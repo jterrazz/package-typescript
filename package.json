@@ -1,0 +1,29 @@
+{
+    "name": "@jterrazz/package-typescript",
+    "author": "Jean-Baptiste Terrazzoni <jterrazzoni@gmail.com>",
+    "version": "1.0.0",
+    "files": [
+        "tsconfig",
+        "bin"
+    ],
+    "type": "module",
+    "bin": {
+        "swc-compiler": "bin/swc-compiler.sh",
+        "swc-runner": "bin/swc-runner.sh"
+    },
+    "scripts": {},
+    "devDependencies": {
+        "@jterrazz/package-typescript-quality": "^1.1.0"
+    },
+    "dependencies": {
+        "@swc-node/register": "^1.9.1",
+        "@swc/cli": "^0.3.12",
+        "@swc/core": "^1.4.17",
+        "@types/node": "^20.12.8",
+        "tsconfig-to-swcconfig": "^2.7.0",
+        "typescript": "^5.4.5"
+    },
+    "publishConfig": {
+        "registry": "https://registry.npmjs.org/"
+    }
+}
