@@ -19,7 +19,7 @@ Use the provided `tsconfig.json` in your project:
 ```json5
 // tsconfig.json
 {
-    extends: '@jterrazz/package-typescript/tsconfig/node-module',
+    extends: '@jterrazz/package-typescript/tsconfig/node-esm',
     compilerOptions: {
         // Your custom compiler options here
     },
