@@ -16,13 +16,13 @@ npm install @jterrazz/package-typescript
 
 Use the provided `tsconfig.json` in your project:
 
-```json
+```json5
 // tsconfig.json
 {
-    "extends": "@jterrazz/package-typescript/tsconfig/node-module",
-    "compilerOptions": {
+    extends: '@jterrazz/package-typescript/tsconfig/node-module',
+    compilerOptions: {
         // Your custom compiler options here
-    }
+    },
 }
 ```
 
