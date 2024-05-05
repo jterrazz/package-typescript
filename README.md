@@ -19,7 +19,7 @@ Use the provided `tsconfig.json` in your project:
 ```json
 // tsconfig.json
 {
-    "extends": "@jterrazz/package-typescript/tsconfig/node.json",
+    "extends": "@jterrazz/package-typescript/tsconfig/node-module",
     "compilerOptions": {
         // Your custom compiler options here
     }
