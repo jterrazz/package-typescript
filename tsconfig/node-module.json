@@ -1,6 +1,8 @@
 {
     "compilerOptions": {
-        "types": ["node"],
+        "moduleResolution": "bundler",
+        "module": "ESNext",
+        "types": ["node", "jest"],
         "strict": true,
         "experimentalDecorators": true,
         "esModuleInterop": true,
