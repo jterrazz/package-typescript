@@ -10,8 +10,8 @@ if [ $? -ne 0 ]; then
 fi
 tsconfig-to-swcconfig --output="$TMP_SWCRC"
 
-# Create javascript files
-swc "$IN_PATH" --source-maps --copy-files --config-file "$TMP_SWCRC" --out-dir "$OUT_PATH" --strip-leading-paths "$@"
-
 # Create typescript declaration files
 tsc $IN_PATH/*.ts --declaration --emitDeclarationOnly --outDir "$OUT_PATH"
+
+# Create javascript files
+swc "$IN_PATH" --source-maps --copy-files --config-file "$TMP_SWCRC" --out-dir "$OUT_PATH" --strip-leading-paths "$@"
