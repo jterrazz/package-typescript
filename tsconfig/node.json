@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "moduleResolution": "bundler",
-        "module": "commonjs",
+        "moduleResolution": "NodeNext",
+        "module": "NodeNext",
         "types": ["node", "jest"],
         "strict": true,
         "experimentalDecorators": true,
