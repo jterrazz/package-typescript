@@ -1,7 +1,7 @@
 {
     "name": "@jterrazz/package-typescript",
     "author": "Jean-Baptiste Terrazzoni <jterrazzoni@gmail.com>",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "files": [
         "tsconfig",
         "bin"
@@ -21,6 +21,7 @@
         "@swc/core": "^1.4.17",
         "@types/node": "^20.12.8",
         "chokidar": "^3.6.0",
+        "rollup": "^4.17.2",
         "tsconfig-to-swcconfig": "^2.7.0",
         "typescript": "^5.4.5"
     },
