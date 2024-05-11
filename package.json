@@ -13,7 +13,7 @@
     },
     "scripts": {},
     "devDependencies": {
-        "@jterrazz/package-typescript-quality": "^1.1.0"
+        "@jterrazz/package-typescript-quality": "^1.2.1"
     },
     "dependencies": {
         "@swc-node/register": "^1.9.1",
