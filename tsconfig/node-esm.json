@@ -1,4 +1,6 @@
 {
+    "display": "ESM",
+
     "compilerOptions": {
         "moduleResolution": "bundler",
         "module": "ESNext",
@@ -9,5 +11,6 @@
         "resolveJsonModule": true,
         "skipLibCheck": true
     },
-    "include": ["../../../../src/**/*.*"]
+
+    "exclude": ["node_modules", "babel.config.js", "metro.config.js", "jest.config.js"]
 }
