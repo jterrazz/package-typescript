@@ -1,6 +1,16 @@
 #!/bin/bash
-IN_PATH=src
-OUT_PATH=dist
+
+# Get the directory where the script is being called from (caller's project root)
+# If called through bin, we need to get the directory where the command was executed
+if [ -n "$INIT_CWD" ]; then
+    PROJECT_ROOT="$INIT_CWD"
+else
+    PROJECT_ROOT=$(pwd)
+fi
+
+# Default paths relative to project root
+IN_PATH="$PROJECT_ROOT/src"
+OUT_PATH="$PROJECT_ROOT/dist"
 
 # Convert tsconfig.json to .swcrc
 TMP_SWCRC=$(mktemp -q /tmp/.swcrc.XXXXXX)
@@ -12,7 +22,7 @@ npx tsconfig-to-swcconfig --output="$TMP_SWCRC"
 
 # Watch for changes in the src directory, compile and run
 npx nodemon --quiet \
-    --watch src \
+    --watch "$IN_PATH" \
     --ext '*' \
     --exec "npx swc $IN_PATH \
         --source-maps \
