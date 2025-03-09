@@ -18,6 +18,9 @@ if [ $? -ne 0 ]; then
     echo "$0: Can't create temporary .swcrc file"
     exit 1
 fi
+
+# Ensure we're in the project root directory for TypeScript configuration
+cd "$PROJECT_ROOT"
 npx tsconfig-to-swcconfig --output="$TMP_SWCRC"
 
 # Watch for changes in the src directory, compile and run
