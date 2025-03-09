@@ -1,5 +1,6 @@
 {
   "display": "ESM",
+  "include": ["./src/"],
 
   "compilerOptions": {
     "moduleResolution": "bundler",

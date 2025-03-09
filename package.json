@@ -1,7 +1,7 @@
 {
   "name": "@jterrazz/typescript",
   "author": "Jean-Baptiste Terrazzoni <jterrazzoni@gmail.com>",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "files": [
     "tsconfig",
     "bin"
@@ -13,7 +13,7 @@
   },
   "scripts": {},
   "devDependencies": {
-    "@jterrazz/quality": "^1.6.0"
+    "@jterrazz/quality": "^1.6.1"
   },
   "dependencies": {
     "@swc/cli": "0.6.0",

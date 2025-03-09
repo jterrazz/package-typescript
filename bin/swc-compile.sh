@@ -8,13 +8,20 @@ if [ $? -ne 0 ]; then
     echo "$0: Can't create temporary .swcrc file"
     exit 1
 fi
-tsconfig-to-swcconfig --output="$TMP_SWCRC"
+npx tsconfig-to-swcconfig --output="$TMP_SWCRC"
 
 # Create typescript declaration files
-tsc --declaration --emitDeclarationOnly --outDir "$OUT_PATH"
+npx tsc --rootDir "$IN_PATH" --declaration --emitDeclarationOnly --outDir "$OUT_PATH"
 
-# Create javascript ESM files
-npx swc "$IN_PATH" --source-maps --copy-files --config-file "$TMP_SWCRC" --out-dir "$OUT_PATH" --strip-leading-paths "$@"
+# Create javascript ESM files with improved source maps
+npx swc "$IN_PATH" \
+    --source-maps \
+    --copy-files \
+    --config-file "$TMP_SWCRC" \
+    --out-dir "$OUT_PATH" \
+    --strip-leading-paths \
+    --log-watch-compilation \
+    "$@"
 
 # Create javascript CJS files
-rollup $OUT_PATH/index.js --format cjs --name --file $OUT_PATH/index.cjs
+npx rollup "$OUT_PATH/index.js" --format cjs --file "$OUT_PATH/index.cjs"

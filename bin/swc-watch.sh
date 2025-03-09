@@ -8,7 +8,16 @@ if [ $? -ne 0 ]; then
     echo "$0: Can't create temporary .swcrc file"
     exit 1
 fi
-tsconfig-to-swcconfig --output="$TMP_SWCRC"
+npx tsconfig-to-swcconfig --output="$TMP_SWCRC"
 
 # Watch for changes in the src directory, compile and run
-nodemon --quiet --watch src --ext '*' --exec "npx swc $IN_PATH --source-maps --quiet --copy-files --config-file $TMP_SWCRC --out-dir $OUT_PATH --strip-leading-paths && node --enable-source-maps $OUT_PATH/index.js"
+npx nodemon --quiet \
+    --watch src \
+    --ext '*' \
+    --exec "npx swc $IN_PATH \
+        --source-maps \
+        --copy-files \
+        --config-file $TMP_SWCRC \
+        --out-dir $OUT_PATH \
+        --strip-leading-paths \
+        && node --enable-source-maps $OUT_PATH/index.js"
