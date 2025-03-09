@@ -14,7 +14,7 @@ tsconfig-to-swcconfig --output="$TMP_SWCRC"
 tsc --declaration --emitDeclarationOnly --outDir "$OUT_PATH"
 
 # Create javascript ESM files
-swc "$IN_PATH" --source-maps --copy-files --config-file "$TMP_SWCRC" --out-dir "$OUT_PATH" --strip-leading-paths "$@"
+npx swc "$IN_PATH" --source-maps --copy-files --config-file "$TMP_SWCRC" --out-dir "$OUT_PATH" --strip-leading-paths "$@"
 
 # Create javascript CJS files
 rollup $OUT_PATH/index.js --format cjs --name --file $OUT_PATH/index.cjs

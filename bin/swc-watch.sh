@@ -11,4 +11,4 @@ fi
 tsconfig-to-swcconfig --output="$TMP_SWCRC"
 
 # Watch for changes in the src directory, compile and run
-nodemon --quiet --watch src --ext '*' --exec "swc $IN_PATH --source-maps --quiet --copy-files --config-file $TMP_SWCRC --out-dir $OUT_PATH --strip-leading-paths && node --enable-source-maps $OUT_PATH/index.js"
+nodemon --quiet --watch src --ext '*' --exec "npx swc $IN_PATH --source-maps --quiet --copy-files --config-file $TMP_SWCRC --out-dir $OUT_PATH --strip-leading-paths && node --enable-source-maps $OUT_PATH/index.js"
