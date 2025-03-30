@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Exit on error
+set -e
+
 # Get the directory where the script is being called from (caller's project root)
 # If called through bin, we need to get the directory where the command was executed
 if [ -n "$INIT_CWD" ]; then
@@ -37,19 +40,25 @@ echo "✅ TypeScript declaration files generated"
 
 # Create javascript ESM files with improved source maps
 echo "⚙️  Compiling TypeScript to ESM with source maps..."
-npx swc "$IN_PATH" \
+if ! npx @swc/cli "$IN_PATH" \
     --source-maps \
     --copy-files \
     --config-file "$TMP_SWCRC" \
     --out-dir "$OUT_PATH" \
     --strip-leading-paths \
     --log-watch-compilation \
-    "$@"
+    "$@"; then
+    echo "❌ SWC compilation failed"
+    exit 1
+fi
 echo "✅ ESM compilation completed"
 
 # Create javascript CJS files
 echo "🔄 Creating CommonJS bundle..."
-npx rollup "$OUT_PATH/index.js" --format cjs --file "$OUT_PATH/index.cjs"
+if ! npx rollup "$OUT_PATH/index.js" --format cjs --file "$OUT_PATH/index.cjs"; then
+    echo "❌ Rollup bundling failed"
+    exit 1
+fi
 echo "✅ CommonJS bundle created"
 
 echo "✨ Compilation process completed successfully!"

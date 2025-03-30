@@ -1,7 +1,7 @@
 {
   "name": "@jterrazz/typescript",
   "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "files": [
     "tsconfig",
     "bin"
@@ -16,13 +16,20 @@
     "@jterrazz/quality": "^1.6.1"
   },
   "dependencies": {
-    "@swc/cli": "0.6.0",
+    "@swc/cli": "^0.6.0",
     "@swc/core": "1.11.13",
     "@types/node": "22.13.10",
     "nodemon": "3.1.9",
     "rollup": "4.35.0",
     "tsconfig-to-swcconfig": "2.8.1",
     "typescript": "5.8.2"
+  },
+  "optionalDependencies": {
+    "@swc/core-linux-x64-gnu": "1.11.13",
+    "@swc/core-linux-x64-musl": "1.11.13",
+    "@swc/core-darwin-x64": "1.11.13",
+    "@swc/core-darwin-arm64": "1.11.13",
+    "@swc/core-win32-x64-msvc": "1.11.13"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
