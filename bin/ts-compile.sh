@@ -40,7 +40,7 @@ echo "✅ TypeScript declaration files generated"
 
 # Create javascript ESM files with improved source maps
 echo "⚙️  Compiling TypeScript to ESM with source maps..."
-if ! npx @swc/cli "$IN_PATH" \
+if ! "$PROJECT_ROOT/node_modules/.bin/swc" "$IN_PATH" \
     --source-maps \
     --copy-files \
     --config-file "$TMP_SWCRC" \
