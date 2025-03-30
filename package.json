@@ -1,7 +1,7 @@
 {
   "name": "@jterrazz/typescript",
-  "author": "Jean-Baptiste Terrazzoni <jterrazzoni@gmail.com>",
-  "version": "2.0.0",
+  "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
+  "version": "2.0.1",
   "files": [
     "tsconfig",
     "bin"
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@swc/cli": "0.6.0",
-    "@swc/core": "1.11.8",
+    "@swc/core": "1.11.13",
     "@types/node": "22.13.10",
     "nodemon": "3.1.9",
     "rollup": "4.35.0",
