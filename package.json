@@ -1,15 +1,15 @@
 {
   "name": "@jterrazz/typescript",
   "author": "Jean-Baptiste Terrazzoni <jterrazzoni@gmail.com>",
-  "version": "1.9.6",
+  "version": "2.0.0",
   "files": [
     "tsconfig",
     "bin"
   ],
   "type": "module",
   "bin": {
-    "swc-compile": "bin/swc-compile.sh",
-    "swc-watch": "bin/swc-watch.sh"
+    "ts-compile": "bin/ts-compile.sh",
+    "ts-watch": "bin/ts-watch.sh"
   },
   "scripts": {},
   "devDependencies": {

@@ -1,6 +1,6 @@
 # Package Typescript
 
-This package provides a consistent TypeScript configuration for projects. It includes two commands: `swc-compiler` and `swc-runner`.
+This package provides a consistent TypeScript configuration for projects. It includes two commands: `ts-compiler` and `ts-runner`.
 
 ## Installation
 
@@ -28,8 +28,8 @@ Use the provided `tsconfig.json` in your project:
 
 ### Commands
 
-- `swc-compiler`: Compile TypeScript files using SWC.
-- `swc-runner`: Execute TypeScript files using SWC.
+- `ts-compiler`: Compile TypeScript files.
+- `ts-runner`: Execute TypeScript files.
 
 ## Implementation Details
 
