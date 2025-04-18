@@ -55,7 +55,7 @@ echo "✅ ESM compilation completed"
 
 # Create javascript CJS files
 echo "🔄 Creating CommonJS bundle..."
-if ! npx rollup "$OUT_PATH/index.js" --format cjs --file "$OUT_PATH/index.cjs"; then
+if ! npx rollup "$OUT_PATH/index.js" --format cjs --file "$OUT_PATH/index.cjs" --silent; then
     echo "❌ Rollup bundling failed"
     exit 1
 fi
