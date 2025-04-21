@@ -11,9 +11,13 @@
     "ts-compile": "bin/ts-compile.sh",
     "ts-watch": "bin/ts-watch.sh"
   },
-  "scripts": {},
+  "scripts": {
+    "lint": "prettier --check .",
+    "test": "echo 'no tests yet'",
+    "build": "echo 'no build yet'"
+  },
   "devDependencies": {
-    "@jterrazz/quality": "^2.0.3"
+    "@jterrazz/quality": "^2.2.0"
   },
   "dependencies": {
     "@swc/cli": "^0.6.0",
