@@ -1,7 +1,7 @@
 {
   "name": "@jterrazz/typescript",
   "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "files": [
     "tsconfig",
     "bin"
@@ -21,24 +21,24 @@
   },
   "dependencies": {
     "@swc/cli": "^0.7.3",
-    "@swc/core": "1.11.21",
+    "@swc/core": "1.11.24",
     "@types/node": "22.14.1",
-    "nodemon": "3.1.9",
-    "rollup": "4.40.0",
+    "nodemon": "3.1.10",
+    "rollup": "4.40.1",
     "tsconfig-to-swcconfig": "2.8.1",
     "typescript": "5.8.3"
   },
   "optionalDependencies": {
-    "@swc/core-linux-x64-gnu": "1.11.21",
-    "@swc/core-linux-x64-musl": "1.11.21",
-    "@swc/core-darwin-x64": "1.11.21",
-    "@swc/core-darwin-arm64": "1.11.21",
-    "@swc/core-win32-x64-msvc": "1.11.21",
-    "@rollup/rollup-linux-x64-gnu": "4.40.0",
-    "@rollup/rollup-linux-x64-musl": "4.40.0",
-    "@rollup/rollup-darwin-x64": "4.40.0",
-    "@rollup/rollup-darwin-arm64": "4.40.0",
-    "@rollup/rollup-win32-x64-msvc": "4.40.0"
+    "@swc/core-linux-x64-gnu": "1.11.24",
+    "@swc/core-linux-x64-musl": "1.11.24",
+    "@swc/core-darwin-x64": "1.11.24",
+    "@swc/core-darwin-arm64": "1.11.24",
+    "@swc/core-win32-x64-msvc": "1.11.24",
+    "@rollup/rollup-linux-x64-gnu": "4.40.1",
+    "@rollup/rollup-linux-x64-musl": "4.40.1",
+    "@rollup/rollup-darwin-x64": "4.40.1",
+    "@rollup/rollup-darwin-arm64": "4.40.1",
+    "@rollup/rollup-win32-x64-msvc": "4.40.1"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"

@@ -1,11 +1,11 @@
 {
-  "display": "ESM",
+  "display": "Node ESM",
   "include": ["../../../../src/"],
 
   "compilerOptions": {
     "moduleResolution": "bundler",
     "module": "ESNext",
-    "types": ["node", "jest"],
+    "types": ["node"],
     "strict": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
