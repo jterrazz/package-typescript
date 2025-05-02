@@ -7,7 +7,7 @@ set -e
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 CYAN_BG='\033[46m'  # Cyan background
-BRIGHT_WHITE='\033[1;38;5;15m'  # Brightest possible white text
+BRIGHT_WHITE='\033[1;30m'  # Bold black text
 NC='\033[0m' # No Color
 
 # Get the directory where the script is being called from (caller's project root)
