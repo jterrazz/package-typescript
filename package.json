@@ -1,7 +1,7 @@
 {
   "name": "@jterrazz/typescript",
   "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "files": [
     "tsconfig",
     "bin"
