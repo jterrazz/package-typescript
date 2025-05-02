@@ -18,35 +18,35 @@ else
     PROJECT_ROOT=$(pwd)
 fi
 
-echo "${CYAN_BG}${BRIGHT_WHITE} START ${NC} Starting TypeScript compilation process...\n"
+printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} Starting TypeScript compilation process...\n\n"
 
 # Default paths relative to project root
 IN_PATH="$PROJECT_ROOT/src"
 OUT_PATH="$PROJECT_ROOT/dist"
 
-echo "Input directory: $IN_PATH"
-echo "Output directory: $OUT_PATH"
+printf "Input directory: %s\n" "$IN_PATH"
+printf "Output directory: %s\n" "$OUT_PATH"
 
 # Convert tsconfig.json to .swcrc
-echo "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Converting tsconfig.json to .swcrc\n"
+printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Converting tsconfig.json to .swcrc\n\n"
 TMP_SWCRC=$(mktemp -q /tmp/.swcrc.XXXXXX)
 if [ $? -ne 0 ]; then
-    echo "${RED}✗ Error: Can't create temporary .swcrc file${NC}"
+    printf "${RED}✗ Error: Can't create temporary .swcrc file${NC}\n"
     exit 1
 fi
 
 # Ensure we're in the project root directory for TypeScript configuration
 cd "$PROJECT_ROOT"
 npx tsconfig-to-swcconfig --output="$TMP_SWCRC"
-echo "${GREEN}✓ Completed${NC}"
+printf "${GREEN}✓ Completed${NC}\n"
 
 # Create typescript declaration files
-echo "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Generating TypeScript declaration files\n"
+printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Generating TypeScript declaration files\n\n"
 npx tsc --rootDir "$IN_PATH" --declaration --emitDeclarationOnly --outDir "$OUT_PATH"
-echo "${GREEN}✓ Completed${NC}"
+printf "${GREEN}✓ Completed${NC}\n"
 
 # Create javascript ESM files with improved source maps
-echo "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Compiling TypeScript to ESM with source maps\n"
+printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Compiling TypeScript to ESM with source maps\n\n"
 if ! "$PROJECT_ROOT/node_modules/.bin/swc" "$IN_PATH" \
     --source-maps \
     --copy-files \
@@ -55,18 +55,18 @@ if ! "$PROJECT_ROOT/node_modules/.bin/swc" "$IN_PATH" \
     --strip-leading-paths \
     --log-watch-compilation \
     "$@"; then
-    echo "${RED}✗ SWC compilation failed${NC}"
+    printf "${RED}✗ SWC compilation failed${NC}\n"
     exit 1
 fi
-echo "${GREEN}✓ Completed${NC}"
+printf "${GREEN}✓ Completed${NC}\n"
 
 # Create javascript CJS files
-echo "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Creating CommonJS bundle\n"
+printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Creating CommonJS bundle\n\n"
 if ! npx rollup "$OUT_PATH/index.js" --format cjs --file "$OUT_PATH/index.cjs" --silent; then
-    echo "${RED}✗ Rollup bundling failed${NC}"
+    printf "${RED}✗ Rollup bundling failed${NC}\n"
     exit 1
 fi
-echo "${GREEN}✓ Completed${NC}"
+printf "${GREEN}✓ Completed${NC}\n"
 
-echo "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing compilation process\n"
-echo "${GREEN}✓ Completed${NC}"
+printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing compilation process\n\n"
+printf "${GREEN}✓ Completed${NC}\n"
