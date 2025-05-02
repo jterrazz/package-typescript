@@ -18,7 +18,7 @@ else
     PROJECT_ROOT=$(pwd)
 fi
 
-echo "${ACCENT_BG}${WHITE} START ${NC} Starting TypeScript compilation process..."
+echo "${ACCENT_BG}${WHITE} START ${NC} Starting TypeScript compilation process...\n"
 
 # Default paths relative to project root
 IN_PATH="$PROJECT_ROOT/src"
@@ -28,7 +28,7 @@ echo "Input directory: $IN_PATH"
 echo "Output directory: $OUT_PATH"
 
 # Convert tsconfig.json to .swcrc
-echo "${ACCENT_BG}${WHITE} STEP ${NC} Converting tsconfig.json to .swcrc..."
+echo "\n${ACCENT_BG}${WHITE} STEP ${NC} Converting tsconfig.json to .swcrc\n"
 TMP_SWCRC=$(mktemp -q /tmp/.swcrc.XXXXXX)
 if [ $? -ne 0 ]; then
     echo "${RED}✗ Error: Can't create temporary .swcrc file${NC}"
@@ -41,12 +41,12 @@ npx tsconfig-to-swcconfig --output="$TMP_SWCRC"
 echo "${GREEN}✓ Completed${NC}"
 
 # Create typescript declaration files
-echo "${ACCENT_BG}${WHITE} STEP ${NC} Generating TypeScript declaration files..."
+echo "\n${ACCENT_BG}${WHITE} STEP ${NC} Generating TypeScript declaration files\n"
 npx tsc --rootDir "$IN_PATH" --declaration --emitDeclarationOnly --outDir "$OUT_PATH"
 echo "${GREEN}✓ Completed${NC}"
 
 # Create javascript ESM files with improved source maps
-echo "${ACCENT_BG}${WHITE} STEP ${NC} Compiling TypeScript to ESM with source maps..."
+echo "\n${ACCENT_BG}${WHITE} STEP ${NC} Compiling TypeScript to ESM with source maps\n"
 if ! "$PROJECT_ROOT/node_modules/.bin/swc" "$IN_PATH" \
     --source-maps \
     --copy-files \
@@ -61,12 +61,12 @@ fi
 echo "${GREEN}✓ Completed${NC}"
 
 # Create javascript CJS files
-echo "${ACCENT_BG}${WHITE} STEP ${NC} Creating CommonJS bundle..."
+echo "\n${ACCENT_BG}${WHITE} STEP ${NC} Creating CommonJS bundle\n"
 if ! npx rollup "$OUT_PATH/index.js" --format cjs --file "$OUT_PATH/index.cjs" --silent; then
     echo "${RED}✗ Rollup bundling failed${NC}"
     exit 1
 fi
 echo "${GREEN}✓ Completed${NC}"
 
-echo "${ACCENT_BG}${WHITE} END ${NC} Finalizing compilation process..."
+echo "\n${ACCENT_BG}${WHITE} END ${NC} Finalizing compilation process\n"
 echo "${GREEN}✓ Completed${NC}"
