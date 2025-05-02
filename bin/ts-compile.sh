@@ -7,7 +7,7 @@ set -e
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 CYAN_BG='\033[46m'  # Cyan background
-WHITE='\033[1;37m'  # Bold white text
+BRIGHT_WHITE='\033[1;97m'  # Bright white text
 NC='\033[0m' # No Color
 
 # Get the directory where the script is being called from (caller's project root)
@@ -18,7 +18,7 @@ else
     PROJECT_ROOT=$(pwd)
 fi
 
-echo "${CYAN_BG}${WHITE} START ${NC} Starting TypeScript compilation process...\n"
+echo "${CYAN_BG}${BRIGHT_WHITE} START ${NC} Starting TypeScript compilation process...\n"
 
 # Default paths relative to project root
 IN_PATH="$PROJECT_ROOT/src"
@@ -28,7 +28,7 @@ echo "Input directory: $IN_PATH"
 echo "Output directory: $OUT_PATH"
 
 # Convert tsconfig.json to .swcrc
-echo "\n${CYAN_BG}${WHITE} RUN ${NC} Converting tsconfig.json to .swcrc\n"
+echo "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Converting tsconfig.json to .swcrc\n"
 TMP_SWCRC=$(mktemp -q /tmp/.swcrc.XXXXXX)
 if [ $? -ne 0 ]; then
     echo "${RED}✗ Error: Can't create temporary .swcrc file${NC}"
@@ -41,12 +41,12 @@ npx tsconfig-to-swcconfig --output="$TMP_SWCRC"
 echo "${GREEN}✓ Completed${NC}"
 
 # Create typescript declaration files
-echo "\n${CYAN_BG}${WHITE} RUN ${NC} Generating TypeScript declaration files\n"
+echo "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Generating TypeScript declaration files\n"
 npx tsc --rootDir "$IN_PATH" --declaration --emitDeclarationOnly --outDir "$OUT_PATH"
 echo "${GREEN}✓ Completed${NC}"
 
 # Create javascript ESM files with improved source maps
-echo "\n${CYAN_BG}${WHITE} RUN ${NC} Compiling TypeScript to ESM with source maps\n"
+echo "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Compiling TypeScript to ESM with source maps\n"
 if ! "$PROJECT_ROOT/node_modules/.bin/swc" "$IN_PATH" \
     --source-maps \
     --copy-files \
@@ -61,12 +61,12 @@ fi
 echo "${GREEN}✓ Completed${NC}"
 
 # Create javascript CJS files
-echo "\n${CYAN_BG}${WHITE} RUN ${NC} Creating CommonJS bundle\n"
+echo "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Creating CommonJS bundle\n"
 if ! npx rollup "$OUT_PATH/index.js" --format cjs --file "$OUT_PATH/index.cjs" --silent; then
     echo "${RED}✗ Rollup bundling failed${NC}"
     exit 1
 fi
 echo "${GREEN}✓ Completed${NC}"
 
-echo "\n${CYAN_BG}${WHITE} END ${NC} Finalizing compilation process\n"
+echo "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing compilation process\n"
 echo "${GREEN}✓ Completed${NC}"
