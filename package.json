@@ -13,7 +13,7 @@
   },
   "scripts": {
     "lint": "prettier --check .",
-    "test": "echo 'no tests yet'",
+    "test": "sh bin/ts-compile.sh",
     "build": "echo 'no build yet'"
   },
   "devDependencies": {
