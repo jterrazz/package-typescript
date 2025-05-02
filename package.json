@@ -1,7 +1,7 @@
 {
   "name": "@jterrazz/typescript",
   "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "files": [
     "tsconfig",
     "bin"
@@ -13,8 +13,8 @@
   },
   "scripts": {
     "lint": "prettier --check .",
-    "test": "sh bin/ts-compile.sh",
-    "build": "echo 'no build yet'"
+    "test": "# no test script",
+    "build": "# no build script"
   },
   "devDependencies": {
     "@jterrazz/quality": "^2.2.0"
