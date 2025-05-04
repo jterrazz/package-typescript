@@ -42,7 +42,6 @@ printf "${GREEN}✓ Successfully converted tsconfig.json to .swcrc${NC}\n"
 
 printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Starting watch mode with nodemon\n\n"
 printf "Watching for changes in: %s\n" "$IN_PATH"
-printf "Changes will trigger automatic recompilation and execution\n\n"
 
 # Watch for changes in the src directory, compile and run
 npx nodemon --quiet \
