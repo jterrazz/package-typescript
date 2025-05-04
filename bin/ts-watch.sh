@@ -48,10 +48,10 @@ printf "Changes will trigger automatic recompilation and execution\n\n"
 npx nodemon --quiet \
     --watch "$IN_PATH" \
     --ext '*' \
-    --exec "printf 'File change detected, recompiling\\n' && npx swc $IN_PATH \
+    --exec "printf 'File change detected, rebuilding\\n' && npx swc $IN_PATH \
         --source-maps \
         --copy-files \
         --config-file $TMP_SWCRC \
         --out-dir $OUT_PATH \
         --strip-leading-paths \
-        && printf '${GREEN}✓ Compilation successful, running project${NC}\\n' && node --enable-source-maps $OUT_PATH/index.js"
+        && printf '${GREEN}✓ Completed${NC}\\n\n' && node --enable-source-maps $OUT_PATH/index.js"
