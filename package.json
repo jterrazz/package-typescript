@@ -1,7 +1,7 @@
 {
   "name": "@jterrazz/typescript",
   "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "files": [
     "tsconfig",
     "bin"
@@ -17,7 +17,7 @@
     "build": "# no build script"
   },
   "devDependencies": {
-    "@jterrazz/quality": "^2.2.1"
+    "@jterrazz/quality": "^2.2.6"
   },
   "dependencies": {
     "@swc/cli": "^0.7.3",
