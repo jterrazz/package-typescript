@@ -17,7 +17,7 @@
     "build": "# no build script"
   },
   "devDependencies": {
-    "@jterrazz/quality": "^2.2.0"
+    "@jterrazz/quality": "^2.2.1"
   },
   "dependencies": {
     "@swc/cli": "^0.7.3",
@@ -29,6 +29,7 @@
     "typescript": "5.8.3"
   },
   "optionalDependencies": {
+    "@swc/core-linux-arm64-gnu": "1.11.24",
     "@swc/core-linux-x64-gnu": "1.11.24",
     "@swc/core-linux-x64-musl": "1.11.24",
     "@swc/core-darwin-x64": "1.11.24",
