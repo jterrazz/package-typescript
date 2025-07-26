@@ -1,10 +1,10 @@
-# Package Typescript
+# @jterrazz/typescript
 
-This package provides a consistent TypeScript configuration for projects. It includes two commands: `ts-compiler` and `ts-runner`.
+> Ready-to-use TypeScript configurations and build tools for modern projects.
+
+A simple package that provides TypeScript configurations for different project types and fast build commands using SWC.
 
 ## Installation
-
-Install the package globally or locally:
 
 ```bash
 npm install @jterrazz/typescript
@@ -12,28 +12,47 @@ npm install @jterrazz/typescript
 
 ## Usage
 
-### TypeScript Configuration
+### 1. Choose a TypeScript configuration
 
-Use the provided `tsconfig.json` in your project:
-
-```json5
-// tsconfig.json
+```json
+// tsconfig.json - Pick one:
 {
-  extends: '@jterrazz/typescript/tsconfig/node-esm',
-  compilerOptions: {
-    // Your custom compiler options here
-  },
+  "extends": "@jterrazz/typescript/tsconfig/node"     // Node.js projects
+}
+{
+  "extends": "@jterrazz/typescript/tsconfig/next"     // Next.js projects
+}
+{
+  "extends": "@jterrazz/typescript/tsconfig/expo"     // Expo/React Native
 }
 ```
 
-### Commands
+### 2. Use the build commands
 
-- `ts-compiler`: Compile TypeScript files.
-- `ts-runner`: Execute TypeScript files.
+```bash
+npx ts-dev    # Development with watch mode
+npx ts-build  # Production build (generates .js, .d.ts, .cjs)
+```
 
-## Implementation Details
+## What you get
 
-- The package reads directly from the `tsconfig.json` file, keeping the implementation details hidden.
-- Consumers don't need to worry about the underlying scripts.
+- **Fast compilation** with SWC (10x faster than tsc)
+- **Zero configuration** - works out of the box
+- **Multiple outputs** - ESM + CommonJS + TypeScript declarations
+- **Source maps** for debugging
 
-Happy coding!
+## Project structure
+
+```
+your-project/
+├── src/
+│   └── index.ts    # Your TypeScript code
+├── dist/           # Generated files
+└── tsconfig.json   # Extends this package
+```
+
+That's it! The package handles all the complex build configuration so you can focus on writing code.
+
+## License
+
+MIT © [Jean-Baptiste Terrazzoni](https://github.com/jterrazz)

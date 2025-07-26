@@ -1,15 +1,15 @@
 {
   "name": "@jterrazz/typescript",
   "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
-  "version": "2.4.3",
+  "version": "3.0.0",
   "files": [
     "tsconfig",
     "bin"
   ],
   "type": "module",
   "bin": {
-    "ts-compile": "bin/ts-compile.sh",
-    "ts-watch": "bin/ts-watch.sh"
+    "ts-build": "bin/ts-build.sh",
+    "ts-dev": "bin/ts-dev.sh"
   },
   "scripts": {
     "lint": "prettier --check .",
