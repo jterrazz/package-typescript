@@ -1,8 +1,6 @@
-# @jterrazz/typescript
+# Package Typescript
 
-> Ready-to-use TypeScript configurations and build tools for modern projects.
-
-A simple package that provides TypeScript configurations for different project types and fast build commands using SWC.
+Drop-in tsconfig presets for consistent builds.
 
 ## Installation
 
