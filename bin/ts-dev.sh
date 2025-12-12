@@ -17,8 +17,14 @@ else
     PROJECT_ROOT=$(pwd)
 fi
 
-# Get the directory where this script lives (inside @jterrazz/typescript)
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Get the real directory where this script lives (resolve symlinks)
+SCRIPT_PATH="$0"
+while [ -L "$SCRIPT_PATH" ]; do
+    LINK_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+    SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
+    [[ $SCRIPT_PATH != /* ]] && SCRIPT_PATH="$LINK_DIR/$SCRIPT_PATH"
+done
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 CONFIG_PATH="$SCRIPT_DIR/../config/rolldown.dev.config.js"
 
 printf "${CYAN_BG}${BRIGHT_WHITE} DEV ${NC} Starting watch mode...\n\n"
