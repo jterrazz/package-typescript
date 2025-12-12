@@ -3,70 +3,34 @@
 # Exit on error
 set -e
 
-# Colors for output (using Vitest-like colors)
+# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-CYAN_BG='\033[46m'  # Cyan background
-BRIGHT_WHITE='\033[1;30m'  # Bold black text
-NC='\033[0m' # No Color
+CYAN_BG='\033[46m'
+BRIGHT_WHITE='\033[1;30m'
+NC='\033[0m'
 
 # Get the directory where the script is being called from (caller's project root)
-# If called through bin, we need to get the directory where the command was executed
 if [ -n "$INIT_CWD" ]; then
     PROJECT_ROOT="$INIT_CWD"
 else
     PROJECT_ROOT=$(pwd)
 fi
 
-printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} Starting TypeScript compilation process...\n\n"
+# Get the directory where this script lives (inside @jterrazz/typescript)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CONFIG_PATH="$SCRIPT_DIR/../config/rolldown.build.config.js"
 
-# Default paths relative to project root
-IN_PATH="$PROJECT_ROOT/src"
-OUT_PATH="$PROJECT_ROOT/dist"
+printf "${CYAN_BG}${BRIGHT_WHITE} BUILD ${NC} Building with Rolldown...\n\n"
 
-printf "Input directory: %s\n" "$IN_PATH"
-printf "Output directory: %s\n" "$OUT_PATH"
+printf "Project root: %s\n" "$PROJECT_ROOT"
+printf "Config path: %s\n\n" "$CONFIG_PATH"
 
-# Convert tsconfig.json to .swcrc
-printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Converting tsconfig.json to .swcrc\n\n"
-TMP_SWCRC=$(mktemp -q /tmp/.swcrc.XXXXXX)
-if [ $? -ne 0 ]; then
-    printf "${RED}✗ Error: Can't create temporary .swcrc file${NC}\n"
-    exit 1
-fi
-
-# Ensure we're in the project root directory for TypeScript configuration
 cd "$PROJECT_ROOT"
-npx tsconfig-to-swcconfig --output="$TMP_SWCRC"
-printf "${GREEN}✓ Completed${NC}\n"
 
-# Create typescript declaration files
-printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Generating TypeScript declaration files\n\n"
-npx tsc --rootDir "$IN_PATH" --declaration --emitDeclarationOnly --outDir "$OUT_PATH"
-printf "${GREEN}✓ Completed${NC}\n"
-
-# Create javascript ESM files with improved source maps
-printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Compiling TypeScript to ESM with source maps\n\n"
-if ! "$PROJECT_ROOT/node_modules/.bin/swc" "$IN_PATH" \
-    --source-maps \
-    --copy-files \
-    --config-file "$TMP_SWCRC" \
-    --out-dir "$OUT_PATH" \
-    --strip-leading-paths \
-    --log-watch-compilation \
-    "$@"; then
-    printf "${RED}✗ SWC compilation failed${NC}\n"
+if ! npx rolldown --config "$CONFIG_PATH"; then
+    printf "${RED}✗ Build failed${NC}\n"
     exit 1
 fi
-printf "${GREEN}✓ Completed${NC}\n"
 
-# Create javascript CJS files
-printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Creating CommonJS bundle\n\n"
-if ! npx rollup "$OUT_PATH/index.js" --format cjs --file "$OUT_PATH/index.cjs" --silent; then
-    printf "${RED}✗ Rollup bundling failed${NC}\n"
-    exit 1
-fi
-printf "${GREEN}✓ Completed${NC}\n"
-
-printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing compilation process\n\n"
-printf "${GREEN}✓ Completed${NC}\n"
+printf "\n${GREEN}✓ Build completed${NC}\n"
