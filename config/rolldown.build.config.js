@@ -2,6 +2,9 @@ import { existsSync } from 'node:fs';
 import { defineConfig } from 'rolldown';
 import { dts } from 'rolldown-plugin-dts';
 
+// Build mode: 'lib' = ESM + CJS + types, 'app' = ESM + types only
+const isLibrary = process.env.BUILD_MODE === 'lib';
+
 // Externalize all dependencies (node built-ins + node_modules)
 const external = [/node_modules/, /^node:/, /^[a-z@]/];
 
@@ -40,4 +43,4 @@ const cjsBuild = defineConfig({
     },
 });
 
-export default [esmBuild, cjsBuild];
+export default isLibrary ? [esmBuild, cjsBuild] : [esmBuild];

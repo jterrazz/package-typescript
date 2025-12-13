@@ -24,8 +24,9 @@ npm install @jterrazz/typescript
 ### 2. Use the build commands
 
 ```bash
-npx ts-dev    # Development with watch mode
-npx ts-build  # Production build
+npx ts-dev         # Development with watch mode
+npx ts-build --app # Production build (ESM + types)
+npx ts-build --lib # Library build (ESM + CJS + types)
 ```
 
 ## What you get
@@ -40,11 +41,13 @@ npx ts-build  # Production build
 | Mode | Output | Description |
 |------|--------|-------------|
 | `ts-dev` | `dist/index.js` | ESM only, fast rebuilds (~20ms) |
-| `ts-build` | `dist/index.js` | ESM bundle |
+| `ts-build --app` | `dist/index.js` | ESM bundle |
+| | `dist/index.d.ts` | TypeScript declarations |
+| `ts-build --lib` | `dist/index.js` | ESM bundle |
 | | `dist/index.cjs` | CommonJS bundle |
 | | `dist/index.d.ts` | TypeScript declarations |
 
-If `src/instrumentation.ts` exists, it will also generate `dist/instrumentation.js`, `dist/instrumentation.cjs`, and `dist/instrumentation.d.ts`.
+If `src/instrumentation.ts` exists, it will also generate corresponding `instrumentation.*` files.
 
 ## Project structure
 
