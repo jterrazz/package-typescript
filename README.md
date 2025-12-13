@@ -44,14 +44,17 @@ npx ts-build  # Production build
 | | `dist/index.cjs` | CommonJS bundle |
 | | `dist/index.d.ts` | TypeScript declarations |
 
+If `src/instrumentation.ts` exists, it will also generate `dist/instrumentation.js`, `dist/instrumentation.cjs`, and `dist/instrumentation.d.ts`.
+
 ## Project structure
 
 ```
 your-project/
 ├── src/
-│   └── index.ts    # Your TypeScript code
-├── dist/           # Generated files
-└── tsconfig.json   # Extends this package
+│   ├── index.ts           # Main entry point
+│   └── instrumentation.ts # Optional instrumentation entry point
+├── dist/                  # Generated files
+└── tsconfig.json          # Extends this package
 ```
 
 ## How it works
