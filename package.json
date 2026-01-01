@@ -29,5 +29,13 @@
   },
   "devDependencies": {
     "@jterrazz/codestyle": "^1.2.4"
+  },
+  "peerDependencies": {
+    "@types/node": "*"
+  },
+  "peerDependenciesMeta": {
+    "@types/node": {
+      "optional": true
+    }
   }
 }
