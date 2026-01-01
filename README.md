@@ -1,4 +1,4 @@
-*Hey there – I'm Jean-Baptiste, just another developer doing weird things with code. All my projects live on [jterrazz.com](https://jterrazz.com) – complete with backstories and lessons learned. Feel free to poke around – you might just find something useful!*
+_Hey there – I'm Jean-Baptiste, just another developer doing weird things with code. All my projects live on [jterrazz.com](https://jterrazz.com) – complete with backstories and lessons learned. Feel free to poke around – you might just find something useful!_
 
 # @jterrazz/typescript
 
@@ -38,14 +38,14 @@ npx ts-build --lib # Library build (ESM + CJS + types)
 
 ### Build outputs
 
-| Mode | Output | Description |
-|------|--------|-------------|
-| `ts-dev` | `dist/index.js` | ESM only, fast rebuilds (~20ms) |
-| `ts-build --app` | `dist/index.js` | ESM bundle |
-| | `dist/index.d.ts` | TypeScript declarations |
-| `ts-build --lib` | `dist/index.js` | ESM bundle |
-| | `dist/index.cjs` | CommonJS bundle |
-| | `dist/index.d.ts` | TypeScript declarations |
+| Mode             | Output            | Description                     |
+| ---------------- | ----------------- | ------------------------------- |
+| `ts-dev`         | `dist/index.js`   | ESM only, fast rebuilds (~20ms) |
+| `ts-build --app` | `dist/index.js`   | ESM bundle                      |
+|                  | `dist/index.d.ts` | TypeScript declarations         |
+| `ts-build --lib` | `dist/index.js`   | ESM bundle                      |
+|                  | `dist/index.cjs`  | CommonJS bundle                 |
+|                  | `dist/index.d.ts` | TypeScript declarations         |
 
 If `src/instrumentation.ts` exists, it will also generate corresponding `instrumentation.*` files.
 
@@ -64,11 +64,11 @@ your-project/
 
 The package uses a fully compiled toolchain — no JavaScript in the hot path:
 
-| Step | Tool | Language |
-|------|------|----------|
-| Transpile | [Oxc](https://oxc.rs) (via Rolldown) | Rust |
-| Bundle | [Rolldown](https://rolldown.rs) | Rust |
-| Declarations | [tsgo](https://github.com/nicolo-ribaudo/typescript-go) | Go |
+| Step         | Tool                                                    | Language |
+| ------------ | ------------------------------------------------------- | -------- |
+| Transpile    | [Oxc](https://oxc.rs) (via Rolldown)                    | Rust     |
+| Bundle       | [Rolldown](https://rolldown.rs)                         | Rust     |
+| Declarations | [tsgo](https://github.com/nicolo-ribaudo/typescript-go) | Go       |
 
 ## License
 
