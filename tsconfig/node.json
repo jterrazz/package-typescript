@@ -1,6 +1,7 @@
 {
   "display": "Node ESM",
-  "include": ["../../../../src/"],
+  "include": ["../../../../**/*.ts"],
+  "exclude": ["../../../../node_modules"],
 
   "compilerOptions": {
     "moduleResolution": "Bundler",
