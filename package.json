@@ -12,12 +12,13 @@
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
+    "./oxfmt": "./src/oxfmt/index.json",
     "./oxlint/node": "./src/oxlint/node.json",
     "./oxlint/expo": "./src/oxlint/expo.json",
     "./oxlint/nextjs": "./src/oxlint/nextjs.json",
     "./oxlint/architectures/hexagonal": "./src/oxlint/architectures/hexagonal.json",
     "./oxlint/plugins/codestyle": "./src/oxlint/plugins/codestyle.js",
-    "./oxfmt": "./src/oxfmt/index.json"
+    "./src/oxlint/plugins/codestyle.js": "./src/oxlint/plugins/codestyle.js"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
@@ -30,12 +31,12 @@
   },
   "dependencies": {
     "@jterrazz/typescript": "^4.2.1",
-    "eslint-plugin-perfectionist": "^5.2.0",
-    "oxfmt": "^0.21.0",
-    "oxlint": "^1.36.0"
+    "eslint-plugin-perfectionist": "^5.4.0",
+    "oxfmt": "^0.26.0",
+    "oxlint": "^1.41.0"
   },
   "devDependencies": {
-    "@types/node": "^25.0.3",
-    "vitest": "^4.0.16"
+    "@types/node": "^25.0.10",
+    "vitest": "^4.0.18"
   }
 }

@@ -12,9 +12,11 @@ Create `.oxlintrc.json`:
 
 ```json
 {
-    "extends": ["@jterrazz/codestyle/oxlint/node"]
+  "extends": ["node_modules/@jterrazz/codestyle/src/oxlint/node.json"]
 }
 ```
+
+> **Note:** The `node_modules/` path is required because oxlint doesn't support npm module resolution in `extends`.
 
 Run:
 
@@ -25,21 +27,19 @@ npx codestyle --fix    # Fix everything
 
 ## Configurations
 
-| Config                                               | Use Case                           |
-| ---------------------------------------------------- | ---------------------------------- |
-| `@jterrazz/codestyle/oxlint/node`                    | Node.js (requires .js extensions)  |
-| `@jterrazz/codestyle/oxlint/expo`                    | Expo / React Native                |
-| `@jterrazz/codestyle/oxlint/nextjs`                  | Next.js                            |
-| `@jterrazz/codestyle/oxlint/architectures/hexagonal` | Hexagonal architecture enforcement |
+Base configurations (pick one):
 
-## What's Included
+| Config                                                    | Use Case                          |
+| --------------------------------------------------------- | --------------------------------- |
+| `node_modules/@jterrazz/codestyle/src/oxlint/node.json`   | Node.js (requires .js extensions) |
+| `node_modules/@jterrazz/codestyle/src/oxlint/expo.json`   | Expo / React Native               |
+| `node_modules/@jterrazz/codestyle/src/oxlint/nextjs.json` | Next.js                           |
 
-- TypeScript strict mode with `type` imports
-- Import sorting and grouping (perfectionist)
-- Named exports enforcement (no default exports)
-- Performance warnings (spread in loops, etc.)
-- Style consistency (curly braces, comments, naming)
-- Custom rules: architecture boundaries, import extensions
+Architecture plugins (additive, combine with any base config):
+
+| Plugin                                                                     | Use Case                           |
+| -------------------------------------------------------------------------- | ---------------------------------- |
+| `node_modules/@jterrazz/codestyle/src/oxlint/architectures/hexagonal.json` | Hexagonal architecture enforcement |
 
 ## CLI
 
@@ -58,10 +58,10 @@ Enforce hexagonal architecture boundaries:
 
 ```json
 {
-    "extends": [
-        "@jterrazz/codestyle/oxlint/node",
-        "@jterrazz/codestyle/oxlint/architectures/hexagonal"
-    ]
+  "extends": [
+    "node_modules/@jterrazz/codestyle/src/oxlint/node.json",
+    "node_modules/@jterrazz/codestyle/src/oxlint/architectures/hexagonal.json"
+  ]
 }
 ```
 
