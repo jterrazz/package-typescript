@@ -1,10 +1,9 @@
 {
   "name": "@jterrazz/typescript",
-  "version": "4.2.1",
+  "version": "4.3.0",
   "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
   "bin": {
-    "ts-build": "bin/ts-build.sh",
-    "ts-dev": "bin/ts-dev.sh"
+    "typescript": "bin/typescript.sh"
   },
   "files": [
     "bin",
@@ -18,17 +17,19 @@
   "scripts": {
     "lint": "oxfmt --check",
     "lint:fix": "oxfmt",
-    "test": "# no test script",
+    "test": "vitest --run",
     "build": "# no build script"
   },
   "dependencies": {
-    "@typescript/native-preview": "^7.0.0-dev.20251231.1",
+    "@typescript/native-preview": "^7.0.0-dev.20260124.1",
     "nodemon": "3.1.11",
-    "rolldown": "^1.0.0-beta.58",
-    "rolldown-plugin-dts": "^0.20.0"
+    "rolldown": "^1.0.0-rc.1",
+    "rolldown-plugin-dts": "^0.21.6"
   },
   "devDependencies": {
-    "@jterrazz/codestyle": "^1.2.4"
+    "@jterrazz/codestyle": "^1.2.6",
+    "@types/node": "^25.0.10",
+    "vitest": "^4.0.18"
   },
   "peerDependencies": {
     "@types/node": "*"
