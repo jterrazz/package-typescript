@@ -27,12 +27,23 @@ done
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 PACKAGE_ROOT="$SCRIPT_DIR/.."
 
-# Use binaries from the package's node_modules
-ROLLDOWN="$PACKAGE_ROOT/node_modules/.bin/rolldown"
-NODEMON="$PACKAGE_ROOT/node_modules/.bin/nodemon"
+# Find binaries - check package's node_modules first, then project's (handles npm hoisting)
+find_binary() {
+    local name="$1"
+    if [ -x "$PACKAGE_ROOT/node_modules/.bin/$name" ]; then
+        echo "$PACKAGE_ROOT/node_modules/.bin/$name"
+    elif [ -x "$PROJECT_ROOT/node_modules/.bin/$name" ]; then
+        echo "$PROJECT_ROOT/node_modules/.bin/$name"
+    else
+        echo "$name"  # Fallback to PATH
+    fi
+}
 
-# Add package's node_modules/.bin to PATH so plugins can find binaries like tsgo
-export PATH="$PACKAGE_ROOT/node_modules/.bin:$PATH"
+ROLLDOWN=$(find_binary rolldown)
+NODEMON=$(find_binary nodemon)
+
+# Add both bin directories to PATH so plugins can find binaries like tsgo
+export PATH="$PACKAGE_ROOT/node_modules/.bin:$PROJECT_ROOT/node_modules/.bin:$PATH"
 
 # Parse command
 COMMAND="$1"

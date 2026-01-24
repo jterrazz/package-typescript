@@ -1,6 +1,6 @@
 {
   "name": "@jterrazz/typescript",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
   "bin": {
     "typescript": "bin/typescript.sh"
