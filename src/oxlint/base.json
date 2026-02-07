@@ -89,6 +89,7 @@
     "unicorn/no-array-sort": "off",
     "import/no-unassigned-import": "off",
     "import/no-named-default": "off",
+    "import/no-nodejs-modules": "off",
 
     // ============================================
     // ENABLED - Code style enforcement

@@ -1,6 +1,6 @@
 {
   "name": "@jterrazz/codestyle",
-  "version": "1.2.6",
+  "version": "1.3.0",
   "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
   "bin": {
     "codestyle": "./src/codestyle.sh"
@@ -30,13 +30,13 @@
     "test": "vitest --run"
   },
   "dependencies": {
-    "@jterrazz/typescript": "^4.2.1",
-    "eslint-plugin-perfectionist": "^5.4.0",
-    "oxfmt": "^0.26.0",
-    "oxlint": "^1.41.0"
+    "@jterrazz/typescript": "^4.3.1",
+    "eslint-plugin-perfectionist": "^5.5.0",
+    "oxfmt": "^0.28.0",
+    "oxlint": "^1.43.0"
   },
   "devDependencies": {
-    "@types/node": "^25.0.10",
+    "@types/node": "^25.2.1",
     "vitest": "^4.0.18"
   }
 }
