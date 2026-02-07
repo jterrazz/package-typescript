@@ -1,1 +1,1 @@
-{"extends":["/Users/jterrazz/Developer/package-codestyle/src/oxlint/architectures/hexagonal.json"],"jsPlugins":["/Users/jterrazz/Developer/package-codestyle/src/oxlint/plugins/codestyle.js"]}
+{"extends":["/Users/jterrazz/conductor/workspaces/package-codestyle/jerusalem/src/oxlint/architectures/hexagonal.json"],"jsPlugins":["/Users/jterrazz/conductor/workspaces/package-codestyle/jerusalem/src/oxlint/plugins/codestyle.js"]}
