@@ -72,6 +72,4 @@ Rules enforced:
 - `presentation/ui/` cannot import navigation
 - `features/` cannot import other features
 
----
 
-By [Jean-Baptiste Terrazzoni](https://jterrazz.com)
