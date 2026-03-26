@@ -22,9 +22,9 @@
   },
   "dependencies": {
     "@typescript/native-preview": "^7.0.0-dev.20260124.1",
-    "nodemon": "3.1.11",
+    "nodemon": "^3.1.14",
     "rolldown": "^1.0.0-rc.1",
-    "rolldown-plugin-dts": "^0.21.6"
+    "rolldown-plugin-dts": "^0.23.0"
   },
   "devDependencies": {
     "@jterrazz/codestyle": "^1.2.6",

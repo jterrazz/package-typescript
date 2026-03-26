@@ -51,23 +51,23 @@ shift 2>/dev/null || true
 
 case "$COMMAND" in
     build)
-        # Parse build arguments (required: --app or --lib)
+        # Parse build mode: accepts "app", "lib", "--app", or "--lib"
         BUILD_MODE=""
         for arg in "$@"; do
             case $arg in
-                --lib)
+                lib|--lib)
                     BUILD_MODE="lib"
                     ;;
-                --app)
+                app|--app)
                     BUILD_MODE="app"
                     ;;
             esac
         done
 
         if [ -z "$BUILD_MODE" ]; then
-            printf "${RED}Error: Build mode required. Use --app or --lib${NC}\n\n"
-            printf "  --app  Build for applications (ESM + types)\n"
-            printf "  --lib  Build for libraries (ESM + CJS + types)\n"
+            printf "${RED}Error: Build mode required. Use 'app' or 'lib'${NC}\n\n"
+            printf "  app  Build for applications (ESM + types)\n"
+            printf "  lib  Build for libraries (ESM + CJS + types)\n"
             exit 1
         fi
 
@@ -105,16 +105,14 @@ case "$COMMAND" in
 
     *)
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} TypeScript/Node project toolkit\n\n"
-        printf "Usage: typescript <command> [options]\n\n"
+        printf "Usage: typescript <command>\n\n"
         printf "Commands:\n"
-        printf "  build    Build the project\n"
-        printf "  watch    Start watch mode (build + run on changes)\n\n"
-        printf "Build options:\n"
-        printf "  --app    Build for applications (ESM + types)\n"
-        printf "  --lib    Build for libraries (ESM + CJS + types)\n\n"
+        printf "  build app    Build for applications (ESM + types)\n"
+        printf "  build lib    Build for libraries (ESM + CJS + types)\n"
+        printf "  watch        Start watch mode (build + run on changes)\n\n"
         printf "Examples:\n"
-        printf "  typescript build --lib\n"
-        printf "  typescript build --app\n"
+        printf "  typescript build lib\n"
+        printf "  typescript build app\n"
         printf "  typescript watch\n"
         exit 1
         ;;

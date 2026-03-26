@@ -35,13 +35,13 @@ describe("cli integration", () => {
 
   it("should show build mode options in help", () => {
     const result = runRunner();
-    expect(result.output).toContain("--app");
-    expect(result.output).toContain("--lib");
+    expect(result.output).toContain("build app");
+    expect(result.output).toContain("build lib");
   });
 
   it("should show examples in help", () => {
     const result = runRunner();
-    expect(result.output).toContain("typescript build --lib");
+    expect(result.output).toContain("typescript build lib");
     expect(result.output).toContain("typescript watch");
   });
 });
