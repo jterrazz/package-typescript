@@ -15,7 +15,7 @@ type BuildResult = {
 
 function runBuild(projectDir: string, mode: "lib" | "app"): BuildResult {
   try {
-    const output = execSync(`${RUNNER_BIN} build --${mode}`, {
+    const output = execSync(`${RUNNER_BIN} build ${mode}`, {
       cwd: projectDir,
       encoding: "utf8",
       stdio: ["pipe", "pipe", "pipe"],
@@ -44,7 +44,7 @@ describe("build integration", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  describe("library build (--lib)", () => {
+  describe("library build (lib)", () => {
     it("should build successfully", () => {
       const result = runBuild(libDir, "lib");
       expect(result.success).toBe(true);
@@ -76,7 +76,7 @@ describe("build integration", () => {
     });
   });
 
-  describe("application build (--app)", () => {
+  describe("application build (app)", () => {
     it("should build successfully", () => {
       const result = runBuild(appDir, "app");
       expect(result.success).toBe(true);

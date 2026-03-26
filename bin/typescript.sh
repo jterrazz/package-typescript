@@ -51,14 +51,14 @@ shift 2>/dev/null || true
 
 case "$COMMAND" in
     build)
-        # Parse build mode: accepts "app", "lib", "--app", or "--lib"
+        # Parse build mode: "app" or "lib"
         BUILD_MODE=""
         for arg in "$@"; do
             case $arg in
-                lib|--lib)
+                lib)
                     BUILD_MODE="lib"
                     ;;
-                app|--app)
+                app)
                     BUILD_MODE="app"
                     ;;
             esac
