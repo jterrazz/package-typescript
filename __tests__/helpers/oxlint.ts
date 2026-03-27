@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = resolve(__dirname, "../..");
 const OXLINT_BIN = resolve(ROOT_DIR, "node_modules/.bin/oxlint");
-const CODESTYLE_PLUGIN = resolve(ROOT_DIR, "src/oxlint/plugins/codestyle.js");
+const CODESTYLE_PLUGIN = resolve(ROOT_DIR, "config/oxlint/plugins/codestyle.js");
 
 export type LintResult = {
   success: boolean;

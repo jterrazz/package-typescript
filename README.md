@@ -1,6 +1,6 @@
 # @jterrazz/codestyle
 
-Fast, opinionated linting and formatting for TypeScript. Powered by Oxlint (2-3x faster than ESLint) and Oxfmt.
+Fast, opinionated linting and formatting for TypeScript. Powered by Oxlint, Oxfmt, and tsgo.
 
 ## Quick Start
 
@@ -12,55 +12,42 @@ Create `.oxlintrc.json`:
 
 ```json
 {
-  "extends": ["node_modules/@jterrazz/codestyle/src/oxlint/node.json"]
+  "extends": ["@jterrazz/codestyle/oxlint/node"]
 }
 ```
-
-> **Note:** The `node_modules/` path is required because oxlint doesn't support npm module resolution in `extends`.
 
 Run:
 
 ```bash
-npx codestyle          # Check everything
-npx codestyle --fix    # Fix everything
+npx codestyle       # Check everything (types + lint + format)
+npx codestyle fix   # Fix everything
 ```
 
 ## Configurations
 
-Base configurations (pick one):
+Pick a base config:
 
-| Config                                                    | Use Case                          |
-| --------------------------------------------------------- | --------------------------------- |
-| `node_modules/@jterrazz/codestyle/src/oxlint/node.json`   | Node.js (requires .js extensions) |
-| `node_modules/@jterrazz/codestyle/src/oxlint/expo.json`   | Expo / React Native               |
-| `node_modules/@jterrazz/codestyle/src/oxlint/nextjs.json` | Next.js                           |
+| Config                            | Use Case                          |
+| --------------------------------- | --------------------------------- |
+| `@jterrazz/codestyle/oxlint/node` | Node.js (requires .js extensions) |
+| `@jterrazz/codestyle/oxlint/expo` | Expo / React Native               |
+| `@jterrazz/codestyle/oxlint/next` | Next.js                           |
 
-Architecture plugins (additive, combine with any base config):
+Architecture plugin (additive):
 
-| Plugin                                                                     | Use Case                           |
-| -------------------------------------------------------------------------- | ---------------------------------- |
-| `node_modules/@jterrazz/codestyle/src/oxlint/architectures/hexagonal.json` | Hexagonal architecture enforcement |
+| Plugin                                               | Use Case                           |
+| ---------------------------------------------------- | ---------------------------------- |
+| `@jterrazz/codestyle/oxlint/architectures/hexagonal` | Hexagonal architecture enforcement |
 
-## CLI
-
-```bash
-npx codestyle              # Run all checks (type + lint + format)
-npx codestyle --fix        # Auto-fix all issues
-
-npx codestyle --type       # TypeScript only
-npx codestyle --lint       # Lint only
-npx codestyle --format     # Format only
-```
-
-## Architecture Enforcement (Optional)
+## Architecture Enforcement
 
 Enforce hexagonal architecture boundaries:
 
 ```json
 {
   "extends": [
-    "node_modules/@jterrazz/codestyle/src/oxlint/node.json",
-    "node_modules/@jterrazz/codestyle/src/oxlint/architectures/hexagonal.json"
+    "@jterrazz/codestyle/oxlint/node",
+    "@jterrazz/codestyle/oxlint/architectures/hexagonal"
   ]
 }
 ```
@@ -72,4 +59,12 @@ Rules enforced:
 - `presentation/ui/` cannot import navigation
 - `features/` cannot import other features
 
+## What runs
 
+`codestyle` runs three tools in parallel:
+
+| Tool   | Purpose       |
+| ------ | ------------- |
+| tsgo   | Type checking |
+| oxlint | Linting       |
+| oxfmt  | Formatting    |

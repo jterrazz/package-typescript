@@ -6,8 +6,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const ROOT_DIR = resolve(import.meta.dirname, "..");
 const FIXTURES_DIR = resolve(import.meta.dirname, "fixtures");
-const CODESTYLE_BIN = resolve(ROOT_DIR, "src/codestyle.sh");
-const CONFIG_PATH = resolve(ROOT_DIR, "src/oxfmt/index.json");
+const OXFMT_BIN = resolve(ROOT_DIR, "node_modules/.bin/oxfmt");
+const CONFIG_PATH = resolve(ROOT_DIR, "config/oxfmt/index.json");
 
 type FormatResult = {
   success: boolean;
@@ -18,29 +18,21 @@ type FormatResult = {
 function runFormatCheck(targetFile: string, targetDir: string): FormatResult {
   try {
     const filePath = resolve(targetDir, targetFile);
-    const output = execSync(`${CODESTYLE_BIN} --format --config ${CONFIG_PATH} ${filePath}`, {
+    const output = execSync(`${OXFMT_BIN} --check --config ${CONFIG_PATH} ${filePath}`, {
       cwd: ROOT_DIR,
       encoding: "utf8",
       stdio: ["pipe", "pipe", "pipe"],
     });
-    return {
-      success: true,
-      output,
-      hasIssues: false,
-    };
+    return { success: true, output, hasIssues: false };
   } catch (error: any) {
     const output = error.stdout?.toString() || error.stderr?.toString() || "";
-    return {
-      success: false,
-      output,
-      hasIssues: output.includes("Format issues found"),
-    };
+    return { success: false, output, hasIssues: output.includes("Format issues found") };
   }
 }
 
 function runFormat(targetFile: string, targetDir: string): string {
   const filePath = resolve(targetDir, targetFile);
-  execSync(`${CODESTYLE_BIN} --format --fix --config ${CONFIG_PATH} ${filePath}`, {
+  execSync(`${OXFMT_BIN} --config ${CONFIG_PATH} ${filePath}`, {
     cwd: ROOT_DIR,
     encoding: "utf8",
     stdio: ["pipe", "pipe", "pipe"],
@@ -78,11 +70,10 @@ describe("formatter integration", () => {
     it("should format unformatted code correctly", () => {
       const formatted = runFormat("unformatted.ts", tempDir);
 
-      // Check formatting rules applied
-      expect(formatted).toContain("import fs from 'fs';"); // Single quotes, semicolons
-      expect(formatted).toContain("function greet(name: string): string"); // Proper spacing
-      expect(formatted).not.toMatch(/^\s{2}const/m); // Should use 4 spaces (tabWidth: 4)
-      expect(formatted).toMatch(/^\s{4}const/m); // 4-space indentation
+      expect(formatted).toContain("import fs from 'fs';");
+      expect(formatted).toContain("function greet(name: string): string");
+      expect(formatted).not.toMatch(/^\s{2}const/m);
+      expect(formatted).toMatch(/^\s{4}const/m);
     });
 
     it("should be idempotent (formatting twice gives same result)", () => {
@@ -103,7 +94,7 @@ describe("formatter integration", () => {
 
     it("should use semicolons", () => {
       const formatted = runFormat("unformatted.ts", tempDir);
-      expect(formatted).toMatch(/;\s*$/m); // Lines end with semicolons
+      expect(formatted).toMatch(/;\s*$/m);
     });
 
     it("should use 4-space indentation", () => {
