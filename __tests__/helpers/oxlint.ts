@@ -49,7 +49,10 @@ export function hasErrorOnFile(output: string, file: string, rule: string): bool
   // Match GitHub Actions annotation format: ::error file=filename,...,title=eslint(rule)::
   // Rules may appear as eslint(rule) or eslint-plugin-name(rule) or codestyle(rule)
   const escapedRule = rule.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
-  const ghPattern = new RegExp(`::error file=${escapedFile},.*title=.*\\(${escapedRule}\\)`, "g");
+  const ghPattern = new RegExp(
+    `::(?:error|warning) file=${escapedFile},.*title=.*\\(${escapedRule}\\)`,
+    "g",
+  );
   if (ghPattern.test(cleanOutput)) {
     return true;
   }
