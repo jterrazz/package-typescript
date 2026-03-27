@@ -8,7 +8,7 @@ const ROOT_DIR = resolve(import.meta.dirname, "..");
 const FIXTURES_DIR = resolve(import.meta.dirname, "fixtures");
 const RUNNER_BIN = resolve(ROOT_DIR, "bin/typescript.sh");
 
-function runDevMode(
+function runWatchMode(
   projectDir: string,
   timeoutMs: number = 5000,
   resolveOnMatch?: string,
@@ -50,12 +50,12 @@ function runDevMode(
   });
 }
 
-describe("dev integration", () => {
+describe("watch integration", () => {
   let tempDir: string;
   let appDir: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(resolve(tmpdir(), "runner-dev-test-"));
+    tempDir = mkdtempSync(resolve(tmpdir(), "runner-watch-test-"));
     cpSync(FIXTURES_DIR, tempDir, { recursive: true });
     appDir = resolve(tempDir, "sample-app");
   });
@@ -64,14 +64,14 @@ describe("dev integration", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("should start dev mode and show startup message", async () => {
-    const { output } = await runDevMode(appDir, 5000, "Starting watch mode");
+  it("should start watch mode and show startup message", async () => {
+    const { output } = await runWatchMode(appDir, 5000, "Starting watch mode");
     expect(output).toContain("TYPESCRIPT");
     expect(output).toContain("Starting watch mode");
   });
 
   it("should build and run the app", async () => {
-    const { output, didRun } = await runDevMode(appDir, 15000, "Hello from sample app");
+    const { output, didRun } = await runWatchMode(appDir, 15000, "Hello from sample app");
     expect(didRun).toBe(true);
     expect(output).toContain("Hello from sample app");
   });
