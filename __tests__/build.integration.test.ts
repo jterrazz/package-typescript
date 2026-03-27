@@ -13,9 +13,9 @@ type BuildResult = {
   output: string;
 };
 
-function runBuild(projectDir: string, mode: "lib" | "app"): BuildResult {
+function runCommand(projectDir: string, command: string): BuildResult {
   try {
-    const output = execSync(`${RUNNER_BIN} build ${mode}`, {
+    const output = execSync(`${RUNNER_BIN} ${command}`, {
       cwd: projectDir,
       encoding: "utf8",
       stdio: ["pipe", "pipe", "pipe"],
@@ -44,9 +44,9 @@ describe("build integration", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  describe("library build (lib)", () => {
+  describe("bundle (library)", () => {
     it("should build successfully", () => {
-      const result = runBuild(libDir, "lib");
+      const result = runCommand(libDir, "bundle");
       expect(result.success).toBe(true);
       expect(result.output).toContain("Build completed");
     });
@@ -76,9 +76,9 @@ describe("build integration", () => {
     });
   });
 
-  describe("application build (app)", () => {
+  describe("build (application)", () => {
     it("should build successfully", () => {
-      const result = runBuild(appDir, "app");
+      const result = runCommand(appDir, "build");
       expect(result.success).toBe(true);
       expect(result.output).toContain("Build completed");
     });
@@ -99,23 +99,6 @@ describe("build integration", () => {
 
     it("should generate source maps", () => {
       expect(existsSync(resolve(appDir, "dist/index.js.map"))).toBe(true);
-    });
-  });
-
-  describe("build mode validation", () => {
-    it("should fail without build mode flag", () => {
-      try {
-        execSync(`${RUNNER_BIN} build`, {
-          cwd: libDir,
-          encoding: "utf8",
-          stdio: ["pipe", "pipe", "pipe"],
-          env: { ...process.env, INIT_CWD: undefined },
-        });
-        expect.fail("Should have thrown");
-      } catch (error: any) {
-        const output = error.stdout?.toString() || error.stderr?.toString() || "";
-        expect(output).toContain("Build mode required");
-      }
     });
   });
 });

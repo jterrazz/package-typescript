@@ -46,40 +46,29 @@ NODEMON=$(find_binary nodemon)
 COMMAND="$1"
 shift 2>/dev/null || true
 
+run_tsdown() {
+    local CONFIG_PATH="$1"
+    local LABEL="$2"
+
+    printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} ${LABEL}...\n\n"
+
+    cd "$PROJECT_ROOT"
+
+    if ! "$TSDOWN" --config "$CONFIG_PATH" --cwd "$PROJECT_ROOT"; then
+        printf "${RED}Error: Build failed${NC}\n"
+        exit 1
+    fi
+
+    printf "\n${GREEN}Build completed${NC}\n"
+}
+
 case "$COMMAND" in
     build)
-        # Parse build mode: "app" or "lib"
-        BUILD_MODE=""
-        for arg in "$@"; do
-            case $arg in
-                lib)
-                    BUILD_MODE="lib"
-                    ;;
-                app)
-                    BUILD_MODE="app"
-                    ;;
-            esac
-        done
+        run_tsdown "$SCRIPT_DIR/../config/tsdown.app.ts" "Building application (ESM + types)"
+        ;;
 
-        if [ -z "$BUILD_MODE" ]; then
-            printf "${RED}Error: Build mode required. Use 'app' or 'lib'${NC}\n\n"
-            printf "  app  Build for applications (ESM + types)\n"
-            printf "  lib  Build for libraries (ESM + CJS + types)\n"
-            exit 1
-        fi
-
-        CONFIG_PATH="$SCRIPT_DIR/../config/tsdown.${BUILD_MODE}.ts"
-
-        printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Building with tsdown (${BUILD_MODE} mode)...\n\n"
-
-        cd "$PROJECT_ROOT"
-
-        if ! "$TSDOWN" --config "$CONFIG_PATH" --cwd "$PROJECT_ROOT"; then
-            printf "${RED}Error: Build failed${NC}\n"
-            exit 1
-        fi
-
-        printf "\n${GREEN}Build completed${NC}\n"
+    bundle)
+        run_tsdown "$SCRIPT_DIR/../config/tsdown.lib.ts" "Bundling library (ESM + CJS + types)"
         ;;
 
     watch)
@@ -99,12 +88,12 @@ case "$COMMAND" in
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} TypeScript/Node project toolkit\n\n"
         printf "Usage: typescript <command>\n\n"
         printf "Commands:\n"
-        printf "  build app    Build for applications (ESM + types)\n"
-        printf "  build lib    Build for libraries (ESM + CJS + types)\n"
-        printf "  watch        Start watch mode (build + run on changes)\n\n"
+        printf "  build     Build application (ESM + types)\n"
+        printf "  bundle    Bundle library (ESM + CJS + types)\n"
+        printf "  watch     Watch mode (build + run on changes)\n\n"
         printf "Examples:\n"
-        printf "  typescript build lib\n"
-        printf "  typescript build app\n"
+        printf "  typescript build\n"
+        printf "  typescript bundle\n"
         printf "  typescript watch\n"
         exit 1
         ;;

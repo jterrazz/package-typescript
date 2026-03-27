@@ -22,9 +22,9 @@ npm install @jterrazz/typescript
 ### 2. Use the CLI
 
 ```bash
+npx typescript build       # Application build (ESM + types)
+npx typescript bundle      # Library bundle (ESM + CJS + types)
 npx typescript watch       # Watch mode (build + run on changes)
-npx typescript build app   # Production build (ESM + types)
-npx typescript build lib   # Library build (ESM + CJS + types)
 ```
 
 ## What you get
@@ -36,16 +36,14 @@ npx typescript build lib   # Library build (ESM + CJS + types)
 
 ### Build outputs
 
-| Command                | Output            | Description                     |
-| ---------------------- | ----------------- | ------------------------------- |
-| `typescript watch`     | `dist/index.js`   | ESM only, fast rebuilds (~20ms) |
-| `typescript build app` | `dist/index.js`   | ESM bundle                      |
-|                        | `dist/index.d.ts` | TypeScript declarations         |
-| `typescript build lib` | `dist/index.js`   | ESM bundle                      |
-|                        | `dist/index.cjs`  | CommonJS bundle                 |
-|                        | `dist/index.d.ts` | TypeScript declarations         |
-
-If `src/instrumentation.ts` exists, it will also generate corresponding `instrumentation.*` files.
+| Command             | Output            | Description             |
+| ------------------- | ----------------- | ----------------------- |
+| `typescript build`  | `dist/index.js`   | ESM bundle              |
+|                     | `dist/index.d.ts` | TypeScript declarations |
+| `typescript bundle` | `dist/index.js`   | ESM bundle              |
+|                     | `dist/index.cjs`  | CommonJS bundle         |
+|                     | `dist/index.d.ts` | TypeScript declarations |
+| `typescript watch`  | `dist/index.js`   | ESM only, fast rebuilds |
 
 ## Project structure
 
