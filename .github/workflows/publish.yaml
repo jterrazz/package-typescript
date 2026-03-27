@@ -13,5 +13,4 @@ jobs:
     uses: jterrazz/jterrazz-workflows/.github/workflows/publish-package.yaml@main
     with:
       node-version: "24"
-    secrets:
-      NPM_ACCESS_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
+    secrets: inherit
