@@ -11,7 +11,7 @@ describe("architecture integration", () => {
   let result: LintResult;
 
   beforeAll(() => {
-    result = runOxlint(HEXAGONAL_CONFIG, FIXTURES_DIR, { withCodestylePlugin: true });
+    result = runOxlint(HEXAGONAL_CONFIG, FIXTURES_DIR);
   });
 
   describe("hexagonal architecture", () => {

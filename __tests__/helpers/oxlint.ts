@@ -1,42 +1,19 @@
 import { execSync } from "child_process";
-import { writeFileSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = resolve(__dirname, "../..");
 const OXLINT_BIN = resolve(ROOT_DIR, "node_modules/.bin/oxlint");
-const CODESTYLE_PLUGIN = resolve(ROOT_DIR, "config/oxlint/plugins/codestyle.js");
 
 export type LintResult = {
   success: boolean;
   output: string;
 };
 
-export type RunOxlintOptions = {
-  withCodestylePlugin?: boolean;
-};
-
-export function runOxlint(
-  configPath: string,
-  cwd: string,
-  options: RunOxlintOptions = {},
-): LintResult {
-  let actualConfig = configPath;
-
-  // If we need the codestyle plugin, create a wrapper config
-  if (options.withCodestylePlugin) {
-    const wrapperConfig = {
-      extends: [configPath],
-      jsPlugins: [CODESTYLE_PLUGIN],
-    };
-    const wrapperPath = resolve(cwd, ".oxlintrc.temp.json");
-    writeFileSync(wrapperPath, JSON.stringify(wrapperConfig));
-    actualConfig = wrapperPath;
-  }
-
+export function runOxlint(configPath: string, cwd: string): LintResult {
   try {
-    const output = execSync(`${OXLINT_BIN} -c ${actualConfig} .`, {
+    const output = execSync(`${OXLINT_BIN} -c ${configPath} .`, {
       cwd,
       encoding: "utf8",
       stdio: ["pipe", "pipe", "pipe"],
@@ -57,11 +34,9 @@ export function hasErrorOnFile(output: string, file: string, rule: string): bool
   const cleanOutput = output.replace(ansiRegex, "");
 
   const escapedFile = file.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
-  // Find all occurrences of the file in error block headers
   const filePattern = new RegExp(`(?:╭─\\[|,─\\[|\\[)${escapedFile}:\\d+:\\d+\\]`, "g");
   let match;
   while ((match = filePattern.exec(cleanOutput)) !== null) {
-    // Look at the ~300 chars before this file reference for the rule
     const start = Math.max(0, match.index - 300);
     const preceding = cleanOutput.substring(start, match.index);
     if (preceding.includes(rule)) {

@@ -26,9 +26,9 @@ describe("linter integration", () => {
     const nextConfig = resolve(ROOT_DIR, "config/oxlint/next.json");
 
     baseResult = runOxlint(baseConfig, tempDir);
-    nodeResult = runOxlint(nodeConfig, tempDir, { withCodestylePlugin: true });
-    expoResult = runOxlint(expoConfig, tempDir, { withCodestylePlugin: true });
-    nextjsResult = runOxlint(nextConfig, tempDir, { withCodestylePlugin: true });
+    nodeResult = runOxlint(nodeConfig, tempDir);
+    expoResult = runOxlint(expoConfig, tempDir);
+    nextjsResult = runOxlint(nextConfig, tempDir);
   });
 
   afterAll(() => {

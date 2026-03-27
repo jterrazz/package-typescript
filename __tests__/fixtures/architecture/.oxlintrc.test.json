@@ -1,0 +1,1 @@
+{"extends":["/Users/jterrazz/Developer/package-codestyle/__tests__/fixtures/architecture/.oxlintrc.temp.json"],"jsPlugins":["eslint-plugin-perfectionist","/Users/jterrazz/Developer/package-codestyle/config/oxlint/plugins/codestyle.js"]}
