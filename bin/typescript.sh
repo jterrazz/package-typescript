@@ -72,7 +72,7 @@ case "$COMMAND" in
         ;;
 
     watch)
-        CONFIG_PATH="$SCRIPT_DIR/../config/tsdown.dev.ts"
+        CONFIG_PATH="$SCRIPT_DIR/../config/tsdown.watch.ts"
 
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Starting watch mode...\n\n"
 
