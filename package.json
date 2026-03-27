@@ -2,6 +2,10 @@
   "name": "@jterrazz/typescript",
   "version": "5.0.0",
   "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jterrazz/package-typescript"
+  },
   "bin": {
     "typescript": "bin/typescript.sh"
   },
