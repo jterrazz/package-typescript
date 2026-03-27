@@ -30,10 +30,6 @@ describe("linter integration", () => {
     expoResult = runOxlint(expoConfig, tempDir);
     nextjsResult = runOxlint(nextConfig, tempDir);
 
-    // Debug CI
-    console.log("DEBUG baseResult success:", baseResult.success);
-    console.log("DEBUG baseResult output (first 1000 chars):", baseResult.output.slice(0, 1000));
-    console.log("DEBUG tempDir:", tempDir);
   });
 
   afterAll(() => {

@@ -34,15 +34,26 @@ export function hasErrorOnFile(output: string, file: string, rule: string): bool
   const cleanOutput = output.replace(ansiRegex, "");
 
   const escapedFile = file.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
-  const filePattern = new RegExp(`(?:╭─\\[|,─\\[|\\[)${escapedFile}:\\d+:\\d+\\]`, "g");
+
+  // Match visual format: ╭─[file:line:col] or ,─[file:line:col]
+  const visualPattern = new RegExp(`(?:╭─\\[|,─\\[|\\[)${escapedFile}:\\d+:\\d+\\]`, "g");
   let match;
-  while ((match = filePattern.exec(cleanOutput)) !== null) {
+  while ((match = visualPattern.exec(cleanOutput)) !== null) {
     const start = Math.max(0, match.index - 300);
     const preceding = cleanOutput.substring(start, match.index);
     if (preceding.includes(rule)) {
       return true;
     }
   }
+
+  // Match GitHub Actions annotation format: ::error file=filename,...,title=eslint(rule)::
+  // Rules may appear as eslint(rule) or eslint-plugin-name(rule) or codestyle(rule)
+  const escapedRule = rule.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+  const ghPattern = new RegExp(`::error file=${escapedFile},.*title=.*\\(${escapedRule}\\)`, "g");
+  if (ghPattern.test(cleanOutput)) {
+    return true;
+  }
+
   return false;
 }
 
