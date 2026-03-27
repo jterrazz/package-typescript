@@ -64,15 +64,15 @@ run_tsdown() {
 
 case "$COMMAND" in
     build)
-        run_tsdown "$SCRIPT_DIR/../config/tsdown.app.ts" "Building application (ESM + types)"
+        run_tsdown "$SCRIPT_DIR/../config/tsdown.build.ts" "Building application (ESM + types)"
         ;;
 
     bundle)
-        run_tsdown "$SCRIPT_DIR/../config/tsdown.lib.ts" "Bundling library (ESM + CJS + types)"
+        run_tsdown "$SCRIPT_DIR/../config/tsdown.bundle.ts" "Bundling library (ESM + CJS + types)"
         ;;
 
     watch)
-        CONFIG_PATH="$SCRIPT_DIR/../config/tsdown.app.ts"
+        CONFIG_PATH="$SCRIPT_DIR/../config/tsdown.build.ts"
 
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Starting watch mode...\n\n"
 

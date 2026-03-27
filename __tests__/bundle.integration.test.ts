@@ -23,41 +23,47 @@ function runCommand(projectDir: string, command: string) {
   }
 }
 
-describe("build integration", () => {
+describe("bundle integration", () => {
   let tempDir: string;
-  let appDir: string;
+  let libDir: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(resolve(tmpdir(), "runner-build-test-"));
+    tempDir = mkdtempSync(resolve(tmpdir(), "runner-bundle-test-"));
     cpSync(FIXTURES_DIR, tempDir, { recursive: true });
-    appDir = resolve(tempDir, "sample-app");
+    libDir = resolve(tempDir, "sample-lib");
   });
 
   afterAll(() => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("should build successfully", () => {
-    const result = runCommand(appDir, "build");
+  it("should bundle successfully", () => {
+    const result = runCommand(libDir, "bundle");
     expect(result.success).toBe(true);
     expect(result.output).toContain("Build completed");
   });
 
   it("should generate ESM output", () => {
-    expect(existsSync(resolve(appDir, "dist/index.js"))).toBe(true);
-    const content = readFileSync(resolve(appDir, "dist/index.js"), "utf8");
-    expect(content).toContain("Hello from sample app");
+    expect(existsSync(resolve(libDir, "dist/index.js"))).toBe(true);
+    const content = readFileSync(resolve(libDir, "dist/index.js"), "utf8");
+    expect(content).toContain("export");
   });
 
-  it("should NOT generate CJS output", () => {
-    expect(existsSync(resolve(appDir, "dist/index.cjs"))).toBe(false);
+  it("should generate CJS output", () => {
+    expect(existsSync(resolve(libDir, "dist/index.cjs"))).toBe(true);
+    const content = readFileSync(resolve(libDir, "dist/index.cjs"), "utf8");
+    expect(content).toContain("exports");
   });
 
   it("should generate type declarations", () => {
-    expect(existsSync(resolve(appDir, "dist/index.d.ts"))).toBe(true);
+    expect(existsSync(resolve(libDir, "dist/index.d.ts"))).toBe(true);
+    const content = readFileSync(resolve(libDir, "dist/index.d.ts"), "utf8");
+    expect(content).toContain("greet");
+    expect(content).toContain("User");
   });
 
   it("should generate source maps", () => {
-    expect(existsSync(resolve(appDir, "dist/index.js.map"))).toBe(true);
+    expect(existsSync(resolve(libDir, "dist/index.js.map"))).toBe(true);
+    expect(existsSync(resolve(libDir, "dist/index.cjs.map"))).toBe(true);
   });
 });
