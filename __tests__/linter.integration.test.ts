@@ -29,7 +29,6 @@ describe("linter integration", () => {
     nodeResult = runOxlint(nodeConfig, tempDir);
     expoResult = runOxlint(expoConfig, tempDir);
     nextjsResult = runOxlint(nextConfig, tempDir);
-
   });
 
   afterAll(() => {
