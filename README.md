@@ -29,7 +29,7 @@ npx typescript build lib   # Library build (ESM + CJS + types)
 
 ## What you get
 
-- **Blazing fast** — Powered by [Rolldown](https://rolldown.rs) (Rust) and [tsgo](https://github.com/nicolo-ribaudo/typescript-go) (Go)
+- **Blazing fast** — Powered by [tsdown](https://tsdown.dev) / [Rolldown](https://rolldown.rs) (Rust)
 - **Zero configuration** — Works out of the box
 - **Multiple outputs** — ESM + CommonJS + TypeScript declarations
 - **Source maps** — Full debugging support
@@ -62,11 +62,11 @@ your-project/
 
 The package uses a fully compiled toolchain — no JavaScript in the hot path:
 
-| Step         | Tool                                                    | Language |
-| ------------ | ------------------------------------------------------- | -------- |
-| Transpile    | [Oxc](https://oxc.rs) (via Rolldown)                    | Rust     |
-| Bundle       | [Rolldown](https://rolldown.rs)                         | Rust     |
-| Declarations | [tsgo](https://github.com/nicolo-ribaudo/typescript-go) | Go       |
+| Step         | Tool                                  | Language |
+| ------------ | ------------------------------------- | -------- |
+| Transpile    | [Oxc](https://oxc.rs) (via tsdown)    | Rust     |
+| Bundle       | [Rolldown](https://rolldown.rs)       | Rust     |
+| Declarations | [tsdown](https://tsdown.dev) built-in | Rust     |
 
 ## License
 

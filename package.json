@@ -21,10 +21,8 @@
     "build": "# no build script"
   },
   "dependencies": {
-    "@typescript/native-preview": "^7.0.0-dev.20260326.1",
     "nodemon": "^3.1.14",
-    "rolldown": "^1.0.0-rc.12",
-    "rolldown-plugin-dts": "^0.23.0"
+    "tsdown": "^0.12.5"
   },
   "devDependencies": {
     "@jterrazz/codestyle": "^1.2.6",

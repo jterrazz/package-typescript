@@ -39,11 +39,8 @@ find_binary() {
     fi
 }
 
-ROLLDOWN=$(find_binary rolldown)
+TSDOWN=$(find_binary tsdown)
 NODEMON=$(find_binary nodemon)
-
-# Add both bin directories to PATH so plugins can find binaries like tsgo
-export PATH="$PACKAGE_ROOT/node_modules/.bin:$PROJECT_ROOT/node_modules/.bin:$PATH"
 
 # Parse command
 COMMAND="$1"
@@ -71,15 +68,13 @@ case "$COMMAND" in
             exit 1
         fi
 
-        CONFIG_PATH="$SCRIPT_DIR/../config/rolldown.build.config.js"
+        CONFIG_PATH="$SCRIPT_DIR/../config/tsdown.${BUILD_MODE}.ts"
 
-        printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Building with Rolldown (${BUILD_MODE} mode)...\n\n"
-        printf "Project root: %s\n" "$PROJECT_ROOT"
-        printf "Config path: %s\n\n" "$CONFIG_PATH"
+        printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Building with tsdown (${BUILD_MODE} mode)...\n\n"
 
         cd "$PROJECT_ROOT"
 
-        if ! BUILD_MODE="$BUILD_MODE" "$ROLLDOWN" --config "$CONFIG_PATH"; then
+        if ! "$TSDOWN" --config "$CONFIG_PATH"; then
             printf "${RED}Error: Build failed${NC}\n"
             exit 1
         fi
@@ -88,19 +83,16 @@ case "$COMMAND" in
         ;;
 
     watch)
-        CONFIG_PATH="$SCRIPT_DIR/../config/rolldown.dev.config.js"
+        CONFIG_PATH="$SCRIPT_DIR/../config/tsdown.dev.ts"
 
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Starting watch mode...\n\n"
-        printf "Project root: %s\n" "$PROJECT_ROOT"
-        printf "Config path: %s\n" "$CONFIG_PATH"
-        printf "Watching: %s/src\n\n" "$PROJECT_ROOT"
 
         cd "$PROJECT_ROOT"
 
         "$NODEMON" --quiet \
             --watch src \
             --ext 'ts,tsx,js,json' \
-            --exec "if OUTPUT=\$(\"$ROLLDOWN\" --config \"$CONFIG_PATH\" 2>&1); then printf '${GREEN}Rebuilt${NC}\n'; node --enable-source-maps dist/index.js; else echo \"\$OUTPUT\" | grep -v 'tsgo.*experimental' | grep -v 'PLUGIN_TIMINGS'; exit 1; fi"
+            --exec "if OUTPUT=\$(\"$TSDOWN\" --config \"$CONFIG_PATH\" 2>&1); then printf '${GREEN}Rebuilt${NC}\n'; node --enable-source-maps dist/index.js; else echo \"\$OUTPUT\"; exit 1; fi"
         ;;
 
     *)
