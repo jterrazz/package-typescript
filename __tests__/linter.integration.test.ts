@@ -29,6 +29,11 @@ describe("linter integration", () => {
     nodeResult = runOxlint(nodeConfig, tempDir);
     expoResult = runOxlint(expoConfig, tempDir);
     nextjsResult = runOxlint(nextConfig, tempDir);
+
+    // Debug: log output when no errors found (helps diagnose CI issues)
+    if (baseResult.success) {
+      console.log("DEBUG baseResult (no errors found):", baseResult.output.slice(0, 500));
+    }
   });
 
   afterAll(() => {
