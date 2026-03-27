@@ -74,7 +74,7 @@ case "$COMMAND" in
 
         cd "$PROJECT_ROOT"
 
-        if ! "$TSDOWN" --config "$CONFIG_PATH"; then
+        if ! "$TSDOWN" --config "$CONFIG_PATH" --cwd "$PROJECT_ROOT"; then
             printf "${RED}Error: Build failed${NC}\n"
             exit 1
         fi
@@ -92,7 +92,7 @@ case "$COMMAND" in
         "$NODEMON" --quiet \
             --watch src \
             --ext 'ts,tsx,js,json' \
-            --exec "if OUTPUT=\$(\"$TSDOWN\" --config \"$CONFIG_PATH\" 2>&1); then printf '${GREEN}Rebuilt${NC}\n'; node --enable-source-maps dist/index.js; else echo \"\$OUTPUT\"; exit 1; fi"
+            --exec "if OUTPUT=\$(\"$TSDOWN\" --config \"$CONFIG_PATH\" --cwd \"$PROJECT_ROOT\" 2>&1); then printf '${GREEN}Rebuilt${NC}\n'; node --enable-source-maps dist/index.js; else echo \"\$OUTPUT\"; exit 1; fi"
         ;;
 
     *)

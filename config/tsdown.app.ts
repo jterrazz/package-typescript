@@ -7,4 +7,7 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   hash: false,
+  outExtensions: () => ({
+    js: ".js",
+  }),
 });

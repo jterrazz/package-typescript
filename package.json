@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "nodemon": "^3.1.14",
-    "tsdown": "^0.12.5"
+    "tsdown": "^0.21.5"
   },
   "devDependencies": {
     "@jterrazz/codestyle": "^1.2.6",
