@@ -26,7 +26,6 @@ describe("linter integration", () => {
     const nextConfig = resolve(ROOT_DIR, "config/oxlint/next.json");
 
     baseResult = runOxlint(baseConfig, tempDir);
-    console.log("DEBUG base output:", JSON.stringify(baseResult.output.slice(0, 2000)));
     nodeResult = runOxlint(nodeConfig, tempDir);
     expoResult = runOxlint(expoConfig, tempDir);
     nextjsResult = runOxlint(nextConfig, tempDir);
