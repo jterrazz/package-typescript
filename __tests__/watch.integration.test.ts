@@ -33,7 +33,7 @@ function runWatchMode(
 
     child.stdout?.on("data", (data) => {
       output += data.toString();
-      if (output.includes("Rebuilt") || output.includes("Hello from sample app")) {
+      if (output.includes("Build complete") || output.includes("Hello from sample app")) {
         didRun = true;
       }
       if (resolveOnMatch && output.includes(resolveOnMatch)) {

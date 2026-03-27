@@ -40,7 +40,6 @@ find_binary() {
 }
 
 TSDOWN=$(find_binary tsdown)
-NODEMON=$(find_binary nodemon)
 
 # Parse command
 COMMAND="$1"
@@ -78,10 +77,9 @@ case "$COMMAND" in
 
         cd "$PROJECT_ROOT"
 
-        "$NODEMON" --quiet \
-            --watch src \
-            --ext 'ts,tsx,js,json' \
-            --exec "if OUTPUT=\$(\"$TSDOWN\" --config \"$CONFIG_PATH\" --cwd \"$PROJECT_ROOT\" 2>&1); then printf '${GREEN}Rebuilt${NC}\n'; node --enable-source-maps dist/index.js; else echo \"\$OUTPUT\"; exit 1; fi"
+        "$TSDOWN" --config "$CONFIG_PATH" --cwd "$PROJECT_ROOT" \
+            --watch \
+            --on-success "node --enable-source-maps dist/index.js"
         ;;
 
     *)
