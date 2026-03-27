@@ -25,7 +25,7 @@ describe("cli integration", () => {
     expect(result.output).toContain("TYPESCRIPT");
     expect(result.output).toContain("Usage: typescript <command>");
     expect(result.output).toContain("build");
-    expect(result.output).toContain("watch");
+    expect(result.output).toContain("dev");
   });
 
   it("should show help with unknown command", () => {
@@ -37,13 +37,15 @@ describe("cli integration", () => {
     const result = runRunner();
     expect(result.output).toContain("build");
     expect(result.output).toContain("bundle");
-    expect(result.output).toContain("watch");
+    expect(result.output).toContain("start");
+    expect(result.output).toContain("dev");
   });
 
   it("should show examples in help", () => {
     const result = runRunner();
     expect(result.output).toContain("typescript build");
     expect(result.output).toContain("typescript bundle");
-    expect(result.output).toContain("typescript watch");
+    expect(result.output).toContain("typescript start");
+    expect(result.output).toContain("typescript dev");
   });
 });

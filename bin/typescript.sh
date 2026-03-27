@@ -70,10 +70,15 @@ case "$COMMAND" in
         run_tsdown "$SCRIPT_DIR/../config/tsdown.bundle.ts" "Bundling library (ESM + CJS + types)"
         ;;
 
-    watch)
+    start)
+        cd "$PROJECT_ROOT"
+        exec node --enable-source-maps dist/index.js "$@"
+        ;;
+
+    dev)
         CONFIG_PATH="$SCRIPT_DIR/../config/tsdown.build.ts"
 
-        printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Starting watch mode...\n\n"
+        printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Starting dev mode...\n\n"
 
         cd "$PROJECT_ROOT"
 
@@ -88,11 +93,13 @@ case "$COMMAND" in
         printf "Commands:\n"
         printf "  build     Build application (ESM + types)\n"
         printf "  bundle    Bundle library (ESM + CJS + types)\n"
-        printf "  watch     Watch mode (build + run on changes)\n\n"
+        printf "  start     Run the built application\n"
+        printf "  dev       Build, run, and rebuild on changes\n\n"
         printf "Examples:\n"
         printf "  typescript build\n"
         printf "  typescript bundle\n"
-        printf "  typescript watch\n"
+        printf "  typescript start\n"
+        printf "  typescript dev\n"
         exit 1
         ;;
 esac

@@ -22,9 +22,10 @@ npm install @jterrazz/typescript
 ### 2. Use the CLI
 
 ```bash
-npx typescript build       # Application build (ESM + types)
-npx typescript bundle      # Library bundle (ESM + CJS + types)
-npx typescript watch       # Watch mode (build + run on changes)
+npx typescript build       # Build application (ESM + types)
+npx typescript bundle      # Bundle library (ESM + CJS + types)
+npx typescript start       # Run the built application
+npx typescript dev         # Build, run, and rebuild on changes
 ```
 
 ## What you get
@@ -43,7 +44,8 @@ npx typescript watch       # Watch mode (build + run on changes)
 | `typescript bundle` | `dist/index.js`   | ESM bundle              |
 |                     | `dist/index.cjs`  | CommonJS bundle         |
 |                     | `dist/index.d.ts` | TypeScript declarations |
-| `typescript watch`  | `dist/index.js`   | ESM only, fast rebuilds |
+| `typescript start`  | —                 | Runs `dist/index.js`    |
+| `typescript dev`    | `dist/index.js`   | Watch + rebuild + run   |
 
 ## Project structure
 

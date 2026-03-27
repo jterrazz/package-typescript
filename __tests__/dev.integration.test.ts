@@ -8,7 +8,7 @@ const ROOT_DIR = resolve(import.meta.dirname, "..");
 const FIXTURES_DIR = resolve(import.meta.dirname, "fixtures");
 const RUNNER_BIN = resolve(ROOT_DIR, "bin/typescript.sh");
 
-function runWatchMode(
+function runDevMode(
   projectDir: string,
   timeoutMs: number = 5000,
   resolveOnMatch?: string,
@@ -18,7 +18,7 @@ function runWatchMode(
     let didRun = false;
     let resolved = false;
 
-    const child = spawn(RUNNER_BIN, ["watch"], {
+    const child = spawn(RUNNER_BIN, ["dev"], {
       cwd: projectDir,
       stdio: ["pipe", "pipe", "pipe"],
       env: { ...process.env, INIT_CWD: undefined },
@@ -45,17 +45,16 @@ function runWatchMode(
       output += data.toString();
     });
 
-    // Kill after timeout
     setTimeout(finish, timeoutMs);
   });
 }
 
-describe("watch integration", () => {
+describe("dev integration", () => {
   let tempDir: string;
   let appDir: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(resolve(tmpdir(), "runner-watch-test-"));
+    tempDir = mkdtempSync(resolve(tmpdir(), "runner-dev-test-"));
     cpSync(FIXTURES_DIR, tempDir, { recursive: true });
     appDir = resolve(tempDir, "sample-app");
   });
@@ -64,14 +63,14 @@ describe("watch integration", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("should start watch mode and show startup message", async () => {
-    const { output } = await runWatchMode(appDir, 5000, "Starting watch mode");
+  it("should start dev mode and show startup message", async () => {
+    const { output } = await runDevMode(appDir, 5000, "Starting dev mode");
     expect(output).toContain("TYPESCRIPT");
-    expect(output).toContain("Starting watch mode");
+    expect(output).toContain("Starting dev mode");
   });
 
   it("should build and run the app", async () => {
-    const { output, didRun } = await runWatchMode(appDir, 15000, "Hello from sample app");
+    const { output, didRun } = await runDevMode(appDir, 15000, "Hello from sample app");
     expect(didRun).toBe(true);
     expect(output).toContain("Hello from sample app");
   });
