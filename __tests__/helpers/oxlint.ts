@@ -50,7 +50,7 @@ export function hasErrorOnFile(output: string, file: string, rule: string): bool
   // Rules may appear as eslint(rule) or eslint-plugin-name(rule) or codestyle(rule)
   const escapedRule = rule.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
   const ghPattern = new RegExp(
-    `::(?:error|warning) file=${escapedFile},.*title=.*\\(${escapedRule}\\)`,
+    `::(?:error|warning|notice) file=${escapedFile},.*title=.*\\(${escapedRule}\\)`,
     "g",
   );
   if (ghPattern.test(cleanOutput)) {
