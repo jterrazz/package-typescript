@@ -23,6 +23,7 @@ npm install @jterrazz/typescript
 ```
 
 **tsconfig.json** — pick one:
+
 ```json
 { "extends": "@jterrazz/typescript/tsconfig/node" }
 { "extends": "@jterrazz/typescript/tsconfig/next" }
@@ -30,6 +31,7 @@ npm install @jterrazz/typescript
 ```
 
 **package.json scripts** — for apps:
+
 ```json
 {
   "build": "typescript build",
@@ -39,6 +41,7 @@ npm install @jterrazz/typescript
 ```
 
 **package.json scripts** — for libraries:
+
 ```json
 {
   "build": "typescript bundle"
@@ -46,6 +49,7 @@ npm install @jterrazz/typescript
 ```
 
 **package.json exports** — for libraries:
+
 ```json
 {
   "exports": {
@@ -60,9 +64,9 @@ npm install @jterrazz/typescript
 
 ## Output
 
-| Command  | Files                                                     |
-|----------|-----------------------------------------------------------|
-| `build`  | `dist/index.js`, `dist/index.d.ts` + sourcemaps           |
+| Command  | Files                                                                                 |
+| -------- | ------------------------------------------------------------------------------------- |
+| `build`  | `dist/index.js`, `dist/index.d.ts` + sourcemaps                                       |
 | `bundle` | `dist/index.js`, `dist/index.cjs`, `dist/index.d.ts`, `dist/index.d.cts` + sourcemaps |
 
 ## Always
