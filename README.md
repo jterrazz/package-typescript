@@ -19,8 +19,8 @@ Create `.oxlintrc.json`:
 Run:
 
 ```bash
-npx codestyle       # Check everything (types + lint + format)
-npx codestyle fix   # Fix everything
+npx codestyle check   # Check everything (types + lint + format)
+npx codestyle fix     # Fix everything
 ```
 
 ## Configurations

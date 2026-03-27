@@ -125,22 +125,22 @@ run_checks() {
 }
 
 case "$COMMAND" in
+    check)
+        run_checks false
+        ;;
+
     fix)
         run_checks true
         ;;
 
-    ""|check)
-        run_checks false
-        ;;
-
     *)
         printf "${CYAN_BG}${BRIGHT_WHITE} CODESTYLE ${NC} Code quality toolkit\n\n"
-        printf "Usage: codestyle [command]\n\n"
+        printf "Usage: codestyle <command>\n\n"
         printf "Commands:\n"
-        printf "  (default)    Check types, lint, and formatting\n"
-        printf "  fix          Auto-fix lint and formatting issues\n\n"
+        printf "  check    Check types, lint, and formatting\n"
+        printf "  fix      Auto-fix lint and formatting issues\n\n"
         printf "Examples:\n"
-        printf "  codestyle\n"
+        printf "  codestyle check\n"
         printf "  codestyle fix\n"
         exit 1
         ;;

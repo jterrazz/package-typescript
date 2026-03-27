@@ -10,8 +10,8 @@ Opinionated linting + formatting + type checking. Runs tsgo, oxlint, and oxfmt i
 ## Commands
 
 ```bash
-codestyle       # Check everything — types + lint + format
-codestyle fix   # Auto-fix lint and formatting issues
+codestyle check   # Check everything — types + lint + format
+codestyle fix     # Auto-fix lint and formatting issues
 ```
 
 ## Setup
@@ -21,6 +21,7 @@ npm install @jterrazz/codestyle
 ```
 
 **`.oxlintrc.json`** — pick a base config:
+
 ```json
 { "extends": ["@jterrazz/codestyle/oxlint/node"] }
 { "extends": ["@jterrazz/codestyle/oxlint/next"] }
@@ -28,17 +29,18 @@ npm install @jterrazz/codestyle
 ```
 
 **package.json scripts:**
+
 ```json
 {
-  "lint": "codestyle",
+  "lint": "codestyle check",
   "lint:fix": "codestyle fix"
 }
 ```
 
 ## Configs
 
-| Config                            | Use case                          |
-|-----------------------------------|-----------------------------------|
+| Config                            | Use case                         |
+| --------------------------------- | -------------------------------- |
 | `@jterrazz/codestyle/oxlint/node` | Node.js — requires `.js` imports |
 | `@jterrazz/codestyle/oxlint/next` | Next.js                          |
 | `@jterrazz/codestyle/oxlint/expo` | Expo / React Native              |
@@ -46,6 +48,7 @@ npm install @jterrazz/codestyle
 ## Architecture enforcement (optional)
 
 Add hexagonal architecture boundary rules:
+
 ```json
 {
   "extends": [
@@ -56,6 +59,7 @@ Add hexagonal architecture boundary rules:
 ```
 
 Rules enforced:
+
 - `domain/` cannot import from other layers
 - `application/` cannot import infrastructure
 - `presentation/ui/` cannot import navigation
@@ -64,7 +68,7 @@ Rules enforced:
 ## What runs
 
 | Tool   | Purpose       | Language |
-|--------|---------------|----------|
+| ------ | ------------- | -------- |
 | tsgo   | Type checking | Go       |
 | oxlint | Linting       | Rust     |
 | oxfmt  | Formatting    | Rust     |

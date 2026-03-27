@@ -1,0 +1,16 @@
+name: Publish
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    uses: jterrazz/jterrazz-workflows/.github/workflows/publish-package.yaml@main
+    with:
+      node-version: "24"
+    secrets: inherit
