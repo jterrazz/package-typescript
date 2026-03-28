@@ -1,9 +1,11 @@
 ---
 name: jterrazz-codestyle
-description: Linting, formatting, and type-checking for TypeScript projects using @jterrazz/codestyle. Activates when configuring linting rules, fixing code style issues, setting up oxlint/oxfmt, or enforcing architecture boundaries.
+description: Code quality for the @jterrazz ecosystem — defines how all projects lint and format. Powered by tsgo, oxlint, oxfmt. Activates when configuring linting, fixing style, or enforcing architecture.
 ---
 
 # @jterrazz/codestyle
+
+Part of the @jterrazz ecosystem. Defines how all projects lint and format.
 
 Opinionated linting + formatting + type checking. Runs tsgo, oxlint, and oxfmt in parallel.
 
