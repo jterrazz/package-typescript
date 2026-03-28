@@ -1,4 +1,4 @@
-import { describe, test } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import { tsgoSpec } from "../../setup/tsgo.specification.js";
 
@@ -11,7 +11,7 @@ describe("typechecker", () => {
       .run();
 
     // Then — no type errors
-    result.exitCode.toBe(0);
+    expect(result.exitCode).toBe(0);
   });
 
   test("detects type errors", async () => {
@@ -22,7 +22,7 @@ describe("typechecker", () => {
       .run();
 
     // Then — type errors reported (tsgo exits with code 2 for type errors)
-    result.exitCode.not.toBe(0);
-    result.stdout.toContain("error TS");
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stdout).toContain("error TS");
   });
 });

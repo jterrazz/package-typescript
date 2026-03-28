@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { beforeAll, describe, test } from "vitest";
+import { beforeAll, describe, expect, test } from "vitest";
 
 import { oxfmtSpec } from "../../setup/oxfmt.specification.js";
 
@@ -17,7 +17,7 @@ describe("formatter", () => {
         .run();
 
       // Then — check fails
-      result.exitCode.toBe(1);
+      expect(result.exitCode).toBe(1);
     });
 
     test("passes for properly formatted code", async () => {
@@ -28,7 +28,7 @@ describe("formatter", () => {
         .run();
 
       // Then — check passes
-      result.exitCode.toBe(0);
+      expect(result.exitCode).toBe(0);
     });
   });
 
@@ -41,10 +41,12 @@ describe("formatter", () => {
         .run();
 
       // Then — file is reformatted with correct style
-      result.exitCode.toBe(0);
-      result.file("inputs/wrong-style.ts").toContain("import fs from 'fs';");
-      result.file("inputs/wrong-style.ts").toContain("function greet(name: string): string");
-      result.file("inputs/wrong-style.ts").toMatch(/^\s{4}const/m);
+      expect(result.exitCode).toBe(0);
+      expect(result.file("inputs/wrong-style.ts").content).toContain("import fs from 'fs';");
+      expect(result.file("inputs/wrong-style.ts").content).toContain(
+        "function greet(name: string): string",
+      );
+      expect(result.file("inputs/wrong-style.ts").content).toMatch(/^\s{4}const/m);
     });
 
     test("is idempotent (formatting twice gives same result)", async () => {
@@ -55,12 +57,12 @@ describe("formatter", () => {
         .run();
 
       // Then — file unchanged after formatting
-      result.exitCode.toBe(0);
+      expect(result.exitCode).toBe(0);
       const original = readFileSync(
         resolve(import.meta.dirname, "expected/correct-style.ts"),
         "utf8",
       );
-      result.file("expected/correct-style.ts").toContain(original.trim());
+      expect(result.file("expected/correct-style.ts").content).toContain(original.trim());
     });
   });
 
@@ -77,17 +79,17 @@ describe("formatter", () => {
 
     test("uses single quotes", () => {
       // Then — single quotes for imports
-      result.file("inputs/wrong-style.ts").toContain("'fs'");
+      expect(result.file("inputs/wrong-style.ts").content).toContain("'fs'");
     });
 
     test("uses semicolons", () => {
       // Then — statements end with semicolons
-      result.file("inputs/wrong-style.ts").toMatch(/;\s*$/m);
+      expect(result.file("inputs/wrong-style.ts").content).toMatch(/;\s*$/m);
     });
 
     test("uses 4-space indentation", () => {
       // Then — indented lines use 4 spaces
-      result.file("inputs/wrong-style.ts").toMatch(/^\s{4}const/m);
+      expect(result.file("inputs/wrong-style.ts").content).toMatch(/^\s{4}const/m);
     });
   });
 });

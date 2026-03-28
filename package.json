@@ -33,7 +33,7 @@
     "oxlint": "^1.57.0"
   },
   "devDependencies": {
-    "@jterrazz/test": "^4.0.1",
+    "@jterrazz/test": "^5.0.0",
     "@types/node": "^25.5.0",
     "vitest": "^4.1.2"
   }
