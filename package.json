@@ -18,8 +18,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "lint": "oxfmt --check",
-    "lint:fix": "oxfmt",
+    "lint": "codestyle check",
+    "lint:fix": "codestyle fix",
     "test": "vitest --run",
     "build": "# no build script"
   },
@@ -27,7 +27,7 @@
     "tsdown": "^0.21.5"
   },
   "devDependencies": {
-    "@jterrazz/codestyle": "^1.2.6",
+    "@jterrazz/codestyle": "^2.1.0",
     "@types/node": "^25.5.0",
     "vitest": "^4.1.2"
   }

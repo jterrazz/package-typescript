@@ -25,7 +25,9 @@ function runDevMode(
     });
 
     const finish = () => {
-      if (resolved) return;
+      if (resolved) {
+        return;
+      }
       resolved = true;
       child.kill("SIGTERM");
       resolvePromise({ output, didRun });
@@ -70,7 +72,7 @@ describe("dev integration", () => {
   });
 
   it("should build and run the app", async () => {
-    const { output, didRun } = await runDevMode(appDir, 15000, "Hello from sample app");
+    const { output, didRun } = await runDevMode(appDir, 15_000, "Hello from sample app");
     expect(didRun).toBe(true);
     expect(output).toContain("Hello from sample app");
   });
