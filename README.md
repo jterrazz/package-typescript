@@ -12,7 +12,7 @@ Create `.oxlintrc.json`:
 
 ```json
 {
-  "extends": ["@jterrazz/codestyle/presets/oxlint/node.json"]
+  "extends": ["node_modules/@jterrazz/codestyle/presets/oxlint/node.json"]
 }
 ```
 
@@ -29,15 +29,15 @@ Pick a base config:
 
 | Preset                                         | Use Case                          |
 | ---------------------------------------------- | --------------------------------- |
-| `@jterrazz/codestyle/presets/oxlint/node.json` | Node.js (requires .js extensions) |
-| `@jterrazz/codestyle/presets/oxlint/expo.json` | Expo / React Native               |
-| `@jterrazz/codestyle/presets/oxlint/next.json` | Next.js                           |
+| `node_modules/@jterrazz/codestyle/presets/oxlint/node.json` | Node.js (requires .js extensions) |
+| `node_modules/@jterrazz/codestyle/presets/oxlint/expo.json` | Expo / React Native               |
+| `node_modules/@jterrazz/codestyle/presets/oxlint/next.json` | Next.js                           |
 
 Architecture preset (additive):
 
 | Preset                                                            | Use Case                           |
 | ----------------------------------------------------------------- | ---------------------------------- |
-| `@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json` | Hexagonal architecture enforcement |
+| `node_modules/@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json` | Hexagonal architecture enforcement |
 
 ## Architecture Enforcement
 
@@ -46,8 +46,8 @@ Enforce hexagonal architecture boundaries:
 ```json
 {
   "extends": [
-    "@jterrazz/codestyle/presets/oxlint/node.json",
-    "@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json"
+    "node_modules/@jterrazz/codestyle/presets/oxlint/node.json",
+    "node_modules/@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json"
   ]
 }
 ```

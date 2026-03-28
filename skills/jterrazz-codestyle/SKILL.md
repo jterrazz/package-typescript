@@ -23,9 +23,9 @@ npm install @jterrazz/codestyle
 **`.oxlintrc.json`** — pick a preset:
 
 ```json
-{ "extends": ["@jterrazz/codestyle/presets/oxlint/node.json"] }
-{ "extends": ["@jterrazz/codestyle/presets/oxlint/next.json"] }
-{ "extends": ["@jterrazz/codestyle/presets/oxlint/expo.json"] }
+{ "extends": ["node_modules/@jterrazz/codestyle/presets/oxlint/node.json"] }
+{ "extends": ["node_modules/@jterrazz/codestyle/presets/oxlint/next.json"] }
+{ "extends": ["node_modules/@jterrazz/codestyle/presets/oxlint/expo.json"] }
 ```
 
 **package.json scripts:**
@@ -41,9 +41,9 @@ npm install @jterrazz/codestyle
 
 | Preset                                         | Use case                         |
 | ---------------------------------------------- | -------------------------------- |
-| `@jterrazz/codestyle/presets/oxlint/node.json` | Node.js — requires `.js` imports |
-| `@jterrazz/codestyle/presets/oxlint/next.json` | Next.js                          |
-| `@jterrazz/codestyle/presets/oxlint/expo.json` | Expo / React Native              |
+| `node_modules/@jterrazz/codestyle/presets/oxlint/node.json` | Node.js — requires `.js` imports |
+| `node_modules/@jterrazz/codestyle/presets/oxlint/next.json` | Next.js                          |
+| `node_modules/@jterrazz/codestyle/presets/oxlint/expo.json` | Expo / React Native              |
 
 ## Architecture enforcement (optional)
 
@@ -52,8 +52,8 @@ Add hexagonal architecture boundary rules:
 ```json
 {
   "extends": [
-    "@jterrazz/codestyle/presets/oxlint/node.json",
-    "@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json"
+    "node_modules/@jterrazz/codestyle/presets/oxlint/node.json",
+    "node_modules/@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json"
   ]
 }
 ```
