@@ -26,7 +26,7 @@
     "test": "vitest --run"
   },
   "dependencies": {
-    "@jterrazz/typescript": "^5.1.0",
+    "@jterrazz/typescript": "^5.2.0",
     "@typescript/native-preview": "^7.0.0-dev.20260327.2",
     "eslint-plugin-perfectionist": "^5.7.0",
     "oxfmt": "^0.42.0",
