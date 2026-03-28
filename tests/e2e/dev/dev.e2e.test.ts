@@ -4,8 +4,8 @@ import { tmpdir } from "os";
 import { resolve } from "path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-const ROOT_DIR = resolve(import.meta.dirname, "../..");
-const FIXTURES_DIR = resolve(ROOT_DIR, "tests/fixtures");
+const ROOT_DIR = resolve(import.meta.dirname, "../../..");
+const SAMPLE_DIR = resolve(import.meta.dirname, "sample-app");
 const RUNNER_BIN = resolve(ROOT_DIR, "bin/typescript.sh");
 
 function runDevMode(
@@ -57,7 +57,7 @@ describe("dev integration", () => {
 
   beforeAll(() => {
     tempDir = mkdtempSync(resolve(tmpdir(), "runner-dev-test-"));
-    cpSync(FIXTURES_DIR, tempDir, { recursive: true });
+    cpSync(SAMPLE_DIR, resolve(tempDir, "sample-app"), { recursive: true });
     appDir = resolve(tempDir, "sample-app");
   });
 
