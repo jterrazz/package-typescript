@@ -75,6 +75,3 @@ npm install @jterrazz/typescript
 
 - Entry point is `src/index.ts`
 - Use `.js` extensions in relative imports: `import { foo } from "./bar.js"`
-- Pair with `@jterrazz/codestyle` for linting
-- Pair with `vitest` for testing
-- Makefile must expose `build`, `lint`, `test` targets
