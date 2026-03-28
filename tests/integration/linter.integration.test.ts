@@ -3,10 +3,10 @@ import { tmpdir } from "os";
 import { resolve } from "path";
 import { afterAll, beforeAll, describe, it } from "vitest";
 
-import { expectError, expectNoError, type LintResult, runOxlint } from "./helpers/oxlint.js";
+import { expectError, expectNoError, type LintResult, runOxlint } from "../helpers/oxlint.js";
 
-const ROOT_DIR = resolve(import.meta.dirname, "..");
-const FIXTURES_DIR = resolve(import.meta.dirname, "fixtures");
+const ROOT_DIR = resolve(import.meta.dirname, "../..");
+const FIXTURES_DIR = resolve(import.meta.dirname, "../fixtures");
 
 describe("linter integration", () => {
   let tempDir: string;

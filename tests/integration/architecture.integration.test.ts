@@ -1,10 +1,10 @@
 import { resolve } from "path";
 import { beforeAll, describe, it } from "vitest";
 
-import { expectError, expectNoError, type LintResult, runOxlint } from "./helpers/oxlint.js";
+import { expectError, expectNoError, type LintResult, runOxlint } from "../helpers/oxlint.js";
 
-const ROOT_DIR = resolve(import.meta.dirname, "..");
-const FIXTURES_DIR = resolve(import.meta.dirname, "fixtures/architecture");
+const ROOT_DIR = resolve(import.meta.dirname, "../..");
+const FIXTURES_DIR = resolve(import.meta.dirname, "../fixtures/architecture");
 const HEXAGONAL_CONFIG = resolve(ROOT_DIR, "presets/oxlint/architectures/hexagonal.json");
 
 describe("architecture integration", () => {

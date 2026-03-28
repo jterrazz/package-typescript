@@ -4,8 +4,8 @@ import { tmpdir } from "os";
 import { resolve } from "path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-const ROOT_DIR = resolve(import.meta.dirname, "..");
-const FIXTURES_DIR = resolve(import.meta.dirname, "fixtures");
+const ROOT_DIR = resolve(import.meta.dirname, "../..");
+const FIXTURES_DIR = resolve(import.meta.dirname, "../fixtures");
 const TSGO_BIN = resolve(ROOT_DIR, "node_modules/.bin/tsgo");
 
 type TypeCheckResult = {
