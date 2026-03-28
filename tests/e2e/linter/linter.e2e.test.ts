@@ -39,7 +39,7 @@ describe("linter", () => {
       expect(grep(baseResult.stdout, "invalid/type-import.ts")).toContain(
         "consistent-type-imports",
       );
-      expect(grep(baseResult.stdout, "valid/type-import.ts")).not.toContain(
+      expect(grep(baseResult.stdout, "/valid/type-import.ts")).not.toContain(
         "consistent-type-imports",
       );
     });

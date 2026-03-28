@@ -1,5 +1,4 @@
-// Invalid: union types should be sorted alphabetically
-type Status = "active" | "completed" | "error" | "pending";
+type Status = "pending" | "active" | "error" | "completed";
 
 export function getStatus(): Status {
   return "active";

@@ -1,5 +1,4 @@
-// Invalid: comments should start with uppercase
 export function test(): number {
-  // This is a comment that should be capitalized
+  // this comment starts with lowercase
   return 42;
 }

@@ -1,5 +1,4 @@
-// Invalid: should use type import for type-only imports
-import { type SomeType } from "./types";
+import { SomeType } from "./helpers-types.js";
 
 export function process(input: SomeType): string {
   return String(input);
