@@ -1,47 +1,60 @@
-import { resolve } from "path";
-import { beforeAll, describe, it } from "vitest";
+import { resolve } from "node:path";
+import { beforeAll, describe, test } from "vitest";
 
-import { expectError, expectNoError, type LintResult, runOxlint } from "../../helpers/oxlint.js";
+import { oxlintSpec } from "../../setup/oxlint.specification.js";
 
 const ROOT_DIR = resolve(import.meta.dirname, "../../..");
-const FIXTURES_DIR = resolve(import.meta.dirname, "hexagonal");
 const HEXAGONAL_CONFIG = resolve(ROOT_DIR, "presets/oxlint/architectures/hexagonal.json");
+const HEXAGONAL_DIR = resolve(import.meta.dirname, "hexagonal");
 
-describe("architecture integration", () => {
-  let result: LintResult;
+describe("architecture", () => {
+  let result: any;
 
-  beforeAll(() => {
-    result = runOxlint(HEXAGONAL_CONFIG, FIXTURES_DIR);
+  beforeAll(async () => {
+    // Given — run oxlint with hexagonal config on fixture dir (absolute path for plugin resolution)
+    result = await oxlintSpec("hexagonal").exec(`-c ${HEXAGONAL_CONFIG} ${HEXAGONAL_DIR}`).run();
   });
 
-  describe("hexagonal architecture", () => {
-    describe("domain layer", () => {
-      it("should allow pure domain files", () => {
-        expectNoError(result.output, "domain/user.entity.ts", "arch-hexagonal");
-      });
+  describe("domain layer", () => {
+    test("allows pure domain files", () => {
+      // Then — arch-hexagonal does NOT trigger on valid domain
+      result.stdout.not.toContain("arch-hexagonal", { near: "domain/user.entity.ts" });
+    });
 
-      it("should reject domain importing infrastructure", () => {
-        expectError(result.output, "domain/invalid-domain.ts", "arch-hexagonal");
+    test("rejects domain importing infrastructure", () => {
+      // Then — arch-hexagonal triggers on invalid domain import
+      result.stdout.toContain("arch-hexagonal", { near: "domain/invalid-domain.ts" });
+    });
+  });
+
+  describe("application layer", () => {
+    test("allows use cases importing domain", () => {
+      // Then — arch-hexagonal does NOT trigger on valid use case
+      result.stdout.not.toContain("arch-hexagonal", {
+        near: "application/use-cases/get-user.ts",
       });
     });
 
-    describe("application layer", () => {
-      it("should allow use cases importing domain", () => {
-        expectNoError(result.output, "application/use-cases/get-user.ts", "arch-hexagonal");
+    test("rejects use cases importing infrastructure", () => {
+      // Then — arch-hexagonal triggers on invalid use case
+      result.stdout.toContain("arch-hexagonal", {
+        near: "application/use-cases/invalid-use-case.ts",
       });
+    });
+  });
 
-      it("should reject use cases importing infrastructure", () => {
-        expectError(result.output, "application/use-cases/invalid-use-case.ts", "arch-hexagonal");
+  describe("presentation layer", () => {
+    test("allows pure UI atoms", () => {
+      // Then — arch-hexagonal does NOT trigger on valid atom
+      result.stdout.not.toContain("arch-hexagonal", {
+        near: "presentation/ui/atoms/button.tsx",
       });
     });
 
-    describe("presentation layer", () => {
-      it("should allow pure UI atoms", () => {
-        expectNoError(result.output, "presentation/ui/atoms/button.tsx", "arch-hexagonal");
-      });
-
-      it("should reject atoms importing navigation", () => {
-        expectError(result.output, "presentation/ui/atoms/invalid-atom.tsx", "arch-hexagonal");
+    test("rejects atoms importing navigation", () => {
+      // Then — arch-hexagonal triggers on invalid atom
+      result.stdout.toContain("arch-hexagonal", {
+        near: "presentation/ui/atoms/invalid-atom.tsx",
       });
     });
   });

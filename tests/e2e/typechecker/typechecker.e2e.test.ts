@@ -1,79 +1,28 @@
-import { execSync } from "child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
-import { tmpdir } from "os";
-import { resolve } from "path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { describe, test } from "vitest";
 
-const ROOT_DIR = resolve(import.meta.dirname, "../../..");
-const TEST_DIR = resolve(import.meta.dirname);
-const TSGO_BIN = resolve(ROOT_DIR, "node_modules/.bin/tsgo");
+import { tsgoSpec } from "../../setup/tsgo.specification.js";
 
-type TypeCheckResult = {
-  success: boolean;
-  output: string;
-  errorCount: number;
-};
+describe("typechecker", () => {
+  test("passes for valid typed code", async () => {
+    // Given — project with valid types
+    const result = await tsgoSpec("valid types")
+      .project("typechecker/valid")
+      .exec("--noEmit")
+      .run();
 
-function runTypeCheck(cwd: string): TypeCheckResult {
-  try {
-    const output = execSync(`${TSGO_BIN} --noEmit`, {
-      cwd,
-      encoding: "utf8",
-      stdio: ["pipe", "pipe", "pipe"],
-    });
-    return { success: true, output, errorCount: 0 };
-  } catch (error: any) {
-    const output = error.stdout?.toString() || error.stderr?.toString() || "";
-    const errorMatches = output.match(/error TS\d+/g);
-    return { success: false, output, errorCount: errorMatches ? errorMatches.length : 1 };
-  }
-}
-
-function copyFixture(fixtureName: string, destDir: string): void {
-  const content = readFileSync(resolve(TEST_DIR, fixtureName), "utf8");
-  const destPath = resolve(destDir, fixtureName);
-  mkdirSync(resolve(destPath, ".."), { recursive: true });
-  writeFileSync(destPath, content);
-}
-
-describe("typechecker integration", () => {
-  let tempDir: string;
-
-  beforeAll(() => {
-    tempDir = mkdtempSync(resolve(tmpdir(), "typechecker-test-"));
-    writeFileSync(
-      resolve(tempDir, "tsconfig.json"),
-      JSON.stringify(
-        {
-          compilerOptions: {
-            strict: true,
-            noEmit: true,
-            skipLibCheck: true,
-          },
-          include: ["**/*.ts"],
-        },
-        null,
-        2,
-      ),
-    );
+    // Then — no type errors
+    result.exitCode.toBe(0);
   });
 
-  afterAll(() => {
-    rmSync(tempDir, { recursive: true, force: true });
-  });
+  test("detects type errors", async () => {
+    // Given — project with type mismatches
+    const result = await tsgoSpec("invalid types")
+      .project("typechecker/invalid")
+      .exec("--noEmit")
+      .run();
 
-  it("should pass for valid typed code", () => {
-    copyFixture("valid/types.ts", tempDir);
-    const result = runTypeCheck(tempDir);
-    expect(result.success).toBe(true);
-    expect(result.errorCount).toBe(0);
-  });
-
-  it("should detect type errors", () => {
-    copyFixture("invalid/types.ts", tempDir);
-    const result = runTypeCheck(tempDir);
-    expect(result.success).toBe(false);
-    expect(result.errorCount).toBeGreaterThan(0);
-    expect(result.output).toContain("error TS");
+    // Then — type errors reported (tsgo exits with code 2 for type errors)
+    result.exitCode.not.toBe(0);
+    result.stdout.toContain("error TS");
   });
 });

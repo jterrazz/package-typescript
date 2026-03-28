@@ -1,107 +1,93 @@
-import { execSync } from "child_process";
-import { cpSync, mkdtempSync, readFileSync, rmSync } from "fs";
-import { tmpdir } from "os";
-import { resolve } from "path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { beforeAll, describe, test } from "vitest";
+
+import { oxfmtSpec } from "../../setup/oxfmt.specification.js";
 
 const ROOT_DIR = resolve(import.meta.dirname, "../../..");
-const TEST_DIR = resolve(import.meta.dirname);
-const OXFMT_BIN = resolve(ROOT_DIR, "node_modules/.bin/oxfmt");
 const CONFIG_PATH = resolve(ROOT_DIR, "presets/oxfmt/index.json");
 
-type FormatResult = {
-  success: boolean;
-  output: string;
-  hasIssues: boolean;
-};
-
-function runFormatCheck(targetFile: string, targetDir: string): FormatResult {
-  try {
-    const filePath = resolve(targetDir, targetFile);
-    const output = execSync(`${OXFMT_BIN} --check --config ${CONFIG_PATH} ${filePath}`, {
-      cwd: ROOT_DIR,
-      encoding: "utf8",
-      stdio: ["pipe", "pipe", "pipe"],
-    });
-    return { success: true, output, hasIssues: false };
-  } catch (error: any) {
-    const output = error.stdout?.toString() || error.stderr?.toString() || "";
-    return { success: false, output, hasIssues: output.includes("Format issues found") };
-  }
-}
-
-function runFormat(targetFile: string, targetDir: string): string {
-  const filePath = resolve(targetDir, targetFile);
-  execSync(`${OXFMT_BIN} --config ${CONFIG_PATH} ${filePath}`, {
-    cwd: ROOT_DIR,
-    encoding: "utf8",
-    stdio: ["pipe", "pipe", "pipe"],
-  });
-  return readFileSync(filePath, "utf8");
-}
-
-describe("formatter integration", () => {
-  let tempDir: string;
-
-  beforeAll(() => {
-    tempDir = mkdtempSync(resolve(tmpdir(), "formatter-test-"));
-    cpSync(TEST_DIR, tempDir, { recursive: true });
-  });
-
-  afterAll(() => {
-    rmSync(tempDir, { recursive: true, force: true });
-  });
-
+describe("formatter", () => {
   describe("format checking", () => {
-    it("should detect unformatted code", () => {
-      const result = runFormatCheck("inputs/wrong-style.ts", tempDir);
-      expect(result.success).toBe(false);
-      expect(result.hasIssues).toBe(true);
+    test("detects unformatted code", async () => {
+      // Given — file with wrong formatting
+      const result = await oxfmtSpec("check wrong")
+        .project("formatter")
+        .exec(`--check --config ${CONFIG_PATH} inputs/wrong-style.ts`)
+        .run();
+
+      // Then — check fails
+      result.exitCode.toBe(1);
     });
 
-    it("should pass for properly formatted code", () => {
-      const result = runFormatCheck("expected/correct-style.ts", tempDir);
-      expect(result.success).toBe(true);
-      expect(result.hasIssues).toBe(false);
+    test("passes for properly formatted code", async () => {
+      // Given — file with correct formatting
+      const result = await oxfmtSpec("check correct")
+        .project("formatter")
+        .exec(`--check --config ${CONFIG_PATH} expected/correct-style.ts`)
+        .run();
+
+      // Then — check passes
+      result.exitCode.toBe(0);
     });
   });
 
   describe("format fixing", () => {
-    it("should format unformatted code correctly", () => {
-      const formatted = runFormat("inputs/wrong-style.ts", tempDir);
+    test("formats unformatted code correctly", async () => {
+      // Given — format the wrong-style file in place
+      const result = await oxfmtSpec("fix wrong")
+        .project("formatter")
+        .exec(`--config ${CONFIG_PATH} inputs/wrong-style.ts`)
+        .run();
 
-      expect(formatted).toContain("import fs from 'fs';");
-      expect(formatted).toContain("function greet(name: string): string");
-      expect(formatted).not.toMatch(/^\s{2}const/m);
-      expect(formatted).toMatch(/^\s{4}const/m);
+      // Then — file is reformatted with correct style
+      result.exitCode.toBe(0);
+      result.file("inputs/wrong-style.ts").toContain("import fs from 'fs';");
+      result.file("inputs/wrong-style.ts").toContain("function greet(name: string): string");
+      result.file("inputs/wrong-style.ts").toMatch(/^\s{4}const/m);
     });
 
-    it("should be idempotent (formatting twice gives same result)", () => {
-      const before = readFileSync(resolve(tempDir, "expected/correct-style.ts"), "utf8");
-      runFormat("expected/correct-style.ts", tempDir);
-      const after = readFileSync(resolve(tempDir, "expected/correct-style.ts"), "utf8");
+    test("is idempotent (formatting twice gives same result)", async () => {
+      // Given — already-correct file
+      const result = await oxfmtSpec("idempotent")
+        .project("formatter")
+        .exec(`--config ${CONFIG_PATH} expected/correct-style.ts`)
+        .run();
 
-      expect(after).toBe(before);
+      // Then — file unchanged after formatting
+      result.exitCode.toBe(0);
+      const original = readFileSync(
+        resolve(import.meta.dirname, "expected/correct-style.ts"),
+        "utf8",
+      );
+      result.file("expected/correct-style.ts").toContain(original.trim());
     });
   });
 
   describe("config options", () => {
-    it("should use single quotes", () => {
-      const formatted = runFormat("inputs/wrong-style.ts", tempDir);
-      expect(formatted).toContain("'fs'");
-      expect(formatted).not.toContain('"fs"');
+    let result: any;
+
+    beforeAll(async () => {
+      // Given — format the wrong-style file
+      result = await oxfmtSpec("config options")
+        .project("formatter")
+        .exec(`--config ${CONFIG_PATH} inputs/wrong-style.ts`)
+        .run();
     });
 
-    it("should use semicolons", () => {
-      const formatted = runFormat("inputs/wrong-style.ts", tempDir);
-      expect(formatted).toMatch(/;\s*$/m);
+    test("uses single quotes", () => {
+      // Then — single quotes for imports
+      result.file("inputs/wrong-style.ts").toContain("'fs'");
     });
 
-    it("should use 4-space indentation", () => {
-      const formatted = runFormat("inputs/wrong-style.ts", tempDir);
-      const lines = formatted.split("\n");
-      const indentedLine = lines.find((l) => l.startsWith("    ") && !l.startsWith("     "));
-      expect(indentedLine).toBeTruthy();
+    test("uses semicolons", () => {
+      // Then — statements end with semicolons
+      result.file("inputs/wrong-style.ts").toMatch(/;\s*$/m);
+    });
+
+    test("uses 4-space indentation", () => {
+      // Then — indented lines use 4 spaces
+      result.file("inputs/wrong-style.ts").toMatch(/^\s{4}const/m);
     });
   });
 });

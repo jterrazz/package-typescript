@@ -1,229 +1,221 @@
-import { cpSync, mkdtempSync, rmSync } from "fs";
-import { tmpdir } from "os";
-import { resolve } from "path";
-import { afterAll, beforeAll, describe, it } from "vitest";
+import { resolve } from "node:path";
+import { beforeAll, describe, test } from "vitest";
 
-import { expectError, expectNoError, type LintResult, runOxlint } from "../../helpers/oxlint.js";
+import { oxlintSpec } from "../../setup/oxlint.specification.js";
 
 const ROOT_DIR = resolve(import.meta.dirname, "../../..");
-const FIXTURES_DIR = resolve(import.meta.dirname);
+const BASE_CONFIG = resolve(ROOT_DIR, "presets/oxlint/base.json");
+const NODE_CONFIG = resolve(ROOT_DIR, "presets/oxlint/node.json");
+const EXPO_CONFIG = resolve(ROOT_DIR, "presets/oxlint/expo.json");
+const NEXT_CONFIG = resolve(ROOT_DIR, "presets/oxlint/next.json");
+const VALID_DIR = resolve(import.meta.dirname, "valid");
+const INVALID_DIR = resolve(import.meta.dirname, "invalid");
 
-describe("linter integration", () => {
-  let tempDir: string;
-  let baseResult: LintResult;
-  let nodeResult: LintResult;
-  let expoResult: LintResult;
-  let nextjsResult: LintResult;
+describe("linter", () => {
+  let baseResult: any;
+  let nodeResult: any;
+  let expoResult: any;
+  let nextResult: any;
 
-  beforeAll(() => {
-    tempDir = mkdtempSync(resolve(tmpdir(), "linter-test-"));
-    cpSync(FIXTURES_DIR, tempDir, { recursive: true });
-
-    // Run oxlint once per config - this is the key optimization
-    const baseConfig = resolve(ROOT_DIR, "presets/oxlint/base.json");
-    const nodeConfig = resolve(ROOT_DIR, "presets/oxlint/node.json");
-    const expoConfig = resolve(ROOT_DIR, "presets/oxlint/expo.json");
-    const nextConfig = resolve(ROOT_DIR, "presets/oxlint/next.json");
-
-    baseResult = runOxlint(baseConfig, tempDir);
-    nodeResult = runOxlint(nodeConfig, tempDir);
-    expoResult = runOxlint(expoConfig, tempDir);
-    nextjsResult = runOxlint(nextConfig, tempDir);
-  });
-
-  afterAll(() => {
-    rmSync(tempDir, { recursive: true, force: true });
+  beforeAll(async () => {
+    // Given — run oxlint once per config on fixture dirs (absolute paths for JS plugin resolution)
+    [baseResult, nodeResult, expoResult, nextResult] = await Promise.all([
+      oxlintSpec("base").exec(`-c ${BASE_CONFIG} ${VALID_DIR} ${INVALID_DIR}`).run(),
+      oxlintSpec("node").exec(`-c ${NODE_CONFIG} ${VALID_DIR} ${INVALID_DIR}`).run(),
+      oxlintSpec("expo").exec(`-c ${EXPO_CONFIG} ${VALID_DIR} ${INVALID_DIR}`).run(),
+      oxlintSpec("next").exec(`-c ${NEXT_CONFIG} ${VALID_DIR} ${INVALID_DIR}`).run(),
+    ]);
   });
 
   describe("base config", () => {
-    describe("no-unused-vars", () => {
-      it("should detect unused variables", () => {
-        expectError(baseResult.output, "invalid/unused-var.ts", "no-unused-vars");
+    test("detects unused variables", () => {
+      // Then — rule triggers on invalid file
+      baseResult.stdout.toContain("no-unused-vars", { near: "invalid/unused-var.ts" });
+    });
+
+    test("requires type imports for type-only imports", () => {
+      // Then — error on wrong import, pass on correct one
+      baseResult.stdout.toContain("consistent-type-imports", { near: "invalid/type-import.ts" });
+      baseResult.stdout.not.toContain("consistent-type-imports", {
+        near: "valid/type-import.ts",
       });
     });
 
-    describe("typescript/consistent-type-imports", () => {
-      it("should require type imports for type-only imports", () => {
-        expectError(baseResult.output, "invalid/type-import.ts", "consistent-type-imports");
-      });
-
-      it("should pass for valid type imports", () => {
-        expectNoError(baseResult.output, "valid/type-import.ts", "consistent-type-imports");
+    test("detects unused expressions", () => {
+      // Then — unused expression detected
+      baseResult.stdout.toContain("no-unused-expressions", {
+        near: "invalid/unused-expression.ts",
       });
     });
 
-    describe("typescript/no-unused-expressions", () => {
-      it("should detect unused expressions", () => {
-        expectError(baseResult.output, "invalid/unused-expression.ts", "no-unused-expressions");
+    test("detects unsorted imports", () => {
+      // Then — error on unsorted, pass on sorted
+      baseResult.stdout.toContain("sort-imports", { near: "invalid/unsorted-imports.ts" });
+      baseResult.stdout.not.toContain("sort-imports", { near: "valid/sorted.ts" });
+    });
+
+    test("detects unsorted union types", () => {
+      // Then — error on unsorted, pass on sorted
+      baseResult.stdout.toContain("sort-union-types", { near: "invalid/unsorted-union.ts" });
+      baseResult.stdout.not.toContain("sort-union-types", { near: "valid/sorted-union.ts" });
+    });
+
+    test("detects unsorted named exports", () => {
+      // Then — error on unsorted, pass on sorted
+      baseResult.stdout.toContain("sort-named-exports", {
+        near: "invalid/unsorted-named-exports.ts",
+      });
+      baseResult.stdout.not.toContain("sort-named-exports", {
+        near: "valid/sorted-named-exports.ts",
       });
     });
 
-    describe("perfectionist/sort-imports", () => {
-      it("should detect unsorted imports", () => {
-        expectError(baseResult.output, "invalid/unsorted-imports.ts", "sort-imports");
-      });
-
-      it("should pass for valid sorted imports", () => {
-        expectNoError(baseResult.output, "valid/sorted.ts", "sort-imports");
+    test("warns about spread in reduce accumulator", () => {
+      // Then — perf rule triggers
+      baseResult.stdout.toContain("no-accumulating-spread", {
+        near: "invalid/perf-spread-in-accumulator.ts",
       });
     });
 
-    describe("perfectionist/sort-union-types", () => {
-      it("should detect unsorted union types", () => {
-        expectError(baseResult.output, "invalid/unsorted-union.ts", "sort-union-types");
+    test("allows default exports", () => {
+      // Then — no-default-export rule is not active
+      baseResult.stdout.not.toContain("no-default-export", {
+        near: "invalid/default-export.ts",
       });
-
-      it("should pass for sorted union types", () => {
-        expectNoError(baseResult.output, "valid/sorted-union.ts", "sort-union-types");
-      });
-    });
-
-    describe("perfectionist/sort-named-exports", () => {
-      it("should detect unsorted named exports", () => {
-        expectError(baseResult.output, "invalid/unsorted-named-exports.ts", "sort-named-exports");
-      });
-
-      it("should pass for sorted named exports", () => {
-        expectNoError(baseResult.output, "valid/sorted-named-exports.ts", "sort-named-exports");
+      baseResult.stdout.not.toContain("no-default-export", {
+        near: "valid/named-export.ts",
       });
     });
 
-    describe("perf category", () => {
-      it("should warn about spread in reduce accumulator", () => {
-        expectError(
-          baseResult.output,
-          "invalid/perf-spread-in-accumulator.ts",
-          "no-accumulating-spread",
-        );
+    test("rejects imports not at top", () => {
+      // Then — import/first rule triggers
+      baseResult.stdout.toContain("first", { near: "invalid/import-not-first.ts" });
+    });
+
+    test("rejects namespace imports", () => {
+      // Then — no-namespace rule triggers
+      baseResult.stdout.toContain("no-namespace", { near: "invalid/namespace-import.ts" });
+    });
+
+    test("requires error variable named error", () => {
+      // Then — catch-error-name rule triggers
+      baseResult.stdout.toContain("catch-error-name", {
+        near: "invalid/catch-error-name.ts",
       });
     });
 
-    describe("import/no-default-export", () => {
-      it("should allow default exports", () => {
-        expectNoError(baseResult.output, "invalid/default-export.ts", "no-default-export");
-      });
-
-      it("should pass for named exports", () => {
-        expectNoError(baseResult.output, "valid/named-export.ts", "no-default-export");
+    test("requires numeric separators on large numbers", () => {
+      // Then — numeric separators rule triggers
+      baseResult.stdout.toContain("numeric-separators", {
+        near: "invalid/numeric-separators.ts",
       });
     });
 
-    describe("import/first", () => {
-      it("should reject imports not at the top", () => {
-        expectError(baseResult.output, "invalid/import-not-first.ts", "first");
+    test("rejects nested ternary", () => {
+      // Then — nested-ternary rule triggers
+      baseResult.stdout.toContain("nested-ternary", { near: "invalid/nested-ternary.ts" });
+    });
+
+    test("requires curly braces", () => {
+      // Then — curly rule triggers
+      baseResult.stdout.toContain("curly", { near: "invalid/curly.ts" });
+    });
+
+    test("warns about lowercase comments", () => {
+      // Then — capitalized-comments rule triggers
+      baseResult.stdout.toContain("capitalized-comments", {
+        near: "invalid/capitalized-comment.ts",
       });
     });
 
-    describe("import/no-namespace", () => {
-      it("should reject namespace imports", () => {
-        expectError(baseResult.output, "invalid/namespace-import.ts", "no-namespace");
+    describe("disabled rules", () => {
+      test("allows lowercase constructor names (new-cap disabled)", () => {
+        // Then — new-cap does NOT trigger
+        baseResult.stdout.not.toContain("new-cap", { near: "valid/new-cap.ts" });
       });
-    });
 
-    describe("unicorn/catch-error-name", () => {
-      it("should require error variable to be named 'error'", () => {
-        expectError(baseResult.output, "invalid/catch-error-name.ts", "catch-error-name");
+      test("allows unassigned imports (no-unassigned-import disabled)", () => {
+        // Then — rule does NOT trigger
+        baseResult.stdout.not.toContain("no-unassigned-import", {
+          near: "valid/unassigned-import.ts",
+        });
       });
-    });
 
-    describe("unicorn/numeric-separators-style", () => {
-      it("should warn about large numbers without separators", () => {
-        expectError(baseResult.output, "invalid/numeric-separators.ts", "numeric-separators");
+      test("allows await in loops (no-await-in-loop disabled)", () => {
+        // Then — rule does NOT trigger
+        baseResult.stdout.not.toContain("no-await-in-loop", {
+          near: "valid/await-in-loop.ts",
+        });
       });
-    });
 
-    describe("no-nested-ternary", () => {
-      it("should reject nested ternary expressions", () => {
-        expectError(baseResult.output, "invalid/nested-ternary.ts", "nested-ternary");
+      test("allows named default imports (no-named-default disabled)", () => {
+        // Then — rule does NOT trigger
+        baseResult.stdout.not.toContain("no-named-default", {
+          near: "valid/named-default.ts",
+        });
       });
-    });
 
-    describe("curly", () => {
-      it("should require curly braces", () => {
-        expectError(baseResult.output, "invalid/curly.ts", "curly");
-      });
-    });
-
-    describe("capitalized-comments", () => {
-      it("should warn about lowercase comments", () => {
-        expectError(baseResult.output, "invalid/capitalized-comment.ts", "capitalized-comments");
-      });
-    });
-
-    // ============================================
-    // DISABLED RULES - Should NOT trigger errors
-    // ============================================
-
-    describe("new-cap (disabled)", () => {
-      it("should allow lowercase constructor names", () => {
-        expectNoError(baseResult.output, "valid/new-cap.ts", "new-cap");
-      });
-    });
-
-    describe("import/no-unassigned-import (disabled)", () => {
-      it("should allow unassigned imports", () => {
-        expectNoError(baseResult.output, "valid/unassigned-import.ts", "no-unassigned-import");
-      });
-    });
-
-    describe("no-await-in-loop (disabled)", () => {
-      it("should allow await in loops", () => {
-        expectNoError(baseResult.output, "valid/await-in-loop.ts", "no-await-in-loop");
-      });
-    });
-
-    describe("import/no-named-default (disabled)", () => {
-      it("should allow named default imports", () => {
-        expectNoError(baseResult.output, "valid/named-default.ts", "no-named-default");
-      });
-    });
-
-    describe("typescript/no-inferrable-types (disabled)", () => {
-      it("should allow inferrable type annotations", () => {
-        expectNoError(baseResult.output, "valid/inferrable-types.ts", "no-inferrable-types");
+      test("allows inferrable type annotations (no-inferrable-types disabled)", () => {
+        // Then — rule does NOT trigger
+        baseResult.stdout.not.toContain("no-inferrable-types", {
+          near: "valid/inferrable-types.ts",
+        });
       });
     });
   });
 
   describe("node config", () => {
-    it("should require .js extension on relative imports", () => {
-      expectError(nodeResult.output, "invalid/missing-js-ext.ts", "imports-with-ext");
+    test("requires .js extension on relative imports", () => {
+      // Then — imports-with-ext rule triggers on missing extension
+      nodeResult.stdout.toContain("imports-with-ext", { near: "invalid/missing-js-ext.ts" });
     });
 
-    it("should pass when .js extension is present", () => {
-      expectNoError(nodeResult.output, "valid/sorted.ts", "imports-with-ext");
+    test("passes when .js extension is present", () => {
+      // Then — rule does NOT trigger on valid file
+      nodeResult.stdout.not.toContain("imports-with-ext", { near: "valid/sorted.ts" });
     });
 
-    it("should inherit base rules (detect unused vars)", () => {
-      expectError(nodeResult.output, "invalid/unused-var.ts", "no-unused-vars");
+    test("inherits base rules", () => {
+      // Then — base rule still works in node config
+      nodeResult.stdout.toContain("no-unused-vars", { near: "invalid/unused-var.ts" });
     });
   });
 
   describe("expo config", () => {
-    it("should reject .ts extension on relative imports", () => {
-      expectError(expoResult.output, "invalid/has-ts-ext.ts", "imports-without-ext");
+    test("rejects .ts extension on relative imports", () => {
+      // Then — imports-without-ext rule triggers
+      expoResult.stdout.toContain("imports-without-ext", { near: "invalid/has-ts-ext.ts" });
     });
 
-    it("should pass when no extension on relative imports", () => {
-      expectNoError(expoResult.output, "valid/sorted-no-ext.ts", "imports-without-ext");
+    test("passes when no extension on relative imports", () => {
+      // Then — rule does NOT trigger on valid file
+      expoResult.stdout.not.toContain("imports-without-ext", {
+        near: "valid/sorted-no-ext.ts",
+      });
     });
 
-    it("should inherit base rules (detect unsorted imports)", () => {
-      expectError(expoResult.output, "invalid/unsorted-imports.ts", "sort-imports");
+    test("inherits base rules", () => {
+      // Then — base rule still works in expo config
+      expoResult.stdout.toContain("sort-imports", { near: "invalid/unsorted-imports.ts" });
     });
   });
 
   describe("nextjs config", () => {
-    it("should reject .ts extension on relative imports", () => {
-      expectError(nextjsResult.output, "invalid/has-ts-ext.ts", "imports-without-ext");
+    test("rejects .ts extension on relative imports", () => {
+      // Then — imports-without-ext rule triggers
+      nextResult.stdout.toContain("imports-without-ext", { near: "invalid/has-ts-ext.ts" });
     });
 
-    it("should pass when no extension on relative imports", () => {
-      expectNoError(nextjsResult.output, "valid/sorted-no-ext.ts", "imports-without-ext");
+    test("passes when no extension on relative imports", () => {
+      // Then — rule does NOT trigger on valid file
+      nextResult.stdout.not.toContain("imports-without-ext", {
+        near: "valid/sorted-no-ext.ts",
+      });
     });
 
-    it("should inherit base rules (detect unused vars)", () => {
-      expectError(nextjsResult.output, "invalid/unused-var.ts", "no-unused-vars");
+    test("inherits base rules", () => {
+      // Then — base rule still works in nextjs config
+      nextResult.stdout.toContain("no-unused-vars", { near: "invalid/unused-var.ts" });
     });
   });
 });
