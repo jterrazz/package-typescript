@@ -6,13 +6,15 @@ describe("build", () => {
   test("builds successfully", async () => {
     const result = await spec("build").project("sample-app").exec("build").run();
 
+    // Then — ESM build completes
     result.expectExitCode(0);
     result.expectStdoutContains("Build completed");
   });
 
-  test("generates ESM output", async () => {
+  test("generates ESM output with source content", async () => {
     const result = await spec("esm output").project("sample-app").exec("build").run();
 
+    // Then — dist contains the app code
     result.expectFile("dist/index.js");
     result.expectFileContains("dist/index.js", "Hello from sample app");
   });
