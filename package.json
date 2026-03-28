@@ -11,8 +11,7 @@
   },
   "files": [
     "bin",
-    "config",
-    "tsconfig"
+    "presets"
   ],
   "type": "module",
   "publishConfig": {

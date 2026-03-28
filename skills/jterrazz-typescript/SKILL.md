@@ -25,9 +25,9 @@ npm install @jterrazz/typescript
 **tsconfig.json** — pick one:
 
 ```json
-{ "extends": "@jterrazz/typescript/tsconfig/node" }
-{ "extends": "@jterrazz/typescript/tsconfig/next" }
-{ "extends": "@jterrazz/typescript/tsconfig/expo" }
+{ "extends": "@jterrazz/typescript/presets/tsconfig/node" }
+{ "extends": "@jterrazz/typescript/presets/tsconfig/next" }
+{ "extends": "@jterrazz/typescript/presets/tsconfig/expo" }
 ```
 
 **package.json scripts** — for apps:

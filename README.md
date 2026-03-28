@@ -14,9 +14,9 @@ npm install @jterrazz/typescript
 
 ```json
 // tsconfig.json - Pick one:
-{ "extends": "@jterrazz/typescript/tsconfig/node" }  // Node.js projects
-{ "extends": "@jterrazz/typescript/tsconfig/next" }  // Next.js projects
-{ "extends": "@jterrazz/typescript/tsconfig/expo" }  // Expo/React Native
+{ "extends": "@jterrazz/typescript/presets/tsconfig/node" }  // Node.js projects
+{ "extends": "@jterrazz/typescript/presets/tsconfig/next" }  // Next.js projects
+{ "extends": "@jterrazz/typescript/presets/tsconfig/expo" }  // Expo/React Native
 ```
 
 ### 2. Use the CLI

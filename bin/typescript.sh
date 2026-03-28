@@ -63,11 +63,11 @@ run_tsdown() {
 
 case "$COMMAND" in
     build)
-        run_tsdown "$SCRIPT_DIR/../config/tsdown.build.ts" "Building application (ESM + types)"
+        run_tsdown "$SCRIPT_DIR/../presets/tsdown/build.ts" "Building application (ESM + types)"
         ;;
 
     bundle)
-        run_tsdown "$SCRIPT_DIR/../config/tsdown.bundle.ts" "Bundling library (ESM + CJS + types)"
+        run_tsdown "$SCRIPT_DIR/../presets/tsdown/bundle.ts" "Bundling library (ESM + CJS + types)"
         ;;
 
     start)
@@ -76,7 +76,7 @@ case "$COMMAND" in
         ;;
 
     dev)
-        CONFIG_PATH="$SCRIPT_DIR/../config/tsdown.build.ts"
+        CONFIG_PATH="$SCRIPT_DIR/../presets/tsdown/build.ts"
 
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Starting dev mode...\n\n"
 
