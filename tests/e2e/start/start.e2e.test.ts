@@ -8,8 +8,8 @@ describe("start", () => {
     const result = await spec("build+start").project("sample-app").exec(["build", "start"]).run();
 
     // Then — app runs and prints its message
-    result.expectExitCode(0);
-    result.expectStdoutContains("Hello from sample app");
+    result.exitCode.toBe(0);
+    result.stdout.toContain("Hello from sample app");
   });
 
   test("fails if dist does not exist", async () => {
@@ -17,6 +17,6 @@ describe("start", () => {
     const result = await spec("no dist").project("sample-app").exec("start").run();
 
     // Then — exits with error
-    result.expectExitCode(1);
+    result.exitCode.toBe(1);
   });
 });

@@ -8,10 +8,10 @@ describe("cli", () => {
     const result = await spec("help").project("sample-app").exec("").run();
 
     // Then — help banner with usage and available commands
-    result.expectStdoutContains("TYPESCRIPT");
-    result.expectStdoutContains("Usage: typescript <command>");
-    result.expectStdoutContains("build");
-    result.expectStdoutContains("dev");
+    result.stdout.toContain("TYPESCRIPT");
+    result.stdout.toContain("Usage: typescript <command>");
+    result.stdout.toContain("build");
+    result.stdout.toContain("dev");
   });
 
   test("shows help with unknown command", async () => {
@@ -19,7 +19,7 @@ describe("cli", () => {
     const result = await spec("unknown").project("sample-app").exec("unknown").run();
 
     // Then — falls back to usage help
-    result.expectStdoutContains("Usage: typescript <command>");
+    result.stdout.toContain("Usage: typescript <command>");
   });
 
   test("lists all commands in help", async () => {
@@ -27,11 +27,10 @@ describe("cli", () => {
     const result = await spec("commands").project("sample-app").exec("").run();
 
     // Then — all four commands listed
-    result
-      .expectStdoutContains("build")
-      .expectStdoutContains("bundle")
-      .expectStdoutContains("start")
-      .expectStdoutContains("dev");
+    result.stdout.toContain("build");
+    result.stdout.toContain("bundle");
+    result.stdout.toContain("start");
+    result.stdout.toContain("dev");
   });
 
   test("shows usage examples in help", async () => {
@@ -39,10 +38,9 @@ describe("cli", () => {
     const result = await spec("examples").project("sample-app").exec("").run();
 
     // Then — usage examples for each command
-    result
-      .expectStdoutContains("typescript build")
-      .expectStdoutContains("typescript bundle")
-      .expectStdoutContains("typescript start")
-      .expectStdoutContains("typescript dev");
+    result.stdout.toContain("typescript build");
+    result.stdout.toContain("typescript bundle");
+    result.stdout.toContain("typescript start");
+    result.stdout.toContain("typescript dev");
   });
 });
