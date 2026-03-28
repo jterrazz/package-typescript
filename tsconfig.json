@@ -1,4 +1,5 @@
 {
   "extends": "./presets/tsconfig/node.json",
-  "include": ["tests/"]
+  "include": ["tests/"],
+  "exclude": ["tests/fixtures/broken-app"]
 }

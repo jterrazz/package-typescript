@@ -48,4 +48,20 @@ describe("bundle", () => {
     expect(result.file("dist/index.js.map").exists).toBe(true);
     expect(result.file("dist/index.cjs.map").exists).toBe(true);
   });
+
+  test("fails on missing entry point", async () => {
+    // Given — project with no src/ directory
+    const result = await spec("missing entry").project("empty-app").exec("bundle").run();
+
+    // Then — bundle fails with non-zero exit code
+    expect(result.exitCode).not.toBe(0);
+  });
+
+  test("fails on unresolvable import", async () => {
+    // Given — project with a missing module import
+    const result = await spec("invalid ts").project("broken-app").exec("bundle").run();
+
+    // Then — bundle fails with non-zero exit code
+    expect(result.exitCode).not.toBe(0);
+  });
 });

@@ -44,4 +44,21 @@ describe("build", () => {
     // Then — source map exists
     expect(result.file("dist/index.js.map").exists).toBe(true);
   });
+
+  test("fails on missing entry point", async () => {
+    // Given — project with no src/ directory
+    const result = await spec("missing entry").project("empty-app").exec("build").run();
+
+    // Then — build fails with non-zero exit code
+    expect(result.exitCode).not.toBe(0);
+  });
+
+  test("fails on unresolvable import", async () => {
+    // Given — project with a missing module import
+    const result = await spec("invalid ts").project("broken-app").exec("build").run();
+
+    // Then — build fails and stderr contains error context
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr).toContain("Error");
+  });
 });
