@@ -1,9 +1,11 @@
 ---
 name: jterrazz-typescript
-description: Build tooling for TypeScript Node.js projects using @jterrazz/typescript. Activates when creating, configuring, or debugging TypeScript builds, tsdown configs, or project scaffolding that uses this package.
+description: Build tooling for the @jterrazz ecosystem — defines how all projects build and bundle. Powered by tsdown. Activates when creating, configuring, or debugging TypeScript builds.
 ---
 
 # @jterrazz/typescript
+
+Part of the @jterrazz ecosystem. Defines how all projects build.
 
 Zero-config TypeScript build tooling powered by tsdown (Rust).
 
