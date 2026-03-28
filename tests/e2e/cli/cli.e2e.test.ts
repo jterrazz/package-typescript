@@ -1,51 +1,39 @@
-import { execSync } from "child_process";
-import { resolve } from "path";
-import { describe, expect, it } from "vitest";
+import { describe, test } from "vitest";
 
-const ROOT_DIR = resolve(import.meta.dirname, "../../..");
-const RUNNER_BIN = resolve(ROOT_DIR, "bin/typescript.sh");
+import { spec } from "../../setup/cli.specification.js";
 
-function runRunner(args: string = ""): { success: boolean; output: string } {
-  try {
-    const output = execSync(`${RUNNER_BIN} ${args}`, {
-      cwd: ROOT_DIR,
-      encoding: "utf8",
-      stdio: ["pipe", "pipe", "pipe"],
-    });
-    return { success: true, output };
-  } catch (error: any) {
-    const output = error.stdout?.toString() || error.stderr?.toString() || "";
-    return { success: false, output };
-  }
-}
+describe("cli", () => {
+  test("shows help when no command is provided", async () => {
+    const result = await spec("help").project("sample-app").exec("").run();
 
-describe("cli integration", () => {
-  it("should show help when no command is provided", () => {
-    const result = runRunner();
-    expect(result.output).toContain("TYPESCRIPT");
-    expect(result.output).toContain("Usage: typescript <command>");
-    expect(result.output).toContain("build");
-    expect(result.output).toContain("dev");
+    result.expectStdoutContains("TYPESCRIPT");
+    result.expectStdoutContains("Usage: typescript <command>");
+    result.expectStdoutContains("build");
+    result.expectStdoutContains("dev");
   });
 
-  it("should show help with unknown command", () => {
-    const result = runRunner("unknown");
-    expect(result.output).toContain("Usage: typescript <command>");
+  test("shows help with unknown command", async () => {
+    const result = await spec("unknown").project("sample-app").exec("unknown").run();
+    result.expectStdoutContains("Usage: typescript <command>");
   });
 
-  it("should show commands in help", () => {
-    const result = runRunner();
-    expect(result.output).toContain("build");
-    expect(result.output).toContain("bundle");
-    expect(result.output).toContain("start");
-    expect(result.output).toContain("dev");
+  test("shows all commands in help", async () => {
+    const result = await spec("commands").project("sample-app").exec("").run();
+
+    result
+      .expectStdoutContains("build")
+      .expectStdoutContains("bundle")
+      .expectStdoutContains("start")
+      .expectStdoutContains("dev");
   });
 
-  it("should show examples in help", () => {
-    const result = runRunner();
-    expect(result.output).toContain("typescript build");
-    expect(result.output).toContain("typescript bundle");
-    expect(result.output).toContain("typescript start");
-    expect(result.output).toContain("typescript dev");
+  test("shows examples in help", async () => {
+    const result = await spec("examples").project("sample-app").exec("").run();
+
+    result
+      .expectStdoutContains("typescript build")
+      .expectStdoutContains("typescript bundle")
+      .expectStdoutContains("typescript start")
+      .expectStdoutContains("typescript dev");
   });
 });

@@ -1,63 +1,37 @@
-import { execSync } from "child_process";
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from "fs";
-import { tmpdir } from "os";
-import { resolve } from "path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { describe, test } from "vitest";
 
-const ROOT_DIR = resolve(import.meta.dirname, "../../..");
-const SAMPLE_DIR = resolve(import.meta.dirname, "sample-app");
-const RUNNER_BIN = resolve(ROOT_DIR, "bin/typescript.sh");
+import { spec } from "../../setup/cli.specification.js";
 
-function runCommand(projectDir: string, command: string) {
-  try {
-    const output = execSync(`${RUNNER_BIN} ${command}`, {
-      cwd: projectDir,
-      encoding: "utf8",
-      stdio: ["pipe", "pipe", "pipe"],
-      env: { ...process.env, INIT_CWD: undefined },
-    });
-    return { success: true, output };
-  } catch (error: any) {
-    const output = error.stdout?.toString() || error.stderr?.toString() || "";
-    return { success: false, output };
-  }
-}
+describe("build", () => {
+  test("builds successfully", async () => {
+    const result = await spec("build").project("sample-app").exec("build").run();
 
-describe("build integration", () => {
-  let tempDir: string;
-  let appDir: string;
-
-  beforeAll(() => {
-    tempDir = mkdtempSync(resolve(tmpdir(), "runner-build-test-"));
-    cpSync(SAMPLE_DIR, resolve(tempDir, "sample-app"), { recursive: true });
-    appDir = resolve(tempDir, "sample-app");
+    result.expectExitCode(0);
+    result.expectStdoutContains("Build completed");
   });
 
-  afterAll(() => {
-    rmSync(tempDir, { recursive: true, force: true });
+  test("generates ESM output", async () => {
+    const result = await spec("esm output").project("sample-app").exec("build").run();
+
+    result.expectFile("dist/index.js");
+    result.expectFileContains("dist/index.js", "Hello from sample app");
   });
 
-  it("should build successfully", () => {
-    const result = runCommand(appDir, "build");
-    expect(result.success).toBe(true);
-    expect(result.output).toContain("Build completed");
+  test("does NOT generate CJS output", async () => {
+    const result = await spec("no cjs").project("sample-app").exec("build").run();
+
+    result.expectNoFile("dist/index.cjs");
   });
 
-  it("should generate ESM output", () => {
-    expect(existsSync(resolve(appDir, "dist/index.js"))).toBe(true);
-    const content = readFileSync(resolve(appDir, "dist/index.js"), "utf8");
-    expect(content).toContain("Hello from sample app");
+  test("generates type declarations", async () => {
+    const result = await spec("types").project("sample-app").exec("build").run();
+
+    result.expectFile("dist/index.d.ts");
   });
 
-  it("should NOT generate CJS output", () => {
-    expect(existsSync(resolve(appDir, "dist/index.cjs"))).toBe(false);
-  });
+  test("generates source maps", async () => {
+    const result = await spec("sourcemaps").project("sample-app").exec("build").run();
 
-  it("should generate type declarations", () => {
-    expect(existsSync(resolve(appDir, "dist/index.d.ts"))).toBe(true);
-  });
-
-  it("should generate source maps", () => {
-    expect(existsSync(resolve(appDir, "dist/index.js.map"))).toBe(true);
+    result.expectFile("dist/index.js.map");
   });
 });

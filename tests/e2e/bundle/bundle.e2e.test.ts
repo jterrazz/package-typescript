@@ -1,69 +1,41 @@
-import { execSync } from "child_process";
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from "fs";
-import { tmpdir } from "os";
-import { resolve } from "path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { describe, test } from "vitest";
 
-const ROOT_DIR = resolve(import.meta.dirname, "../../..");
-const SAMPLE_DIR = resolve(import.meta.dirname, "sample-lib");
-const RUNNER_BIN = resolve(ROOT_DIR, "bin/typescript.sh");
+import { spec } from "../../setup/cli.specification.js";
 
-function runCommand(projectDir: string, command: string) {
-  try {
-    const output = execSync(`${RUNNER_BIN} ${command}`, {
-      cwd: projectDir,
-      encoding: "utf8",
-      stdio: ["pipe", "pipe", "pipe"],
-      env: { ...process.env, INIT_CWD: undefined },
-    });
-    return { success: true, output };
-  } catch (error: any) {
-    const output = error.stdout?.toString() || error.stderr?.toString() || "";
-    return { success: false, output };
-  }
-}
+describe("bundle", () => {
+  test("bundles successfully", async () => {
+    const result = await spec("bundle").project("sample-lib").exec("bundle").run();
 
-describe("bundle integration", () => {
-  let tempDir: string;
-  let libDir: string;
-
-  beforeAll(() => {
-    tempDir = mkdtempSync(resolve(tmpdir(), "runner-bundle-test-"));
-    cpSync(SAMPLE_DIR, resolve(tempDir, "sample-lib"), { recursive: true });
-    libDir = resolve(tempDir, "sample-lib");
+    result.expectExitCode(0);
+    result.expectStdoutContains("Build completed");
   });
 
-  afterAll(() => {
-    rmSync(tempDir, { recursive: true, force: true });
+  test("generates ESM output", async () => {
+    const result = await spec("esm output").project("sample-lib").exec("bundle").run();
+
+    result.expectFile("dist/index.js");
+    result.expectFileContains("dist/index.js", "export");
   });
 
-  it("should bundle successfully", () => {
-    const result = runCommand(libDir, "bundle");
-    expect(result.success).toBe(true);
-    expect(result.output).toContain("Build completed");
+  test("generates CJS output", async () => {
+    const result = await spec("cjs output").project("sample-lib").exec("bundle").run();
+
+    result.expectFile("dist/index.cjs");
+    result.expectFileContains("dist/index.cjs", "exports");
   });
 
-  it("should generate ESM output", () => {
-    expect(existsSync(resolve(libDir, "dist/index.js"))).toBe(true);
-    const content = readFileSync(resolve(libDir, "dist/index.js"), "utf8");
-    expect(content).toContain("export");
+  test("generates type declarations", async () => {
+    const result = await spec("types").project("sample-lib").exec("bundle").run();
+
+    result.expectFile("dist/index.d.ts");
+    result.expectFileContains("dist/index.d.ts", "greet");
+    result.expectFileContains("dist/index.d.ts", "User");
   });
 
-  it("should generate CJS output", () => {
-    expect(existsSync(resolve(libDir, "dist/index.cjs"))).toBe(true);
-    const content = readFileSync(resolve(libDir, "dist/index.cjs"), "utf8");
-    expect(content).toContain("exports");
-  });
+  test("generates source maps", async () => {
+    const result = await spec("sourcemaps").project("sample-lib").exec("bundle").run();
 
-  it("should generate type declarations", () => {
-    expect(existsSync(resolve(libDir, "dist/index.d.ts"))).toBe(true);
-    const content = readFileSync(resolve(libDir, "dist/index.d.ts"), "utf8");
-    expect(content).toContain("greet");
-    expect(content).toContain("User");
-  });
-
-  it("should generate source maps", () => {
-    expect(existsSync(resolve(libDir, "dist/index.js.map"))).toBe(true);
-    expect(existsSync(resolve(libDir, "dist/index.cjs.map"))).toBe(true);
+    result.expectFile("dist/index.js.map");
+    result.expectFile("dist/index.cjs.map");
   });
 });

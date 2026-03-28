@@ -5,7 +5,7 @@ import { resolve } from "path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const ROOT_DIR = resolve(import.meta.dirname, "../../..");
-const SAMPLE_DIR = resolve(import.meta.dirname, "sample-app");
+const SAMPLE_DIR = resolve(import.meta.dirname, "../../fixtures/sample-app");
 const RUNNER_BIN = resolve(ROOT_DIR, "bin/typescript.sh");
 
 function runCommand(projectDir: string, command: string) {
