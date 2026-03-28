@@ -11,20 +11,20 @@
   },
   "files": [
     "bin",
-    "config",
+    "presets",
     "src"
   ],
   "type": "module",
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./oxfmt": "./config/oxfmt/index.json",
-    "./oxlint/node": "./config/oxlint/node.json",
-    "./oxlint/expo": "./config/oxlint/expo.json",
-    "./oxlint/next": "./config/oxlint/next.json",
-    "./oxlint/architectures/hexagonal": "./config/oxlint/architectures/hexagonal.json",
-    "./oxlint/plugins/codestyle": "./config/oxlint/plugins/codestyle.js",
-    "./config/oxlint/plugins/codestyle.js": "./config/oxlint/plugins/codestyle.js"
+    "./oxfmt": "./presets/oxfmt/index.json",
+    "./oxlint/node": "./presets/oxlint/node.json",
+    "./oxlint/expo": "./presets/oxlint/expo.json",
+    "./oxlint/next": "./presets/oxlint/next.json",
+    "./oxlint/architectures/hexagonal": "./presets/oxlint/architectures/hexagonal.json",
+    "./oxlint/plugins/codestyle": "./presets/oxlint/plugins/codestyle.js",
+    "./presets/oxlint/plugins/codestyle.js": "./presets/oxlint/plugins/codestyle.js"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"

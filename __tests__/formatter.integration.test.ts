@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 const ROOT_DIR = resolve(import.meta.dirname, "..");
 const FIXTURES_DIR = resolve(import.meta.dirname, "fixtures");
 const OXFMT_BIN = resolve(ROOT_DIR, "node_modules/.bin/oxfmt");
-const CONFIG_PATH = resolve(ROOT_DIR, "config/oxfmt/index.json");
+const CONFIG_PATH = resolve(ROOT_DIR, "presets/oxfmt/index.json");
 
 type FormatResult = {
   success: boolean;

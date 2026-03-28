@@ -5,7 +5,7 @@ import { expectError, expectNoError, type LintResult, runOxlint } from "./helper
 
 const ROOT_DIR = resolve(import.meta.dirname, "..");
 const FIXTURES_DIR = resolve(import.meta.dirname, "fixtures/architecture");
-const HEXAGONAL_CONFIG = resolve(ROOT_DIR, "config/oxlint/architectures/hexagonal.json");
+const HEXAGONAL_CONFIG = resolve(ROOT_DIR, "presets/oxlint/architectures/hexagonal.json");
 
 describe("architecture integration", () => {
   let result: LintResult;

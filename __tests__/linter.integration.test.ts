@@ -20,10 +20,10 @@ describe("linter integration", () => {
     cpSync(FIXTURES_DIR, tempDir, { recursive: true });
 
     // Run oxlint once per config - this is the key optimization
-    const baseConfig = resolve(ROOT_DIR, "config/oxlint/base.json");
-    const nodeConfig = resolve(ROOT_DIR, "config/oxlint/node.json");
-    const expoConfig = resolve(ROOT_DIR, "config/oxlint/expo.json");
-    const nextConfig = resolve(ROOT_DIR, "config/oxlint/next.json");
+    const baseConfig = resolve(ROOT_DIR, "presets/oxlint/base.json");
+    const nodeConfig = resolve(ROOT_DIR, "presets/oxlint/node.json");
+    const expoConfig = resolve(ROOT_DIR, "presets/oxlint/expo.json");
+    const nextConfig = resolve(ROOT_DIR, "presets/oxlint/next.json");
 
     baseResult = runOxlint(baseConfig, tempDir);
     nodeResult = runOxlint(nodeConfig, tempDir);
