@@ -12,7 +12,7 @@ Create `.oxlintrc.json`:
 
 ```json
 {
-  "extends": ["@jterrazz/codestyle/oxlint/node"]
+  "extends": ["@jterrazz/codestyle/presets/oxlint/node.json"]
 }
 ```
 
@@ -23,21 +23,21 @@ npx codestyle check   # Check everything (types + lint + format)
 npx codestyle fix     # Fix everything
 ```
 
-## Configurations
+## Presets
 
 Pick a base config:
 
-| Config                            | Use Case                          |
-| --------------------------------- | --------------------------------- |
-| `@jterrazz/codestyle/oxlint/node` | Node.js (requires .js extensions) |
-| `@jterrazz/codestyle/oxlint/expo` | Expo / React Native               |
-| `@jterrazz/codestyle/oxlint/next` | Next.js                           |
+| Preset                                         | Use Case                          |
+| ---------------------------------------------- | --------------------------------- |
+| `@jterrazz/codestyle/presets/oxlint/node.json` | Node.js (requires .js extensions) |
+| `@jterrazz/codestyle/presets/oxlint/expo.json` | Expo / React Native               |
+| `@jterrazz/codestyle/presets/oxlint/next.json` | Next.js                           |
 
-Architecture plugin (additive):
+Architecture preset (additive):
 
-| Plugin                                               | Use Case                           |
-| ---------------------------------------------------- | ---------------------------------- |
-| `@jterrazz/codestyle/oxlint/architectures/hexagonal` | Hexagonal architecture enforcement |
+| Preset                                                            | Use Case                           |
+| ----------------------------------------------------------------- | ---------------------------------- |
+| `@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json` | Hexagonal architecture enforcement |
 
 ## Architecture Enforcement
 
@@ -46,8 +46,8 @@ Enforce hexagonal architecture boundaries:
 ```json
 {
   "extends": [
-    "@jterrazz/codestyle/oxlint/node",
-    "@jterrazz/codestyle/oxlint/architectures/hexagonal"
+    "@jterrazz/codestyle/presets/oxlint/node.json",
+    "@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json"
   ]
 }
 ```

@@ -20,12 +20,12 @@ codestyle fix     # Auto-fix lint and formatting issues
 npm install @jterrazz/codestyle
 ```
 
-**`.oxlintrc.json`** — pick a base config:
+**`.oxlintrc.json`** — pick a preset:
 
 ```json
-{ "extends": ["@jterrazz/codestyle/oxlint/node"] }
-{ "extends": ["@jterrazz/codestyle/oxlint/next"] }
-{ "extends": ["@jterrazz/codestyle/oxlint/expo"] }
+{ "extends": ["@jterrazz/codestyle/presets/oxlint/node.json"] }
+{ "extends": ["@jterrazz/codestyle/presets/oxlint/next.json"] }
+{ "extends": ["@jterrazz/codestyle/presets/oxlint/expo.json"] }
 ```
 
 **package.json scripts:**
@@ -37,13 +37,13 @@ npm install @jterrazz/codestyle
 }
 ```
 
-## Configs
+## Presets
 
-| Config                            | Use case                         |
-| --------------------------------- | -------------------------------- |
-| `@jterrazz/codestyle/oxlint/node` | Node.js — requires `.js` imports |
-| `@jterrazz/codestyle/oxlint/next` | Next.js                          |
-| `@jterrazz/codestyle/oxlint/expo` | Expo / React Native              |
+| Preset                                         | Use case                         |
+| ---------------------------------------------- | -------------------------------- |
+| `@jterrazz/codestyle/presets/oxlint/node.json` | Node.js — requires `.js` imports |
+| `@jterrazz/codestyle/presets/oxlint/next.json` | Next.js                          |
+| `@jterrazz/codestyle/presets/oxlint/expo.json` | Expo / React Native              |
 
 ## Architecture enforcement (optional)
 
@@ -52,8 +52,8 @@ Add hexagonal architecture boundary rules:
 ```json
 {
   "extends": [
-    "@jterrazz/codestyle/oxlint/node",
-    "@jterrazz/codestyle/oxlint/architectures/hexagonal"
+    "@jterrazz/codestyle/presets/oxlint/node.json",
+    "@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json"
   ]
 }
 ```
@@ -84,6 +84,6 @@ Rules enforced:
 
 ## Always
 
-- Run `codestyle fix` before committing, not just `codestyle`
+- Run `codestyle fix` before committing, not just `codestyle check`
 - Never disable rules inline without a comment explaining why
 - Sorting is enforced by perfectionist plugin — imports, types, object keys
