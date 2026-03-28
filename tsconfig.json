@@ -1,5 +1,4 @@
 {
   "extends": "@jterrazz/typescript/presets/tsconfig/node",
-  "include": ["tests/**/*.ts"],
-  "exclude": ["tests/fixtures/**"]
+  "include": ["tests/helpers/**/*.ts", "tests/e2e/**/*.e2e.test.ts"]
 }

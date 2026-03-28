@@ -39,8 +39,8 @@ npm install @jterrazz/codestyle
 
 ## Presets
 
-| Preset                                         | Use case                         |
-| ---------------------------------------------- | -------------------------------- |
+| Preset                                                      | Use case                         |
+| ----------------------------------------------------------- | -------------------------------- |
 | `node_modules/@jterrazz/codestyle/presets/oxlint/node.json` | Node.js — requires `.js` imports |
 | `node_modules/@jterrazz/codestyle/presets/oxlint/next.json` | Next.js                          |
 | `node_modules/@jterrazz/codestyle/presets/oxlint/expo.json` | Expo / React Native              |

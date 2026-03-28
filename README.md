@@ -27,16 +27,16 @@ npx codestyle fix     # Fix everything
 
 Pick a base config:
 
-| Preset                                         | Use Case                          |
-| ---------------------------------------------- | --------------------------------- |
+| Preset                                                      | Use Case                          |
+| ----------------------------------------------------------- | --------------------------------- |
 | `node_modules/@jterrazz/codestyle/presets/oxlint/node.json` | Node.js (requires .js extensions) |
 | `node_modules/@jterrazz/codestyle/presets/oxlint/expo.json` | Expo / React Native               |
 | `node_modules/@jterrazz/codestyle/presets/oxlint/next.json` | Next.js                           |
 
 Architecture preset (additive):
 
-| Preset                                                            | Use Case                           |
-| ----------------------------------------------------------------- | ---------------------------------- |
+| Preset                                                                         | Use Case                           |
+| ------------------------------------------------------------------------------ | ---------------------------------- |
 | `node_modules/@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json` | Hexagonal architecture enforcement |
 
 ## Architecture Enforcement
