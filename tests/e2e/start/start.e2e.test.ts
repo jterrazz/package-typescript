@@ -1,4 +1,4 @@
-import { describe, test } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import { spec } from "../../setup/cli.specification.js";
 
@@ -8,8 +8,8 @@ describe("start", () => {
     const result = await spec("build+start").project("sample-app").exec(["build", "start"]).run();
 
     // Then — app runs and prints its message
-    result.exitCode.toBe(0);
-    result.stdout.toContain("Hello from sample app");
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Hello from sample app");
   });
 
   test("fails if dist does not exist", async () => {
@@ -17,6 +17,6 @@ describe("start", () => {
     const result = await spec("no dist").project("sample-app").exec("start").run();
 
     // Then — exits with error
-    result.exitCode.toBe(1);
+    expect(result.exitCode).toBe(1);
   });
 });

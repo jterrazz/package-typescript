@@ -1,4 +1,4 @@
-import { describe, test } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import { spec } from "../../setup/cli.specification.js";
 
@@ -11,9 +11,9 @@ describe("dev", () => {
       .run();
 
     // Then — banner and startup message appear
-    result.exitCode.toBe(0);
-    result.stdout.toContain("TYPESCRIPT");
-    result.stdout.toContain("Starting dev mode");
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("TYPESCRIPT");
+    expect(result.stdout).toContain("Starting dev mode");
   });
 
   test("builds and runs the app in watch mode", async () => {
@@ -24,7 +24,7 @@ describe("dev", () => {
       .run();
 
     // Then — app output appears (build succeeded and app ran)
-    result.exitCode.toBe(0);
-    result.stdout.toContain("Hello from sample app");
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Hello from sample app");
   });
 });

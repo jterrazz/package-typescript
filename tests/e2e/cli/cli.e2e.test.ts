@@ -1,4 +1,4 @@
-import { describe, test } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import { spec } from "../../setup/cli.specification.js";
 
@@ -8,10 +8,10 @@ describe("cli", () => {
     const result = await spec("help").project("sample-app").exec("").run();
 
     // Then — help banner with usage and available commands
-    result.stdout.toContain("TYPESCRIPT");
-    result.stdout.toContain("Usage: typescript <command>");
-    result.stdout.toContain("build");
-    result.stdout.toContain("dev");
+    expect(result.stdout).toContain("TYPESCRIPT");
+    expect(result.stdout).toContain("Usage: typescript <command>");
+    expect(result.stdout).toContain("build");
+    expect(result.stdout).toContain("dev");
   });
 
   test("shows help with unknown command", async () => {
@@ -19,7 +19,7 @@ describe("cli", () => {
     const result = await spec("unknown").project("sample-app").exec("unknown").run();
 
     // Then — falls back to usage help
-    result.stdout.toContain("Usage: typescript <command>");
+    expect(result.stdout).toContain("Usage: typescript <command>");
   });
 
   test("lists all commands in help", async () => {
@@ -27,10 +27,10 @@ describe("cli", () => {
     const result = await spec("commands").project("sample-app").exec("").run();
 
     // Then — all four commands listed
-    result.stdout.toContain("build");
-    result.stdout.toContain("bundle");
-    result.stdout.toContain("start");
-    result.stdout.toContain("dev");
+    expect(result.stdout).toContain("build");
+    expect(result.stdout).toContain("bundle");
+    expect(result.stdout).toContain("start");
+    expect(result.stdout).toContain("dev");
   });
 
   test("shows usage examples in help", async () => {
@@ -38,9 +38,9 @@ describe("cli", () => {
     const result = await spec("examples").project("sample-app").exec("").run();
 
     // Then — usage examples for each command
-    result.stdout.toContain("typescript build");
-    result.stdout.toContain("typescript bundle");
-    result.stdout.toContain("typescript start");
-    result.stdout.toContain("typescript dev");
+    expect(result.stdout).toContain("typescript build");
+    expect(result.stdout).toContain("typescript bundle");
+    expect(result.stdout).toContain("typescript start");
+    expect(result.stdout).toContain("typescript dev");
   });
 });
