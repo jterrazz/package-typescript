@@ -1,4 +1,4 @@
 {
   "extends": "./presets/tsconfig/node.json",
-  "include": ["__tests__/"]
+  "include": ["tests/"]
 }

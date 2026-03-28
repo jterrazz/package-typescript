@@ -4,8 +4,8 @@ import { tmpdir } from "os";
 import { resolve } from "path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-const ROOT_DIR = resolve(import.meta.dirname, "..");
-const FIXTURES_DIR = resolve(import.meta.dirname, "fixtures");
+const ROOT_DIR = resolve(import.meta.dirname, "../..");
+const FIXTURES_DIR = resolve(ROOT_DIR, "tests/fixtures");
 const RUNNER_BIN = resolve(ROOT_DIR, "bin/typescript.sh");
 
 function runDevMode(

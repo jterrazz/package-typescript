@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import { resolve } from "path";
 import { describe, expect, it } from "vitest";
 
-const ROOT_DIR = resolve(import.meta.dirname, "..");
+const ROOT_DIR = resolve(import.meta.dirname, "../..");
 const RUNNER_BIN = resolve(ROOT_DIR, "bin/typescript.sh");
 
 function runRunner(args: string = ""): { success: boolean; output: string } {
