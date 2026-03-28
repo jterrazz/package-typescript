@@ -4,6 +4,7 @@ import { spec } from "../../setup/cli.specification.js";
 
 describe("dev", () => {
   test("shows startup message", async () => {
+    // Given — dev mode on sample app
     const result = await spec("dev startup")
       .project("sample-app")
       .spawn("dev", { waitFor: "Starting dev mode", timeout: 10_000 })
@@ -16,6 +17,7 @@ describe("dev", () => {
   });
 
   test("builds and runs the app in watch mode", async () => {
+    // Given — dev mode on sample app
     const result = await spec("dev build+run")
       .project("sample-app")
       .spawn("dev", { waitFor: "Hello from sample app", timeout: 15_000 })

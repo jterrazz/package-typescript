@@ -7,6 +7,7 @@ describe("start", () => {
     // Given — build first, then start in the same directory
     const result = await spec("build+start").project("sample-app").exec(["build", "start"]).run();
 
+    // Then — app runs and prints its message
     result.expectExitCode(0);
     result.expectStdoutContains("Hello from sample app");
   });
@@ -15,6 +16,7 @@ describe("start", () => {
     // Given — empty project, no build step
     const result = await spec("no dist").project("sample-app").exec("start").run();
 
+    // Then — exits with error
     result.expectExitCode(1);
   });
 });

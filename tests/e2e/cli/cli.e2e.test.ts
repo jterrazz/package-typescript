@@ -4,6 +4,7 @@ import { spec } from "../../setup/cli.specification.js";
 
 describe("cli", () => {
   test("shows help when no command is provided", async () => {
+    // Given — no command argument
     const result = await spec("help").project("sample-app").exec("").run();
 
     // Then — help banner with usage and available commands
@@ -17,10 +18,12 @@ describe("cli", () => {
     // Given — unrecognized command
     const result = await spec("unknown").project("sample-app").exec("unknown").run();
 
+    // Then — falls back to usage help
     result.expectStdoutContains("Usage: typescript <command>");
   });
 
-  test("shows all commands in help", async () => {
+  test("lists all commands in help", async () => {
+    // Given — no command argument
     const result = await spec("commands").project("sample-app").exec("").run();
 
     // Then — all four commands listed
@@ -31,7 +34,8 @@ describe("cli", () => {
       .expectStdoutContains("dev");
   });
 
-  test("shows examples in help", async () => {
+  test("shows usage examples in help", async () => {
+    // Given — no command argument
     const result = await spec("examples").project("sample-app").exec("").run();
 
     // Then — usage examples for each command
