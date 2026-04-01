@@ -27,7 +27,7 @@
     "tsdown": "^0.21.5"
   },
   "devDependencies": {
-    "@jterrazz/codestyle": "^2.1.0",
+    "@jterrazz/codestyle": "^2.2.0",
     "@jterrazz/test": "^5.0.0",
     "@types/node": "^25.5.0",
     "vitest": "^4.1.2"
