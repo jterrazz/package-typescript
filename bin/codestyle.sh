@@ -68,7 +68,7 @@ run_checks() {
 
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
 
-    # Run all three in parallel
+    # Run all tools in parallel
     "$BIN_DIR/tsgo" --noEmit > "$tmp_dir/type.log" 2>&1 &
     local type_pid=$!
 
@@ -86,10 +86,19 @@ run_checks() {
     fi
     local format_pid=$!
 
+    # Knip: only run in check mode (fix mode is destructive)
+    local knip_pid=""
+    local knip_status=0
+    if [ "$FIX_MODE" = false ]; then
+        "$BIN_DIR/knip" --no-progress > "$tmp_dir/knip.log" 2>&1 &
+        knip_pid=$!
+    fi
+
     # Wait and collect statuses
     wait $type_pid;   local type_status=$?
     wait $lint_pid;   local lint_status=$?
     wait $format_pid; local format_status=$?
+    [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
 
     # Print results
     printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} TypeScript Check\n\n"
@@ -108,6 +117,12 @@ run_checks() {
     [ -s "$tmp_dir/format.log" ] && cat "$tmp_dir/format.log"
     [ $format_status -ne 0 ] && printf "${RED}✗ Failed with exit code %d${NC}\n" $format_status || printf "${GREEN}✓ Passed${NC}\n"
 
+    if [ "$FIX_MODE" = false ]; then
+        printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Knip (unused code)\n\n"
+        [ -s "$tmp_dir/knip.log" ] && cat "$tmp_dir/knip.log"
+        [ $knip_status -ne 0 ] && printf "${RED}✗ Failed with exit code %d${NC}\n" $knip_status || printf "${GREEN}✓ Passed${NC}\n"
+    fi
+
     # Summary
     if [ "$FIX_MODE" = true ]; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality fixes\n\n"
@@ -115,7 +130,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else
@@ -137,7 +152,7 @@ case "$COMMAND" in
         printf "${CYAN_BG}${BRIGHT_WHITE} CODESTYLE ${NC} Code quality toolkit\n\n"
         printf "Usage: codestyle <command>\n\n"
         printf "Commands:\n"
-        printf "  check    Check types, lint, and formatting\n"
+        printf "  check    Check types, lint, formatting, and unused code\n"
         printf "  fix      Auto-fix lint and formatting issues\n\n"
         printf "Examples:\n"
         printf "  codestyle check\n"
