@@ -87,10 +87,17 @@ run_checks() {
     local format_pid=$!
 
     # Knip: only run in check mode (fix mode is destructive)
+    # Merge base config (from codestyle) with optional project-local knip.json
     local knip_pid=""
     local knip_status=0
     if [ "$FIX_MODE" = false ]; then
-        "$BIN_DIR/knip" --no-progress > "$tmp_dir/knip.log" 2>&1 &
+        local knip_base="$PACKAGE_ROOT/presets/knip/base.json"
+        local knip_project=""
+        [ -f "knip.json" ] && knip_project="knip.json"
+        [ -f "knip.jsonc" ] && knip_project="knip.jsonc"
+
+        node "$PACKAGE_ROOT/bin/merge-knip-config.js" "$knip_base" $knip_project > "$tmp_dir/knip-merged.json"
+        "$BIN_DIR/knip" --no-progress --no-config-hints --config "$tmp_dir/knip-merged.json" > "$tmp_dir/knip.log" 2>&1 &
         knip_pid=$!
     fi
 

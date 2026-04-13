@@ -1,0 +1,8 @@
+{
+  "name": "fixture-with-overrides",
+  "version": "1.0.0",
+  "dependencies": {
+    "@jterrazz/test": "^5.0.0",
+    "some-local-dep": "^1.0.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "fixture-plugin-deps",
+  "version": "1.0.0",
+  "devDependencies": {
+    "vitepress-plugin-llms": "^1.0.0"
+  },
+  "dependencies": {
+    "vitepress": "^1.0.0"
+  },
+  "peerDependencies": {
+    "hono": "^4.0.0"
+  }
+}
