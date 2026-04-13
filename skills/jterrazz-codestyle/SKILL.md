@@ -1,6 +1,6 @@
 ---
 name: jterrazz-codestyle
-description: Code quality for the @jterrazz ecosystem — defines how all projects lint and format. Powered by tsgo, oxlint, oxfmt. Activates when configuring linting, fixing style, or enforcing architecture.
+description: Use when linting, formatting, type-checking, or detecting unused code. Covers oxlint/oxfmt config presets, `codestyle check`/`codestyle fix`, knip setup, and hexagonal architecture enforcement.
 ---
 
 # @jterrazz/codestyle
