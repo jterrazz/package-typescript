@@ -1,0 +1,124 @@
+import { defineConfig } from 'oxlint';
+
+export default defineConfig({
+    plugins: ['typescript', 'import', 'oxc', 'unicorn'],
+    jsPlugins: ['eslint-plugin-perfectionist'],
+    categories: {
+        correctness: 'error',
+        suspicious: 'error',
+        perf: 'error',
+        pedantic: 'off',
+        style: 'error',
+        nursery: 'off',
+    },
+    rules: {
+        // ============================================
+        // ENABLED RULES
+        // ============================================
+
+        'no-unused-vars': 'error',
+
+        // -- TypeScript --
+        'typescript/consistent-type-imports': [
+            'error',
+            {
+                disallowTypeAnnotations: true,
+                fixStyle: 'inline-type-imports',
+                prefer: 'type-imports',
+            },
+        ],
+        'typescript/no-unused-expressions': [
+            'error',
+            {
+                allowShortCircuit: true,
+                allowTernary: true,
+                allowTaggedTemplates: true,
+            },
+        ],
+
+        // -- Perfectionist (sorting/ordering) --
+        'perfectionist/sort-heritage-clauses': ['error', { type: 'natural' }],
+        'perfectionist/sort-intersection-types': ['error', { type: 'natural' }],
+        'perfectionist/sort-jsx-props': ['error', { type: 'natural' }],
+        'perfectionist/sort-named-exports': ['error', { type: 'natural' }],
+        'perfectionist/sort-named-imports': ['error', { type: 'natural' }],
+        'perfectionist/sort-union-types': ['error', { type: 'natural' }],
+        'perfectionist/sort-imports': [
+            'error',
+            {
+                type: 'alphabetical',
+                order: 'asc',
+                ignoreCase: true,
+                newlinesBetween: 1,
+                groups: [
+                    ['builtin', 'external'],
+                    'internal',
+                    ['parent', 'sibling', 'index'],
+                    'style',
+                    'unknown',
+                ],
+            },
+        ],
+
+        // ============================================
+        // DISABLED - Conflicts with perfectionist
+        // ============================================
+
+        'sort-keys': 'off',
+        'sort-imports': 'off',
+
+        // ============================================
+        // DISABLED - Too strict / opinionated
+        // ============================================
+
+        'func-style': 'off',
+        'no-magic-numbers': 'off',
+        'no-ternary': 'off',
+        'init-declarations': 'off',
+        'id-length': 'off',
+        'max-statements': 'off',
+        'max-params': 'off',
+        'no-continue': 'off',
+        'arrow-body-style': 'off',
+        'prefer-destructuring': 'off',
+        'new-cap': 'off',
+        'no-await-in-loop': 'off',
+        'typescript/consistent-type-definitions': 'off',
+        'typescript/array-type': 'off',
+        'typescript/no-inferrable-types': 'off',
+        'unicorn/no-null': 'off',
+        'unicorn/no-array-sort': 'off',
+        'import/no-unassigned-import': 'off',
+        'import/no-named-default': 'off',
+        'import/no-nodejs-modules': 'off',
+
+        // ============================================
+        // ENABLED - Code style enforcement
+        // ============================================
+
+        'capitalized-comments': 'error',
+        curly: 'error',
+        'no-nested-ternary': 'error',
+        'unicorn/catch-error-name': 'error',
+        'unicorn/numeric-separators-style': 'error',
+
+        // ============================================
+        // DISABLED - Conflicts with other rules
+        // ============================================
+
+        'import/no-named-export': 'off',
+        'import/consistent-type-specifier-style': 'off',
+        'import/prefer-default-export': 'off',
+        'import/no-default-export': 'off',
+        'import/group-exports': 'off',
+        'import/no-anonymous-default-export': 'off',
+
+        // ============================================
+        // ENABLED - Clean imports
+        // ============================================
+
+        'import/first': 'error',
+        'import/no-namespace': 'error',
+    },
+    ignorePatterns: ['dist/**', 'node_modules/**'],
+});

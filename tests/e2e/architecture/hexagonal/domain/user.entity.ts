@@ -1,4 +1,4 @@
 // Valid domain file - no external imports
 export class User {
-  constructor(public name: string) {}
+    constructor(public name: string) {}
 }

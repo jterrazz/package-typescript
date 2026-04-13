@@ -7,12 +7,12 @@ description: Code quality for the @jterrazz ecosystem — defines how all projec
 
 Part of the @jterrazz ecosystem. Defines how all projects lint and format.
 
-Opinionated linting + formatting + type checking. Runs tsgo, oxlint, and oxfmt in parallel.
+Opinionated linting + formatting + type checking + unused code detection. Runs tsgo, oxlint, oxfmt, and knip in parallel.
 
 ## Commands
 
 ```bash
-codestyle check   # Check everything — types + lint + format
+codestyle check   # Check everything — types + lint + format + unused code
 codestyle fix     # Auto-fix lint and formatting issues
 ```
 
@@ -22,42 +22,53 @@ codestyle fix     # Auto-fix lint and formatting issues
 npm install @jterrazz/codestyle
 ```
 
-**`.oxlintrc.json`** — pick a preset:
+**`oxlint.config.ts`** — pick a preset:
 
-```json
-{ "extends": ["node_modules/@jterrazz/codestyle/presets/oxlint/node.json"] }
-{ "extends": ["node_modules/@jterrazz/codestyle/presets/oxlint/next.json"] }
-{ "extends": ["node_modules/@jterrazz/codestyle/presets/oxlint/expo.json"] }
+```ts
+import { defineConfig } from 'oxlint';
+import { oxlint } from '@jterrazz/codestyle';
+
+export default defineConfig({ extends: [oxlint.node] }); // or oxlint.next, oxlint.expo
+```
+
+**`oxfmt.config.ts`**:
+
+```ts
+import { defineConfig } from 'oxfmt';
+import { oxfmt } from '@jterrazz/codestyle';
+
+export default defineConfig(oxfmt);
 ```
 
 **package.json scripts:**
 
 ```json
 {
-  "lint": "codestyle check",
-  "lint:fix": "codestyle fix"
+    "lint": "codestyle check",
+    "lint:fix": "codestyle fix"
 }
 ```
 
 ## Presets
 
-| Preset                                                      | Use case                         |
-| ----------------------------------------------------------- | -------------------------------- |
-| `node_modules/@jterrazz/codestyle/presets/oxlint/node.json` | Node.js — requires `.js` imports |
-| `node_modules/@jterrazz/codestyle/presets/oxlint/next.json` | Next.js                          |
-| `node_modules/@jterrazz/codestyle/presets/oxlint/expo.json` | Expo / React Native              |
+| Preset             | Use case                          |
+| ------------------ | --------------------------------- |
+| `oxlint.node`      | Node.js — requires `.js` imports  |
+| `oxlint.next`      | Next.js                           |
+| `oxlint.expo`      | Expo / React Native               |
+| `oxlint.hexagonal` | Hexagonal architecture (additive) |
 
 ## Architecture enforcement (optional)
 
 Add hexagonal architecture boundary rules:
 
-```json
-{
-  "extends": [
-    "node_modules/@jterrazz/codestyle/presets/oxlint/node.json",
-    "node_modules/@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json"
-  ]
-}
+```ts
+import { defineConfig } from 'oxlint';
+import { oxlint } from '@jterrazz/codestyle';
+
+export default defineConfig({
+    extends: [oxlint.node, oxlint.hexagonal],
+});
 ```
 
 Rules enforced:
@@ -69,11 +80,12 @@ Rules enforced:
 
 ## What runs
 
-| Tool   | Purpose       | Language |
-| ------ | ------------- | -------- |
-| tsgo   | Type checking | Go       |
-| oxlint | Linting       | Rust     |
-| oxfmt  | Formatting    | Rust     |
+| Tool   | Purpose              | Language |
+| ------ | -------------------- | -------- |
+| tsgo   | Type checking        | Go       |
+| oxlint | Linting              | Rust     |
+| oxfmt  | Formatting           | Rust     |
+| knip   | Unused code analysis | Node     |
 
 ## Formatting rules
 

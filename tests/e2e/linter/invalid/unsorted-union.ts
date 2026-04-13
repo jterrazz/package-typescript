@@ -1,5 +1,5 @@
-type Status = "pending" | "active" | "error" | "completed";
+type Status = 'pending' | 'active' | 'error' | 'completed';
 
 export function getStatus(): Status {
-  return "active";
+    return 'active';
 }

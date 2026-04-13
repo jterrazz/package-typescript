@@ -1,5 +1,0 @@
-{
-  "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "extends": ["./presets/oxfmt/index.json"],
-  "ignorePatterns": ["dist", "node_modules", "**/fixtures", "**/inputs", "**/expected"]
-}

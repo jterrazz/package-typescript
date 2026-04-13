@@ -1,4 +1,4 @@
 export function test(value: number): number {
-  if (value > 0) return value;
-  return 0;
+    if (value > 0) return value;
+    return 0;
 }

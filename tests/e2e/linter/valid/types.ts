@@ -1,8 +1,8 @@
-const message: string = "hello";
+const message: string = 'hello';
 const count: number = 42;
 
 function greet(name: string): string {
-  return `Hello, ${name}!`;
+    return `Hello, ${name}!`;
 }
 
 export { count, greet, message };

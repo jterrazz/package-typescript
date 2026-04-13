@@ -1,41 +1,41 @@
 {
-  "name": "@jterrazz/codestyle",
-  "version": "2.2.1",
-  "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jterrazz/package-codestyle"
-  },
-  "bin": {
-    "codestyle": "bin/codestyle.sh"
-  },
-  "files": [
-    "bin",
-    "presets",
-    "src"
-  ],
-  "type": "module",
-  "main": "src/index.js",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
-  },
-  "scripts": {
-    "build": "# no build script",
-    "lint": "./bin/codestyle.sh check --ignore-pattern '**/fixtures/**'",
-    "lint:fix": "./bin/codestyle.sh fix --ignore-pattern '**/fixtures/**'",
-    "test": "vitest --run"
-  },
-  "dependencies": {
-    "@jterrazz/typescript": "^5.2.0",
-    "@typescript/native-preview": "^7.0.0-dev.20260327.2",
-    "eslint-plugin-perfectionist": "^5.7.0",
-    "knip": "^6.2.0",
-    "oxfmt": "^0.42.0",
-    "oxlint": "^1.57.0"
-  },
-  "devDependencies": {
-    "@jterrazz/test": "^5.0.0",
-    "@types/node": "^25.5.0",
-    "vitest": "^4.1.2"
-  }
+    "name": "@jterrazz/codestyle",
+    "version": "2.2.1",
+    "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/jterrazz/package-codestyle"
+    },
+    "bin": {
+        "codestyle": "bin/codestyle.sh"
+    },
+    "files": [
+        "bin",
+        "presets",
+        "src"
+    ],
+    "type": "module",
+    "main": "src/index.js",
+    "publishConfig": {
+        "registry": "https://registry.npmjs.org/"
+    },
+    "scripts": {
+        "build": "# no build script",
+        "lint": "./bin/codestyle.sh check --ignore-pattern '**/fixtures/**'",
+        "lint:fix": "./bin/codestyle.sh fix --ignore-pattern '**/fixtures/**'",
+        "test": "vitest --run"
+    },
+    "dependencies": {
+        "@jterrazz/typescript": "^5.2.0",
+        "@typescript/native-preview": "^7.0.0-dev.20260327.2",
+        "eslint-plugin-perfectionist": "^5.7.0",
+        "knip": "^6.2.0",
+        "oxfmt": "^0.42.0",
+        "oxlint": "^1.57.0"
+    },
+    "devDependencies": {
+        "@jterrazz/test": "^5.0.0",
+        "@types/node": "^25.5.0",
+        "vitest": "^4.1.2"
+    }
 }

@@ -1,4 +1,4 @@
 {
-  "extends": "@jterrazz/typescript/presets/tsconfig/node",
-  "include": ["tests/helpers/**/*.ts", "tests/e2e/**/*.e2e.test.ts"]
+    "extends": "@jterrazz/typescript/presets/tsconfig/node",
+    "include": ["tests/helpers/**/*.ts", "tests/e2e/**/*.e2e.test.ts"]
 }

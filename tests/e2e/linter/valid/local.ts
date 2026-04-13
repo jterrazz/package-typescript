@@ -1,2 +1,2 @@
 // Local module for import tests
-export const something = "test";
+export const something = 'test';

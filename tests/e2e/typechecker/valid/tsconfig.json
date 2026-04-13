@@ -1,4 +1,4 @@
 {
-  "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true },
-  "include": ["**/*.ts"]
+    "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true },
+    "include": ["**/*.ts"]
 }

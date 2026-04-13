@@ -1,5 +1,5 @@
-import { SomeType } from "./helpers-types.js";
+import { SomeType } from './helpers-types.js';
 
 export function process(input: SomeType): string {
-  return String(input);
+    return String(input);
 }

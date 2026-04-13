@@ -8,12 +8,24 @@ Fast, opinionated linting and formatting for TypeScript. Powered by Oxlint, Oxfm
 npm install @jterrazz/codestyle --save-dev
 ```
 
-Create `.oxlintrc.json`:
+Create `oxlint.config.ts`:
 
-```json
-{
-  "extends": ["node_modules/@jterrazz/codestyle/presets/oxlint/node.json"]
-}
+```ts
+import { defineConfig } from 'oxlint';
+import { oxlint } from '@jterrazz/codestyle';
+
+export default defineConfig({
+    extends: [oxlint.node],
+});
+```
+
+Create `oxfmt.config.ts`:
+
+```ts
+import { defineConfig } from 'oxfmt';
+import { oxfmt } from '@jterrazz/codestyle';
+
+export default defineConfig(oxfmt);
 ```
 
 Run:
@@ -27,29 +39,29 @@ npx codestyle fix     # Fix lint and formatting issues
 
 Pick a base config:
 
-| Preset                                                      | Use Case                          |
-| ----------------------------------------------------------- | --------------------------------- |
-| `node_modules/@jterrazz/codestyle/presets/oxlint/node.json` | Node.js (requires .js extensions) |
-| `node_modules/@jterrazz/codestyle/presets/oxlint/expo.json` | Expo / React Native               |
-| `node_modules/@jterrazz/codestyle/presets/oxlint/next.json` | Next.js                           |
+| Preset        | Use Case                          |
+| ------------- | --------------------------------- |
+| `oxlint.node` | Node.js (requires .js extensions) |
+| `oxlint.expo` | Expo / React Native               |
+| `oxlint.next` | Next.js                           |
 
 Architecture preset (additive):
 
-| Preset                                                                         | Use Case                           |
-| ------------------------------------------------------------------------------ | ---------------------------------- |
-| `node_modules/@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json` | Hexagonal architecture enforcement |
+| Preset             | Use Case                           |
+| ------------------ | ---------------------------------- |
+| `oxlint.hexagonal` | Hexagonal architecture enforcement |
 
 ## Architecture Enforcement
 
 Enforce hexagonal architecture boundaries:
 
-```json
-{
-  "extends": [
-    "node_modules/@jterrazz/codestyle/presets/oxlint/node.json",
-    "node_modules/@jterrazz/codestyle/presets/oxlint/architectures/hexagonal.json"
-  ]
-}
+```ts
+import { defineConfig } from 'oxlint';
+import { oxlint } from '@jterrazz/codestyle';
+
+export default defineConfig({
+    extends: [oxlint.node, oxlint.hexagonal],
+});
 ```
 
 Rules enforced:
@@ -61,19 +73,14 @@ Rules enforced:
 
 ## Unused Code Detection
 
-`codestyle check` runs [Knip](https://knip.dev/) to detect unused files, exports, and dependencies. Knip auto-detects your framework from `package.json` (Next.js, Vitest, Prisma, etc.) with 100+ built-in plugins.
+`codestyle check` runs [Knip](https://knip.dev/) to detect unused files, exports, and dependencies. A base config is automatically merged with any project-local `knip.json`, handling common ecosystem patterns:
 
-For fine-tuning, create a `knip.json`:
+- `@jterrazz/*` packages auto-ignored
+- Published libraries: `exports`/`types`/`files` rules auto-disabled
+- Convention paths (`fixtures/`, `expected/`, `docs/`) auto-ignored
+- Plugin dependencies (`*-plugin-*`, `@scope/*`) auto-ignored
 
-```json
-{
-  "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreDependencies": ["@jterrazz/codestyle", "@jterrazz/test", "@jterrazz/typescript"],
-  "ignoreBinaries": ["oxlint", "oxfmt"]
-}
-```
-
-Knip only runs in `check` mode (not `fix`) since its auto-fix removes exports and files.
+For fine-tuning, create a `knip.json` with only project-specific overrides.
 
 ## What Runs
 

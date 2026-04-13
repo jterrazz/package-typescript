@@ -1,6 +1,6 @@
 // Invalid: domain importing from infrastructure
-import { Database } from "../infrastructure/database";
+import { Database } from '../infrastructure/database';
 
 export class Order {
-  db = new Database();
+    db = new Database();
 }
