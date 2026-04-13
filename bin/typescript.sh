@@ -87,6 +87,14 @@ case "$COMMAND" in
             --on-success "node --enable-source-maps dist/index.js"
         ;;
 
+    docs)
+        printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Generating API docs...\n\n"
+
+        bash "$SCRIPT_DIR/generate-docs.sh" "$PROJECT_ROOT" "$PACKAGE_ROOT"
+
+        printf "\n${GREEN}Docs generated at .docs/${NC}\n"
+        ;;
+
     *)
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} TypeScript/Node project toolkit\n\n"
         printf "Usage: typescript <command>\n\n"
@@ -94,12 +102,14 @@ case "$COMMAND" in
         printf "  build     Build application (ESM + types)\n"
         printf "  bundle    Bundle library (ESM + CJS + types)\n"
         printf "  start     Run the built application\n"
-        printf "  dev       Build, run, and rebuild on changes\n\n"
+        printf "  dev       Build, run, and rebuild on changes\n"
+        printf "  docs      Generate API reference + llms.txt from TSDoc\n\n"
         printf "Examples:\n"
         printf "  typescript build\n"
         printf "  typescript bundle\n"
         printf "  typescript start\n"
         printf "  typescript dev\n"
+        printf "  typescript docs\n"
         exit 1
         ;;
 esac
