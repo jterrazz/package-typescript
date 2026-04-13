@@ -1,4 +1,0 @@
-{
-  "extends": ["node_modules/@jterrazz/codestyle/presets/oxlint/node.json"],
-  "ignorePatterns": ["**/fixtures/**"]
-}
