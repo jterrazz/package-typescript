@@ -1,10 +1,8 @@
-import { resolve } from 'node:path';
+import { createRequire } from 'node:module';
 import { defineConfig } from 'oxlint';
 
-const perfectionistPath = resolve(
-    import.meta.dirname,
-    '../../node_modules/eslint-plugin-perfectionist/dist/index.js',
-);
+const require = createRequire(import.meta.url);
+const perfectionistPath = require.resolve('eslint-plugin-perfectionist');
 
 export default defineConfig({
     plugins: ['typescript', 'import', 'oxc', 'unicorn'],
