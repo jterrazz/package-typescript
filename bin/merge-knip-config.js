@@ -118,6 +118,10 @@ if (allDeps.vitest && !merged.vitest) {
         merged.vitest = { config: ['vitest.config.ts'] };
     } else if (existsSync('vitest.config.js')) {
         merged.vitest = { config: ['vitest.config.js'] };
+    } else if (existsSync('vitest.workspace.ts')) {
+        merged.vitest = { config: ['vitest.workspace.ts'] };
+    } else if (existsSync('vitest.workspace.js')) {
+        merged.vitest = { config: ['vitest.workspace.js'] };
     }
 }
 
@@ -136,6 +140,13 @@ const devDeps = Object.keys(pkg.devDependencies || {});
 const peerDeps = Object.keys(pkg.peerDependencies || {});
 const allDepNames = Object.keys(allDeps);
 const autoIgnoreDeps = [];
+
+// DevDependencies that are also peerDependencies (installed locally for testing)
+for (const dep of devDeps) {
+    if (peerDeps.includes(dep)) {
+        autoIgnoreDeps.push(dep);
+    }
+}
 
 for (const dep of [...prodDeps, ...devDeps]) {
     // @scope/sub-package when the unscoped root is a peer or dependency
