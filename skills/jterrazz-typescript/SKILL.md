@@ -1,6 +1,6 @@
 ---
 name: jterrazz-typescript
-description: Build tooling for the @jterrazz ecosystem — defines how all projects build, bundle, and generate docs. Powered by tsdown + typedoc. Activates when creating, configuring, or debugging TypeScript builds.
+description: Use when building, bundling, or generating docs for a TypeScript project. Covers tsconfig setup, tsdown builds (ESM/CJS), dev mode, and API docs via `typescript docs`. Use when configuring builds or debugging bundle issues.
 ---
 
 # @jterrazz/typescript
