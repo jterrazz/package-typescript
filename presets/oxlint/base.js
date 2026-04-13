@@ -1,7 +1,10 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'oxlint';
 
-const perfectionistPath = resolve(import.meta.dirname, '../../node_modules/eslint-plugin-perfectionist/dist/index.js');
+const perfectionistPath = resolve(
+    import.meta.dirname,
+    '../../node_modules/eslint-plugin-perfectionist/dist/index.js',
+);
 
 export default defineConfig({
     plugins: ['typescript', 'import', 'oxc', 'unicorn'],
