@@ -1,35 +1,35 @@
 {
-  "name": "@jterrazz/typescript",
-  "version": "5.2.0",
-  "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jterrazz/package-typescript"
-  },
-  "bin": {
-    "typescript": "bin/typescript.sh"
-  },
-  "files": [
-    "bin",
-    "presets"
-  ],
-  "type": "module",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
-  },
-  "scripts": {
-    "lint": "codestyle check",
-    "lint:fix": "codestyle fix",
-    "test": "vitest --run",
-    "build": "# no build script"
-  },
-  "dependencies": {
-    "tsdown": "^0.21.5"
-  },
-  "devDependencies": {
-    "@jterrazz/codestyle": "^3.0.0",
-    "@jterrazz/test": "^5.0.0",
-    "@types/node": "^25.5.0",
-    "vitest": "^4.1.2"
-  }
+    "name": "@jterrazz/typescript",
+    "version": "5.2.0",
+    "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/jterrazz/package-typescript"
+    },
+    "bin": {
+        "typescript": "bin/typescript.sh"
+    },
+    "files": [
+        "bin",
+        "presets"
+    ],
+    "type": "module",
+    "publishConfig": {
+        "registry": "https://registry.npmjs.org/"
+    },
+    "scripts": {
+        "lint": "codestyle check",
+        "lint:fix": "codestyle fix",
+        "test": "vitest --run",
+        "build": "# no build script"
+    },
+    "dependencies": {
+        "tsdown": "^0.21.5"
+    },
+    "devDependencies": {
+        "@jterrazz/codestyle": "^3.0.9",
+        "@jterrazz/test": "^5.0.0",
+        "@types/node": "^25.5.0",
+        "vitest": "^4.1.2"
+    }
 }

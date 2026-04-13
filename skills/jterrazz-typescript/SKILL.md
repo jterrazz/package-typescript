@@ -36,9 +36,9 @@ npm install @jterrazz/typescript
 
 ```json
 {
-  "build": "typescript build",
-  "start": "typescript start",
-  "dev": "typescript dev"
+    "build": "typescript build",
+    "start": "typescript start",
+    "dev": "typescript dev"
 }
 ```
 
@@ -46,7 +46,7 @@ npm install @jterrazz/typescript
 
 ```json
 {
-  "build": "typescript bundle"
+    "build": "typescript bundle"
 }
 ```
 
@@ -54,13 +54,13 @@ npm install @jterrazz/typescript
 
 ```json
 {
-  "exports": {
-    ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
-    }
-  },
-  "files": ["dist"]
+    "exports": {
+        ".": {
+            "require": "./dist/index.cjs",
+            "import": "./dist/index.js"
+        }
+    },
+    "files": ["dist"]
 }
 ```
 

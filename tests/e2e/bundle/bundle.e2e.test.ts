@@ -1,67 +1,67 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test } from 'vitest';
 
-import { spec } from "../../setup/cli.specification.js";
+import { spec } from '../../setup/cli.specification.js';
 
-describe("bundle", () => {
-  test("bundles successfully", async () => {
-    // Given — sample library project
-    const result = await spec("bundle").project("sample-lib").exec("bundle").run();
+describe('bundle', () => {
+    test('bundles successfully', async () => {
+        // Given — sample library project
+        const result = await spec('bundle').project('sample-lib').exec('bundle').run();
 
-    // Then — ESM + CJS bundle completes
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain("Build completed");
-  });
+        // Then — ESM + CJS bundle completes
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toContain('Build completed');
+    });
 
-  test("generates ESM output with exports", async () => {
-    // Given — sample library project
-    const result = await spec("esm output").project("sample-lib").exec("bundle").run();
+    test('generates ESM output with exports', async () => {
+        // Given — sample library project
+        const result = await spec('esm output').project('sample-lib').exec('bundle').run();
 
-    // Then — ESM module with export statements
-    expect(result.file("dist/index.js").exists).toBe(true);
-    expect(result.file("dist/index.js").content).toContain("export");
-  });
+        // Then — ESM module with export statements
+        expect(result.file('dist/index.js').exists).toBe(true);
+        expect(result.file('dist/index.js').content).toContain('export');
+    });
 
-  test("generates CJS output with exports", async () => {
-    // Given — sample library project
-    const result = await spec("cjs output").project("sample-lib").exec("bundle").run();
+    test('generates CJS output with exports', async () => {
+        // Given — sample library project
+        const result = await spec('cjs output').project('sample-lib').exec('bundle').run();
 
-    // Then — CommonJS module with exports
-    expect(result.file("dist/index.cjs").exists).toBe(true);
-    expect(result.file("dist/index.cjs").content).toContain("exports");
-  });
+        // Then — CommonJS module with exports
+        expect(result.file('dist/index.cjs').exists).toBe(true);
+        expect(result.file('dist/index.cjs').content).toContain('exports');
+    });
 
-  test("generates type declarations with public API", async () => {
-    // Given — sample library project
-    const result = await spec("types").project("sample-lib").exec("bundle").run();
+    test('generates type declarations with public API', async () => {
+        // Given — sample library project
+        const result = await spec('types').project('sample-lib').exec('bundle').run();
 
-    // Then — declaration file exposes all public types
-    expect(result.file("dist/index.d.ts").exists).toBe(true);
-    expect(result.file("dist/index.d.ts").content).toContain("greet");
-    expect(result.file("dist/index.d.ts").content).toContain("User");
-  });
+        // Then — declaration file exposes all public types
+        expect(result.file('dist/index.d.ts').exists).toBe(true);
+        expect(result.file('dist/index.d.ts').content).toContain('greet');
+        expect(result.file('dist/index.d.ts').content).toContain('User');
+    });
 
-  test("generates source maps for both formats", async () => {
-    // Given — sample library project
-    const result = await spec("sourcemaps").project("sample-lib").exec("bundle").run();
+    test('generates source maps for both formats', async () => {
+        // Given — sample library project
+        const result = await spec('sourcemaps').project('sample-lib').exec('bundle').run();
 
-    // Then — both ESM and CJS have source maps
-    expect(result.file("dist/index.js.map").exists).toBe(true);
-    expect(result.file("dist/index.cjs.map").exists).toBe(true);
-  });
+        // Then — both ESM and CJS have source maps
+        expect(result.file('dist/index.js.map').exists).toBe(true);
+        expect(result.file('dist/index.cjs.map').exists).toBe(true);
+    });
 
-  test("fails on missing entry point", async () => {
-    // Given — project with no src/ directory
-    const result = await spec("missing entry").project("empty-app").exec("bundle").run();
+    test('fails on missing entry point', async () => {
+        // Given — project with no src/ directory
+        const result = await spec('missing entry').project('empty-app').exec('bundle').run();
 
-    // Then — bundle fails with non-zero exit code
-    expect(result.exitCode).not.toBe(0);
-  });
+        // Then — bundle fails with non-zero exit code
+        expect(result.exitCode).not.toBe(0);
+    });
 
-  test("fails on unresolvable import", async () => {
-    // Given — project with a missing module import
-    const result = await spec("invalid ts").project("broken-app").exec("bundle").run();
+    test('fails on unresolvable import', async () => {
+        // Given — project with a missing module import
+        const result = await spec('invalid ts').project('broken-app').exec('bundle').run();
 
-    // Then — bundle fails with non-zero exit code
-    expect(result.exitCode).not.toBe(0);
-  });
+        // Then — bundle fails with non-zero exit code
+        expect(result.exitCode).not.toBe(0);
+    });
 });

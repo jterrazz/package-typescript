@@ -1,7 +1,7 @@
 {
-  "name": "broken-app",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts"
+    "name": "broken-app",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts"
 }

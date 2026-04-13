@@ -1,17 +1,17 @@
 {
-  "display": "Node ESM",
-  "include": ["../../../../**/*.ts"],
-  "exclude": ["../../../../node_modules"],
+    "display": "Node ESM",
+    "include": ["../../../../**/*.ts"],
+    "exclude": ["../../../../node_modules"],
 
-  "compilerOptions": {
-    "moduleResolution": "Bundler",
-    "module": "ESNext",
-    "target": "ESNext",
-    "types": ["node"],
-    "strict": true,
-    "experimentalDecorators": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true
-  }
+    "compilerOptions": {
+        "moduleResolution": "Bundler",
+        "module": "ESNext",
+        "target": "ESNext",
+        "types": ["node"],
+        "strict": true,
+        "experimentalDecorators": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true
+    }
 }

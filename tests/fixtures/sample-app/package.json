@@ -1,7 +1,7 @@
 {
-  "name": "sample-app",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts"
+    "name": "sample-app",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts"
 }
