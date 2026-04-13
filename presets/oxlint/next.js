@@ -17,5 +17,7 @@ export default defineConfig({
         'react/jsx-boolean-value': 'off',
         'react/jsx-handler-names': 'off',
         'react/jsx-curly-brace-presence': 'off',
+        'react/jsx-max-depth': 'off',
+        'unicorn/no-nested-ternary': 'off',
     },
 });
