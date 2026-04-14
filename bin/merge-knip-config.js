@@ -136,12 +136,12 @@ if (existsSync('vitest.workspace.ts') || existsSync('vitest.workspace.js')) {
 
 // 4. Playwright at non-standard paths + string-referenced global hooks.
 //    Knip auto-discovers `playwright.config.ts` at the repo root, but
-//    projects that keep their browser tests under a dedicated subdir
+//    Projects that keep their browser tests under a dedicated subdir
 //    (e.g. `web/playwright.config.ts`, `e2e/playwright.config.ts`,
 //    `tests/playwright.config.ts`) need an explicit entry. The global
-//    setup/teardown files next to that config are referenced as plain
-//    strings from `playwright.config.ts`, so knip can't trace them —
-//    add them as entries when they exist.
+//    Setup/teardown files next to that config are referenced as plain
+//    Strings from `playwright.config.ts`, so knip can't trace them —
+//    Add them as entries when they exist.
 if (allDeps['@playwright/test'] || allDeps.playwright) {
     const playwrightSearchPaths = [
         'web/playwright.config.ts',
