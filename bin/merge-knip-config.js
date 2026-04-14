@@ -134,7 +134,48 @@ if (existsSync('vitest.workspace.ts') || existsSync('vitest.workspace.js')) {
     merged.ignore = [...new Set([...existing, wsFile])];
 }
 
-// 4. Auto-ignore plugin/addon dependencies for known parent packages
+// 4. Playwright at non-standard paths + string-referenced global hooks.
+//    Knip auto-discovers `playwright.config.ts` at the repo root, but
+//    projects that keep their browser tests under a dedicated subdir
+//    (e.g. `web/playwright.config.ts`, `e2e/playwright.config.ts`,
+//    `tests/playwright.config.ts`) need an explicit entry. The global
+//    setup/teardown files next to that config are referenced as plain
+//    strings from `playwright.config.ts`, so knip can't trace them —
+//    add them as entries when they exist.
+if (allDeps['@playwright/test'] || allDeps.playwright) {
+    const playwrightSearchPaths = [
+        'web/playwright.config.ts',
+        'web/playwright.config.js',
+        'e2e/playwright.config.ts',
+        'e2e/playwright.config.js',
+        'tests/playwright.config.ts',
+        'tests/playwright.config.js',
+    ];
+    const playwrightEntries = [];
+    for (const configPath of playwrightSearchPaths) {
+        if (!existsSync(configPath)) {
+            continue;
+        }
+        playwrightEntries.push(configPath);
+        const configDir = configPath.slice(0, configPath.lastIndexOf('/'));
+        for (const hook of [
+            `${configDir}/setup/global-setup.ts`,
+            `${configDir}/setup/global-teardown.ts`,
+            `${configDir}/setup/global-setup.js`,
+            `${configDir}/setup/global-teardown.js`,
+        ]) {
+            if (existsSync(hook)) {
+                playwrightEntries.push(hook);
+            }
+        }
+    }
+    if (playwrightEntries.length > 0) {
+        const existing = merged.entry || [];
+        merged.entry = [...new Set([...existing, ...playwrightEntries])];
+    }
+}
+
+// 5. Auto-ignore plugin/addon dependencies for known parent packages
 const prodDeps = Object.keys(pkg.dependencies || {});
 const devDeps = Object.keys(pkg.devDependencies || {});
 const peerDeps = Object.keys(pkg.peerDependencies || {});
