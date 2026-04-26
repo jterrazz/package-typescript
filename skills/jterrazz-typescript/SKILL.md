@@ -88,7 +88,7 @@ Deploy with the shared workflow:
 # .github/workflows/docs.yaml
 jobs:
     docs:
-        uses: jterrazz/jterrazz-workflows/.github/workflows/docs.yaml@main
+        uses: jterrazz/jterrazz-actions/.github/workflows/docs.yaml@main
 ```
 
 Add `.docs` to `.gitignore` — it's a build artifact, not committed.

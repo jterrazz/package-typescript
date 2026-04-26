@@ -75,7 +75,7 @@ No `typedoc.json` needed. Pair with the shared CI workflow to auto-deploy:
 # .github/workflows/docs.yaml
 jobs:
     docs:
-        uses: jterrazz/jterrazz-workflows/.github/workflows/docs.yaml@main
+        uses: jterrazz/jterrazz-actions/.github/workflows/docs.yaml@main
 ```
 
 ## How it works
