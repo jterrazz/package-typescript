@@ -89,7 +89,7 @@ run_checks() {
     local format_pid=$!
 
     # Knip: only run in check mode (fix mode is destructive)
-    # Merge base config (from codestyle) with optional project-local knip.json
+    # Merge base config (from this package) with optional project-local knip.json
     local knip_pid=""
     local knip_status=0
     if [ "$FIX_MODE" = false ]; then

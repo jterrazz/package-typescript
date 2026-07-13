@@ -2,7 +2,7 @@
 # Test helper: merges knip config and runs knip in the current directory.
 # Usage: run-knip.sh <package-root>
 #
-# This mimics the knip portion of codestyle.sh for isolated testing.
+# This mimics the knip portion of check.sh for isolated testing.
 
 PACKAGE_ROOT="$1"
 KNIP_BASE="$PACKAGE_ROOT/presets/knip/base.json"

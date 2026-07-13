@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Merges the codestyle base knip config with an optional project-local knip.json,
+ * Merges the base knip config with an optional project-local knip.json,
  * then applies dynamic detection rules based on the project's package.json and file structure.
  *
  * Usage: node merge-knip-config.js <base.json> [project-knip.json]
@@ -217,7 +217,7 @@ for (const dep of [...prodDeps, ...devDeps]) {
 }
 
 // 5. Auto-ignore production dependencies that provide binaries
-//    When a binary-only tool is in "dependencies", it's shipped for consumers (e.g. codestyle ships oxlint)
+//    When a binary-only tool is in "dependencies", it's shipped for consumers (e.g. @jterrazz/typescript ships oxlint)
 for (const dep of prodDeps) {
     if (autoIgnoreDeps.includes(dep)) {
         continue;
