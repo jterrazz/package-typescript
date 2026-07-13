@@ -1,4 +1,6 @@
 #!/bin/bash
+# Quality checks: runs tsgo, oxlint, oxfmt, and knip in parallel.
+# Called by: typescript check | typescript fix
 
 # Colors for output
 RED='\033[0;31m'
@@ -15,7 +17,7 @@ while [ -L "$SOURCE" ]; do
     [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-PACKAGE_ROOT="$SCRIPT_DIR/.."
+PACKAGE_ROOT="$SCRIPT_DIR/../.."
 
 # Find bin directory
 if [ -x "$PACKAGE_ROOT/../../.bin/oxlint" ]; then
@@ -156,14 +158,7 @@ case "$COMMAND" in
         ;;
 
     *)
-        printf "${CYAN_BG}${BRIGHT_WHITE} CODESTYLE ${NC} Code quality toolkit\n\n"
-        printf "Usage: codestyle <command>\n\n"
-        printf "Commands:\n"
-        printf "  check    Check types, lint, formatting, and unused code\n"
-        printf "  fix      Auto-fix lint and formatting issues\n\n"
-        printf "Examples:\n"
-        printf "  codestyle check\n"
-        printf "  codestyle fix\n"
+        printf "Usage: check.sh <check|fix> [--ignore-pattern <pattern>]\n"
         exit 1
         ;;
 esac

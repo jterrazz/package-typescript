@@ -146,7 +146,7 @@ const importsWithoutExtRule = {
         schema: [],
     },
     create(context) {
-        const extensionsToRemove = /\.(js|jsx|ts|tsx)$/;
+        const extensionsToRemove = /\.(?:js|jsx|ts|tsx)$/;
 
         function checkNode(node) {
             if (!node.source || !node.source.value) {

@@ -192,16 +192,20 @@ for (const dep of devDeps) {
 for (const dep of [...prodDeps, ...devDeps]) {
     // @scope/sub-package when the unscoped root is a peer or dependency
     // E.g. @hono/node-server → hono
-    const scopeMatch = dep.match(/^@([^/]+)\//);
-    if (scopeMatch && (peerDeps.includes(scopeMatch[1]) || allDepNames.includes(scopeMatch[1]))) {
+    const scopeMatch = dep.match(/^@(?<scope>[^/]+)\//);
+    if (
+        scopeMatch &&
+        (peerDeps.includes(scopeMatch.groups.scope) ||
+            allDepNames.includes(scopeMatch.groups.scope))
+    ) {
         autoIgnoreDeps.push(dep);
         continue;
     }
 
     // <parent>-plugin-* or <parent>-preset-* when <parent> is installed
     // E.g. vitepress-plugin-llms → vitepress
-    const pluginMatch = dep.match(/^(.+?)-(plugin|preset|transformer|loader)-/);
-    if (pluginMatch && allDepNames.includes(pluginMatch[1])) {
+    const pluginMatch = dep.match(/^(?<parent>.+?)-(?:plugin|preset|transformer|loader)-/);
+    if (pluginMatch && allDepNames.includes(pluginMatch.groups.parent)) {
         autoIgnoreDeps.push(dep);
         continue;
     }

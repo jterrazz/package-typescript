@@ -1,13 +1,13 @@
 ---
 name: jterrazz-typescript
-description: Use when building, bundling, or generating docs for a TypeScript project. Covers tsconfig setup, tsdown builds (ESM/CJS), dev mode, and API docs via `typescript docs`. Use when configuring builds or debugging bundle issues.
+description: Use when building, bundling, linting, formatting, type-checking, or generating docs for a TypeScript project. Covers tsconfig setup, tsdown builds (ESM/CJS), dev mode, `typescript check`/`typescript fix`, oxlint/oxfmt presets, knip, hexagonal architecture enforcement, and API docs via `typescript docs`.
 ---
 
 # @jterrazz/typescript
 
-Part of the @jterrazz ecosystem. Defines how all projects build and generate docs.
+Part of the @jterrazz ecosystem. The complete TypeScript toolchain — defines how all projects build, lint, format, and generate docs.
 
-Zero-config TypeScript build tooling powered by tsdown (Rust) + typedoc.
+Zero-config, fully compiled toolchain: tsdown/Rolldown (Rust) for builds, oxlint/oxfmt (Rust) for lint and format, tsgo (Go) for type checking, knip for unused code, typedoc for API docs.
 
 ## Commands
 
@@ -17,20 +17,40 @@ typescript bundle     # Bundle library — ESM + CJS + .d.ts + sourcemaps
 typescript start      # Run dist/index.js with source maps
 typescript dev        # Watch mode — rebuild + run on file changes
 typescript docs       # Generate API reference + llms.txt from TSDoc
+typescript check      # Check everything — types + lint + format + unused code
+typescript fix        # Auto-fix lint and formatting issues
 ```
 
 ## Setup
 
 ```bash
-npm install @jterrazz/typescript
+npm install @jterrazz/typescript --save-dev
 ```
 
 **tsconfig.json** — pick one:
 
 ```json
-{ "extends": "@jterrazz/typescript/presets/tsconfig/node" }
-{ "extends": "@jterrazz/typescript/presets/tsconfig/next" }
-{ "extends": "@jterrazz/typescript/presets/tsconfig/expo" }
+{ "extends": "@jterrazz/typescript/tsconfig/node" }
+{ "extends": "@jterrazz/typescript/tsconfig/next" }
+{ "extends": "@jterrazz/typescript/tsconfig/expo" }
+```
+
+**`oxlint.config.ts`** — pick a preset:
+
+```ts
+import { oxlint } from '@jterrazz/typescript';
+import { defineConfig } from 'oxlint';
+
+export default defineConfig({ extends: [oxlint.node] }); // or oxlint.next, oxlint.expo
+```
+
+**`oxfmt.config.ts`**:
+
+```ts
+import { oxfmt } from '@jterrazz/typescript';
+import { defineConfig } from 'oxfmt';
+
+export default defineConfig(oxfmt);
 ```
 
 **package.json scripts** — for apps:
@@ -39,7 +59,9 @@ npm install @jterrazz/typescript
 {
     "build": "typescript build",
     "start": "typescript start",
-    "dev": "typescript dev"
+    "dev": "typescript dev",
+    "lint": "typescript check",
+    "lint:fix": "typescript fix"
 }
 ```
 
@@ -48,7 +70,9 @@ npm install @jterrazz/typescript
 ```json
 {
     "build": "typescript bundle",
-    "docs": "typescript docs"
+    "docs": "typescript docs",
+    "lint": "typescript check",
+    "lint:fix": "typescript fix"
 }
 ```
 
@@ -74,6 +98,61 @@ npm install @jterrazz/typescript
 | `bundle` | `dist/index.js`, `dist/index.cjs`, `dist/index.d.ts`, `dist/index.d.cts` + sourcemaps |
 | `docs`   | `.docs/` — typedoc markdown + `llms.txt` + `llms-full.txt`                            |
 
+## Quality checks
+
+`typescript check` runs four tools in parallel:
+
+| Tool   | Purpose              | Language |
+| ------ | -------------------- | -------- |
+| tsgo   | Type checking        | Go       |
+| oxlint | Linting              | Rust     |
+| oxfmt  | Formatting           | Rust     |
+| knip   | Unused code analysis | Node     |
+
+`typescript fix` runs tsgo, oxlint (with `--fix`), and oxfmt (knip excluded).
+
+### Lint presets
+
+| Preset             | Use case                          |
+| ------------------ | --------------------------------- |
+| `oxlint.node`      | Node.js — requires `.js` imports  |
+| `oxlint.next`      | Next.js                           |
+| `oxlint.expo`      | Expo / React Native               |
+| `oxlint.hexagonal` | Hexagonal architecture (additive) |
+
+### Architecture enforcement (optional)
+
+Add hexagonal architecture boundary rules:
+
+```ts
+import { oxlint } from '@jterrazz/typescript';
+import { defineConfig } from 'oxlint';
+
+export default defineConfig({
+    extends: [oxlint.node, oxlint.hexagonal],
+});
+```
+
+Rules enforced:
+
+- `domain/` cannot import from other layers
+- `application/` cannot import infrastructure
+- `presentation/ui/` cannot import navigation
+- `features/` cannot import other features
+
+### Knip
+
+A base config is automatically merged with any project-local `knip.json` — `@jterrazz/*` deps, plugin deps, and convention paths are auto-ignored. Only create a `knip.json` for project-specific overrides.
+
+## Formatting rules
+
+- 100 char print width
+- 4-space indentation
+- Single quotes
+- Trailing commas
+- Semicolons
+- LF line endings
+
 ## Docs generation
 
 `typescript docs` requires no configuration. It reads TSDoc from `src/index.ts` and generates:
@@ -98,3 +177,6 @@ Add `.docs` to `.gitignore` — it's a build artifact, not committed.
 - Entry point is `src/index.ts`
 - Use `.js` extensions in relative imports: `import { foo } from "./bar.js"`
 - Add TSDoc to all public exports — `typescript docs` derives everything from it
+- Run `typescript fix` before committing, not just `typescript check`
+- Never disable rules inline without a comment explaining why
+- Sorting is enforced by perfectionist plugin — imports, types, object keys

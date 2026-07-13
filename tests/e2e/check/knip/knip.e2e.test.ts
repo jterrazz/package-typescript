@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { knipSpec, PACKAGE_ROOT } from '../../setup/knip.specification.js';
+import { knipSpec, PACKAGE_ROOT } from '../../../setup/knip.specification.js';
 
 describe('knip config merging', () => {
     test('passes with no local knip.json when base config covers dependencies', async () => {

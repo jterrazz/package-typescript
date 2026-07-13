@@ -2,9 +2,9 @@ import { grep } from '@jterrazz/test';
 import { resolve } from 'node:path';
 import { beforeAll, describe, expect, test } from 'vitest';
 
-import { oxlintSpec } from '../../setup/oxlint.specification.js';
+import { oxlintSpec } from '../../../setup/oxlint.specification.js';
 
-const ROOT_DIR = resolve(import.meta.dirname, '../../..');
+const ROOT_DIR = resolve(import.meta.dirname, '../../../..');
 const HEXAGONAL_CONFIG = resolve(ROOT_DIR, 'presets/oxlint/architectures/hexagonal.js');
 const HEXAGONAL_DIR = resolve(import.meta.dirname, 'hexagonal');
 

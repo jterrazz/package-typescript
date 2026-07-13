@@ -6,5 +6,5 @@ const TSGO_BIN = resolve(ROOT_DIR, 'node_modules/.bin/tsgo');
 
 export const tsgoSpec = await cli({
     command: TSGO_BIN,
-    root: '../e2e',
+    root: '../e2e/check',
 });

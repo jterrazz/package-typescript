@@ -26,11 +26,14 @@ describe('cli', () => {
         // Given — no command argument
         const result = await spec('commands').project('sample-app').exec('').run();
 
-        // Then — all four commands listed
+        // Then — all commands listed
         expect(result.stdout).toContain('build');
         expect(result.stdout).toContain('bundle');
         expect(result.stdout).toContain('start');
         expect(result.stdout).toContain('dev');
+        expect(result.stdout).toContain('docs');
+        expect(result.stdout).toContain('check');
+        expect(result.stdout).toContain('fix');
     });
 
     test('shows usage examples in help', async () => {
@@ -42,5 +45,7 @@ describe('cli', () => {
         expect(result.stdout).toContain('typescript bundle');
         expect(result.stdout).toContain('typescript start');
         expect(result.stdout).toContain('typescript dev');
+        expect(result.stdout).toContain('typescript check');
+        expect(result.stdout).toContain('typescript fix');
     });
 });

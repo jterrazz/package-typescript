@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { tsgoSpec } from '../../setup/tsgo.specification.js';
+import { tsgoSpec } from '../../../setup/tsgo.specification.js';
 
 describe('typechecker', () => {
     test('passes for valid typed code', async () => {

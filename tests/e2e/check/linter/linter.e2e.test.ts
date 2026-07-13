@@ -2,9 +2,9 @@ import { grep } from '@jterrazz/test';
 import { resolve } from 'node:path';
 import { beforeAll, describe, expect, test } from 'vitest';
 
-import { oxlintSpec } from '../../setup/oxlint.specification.js';
+import { oxlintSpec } from '../../../setup/oxlint.specification.js';
 
-const ROOT_DIR = resolve(import.meta.dirname, '../../..');
+const ROOT_DIR = resolve(import.meta.dirname, '../../../..');
 const BASE_CONFIG = resolve(ROOT_DIR, 'presets/oxlint/base.js');
 const NODE_CONFIG = resolve(ROOT_DIR, 'presets/oxlint/node.js');
 const EXPO_CONFIG = resolve(ROOT_DIR, 'presets/oxlint/expo.js');

@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { beforeAll, describe, expect, test } from 'vitest';
 
-import { oxfmtSpec } from '../../setup/oxfmt.specification.js';
+import { oxfmtSpec } from '../../../setup/oxfmt.specification.js';
 
-const ROOT_DIR = resolve(import.meta.dirname, '../../..');
+const ROOT_DIR = resolve(import.meta.dirname, '../../../..');
 const CONFIG_PATH = resolve(ROOT_DIR, 'presets/oxfmt/index.js');
 
 describe('formatter', () => {
