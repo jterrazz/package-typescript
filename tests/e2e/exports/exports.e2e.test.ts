@@ -3,8 +3,7 @@ import { describe, expect, test } from 'vitest';
 
 const require = createRequire(import.meta.url);
 
-// Self-reference resolution — verifies the exports map covers every consumer-facing
-// subpath, with and without file extensions.
+// Self-reference resolution — the exports map must cover every consumer-facing subpath.
 describe('package exports', () => {
     test.each([
         '@jterrazz/typescript',
