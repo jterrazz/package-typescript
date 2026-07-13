@@ -1,4 +1,8 @@
-import { oxfmt } from '@jterrazz/codestyle';
 import { defineConfig } from 'oxfmt';
 
-export default defineConfig(oxfmt);
+import preset from './presets/oxfmt/index.js';
+
+export default defineConfig({
+    ...preset,
+    ignorePatterns: ['dist', 'node_modules', '**/fixtures', '**/inputs', '**/expected'],
+});

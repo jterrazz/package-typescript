@@ -1,0 +1,7 @@
+{
+  "name": "fixture-unused-dep",
+  "version": "1.0.0",
+  "dependencies": {
+    "totally-unused-pkg": "^1.0.0"
+  }
+}

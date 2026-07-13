@@ -1,5 +1,4 @@
 {
     "extends": "./presets/tsconfig/node.json",
-    "include": ["tests/"],
-    "exclude": ["tests/fixtures/broken-app"]
+    "include": ["tests/e2e/**/*.e2e.test.ts", "tests/setup/**/*.ts"]
 }
