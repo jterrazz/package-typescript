@@ -1,6 +1,6 @@
 {
     "name": "@jterrazz/typescript",
-    "version": "6.0.2",
+    "version": "6.0.3",
     "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
     "repository": {
         "type": "git",
@@ -16,8 +16,12 @@
     ],
     "type": "module",
     "main": "src/index.js",
+    "types": "src/index.d.ts",
     "exports": {
-        ".": "./src/index.js",
+        ".": {
+            "types": "./src/index.d.ts",
+            "default": "./src/index.js"
+        },
         "./tsconfig/*": "./presets/tsconfig/*.json",
         "./tsconfig/*.json": "./presets/tsconfig/*.json",
         "./tsdown/*": "./presets/tsdown/*.js",
