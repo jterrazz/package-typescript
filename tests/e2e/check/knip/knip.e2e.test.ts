@@ -4,7 +4,7 @@ import { knipSpec, PACKAGE_ROOT } from '../../../setup/knip.specification.js';
 
 describe('knip config merging', () => {
     test('passes with no local knip.json when base config covers dependencies', async () => {
-        // Given — a project with @jterrazz/test and @jterrazz/codestyle but no knip.json
+        // Given — a project with @jterrazz/test and @jterrazz/typescript but no knip.json
         const result = await knipSpec('no local config')
             .project('no-config')
             .exec(PACKAGE_ROOT)
