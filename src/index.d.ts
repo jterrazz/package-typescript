@@ -1,17 +1,18 @@
 type ConfigObject = Record<string, unknown>;
 
-export declare const oxfmt: ConfigObject;
+declare const oxfmtConfig: ConfigObject;
 
-export declare const oxlint: {
+declare const oxlintPresets: {
     expo: ConfigObject;
     hexagonal: ConfigObject;
     next: ConfigObject;
     node: ConfigObject;
 };
 
-declare const _default: {
-    oxfmt: typeof oxfmt;
-    oxlint: typeof oxlint;
+declare const defaultExport: {
+    oxfmt: typeof oxfmtConfig;
+    oxlint: typeof oxlintPresets;
 };
 
-export default _default;
+export { oxfmtConfig as oxfmt, oxlintPresets as oxlint };
+export default defaultExport;
