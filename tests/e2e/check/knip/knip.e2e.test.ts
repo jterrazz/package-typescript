@@ -45,7 +45,7 @@ describe('knip config merging', () => {
 
         // Then — knip reports the unused dependency
         expect(result.exitCode).not.toBe(0);
-        expect(result.stdout).toContain('totally-unused-pkg');
+        result.stdout.toContain('totally-unused-pkg');
     });
 });
 

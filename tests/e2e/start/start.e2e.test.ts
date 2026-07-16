@@ -12,7 +12,7 @@ describe('start', () => {
 
         // Then — app runs and prints its message
         expect(result.exitCode).toBe(0);
-        expect(result.stdout).toContain('Hello from sample app');
+        result.stdout.toContain('Hello from sample app');
     });
 
     test('fails if dist does not exist', async () => {

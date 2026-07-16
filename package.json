@@ -51,7 +51,7 @@
         "typedoc-plugin-markdown": "^4.11.0"
     },
     "devDependencies": {
-        "@jterrazz/test": "^5.3.2",
+        "@jterrazz/test": "^8.0.0",
         "@types/node": "^25.5.0",
         "vitest": "^4.1.2"
     }

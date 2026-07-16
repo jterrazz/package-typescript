@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, test } from 'vitest';
 
 import { checkSpec } from '../../setup/check.specification.js';
 
@@ -11,10 +11,10 @@ describe('check', () => {
         const result = await checkSpec('check all tools').exec(`check ${IGNORE_ARGS}`).run();
 
         // Then — output contains sections for each tool
-        expect(result.stdout).toContain('TypeScript Check');
-        expect(result.stdout).toContain('Oxlint');
-        expect(result.stdout).toContain('Oxfmt');
-        expect(result.stdout).toContain('Knip');
+        result.stdout.toContain('TypeScript Check');
+        result.stdout.toContain('Oxlint');
+        result.stdout.toContain('Oxfmt');
+        result.stdout.toContain('Knip');
     });
 
     test('check reports quality checks label', async () => {
@@ -22,7 +22,7 @@ describe('check', () => {
         const result = await checkSpec('check label').exec(`check ${IGNORE_ARGS}`).run();
 
         // Then — output contains the quality checks banner
-        expect(result.stdout).toContain('Running quality checks');
+        result.stdout.toContain('Running quality checks');
     });
 
     test('fix reports quality fixes label', async () => {
@@ -30,6 +30,6 @@ describe('check', () => {
         const result = await checkSpec('fix label').exec(`fix ${IGNORE_ARGS}`).run();
 
         // Then — output contains the quality fixes banner
-        expect(result.stdout).toContain('Running quality fixes');
+        result.stdout.toContain('Running quality fixes');
     });
 });

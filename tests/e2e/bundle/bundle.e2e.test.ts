@@ -9,7 +9,7 @@ describe('bundle', () => {
 
         // Then — ESM + CJS bundle completes
         expect(result.exitCode).toBe(0);
-        expect(result.stdout).toContain('Build completed');
+        result.stdout.toContain('Build completed');
     });
 
     test('generates ESM output with exports', async () => {

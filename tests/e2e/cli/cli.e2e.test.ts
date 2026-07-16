@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, test } from 'vitest';
 
 import { spec } from '../../setup/cli.specification.js';
 
@@ -8,10 +8,10 @@ describe('cli', () => {
         const result = await spec('help').project('sample-app').exec('').run();
 
         // Then — help banner with usage and available commands
-        expect(result.stdout).toContain('TYPESCRIPT');
-        expect(result.stdout).toContain('Usage: typescript <command>');
-        expect(result.stdout).toContain('build');
-        expect(result.stdout).toContain('dev');
+        result.stdout.toContain('TYPESCRIPT');
+        result.stdout.toContain('Usage: typescript <command>');
+        result.stdout.toContain('build');
+        result.stdout.toContain('dev');
     });
 
     test('shows help with unknown command', async () => {
@@ -19,7 +19,7 @@ describe('cli', () => {
         const result = await spec('unknown').project('sample-app').exec('unknown').run();
 
         // Then — falls back to usage help
-        expect(result.stdout).toContain('Usage: typescript <command>');
+        result.stdout.toContain('Usage: typescript <command>');
     });
 
     test('lists all commands in help', async () => {
@@ -27,13 +27,13 @@ describe('cli', () => {
         const result = await spec('commands').project('sample-app').exec('').run();
 
         // Then — all commands listed
-        expect(result.stdout).toContain('build');
-        expect(result.stdout).toContain('bundle');
-        expect(result.stdout).toContain('start');
-        expect(result.stdout).toContain('dev');
-        expect(result.stdout).toContain('docs');
-        expect(result.stdout).toContain('check');
-        expect(result.stdout).toContain('fix');
+        result.stdout.toContain('build');
+        result.stdout.toContain('bundle');
+        result.stdout.toContain('start');
+        result.stdout.toContain('dev');
+        result.stdout.toContain('docs');
+        result.stdout.toContain('check');
+        result.stdout.toContain('fix');
     });
 
     test('shows usage examples in help', async () => {
@@ -41,11 +41,11 @@ describe('cli', () => {
         const result = await spec('examples').project('sample-app').exec('').run();
 
         // Then — usage examples for each command
-        expect(result.stdout).toContain('typescript build');
-        expect(result.stdout).toContain('typescript bundle');
-        expect(result.stdout).toContain('typescript start');
-        expect(result.stdout).toContain('typescript dev');
-        expect(result.stdout).toContain('typescript check');
-        expect(result.stdout).toContain('typescript fix');
+        result.stdout.toContain('typescript build');
+        result.stdout.toContain('typescript bundle');
+        result.stdout.toContain('typescript start');
+        result.stdout.toContain('typescript dev');
+        result.stdout.toContain('typescript check');
+        result.stdout.toContain('typescript fix');
     });
 });

@@ -9,7 +9,7 @@ describe('build', () => {
 
         // Then — ESM build completes
         expect(result.exitCode).toBe(0);
-        expect(result.stdout).toContain('Build completed');
+        result.stdout.toContain('Build completed');
     });
 
     test('generates ESM output with source content', async () => {
@@ -59,6 +59,6 @@ describe('build', () => {
 
         // Then — build fails and stderr contains error context
         expect(result.exitCode).not.toBe(0);
-        expect(result.stderr).toContain('Error');
+        result.stderr.toContain('Error');
     });
 });

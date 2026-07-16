@@ -12,8 +12,8 @@ describe('dev', () => {
 
         // Then — banner and startup message appear
         expect(result.exitCode).toBe(0);
-        expect(result.stdout).toContain('TYPESCRIPT');
-        expect(result.stdout).toContain('Starting dev mode');
+        result.stdout.toContain('TYPESCRIPT');
+        result.stdout.toContain('Starting dev mode');
     });
 
     test('builds and runs the app in watch mode', async () => {
@@ -25,6 +25,6 @@ describe('dev', () => {
 
         // Then — app output appears (build succeeded and app ran)
         expect(result.exitCode).toBe(0);
-        expect(result.stdout).toContain('Hello from sample app');
+        result.stdout.toContain('Hello from sample app');
     });
 });

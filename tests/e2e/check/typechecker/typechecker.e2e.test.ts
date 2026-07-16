@@ -23,6 +23,6 @@ describe('typechecker', () => {
 
         // Then — type errors reported (tsgo exits with code 2 for type errors)
         expect(result.exitCode).not.toBe(0);
-        expect(result.stdout).toContain('error TS');
+        result.stdout.toContain('error TS');
     });
 });
