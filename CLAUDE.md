@@ -47,16 +47,16 @@ skills/jterrazz-typescript/SKILL.md
 
 This repo follows the `jterrazz-stack` skill for cross-cutting concerns.
 
-## Two typescript packages, on purpose
+## Two TypeScript compilers, on purpose
 
-Dependencies include both `typescript` (^6, JS API) and `typescript-go`
-(npm alias of the official `typescript@7` Go compiler). `typescript check`
-type-checks with the fast Go `tsc` (resolved by path via the alias in
-`check.sh`), while typedoc and eslint-plugin-perfectionist still require the
-JS API and resolve the name `typescript` to v6. Declaring both pins peer
-resolution deterministically under npm AND pnpm — do not "simplify" to a
-single `typescript@7` dep: it breaks perfectionist (no JS API) and typedoc
-(peer range 5–6).
+`typescript check` type-checks with the official TypeScript 7 Go compiler,
+pulled in via the per-platform `@typescript/typescript-*` optionalDependencies
+(resolved by path in `check.sh`). The regular `typescript` dependency stays on
+^6 because typedoc (peer range 5–6) and eslint-plugin-perfectionist (bare
+`require('typescript')`) need the JS compiler API, which the Go package no
+longer ships. Never add `typescript@7` (or an npm alias of it) to the tree:
+under pnpm's hoist fallback it can hijack perfectionist's typescript lookup
+(`isExternalModuleNameRelative is not a function`), intermittently.
 
 ## What the CLI provides to consumers
 

@@ -1,6 +1,6 @@
 {
     "name": "@jterrazz/typescript",
-    "version": "6.1.0",
+    "version": "6.1.1",
     "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
     "repository": {
         "type": "git",
@@ -49,12 +49,20 @@
         "tsdown": "^0.22.9",
         "typedoc": "^0.28.20",
         "typedoc-plugin-markdown": "^4.12.0",
-        "typescript": "^6.0.0",
-        "typescript-go": "npm:typescript@^7.0.2"
+        "typescript": "^6.0.0"
     },
     "devDependencies": {
         "@jterrazz/test": "^8.0.0",
         "@types/node": "^26.1.1",
         "vitest": "^4.1.10"
+    },
+    "optionalDependencies": {
+        "@typescript/typescript-darwin-arm64": "^7.0.2",
+        "@typescript/typescript-darwin-x64": "^7.0.2",
+        "@typescript/typescript-linux-arm": "^7.0.2",
+        "@typescript/typescript-linux-arm64": "^7.0.2",
+        "@typescript/typescript-linux-x64": "^7.0.2",
+        "@typescript/typescript-win32-arm64": "^7.0.2",
+        "@typescript/typescript-win32-x64": "^7.0.2"
     }
 }

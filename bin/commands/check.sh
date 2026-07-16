@@ -33,16 +33,30 @@ find_binary() {
     fi
 }
 
-# The Go compiler (official typescript@7) is installed under the
-# "typescript-go" npm alias: typedoc and eslint-plugin-perfectionist need the
-# JS-API typescript 5/6 to resolve under the name "typescript", so the two
-# must coexist. Resolve the aliased package's binary directly — both packages
-# link a `tsc` bin, so .bin/tsc would be ambiguous.
+# Type checking uses the official TypeScript 7 Go compiler, pulled in through
+# the per-platform @typescript/typescript-* packages instead of a second
+# package named "typescript": typedoc and eslint-plugin-perfectionist load
+# the JS API from the "typescript" name (v6 here), and any typescript@7 in
+# the tree can hijack that lookup under pnpm's hoist fallback.
 find_tsc() {
-    if [ -x "$PACKAGE_ROOT/node_modules/typescript-go/bin/tsc" ]; then
-        echo "$PACKAGE_ROOT/node_modules/typescript-go/bin/tsc"
-    elif [ -x "$PACKAGE_ROOT/../../typescript-go/bin/tsc" ]; then
-        echo "$PACKAGE_ROOT/../../typescript-go/bin/tsc"
+    local os arch
+    case "$(uname -s)" in
+        Darwin) os="darwin" ;;
+        Linux) os="linux" ;;
+        MINGW*|MSYS*|CYGWIN*) os="win32" ;;
+        *) os="linux" ;;
+    esac
+    case "$(uname -m)" in
+        arm64|aarch64) arch="arm64" ;;
+        armv7l) arch="arm" ;;
+        *) arch="x64" ;;
+    esac
+
+    local pkg="@typescript/typescript-$os-$arch"
+    if [ -x "$PACKAGE_ROOT/node_modules/$pkg/lib/tsc" ]; then
+        echo "$PACKAGE_ROOT/node_modules/$pkg/lib/tsc"
+    elif [ -x "$PACKAGE_ROOT/../../$pkg/lib/tsc" ]; then
+        echo "$PACKAGE_ROOT/../../$pkg/lib/tsc"
     else
         find_binary tsc
     fi
