@@ -23,9 +23,10 @@ No build step — this package ships JS directly. The repo dogfoods its own CLI 
 ```
 bin/
 ├── typescript.sh          # CLI entry point (build, bundle, start, dev, docs, check, fix)
-├── commands/
-│   ├── check.sh           # Quality checks: tsgo + oxlint + oxfmt + knip in parallel
-│   └── docs.sh            # Docs generation logic (typedoc + llms.txt)
+└── commands/
+    ├── check.sh           # Quality checks: tsgo + oxlint + oxfmt + knip in parallel
+    └── docs.sh            # Docs generation logic (typedoc + llms.txt)
+lib/
 └── merge-knip-config.js   # Merges knip base preset with project-local knip.json
 presets/
 ├── tsconfig/              # TypeScript config presets (node, next, expo)

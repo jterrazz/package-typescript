@@ -7,7 +7,7 @@
 PACKAGE_ROOT="$1"
 KNIP_BASE="$PACKAGE_ROOT/presets/knip/base.json"
 KNIP_BIN="$PACKAGE_ROOT/node_modules/.bin/knip"
-MERGE_SCRIPT="$PACKAGE_ROOT/bin/merge-knip-config.js"
+MERGE_SCRIPT="$PACKAGE_ROOT/lib/merge-knip-config.js"
 
 # Find project-local knip config (if any)
 KNIP_PROJECT=""

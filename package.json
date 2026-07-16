@@ -1,6 +1,6 @@
 {
     "name": "@jterrazz/typescript",
-    "version": "6.0.3",
+    "version": "6.0.4",
     "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
     "repository": {
         "type": "git",
@@ -11,6 +11,7 @@
     },
     "files": [
         "bin",
+        "lib",
         "presets",
         "src"
     ],

@@ -19,14 +19,24 @@ done
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 PACKAGE_ROOT="$SCRIPT_DIR/../.."
 
-# Find bin directory
-if [ -x "$PACKAGE_ROOT/../../.bin/oxlint" ]; then
-    BIN_DIR="$PACKAGE_ROOT/../../.bin"
-elif [ -x "$PACKAGE_ROOT/node_modules/.bin/oxlint" ]; then
-    BIN_DIR="$PACKAGE_ROOT/node_modules/.bin"
-else
-    BIN_DIR="$(npm bin 2>/dev/null)"
-fi
+# Find binaries one by one - npm may hoist some tools to the consumer's
+# node_modules/.bin and nest others under this package, so a single shared
+# bin directory cannot be assumed
+find_binary() {
+    local name="$1"
+    if [ -x "$PACKAGE_ROOT/node_modules/.bin/$name" ]; then
+        echo "$PACKAGE_ROOT/node_modules/.bin/$name"
+    elif [ -x "$PACKAGE_ROOT/../../.bin/$name" ]; then
+        echo "$PACKAGE_ROOT/../../.bin/$name"
+    else
+        echo "$name"  # Fallback to PATH
+    fi
+}
+
+TSGO=$(find_binary tsgo)
+OXLINT=$(find_binary oxlint)
+OXFMT=$(find_binary oxfmt)
+KNIP=$(find_binary knip)
 
 # Parse command and args
 COMMAND=""
@@ -71,20 +81,20 @@ run_checks() {
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
 
     # Run all tools in parallel
-    "$BIN_DIR/tsgo" --noEmit > "$tmp_dir/type.log" 2>&1 &
+    "$TSGO" --noEmit > "$tmp_dir/type.log" 2>&1 &
     local type_pid=$!
 
     if [ "$FIX_MODE" = true ]; then
-        "$BIN_DIR/oxlint" --fix "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 &
+        "$OXLINT" --fix "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 &
     else
-        "$BIN_DIR/oxlint" "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 &
+        "$OXLINT" "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 &
     fi
     local lint_pid=$!
 
     if [ "$FIX_MODE" = true ]; then
-        "$BIN_DIR/oxfmt" > "$tmp_dir/format.log" 2>&1 &
+        "$OXFMT" > "$tmp_dir/format.log" 2>&1 &
     else
-        "$BIN_DIR/oxfmt" --check > "$tmp_dir/format.log" 2>&1 &
+        "$OXFMT" --check > "$tmp_dir/format.log" 2>&1 &
     fi
     local format_pid=$!
 
@@ -98,8 +108,8 @@ run_checks() {
         [ -f "knip.json" ] && knip_project="knip.json"
         [ -f "knip.jsonc" ] && knip_project="knip.jsonc"
 
-        node "$PACKAGE_ROOT/bin/merge-knip-config.js" "$knip_base" $knip_project > "$tmp_dir/knip-merged.json"
-        "$BIN_DIR/knip" --no-progress --no-config-hints --config "$tmp_dir/knip-merged.json" > "$tmp_dir/knip.log" 2>&1 &
+        node "$PACKAGE_ROOT/lib/merge-knip-config.js" "$knip_base" $knip_project > "$tmp_dir/knip-merged.json"
+        "$KNIP" --no-progress --no-config-hints --config "$tmp_dir/knip-merged.json" > "$tmp_dir/knip.log" 2>&1 &
         knip_pid=$!
     fi
 
