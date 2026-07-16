@@ -1,5 +1,5 @@
 #!/bin/bash
-# Quality checks: runs tsgo, oxlint, oxfmt, and knip in parallel.
+# Quality checks: runs tsc, oxlint, oxfmt, and knip in parallel.
 # Called by: typescript check | typescript fix
 
 # Colors for output
@@ -33,7 +33,22 @@ find_binary() {
     fi
 }
 
-TSGO=$(find_binary tsgo)
+# The Go compiler (official typescript@7) is installed under the
+# "typescript-go" npm alias: typedoc and eslint-plugin-perfectionist need the
+# JS-API typescript 5/6 to resolve under the name "typescript", so the two
+# must coexist. Resolve the aliased package's binary directly — both packages
+# link a `tsc` bin, so .bin/tsc would be ambiguous.
+find_tsc() {
+    if [ -x "$PACKAGE_ROOT/node_modules/typescript-go/bin/tsc" ]; then
+        echo "$PACKAGE_ROOT/node_modules/typescript-go/bin/tsc"
+    elif [ -x "$PACKAGE_ROOT/../../typescript-go/bin/tsc" ]; then
+        echo "$PACKAGE_ROOT/../../typescript-go/bin/tsc"
+    else
+        find_binary tsc
+    fi
+}
+
+TSC=$(find_tsc)
 OXLINT=$(find_binary oxlint)
 OXFMT=$(find_binary oxfmt)
 KNIP=$(find_binary knip)
@@ -81,7 +96,7 @@ run_checks() {
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
 
     # Run all tools in parallel
-    "$TSGO" --noEmit > "$tmp_dir/type.log" 2>&1 &
+    "$TSC" --noEmit > "$tmp_dir/type.log" 2>&1 &
     local type_pid=$!
 
     if [ "$FIX_MODE" = true ]; then

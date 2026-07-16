@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'vitest';
 
-import { tsgoSpec } from '../../../setup/tsgo.specification.js';
+import { tscSpec } from '../../../setup/tsc.specification.js';
 
 describe('typechecker', () => {
     test('passes for valid typed code', async () => {
         // Given — project with valid types
-        const result = await tsgoSpec('valid types')
+        const result = await tscSpec('valid types')
             .project('typechecker/valid')
             .exec('--noEmit')
             .run();
@@ -16,12 +16,12 @@ describe('typechecker', () => {
 
     test('detects type errors', async () => {
         // Given — project with type mismatches
-        const result = await tsgoSpec('invalid types')
+        const result = await tscSpec('invalid types')
             .project('typechecker/invalid')
             .exec('--noEmit')
             .run();
 
-        // Then — type errors reported (tsgo exits with code 2 for type errors)
+        // Then — type errors reported (tsc exits non-zero for type errors)
         expect(result.exitCode).not.toBe(0);
         result.stdout.toContain('error TS');
     });

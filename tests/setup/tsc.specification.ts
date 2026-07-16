@@ -4,10 +4,10 @@ import { resolve } from 'node:path';
 import { asCommandRunner } from './command-runner.js';
 
 const ROOT_DIR = resolve(import.meta.dirname, '../..');
-const TSGO_BIN = resolve(ROOT_DIR, 'node_modules/.bin/tsgo');
+const TSC_BIN = resolve(ROOT_DIR, 'node_modules/typescript-go/bin/tsc');
 
-export const tsgoSpec = asCommandRunner(
-    await spec(command(TSGO_BIN), {
+export const tscSpec = asCommandRunner(
+    await spec(command(TSC_BIN), {
         root: '../e2e/check',
     }),
 );

@@ -1,6 +1,6 @@
 # @jterrazz/typescript
 
-The complete TypeScript toolchain — build, run, check, and document with zero configuration. Powered by tsdown, Oxlint, Oxfmt, tsgo, and Knip.
+The complete TypeScript toolchain — build, run, check, and document with zero configuration. Powered by tsdown, Oxlint, Oxfmt, TypeScript 7, and Knip.
 
 ## Installation
 
@@ -86,12 +86,12 @@ your-project/
 
 | Tool   | Purpose              |
 | ------ | -------------------- |
-| tsgo   | Type checking        |
+| tsc    | Type checking        |
 | oxlint | Linting              |
 | oxfmt  | Formatting           |
 | knip   | Unused code analysis |
 
-`typescript fix` runs tsgo, oxlint (with `--fix`), and oxfmt in parallel (knip excluded).
+`typescript fix` runs tsc, oxlint (with `--fix`), and oxfmt in parallel (knip excluded).
 
 ### Lint presets
 
@@ -153,16 +153,16 @@ jobs:
 
 The toolchain is fully compiled — no JavaScript in the hot path:
 
-| Step         | Tool                                               | Language |
-| ------------ | -------------------------------------------------- | -------- |
-| Transpile    | [Oxc](https://oxc.rs) (via tsdown)                 | Rust     |
-| Bundle       | [Rolldown](https://rolldown.rs)                    | Rust     |
-| Declarations | [tsdown](https://tsdown.dev) built-in              | Rust     |
-| Type check   | [tsgo](https://github.com/microsoft/typescript-go) | Go       |
-| Lint         | [Oxlint](https://oxc.rs/docs/guide/usage/linter)   | Rust     |
-| Format       | [Oxfmt](https://oxc.rs/docs/guide/usage/formatter) | Rust     |
-| Unused code  | [Knip](https://knip.dev)                           | Node     |
-| API docs     | [Typedoc](https://typedoc.org)                     | Node     |
+| Step         | Tool                                                             | Language |
+| ------------ | ---------------------------------------------------------------- | -------- |
+| Transpile    | [Oxc](https://oxc.rs) (via tsdown)                               | Rust     |
+| Bundle       | [Rolldown](https://rolldown.rs)                                  | Rust     |
+| Declarations | [tsdown](https://tsdown.dev) built-in                            | Rust     |
+| Type check   | [tsc (TypeScript 7)](https://github.com/microsoft/typescript-go) | Go       |
+| Lint         | [Oxlint](https://oxc.rs/docs/guide/usage/linter)                 | Rust     |
+| Format       | [Oxfmt](https://oxc.rs/docs/guide/usage/formatter)               | Rust     |
+| Unused code  | [Knip](https://knip.dev)                                         | Node     |
+| API docs     | [Typedoc](https://typedoc.org)                                   | Node     |
 
 ## License
 

@@ -24,7 +24,7 @@ No build step — this package ships JS directly. The repo dogfoods its own CLI 
 bin/
 ├── typescript.sh          # CLI entry point (build, bundle, start, dev, docs, check, fix)
 └── commands/
-    ├── check.sh           # Quality checks: tsgo + oxlint + oxfmt + knip in parallel
+    ├── check.sh           # Quality checks: tsc + oxlint + oxfmt + knip in parallel
     └── docs.sh            # Docs generation logic (typedoc + llms.txt)
 lib/
 └── merge-knip-config.js   # Merges knip base preset with project-local knip.json
@@ -47,6 +47,17 @@ skills/jterrazz-typescript/SKILL.md
 
 This repo follows the `jterrazz-stack` skill for cross-cutting concerns.
 
+## Two typescript packages, on purpose
+
+Dependencies include both `typescript` (^6, JS API) and `typescript-go`
+(npm alias of the official `typescript@7` Go compiler). `typescript check`
+type-checks with the fast Go `tsc` (resolved by path via the alias in
+`check.sh`), while typedoc and eslint-plugin-perfectionist still require the
+JS API and resolve the name `typescript` to v6. Declaring both pins peer
+resolution deterministically under npm AND pnpm — do not "simplify" to a
+single `typescript@7` dep: it breaks perfectionist (no JS API) and typedoc
+(peer range 5–6).
+
 ## What the CLI provides to consumers
 
 - `typescript build` — ESM app build via tsdown
@@ -54,5 +65,5 @@ This repo follows the `jterrazz-stack` skill for cross-cutting concerns.
 - `typescript start` — Run dist/index.js with source maps
 - `typescript dev` — Watch + rebuild + run
 - `typescript docs` — Generate API reference + llms.txt + llms-full.txt from TSDoc (no typedoc.json needed)
-- `typescript check` — Type check (tsgo) + lint (oxlint) + format check (oxfmt) + unused code (knip), in parallel
+- `typescript check` — Type check (tsc, TypeScript 7) + lint (oxlint) + format check (oxfmt) + unused code (knip), in parallel
 - `typescript fix` — Auto-fix lint and formatting issues

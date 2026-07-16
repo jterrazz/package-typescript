@@ -7,7 +7,7 @@ description: Use when building, bundling, linting, formatting, type-checking, or
 
 Part of the @jterrazz ecosystem. The complete TypeScript toolchain — defines how all projects build, lint, format, and generate docs.
 
-Zero-config, fully compiled toolchain: tsdown/Rolldown (Rust) for builds, oxlint/oxfmt (Rust) for lint and format, tsgo (Go) for type checking, knip for unused code, typedoc for API docs.
+Zero-config, fully compiled toolchain: tsdown/Rolldown (Rust) for builds, oxlint/oxfmt (Rust) for lint and format, tsc (TypeScript 7, Go-native) for type checking, knip for unused code, typedoc for API docs.
 
 ## Commands
 
@@ -104,12 +104,12 @@ export default defineConfig(oxfmt);
 
 | Tool   | Purpose              | Language |
 | ------ | -------------------- | -------- |
-| tsgo   | Type checking        | Go       |
+| tsc    | Type checking        | Go       |
 | oxlint | Linting              | Rust     |
 | oxfmt  | Formatting           | Rust     |
 | knip   | Unused code analysis | Node     |
 
-`typescript fix` runs tsgo, oxlint (with `--fix`), and oxfmt (knip excluded).
+`typescript fix` runs tsc, oxlint (with `--fix`), and oxfmt (knip excluded).
 
 ### Lint presets
 

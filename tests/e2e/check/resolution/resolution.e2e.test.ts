@@ -9,7 +9,7 @@ describe('check binary resolution', () => {
 
         // Then — every tool is found and runs, wherever npm placed it
         expect(result.exitCode).toBe(0);
-        result.stdout.toContain('tsgo-stub-ran');
+        result.stdout.toContain('tsc-stub-ran');
         result.stdout.toContain('oxlint-stub-ran');
         result.stdout.toContain('oxfmt-stub-ran');
         result.stdout.toContain('knip-stub-ran');

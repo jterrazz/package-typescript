@@ -20,7 +20,7 @@ cp -R "$PACKAGE_ROOT/lib" "$PKG/lib"
 cp -R "$PACKAGE_ROOT/presets" "$PKG/presets"
 
 # Stub tools hoisted at the consumer root...
-for tool in tsgo oxfmt knip; do
+for tool in tsc oxfmt knip; do
     printf '#!/bin/sh\necho "%s-stub-ran"\n' "$tool" > "$SANDBOX/node_modules/.bin/$tool"
     chmod +x "$SANDBOX/node_modules/.bin/$tool"
 done
