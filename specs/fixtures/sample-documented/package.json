@@ -1,0 +1,9 @@
+{
+    "name": "sample-documented",
+    "version": "1.0.0",
+    "description": "A sample documented library",
+    "type": "module",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts"
+}

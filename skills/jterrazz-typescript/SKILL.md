@@ -1,193 +1,72 @@
 ---
 name: jterrazz-typescript
-description: Use when building, bundling, linting, formatting, type-checking, or generating docs for a TypeScript project. Covers tsconfig setup, tsdown builds (ESM/CJS), dev mode, `typescript check`/`typescript fix`, oxlint/oxfmt presets, knip, hexagonal architecture enforcement, and API docs via `typescript docs`.
+description: Use when building, checking, linting, formatting, or configuring a TypeScript project with @jterrazz/typescript — build/bundle/dev/start, typescript check|fix failures, oxlint/oxfmt/knip/tsconfig presets, compose() lint config, docs generation command.
 ---
 
 # @jterrazz/typescript
 
-Part of the @jterrazz ecosystem. The complete TypeScript toolchain — defines how all projects build, lint, format, and generate docs.
+The complete TypeScript toolchain for the @jterrazz ecosystem — defines how every project builds, lints, formats, and documents. Zero-config, fully compiled: tsdown/Rolldown (Rust) for builds, oxlint/oxfmt (Rust) for lint and format, tsc (TypeScript 7, Go) for type checking, knip for unused code, typedoc for API docs.
 
-Zero-config, fully compiled toolchain: tsdown/Rolldown (Rust) for builds, oxlint/oxfmt (Rust) for lint and format, tsc (TypeScript 7, Go-native) for type checking, knip for unused code, typedoc for API docs.
+## Mental model
 
-## Commands
+Three surfaces, one CLI (`bin/typescript.sh`):
 
-```bash
-typescript build      # Build application — ESM + .d.ts + sourcemaps
-typescript bundle     # Bundle library — ESM + CJS + .d.ts + sourcemaps
-typescript start      # Run dist/index.js with source maps
-typescript dev        # Watch mode — rebuild + run on file changes
-typescript docs       # Generate API reference + llms.txt from TSDoc
-typescript check      # Check everything — types + lint + format + unused code
-typescript fix        # Auto-fix lint and formatting issues
-```
+- **Build** — `build` (app: ESM + types), `bundle` (library: ESM + CJS + types), `start`, `dev`.
+- **Check** — `check` runs tsc + oxlint + oxfmt + knip in parallel (plus a conventions pass and a docs-sync pass when the project qualifies); `fix` auto-repairs lint + format.
+- **Docs** — `docs` compiles the source barrel into a **committed** projection (`docs/reference/`); `docs --check` verifies it is in sync.
 
-## Setup
+Lint/format/tsconfig are preset packages a project wires explicitly in its own config files. There is no dependency auto-detection in the presets.
+
+## Where to look
+
+The full knowledge lives in the package's own corpus — route into it, do not restate it. Read the relevant chapter straight from the repo:
+
+| Task                                               | Chapter                      |
+| -------------------------------------------------- | ---------------------------- |
+| Setting up a project                               | `docs/01-getting-started.md` |
+| Build issues (build/bundle/start/dev)              | `docs/02-building.md`        |
+| `check` / `fix` failing                            | `docs/03-quality-checks.md`  |
+| Lint rules, presets, `compose`, architecture, knip | `docs/04-lint-presets.md`    |
+| Docs pipeline (`typescript docs`)                  | `docs/05-docs-pipeline.md`   |
+
+Organizing the repo itself — where knowledge lives, corpus vs skills vs the compiler — is a separate capability: see the `jterrazz-repo-structure` skill.
+
+## Quick setup
 
 ```bash
 npm install @jterrazz/typescript --save-dev
 ```
 
-**tsconfig.json** — pick one:
-
 ```json
-{ "extends": "@jterrazz/typescript/tsconfig/node" }
-{ "extends": "@jterrazz/typescript/tsconfig/next" }
-{ "extends": "@jterrazz/typescript/tsconfig/expo" }
+// tsconfig.json — pick one
+{ "extends": "@jterrazz/typescript/tsconfig/node" } // or /next, /expo
 ```
 
-**`oxlint.config.ts`** — pick a preset:
-
 ```ts
+// oxlint.config.ts
 import { oxlint } from '@jterrazz/typescript';
 import { defineConfig } from 'oxlint';
-
 export default defineConfig({ extends: [oxlint.node] }); // or oxlint.next, oxlint.expo
 ```
 
-Projects using `@jterrazz/test` compose its lint fragment EXPLICITLY (no auto-detection) via the `@jterrazz/typescript/oxlint` entry:
+```ts
+// oxfmt.config.ts
+import { oxfmt } from '@jterrazz/typescript';
+import { defineConfig } from 'oxfmt';
+export default defineConfig(oxfmt);
+```
+
+Projects using `@jterrazz/test` compose its lint fragment explicitly:
 
 ```ts
 import { testing } from '@jterrazz/test/oxlint';
 import { compose, node } from '@jterrazz/typescript/oxlint';
-
 export default compose(node, testing);
 ```
 
-`compose(...fragments)` merges deterministically (jsPlugins/plugins/ignorePatterns concatenated + deduped, rules/categories last-wins, overrides concatenated) — compose an extra fragment last to deviate on a rule.
-
-**`oxfmt.config.ts`**:
-
-```ts
-import { oxfmt } from '@jterrazz/typescript';
-import { defineConfig } from 'oxfmt';
-
-export default defineConfig(oxfmt);
-```
-
-**package.json scripts** — for apps:
-
-```json
-{
-    "build": "typescript build",
-    "start": "typescript start",
-    "dev": "typescript dev",
-    "lint": "typescript check",
-    "lint:fix": "typescript fix"
-}
-```
-
-**package.json scripts** — for libraries:
-
-```json
-{
-    "build": "typescript bundle",
-    "docs": "typescript docs",
-    "lint": "typescript check",
-    "lint:fix": "typescript fix"
-}
-```
-
-**package.json exports** — for libraries:
-
-```json
-{
-    "exports": {
-        ".": {
-            "require": "./dist/index.cjs",
-            "import": "./dist/index.js"
-        }
-    },
-    "files": ["dist"]
-}
-```
-
-## Output
-
-| Command  | Files                                                                                 |
-| -------- | ------------------------------------------------------------------------------------- |
-| `build`  | `dist/index.js`, `dist/index.d.ts` + sourcemaps                                       |
-| `bundle` | `dist/index.js`, `dist/index.cjs`, `dist/index.d.ts`, `dist/index.d.cts` + sourcemaps |
-| `docs`   | `.docs/` — typedoc markdown + `llms.txt` + `llms-full.txt`                            |
-
-## Quality checks
-
-`typescript check` runs four tools in parallel:
-
-| Tool   | Purpose              | Language |
-| ------ | -------------------- | -------- |
-| tsc    | Type checking        | Go       |
-| oxlint | Linting              | Rust     |
-| oxfmt  | Formatting           | Rust     |
-| knip   | Unused code analysis | Node     |
-
-`typescript fix` runs tsc, oxlint (with `--fix`), and oxfmt (knip excluded).
-
-### Lint presets
-
-| Preset             | Use case                          |
-| ------------------ | --------------------------------- |
-| `oxlint.node`      | Node.js — requires `.js` imports  |
-| `oxlint.next`      | Next.js                           |
-| `oxlint.expo`      | Expo / React Native               |
-| `oxlint.hexagonal` | Hexagonal architecture (additive) |
-
-### Architecture enforcement (optional)
-
-Add hexagonal architecture boundary rules:
-
-```ts
-import { oxlint } from '@jterrazz/typescript';
-import { defineConfig } from 'oxlint';
-
-export default defineConfig({
-    extends: [oxlint.node, oxlint.hexagonal],
-});
-```
-
-Rules enforced:
-
-- `domain/` cannot import from other layers
-- `application/` cannot import infrastructure
-- `presentation/ui/` cannot import navigation
-- `features/` cannot import other features
-
-### Knip
-
-A base config is automatically merged with any project-local `knip.json` — `@jterrazz/*` deps, plugin deps, and convention paths are auto-ignored. Only create a `knip.json` for project-specific overrides.
-
-## Formatting rules
-
-- 100 char print width
-- 4-space indentation
-- Single quotes
-- Trailing commas
-- Semicolons
-- LF line endings
-
-## Docs generation
-
-`typescript docs` requires no configuration. It reads TSDoc from `src/index.ts` and generates:
-
-- API reference as markdown under `.docs/`
-- `llms.txt` — structured index for LLM discovery
-- `llms-full.txt` — full reference in one file for LLM context windows
-
-Deploy with the shared workflow:
-
-```yaml
-# .github/workflows/docs.yaml
-jobs:
-    docs:
-        uses: jterrazz/jterrazz-actions/.github/workflows/docs.yaml@main
-```
-
-Add `.docs` to `.gitignore` — it's a build artifact, not committed.
-
 ## Always
 
-- Entry point is `src/index.ts`
-- Use `.js` extensions in relative imports: `import { foo } from "./bar.js"`
-- Add TSDoc to all public exports — `typescript docs` derives everything from it
-- Run `typescript fix` before committing, not just `typescript check`
-- Never disable rules inline without a comment explaining why
-- Sorting is enforced by perfectionist plugin — imports, types, object keys
+- Entry point is `src/index.ts` (the single public barrel); use `.js` extensions in relative imports.
+- Add TSDoc to every public export — `typescript docs` derives the reference from it.
+- Run `typescript fix` before committing, not just `typescript check`.
+- `typescript docs` writes a **committed** projection under `docs/reference/` — commit it, and regenerate in the same change that touches the source (`check` runs a Docs sync pass). Never hand-edit a generated file, and never gitignore `docs/`.

@@ -8,150 +8,21 @@ The complete TypeScript toolchain — build, run, check, and document with zero 
 npm install @jterrazz/typescript --save-dev
 ```
 
-## Setup
-
-### 1. Choose a TypeScript configuration
-
-```json
-// tsconfig.json - Pick one:
-{ "extends": "@jterrazz/typescript/tsconfig/node" }  // Node.js projects
-{ "extends": "@jterrazz/typescript/tsconfig/next" }  // Next.js projects
-{ "extends": "@jterrazz/typescript/tsconfig/expo" }  // Expo/React Native
-```
-
-### 2. Create the lint and format configs
-
-```ts
-// oxlint.config.ts
-import { oxlint } from '@jterrazz/typescript';
-import { defineConfig } from 'oxlint';
-
-export default defineConfig({
-    extends: [oxlint.node],
-});
-```
-
-```ts
-// oxfmt.config.ts
-import { oxfmt } from '@jterrazz/typescript';
-import { defineConfig } from 'oxfmt';
-
-export default defineConfig(oxfmt);
-```
-
-### 3. Use the CLI
+## The CLI
 
 ```bash
 npx typescript build       # Build application (ESM + types)
 npx typescript bundle      # Bundle library (ESM + CJS + types)
 npx typescript start       # Run the built application
 npx typescript dev         # Build, run, and rebuild on changes
-npx typescript docs        # Generate API reference + llms.txt
-npx typescript check       # Check types, lint, formatting, and unused code
+npx typescript docs        # Compile the committed docs/reference tree from source
+npx typescript check       # Type-check, lint, format-check, and unused-code in parallel
 npx typescript fix         # Auto-fix lint and formatting issues
-```
-
-## Building
-
-- **Blazing fast** — Powered by [tsdown](https://tsdown.dev) / [Rolldown](https://rolldown.rs) (Rust)
-- **Zero configuration** — Works out of the box
-- **Multiple outputs** — ESM + CommonJS + TypeScript declarations
-- **Source maps** — Full debugging support
-
-| Command             | Output            | Description              |
-| ------------------- | ----------------- | ------------------------ |
-| `typescript build`  | `dist/index.js`   | ESM bundle               |
-|                     | `dist/index.d.ts` | TypeScript declarations  |
-| `typescript bundle` | `dist/index.js`   | ESM bundle               |
-|                     | `dist/index.cjs`  | CommonJS bundle          |
-|                     | `dist/index.d.ts` | TypeScript declarations  |
-| `typescript start`  | —                 | Runs `dist/index.js`     |
-| `typescript dev`    | `dist/index.js`   | Watch + rebuild + run    |
-| `typescript docs`   | `.docs/`          | API reference + llms.txt |
-
-### Project structure
-
-```
-your-project/
-├── src/
-│   ├── index.ts           # Main entry point
-│   └── instrumentation.ts # Optional instrumentation entry point
-├── dist/                  # Generated files
-└── tsconfig.json          # Extends this package
-```
-
-## Quality checks
-
-`typescript check` runs four tools in parallel:
-
-| Tool   | Purpose              |
-| ------ | -------------------- |
-| tsc    | Type checking        |
-| oxlint | Linting              |
-| oxfmt  | Formatting           |
-| knip   | Unused code analysis |
-
-`typescript fix` runs tsc, oxlint (with `--fix`), and oxfmt in parallel (knip excluded).
-
-### Lint presets
-
-| Preset        | Use Case                          |
-| ------------- | --------------------------------- |
-| `oxlint.node` | Node.js (requires .js extensions) |
-| `oxlint.expo` | Expo / React Native               |
-| `oxlint.next` | Next.js                           |
-
-### Architecture enforcement
-
-Enforce hexagonal architecture boundaries with the additive `oxlint.hexagonal` preset:
-
-```ts
-import { oxlint } from '@jterrazz/typescript';
-import { defineConfig } from 'oxlint';
-
-export default defineConfig({
-    extends: [oxlint.node, oxlint.hexagonal],
-});
-```
-
-Rules enforced:
-
-- `domain/` cannot import from other layers
-- `application/` cannot import infrastructure
-- `presentation/ui/` cannot import navigation
-- `features/` cannot import other features
-
-### Unused code detection
-
-`typescript check` runs [Knip](https://knip.dev/) to detect unused files, exports, and dependencies. A base config is automatically merged with any project-local `knip.json`, handling common ecosystem patterns:
-
-- `@jterrazz/*` packages auto-ignored
-- Published libraries: `exports`/`types`/`files` rules auto-disabled
-- Convention paths (`fixtures/`, `expected/`, `docs/`) auto-ignored
-- Plugin dependencies (`*-plugin-*`, `@scope/*`) auto-ignored
-
-For fine-tuning, create a `knip.json` with only project-specific overrides.
-
-## API docs generation
-
-`typescript docs` reads TSDoc from `src/index.ts` and generates:
-
-- **Typedoc markdown** — Full API reference under `.docs/`
-- **`llms.txt`** — Structured index following the [llms.txt standard](https://llmstxt.org/)
-- **`llms-full.txt`** — Complete reference in one file for LLM context windows
-
-No `typedoc.json` needed. Pair with the shared CI workflow to auto-deploy:
-
-```yaml
-# .github/workflows/docs.yaml
-jobs:
-    docs:
-        uses: jterrazz/jterrazz-actions/.github/workflows/docs.yaml@main
 ```
 
 ## How it works
 
-The toolchain is fully compiled — no JavaScript in the hot path:
+Fully compiled — no JavaScript in the hot path:
 
 | Step         | Tool                                                             | Language |
 | ------------ | ---------------------------------------------------------------- | -------- |
@@ -163,6 +34,19 @@ The toolchain is fully compiled — no JavaScript in the hot path:
 | Format       | [Oxfmt](https://oxc.rs/docs/guide/usage/formatter)               | Rust     |
 | Unused code  | [Knip](https://knip.dev)                                         | Node     |
 | API docs     | [Typedoc](https://typedoc.org)                                   | Node     |
+
+## Documentation
+
+The full corpus lives in [`docs/`](docs/):
+
+- [Getting started](docs/01-getting-started.md) — install and configure a project.
+- [Building](docs/02-building.md) — `build`, `bundle`, `start`, `dev`.
+- [Quality checks](docs/03-quality-checks.md) — `check` / `fix` and their passes.
+- [Lint presets](docs/04-lint-presets.md) — oxlint presets, `compose`, architecture, knip.
+- [Docs pipeline](docs/05-docs-pipeline.md) — the `typescript docs` compiler.
+- [Repo structure](docs/06-repo-structure.md) — the corpus / injection / compiler doctrine.
+
+For agents: read the chapters and the generated [`docs/reference/`](docs/reference/) tree straight from the repo, plus two Claude Code skills — [`skills/jterrazz-typescript`](skills/jterrazz-typescript/SKILL.md) (the toolchain) and [`skills/jterrazz-repo-structure`](skills/jterrazz-repo-structure/SKILL.md) (the repo doctrine).
 
 ## License
 

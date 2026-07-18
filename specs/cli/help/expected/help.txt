@@ -7,7 +7,7 @@ Commands:
   bundle    Bundle library (ESM + CJS + types)
   start     Run the built application
   dev       Build, run, and rebuild on changes
-  docs      Generate API reference + llms.txt from TSDoc
+  docs      Generate the committed docs/reference tree; --check verifies sync
   check     Check types, lint, formatting, and unused code
   fix       Auto-fix lint and formatting issues
 
@@ -17,5 +17,6 @@ Examples:
   typescript start
   typescript dev
   typescript docs
+  typescript docs --check
   typescript check
   typescript fix

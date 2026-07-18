@@ -88,11 +88,19 @@ case "$COMMAND" in
         ;;
 
     docs)
-        printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Generating API docs...\n\n"
+        if [ "${1:-}" = "--check" ]; then
+            printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Checking docs are in sync...\n\n"
 
-        bash "$SCRIPT_DIR/commands/docs.sh" "$PROJECT_ROOT" "$PACKAGE_ROOT"
+            bash "$SCRIPT_DIR/commands/docs.sh" "$PROJECT_ROOT" "$PACKAGE_ROOT" --check
 
-        printf "\n${GREEN}Docs generated at .docs/${NC}\n"
+            printf "${GREEN}Docs are in sync${NC}\n"
+        else
+            printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Generating API docs...\n\n"
+
+            bash "$SCRIPT_DIR/commands/docs.sh" "$PROJECT_ROOT" "$PACKAGE_ROOT"
+
+            printf "\n${GREEN}Docs generated at docs/${NC}\n"
+        fi
         ;;
 
     check|fix)
@@ -107,7 +115,7 @@ case "$COMMAND" in
         printf "  bundle    Bundle library (ESM + CJS + types)\n"
         printf "  start     Run the built application\n"
         printf "  dev       Build, run, and rebuild on changes\n"
-        printf "  docs      Generate API reference + llms.txt from TSDoc\n"
+        printf "  docs      Generate the committed docs/reference tree; --check verifies sync\n"
         printf "  check     Check types, lint, formatting, and unused code\n"
         printf "  fix       Auto-fix lint and formatting issues\n\n"
         printf "Examples:\n"
@@ -116,6 +124,7 @@ case "$COMMAND" in
         printf "  typescript start\n"
         printf "  typescript dev\n"
         printf "  typescript docs\n"
+        printf "  typescript docs --check\n"
         printf "  typescript check\n"
         printf "  typescript fix\n"
         exit 1

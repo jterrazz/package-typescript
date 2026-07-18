@@ -1,6 +1,23 @@
 # Agent brief — `@jterrazz/typescript`
 
-The complete TypeScript toolchain for the @jterrazz ecosystem: builds, quality checks, and API docs generation. Zero config for consumers.
+The complete TypeScript toolchain for the @jterrazz ecosystem: builds, quality checks, and API docs. Zero config for consumers. This file **routes**; it does not restate what the corpus already says.
+
+## Where knowledge lives (route here first)
+
+The consumer-facing corpus is `docs/` + `README.md`. Do not duplicate it — link to it.
+
+| Working on…                                   | Read                         |
+| --------------------------------------------- | ---------------------------- |
+| Setup, tsconfig/oxlint/oxfmt wiring           | `docs/01-getting-started.md` |
+| build / bundle / start / dev                  | `docs/02-building.md`        |
+| check / fix and their passes                  | `docs/03-quality-checks.md`  |
+| oxlint presets, `compose`, architecture, knip | `docs/04-lint-presets.md`    |
+| the `typescript docs` compiler                | `docs/05-docs-pipeline.md`   |
+| repo doctrine (corpus / injection / compiler) | `docs/06-repo-structure.md`  |
+
+`docs/reference/` is a **generated projection** — never hand-edit it (regenerate with `typescript docs`).
+
+Two Claude Code skills route into this corpus, split by capability: `skills/jterrazz-typescript/` (building, checking, linting, formatting, docs generation) and `skills/jterrazz-repo-structure/` (where knowledge lives, corpus vs injection vs compiler). Neither restates the corpus — they route into it.
 
 ## Setup
 
@@ -8,86 +25,55 @@ The complete TypeScript toolchain for the @jterrazz ecosystem: builds, quality c
 npm install
 ```
 
-## Commands
-
-| Task                             | Command            |
-| -------------------------------- | ------------------ |
-| Run all tests                    | `npm test`         |
-| Lint + format + typecheck + knip | `npm run lint`     |
-| Auto-fix lint issues             | `npm run lint:fix` |
-
-No build step — this package ships JS directly. The repo dogfoods its own CLI (`npm run lint` → `./bin/typescript.sh check`).
+No build step — this package ships JS directly. It dogfoods its own CLI (`npm run lint` → `./bin/typescript.sh check`).
 
 ## Repo layout
 
 ```
 bin/
-├── typescript.sh          # CLI entry point (build, bundle, start, dev, docs, check, fix)
+├── typescript.sh          # CLI entry (build, bundle, start, dev, docs [--check], check, fix)
 └── commands/
-    ├── check.sh           # Quality checks: tsc + oxlint + oxfmt + knip in parallel
-    └── docs.sh            # Docs generation logic (typedoc + llms.txt)
-lib/
-└── merge-knip-config.js   # Merges knip base preset with project-local knip.json
+    ├── check.sh           # Quality passes in parallel: tsc + oxlint + oxfmt + knip + (conventions) + (docs sync)
+    └── docs.sh            # The docs compiler: typedoc reference tree, generate | --check
+lib/merge-knip-config.js   # Merges knip base preset with project-local knip.json
 presets/
-├── tsconfig/              # TypeScript config presets (node, next, expo)
-├── tsdown/                # Build config presets (build.js, bundle.js)
-├── oxlint/                # Lint presets (base, node, next, expo) + hexagonal architecture
-├── oxfmt/                 # Format preset
-└── knip/                  # Unused-code base config
-src/index.js               # Package entry — exports { oxlint, oxfmt } presets for configs
-specs/                     # Product specifications (@jterrazz/test, CONVENTIONS C1': facet → domain)
-├── cli/                   # THE facet — runners at its root, tests in domain folders
-│   ├── cli.specification.ts        # THE product runner (bin/typescript.sh) — every spec goes through real product commands
-│   ├── oxlint.specification.ts     # b9w-suppressed exception: asserts the shipped oxlint PRESETS (`-c <preset>`)
-│   ├── oxfmt.specification.ts      # b9w-suppressed exception: asserts the shipped oxfmt PRESET
-│   ├── resolution.specification.ts # sandbox runner (run-split-install.sh → real check.sh in a synthetic install tree)
-│   ├── check/             # cli.exec('check'/'fix'): kitchen-sink golden files + per-tool aspects (linter, architecture, knip, typechecker, formatter)
-│   ├── build/             # build.test.ts + bundle.test.ts
-│   ├── dev/ · start/ · help/ · preset/  # remaining domains
-│   └── */fixtures/, */expected/    # domain-local assets (fixture projects, golden snapshots)
-└── fixtures/              # SHARED pool via .fixture('$FIXTURES/…'): sample-app, sample-lib, broken-app
-skills/jterrazz-typescript/SKILL.md
+├── tsconfig/ · tsdown/ · oxlint/ (+ architectures/hexagonal) · oxfmt/ · knip/
+src/index.js + index.d.ts  # Package entry — exports { oxfmt, oxlint } presets (JS-shipped, no build)
+docs/                      # The corpus: numbered chapters + the generated reference/ projection
+specs/                     # Product specifications (@jterrazz/test) — see below
 ```
-
-## Conventions
-
-This repo follows the `jterrazz-stack` skill for cross-cutting concerns, plus the `@jterrazz/test` CONVENTIONS (machine-enforced via the auto-wired oxlint plugin):
-
-- **Layout (C1')** — runners (`*.specification.ts`) sit at the facet root (`specs/cli/`); tests sit at facet/domain depth (`specs/cli/<domain>/<aspect>.test.ts`). Never a test at the facet root, never a runner inside a domain.
-- **Single real runner (B9)** — specs exercise the PRODUCT command (`cli.exec('check')`, `cli.exec('build')`…), never a third-party binary in `node_modules/.bin`. The two preset runners (oxlint/oxfmt) are sanctioned, reason-commented `b9w-product-command` suppressions: the product they guard IS the preset, and `typescript check` cannot load a preset inside a temp-workdir fixture.
-- **Golden files (D11)** — tool output is asserted as full snapshots per scoped use case (`expect(result.stdout).toMatch('<name>.txt')`, tokens like `{{duration}}` for volatile parts, regenerate with `TEST_UPDATE=1`). The kitchen-sink fixture + `check.txt`/`fix.txt` is the whole-surface regression net (it churns — that's its role). `.grep()` is the scalpel for targeted presence/absence probes (the per-rule preset assertions).
-- **Titles (J5)** — `test('…')`/`describe('…')` titles start lowercase. Every test carries `// Given -` and `// Then -` comments.
 
 ## Two TypeScript compilers, on purpose
 
-`typescript check` type-checks with the official TypeScript 7 Go compiler,
-pulled in via the per-platform `@typescript/typescript-*` optionalDependencies
-(resolved by path in `check.sh`). The regular `typescript` dependency stays on
-^6 because typedoc (peer range 5–6) and eslint-plugin-perfectionist (bare
-`require('typescript')`) need the JS compiler API, which the Go package no
-longer ships. Never add `typescript@7` (or an npm alias of it) to the tree:
-under pnpm's hoist fallback it can hijack perfectionist's typescript lookup
-(`isExternalModuleNameRelative is not a function`), intermittently.
+`typescript check` type-checks with the official TypeScript 7 Go compiler, pulled in via the per-platform `@typescript/typescript-*` optionalDependencies (resolved by path in `check.sh`). The regular `typescript` dependency stays on ^6 because typedoc (peer range 5–6) and eslint-plugin-perfectionist (bare `require('typescript')`) need the JS compiler API, which the Go package no longer ships. Never add `typescript@7` (or an npm alias of it) to the tree: under pnpm's hoist fallback it can hijack perfectionist's typescript lookup (`isExternalModuleNameRelative is not a function`), intermittently.
 
-## Composable lint presets — explicit wiring
+## Docs compiler internals
 
-`@jterrazz/typescript/oxlint` exports the named presets (`node`, `expo`, `next`, `hexagonal`) plus `compose(...fragments)` — deterministic merge: `jsPlugins`/`plugins`/`ignorePatterns`/`extends` concatenated + deduped, `rules`/`categories` shallow-merged (last wins), `overrides` concatenated. There is NO dependency auto-detection in the presets: a project using `@jterrazz/test` composes its `testing` fragment explicitly:
+- `docs.sh` resolves the entry barrel as `src/index.ts`, else `src/index.d.ts` (this package is the JS-shipped case — its `tsconfig.json` includes `src/index.d.ts` so typedoc can read it).
+- Output goes to a **committed** path under `docs/` (the reference tree), each file stamped with a `DO-NOT-EDIT` first line. Generation is deterministic (`LC_ALL=C`, `find | sort`, no timestamps) — two runs are byte-identical. Only `docs/reference/` is projected: it is the one cross-layer compile (source → docs); the chapters are authored corpus, not re-packaged into an `llms.txt` (that would be a same-layer presentation, and there is no delivery target for one here).
+- `docs.sh --check` regenerates into a temp dir and diffs the committed reference tree without touching it; `check.sh` runs it as the **Docs (sync)** pass once `docs/reference/` exists.
 
-```typescript
-import { testing } from '@jterrazz/test/oxlint';
-import { compose, node } from '@jterrazz/typescript/oxlint';
+## Self-lint ordering
 
-export default compose(node, testing);
-```
+`oxlint.config.ts` loads the `@jterrazz/test` ESM plugin via the exports map, and `check` type-checks `specs/` + `src/index.d.ts`. `npm run lint` is `typescript check` on this repo — it now includes the Docs (sync) pass on this repo's own committed `docs/`, the ultimate dogfood. Keep the committed docs in sync (regenerate on any corpus change) or lint fails.
 
-This repo's own `oxlint.config.ts` is consumer #1 of that pattern (self-reference through the exports map). Detection survives ONLY as orchestration in `check.sh`: the `jterrazz-test-check` conventions step runs when the project depends on `@jterrazz/test` AND has a `specs/` directory (a runner decision, not config identity), and the loud CommonJS-config warning stays.
+## Specs (self-test)
 
-## What the CLI provides to consumers
+`specs/cli/` drives the real product command through `specification.cli(bin/typescript.sh)` (CONVENTIONS B9 — never a tool underneath it). Layout C1': runners (`*.specification.ts`) at the facet root, tests in domain folders (`specs/cli/<domain>/<aspect>.test.ts`). Shared fixture projects in `specs/fixtures/` (reached via `.fixture('$FIXTURES/…')`); domain-local fixtures/goldens under `specs/cli/<domain>/`.
 
-- `typescript build` — ESM app build via tsdown
-- `typescript bundle` — ESM + CJS library bundle via tsdown
-- `typescript start` — Run dist/index.js with source maps
-- `typescript dev` — Watch + rebuild + run
-- `typescript docs` — Generate API reference + llms.txt + llms-full.txt from TSDoc (no typedoc.json needed)
-- `typescript check` — Type check (tsc, TypeScript 7) + lint (oxlint) + format check (oxfmt) + unused code (knip), in parallel
-- `typescript fix` — Auto-fix lint and formatting issues
+- `specs/cli/docs/` — the docs compiler: `generation.test.ts` (byte golden of the committed tree + header + enum sweep) and `sync.test.ts` (`docs --check` green/red + no-docs guard). Drift fixtures overlay `sample-documented` to tamper one file.
+- `specs/cli/check/` — kitchen-sink whole-surface goldens (`check.txt`/`fix.txt`) + per-tool aspects; `docs-sync.test.ts` proves the Docs pass appears only when `docs/reference/` exists.
+- Golden files (D11): full snapshots per use case, tokens for volatile parts, regenerate with `TEST_UPDATE=1`. `.grep()` is the scalpel for targeted probes.
+
+## Commands
+
+| Task                                         | Command                    |
+| -------------------------------------------- | -------------------------- |
+| Run all tests                                | `npm test`                 |
+| Lint + format + typecheck + knip + docs sync | `npm run lint`             |
+| Auto-fix lint issues                         | `npm run lint:fix`         |
+| Regenerate docs projections                  | `./bin/typescript.sh docs` |
+
+## Standing rule
+
+A change to the corpus (README or a chapter) or the public API means **regenerate the projections in the same change** (`./bin/typescript.sh docs`) — the Docs (sync) pass will fail otherwise. A change to the public API also updates `README.md`, the `docs/` chapters, and `skills/jterrazz-typescript/`. A change to the repo-structure doctrine also updates `skills/jterrazz-repo-structure/`.

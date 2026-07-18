@@ -190,12 +190,24 @@ run_checks() {
         checker_pid=$!
     fi
 
+    # Docs (sync): only in check mode, and only once the project has generated
+    # its committed docs (docs/reference/ exists — opt-in by first generation).
+    # Delegates to docs.sh --check: regenerate into a temp dir, diff the
+    # committed projections. Never duplicates the compiler's logic.
+    local docs_pid=""
+    local docs_status=0
+    if [ "$FIX_MODE" = false ] && [ -d "docs/reference" ]; then
+        bash "$SCRIPT_DIR/docs.sh" "$(pwd)" "$PACKAGE_ROOT" --check > "$tmp_dir/docs.log" 2>&1 &
+        docs_pid=$!
+    fi
+
     # Wait and collect statuses
     wait $type_pid;   local type_status=$?
     wait $lint_pid;   local lint_status=$?
     wait $format_pid; local format_status=$?
     [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
     [ -n "$checker_pid" ] && { wait $checker_pid; checker_status=$?; }
+    [ -n "$docs_pid" ] && { wait $docs_pid; docs_status=$?; }
 
     # Print results — quiet on success, verbose on failure: a tool's captured log
     # is shown only when it failed, so green output stays byte-identical across
@@ -246,6 +258,16 @@ run_checks() {
                 printf "${GREEN}✓ Passed${NC}\n"
             fi
         fi
+
+        if [ -n "$docs_pid" ]; then
+            printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Docs (sync)\n\n"
+            if [ $docs_status -ne 0 ]; then
+                [ -s "$tmp_dir/docs.log" ] && cat "$tmp_dir/docs.log"
+                printf "${RED}✗ Failed with exit code %d${NC}\n" $docs_status
+            else
+                printf "${GREEN}✓ Passed${NC}\n"
+            fi
+        fi
     fi
 
     # Summary
@@ -255,7 +277,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $checker_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

@@ -1,7 +1,7 @@
  TYPESCRIPT  Generating API docs...
 
 [info] Loaded plugin typedoc-plugin-markdown
-[info] markdown generated at {{path}}
-Generated {{path}} and {{path}}
+[info] markdown generated at ./docs/reference
+Generated docs/reference/
 
-Docs generated at .docs/
+Docs generated at docs/
