@@ -5,4 +5,4 @@
 const oxfmt: ConfigObject;
 ```
 
-Defined in: [index.d.ts:3](https://github.com/jterrazz/package-typescript/blob/3aa14214483c95d0317728570a27d920281baea2/src/index.d.ts#L3)
+Defined in: [index.d.ts:3](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L3)

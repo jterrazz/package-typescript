@@ -5,11 +5,11 @@
 const default: object;
 ```
 
-Defined in: [index.d.ts:12](https://github.com/jterrazz/package-typescript/blob/3aa14214483c95d0317728570a27d920281baea2/src/index.d.ts#L12)
+Defined in: [index.d.ts:12](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L12)
 
 ## Type Declaration
 
 | Name | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="property-oxfmt"></a> `oxfmt` | *typeof* [`oxfmt`](oxfmt.md) | [index.d.ts:13](https://github.com/jterrazz/package-typescript/blob/3aa14214483c95d0317728570a27d920281baea2/src/index.d.ts#L13) |
-| <a id="property-oxlint"></a> `oxlint` | *typeof* [`oxlint`](oxlint.md) | [index.d.ts:14](https://github.com/jterrazz/package-typescript/blob/3aa14214483c95d0317728570a27d920281baea2/src/index.d.ts#L14) |
+| <a id="property-oxfmt"></a> `oxfmt` | *typeof* [`oxfmt`](oxfmt.md) | [index.d.ts:13](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L13) |
+| <a id="property-oxlint"></a> `oxlint` | *typeof* [`oxlint`](oxlint.md) | [index.d.ts:14](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L14) |

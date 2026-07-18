@@ -85,10 +85,15 @@ generate_docs() {
 
     # Step 1 — typedoc markdown tree. cleanOutputDir (default) wipes the target
     # first, so members removed from the source vanish from the committed tree.
+    # --gitRevision main pins source links to the branch, not a commit SHA:
+    # a SHA link would name the commit BEFORE the one carrying the regenerated
+    # docs, so every docs-carrying commit would invalidate its own projection
+    # (bootstrap paradox — the sync check could never be green at HEAD).
     "$TYPEDOC" \
         --entryPoints "$ENTRY" \
         --plugin typedoc-plugin-markdown \
         --out "$REF" \
+        --gitRevision main \
         --readme none \
         --entryFileName index.md \
         --hideBreadcrumbs true \

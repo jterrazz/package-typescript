@@ -5,13 +5,13 @@
 const oxlint: object;
 ```
 
-Defined in: [index.d.ts:5](https://github.com/jterrazz/package-typescript/blob/3aa14214483c95d0317728570a27d920281baea2/src/index.d.ts#L5)
+Defined in: [index.d.ts:5](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L5)
 
 ## Type Declaration
 
 | Name | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="property-expo"></a> `expo` | `ConfigObject` | [index.d.ts:6](https://github.com/jterrazz/package-typescript/blob/3aa14214483c95d0317728570a27d920281baea2/src/index.d.ts#L6) |
-| <a id="property-hexagonal"></a> `hexagonal` | `ConfigObject` | [index.d.ts:7](https://github.com/jterrazz/package-typescript/blob/3aa14214483c95d0317728570a27d920281baea2/src/index.d.ts#L7) |
-| <a id="property-next"></a> `next` | `ConfigObject` | [index.d.ts:8](https://github.com/jterrazz/package-typescript/blob/3aa14214483c95d0317728570a27d920281baea2/src/index.d.ts#L8) |
-| <a id="property-node"></a> `node` | `ConfigObject` | [index.d.ts:9](https://github.com/jterrazz/package-typescript/blob/3aa14214483c95d0317728570a27d920281baea2/src/index.d.ts#L9) |
+| <a id="property-expo"></a> `expo` | `ConfigObject` | [index.d.ts:6](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L6) |
+| <a id="property-hexagonal"></a> `hexagonal` | `ConfigObject` | [index.d.ts:7](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L7) |
+| <a id="property-next"></a> `next` | `ConfigObject` | [index.d.ts:8](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L8) |
+| <a id="property-node"></a> `node` | `ConfigObject` | [index.d.ts:9](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L9) |
