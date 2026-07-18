@@ -1,6 +1,6 @@
 {
     "name": "@jterrazz/typescript",
-    "version": "6.1.1",
+    "version": "6.2.0",
     "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
     "repository": {
         "type": "git",
@@ -22,6 +22,10 @@
         ".": {
             "types": "./src/index.d.ts",
             "default": "./src/index.js"
+        },
+        "./oxlint": {
+            "types": "./src/oxlint.d.ts",
+            "default": "./src/oxlint.js"
         },
         "./tsconfig/*": "./presets/tsconfig/*.json",
         "./tsconfig/*.json": "./presets/tsconfig/*.json",
@@ -52,7 +56,7 @@
         "typescript": "^6.0.0"
     },
     "devDependencies": {
-        "@jterrazz/test": "^8.0.0",
+        "@jterrazz/test": "^9.0.0",
         "@types/node": "^26.1.1",
         "vitest": "^4.1.10"
     },

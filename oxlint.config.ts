@@ -1,17 +1,10 @@
+// Consumer #1 of our own composable model (self-reference via the exports map).
+import { testing } from '@jterrazz/test/oxlint';
+import { compose, node } from '@jterrazz/typescript/oxlint';
 import { defineConfig } from 'oxlint';
 
-import base from './presets/oxlint/base.js';
-
-export default defineConfig({
-    extends: [base],
-    ignorePatterns: [
-        'dist',
-        'node_modules',
-        '**/fixtures/**',
-        '**/invalid',
-        '**/valid',
-        '**/inputs',
-        '**/expected',
-        '**/hexagonal',
-    ],
-});
+export default defineConfig(
+    compose(node, testing, {
+        ignorePatterns: ['dist', 'node_modules', '**/fixtures/**'],
+    }),
+);

@@ -1,0 +1,4 @@
+{
+    "name": "consumer-cjs",
+    "devDependencies": { "@jterrazz/test": "^9.0.0" }
+}

@@ -44,6 +44,17 @@ import { defineConfig } from 'oxlint';
 export default defineConfig({ extends: [oxlint.node] }); // or oxlint.next, oxlint.expo
 ```
 
+Projects using `@jterrazz/test` compose its lint fragment EXPLICITLY (no auto-detection) via the `@jterrazz/typescript/oxlint` entry:
+
+```ts
+import { testing } from '@jterrazz/test/oxlint';
+import { compose, node } from '@jterrazz/typescript/oxlint';
+
+export default compose(node, testing);
+```
+
+`compose(...fragments)` merges deterministically (jsPlugins/plugins/ignorePatterns concatenated + deduped, rules/categories last-wins, overrides concatenated) — compose an extra fragment last to deviate on a rule.
+
 **`oxfmt.config.ts`**:
 
 ```ts

@@ -66,6 +66,41 @@ TSC=$(find_tsc)
 OXLINT=$(find_binary oxlint)
 OXFMT=$(find_binary oxfmt)
 KNIP=$(find_binary knip)
+CHECKER=$(find_binary jterrazz-test-check)
+
+# The @jterrazz/test conventions checker (D4 tokens, C8/C9 fixtures) runs only when the
+# consuming project depends on @jterrazz/test — auto-detected from its package.json.
+project_uses_jterrazz_test() {
+    [ -f "package.json" ] || return 1
+    node -e 'const p=require("./package.json");const d={...p.dependencies,...p.devDependencies,...p.peerDependencies};process.exit(d["@jterrazz/test"]?0:1)' 2>/dev/null
+}
+
+# The @jterrazz/test oxlint plugin is ESM-only. A CommonJS oxlint config silently drops
+# it (oxlint prints a load warning and still exits 0) — none of the jterrazz/* rules run.
+# Warn loudly when that pitfall is detectable.
+warn_cjs_oxlint_config() {
+    local cfg=""
+    for c in oxlint.config.ts oxlint.config.mjs oxlint.config.cjs oxlint.config.js; do
+        [ -f "$c" ] && { cfg="$c"; break; }
+    done
+    [ -z "$cfg" ] && return 0
+
+    local is_cjs=false
+    case "$cfg" in
+        *.cjs) is_cjs=true ;;
+        *.js)
+            if ! node -e 'process.exit(require("./package.json").type==="module"?0:1)' 2>/dev/null; then
+                is_cjs=true
+            fi
+            ;;
+    esac
+
+    if [ "$is_cjs" = true ]; then
+        printf "${RED} WARNING ${NC} @jterrazz/test is installed but %s is CommonJS.\n" "$cfg"
+        printf "          The @jterrazz/test oxlint plugin is ESM-only and will be SILENTLY DROPPED —\n"
+        printf "          none of the jterrazz/* rules will run. Switch to an ESM config (oxlint.config.ts or .mjs).\n\n"
+    fi
+}
 
 # Parse command and args
 COMMAND=""
@@ -109,6 +144,10 @@ run_checks() {
 
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
 
+    if project_uses_jterrazz_test; then
+        warn_cjs_oxlint_config
+    fi
+
     # Run all tools in parallel
     "$TSC" --noEmit > "$tmp_dir/type.log" 2>&1 &
     local type_pid=$!
@@ -142,11 +181,21 @@ run_checks() {
         knip_pid=$!
     fi
 
+    # Conventions checker: only in check mode, only when the project uses @jterrazz/test
+    # and has a specs/ directory to validate.
+    local checker_pid=""
+    local checker_status=0
+    if [ "$FIX_MODE" = false ] && [ -d "specs" ] && project_uses_jterrazz_test; then
+        "$CHECKER" specs > "$tmp_dir/checker.log" 2>&1 &
+        checker_pid=$!
+    fi
+
     # Wait and collect statuses
     wait $type_pid;   local type_status=$?
     wait $lint_pid;   local lint_status=$?
     wait $format_pid; local format_status=$?
     [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
+    [ -n "$checker_pid" ] && { wait $checker_pid; checker_status=$?; }
 
     # Print results
     printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} TypeScript Check\n\n"
@@ -169,6 +218,12 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Knip (unused code)\n\n"
         [ -s "$tmp_dir/knip.log" ] && cat "$tmp_dir/knip.log"
         [ $knip_status -ne 0 ] && printf "${RED}✗ Failed with exit code %d${NC}\n" $knip_status || printf "${GREEN}✓ Passed${NC}\n"
+
+        if [ -n "$checker_pid" ]; then
+            printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Test Conventions (@jterrazz/test)\n\n"
+            [ -s "$tmp_dir/checker.log" ] && cat "$tmp_dir/checker.log"
+            [ $checker_status -ne 0 ] && printf "${RED}✗ Failed with exit code %d${NC}\n" $checker_status || printf "${GREEN}✓ Passed${NC}\n"
+        fi
     fi
 
     # Summary
@@ -178,7 +233,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $checker_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

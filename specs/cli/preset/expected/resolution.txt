@@ -1,0 +1,25 @@
+ START  Running quality checks
+
+ RUN  TypeScript Check
+
+tsc-stub-ran
+✓ Passed
+
+ RUN  Oxlint Check
+
+oxlint-stub-ran
+✓ Passed
+
+ RUN  Oxfmt Check
+
+oxfmt-stub-ran
+✓ Passed
+
+ RUN  Knip (unused code)
+
+knip-stub-ran
+✓ Passed
+
+ END  Finalizing quality checks
+
+✓ All checks passed

@@ -35,17 +35,28 @@ presets/
 ├── oxfmt/                 # Format preset
 └── knip/                  # Unused-code base config
 src/index.js               # Package entry — exports { oxlint, oxfmt } presets for configs
-tests/
-├── e2e/                   # CLI command tests (build, bundle, dev, start, cli)
-│   └── check/             # Quality check tests (linter, formatter, typechecker, knip, architecture)
-├── fixtures/              # Sample projects for testing
-└── setup/                 # Test spec runners
+specs/                     # Product specifications (@jterrazz/test, CONVENTIONS C1': facet → domain)
+├── cli/                   # THE facet — runners at its root, tests in domain folders
+│   ├── cli.specification.ts        # THE product runner (bin/typescript.sh) — every spec goes through real product commands
+│   ├── oxlint.specification.ts     # b9w-suppressed exception: asserts the shipped oxlint PRESETS (`-c <preset>`)
+│   ├── oxfmt.specification.ts      # b9w-suppressed exception: asserts the shipped oxfmt PRESET
+│   ├── resolution.specification.ts # sandbox runner (run-split-install.sh → real check.sh in a synthetic install tree)
+│   ├── check/             # cli.exec('check'/'fix'): kitchen-sink golden files + per-tool aspects (linter, architecture, knip, typechecker, formatter)
+│   ├── build/             # build.test.ts + bundle.test.ts
+│   ├── dev/ · start/ · help/ · preset/  # remaining domains
+│   └── */fixtures/, */expected/    # domain-local assets (fixture projects, golden snapshots)
+└── fixtures/              # SHARED pool via .fixture('$FIXTURES/…'): sample-app, sample-lib, broken-app
 skills/jterrazz-typescript/SKILL.md
 ```
 
 ## Conventions
 
-This repo follows the `jterrazz-stack` skill for cross-cutting concerns.
+This repo follows the `jterrazz-stack` skill for cross-cutting concerns, plus the `@jterrazz/test` CONVENTIONS (machine-enforced via the auto-wired oxlint plugin):
+
+- **Layout (C1')** — runners (`*.specification.ts`) sit at the facet root (`specs/cli/`); tests sit at facet/domain depth (`specs/cli/<domain>/<aspect>.test.ts`). Never a test at the facet root, never a runner inside a domain.
+- **Single real runner (B9)** — specs exercise the PRODUCT command (`cli.exec('check')`, `cli.exec('build')`…), never a third-party binary in `node_modules/.bin`. The two preset runners (oxlint/oxfmt) are sanctioned, reason-commented `b9w-product-command` suppressions: the product they guard IS the preset, and `typescript check` cannot load a preset inside a temp-workdir fixture.
+- **Golden files (D11)** — tool output is asserted as full snapshots per scoped use case (`expect(result.stdout).toMatch('<name>.txt')`, tokens like `{{duration}}` for volatile parts, regenerate with `TEST_UPDATE=1`). The kitchen-sink fixture + `check.txt`/`fix.txt` is the whole-surface regression net (it churns — that's its role). `.grep()` is the scalpel for targeted presence/absence probes (the per-rule preset assertions).
+- **Titles (J5)** — `test('…')`/`describe('…')` titles start lowercase. Every test carries `// Given -` and `// Then -` comments.
 
 ## Two TypeScript compilers, on purpose
 
@@ -57,6 +68,19 @@ pulled in via the per-platform `@typescript/typescript-*` optionalDependencies
 longer ships. Never add `typescript@7` (or an npm alias of it) to the tree:
 under pnpm's hoist fallback it can hijack perfectionist's typescript lookup
 (`isExternalModuleNameRelative is not a function`), intermittently.
+
+## Composable lint presets — explicit wiring
+
+`@jterrazz/typescript/oxlint` exports the named presets (`node`, `expo`, `next`, `hexagonal`) plus `compose(...fragments)` — deterministic merge: `jsPlugins`/`plugins`/`ignorePatterns`/`extends` concatenated + deduped, `rules`/`categories` shallow-merged (last wins), `overrides` concatenated. There is NO dependency auto-detection in the presets: a project using `@jterrazz/test` composes its `testing` fragment explicitly:
+
+```typescript
+import { testing } from '@jterrazz/test/oxlint';
+import { compose, node } from '@jterrazz/typescript/oxlint';
+
+export default compose(node, testing);
+```
+
+This repo's own `oxlint.config.ts` is consumer #1 of that pattern (self-reference through the exports map). Detection survives ONLY as orchestration in `check.sh`: the `jterrazz-test-check` conventions step runs when the project depends on `@jterrazz/test` AND has a `specs/` directory (a runner decision, not config identity), and the loud CommonJS-config warning stays.
 
 ## What the CLI provides to consumers
 

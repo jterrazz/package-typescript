@@ -1,0 +1,26 @@
+ START  Running quality checks
+
+ RUN  TypeScript Check
+
+✓ Passed
+
+ RUN  Oxlint Check
+
+✓ Passed
+
+ RUN  Oxfmt Check
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in {{duration}} on 3 files using {{number}} threads.
+No config found, using defaults. Please add a config file or try `oxfmt --init` if needed.
+✓ Passed
+
+ RUN  Knip (unused code)
+
+✓ Passed
+
+ END  Finalizing quality checks
+
+✓ All checks passed

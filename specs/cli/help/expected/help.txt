@@ -1,0 +1,21 @@
+ TYPESCRIPT  TypeScript toolchain
+
+Usage: typescript <command>
+
+Commands:
+  build     Build application (ESM + types)
+  bundle    Bundle library (ESM + CJS + types)
+  start     Run the built application
+  dev       Build, run, and rebuild on changes
+  docs      Generate API reference + llms.txt from TSDoc
+  check     Check types, lint, formatting, and unused code
+  fix       Auto-fix lint and formatting issues
+
+Examples:
+  typescript build
+  typescript bundle
+  typescript start
+  typescript dev
+  typescript docs
+  typescript check
+  typescript fix

@@ -4,6 +4,19 @@ import { defineConfig } from 'oxlint';
 const require = createRequire(import.meta.url);
 const perfectionistPath = require.resolve('eslint-plugin-perfectionist');
 
+/*
+ * Base lint preset — tooling rules only. Wiring is EXPLICIT: this preset never
+ * auto-detects other jterrazz packages. A project using @jterrazz/test composes
+ * its `testing` fragment itself:
+ *
+ *     import { testing } from '@jterrazz/test/oxlint';
+ *     import { compose, node } from '@jterrazz/typescript/oxlint';
+ *
+ *     export default compose(node, testing);
+ *
+ * (The @jterrazz/test plugin is ESM-only: a CommonJS oxlint config silently
+ * drops it — `typescript check` still warns loudly about that pitfall.)
+ */
 export default defineConfig({
     plugins: ['typescript', 'import', 'oxc', 'unicorn'],
     jsPlugins: [perfectionistPath],

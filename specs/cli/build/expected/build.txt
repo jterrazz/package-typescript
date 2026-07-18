@@ -1,0 +1,14 @@
+ TYPESCRIPT  Building application (ESM + types)...
+
+ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
+ℹ config file: {{path}} 
+ℹ entry: src/index.ts
+ℹ tsconfig: tsconfig.json
+ℹ Build start
+ℹ dist/index.js      {{number}} kB │ gzip: {{number}} kB
+ℹ dist/index.js.map  {{number}} kB │ gzip: {{number}} kB
+ℹ dist/index.d.ts    {{number}} kB │ gzip: {{number}} kB
+ℹ 3 files, total: {{number}} kB
+✔ Build complete in {{duration}}
+
+Build completed
