@@ -10,8 +10,6 @@
 
  RUN  Oxfmt Format
 
-Finished in {{duration}} on 3 files using {{number}} threads.
-No config found, using defaults. Please add a config file or try `oxfmt --init` if needed.
 ✓ Passed
 
  END  Finalizing quality fixes

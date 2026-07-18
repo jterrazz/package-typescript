@@ -197,32 +197,54 @@ run_checks() {
     [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
     [ -n "$checker_pid" ] && { wait $checker_pid; checker_status=$?; }
 
-    # Print results
+    # Print results — quiet on success, verbose on failure: a tool's captured log
+    # is shown only when it failed, so green output stays byte-identical across
+    # platforms (some tool builds print success chatter on Linux but not macOS).
     printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} TypeScript Check\n\n"
-    [ -s "$tmp_dir/type.log" ] && cat "$tmp_dir/type.log"
-    [ $type_status -ne 0 ] && printf "${RED}✗ Failed with exit code %d${NC}\n" $type_status || printf "${GREEN}✓ Passed${NC}\n"
+    if [ $type_status -ne 0 ]; then
+        [ -s "$tmp_dir/type.log" ] && cat "$tmp_dir/type.log"
+        printf "${RED}✗ Failed with exit code %d${NC}\n" $type_status
+    else
+        printf "${GREEN}✓ Passed${NC}\n"
+    fi
 
     local lint_label="Oxlint Check"
     [ "$FIX_MODE" = true ] && lint_label="Oxlint Fix"
     printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} ${lint_label}\n\n"
-    [ -s "$tmp_dir/lint.log" ] && cat "$tmp_dir/lint.log"
-    [ $lint_status -ne 0 ] && printf "${RED}✗ Failed with exit code %d${NC}\n" $lint_status || printf "${GREEN}✓ Passed${NC}\n"
+    if [ $lint_status -ne 0 ]; then
+        [ -s "$tmp_dir/lint.log" ] && cat "$tmp_dir/lint.log"
+        printf "${RED}✗ Failed with exit code %d${NC}\n" $lint_status
+    else
+        printf "${GREEN}✓ Passed${NC}\n"
+    fi
 
     local format_label="Oxfmt Check"
     [ "$FIX_MODE" = true ] && format_label="Oxfmt Format"
     printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} ${format_label}\n\n"
-    [ -s "$tmp_dir/format.log" ] && cat "$tmp_dir/format.log"
-    [ $format_status -ne 0 ] && printf "${RED}✗ Failed with exit code %d${NC}\n" $format_status || printf "${GREEN}✓ Passed${NC}\n"
+    if [ $format_status -ne 0 ]; then
+        [ -s "$tmp_dir/format.log" ] && cat "$tmp_dir/format.log"
+        printf "${RED}✗ Failed with exit code %d${NC}\n" $format_status
+    else
+        printf "${GREEN}✓ Passed${NC}\n"
+    fi
 
     if [ "$FIX_MODE" = false ]; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Knip (unused code)\n\n"
-        [ -s "$tmp_dir/knip.log" ] && cat "$tmp_dir/knip.log"
-        [ $knip_status -ne 0 ] && printf "${RED}✗ Failed with exit code %d${NC}\n" $knip_status || printf "${GREEN}✓ Passed${NC}\n"
+        if [ $knip_status -ne 0 ]; then
+            [ -s "$tmp_dir/knip.log" ] && cat "$tmp_dir/knip.log"
+            printf "${RED}✗ Failed with exit code %d${NC}\n" $knip_status
+        else
+            printf "${GREEN}✓ Passed${NC}\n"
+        fi
 
         if [ -n "$checker_pid" ]; then
             printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Test Conventions (@jterrazz/test)\n\n"
-            [ -s "$tmp_dir/checker.log" ] && cat "$tmp_dir/checker.log"
-            [ $checker_status -ne 0 ] && printf "${RED}✗ Failed with exit code %d${NC}\n" $checker_status || printf "${GREEN}✓ Passed${NC}\n"
+            if [ $checker_status -ne 0 ]; then
+                [ -s "$tmp_dir/checker.log" ] && cat "$tmp_dir/checker.log"
+                printf "${RED}✗ Failed with exit code %d${NC}\n" $checker_status
+            else
+                printf "${GREEN}✓ Passed${NC}\n"
+            fi
         fi
     fi
 
