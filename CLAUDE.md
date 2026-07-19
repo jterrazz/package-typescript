@@ -6,18 +6,18 @@ The complete TypeScript toolchain for the @jterrazz ecosystem: builds, quality c
 
 The consumer-facing corpus is `docs/` + `README.md`. Do not duplicate it — link to it.
 
-| Working on…                                   | Read                         |
-| --------------------------------------------- | ---------------------------- |
-| Setup, tsconfig/oxlint/oxfmt wiring           | `docs/01-getting-started.md` |
-| build / bundle / start / dev                  | `docs/02-building.md`        |
-| check / fix and their passes                  | `docs/03-quality-checks.md`  |
-| oxlint presets, `compose`, architecture, knip | `docs/04-lint-presets.md`    |
-| the `typescript docs` compiler                | `docs/05-docs-pipeline.md`   |
-| repo doctrine (corpus / injection / compiler) | `docs/06-repo-structure.md`  |
+| Working on…                                   | Read                                                                                                                                                                |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Setup, tsconfig/oxlint/oxfmt wiring           | `docs/01-getting-started.md`                                                                                                                                        |
+| build / bundle / start / dev                  | `docs/02-building.md`                                                                                                                                               |
+| check / fix and their passes                  | `docs/03-quality-checks.md`                                                                                                                                         |
+| oxlint presets, `compose`, architecture, knip | `docs/04-lint-presets.md`                                                                                                                                           |
+| the `typescript docs` compiler                | `docs/05-docs-pipeline.md`                                                                                                                                          |
+| repo doctrine (corpus / injection / compiler) | `docs/06-repo-structure.md` (stub) → [`jterrazz-studio` docs/08-repo-structure.md](https://github.com/jterrazz/jterrazz-studio/blob/main/docs/08-repo-structure.md) |
 
 `docs/reference/` is a **generated projection** — never hand-edit it (regenerate with `typescript docs`).
 
-Two Claude Code skills route into this corpus, split by capability: `skills/jterrazz-typescript/` (building, checking, linting, formatting, docs generation) and `skills/jterrazz-repo-structure/` (where knowledge lives, corpus vs injection vs compiler). Neither restates the corpus — they route into it.
+One Claude Code skill routes into this corpus: `skills/jterrazz-typescript/` (building, checking, linting, formatting, docs generation). It does not restate the corpus — it routes into it. The repo-structure doctrine itself is a separate skill, `jterrazz-repo-structure`, which now ships from `jterrazz-studio`.
 
 ## Setup
 
@@ -76,4 +76,4 @@ specs/                     # Product specifications (@jterrazz/test) — see bel
 
 ## Standing rule
 
-A change to the corpus (README or a chapter) or the public API means **regenerate the projections in the same change** (`./bin/typescript.sh docs`) — the Docs (sync) pass will fail otherwise. A change to the public API also updates `README.md`, the `docs/` chapters, and `skills/jterrazz-typescript/`. A change to the repo-structure doctrine also updates `skills/jterrazz-repo-structure/`.
+A change to the corpus (README or a chapter) or the public API means **regenerate the projections in the same change** (`./bin/typescript.sh docs`) — the Docs (sync) pass will fail otherwise. A change to the public API also updates `README.md`, the `docs/` chapters, and `skills/jterrazz-typescript/`. The repo-structure doctrine itself now lives in `jterrazz-studio` — never author it here or in a skill; route to it from `docs/06-repo-structure.md`.

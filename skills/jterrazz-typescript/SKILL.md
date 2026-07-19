@@ -29,7 +29,7 @@ The full knowledge lives in the package's own corpus — route into it, do not r
 | Lint rules, presets, `compose`, architecture, knip | `docs/04-lint-presets.md`    |
 | Docs pipeline (`typescript docs`)                  | `docs/05-docs-pipeline.md`   |
 
-Organizing the repo itself — where knowledge lives, corpus vs skills vs the compiler — is a separate capability: see the `jterrazz-repo-structure` skill.
+Organizing the repo itself — where knowledge lives, corpus vs skills vs the compiler — is a separate capability: see the `jterrazz-repo-structure` skill, which ships from [`jterrazz-studio`](https://github.com/jterrazz/jterrazz-studio).
 
 ## Quick setup
 

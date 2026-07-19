@@ -44,9 +44,9 @@ The full corpus lives in [`docs/`](docs/):
 - [Quality checks](docs/03-quality-checks.md) — `check` / `fix` and their passes.
 - [Lint presets](docs/04-lint-presets.md) — oxlint presets, `compose`, architecture, knip.
 - [Docs pipeline](docs/05-docs-pipeline.md) — the `typescript docs` compiler.
-- [Repo structure](docs/06-repo-structure.md) — the corpus / injection / compiler doctrine.
+- [Repo structure](docs/06-repo-structure.md) — pointer to the shared doctrine; what's TypeScript-specific here.
 
-For agents: read the chapters and the generated [`docs/reference/`](docs/reference/) tree straight from the repo, plus two Claude Code skills — [`skills/jterrazz-typescript`](skills/jterrazz-typescript/SKILL.md) (the toolchain) and [`skills/jterrazz-repo-structure`](skills/jterrazz-repo-structure/SKILL.md) (the repo doctrine).
+For agents: read the chapters and the generated [`docs/reference/`](docs/reference/) tree straight from the repo, plus the [`skills/jterrazz-typescript`](skills/jterrazz-typescript/SKILL.md) Claude Code skill (the toolchain). The repo-structure doctrine itself is a Claude Code skill too — `jterrazz-repo-structure`, shipped from [`jterrazz-studio`](https://github.com/jterrazz/jterrazz-studio).
 
 ## License
 

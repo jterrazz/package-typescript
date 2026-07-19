@@ -32,5 +32,5 @@ The rule: **regenerate in the same change that touches the source.** Never hand-
 
 ## Related
 
-- [Repo structure](06-repo-structure.md) — projections vs presentations, the doctrine.
+- [Repo structure](06-repo-structure.md) — pointer to the shared doctrine on projections vs presentations.
 - [Quality checks](03-quality-checks.md) — the Docs (sync) pass.
