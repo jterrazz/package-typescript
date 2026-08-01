@@ -9,7 +9,17 @@ export default defineConfig({
     extends: [base],
     plugins: ['typescript', 'import', 'react', 'nextjs'],
     jsPlugins: [pluginPath],
-    ignorePatterns: ['dist/**', 'node_modules/**', '.next/**', 'next-env.d.ts'],
+    // `public/` is Next's static dir and `assets/` is the stack's convention
+    // For content trees (jterrazz-web: signed attestation bytes live there —
+    // A formatter pass would invalidate every proof). Neither is source.
+    ignorePatterns: [
+        'dist/**',
+        'node_modules/**',
+        '.next/**',
+        'next-env.d.ts',
+        'assets/**',
+        'public/**',
+    ],
     rules: {
         'codestyle/imports-without-ext': 'error',
         'react/react-in-jsx-scope': 'off',

@@ -9,6 +9,9 @@ export default defineConfig({
     extends: [base],
     plugins: ['typescript', 'import', 'react'],
     jsPlugins: [pluginPath],
+    // `.expo/` is the toolchain cache and `assets/` is scaffolded by Expo
+    // Itself (icons, splash, fonts) — never source.
+    ignorePatterns: ['dist/**', 'node_modules/**', '.expo/**', 'assets/**'],
     rules: {
         'typescript/no-require-imports': [
             'error',
