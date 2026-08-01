@@ -14,12 +14,5 @@ export default defineConfig({
      * Asset trees and build caches are not source either — and a content tree
      * can hold signed bytes (jterrazz-web's attestations), where one formatter
      * pass invalidates every proof. */
-    ignorePatterns: [
-        'docs/reference',
-        'dist/**',
-        'assets/**',
-        'public/**',
-        '.next/**',
-        '.expo/**',
-    ],
+    ignorePatterns: ['docs/reference', 'dist/**', 'assets/**', 'public/**', '.next/**', '.expo/**'],
 });
