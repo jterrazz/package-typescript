@@ -108,6 +108,10 @@ export default defineConfig({
         'import/no-unassigned-import': 'off',
         'import/no-named-default': 'off',
         'import/no-nodejs-modules': 'off',
+        // Exports-at-end fights how these files actually read everywhere in
+        // The ecosystem — three repos had disabled it locally (jterrazz-web,
+        // Package-test, package-attestation) before it moved here.
+        'import/exports-last': 'off',
 
         // ============================================
         // ENABLED - Code style enforcement

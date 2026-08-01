@@ -13,7 +13,7 @@ There is no dependency auto-detection in the presets: what you compose is what r
 | `oxlint.expo`      | Expo / React Native               |
 | `oxlint.hexagonal` | Hexagonal architecture (additive) |
 
-The `next` preset relaxes what fights the framework's own idiom rather than bad code: `import/exports-last` (a Next file interleaves `metadata`, types and the default export), `oxc/no-map-spread` (immutable serialization maps), and `unicorn/prefer-global-this` (client components mean `window`) — so consumers don't each rediscover the same three exceptions.
+The base preset keeps `import/exports-last` off — exports-at-end fights how files read across the whole ecosystem, and three repos had rediscovered the same exception before it moved here. The `next` preset additionally relaxes what fights the framework's idiom: `oxc/no-map-spread` (immutable serialization maps) and `unicorn/prefer-global-this` (client components mean `window`).
 
 ## Composing fragments
 
