@@ -1,11 +1,7 @@
 {
     "compilerOptions": {
         "target": "ES2022",
-        "lib": [
-            "dom",
-            "dom.iterable",
-            "esnext"
-        ],
+        "lib": ["dom", "dom.iterable", "esnext"],
         "allowJs": true,
         "skipLibCheck": true,
         "strict": true,
@@ -30,7 +26,5 @@
         "${configDir}/**/*.ts",
         "${configDir}/**/*.tsx"
     ],
-    "exclude": [
-        "${configDir}/node_modules"
-    ]
+    "exclude": ["${configDir}/node_modules"]
 }
