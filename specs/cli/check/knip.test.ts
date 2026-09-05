@@ -65,3 +65,23 @@ describe('dynamic detection', () => {
         expect(result.stdout).not.toContain('Unused');
     });
 });
+
+describe('workspaces', () => {
+    test("auto-ignores a member's convention paths, not just the root's", async () => {
+        // Given - a workspace whose only fixtures tree belongs to apps/api
+        const result = await cli.fixture('knip/workspace-conventions/').exec('check');
+
+        // Then - the convention is the package's, so the member's staged material is ignored
+        expect(result.stdout).toContain('Knip (unused code)');
+        expect(result.stdout).not.toContain('Unused');
+    });
+
+    test('carries a consumer workspaces key through the merge', async () => {
+        // Given - a root knip.json declaring per-member settings knip resolves itself
+        const result = await cli.fixture('knip/workspace-config/').exec('check');
+
+        // Then - the member's own ignore is honoured: the base preset never shadows it
+        expect(result.stdout).not.toContain('some-local-dep');
+        expect(result.stdout).not.toContain('Unused');
+    });
+});
