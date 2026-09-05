@@ -195,6 +195,22 @@ describe('node config', () => {
         expect(nodeResult.stdout.grep('valid/sorted.ts')).not.toContain('imports-with-ext');
     });
 
+    test('requires a .js extension on a dotted module name', () => {
+        // Given - the node config linting the case trees
+        // Then - imports-with-ext triggers on `./entities/dashboard.post`, not fooled by the dot
+        expect(nodeResult.stdout.grep('invalid/dotted-module-name.ts')).toContain(
+            'imports-with-ext',
+        );
+    });
+
+    test('passes when a dotted module name carries its .js extension', () => {
+        // Given - the node config linting the case trees
+        // Then - the rule does not trigger on the extended form
+        expect(nodeResult.stdout.grep('/valid/dotted-module-name.ts')).not.toContain(
+            'imports-with-ext',
+        );
+    });
+
     test('inherits base rules under the node config', () => {
         // Given - the node config linting the case trees
         // Then - a base rule still fires

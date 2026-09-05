@@ -78,6 +78,41 @@ function createHexagonalRule() {
 // Imports-with-ext - Require .js extensions
 // ============================================
 
+// The extensions a bundler or Node actually resolves from an import specifier.
+// Anything else after a dot is part of the module NAME (`user.entity`,
+// `dashboard.post`, `article.repository`) and still needs its `.js`.
+const KNOWN_IMPORT_EXTENSIONS = [
+    'cjs',
+    'css',
+    'cts',
+    'graphql',
+    'gql',
+    'html',
+    'jpeg',
+    'jpg',
+    'js',
+    'json',
+    'jsx',
+    'less',
+    'md',
+    'mdx',
+    'mjs',
+    'mts',
+    'node',
+    'png',
+    'sass',
+    'scss',
+    'svg',
+    'toml',
+    'ts',
+    'tsx',
+    'txt',
+    'wasm',
+    'webp',
+    'yaml',
+    'yml',
+];
+
 const importsWithExtRule = {
     meta: {
         type: 'problem',
@@ -89,7 +124,9 @@ const importsWithExtRule = {
         schema: [],
     },
     create(context) {
-        const hasExtension = /\.[a-zA-Z0-9]+$/;
+        // Only a KNOWN extension counts as already-extended — "anything after the
+        // Last dot" read `./entities/dashboard.post` as extended and skipped it.
+        const hasExtension = new RegExp(`\\.(?:${KNOWN_IMPORT_EXTENSIONS.join('|')})$`, 'i');
 
         function checkNode(node) {
             if (!node.source || !node.source.value) {
