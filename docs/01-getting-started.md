@@ -16,6 +16,8 @@ Extend one of the shipped presets from `tsconfig.json`:
 { "extends": "@jterrazz/typescript/tsconfig/expo" }  // Expo / React Native
 ```
 
+Every preset scopes its `include` and `exclude` to `${configDir}` — the directory of the `tsconfig.json` that extends it — so a project inherits the right file set without restating one.
+
 ## 2. Create the lint and format configs
 
 ```ts
