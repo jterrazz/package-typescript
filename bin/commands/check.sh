@@ -117,17 +117,47 @@ workspace_uses_jterrazz_test() {
     return 1
 }
 
+# A path git has been told to forget is not this workspace's source. Clones,
+# workbenches and build output live under gitignored paths, and the conventions
+# checker walks whatever root it is handed — so the filter belongs here, before
+# the handing over. Outside a git tree the question has no answer, and the
+# non-zero exit reads as "not ignored", which is the right default.
+path_is_gitignored() {
+    git check-ignore --quiet "$1" 2>/dev/null
+}
+
+# A discovered root must belong to the member that produced it. Walk back up
+# from the candidate: a nested `.git`, or a package.json no workspace glob
+# claims, means the walk crossed OUT of this workspace into a foreign tree —
+# a vendored dependency, a sibling clone — whose conventions are not ours.
+inside_owning_member() {
+    local dir member="$2"
+    dir=$(dirname "$1")
+    while [ "$dir" != "$member" ] && [ "$dir" != "." ] && [ "$dir" != "/" ]; do
+        if [ -e "$dir/.git" ] || [ -f "$dir/package.json" ]; then
+            return 1
+        fi
+        dir=$(dirname "$dir")
+    done
+    return 0
+}
+
 # Every specs root the workspace owns: the root's own, plus the first one found
 # At or below each member (a member that nests its facet — web/specs — counts).
 # Never descends INTO a specs tree: the fixtures under it are not specs roots.
 discover_specs_roots() {
     {
-        [ -d "specs" ] && printf '%s\n' "specs"
-        local member
+        [ -d "specs" ] && ! path_is_gitignored "specs" && printf '%s\n' "specs"
+        local member candidate
         for member in "${WORKSPACE_MEMBERS[@]}"; do
-            find "$member" \
+            while IFS= read -r candidate; do
+                [ -n "$candidate" ] || continue
+                path_is_gitignored "$candidate" && continue
+                inside_owning_member "$candidate" "$member" || continue
+                printf '%s\n' "$candidate"
+            done < <(find "$member" \
                 \( -name node_modules -o -name dist -o -name .git \) -prune -o \
-                -type d -name specs -prune -print 2>/dev/null
+                -type d -name specs -prune -print 2>/dev/null)
         done
     } | LC_ALL=C sort -u
 }
