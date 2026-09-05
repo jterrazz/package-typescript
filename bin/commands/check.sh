@@ -68,11 +68,110 @@ OXFMT=$(find_binary oxfmt)
 KNIP=$(find_binary knip)
 CHECKER=$(find_binary jterrazz-test-check)
 
+# ── The unit is the workspace package, not the repository ────────────────────
+# Every gate measures from the NEAREST package.json. A single-package project
+# has exactly one — the cwd — and nothing below changes for it. A workspace
+# root has one per member, and the per-member gates run once per member
+# instead of once for a root that owns neither the specs nor the docs.
+#
+# Root-only by nature, and deliberately left alone: tsc, oxlint and oxfmt
+# measure from their CONFIG file, not from a package, and each already walks
+# the whole tree from the cwd; knip is natively workspace-aware, so a member's
+# knip config belongs under the root config's `workspaces` key, not in a second
+# invocation.
+WORKSPACE_MEMBERS=()
+while IFS= read -r workspace_member; do
+    [ -n "$workspace_member" ] && WORKSPACE_MEMBERS+=("$workspace_member")
+done < <(node "$PACKAGE_ROOT/lib/workspace-members.js" 2>/dev/null)
+
+# The nearest package.json OWNS a directory. Walk up from the given path and
+# stop at the cwd — a gate never asks a question above the project it runs in.
+nearest_package_dir() {
+    local dir="$1"
+    while true; do
+        if [ -f "$dir/package.json" ]; then
+            printf '%s\n' "$dir"
+            return 0
+        fi
+        [ "$dir" = "." ] && return 1
+        dir=$(dirname "$dir")
+    done
+}
+
 # The @jterrazz/test conventions checker (D4 tokens, C8/C9 fixtures) runs only when the
-# consuming project depends on @jterrazz/test — auto-detected from its package.json.
+# owning package depends on @jterrazz/test — auto-detected from its package.json.
 project_uses_jterrazz_test() {
-    [ -f "package.json" ] || return 1
-    node -e 'const p=require("./package.json");const d={...p.dependencies,...p.devDependencies,...p.peerDependencies};process.exit(d["@jterrazz/test"]?0:1)' 2>/dev/null
+    local dir="${1:-.}"
+    [ -f "$dir/package.json" ] || return 1
+    node -e 'const {readFileSync}=require("node:fs");const p=JSON.parse(readFileSync(process.argv[1],"utf8"));const d={...p.dependencies,...p.devDependencies,...p.peerDependencies};process.exit(d["@jterrazz/test"]?0:1)' "$dir/package.json" 2>/dev/null
+}
+
+# In a workspace the dependency may sit on a member alone — the warning below
+# is about the ROOT oxlint config, but the reason to print it is anywhere.
+workspace_uses_jterrazz_test() {
+    project_uses_jterrazz_test "." && return 0
+    local member
+    for member in "${WORKSPACE_MEMBERS[@]}"; do
+        project_uses_jterrazz_test "$member" && return 0
+    done
+    return 1
+}
+
+# A path git has been told to forget is not this workspace's source. Clones,
+# workbenches and build output live under gitignored paths, and the conventions
+# checker walks whatever root it is handed — so the filter belongs here, before
+# the handing over. Outside a git tree the question has no answer, and the
+# non-zero exit reads as "not ignored", which is the right default.
+path_is_gitignored() {
+    git check-ignore --quiet "$1" 2>/dev/null
+}
+
+# A discovered root must belong to the member that produced it. Walk back up
+# from the candidate: a nested `.git`, or a package.json no workspace glob
+# claims, means the walk crossed OUT of this workspace into a foreign tree —
+# a vendored dependency, a sibling clone — whose conventions are not ours.
+inside_owning_member() {
+    local dir member="$2"
+    dir=$(dirname "$1")
+    while [ "$dir" != "$member" ] && [ "$dir" != "." ] && [ "$dir" != "/" ]; do
+        if [ -e "$dir/.git" ] || [ -f "$dir/package.json" ]; then
+            return 1
+        fi
+        dir=$(dirname "$dir")
+    done
+    return 0
+}
+
+# Every specs root the workspace owns: the root's own, plus the first one found
+# At or below each member (a member that nests its facet — web/specs — counts).
+# Never descends INTO a specs tree: the fixtures under it are not specs roots.
+discover_specs_roots() {
+    {
+        [ -d "specs" ] && ! path_is_gitignored "specs" && printf '%s\n' "specs"
+        local member candidate
+        for member in "${WORKSPACE_MEMBERS[@]}"; do
+            while IFS= read -r candidate; do
+                [ -n "$candidate" ] || continue
+                path_is_gitignored "$candidate" && continue
+                inside_owning_member "$candidate" "$member" || continue
+                printf '%s\n' "$candidate"
+            done < <(find "$member" \
+                \( -name node_modules -o -name dist -o -name .git \) -prune -o \
+                -type d -name specs -prune -print 2>/dev/null)
+        done
+    } | LC_ALL=C sort -u
+}
+
+# Every package that owns a committed docs projection. A package's docs sit at
+# its own root — that IS the nearest-package.json rule, so no walk is needed.
+discover_docs_roots() {
+    {
+        [ -d "docs/reference" ] && printf '%s\n' "."
+        local member
+        for member in "${WORKSPACE_MEMBERS[@]}"; do
+            [ -d "$member/docs/reference" ] && printf '%s\n' "$member"
+        done
+    } | LC_ALL=C sort -u
 }
 
 # The @jterrazz/test oxlint plugin is ESM-only. A CommonJS oxlint config silently drops
@@ -144,7 +243,7 @@ run_checks() {
 
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
 
-    if project_uses_jterrazz_test; then
+    if workspace_uses_jterrazz_test; then
         warn_cjs_oxlint_config
     fi
 
@@ -167,7 +266,9 @@ run_checks() {
     local format_pid=$!
 
     # Knip: only run in check mode (fix mode is destructive)
-    # Merge base config (from this package) with optional project-local knip.json
+    # Merge base config (from this package) with optional project-local knip.json.
+    # Root-only on purpose: knip reads the workspace globs itself and reports per
+    # member from one run — a second invocation per member would double-report.
     local knip_pid=""
     local knip_status=0
     if [ "$FIX_MODE" = false ]; then
@@ -181,24 +282,43 @@ run_checks() {
         knip_pid=$!
     fi
 
-    # Conventions checker: only in check mode, only when the project uses @jterrazz/test
-    # and has a specs/ directory to validate.
-    local checker_pid=""
+    # Conventions checker: only in check mode, once per specs root the workspace
+    # owns, gated by the package that OWNS that root — a member may depend on
+    # @jterrazz/test while the root does not, and the reverse.
+    local checker_pids=()
+    local checker_logs=()
     local checker_status=0
-    if [ "$FIX_MODE" = false ] && [ -d "specs" ] && project_uses_jterrazz_test; then
-        "$CHECKER" specs > "$tmp_dir/checker.log" 2>&1 &
-        checker_pid=$!
+    if [ "$FIX_MODE" = false ]; then
+        local checker_index=0
+        while IFS= read -r specs_root; do
+            [ -n "$specs_root" ] || continue
+            local owner
+            owner=$(nearest_package_dir "$(dirname "$specs_root")") || continue
+            project_uses_jterrazz_test "$owner" || continue
+            "$CHECKER" "$specs_root" > "$tmp_dir/checker-$checker_index.log" 2>&1 &
+            checker_pids+=($!)
+            checker_logs+=("$tmp_dir/checker-$checker_index.log")
+            checker_index=$((checker_index + 1))
+        done < <(discover_specs_roots)
     fi
 
-    # Docs (sync): only in check mode, and only once the project has generated
+    # Docs (sync): only in check mode, and only for a package that has generated
     # its committed docs (docs/reference/ exists — opt-in by first generation).
     # Delegates to docs.sh --check: regenerate into a temp dir, diff the
     # committed projections. Never duplicates the compiler's logic.
-    local docs_pid=""
+    local docs_pids=()
+    local docs_logs=()
     local docs_status=0
-    if [ "$FIX_MODE" = false ] && [ -d "docs/reference" ]; then
-        bash "$SCRIPT_DIR/docs.sh" "$(pwd)" "$PACKAGE_ROOT" --check > "$tmp_dir/docs.log" 2>&1 &
-        docs_pid=$!
+    if [ "$FIX_MODE" = false ]; then
+        local docs_index=0
+        while IFS= read -r docs_root; do
+            [ -n "$docs_root" ] || continue
+            bash "$SCRIPT_DIR/docs.sh" "$(cd "$docs_root" && pwd)" "$PACKAGE_ROOT" --check \
+                > "$tmp_dir/docs-$docs_index.log" 2>&1 &
+            docs_pids+=($!)
+            docs_logs+=("$tmp_dir/docs-$docs_index.log")
+            docs_index=$((docs_index + 1))
+        done < <(discover_docs_roots)
     fi
 
     # Wait and collect statuses
@@ -206,8 +326,28 @@ run_checks() {
     wait $lint_pid;   local lint_status=$?
     wait $format_pid; local format_status=$?
     [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
-    [ -n "$checker_pid" ] && { wait $checker_pid; checker_status=$?; }
-    [ -n "$docs_pid" ] && { wait $docs_pid; docs_status=$?; }
+
+    # One pass, N runs: the pass fails if any run failed, and only the logs of
+    # the runs that FAILED are printed — a green member stays silent.
+    local checker_failed_logs=()
+    local index=0
+    for pid in "${checker_pids[@]}"; do
+        if ! wait "$pid"; then
+            checker_status=1
+            checker_failed_logs+=("${checker_logs[$index]}")
+        fi
+        index=$((index + 1))
+    done
+
+    local docs_failed_logs=()
+    index=0
+    for pid in "${docs_pids[@]}"; do
+        if ! wait "$pid"; then
+            docs_status=1
+            docs_failed_logs+=("${docs_logs[$index]}")
+        fi
+        index=$((index + 1))
+    done
 
     # Print results — quiet on success, verbose on failure: a tool's captured log
     # is shown only when it failed, so green output stays byte-identical across
@@ -249,20 +389,24 @@ run_checks() {
             printf "${GREEN}✓ Passed${NC}\n"
         fi
 
-        if [ -n "$checker_pid" ]; then
+        if [ ${#checker_pids[@]} -gt 0 ]; then
             printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Test Conventions (@jterrazz/test)\n\n"
             if [ $checker_status -ne 0 ]; then
-                [ -s "$tmp_dir/checker.log" ] && cat "$tmp_dir/checker.log"
+                for log in "${checker_failed_logs[@]}"; do
+                    [ -s "$log" ] && cat "$log"
+                done
                 printf "${RED}✗ Failed with exit code %d${NC}\n" $checker_status
             else
                 printf "${GREEN}✓ Passed${NC}\n"
             fi
         fi
 
-        if [ -n "$docs_pid" ]; then
+        if [ ${#docs_pids[@]} -gt 0 ]; then
             printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Docs (sync)\n\n"
             if [ $docs_status -ne 0 ]; then
-                [ -s "$tmp_dir/docs.log" ] && cat "$tmp_dir/docs.log"
+                for log in "${docs_failed_logs[@]}"; do
+                    [ -s "$log" ] && cat "$log"
+                done
                 printf "${RED}✗ Failed with exit code %d${NC}\n" $docs_status
             else
                 printf "${GREEN}✓ Passed${NC}\n"

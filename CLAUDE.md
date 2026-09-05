@@ -36,6 +36,7 @@ bin/
     ├── check.sh           # Quality passes in parallel: tsc + oxlint + oxfmt + knip + (conventions) + (docs sync)
     └── docs.sh            # The docs compiler: typedoc reference tree, generate | --check
 lib/merge-knip-config.js   # Merges knip base preset with project-local knip.json
+lib/workspace-members.js   # Lists the consumer's workspace members — the unit each per-package gate measures from
 presets/
 ├── tsconfig/ · tsdown/ · oxlint/ (+ architectures/hexagonal) · oxfmt/ · knip/
 src/index.js + index.d.ts  # Package entry — exports { oxfmt, oxlint } presets (JS-shipped, no build)
@@ -49,7 +50,7 @@ specs/                     # Product specifications (@jterrazz/test) — see bel
 
 ## Docs compiler internals
 
-- `docs.sh` resolves the entry barrel as `src/index.ts`, else `src/index.d.ts` (this package is the JS-shipped case — its `tsconfig.json` includes `src/index.d.ts` so typedoc can read it).
+- `docs.sh` resolves the entry barrel as `src/index.ts`, else `src/index.d.ts` (this package is the JS-shipped case — its `tsconfig.json` includes `src/index.d.ts` so typedoc can read it). It compiles ONE project root, handed to it as an argument; which roots those are is `typescript.sh`'s question — the project itself, or each workspace member that owns a barrel and a `docs/`.
 - Output goes to a **committed** path under `docs/` (the reference tree), each file stamped with a `DO-NOT-EDIT` first line. Generation is deterministic (`LC_ALL=C`, `find | sort`, no timestamps) — two runs are byte-identical. Only `docs/reference/` is projected: it is the one cross-layer compile (source → docs); the chapters are authored corpus, not re-packaged into an `llms.txt` (that would be a same-layer presentation, and there is no delivery target for one here).
 - `docs.sh --check` regenerates into a temp dir and diffs the committed reference tree without touching it; `check.sh` runs it as the **Docs (sync)** pass once `docs/reference/` exists.
 

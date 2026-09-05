@@ -54,10 +54,24 @@ Rules enforced:
 
 - `@jterrazz/*` packages auto-ignored.
 - Published libraries: `exports` / `types` / `files` rules auto-disabled.
-- Convention paths (`fixtures/`, `expected/`, `docs/`) auto-ignored.
+- Convention paths (`fixtures/`, `expected/`, `docs/`) auto-ignored — at the root and inside every workspace member, because the convention belongs to the package.
 - Plugin dependencies (`*-plugin-*`, `@scope/*`) auto-ignored.
 
 Create a `knip.json` only for project-specific overrides.
+
+### Workspaces
+
+Knip is workspace-aware on its own: it reads the `workspaces` globs from your `package.json` and reports per member from a single run — which is why `check` invokes it once, at the root. Per-member settings go under a `workspaces` key in your `knip.json`:
+
+```json
+{
+    "workspaces": {
+        "apps/api": { "ignoreDependencies": ["some-local-dep"] }
+    }
+}
+```
+
+The base preset declares no `workspaces`, so the key reaches knip exactly as written.
 
 ## Formatting rules (oxfmt)
 
