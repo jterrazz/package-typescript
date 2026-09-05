@@ -27,6 +27,15 @@ describe('conventions checker', () => {
         expect(result.stdout).not.toContain('Test Conventions');
         expect(result.stdout).not.toContain('bogusToken');
     });
+
+    test('stays out of a foreign tree vendored inside a member', async () => {
+        // Given - a member with a clean specs tree, and a vendored project carrying its own
+        const result = await cli.fixture('workspace-foreign/').exec('check');
+
+        // Then - the member's own root is checked and the foreign one is never read
+        expect(result.stdout).toContain('Test Conventions');
+        expect(result.stdout).not.toContain('bogusToken');
+    });
 });
 
 describe('docs sync', () => {

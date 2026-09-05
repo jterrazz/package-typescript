@@ -1,0 +1,6 @@
+{
+  "name": "foreign-vendored-project",
+  "devDependencies": {
+    "@jterrazz/test": "^9.0.0"
+  }
+}
