@@ -1,0 +1,7 @@
+{
+  "name": "fixture-knip-workspace",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ]
+}
