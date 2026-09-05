@@ -4,6 +4,8 @@
 
 It needs two inputs — an entry barrel (`src/index.ts`, or `src/index.d.ts` for JS-shipped packages) and a `docs/` directory holding your numbered chapters. Without both, `docs` errors (and `docs --check` is a silent no-op — a project that owns no docs is trivially in sync).
 
+Those two inputs belong to a **package**, not to a repository, and so does the `tsconfig.json` the compiler reads them through. Run at a workspace root, `docs` compiles once per member that owns a projection — naming each as it goes — and a root that owns one is a unit like any other. A single-package project is the single run it always was.
+
 ## What it generates
 
 One projection, written under `docs/` and **committed** to the repo:
