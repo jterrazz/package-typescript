@@ -36,6 +36,7 @@ bin/
     ├── check.sh           # Quality passes in parallel: tsc + oxlint + oxfmt + knip + (conventions) + (docs sync)
     └── docs.sh            # The docs compiler: typedoc reference tree, generate | --check
 lib/merge-knip-config.js   # Merges knip base preset with project-local knip.json
+lib/workspace-members.js   # Lists the consumer's workspace members — the unit each per-package gate measures from
 presets/
 ├── tsconfig/ · tsdown/ · oxlint/ (+ architectures/hexagonal) · oxfmt/ · knip/
 src/index.js + index.d.ts  # Package entry — exports { oxfmt, oxlint } presets (JS-shipped, no build)
