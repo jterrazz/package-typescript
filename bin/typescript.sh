@@ -88,18 +88,59 @@ case "$COMMAND" in
         ;;
 
     docs)
+        # The unit is the PACKAGE. A projection is compiled from a package's own
+        # Barrel against its own tsconfig into its own docs/ — three things a
+        # Workspace root does not have, and each member does. docs.sh was always
+        # Parameterised by a project root; what was missing is the list.
+        owns_a_projection() {
+            local root="$1"
+            [ -d "$root/docs" ] || return 1
+            [ -f "$root/src/index.ts" ] || [ -f "$root/src/index.d.ts" ]
+        }
+
+        DOCS_UNITS=()
+        if owns_a_projection "$PROJECT_ROOT"; then
+            DOCS_UNITS+=("$PROJECT_ROOT")
+        fi
+        while IFS= read -r docs_member; do
+            [ -n "$docs_member" ] || continue
+            if owns_a_projection "$PROJECT_ROOT/$docs_member"; then
+                DOCS_UNITS+=("$PROJECT_ROOT/$docs_member")
+            fi
+        done < <(node "$PACKAGE_ROOT/lib/workspace-members.js" "$PROJECT_ROOT" 2>/dev/null)
+
+        # Nothing qualified: hand the project root over anyway, so the compiler's
+        # Own diagnostic is what the operator reads.
+        if [ ${#DOCS_UNITS[@]} -eq 0 ]; then
+            DOCS_UNITS=("$PROJECT_ROOT")
+        fi
+
         if [ "${1:-}" = "--check" ]; then
             printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Checking docs are in sync...\n\n"
 
-            bash "$SCRIPT_DIR/commands/docs.sh" "$PROJECT_ROOT" "$PACKAGE_ROOT" --check
+            for docs_unit in "${DOCS_UNITS[@]}"; do
+                if [ ${#DOCS_UNITS[@]} -gt 1 ]; then
+                    printf "%s\n" "${docs_unit#"$PROJECT_ROOT/"}"
+                fi
+                bash "$SCRIPT_DIR/commands/docs.sh" "$docs_unit" "$PACKAGE_ROOT" --check
+            done
 
             printf "${GREEN}Docs are in sync${NC}\n"
         else
             printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Generating API docs...\n\n"
 
-            bash "$SCRIPT_DIR/commands/docs.sh" "$PROJECT_ROOT" "$PACKAGE_ROOT"
+            for docs_unit in "${DOCS_UNITS[@]}"; do
+                if [ ${#DOCS_UNITS[@]} -gt 1 ]; then
+                    printf "%s\n" "${docs_unit#"$PROJECT_ROOT/"}"
+                fi
+                bash "$SCRIPT_DIR/commands/docs.sh" "$docs_unit" "$PACKAGE_ROOT"
+            done
 
-            printf "\n${GREEN}Docs generated at docs/${NC}\n"
+            if [ ${#DOCS_UNITS[@]} -gt 1 ]; then
+                printf "\n${GREEN}Docs generated for %d packages${NC}\n" ${#DOCS_UNITS[@]}
+            else
+                printf "\n${GREEN}Docs generated at docs/${NC}\n"
+            fi
         fi
         ;;
 
