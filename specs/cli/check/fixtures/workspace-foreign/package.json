@@ -1,0 +1,7 @@
+{
+  "name": "fixture-workspace-foreign",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ]
+}
