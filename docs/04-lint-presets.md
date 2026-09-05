@@ -17,6 +17,61 @@ Asset trees are ignored by default: `next` skips `public/**` and `assets/**` (th
 
 The base preset keeps `import/exports-last` off — exports-at-end fights how files read across the whole ecosystem, and three repos had rediscovered the same exception before it moved here. The `next` preset additionally relaxes what fights the framework's idiom: `oxc/no-map-spread` (immutable serialization maps) and `unicorn/prefer-global-this` (client components mean `window`).
 
+## The `style` category
+
+The base preset turns oxlint's whole `style` category on (`categories: { style: 'error' }`), so its rules shape the code before any reviewer does. Two of them are the ones a consumer meets first, and neither is obvious from the error message alone.
+
+### `one-var` — one `const` statement per scope
+
+Declarations of the same kind in one scope are a single statement, comma-chained. A second `const` after a first is `Combine this with the previous 'const' statement`:
+
+```ts
+const RETRY_LIMIT = 3,
+    TIMEOUT_MS = 10_000;
+```
+
+The shape it drives through a whole module: the private constants first, chained into one `const`, then the exported `function` declarations.
+
+`typescript fix` repairs a violation by **fusing** the statements — and that is the hazard. A comment standing between the two is swallowed into the chain, where it now sits between two declarators:
+
+```ts
+// Before fix — two statements, a comment on its own line between them
+const alpha = 1;
+// A note about beta
+const beta = 2;
+
+// After fix — one chain, and the note has been pulled inside it
+const alpha = 1,
+    // A note about beta
+    beta = 2;
+```
+
+So a comment that must stay a line of its own goes between STATEMENTS, never between two declarations the fixer is about to weld together. It bites hardest on the `// Given -` / `// Then -` narration `@jterrazz/test` requires in every test: a marker parked between two `const` lines is silently relocated into a declaration chain and stops separating anything.
+
+### `unicorn/max-nested-calls` — three levels of nesting at most
+
+A call nested four deep is `Call is nested too deeply. Maximum allowed is 3`, reported on the innermost one. Schema declarations are where it lands: three levels pass, the fourth does not.
+
+```ts
+// Passes — three levels
+const ITEMS = z.looseObject({ items: z.array(z.string()) });
+
+// Refused — z.string() is the fourth
+const ORDER = z.looseObject({ items: z.array(z.looseObject({ id: z.string() })) });
+```
+
+The fix is not a deviation but a named builder function whose locals name the levels; the module constant holds its result:
+
+```ts
+function buildOrderSchema() {
+    const item = z.looseObject({ id: z.string() });
+
+    return z.looseObject({ items: z.array(item) });
+}
+
+const ORDER_SCHEMA = buildOrderSchema();
+```
+
 ## Composing fragments
 
 `compose(...fragments)` merges deterministically: `jsPlugins` / `plugins` / `ignorePatterns` / `extends` concatenated and deduped, `rules` / `categories` shallow-merged (last wins), `overrides` concatenated. Compose an extra fragment last to deviate on a single rule.

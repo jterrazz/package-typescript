@@ -61,6 +61,16 @@ Libraries (bundle instead of build, and generate docs):
 }
 ```
 
+## The shape a consumer keeps
+
+That is the whole contract, and it is meant to stay that size:
+
+- **One devDependency** — `@jterrazz/typescript`. tsc, oxlint, oxfmt, knip, tsdown and typedoc are its own dependencies and arrive with it; installing one of them directly gives a project two opinions about its own toolchain, and the versions drift apart from there.
+- **Two commands** — `typescript check` and `typescript fix`. Every gate is behind them, so a script that calls a tool underneath skips the passes the CLI orchestrates.
+- **One line of tsconfig** — the `extends` above, and nothing beside it. In a workspace that is one line per member: the unit the toolchain measures from is the package, not the repository ([Quality checks](03-quality-checks.md)).
+
+A local `compilerOption` is a **smell, not a shortcut**. It says the preset lacks something, and it settles that lack for one project in a place nobody else reads — so the next project rediscovers the same gap and answers it differently. Name what is missing and change the preset instead: the fix belongs upstream, where every project gets the same answer.
+
 ## Conventions
 
 - Entry point is `src/index.ts` — the single public barrel.
