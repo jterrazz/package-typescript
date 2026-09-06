@@ -4,7 +4,7 @@ The complete TypeScript toolchain for the @jterrazz ecosystem: builds, quality c
 
 ## Where knowledge lives (route here first)
 
-The consumer-facing corpus is `docs/` + `README.md`. Do not duplicate it — link to it.
+The consumer-facing corpus is `docs/` + `README.md`, mapped by `docs/README.md`. Decisions this package alone took are in `docs/decisions/`. Do not duplicate it — link to it.
 
 | Working on…                                   | Read                                                                                                                                                                |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
