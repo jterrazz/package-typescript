@@ -1,0 +1,44 @@
+description: warns loudly when @jterrazz/test meets a CommonJS oxlint config
+fixture: cjs-config/
+runs:
+    - command: check
+      exit: 1
+      # The fixture is a preset case with no tsconfig, so tsc prints its help and
+      # refuses — the compiler's block, not this document's subject.
+      stdout: |4
+           START  Running quality checks
+           WARNING  @jterrazz/test is installed but oxlint.config.js is CommonJS.
+                    The @jterrazz/test oxlint plugin is ESM-only and will be SILENTLY DROPPED —
+                    none of the jterrazz/* rules will run. Switch to an ESM config (oxlint.config.ts or .mjs).
+
+
+           RUN  TypeScript Check
+
+          {{any}}
+
+          ✗ Failed with exit code 1
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          Checking formatting...
+
+          package.json ({{duration}})
+
+          Format issues found in above 1 files. Run without `--check` to fix.
+          Finished in {{duration}} on 2 files using {{int}} threads.
+          No config found, using defaults. Please add a config file or try `oxfmt --init` if needed.
+          ✗ Failed with exit code 1
+
+           RUN  Knip (unused code)
+
+          Unused files (1)
+          oxlint.config.js
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
