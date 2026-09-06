@@ -1,0 +1,5 @@
+{
+  "name": "fixture-gitignore-workspace-root-missing",
+  "private": true,
+  "workspaces": ["packages/*"]
+}

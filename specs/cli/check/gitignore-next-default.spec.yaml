@@ -1,0 +1,34 @@
+description: fails a project that ignores .next with no output:'export' to pin it
+fixture: gitignore/next-default/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Gitignore (artefacts)
+
+          Artefacts belong under .artifacts/<tool>/ at the project root:
+            ✗ .gitignore names .next/ — its home is .artifacts/next/
+          Run 'typescript fix' to rewrite .gitignore.
+          ✗ Failed with exit code 1
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

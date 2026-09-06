@@ -289,13 +289,23 @@ run_checks() {
 
     # Gitignore (artefacts): the convention — every artefact under
     # `.artifacts/<tool>/`, `dist` excepted — read off the project's own
-    # `.gitignore`. Opt-in by existence: a project with no `.gitignore` names no
-    # artefact path, so the gate has no question to ask. Root-only, because
-    # `.artifacts/` sits at the project ROOT. Runs in fix mode too — it is the
-    # one gate whose remedy is a rewrite rather than a deletion.
+    # `.gitignore` AND, in check mode, the nearest ancestor `.gitignore` above it
+    # (the workspace root's — check-gitignore.js walks up to find it). Opt-in by
+    # existence: neither file names an artefact path, the gate has no question to
+    # ask. A workspace whose `lint` delegates to members needs the ancestor probed
+    # here, in bash, because it decides whether to print the pass at all — the
+    # node script decides everything past that. Fix mode stays own-file-only: it
+    # is the one gate whose remedy is a rewrite, and it never rewrites another
+    # project's `.gitignore`.
     local gitignore_pid=""
     local gitignore_status=0
+    local gitignore_applicable=false
     if [ -f ".gitignore" ]; then
+        gitignore_applicable=true
+    elif [ "$FIX_MODE" = false ] && node "$PACKAGE_ROOT/lib/check-gitignore.js" --has-ancestor > /dev/null 2>&1; then
+        gitignore_applicable=true
+    fi
+    if [ "$gitignore_applicable" = true ]; then
         if [ "$FIX_MODE" = true ]; then
             node "$PACKAGE_ROOT/lib/check-gitignore.js" --fix > "$tmp_dir/gitignore.log" 2>&1 &
         else
