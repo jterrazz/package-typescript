@@ -5,6 +5,6 @@ import { defineConfig } from 'oxlint';
 
 export default defineConfig(
     compose(node, testing, {
-        ignorePatterns: ['dist', 'node_modules', '**/fixtures/**'],
+        ignorePatterns: ['dist', 'node_modules', '**/_fixtures/**'],
     }),
 );

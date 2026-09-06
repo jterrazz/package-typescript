@@ -60,7 +60,7 @@ specs/                     # Product specifications (@jterrazz/test) — see bel
 
 ## Specs (self-test)
 
-`specs/cli/` drives the real product command through `specification.cli(bin/typescript.sh)` (CONVENTIONS B9 — never a tool underneath it). Layout C1': runners (`*.specification.ts`) at the facet root, scenarios in domain folders (`specs/cli/<domain>/`). Shared fixture projects in `specs/fixtures/` (reached via `fixture: $FIXTURES/…`); domain-local fixtures/goldens under `specs/cli/<domain>/`.
+`specs/cli/` drives the real product command through `specification.cli(bin/typescript.sh)` (CONVENTIONS B9 — never a tool underneath it). Layout C1': runners (`*.specification.ts`) at the facet root, scenarios in domain folders (`specs/cli/<domain>/`). What a spec stands on carries a leading underscore (`@jterrazz/test` 14): the shared fixture projects are the pool `specs/_fixtures/` (reached via `fixture: $FIXTURES/…`) and hold only what SEVERAL domains use — `sample-app`, `sample-documented`. A fixture one domain alone reaches for lives beside it, in `specs/cli/<domain>/_fixtures/`, named by the relative form; goldens are `_expected/`.
 
 **A scenario is a document.** Most of them are `<case>.spec.yaml` files beside the spec — `description:` the vitest title, `fixture:` the ground, `runs:` the session with each command's `exit:`, `stdout:`, `stderr:` and the `files:` it left behind. `vitest.config.ts` wires them with `literate({ specification })` from `@jterrazz/test/vitest`, which binds every document of this repo to `cli.specification.ts` — the product runner. Regenerate the streams with `TEST_UPDATE=1`; tokens survive it. The format is `@jterrazz/test`'s `docs/04-cli.md`.
 

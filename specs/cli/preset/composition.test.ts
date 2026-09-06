@@ -12,7 +12,7 @@ import { cli as oxlintCli } from '../oxlint.specification.js';
  */
 
 const NODE_CONFIG = resolve(import.meta.dirname, '../../../presets/oxlint/node.js');
-const COMPOSED_CONFIG = resolve(import.meta.dirname, 'fixtures/composed.config.ts');
+const COMPOSED_CONFIG = resolve(import.meta.dirname, '_fixtures/composed.config.ts');
 
 describe('composable presets (explicit wiring)', () => {
     test('enables the jterrazz rules when the consumer composes the testing fragment', async () => {

@@ -65,7 +65,7 @@ describe('format fixing', () => {
         // Then - the file is unchanged after formatting
         expect(result.exitCode).toBe(0);
         const original = readFileSync(
-            resolve(import.meta.dirname, 'fixtures/formatter/correct-style.ts'),
+            resolve(import.meta.dirname, '_fixtures/formatter/correct-style.ts'),
             'utf8',
         );
         expect(result.file('correct-style.ts').content).toContain(original.trim());
