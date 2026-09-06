@@ -60,11 +60,14 @@ specs/                     # Product specifications (@jterrazz/test) — see bel
 
 ## Specs (self-test)
 
-`specs/cli/` drives the real product command through `specification.cli(bin/typescript.sh)` (CONVENTIONS B9 — never a tool underneath it). Layout C1': runners (`*.specification.ts`) at the facet root, tests in domain folders (`specs/cli/<domain>/<aspect>.test.ts`). Shared fixture projects in `specs/fixtures/` (reached via `.fixture('$FIXTURES/…')`); domain-local fixtures/goldens under `specs/cli/<domain>/`.
+`specs/cli/` drives the real product command through `specification.cli(bin/typescript.sh)` (CONVENTIONS B9 — never a tool underneath it). Layout C1': runners (`*.specification.ts`) at the facet root, scenarios in domain folders (`specs/cli/<domain>/`). Shared fixture projects in `specs/fixtures/` (reached via `fixture: $FIXTURES/…`); domain-local fixtures/goldens under `specs/cli/<domain>/`.
 
-- `specs/cli/docs/` — the docs compiler: `generation.test.ts` (byte golden of the committed tree + header + enum sweep) and `sync.test.ts` (`docs --check` green/red + no-docs guard). Drift fixtures overlay `sample-documented` to tamper one file.
-- `specs/cli/check/` — kitchen-sink whole-surface goldens (`check.txt`/`fix.txt`) + per-tool aspects; `docs-sync.test.ts` proves the Docs pass appears only when `docs/reference/` exists.
-- Golden files (D11): full snapshots per use case, tokens for volatile parts, regenerate with `TEST_UPDATE=1`. `.grep()` is the scalpel for targeted probes.
+**A scenario is a document.** Most of them are `<case>.spec.yaml` files beside the spec — `description:` the vitest title, `fixture:` the ground, `runs:` the session with each command's `exit:`, `stdout:`, `stderr:` and the `files:` it left behind. `vitest.config.ts` wires them with `literate({ specification })` from `@jterrazz/test/vitest`, which binds every document of this repo to `cli.specification.ts` — the product runner. Regenerate the streams with `TEST_UPDATE=1`; tokens survive it. The format is `@jterrazz/test`'s `docs/04-cli.md`.
+
+- **A `.test.ts` is the exception, and it says which one it is.** Four drive a binary that is not the product (the B9w exceptions: `oxfmt`, `oxlint` twice, the split-install sandbox), one waits on a marker in a stream with no byte-exact form (`dev/`), and two are BRIDGES — `cli.run('<case>.spec.yaml')` runs the document, then code adds the one claim the format cannot make (a byte-exact directory golden, an exhaustive file list). A bridged document is excluded from the plugin's glob in `vitest.config.ts` so it runs once.
+- `specs/cli/docs/` — the docs compiler: six documents plus the two bridges in `generation.test.ts` and `workspace.test.ts`. Drift fixtures overlay `sample-documented` to tamper one file.
+- `specs/cli/check/` — eighteen documents, each stating the whole combined `check`/`fix` output (D11). Where a fixture makes a tool refuse for a reason the scenario is not about — a knip case with no tsconfig, so tsc prints its manual — the document spans that block with `{{any}}` and a comment naming whose it is.
+- The one `transform` (D6's escape hatch) is in `cli.specification.ts`: rolldown's slow-plugin advisory appears on stderr with the machine's load, never with the command, so no token can cover it.
 
 ## Commands
 

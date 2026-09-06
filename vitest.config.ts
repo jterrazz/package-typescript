@@ -25,9 +25,11 @@ export default defineConfig({
                     include: ['specs/**/*.test.ts'],
                     exclude: [
                         'specs/cli/preset/exports.test.ts',
-                        // Bridged documents: a .test.ts beside each one runs it and adds
-                        // the assertion the format has no vocabulary for. Collecting them
-                        // here too would compile the same typedoc projection twice.
+                        /*
+                         * Bridged documents: a .test.ts beside each one runs it and adds the
+                         * assertion the format has no vocabulary for. Collecting them here
+                         * too would compile the same typedoc projection twice.
+                         */
                         'specs/cli/docs/projection.spec.yaml',
                         'specs/cli/docs/workspace-members.spec.yaml',
                         '**/fixtures/**',

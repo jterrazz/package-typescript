@@ -11,6 +11,12 @@ const NEXT_CONFIG = resolve(PRESETS, 'next.js');
 
 type LintResult = Awaited<ReturnType<typeof oxlintCli.exec>>;
 
+/*
+ * A chain, not a document: it drives the oxlint binary (the B9w exception
+ * oxlint.specification.ts states) and `literate()` binds every document of this
+ * repo to the product runner. Every claim is a `.grep()` besides.
+ */
+
 // Stage the valid/ and invalid/ case trees in the cwd, then lint them with one config.
 // Grep is the scalpel here: each rule is a targeted presence/absence probe in the
 // Combined lint output, not a full-surface snapshot.

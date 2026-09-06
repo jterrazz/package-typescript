@@ -13,7 +13,8 @@ const BIN = resolve(import.meta.dirname, '../../bin/typescript.sh');
  * never of the command, so no token can cover it: a document would have to accept
  * any stderr to survive it. D6's escape hatch is the right one here.
  */
-const SLOW_PLUGIN_ADVISORY = /\[PLUGIN_TIMINGS\][\s\S]*?checks#plugintimings for more details\.\n?/g;
+const SLOW_PLUGIN_ADVISORY =
+    /\[PLUGIN_TIMINGS\][\s\S]*?checks#plugintimings for more details\.\n?/g;
 
 function withoutSlowPluginAdvisory(text: string): string {
     if (!text.includes('[PLUGIN_TIMINGS]')) {
