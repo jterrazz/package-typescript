@@ -43,11 +43,11 @@ test('concatenates and dedupes ignorePatterns', () => {
     // Given - overlapping ignore lists
     const merged = compose(
         { ignorePatterns: ['dist/**', 'node_modules/**'] },
-        { ignorePatterns: ['node_modules/**', '**/fixtures/**'] },
+        { ignorePatterns: ['node_modules/**', '**/_fixtures/**'] },
     );
 
     // Then - one entry each
-    expect(merged.ignorePatterns).toEqual(['dist/**', 'node_modules/**', '**/fixtures/**']);
+    expect(merged.ignorePatterns).toEqual(['dist/**', 'node_modules/**', '**/_fixtures/**']);
 });
 
 test('takes unknown scalar keys from the last fragment', () => {

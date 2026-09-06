@@ -41,8 +41,8 @@
     },
     "scripts": {
         "build": "# no build script",
-        "lint": "./bin/typescript.sh check --ignore-pattern '**/fixtures/**'",
-        "lint:fix": "./bin/typescript.sh fix --ignore-pattern '**/fixtures/**'",
+        "lint": "./bin/typescript.sh check --ignore-pattern '**/_fixtures/**'",
+        "lint:fix": "./bin/typescript.sh fix --ignore-pattern '**/_fixtures/**'",
         "test": "vitest --run"
     },
     "dependencies": {

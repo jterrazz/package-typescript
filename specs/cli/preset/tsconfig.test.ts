@@ -7,7 +7,7 @@ import { describe, expect, test } from 'vitest';
  * the product under test IS the shipped tsconfig preset, and `typescript check`
  * cannot exercise it — check loads the preset from the consumer's node_modules,
  * which a copied temp-workdir fixture does not have. So a consumer tsconfig that
- * extends the preset by a repo-relative path lives under fixtures/, and tsc is
+ * extends the preset by a repo-relative path lives under _fixtures/, and tsc is
  * asked to resolve it with `--showConfig` from that directory.
  *
  * The law: a preset's `include`/`exclude` must be scoped to the CONSUMER, never
@@ -20,7 +20,7 @@ import { describe, expect, test } from 'vitest';
 const TSC = resolve(import.meta.dirname, '../../../node_modules/.bin/tsc');
 
 function resolvedConfig(fixture: string): { dir: string; scoped: string[] } {
-    const dir = resolve(import.meta.dirname, 'fixtures', fixture);
+    const dir = resolve(import.meta.dirname, '_fixtures', fixture);
     const stdout = execFileSync(TSC, ['--showConfig'], { cwd: dir, encoding: 'utf8' });
     const config = JSON.parse(stdout) as { files?: string[]; include?: string[] };
 

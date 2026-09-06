@@ -8,7 +8,7 @@ export default defineConfig({
                 test: {
                     name: 'fast',
                     include: ['specs/cli/preset/exports.test.ts', 'src/**/*.test.ts'],
-                    exclude: ['**/fixtures/**', 'node_modules/**', 'dist/**'],
+                    exclude: ['**/_fixtures/**', 'node_modules/**', 'dist/**'],
                 },
             },
             {
@@ -32,7 +32,7 @@ export default defineConfig({
                          */
                         'specs/cli/docs/projection.spec.yaml',
                         'specs/cli/docs/workspace-members.spec.yaml',
-                        '**/fixtures/**',
+                        '**/_fixtures/**',
                         'node_modules/**',
                         'dist/**',
                     ],

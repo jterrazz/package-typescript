@@ -26,7 +26,7 @@ runs:
 
            RUN  Test Conventions (@jterrazz/test)
 
-          [error] http/expected/response.txt:1: unknown token {{string}}
+          [error] http/_expected/response.txt:1: unknown token {{string}}
 
           conventions checker: 1 error(s) found under {{workdir}}/apps/api/specs
           ✗ Failed with exit code 1
