@@ -282,6 +282,23 @@ run_checks() {
         knip_pid=$!
     fi
 
+    # Gitignore (artefacts): the convention — every artefact under
+    # `.artifacts/<tool>/`, `dist` excepted — read off the project's own
+    # `.gitignore`. Opt-in by existence: a project with no `.gitignore` names no
+    # artefact path, so the gate has no question to ask. Root-only, because
+    # `.artifacts/` sits at the project ROOT. Runs in fix mode too — it is the
+    # one gate whose remedy is a rewrite rather than a deletion.
+    local gitignore_pid=""
+    local gitignore_status=0
+    if [ -f ".gitignore" ]; then
+        if [ "$FIX_MODE" = true ]; then
+            node "$PACKAGE_ROOT/lib/check-gitignore.js" --fix > "$tmp_dir/gitignore.log" 2>&1 &
+        else
+            node "$PACKAGE_ROOT/lib/check-gitignore.js" > "$tmp_dir/gitignore.log" 2>&1 &
+        fi
+        gitignore_pid=$!
+    fi
+
     # Conventions checker: only in check mode, once per specs root the workspace
     # owns, gated by the package that OWNS that root — a member may depend on
     # @jterrazz/test while the root does not, and the reverse.
@@ -326,6 +343,7 @@ run_checks() {
     wait $lint_pid;   local lint_status=$?
     wait $format_pid; local format_status=$?
     [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
+    [ -n "$gitignore_pid" ] && { wait $gitignore_pid; gitignore_status=$?; }
 
     # One pass, N runs: the pass fails if any run failed, and only the logs of
     # the runs that FAILED are printed — a green member stays silent.
@@ -380,6 +398,19 @@ run_checks() {
         printf "${GREEN}✓ Passed${NC}\n"
     fi
 
+    # The one pass that speaks on success: a rewrite changed a file the operator
+    # owns, and silence would hide it. In check mode a green gate writes nothing,
+    # so the green output stays byte-identical with the others.
+    if [ -n "$gitignore_pid" ]; then
+        printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Gitignore (artefacts)\n\n"
+        [ -s "$tmp_dir/gitignore.log" ] && cat "$tmp_dir/gitignore.log"
+        if [ $gitignore_status -ne 0 ]; then
+            printf "${RED}✗ Failed with exit code %d${NC}\n" $gitignore_status
+        else
+            printf "${GREEN}✓ Passed${NC}\n"
+        fi
+    fi
+
     if [ "$FIX_MODE" = false ]; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Knip (unused code)\n\n"
         if [ $knip_status -ne 0 ]; then
@@ -421,7 +452,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

@@ -68,8 +68,6 @@ describe.each([
         // Then - incremental compilation is on, and its buildinfo is an artefact
         expect(compilerOptions.incremental).toBe(true);
         const buildInfo = compilerOptions.tsBuildInfoFile ?? '';
-        expect(resolve(dir, buildInfo)).toBe(
-            resolve(dir, '.artifacts/tsc/tsconfig.tsbuildinfo'),
-        );
+        expect(resolve(dir, buildInfo)).toBe(resolve(dir, '.artifacts/tsc/tsconfig.tsbuildinfo'));
     });
 });

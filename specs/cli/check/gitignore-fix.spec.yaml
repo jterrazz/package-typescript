@@ -1,0 +1,41 @@
+description: rewrites the gitignore onto the convention, keeping comments and negations
+fixture: gitignore/old-layout/
+runs:
+    - command: fix
+      exit: 0
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+
+          ✓ Passed
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Gitignore (artefacts)
+
+          .gitignore rewritten:
+            - coverage/
+            - *.tsbuildinfo
+            + .artifacts/
+            · !docs/keep.md — a negation rescues a tracked file, kept
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✓ All checks passed
+      files:
+          .gitignore:
+              equals: |
+                  node_modules/
+                  dist/
+                  !docs/keep.md
+
+                  # Build, test and lint artefacts (@jterrazz/typescript)
+                  .artifacts/
