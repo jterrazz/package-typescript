@@ -1,0 +1,11 @@
+description: docs errors on a project without a docs/ corpus
+fixture: $FIXTURES/sample-app/
+runs:
+    - command: docs
+      exit: 1
+      stdout: |4+
+           TYPESCRIPT  Generating API docs...
+
+      stderr: |
+          Error: 'typescript docs' needs an entry barrel and a docs/ directory.
+                 No docs/ directory found — create it with your hand-written chapters.

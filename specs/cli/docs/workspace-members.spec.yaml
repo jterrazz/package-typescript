@@ -1,0 +1,18 @@
+description: compiles a projection for every member that owns one
+fixture: workspace-packages/
+runs:
+    - command: docs
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Generating API docs...
+
+          packages/lib-a
+          [info] Loaded plugin typedoc-plugin-markdown
+          [info] markdown generated at ./packages/lib-a/docs/reference
+          Generated docs/reference/
+          packages/lib-b
+          [info] Loaded plugin typedoc-plugin-markdown
+          [info] markdown generated at ./packages/lib-b/docs/reference
+          Generated docs/reference/
+
+          Docs generated for 2 packages

@@ -1,0 +1,13 @@
+description: compiles the committed docs projection for a documented library
+fixture: $FIXTURES/sample-documented/
+runs:
+    - command: docs
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Generating API docs...
+
+          [info] Loaded plugin typedoc-plugin-markdown
+          [info] markdown generated at ./docs/reference
+          Generated docs/reference/
+
+          Docs generated at docs/

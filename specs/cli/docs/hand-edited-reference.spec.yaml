@@ -1,0 +1,13 @@
+description: docs --check fails when a generated reference file was hand-edited
+fixture:
+    - $FIXTURES/sample-documented/
+    - drift-reference/
+runs:
+    - command: docs --check
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  Checking docs are in sync...
+
+          Docs are out of sync:
+            ✗ docs/reference/
+          Run 'typescript docs' to regenerate.
