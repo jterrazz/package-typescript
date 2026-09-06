@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.next/
+
+# Build, test and lint artefacts (@jterrazz/typescript)
+.artifacts/

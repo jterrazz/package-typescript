@@ -86,9 +86,11 @@ typescript clean                   # rm -rf .artifacts — dist/ is left alone
 
 The presets do the rest. All three tsconfig presets compile incrementally and put the buildinfo at `${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo`, so a warm type-check is several times faster and nothing lands at the project root. In a workspace each member writes under its own root, because `${configDir}` means "the project extending me".
 
-`typescript check` guards it: the [Gitignore (artefacts)](03-quality-checks.md) pass fails a `.gitignore` that still names an artefact somewhere else, and `typescript fix` rewrites it.
+`typescript check` guards it: the [Gitignore (artefacts)](03-quality-checks.md) pass fails a `.gitignore` that still names an artefact somewhere else, and `typescript fix` rewrites it. In a workspace it reads the package's own `.gitignore` AND the nearest ancestor one above it — a workspace root that ignores `.artifacts/` covers every member, even one with no `.gitignore` of its own.
 
 The exceptions the gate never touches are a closed list — `.expo/`, `ios/`, `android/`, `next-env.d.ts`, `.vercel`, `.build/`, `.swiftpm/`, `Package.resolved`, `DerivedData/`, `.gradle/`, `.metro-health-check*`, `node_modules/` — platform directories a toolchain owns and cannot be told to move.
+
+One exception is conditional, not static: `.next`. With `output: 'export'` in `next.config.*`, Next reads `distDir` as the export destination and keeps its working directory pinned at `.next` regardless (`next/dist/export/utils.js`'s `hasCustomExportOutput` refuses to move it) — proven by a real consumer's static site. In that one mode `.next` joins the exception list; without it, nothing pins it, and it stays an ordinary artefact whose home is `.artifacts/next/`.
 
 ## Conventions
 
