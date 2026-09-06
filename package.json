@@ -56,7 +56,7 @@
         "typescript": "^6.0.0"
     },
     "devDependencies": {
-        "@jterrazz/test": "^9.0.0",
+        "@jterrazz/test": "^13.0.1",
         "@types/node": "^26.1.1",
         "vitest": "^4.1.10"
     },
