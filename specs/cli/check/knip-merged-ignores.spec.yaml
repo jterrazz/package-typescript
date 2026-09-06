@@ -1,0 +1,31 @@
+description: merges project ignoreDependencies with the base config
+fixture: knip/with-overrides/
+runs:
+    - command: check
+      exit: 1
+      # A knip fixture carries no tsconfig, so tsc prints its help and refuses —
+      # the compiler's block, not this document's subject.
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          {{any}}
+
+          ✗ Failed with exit code 1
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

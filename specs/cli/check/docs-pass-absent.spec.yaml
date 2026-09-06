@@ -1,0 +1,27 @@
+description: omits the Docs sync pass when the project has no generated docs
+fixture: kitchen-sink/
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

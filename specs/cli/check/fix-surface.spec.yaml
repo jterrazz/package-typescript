@@ -1,0 +1,23 @@
+description: reports the quality fixes surface
+fixture: kitchen-sink/
+runs:
+    - command: fix
+      exit: 0
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+
+          ✓ Passed
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✓ All checks passed

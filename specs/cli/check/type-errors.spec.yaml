@@ -1,0 +1,40 @@
+description: detects type errors
+fixture: typechecker/invalid/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          types.ts(1,7): error TS2322: Type 'number' is not assignable to type 'string'.
+          types.ts(2,7): error TS2322: Type 'string' is not assignable to type 'number'.
+          ✗ Failed with exit code 1
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          Checking formatting...
+
+          tsconfig.json ({{duration}})
+          types.ts ({{duration}})
+
+          Format issues found in above 2 files. Run without `--check` to fix.
+          Finished in {{duration}} on 2 files using {{int}} threads.
+          No config found, using defaults. Please add a config file or try `oxfmt --init` if needed.
+          ✗ Failed with exit code 1
+
+           RUN  Knip (unused code)
+
+          ERROR: Unable to find package.json
+
+          Run `knip --help` or visit https://knip.dev for help
+          ✗ Failed with exit code 2
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
