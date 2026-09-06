@@ -5,6 +5,11 @@ import { beforeAll, describe, expect, test } from 'vitest';
 import { cli as oxfmtCli } from '../oxfmt.specification.js';
 
 /*
+ * A chain, not a document: it drives the oxfmt binary (the B9w exception
+ * oxfmt.specification.ts states) and `literate()` binds every document of this
+ * repo to the product runner — and the claims below are regexes over a file's
+ * content, where `files:` compares literal text.
+ *
  * Scalpel by design: the formatted file content is oxfmt's (third-party) output —
  * our product is the PRESET, so each probe targets one style decision the preset
  * makes (quotes, semicolons, indentation), not oxfmt's overall formatting.

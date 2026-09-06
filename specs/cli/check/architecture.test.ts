@@ -10,6 +10,13 @@ const HEXAGONAL_CONFIG = resolve(
 
 type LintResult = Awaited<ReturnType<typeof oxlintCli.exec>>;
 
+/*
+ * A chain, not a document: it drives the oxlint binary (the B9w exception
+ * oxlint.specification.ts states) and `literate()` binds every document of this
+ * repo to the product runner. Each claim is also a `.grep()` over one file's
+ * block of a long report, which the format has no vocabulary for.
+ */
+
 describe('hexagonal architecture', () => {
     let result: LintResult;
 
