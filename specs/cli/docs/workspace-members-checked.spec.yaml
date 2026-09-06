@@ -1,0 +1,26 @@
+description: checks every member projection it generated
+fixture: workspace-packages/
+runs:
+    - command: docs
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Generating API docs...
+
+          packages/lib-a
+          [info] Loaded plugin typedoc-plugin-markdown
+          [info] markdown generated at ./packages/lib-a/docs/reference
+          Generated docs/reference/
+          packages/lib-b
+          [info] Loaded plugin typedoc-plugin-markdown
+          [info] markdown generated at ./packages/lib-b/docs/reference
+          Generated docs/reference/
+
+          Docs generated for 2 packages
+    - command: docs --check
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Checking docs are in sync...
+
+          packages/lib-a
+          packages/lib-b
+          Docs are in sync

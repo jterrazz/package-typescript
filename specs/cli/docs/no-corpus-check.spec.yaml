@@ -1,0 +1,9 @@
+description: docs --check is a no-op for a project that owns no docs
+fixture: $FIXTURES/sample-app/
+runs:
+    - command: docs --check
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Checking docs are in sync...
+
+          Docs are in sync

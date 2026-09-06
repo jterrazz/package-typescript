@@ -7,16 +7,17 @@ import { cli } from '../cli.specification.js';
  * into its own docs/ — three things a workspace root does not have and each member
  * does. `typescript docs` at a workspace root therefore compiles once per member
  * that owns a projection, not once for the root that owns none.
+ *
+ * The run and what it printed are workspace-members.spec.yaml's. Only the exact
+ * member trees stay here: `files:` can require a path, never forbid the ones
+ * nobody listed.
  */
 
-test('compiles a projection for every member that owns one', async () => {
-    // Given - a workspace root with no barrel of its own and two documented packages
-    const result = await cli.fixture('workspace-packages/').exec('docs');
+test('gives every member that owns a projection its own reference tree', async () => {
+    // Given - the whole generation over a two-package workspace, stated in the document
+    const result = await cli.run('workspace-members.spec.yaml');
 
-    // Then - each member is named and gets its own reference tree
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('packages/lib-a');
-    expect(result.stdout).toContain('packages/lib-b');
+    // Then - each member's reference tree holds exactly what its barrel exports
     expect(await result.directory('packages/lib-a/docs/reference').files()).toEqual([
         'functions/greet.md',
         'index.md',
@@ -25,13 +26,4 @@ test('compiles a projection for every member that owns one', async () => {
         'index.md',
         'variables/VERSION.md',
     ]);
-});
-
-test('checks every member projection it generated', async () => {
-    // Given - a workspace generated and then checked in the same tree
-    const result = await cli.fixture('workspace-packages/').exec(['docs', 'docs --check']);
-
-    // Then - the sync check is green for the whole workspace
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('Docs are in sync');
 });

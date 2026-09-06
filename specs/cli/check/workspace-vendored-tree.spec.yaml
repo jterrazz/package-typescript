@@ -1,0 +1,34 @@
+description: stays out of a foreign tree vendored inside a member
+fixture: workspace-foreign/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          Unused files (2)
+          apps/api/specs/http/response.test.ts                     
+          apps/api/vendor/other-project/specs/http/response.test.ts
+          ✗ Failed with exit code 1
+
+           RUN  Test Conventions (@jterrazz/test)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

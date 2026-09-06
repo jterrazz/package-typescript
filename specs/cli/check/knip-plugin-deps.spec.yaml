@@ -1,0 +1,38 @@
+description: auto-ignores plugin and scoped addon devDependencies
+fixture: knip/plugin-deps/
+runs:
+    - command: check
+      exit: 1
+      # A knip fixture carries no tsconfig, so tsc prints its help and refuses —
+      # the compiler's block, not this document's subject.
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          {{any}}
+
+          ✗ Failed with exit code 1
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          Checking formatting...
+
+          package.json ({{duration}})
+
+          Format issues found in above 1 files. Run without `--check` to fix.
+          Finished in {{duration}} on 3 files using {{int}} threads.
+          No config found, using defaults. Please add a config file or try `oxfmt --init` if needed.
+          ✗ Failed with exit code 1
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

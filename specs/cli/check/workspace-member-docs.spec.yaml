@@ -1,0 +1,34 @@
+description: checks a member's committed docs when the root owns none
+fixture: workspace-docs/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Docs (sync)
+
+          Docs are out of sync:
+            ✗ docs/reference/
+          Run 'typescript docs' to regenerate.
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
