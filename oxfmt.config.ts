@@ -1,9 +1,8 @@
-import { defineConfig } from 'oxfmt';
-
-import preset from './presets/oxfmt/index.js';
+// Consumer #1 of the oxfmt entry, self-referenced through the exports map.
+import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
 
 export default defineConfig({
-    ...preset,
+    ...base,
     /* Generated docs projections (typedoc markdown) and golden trees are byte-for-byte artifacts of `typescript docs` — formatting them would fight the Docs (sync) pass. */
     ignorePatterns: ['dist', 'node_modules', '**/_fixtures', 'docs/reference', '**/_expected'],
 });

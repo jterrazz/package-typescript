@@ -6,6 +6,7 @@ const require = createRequire(import.meta.url);
 // Self-reference resolution — the exports map must cover every consumer-facing subpath.
 test.each([
     '@jterrazz/typescript',
+    '@jterrazz/typescript/oxfmt',
     '@jterrazz/typescript/oxlint',
     '@jterrazz/typescript/tsconfig/node',
     '@jterrazz/typescript/tsconfig/node.json',

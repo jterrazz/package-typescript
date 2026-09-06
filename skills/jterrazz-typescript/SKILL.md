@@ -45,17 +45,17 @@ npm install @jterrazz/typescript --save-dev
 
 ```ts
 // oxlint.config.ts
-import { oxlint } from '@jterrazz/typescript';
-import { defineConfig } from 'oxlint';
-export default defineConfig({ extends: [oxlint.node] }); // or oxlint.next, oxlint.expo
+import { defineConfig, node } from '@jterrazz/typescript/oxlint';
+export default defineConfig({ extends: [node] }); // or next, expo
 ```
 
 ```ts
 // oxfmt.config.ts
-import { oxfmt } from '@jterrazz/typescript';
-import { defineConfig } from 'oxfmt';
-export default defineConfig(oxfmt);
+import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
+export default defineConfig(base);
 ```
+
+A config imports `@jterrazz/typescript` and nothing else — `defineConfig` included. Naming `oxlint` or `oxfmt` directly breaks under pnpm's strict `node_modules` (`ERR_MODULE_NOT_FOUND`), where only what the project declares resolves.
 
 Projects using `@jterrazz/test` compose its lint fragment explicitly:
 
@@ -70,5 +70,6 @@ export default compose(node, testing);
 - Entry point is `src/index.ts` (the single public barrel); use `.js` extensions in relative imports.
 - Add TSDoc to every public export — `typescript docs` derives the reference from it.
 - Run `typescript fix` before committing, not just `typescript check`.
+- A `knip.json` entry carries its reason: the file is read as JSONC, so a `//` line above an ignore says why it is there.
 - Every artefact lives under `.artifacts/<tool>/` at the project root, and `.artifacts/` is gitignored; `dist` is the one exception (the product). `typescript clean` empties it — see `docs/01-getting-started.md`.
 - `typescript docs` writes a **committed** projection under `docs/reference/` — commit it, and regenerate in the same change that touches the source (`check` runs a Docs sync pass). Never hand-edit a generated file, and never gitignore `docs/`.

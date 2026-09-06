@@ -1,0 +1,8 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  /* Every ignore below says why it exists. */
+  "ignoreDependencies": [
+    // Loaded by the bundler at runtime, never imported from source.
+    "extra-dep",
+  ],
+}

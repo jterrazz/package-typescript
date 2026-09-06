@@ -36,11 +36,12 @@ bin/
     ├── check.sh           # Quality passes in parallel: tsc + oxlint + oxfmt + (gitignore) + knip + (conventions) + (docs sync)
     └── docs.sh            # The docs compiler: typedoc reference tree, generate | --check
 lib/check-gitignore.js     # The artefact convention, read off the project's .gitignore — check | --fix
-lib/merge-knip-config.js   # Merges knip base preset with project-local knip.json
+lib/merge-knip-config.js   # Merges knip base preset with project-local knip.json (read as JSONC)
 lib/workspace-members.js   # Lists the consumer's workspace members — the unit each per-package gate measures from
 presets/
 ├── tsconfig/ · tsdown/ · oxlint/ (+ architectures/hexagonal) · oxfmt/ · knip/
 src/index.js + index.d.ts  # Package entry — exports { oxfmt, oxlint } presets (JS-shipped, no build)
+src/oxlint.js · oxfmt.js   # The tool-facing entries — presets, compose(), and each tool's defineConfig
 docs/                      # The corpus: numbered chapters + the generated reference/ projection
 specs/                     # Product specifications (@jterrazz/test) — see below
 ```
@@ -65,9 +66,9 @@ specs/                     # Product specifications (@jterrazz/test) — see bel
 
 **A scenario is a document.** Most of them are `<case>.spec.yaml` files beside the spec — `description:` the vitest title, `fixture:` the ground, `runs:` the session with each command's `exit:`, `stdout:`, `stderr:` and the `files:` it left behind. `vitest.config.ts` wires them with `literate({ specification })` from `@jterrazz/test/vitest`, which binds every document of this repo to `cli.specification.ts` — the product runner. Regenerate the streams with `TEST_UPDATE=1`; tokens survive it. The format is `@jterrazz/test`'s `docs/04-cli.md`.
 
-- **A `.test.ts` is the exception, and it says which one it is.** Four drive a binary that is not the product (the B9w exceptions: `oxfmt`, `oxlint` twice, the split-install sandbox), one waits on a marker in a stream with no byte-exact form (`dev/`), one needs a GROUND no fixture can be — a real git repository, for the artefact gate's committed-artefact claim — one needs a cwd no fixture can be ABOVE — a member run from inside a workspace, testing the gitignore gate's ancestor walk, since `fixture:` spreads a project INTO the working directory and the literate `run` schema has no per-run `cwd` to place an ancestor `.gitignore` outside it — and two are BRIDGES — `cli.run('<case>.spec.yaml')` runs the document, then code adds the one claim the format cannot make (a byte-exact directory golden, an exhaustive file list). A bridged document is excluded from the plugin's glob in `vitest.config.ts` so it runs once.
+- **A `.test.ts` is the exception, and it says which one it is.** Five drive a binary that is not the product (the B9w exceptions: `oxfmt`, `oxlint` twice, and the two install sandboxes — the split one, and the pnpm-strict one that proves a consumer's configs load with one devDependency declared), one waits on a marker in a stream with no byte-exact form (`dev/`), one needs a GROUND no fixture can be — a real git repository, for the artefact gate's committed-artefact claim — one needs a cwd no fixture can be ABOVE — a member run from inside a workspace, testing the gitignore gate's ancestor walk, since `fixture:` spreads a project INTO the working directory and the literate `run` schema has no per-run `cwd` to place an ancestor `.gitignore` outside it — and two are BRIDGES — `cli.run('<case>.spec.yaml')` runs the document, then code adds the one claim the format cannot make (a byte-exact directory golden, an exhaustive file list). A bridged document is excluded from the plugin's glob in `vitest.config.ts` so it runs once.
 - `specs/cli/docs/` — the docs compiler: six documents plus the two bridges in `generation.test.ts` and `workspace.test.ts`. Drift fixtures overlay `sample-documented` to tamper one file.
-- `specs/cli/check/` — twenty-four documents, each stating the whole combined `check`/`fix` output (D11). Where a fixture makes a tool refuse for a reason the scenario is not about — a knip case with no tsconfig, so tsc prints its manual — the document spans that block with `{{any}}` and a comment naming whose it is.
+- `specs/cli/check/` — twenty-six documents, each stating the whole combined `check`/`fix` output (D11). Where a fixture makes a tool refuse for a reason the scenario is not about — a knip case with no tsconfig, so tsc prints its manual — the document spans that block with `{{any}}` and a comment naming whose it is.
 - The one `transform` (D6's escape hatch) is in `cli.specification.ts`: rolldown's slow-plugin advisory appears on stderr with the machine's load, never with the command, so no token can cover it.
 
 ## Commands

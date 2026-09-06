@@ -1,7 +1,8 @@
 /*
  * The tool-facing oxlint entry (`@jterrazz/typescript/oxlint`): the named
- * presets plus the `compose()` helper. Wiring is EXPLICIT — a consumer
- * composes exactly the fragments it wants, nothing is auto-detected:
+ * presets, the `compose()` helper, and oxlint's own `defineConfig`. Wiring is
+ * EXPLICIT — a consumer composes exactly the fragments it wants, nothing is
+ * auto-detected:
  *
  *     import { testing } from '@jterrazz/test/oxlint';
  *     import { compose, node } from '@jterrazz/typescript/oxlint';
@@ -49,6 +50,13 @@ export function compose(...fragments) {
     }
     return merged;
 }
+
+/* Oxlint's own `defineConfig`, re-exported from here: a bare
+ * `import { defineConfig } from 'oxlint'` in a consumer's config resolves only
+ * where the consumer declares oxlint itself, which pnpm's strict node_modules
+ * refuses to assume. Resolved from THIS package — where oxlint is a real
+ * dependency — the one-devDependency shape holds on every package manager. */
+export { defineConfig } from 'oxlint';
 
 export { default as hexagonal } from '../presets/oxlint/architectures/hexagonal.js';
 export { default as expo } from '../presets/oxlint/expo.js';

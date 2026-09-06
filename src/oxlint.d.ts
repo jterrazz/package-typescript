@@ -12,4 +12,5 @@ declare const node: ConfigObject;
  */
 declare function compose(...fragments: ConfigObject[]): ConfigObject;
 
+export { defineConfig } from 'oxlint';
 export { compose, expo, hexagonal, next, node };
