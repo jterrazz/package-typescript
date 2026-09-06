@@ -1,0 +1,37 @@
+description: fails a project whose gitignore still names artefacts outside .artifacts/
+fixture: gitignore/old-layout/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Gitignore (artefacts)
+
+          Artefacts belong under .artifacts/<tool>/ at the project root:
+            ✗ .gitignore names coverage/ — its home is .artifacts/coverage/
+            ✗ .gitignore names *.tsbuildinfo — its home is .artifacts/tsc/
+            ✗ .gitignore does not ignore .artifacts/ — add it
+            · !docs/keep.md — a negation rescues a tracked file, left for you
+          Run 'typescript fix' to rewrite .gitignore.
+          ✗ Failed with exit code 1
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

@@ -1,0 +1,34 @@
+description: leaves the incremental buildinfo under .artifacts/tsc/
+# The fixture spells `incremental` and `tsBuildInfoFile` itself: a temp workdir
+# has no node_modules to extend the preset from, and the preset's own claim is
+# specs/cli/preset/tsconfig.test.ts's. What this document states is the product
+# behaviour — a check leaves its artefact in the convention's place, nowhere else.
+fixture: $FIXTURES/incremental-app/
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed
+      files:
+          .artifacts/tsc/tsconfig.tsbuildinfo: exists
+          tsconfig.tsbuildinfo: absent

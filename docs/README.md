@@ -6,14 +6,14 @@ This corpus is where that knowledge is authored. `CLAUDE.md` and the `jterrazz-t
 
 ## Table of contents
 
-| Chapter                                       | Covers                                                                                |
-| --------------------------------------------- | ------------------------------------------------------------------------------------- |
-| [01 — Getting started](01-getting-started.md) | Install, the tsconfig/oxlint/oxfmt wiring, the npm scripts for a library and an app   |
-| [02 — Building](02-building.md)               | `build`, `bundle`, `start`, `dev` — what each produces and for which project shape    |
-| [03 — Quality checks](03-quality-checks.md)   | `check` and `fix`: the passes they run, in parallel, and what makes each one fail     |
-| [04 — Lint presets](04-lint-presets.md)       | The oxlint presets, `compose`, the architecture rules, and the knip configuration     |
-| [05 — Docs pipeline](05-docs-pipeline.md)     | The `typescript docs` compiler and the committed `docs/reference/` projection         |
-| [06 — Repo structure](06-repo-structure.md)   | The TypeScript-specific half of the shared repo doctrine; the rest lives in the skill |
+| Chapter                                       | Covers                                                                                   |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| [01 — Getting started](01-getting-started.md) | Install, the tsconfig/oxlint/oxfmt wiring, the npm scripts, the `.artifacts/` convention |
+| [02 — Building](02-building.md)               | `build`, `bundle`, `start`, `dev` — what each produces and for which project shape       |
+| [03 — Quality checks](03-quality-checks.md)   | `check` and `fix`: the passes they run, in parallel, and what makes each one fail        |
+| [04 — Lint presets](04-lint-presets.md)       | The oxlint presets, `compose`, the architecture rules, and the knip configuration        |
+| [05 — Docs pipeline](05-docs-pipeline.md)     | The `typescript docs` compiler and the committed `docs/reference/` projection            |
+| [06 — Repo structure](06-repo-structure.md)   | The TypeScript-specific half of the shared repo doctrine; the rest lives in the skill    |
 
 `docs/reference/` is a generated projection, not a chapter — regenerate it with `typescript docs`, never hand-edit it.
 

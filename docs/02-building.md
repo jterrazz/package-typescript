@@ -31,7 +31,8 @@ your-project/
 ├── src/
 │   ├── index.ts           # Main entry point
 │   └── instrumentation.ts # Optional instrumentation entry point
-├── dist/                  # Generated artifacts
+├── dist/                  # The build's product — published from here
+├── .artifacts/            # Every tool's output, gitignored (Getting started)
 └── tsconfig.json          # Extends this package
 ```
 

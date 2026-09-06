@@ -269,6 +269,11 @@ run_checks() {
     # Merge base config (from this package) with optional project-local knip.json.
     # Root-only on purpose: knip reads the workspace globs itself and reports per
     # member from one run — a second invocation per member would double-report.
+    #
+    # Deliberately UNCACHED. Knip's `--cache` validates a cached glob against the
+    # mtimes of the directories that held a match; a file added to a directory
+    # that held none is invisible to it, and the run exits 0 where the uncached
+    # run exits 1. A gate that can pass on stale knowledge is worse than a slow one.
     local knip_pid=""
     local knip_status=0
     if [ "$FIX_MODE" = false ]; then
@@ -280,6 +285,23 @@ run_checks() {
         node "$PACKAGE_ROOT/lib/merge-knip-config.js" "$knip_base" $knip_project > "$tmp_dir/knip-merged.json"
         "$KNIP" --no-progress --no-config-hints --config "$tmp_dir/knip-merged.json" > "$tmp_dir/knip.log" 2>&1 &
         knip_pid=$!
+    fi
+
+    # Gitignore (artefacts): the convention — every artefact under
+    # `.artifacts/<tool>/`, `dist` excepted — read off the project's own
+    # `.gitignore`. Opt-in by existence: a project with no `.gitignore` names no
+    # artefact path, so the gate has no question to ask. Root-only, because
+    # `.artifacts/` sits at the project ROOT. Runs in fix mode too — it is the
+    # one gate whose remedy is a rewrite rather than a deletion.
+    local gitignore_pid=""
+    local gitignore_status=0
+    if [ -f ".gitignore" ]; then
+        if [ "$FIX_MODE" = true ]; then
+            node "$PACKAGE_ROOT/lib/check-gitignore.js" --fix > "$tmp_dir/gitignore.log" 2>&1 &
+        else
+            node "$PACKAGE_ROOT/lib/check-gitignore.js" > "$tmp_dir/gitignore.log" 2>&1 &
+        fi
+        gitignore_pid=$!
     fi
 
     # Conventions checker: only in check mode, once per specs root the workspace
@@ -326,6 +348,7 @@ run_checks() {
     wait $lint_pid;   local lint_status=$?
     wait $format_pid; local format_status=$?
     [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
+    [ -n "$gitignore_pid" ] && { wait $gitignore_pid; gitignore_status=$?; }
 
     # One pass, N runs: the pass fails if any run failed, and only the logs of
     # the runs that FAILED are printed — a green member stays silent.
@@ -380,6 +403,19 @@ run_checks() {
         printf "${GREEN}✓ Passed${NC}\n"
     fi
 
+    # The one pass that speaks on success: a rewrite changed a file the operator
+    # owns, and silence would hide it. In check mode a green gate writes nothing,
+    # so the green output stays byte-identical with the others.
+    if [ -n "$gitignore_pid" ]; then
+        printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Gitignore (artefacts)\n\n"
+        [ -s "$tmp_dir/gitignore.log" ] && cat "$tmp_dir/gitignore.log"
+        if [ $gitignore_status -ne 0 ]; then
+            printf "${RED}✗ Failed with exit code %d${NC}\n" $gitignore_status
+        else
+            printf "${GREEN}✓ Passed${NC}\n"
+        fi
+    fi
+
     if [ "$FIX_MODE" = false ]; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Knip (unused code)\n\n"
         if [ $knip_status -ne 0 ]; then
@@ -421,7 +457,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

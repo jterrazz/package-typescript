@@ -11,8 +11,8 @@ The complete TypeScript toolchain for the @jterrazz ecosystem — defines how ev
 
 Three surfaces, one CLI (`bin/typescript.sh`):
 
-- **Build** — `build` (app: ESM + types), `bundle` (library: ESM + CJS + types), `start`, `dev`.
-- **Check** — `check` runs tsc + oxlint + oxfmt + knip in parallel (plus a conventions pass and a docs-sync pass when the project qualifies); `fix` auto-repairs lint + format.
+- **Build** — `build` (app: ESM + types), `bundle` (library: ESM + CJS + types), `start`, `dev`, `clean`.
+- **Check** — `check` runs tsc + oxlint + oxfmt + knip in parallel (plus an artefact-convention gate, a conventions pass and a docs-sync pass when the project qualifies); `fix` auto-repairs lint + format and rewrites the `.gitignore`.
 - **Docs** — `docs` compiles the source barrel into a **committed** projection (`docs/reference/`); `docs --check` verifies it is in sync.
 
 Lint/format/tsconfig are preset packages a project wires explicitly in its own config files. There is no dependency auto-detection in the presets.
@@ -24,6 +24,7 @@ The full knowledge lives in the package's own corpus — route into it, do not r
 | Task                                               | Chapter                      |
 | -------------------------------------------------- | ---------------------------- |
 | Setting up a project                               | `docs/01-getting-started.md` |
+| Where a tool's output goes (`.artifacts/`)         | `docs/01-getting-started.md` |
 | Build issues (build/bundle/start/dev)              | `docs/02-building.md`        |
 | `check` / `fix` failing                            | `docs/03-quality-checks.md`  |
 | Lint rules, presets, `compose`, architecture, knip | `docs/04-lint-presets.md`    |
@@ -69,4 +70,5 @@ export default compose(node, testing);
 - Entry point is `src/index.ts` (the single public barrel); use `.js` extensions in relative imports.
 - Add TSDoc to every public export — `typescript docs` derives the reference from it.
 - Run `typescript fix` before committing, not just `typescript check`.
+- Every artefact lives under `.artifacts/<tool>/` at the project root, and `.artifacts/` is gitignored; `dist` is the one exception (the product). `typescript clean` empties it — see `docs/01-getting-started.md`.
 - `typescript docs` writes a **committed** projection under `docs/reference/` — commit it, and regenerate in the same change that touches the source (`check` runs a Docs sync pass). Never hand-edit a generated file, and never gitignore `docs/`.

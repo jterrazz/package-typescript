@@ -3,6 +3,7 @@
     "entry": [
         "presets/**/*.js",
         "src/index.js",
+        "lib/check-gitignore.js",
         "lib/merge-knip-config.js",
         "lib/workspace-members.js"
     ]

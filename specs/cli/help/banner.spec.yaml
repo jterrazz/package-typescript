@@ -15,6 +15,7 @@ runs:
             docs      Generate the committed docs/reference tree; --check verifies sync
             check     Check types, lint, formatting, and unused code
             fix       Auto-fix lint and formatting issues
+            clean     Remove .artifacts/ — dist/ stays, it is the build's product
 
           Examples:
             typescript build
@@ -25,3 +26,4 @@ runs:
             typescript docs --check
             typescript check
             typescript fix
+            typescript clean

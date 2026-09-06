@@ -9,6 +9,8 @@
         "target": "ESNext",
         "types": ["node"],
         "strict": true,
+        "incremental": true,
+        "tsBuildInfoFile": "${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo",
         "experimentalDecorators": true,
         "esModuleInterop": true,
         "resolveJsonModule": true,

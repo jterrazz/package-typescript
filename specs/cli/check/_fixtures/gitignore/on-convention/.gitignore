@@ -1,8 +1,5 @@
 node_modules/
-.idea
-.DS_Store
-.test-fixtures/
-*.temp.json
+dist/
 
 # Build, test and lint artefacts (@jterrazz/typescript)
 .artifacts/

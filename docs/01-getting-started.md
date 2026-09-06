@@ -71,6 +71,25 @@ That is the whole contract, and it is meant to stay that size:
 
 A local `compilerOption` is a **smell, not a shortcut**. It says the preset lacks something, and it settles that lack for one project in a place nobody else reads — so the next project rediscovers the same gap and answers it differently. Name what is missing and change the preset instead: the fix belongs upstream, where every project gets the same answer.
 
+## Where a tool's output goes
+
+Every build, test and lint artefact lives under `.artifacts/<tool>/` at the project root — one folder per tool that writes, `.artifacts/tsc/` for the incremental buildinfo, `.artifacts/coverage/` for coverage, and so on. One directory to ignore, one to delete, and no tool's droppings beside the source.
+
+`dist` is the one exception: a build's **product** stays beside `src/` and is published from there ([Building](02-building.md)). It is not an artefact — it is what the package ships.
+
+Two lines carry the convention into a project:
+
+```bash
+echo '.artifacts/' >> .gitignore   # or let `typescript fix` write it
+typescript clean                   # rm -rf .artifacts — dist/ is left alone
+```
+
+The presets do the rest. All three tsconfig presets compile incrementally and put the buildinfo at `${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo`, so a warm type-check is several times faster and nothing lands at the project root. In a workspace each member writes under its own root, because `${configDir}` means "the project extending me".
+
+`typescript check` guards it: the [Gitignore (artefacts)](03-quality-checks.md) pass fails a `.gitignore` that still names an artefact somewhere else, and `typescript fix` rewrites it.
+
+The exceptions the gate never touches are a closed list — `.expo/`, `ios/`, `android/`, `next-env.d.ts`, `.vercel`, `.build/`, `.swiftpm/`, `Package.resolved`, `DerivedData/`, `.gradle/`, `.metro-health-check*`, `node_modules/` — platform directories a toolchain owns and cannot be told to move.
+
 ## Conventions
 
 - Entry point is `src/index.ts` — the single public barrel.
