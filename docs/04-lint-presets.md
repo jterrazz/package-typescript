@@ -110,6 +110,7 @@ Rules enforced:
 - Published libraries: `exports` / `types` / `files` rules auto-disabled.
 - Convention paths (`_fixtures/`, `_expected/`, `docs/`) auto-ignored — at the root and inside every workspace member, because the convention belongs to the package. The two underscored names are `@jterrazz/test` 14's: what a spec stands on carries a leading underscore, and the bare `fixtures/` and `expected/` of earlier versions are no longer recognised.
 - Plugin dependencies (`*-plugin-*`, `@scope/*`) auto-ignored.
+- The toolchain's own config files — `oxlint.config.ts`, `oxfmt.config.ts`, `vitest.config.*`, `tsdown.config.*` — are named as `entry`, so they read as used even though a consumer never declares oxlint, oxfmt, vitest or tsdown itself: knip's own plugins for those tools only auto-enable when the tool is a DIRECT dependency, and this preset's contract is one devDependency ([Getting started](01-getting-started.md)).
 
 Create a `knip.json` only for project-specific overrides. It is read as **JSONC** — comments and trailing commas — so every override states why it exists ([Quality checks](03-quality-checks.md)):
 

@@ -1,5 +1,26 @@
 {
     "$schema": "https://unpkg.com/knip@6/schema.json",
     "ignoreDependencies": ["@jterrazz/test", "@jterrazz/typescript"],
-    "ignoreBinaries": ["oxlint", "oxfmt"]
+    "ignoreBinaries": ["oxlint", "oxfmt"],
+    // Knip's own oxlint/oxfmt/vitest/tsdown plugins auto-enable only when
+    // that PACKAGE is a direct dependency of the project (`hasDependency`
+    // reads package.json). A consumer of this preset declares only
+    // `@jterrazz/typescript`, so those tools are never direct dependencies
+    // of its own — the plugins stay off and their config files read as
+    // unused. Naming the toolchain's own config files here, by hand, is
+    // the fix: an explicit `entry` always wins, regardless of the plugin.
+    //
+    // Setting `entry` at all REPLACES knip's own default (it does not add
+    // to it) — so the first two patterns below are knip's own defaults,
+    // repeated here on purpose, or a consumer with a bare `index.ts` and no
+    // `entry` of its own would lose it the moment this preset's `entry`
+    // took over.
+    "entry": [
+        "{index,cli,main}.{js,mjs,cjs,jsx,ts,tsx,mts,cts}!",
+        "src/{index,cli,main}.{js,mjs,cjs,jsx,ts,tsx,mts,cts}!",
+        "oxlint.config.ts",
+        "oxfmt.config.ts",
+        "vitest.config.{js,mjs,ts,cjs,mts,cts}",
+        "tsdown.config.{ts,mts,cts,js,mjs,cjs}"
+    ]
 }

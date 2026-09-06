@@ -1,0 +1,7 @@
+{
+  "name": "fixture-toolchain-config-files",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@jterrazz/typescript": "^9.1.0"
+  }
+}

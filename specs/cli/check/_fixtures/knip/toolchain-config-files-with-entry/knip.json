@@ -1,0 +1,6 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  // A project's own entry — a script invoked only by CI, never imported —
+  // must survive the merge beside the preset's own config-file entries.
+  "entry": ["scripts/seed.ts"]
+}
