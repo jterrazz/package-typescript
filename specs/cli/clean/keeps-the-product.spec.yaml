@@ -1,0 +1,11 @@
+description: leaves dist/ alone — the product is not an artefact
+fixture: built-app/
+runs:
+    - command: clean
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Removing artefacts...
+
+          Nothing to remove — .artifacts/ is already absent
+      files:
+          dist/index.js: exists

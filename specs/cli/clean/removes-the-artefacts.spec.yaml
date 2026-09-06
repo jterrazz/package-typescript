@@ -1,0 +1,36 @@
+description: removes what the tools wrote under .artifacts/
+fixture: $FIXTURES/incremental-app/
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed
+    - command: clean
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Removing artefacts...
+
+          Removed .artifacts/
+      files:
+          .artifacts: absent
+          index.ts: exists

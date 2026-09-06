@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "incremental": true,
+    "tsBuildInfoFile": "${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo"
+  },
+  "include": ["**/*.ts"]
+}

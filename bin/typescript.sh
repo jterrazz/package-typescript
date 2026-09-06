@@ -144,6 +144,22 @@ case "$COMMAND" in
         fi
         ;;
 
+    clean)
+        # Every tool writes under .artifacts/<tool>/, so removing that one
+        # directory is the whole cleanup. dist/ is NOT touched: it is the
+        # build's product, published from beside src/, not an artefact.
+        cd "$PROJECT_ROOT"
+
+        printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Removing artefacts...\n\n"
+
+        if [ -d ".artifacts" ]; then
+            rm -rf .artifacts
+            printf "${GREEN}Removed .artifacts/${NC}\n"
+        else
+            printf "${GREEN}Nothing to remove — .artifacts/ is already absent${NC}\n"
+        fi
+        ;;
+
     check|fix)
         exec bash "$SCRIPT_DIR/commands/check.sh" "$COMMAND" "$@"
         ;;
@@ -158,7 +174,8 @@ case "$COMMAND" in
         printf "  dev       Build, run, and rebuild on changes\n"
         printf "  docs      Generate the committed docs/reference tree; --check verifies sync\n"
         printf "  check     Check types, lint, formatting, and unused code\n"
-        printf "  fix       Auto-fix lint and formatting issues\n\n"
+        printf "  fix       Auto-fix lint and formatting issues\n"
+        printf "  clean     Remove .artifacts/ — dist/ stays, it is the build's product\n\n"
         printf "Examples:\n"
         printf "  typescript build\n"
         printf "  typescript bundle\n"
@@ -168,6 +185,7 @@ case "$COMMAND" in
         printf "  typescript docs --check\n"
         printf "  typescript check\n"
         printf "  typescript fix\n"
+        printf "  typescript clean\n"
         exit 1
         ;;
 esac
