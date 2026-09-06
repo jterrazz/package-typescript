@@ -1,5 +1,5 @@
 description: building fails on a missing entry point
-fixture: $FIXTURES/empty-app/
+fixture: empty-app/
 runs:
     - command: build
       exit: 1

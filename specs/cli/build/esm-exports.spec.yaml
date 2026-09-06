@@ -1,5 +1,5 @@
 description: generates ESM output with export statements
-fixture: $FIXTURES/sample-lib/
+fixture: sample-lib/
 runs:
     - command: bundle
       exit: 0

@@ -1,5 +1,5 @@
 description: building fails on an unresolvable import
-fixture: $FIXTURES/broken-app/
+fixture: broken-app/
 runs:
     - command: build
       exit: 1
