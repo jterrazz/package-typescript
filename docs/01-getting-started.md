@@ -22,19 +22,19 @@ Every preset scopes its `include` and `exclude` to `${configDir}` — the direct
 
 ```ts
 // oxlint.config.ts
-import { oxlint } from '@jterrazz/typescript';
-import { defineConfig } from 'oxlint';
+import { defineConfig, node } from '@jterrazz/typescript/oxlint';
 
-export default defineConfig({ extends: [oxlint.node] });
+export default defineConfig({ extends: [node] });
 ```
 
 ```ts
 // oxfmt.config.ts
-import { oxfmt } from '@jterrazz/typescript';
-import { defineConfig } from 'oxfmt';
+import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
 
-export default defineConfig(oxfmt);
+export default defineConfig(base);
 ```
+
+Each config names `@jterrazz/typescript` and nothing else — the preset and the tool's own `defineConfig` both arrive from it. Importing `defineConfig` from `oxlint` or `oxfmt` directly asks the project to declare those packages as well, which is the shape below refusing to hold.
 
 ## 3. Wire the CLI into package.json
 
@@ -65,7 +65,7 @@ Libraries (bundle instead of build, and generate docs):
 
 That is the whole contract, and it is meant to stay that size:
 
-- **One devDependency** — `@jterrazz/typescript`. tsc, oxlint, oxfmt, knip, tsdown and typedoc are its own dependencies and arrive with it; installing one of them directly gives a project two opinions about its own toolchain, and the versions drift apart from there.
+- **One devDependency** — `@jterrazz/typescript`. tsc, oxlint, oxfmt, knip, tsdown and typedoc are its own dependencies and arrive with it; installing one of them directly gives a project two opinions about its own toolchain, and the versions drift apart from there. It holds under npm, pnpm and bun alike, and pnpm is the one that proves it: its `node_modules` resolves only what the project itself declares, so a config naming any other package would fail there with `ERR_MODULE_NOT_FOUND`.
 - **Two commands** — `typescript check` and `typescript fix`. Every gate is behind them, so a script that calls a tool underneath skips the passes the CLI orchestrates.
 - **One line of tsconfig** — the `extends` above, and nothing beside it. In a workspace that is one line per member: the unit the toolchain measures from is the package, not the repository ([Quality checks](03-quality-checks.md)).
 

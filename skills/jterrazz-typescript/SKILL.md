@@ -45,17 +45,17 @@ npm install @jterrazz/typescript --save-dev
 
 ```ts
 // oxlint.config.ts
-import { oxlint } from '@jterrazz/typescript';
-import { defineConfig } from 'oxlint';
-export default defineConfig({ extends: [oxlint.node] }); // or oxlint.next, oxlint.expo
+import { defineConfig, node } from '@jterrazz/typescript/oxlint';
+export default defineConfig({ extends: [node] }); // or next, expo
 ```
 
 ```ts
 // oxfmt.config.ts
-import { oxfmt } from '@jterrazz/typescript';
-import { defineConfig } from 'oxfmt';
-export default defineConfig(oxfmt);
+import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
+export default defineConfig(base);
 ```
+
+A config imports `@jterrazz/typescript` and nothing else — `defineConfig` included. Naming `oxlint` or `oxfmt` directly breaks under pnpm's strict `node_modules` (`ERR_MODULE_NOT_FOUND`), where only what the project declares resolves.
 
 Projects using `@jterrazz/test` compose its lint fragment explicitly:
 

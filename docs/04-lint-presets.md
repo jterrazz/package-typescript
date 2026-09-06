@@ -1,17 +1,17 @@
 # Lint presets
 
-The `@jterrazz/typescript/oxlint` entry ships named presets plus a `compose(...)` merger — projects wire the fragments they want, explicitly.
+The `@jterrazz/typescript/oxlint` entry ships named presets, a `compose(...)` merger, and oxlint's own `defineConfig` — projects wire the fragments they want, explicitly, importing this package alone ([Getting started](01-getting-started.md)).
 
 There is no dependency auto-detection in the presets: what you compose is what runs.
 
 ## Presets
 
-| Preset             | Use case                          |
-| ------------------ | --------------------------------- |
-| `oxlint.node`      | Node.js — requires `.js` imports  |
-| `oxlint.next`      | Next.js                           |
-| `oxlint.expo`      | Expo / React Native               |
-| `oxlint.hexagonal` | Hexagonal architecture (additive) |
+| Preset      | Use case                          |
+| ----------- | --------------------------------- |
+| `node`      | Node.js — requires `.js` imports  |
+| `next`      | Next.js                           |
+| `expo`      | Expo / React Native               |
+| `hexagonal` | Hexagonal architecture (additive) |
 
 Asset trees are ignored by default: `next` skips `public/**` and `assets/**` (the stack's convention for content trees — signed bytes can live there), `expo` skips `.expo/**` and its scaffolded `assets/**`. Neither is source; a consumer with source in those paths is fighting the convention, not the preset.
 
@@ -90,10 +90,9 @@ export default compose(node, testing);
 The additive `hexagonal` preset enforces layer boundaries:
 
 ```ts
-import { oxlint } from '@jterrazz/typescript';
-import { defineConfig } from 'oxlint';
+import { defineConfig, hexagonal, node } from '@jterrazz/typescript/oxlint';
 
-export default defineConfig({ extends: [oxlint.node, oxlint.hexagonal] });
+export default defineConfig({ extends: [node, hexagonal] });
 ```
 
 Rules enforced:
@@ -130,7 +129,7 @@ The base preset declares no `workspaces`, so the key reaches knip exactly as wri
 
 ## Formatting rules (oxfmt)
 
-100-char print width, 4-space indentation, single quotes, trailing commas, semicolons, LF line endings.
+100-char print width, 4-space indentation, single quotes, trailing commas, semicolons, LF line endings. They arrive as `base` from the `@jterrazz/typescript/oxfmt` entry, which ships oxfmt's `defineConfig` beside it for the same reason the oxlint entry does.
 
 ## Related
 

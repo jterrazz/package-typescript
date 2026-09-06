@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { compose, expo, hexagonal, next, node } from './oxlint.js';
+import { compose, defineConfig, expo, hexagonal, next, node } from './oxlint.js';
 
 test('concatenates and dedupes plugin lists', () => {
     // Given - two fragments sharing one jsPlugin
@@ -76,4 +76,12 @@ test('exports the named presets', () => {
     for (const preset of [node, expo, next, hexagonal]) {
         expect(typeof preset).toBe('object');
     }
+});
+
+test("re-exports oxlint's own defineConfig", () => {
+    // Given - a config a consumer would write, with oxlint declared nowhere in its project
+    const config = { rules: { curly: 'error' } };
+
+    // Then - the entry carries the tool's helper, which returns the config unchanged
+    expect(defineConfig(config)).toBe(config);
 });
