@@ -1,3 +1,4 @@
+import { literate } from '@jterrazz/test/vitest';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -11,6 +12,14 @@ export default defineConfig({
                 },
             },
             {
+                /*
+                 * The spec documents run here, beside the chains that still need code.
+                 * `literate()` binds every `<case>.spec.yaml` to ONE runner, and the one
+                 * this repo tests through is the product command (B9). The three B9w
+                 * exception runners — oxfmt, oxlint, run-split-install.sh — therefore keep
+                 * their chains: a document cannot name the binary it runs.
+                 */
+                plugins: [literate({ specification: './specs/cli/cli.specification.ts' })],
                 test: {
                     name: 'e2e',
                     include: ['specs/**/*.test.ts'],

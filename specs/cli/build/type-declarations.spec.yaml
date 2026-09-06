@@ -1,0 +1,17 @@
+description: generates type declarations exposing the public API
+fixture: $FIXTURES/sample-lib/
+runs:
+    - command: bundle
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Bundling library (ESM + CJS + types)...
+
+          ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
+          ℹ config file: {{path}} 
+          ℹ entry: src/index.ts
+          ℹ tsconfig: tsconfig.json
+          ℹ Build start
+          {{any}}
+          Build completed
+      files:
+          dist/index.d.ts: { contains: ['greet', 'User'] }

@@ -1,0 +1,23 @@
+description: bundling fails on a missing entry point
+fixture: $FIXTURES/empty-app/
+runs:
+    - command: bundle
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  Bundling library (ESM + CJS + types)...
+
+          ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
+          ℹ config file: {{path}} 
+          ℹ entry: src/index.ts
+          ℹ tsconfig: tsconfig.json
+          ℹ Build start
+          Error: Build failed
+      # The diagnostic is the subject; the rolldown/tsdown frames under it carry
+      # absolute paths and content-hashed bundle names, and say nothing about the
+      # refusal.
+      stderr: |-
+          {{any}}
+           ERROR  Error: Build failed with 1 error:
+
+          [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts.
+          {{any}}
