@@ -269,6 +269,11 @@ run_checks() {
     # Merge base config (from this package) with optional project-local knip.json.
     # Root-only on purpose: knip reads the workspace globs itself and reports per
     # member from one run — a second invocation per member would double-report.
+    #
+    # Deliberately UNCACHED. Knip's `--cache` validates a cached glob against the
+    # mtimes of the directories that held a match; a file added to a directory
+    # that held none is invisible to it, and the run exits 0 where the uncached
+    # run exits 1. A gate that can pass on stale knowledge is worse than a slow one.
     local knip_pid=""
     local knip_status=0
     if [ "$FIX_MODE" = false ]; then
