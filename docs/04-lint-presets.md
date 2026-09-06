@@ -111,7 +111,18 @@ Rules enforced:
 - Convention paths (`_fixtures/`, `_expected/`, `docs/`) auto-ignored — at the root and inside every workspace member, because the convention belongs to the package. The two underscored names are `@jterrazz/test` 14's: what a spec stands on carries a leading underscore, and the bare `fixtures/` and `expected/` of earlier versions are no longer recognised.
 - Plugin dependencies (`*-plugin-*`, `@scope/*`) auto-ignored.
 
-Create a `knip.json` only for project-specific overrides.
+Create a `knip.json` only for project-specific overrides. It is read as **JSONC** — comments and trailing commas — so every override states why it exists ([Quality checks](03-quality-checks.md)):
+
+```json
+{
+    "ignoreDependencies": [
+        // Loaded by the bundler at runtime, never imported from source.
+        "some-runtime-plugin"
+    ]
+}
+```
+
+`knip.jsonc` is read the same way, for a project that prefers the extension. The two differ only under the formatter: it drops a trailing comma from a `.json` and keeps one in a `.jsonc`, and the parser accepts either.
 
 ### Workspaces
 
