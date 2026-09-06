@@ -109,7 +109,7 @@ Rules enforced:
 
 - `@jterrazz/*` packages auto-ignored.
 - Published libraries: `exports` / `types` / `files` rules auto-disabled.
-- Convention paths (`fixtures/`, `expected/`, `docs/`) auto-ignored — at the root and inside every workspace member, because the convention belongs to the package.
+- Convention paths (`_fixtures/`, `_expected/`, `docs/`) auto-ignored — at the root and inside every workspace member, because the convention belongs to the package. The two underscored names are `@jterrazz/test` 14's: what a spec stands on carries a leading underscore, and the bare `fixtures/` and `expected/` of earlier versions are no longer recognised.
 - Plugin dependencies (`*-plugin-*`, `@scope/*`) auto-ignored.
 
 Create a `knip.json` only for project-specific overrides.
