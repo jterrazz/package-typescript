@@ -199,12 +199,17 @@ function auditChapters(report, { chapters, ships }) {
     }
 
     const numbers = chapters.map((chapter) => chapter.number).sort((a, b) => a - b);
-    const contiguous = numbers.every((number, index) => number === index + 1);
+    const hasOperating = numbers.includes(4);
+    // 04 is the one number the spine never requires (`docs-operating-missing`
+    // Asks for it on its own terms), so a run missing it is still contiguous —
+    // Every number from 05 on shifts down one slot to close the gap.
+    const expected = (index) => (!hasOperating && index + 1 >= 4 ? index + 2 : index + 1);
+    const contiguous = numbers.every((number, index) => number === expected(index));
     if (numbers.length > 0 && !contiguous) {
         report(
             'docs-chapter-numbering',
             'docs/',
-            `chapter numbers run ${numbers.map(padded).join(', ')}: they are contiguous from 01, one file per number`,
+            `chapter numbers run ${numbers.map(padded).join(', ')}: they are contiguous from 01, one file per number, except that 04 may be absent`,
         );
     }
 

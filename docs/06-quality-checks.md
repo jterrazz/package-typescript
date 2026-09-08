@@ -74,7 +74,7 @@ The spine itself is language-agnostic doctrine, and it is [`jterrazz-studio`'s](
 | `docs-map-drift`           | a map and a chapter list that are not bijective                            |
 | `docs-map-foreign-link`    | a map link to anything but a chapter, `decisions/` or `reference/`         |
 | `docs-chapter-name`        | a chapter that is not `NN-kebab.md`                                        |
-| `docs-chapter-numbering`   | numbers that skip, or one number on two files                              |
+| `docs-chapter-numbering`   | numbers that skip (04 aside), or one number on two files                   |
 | `docs-spine-name`          | a chapter sitting on a reserved number under another name                  |
 | `docs-spine-missing`       | an absent `01-architecture.md`, `02-developing.md` or `03-testing.md`      |
 | `docs-operating-missing`   | an absent `04-operating.md` when the presence test below fires             |
