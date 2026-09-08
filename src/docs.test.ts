@@ -332,12 +332,28 @@ test('names a decision outside the status vocabulary', () => {
 
     // Then - the four the vocabulary holds
     expect(sentence(tree, 'docs-decision-status')).toBe(
-        'docs/decisions/001-the-first-call.md: **Status:** is none of Proposed, Accepted, Superseded by ADR-NNN, Deprecated',
+        'docs/decisions/001-the-first-call.md: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated',
     );
 });
 
-test('accepts a superseded status that names the record replacing it', () => {
-    // Given - the one status carrying an argument
+test('accepts a superseded status that links the record replacing it', () => {
+    // Given - the one status carrying an argument, written as a citation
+    const tree = withDecisions({
+        heads: {
+            'docs/decisions/001-the-first-call.md': [
+                '# ADR-001: The first call',
+                '',
+                '**Status:** Superseded by [ADR-014](014-the-later-call.md)',
+            ],
+        },
+    });
+
+    // Then - nothing to say
+    expect(rules(tree)).toEqual([]);
+});
+
+test('refuses a superseded status with no link naming the successor', () => {
+    // Given - the bare form: a successor is named, but not as a place to look
     const tree = withDecisions({
         heads: {
             'docs/decisions/001-the-first-call.md': [
@@ -348,8 +364,10 @@ test('accepts a superseded status that names the record replacing it', () => {
         },
     });
 
-    // Then - nothing to say
-    expect(rules(tree)).toEqual([]);
+    // Then - the missing link is the whole complaint
+    expect(sentence(tree, 'docs-decision-status')).toBe(
+        'docs/decisions/001-the-first-call.md: **Status:** names a successor but no link — write Superseded by [ADR-NNN](file.md)',
+    );
 });
 
 test('names a number two records claim', () => {

@@ -48,8 +48,14 @@ const JOURNAL_WORDS = new Set([
 /** The closed status vocabulary of a decision record. */
 const STATUSES = new Set(['Proposed', 'Accepted', 'Deprecated']);
 
-/** The fourth status carries the record that replaced it. */
-const SUPERSEDED = /^Superseded by ADR-\d{3}$/;
+/**
+ * The fourth status carries the record that replaced it, as a link a reader
+ * can follow — a citation is a place a human can look, not just a number.
+ */
+const SUPERSEDED = /^Superseded by \[ADR-\d{3}\]\([^)]+\)$/;
+
+/** The same status named but not linked — the successor exists, the citation does not. */
+const BARE_SUPERSEDED = /^Superseded by ADR-\d{3}$/;
 
 /** What a chapter's file name must be: two digits, lowercase words, single hyphens. */
 const CHAPTER_NAME = /^\d{2}-[a-z\d]+(?:-[a-z\d]+)*\.md$/;
@@ -284,11 +290,11 @@ function auditRecord(report, record, heads) {
 
     const status = head.map((line) => DECISION_STATUS.exec(line)?.groups?.status).find(Boolean);
     if (status === undefined || !(STATUSES.has(status) || SUPERSEDED.test(status))) {
-        report(
-            'docs-decision-status',
-            record.path,
-            `${record.path}: **Status:** is none of Proposed, Accepted, Superseded by ADR-NNN, Deprecated`,
-        );
+        const message =
+            status !== undefined && BARE_SUPERSEDED.test(status)
+                ? `${record.path}: **Status:** names a successor but no link — write Superseded by [ADR-NNN](file.md)`
+                : `${record.path}: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated`;
+        report('docs-decision-status', record.path, message);
     }
 }
 
