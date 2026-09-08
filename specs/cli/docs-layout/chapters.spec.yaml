@@ -1,0 +1,13 @@
+description: names map drift, a broken numbering, journal chapters and what clutters docs/
+fixture: journal-and-clutter/
+runs:
+    - command: docs-layout .
+      exit: 1
+      stdout: |
+          docs-map-drift  docs/README.md  docs/README.md and the chapters disagree: 06-deployment.md has no file
+          docs-map-drift  docs/README.md  docs/README.md and the chapters disagree: 07-operations.md has no row
+          docs-chapter-numbering  docs/  chapter numbers run 01, 02, 03, 05, 05, 07: they are contiguous from 01, one file per number
+          docs-journal-chapter  docs/05-design-exploration.md  docs/05-design-exploration.md names a journal, not a subject — exploration; the record is an ADR, the history is git's
+          docs-journal-chapter  docs/05-notes.md  docs/05-notes.md names a journal, not a subject — notes; the record is an ADR, the history is git's
+          docs-loose-file  docs/automations.md  docs/automations.md is neither the map nor a chapter — number it, or move it under _assets/
+          docs-foreign-folder  docs/qa/  docs/qa/ is not one of decisions/, reference/, _assets/

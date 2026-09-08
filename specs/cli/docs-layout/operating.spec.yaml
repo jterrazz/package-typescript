@@ -1,0 +1,7 @@
+description: asks a workspace whose member ships an image for its operating chapter
+fixture: workspace-member-image/
+runs:
+    - command: docs-layout .
+      exit: 1
+      stdout: |
+          docs-operating-missing  docs/04-operating.md  04-operating.md is missing — this repository ships an image (a Dockerfile)

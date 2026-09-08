@@ -1,10 +1,12 @@
-# Getting started
+# Developing
 
 Install `@jterrazz/typescript` and point three config files at its presets — the toolchain is zero-config beyond that.
 
 ```bash
 npm install @jterrazz/typescript --save-dev
 ```
+
+Two audiences read this chapter: a project being wired onto the toolchain, first, and then anyone changing the toolchain itself — the last section is theirs.
 
 ## 1. Choose a TypeScript configuration
 
@@ -67,7 +69,7 @@ That is the whole contract, and it is meant to stay that size:
 
 - **One devDependency** — `@jterrazz/typescript`. tsc, oxlint, oxfmt, knip, tsdown and typedoc are its own dependencies and arrive with it; installing one of them directly gives a project two opinions about its own toolchain, and the versions drift apart from there. It holds under npm, pnpm and bun alike, and pnpm is the one that proves it: its `node_modules` resolves only what the project itself declares, so a config naming any other package would fail there with `ERR_MODULE_NOT_FOUND`.
 - **Two commands** — `typescript check` and `typescript fix`. Every gate is behind them, so a script that calls a tool underneath skips the passes the CLI orchestrates.
-- **One line of tsconfig** — the `extends` above, and nothing beside it. In a workspace that is one line per member: the unit the toolchain measures from is the package, not the repository ([Quality checks](03-quality-checks.md)).
+- **One line of tsconfig** — the `extends` above, and nothing beside it. In a workspace that is one line per member: the unit the toolchain measures from is the package, not the repository ([Quality checks](06-quality-checks.md)).
 
 A local `compilerOption` is a **smell, not a shortcut**. It says the preset lacks something, and it settles that lack for one project in a place nobody else reads — so the next project rediscovers the same gap and answers it differently. Name what is missing and change the preset instead: the fix belongs upstream, where every project gets the same answer.
 
@@ -75,7 +77,7 @@ A local `compilerOption` is a **smell, not a shortcut**. It says the preset lack
 
 Every build, test and lint artefact lives under `.artifacts/<tool>/` at the project root — one folder per tool that writes, `.artifacts/tsc/` for the incremental buildinfo, `.artifacts/coverage/` for coverage, and so on. One directory to ignore, one to delete, and no tool's droppings beside the source.
 
-`dist` is the one exception: a build's **product** stays beside `src/` and is published from there ([Building](02-building.md)). It is not an artefact — it is what the package ships.
+`dist` is the one exception: a build's **product** stays beside `src/` and is published from there ([Building](05-building.md)). It is not an artefact — it is what the package ships.
 
 Two lines carry the convention into a project:
 
@@ -86,7 +88,7 @@ typescript clean                   # rm -rf .artifacts — dist/ is left alone
 
 The presets do the rest. All three tsconfig presets compile incrementally and put the buildinfo at `${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo`, so a warm type-check is several times faster and nothing lands at the project root. In a workspace each member writes under its own root, because `${configDir}` means "the project extending me".
 
-`typescript check` guards it: the [Gitignore (artefacts)](03-quality-checks.md) pass fails a `.gitignore` that still names an artefact somewhere else, and `typescript fix` rewrites it. In a workspace it reads the package's own `.gitignore` AND the nearest ancestor one above it — a workspace root that ignores `.artifacts/` covers every member, even one with no `.gitignore` of its own.
+`typescript check` guards it: the [Gitignore (artefacts)](06-quality-checks.md) pass fails a `.gitignore` that still names an artefact somewhere else, and `typescript fix` rewrites it. In a workspace it reads the package's own `.gitignore` AND the nearest ancestor one above it — a workspace root that ignores `.artifacts/` covers every member, even one with no `.gitignore` of its own.
 
 The exceptions the gate never touches are a closed list — `.expo/`, `ios/`, `android/`, `next-env.d.ts`, `.vercel`, `.build/`, `.swiftpm/`, `Package.resolved`, `DerivedData/`, `.gradle/`, `.metro-health-check*`, `node_modules/` — platform directories a toolchain owns and cannot be told to move.
 
@@ -98,8 +100,24 @@ One exception is conditional, not static: `.next`. With `output: 'export'` in `n
 - Use `.js` extensions in relative imports: `import { foo } from './bar.js'`.
 - Add TSDoc to every public export — `typescript docs` derives the reference from it.
 
+## Working on this package
+
+```bash
+npm install     # there is no build step — the package ships JS directly
+npm test        # the two vitest suites (Testing)
+npm run lint    # this package's own CLI, run on this package
+```
+
+Where a new thing goes follows the layers ([Architecture](01-architecture.md)): a new gate is a node script in `lib/` plus the lines in `bin/commands/check.sh` that decide whether it applies; a new configuration is a file under `presets/`; a new importable entry is a `.js` and a hand-written `.d.ts` in `src/`, an `exports` subpath, and a row in the resolution test.
+
+Two standing rules bind every change here:
+
+- **Regenerate the projection in the same change.** Touching the corpus or the public API and forgetting `./bin/typescript.sh docs` fails the Docs (sync) pass — see [Docs pipeline](08-docs-pipeline.md).
+- **A change to the public surface reaches three places.** `README.md`, the chapter that owns the subject, and `skills/jterrazz-typescript/SKILL.md`, which routes into the chapter and never restates it.
+
 ## Related
 
-- [Building](02-building.md) — build, bundle, start, dev.
-- [Quality checks](03-quality-checks.md) — `check` / `fix`.
-- [Repo structure](06-repo-structure.md) — how a repo is organized.
+- [Architecture](01-architecture.md) — the layers a change lands in.
+- [Building](05-building.md) — build, bundle, start, dev.
+- [Quality checks](06-quality-checks.md) — `check` / `fix`.
+- [Repo structure](09-repo-structure.md) — how a repo is organized.

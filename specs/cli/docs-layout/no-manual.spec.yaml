@@ -1,0 +1,7 @@
+description: names a repository that carries no manual at all
+fixture: no-manual/
+runs:
+    - command: docs-layout .
+      exit: 1
+      stdout: |
+          docs-absent  docs/  docs/ is missing — every repository carries its own manual, starting at docs/README.md

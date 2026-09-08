@@ -23,6 +23,10 @@
             "types": "./src/index.d.ts",
             "default": "./src/index.js"
         },
+        "./docs": {
+            "types": "./src/docs.d.ts",
+            "default": "./src/docs.js"
+        },
         "./oxfmt": {
             "types": "./src/oxfmt.d.ts",
             "default": "./src/oxfmt.js"

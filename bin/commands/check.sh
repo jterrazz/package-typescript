@@ -314,6 +314,21 @@ run_checks() {
         gitignore_pid=$!
     fi
 
+    # Docs (layout): the manual's shape — the map, the spine, the numbering, the
+    # three subfolders, the decision mold. Its unit is the REPOSITORY, not the
+    # package: a manual answers for the whole tree, and only its root carries the
+    # AGENTS.md that routes into it. So the pass asks its question exactly where a
+    # repository is — `.git` here, a file in a worktree and a directory in a clone.
+    # Nothing else gates it: a repository with NO docs/ is the population the rule
+    # exists for, and it fails on `docs-absent`. Check-only, like every read-only
+    # gate — there is no rewrite that can author a chapter.
+    local docs_layout_pid=""
+    local docs_layout_status=0
+    if [ "$FIX_MODE" = false ] && [ -e ".git" ]; then
+        node "$PACKAGE_ROOT/lib/check-docs.js" > "$tmp_dir/docs-layout.log" 2>&1 &
+        docs_layout_pid=$!
+    fi
+
     # Conventions checker: only in check mode, once per specs root the workspace
     # owns, gated by the package that OWNS that root — a member may depend on
     # @jterrazz/test while the root does not, and the reverse.
@@ -359,6 +374,7 @@ run_checks() {
     wait $format_pid; local format_status=$?
     [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
     [ -n "$gitignore_pid" ] && { wait $gitignore_pid; gitignore_status=$?; }
+    [ -n "$docs_layout_pid" ] && { wait $docs_layout_pid; docs_layout_status=$?; }
 
     # One pass, N runs: the pass fails if any run failed, and only the logs of
     # the runs that FAILED are printed — a green member stays silent.
@@ -447,6 +463,16 @@ run_checks() {
             fi
         fi
 
+        if [ -n "$docs_layout_pid" ]; then
+            printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Docs (layout)\n\n"
+            if [ $docs_layout_status -ne 0 ]; then
+                [ -s "$tmp_dir/docs-layout.log" ] && cat "$tmp_dir/docs-layout.log"
+                printf "${RED}✗ Failed with exit code %d${NC}\n" $docs_layout_status
+            else
+                printf "${GREEN}✓ Passed${NC}\n"
+            fi
+        fi
+
         if [ ${#docs_pids[@]} -gt 0 ]; then
             printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Docs (sync)\n\n"
             if [ $docs_status -ne 0 ]; then
@@ -467,7 +493,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

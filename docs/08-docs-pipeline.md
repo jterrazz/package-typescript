@@ -14,7 +14,7 @@ One projection, written under `docs/` and **committed** to the repo:
 | ----------------- | ----------------------------------------------------------------------------------------- |
 | `docs/reference/` | The typedoc markdown tree — one file per exported member (stale members vanish on regen). |
 
-This is the pipeline's single output because it is the only thing that **crosses a layer boundary**: source code (one layer) compiled into docs (another). The hand-written chapters are already docs — re-concatenating them into an `llms.txt` bundle would be a same-layer re-packaging, a _presentation_, not a projection (see [Repo structure](06-repo-structure.md)).
+This is the pipeline's single output because it is the only thing that **crosses a layer boundary**: source code (one layer) compiled into docs (another). The hand-written chapters are already docs — re-concatenating them into an `llms.txt` bundle would be a same-layer re-packaging, a _presentation_, not a projection (see [Repo structure](09-repo-structure.md)).
 
 Every generated file self-identifies with a first line:
 
@@ -28,11 +28,20 @@ The output lives in the repo, under version control — it is not a hidden `.doc
 
 ## Keeping it in sync
 
-`typescript docs --check` regenerates the reference tree into a temp directory and diffs it against what is committed. It never touches the committed tree, so it is safe to run anywhere — including in parallel from `typescript check`, which adds a [Docs (sync) pass](03-quality-checks.md) once `docs/reference/` exists. When the two diverge, the check fails and names the out-of-sync path, pointing you back to `typescript docs`.
+`typescript docs --check` regenerates the reference tree into a temp directory and diffs it against what is committed. It never touches the committed tree, so it is safe to run anywhere — including in parallel from `typescript check`, which adds a [Docs (sync) pass](06-quality-checks.md) once `docs/reference/` exists. When the two diverge, the check fails and names the out-of-sync path, pointing you back to `typescript docs`.
 
 The rule: **regenerate in the same change that touches the source.** Never hand-edit a generated file. (Editing a chapter is not drift — chapters are authored corpus, not a projection.)
 
+## Internals
+
+`bin/commands/docs.sh` compiles ONE project root, handed to it as an argument; which roots those are is `typescript.sh`'s question — the project itself, or each workspace member that owns a barrel and a `docs/`.
+
+- **The entry barrel** resolves as `src/index.ts`, else `src/index.d.ts`. This package is the JS-shipped case, which is why its own `tsconfig.json` includes `src/index.d.ts` — typedoc has to be able to read it.
+- **Generation is deterministic**: `LC_ALL=C`, `find | sort`, no timestamps. Two runs on an unchanged tree are byte-identical, which is what makes the sync check a diff rather than a heuristic.
+- **`--check` never touches the committed tree**: it regenerates into a temp directory and diffs. That is why it is safe to run in parallel from `typescript check`.
+- **Only `docs/reference/` is projected.** It is the one cross-layer compile — source into docs. The chapters are authored corpus; re-packaging them would be a presentation, not a projection.
+
 ## Related
 
-- [Repo structure](06-repo-structure.md) — pointer to the shared doctrine on projections vs presentations.
-- [Quality checks](03-quality-checks.md) — the Docs (sync) pass.
+- [Repo structure](09-repo-structure.md) — pointer to the shared doctrine on projections vs presentations.
+- [Quality checks](06-quality-checks.md) — the Docs (sync) pass.

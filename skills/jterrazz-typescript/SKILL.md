@@ -12,7 +12,7 @@ The complete TypeScript toolchain for the @jterrazz ecosystem — defines how ev
 Three surfaces, one CLI (`bin/typescript.sh`):
 
 - **Build** — `build` (app: ESM + types), `bundle` (library: ESM + CJS + types), `start`, `dev`, `clean`.
-- **Check** — `check` runs tsc + oxlint + oxfmt + knip in parallel (plus an artefact-convention gate, a conventions pass and a docs-sync pass when the project qualifies); `fix` auto-repairs lint + format and rewrites the `.gitignore`.
+- **Check** — `check` runs tsc + oxlint + oxfmt + knip in parallel (plus an artefact-convention gate, a conventions pass, a docs-layout gate and a docs-sync pass when the project qualifies); `fix` auto-repairs lint + format and rewrites the `.gitignore`.
 - **Docs** — `docs` compiles the source barrel into a **committed** projection (`docs/reference/`); `docs --check` verifies it is in sync.
 
 Lint/format/tsconfig are preset packages a project wires explicitly in its own config files. There is no dependency auto-detection in the presets.
@@ -21,14 +21,15 @@ Lint/format/tsconfig are preset packages a project wires explicitly in its own c
 
 The full knowledge lives in the package's own corpus — route into it, do not restate it. Read the relevant chapter straight from the repo:
 
-| Task                                               | Chapter                      |
-| -------------------------------------------------- | ---------------------------- |
-| Setting up a project                               | `docs/01-getting-started.md` |
-| Where a tool's output goes (`.artifacts/`)         | `docs/01-getting-started.md` |
-| Build issues (build/bundle/start/dev)              | `docs/02-building.md`        |
-| `check` / `fix` failing                            | `docs/03-quality-checks.md`  |
-| Lint rules, presets, `compose`, architecture, knip | `docs/04-lint-presets.md`    |
-| Docs pipeline (`typescript docs`)                  | `docs/05-docs-pipeline.md`   |
+| Task                                               | Chapter                     |
+| -------------------------------------------------- | --------------------------- |
+| Setting up a project                               | `docs/02-developing.md`     |
+| Where a tool's output goes (`.artifacts/`)         | `docs/02-developing.md`     |
+| Build issues (build/bundle/start/dev)              | `docs/05-building.md`       |
+| `check` / `fix` failing                            | `docs/06-quality-checks.md` |
+| The shape of `docs/` (the spine, the lint)         | `docs/06-quality-checks.md` |
+| Lint rules, presets, `compose`, architecture, knip | `docs/07-lint-presets.md`   |
+| Docs pipeline (`typescript docs`)                  | `docs/08-docs-pipeline.md`  |
 
 Organizing the repo itself — where knowledge lives, corpus vs skills vs the compiler — is a separate capability: see the `jterrazz-repo-structure` skill, which ships from [`jterrazz-studio`](https://github.com/jterrazz/jterrazz-studio).
 
@@ -71,5 +72,5 @@ export default compose(node, testing);
 - Add TSDoc to every public export — `typescript docs` derives the reference from it.
 - Run `typescript fix` before committing, not just `typescript check`.
 - A `knip.json` entry carries its reason: the file is read as JSONC, so a `//` line above an ignore says why it is there.
-- Every artefact lives under `.artifacts/<tool>/` at the project root, and `.artifacts/` is gitignored; `dist` is the one exception (the product). `typescript clean` empties it — see `docs/01-getting-started.md`.
+- Every artefact lives under `.artifacts/<tool>/` at the project root, and `.artifacts/` is gitignored; `dist` is the one exception (the product). `typescript clean` empties it — see `docs/02-developing.md`.
 - `typescript docs` writes a **committed** projection under `docs/reference/` — commit it, and regenerate in the same change that touches the source (`check` runs a Docs sync pass). Never hand-edit a generated file, and never gitignore `docs/`.
