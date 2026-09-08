@@ -38,5 +38,5 @@ your-project/
 
 ## Related
 
-- [Getting started](01-getting-started.md) — install and config.
-- [Docs pipeline](05-docs-pipeline.md) — the `docs` compiler for libraries.
+- [Developing](02-developing.md) — install and config.
+- [Docs pipeline](08-docs-pipeline.md) — the `docs` compiler for libraries.

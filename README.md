@@ -41,12 +41,15 @@ Fully compiled — no JavaScript in the hot path:
 
 The full corpus lives in [`docs/`](docs/):
 
-- [Getting started](docs/01-getting-started.md) — install and configure a project.
-- [Building](docs/02-building.md) — `build`, `bundle`, `start`, `dev`.
-- [Quality checks](docs/03-quality-checks.md) — `check` / `fix` and their passes.
-- [Lint presets](docs/04-lint-presets.md) — oxlint presets, `compose`, architecture, knip.
-- [Docs pipeline](docs/05-docs-pipeline.md) — the `typescript docs` compiler.
-- [Repo structure](docs/06-repo-structure.md) — pointer to the shared doctrine; what's TypeScript-specific here.
+- [Architecture](docs/01-architecture.md) — the four layers and what each one holds.
+- [Developing](docs/02-developing.md) — install and configure a project.
+- [Testing](docs/03-testing.md) — how this toolchain proves itself.
+- [Operating](docs/04-operating.md) — what publishes it, and which number moves.
+- [Building](docs/05-building.md) — `build`, `bundle`, `start`, `dev`.
+- [Quality checks](docs/06-quality-checks.md) — `check` / `fix` and their passes.
+- [Lint presets](docs/07-lint-presets.md) — oxlint presets, `compose`, architecture, knip.
+- [Docs pipeline](docs/08-docs-pipeline.md) — the `typescript docs` compiler.
+- [Repo structure](docs/09-repo-structure.md) — pointer to the shared doctrine; what's TypeScript-specific here.
 
 For agents: read the chapters and the generated [`docs/reference/`](docs/reference/) tree straight from the repo, plus the [`skills/jterrazz-typescript`](skills/jterrazz-typescript/SKILL.md) Claude Code skill (the toolchain). The repo-structure doctrine itself is a Claude Code skill too — `jterrazz-repo-structure`, shipped from [`jterrazz-studio`](https://github.com/jterrazz/jterrazz-studio).
 

@@ -35,7 +35,7 @@ Discovery never leaves the workspace. A candidate is dropped when git ignores it
 
 ## The Gitignore (artefacts) pass
 
-Every build, test and lint artefact lives under `.artifacts/<tool>/` at the project root ([Getting started](01-getting-started.md)), and this pass reads that convention off two files: the project's own `.gitignore`, and the nearest ANCESTOR `.gitignore` above it — the workspace root's, found by walking up to the nearest directory holding a lockfile (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`/`bun.lockb`, `npm-shrinkwrap.json`) or a `workspaces` manifest. It runs when either file exists — a project with neither names no artefact path — and each is judged by the same rules.
+Every build, test and lint artefact lives under `.artifacts/<tool>/` at the project root ([Developing](02-developing.md)), and this pass reads that convention off two files: the project's own `.gitignore`, and the nearest ANCESTOR `.gitignore` above it — the workspace root's, found by walking up to the nearest directory holding a lockfile (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`/`bun.lockb`, `npm-shrinkwrap.json`) or a `workspaces` manifest. It runs when either file exists — a project with neither names no artefact path — and each is judged by the same rules.
 
 The second file matters in a workspace whose `lint` DELEGATES to members — each one calling `typescript check` on its own, cwd'd there. Without it, a member with no `.gitignore` of its own would pass silently even when neither it nor the root ever declared the convention: the pass is opt-in on a file's existence, and only the package's own file used to be asked. An ancestor's pattern counts only when it is not ANCHORED to the ancestor's own directory — `.artifacts/`, not `/.artifacts/` — the same rule git applies when deciding whether a pattern reaches into a nested directory; a root that ignores `.artifacts/` this way covers every member beneath it.
 
@@ -103,7 +103,7 @@ Three things about the roster are decisions, not details:
 npx --yes @jterrazz/typescript docs-layout .
 ```
 
-The same gate, on any tree: a Go, Rust or Ansible repository wires that line into its own `make lint`. It needs nothing installed, takes the repository root as its argument, and prints one line per violation as `<rule>  <path>  <message>`. Unlike the pass it never asks whether the tree is a repository — the operator already said so by running it. It is `docs-layout`, and not `docs check`, because `typescript docs --check` already exists and asks a different question ([Docs pipeline](05-docs-pipeline.md)).
+The same gate, on any tree: a Go, Rust or Ansible repository wires that line into its own `make lint`. It needs nothing installed, takes the repository root as its argument, and prints one line per violation as `<rule>  <path>  <message>`. Unlike the pass it never asks whether the tree is a repository — the operator already said so by running it. It is `docs-layout`, and not `docs check`, because `typescript docs --check` already exists and asks a different question ([Docs pipeline](08-docs-pipeline.md)).
 
 ### Reusing the rules
 
@@ -119,16 +119,16 @@ const violations = auditDocs(tree); // -> [{ rule, path, message }, …]
 
 ## The Docs (sync) pass
 
-Once a project has generated its committed docs, `check` guards them: it regenerates the projections into a temp dir and diffs them against what is committed. A drift — a hand-edited reference file, a chapter changed without regenerating — fails the pass and tells you to run `typescript docs`. See [Docs pipeline](05-docs-pipeline.md).
+Once a project has generated its committed docs, `check` guards them: it regenerates the projections into a temp dir and diffs them against what is committed. A drift — a hand-edited reference file, a chapter changed without regenerating — fails the pass and tells you to run `typescript docs`. See [Docs pipeline](08-docs-pipeline.md).
 
 ## Pitfalls
 
 - **A CommonJS `oxlint.config.js` silently drops the `@jterrazz/test` plugin.** oxlint loads the ESM-only plugin, prints a warning, and still exits 0 — so none of the `jterrazz/*` rules run. `check` warns loudly when it detects this; use an ESM config (`oxlint.config.ts` or `.mjs`).
-- **An ignore without a reason is the expected form of nothing.** Every entry in the project's `knip.json` tells the gate to overlook something, and the next reader has to re-derive why. The file is read as JSONC, so the reason goes beside the entry as a `//` comment — that is the form this toolchain expects, and the shape of the file is [Lint presets](04-lint-presets.md)'s.
+- **An ignore without a reason is the expected form of nothing.** Every entry in the project's `knip.json` tells the gate to overlook something, and the next reader has to re-derive why. The file is read as JSONC, so the reason goes beside the entry as a `//` comment — that is the form this toolchain expects, and the shape of the file is [Lint presets](07-lint-presets.md)'s.
 - **Knip is check-only.** Fix mode never runs it because its remedies (deleting exports, files, deps) are destructive.
 - **Knip runs uncached, on purpose.** Its `--cache` would be the obvious speed-up and it can lie: a cached glob is validated against the mtimes of the directories that held a match, so a file added to a directory that held none is invisible, and the cached run passes a project the uncached run fails. Every other cache in the toolchain — tsc's buildinfo — is keyed on content and cannot.
 
 ## Related
 
-- [Lint presets](04-lint-presets.md) — oxlint presets, compose, architecture.
-- [Docs pipeline](05-docs-pipeline.md) — what the Docs pass checks.
+- [Lint presets](07-lint-presets.md) — oxlint presets, compose, architecture.
+- [Docs pipeline](08-docs-pipeline.md) — what the Docs pass checks.
