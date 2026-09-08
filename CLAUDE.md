@@ -31,10 +31,11 @@ No build step — this package ships JS directly. It dogfoods its own CLI (`npm 
 
 ```
 bin/
-├── typescript.sh          # CLI entry (build, bundle, start, dev, docs [--check], check, fix, clean)
+├── typescript.sh          # CLI entry (build, bundle, start, dev, docs [--check], docs-layout, check, fix, clean)
 └── commands/
-    ├── check.sh           # Quality passes in parallel: tsc + oxlint + oxfmt + (gitignore) + knip + (conventions) + (docs sync)
+    ├── check.sh           # Quality passes in parallel: tsc + oxlint + oxfmt + (gitignore) + knip + (conventions) + (docs layout) + (docs sync)
     └── docs.sh            # The docs compiler: typedoc reference tree, generate | --check
+lib/check-docs.js          # The manual's shape, read off the repository's docs/ — the reader behind the Docs (layout) pass
 lib/check-gitignore.js     # The artefact convention, read off the project's .gitignore — check | --fix
 lib/merge-knip-config.js   # Merges knip base preset with project-local knip.json (read as JSONC)
 lib/workspace-members.js   # Lists the consumer's workspace members — the unit each per-package gate measures from
@@ -42,6 +43,7 @@ presets/
 ├── tsconfig/ · tsdown/ · oxlint/ (+ architectures/hexagonal) · oxfmt/ · knip/
 src/index.js + index.d.ts  # Package entry — exports { oxfmt, oxlint } presets (JS-shipped, no build)
 src/oxlint.js · oxfmt.js   # The tool-facing entries — presets, compose(), and each tool's defineConfig
+src/docs.js + docs.d.ts    # The manual's rules, pure — auditDocs(tree), exported at ./docs for a second reader
 docs/                      # The corpus: numbered chapters + the generated reference/ projection
 specs/                     # Product specifications (@jterrazz/test) — see below
 ```

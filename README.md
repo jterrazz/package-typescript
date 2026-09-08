@@ -11,14 +11,15 @@ npm install @jterrazz/typescript --save-dev
 ## The CLI
 
 ```bash
-npx typescript build       # Build application (ESM + types)
-npx typescript bundle      # Bundle library (ESM + CJS + types)
-npx typescript start       # Run the built application
-npx typescript dev         # Build, run, and rebuild on changes
-npx typescript docs        # Compile the committed docs/reference tree from source
-npx typescript check       # Type-check, lint, format-check, and unused-code in parallel
-npx typescript fix         # Auto-fix lint and formatting issues
-npx typescript clean       # Remove .artifacts/ (dist/ stays — it is the product)
+npx typescript build           # Build application (ESM + types)
+npx typescript bundle          # Bundle library (ESM + CJS + types)
+npx typescript start           # Run the built application
+npx typescript dev             # Build, run, and rebuild on changes
+npx typescript docs            # Compile the committed docs/reference tree from source
+npx typescript docs-layout .   # Check a repository's docs/ against the manual spine
+npx typescript check           # Type-check, lint, format-check, and unused-code in parallel
+npx typescript fix             # Auto-fix lint and formatting issues
+npx typescript clean           # Remove .artifacts/ (dist/ stays — it is the product)
 ```
 
 ## How it works

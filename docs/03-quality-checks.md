@@ -8,7 +8,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 
 ## The passes
 
-`typescript check` runs up to seven passes. The first three always run; the rest are opt-in — they appear only when the project qualifies.
+`typescript check` runs up to eight passes. The first three always run; the rest are opt-in — they appear only when the project qualifies.
 
 | Pass                              | Tool                      | When it runs                                                 |
 | --------------------------------- | ------------------------- | ------------------------------------------------------------ |
@@ -18,13 +18,16 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Gitignore (artefacts)             | the artefact gate         | check: project or ancestor `.gitignore`; fix: project's own  |
 | Knip (unused code)                | knip (Node)               | always (check only — it is not run in fix)                   |
 | Test Conventions (@jterrazz/test) | conventions checker       | per package that depends on `@jterrazz/test` + owns `specs/` |
+| Docs (layout)                     | the manual gate           | check: at a repository root (a `.git` beside the project)    |
 | Docs (sync)                       | `typescript docs --check` | per package that has committed docs (`docs/reference/`)      |
 
-`typescript fix` runs tsc, oxlint (`--fix`), oxfmt and the artefact gate in parallel — knip, the conventions checker, and the Docs pass are check-only (they are read-only gates, not fixers).
+`typescript fix` runs tsc, oxlint (`--fix`), oxfmt and the artefact gate in parallel — knip, the conventions checker and the two Docs passes are check-only (they are read-only gates, not fixers).
 
 ### In a workspace
 
 When the `package.json` at the cwd declares `workspaces`, the two per-package passes run once per member that qualifies — `apps/*/specs`, `packages/*/docs/reference` and the rest are gates of their own, not files the root happens to contain. A member is a directory a workspace glob matches that holds a `package.json`; the pass reports one line and prints the log of any run that failed.
+
+The Docs (layout) pass measures from neither: its unit is the repository, and the section below says why.
 
 The other four passes are root-only, and that is not an omission. tsc, oxlint and oxfmt measure from their **config file**, not from a package, and each already walks the whole tree from the cwd. Knip reads the workspace globs itself and reports per member from a single run, so a second invocation per member would only double-report.
 
@@ -53,6 +56,66 @@ One more exception joins the list CONDITIONALLY: `.next`, but only when the proj
 ### What `typescript fix` rewrites
 
 Fix mode rewrites the package's OWN `.gitignore` only — never an ancestor's, which is a different project's file, and never one that does not exist, since fix repairs a file, it does not create one. The artefact lines go, `.artifacts/` arrives, and everything else — the comments, the blank lines, the order, the project's own paths — survives untouched. It reports every line it removed and prints the file's negations, which it never touches: a `!` line rescues a tracked file, so what to do with one is a judgement, not a rewrite. A committed artefact is reported in fix mode too and still fails the run — untracking a file is not something a formatter should decide.
+
+## The Docs (layout) pass
+
+Every repository carries the same manual — a map at `docs/README.md`, a fixed spine, and its own chapters numbered contiguously after it — and this pass refuses a tree that breaks it.
+
+Its unit is the **repository**, not the package: a manual answers for a whole tree, and only its root carries the `AGENTS.md` that routes into it. So the pass asks its question exactly where a repository is — a `.git` beside the project, a file in a worktree and a directory in a clone — and nowhere else. A fixture directory is not a repository, and neither is a workspace member linted on its own.
+
+Nothing else gates it. A repository with **no** `docs/` at all is not exempt; it is the case the rule exists for, and it fails on `docs-absent`.
+
+The spine itself is language-agnostic doctrine, and it is [`jterrazz-studio`'s](https://github.com/jterrazz/jterrazz-studio/blob/main/docs/08-repo-structure.md): the four fixed names, the three subfolders, the water line between a repository's manual and its brand's wiki. What this chapter owns is the rule ids and what each one refuses. The sentence a rule prints is not here — it lives in the engine, so a page and a gate cannot drift.
+
+| Rule                       | Refuses                                                                    |
+| -------------------------- | -------------------------------------------------------------------------- |
+| `docs-absent`              | no `docs/` at the repository root                                          |
+| `docs-map-missing`         | a `docs/` with no `README.md`                                              |
+| `docs-map-drift`           | a map and a chapter list that are not bijective                            |
+| `docs-map-foreign-link`    | a map link to anything but a chapter, `decisions/` or `reference/`         |
+| `docs-chapter-name`        | a chapter that is not `NN-kebab.md`                                        |
+| `docs-chapter-numbering`   | numbers that skip, or one number on two files                              |
+| `docs-spine-name`          | a chapter sitting on a reserved number under another name                  |
+| `docs-spine-missing`       | an absent `01-architecture.md`, `02-developing.md` or `03-testing.md`      |
+| `docs-operating-missing`   | an absent `04-operating.md` when the presence test below fires             |
+| `docs-journal-chapter`     | a chapter named for the state of a piece of work, not for a subject        |
+| `docs-foreign-folder`      | a subfolder of `docs/` other than `decisions/`, `reference/`, `_assets/`   |
+| `docs-loose-file`          | a file directly under `docs/` that is neither the map nor a chapter        |
+| `docs-decision-name`       | a record in `decisions/` that is not `NNN-kebab.md`                        |
+| `docs-decision-heading`    | a record opening on anything but `# ADR-NNN: Title`, or on another number  |
+| `docs-decision-status`     | a `**Status:**` that is absent or outside the closed vocabulary            |
+| `docs-decision-number`     | one ADR number claimed by two records                                      |
+| `docs-decision-index`      | a hand-written `decisions/README.md` — an index is a copy                  |
+| `docs-template-missing`    | a `decisions/` with no `_template.md` beside the records                   |
+| `docs-reference-unstamped` | a page under `reference/` carrying no generation marker on its first line  |
+| `docs-agents-route`        | a repository whose root `AGENTS.md` is absent or does not route to the map |
+| `docs-cross-repo-link`     | a link from `docs/` reaching into another repository's tree                |
+
+Three things about the roster are decisions, not details:
+
+- **The `04-operating.md` presence test is derived, and there is no configuration key.** It fires on a `Dockerfile` (or `Dockerfile.*`), on an `.infrastructure/` directory — either at the repository root or at a workspace member's root, since a monorepo deploys from a member as readily as from its root — or on a root `package.json` that is not `"private": true`. The publishable clause reads the root manifest alone: a private root holding a publishable member is a question for its owner, not a verdict for a gate.
+- **The pass only ever REQUIRES a chapter; it never forbids one.** A repository that releases by a tagged workflow and ships neither an image nor a package writes its `04-operating.md` and hears nothing about it. Machine-holding the other half would mean parsing `.github/workflows/**`, which is another repository's shape.
+- **The journal-word roster is closed, and it is in the code.** `exploration`, `review`, `notes`, `proposal`, `draft`, `wip`, `old`, `legacy`, `misc`, `todo` — matched as whole words of a chapter's name. No page keeps a second copy of it; the one that matters is executable.
+
+### Outside an npm project
+
+```bash
+npx --yes @jterrazz/typescript docs-layout .
+```
+
+The same gate, on any tree: a Go, Rust or Ansible repository wires that line into its own `make lint`. It needs nothing installed, takes the repository root as its argument, and prints one line per violation as `<rule>  <path>  <message>`. Unlike the pass it never asks whether the tree is a repository — the operator already said so by running it. It is `docs-layout`, and not `docs check`, because `typescript docs --check` already exists and asks a different question ([Docs pipeline](05-docs-pipeline.md)).
+
+### Reusing the rules
+
+The engine is a pure function, exported at `@jterrazz/typescript/docs`:
+
+```ts
+import { auditDocs } from '@jterrazz/typescript/docs';
+
+const violations = auditDocs(tree); // -> [{ rule, path, message }, …]
+```
+
+`tree` is a plain description of one repository — the paths under `docs/`, the opening lines of each page, each page's link targets, the root `AGENTS.md`, and the three presence facts. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
 
 ## The Docs (sync) pass
 

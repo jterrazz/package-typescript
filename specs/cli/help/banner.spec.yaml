@@ -8,14 +8,15 @@ runs:
           Usage: typescript <command>
 
           Commands:
-            build     Build application (ESM + types)
-            bundle    Bundle library (ESM + CJS + types)
-            start     Run the built application
-            dev       Build, run, and rebuild on changes
-            docs      Generate the committed docs/reference tree; --check verifies sync
-            check     Check types, lint, formatting, and unused code
-            fix       Auto-fix lint and formatting issues
-            clean     Remove .artifacts/ — dist/ stays, it is the build's product
+            build        Build application (ESM + types)
+            bundle       Bundle library (ESM + CJS + types)
+            start        Run the built application
+            dev          Build, run, and rebuild on changes
+            docs         Generate the committed docs/reference tree; --check verifies sync
+            docs-layout  Check a repository's docs/ against the manual spine
+            check        Check types, lint, formatting, and unused code
+            fix          Auto-fix lint and formatting issues
+            clean        Remove .artifacts/ — dist/ stays, it is the build's product
 
           Examples:
             typescript build
@@ -24,6 +25,7 @@ runs:
             typescript dev
             typescript docs
             typescript docs --check
+            typescript docs-layout .
             typescript check
             typescript fix
             typescript clean

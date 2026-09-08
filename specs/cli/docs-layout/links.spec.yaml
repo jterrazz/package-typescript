@@ -1,0 +1,11 @@
+description: names a map that routes outside, an authored reference page and a link into another repository
+fixture: stray-links/
+runs:
+    - command: docs-layout .
+      exit: 1
+      stdout: |
+          docs-map-foreign-link  docs/README.md  docs/README.md links ../../jterrazz-os/home/_all/doctrine.md: the map routes to its own chapters and nothing else
+          docs-reference-unstamped  docs/reference/index.md  docs/reference/index.md carries no GENERATED marker — reference/ is a projection, never authored
+          docs-agents-route  AGENTS.md  AGENTS.md does not route to docs/README.md — the brief is a map, not a manual
+          docs-cross-repo-link  docs/01-architecture.md  docs/01-architecture.md links ../../package-test/docs/README.md: another repository's tree is not a place this manual may reach
+          docs-cross-repo-link  docs/README.md  docs/README.md links ../../jterrazz-os/home/_all/doctrine.md: another repository's tree is not a place this manual may reach

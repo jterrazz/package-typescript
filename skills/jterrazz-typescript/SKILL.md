@@ -12,7 +12,7 @@ The complete TypeScript toolchain for the @jterrazz ecosystem — defines how ev
 Three surfaces, one CLI (`bin/typescript.sh`):
 
 - **Build** — `build` (app: ESM + types), `bundle` (library: ESM + CJS + types), `start`, `dev`, `clean`.
-- **Check** — `check` runs tsc + oxlint + oxfmt + knip in parallel (plus an artefact-convention gate, a conventions pass and a docs-sync pass when the project qualifies); `fix` auto-repairs lint + format and rewrites the `.gitignore`.
+- **Check** — `check` runs tsc + oxlint + oxfmt + knip in parallel (plus an artefact-convention gate, a conventions pass, a docs-layout gate and a docs-sync pass when the project qualifies); `fix` auto-repairs lint + format and rewrites the `.gitignore`.
 - **Docs** — `docs` compiles the source barrel into a **committed** projection (`docs/reference/`); `docs --check` verifies it is in sync.
 
 Lint/format/tsconfig are preset packages a project wires explicitly in its own config files. There is no dependency auto-detection in the presets.

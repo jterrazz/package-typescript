@@ -160,6 +160,14 @@ case "$COMMAND" in
         fi
         ;;
 
+    docs-layout)
+        # The manual's shape, on its own — the same gate `check` runs as its
+        # Docs (layout) pass, reachable by a repository that has no npm project
+        # to hang it on (a Go, Rust or Ansible tree wiring it into `make lint`
+        # through npx). It takes the repository root and needs nothing installed.
+        exec node "$PACKAGE_ROOT/lib/check-docs.js" "${1:-$PROJECT_ROOT}"
+        ;;
+
     check|fix)
         exec bash "$SCRIPT_DIR/commands/check.sh" "$COMMAND" "$@"
         ;;
@@ -168,14 +176,15 @@ case "$COMMAND" in
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} TypeScript toolchain\n\n"
         printf "Usage: typescript <command>\n\n"
         printf "Commands:\n"
-        printf "  build     Build application (ESM + types)\n"
-        printf "  bundle    Bundle library (ESM + CJS + types)\n"
-        printf "  start     Run the built application\n"
-        printf "  dev       Build, run, and rebuild on changes\n"
-        printf "  docs      Generate the committed docs/reference tree; --check verifies sync\n"
-        printf "  check     Check types, lint, formatting, and unused code\n"
-        printf "  fix       Auto-fix lint and formatting issues\n"
-        printf "  clean     Remove .artifacts/ — dist/ stays, it is the build's product\n\n"
+        printf "  build        Build application (ESM + types)\n"
+        printf "  bundle       Bundle library (ESM + CJS + types)\n"
+        printf "  start        Run the built application\n"
+        printf "  dev          Build, run, and rebuild on changes\n"
+        printf "  docs         Generate the committed docs/reference tree; --check verifies sync\n"
+        printf "  docs-layout  Check a repository's docs/ against the manual spine\n"
+        printf "  check        Check types, lint, formatting, and unused code\n"
+        printf "  fix          Auto-fix lint and formatting issues\n"
+        printf "  clean        Remove .artifacts/ — dist/ stays, it is the build's product\n\n"
         printf "Examples:\n"
         printf "  typescript build\n"
         printf "  typescript bundle\n"
@@ -183,6 +192,7 @@ case "$COMMAND" in
         printf "  typescript dev\n"
         printf "  typescript docs\n"
         printf "  typescript docs --check\n"
+        printf "  typescript docs-layout .\n"
         printf "  typescript check\n"
         printf "  typescript fix\n"
         printf "  typescript clean\n"

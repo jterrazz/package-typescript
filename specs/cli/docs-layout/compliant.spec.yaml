@@ -1,0 +1,5 @@
+description: says nothing about a manual that holds the spine
+fixture: compliant/
+runs:
+    - command: docs-layout .
+      exit: 0
