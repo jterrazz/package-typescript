@@ -100,8 +100,10 @@ Three things about the roster are decisions, not details:
 ### Outside an npm project
 
 ```bash
-npx --yes @jterrazz/typescript docs-layout .
+npx --yes --package=@jterrazz/typescript -- typescript docs-layout .
 ```
+
+The `--package` flag and the bin name are both spelled out on purpose: the shorter `npx @jterrazz/typescript docs-layout .` lets npm infer the command from the package name, and that inferred name — `typescript` — collides with the `typescript` package this one depends on, which crashes npm's resolution of the ephemeral install tree on some npm/Node combinations even though the short form works on others.
 
 The same gate, on any tree: a Go, Rust or Ansible repository wires that line into its own `make lint`. It needs nothing installed, takes the repository root as its argument, and prints one line per violation as `<rule>  <path>  <message>`. Unlike the pass it never asks whether the tree is a repository — the operator already said so by running it. It is `docs-layout`, and not `docs check`, because `typescript docs --check` already exists and asks a different question ([Docs pipeline](08-docs-pipeline.md)).
 
