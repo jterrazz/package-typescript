@@ -1,6 +1,6 @@
 # ADR-002: The manual is a gate of the toolchain
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-08
 
 Written at decision time, implementing the owner's decision of 2026-09-08
