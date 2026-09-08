@@ -5,7 +5,7 @@ runs:
       exit: 1
       stdout: |
           docs-decision-name  docs/decisions/rejected-ideas.md  docs/decisions/rejected-ideas.md is not NNN-kebab.md
-          docs-decision-status  docs/decisions/001-the-same-call.md  docs/decisions/001-the-same-call.md: **Status:** is none of Proposed, Accepted, Superseded by ADR-NNN, Deprecated
+          docs-decision-status  docs/decisions/001-the-same-call.md  docs/decisions/001-the-same-call.md: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated
           docs-decision-heading  docs/decisions/002-the-second-call.md  docs/decisions/002-the-second-call.md opens on # The second call: the mold is "# ADR-002: Title"
           docs-decision-number  docs/decisions/  ADR-001 is claimed by 001-the-first-call.md and 001-the-same-call.md
           docs-decision-index  docs/decisions/README.md  docs/decisions/README.md is an index — an index is a copy; the queue is derived (terra <brand> decisions)

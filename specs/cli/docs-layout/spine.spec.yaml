@@ -6,7 +6,7 @@ runs:
       stdout: |
           docs-map-missing  docs/README.md  docs/README.md is missing — the map is the one file an outside corpus points at
           docs-chapter-name  docs/1-intro.md  docs/1-intro.md is not NN-kebab.md — two digits, lowercase words, single hyphens
-          docs-chapter-numbering  docs/  chapter numbers run 01, 03: they are contiguous from 01, one file per number
+          docs-chapter-numbering  docs/  chapter numbers run 01, 03: they are contiguous from 01, one file per number, except that 04 may be absent
           docs-spine-name  docs/03-quality-checks.md  docs/03-quality-checks.md takes number 03, which is reserved for 03-testing.md
           docs-spine-name  docs/1-intro.md  docs/1-intro.md takes number 01, which is reserved for 01-architecture.md
           docs-spine-missing  docs/01-architecture.md  01-architecture.md is missing — the spine is architecture, developing, testing

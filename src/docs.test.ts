@@ -154,7 +154,7 @@ test('names chapter numbers that skip, and numbers claimed twice', () => {
 
     // Then - one sentence about the whole run
     expect(sentence(tree, 'docs-chapter-numbering')).toBe(
-        'chapter numbers run 01, 02, 03, 05, 05: they are contiguous from 01, one file per number',
+        'chapter numbers run 01, 02, 03, 05, 05: they are contiguous from 01, one file per number, except that 04 may be absent',
     );
 });
 
@@ -209,6 +209,40 @@ test('never asks for 04-operating.md from a repository that ships nothing', () =
     // Given - no image, no infrastructure, a private manifest
     // Then - the lint only ever requires; it never forbids a 04 either
     expect(rules(manual())).toEqual([]);
+});
+
+test('lets 05 follow 03 directly when the repository ships nothing', () => {
+    // Given - 01-03 then 05, no 04 chapter, nothing that would ask for one
+    const tree = manual({
+        files: [...manual().files, 'docs/05-building.md'],
+        links: { 'docs/README.md': [...manual().links['docs/README.md'], '05-building.md'] },
+    });
+
+    // Then - 04 is the one gap the numbering excuses
+    expect(rules(tree)).toEqual([]);
+});
+
+test('still asks for 04-operating.md from that same shape once it ships', () => {
+    // Given - the same 01-03 + 05 shape, but an image this time
+    const tree = manual({
+        files: [...manual().files, 'docs/05-building.md'],
+        links: { 'docs/README.md': [...manual().links['docs/README.md'], '05-building.md'] },
+        ships: { dockerfile: true, infrastructure: false, publishable: false },
+    });
+
+    // Then - the numbering stays clean; only the presence test speaks
+    expect(rules(tree)).toEqual(['docs-operating-missing']);
+});
+
+test('refuses a gap at 05 even though 04 may be absent', () => {
+    // Given - 01-03 then 06, skipping past the one number the spine excuses
+    const tree = manual({
+        files: [...manual().files, 'docs/06-quality-checks.md'],
+        links: { 'docs/README.md': [...manual().links['docs/README.md'], '06-quality-checks.md'] },
+    });
+
+    // Then - only 04 is excused; 05 still has to be there
+    expect(rules(tree)).toEqual(['docs-chapter-numbering']);
 });
 
 test('names a chapter that is a journal, not a subject', () => {
@@ -332,12 +366,28 @@ test('names a decision outside the status vocabulary', () => {
 
     // Then - the four the vocabulary holds
     expect(sentence(tree, 'docs-decision-status')).toBe(
-        'docs/decisions/001-the-first-call.md: **Status:** is none of Proposed, Accepted, Superseded by ADR-NNN, Deprecated',
+        'docs/decisions/001-the-first-call.md: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated',
     );
 });
 
-test('accepts a superseded status that names the record replacing it', () => {
-    // Given - the one status carrying an argument
+test('accepts a superseded status that links the record replacing it', () => {
+    // Given - the one status carrying an argument, written as a citation
+    const tree = withDecisions({
+        heads: {
+            'docs/decisions/001-the-first-call.md': [
+                '# ADR-001: The first call',
+                '',
+                '**Status:** Superseded by [ADR-014](014-the-later-call.md)',
+            ],
+        },
+    });
+
+    // Then - nothing to say
+    expect(rules(tree)).toEqual([]);
+});
+
+test('refuses a superseded status with no link naming the successor', () => {
+    // Given - the bare form: a successor is named, but not as a place to look
     const tree = withDecisions({
         heads: {
             'docs/decisions/001-the-first-call.md': [
@@ -348,8 +398,10 @@ test('accepts a superseded status that names the record replacing it', () => {
         },
     });
 
-    // Then - nothing to say
-    expect(rules(tree)).toEqual([]);
+    // Then - the missing link is the whole complaint
+    expect(sentence(tree, 'docs-decision-status')).toBe(
+        'docs/decisions/001-the-first-call.md: **Status:** names a successor but no link — write Superseded by [ADR-NNN](file.md)',
+    );
 });
 
 test('names a number two records claim', () => {
