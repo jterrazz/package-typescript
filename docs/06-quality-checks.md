@@ -84,6 +84,7 @@ The spine itself is language-agnostic doctrine, and it is [`jterrazz-studio`'s](
 | `docs-decision-name`       | a record in `decisions/` that is not `NNN-kebab.md`                        |
 | `docs-decision-heading`    | a record opening on anything but `# ADR-NNN: Title`, or on another number  |
 | `docs-decision-status`     | a `**Status:**` that is absent or outside the closed vocabulary            |
+| `docs-decision-sequence`   | a `decisions/` folder whose numbers skip, or start above 001               |
 | `docs-decision-number`     | one ADR number claimed by two records                                      |
 | `docs-decision-index`      | a hand-written `decisions/README.md` — an index is a copy                  |
 | `docs-template-missing`    | a `decisions/` with no `_template.md` beside the records                   |
