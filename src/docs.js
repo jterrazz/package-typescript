@@ -324,6 +324,16 @@ function auditDecisions(report, { files, heads }) {
         auditRecord(report, record, heads);
     }
 
+    const numbers = [...new Set(records.map((record) => record.name.slice(0, 3)))].sort();
+    const sequential = numbers.every((number, index) => Number.parseInt(number, 10) === index + 1);
+    if (numbers.length > 0 && !sequential) {
+        report(
+            'docs-decision-sequence',
+            'docs/decisions/',
+            `docs/decisions/ numbers run ${numbers.join(', ')}: they run from 001 with no gap — a decision that moved folders takes the next number where it lands`,
+        );
+    }
+
     const claimed = new Map();
     for (const record of records) {
         const number = record.name.slice(0, 3);

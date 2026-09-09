@@ -1,0 +1,7 @@
+description: refuses a decisions folder that skips a number
+fixture: decision-sequence/
+runs:
+    - command: docs-layout .
+      exit: 1
+      stdout: |
+          docs-decision-sequence  docs/decisions/  docs/decisions/ numbers run 001, 003: they run from 001 with no gap — a decision that moved folders takes the next number where it lands

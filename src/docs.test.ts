@@ -404,6 +404,102 @@ test('refuses a superseded status with no link naming the successor', () => {
     );
 });
 
+test('passes an empty decisions folder', () => {
+    // Given - the folder exists but holds no record yet
+    const tree = manual({ files: [...manual().files, 'docs/decisions/'] });
+
+    // Then - a folder with nothing to number has no sequence to break
+    expect(rules(tree)).toEqual(['docs-template-missing']);
+});
+
+test('passes a decisions folder holding only the template', () => {
+    // Given - the mold, and not a single record beside it
+    const tree = manual({
+        files: [...manual().files, 'docs/decisions/', 'docs/decisions/_template.md'],
+    });
+
+    // Then - nothing to say
+    expect(rules(tree)).toEqual([]);
+});
+
+test('refuses a decision sequence that skips a number', () => {
+    // Given - 001 and 003, with no record ever numbered 002
+    const tree = withDecisions({
+        files: [
+            ...manual().files,
+            'docs/decisions/',
+            'docs/decisions/001-the-first-call.md',
+            'docs/decisions/003-the-third-call.md',
+            'docs/decisions/_template.md',
+        ],
+        heads: {
+            'docs/decisions/001-the-first-call.md': [
+                '# ADR-001: The first call',
+                '',
+                '**Status:** Accepted',
+            ],
+            'docs/decisions/003-the-third-call.md': [
+                '# ADR-003: The third call',
+                '',
+                '**Status:** Accepted',
+            ],
+        },
+    });
+
+    // Then - the gap is named, from 001
+    expect(sentence(tree, 'docs-decision-sequence')).toBe(
+        'docs/decisions/ numbers run 001, 003: they run from 001 with no gap — a decision that moved folders takes the next number where it lands',
+    );
+});
+
+test('refuses a decision sequence that starts above 001', () => {
+    // Given - 006 and 008, with nothing numbered before them
+    const tree = withDecisions({
+        files: [
+            ...manual().files,
+            'docs/decisions/',
+            'docs/decisions/006-the-sixth-call.md',
+            'docs/decisions/008-the-eighth-call.md',
+            'docs/decisions/_template.md',
+        ],
+        heads: {
+            'docs/decisions/006-the-sixth-call.md': [
+                '# ADR-006: The sixth call',
+                '',
+                '**Status:** Accepted',
+            ],
+            'docs/decisions/008-the-eighth-call.md': [
+                '# ADR-008: The eighth call',
+                '',
+                '**Status:** Accepted',
+            ],
+        },
+    });
+
+    // Then - the same rule, from an offset start
+    expect(sentence(tree, 'docs-decision-sequence')).toBe(
+        'docs/decisions/ numbers run 006, 008: they run from 001 with no gap — a decision that moved folders takes the next number where it lands',
+    );
+});
+
+test('lets a duplicated number pass the sequence check on its own', () => {
+    // Given - two records claiming 001, and none other — the set is just {001}
+    const tree = withDecisions({
+        files: [...withDecisions().files, 'docs/decisions/001-the-same-call.md'],
+        heads: {
+            ...withDecisions().heads,
+            'docs/decisions/001-the-same-call.md': [
+                '# ADR-001: The same call',
+                '',
+                '**Status:** Proposed',
+            ],
+        },
+    });
+
+    // Then - docs-decision-number still refuses it; the sequence itself is not the gap
+    expect(rules(tree)).toEqual(['docs-decision-number']);
+});
+
 test('names a number two records claim', () => {
     // Given - two records numbered 001
     const tree = withDecisions({
