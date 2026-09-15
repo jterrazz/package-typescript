@@ -52,28 +52,28 @@ const STATUSES = new Set(['Proposed', 'Accepted', 'Deprecated']);
  * The fourth status carries the record that replaced it, as a link a reader
  * can follow — a citation is a place a human can look, not just a number.
  */
-const SUPERSEDED = /^Superseded by \[ADR-\d{3}\]\([^)]+\)$/;
+const SUPERSEDED = /^Superseded by \[ADR-\d{3}\]\([^)]+\)$/u;
 
 /** The same status named but not linked — the successor exists, the citation does not. */
-const BARE_SUPERSEDED = /^Superseded by ADR-\d{3}$/;
+const BARE_SUPERSEDED = /^Superseded by ADR-\d{3}$/u;
 
 /** What a chapter's file name must be: two digits, lowercase words, single hyphens. */
-const CHAPTER_NAME = /^\d{2}-[a-z\d]+(?:-[a-z\d]+)*\.md$/;
+const CHAPTER_NAME = /^\d{2}-[a-z\d]+(?:-[a-z\d]+)*\.md$/u;
 
 /** What a decision record's file name must be: three digits, then the same words. */
-const DECISION_NAME = /^\d{3}-[a-z\d]+(?:-[a-z\d]+)*\.md$/;
+const DECISION_NAME = /^\d{3}-[a-z\d]+(?:-[a-z\d]+)*\.md$/u;
 
 /** A decision record's first heading, carrying the number the file claims. */
-const DECISION_HEADING = /^# ADR-(?<number>\d{3}): \S/;
+const DECISION_HEADING = /^# ADR-(?<number>\d{3}): \S/u;
 
 /** The `**Status:**` line of a decision record, wherever it sits in the head. */
-const DECISION_STATUS = /^\*\*Status:\*\*\s*(?<status>.+?)\s*$/;
+const DECISION_STATUS = /^\*\*Status:\*\*\s*(?<status>.+?)\s*$/u;
 
 /** The marker every file under `reference/` carries — it is generated, never authored. */
 const GENERATED = 'GENERATED';
 
 /** A link with a scheme (`https:`, `mailto:`) cites; it never reaches into a tree. */
-const SCHEME = /^[a-z][\d+.a-z-]*:/i;
+const SCHEME = /^[a-z][\d+.a-z-]*:/iu;
 
 /** What each of the three presence facts means, in the sentence `04` is asked for. */
 const SHIPPING_REASONS = [
@@ -84,7 +84,7 @@ const SHIPPING_REASONS = [
 
 /** Directly under `docs/` — a file, or a directory with its trailing slash. */
 function directChildren(files) {
-    return files.filter((path) => /^docs\/[^/]+\/?$/.test(path));
+    return files.filter((path) => /^docs\/[^/]+\/?$/u.test(path));
 }
 
 /** Everything under a folder of `docs/`, named relative to that folder. */
@@ -103,12 +103,12 @@ function padded(value) {
 
 /** The link target itself, without the anchor a reader lands on. */
 function targetPath(link) {
-    return link.split('#')[0].replace(/^\.\//, '');
+    return link.split('#')[0].replace(/^\.\//u, '');
 }
 
 /** A link that names a chapter of the same folder — `03-testing.md`, no slash. */
 function isChapterLink(target) {
-    return /^\d/.test(target) && !target.includes('/');
+    return /^\d/u.test(target) && !target.includes('/');
 }
 
 /**
@@ -198,20 +198,7 @@ function auditChapters(report, { chapters, ships }) {
         }
     }
 
-    const numbers = chapters.map((chapter) => chapter.number).sort((a, b) => a - b);
-    const hasOperating = numbers.includes(4);
-    // 04 is the one number the spine never requires (`docs-operating-missing`
-    // Asks for it on its own terms), so a run missing it is still contiguous —
-    // Every number from 05 on shifts down one slot to close the gap.
-    const expected = (index) => (!hasOperating && index + 1 >= 4 ? index + 2 : index + 1);
-    const contiguous = numbers.every((number, index) => number === expected(index));
-    if (numbers.length > 0 && !contiguous) {
-        report(
-            'docs-chapter-numbering',
-            'docs/',
-            `chapter numbers run ${numbers.map(padded).join(', ')}: they are contiguous from 01, one file per number, except that 04 may be absent`,
-        );
-    }
+    auditChapterNumbering(report, chapters);
 
     for (const chapter of chapters) {
         const reserved = SPINE[chapter.number - 1];
@@ -244,13 +231,69 @@ function auditChapters(report, { chapters, ships }) {
         );
     }
 
+    auditChapterWords(report, chapters);
+}
+
+/** The run of numbers: contiguous from 01, one file per number, 04 the one that may be absent. */
+function auditChapterNumbering(report, chapters) {
+    const numbers = chapters.map((chapter) => chapter.number).toSorted((a, b) => a - b);
+    const hasOperating = numbers.includes(4);
+    // 04 is the one number the spine never requires (`docs-operating-missing`
+    // Asks for it on its own terms), so a run missing it is still contiguous —
+    // Every number from 05 on shifts down one slot to close the gap.
+    const expected = (index) => (!hasOperating && index + 1 >= 4 ? index + 2 : index + 1);
+    const contiguous = numbers.every((number, index) => number === expected(index));
+    if (numbers.length === 0 || contiguous) {
+        return;
+    }
+
+    report(
+        'docs-chapter-numbering',
+        'docs/',
+        `chapter numbers run ${numbers.map(padded).join(', ')}: they are contiguous from 01, one file per number, except that 04 may be absent`,
+    );
+}
+
+/** A chapter named for a journal rather than a subject — the record is an ADR. */
+function auditChapterWords(report, chapters) {
     for (const chapter of chapters) {
-        const word = chapter.name.split(/[.-]/).find((segment) => JOURNAL_WORDS.has(segment));
+        const word = chapter.name.split(/[.-]/u).find((segment) => JOURNAL_WORDS.has(segment));
         if (word !== undefined) {
             report(
                 'docs-journal-chapter',
                 chapter.path,
                 `${chapter.path} names a journal, not a subject — ${word}; the record is an ADR, the history is git's`,
+            );
+        }
+    }
+}
+
+/** The run of record numbers: from 001, with no gap, and no number claimed twice. */
+function auditDecisionNumbers(report, records) {
+    const numbers = [...new Set(records.map((record) => record.name.slice(0, 3)))].toSorted(
+        (left, right) => left.localeCompare(right),
+    );
+    const sequential = numbers.every((number, index) => Number.parseInt(number, 10) === index + 1);
+    if (numbers.length > 0 && !sequential) {
+        report(
+            'docs-decision-sequence',
+            'docs/decisions/',
+            `docs/decisions/ numbers run ${numbers.join(', ')}: they run from 001 with no gap — a decision that moved folders takes the next number where it lands`,
+        );
+    }
+
+    const claimed = new Map();
+    for (const record of records) {
+        const number = record.name.slice(0, 3);
+        const first = claimed.get(number);
+
+        if (first === undefined) {
+            claimed.set(number, record.name);
+        } else {
+            report(
+                'docs-decision-number',
+                'docs/decisions/',
+                `ADR-${number} is claimed by ${first} and ${record.name}`,
             );
         }
     }
@@ -269,7 +312,7 @@ function auditFolder(report, { children }) {
                     `${path} is not one of decisions/, reference/, _assets/`,
                 );
             }
-        } else if (name !== 'README.md' && !/^\d/.test(name)) {
+        } else if (name !== 'README.md' && !/^\d/u.test(name)) {
             report(
                 'docs-loose-file',
                 path,
@@ -312,43 +355,18 @@ function auditDecisions(report, { files, heads }) {
     const entries = under(files, 'decisions/');
 
     for (const entry of entries) {
-        if (entry.name !== '_template.md' && entry.name !== 'README.md') {
-            if (!DECISION_NAME.test(entry.name)) {
-                report('docs-decision-name', entry.path, `${entry.path} is not NNN-kebab.md`);
-            }
+        const mold = entry.name === '_template.md' || entry.name === 'README.md';
+        if (!mold && !DECISION_NAME.test(entry.name)) {
+            report('docs-decision-name', entry.path, `${entry.path} is not NNN-kebab.md`);
         }
     }
 
-    const records = entries.filter((entry) => /^\d{3}-/.test(entry.name));
+    const records = entries.filter((entry) => /^\d{3}-/u.test(entry.name));
     for (const record of records) {
         auditRecord(report, record, heads);
     }
 
-    const numbers = [...new Set(records.map((record) => record.name.slice(0, 3)))].sort();
-    const sequential = numbers.every((number, index) => Number.parseInt(number, 10) === index + 1);
-    if (numbers.length > 0 && !sequential) {
-        report(
-            'docs-decision-sequence',
-            'docs/decisions/',
-            `docs/decisions/ numbers run ${numbers.join(', ')}: they run from 001 with no gap — a decision that moved folders takes the next number where it lands`,
-        );
-    }
-
-    const claimed = new Map();
-    for (const record of records) {
-        const number = record.name.slice(0, 3);
-        const first = claimed.get(number);
-
-        if (first === undefined) {
-            claimed.set(number, record.name);
-        } else {
-            report(
-                'docs-decision-number',
-                'docs/decisions/',
-                `ADR-${number} is claimed by ${first} and ${record.name}`,
-            );
-        }
-    }
+    auditDecisionNumbers(report, records);
 
     if (files.includes('docs/decisions/README.md')) {
         report(
@@ -427,7 +445,7 @@ export function auditDocs(tree) {
 
     const children = directChildren(files);
     const chapters = children
-        .filter((path) => !path.endsWith('/') && /^\d/.test(path.slice('docs/'.length)))
+        .filter((path) => !path.endsWith('/') && /^\d/u.test(path.slice('docs/'.length)))
         .map((path) => ({
             name: path.slice('docs/'.length),
             number: Number.parseInt(path.slice('docs/'.length), 10),

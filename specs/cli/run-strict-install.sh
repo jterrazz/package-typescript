@@ -18,7 +18,7 @@ PKG="$STORE/@jterrazz/typescript"
 mkdir -p "$PKG" "$STORE/.bin" "$SANDBOX/node_modules/@jterrazz" "$SANDBOX/src"
 
 # The package as published (its `files`), plus the manifest carrying its exports
-cp -R "$PACKAGE_ROOT/bin" "$PACKAGE_ROOT/lib" "$PACKAGE_ROOT/presets" "$PACKAGE_ROOT/src" "$PKG/"
+cp -R "$PACKAGE_ROOT/bin" "$PACKAGE_ROOT/lib" "$PACKAGE_ROOT/presets" "$PACKAGE_ROOT/rules" "$PACKAGE_ROOT/src" "$PKG/"
 cp "$PACKAGE_ROOT/package.json" "$PKG/package.json"
 
 # The single link the consumer's manifest earns

@@ -1,5 +1,5 @@
 {
     "extends": "./presets/tsconfig/node.json",
-    "include": ["specs/**/*.ts", "src/index.d.ts"],
-    "exclude": ["node_modules", "dist", "**/_fixtures/**"]
+    "include": ["specs/**/*.ts", "src/**/*", "lib/**/*.js", "rules/**/*", "presets/**/*.js"],
+    "exclude": ["node_modules", "dist", "**/_fixtures/**", "**/_expected/**"]
 }

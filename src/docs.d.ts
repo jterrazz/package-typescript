@@ -1,5 +1,5 @@
 /** The `docs/` tree of one repository, as a rule engine needs to see it. */
-export interface DocsTree {
+export type DocsTree = {
     /** The root `AGENTS.md`, its whole text, or `null` when the repository has none. */
     readonly agents: null | string;
     /**
@@ -26,14 +26,14 @@ export interface DocsTree {
         /** A `package.json` at either that is not `"private": true`. */
         readonly publishable: boolean;
     };
-}
+};
 
 /** One broken rule, naming the path it is about and the sentence the gate prints. */
-export interface DocsViolation {
+export type DocsViolation = {
     readonly message: string;
     readonly path: string;
     readonly rule: string;
-}
+};
 
 /** How many opening lines of a file a rule may read. */
 export declare const HEAD_LINES: number;

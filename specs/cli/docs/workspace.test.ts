@@ -18,11 +18,11 @@ test('gives every member that owns a projection its own reference tree', async (
     const result = await cli.run('workspace-members.spec.yaml');
 
     // Then - each member's reference tree holds exactly what its barrel exports
-    expect(await result.directory('packages/lib-a/docs/reference').files()).toEqual([
+    await expect(result.directory('packages/lib-a/docs/reference').files()).resolves.toStrictEqual([
         'functions/greet.md',
         'index.md',
     ]);
-    expect(await result.directory('packages/lib-b/docs/reference').files()).toEqual([
+    await expect(result.directory('packages/lib-b/docs/reference').files()).resolves.toStrictEqual([
         'index.md',
         'variables/VERSION.md',
     ]);

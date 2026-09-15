@@ -25,7 +25,7 @@ test('emits the full reference member set including enumerations', async () => {
 
     // Then - typedoc's member tree carries every category, enumerations included
     const files = await result.directory('docs/reference').files();
-    expect(files).toEqual([
+    expect(files).toStrictEqual([
         'enumerations/Level.md',
         'functions/add.md',
         'functions/greet.md',

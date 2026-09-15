@@ -24,8 +24,10 @@ test('committed reference docs link to the branch, never a commit sha', async ()
     expect(files.length).toBeGreaterThan(0);
 
     // Then - no source link pins a 40-hex commit SHA (the bootstrap paradox above)
-    for (const file of files) {
-        const content = await readFile(file, 'utf8');
-        expect(content, `${file} must use blob/main/ links`).not.toMatch(/blob\/[0-9a-f]{40}\//);
+    const contents = await Promise.all(files.map(async (file) => await readFile(file, 'utf8')));
+    for (const [index, content] of contents.entries()) {
+        expect(content, `${files[index]} must use blob/main/ links`).not.toMatch(
+            /blob\/[0-9a-f]{40}\//u,
+        );
     }
 });
