@@ -22,12 +22,24 @@ runs:
 
           ✓ Passed
 
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
            RUN  Markdown (prose)
 
           markdown-block-long  README.md  a block of 13 lines at line 5 — the floor is 12
           markdown-fence-long  README.md  a fenced block at line 21 runs 16 lines unbroken — the floor is 15
           markdown-section-flat  README.md  "## A section with nothing to break it up" at line 40 runs 31 lines of prose with no ### and no list
           ✗ Failed with exit code 1
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
 
            END  Finalizing quality checks
 

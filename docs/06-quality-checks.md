@@ -2,15 +2,17 @@
 
 `typescript check` runs every quality gate in parallel; `typescript fix` auto-repairs what it can.
 
-Output is quiet on success and verbose on failure — a tool's captured log is printed only when it fails, so green runs stay byte-identical across platforms.
+Every pass that RAN prints the same block, in one fixed order: a `RUN` header carrying its name, whatever it has to say, and one verdict line. A pass that did not apply — no Astro in the project, no declared layer map — prints nothing at all, because it answered no question.
 
-The passes that spawn a tool print a block each on every run. The **tree gates** — the node scripts that read what the project would commit — print nothing at all when they pass: nine more green headers would bury the four that always speak. A tree gate that fails prints its whole log under its own `RUN` header, like every other pass.
+What sits between the header and the verdict is the one variable. A failing pass prints its whole captured log; a passing one stays silent, unless it WROTE something — `fix` changed a file the operator owns, and silence would hide that. A tool's success chatter never reaches the stream, so a green run is byte-identical on every platform.
+
+The order is the table below, top to bottom, and the drift report closes the run.
 
 The toolchain measures from the nearest `package.json`: a workspace root runs each per-package gate once per member, and a single-package project is the same run it always was.
 
 ## The passes
 
-`typescript check` runs up to fourteen passes. The first three always run, four more read the tracked tree on every run, and the rest are opt-in — they appear only when the project qualifies.
+`typescript check` runs up to fifteen passes. Three spawn a tool on every invocation, knip and four tree gates run on every `check`, and the other seven are opt-in — they appear only when the project qualifies.
 
 | Pass                              | Tool                        | When it runs                                                 |
 | --------------------------------- | --------------------------- | ------------------------------------------------------------ |

@@ -16,6 +16,8 @@ runs:
            RUN  Oxlint Check
 
           {{any}}
+          index.ts:2:3: warning eslint(no-debugger): `debugger` statement is not allowed help: Remove the debugger statement
+          index.ts:6:3: warning eslint(no-debugger): `debugger` statement is not allowed help: Remove the debugger statement
           baseline-ratchet  oxlint.baseline.json  eslint/no-debugger is at 2, above its baseline of 1
           baseline-ratchet  oxlint.baseline.json  eslint/no-unused-vars has 1 diagnostic(s) and no entry — it is new debt
           baseline-ratchet  oxlint.baseline.json  eslint/no-var is at zero — the ratchet moved, delete its entry
@@ -27,6 +29,22 @@ runs:
           ✓ Passed
 
            RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
 
           ✓ Passed
 

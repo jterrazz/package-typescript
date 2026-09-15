@@ -22,11 +22,23 @@ runs:
 
           ✓ Passed
 
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
            RUN  Names (tree)
 
           names-shortcut  src/gateway/repo-client.ts  `repo-client` is a word written in half — spell it whole
           names-grab-bag  src/utils  `utils` names no subject — it holds whatever nobody placed
           ✗ Failed with exit code 1
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
 
            END  Finalizing quality checks
 

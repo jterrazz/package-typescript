@@ -27,6 +27,10 @@ runs:
             · !docs/keep.md — a negation rescues a tracked file, kept
           ✓ Passed
 
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
            END  Finalizing quality fixes
 
           ✓ All checks passed

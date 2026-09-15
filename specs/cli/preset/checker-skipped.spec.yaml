@@ -36,6 +36,22 @@ runs:
           probe.test.ts
           ✗ Failed with exit code 1
 
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
            END  Finalizing quality checks
 
           ✗ Some checks failed

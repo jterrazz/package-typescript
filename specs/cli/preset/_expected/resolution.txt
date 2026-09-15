@@ -16,6 +16,22 @@
 
 ✓ Passed
 
+ RUN  Suppressions (directives)
+
+✓ Passed
+
+ RUN  Markdown (prose)
+
+✓ Passed
+
+ RUN  Names (tree)
+
+✓ Passed
+
+ RUN  Secrets (credentials)
+
+✓ Passed
+
  END  Finalizing quality checks
 
 ✓ All checks passed

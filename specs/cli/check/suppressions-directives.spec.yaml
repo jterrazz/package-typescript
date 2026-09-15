@@ -31,6 +31,18 @@ runs:
           suppressions-reason  index.ts  line 10 carries a TypeScript suppression with no description of what it is for
           ✗ Failed with exit code 1
 
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
            END  Finalizing quality checks
 
           ✗ Some checks failed

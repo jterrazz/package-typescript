@@ -39,6 +39,22 @@ runs:
           oxlint.config.js
           ✗ Failed with exit code 1
 
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
            DRIFT  Deviations from the profile
 
             profile               none of this package's

@@ -18,6 +18,10 @@ runs:
 
           ✓ Passed
 
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
            END  Finalizing quality fixes
 
           ✓ All checks passed

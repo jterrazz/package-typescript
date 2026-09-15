@@ -30,7 +30,28 @@ runs:
           publish-exports-target  package.json  ./farewell.js resolves to nothing on disk
           publish-files  package.json  ./greeter.js is outside "files" — it resolves here and 404s in a consumer
           {{any}}
+          Packing files with `npm pack`...
+          Linting...
+          Errors:
+          1. pkg.exports["./farewell"] is ./farewell.js but the file does not exist.
+          2. pkg.exports["./greeter"] is ./greeter.js but the file is not published. Is it specified in pkg.files?
           ✗ Failed with exit code 1
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
 
            END  Finalizing quality checks
 

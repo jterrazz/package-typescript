@@ -296,30 +296,42 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# ── The tree gates ───────────────────────────────────────────────────────────
-# A tree gate reads what the project would commit — `git ls-files`, or a walk
-# where there is no git tree — and answers one question about it. Every one of
-# them is QUIET when it passes: four passes already print a block each on every
-# run, and nine more green headers would bury them. A gate that FAILS prints its
-# whole log under its own RUN header, exactly like the passes above it.
+# ── How a pass speaks ────────────────────────────────────────────────────────
+# Every pass that RAN prints the same three things, in the same order: a `RUN`
+# header carrying its label, whatever it has to say, and one verdict line. A
+# pass that did not apply — no Astro in the project, no declared layer map —
+# prints nothing at all, because it answered no question.
 #
-# A gate that WROTE something speaks too, whatever its status: `fix` changed a
-# file the operator owns, and silence would hide it. That is the Gitignore
-# pass's rule, and a gate asks for it with a fourth argument — the gates that
-# only READ stay silent, and so does a tool's success chatter.
-report_gate() {
+# What sits between the header and the verdict is the one variable: a failing
+# pass prints its whole captured log, and a passing one stays silent unless it
+# WROTE something. `fix` changed a file the operator owns and silence would hide
+# it, so a writer asks for its log with the fourth argument; a reader's success
+# chatter — which some tool builds print on Linux and not on macOS — never
+# reaches the stream, so a green run is byte-identical everywhere.
+report_pass() {
     local label="$1" status="$2" log="$3" writer="${4:-}"
 
-    [ "$status" -eq 0 ] && [ -z "$writer" ] && return 0
-    [ "$status" -eq 0 ] && [ ! -s "$log" ] && return 0
-
     printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} %s\n\n" "$label"
-    [ -s "$log" ] && cat "$log"
+    if [ "$status" -ne 0 ] || [ -n "$writer" ]; then
+        [ -s "$log" ] && cat "$log"
+    fi
     if [ "$status" -eq 0 ]; then
         printf "${GREEN}✓ Passed${NC}\n"
     else
         printf "${RED}✗ Failed with exit code %d${NC}\n" "$status"
     fi
+}
+
+# One pass, N runs: the logs of the runs that FAILED, joined into the single log
+# the pass reports under. A green member stays silent — it is the same pass.
+join_logs() {
+    local into="$1"
+    shift
+    : > "$into"
+    local log
+    for log in "$@"; do
+        [ -s "$log" ] && cat "$log" >> "$into"
+    done
 }
 
 # Create a temporary directory for log files
@@ -642,114 +654,48 @@ run_checks() {
         index=$((index + 1))
     done
 
-    # Print results — quiet on success, verbose on failure: a tool's captured log
-    # is shown only when it failed, so green output stays byte-identical across
-    # platforms (some tool builds print success chatter on Linux but not macOS).
-    printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} TypeScript Check\n\n"
-    if [ $type_status -ne 0 ]; then
-        [ -s "$tmp_dir/type.log" ] && cat "$tmp_dir/type.log"
-        printf "${RED}✗ Failed with exit code %d${NC}\n" $type_status
-    else
-        printf "${GREEN}✓ Passed${NC}\n"
-    fi
+    # ── The report ───────────────────────────────────────────────────────────
+    # One order, and it is the chapter's: the three tools, the artefact gate,
+    # knip, the conventions checker, the two Docs passes, then the gates a
+    # project opts into and the four that read its tree on every run. A pass
+    # that did not apply is absent; every pass that ran prints the same block.
+    join_logs "$tmp_dir/checker.log" "${checker_failed_logs[@]}"
+    join_logs "$tmp_dir/docs.log" "${docs_failed_logs[@]}"
+    join_logs "$tmp_dir/publish.log" "${publish_failed_logs[@]}"
 
     local lint_label="Oxlint Check"
-    [ "$FIX_MODE" = true ] && lint_label="Oxlint Fix"
-    printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} ${lint_label}\n\n"
-    if [ $lint_status -ne 0 ]; then
-        [ -s "$tmp_dir/lint.log" ] && cat "$tmp_dir/lint.log"
-        printf "${RED}✗ Failed with exit code %d${NC}\n" $lint_status
-    else
-        printf "${GREEN}✓ Passed${NC}\n"
-    fi
-
     local format_label="Oxfmt Check"
-    [ "$FIX_MODE" = true ] && format_label="Oxfmt Format"
-    printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} ${format_label}\n\n"
-    if [ $format_status -ne 0 ]; then
-        [ -s "$tmp_dir/format.log" ] && cat "$tmp_dir/format.log"
-        printf "${RED}✗ Failed with exit code %d${NC}\n" $format_status
-    else
-        printf "${GREEN}✓ Passed${NC}\n"
+    local write=""
+    if [ "$FIX_MODE" = true ]; then
+        lint_label="Oxlint Fix"
+        format_label="Oxfmt Format"
+        write="writer"
     fi
 
-    # The one pass that speaks on success: a rewrite changed a file the operator
-    # owns, and silence would hide it. In check mode a green gate writes nothing,
-    # so the green output stays byte-identical with the others.
-    if [ -n "$gitignore_pid" ]; then
-        printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Gitignore (artefacts)\n\n"
-        [ -s "$tmp_dir/gitignore.log" ] && cat "$tmp_dir/gitignore.log"
-        if [ $gitignore_status -ne 0 ]; then
-            printf "${RED}✗ Failed with exit code %d${NC}\n" $gitignore_status
-        else
-            printf "${GREEN}✓ Passed${NC}\n"
-        fi
-    fi
-
-    if [ "$FIX_MODE" = false ]; then
-        printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Knip (unused code)\n\n"
-        if [ $knip_status -ne 0 ]; then
-            [ -s "$tmp_dir/knip.log" ] && cat "$tmp_dir/knip.log"
-            printf "${RED}✗ Failed with exit code %d${NC}\n" $knip_status
-        else
-            printf "${GREEN}✓ Passed${NC}\n"
-        fi
-
-        if [ ${#checker_pids[@]} -gt 0 ]; then
-            printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Test Conventions (@jterrazz/test)\n\n"
-            if [ $checker_status -ne 0 ]; then
-                for log in "${checker_failed_logs[@]}"; do
-                    [ -s "$log" ] && cat "$log"
-                done
-                printf "${RED}✗ Failed with exit code %d${NC}\n" $checker_status
-            else
-                printf "${GREEN}✓ Passed${NC}\n"
-            fi
-        fi
-
-        if [ -n "$docs_layout_pid" ]; then
-            printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Docs (layout)\n\n"
-            if [ $docs_layout_status -ne 0 ]; then
-                [ -s "$tmp_dir/docs-layout.log" ] && cat "$tmp_dir/docs-layout.log"
-                printf "${RED}✗ Failed with exit code %d${NC}\n" $docs_layout_status
-            else
-                printf "${GREEN}✓ Passed${NC}\n"
-            fi
-        fi
-
-        if [ ${#docs_pids[@]} -gt 0 ]; then
-            printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Docs (sync)\n\n"
-            if [ $docs_status -ne 0 ]; then
-                for log in "${docs_failed_logs[@]}"; do
-                    [ -s "$log" ] && cat "$log"
-                done
-                printf "${RED}✗ Failed with exit code %d${NC}\n" $docs_status
-            else
-                printf "${GREEN}✓ Passed${NC}\n"
-            fi
-        fi
-    fi
-
-    if [ ${#publish_failed_logs[@]} -gt 0 ]; then
-        printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Publish (packaging)\n\n"
-        for log in "${publish_failed_logs[@]}"; do
-            [ -s "$log" ] && cat "$log"
-        done
-        printf "${RED}✗ Failed with exit code %d${NC}\n" $publish_status
-    fi
-
-    # The tree gates report in both modes: a gate with a `--fix` may have
-    # written, and one that only reads stays silent unless it refused.
-    # In fix mode the formatter rewrote the operator's templates, so the block
-    # speaks whatever the status; in check mode it is a reader like the rest.
-    local astro_writer=""
-    [ "$FIX_MODE" = true ] && astro_writer="writer"
-    report_gate "Astro (check + format)" $astro_status "$tmp_dir/astro.log" "$astro_writer"
-    report_gate "Architecture (layer map)" $architecture_status "$tmp_dir/architecture.log"
-    report_gate "Suppressions (directives)" $suppressions_status "$tmp_dir/suppressions.log" writer
-    report_gate "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
-    report_gate "Names (tree)" $names_status "$tmp_dir/names.log"
-    report_gate "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
+    report_pass "TypeScript Check" $type_status "$tmp_dir/type.log"
+    report_pass "$lint_label" $lint_status "$tmp_dir/lint.log"
+    report_pass "$format_label" $format_status "$tmp_dir/format.log"
+    [ -n "$gitignore_pid" ] &&
+        report_pass "Gitignore (artefacts)" $gitignore_status "$tmp_dir/gitignore.log" writer
+    [ "$FIX_MODE" = false ] &&
+        report_pass "Knip (unused code)" $knip_status "$tmp_dir/knip.log"
+    [ ${#checker_pids[@]} -gt 0 ] &&
+        report_pass "Test Conventions (@jterrazz/test)" $checker_status "$tmp_dir/checker.log"
+    [ -n "$docs_layout_pid" ] &&
+        report_pass "Docs (layout)" $docs_layout_status "$tmp_dir/docs-layout.log"
+    [ ${#docs_pids[@]} -gt 0 ] &&
+        report_pass "Docs (sync)" $docs_status "$tmp_dir/docs.log"
+    [ ${#publish_pids[@]} -gt 0 ] &&
+        report_pass "Publish (packaging)" $publish_status "$tmp_dir/publish.log"
+    [ -n "$architecture_pid" ] &&
+        report_pass "Architecture (layer map)" $architecture_status "$tmp_dir/architecture.log"
+    [ -n "$astro_pid" ] &&
+        report_pass "Astro (check + format)" $astro_status "$tmp_dir/astro.log" "$write"
+    report_pass "Suppressions (directives)" $suppressions_status "$tmp_dir/suppressions.log" "$write"
+    [ -n "$markdown_pid" ] &&
+        report_pass "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
+    [ -n "$names_pid" ] && report_pass "Names (tree)" $names_status "$tmp_dir/names.log"
+    [ -n "$secrets_pid" ] && report_pass "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
 
     # Drift: the report, not a gate — how far this project stands from the
     # profile it says it extends, in four numbers. It runs last and it speaks on
