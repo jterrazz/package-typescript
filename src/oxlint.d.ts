@@ -6,7 +6,7 @@
  * consumer's `defineConfig(node)` stopped type-checking.
  */
 
-import { type OxlintConfig } from 'oxlint';
+import type { OxlintConfig } from 'oxlint';
 
 /** A rule entry as oxlint reads it: a level, or a level and its options. */
 type RuleEntry = NonNullable<OxlintConfig['rules']>[string];

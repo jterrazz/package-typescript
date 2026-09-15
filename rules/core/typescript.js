@@ -154,13 +154,19 @@ export default fragment({
             },
         ]),
         'typescript/consistent-type-definitions': on(['type']),
+        /* `separate-type-imports`, for `import/consistent-type-specifier-style`'s
+         * reason: an inline type specifier survives `verbatimModuleSyntax` as an
+         * empty runtime import. */
         'typescript/consistent-type-imports': on([
             {
                 disallowTypeAnnotations: true,
-                fixStyle: 'inline-type-imports',
+                fixStyle: 'separate-type-imports',
                 prefer: 'type-imports',
             },
         ]),
+        /* The guard for the emit above: an all-inline type import is the shape
+         * `verbatimModuleSyntax` turns into a side effect, and this names it. */
+        'typescript/no-import-type-side-effects': on(),
         'typescript/explicit-member-accessibility': on([{ accessibility: 'no-public' }]),
         /* Booleans excepted: `false ?? x` is `false` and `false || x` is `x`,
          * so on a boolean the two operators mean different things and the
@@ -183,10 +189,6 @@ export default fragment({
         'typescript/explicit-module-boundary-types': off({
             by: 'presets/tsconfig/library.json — isolatedDeclarations requires the annotation exactly where it is load-bearing',
             kind: 'covered',
-        }),
-        'typescript/no-import-type-side-effects': off({
-            by: 'import/consistent-type-specifier-style (prefer-inline) — an import whose specifiers are all inline types is exactly the form that rule asks for',
-            kind: 'exclusive',
         }),
         'typescript/no-empty-interface': off({
             by: 'typescript/no-empty-object-type — its upstream successor',

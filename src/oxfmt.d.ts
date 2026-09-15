@@ -6,7 +6,7 @@
  * consumer's `defineConfig(base)` stopped type-checking because of it.
  */
 
-import { type OxfmtConfig } from 'oxfmt';
+import type { OxfmtConfig } from 'oxfmt';
 
 declare const base: OxfmtConfig;
 

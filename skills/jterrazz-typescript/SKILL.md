@@ -72,7 +72,8 @@ export default defineConfig(compose(node, testing));
 Under the `library` profile alone, `isolatedDeclarations` refuses a default export it would have to infer, so both config files name the type:
 
 ```ts
-import { defineConfig, library, type OxlintConfig } from '@jterrazz/typescript/oxlint';
+import type { OxlintConfig } from '@jterrazz/typescript/oxlint';
+import { defineConfig, library } from '@jterrazz/typescript/oxlint';
 const config: OxlintConfig = defineConfig(library);
 export default config;
 ```

@@ -63,7 +63,13 @@ export default fragment({
         ),
 
         // -- On, at the strictest value the option carries ---------------------
-        'import/consistent-type-specifier-style': on(['prefer-inline']),
+        /*
+         * Top level, not inline, and `verbatimModuleSyntax` is why: under it
+         * `import { type X } from 'leaflet'` is emitted as
+         * `import {} from 'leaflet'` — a runtime side-effect import of a module
+         * that may only exist in a browser. signews-web served a 500 from it.
+         */
+        'import/consistent-type-specifier-style': on(['prefer-top-level']),
         'import/extensions': EXTENSIONS_ALWAYS,
 
         // -- Off, each with its one reason -------------------------------------

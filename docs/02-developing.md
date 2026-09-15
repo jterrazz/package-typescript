@@ -54,7 +54,8 @@ Each config names `@jterrazz/typescript` and nothing else — the preset and the
 
 ```ts
 // oxlint.config.ts, under the library profile
-import { defineConfig, library, type OxlintConfig } from '@jterrazz/typescript/oxlint';
+import type { OxlintConfig } from '@jterrazz/typescript/oxlint';
+import { defineConfig, library } from '@jterrazz/typescript/oxlint';
 
 const config: OxlintConfig = defineConfig(library);
 
@@ -72,7 +73,8 @@ export default bundle;
 
 ```ts
 // tsdown.config.ts, under the library profile
-import bundle, { type UserConfig } from '@jterrazz/typescript/tsdown/bundle.js';
+import type { UserConfig } from '@jterrazz/typescript/tsdown/bundle.js';
+import bundle from '@jterrazz/typescript/tsdown/bundle.js';
 
 const config: UserConfig = bundle;
 

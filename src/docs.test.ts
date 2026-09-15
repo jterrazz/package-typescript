@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
 
-import { auditDocs, type DocsTree } from './docs.js';
+import { auditDocs } from './docs.js';
+import type { DocsTree } from './docs.js';
 
 /**
  * The manual every repository carries, in its smallest compliant form: a map,

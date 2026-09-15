@@ -67,14 +67,16 @@ for consumer in "$CONSUMERS"/*/; do
         # `isolatedDeclarations` refuses a default export it would have to
         # infer, so this one profile names the type ([Developing](../../docs/02-developing.md)).
         cat > "$project/oxlint.config.ts" <<EOF
-import { defineConfig, $profile, type OxlintConfig } from '@jterrazz/typescript/oxlint';
+import type { OxlintConfig } from '@jterrazz/typescript/oxlint';
+import { defineConfig, $profile } from '@jterrazz/typescript/oxlint';
 
 const config: OxlintConfig = defineConfig($profile);
 
 export default config;
 EOF
         cat > "$project/oxfmt.config.ts" <<'EOF'
-import { base, defineConfig, type OxfmtConfig } from '@jterrazz/typescript/oxfmt';
+import type { OxfmtConfig } from '@jterrazz/typescript/oxfmt';
+import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
 
 const config: OxfmtConfig = defineConfig(base);
 

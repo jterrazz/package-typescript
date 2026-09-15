@@ -2,7 +2,8 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync
 import { resolve } from 'node:path';
 import { expect, test } from 'vitest';
 
-import { type Diagnostic, diagnosticsOf, oxlint, PROFILES, sandbox } from './rulebook.js';
+import { diagnosticsOf, oxlint, PROFILES, sandbox } from './rulebook.js';
+import type { Diagnostic } from './rulebook.js';
 
 /*
  * What a decision DOES, on a file that breaks it. One case per decision this

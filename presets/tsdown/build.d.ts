@@ -5,7 +5,7 @@
  * export whose type it would have to infer ([Developing](../../docs/02-developing.md)).
  */
 
-import { type UserConfig } from 'tsdown';
+import type { UserConfig } from 'tsdown';
 
 /** An application build: one ESM output with declarations and source maps. */
 declare const build: UserConfig;

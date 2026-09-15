@@ -4,6 +4,9 @@
  * silent: an off nobody can see is an off nobody maintains.
  */
 
+/** The type the options fixture imports, so the hoist has something to hoist. */
+export type Options = { timeout: number };
+
 // unicorn/no-nested-ternary — off (formatter): its fixer parenthesises, oxfmt strips.
 export function label(count: number): string {
     return count === 0 ? 'none' : count === 1 ? 'one' : 'many';

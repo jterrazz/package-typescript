@@ -442,7 +442,7 @@ typescript/no-extraneous-class
 typescript/no-floating-promises
 typescript/no-for-in-array
 typescript/no-implied-eval
-- typescript/no-import-type-side-effects
+typescript/no-import-type-side-effects
 typescript/no-inferrable-types
 typescript/no-invalid-void-type
 typescript/no-meaningless-void-operator

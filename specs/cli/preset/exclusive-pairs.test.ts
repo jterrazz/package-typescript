@@ -39,11 +39,6 @@ const PAIRS = Object.freeze([
         'one describes a `.then()` chain the other refuses to have',
     ],
     [
-        'typescript/no-import-type-side-effects',
-        'import/consistent-type-specifier-style',
-        'an all-inline type import is exactly the form one demands and the other refuses',
-    ],
-    [
         'vitest/prefer-describe-function-title',
         'vitest/valid-title',
         'one titles a describe after the function, the other after the behaviour',
