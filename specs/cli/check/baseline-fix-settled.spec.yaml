@@ -3,9 +3,11 @@ fixture: baseline/settled/
 runs:
     - command: fix
       exit: 1
-      # oxlint itself exits 0 here — the fixer leaves a clean tree and prints
-      # nothing — so this states the whole run: what fails it is the ratchet,
-      # which fix mode is judged by exactly as check mode is.
+      # oxlint itself exits 0 here: the fixer leaves a clean tree. What it
+      # prints for that is the environment's — a summary line under
+      # GITHUB_ACTIONS, nothing in a terminal — so the block is spanned
+      # ([Testing](../../../docs/03-testing.md)). What is claimed is the
+      # ratchet's verdict, which fix mode is judged by exactly as check mode is.
       stdout: |4
            START  Running quality fixes
 
@@ -14,7 +16,7 @@ runs:
           ✓ Passed
 
            RUN  Oxlint Fix
-
+          {{any}}
           baseline-ratchet  oxlint.baseline.json  eslint/no-debugger is at zero — the ratchet moved, delete its entry
           Run 'typescript baseline' to record where the project actually stands.
           ✗ Failed with exit code 1
