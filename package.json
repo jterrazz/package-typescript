@@ -13,6 +13,7 @@
         "bin",
         "lib",
         "presets",
+        "rules",
         "src"
     ],
     "type": "module",
@@ -49,15 +50,16 @@
     },
     "scripts": {
         "build": "# no build script",
-        "lint": "./bin/typescript.sh check --ignore-pattern '**/_fixtures/**'",
-        "lint:fix": "./bin/typescript.sh fix --ignore-pattern '**/_fixtures/**'",
+        "lint": "./bin/typescript.sh check",
+        "lint:fix": "./bin/typescript.sh fix",
         "test": "vitest --run"
     },
     "dependencies": {
         "eslint-plugin-perfectionist": "^5.10.0",
         "knip": "^6.27.0",
-        "oxfmt": "^0.59.0",
-        "oxlint": "^1.74.0",
+        "oxfmt": "^0.68.0",
+        "oxlint": "^1.83.0",
+        "oxlint-tsgolint": "7.0.2001",
         "tsdown": "^0.22.9",
         "typedoc": "^0.28.20",
         "typedoc-plugin-markdown": "^4.12.0",
