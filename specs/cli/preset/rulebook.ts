@@ -141,6 +141,12 @@ export function printConfig(name: string): ResolvedConfig {
     return JSON.parse(stdout) as ResolvedConfig;
 }
 
+/** The diagnostics of one `--format=json` run, as oxlint itself reports them. */
+export function diagnosticsOf(report: { stdout: string }): unknown[] {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint's own --format=json output is oxlint's contract
+    return (JSON.parse(report.stdout) as { diagnostics: unknown[] }).diagnostics;
+}
+
 /** Every rule oxlint knows at this pinned version, nursery included. */
 export function roster(): RosterEntry[] {
     const { stdout } = run(OXLINT, ['--rules', '--format=json'], REPOSITORY);

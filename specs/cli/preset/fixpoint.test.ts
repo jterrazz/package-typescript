@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, test } from 'vitest';
 
-import { oxfmt, oxlint, PROFILES, sandbox } from './rulebook.js';
+import { diagnosticsOf, oxfmt, oxlint, PROFILES, sandbox } from './rulebook.js';
 
 /*
  * Law 2's proof. A lint fixer and the formatter can rewrite each other for
@@ -45,7 +45,6 @@ test.each(PROFILES)('$name reaches a fixpoint with no diagnostic left', ({ name,
 
     // Then - and the settled bytes carry no diagnostic at all
     const report = oxlint(work.path, ['-c', work.config, '--format=json', ...work.files]);
-    const { diagnostics } = JSON.parse(report.stdout) as { diagnostics: unknown[] };
-    expect(diagnostics, `${name} still reports on a settled tree`).toStrictEqual([]);
+    expect(diagnosticsOf(report), `${name} still reports on a settled tree`).toStrictEqual([]);
     expect(report.status).toBe(0);
 });
