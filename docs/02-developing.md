@@ -61,6 +61,26 @@ const config: OxlintConfig = defineConfig({ extends: [library] });
 export default config;
 ```
 
+A project that owns a `tsdown.config.ts` imports the build preset from the same place, and it ships a declaration so the import is typed rather than `any`:
+
+```ts
+// tsdown.config.ts
+import bundle from '@jterrazz/typescript/tsdown/bundle.js';
+
+export default bundle;
+```
+
+```ts
+// tsdown.config.ts, under the library profile
+import bundle, { type UserConfig } from '@jterrazz/typescript/tsdown/bundle.js';
+
+const config: UserConfig = bundle;
+
+export default config;
+```
+
+`build` is the application preset, `bundle` the library one — the same two the CLI runs.
+
 ## 3. Wire the CLI into package.json
 
 Applications:

@@ -15,9 +15,13 @@ import { expect, test } from 'vitest';
  */
 
 const ROOT = resolve(import.meta.dirname, '../../../src');
+const PRESETS = resolve(import.meta.dirname, '../../../presets/tsdown');
 
 /** The four importable entries, each a `.js` and the `.d.ts` written beside it. */
 const ENTRIES = ['docs', 'index', 'oxfmt', 'oxlint'] as const;
+
+/** The tsdown presets, reached as `@jterrazz/typescript/tsdown/<name>.js`. */
+const TSDOWN_PRESETS = ['build', 'bundle'] as const;
 
 /** Names in one order, so two readings of the same surface are comparable. */
 const sorted = (names: string[]): string[] =>
@@ -84,3 +88,20 @@ test.each(ENTRIES)('src/%s.js and its declaration carry the same exports', async
     // Then - every value the runtime exports is declared, and nothing is declared that is not there
     expect(declaredValues(resolve(ROOT, `${entry}.d.ts`))).toStrictEqual(runtime);
 });
+
+test.each(TSDOWN_PRESETS)(
+    'presets/tsdown/%s.js and its declaration carry the same exports',
+    async (preset) => {
+        /*
+         * A bundler config is a `.ts` file in every consumer, so the preset it
+         * imports needs a declaration or the import is `any` — and under the
+         * `library` profile, where `allowJs` is off, TS7016 instead.
+         */
+
+        // Given - one shipped tsdown preset, read twice: as a module, and as a declaration
+        const runtime = await runtimeValues(resolve(PRESETS, `${preset}.js`));
+
+        // Then - the default export is declared, and nothing else is
+        expect(declaredValues(resolve(PRESETS, `${preset}.d.ts`))).toStrictEqual(runtime);
+    },
+);

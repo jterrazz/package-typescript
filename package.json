@@ -39,12 +39,24 @@
         },
         "./tsconfig/*": "./presets/tsconfig/*.json",
         "./tsconfig/*.json": "./presets/tsconfig/*.json",
-        "./tsdown/*": "./presets/tsdown/*.js",
-        "./tsdown/*.js": "./presets/tsdown/*.js",
+        "./tsdown/*": {
+            "types": "./presets/tsdown/*.d.ts",
+            "default": "./presets/tsdown/*.js"
+        },
+        "./tsdown/*.js": {
+            "types": "./presets/tsdown/*.d.ts",
+            "default": "./presets/tsdown/*.js"
+        },
         "./presets/tsconfig/*": "./presets/tsconfig/*.json",
         "./presets/tsconfig/*.json": "./presets/tsconfig/*.json",
-        "./presets/tsdown/*": "./presets/tsdown/*.js",
-        "./presets/tsdown/*.js": "./presets/tsdown/*.js"
+        "./presets/tsdown/*": {
+            "types": "./presets/tsdown/*.d.ts",
+            "default": "./presets/tsdown/*.js"
+        },
+        "./presets/tsdown/*.js": {
+            "types": "./presets/tsdown/*.d.ts",
+            "default": "./presets/tsdown/*.js"
+        }
     },
     "publishConfig": {
         "registry": "https://registry.npmjs.org/"
