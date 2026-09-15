@@ -1,55 +1,24 @@
 /*
- * The tool-facing oxlint entry (`@jterrazz/typescript/oxlint`): the named
- * presets, the `compose()` helper, and oxlint's own `defineConfig`. Wiring is
- * EXPLICIT — a consumer composes exactly the fragments it wants, nothing is
- * auto-detected:
+ * The tool-facing oxlint entry (`@jterrazz/typescript/oxlint`): the six
+ * profiles, the `compose()` merger, the layer-map builder, and oxlint's own
+ * `defineConfig`. A consumer names a PROFILE, not a set of fragments:
  *
- *     import { testing } from '@jterrazz/test/oxlint';
- *     import { compose, node } from '@jterrazz/typescript/oxlint';
+ *     import { defineConfig, node } from '@jterrazz/typescript/oxlint';
  *
- *     export default compose(node, testing);
+ *     export default defineConfig({ extends: [node] });
+ *
+ * What each profile carries, and why every rule of every loaded plugin is
+ * decided by name, is [Lint presets](../docs/07-lint-presets.md).
+ *
+ * `rules/` holds the manifest — decisions, with a reason behind every `off`.
+ * What crosses this file is always a plain oxlint config, compiled from it.
  */
 
-/** Config keys concatenated across fragments, duplicates dropped (===). */
-const CONCAT_DEDUPE = new Set(['extends', 'ignorePatterns', 'jsPlugins', 'plugins']);
-/** Config keys concatenated verbatim (order matters, no dedupe). */
-const CONCAT = new Set(['overrides']);
-/** Config keys shallow-merged as objects — the LAST fragment wins per key. */
-const SHALLOW_MERGE = new Set(['categories', 'env', 'globals', 'rules', 'settings']);
+import hexagonalFragment from '../rules/architecture/hexagonal.js';
+import { layers as layersFragment } from '../rules/architecture/layers.js';
+import { compile } from '../rules/compile.js';
 
-/**
- * Deterministic merge of oxlint config fragments, left to right:
- * `jsPlugins` / `plugins` / `ignorePatterns` / `extends` are concatenated and
- * deduped, `rules` / `categories` (and env/globals/settings) are shallow-merged
- * with last-wins per key, `overrides` are concatenated, and any other key is
- * taken from the last fragment that sets it.
- */
-export function compose(...fragments) {
-    const merged = {};
-    for (const fragment of fragments) {
-        if (!fragment || typeof fragment !== 'object') {
-            continue;
-        }
-        for (const [key, value] of Object.entries(fragment)) {
-            if (value === undefined) {
-                continue;
-            }
-            if (CONCAT_DEDUPE.has(key)) {
-                const previous = Array.isArray(merged[key]) ? merged[key] : [];
-                const combined = [...previous, ...(Array.isArray(value) ? value : [value])];
-                merged[key] = combined.filter((entry, index) => combined.indexOf(entry) === index);
-            } else if (CONCAT.has(key)) {
-                const previous = Array.isArray(merged[key]) ? merged[key] : [];
-                merged[key] = [...previous, ...(Array.isArray(value) ? value : [value])];
-            } else if (SHALLOW_MERGE.has(key)) {
-                merged[key] = { ...merged[key], ...value };
-            } else {
-                merged[key] = value;
-            }
-        }
-    }
-    return merged;
-}
+export { merge as compose } from '../rules/compile.js';
 
 /* Oxlint's own `defineConfig`, re-exported from here: a bare
  * `import { defineConfig } from 'oxlint'` in a consumer's config resolves only
@@ -58,7 +27,23 @@ export function compose(...fragments) {
  * dependency — the one-devDependency shape holds on every package manager. */
 export { defineConfig } from 'oxlint';
 
-export { default as hexagonal } from '../presets/oxlint/architectures/hexagonal.js';
-export { default as expo } from '../presets/oxlint/expo.js';
-export { default as next } from '../presets/oxlint/next.js';
-export { default as node } from '../presets/oxlint/node.js';
+export { default as astro } from '../presets/oxlint/profiles/astro.js';
+export { default as bun } from '../presets/oxlint/profiles/bun.js';
+export { default as expo } from '../presets/oxlint/profiles/expo.js';
+export { default as library } from '../presets/oxlint/profiles/library.js';
+export { default as next } from '../presets/oxlint/profiles/next.js';
+export { default as node } from '../presets/oxlint/profiles/node.js';
+
+export { HEXAGONAL_MAP } from '../rules/architecture/hexagonal.js';
+
+/** The hexagonal layer map, ready to compose beside a profile. */
+export const hexagonal = compile(hexagonalFragment);
+
+/**
+ * A declared layer map as an additive oxlint fragment: one
+ * `no-restricted-imports` override per layer, each carrying that layer's
+ * complete pattern list (an oxlint override REPLACES, it never merges).
+ */
+export function layers(definition) {
+    return compile(layersFragment(definition));
+}
