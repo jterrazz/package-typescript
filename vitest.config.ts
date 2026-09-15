@@ -7,7 +7,11 @@ export default defineConfig({
             {
                 test: {
                     name: 'fast',
-                    include: ['specs/cli/preset/exports.test.ts', 'src/**/*.test.ts'],
+                    include: [
+                        'specs/cli/preset/exports.test.ts',
+                        'rules/**/*.test.ts',
+                        'src/**/*.test.ts',
+                    ],
                     exclude: ['**/_fixtures/**', 'node_modules/**', 'dist/**'],
                 },
             },

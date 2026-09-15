@@ -1,0 +1,2 @@
+our-options.ts eslint(max-params)
+our-options.ts import(extensions)

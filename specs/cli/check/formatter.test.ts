@@ -53,7 +53,7 @@ describe('format fixing', () => {
         expect(result.file('wrong-style.ts').content).toContain(
             'function greet(name: string): string',
         );
-        expect(result.file('wrong-style.ts').content).toMatch(/^\s{4}const/m);
+        expect(result.file('wrong-style.ts').content).toMatch(/^\s{4}const/mu);
     });
 
     test('is idempotent when formatting already-correct code', async () => {
@@ -91,12 +91,12 @@ describe('config options', () => {
     test('uses semicolons', () => {
         // Given - the formatted wrong-style file
         // Then - statements end with semicolons
-        expect(result.file('wrong-style.ts').content).toMatch(/;\s*$/m);
+        expect(result.file('wrong-style.ts').content).toMatch(/;\s*$/mu);
     });
 
     test('uses four-space indentation', () => {
         // Given - the formatted wrong-style file
         // Then - indented lines use four spaces
-        expect(result.file('wrong-style.ts').content).toMatch(/^\s{4}const/m);
+        expect(result.file('wrong-style.ts').content).toMatch(/^\s{4}const/mu);
     });
 });

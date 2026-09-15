@@ -17,7 +17,9 @@ const FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/on-convention'
 
 const workDir = mkdtempSync(resolve(tmpdir(), 'spec-committed-artefact-'));
 
-afterAll(() => rmSync(workDir, { force: true, recursive: true }));
+afterAll(() => {
+    rmSync(workDir, { force: true, recursive: true });
+});
 
 test('fails a repository that has committed an artefact', () => {
     // Given - a project on the convention, in a git repository that tracks a buildinfo

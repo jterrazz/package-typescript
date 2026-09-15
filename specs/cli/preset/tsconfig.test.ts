@@ -31,6 +31,7 @@ type ResolvedConfig = {
 function resolvedConfig(fixture: string): ResolvedConfig {
     const dir = resolve(import.meta.dirname, '_fixtures', fixture);
     const stdout = execFileSync(TSC, ['--showConfig'], { cwd: dir, encoding: 'utf8' });
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tsc's own --showConfig output is tsc's contract
     const config = JSON.parse(stdout) as {
         compilerOptions?: ResolvedConfig['compilerOptions'];
         files?: string[];
@@ -57,7 +58,7 @@ describe.each([
         expect(scoped.length).toBeGreaterThan(0);
         for (const entry of scoped) {
             const absolute = isAbsolute(entry) ? entry : resolve(dir, entry);
-            expect(absolute.startsWith(dir + sep)).toBe(true);
+            expect(absolute.startsWith(dir + sep)).toBeTruthy();
         }
     });
 
@@ -66,7 +67,7 @@ describe.each([
         const { compilerOptions, dir } = resolvedConfig(fixture);
 
         // Then - incremental compilation is on, and its buildinfo is an artefact
-        expect(compilerOptions.incremental).toBe(true);
+        expect(compilerOptions.incremental).toBeTruthy();
         const buildInfo = compilerOptions.tsBuildInfoFile ?? '';
         expect(resolve(dir, buildInfo)).toBe(resolve(dir, '.artifacts/tsc/tsconfig.tsbuildinfo'));
     });

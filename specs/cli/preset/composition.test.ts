@@ -4,14 +4,17 @@ import { describe, expect, test } from 'vitest';
 import { cli as oxlintCli } from '../oxlint.specification.js';
 
 /*
- * A chain, not a document: these two point oxlint at a preset config directly
- * (the B9w exception oxlint.specification.ts states), and `literate()` binds
- * every `<case>.spec.yaml` of this repo to the product runner. Grep is the
- * scalpel here anyway — each test is one presence/absence probe for a rule id
- * in a lint report, not a full-surface snapshot.
+ * A chain, not a document: these two point oxlint at a profile directly (the
+ * B9w exception oxlint.specification.ts states), and `literate()` binds every
+ * `<case>.spec.yaml` of this repo to the product runner.
+ *
+ * The claim is about WIRING, not about a rule: a profile never auto-detects
+ * another @jterrazz package, so the testing fragment's rules exist only where
+ * a consumer composed it. Grep is the scalpel — one presence probe and one
+ * absence probe, not a full-surface snapshot, which is resolved-config's.
  */
 
-const NODE_CONFIG = resolve(import.meta.dirname, '../../../presets/oxlint/node.js');
+const NODE_CONFIG = resolve(import.meta.dirname, '../../../presets/oxlint/profiles/node.js');
 const COMPOSED_CONFIG = resolve(import.meta.dirname, '_fixtures/composed.config.ts');
 
 describe('composable presets (explicit wiring)', () => {
