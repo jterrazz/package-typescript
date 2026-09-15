@@ -19,6 +19,7 @@ test.each([
     '@jterrazz/typescript/tsconfig/library',
     '@jterrazz/typescript/tsconfig/next',
     '@jterrazz/typescript/tsconfig/expo',
+    '@jterrazz/typescript/tsconfig/react',
     '@jterrazz/typescript/tsdown/build',
     '@jterrazz/typescript/tsdown/build.js',
     '@jterrazz/typescript/tsdown/bundle.js',
@@ -32,7 +33,7 @@ test.each([
     expect(() => require.resolve(specifier)).not.toThrow();
 });
 
-test('the oxlint entry exports the six profiles and the layer-map builders', () => {
+test('the oxlint entry exports the seven profiles and the layer-map builders', () => {
     // Given - the tool-facing oxlint entry
     // Then - its surface is exactly what a consumer's config names
     expect(Object.keys(oxlintEntry).toSorted()).toStrictEqual([
@@ -47,6 +48,7 @@ test('the oxlint entry exports the six profiles and the layer-map builders', () 
         'library',
         'next',
         'node',
+        'react',
     ]);
 });
 
@@ -67,6 +69,7 @@ test('the barrel carries the same profiles the oxlint entry does', () => {
         'library',
         'next',
         'node',
+        'react',
     ]);
     expect(oxlint.node).toStrictEqual(oxlintEntry.node);
     expect(oxfmt).toStrictEqual(oxfmtEntry.base);

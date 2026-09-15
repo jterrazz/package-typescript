@@ -11,6 +11,7 @@ declare const oxlintProfiles: {
     library: OxlintConfig;
     next: OxlintConfig;
     node: OxlintConfig;
+    react: OxlintConfig;
 };
 
 declare const defaultExport: {

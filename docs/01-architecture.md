@@ -34,14 +34,14 @@ The rule the split follows: **bash decides whether a gate applies; node decides 
 
 The barrel and three subpaths, each a `.js` beside its hand-written `.d.ts`, all declared in the exports map:
 
-| Subpath                       | Exports                                                                                  |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
-| `@jterrazz/typescript`        | the barrel — `{ oxfmt, oxlint }` presets                                                 |
-| `@jterrazz/typescript/oxlint` | the six profiles, `compose()`, `layers()`, `hexagonal` + `HEXAGONAL_MAP`, `defineConfig` |
-| `@jterrazz/typescript/oxfmt`  | `base`, and oxfmt's own `defineConfig`                                                   |
-| `@jterrazz/typescript/docs`   | `auditDocs()` — the manual's rules, pure                                                 |
+| Subpath                       | Exports                                                                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------ |
+| `@jterrazz/typescript`        | the barrel — `{ oxfmt, oxlint }` presets                                                   |
+| `@jterrazz/typescript/oxlint` | the seven profiles, `compose()`, `layers()`, `hexagonal` + `HEXAGONAL_MAP`, `defineConfig` |
+| `@jterrazz/typescript/oxfmt`  | `base`, and oxfmt's own `defineConfig`                                                     |
+| `@jterrazz/typescript/docs`   | `auditDocs()` — the manual's rules, pure                                                   |
 
-The oxlint entry carries the six profiles by name — `node`, `library`, `next`, `astro`, `expo`, `bun` — plus three things about composing them: `compose()` merges configs left to right, `layers()` compiles a declared layer map into `no-restricted-imports` overrides, and `hexagonal` is the map this package ships, with `HEXAGONAL_MAP` the declaration behind it. Each config TYPE — `OxlintConfig`, `OxfmtConfig` — is re-exported from the tool that owns it, never restated here: a hand copy drifts, and a drifted copy stops a consumer's own config from type-checking.
+The oxlint entry carries the seven profiles by name — `node`, `library`, `next`, `astro`, `expo`, `bun`, `react` — plus three things about composing them: `compose()` merges configs left to right, `layers()` compiles a declared layer map into `no-restricted-imports` overrides, and `hexagonal` is the map this package ships, with `HEXAGONAL_MAP` the declaration behind it. Each config TYPE — `OxlintConfig`, `OxfmtConfig` — is re-exported from the tool that owns it, never restated here: a hand copy drifts, and a drifted copy stops a consumer's own config from type-checking.
 
 Each one re-exports the underlying tool's `defineConfig` on purpose: a consumer's config file names `@jterrazz/typescript` and nothing else, which is the one-devDependency contract holding under pnpm's strict `node_modules` ([Developing](02-developing.md)). `specs/cli/preset/exports.test.ts` resolves every subpath by its public specifier, and `declarations.test.ts` holds each `.d.ts` to the value surface of the `.js` beside it — the package is its own consumer #1.
 

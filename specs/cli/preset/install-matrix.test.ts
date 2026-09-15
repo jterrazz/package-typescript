@@ -5,7 +5,7 @@ import { cli as installMatrixCli } from '../install-matrix.specification.js';
 /*
  * A chain, not a document: the sandbox runner builds its own install tree.
  *
- * Six consumers, one per profile, each the smallest honest project — the
+ * Seven consumers, one per profile, each the smallest honest project — the
  * manifest, the tsconfig extending that profile's preset, the two config
  * files, one source file and one test file. What they prove is the whole
  * consumer contract at once: the profile resolves from a strict install, the
@@ -14,17 +14,17 @@ import { cli as installMatrixCli } from '../install-matrix.specification.js';
  *
  * `specs/cli/preset/_fixtures/install-matrix/<profile>/` is the ground, and the
  * profile it is for IS its directory name — the runner reads the roster off the
- * tree, so a seventh profile earns a consumer by existing.
+ * tree, so an eighth profile earns a consumer by existing.
  */
 
 test('every profile installs strict and checks green', async () => {
     // Given - one consumer per profile, each installed the way pnpm installs
     const result = await installMatrixCli.exec();
 
-    // Then - every one of the six passed `typescript check`
+    // Then - every one of the seven passed `typescript check`
     expect(result.exitCode).toBe(0);
-    for (const profile of ['astro', 'bun', 'expo', 'library', 'next', 'node']) {
+    for (const profile of ['astro', 'bun', 'expo', 'library', 'next', 'node', 'react']) {
         expect(result.stdout.toString()).toContain(`checked: ${profile}`);
     }
-    // Six strict installs, not one: the chain earns four times the e2e budget.
+    // Seven strict installs, not one: the chain earns four times the e2e budget.
 }, 120_000);

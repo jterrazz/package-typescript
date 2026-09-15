@@ -1,5 +1,5 @@
 /*
- * The tool-facing oxlint entry (`@jterrazz/typescript/oxlint`): the six
+ * The tool-facing oxlint entry (`@jterrazz/typescript/oxlint`): the seven
  * profiles, the `compose()` merger, the layer-map builder, and oxlint's own
  * `defineConfig`. A consumer names a PROFILE, not a set of fragments:
  *
@@ -33,6 +33,7 @@ export { default as expo } from '../presets/oxlint/profiles/expo.js';
 export { default as library } from '../presets/oxlint/profiles/library.js';
 export { default as next } from '../presets/oxlint/profiles/next.js';
 export { default as node } from '../presets/oxlint/profiles/node.js';
+export { default as react } from '../presets/oxlint/profiles/react.js';
 
 export { HEXAGONAL_MAP } from '../rules/architecture/hexagonal.js';
 

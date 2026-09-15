@@ -5,6 +5,7 @@ import expoProfile from '../presets/oxlint/profiles/expo.js';
 import libraryProfile from '../presets/oxlint/profiles/library.js';
 import nextProfile from '../presets/oxlint/profiles/next.js';
 import nodeProfile from '../presets/oxlint/profiles/node.js';
+import reactProfile from '../presets/oxlint/profiles/react.js';
 import hexagonalFragment from '../rules/architecture/hexagonal.js';
 import { compile } from '../rules/compile.js';
 
@@ -18,6 +19,7 @@ export const oxlint = {
     library: libraryProfile,
     next: nextProfile,
     node: nodeProfile,
+    react: reactProfile,
 };
 
 export default { oxfmt, oxlint };

@@ -61,13 +61,13 @@ lib/workspace-members.js   # Lists the consumer's workspace members — the unit
 rules/                     # The lint manifest — every rule of every loaded plugin decided by name
 ├── _contract.js           # fragment() / on() / off() — refuses an `off` with no recorded reason, at load time
 ├── compile.js             # fragment -> the plain oxlint config object; `merge()` is the exported compose()
-├── profiles.js            # Which fragments each of the six profiles carries, and its ignore patterns
+├── profiles.js            # Which fragments each of the seven profiles carries, and its ignore patterns
 ├── catalog.js             # The catalogue, rendered twice — the chapter's table and the skill's reference
-├── core/ · react.js · next.js · astro.js · a11y.js · vitest.js · sorted.js · react-native.js
+├── core/ · react.js · next.js · astro.js · a11y.js · bundler.js · vitest.js · sorted.js · react-native.js
 └── architecture/          # hexagonal.js (the map this package ships) and layers.js (the builder)
 
 presets/
-├── tsconfig/ · tsdown/ · oxlint/profiles/ (the six, compiled) · oxfmt/ · knip/ · prettier/ (.astro only)
+├── tsconfig/ · tsdown/ · oxlint/profiles/ (the seven, compiled) · oxfmt/ · knip/ · prettier/ (.astro only)
 src/index.js + index.d.ts  # Package entry — exports { oxfmt, oxlint } profiles (JS-shipped, no build)
 src/oxlint.js · oxfmt.js   # The tool-facing entries — the profiles, compose(), layers(), each tool's defineConfig
 src/docs.js + docs.d.ts    # The manual's rules, pure — auditDocs(tree), exported at ./docs for a second reader

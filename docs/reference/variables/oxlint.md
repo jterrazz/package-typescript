@@ -18,3 +18,4 @@ Defined in: [index.d.ts:6](https://github.com/jterrazz/package-typescript/blob/m
 | <a id="property-library"></a> `library` | `OxlintConfig` | [index.d.ts:11](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L11) |
 | <a id="property-next"></a> `next` | `OxlintConfig` | [index.d.ts:12](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L12) |
 | <a id="property-node"></a> `node` | `OxlintConfig` | [index.d.ts:13](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L13) |
+| <a id="property-react"></a> `react` | `OxlintConfig` | [index.d.ts:14](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L14) |

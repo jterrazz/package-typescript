@@ -10,7 +10,7 @@ Two audiences read this chapter: a project being wired onto the toolchain, first
 
 ## 1. Pick a profile
 
-A project names ONE profile, and that name answers for both its lint rules and its TypeScript configuration. There are six, and four tsconfig presets behind them — `astro` and `bun` sit on the node compiler settings.
+A project names ONE profile, and that name answers for both its lint rules and its TypeScript configuration. There are seven, and five tsconfig presets behind them — `astro` and `bun` sit on the node compiler settings.
 
 | Profile   | For                                | `extends` in `tsconfig.json`            |
 | --------- | ---------------------------------- | --------------------------------------- |
@@ -20,6 +20,7 @@ A project names ONE profile, and that name answers for both its lint rules and i
 | `astro`   | an Astro site                      | `@jterrazz/typescript/tsconfig/node`    |
 | `expo`    | an Expo / React Native application | `@jterrazz/typescript/tsconfig/expo`    |
 | `bun`     | a project on the Bun runtime       | `@jterrazz/typescript/tsconfig/node`    |
+| `react`   | React with no framework under it   | `@jterrazz/typescript/tsconfig/react`   |
 
 ```json
 { "extends": "@jterrazz/typescript/tsconfig/node" }

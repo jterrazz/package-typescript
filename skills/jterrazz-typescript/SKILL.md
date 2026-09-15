@@ -16,7 +16,7 @@ Three surfaces, one CLI (`bin/typescript.sh`):
 - **Adopt** — `doctor` reports the installed tool versions against the declared ranges; `baseline` records `oxlint.baseline.json`, the ratchet a project adopts a stricter release with.
 - **Docs** — `docs` compiles the source barrel into a **committed** projection (`docs/reference/`); `docs --check` verifies it is in sync.
 
-A project names ONE of six profiles — `node`, `library`, `next`, `astro`, `expo`, `bun` — in its `oxlint.config.ts`, and the matching tsconfig preset in its `tsconfig.json`. Every rule of every loaded plugin is decided by name, at `error` or at `off` with one of five recorded reasons; there is no warn tier, and a profile never relaxes what the profiles share. There is no dependency auto-detection.
+A project names ONE of seven profiles — `node`, `library`, `next`, `astro`, `expo`, `bun`, `react` — in its `oxlint.config.ts`, and the matching tsconfig preset in its `tsconfig.json`. Every rule of every loaded plugin is decided by name, at `error` or at `off` with one of five recorded reasons; there is no warn tier, and a profile never relaxes what the profiles share. There is no dependency auto-detection.
 
 ## Where to look
 
@@ -42,7 +42,7 @@ npm install @jterrazz/typescript --save-dev
 ```
 
 ```json
-// tsconfig.json — the profile's preset: /node, /library, /next, /expo
+// tsconfig.json — the profile's preset: /node, /library, /next, /expo, /react
 // (astro and bun sit on /node)
 { "extends": "@jterrazz/typescript/tsconfig/node" }
 ```
@@ -50,7 +50,7 @@ npm install @jterrazz/typescript --save-dev
 ```ts
 // oxlint.config.ts — the same word as the tsconfig preset
 import { defineConfig, node } from '@jterrazz/typescript/oxlint';
-export default defineConfig({ extends: [node] }); // or library, next, astro, expo, bun
+export default defineConfig({ extends: [node] }); // or library, next, astro, expo, bun, react
 ```
 
 ```ts

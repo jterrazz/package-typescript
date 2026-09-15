@@ -43,6 +43,7 @@ export const PROFILES = Object.freeze([
     { name: 'astro', tsconfig: 'node' },
     { name: 'expo', tsconfig: 'expo' },
     { name: 'bun', tsconfig: 'node' },
+    { name: 'react', tsconfig: 'react' },
 ] as const);
 
 /** The profile config file a consumer's own config re-exports. */

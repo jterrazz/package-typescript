@@ -1,6 +1,6 @@
 # @jterrazz/typescript
 
-The complete TypeScript toolchain — build, run, check, and document with zero configuration. Powered by tsdown, Oxlint, Oxfmt, TypeScript 7, and Knip. Six profiles, one rulebook: every rule of every plugin it loads is decided by name.
+The complete TypeScript toolchain — build, run, check, and document with zero configuration. Powered by tsdown, Oxlint, Oxfmt, TypeScript 7, and Knip. Seven profiles, one rulebook: every rule of every plugin it loads is decided by name.
 
 ## Installation
 
@@ -51,7 +51,7 @@ The full corpus lives in [`docs/`](docs/):
 - [Operating](docs/04-operating.md) — what publishes it, and which number moves.
 - [Building](docs/05-building.md) — `build`, `bundle`, `start`, `dev`.
 - [Quality checks](docs/06-quality-checks.md) — `check` / `fix` and their fifteen passes.
-- [Lint presets](docs/07-lint-presets.md) — the rulebook, the six profiles, `compose`, architecture, knip.
+- [Lint presets](docs/07-lint-presets.md) — the rulebook, the seven profiles, `compose`, architecture, knip.
 - [Docs pipeline](docs/08-docs-pipeline.md) — the `typescript docs` compiler.
 - [Repo structure](docs/09-repo-structure.md) — pointer to the shared doctrine; what's TypeScript-specific here.
 

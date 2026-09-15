@@ -52,7 +52,7 @@ The presets are the one part of this package a document cannot reach: `check` lo
 | `declarations`    | every `.d.ts` carries the value surface of the `.js` beside it                |
 | `install-matrix`  | one consumer per profile installs under pnpm-strict and checks green          |
 
-The last one is the outside view, and it is the one that fails when the corpus is wrong: six tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/_fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so a seventh profile earns a consumer by existing. The two config files are the one thing the ground does NOT carry: the runner writes them, for the same reason as above, and that heredoc is the single place the documented form is stated for all six.
+The last one is the outside view, and it is the one that fails when the corpus is wrong: seven tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/_fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so an eighth profile earns a consumer by existing. The two config files are the one thing the ground does NOT carry: the runner writes them, for the same reason as above, and that heredoc is the single place the documented form is stated for all seven.
 
 ### Regenerating a golden
 

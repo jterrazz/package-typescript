@@ -49,6 +49,7 @@ describe.each([
     ['node', 'tsconfig-node'],
     ['expo', 'tsconfig-expo'],
     ['next', 'tsconfig-next'],
+    ['react', 'tsconfig-react'],
 ])('%s preset', (_preset, fixture) => {
     test('scopes the compiled file set to the consumer that extends it', () => {
         // Given - a consumer tsconfig that extends the preset and overrides nothing

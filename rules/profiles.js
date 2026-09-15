@@ -1,5 +1,6 @@
 import a11y from './a11y.js';
 import astro from './astro.js';
+import bundler from './bundler.js';
 import eslint from './core/eslint.js';
 import importPlugin from './core/import.js';
 import jsdoc from './core/jsdoc.js';
@@ -84,6 +85,11 @@ export const PROFILES = Object.freeze({
     node: {
         env: { builtin: true, node: true },
         fragments: [...CORE],
+        ignorePatterns: [...IGNORED],
+    },
+    react: {
+        env: { browser: true, builtin: true, node: true },
+        fragments: [...CORE, react, a11y, bundler],
         ignorePatterns: [...IGNORED],
     },
 });

@@ -1,0 +1,33 @@
+{
+    "display": "React (bundled, no framework)",
+    "include": ["${configDir}/**/*.ts", "${configDir}/**/*.tsx"],
+    "exclude": [
+        "${configDir}/node_modules",
+        "${configDir}/dist",
+        "${configDir}/.artifacts",
+        "${configDir}/**/_fixtures",
+        "${configDir}/**/_expected"
+    ],
+    "compilerOptions": {
+        "allowJs": true,
+        "esModuleInterop": true,
+        "exactOptionalPropertyTypes": true,
+        "incremental": true,
+        "isolatedModules": true,
+        "jsx": "react-jsx",
+        "lib": ["DOM", "DOM.Iterable", "ESNext"],
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noUncheckedIndexedAccess": true,
+        "noUncheckedSideEffectImports": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext",
+        "tsBuildInfoFile": "${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo",
+        "verbatimModuleSyntax": true
+    }
+}

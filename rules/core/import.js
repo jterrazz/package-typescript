@@ -6,8 +6,9 @@ import { allOn, fragment, off, on } from '../_contract.js';
  * `import/extensions` is the one rule two platforms answer differently: Node
  * ESM resolves a specifier literally and needs the `.js`, a bundler resolves it
  * and refuses one. Core states the Node answer; `rules/next.js`,
- * `rules/astro.js` and `rules/react-native.js` re-decide it for their platform,
- * at `error` either way — a profile changes the convention, never the level.
+ * `rules/astro.js`, `rules/react-native.js` and `rules/bundler.js` re-decide it
+ * for their platform, at `error` either way — a profile changes the convention,
+ * never the level.
  *
  * `import/no-cycle` rides here for +0.05s. Mind what it does NOT see: oxlint's
  * implementation ignores type-only imports, so a value import one way and an

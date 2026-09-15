@@ -30,6 +30,7 @@ const GOLDENS: Record<string, string> = {
     library: 'library.rules.txt',
     next: 'next.rules.txt',
     node: 'node.rules.txt',
+    react: 'react.rules.txt',
 };
 
 const MARKERS: Record<string, string> = { allow: '- ', deny: '', warn: '~ ' };

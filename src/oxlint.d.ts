@@ -27,6 +27,7 @@ declare const hexagonal: OxlintConfig;
 declare const library: OxlintConfig;
 declare const next: OxlintConfig;
 declare const node: OxlintConfig;
+declare const react: OxlintConfig;
 
 /** The six boundaries the `hexagonal` fragment enforces, as a declared map. */
 declare const HEXAGONAL_MAP: readonly Layer[];
@@ -59,5 +60,6 @@ export {
     library,
     next,
     node,
+    react,
     type RuleEntry,
 };
