@@ -26,6 +26,14 @@ runs:
 
           ✓ Passed
 
+           DRIFT  Deviations from the profile
+
+            profile               none of this package's
+            rules off vs profile  not measured
+            suppressions          0
+            baseline              absent
+            tool versions         in range
+
            END  Finalizing quality checks
 
           ✗ Some checks failed

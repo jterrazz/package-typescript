@@ -190,6 +190,32 @@ The plugin is handed to prettier as a resolved path rather than as a name in the
 
 Both halves run in `fix` too: prettier writes, `astro check` is read-only wherever it runs. The pass speaks on success in fix mode alone, because there it rewrote files the operator owns.
 
+## The drift report
+
+Not a pass: a report, printed at the end of every `check` that has an oxlint config to read. Four numbers, because the alternative is what the estate had — twenty-eight repositories each quietly a little further from the shared rulebook, and nobody able to say by how much without opening twenty-eight config files.
+
+```text
+ DRIFT  Deviations from the profile
+
+  profile               node
+  rules off vs profile  none
+  suppressions          2
+  baseline              7
+  tool versions         in range
+```
+
+A rule turned off, a suppression written, a baseline entry recorded and a tool left behind are the four ways a project drifts, and each of them is one line. `--json` prints the same reading for a machine, which is how a fleet-wide sweep collects the table.
+
+**The profile is read off the consumer's config, and a config that names none is NOT measured.** A project extending no profile of this package is not drifting from one, it never joined it, and reporting two hundred rules as "off" would say nothing about anything. The name comes from the compiled config where it carries one, and from the config's own `import` otherwise.
+
+The versions line reports only what deviates. The full table is `typescript doctor`'s, and printing it on every run would put a number that changes with every dependency bump in front of a reader looking for what changed in their own tree.
+
+### The one thing it refuses
+
+`drift-unreasoned`: a rule the profile has ON, turned off by the consumer's config, with no `// reason:` comment on the line that turns it off.
+
+A project may know things the profile does not, so turning a rule off is allowed. Doing it silently is not: the reason is what the next reader — or the next bump — needs, and a config line is where it belongs. Everything else in the report only ever reports.
+
 ## The Suppressions (directives) pass
 
 Every place the project told a checker to look away. A suppression is a decision, and a decision the next reader cannot re-derive is a defect waiting to be re-introduced, so three rules hold the whole surface.

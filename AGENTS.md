@@ -45,6 +45,7 @@ bin/
 
 lib/check-architecture.js  # The declared layer map against the resolved graph — the Architecture gate (dependency-cruiser)
 lib/check-baseline.js      # The oxlint ratchet — counts that may fall and never rise; `typescript baseline` writes it
+lib/check-drift.js         # How far the project stands from its profile — the drift report, `--json` for a machine
 lib/check-docs.js          # The manual's shape, read off the repository's docs/ — the reader behind the Docs (layout) pass
 lib/check-gitignore.js     # The artefact convention, read off the project's .gitignore — check | --fix
 lib/check-markdown.js      # Every tracked page's coordinates and readability floors — the Markdown (prose) gate

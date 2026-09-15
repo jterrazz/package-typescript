@@ -79,6 +79,13 @@ add_tsgolint_to_path() {
 
 add_tsgolint_to_path
 
+# The config a consumer declares its rules in — the one thing that makes the
+# drift report answerable. Without one there is no profile to have drifted from.
+OXLINT_CONFIG=""
+for candidate in oxlint.config.ts oxlint.config.mjs oxlint.config.js oxlint.config.cjs .oxlintrc.json; do
+    [ -f "$candidate" ] && { OXLINT_CONFIG="$candidate"; break; }
+done
+
 # The ratchet's file, at the project root. Its presence is what turns the oxlint
 # pass from "no diagnostic at all" into "no diagnostic above what was recorded".
 BASELINE_FILE="oxlint.baseline.json"
@@ -744,6 +751,19 @@ run_checks() {
     report_gate "Names (tree)" $names_status "$tmp_dir/names.log"
     report_gate "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
 
+    # Drift: the report, not a gate — how far this project stands from the
+    # profile it says it extends, in four numbers. It runs last and it speaks on
+    # every check, because the alternative is what the estate had: every
+    # repository quietly a little further from the shared rulebook, and nobody
+    # able to say by how much without opening every config. Only a rule turned
+    # off with no reason beside it actually fails the run.
+    local drift_status=0
+    if [ "$FIX_MODE" = false ] && [ -n "$OXLINT_CONFIG" ]; then
+        printf "\n${CYAN_BG}${BRIGHT_WHITE} DRIFT ${NC} Deviations from the profile\n\n"
+        node "$PACKAGE_ROOT/lib/check-drift.js" . --oxlint "$OXLINT" "${LINT_ARGS[@]}"
+        drift_status=$?
+    fi
+
     # Summary
     if [ "$FIX_MODE" = true ]; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality fixes\n\n"
@@ -751,7 +771,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ] && [ $publish_status -eq 0 ] && [ $architecture_status -eq 0 ] && [ $astro_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ] && [ $publish_status -eq 0 ] && [ $architecture_status -eq 0 ] && [ $astro_status -eq 0 ] && [ $drift_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else
