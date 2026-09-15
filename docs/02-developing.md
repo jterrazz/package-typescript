@@ -36,6 +36,8 @@ That line is the whole file. Every preset scopes its `include` and `exclude` to 
 
 The `astro` preset states no `include` for that reason: the later entry wins, and the file set is Astro's.
 
+`node` keeps `allowJs` on and `library` turns it off, and the split is deliberate: a service may still carry a `.js` file — the rulebook scopes decisions to `**/*.js` on the strength of it ([Lint presets](07-lint-presets.md)) — while a published package emits its declarations without a type-checker, which cannot be done from JavaScript.
+
 What each profile adds to the rulebook, and why a profile never relaxes it, is [Lint presets](07-lint-presets.md).
 
 ## 2. Create the lint and format configs
@@ -115,6 +117,8 @@ Libraries (bundle instead of build, and generate docs):
     "lint:fix": "typescript fix"
 }
 ```
+
+A repository that EMITS with project references runs the compiler directly, and names it through the CLI so the version is the toolchain's: `"build": "typescript tsc --build"` ([Building](05-building.md)).
 
 ## The shape a consumer keeps
 

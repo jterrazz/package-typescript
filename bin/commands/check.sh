@@ -37,30 +37,10 @@ find_binary() {
 # the per-platform @typescript/typescript-* packages instead of a second
 # package named "typescript": typedoc and eslint-plugin-perfectionist load
 # the JS API from the "typescript" name (v6 here), and any typescript@7 in
-# the tree can hijack that lookup under pnpm's hoist fallback.
-find_tsc() {
-    local os arch
-    case "$(uname -s)" in
-        Darwin) os="darwin" ;;
-        Linux) os="linux" ;;
-        MINGW*|MSYS*|CYGWIN*) os="win32" ;;
-        *) os="linux" ;;
-    esac
-    case "$(uname -m)" in
-        arm64|aarch64) arch="arm64" ;;
-        armv7l) arch="arm" ;;
-        *) arch="x64" ;;
-    esac
-
-    local pkg="@typescript/typescript-$os-$arch"
-    if [ -x "$PACKAGE_ROOT/node_modules/$pkg/lib/tsc" ]; then
-        echo "$PACKAGE_ROOT/node_modules/$pkg/lib/tsc"
-    elif [ -x "$PACKAGE_ROOT/../../$pkg/lib/tsc" ]; then
-        echo "$PACKAGE_ROOT/../../$pkg/lib/tsc"
-    else
-        find_binary tsc
-    fi
-}
+# the tree can hijack that lookup under pnpm's hoist fallback. The lookup is
+# shared with the CLI's `tsc` passthrough, so it lives in one file.
+# shellcheck source=../find-tsc.sh
+. "$SCRIPT_DIR/../find-tsc.sh"
 
 # oxlint's type-aware rules run in `tsgolint`, a separate binary it looks up on
 # PATH — and a consumer's PATH has no reason to carry this package's bin dir. It

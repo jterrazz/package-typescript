@@ -39,6 +39,9 @@ find_binary() {
     fi
 }
 
+# shellcheck source=find-tsc.sh
+. "$SCRIPT_DIR/find-tsc.sh"
+
 TSDOWN=$(find_binary tsdown)
 
 # oxlint's type-aware rules run in `tsgolint`, a separate binary it looks up on
@@ -219,6 +222,16 @@ case "$COMMAND" in
         "$OXFMT" oxlint.baseline.json > /dev/null 2>&1 || true
         ;;
 
+    tsc)
+        # The compiler itself, for the one thing `check` cannot do: EMIT. A
+        # repository built with project references runs `tsc --build`, and
+        # without this it reaches for `tsc` on PATH — whatever version the tree
+        # hoisted, which is how a package that dropped its own `typescript`
+        # dependency silently compiled against TypeScript 5.
+        cd "$PROJECT_ROOT"
+        exec "$(find_tsc)" "$@"
+        ;;
+
     check|fix)
         exec bash "$SCRIPT_DIR/commands/check.sh" "$COMMAND" "$@"
         ;;
@@ -235,6 +248,7 @@ case "$COMMAND" in
         printf "  docs-layout  Check a repository's docs/ against the manual spine\n"
         printf "  doctor       Report the installed tool versions against the declared ranges\n"
         printf "  baseline     Record the oxlint baseline this project may not exceed\n"
+        printf "  tsc          Run the TypeScript 7 compiler this package ships (emit, --build)\n"
         printf "  check        Check types, lint, formatting, and unused code\n"
         printf "  fix          Auto-fix lint and formatting issues\n"
         printf "  clean        Remove .artifacts/ — dist/ stays, it is the build's product\n\n"
@@ -248,6 +262,7 @@ case "$COMMAND" in
         printf "  typescript docs-layout .\n"
         printf "  typescript doctor\n"
         printf "  typescript baseline\n"
+        printf "  typescript tsc --build\n"
         printf "  typescript check\n"
         printf "  typescript fix\n"
         printf "  typescript clean\n"

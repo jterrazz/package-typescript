@@ -16,6 +16,7 @@ runs:
             docs-layout  Check a repository's docs/ against the manual spine
             doctor       Report the installed tool versions against the declared ranges
             baseline     Record the oxlint baseline this project may not exceed
+            tsc          Run the TypeScript 7 compiler this package ships (emit, --build)
             check        Check types, lint, formatting, and unused code
             fix          Auto-fix lint and formatting issues
             clean        Remove .artifacts/ — dist/ stays, it is the build's product
@@ -30,6 +31,7 @@ runs:
             typescript docs-layout .
             typescript doctor
             typescript baseline
+            typescript tsc --build
             typescript check
             typescript fix
             typescript clean

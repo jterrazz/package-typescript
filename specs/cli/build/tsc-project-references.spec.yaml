@@ -1,0 +1,6 @@
+description: builds a project-reference graph with the compiler the toolchain ships
+fixture: references/
+runs:
+    - command: tsc --build
+      exit: 0
+      stdout: ''
