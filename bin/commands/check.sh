@@ -285,8 +285,9 @@ done
 # pass prints its whole captured log, and a passing one stays silent unless it
 # WROTE something. `fix` changed a file the operator owns and silence would hide
 # it, so a writer asks for its log with the fourth argument; a reader's success
-# chatter — which some tool builds print on Linux and not on macOS — never
-# reaches the stream, so a green run is byte-identical everywhere.
+# chatter — oxlint's summary, which its reporter prints on a runner and in a
+# terminal and drops under an AI agent — never reaches the stream, so a green
+# run is byte-identical everywhere.
 report_pass() {
     local label="$1" status="$2" log="$3" writer="${4:-}"
 
