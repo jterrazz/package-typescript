@@ -144,5 +144,12 @@ export default fragment({
             by: 'presets/tsconfig/next.json — the automatic JSX runtime (jsx: react-jsx) imports it',
             kind: 'covered',
         }),
+
+        /*
+         * A stylesheet import IS its own assignment — `import './index.css'`
+         * is how a React tree carries its styles, whatever bundles it, and
+         * there is nothing to bind it to. One owner for every React profile.
+         */
+        'import/no-unassigned-import': on([{ allow: ['**/*.css', '**/*.scss'] }]),
     },
 });

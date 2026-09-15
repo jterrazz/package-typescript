@@ -1,4 +1,4 @@
-import { allOn, fragment, off, on, scoped } from './_contract.js';
+import { allOn, fragment, off, scoped } from './_contract.js';
 import { EXTENSIONS_NEVER } from './core/import.js';
 
 /*
@@ -49,13 +49,5 @@ export default fragment({
         ),
 
         'import/extensions': EXTENSIONS_NEVER,
-
-        /*
-         * A stylesheet import IS its own assignment — `import './global.css'`
-         * in a root layout is how a Next tree carries its styles, and there is
-         * nothing to bind it to. The option list is restated whole, options
-         * replacing.
-         */
-        'import/no-unassigned-import': on([{ allow: ['**/*.css', '**/*.scss'] }]),
     },
 });
