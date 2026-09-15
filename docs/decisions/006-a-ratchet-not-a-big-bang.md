@@ -43,7 +43,9 @@ flag on `fix`, because recording debt is neither checking nor repairing, and
 burying a rewrite of a tracked file inside the gesture a developer runs
 twenty times a day would make the ratchet slip by accident.
 
-This package keeps its own baseline, seven diagnostics across two rules.
+This package records none of its own: the seven diagnostics type-aware
+linting found in its source were fixed inside the release, and an entry at
+zero is an entry the third rule above removes.
 
 ## Consequences
 

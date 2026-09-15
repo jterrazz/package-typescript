@@ -151,7 +151,7 @@ typescript baseline
 
 A command of its own, because it neither checks nor repairs: it writes down where the project actually stands. `fix --baseline` would bury the rewrite of a tracked file inside the gesture a developer runs twenty times a day. The file is written from the current counts, then handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape.
 
-This package keeps one. Turning type-aware linting on found seven diagnostics in its own source, and they are recorded rather than hidden: the toolchain is consumer #1 of its own migration path.
+This package keeps NONE, and that is the ratchet's own rule showing: turning type-aware linting on found seven diagnostics in its own source, the seven were fixed rather than recorded, and an entry at zero is an entry that goes. The toolchain is consumer #1 of the rulebook it ships, so its own tree is the one place the debt is never carried.
 
 ## The Publish (packaging) pass
 
@@ -206,7 +206,7 @@ Not a pass: a report, printed at the end of every `check` that has an oxlint con
 
 A rule turned off, a suppression written, a baseline entry recorded and a tool left behind are the four ways a project drifts, and each of them is one line. `--json` prints the same reading for a machine, which is how a fleet-wide sweep collects the table.
 
-**The profile is read off the consumer's config, and a config that names none is NOT measured.** A project extending no profile of this package is not drifting from one, it never joined it, and reporting two hundred rules as "off" would say nothing about anything. The name comes from the compiled config where it carries one, and from the config's own `import` otherwise.
+**The profile is read off the consumer's config, and a config that names none is NOT measured.** A project extending no profile of this package is not drifting from one, it never joined it, and reporting two hundred rules as "off" would say nothing about anything. The name comes from the config's own `import`, which is the only evidence there is: oxlint's config schema is closed, so a compiled profile cannot carry its own name through to `--print-config`.
 
 The versions line reports only what deviates. The full table is `typescript doctor`'s, and printing it on every run would put a number that changes with every dependency bump in front of a reader looking for what changed in their own tree.
 
