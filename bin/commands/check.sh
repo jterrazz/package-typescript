@@ -367,6 +367,18 @@ run_checks() {
         names_pid=$!
     fi
 
+    # Secrets: no file the project would commit carries a live-looking
+    # credential. The gate always applies, so WHICH engine answers — gitleaks
+    # where the machine has it, the built-in patterns where it does not — is
+    # decided inside the script, not here.
+    local secrets_pid=""
+    local secrets_status=0
+    if [ "$FIX_MODE" = false ]; then
+        node "$PACKAGE_ROOT/lib/check-secrets.js" . "${LINT_ARGS[@]}" \
+            > "$tmp_dir/secrets.log" 2>&1 &
+        secrets_pid=$!
+    fi
+
     # Conventions checker: only in check mode, once per specs root the workspace
     # owns, gated by the package that OWNS that root — a member may depend on
     # @jterrazz/test while the root does not, and the reverse.
@@ -415,6 +427,7 @@ run_checks() {
     [ -n "$docs_layout_pid" ] && { wait $docs_layout_pid; docs_layout_status=$?; }
     [ -n "$markdown_pid" ] && { wait $markdown_pid; markdown_status=$?; }
     [ -n "$names_pid" ] && { wait $names_pid; names_status=$?; }
+    [ -n "$secrets_pid" ] && { wait $secrets_pid; secrets_status=$?; }
 
     # One pass, N runs: the pass fails if any run failed, and only the logs of
     # the runs that FAILED are printed — a green member stays silent.
@@ -527,6 +540,7 @@ run_checks() {
 
         report_failed_gate "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
         report_failed_gate "Names (tree)" $names_status "$tmp_dir/names.log"
+        report_failed_gate "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
     fi
 
     # Summary
@@ -536,7 +550,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

@@ -12,18 +12,19 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 
 `typescript check` runs up to eight passes. The first three always run; the rest are opt-in — they appear only when the project qualifies.
 
-| Pass                              | Tool                      | When it runs                                                 |
-| --------------------------------- | ------------------------- | ------------------------------------------------------------ |
-| TypeScript Check                  | tsc (TypeScript 7, Go)    | always                                                       |
-| Oxlint Check                      | oxlint (Rust)             | always                                                       |
-| Oxfmt Check                       | oxfmt (Rust)              | always                                                       |
-| Gitignore (artefacts)             | the artefact gate         | check: project or ancestor `.gitignore`; fix: project's own  |
-| Knip (unused code)                | knip (Node)               | always (check only — it is not run in fix)                   |
-| Test Conventions (@jterrazz/test) | conventions checker       | per package that depends on `@jterrazz/test` + owns `specs/` |
-| Docs (layout)                     | the manual gate           | check: at a repository root (a `.git` beside the project)    |
-| Docs (sync)                       | `typescript docs --check` | per package that has committed docs (`docs/reference/`)      |
-| Markdown (prose)                  | the prose gate            | always (check only — a paragraph is not machine-split)       |
-| Names (tree)                      | the naming gate           | always (check only — a rename is a move, not a rewrite)      |
+| Pass                              | Tool                        | When it runs                                                 |
+| --------------------------------- | --------------------------- | ------------------------------------------------------------ |
+| TypeScript Check                  | tsc (TypeScript 7, Go)      | always                                                       |
+| Oxlint Check                      | oxlint (Rust)               | always                                                       |
+| Oxfmt Check                       | oxfmt (Rust)                | always                                                       |
+| Gitignore (artefacts)             | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own  |
+| Knip (unused code)                | knip (Node)                 | always (check only — it is not run in fix)                   |
+| Test Conventions (@jterrazz/test) | conventions checker         | per package that depends on `@jterrazz/test` + owns `specs/` |
+| Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)    |
+| Docs (sync)                       | `typescript docs --check`   | per package that has committed docs (`docs/reference/`)      |
+| Markdown (prose)                  | the prose gate              | always (check only — a paragraph is not machine-split)       |
+| Names (tree)                      | the naming gate             | always (check only — a rename is a move, not a rewrite)      |
+| Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)     |
 
 `typescript fix` runs tsc, oxlint (`--fix`), oxfmt and the artefact gate in parallel — knip, the conventions checker and the two Docs passes are check-only (they are read-only gates, not fixers).
 
@@ -150,6 +151,27 @@ What a project calls its own parts, swept under the roots where a project keeps 
 | `names-shortcut` | a name, or one hyphen segment of it, written in half                    |
 
 Both rosters are closed and both live in the gate, in one executable copy. Grab-bag: `base`, `common`, `core`, `helpers`, `lib`, `misc`, `shared`, `stuff`, `tools`, `utils` — a leading `_` exempts one, because it marks a row rather than a subject. Shortcut: `auth`, `cfg`, `impl`, `infra`, `k8s`, `pkg`, `repo`, `repos`, `svc`, `tmp` — and the `_` marker does NOT excuse one, since it states a position, not whether the name is whole.
+
+## The Secrets (credentials) pass
+
+No file the project would commit carries a live-looking credential. Two engines answer that one question: where `gitleaks` is on PATH it runs as `gitleaks dir . --no-banner --redact`, so a finding names the file and never reprints the secret; where it is not, ten patterns over the tracked text answer well enough to stop the leak that actually happens — a token pasted into a note and committed with it.
+
+Which engine runs is decided inside the gate rather than in `check.sh`, because the gate applies either way. Bash decides whether a pass applies; this one always does, and what changes is only who answers.
+
+| Rule                    | Looks like            |
+| ----------------------- | --------------------- |
+| `secrets-private-key`   | a private key block   |
+| `secrets-aws-key`       | an aws access key     |
+| `secrets-github-token`  | a github token        |
+| `secrets-slack-token`   | a slack token         |
+| `secrets-tailscale-key` | a tailscale key       |
+| `secrets-jwt`           | a signed jwt          |
+| `secrets-grafana-token` | a grafana token       |
+| `secrets-api-key`       | an api key            |
+| `secrets-iban`          | a bank account number |
+| `secrets-service-token` | a service token       |
+
+**There is no exception list, and there will not be one.** A hit is forgiven by exactly one thing: the same line declaring itself `fake`, `dummy`, `example`, `sample`, `synthetic` or `redacted`. A path allow-list is the first place a real leak hides, so the only way to silence this gate is to make the line say what it is.
 
 ## The Docs (sync) pass
 
