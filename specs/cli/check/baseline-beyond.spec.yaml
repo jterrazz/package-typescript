@@ -3,9 +3,14 @@ fixture: baseline/beyond/
 runs:
     - command: check
       exit: 1
-      # oxlint reports its three diagnostics in whatever order its threads
-      # finish — that block is the linter's, not this document's subject. What
-      # is claimed here is the ratchet's verdict, which is ordered.
+      # The oxlint pass prints the linter's own report, and that block has no
+      # fixed shape: oxlint picks its reporter from the environment — GitHub
+      # workflow commands under GITHUB_ACTIONS, one compact line per diagnostic
+      # under an AI agent, miette's framed rendering in a terminal — and its
+      # threads finish in whatever order they finish. That is the linter's, not
+      # this document's subject. What is claimed here is the ratchet's verdict,
+      # which is ours and is ordered; it already states how many diagnostics
+      # each rule has.
       stdout: |4
            START  Running quality checks
 
@@ -14,10 +19,7 @@ runs:
           ✓ Passed
 
            RUN  Oxlint Check
-
           {{any}}
-          index.ts:2:3: warning eslint(no-debugger): `debugger` statement is not allowed help: Remove the debugger statement
-          index.ts:6:3: warning eslint(no-debugger): `debugger` statement is not allowed help: Remove the debugger statement
           baseline-ratchet  oxlint.baseline.json  eslint/no-debugger is at 2, above its baseline of 1
           baseline-ratchet  oxlint.baseline.json  eslint/no-unused-vars has 1 diagnostic(s) and no entry — it is new debt
           baseline-ratchet  oxlint.baseline.json  eslint/no-var is at zero — the ratchet moved, delete its entry
