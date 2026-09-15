@@ -349,12 +349,22 @@ run_checks() {
     # ones no syntactic linter can express, and a flag that is only sometimes
     # passed is a rule set that is only sometimes enforced. `oxlint-tsgolint` is
     # a dependency of this package, so it is there for every consumer.
+    #
+    # In FIX mode the two rewriters run one after the other, and they are the
+    # only pair that does: `oxlint --fix` and `oxfmt` write the same files, and
+    # in parallel the second writer lands its copy over the first's — after
+    # which `fix` then `check` fails on formatting the fix had just settled.
+    local lint_pid=""
+    local lint_status=0
+    local format_status=0
     if [ "$FIX_MODE" = true ]; then
-        "$OXLINT" --type-aware --fix "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 &
+        "$OXLINT" --type-aware --fix "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 ||
+            lint_status=$?
+        "$OXFMT" > "$tmp_dir/format.log" 2>&1 || format_status=$?
     else
         "$OXLINT" --type-aware "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 &
+        lint_pid=$!
     fi
-    local lint_pid=$!
 
     # The same run, machine-readable, so the ratchet can be judged rule by rule.
     # A second invocation rather than a reformat of the first: the human log is
@@ -369,12 +379,11 @@ run_checks() {
         lint_json_pid=$!
     fi
 
-    if [ "$FIX_MODE" = true ]; then
-        "$OXFMT" > "$tmp_dir/format.log" 2>&1 &
-    else
+    local format_pid=""
+    if [ "$FIX_MODE" = false ]; then
         "$OXFMT" --check > "$tmp_dir/format.log" 2>&1 &
+        format_pid=$!
     fi
-    local format_pid=$!
 
     # Knip: only run in check mode (fix mode is destructive)
     # Merge base config (from this package) with optional project-local knip.json.
@@ -588,7 +597,7 @@ run_checks() {
 
     # Wait and collect statuses
     wait $type_pid;   local type_status=$?
-    wait $lint_pid;   local lint_status=$?
+    [ -n "$lint_pid" ] && { wait $lint_pid; lint_status=$?; }
 
     # The ratchet, where the project keeps one: the pass is judged by what the
     # baseline tolerates, not by oxlint's exit code — in FIX mode as much as in
@@ -609,7 +618,7 @@ run_checks() {
         lint_status=$?
     fi
 
-    wait $format_pid; local format_status=$?
+    [ -n "$format_pid" ] && { wait $format_pid; format_status=$?; }
     [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
     [ -n "$gitignore_pid" ] && { wait $gitignore_pid; gitignore_status=$?; }
     [ -n "$docs_layout_pid" ] && { wait $docs_layout_pid; docs_layout_status=$?; }
