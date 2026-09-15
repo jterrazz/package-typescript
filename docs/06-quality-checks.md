@@ -23,6 +23,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Docs (layout)                     | the manual gate           | check: at a repository root (a `.git` beside the project)    |
 | Docs (sync)                       | `typescript docs --check` | per package that has committed docs (`docs/reference/`)      |
 | Markdown (prose)                  | the prose gate            | always (check only — a paragraph is not machine-split)       |
+| Names (tree)                      | the naming gate           | always (check only — a rename is a move, not a rewrite)      |
 
 `typescript fix` runs tsc, oxlint (`--fix`), oxfmt and the artefact gate in parallel — knip, the conventions checker and the two Docs passes are check-only (they are read-only gates, not fixers).
 
@@ -138,6 +139,17 @@ Every tracked `*.md` outside `docs/reference/` and outside any `_`-prefixed row 
 The three numbers are the readability floor of the shared doctrine, not the craft it asks for: the gap between them is a reader's pass, not a red gate. They are named constants at the top of the gate, and no page keeps a second copy of them.
 
 The backtick rule reads a closed roster of opening segments — `apps/`, `bin/`, `lib/`, `packages/`, `presets/`, `specs/`, `tests/` — because without one every `a/b` in a sentence would be read as a coordinate. `docs/` and `src/` are deliberately off it: every repository has both, so a page teaching a convention writes `src/index.ts` about the READER's tree, not about its own. A relative LINK into either is still judged, because that one names a real target.
+
+## The Names (tree) pass
+
+What a project calls its own parts, swept under the roots where a project keeps what it wrote: `apps/`, `bin/`, `lib/`, `packages/`, `specs/`, `src/`, `tests/`. Each root's OWN name is the toolchain's vocabulary rather than the project's choice, so it is never judged — `lib/` sits on this list and on the grab-bag roster at once, and only what a project put inside it is the project's to name.
+
+| Rule             | Refuses                                                                 |
+| ---------------- | ----------------------------------------------------------------------- |
+| `names-grab-bag` | a directory or file stem that says nothing: it holds what nobody placed |
+| `names-shortcut` | a name, or one hyphen segment of it, written in half                    |
+
+Both rosters are closed and both live in the gate, in one executable copy. Grab-bag: `base`, `common`, `core`, `helpers`, `lib`, `misc`, `shared`, `stuff`, `tools`, `utils` — a leading `_` exempts one, because it marks a row rather than a subject. Shortcut: `auth`, `cfg`, `impl`, `infra`, `k8s`, `pkg`, `repo`, `repos`, `svc`, `tmp` — and the `_` marker does NOT excuse one, since it states a position, not whether the name is whole.
 
 ## The Docs (sync) pass
 

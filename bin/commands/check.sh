@@ -357,6 +357,16 @@ run_checks() {
         markdown_pid=$!
     fi
 
+    # Names: what the project calls its own parts, under the roots where a
+    # project keeps what it wrote. Check-only — renaming a file is a move, and
+    # choosing the name it moves to is the work the rule is asking for.
+    local names_pid=""
+    local names_status=0
+    if [ "$FIX_MODE" = false ]; then
+        node "$PACKAGE_ROOT/lib/check-names.js" . "${LINT_ARGS[@]}" > "$tmp_dir/names.log" 2>&1 &
+        names_pid=$!
+    fi
+
     # Conventions checker: only in check mode, once per specs root the workspace
     # owns, gated by the package that OWNS that root — a member may depend on
     # @jterrazz/test while the root does not, and the reverse.
@@ -404,6 +414,7 @@ run_checks() {
     [ -n "$gitignore_pid" ] && { wait $gitignore_pid; gitignore_status=$?; }
     [ -n "$docs_layout_pid" ] && { wait $docs_layout_pid; docs_layout_status=$?; }
     [ -n "$markdown_pid" ] && { wait $markdown_pid; markdown_status=$?; }
+    [ -n "$names_pid" ] && { wait $names_pid; names_status=$?; }
 
     # One pass, N runs: the pass fails if any run failed, and only the logs of
     # the runs that FAILED are printed — a green member stays silent.
@@ -515,6 +526,7 @@ run_checks() {
         fi
 
         report_failed_gate "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
+        report_failed_gate "Names (tree)" $names_status "$tmp_dir/names.log"
     fi
 
     # Summary
@@ -524,7 +536,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

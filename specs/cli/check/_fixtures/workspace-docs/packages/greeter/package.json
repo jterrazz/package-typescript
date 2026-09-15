@@ -1,5 +1,5 @@
 {
-  "name": "fixture-workspace-lib",
+  "name": "fixture-workspace-greeter",
   "version": "1.0.0",
   "type": "module"
 }

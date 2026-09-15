@@ -1,0 +1,33 @@
+description: fails a tree whose folder names no subject and whose file names one in half
+fixture: names/vague/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          names-shortcut  src/gateway/repo-client.ts  `repo-client` is a word written in half — spell it whole
+          names-grab-bag  src/utils  `utils` names no subject — it holds whatever nobody placed
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
