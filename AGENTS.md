@@ -57,7 +57,7 @@ lib/tracked-files.js       # The one sweep every tree gate starts from — git l
 lib/workspace-members.js   # Lists the consumer's workspace members — the unit each per-package gate measures from
 
 presets/
-├── tsconfig/ · tsdown/ · oxlint/ (+ architectures/hexagonal) · oxfmt/ · knip/
+├── tsconfig/ · tsdown/ · oxlint/ (+ architectures/hexagonal) · oxfmt/ · knip/ · prettier/ (.astro only)
 src/index.js + index.d.ts  # Package entry — exports { oxfmt, oxlint } presets (JS-shipped, no build)
 src/oxlint.js · oxfmt.js   # The tool-facing entries — presets, compose(), and each tool's defineConfig
 src/docs.js + docs.d.ts    # The manual's rules, pure — auditDocs(tree), exported at ./docs for a second reader

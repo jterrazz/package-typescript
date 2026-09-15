@@ -24,6 +24,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Docs (sync)                       | `typescript docs --check`   | per package that has committed docs (`docs/reference/`)      |
 | Publish (packaging)               | publint + attw              | per package the registry would accept (not `private`)        |
 | Architecture (layer map)          | dependency-cruiser          | check: a `.dependency-cruiser.*` at the project root         |
+| Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)          |
 | Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)       |
 | Markdown (prose)                  | the prose gate              | always (check only — a paragraph is not machine-split)       |
 | Names (tree)                      | the naming gate             | always (check only — a rename is a move, not a rewrite)      |
@@ -178,6 +179,16 @@ oxlint's `no-restricted-imports` reads a path and a pattern; dependency-cruiser 
 A cruise starts from `src/` wherever there is one, and from whichever of `apps/`, `packages/` and `lib/` exist otherwise — a map never has to restate the shape of the tree it is about.
 
 `dependency-cruiser` declares a `typescript <7` peer, and this tree satisfies it: the ordinary `typescript` dependency here is the ^6 JavaScript compiler API that typedoc and perfectionist already need ([Architecture](01-architecture.md)). That is also why the TS7 Go compiler stays out of `node_modules` under the name `typescript`.
+
+## The Astro (check + format) pass
+
+`.astro` is the one file shape oxfmt does not parse, and `astro check` is the only checker that reads a template's frontmatter. So where a project depends on `astro`, the pass runs both: the project's own `astro check`, and `prettier` over every `.astro` file.
+
+**`prettier` and `prettier-plugin-astro` are dependencies of THIS package**, with a config derived from the oxfmt values — 100 columns, 4 spaces, single quotes, trailing commas everywhere. Five Astro consumers declare prettier today, each with its own copy of those numbers; after this, none of them declares a formatter at all.
+
+The plugin is handed to prettier as a resolved path rather than as a name in the config, because prettier resolves a plugin name from the working directory — and the working directory is the consumer's, which is precisely the project that no longer declares it.
+
+Both halves run in `fix` too: prettier writes, `astro check` is read-only wherever it runs. The pass speaks on success in fix mode alone, because there it rewrote files the operator owns.
 
 ## The Suppressions (directives) pass
 

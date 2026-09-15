@@ -90,6 +90,27 @@ KNIP=$(find_binary knip)
 DEPCRUISE=$(find_binary depcruise)
 PUBLINT=$(find_binary publint)
 ATTW=$(find_binary attw)
+PRETTIER=$(find_binary prettier)
+
+# `astro` is the CONSUMER's dependency, never this package's: the pass runs its
+# checker, it does not ship one. So the lookup starts at the project.
+find_project_binary() {
+    local name="$1"
+    if [ -x "node_modules/.bin/$name" ]; then
+        echo "$PWD/node_modules/.bin/$name"
+    else
+        find_binary "$name"
+    fi
+}
+
+# The one file shape oxfmt does not parse. The values are the oxfmt values —
+# 100 / 4 / single / all — so a consumer never declares a formatter of its own.
+#
+# The plugin is passed as a RESOLVED PATH, not as a name in the config: prettier
+# resolves a plugin name from the working directory, which is the consumer's,
+# and the consumer is precisely the project that no longer declares it.
+PRETTIER_ASTRO_CONFIG="$PACKAGE_ROOT/presets/prettier/astro.json"
+PRETTIER_ASTRO_PLUGIN=$(cd "$PACKAGE_ROOT" && node -e 'process.stdout.write(require.resolve("prettier-plugin-astro"))' 2>/dev/null)
 CHECKER=$(find_binary jterrazz-test-check)
 
 # ── The unit is the workspace package, not the repository ────────────────────
@@ -139,6 +160,15 @@ workspace_uses_jterrazz_test() {
         project_uses_jterrazz_test "$member" && return 0
     done
     return 1
+}
+
+# An Astro project, read off its manifest. `.astro` is the one file shape oxfmt
+# does not parse and `astro check` is the only checker that reads a template's
+# frontmatter, so the pass exists exactly where the dependency does.
+project_uses_astro() {
+    local dir="${1:-.}"
+    [ -f "$dir/package.json" ] || return 1
+    node -e 'const {readFileSync}=require("node:fs");const p=JSON.parse(readFileSync(process.argv[1],"utf8"));const d={...p.dependencies,...p.devDependencies,...p.peerDependencies};process.exit(d["astro"]?0:1)' "$dir/package.json" 2>/dev/null
 }
 
 # A package the registry would accept: it names an entry (`exports`, `main`) or
@@ -267,11 +297,13 @@ done
 # whole log under its own RUN header, exactly like the passes above it.
 #
 # A gate that WROTE something speaks too, whatever its status: `fix` changed a
-# file the operator owns, and silence would hide it. That is the same rule the
-# Gitignore pass follows, read off the log rather than off the mode.
+# file the operator owns, and silence would hide it. That is the Gitignore
+# pass's rule, and a gate asks for it with a fourth argument — the gates that
+# only READ stay silent, and so does a tool's success chatter.
 report_gate() {
-    local label="$1" status="$2" log="$3"
+    local label="$1" status="$2" log="$3" writer="${4:-}"
 
+    [ "$status" -eq 0 ] && [ -z "$writer" ] && return 0
     [ "$status" -eq 0 ] && [ ! -s "$log" ] && return 0
 
     printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} %s\n\n" "$label"
@@ -446,6 +478,34 @@ run_checks() {
         secrets_pid=$!
     fi
 
+    # Astro: the consumer's own checker, plus the formatter for the one file
+    # shape oxfmt does not parse. Both halves run in fix mode too — prettier
+    # writes there, and `astro check` is read-only wherever it runs.
+    local astro_pid=""
+    local astro_status=0
+    if project_uses_astro "."; then
+        ASTRO=$(find_project_binary astro)
+        # A subshell, so both halves run and both are reported — a template that
+        # does not type-check is not a reason to stay quiet about its shape.
+        # `local` has no meaning past the `&`, hence the plain names.
+        (
+            "$ASTRO" check
+            astro_check=$?
+            if [ "$FIX_MODE" = true ]; then
+                "$PRETTIER" --write --config "$PRETTIER_ASTRO_CONFIG" \
+                    --plugin "$PRETTIER_ASTRO_PLUGIN" \
+                    --no-error-on-unmatched-pattern "**/*.astro"
+            else
+                "$PRETTIER" --check --config "$PRETTIER_ASTRO_CONFIG" \
+                    --plugin "$PRETTIER_ASTRO_PLUGIN" \
+                    --no-error-on-unmatched-pattern "**/*.astro"
+            fi
+            astro_format=$?
+            [ $astro_check -eq 0 ] && [ $astro_format -eq 0 ]
+        ) > "$tmp_dir/astro.log" 2>&1 &
+        astro_pid=$!
+    fi
+
     # Architecture (layer map): the graph a project declared, resolved. Bash
     # asks the one question that decides whether the gate applies at all — is
     # there a map — and the script decides what it says. Opt-in by the file's
@@ -539,6 +599,7 @@ run_checks() {
     wait $suppressions_pid; suppressions_status=$?
     [ -n "$markdown_pid" ] && { wait $markdown_pid; markdown_status=$?; }
     [ -n "$architecture_pid" ] && { wait $architecture_pid; architecture_status=$?; }
+    [ -n "$astro_pid" ] && { wait $astro_pid; astro_status=$?; }
     [ -n "$names_pid" ] && { wait $names_pid; names_status=$?; }
     [ -n "$secrets_pid" ] && { wait $secrets_pid; secrets_status=$?; }
 
@@ -672,8 +733,13 @@ run_checks() {
 
     # The tree gates report in both modes: a gate with a `--fix` may have
     # written, and one that only reads stays silent unless it refused.
+    # In fix mode the formatter rewrote the operator's templates, so the block
+    # speaks whatever the status; in check mode it is a reader like the rest.
+    local astro_writer=""
+    [ "$FIX_MODE" = true ] && astro_writer="writer"
+    report_gate "Astro (check + format)" $astro_status "$tmp_dir/astro.log" "$astro_writer"
     report_gate "Architecture (layer map)" $architecture_status "$tmp_dir/architecture.log"
-    report_gate "Suppressions (directives)" $suppressions_status "$tmp_dir/suppressions.log"
+    report_gate "Suppressions (directives)" $suppressions_status "$tmp_dir/suppressions.log" writer
     report_gate "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
     report_gate "Names (tree)" $names_status "$tmp_dir/names.log"
     report_gate "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
@@ -685,7 +751,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ] && [ $publish_status -eq 0 ] && [ $architecture_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ] && [ $publish_status -eq 0 ] && [ $architecture_status -eq 0 ] && [ $astro_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else
