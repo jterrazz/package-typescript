@@ -96,6 +96,18 @@ A map whose layers share a `files` glob is refused at build time rather than shi
 
 On in core, and worth knowing what it does not see: oxlint's implementation ignores type-only imports, so a value import one way and an `import type` back is invisible to it (oxc#20551).
 
+## Fixers that lie
+
+`typescript fix` applies every fixer oxlint ships, and five of them rewrite code into something that no longer compiles or no longer claims what it claimed. What follows is what the fleet has measured, so a `fix` run is re-read where it lands:
+
+- `vitest/consistent-test-it` rewrites `it(` into `test(` and leaves `import { it }` behind.
+- `vitest/prefer-lowercase-title` lower-cases the first character blindly: `CLI …` becomes `cLI …`.
+- `vitest/require-mock-type-parameters` rewrites `vi.mock('x', f)` into `vi.mock(import('x'), f)`, after which the factory owes the module's full type.
+- `unicorn/no-useless-undefined` strips a REQUIRED argument, `mockReturnValue(undefined)` included — TS2554.
+- `unicorn/prefer-import-meta-properties` rewrites `fileURLToPath(new URL('.', import.meta.url))` into `import.meta.dirname`, which carries no trailing slash where the first form did.
+
+The last two re-emit on every `fix` run.
+
 ## The formatting decisions
 
 100-char print width, 4-space indentation, single quotes, trailing commas everywhere, semicolons, LF. Those four do not move: twenty-eight repositories are written that way and two of them hold signed attestation bytes a reflow would invalidate.
