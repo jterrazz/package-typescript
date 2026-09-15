@@ -59,7 +59,7 @@ describe.each([
         expect(scoped.length).toBeGreaterThan(0);
         for (const entry of scoped) {
             const absolute = isAbsolute(entry) ? entry : resolve(dir, entry);
-            expect(absolute.startsWith(dir + sep)).toBeTruthy();
+            expect(absolute.startsWith(dir + sep)).toBe(true);
         }
     });
 
@@ -68,7 +68,7 @@ describe.each([
         const { compilerOptions, dir } = resolvedConfig(fixture);
 
         // Then - incremental compilation is on, and its buildinfo is an artefact
-        expect(compilerOptions.incremental).toBeTruthy();
+        expect(compilerOptions.incremental).toBe(true);
         const buildInfo = compilerOptions.tsBuildInfoFile ?? '';
         expect(resolve(dir, buildInfo)).toBe(resolve(dir, '.artifacts/tsc/tsconfig.tsbuildinfo'));
     });

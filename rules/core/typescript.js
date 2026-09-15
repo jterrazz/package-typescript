@@ -119,7 +119,6 @@ export default fragment({
                 'no-unsafe-type-assertion',
                 'no-unsafe-unary-minus',
                 'no-useless-default-assignment',
-                'non-nullable-type-assertion-style',
                 'only-throw-error',
                 'prefer-find',
                 'prefer-includes',
@@ -193,6 +192,10 @@ export default fragment({
         'typescript/no-empty-interface': off({
             by: 'typescript/no-empty-object-type — its upstream successor',
             kind: 'covered',
+        }),
+        'typescript/non-nullable-type-assertion-style': off({
+            by: 'typescript/no-non-null-assertion — its fix is the `!` assertion that rule forbids, so no edit closes both',
+            kind: 'exclusive',
         }),
         'typescript/no-var-requires': off({
             by: 'typescript/no-require-imports — its upstream successor',

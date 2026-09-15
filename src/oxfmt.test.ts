@@ -12,7 +12,7 @@ test('gives the formatter the three sorters, so no lint rule owns an order', () 
     // Given - the shared preset
     // Then - import order, package.json key order and Tailwind class order are oxfmt's
     expect(base.sortImports).toMatchObject({ ignoreCase: true, order: 'asc' });
-    expect(base.sortPackageJson).toBeTruthy();
+    expect(base.sortPackageJson).toBe(true);
     expect(base.sortTailwindcss).toStrictEqual({
         functions: ['clsx', 'cn', 'cva', 'tv', 'twMerge', 'twJoin', 'tw'],
     });

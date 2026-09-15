@@ -59,6 +59,16 @@ const PAIRS = Object.freeze([
         'one wants a strict boolean matcher, the other the truthy one',
     ],
     [
+        'vitest/prefer-strict-boolean-matchers',
+        'vitest/prefer-to-be-falsy',
+        'one wants a strict boolean matcher, the other the falsy one',
+    ],
+    [
+        'typescript/no-non-null-assertion',
+        'typescript/non-nullable-type-assertion-style',
+        'one forbids the `!` assertion the other fix asks for',
+    ],
+    [
         'vitest/no-hooks',
         'vitest/prefer-hooks-in-order',
         'one forbids hooks, the other says where they go',

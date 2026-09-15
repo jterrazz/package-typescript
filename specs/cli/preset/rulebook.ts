@@ -74,6 +74,14 @@ export function sandbox(
         resolve(path, 'node_modules/@types'),
         'dir',
     );
+    // A test file is where the vitest half of the rulebook applies, and an
+    // unresolved `vitest` import makes every call in it an `any` — which the
+    // type-aware rules report instead of the decision under test.
+    symlinkSync(
+        resolve(REPOSITORY, 'node_modules/vitest'),
+        resolve(path, 'node_modules/vitest'),
+        'dir',
+    );
 
     writeFileSync(
         resolve(path, 'tsconfig.json'),

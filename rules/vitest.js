@@ -63,11 +63,10 @@ const ON_IN_TESTS = [
     'prefer-mock-return-shorthand',
     'prefer-snapshot-hint',
     'prefer-spy-on',
+    'prefer-strict-boolean-matchers',
     'prefer-strict-equal',
     'prefer-to-be',
-    'prefer-to-be-falsy',
     'prefer-to-be-object',
-    'prefer-to-be-truthy',
     'prefer-to-contain',
     'prefer-to-have-been-called-times',
     'prefer-to-have-length',
@@ -124,8 +123,15 @@ export default fragment({
                     by: 'docs/07-lint-presets.md — a spec states its assertions; counting them is bookkeeping the reader does not need',
                     kind: 'convention',
                 }),
-                'vitest/prefer-strict-boolean-matchers': off({
-                    by: 'vitest/prefer-to-be-truthy, vitest/prefer-to-be-falsy',
+                /* The pair the other way round. `toBe(true)` is a strict
+                 * boolean assertion and `toBeTruthy()` is not — the fixer that
+                 * rewrote one into the other WEAKENED every spec it touched. */
+                'vitest/prefer-to-be-falsy': off({
+                    by: 'vitest/prefer-strict-boolean-matchers — one asks for the strict matcher, the other for the falsy one',
+                    kind: 'exclusive',
+                }),
+                'vitest/prefer-to-be-truthy': off({
+                    by: 'vitest/prefer-strict-boolean-matchers — one asks for the strict matcher, the other for the truthy one',
                     kind: 'exclusive',
                 }),
                 'vitest/require-top-level-describe': off({

@@ -357,7 +357,7 @@ typescript/no-useless-default-assignment
 typescript/no-useless-empty-export
 - typescript/no-var-requires
 typescript/no-wrapper-object-types
-typescript/non-nullable-type-assertion-style
+- typescript/non-nullable-type-assertion-style
 typescript/only-throw-error
 typescript/parameter-properties
 typescript/prefer-as-const
