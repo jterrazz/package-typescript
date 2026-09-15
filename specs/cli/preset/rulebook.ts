@@ -119,6 +119,16 @@ export type ResolvedConfig = {
     rules: Record<string, unknown>;
 };
 
+/**
+ * One diagnostic of `oxlint --format=json`, in the fields the suites read.
+ * `code` is the rule id in oxlint's own vocabulary — `eslint(max-params)`.
+ */
+export type Diagnostic = {
+    code: string;
+    filename: string;
+    severity: string;
+};
+
 /** One row of `oxlint --rules --format=json`. */
 export type RosterEntry = {
     category: string;
@@ -141,10 +151,17 @@ export function printConfig(name: string): ResolvedConfig {
     return JSON.parse(stdout) as ResolvedConfig;
 }
 
-/** The diagnostics of one `--format=json` run, as oxlint itself reports them. */
-export function diagnosticsOf(report: { stdout: string }): unknown[] {
+/**
+ * The diagnostics of one `--format=json` run, as oxlint itself reports them.
+ * Every suite reads this rather than the human report, because the human one
+ * has no fixed shape: oxlint picks its reporter from the environment — GitHub
+ * workflow commands under `GITHUB_ACTIONS`, one compact line per diagnostic
+ * under an AI agent, miette's framed rendering otherwise. `--format=json` is
+ * the one form that is the same on a laptop and on a runner.
+ */
+export function diagnosticsOf(report: { stdout: string }): Diagnostic[] {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint's own --format=json output is oxlint's contract
-    return (JSON.parse(report.stdout) as { diagnostics: unknown[] }).diagnostics;
+    return (JSON.parse(report.stdout) as { diagnostics: Diagnostic[] }).diagnostics;
 }
 
 /** Every rule oxlint knows at this pinned version, nursery included. */

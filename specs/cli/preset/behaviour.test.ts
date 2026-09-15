@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync
 import { resolve } from 'node:path';
 import { expect, test } from 'vitest';
 
-import { oxlint, PROFILES, sandbox } from './rulebook.js';
+import { type Diagnostic, diagnosticsOf, oxlint, PROFILES, sandbox } from './rulebook.js';
 
 /*
  * What a decision DOES, on a file that breaks it. One case per decision this
@@ -24,15 +24,11 @@ const FIXTURES = resolve(import.meta.dirname, '_fixtures/behaviour');
 const EXPECTED = resolve(import.meta.dirname, '_expected/behaviour');
 const UPDATING = process.env.TEST_UPDATE === '1';
 
-/** The rule ids a report names, with the file each one landed on, sorted. */
-function rulesOf(report: string): string {
-    const lines = report
-        .split('\n')
-        .filter((line) => line.includes(': error '))
-        .map((line) => {
-            const [location, rest] = line.split(': error ');
-            return `${location?.split(':')[0] ?? ''} ${rest?.split(':')[0] ?? ''}`;
-        });
+/** The rule ids a run names, with the file each one landed on, sorted. */
+function rulesOf(diagnostics: Diagnostic[]): string {
+    const lines = diagnostics
+        .filter((diagnostic) => diagnostic.severity === 'error')
+        .map((diagnostic) => `${diagnostic.filename} ${diagnostic.code}`);
     return `${lines.toSorted((left, right) => left.localeCompare(right)).join('\n')}\n`;
 }
 
@@ -69,7 +65,9 @@ test.each(PROFILES)('$name fixes what it owns and says what it refuses', ({ name
 
     // Then - what the fixer cannot repair is exactly the report the golden records
     const golden = resolve(EXPECTED, `${name}.report.txt`);
-    const report = rulesOf(oxlint(work.path, ['-c', work.config, ...work.files]).stdout);
+    const report = rulesOf(
+        diagnosticsOf(oxlint(work.path, ['-c', work.config, '--format=json', ...work.files])),
+    );
     if (UPDATING) {
         writeFileSync(golden, report);
     }
@@ -80,13 +78,12 @@ test('the hexagonal layer map refuses an edge and carves out features/common', (
     // Given - a hexagonal tree with one legal import and one edge per layer,
     // Linted by the node profile composed with the hexagonal map
     using work = sandbox(resolve(FIXTURES, 'hexagonal', 'input'), 'node', 'node', ['hexagonal']);
-    const report = oxlint(work.path, ['-c', work.config, ...work.files]);
+    const report = oxlint(work.path, ['-c', work.config, '--format=json', ...work.files]);
 
     // Then - each edge is named, and only the file that crosses it
-    const named = report.stdout
-        .split('\n')
-        .filter((line) => line.includes('no-restricted-imports'))
-        .map((line) => line.split(':')[0] ?? '')
+    const named = diagnosticsOf(report)
+        .filter((diagnostic) => diagnostic.code.includes('no-restricted-imports'))
+        .map((diagnostic) => diagnostic.filename)
         .toSorted((left, right) => left.localeCompare(right));
 
     expect(named).toStrictEqual([
