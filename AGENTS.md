@@ -40,12 +40,16 @@ No build step — this package ships JS directly. It dogfoods its own CLI (`npm 
 bin/
 ├── typescript.sh          # CLI entry (build, bundle, start, dev, docs [--check], docs-layout, check, fix, clean)
 └── commands/
-    ├── check.sh           # Quality passes in parallel: tsc + oxlint + oxfmt + (gitignore) + knip + (conventions) + (docs layout) + (docs sync)
+    ├── check.sh           # Quality passes in parallel: tsc + oxlint + oxfmt + knip + the tree gates (quiet unless they fail)
     └── docs.sh            # The docs compiler: typedoc reference tree, generate | --check
+
 lib/check-docs.js          # The manual's shape, read off the repository's docs/ — the reader behind the Docs (layout) pass
 lib/check-gitignore.js     # The artefact convention, read off the project's .gitignore — check | --fix
+lib/check-markdown.js      # Every tracked page's coordinates and readability floors — the Markdown (prose) gate
 lib/merge-knip-config.js   # Merges knip base preset with project-local knip.json (read as JSONC)
+lib/tracked-files.js       # The one sweep every tree gate starts from — git ls-files, or a walk where there is no git
 lib/workspace-members.js   # Lists the consumer's workspace members — the unit each per-package gate measures from
+
 presets/
 ├── tsconfig/ · tsdown/ · oxlint/ (+ architectures/hexagonal) · oxfmt/ · knip/
 src/index.js + index.d.ts  # Package entry — exports { oxfmt, oxlint } presets (JS-shipped, no build)

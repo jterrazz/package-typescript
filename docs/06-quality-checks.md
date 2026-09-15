@@ -4,6 +4,8 @@
 
 Output is quiet on success and verbose on failure — a tool's captured log is printed only when it fails, so green runs stay byte-identical across platforms.
 
+The passes that spawn a tool print a block each on every run. The **tree gates** — the node scripts that read what the project would commit — print nothing at all when they pass: nine more green headers would bury the four that always speak. A tree gate that fails prints its whole log under its own `RUN` header, like every other pass.
+
 The toolchain measures from the nearest `package.json`: a workspace root runs each per-package gate once per member, and a single-package project is the same run it always was.
 
 ## The passes
@@ -20,6 +22,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Test Conventions (@jterrazz/test) | conventions checker       | per package that depends on `@jterrazz/test` + owns `specs/` |
 | Docs (layout)                     | the manual gate           | check: at a repository root (a `.git` beside the project)    |
 | Docs (sync)                       | `typescript docs --check` | per package that has committed docs (`docs/reference/`)      |
+| Markdown (prose)                  | the prose gate            | always (check only — a paragraph is not machine-split)       |
 
 `typescript fix` runs tsc, oxlint (`--fix`), oxfmt and the artefact gate in parallel — knip, the conventions checker and the two Docs passes are check-only (they are read-only gates, not fixers).
 
@@ -119,6 +122,22 @@ const violations = auditDocs(tree); // -> [{ rule, path, message }, …]
 ```
 
 `tree` is a plain description of one repository — the paths under `docs/`, the opening lines of each page, each page's link targets, the root `AGENTS.md`, and the three presence facts. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
+
+## The Markdown (prose) pass
+
+Every tracked `*.md` outside `docs/reference/` and outside any `_`-prefixed row — a fixture, a golden, a template, all of them another project's tree — is read for two things: whether its coordinates resolve, and whether its blocks breathe.
+
+| Rule                    | Refuses                                                                    |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `markdown-link-missing` | a relative link whose target is not on disk                                |
+| `markdown-path-missing` | a backticked repo-relative path naming nothing on disk                     |
+| `markdown-block-long`   | a paragraph, or one list item, running past twelve lines                   |
+| `markdown-fence-long`   | a fenced block running fifteen lines with no blank one in it               |
+| `markdown-section-flat` | a `##` section over thirty prose lines carrying neither a `###` nor a list |
+
+The three numbers are the readability floor of the shared doctrine, not the craft it asks for: the gap between them is a reader's pass, not a red gate. They are named constants at the top of the gate, and no page keeps a second copy of them.
+
+The backtick rule reads a closed roster of opening segments — `apps/`, `bin/`, `lib/`, `packages/`, `presets/`, `specs/`, `tests/` — because without one every `a/b` in a sentence would be read as a coordinate. `docs/` and `src/` are deliberately off it: every repository has both, so a page teaching a convention writes `src/index.ts` about the READER's tree, not about its own. A relative LINK into either is still judged, because that one names a real target.
 
 ## The Docs (sync) pass
 

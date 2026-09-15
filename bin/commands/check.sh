@@ -226,6 +226,22 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# ── The tree gates ───────────────────────────────────────────────────────────
+# A tree gate reads what the project would commit — `git ls-files`, or a walk
+# where there is no git tree — and answers one question about it. Every one of
+# them is QUIET when it passes: four passes already print a block each on every
+# run, and nine more green headers would bury them. A gate that FAILS prints its
+# whole log under its own RUN header, exactly like the passes above it.
+report_failed_gate() {
+    local label="$1" status="$2" log="$3"
+
+    [ "$status" -eq 0 ] && return 0
+
+    printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} %s\n\n" "$label"
+    [ -s "$log" ] && cat "$log"
+    printf "${RED}✗ Failed with exit code %d${NC}\n" "$status"
+}
+
 # Create a temporary directory for log files
 tmp_dir=$(mktemp -d)
 cleanup() { rm -rf "$tmp_dir"; }
@@ -329,6 +345,18 @@ run_checks() {
         docs_layout_pid=$!
     fi
 
+    # Markdown (prose): every tracked page's coordinates resolve, and its blocks
+    # breathe. Check-only — there is no rewrite that splits a paragraph into the
+    # two ideas it was carrying. It reads the same `--ignore-pattern` globs the
+    # linter received, so one flag answers for the whole run.
+    local markdown_pid=""
+    local markdown_status=0
+    if [ "$FIX_MODE" = false ]; then
+        node "$PACKAGE_ROOT/lib/check-markdown.js" . "${LINT_ARGS[@]}" \
+            > "$tmp_dir/markdown.log" 2>&1 &
+        markdown_pid=$!
+    fi
+
     # Conventions checker: only in check mode, once per specs root the workspace
     # owns, gated by the package that OWNS that root — a member may depend on
     # @jterrazz/test while the root does not, and the reverse.
@@ -375,6 +403,7 @@ run_checks() {
     [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
     [ -n "$gitignore_pid" ] && { wait $gitignore_pid; gitignore_status=$?; }
     [ -n "$docs_layout_pid" ] && { wait $docs_layout_pid; docs_layout_status=$?; }
+    [ -n "$markdown_pid" ] && { wait $markdown_pid; markdown_status=$?; }
 
     # One pass, N runs: the pass fails if any run failed, and only the logs of
     # the runs that FAILED are printed — a green member stays silent.
@@ -484,6 +513,8 @@ run_checks() {
                 printf "${GREEN}✓ Passed${NC}\n"
             fi
         fi
+
+        report_failed_gate "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
     fi
 
     # Summary
@@ -493,7 +524,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

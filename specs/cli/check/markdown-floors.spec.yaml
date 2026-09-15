@@ -1,0 +1,34 @@
+description: fails a page whose prose, fence and section run past the readability floors
+fixture: markdown/walls/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          markdown-block-long  README.md  a block of 13 lines at line 5 — the floor is 12
+          markdown-fence-long  README.md  a fenced block at line 21 runs 16 lines unbroken — the floor is 15
+          markdown-section-flat  README.md  "## A section with nothing to break it up" at line 40 runs 31 lines of prose with no ### and no list
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

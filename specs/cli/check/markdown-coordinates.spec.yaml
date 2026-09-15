@@ -1,0 +1,33 @@
+description: fails a page whose link and whose backticked path name nothing on disk
+fixture: markdown/stale-coordinates/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          markdown-link-missing  README.md  notes/design.md resolves to nothing on disk
+          markdown-path-missing  README.md  `lib/greeter.js` names nothing on disk
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
