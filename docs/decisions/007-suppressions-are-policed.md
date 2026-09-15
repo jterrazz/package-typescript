@@ -1,4 +1,4 @@
-# ADR-004: Suppressions are policed
+# ADR-007: Suppressions are policed
 
 **Status:** Proposed
 **Date:** 2026-09-15

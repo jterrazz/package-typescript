@@ -1,4 +1,4 @@
-# ADR-003: A ratchet, not a big bang
+# ADR-006: A ratchet, not a big bang
 
 **Status:** Proposed
 **Date:** 2026-09-15
