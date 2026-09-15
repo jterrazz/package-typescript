@@ -131,9 +131,24 @@ const violations = auditDocs(tree); // -> [{ rule, path, message }, …]
 
 `tree` is a plain description of one repository — the paths under `docs/`, the opening lines of each page, each page's link targets, the root `AGENTS.md`, and the three presence facts. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
 
-## The Oxlint pass and its ratchet
+## The Oxlint pass
 
 `--type-aware` is passed explicitly and unconditionally. The rules it unlocks are the ones no syntactic linter can express, and a flag that is only sometimes passed is a rule set that is only sometimes enforced. Those rules run in `tsgolint`, a separate binary oxlint looks up on PATH; `oxlint-tsgolint` is a dependency of this package, and `check.sh` puts the directory holding it in front of PATH for its own children, so a consumer never installs or configures anything.
+
+### The two refusals that are not diagnostics
+
+A lint run can be green about nothing, and neither way shows up as a diagnostic. Both are the pass refusing, both are written into its own log, and both fail it — after them the verdict is on what the linter RAN, not on what it managed to exit with.
+
+| Rule                     | Refuses                                                    |
+| ------------------------ | ---------------------------------------------------------- |
+| `oxlint-config-unparsed` | a config oxlint could not parse, so it linted nothing      |
+| `oxlint-config-commonjs` | a CommonJS config, which oxlint drops whole and in silence |
+
+The first is usually a `jsPlugins` naming a module that is not there. oxlint prints `Failed to parse oxlint configuration file` above the pass's own line, and this names the refusal in the toolchain's vocabulary rather than leaving a reader with a tool's text.
+
+The second is the silent one: a `.cjs` config, or a `.js` config in a package that is not `"type": "module"`. oxlint prints NOTHING and exits 0, so the run reads as green having enforced no rule the config named. Everything this package ships is ESM and so is every oxlint JS plugin the estate writes — a CommonJS config cannot load either.
+
+## The ratchet
 
 A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. `oxlint.baseline.json` is the second — a tracked `{ "<rule>": <count> }` at the project root, and the oxlint pass is judged by it rather than by oxlint's exit code. Without the file a single diagnostic fails the pass, exactly as before.
 
@@ -292,7 +307,6 @@ Once a project has generated its committed docs, `check` guards them: it regener
 
 ## Pitfalls
 
-- **A CommonJS `oxlint.config.js` silently drops the `@jterrazz/test` plugin.** oxlint loads the ESM-only plugin, prints a warning, and still exits 0 — so none of the `jterrazz/*` rules run. `check` warns loudly when it detects this; use an ESM config (`oxlint.config.ts` or `.mjs`).
 - **An ignore without a reason is the expected form of nothing.** Every entry in the project's `knip.json` tells the gate to overlook something, and the next reader has to re-derive why. The file is read as JSONC, so the reason goes beside the entry as a `//` comment — that is the form this toolchain expects, and the shape of the file is [Lint presets](07-lint-presets.md)'s.
 - **Knip is check-only.** Fix mode never runs it because its remedies (deleting exports, files, deps) are destructive.
 - **Knip runs uncached, on purpose.** Its `--cache` would be the obvious speed-up and it can lie: a cached glob is validated against the mtimes of the directories that held a match, so a file added to a directory that held none is invisible, and the cached run passes a project the uncached run fails. Every other cache in the toolchain — tsc's buildinfo — is keyed on content and cannot.

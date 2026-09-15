@@ -1,0 +1,57 @@
+description: fails the oxlint pass when the config names a JS plugin that is not there
+fixture: oxlint-config/broken-plugin/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          Failed to parse oxlint configuration file.
+
+            x Failed to load JS plugin: ./nowhere.js
+            |   Cannot find module './nowhere.js'
+
+          oxlint-config-unparsed  oxlint.config.ts  oxlint refused this config and linted nothing — its own report is above
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile               none of this package's
+            rules off vs profile  not measured
+            suppressions          0
+            baseline              absent
+            tool versions         in range
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

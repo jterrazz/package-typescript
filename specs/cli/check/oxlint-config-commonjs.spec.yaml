@@ -1,0 +1,52 @@
+description: fails the oxlint pass on a CommonJS config, which oxlint drops in silence
+fixture: oxlint-config/commonjs/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          oxlint-config-commonjs  oxlint.config.js  a CommonJS config cannot load an ESM preset or plugin, and oxlint drops what it cannot load — write oxlint.config.ts or .mjs
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile               none of this package's
+            rules off vs profile  not measured
+            suppressions          0
+            baseline              absent
+            tool versions         in range
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

@@ -158,17 +158,6 @@ project_uses_jterrazz_test() {
     node -e 'const {readFileSync}=require("node:fs");const p=JSON.parse(readFileSync(process.argv[1],"utf8"));const d={...p.dependencies,...p.devDependencies,...p.peerDependencies};process.exit(d["@jterrazz/test"]?0:1)' "$dir/package.json" 2>/dev/null
 }
 
-# In a workspace the dependency may sit on a member alone — the warning below
-# is about the ROOT oxlint config, but the reason to print it is anywhere.
-workspace_uses_jterrazz_test() {
-    project_uses_jterrazz_test "." && return 0
-    local member
-    for member in "${WORKSPACE_MEMBERS[@]}"; do
-        project_uses_jterrazz_test "$member" && return 0
-    done
-    return 1
-}
-
 # An Astro project, read off its manifest. `.astro` is the one file shape oxfmt
 # does not parse and `astro check` is the only checker that reads a template's
 # frontmatter, so the pass exists exactly where the dependency does.
@@ -244,31 +233,21 @@ discover_docs_roots() {
     } | LC_ALL=C sort -u
 }
 
-# The @jterrazz/test oxlint plugin is ESM-only. A CommonJS oxlint config silently drops
-# it (oxlint prints a load warning and still exits 0) — none of the jterrazz/* rules run.
-# Warn loudly when that pitfall is detectable.
-warn_cjs_oxlint_config() {
-    local cfg=""
-    for c in oxlint.config.ts oxlint.config.mjs oxlint.config.cjs oxlint.config.js; do
-        [ -f "$c" ] && { cfg="$c"; break; }
-    done
-    [ -z "$cfg" ] && return 0
-
-    local is_cjs=false
-    case "$cfg" in
-        *.cjs) is_cjs=true ;;
+# The name of the oxlint config, when that config is CommonJS — and nothing
+# otherwise. Everything this package ships is ESM, and so is every oxlint JS
+# plugin the estate writes; a CommonJS config cannot load either, and oxlint
+# drops what it cannot load and still exits 0. The rules a config names are the
+# whole claim of a lint run, so the shape of the config is the oxlint pass's
+# business ([Quality checks](../../docs/06-quality-checks.md)).
+commonjs_oxlint_config() {
+    case "$OXLINT_CONFIG" in
+        *.cjs) printf '%s' "$OXLINT_CONFIG" ;;
         *.js)
             if ! node -e 'process.exit(require("./package.json").type==="module"?0:1)' 2>/dev/null; then
-                is_cjs=true
+                printf '%s' "$OXLINT_CONFIG"
             fi
             ;;
     esac
-
-    if [ "$is_cjs" = true ]; then
-        printf "${RED} WARNING ${NC} @jterrazz/test is installed but %s is CommonJS.\n" "$cfg"
-        printf "          The @jterrazz/test oxlint plugin is ESM-only and will be SILENTLY DROPPED —\n"
-        printf "          none of the jterrazz/* rules will run. Switch to an ESM config (oxlint.config.ts or .mjs).\n\n"
-    fi
 }
 
 # Parse command and args
@@ -322,6 +301,36 @@ report_pass() {
     fi
 }
 
+# Two ways a lint run says nothing about the rules it was supposed to enforce.
+#
+# A config oxlint cannot parse — a `jsPlugins` naming a module that is not there
+# is the common one — makes it print `Failed to parse oxlint configuration file`
+# and lint nothing; 1.83.0 exits 1 for it, and this names the refusal in the
+# toolchain's own vocabulary rather than leaving a reader with the tool's text.
+# A CommonJS config is the silent one: oxlint drops it whole, prints NOTHING and
+# exits 0, so the run is green having enforced no rule the config named.
+#
+# Both are the oxlint pass refusing, so both are written into its own log and
+# both fail it. After this, `lint_status` is the verdict on what the linter
+# actually ran, not on what it managed to exit with.
+judge_lint_config() {
+    local cjs
+    cjs=$(commonjs_oxlint_config)
+    local refusals=""
+
+    if grep -q 'Failed to parse oxlint configuration file' "$tmp_dir/lint.log" 2>/dev/null; then
+        refusals+="oxlint-config-unparsed  ${OXLINT_CONFIG}  oxlint refused this config and linted nothing — its own report is above"$'\n'
+    fi
+    if [ -n "$cjs" ]; then
+        refusals+="oxlint-config-commonjs  ${cjs}  a CommonJS config cannot load an ESM preset or plugin, and oxlint drops what it cannot load — write oxlint.config.ts or .mjs"$'\n'
+    fi
+
+    [ -z "$refusals" ] && return 0
+
+    printf '%s' "$refusals" >> "$tmp_dir/lint.log"
+    lint_status=1
+}
+
 # One pass, N runs: the logs of the runs that FAILED, joined into the single log
 # the pass reports under. A green member stays silent — it is the same pass.
 join_logs() {
@@ -350,10 +359,6 @@ run_checks() {
     fi
 
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
-
-    if workspace_uses_jterrazz_test; then
-        warn_cjs_oxlint_config
-    fi
 
     # Run all tools in parallel
     "$TSC" --noEmit > "$tmp_dir/type.log" 2>&1 &
@@ -672,6 +677,7 @@ run_checks() {
         write="writer"
     fi
 
+    judge_lint_config
     report_pass "TypeScript Check" $type_status "$tmp_dir/type.log"
     report_pass "$lint_label" $lint_status "$tmp_dir/lint.log"
     report_pass "$format_label" $format_status "$tmp_dir/format.log"
