@@ -1,5 +1,5 @@
 import { fragment, off, on, scoped } from './_contract.js';
-import { EXTENSIONS_NEVER } from './core/import.js';
+import { ASSETS } from './core/import.js';
 
 /*
  * Astro. oxlint parses an `.astro` file's script body but not its frontmatter
@@ -28,7 +28,14 @@ export default fragment({
         }),
     ],
     rules: {
-        'import/extensions': EXTENSIONS_NEVER,
+        /*
+         * `never`, with two extensions that stay: an asset, which Vite resolves
+         * BY its extension, and `.astro` itself — Astro's `resolve.extensions`
+         * does not carry it, so a layout imported without it fails the build.
+         * An override's options REPLACE the base entry, so the whole list is
+         * restated here.
+         */
+        'import/extensions': on(['never', { ...ASSETS, astro: 'always' }]),
         'no-restricted-imports': on([
             {
                 patterns: [

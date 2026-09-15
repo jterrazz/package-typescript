@@ -1,2 +1,3 @@
+layout.astro import(unambiguous)
 our-options.tsx import(extensions)
 our-options.tsx react(function-component-definition)

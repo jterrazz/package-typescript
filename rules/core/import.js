@@ -16,7 +16,7 @@ import { allOn, fragment, off, on } from '../_contract.js';
  */
 
 /** Asset specifiers keep their extension on every platform — a bundler resolves them by it. */
-const ASSETS = {
+export const ASSETS = {
     avif: 'always',
     css: 'always',
     gif: 'always',
