@@ -12,7 +12,8 @@ The complete TypeScript toolchain for the @jterrazz ecosystem — defines how ev
 Three surfaces, one CLI (`bin/typescript.sh`):
 
 - **Build** — `build` (app: ESM + types), `bundle` (library: ESM + CJS + types), `start`, `dev`, `clean`.
-- **Check** — `check` runs tsc + oxlint + oxfmt + knip in parallel (plus an artefact-convention gate, a conventions pass, a docs-layout gate and a docs-sync pass when the project qualifies); `fix` auto-repairs lint + format and rewrites the `.gitignore`.
+- **Check** — `check` runs tsc (type-aware oxlint beside it) + oxfmt + knip in parallel, plus the tree gates: suppressions, markdown, names, secrets, and the artefact, conventions, docs-layout, docs-sync, publish, architecture and Astro passes where the project qualifies. It ends on a drift report. `fix` auto-repairs lint + format, rewrites the `.gitignore`, settles suppression spellings and formats `.astro`.
+- **Adopt** — `doctor` reports the installed tool versions against the declared ranges; `baseline` records `oxlint.baseline.json`, the ratchet a project adopts a stricter release with.
 - **Docs** — `docs` compiles the source barrel into a **committed** projection (`docs/reference/`); `docs --check` verifies it is in sync.
 
 Lint/format/tsconfig are preset packages a project wires explicitly in its own config files. There is no dependency auto-detection in the presets.
@@ -71,6 +72,8 @@ export default compose(node, testing);
 - Entry point is `src/index.ts` (the single public barrel); use `.js` extensions in relative imports.
 - Add TSDoc to every public export — `typescript docs` derives the reference from it.
 - Run `typescript fix` before committing, not just `typescript check`.
+- A suppression carries its reason: `// oxlint-disable-next-line <rule> -- why`, and `@ts-expect-error` with a description. `eslint-disable`, `biome-ignore` and `@ts-ignore` are refused.
+- Turning a profile rule off in `oxlint.config.ts` needs a `// reason:` comment on that line, or the drift report refuses the run.
 - A `knip.json` entry carries its reason: the file is read as JSONC, so a `//` line above an ignore says why it is there.
 - Every artefact lives under `.artifacts/<tool>/` at the project root, and `.artifacts/` is gitignored; `dist` is the one exception (the product). `typescript clean` empties it — see `docs/02-developing.md`.
 - `typescript docs` writes a **committed** projection under `docs/reference/` — commit it, and regenerate in the same change that touches the source (`check` runs a Docs sync pass). Never hand-edit a generated file, and never gitignore `docs/`.

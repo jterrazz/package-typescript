@@ -10,7 +10,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 
 ## The passes
 
-`typescript check` runs up to eight passes. The first three always run; the rest are opt-in — they appear only when the project qualifies.
+`typescript check` runs up to fourteen passes. The first three always run, four more read the tracked tree on every run, and the rest are opt-in — they appear only when the project qualifies.
 
 | Pass                              | Tool                        | When it runs                                                 |
 | --------------------------------- | --------------------------- | ------------------------------------------------------------ |
