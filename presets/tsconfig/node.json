@@ -1,19 +1,33 @@
 {
     "display": "Node ESM",
-    "include": ["${configDir}/**/*.ts"],
-    "exclude": ["${configDir}/node_modules"],
-
+    "include": ["${configDir}/**/*.ts", "${configDir}/**/*.js"],
+    "exclude": [
+        "${configDir}/node_modules",
+        "${configDir}/dist",
+        "${configDir}/.artifacts",
+        "${configDir}/**/_fixtures",
+        "${configDir}/**/_expected"
+    ],
     "compilerOptions": {
         "moduleResolution": "Bundler",
         "module": "ESNext",
         "target": "ESNext",
         "types": ["node"],
         "strict": true,
+        "exactOptionalPropertyTypes": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noUncheckedIndexedAccess": true,
+        "noUncheckedSideEffectImports": true,
+        "verbatimModuleSyntax": true,
         "incremental": true,
         "tsBuildInfoFile": "${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo",
         "experimentalDecorators": true,
         "esModuleInterop": true,
         "resolveJsonModule": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "allowJs": true,
+        "checkJs": false,
+        "noEmit": true
     }
 }

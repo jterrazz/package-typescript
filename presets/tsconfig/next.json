@@ -18,7 +18,13 @@
             {
                 "name": "next"
             }
-        ]
+        ],
+        "exactOptionalPropertyTypes": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noUncheckedIndexedAccess": true,
+        "noUncheckedSideEffectImports": true,
+        "verbatimModuleSyntax": true
     },
     "include": [
         "${configDir}/next-env.d.ts",
@@ -27,5 +33,9 @@
         "${configDir}/**/*.ts",
         "${configDir}/**/*.tsx"
     ],
-    "exclude": ["${configDir}/node_modules"]
+    "exclude": [
+        "${configDir}/node_modules",
+        "${configDir}/**/_fixtures",
+        "${configDir}/**/_expected"
+    ]
 }

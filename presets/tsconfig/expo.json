@@ -1,23 +1,33 @@
 {
     "display": "Expo",
     "include": ["${configDir}/**/*.ts", "${configDir}/**/*.tsx"],
-    "exclude": ["${configDir}/node_modules"],
-
+    "exclude": [
+        "${configDir}/node_modules",
+        "${configDir}/**/_fixtures",
+        "${configDir}/**/_expected"
+    ],
     "compilerOptions": {
         "allowJs": true,
-        "baseUrl": ".",
         "esModuleInterop": true,
+        "exactOptionalPropertyTypes": true,
         "incremental": true,
         "jsx": "react-native",
         "lib": ["DOM", "ESNext"],
-        "moduleResolution": "node",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
         "noEmit": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noUncheckedIndexedAccess": true,
+        "noUncheckedSideEffectImports": true,
         "paths": {
-            "@/*": ["src/*"]
+            "@/*": ["${configDir}/src/*"]
         },
         "resolveJsonModule": true,
         "skipLibCheck": true,
+        "strict": true,
         "target": "ESNext",
-        "tsBuildInfoFile": "${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo"
+        "tsBuildInfoFile": "${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo",
+        "verbatimModuleSyntax": true
     }
 }
