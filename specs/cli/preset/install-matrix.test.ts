@@ -26,4 +26,5 @@ test('every profile installs strict and checks green', async () => {
     for (const profile of ['astro', 'bun', 'expo', 'library', 'next', 'node']) {
         expect(result.stdout.toString()).toContain(`checked: ${profile}`);
     }
-});
+    // Six strict installs, not one: the chain earns four times the e2e budget.
+}, 120_000);
