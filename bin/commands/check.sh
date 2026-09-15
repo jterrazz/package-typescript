@@ -379,6 +379,9 @@ run_checks() {
     # The same run, machine-readable, so the ratchet can be judged rule by rule.
     # A second invocation rather than a reformat of the first: the human log is
     # what a failing pass prints, and neither form can be derived from the other.
+    # In check mode it runs BESIDE the human one, on the same bytes. In fix mode
+    # it cannot: the bytes change under the fixer, so the machine-readable run
+    # is made after it, below.
     local lint_json_pid=""
     if [ "$FIX_MODE" = false ] && [ -f "$BASELINE_FILE" ]; then
         "$OXLINT" --type-aware --format json "${LINT_ARGS[@]}" \
@@ -608,10 +611,19 @@ run_checks() {
     wait $lint_pid;   local lint_status=$?
 
     # The ratchet, where the project keeps one: the pass is judged by what the
-    # baseline tolerates, not by oxlint's exit code. Bash decides whether the
-    # file is there; the script decides what it says.
-    if [ -n "$lint_json_pid" ]; then
-        wait $lint_json_pid
+    # baseline tolerates, not by oxlint's exit code — in FIX mode as much as in
+    # check mode, or `fix` then `check` reads red then green on the same tree.
+    # Bash decides whether the file is there; the script decides what it says.
+    #
+    # What fix mode judges is what SURVIVED the rewrite, so its machine-readable
+    # run is made here, after the fixer, and in the foreground.
+    if [ -f "$BASELINE_FILE" ]; then
+        if [ -n "$lint_json_pid" ]; then
+            wait $lint_json_pid
+        else
+            "$OXLINT" --type-aware --format json "${LINT_ARGS[@]}" \
+                > "$tmp_dir/lint.json" 2>/dev/null
+        fi
         node "$PACKAGE_ROOT/lib/check-baseline.js" "$tmp_dir/lint.json" . \
             >> "$tmp_dir/lint.log" 2>&1
         lint_status=$?

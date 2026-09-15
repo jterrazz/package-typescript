@@ -1,0 +1,32 @@
+description: fails a fix run on a tree that owes nothing, because the ratchet moved and the entry stayed
+fixture: baseline/settled/
+runs:
+    - command: fix
+      exit: 1
+      # oxlint itself exits 0 here — the fixer leaves a clean tree and prints
+      # nothing — so this states the whole run: what fails it is the ratchet,
+      # which fix mode is judged by exactly as check mode is.
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+
+          baseline-ratchet  oxlint.baseline.json  eslint/no-debugger is at zero — the ratchet moved, delete its entry
+          Run 'typescript baseline' to record where the project actually stands.
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✗ Some checks failed

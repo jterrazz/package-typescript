@@ -1,0 +1,35 @@
+description: fails a fix run whose surviving diagnostics break the ratchet
+fixture: baseline/beyond/
+runs:
+    - command: fix
+      exit: 1
+      # The oxlint pass prints the linter's own report, and that block has no
+      # fixed shape ([Testing](../../../docs/03-testing.md)). What is claimed
+      # here is the ratchet's verdict on what SURVIVED the fixer, which is ours
+      # and is ordered.
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+          {{any}}
+          baseline-ratchet  oxlint.baseline.json  eslint/no-debugger is at 2, above its baseline of 1
+          baseline-ratchet  oxlint.baseline.json  eslint/no-unused-vars has 1 diagnostic(s) and no entry — it is new debt
+          baseline-ratchet  oxlint.baseline.json  eslint/no-var is at zero — the ratchet moved, delete its entry
+          Run 'typescript baseline' to record where the project actually stands.
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✗ Some checks failed
