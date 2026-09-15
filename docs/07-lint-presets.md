@@ -98,15 +98,20 @@ On in core, and worth knowing what it does not see: oxlint's implementation igno
 
 ## Fixers that lie
 
-`typescript fix` applies every fixer oxlint ships, and five of them rewrite code into something that no longer compiles or no longer claims what it claimed. What follows is what the fleet has measured, so a `fix` run is re-read where it lands:
+A fixer that changes MEANING is never applied unattended. The rules below stay armed — `check` reports them and a human answers them — and `fix` runs with each one allowed, so the rewrite never lands. Each is marked in the manifest with what its rewrite does, and this list is that mark's projection.
 
-- `vitest/consistent-test-it` rewrites `it(` into `test(` and leaves `import { it }` behind.
-- `vitest/prefer-lowercase-title` lower-cases the first character blindly: `CLI …` becomes `cLI …`.
-- `vitest/require-mock-type-parameters` rewrites `vi.mock('x', f)` into `vi.mock(import('x'), f)`, after which the factory owes the module's full type.
-- `unicorn/no-useless-undefined` strips a REQUIRED argument, `mockReturnValue(undefined)` included — TS2554.
-- `unicorn/prefer-import-meta-properties` rewrites `fileURLToPath(new URL('.', import.meta.url))` into `import.meta.dirname`, which carries no trailing slash where the first form did.
+<!-- GENERATED:fixers -->
 
-The last two re-emit on every `fix` run.
+- `typescript/consistent-type-definitions` — rewrites a `declare module` augmentation into an alias, which no longer merges
+- `typescript/no-confusing-void-expression` — wraps a returned promise, after which nothing awaits it
+- `typescript/no-unnecessary-type-assertion` — drops a cast a widened platform type needs
+- `unicorn/no-useless-undefined` — strips a REQUIRED argument, `mockReturnValue(undefined)` included (TS2554)
+- `unicorn/prefer-import-meta-properties` — rewrites `fileURLToPath(new URL('.', import.meta.url))` into `import.meta.dirname`, which carries no trailing slash
+- `vitest/consistent-test-it` — rewrites `it(` into `test(` and leaves `import { it }` behind
+- `vitest/prefer-lowercase-title` — lower-cases the first character blindly: `CLI …` becomes `cLI …`
+- `vitest/require-mock-type-parameters` — rewrites `vi.mock('x', f)` into `vi.mock(import('x'), f)`, after which the factory owes the module's full type
+
+<!-- /GENERATED:fixers -->
 
 ## The formatting decisions
 

@@ -1,4 +1,4 @@
-import { allOn, fragment, off, on } from '../_contract.js';
+import { allOn, fragment, off, on, unsafeFix } from '../_contract.js';
 
 /*
  * The `unicorn` plugin, all 137 non-nursery rules decided by name. Two of the
@@ -72,7 +72,6 @@ export default fragment({
                 'no-useless-promise-resolve-reject',
                 'no-useless-spread',
                 'no-useless-switch-case',
-                'no-useless-undefined',
                 'no-zero-fractions',
                 'numeric-separators-style',
                 'prefer-add-event-listener',
@@ -96,7 +95,6 @@ export default fragment({
                 'prefer-event-target',
                 'prefer-export-from',
                 'prefer-global-this',
-                'prefer-import-meta-properties',
                 'prefer-keyboard-event-key',
                 'prefer-logical-operator-over-ternary',
                 'prefer-math-min-max',
@@ -158,6 +156,18 @@ export default fragment({
         /* No `withDash`: the estate writes `'utf8'`, which is the rule's own
          * default preference, and `'utf-8'` is the same encoding spelled longer. */
         'unicorn/text-encoding-identifier-case': on(),
+
+        /* Both fixers change meaning, so `fix` never applies them and `check`
+         * still reports them: one strips a REQUIRED argument, the other drops
+         * the trailing slash `new URL('.', import.meta.url)` carries. */
+        'unicorn/no-useless-undefined': unsafeFix(
+            on(),
+            'strips a REQUIRED argument, `mockReturnValue(undefined)` included (TS2554)',
+        ),
+        'unicorn/prefer-import-meta-properties': unsafeFix(
+            on(),
+            "rewrites `fileURLToPath(new URL('.', import.meta.url))` into `import.meta.dirname`, which carries no trailing slash",
+        ),
 
         // -- Off, each with its one reason -------------------------------------
         'unicorn/explicit-length-check': off({

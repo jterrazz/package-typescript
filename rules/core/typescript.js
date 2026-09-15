@@ -1,4 +1,4 @@
-import { allOn, fragment, off, on, scoped, typeAware } from '../_contract.js';
+import { allOn, fragment, off, on, scoped, typeAware, unsafeFix } from '../_contract.js';
 
 /*
  * The `typescript` plugin, all 108 non-nursery rules decided by name. Fifty-one
@@ -92,7 +92,6 @@ export default fragment({
                 'dot-notation',
                 'no-array-delete',
                 'no-base-to-string',
-                'no-confusing-void-expression',
                 'no-deprecated',
                 'no-duplicate-type-constituents',
                 'no-floating-promises',
@@ -107,7 +106,6 @@ export default fragment({
                 'no-unnecessary-qualifier',
                 'no-unnecessary-template-expression',
                 'no-unnecessary-type-arguments',
-                'no-unnecessary-type-assertion',
                 'no-unnecessary-type-conversion',
                 'no-unnecessary-type-parameters',
                 'no-unsafe-argument',
@@ -152,7 +150,23 @@ export default fragment({
                 'ts-nocheck': true,
             },
         ]),
-        'typescript/consistent-type-definitions': on(['type']),
+        /* Three fixers that change meaning, so `fix` never applies them and
+         * `check` still reports them: one rewrites a `declare module`
+         * augmentation into an alias that no longer merges, one wraps a
+         * returned promise so nothing awaits it, one drops a cast a widened
+         * platform type needs. */
+        'typescript/consistent-type-definitions': unsafeFix(
+            on(['type']),
+            'rewrites a `declare module` augmentation into an alias, which no longer merges',
+        ),
+        'typescript/no-confusing-void-expression': unsafeFix(
+            typeAware(),
+            'wraps a returned promise, after which nothing awaits it',
+        ),
+        'typescript/no-unnecessary-type-assertion': unsafeFix(
+            typeAware(),
+            'drops a cast a widened platform type needs',
+        ),
         /* `separate-type-imports`, for `import/consistent-type-specifier-style`'s
          * reason: an inline type specifier survives `verbatimModuleSyntax` as an
          * empty runtime import. */

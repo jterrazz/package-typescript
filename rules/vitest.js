@@ -1,4 +1,4 @@
-import { allOn, fragment, off, on, scoped } from './_contract.js';
+import { allOn, fragment, off, on, scoped, unsafeFix } from './_contract.js';
 
 /*
  * The `vitest` plugin, all 73 rules decided by name — inside an `overrides`
@@ -73,7 +73,6 @@ const ON_IN_TESTS = [
     'prefer-todo',
     'require-awaited-expect-poll',
     'require-local-test-context-for-concurrent-snapshots',
-    'require-mock-type-parameters',
     'require-to-throw-message',
     'valid-describe-callback',
     'valid-expect',
@@ -81,6 +80,30 @@ const ON_IN_TESTS = [
     'valid-title',
     'warn-todo',
 ].map((rule) => `vitest/${rule}`);
+
+/*
+ * The three vitest fixers that change meaning, so `fix` never applies them and
+ * `check` still reports them. They are named here rather than inline because a
+ * decision three calls deep inside an override reads as nesting, not as a
+ * decision.
+ *
+ * `prefer-lowercase-title` carries no `allowedPrefixes`: the rule is stricter
+ * than the `j5` rule @jterrazz/test retires for it — it also refuses a title
+ * opening on an all-caps identifier (`HTTP 404 …`, `DI …`) — and an existing
+ * title is a rename, not a case for an estate-specific escape hatch.
+ */
+const CONSISTENT_TEST_IT = unsafeFix(
+    on([{ fn: 'test' }]),
+    'rewrites `it(` into `test(` and leaves `import { it }` behind',
+);
+const PREFER_LOWERCASE_TITLE = unsafeFix(
+    on(),
+    'lower-cases the first character blindly: `CLI …` becomes `cLI …`',
+);
+const REQUIRE_MOCK_TYPE_PARAMETERS = unsafeFix(
+    on(),
+    "rewrites `vi.mock('x', f)` into `vi.mock(import('x'), f)`, after which the factory owes the module's full type",
+);
 
 export default fragment({
     id: 'vitest',
@@ -91,13 +114,9 @@ export default fragment({
             rules: {
                 ...allOn(ON_IN_TESTS),
 
-                'vitest/consistent-test-it': on([{ fn: 'test' }]),
-                /* No `allowedPrefixes`. The rule is stricter than the `j5` rule
-                 * @jterrazz/test retires for it: it also refuses a title opening
-                 * on an all-caps identifier (`HTTP 404 …`, `DI …`). Strictest
-                 * sensible wins, and an existing title is a rename, not a case
-                 * for an estate-specific escape hatch. */
-                'vitest/prefer-lowercase-title': on(),
+                'vitest/consistent-test-it': CONSISTENT_TEST_IT,
+                'vitest/prefer-lowercase-title': PREFER_LOWERCASE_TITLE,
+                'vitest/require-mock-type-parameters': REQUIRE_MOCK_TYPE_PARAMETERS,
 
                 'vitest/no-conditional-in-test': off({
                     by: "vitest/no-conditional-expect — the defect is an assertion that may not run, and that rule names it; this one also refuses a golden suite's TEST_UPDATE branch and every comparator",

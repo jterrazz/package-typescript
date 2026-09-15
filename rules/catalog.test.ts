@@ -2,7 +2,14 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, test } from 'vitest';
 
-import { catalog, MARKERS, render, renderReference } from './catalog.js';
+import {
+    catalog,
+    FIXER_MARKERS,
+    MARKERS,
+    render,
+    renderFixers,
+    renderReference,
+} from './catalog.js';
 
 /*
  * The catalogue has two readers and one source. `docs/07-lint-presets.md` is
@@ -19,10 +26,17 @@ import { catalog, MARKERS, render, renderReference } from './catalog.js';
 
 const PROJECTIONS = {
     chapter: {
+        markers: MARKERS,
         page: resolve(import.meta.dirname, '../docs/07-lint-presets.md'),
         render,
     },
+    'fixer list': {
+        markers: FIXER_MARKERS,
+        page: resolve(import.meta.dirname, '../docs/07-lint-presets.md'),
+        render: renderFixers,
+    },
     'skill reference': {
+        markers: MARKERS,
         page: resolve(import.meta.dirname, '../skills/jterrazz-typescript/references/rules.md'),
         render: renderReference,
     },
@@ -54,18 +68,18 @@ test('every decision carries the version it was taken in', () => {
 
 test.each(Object.entries(PROJECTIONS))(
     'the %s carries the catalogue the manifest renders',
-    (_name, { page, render: project }) => {
+    (_name, { markers, page, render: project }) => {
         // Given - the generated section of the projection
         const before = readFileSync(page, 'utf8');
-        const start = before.indexOf(MARKERS.start);
-        const end = before.indexOf(MARKERS.end);
+        const start = before.indexOf(markers.start);
+        const end = before.indexOf(markers.end);
         expect(start, 'the page has lost its GENERATED marker').toBeGreaterThan(-1);
         expect(end, 'the page has lost its /GENERATED marker').toBeGreaterThan(start);
 
         // Then - it is exactly what the manifest renders today
         const table = project();
         if (process.env.TEST_UPDATE === '1') {
-            const head = before.slice(0, start + MARKERS.start.length);
+            const head = before.slice(0, start + markers.start.length);
             writeFileSync(page, `${head}\n\n${table}\n\n${before.slice(end)}`);
         }
 
@@ -76,8 +90,8 @@ test.each(Object.entries(PROJECTIONS))(
          */
         const fresh = readFileSync(page, 'utf8');
         const carried = fresh.slice(
-            fresh.indexOf(MARKERS.start) + MARKERS.start.length,
-            fresh.indexOf(MARKERS.end),
+            fresh.indexOf(markers.start) + markers.start.length,
+            fresh.indexOf(markers.end),
         );
         expect(cells(carried)).toStrictEqual(cells(table));
     },

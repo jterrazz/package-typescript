@@ -31,6 +31,12 @@ export const MARKERS = Object.freeze({
     start: '<!-- GENERATED -->',
 });
 
+/** The fence that bounds the list of fixers `fix` refuses to run. */
+export const FIXER_MARKERS = Object.freeze({
+    end: '<!-- /GENERATED:fixers -->',
+    start: '<!-- GENERATED:fixers -->',
+});
+
 /** Every profile there is, so a decision carried by all of them says `all`. */
 const EVERY_PROFILE = Object.keys(PROFILES).length;
 
@@ -131,4 +137,30 @@ function scopeOf(entry) {
         return entry.typeAware === true ? 'type-aware' : '—';
     }
     return `scoped to ${entry.scoped.map((glob) => `\`${glob}\``).join(', ')}`;
+}
+
+/**
+ * Every rule whose own fixer changes meaning, with what the rewrite does.
+ * `check` reports them and a human answers them; `fix` runs with each one
+ * allowed, so the rewrite is never applied
+ * ([Quality checks](../docs/06-quality-checks.md)).
+ */
+export function unsafeFixers() {
+    const seen = new Map();
+    for (const entry of catalog()) {
+        if (entry.fixer === 'unsafe' && !seen.has(entry.rule)) {
+            seen.set(entry.rule, entry.fixerReason);
+        }
+    }
+
+    return [...seen.entries()]
+        .map(([rule, why]) => ({ rule, why }))
+        .toSorted((left, right) => left.rule.localeCompare(right.rule));
+}
+
+/** The same list as the markdown the chapter carries between its fixer markers. */
+export function renderFixers() {
+    return unsafeFixers()
+        .map(({ rule, why }) => `- \`${rule}\` — ${why}`)
+        .join('\n');
 }

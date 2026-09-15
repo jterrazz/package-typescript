@@ -358,7 +358,16 @@ run_checks() {
     local lint_status=0
     local format_status=0
     if [ "$FIX_MODE" = true ]; then
-        "$OXLINT" --type-aware --fix "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 ||
+        # A fixer that changes MEANING is never applied unattended: the rules
+        # marked `unsafe` in the manifest are allowed for THIS run only, so
+        # `fix` leaves them alone and `check` still reports them for a human.
+        local unsafe_fixers=()
+        while IFS= read -r flag; do
+            [ -n "$flag" ] && unsafe_fixers+=("$flag")
+        done < <(node "$PACKAGE_ROOT/lib/unsafe-fixers.js")
+
+        "$OXLINT" --type-aware --fix "${unsafe_fixers[@]}" "${LINT_ARGS[@]}" \
+            > "$tmp_dir/lint.log" 2>&1 ||
             lint_status=$?
         "$OXFMT" > "$tmp_dir/format.log" 2>&1 || format_status=$?
     else

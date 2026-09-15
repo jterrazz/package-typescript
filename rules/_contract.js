@@ -30,6 +30,8 @@
  * @property {unknown} [options] The rule's options, at their decided value.
  * @property {Reason} [reason] Present on every `off`, absent on every `on`.
  * @property {boolean} [typeAware] Whether the rule needs type information.
+ * @property {'unsafe'} [fixer] Present when the rule's own fixer changes meaning.
+ * @property {string} [fixerReason] What that rewrite changes — measured, one clause.
  * @property {string} since The version the decision was taken in.
  *
  * @typedef {object} Scoped An `overrides` block, stated in decisions.
@@ -78,6 +80,20 @@ export function allOn(rules) {
 export function off(reason, since) {
     assertReason(reason);
     return Object.freeze({ level: 'off', reason: Object.freeze({ ...reason }), since });
+}
+
+/**
+ * A decision whose FIXER changes meaning. The rule stays on — `check` reports
+ * it and a human answers it — but `fix` never applies the rewrite: the eight
+ * marked here have each been measured turning working code into code that
+ * does not compile, or into code that claims something else
+ * ([Lint presets](../docs/07-lint-presets.md)).
+ */
+export function unsafeFix(decision, why) {
+    if (typeof why !== 'string' || why.length === 0) {
+        throw new TypeError('An unsafe fixer must say what its rewrite changes.');
+    }
+    return Object.freeze({ ...decision, fixer: 'unsafe', fixerReason: why });
 }
 
 /**
