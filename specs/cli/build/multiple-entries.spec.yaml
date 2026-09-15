@@ -1,0 +1,15 @@
+description: compiles every entry the package's exports map publishes
+fixture: multi-entry/
+runs:
+    - command: build
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Building application (ESM + types)...
+
+          ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
+          ℹ config file: {{path}} 
+          ℹ entry: src/index.ts, src/register.ts
+          ℹ tsconfig: tsconfig.json
+          ℹ Build start
+          {{any}}
+          Build completed

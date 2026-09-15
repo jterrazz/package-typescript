@@ -62,7 +62,7 @@ Each config names `@jterrazz/typescript` and nothing else — the preset and the
 
 That form is every profile's, `library` included: what used to make a published package name `OxlintConfig` in its config files was `isolatedDeclarations` in the tsconfig preset, and that guarantee has moved to where it belongs — see the build presets below.
 
-A project that owns a `tsdown.config.ts` imports the build preset from the same place, and it ships a declaration so the import is typed rather than `any`:
+A project with several public subpaths needs no build config at all: `build` and `bundle` read their entries off the `exports` map ([Building](05-building.md)). A project that owns a `tsdown.config.ts` anyway imports the build preset from the same place, and it ships a declaration so the import is typed rather than `any`:
 
 ```ts
 // tsdown.config.ts

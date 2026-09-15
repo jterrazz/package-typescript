@@ -71,7 +71,15 @@ run_tsdown() {
 
     cd "$PROJECT_ROOT"
 
-    if ! "$TSDOWN" --config "$CONFIG_PATH" --cwd "$PROJECT_ROOT"; then
+    # What the package publishes is its `exports` map, so the build reads its
+    # entries there rather than assuming one. A package with no map, or whose
+    # map names nothing under `dist/`, keeps the preset's `src/index.ts`.
+    local entries=()
+    while IFS= read -r entry; do
+        [ -n "$entry" ] && entries+=("$entry")
+    done < <(node "$PACKAGE_ROOT/lib/entry-points.js" "$PROJECT_ROOT")
+
+    if ! "$TSDOWN" --config "$CONFIG_PATH" --cwd "$PROJECT_ROOT" "${entries[@]}"; then
         printf "${RED}Error: Build failed${NC}\n"
         exit 1
     fi

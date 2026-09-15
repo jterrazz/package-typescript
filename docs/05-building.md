@@ -15,6 +15,12 @@ The pipeline is fully compiled and Rust-fast: [tsdown](https://tsdown.dev) / [Ro
 | `typescript dev`    | `dist/index.js`    | Watch + rebuild + run                     |
 | `typescript tsc`    | whatever tsc emits | The TypeScript 7 compiler, passed through |
 
+## The entries
+
+A build compiles what the package PUBLISHES, and the package already says what that is: its `exports` map. Every subpath whose target is a file under `dist/` is compiled from the same path under `src/`, with a `.ts` extension — `"./register": "./dist/register.js"` is `src/register.ts`. A package with no map, or whose map names nothing under `dist/`, compiles `src/index.ts` alone.
+
+Two subpaths are skipped: a pattern (`./tsconfig/*`), because the map does not enumerate what it stands for, and a target the source tree has no file for. So a multi-entry package needs no `tsdown.config.ts` — which is the whole point, since owning one means declaring tsdown, and the contract is one devDependency ([Developing](02-developing.md)).
+
 ## build vs bundle
 
 - **`build`** — for applications. Emits ESM + declarations + source maps.
