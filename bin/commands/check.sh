@@ -87,6 +87,7 @@ TSC=$(find_tsc)
 OXLINT=$(find_binary oxlint)
 OXFMT=$(find_binary oxfmt)
 KNIP=$(find_binary knip)
+DEPCRUISE=$(find_binary depcruise)
 PUBLINT=$(find_binary publint)
 ATTW=$(find_binary attw)
 CHECKER=$(find_binary jterrazz-test-check)
@@ -445,6 +446,20 @@ run_checks() {
         secrets_pid=$!
     fi
 
+    # Architecture (layer map): the graph a project declared, resolved. Bash
+    # asks the one question that decides whether the gate applies at all — is
+    # there a map — and the script decides what it says. Opt-in by the file's
+    # existence: a project with no declared architecture is not in breach of one.
+    local architecture_pid=""
+    local architecture_status=0
+    if [ "$FIX_MODE" = false ] &&
+        { [ -f ".dependency-cruiser.cjs" ] || [ -f ".dependency-cruiser.js" ] ||
+            [ -f ".dependency-cruiser.mjs" ]; }; then
+        node "$PACKAGE_ROOT/lib/check-architecture.js" . --depcruise "$DEPCRUISE" \
+            > "$tmp_dir/architecture.log" 2>&1 &
+        architecture_pid=$!
+    fi
+
     # Publish (packaging): what a published package promises, held to what the
     # tarball will contain. Once per package the registry would accept — the
     # unit is the workspace package, and a private one has no tarball.
@@ -523,6 +538,7 @@ run_checks() {
     [ -n "$docs_layout_pid" ] && { wait $docs_layout_pid; docs_layout_status=$?; }
     wait $suppressions_pid; suppressions_status=$?
     [ -n "$markdown_pid" ] && { wait $markdown_pid; markdown_status=$?; }
+    [ -n "$architecture_pid" ] && { wait $architecture_pid; architecture_status=$?; }
     [ -n "$names_pid" ] && { wait $names_pid; names_status=$?; }
     [ -n "$secrets_pid" ] && { wait $secrets_pid; secrets_status=$?; }
 
@@ -656,6 +672,7 @@ run_checks() {
 
     # The tree gates report in both modes: a gate with a `--fix` may have
     # written, and one that only reads stays silent unless it refused.
+    report_gate "Architecture (layer map)" $architecture_status "$tmp_dir/architecture.log"
     report_gate "Suppressions (directives)" $suppressions_status "$tmp_dir/suppressions.log"
     report_gate "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
     report_gate "Names (tree)" $names_status "$tmp_dir/names.log"
@@ -668,7 +685,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ] && [ $publish_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ] && [ $publish_status -eq 0 ] && [ $architecture_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

@@ -23,6 +23,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)    |
 | Docs (sync)                       | `typescript docs --check`   | per package that has committed docs (`docs/reference/`)      |
 | Publish (packaging)               | publint + attw              | per package the registry would accept (not `private`)        |
+| Architecture (layer map)          | dependency-cruiser          | check: a `.dependency-cruiser.*` at the project root         |
 | Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)       |
 | Markdown (prose)                  | the prose gate              | always (check only — a paragraph is not machine-split)       |
 | Names (tree)                      | the naming gate             | always (check only — a rename is a move, not a rewrite)      |
@@ -167,6 +168,16 @@ Beside them run `publint --strict` on the packed tarball and `attw --pack . --pr
 The two rule ids overlap publint on purpose. They read the SOURCE TREE and it reads the TARBALL, which means they answer where npm is not reachable and they keep a stable id whatever publint's wording does next. A gate's vocabulary is its own.
 
 **Both tools are dependencies of this package rather than tsdown flags.** tsdown 0.23 can run them behind `--publint` and `--attw`, but only during a build — and `check` has to judge a package that does not build, which is exactly what this one is.
+
+## The Architecture (layer map) pass
+
+oxlint's `no-restricted-imports` reads a path and a pattern; dependency-cruiser resolves the module graph, which is the only way to see a cycle running through three files or an edge hiding behind a barrel. Where a project declares a map — `.dependency-cruiser.cjs`, `.js` or `.mjs` at its root — this pass reads it, and where it does not the pass never runs: a project with no declared architecture is not in breach of one.
+
+**The rule ids are the config's own `name`s.** This is the one gate of the toolchain whose vocabulary the consumer writes, and that is the point: a layer map is a project's own architecture, so its rules are named for it.
+
+A cruise starts from `src/` wherever there is one, and from whichever of `apps/`, `packages/` and `lib/` exist otherwise — a map never has to restate the shape of the tree it is about.
+
+`dependency-cruiser` declares a `typescript <7` peer, and this tree satisfies it: the ordinary `typescript` dependency here is the ^6 JavaScript compiler API that typedoc and perfectionist already need ([Architecture](01-architecture.md)). That is also why the TS7 Go compiler stays out of `node_modules` under the name `typescript`.
 
 ## The Suppressions (directives) pass
 
