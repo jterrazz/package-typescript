@@ -1,6 +1,7 @@
 {
     "name": "sample-documented",
     "version": "1.0.0",
+    "private": true,
     "description": "A sample documented library",
     "type": "module",
     "main": "dist/index.cjs",

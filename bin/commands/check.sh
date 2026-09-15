@@ -87,6 +87,8 @@ TSC=$(find_tsc)
 OXLINT=$(find_binary oxlint)
 OXFMT=$(find_binary oxfmt)
 KNIP=$(find_binary knip)
+PUBLINT=$(find_binary publint)
+ATTW=$(find_binary attw)
 CHECKER=$(find_binary jterrazz-test-check)
 
 # ── The unit is the workspace package, not the repository ────────────────────
@@ -136,6 +138,15 @@ workspace_uses_jterrazz_test() {
         project_uses_jterrazz_test "$member" && return 0
     done
     return 1
+}
+
+# A package the registry would accept: it names an entry (`exports`, `main`) or
+# a publish target, and it never says it is private. A private package, and a
+# workspace root that only holds members, have no tarball to be judged on.
+project_is_publishable() {
+    local dir="${1:-.}"
+    [ -f "$dir/package.json" ] || return 1
+    node -e 'const {readFileSync}=require("node:fs");const p=JSON.parse(readFileSync(process.argv[1],"utf8"));process.exit(p.private!==true&&(p.exports||p.main||p.publishConfig)?0:1)' "$dir/package.json" 2>/dev/null
 }
 
 # A path git has been told to forget is not this workspace's source. Clones,
@@ -434,6 +445,25 @@ run_checks() {
         secrets_pid=$!
     fi
 
+    # Publish (packaging): what a published package promises, held to what the
+    # tarball will contain. Once per package the registry would accept — the
+    # unit is the workspace package, and a private one has no tarball.
+    local publish_pids=()
+    local publish_logs=()
+    local publish_status=0
+    if [ "$FIX_MODE" = false ]; then
+        local publish_index=0
+        for publish_root in "." "${WORKSPACE_MEMBERS[@]}"; do
+            project_is_publishable "$publish_root" || continue
+            node "$PACKAGE_ROOT/lib/check-publish.js" "$publish_root" \
+                --publint "$PUBLINT" --attw "$ATTW" \
+                > "$tmp_dir/publish-$publish_index.log" 2>&1 &
+            publish_pids+=($!)
+            publish_logs+=("$tmp_dir/publish-$publish_index.log")
+            publish_index=$((publish_index + 1))
+        done
+    fi
+
     # Conventions checker: only in check mode, once per specs root the workspace
     # owns, gated by the package that OWNS that root — a member may depend on
     # @jterrazz/test while the root does not, and the reverse.
@@ -504,6 +534,16 @@ run_checks() {
         if ! wait "$pid"; then
             checker_status=1
             checker_failed_logs+=("${checker_logs[$index]}")
+        fi
+        index=$((index + 1))
+    done
+
+    local publish_failed_logs=()
+    index=0
+    for pid in "${publish_pids[@]}"; do
+        if ! wait "$pid"; then
+            publish_status=1
+            publish_failed_logs+=("${publish_logs[$index]}")
         fi
         index=$((index + 1))
     done
@@ -606,6 +646,14 @@ run_checks() {
         fi
     fi
 
+    if [ ${#publish_failed_logs[@]} -gt 0 ]; then
+        printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} Publish (packaging)\n\n"
+        for log in "${publish_failed_logs[@]}"; do
+            [ -s "$log" ] && cat "$log"
+        done
+        printf "${RED}✗ Failed with exit code %d${NC}\n" $publish_status
+    fi
+
     # The tree gates report in both modes: a gate with a `--fix` may have
     # written, and one that only reads stays silent unless it refused.
     report_gate "Suppressions (directives)" $suppressions_status "$tmp_dir/suppressions.log"
@@ -620,7 +668,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ] && [ $publish_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

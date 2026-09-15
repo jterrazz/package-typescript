@@ -1,0 +1,14 @@
+{
+  "name": "fixture-publish-broken-map",
+  "version": "1.0.0",
+  "files": [
+    "index.js"
+  ],
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./greeter": "./greeter.js",
+    "./farewell": "./farewell.js"
+  }
+}

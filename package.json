@@ -1,10 +1,11 @@
 {
     "name": "@jterrazz/typescript",
     "version": "9.3.0",
+    "license": "MIT",
     "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
     "repository": {
         "type": "git",
-        "url": "https://github.com/jterrazz/package-typescript"
+        "url": "git+https://github.com/jterrazz/package-typescript.git"
     },
     "bin": {
         "typescript": "bin/typescript.sh"

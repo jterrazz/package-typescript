@@ -48,6 +48,7 @@ lib/check-docs.js          # The manual's shape, read off the repository's docs/
 lib/check-gitignore.js     # The artefact convention, read off the project's .gitignore — check | --fix
 lib/check-markdown.js      # Every tracked page's coordinates and readability floors — the Markdown (prose) gate
 lib/check-names.js         # What the tree calls its own parts — the Names (tree) gate
+lib/check-publish.js       # The exports map against the tarball — the Publish gate (publint + attw)
 lib/check-secrets.js       # No committed file carries a live credential — the Secrets gate (gitleaks, else patterns)
 lib/check-suppressions.js  # Every disable directive is spelled, reasoned and live — the Suppressions gate, check | --fix
 lib/merge-knip-config.js   # Merges knip base preset with project-local knip.json (read as JSONC)

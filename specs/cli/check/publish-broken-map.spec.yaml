@@ -1,0 +1,37 @@
+description: fails an exports map naming a file that is absent and one the tarball leaves out
+fixture: publish/broken-map/
+runs:
+    - command: check
+      exit: 1
+      # publint's own report follows the two rule lines, and it opens on its
+      # version — a block that belongs to the tool, not to this document. What
+      # is claimed here is the gate's own reading of the source tree.
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Publish (packaging)
+
+          publish-exports-target  package.json  ./farewell.js resolves to nothing on disk
+          publish-files  package.json  ./greeter.js is outside "files" — it resolves here and 404s in a consumer
+          {{any}}
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

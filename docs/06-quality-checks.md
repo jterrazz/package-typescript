@@ -22,6 +22,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Test Conventions (@jterrazz/test) | conventions checker         | per package that depends on `@jterrazz/test` + owns `specs/` |
 | Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)    |
 | Docs (sync)                       | `typescript docs --check`   | per package that has committed docs (`docs/reference/`)      |
+| Publish (packaging)               | publint + attw              | per package the registry would accept (not `private`)        |
 | Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)       |
 | Markdown (prose)                  | the prose gate              | always (check only — a paragraph is not machine-split)       |
 | Names (tree)                      | the naming gate             | always (check only — a rename is a move, not a rewrite)      |
@@ -149,6 +150,23 @@ typescript baseline
 A command of its own, because it neither checks nor repairs: it writes down where the project actually stands. `fix --baseline` would bury the rewrite of a tracked file inside the gesture a developer runs twenty times a day. The file is written from the current counts, then handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape.
 
 This package keeps one. Turning type-aware linting on found seven diagnostics in its own source, and they are recorded rather than hidden: the toolchain is consumer #1 of its own migration path.
+
+## The Publish (packaging) pass
+
+Every mistake this pass refuses is invisible in the repository and fatal in the registry: an `exports` entry pointing at a file nobody built, a subpath left out of `files` so it resolves in development and 404s in a consumer, a type declaration a modern resolver cannot see.
+
+It runs once per package the registry would accept — one that names an entry (`exports`, `main`) or a `publishConfig` and never says it is `private`. A private package, and a workspace root that only holds members, have no tarball to be judged on.
+
+| Rule                     | Refuses                                                    |
+| ------------------------ | ---------------------------------------------------------- |
+| `publish-exports-target` | an `exports`, `main` or `types` target that is not on disk |
+| `publish-files`          | a target `files` does not reach — it 404s in a consumer    |
+
+Beside them run `publint --strict` on the packed tarball and `attw --pack . --profile esm-only` on the declarations, and each prints its own report verbatim when it refuses.
+
+The two rule ids overlap publint on purpose. They read the SOURCE TREE and it reads the TARBALL, which means they answer where npm is not reachable and they keep a stable id whatever publint's wording does next. A gate's vocabulary is its own.
+
+**Both tools are dependencies of this package rather than tsdown flags.** tsdown 0.23 can run them behind `--publint` and `--attw`, but only during a build — and `check` has to judge a package that does not build, which is exactly what this one is.
 
 ## The Suppressions (directives) pass
 
