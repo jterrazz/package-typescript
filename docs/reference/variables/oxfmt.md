@@ -5,4 +5,4 @@
 const oxfmt: OxfmtConfig;
 ```
 
-Defined in: index.d.ts:4
+Defined in: [index.d.ts:4](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L4)

@@ -5,11 +5,11 @@
 const default: object;
 ```
 
-Defined in: index.d.ts:16
+Defined in: [index.d.ts:16](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L16)
 
 ## Type Declaration
 
 | Name | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="property-oxfmt"></a> `oxfmt` | *typeof* [`oxfmt`](oxfmt.md) | index.d.ts:17 |
-| <a id="property-oxlint"></a> `oxlint` | *typeof* [`oxlint`](oxlint.md) | index.d.ts:18 |
+| <a id="property-oxfmt"></a> `oxfmt` | *typeof* [`oxfmt`](oxfmt.md) | [index.d.ts:17](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L17) |
+| <a id="property-oxlint"></a> `oxlint` | *typeof* [`oxlint`](oxlint.md) | [index.d.ts:18](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L18) |

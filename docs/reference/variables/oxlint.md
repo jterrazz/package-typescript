@@ -5,16 +5,16 @@
 const oxlint: object;
 ```
 
-Defined in: index.d.ts:6
+Defined in: [index.d.ts:6](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L6)
 
 ## Type Declaration
 
 | Name | Type | Defined in |
 | ------ | ------ | ------ |
-| <a id="property-astro"></a> `astro` | `OxlintConfig` | index.d.ts:7 |
-| <a id="property-bun"></a> `bun` | `OxlintConfig` | index.d.ts:8 |
-| <a id="property-expo"></a> `expo` | `OxlintConfig` | index.d.ts:9 |
-| <a id="property-hexagonal"></a> `hexagonal` | `OxlintConfig` | index.d.ts:10 |
-| <a id="property-library"></a> `library` | `OxlintConfig` | index.d.ts:11 |
-| <a id="property-next"></a> `next` | `OxlintConfig` | index.d.ts:12 |
-| <a id="property-node"></a> `node` | `OxlintConfig` | index.d.ts:13 |
+| <a id="property-astro"></a> `astro` | `OxlintConfig` | [index.d.ts:7](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L7) |
+| <a id="property-bun"></a> `bun` | `OxlintConfig` | [index.d.ts:8](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L8) |
+| <a id="property-expo"></a> `expo` | `OxlintConfig` | [index.d.ts:9](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L9) |
+| <a id="property-hexagonal"></a> `hexagonal` | `OxlintConfig` | [index.d.ts:10](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L10) |
+| <a id="property-library"></a> `library` | `OxlintConfig` | [index.d.ts:11](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L11) |
+| <a id="property-next"></a> `next` | `OxlintConfig` | [index.d.ts:12](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L12) |
+| <a id="property-node"></a> `node` | `OxlintConfig` | [index.d.ts:13](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L13) |
