@@ -8,6 +8,7 @@ export default defineConfig({
                 test: {
                     name: 'fast',
                     include: [
+                        'specs/cli/preset/declarations.test.ts',
                         'specs/cli/preset/exports.test.ts',
                         'rules/**/*.test.ts',
                         'src/**/*.test.ts',
@@ -28,6 +29,7 @@ export default defineConfig({
                     name: 'e2e',
                     include: ['specs/**/*.test.ts'],
                     exclude: [
+                        'specs/cli/preset/declarations.test.ts',
                         'specs/cli/preset/exports.test.ts',
                         /*
                          * Bridged documents: a .test.ts beside each one runs it and adds the
