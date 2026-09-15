@@ -3,7 +3,7 @@
  * restate it: `OxlintConfig` and `OxlintOverride` are re-exported from the
  * tool, under the names a consumer already reads here. A hand copy drifts —
  * this one had `plugins?: string[]` where oxlint takes a closed union, and a
- * consumer's `defineConfig({ extends: [node] })` stopped type-checking.
+ * consumer's `defineConfig(node)` stopped type-checking.
  */
 
 import { type OxlintConfig } from 'oxlint';

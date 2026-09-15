@@ -69,7 +69,7 @@ for consumer in "$CONSUMERS"/*/; do
         cat > "$project/oxlint.config.ts" <<EOF
 import { defineConfig, $profile, type OxlintConfig } from '@jterrazz/typescript/oxlint';
 
-const config: OxlintConfig = defineConfig({ extends: [$profile] });
+const config: OxlintConfig = defineConfig($profile);
 
 export default config;
 EOF
@@ -84,7 +84,7 @@ EOF
         cat > "$project/oxlint.config.ts" <<EOF
 import { $(named_imports defineConfig "$profile") } from '@jterrazz/typescript/oxlint';
 
-export default defineConfig({ extends: [$profile] });
+export default defineConfig($profile);
 EOF
         cat > "$project/oxfmt.config.ts" <<'EOF'
 import { base, defineConfig } from '@jterrazz/typescript/oxfmt';

@@ -50,7 +50,7 @@ npm install @jterrazz/typescript --save-dev
 ```ts
 // oxlint.config.ts — the same word as the tsconfig preset
 import { defineConfig, node } from '@jterrazz/typescript/oxlint';
-export default defineConfig({ extends: [node] }); // or library, next, astro, expo, bun, react
+export default defineConfig(node); // or library, next, astro, expo, bun, react
 ```
 
 ```ts
@@ -65,15 +65,15 @@ Projects using `@jterrazz/test` compose its lint fragment explicitly:
 
 ```ts
 import { testing } from '@jterrazz/test/oxlint';
-import { compose, node } from '@jterrazz/typescript/oxlint';
-export default compose(node, testing);
+import { compose, defineConfig, node } from '@jterrazz/typescript/oxlint';
+export default defineConfig(compose(node, testing));
 ```
 
 Under the `library` profile alone, `isolatedDeclarations` refuses a default export it would have to infer, so both config files name the type:
 
 ```ts
 import { defineConfig, library, type OxlintConfig } from '@jterrazz/typescript/oxlint';
-const config: OxlintConfig = defineConfig({ extends: [library] });
+const config: OxlintConfig = defineConfig(library);
 export default config;
 ```
 

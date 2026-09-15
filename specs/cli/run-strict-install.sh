@@ -48,7 +48,7 @@ EOF
 cat > "$SANDBOX/oxlint.config.ts" <<'EOF'
 import { defineConfig, node } from '@jterrazz/typescript/oxlint';
 
-export default defineConfig({ extends: [node] });
+export default defineConfig(node);
 EOF
 
 cat > "$SANDBOX/oxfmt.config.ts" <<'EOF'

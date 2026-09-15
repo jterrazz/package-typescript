@@ -5,7 +5,7 @@
  *
  *     import { defineConfig, node } from '@jterrazz/typescript/oxlint';
  *
- *     export default defineConfig({ extends: [node] });
+ *     export default defineConfig(node);
  *
  * What each profile carries, and why every rule of every loaded plugin is
  * decided by name, is [Lint presets](../docs/07-lint-presets.md).

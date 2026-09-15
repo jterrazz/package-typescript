@@ -36,7 +36,7 @@ What each profile adds to the rulebook, and why a profile never relaxes it, is [
 // oxlint.config.ts
 import { defineConfig, node } from '@jterrazz/typescript/oxlint';
 
-export default defineConfig({ extends: [node] });
+export default defineConfig(node);
 ```
 
 ```ts
@@ -46,7 +46,7 @@ import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
 export default defineConfig(base);
 ```
 
-Swap `node` for the profile you picked — the import name and the profile name are the same word.
+Swap `node` for the profile you picked — the import name and the profile name are the same word. A project that also uses `@jterrazz/test` composes that package's testing fragment beside the profile, in the same one line ([Lint presets](07-lint-presets.md)).
 
 Each config names `@jterrazz/typescript` and nothing else — the preset and the tool's own `defineConfig` both arrive from it. Importing `defineConfig` from `oxlint` or `oxfmt` directly asks the project to declare those packages as well, which is the shape below refusing to hold.
 
@@ -56,7 +56,7 @@ Each config names `@jterrazz/typescript` and nothing else — the preset and the
 // oxlint.config.ts, under the library profile
 import { defineConfig, library, type OxlintConfig } from '@jterrazz/typescript/oxlint';
 
-const config: OxlintConfig = defineConfig({ extends: [library] });
+const config: OxlintConfig = defineConfig(library);
 
 export default config;
 ```

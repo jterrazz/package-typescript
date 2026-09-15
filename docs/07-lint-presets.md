@@ -6,7 +6,7 @@ Every rule of every plugin this package loads is decided by name, at `error` or 
 // oxlint.config.ts
 import { defineConfig, node } from '@jterrazz/typescript/oxlint';
 
-export default defineConfig({ extends: [node] });
+export default defineConfig(node);
 ```
 
 ## The four laws
@@ -63,9 +63,9 @@ A project using `@jterrazz/test` composes its testing fragment explicitly — no
 
 ```ts
 import { testing } from '@jterrazz/test/oxlint';
-import { compose, node } from '@jterrazz/typescript/oxlint';
+import { compose, defineConfig, node } from '@jterrazz/typescript/oxlint';
 
-export default compose(node, testing);
+export default defineConfig(compose(node, testing));
 ```
 
 ## The layer map
