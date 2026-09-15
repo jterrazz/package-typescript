@@ -11,12 +11,12 @@ npm run lint    # this package's own CLI, run on this package
 
 `vitest.config.ts` declares two projects:
 
-| Project | Runs                                               | Speed                        |
-| ------- | -------------------------------------------------- | ---------------------------- |
-| `fast`  | `src/**/*.test.ts` and the exports resolution test | milliseconds, pure functions |
-| `e2e`   | everything under `specs/` — the product command    | seconds, real processes      |
+| Project | Runs                                                                      | Speed                        |
+| ------- | ------------------------------------------------------------------------- | ---------------------------- |
+| `fast`  | `src/**` and `rules/**` unit tests, plus the exports and declaration ones | milliseconds, pure functions |
+| `e2e`   | everything else under `specs/` — the product command                      | seconds, real processes      |
 
-The `fast` project is where a pure function is proved: `compose()`, and the manual's rule engine over in-memory trees (`src/docs.test.ts`). Nothing there spawns anything.
+The `fast` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`rules/*.test.ts`), the manual's rule engine over in-memory trees (`src/docs.test.ts`), and the two that read the package's own surface — `exports.test.ts` resolves every public subpath, `declarations.test.ts` holds each `.d.ts` to the value surface of the `.js` beside it. Nothing there spawns anything.
 
 ## A scenario is a document
 
@@ -32,15 +32,41 @@ runs:
           …
 ```
 
-`literate({ specification })` from `@jterrazz/test/vitest` binds every document of this repo to `cli.specification.ts`, the product runner. Regenerate the streams with `TEST_UPDATE=1`; the `{{duration}}`-style tokens survive it. The format itself is `@jterrazz/test`'s.
+`literate({ specification })` from `@jterrazz/test/vitest` binds every document of this repo to `cli.specification.ts`, the product runner. The format itself is `@jterrazz/test`'s, and the regeneration gesture is below.
 
 Each `check` document states the **whole** combined output of the run, not the fragment it is about. Where a fixture makes a tool refuse for a reason the scenario is not about — a knip case with no tsconfig, so tsc prints its own manual — the document spans that block with `{{any}}` and a comment naming whose noise it is.
+
+## The rulebook has seven suites
+
+The presets are the one part of this package a document cannot reach: `check` loads a preset from the consumer's `node_modules`, and a copied fixture has none. So `specs/cli/preset/` drives the tools directly — the B9w exception `oxlint.specification.ts` states — and seven suites divide the claim between them.
+
+| Suite             | Claims                                                                        |
+| ----------------- | ----------------------------------------------------------------------------- |
+| `resolved-config` | each profile resolves to the rule set its golden records, marker by marker    |
+| `rule-surface`    | every non-nursery rule of every loaded plugin is decided, and no `categories` |
+| `fixpoint`        | oxlint's fixes and oxfmt's reach a fixed point — no rule fights the formatter |
+| `behaviour`       | a fixture written to break rules reports exactly the diagnostics it should    |
+| `exclusive-pairs` | every `off` of kind `exclusive` names a rule that really is on, and conflicts |
+| `declarations`    | every `.d.ts` carries the value surface of the `.js` beside it                |
+| `install-matrix`  | one consumer per profile installs under pnpm-strict and checks green          |
+
+The last one is the outside view, and it is the one that fails when the corpus is wrong: six tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/_fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so a seventh profile earns a consumer by existing.
+
+### Regenerating a golden
+
+Every golden of this repository takes the same gesture:
+
+```bash
+TEST_UPDATE=1 npm test
+```
+
+It rewrites the `_expected/` trees, the resolved-config rosters, the catalogue section of [Lint presets](07-lint-presets.md), and the `stdout` of every spec document. Two things about it are worth knowing before reaching for it. A `{{any}}` token SURVIVES, but the real output is appended after it — so a document spanning a block it is not about is hand-edited, never regenerated. And the catalogue table comes out unaligned; `typescript fix` puts the columns back, and the freshness test compares cells, not padding.
 
 ## When a `.test.ts` is the right answer
 
 A chain of code is the exception, and each one says which exception it is:
 
-- **The binary is not the product.** oxfmt and oxlint run directly in three of them, and two install sandboxes run a shell script — the split install, and the pnpm-strict one that proves a consumer's configs load with one devDependency declared.
+- **The binary is not the product.** oxfmt and oxlint run directly in the rulebook suites, and three install sandboxes run a shell script — the split install, the pnpm-strict one that proves a consumer's configs load with one devDependency declared, and the profile matrix above.
 - **The stream has no byte-exact form.** `dev/` waits on a marker instead.
 - **The ground cannot be a fixture.** A fixture is copied, not initialised, so a scenario needing a real git repository builds one in a temp directory: the committed-artefact claim, and the Docs (layout) pass, which asks its question only where a repository is.
 - **The cwd must sit below the ground.** The gitignore gate's ancestor walk needs a `.gitignore` ABOVE the working directory, and `fixture:` spreads a project INTO it.
@@ -50,7 +76,7 @@ A chain of code is the exception, and each one says which exception it is:
 
 What a spec stands on carries a leading underscore. The shared pool is `specs/_fixtures/`, reached as `fixture: $FIXTURES/…`, and it holds only what SEVERAL domains use — `sample-app`, `sample-documented`, `incremental-app`. A fixture one domain alone reaches for lives beside that domain, in `specs/cli/<domain>/_fixtures/`, and is named by its relative form. Goldens are `_expected/`.
 
-The domains today: `build`, `check` (the passes, each stating the whole run), `clean`, `dev`, `docs` (the compiler, plus two bridges), `docs-layout` (the manual's rules, one document per family), `help`, `preset`, `start`.
+The domains today: `build`, `check` (the passes, each stating the whole run), `clean`, `dev`, `docs` (the compiler, plus two bridges), `docs-layout` (the manual's rules, one document per family), `doctor`, `help`, `preset`, `start`.
 
 ## The self-lint is the strongest test
 

@@ -8,17 +8,26 @@ npm install @jterrazz/typescript --save-dev
 
 Two audiences read this chapter: a project being wired onto the toolchain, first, and then anyone changing the toolchain itself — the last section is theirs.
 
-## 1. Choose a TypeScript configuration
+## 1. Pick a profile
 
-Extend one of the shipped presets from `tsconfig.json`:
+A project names ONE profile, and that name answers for both its lint rules and its TypeScript configuration. There are six, and four tsconfig presets behind them — `astro` and `bun` sit on the node compiler settings.
+
+| Profile   | For                                | `extends` in `tsconfig.json`            |
+| --------- | ---------------------------------- | --------------------------------------- |
+| `node`    | services and command-line tools    | `@jterrazz/typescript/tsconfig/node`    |
+| `library` | a package published to a registry  | `@jterrazz/typescript/tsconfig/library` |
+| `next`    | a Next.js application              | `@jterrazz/typescript/tsconfig/next`    |
+| `astro`   | an Astro site                      | `@jterrazz/typescript/tsconfig/node`    |
+| `expo`    | an Expo / React Native application | `@jterrazz/typescript/tsconfig/expo`    |
+| `bun`     | a project on the Bun runtime       | `@jterrazz/typescript/tsconfig/node`    |
 
 ```json
-{ "extends": "@jterrazz/typescript/tsconfig/node" }  // Node.js projects
-{ "extends": "@jterrazz/typescript/tsconfig/next" }  // Next.js projects
-{ "extends": "@jterrazz/typescript/tsconfig/expo" }  // Expo / React Native
+{ "extends": "@jterrazz/typescript/tsconfig/node" }
 ```
 
-Every preset scopes its `include` and `exclude` to `${configDir}` — the directory of the `tsconfig.json` that extends it — so a project inherits the right file set without restating one.
+That line is the whole file. Every preset scopes its `include` and `exclude` to `${configDir}` — the directory of the `tsconfig.json` that extends it — so a project inherits the right file set without restating one.
+
+What each profile adds to the rulebook, and why a profile never relaxes it, is [Lint presets](07-lint-presets.md).
 
 ## 2. Create the lint and format configs
 
@@ -36,7 +45,20 @@ import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
 export default defineConfig(base);
 ```
 
+Swap `node` for the profile you picked — the import name and the profile name are the same word.
+
 Each config names `@jterrazz/typescript` and nothing else — the preset and the tool's own `defineConfig` both arrive from it. Importing `defineConfig` from `oxlint` or `oxfmt` directly asks the project to declare those packages as well, which is the shape below refusing to hold.
+
+**The `library` profile is the one exception, and its tsconfig is why.** `isolatedDeclarations` refuses a default export whose type it would have to infer, so a published package names the type once per config file:
+
+```ts
+// oxlint.config.ts, under the library profile
+import { defineConfig, library, type OxlintConfig } from '@jterrazz/typescript/oxlint';
+
+const config: OxlintConfig = defineConfig({ extends: [library] });
+
+export default config;
+```
 
 ## 3. Wire the CLI into package.json
 
@@ -100,6 +122,17 @@ One exception is conditional, not static: `.next`. With `output: 'export'` in `n
 - Use `.js` extensions in relative imports: `import { foo } from './bar.js'`.
 - Add TSDoc to every public export — `typescript docs` derives the reference from it.
 
+## Taking a bump
+
+Two commands exist for the day a stricter release lands, and both are read-only until you ask for a file:
+
+```bash
+typescript doctor     # every tool, what is installed, and the range this release asks for
+typescript baseline   # record today's diagnostics, so the count may only fall
+```
+
+`doctor` is the first read after a bump: one row per tool, with a verdict. `baseline` is only needed where the bump lands red — it writes `oxlint.baseline.json`, and from then on the oxlint pass refuses any rule going up, refuses a rule nobody recorded, and refuses an entry that has reached zero. When to reach for each is [Operating](04-operating.md)'s; what the ratchet refuses is [Quality checks](06-quality-checks.md)'s.
+
 ## Working on this package
 
 ```bash
@@ -108,7 +141,7 @@ npm test        # the two vitest suites (Testing)
 npm run lint    # this package's own CLI, run on this package
 ```
 
-Where a new thing goes follows the layers ([Architecture](01-architecture.md)): a new gate is a node script in `lib/` plus the lines in `bin/commands/check.sh` that decide whether it applies; a new configuration is a file under `presets/`; a new importable entry is a `.js` and a hand-written `.d.ts` in `src/`, an `exports` subpath, and a row in the resolution test.
+Where a new thing goes follows the layers ([Architecture](01-architecture.md)): a new gate is a node script in `lib/` plus the lines in `bin/commands/check.sh` that decide whether it applies; a lint decision is a line of a fragment under `rules/`, never a config; a new configuration is a file under `presets/`; a new importable entry is a `.js` and a hand-written `.d.ts` in `src/`, an `exports` subpath, and a row in the resolution test.
 
 Two standing rules bind every change here:
 

@@ -34,6 +34,8 @@ One line decides it, and it is the consumer's side of the wire: **breaking means
 | a config file the consumer must rewrite to keep working  | major  |
 | a fix that makes a gate stop lying                       | patch  |
 
+**10.0.0 is a major on the fifth row, and on nothing else.** The rulebook got far stricter and the type-aware rules started running for the first time, and neither of those is what makes the number move: what does is that the four framework presets became six profiles, so every consumer rewrites the `import` line of its `oxlint.config.ts` and the `extends` of its `tsconfig.json`. A consumer that did not touch its config would resolve a name that is no longer there.
+
 A new gate turning a consumer's `main` red is not treated as a breaking change, and that is deliberate: the toolchain's job is to say what is wrong, and a repository absorbs it when it bumps. The estate has no legacy mode and no warn-only window — a rule that is worth shipping is worth failing on.
 
 What the ratchet changes is not that rule but the SHAPE of absorbing it: a repository adopting a stricter release records its debt with `typescript baseline` and burns it down on its own clock, instead of holding the bump until the tree is clean.

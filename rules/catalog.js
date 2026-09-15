@@ -31,6 +31,9 @@ export const MARKERS = Object.freeze({
     start: '<!-- GENERATED -->',
 });
 
+/** Every profile there is, so a decision carried by all of them says `all`. */
+const EVERY_PROFILE = Object.keys(PROFILES).length;
+
 /** Every decision, in rule order, one entry per distinct decision. */
 export function catalog() {
     /** @type {Map<string, Entry>} */
@@ -69,6 +72,34 @@ export function render() {
         '| --- | --- | --- | --- | --- |',
         ...rows,
     ].join('\n');
+}
+
+/**
+ * The same catalogue, trimmed for an agent: what the rule is, whether it runs,
+ * the reason in one clause, and where. No `since` column — an agent is reading
+ * to answer "may I write this", not "when was this decided", and the chapter
+ * carries that half.
+ */
+export function renderReference() {
+    const rows = catalog().map((entry) => {
+        const state = entry.level === 'off' ? 'off' : 'on';
+        const why = entry.level === 'off' ? reasonClause(entry.reason) : scopeOf(entry);
+        const where =
+            entry.profiles.length === EVERY_PROFILE ? 'all' : entry.profiles.join(', ');
+
+        return `| \`${entry.rule}\` | ${state} | ${why} | ${where} |`;
+    });
+
+    return [
+        '| Rule | State | Why | Profiles |',
+        '| --- | --- | --- | --- |',
+        ...rows,
+    ].join('\n');
+}
+
+/** An `off` in one clause: its kind, and the first thing its reason names. */
+function reasonClause({ by, kind }) {
+    return `${kind}: ${by.split(' — ')[0]}`;
 }
 
 /** One profile's decisions, its fragments applied left to right, last wins per rule and scope. */

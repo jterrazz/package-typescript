@@ -22,7 +22,7 @@ The first four chapters are the spine every repository of the ecosystem carries 
 
 `docs/reference/` is a **generated projection** — never hand-edit it (regenerate with `typescript docs`).
 
-One Claude Code skill routes into this corpus: `skills/jterrazz-typescript/` (building, checking, linting, formatting, docs generation). It does not restate the corpus — it routes into it. The repo-structure doctrine itself is a separate skill, `jterrazz-repo-structure`, which now ships from `jterrazz-studio`.
+One Claude Code skill routes into this corpus: `skills/jterrazz-typescript/` (building, checking, linting, formatting, docs generation). It does not restate the corpus — it routes into it. Its one reference page, `references/rules.md`, is GENERATED from `rules/` and freshness-tested by `rules/catalog.test.ts`; never hand-edit it. The repo-structure doctrine itself is a separate skill, `jterrazz-repo-structure`, which now ships from `jterrazz-studio`.
 
 `CLAUDE.md` at the root is a symlink to this file: one brief, two names, no second copy.
 
@@ -40,7 +40,7 @@ No build step — this package ships JS directly. It dogfoods its own CLI (`npm 
 bin/
 ├── typescript.sh          # CLI entry (build, bundle, start, dev, docs [--check], docs-layout, doctor, baseline, check, fix, clean)
 └── commands/
-    ├── check.sh           # Quality passes in parallel: tsc + oxlint + oxfmt + knip + the tree gates (quiet unless they fail)
+    ├── check.sh           # Fifteen passes in parallel; each that RAN prints a header and a verdict, in one fixed order
     └── docs.sh            # The docs compiler: typedoc reference tree, generate | --check
 
 lib/check-architecture.js  # The declared layer map against the resolved graph — the Architecture gate (dependency-cruiser)
@@ -58,12 +58,21 @@ lib/merge-knip-config.js   # Merges knip base preset with project-local knip.jso
 lib/tracked-files.js       # The one sweep every tree gate starts from — git ls-files, or a walk where there is no git
 lib/workspace-members.js   # Lists the consumer's workspace members — the unit each per-package gate measures from
 
+rules/                     # The lint manifest — every rule of every loaded plugin decided by name
+├── _contract.js           # fragment() / on() / off() — refuses an `off` with no recorded reason, at load time
+├── compile.js             # fragment -> the plain oxlint config object; `merge()` is the exported compose()
+├── profiles.js            # Which fragments each of the six profiles carries, and its ignore patterns
+├── catalog.js             # The catalogue, rendered twice — the chapter's table and the skill's reference
+├── core/ · react.js · next.js · astro.js · a11y.js · vitest.js · sorted.js · react-native.js
+└── architecture/          # hexagonal.js (the map this package ships) and layers.js (the builder)
+
 presets/
-├── tsconfig/ · tsdown/ · oxlint/ (+ architectures/hexagonal) · oxfmt/ · knip/ · prettier/ (.astro only)
-src/index.js + index.d.ts  # Package entry — exports { oxfmt, oxlint } presets (JS-shipped, no build)
-src/oxlint.js · oxfmt.js   # The tool-facing entries — presets, compose(), and each tool's defineConfig
+├── tsconfig/ · tsdown/ · oxlint/profiles/ (the six, compiled) · oxfmt/ · knip/ · prettier/ (.astro only)
+src/index.js + index.d.ts  # Package entry — exports { oxfmt, oxlint } profiles (JS-shipped, no build)
+src/oxlint.js · oxfmt.js   # The tool-facing entries — the profiles, compose(), layers(), each tool's defineConfig
 src/docs.js + docs.d.ts    # The manual's rules, pure — auditDocs(tree), exported at ./docs for a second reader
 docs/                      # The corpus: numbered chapters + the generated reference/ projection
+skills/                    # The Claude Code skill, with a GENERATED references/rules.md off the manifest
 specs/                     # Product specifications (@jterrazz/test) — the shape is docs/03-testing.md
 ```
 
@@ -75,7 +84,8 @@ specs/                     # Product specifications (@jterrazz/test) — the sha
 | Lint + format + typecheck + knip + docs | `npm run lint`             |
 | Auto-fix lint issues                    | `npm run lint:fix`         |
 | Regenerate docs projections             | `./bin/typescript.sh docs` |
+| Regenerate every golden and projection  | `TEST_UPDATE=1 npm test`   |
 
 ## Standing rule
 
-A change to the corpus (README or a chapter) or the public API means **regenerate the projections in the same change** (`./bin/typescript.sh docs`) — the Docs (sync) pass will fail otherwise. A change to the public API also updates `README.md`, the `docs/` chapters, and `skills/jterrazz-typescript/`. The repo-structure doctrine itself now lives in `jterrazz-studio` — never author it here or in a skill; route to it from `docs/09-repo-structure.md`.
+A change to the corpus (README or a chapter) or the public API means **regenerate the projections in the same change** (`./bin/typescript.sh docs`) — the Docs (sync) pass will fail otherwise. A change to the public API also updates `README.md`, the `docs/` chapters, and `skills/jterrazz-typescript/`. A change to a LINT DECISION is a line of a fragment under `rules/` and nothing else — the chapter's catalogue and the skill's reference are both projections of it, regenerated with `TEST_UPDATE=1 npm test`. The repo-structure doctrine itself now lives in `jterrazz-studio` — never author it here or in a skill; route to it from `docs/09-repo-structure.md`.
