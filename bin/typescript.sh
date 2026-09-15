@@ -41,6 +41,21 @@ find_binary() {
 
 TSDOWN=$(find_binary tsdown)
 
+# oxlint's type-aware rules run in `tsgolint`, a separate binary it looks up on
+# PATH — and a consumer's PATH has no reason to carry this package's bin dir. It
+# is a dependency here, so the lookup is made to succeed by putting the
+# directory that holds it in front, for this process and its children only.
+add_tsgolint_to_path() {
+    local tsgolint
+    tsgolint=$(find_binary tsgolint)
+    case "$tsgolint" in
+        */*)
+            PATH="$(cd -P "$(dirname "$tsgolint")" && pwd):$PATH"
+            export PATH
+            ;;
+    esac
+}
+
 # Parse command
 COMMAND="$1"
 shift 2>/dev/null || true
@@ -168,6 +183,32 @@ case "$COMMAND" in
         exec node "$PACKAGE_ROOT/lib/check-docs.js" "${1:-$PROJECT_ROOT}"
         ;;
 
+    baseline)
+        # The ratchet, recorded. A command of its own because it neither checks
+        # nor repairs: it writes down where the project actually stands, so the
+        # oxlint pass can refuse to let that number rise. `fix --baseline` would
+        # bury a rewrite of a tracked file inside the everyday gesture.
+        cd "$PROJECT_ROOT"
+
+        add_tsgolint_to_path
+
+        OXLINT=$(find_binary oxlint)
+        BASELINE_REPORT=$(mktemp)
+        trap 'rm -f "$BASELINE_REPORT"' EXIT
+
+        printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Recording the oxlint baseline...\n\n"
+
+        # A non-zero exit is the whole point of the recording, not a failure.
+        "$OXLINT" --type-aware --format json "$@" > "$BASELINE_REPORT" 2>/dev/null || true
+
+        node "$PACKAGE_ROOT/lib/check-baseline.js" "$BASELINE_REPORT" . --write
+
+        # The file is tracked, so it is the formatter's like every other tracked
+        # file — written here, shaped by the project's own oxfmt, never both.
+        OXFMT=$(find_binary oxfmt)
+        "$OXFMT" oxlint.baseline.json > /dev/null 2>&1 || true
+        ;;
+
     check|fix)
         exec bash "$SCRIPT_DIR/commands/check.sh" "$COMMAND" "$@"
         ;;
@@ -182,6 +223,7 @@ case "$COMMAND" in
         printf "  dev          Build, run, and rebuild on changes\n"
         printf "  docs         Generate the committed docs/reference tree; --check verifies sync\n"
         printf "  docs-layout  Check a repository's docs/ against the manual spine\n"
+        printf "  baseline     Record the oxlint baseline this project may not exceed\n"
         printf "  check        Check types, lint, formatting, and unused code\n"
         printf "  fix          Auto-fix lint and formatting issues\n"
         printf "  clean        Remove .artifacts/ — dist/ stays, it is the build's product\n\n"
@@ -193,6 +235,7 @@ case "$COMMAND" in
         printf "  typescript docs\n"
         printf "  typescript docs --check\n"
         printf "  typescript docs-layout .\n"
+        printf "  typescript baseline\n"
         printf "  typescript check\n"
         printf "  typescript fix\n"
         printf "  typescript clean\n"

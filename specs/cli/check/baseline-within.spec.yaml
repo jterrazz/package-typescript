@@ -1,0 +1,27 @@
+description: passes a project whose diagnostics stay under the counts it recorded
+fixture: baseline/within/
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

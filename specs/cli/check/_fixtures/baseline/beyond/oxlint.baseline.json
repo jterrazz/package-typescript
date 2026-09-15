@@ -1,0 +1,4 @@
+{
+  "eslint/no-debugger": 1,
+  "eslint/no-var": 3
+}

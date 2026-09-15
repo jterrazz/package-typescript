@@ -38,11 +38,12 @@ No build step — this package ships JS directly. It dogfoods its own CLI (`npm 
 
 ```
 bin/
-├── typescript.sh          # CLI entry (build, bundle, start, dev, docs [--check], docs-layout, check, fix, clean)
+├── typescript.sh          # CLI entry (build, bundle, start, dev, docs [--check], docs-layout, baseline, check, fix, clean)
 └── commands/
     ├── check.sh           # Quality passes in parallel: tsc + oxlint + oxfmt + knip + the tree gates (quiet unless they fail)
     └── docs.sh            # The docs compiler: typedoc reference tree, generate | --check
 
+lib/check-baseline.js      # The oxlint ratchet — counts that may fall and never rise; `typescript baseline` writes it
 lib/check-docs.js          # The manual's shape, read off the repository's docs/ — the reader behind the Docs (layout) pass
 lib/check-gitignore.js     # The artefact convention, read off the project's .gitignore — check | --fix
 lib/check-markdown.js      # Every tracked page's coordinates and readability floors — the Markdown (prose) gate

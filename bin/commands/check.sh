@@ -62,6 +62,27 @@ find_tsc() {
     fi
 }
 
+# oxlint's type-aware rules run in `tsgolint`, a separate binary it looks up on
+# PATH — and a consumer's PATH has no reason to carry this package's bin dir. It
+# is a dependency here, so the lookup is made to succeed by putting the
+# directory that holds it in front, for this process and its children only.
+add_tsgolint_to_path() {
+    local tsgolint
+    tsgolint=$(find_binary tsgolint)
+    case "$tsgolint" in
+        */*)
+            PATH="$(cd -P "$(dirname "$tsgolint")" && pwd):$PATH"
+            export PATH
+            ;;
+    esac
+}
+
+add_tsgolint_to_path
+
+# The ratchet's file, at the project root. Its presence is what turns the oxlint
+# pass from "no diagnostic at all" into "no diagnostic above what was recorded".
+BASELINE_FILE="oxlint.baseline.json"
+
 TSC=$(find_tsc)
 OXLINT=$(find_binary oxlint)
 OXFMT=$(find_binary oxfmt)
@@ -275,12 +296,26 @@ run_checks() {
     "$TSC" --noEmit > "$tmp_dir/type.log" 2>&1 &
     local type_pid=$!
 
+    # --type-aware is explicit and unconditional: the rules it unlocks are the
+    # ones no syntactic linter can express, and a flag that is only sometimes
+    # passed is a rule set that is only sometimes enforced. `oxlint-tsgolint` is
+    # a dependency of this package, so it is there for every consumer.
     if [ "$FIX_MODE" = true ]; then
-        "$OXLINT" --fix "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 &
+        "$OXLINT" --type-aware --fix "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 &
     else
-        "$OXLINT" "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 &
+        "$OXLINT" --type-aware "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 &
     fi
     local lint_pid=$!
+
+    # The same run, machine-readable, so the ratchet can be judged rule by rule.
+    # A second invocation rather than a reformat of the first: the human log is
+    # what a failing pass prints, and neither form can be derived from the other.
+    local lint_json_pid=""
+    if [ "$FIX_MODE" = false ] && [ -f "$BASELINE_FILE" ]; then
+        "$OXLINT" --type-aware --format json "${LINT_ARGS[@]}" \
+            > "$tmp_dir/lint.json" 2>/dev/null &
+        lint_json_pid=$!
+    fi
 
     if [ "$FIX_MODE" = true ]; then
         "$OXFMT" > "$tmp_dir/format.log" 2>&1 &
@@ -441,6 +476,17 @@ run_checks() {
     # Wait and collect statuses
     wait $type_pid;   local type_status=$?
     wait $lint_pid;   local lint_status=$?
+
+    # The ratchet, where the project keeps one: the pass is judged by what the
+    # baseline tolerates, not by oxlint's exit code. Bash decides whether the
+    # file is there; the script decides what it says.
+    if [ -n "$lint_json_pid" ]; then
+        wait $lint_json_pid
+        node "$PACKAGE_ROOT/lib/check-baseline.js" "$tmp_dir/lint.json" . \
+            >> "$tmp_dir/lint.log" 2>&1
+        lint_status=$?
+    fi
+
     wait $format_pid; local format_status=$?
     [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
     [ -n "$gitignore_pid" ] && { wait $gitignore_pid; gitignore_status=$?; }

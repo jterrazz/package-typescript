@@ -28,8 +28,9 @@ function pathWithoutGitleaks(): string {
     const probe = spawnSync('which', ['gitleaks'], { encoding: 'utf8' });
     const binary = probe.stdout.trim();
 
-    return (process.env['PATH'] ?? '')
-        .split(delimiter)
+    const { PATH = '' } = process.env;
+
+    return PATH.split(delimiter)
         .filter((directory) => binary === '' || !binary.startsWith(`${directory}/`))
         .join(delimiter);
 }

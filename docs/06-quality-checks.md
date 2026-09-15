@@ -15,7 +15,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Pass                              | Tool                        | When it runs                                                 |
 | --------------------------------- | --------------------------- | ------------------------------------------------------------ |
 | TypeScript Check                  | tsc (TypeScript 7, Go)      | always                                                       |
-| Oxlint Check                      | oxlint (Rust)               | always                                                       |
+| Oxlint Check                      | oxlint (`--type-aware`)     | always (judged by `oxlint.baseline.json` where there is one) |
 | Oxfmt Check                       | oxfmt (Rust)                | always                                                       |
 | Gitignore (artefacts)             | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own  |
 | Knip (unused code)                | knip (Node)                 | always (check only — it is not run in fix)                   |
@@ -125,6 +125,30 @@ const violations = auditDocs(tree); // -> [{ rule, path, message }, …]
 ```
 
 `tree` is a plain description of one repository — the paths under `docs/`, the opening lines of each page, each page's link targets, the root `AGENTS.md`, and the three presence facts. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
+
+## The Oxlint pass and its ratchet
+
+`--type-aware` is passed explicitly and unconditionally. The rules it unlocks are the ones no syntactic linter can express, and a flag that is only sometimes passed is a rule set that is only sometimes enforced. Those rules run in `tsgolint`, a separate binary oxlint looks up on PATH; `oxlint-tsgolint` is a dependency of this package, and `check.sh` puts the directory holding it in front of PATH for its own children, so a consumer never installs or configures anything.
+
+A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. `oxlint.baseline.json` is the second — a tracked `{ "<rule>": <count> }` at the project root, and the oxlint pass is judged by it rather than by oxlint's exit code. Without the file a single diagnostic fails the pass, exactly as before.
+
+Three things fail a run that has one, all under `baseline-ratchet`:
+
+- a rule whose count **exceeds** its entry — the debt grew;
+- a rule with diagnostics and **no** entry — debt nobody recorded owing;
+- an entry whose count is now **zero** — the ratchet moved, so the entry goes.
+
+The third is what makes the file shrink. Without it a baseline records a debt that was paid a year ago and nothing ever says so.
+
+### Recording it
+
+```bash
+typescript baseline
+```
+
+A command of its own, because it neither checks nor repairs: it writes down where the project actually stands. `fix --baseline` would bury the rewrite of a tracked file inside the gesture a developer runs twenty times a day. The file is written from the current counts, then handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape.
+
+This package keeps one. Turning type-aware linting on found seven diagnostics in its own source, and they are recorded rather than hidden: the toolchain is consumer #1 of its own migration path.
 
 ## The Suppressions (directives) pass
 

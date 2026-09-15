@@ -1,0 +1,4 @@
+{
+    "typescript/no-unsafe-type-assertion": 6,
+    "typescript/require-array-sort-compare": 1
+}
