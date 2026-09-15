@@ -1,0 +1,21 @@
+description: refuses to bundle a library whose export has no annotation to emit
+fixture: inferred-lib/
+runs:
+    - command: bundle
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  Bundling library (ESM + CJS + types)...
+
+          ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
+          ℹ config file: {{path}} 
+          ℹ entry: src/index.ts
+          ℹ tsconfig: tsconfig.json
+          ℹ Build start
+          {{any}}
+      # The diagnostic is the subject. The frames under it carry absolute paths
+      # and say nothing about the refusal — and the guarantee is the bundle's,
+      # not the tsconfig's: nothing in this fixture asks for it.
+      stderr: |-
+          {{any}}
+          RolldownError: TS9010: Variable must have an explicit type annotation with --isolatedDeclarations.
+          {{any}}

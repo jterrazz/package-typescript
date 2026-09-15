@@ -60,17 +60,7 @@ Swap `node` for the profile you picked — the import name and the profile name 
 
 Each config names `@jterrazz/typescript` and nothing else — the preset and the tool's own `defineConfig` both arrive from it. Importing `defineConfig` from `oxlint` or `oxfmt` directly asks the project to declare those packages as well, which is the shape below refusing to hold.
 
-**The `library` profile is the one exception, and its tsconfig is why.** `isolatedDeclarations` refuses a default export whose type it would have to infer, so a published package names the type once per config file:
-
-```ts
-// oxlint.config.ts, under the library profile
-import type { OxlintConfig } from '@jterrazz/typescript/oxlint';
-import { defineConfig, library } from '@jterrazz/typescript/oxlint';
-
-const config: OxlintConfig = defineConfig(library);
-
-export default config;
-```
+That form is every profile's, `library` included: what used to make a published package name `OxlintConfig` in its config files was `isolatedDeclarations` in the tsconfig preset, and that guarantee has moved to where it belongs — see the build presets below.
 
 A project that owns a `tsdown.config.ts` imports the build preset from the same place, and it ships a declaration so the import is typed rather than `any`:
 
@@ -81,17 +71,9 @@ import bundle from '@jterrazz/typescript/tsdown/bundle.js';
 export default bundle;
 ```
 
-```ts
-// tsdown.config.ts, under the library profile
-import type { UserConfig } from '@jterrazz/typescript/tsdown/bundle.js';
-import bundle from '@jterrazz/typescript/tsdown/bundle.js';
+`build` is the application preset, `bundle` the library one — the same two the CLI runs, and `UserConfig` is exported beside each for a project that annotates its own.
 
-const config: UserConfig = bundle;
-
-export default config;
-```
-
-`build` is the application preset, `bundle` the library one — the same two the CLI runs.
+**`isolatedDeclarations` is the `bundle` preset's, not the `library` tsconfig's.** What it buys is a declaration emitted without a type-checker, which is a property of the PUBLISHED artefact: `typescript bundle` refuses an export whose type it would have to infer, and `tsc --noEmit` over the repository does not. In the tsconfig it also reached every spec file, where it refused the destructured export a specification hands back (TS9019).
 
 ## 3. Wire the CLI into package.json
 

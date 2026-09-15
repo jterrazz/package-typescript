@@ -69,14 +69,7 @@ import { compose, defineConfig, node } from '@jterrazz/typescript/oxlint';
 export default defineConfig(compose(node, testing));
 ```
 
-Under the `library` profile alone, `isolatedDeclarations` refuses a default export it would have to infer, so both config files name the type:
-
-```ts
-import type { OxlintConfig } from '@jterrazz/typescript/oxlint';
-import { defineConfig, library } from '@jterrazz/typescript/oxlint';
-const config: OxlintConfig = defineConfig(library);
-export default config;
-```
+`isolatedDeclarations` is the `bundle` preset's: `typescript bundle` refuses an export whose type it would have to infer, and the config files of every profile — `library` included — are the one form above.
 
 ## Always
 

@@ -63,37 +63,16 @@ for consumer in "$CONSUMERS"/*/; do
     # trees included, and a config importing `@jterrazz/typescript` resolves to
     # nothing from a fixture's own directory. Writing them is also how
     # `run-strict-install.sh` states the documented form, in one place.
-    if [ "$profile" = library ]; then
-        # `isolatedDeclarations` refuses a default export it would have to
-        # infer, so this one profile names the type ([Developing](../../docs/02-developing.md)).
-        cat > "$project/oxlint.config.ts" <<EOF
-import type { OxlintConfig } from '@jterrazz/typescript/oxlint';
-import { defineConfig, $profile } from '@jterrazz/typescript/oxlint';
-
-const config: OxlintConfig = defineConfig($profile);
-
-export default config;
-EOF
-        cat > "$project/oxfmt.config.ts" <<'EOF'
-import type { OxfmtConfig } from '@jterrazz/typescript/oxfmt';
-import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
-
-const config: OxfmtConfig = defineConfig(base);
-
-export default config;
-EOF
-    else
-        cat > "$project/oxlint.config.ts" <<EOF
+    cat > "$project/oxlint.config.ts" <<EOF
 import { $(named_imports defineConfig "$profile") } from '@jterrazz/typescript/oxlint';
 
 export default defineConfig($profile);
 EOF
-        cat > "$project/oxfmt.config.ts" <<'EOF'
+    cat > "$project/oxfmt.config.ts" <<'EOF'
 import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
 
 export default defineConfig(base);
 EOF
-    fi
 
     cd "$project"
 
