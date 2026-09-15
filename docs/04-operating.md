@@ -23,7 +23,7 @@ Steps 2 to 4 are the owner's. A contributor never bumps the version inside a fea
 
 ## Which number moves
 
-Semver, read from the CONSUMER's side — a project that owns one devDependency and runs two commands:
+One line decides it, and it is the consumer's side of the wire: **breaking means the consumer must change HOW IT CONSUMES the package, or the package changes the consumer's runtime.** A stricter rule is neither of those — it changes what the consumer's code is allowed to look like, which is the job.
 
 | Change                                                   | Number |
 | -------------------------------------------------------- | ------ |
@@ -31,9 +31,25 @@ Semver, read from the CONSUMER's side — a project that owns one devDependency 
 | a new rule inside an existing pass                       | minor  |
 | a preset rule that starts failing code that used to pass | minor  |
 | a removed command, a removed export, a renamed preset    | major  |
+| a config file the consumer must rewrite to keep working  | major  |
 | a fix that makes a gate stop lying                       | patch  |
 
 A new gate turning a consumer's `main` red is not treated as a breaking change, and that is deliberate: the toolchain's job is to say what is wrong, and a repository absorbs it when it bumps. The estate has no legacy mode and no warn-only window — a rule that is worth shipping is worth failing on.
+
+What the ratchet changes is not that rule but the SHAPE of absorbing it: a repository adopting a stricter release records its debt with `typescript baseline` and burns it down on its own clock, instead of holding the bump until the tree is clean.
+
+## Adopting a stricter release
+
+Two gestures, and both are the consumer's:
+
+```bash
+typescript doctor     # what is installed, against what this release asks for
+typescript baseline   # record the diagnostics, so the count may only fall
+```
+
+`doctor` is the first read after a bump. It prints one row per tool — node, the Go `tsc`, the TypeScript JS API, oxlint, oxfmt, `oxlint-tsgolint`, knip — with what is installed, what this package declares, and a verdict. A tool OLDER than its range fails, because a gate running an older linter enforces an older rulebook without saying so; a tool NEWER only warns, since a version ahead of its range may be perfectly fine and the toolchain does not get to decide that. Every number is read off an installed package's own manifest rather than a lockfile or a `--version` flag: that is the one place that cannot disagree with what node will load.
+
+`baseline` is the second, and it is needed only where the bump lands red. It writes `oxlint.baseline.json` from the current counts, and from then on the oxlint pass refuses any rule going up, refuses a rule nobody recorded, and refuses an entry that has reached zero — so the file only ever shrinks. [Quality checks](06-quality-checks.md) owns the rules; what belongs here is when to reach for it: on the adoption pull request, in the same commit as the bump, never as a follow-up.
 
 ## How a consumer takes it
 

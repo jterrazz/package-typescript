@@ -84,5 +84,8 @@
         "@typescript/typescript-linux-x64": "^7.0.2",
         "@typescript/typescript-win32-arm64": "^7.0.2",
         "@typescript/typescript-win32-x64": "^7.0.2"
+    },
+    "engines": {
+        "node": ">=24.0.0"
     }
 }

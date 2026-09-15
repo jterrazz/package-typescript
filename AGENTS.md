@@ -38,7 +38,7 @@ No build step — this package ships JS directly. It dogfoods its own CLI (`npm 
 
 ```
 bin/
-├── typescript.sh          # CLI entry (build, bundle, start, dev, docs [--check], docs-layout, baseline, check, fix, clean)
+├── typescript.sh          # CLI entry (build, bundle, start, dev, docs [--check], docs-layout, doctor, baseline, check, fix, clean)
 └── commands/
     ├── check.sh           # Quality passes in parallel: tsc + oxlint + oxfmt + knip + the tree gates (quiet unless they fail)
     └── docs.sh            # The docs compiler: typedoc reference tree, generate | --check
@@ -52,6 +52,7 @@ lib/check-names.js         # What the tree calls its own parts — the Names (tr
 lib/check-publish.js       # The exports map against the tarball — the Publish gate (publint + attw)
 lib/check-secrets.js       # No committed file carries a live credential — the Secrets gate (gitleaks, else patterns)
 lib/check-suppressions.js  # Every disable directive is spelled, reasoned and live — the Suppressions gate, check | --fix
+lib/doctor.js              # Installed tool versions against the declared ranges — `typescript doctor`
 lib/merge-knip-config.js   # Merges knip base preset with project-local knip.json (read as JSONC)
 lib/tracked-files.js       # The one sweep every tree gate starts from — git ls-files, or a walk where there is no git
 lib/workspace-members.js   # Lists the consumer's workspace members — the unit each per-package gate measures from

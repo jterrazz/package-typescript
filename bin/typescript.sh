@@ -183,6 +183,16 @@ case "$COMMAND" in
         exec node "$PACKAGE_ROOT/lib/check-docs.js" "${1:-$PROJECT_ROOT}"
         ;;
 
+    doctor)
+        # Cheap, and read-only: what the toolchain is actually running against
+        # what it says it needs. No binary is spawned — every version is read
+        # off an installed package's own manifest, which is the one place that
+        # cannot disagree with what node will load.
+        printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Checking the toolchain...\n\n"
+
+        exec node "$PACKAGE_ROOT/lib/doctor.js"
+        ;;
+
     baseline)
         # The ratchet, recorded. A command of its own because it neither checks
         # nor repairs: it writes down where the project actually stands, so the
@@ -223,6 +233,7 @@ case "$COMMAND" in
         printf "  dev          Build, run, and rebuild on changes\n"
         printf "  docs         Generate the committed docs/reference tree; --check verifies sync\n"
         printf "  docs-layout  Check a repository's docs/ against the manual spine\n"
+        printf "  doctor       Report the installed tool versions against the declared ranges\n"
         printf "  baseline     Record the oxlint baseline this project may not exceed\n"
         printf "  check        Check types, lint, formatting, and unused code\n"
         printf "  fix          Auto-fix lint and formatting issues\n"
@@ -235,6 +246,7 @@ case "$COMMAND" in
         printf "  typescript docs\n"
         printf "  typescript docs --check\n"
         printf "  typescript docs-layout .\n"
+        printf "  typescript doctor\n"
         printf "  typescript baseline\n"
         printf "  typescript check\n"
         printf "  typescript fix\n"

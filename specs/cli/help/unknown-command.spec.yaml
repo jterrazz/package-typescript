@@ -14,6 +14,7 @@ runs:
             dev          Build, run, and rebuild on changes
             docs         Generate the committed docs/reference tree; --check verifies sync
             docs-layout  Check a repository's docs/ against the manual spine
+            doctor       Report the installed tool versions against the declared ranges
             baseline     Record the oxlint baseline this project may not exceed
             check        Check types, lint, formatting, and unused code
             fix          Auto-fix lint and formatting issues
@@ -27,6 +28,7 @@ runs:
             typescript docs
             typescript docs --check
             typescript docs-layout .
+            typescript doctor
             typescript baseline
             typescript check
             typescript fix
