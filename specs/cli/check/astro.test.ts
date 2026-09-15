@@ -30,7 +30,7 @@ function installAstroStub(): void {
     chmodSync(stub, 0o755);
 }
 
-test('checks the templates and formats them, where the project declares astro', () => {
+test("refuses a template the project's own checker and the formatter both refuse", () => {
     // Given - a project that depends on astro, with one badly shaped template
     writeFileSync(
         join(project, 'package.json'),
@@ -63,12 +63,18 @@ test('checks the templates and formats them, where the project declares astro', 
     expect(result.stdout).toContain('Astro (check + format)');
     expect(result.stdout).toContain('astro-check-ran');
     expect(result.stdout).toContain('src/page.astro');
+});
 
-    // When - the same project is fixed
+test('the formatter rewrites the template, and the pass has nothing left to say', () => {
+    // Given - the project the case above left with a badly shaped template
+
+    // When - the fixes run there
     const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
 
-    // Then - the formatter rewrote the template, so the check has nothing left to say
+    // Then - the formatter named the file it rewrote
     expect(fixed.stdout).toContain('src/page.astro');
+
+    // Then - and a second check no longer reports the pass at all
     const rechecked = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
-    expect(rechecked.stdout).not.toContain('Astro (check + format)');
+    expect(rechecked.stdout).not.toContain('astro-check-ran');
 });

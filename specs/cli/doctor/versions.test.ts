@@ -1,7 +1,6 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { expect, test } from 'vitest';
 
+import manifest from '../../../package.json' with { type: 'json' };
 import { cli } from '../cli.specification.js';
 
 /*
@@ -11,10 +10,6 @@ import { cli } from '../cli.specification.js';
  * JOIN — the ranges the report prints are the ones package.json declares, and
  * the verdict column answers for every tool the toolchain runs.
  */
-
-const MANIFEST = JSON.parse(
-    readFileSync(resolve(import.meta.dirname, '../../../package.json'), 'utf8'),
-);
 
 test('reports every tool of the toolchain against the range this package declares', async () => {
     // Given - the toolchain installed as this repository's own devDependencies
@@ -27,10 +22,10 @@ test('reports every tool of the toolchain against the range this package declare
     }
 
     // Then - the range beside each one is the range the manifest declares
-    for (const name of ['knip', 'oxfmt', 'oxlint', 'oxlint-tsgolint', 'typescript']) {
-        expect(result.stdout.toString()).toContain(MANIFEST.dependencies[name]);
+    for (const name of ['knip', 'oxfmt', 'oxlint', 'oxlint-tsgolint', 'typescript'] as const) {
+        expect(result.stdout.toString()).toContain(manifest.dependencies[name]);
     }
-    expect(result.stdout.toString()).toContain(MANIFEST.engines.node);
+    expect(result.stdout.toString()).toContain(manifest.engines.node);
 
     // Then - nothing installed here is older than what the toolchain asks for
     expect(result.stdout.toString()).not.toContain('old');

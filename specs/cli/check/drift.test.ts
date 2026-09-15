@@ -47,7 +47,7 @@ function stand(config: string): void {
     writeFileSync(join(project, 'oxlint.config.ts'), config);
 }
 
-test('refuses a rule turned off with no reason, and accepts the same line with one', () => {
+test('refuses a rule the profile has on, turned off with no reason beside it', () => {
     // Given - a project on the node profile that silently turns a rule off
     stand(
         [
@@ -72,7 +72,9 @@ test('refuses a rule turned off with no reason, and accepts the same line with o
         "drift-unreasoned  oxlint.config.ts  no-debugger is off and the line that turns it off carries no '// reason:'",
     );
     expect(silent.status).toBe(1);
+});
 
+test('accepts the same rule turned off, once the line that turns it off says why', () => {
     // Given - the same rule turned off, with the reason on the line that turns it off
     stand(
         [
@@ -91,11 +93,12 @@ test('refuses a rule turned off with no reason, and accepts the same line with o
     const reasoned = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
 
     /*
-     * Then - the rule is still REPORTED as off, and no longer refused: it is a
-     * decision now. The run's own exit code is not the claim here — a sandbox
-     * that links this checkout into its node_modules lints and formats what it
-     * finds there, which is this repository, not the case.
+     * The run's own exit code is not the claim here — a sandbox that links this
+     * checkout into its node_modules lints and formats what it finds there,
+     * which is this repository, not the case.
      */
+
+    // Then - the rule is still REPORTED as off, and no longer refused: it is a decision now
     expect(reasoned.stdout).toContain('rules off vs profile  1 (no-debugger)');
     expect(reasoned.stdout).not.toContain('drift-unreasoned');
 });
