@@ -10,14 +10,14 @@ Two audiences read this chapter: a project being wired onto the toolchain, first
 
 ## 1. Pick a profile
 
-A project names ONE profile, and that name answers for both its lint rules and its TypeScript configuration. There are seven, and five tsconfig presets behind them — `astro` and `bun` sit on the node compiler settings.
+A project names ONE profile, and that name answers for both its lint rules and its TypeScript configuration. There are seven, and six tsconfig presets behind them — `bun` alone sits on the node compiler settings.
 
 | Profile   | For                                | `extends` in `tsconfig.json`            |
 | --------- | ---------------------------------- | --------------------------------------- |
 | `node`    | services and command-line tools    | `@jterrazz/typescript/tsconfig/node`    |
 | `library` | a package published to a registry  | `@jterrazz/typescript/tsconfig/library` |
 | `next`    | a Next.js application              | `@jterrazz/typescript/tsconfig/next`    |
-| `astro`   | an Astro site                      | `@jterrazz/typescript/tsconfig/node`    |
+| `astro`   | an Astro site                      | `@jterrazz/typescript/tsconfig/astro`   |
 | `expo`    | an Expo / React Native application | `@jterrazz/typescript/tsconfig/expo`    |
 | `bun`     | a project on the Bun runtime       | `@jterrazz/typescript/tsconfig/node`    |
 | `react`   | React with no framework under it   | `@jterrazz/typescript/tsconfig/react`   |
@@ -27,6 +27,14 @@ A project names ONE profile, and that name answers for both its lint rules and i
 ```
 
 That line is the whole file. Every preset scopes its `include` and `exclude` to `${configDir}` — the directory of the `tsconfig.json` that extends it — so a project inherits the right file set without restating one.
+
+**Astro is the one profile whose tsconfig takes two names.** Astro ships the file set its own tooling needs, and this package cannot extend a dependency the consumer owns, so the consumer composes them — ours for the strict flags and the JSX runtime, Astro's for what it knows about `.astro` files:
+
+```json
+{ "extends": ["@jterrazz/typescript/tsconfig/astro", "astro/tsconfigs/strict"] }
+```
+
+The `astro` preset states no `include` for that reason: the later entry wins, and the file set is Astro's.
 
 What each profile adds to the rulebook, and why a profile never relaxes it, is [Lint presets](07-lint-presets.md).
 

@@ -1,0 +1,25 @@
+{
+    "display": "Astro",
+    "compilerOptions": {
+        "allowJs": true,
+        "esModuleInterop": true,
+        "exactOptionalPropertyTypes": true,
+        "incremental": true,
+        "jsx": "react-jsx",
+        "jsxImportSource": "react",
+        "lib": ["DOM", "DOM.Iterable", "ESNext"],
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noUncheckedIndexedAccess": true,
+        "noUncheckedSideEffectImports": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext",
+        "tsBuildInfoFile": "${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo",
+        "verbatimModuleSyntax": true
+    }
+}

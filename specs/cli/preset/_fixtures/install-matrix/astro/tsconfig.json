@@ -1,1 +1,1 @@
-{ "extends": "@jterrazz/typescript/tsconfig/node" }
+{ "extends": "@jterrazz/typescript/tsconfig/astro" }

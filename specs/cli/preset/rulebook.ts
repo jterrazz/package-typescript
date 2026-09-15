@@ -40,7 +40,7 @@ export const PROFILES = Object.freeze([
     { name: 'node', tsconfig: 'node' },
     { name: 'library', tsconfig: 'library' },
     { name: 'next', tsconfig: 'next' },
-    { name: 'astro', tsconfig: 'node' },
+    { name: 'astro', tsconfig: 'astro' },
     { name: 'expo', tsconfig: 'expo' },
     { name: 'bun', tsconfig: 'node' },
     { name: 'react', tsconfig: 'react' },

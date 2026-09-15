@@ -35,7 +35,7 @@ export default defineConfig(node);
 | `node`    | nothing — services and command-line tools                             | `tsconfig/node`    |
 | `library` | the committed `docs/reference/` tree is not linted                    | `tsconfig/library` |
 | `next`    | react, jsx-a11y, nextjs; `import/extensions` at `never`               | `tsconfig/next`    |
-| `astro`   | react, jsx-a11y, the `*.astro` decisions; Next is a restricted import | `tsconfig/node`    |
+| `astro`   | react, jsx-a11y, the `*.astro` decisions; Next is a restricted import | `tsconfig/astro`   |
 | `expo`    | react, jsx-a11y, the React Native platform decisions                  | `tsconfig/expo`    |
 | `bun`     | the globals Bun's runtime defines                                     | `tsconfig/node`    |
 | `react`   | react, jsx-a11y; `import/extensions` at `never`, no framework plugin  | `tsconfig/react`   |

@@ -18,6 +18,7 @@ test.each([
     '@jterrazz/typescript/tsconfig/node.json',
     '@jterrazz/typescript/tsconfig/library',
     '@jterrazz/typescript/tsconfig/next',
+    '@jterrazz/typescript/tsconfig/astro',
     '@jterrazz/typescript/tsconfig/expo',
     '@jterrazz/typescript/tsconfig/react',
     '@jterrazz/typescript/tsdown/build',
