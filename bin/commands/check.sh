@@ -232,14 +232,22 @@ done
 # them is QUIET when it passes: four passes already print a block each on every
 # run, and nine more green headers would bury them. A gate that FAILS prints its
 # whole log under its own RUN header, exactly like the passes above it.
-report_failed_gate() {
+#
+# A gate that WROTE something speaks too, whatever its status: `fix` changed a
+# file the operator owns, and silence would hide it. That is the same rule the
+# Gitignore pass follows, read off the log rather than off the mode.
+report_gate() {
     local label="$1" status="$2" log="$3"
 
-    [ "$status" -eq 0 ] && return 0
+    [ "$status" -eq 0 ] && [ ! -s "$log" ] && return 0
 
     printf "\n${CYAN_BG}${BRIGHT_WHITE} RUN ${NC} %s\n\n" "$label"
     [ -s "$log" ] && cat "$log"
-    printf "${RED}✗ Failed with exit code %d${NC}\n" "$status"
+    if [ "$status" -eq 0 ]; then
+        printf "${GREEN}✓ Passed${NC}\n"
+    else
+        printf "${RED}✗ Failed with exit code %d${NC}\n" "$status"
+    fi
 }
 
 # Create a temporary directory for log files
@@ -345,6 +353,18 @@ run_checks() {
         docs_layout_pid=$!
     fi
 
+    # Suppressions (directives): every place the project told a checker to look
+    # away is spelled in this toolchain's vocabulary, carries its reason, and
+    # names a rule that is still live. It runs in BOTH modes — `--fix` settles
+    # the two spellings a machine can settle, and never invents a reason.
+    local suppressions_pid=""
+    local suppressions_status=0
+    local suppressions_fix=()
+    [ "$FIX_MODE" = true ] && suppressions_fix=(--fix)
+    node "$PACKAGE_ROOT/lib/check-suppressions.js" . --oxlint "$OXLINT" \
+        "${suppressions_fix[@]}" "${LINT_ARGS[@]}" > "$tmp_dir/suppressions.log" 2>&1 &
+    suppressions_pid=$!
+
     # Markdown (prose): every tracked page's coordinates resolve, and its blocks
     # breathe. Check-only — there is no rewrite that splits a paragraph into the
     # two ideas it was carrying. It reads the same `--ignore-pattern` globs the
@@ -425,6 +445,7 @@ run_checks() {
     [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
     [ -n "$gitignore_pid" ] && { wait $gitignore_pid; gitignore_status=$?; }
     [ -n "$docs_layout_pid" ] && { wait $docs_layout_pid; docs_layout_status=$?; }
+    wait $suppressions_pid; suppressions_status=$?
     [ -n "$markdown_pid" ] && { wait $markdown_pid; markdown_status=$?; }
     [ -n "$names_pid" ] && { wait $names_pid; names_status=$?; }
     [ -n "$secrets_pid" ] && { wait $secrets_pid; secrets_status=$?; }
@@ -537,11 +558,14 @@ run_checks() {
                 printf "${GREEN}✓ Passed${NC}\n"
             fi
         fi
-
-        report_failed_gate "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
-        report_failed_gate "Names (tree)" $names_status "$tmp_dir/names.log"
-        report_failed_gate "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
     fi
+
+    # The tree gates report in both modes: a gate with a `--fix` may have
+    # written, and one that only reads stays silent unless it refused.
+    report_gate "Suppressions (directives)" $suppressions_status "$tmp_dir/suppressions.log"
+    report_gate "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
+    report_gate "Names (tree)" $names_status "$tmp_dir/names.log"
+    report_gate "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
 
     # Summary
     if [ "$FIX_MODE" = true ]; then
@@ -550,7 +574,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

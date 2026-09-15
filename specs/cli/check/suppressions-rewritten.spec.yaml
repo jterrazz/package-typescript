@@ -1,0 +1,31 @@
+description: rewrites the two spellings a machine can settle, and leaves the reasons to the author
+fixture: suppressions/looking-away/
+runs:
+    - command: fix
+      exit: 1
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+
+          ✓ Passed
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          suppressions-reason  index.ts  line 4 disables no-unused-vars with no '-- reason' after it
+          suppressions-dead  index.ts  line 7 disables no-console, which the resolved config does not have on
+          suppressions-reason  index.ts  line 10 carries a TypeScript suppression with no description of what it is for
+          index.ts rewritten — the directive now names the checker this project runs
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality fixes
+
+          ✗ Some checks failed

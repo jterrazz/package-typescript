@@ -1,0 +1,36 @@
+description: names every suppression that is misspelled, unreasoned or already dead
+fixture: suppressions/looking-away/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          suppressions-spelling  index.ts  line 1 spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it
+          suppressions-reason  index.ts  line 4 disables no-unused-vars with no '-- reason' after it
+          suppressions-dead  index.ts  line 7 disables no-console, which the resolved config does not have on
+          suppressions-spelling  index.ts  line 10 spells @ts-ignore, which stays silent once the error is gone — @ts-expect-error does not
+          suppressions-reason  index.ts  line 10 carries a TypeScript suppression with no description of what it is for
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

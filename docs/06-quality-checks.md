@@ -22,11 +22,12 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Test Conventions (@jterrazz/test) | conventions checker         | per package that depends on `@jterrazz/test` + owns `specs/` |
 | Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)    |
 | Docs (sync)                       | `typescript docs --check`   | per package that has committed docs (`docs/reference/`)      |
+| Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)       |
 | Markdown (prose)                  | the prose gate              | always (check only — a paragraph is not machine-split)       |
 | Names (tree)                      | the naming gate             | always (check only — a rename is a move, not a rewrite)      |
 | Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)     |
 
-`typescript fix` runs tsc, oxlint (`--fix`), oxfmt and the artefact gate in parallel — knip, the conventions checker and the two Docs passes are check-only (they are read-only gates, not fixers).
+`typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate and the suppression gate in parallel — knip, the conventions checker, the two Docs passes and the remaining tree gates are check-only (they are read-only gates, not fixers).
 
 ### In a workspace
 
@@ -124,6 +125,26 @@ const violations = auditDocs(tree); // -> [{ rule, path, message }, …]
 ```
 
 `tree` is a plain description of one repository — the paths under `docs/`, the opening lines of each page, each page's link targets, the root `AGENTS.md`, and the three presence facts. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
+
+## The Suppressions (directives) pass
+
+Every place the project told a checker to look away. A suppression is a decision, and a decision the next reader cannot re-derive is a defect waiting to be re-introduced, so three rules hold the whole surface.
+
+| Rule                    | Refuses                                                                           |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| `suppressions-spelling` | an `eslint-disable*`, a `biome-ignore` or a `@ts-ignore` — none of those run here |
+| `suppressions-reason`   | an `oxlint-disable*` with no `-- reason`, or a `@ts-expect-error` with no text    |
+| `suppressions-dead`     | a directive naming a rule the resolved config does not have on                    |
+
+A directive is read only where a checker reads one: at the OPENING of a comment. Prose about a suppression, and a string carrying its spelling — the gate's own source is made of both — is not a suppression, and neither oxlint nor tsc would treat it as one.
+
+`suppressions-dead` asks `oxlint --print-config` for the project's resolved rules, and that map holds what the config DECIDED rather than oxlint's whole catalogue: a rule missing from it is a rule this project does not run, which is the only question being asked. A JS plugin's rules never appear there at all, so a directive naming one — `jterrazz/b9w-product-command`, say — is left alone rather than called dead on evidence the gate does not have.
+
+### What `typescript fix` rewrites
+
+Two spellings, both mechanical. An `eslint-disable*` becomes `oxlint-disable*` when every rule it names is one this project runs — a name that means nothing here is a directive whose intent only its author knows. A `@ts-ignore` becomes `@ts-expect-error`, which is the same suppression plus a failure when the error it was covering is gone.
+
+It never invents a reason, and it never deletes a directive: both are the author's judgement, and a rewrite that guessed either would be worse than the report.
 
 ## The Markdown (prose) pass
 
