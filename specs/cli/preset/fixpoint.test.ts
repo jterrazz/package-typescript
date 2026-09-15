@@ -44,7 +44,8 @@ test.each(PROFILES)('$name reaches a fixpoint with no diagnostic left', ({ name,
     expect(snapshot(work.path)).toStrictEqual(first);
 
     // Then - and the settled bytes carry no diagnostic at all
-    const report = oxlint(work.path, ['-c', work.config, ...work.files]);
-    expect(report.stdout, `${name} still reports on a settled tree`).toBe('');
+    const report = oxlint(work.path, ['-c', work.config, '--format=json', ...work.files]);
+    const { diagnostics } = JSON.parse(report.stdout) as { diagnostics: unknown[] };
+    expect(diagnostics, `${name} still reports on a settled tree`).toStrictEqual([]);
     expect(report.status).toBe(0);
 });
