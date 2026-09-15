@@ -36,6 +36,13 @@ export default fragment({
          * restated here.
          */
         'import/extensions': on(['never', { ...ASSETS, astro: 'always' }]),
+
+        /*
+         * A stylesheet import IS its own assignment — `import './global.css'`
+         * is how a layout carries its styles, and there is nothing to bind it
+         * to. The option list is restated whole, options replacing.
+         */
+        'import/no-unassigned-import': on([{ allow: ['**/*.css', '**/*.scss'] }]),
         'no-restricted-imports': on([
             {
                 patterns: [

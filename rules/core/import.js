@@ -59,7 +59,6 @@ export default fragment({
                 'no-self-import',
                 'no-unassigned-import',
                 'no-webpack-loader-syntax',
-                'unambiguous',
             ].map((rule) => `import/${rule}`),
         ),
 
@@ -103,6 +102,10 @@ export default fragment({
         'import/prefer-default-export': off({
             by: 'docs/07-lint-presets.md — a module exports what it owns by name',
             kind: 'convention',
+        }),
+        'import/unambiguous': off({
+            by: 'TypeScript — `verbatimModuleSyntax` and a package\'s `"type": "module"` already make every file a module, and what the rule reports beyond that is a file with nothing to export: an entry script, an Astro `is:inline` block',
+            kind: 'covered',
         }),
     },
 });

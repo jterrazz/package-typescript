@@ -1,8 +1,13 @@
 /*
  * The decisions a bundler profile owns: an extension a bundler refuses, the one
- * extension Astro's own resolver needs, and the React shape the estate writes
- * rather than the one upstream defaults to.
+ * extension Astro's own resolver needs, the stylesheet import a layout makes,
+ * and the React shape the estate writes rather than the one upstream defaults
+ * to.
  */
+
+// import/no-unassigned-import: allow *.css — a stylesheet import IS its own
+// assignment, so this line reports nothing.
+import './global.css';
 
 // import/extensions: never — a bundler resolves the specifier, so it carries no extension.
 export { label } from './widgets.ts';

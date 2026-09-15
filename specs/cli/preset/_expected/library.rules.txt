@@ -51,7 +51,7 @@ import/no-self-import
 import/no-unassigned-import
 import/no-webpack-loader-syntax
 - import/prefer-default-export
-import/unambiguous
+- import/unambiguous
 - init-declarations
 jsdoc/check-access
 jsdoc/check-property-names
