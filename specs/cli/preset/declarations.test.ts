@@ -19,6 +19,10 @@ const ROOT = resolve(import.meta.dirname, '../../../src');
 /** The four importable entries, each a `.js` and the `.d.ts` written beside it. */
 const ENTRIES = ['docs', 'index', 'oxfmt', 'oxlint'] as const;
 
+/** Names in one order, so two readings of the same surface are comparable. */
+const sorted = (names: string[]): string[] =>
+    names.toSorted((left, right) => left.localeCompare(right));
+
 /** Every value a declaration file exports, types and interfaces left out. */
 function declaredValues(declaration: string): string[] {
     const program = ts.createProgram([declaration], {
@@ -28,34 +32,54 @@ function declaredValues(declaration: string): string[] {
         strict: true,
     });
     const source = program.getSourceFile(declaration);
-    expect(source, `${declaration} does not parse`).toBeDefined();
+    if (source === undefined) {
+        throw new Error(`${declaration} does not parse`);
+    }
 
     const checker = program.getTypeChecker();
-    const module = checker.getSymbolAtLocation(source as ts.SourceFile);
-    expect(module, `${declaration} is not a module`).toBeDefined();
+    const module = checker.getSymbolAtLocation(source);
+    if (module === undefined) {
+        throw new Error(`${declaration} is not a module`);
+    }
 
-    return checker
-        .getExportsOfModule(module as ts.Symbol)
-        .filter((symbol) => (resolved(checker, symbol).flags & ts.SymbolFlags.Value) !== 0)
-        .map((symbol) => symbol.name)
-        .toSorted((left, right) => left.localeCompare(right));
+    return sorted(
+        checker
+            .getExportsOfModule(module)
+            .filter((symbol) => carriesValue(checker, symbol))
+            .map((symbol) => symbol.name),
+    );
 }
 
 /**
- * What an exported name really is. `export { astro }` and `export { X } from
- * 'oxlint'` both arrive as ALIASES, whose own flags say nothing about whether
- * they carry a value — the declaration behind them does.
+ * Whether an exported name carries a value. `export { astro }`,
+ * `export { X } from 'oxlint'` and `export default config` all arrive as
+ * ALIASES, which say nothing themselves — the declaration behind them does,
+ * and a declaration a value can be read from is exactly one TypeScript records
+ * as a `valueDeclaration`.
  */
-function resolved(checker: ts.TypeChecker, symbol: ts.Symbol): ts.Symbol {
-    return (symbol.flags & ts.SymbolFlags.Alias) === 0
-        ? symbol
-        : checker.getAliasedSymbol(symbol);
+function carriesValue(checker: ts.TypeChecker, symbol: ts.Symbol): boolean {
+    const aliased =
+        symbol.declarations?.some(
+            (declaration) =>
+                ts.isExportSpecifier(declaration) || ts.isExportAssignment(declaration),
+        ) === true;
+
+    return (aliased ? checker.getAliasedSymbol(symbol) : symbol).valueDeclaration !== undefined;
+}
+
+/** Every name one module exports at RUNTIME, which is the surface a consumer gets. */
+async function runtimeValues(entry: string): Promise<string[]> {
+    const loaded: unknown = await import(entry);
+    if (typeof loaded !== 'object' || loaded === null) {
+        throw new Error(`${entry} did not load as a module`);
+    }
+
+    return sorted(Object.keys(loaded));
 }
 
 test.each(ENTRIES)('src/%s.js and its declaration carry the same exports', async (entry) => {
     // Given - one importable entry, read twice: as a module, and as a declaration
-    const module: Record<string, unknown> = await import(resolve(ROOT, `${entry}.js`));
-    const runtime = Object.keys(module).toSorted((left, right) => left.localeCompare(right));
+    const runtime = await runtimeValues(resolve(ROOT, `${entry}.js`));
 
     // Then - every value the runtime exports is declared, and nothing is declared that is not there
     expect(declaredValues(resolve(ROOT, `${entry}.d.ts`))).toStrictEqual(runtime);

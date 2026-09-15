@@ -84,17 +84,12 @@ export function renderReference() {
     const rows = catalog().map((entry) => {
         const state = entry.level === 'off' ? 'off' : 'on';
         const why = entry.level === 'off' ? reasonClause(entry.reason) : scopeOf(entry);
-        const where =
-            entry.profiles.length === EVERY_PROFILE ? 'all' : entry.profiles.join(', ');
+        const where = entry.profiles.length === EVERY_PROFILE ? 'all' : entry.profiles.join(', ');
 
         return `| \`${entry.rule}\` | ${state} | ${why} | ${where} |`;
     });
 
-    return [
-        '| Rule | State | Why | Profiles |',
-        '| --- | --- | --- | --- |',
-        ...rows,
-    ].join('\n');
+    return ['| Rule | State | Why | Profiles |', '| --- | --- | --- | --- |', ...rows].join('\n');
 }
 
 /** An `off` in one clause: its kind, and the first thing its reason names. */

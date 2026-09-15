@@ -10,6 +10,12 @@ set -e
 PACKAGE_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 CONSUMERS="$PACKAGE_ROOT/specs/cli/preset/_fixtures/install-matrix"
 
+# perfectionist sorts the specifiers inside one import statement, and a
+# consumer's config is linted like everything else it writes.
+named_imports() {
+    printf '%s\n' "$@" | LC_ALL=C sort -f | paste -sd, - | sed 's/,/, /g'
+}
+
 SANDBOX=$(mktemp -d -t install-matrix-XXXXXX)
 trap 'rm -rf "$SANDBOX"' EXIT
 
@@ -51,6 +57,41 @@ for consumer in "$CONSUMERS"/*/; do
     mkdir -p "$project/node_modules/@types"
     ln -sfn "$PACKAGE_ROOT/node_modules/@types/node" "$project/node_modules/@types/node"
     ln -sfn "$PACKAGE_ROOT/node_modules/vitest" "$project/node_modules/vitest"
+
+    # The two config files are WRITTEN here, not committed with the consumer:
+    # oxlint discovers every `oxlint.config.*` under this repository, fixture
+    # trees included, and a config importing `@jterrazz/typescript` resolves to
+    # nothing from a fixture's own directory. Writing them is also how
+    # `run-strict-install.sh` states the documented form, in one place.
+    if [ "$profile" = library ]; then
+        # `isolatedDeclarations` refuses a default export it would have to
+        # infer, so this one profile names the type ([Developing](../../docs/02-developing.md)).
+        cat > "$project/oxlint.config.ts" <<EOF
+import { defineConfig, $profile, type OxlintConfig } from '@jterrazz/typescript/oxlint';
+
+const config: OxlintConfig = defineConfig({ extends: [$profile] });
+
+export default config;
+EOF
+        cat > "$project/oxfmt.config.ts" <<'EOF'
+import { base, defineConfig, type OxfmtConfig } from '@jterrazz/typescript/oxfmt';
+
+const config: OxfmtConfig = defineConfig(base);
+
+export default config;
+EOF
+    else
+        cat > "$project/oxlint.config.ts" <<EOF
+import { $(named_imports defineConfig "$profile") } from '@jterrazz/typescript/oxlint';
+
+export default defineConfig({ extends: [$profile] });
+EOF
+        cat > "$project/oxfmt.config.ts" <<'EOF'
+import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
+
+export default defineConfig(base);
+EOF
+    fi
 
     cd "$project"
 

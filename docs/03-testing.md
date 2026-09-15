@@ -50,7 +50,7 @@ The presets are the one part of this package a document cannot reach: `check` lo
 | `declarations`    | every `.d.ts` carries the value surface of the `.js` beside it                |
 | `install-matrix`  | one consumer per profile installs under pnpm-strict and checks green          |
 
-The last one is the outside view, and it is the one that fails when the corpus is wrong: six tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/_fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so a seventh profile earns a consumer by existing.
+The last one is the outside view, and it is the one that fails when the corpus is wrong: six tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/_fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so a seventh profile earns a consumer by existing. The two config files are the one thing the ground does NOT carry: the runner writes them, for the same reason as above, and that heredoc is the single place the documented form is stated for all six.
 
 ### Regenerating a golden
 
@@ -68,7 +68,7 @@ A chain of code is the exception, and each one says which exception it is:
 
 - **The binary is not the product.** oxfmt and oxlint run directly in the rulebook suites, and three install sandboxes run a shell script — the split install, the pnpm-strict one that proves a consumer's configs load with one devDependency declared, and the profile matrix above.
 - **The stream has no byte-exact form.** `dev/` waits on a marker instead.
-- **The ground cannot be a fixture.** A fixture is copied, not initialised, so a scenario needing a real git repository builds one in a temp directory: the committed-artefact claim, and the Docs (layout) pass, which asks its question only where a repository is.
+- **The ground cannot be a fixture.** A fixture is copied, not initialised, so a scenario needing a real git repository builds one in a temp directory: the committed-artefact claim, and the Docs (layout) pass, which asks its question only where a repository is. A project whose `oxlint.config.*` cannot LOAD is the same case for a different reason — oxlint reads every config under this repository, fixtures included, so a broken one committed here would fail this repository's own lint run ([Quality checks](06-quality-checks.md)).
 - **The cwd must sit below the ground.** The gitignore gate's ancestor walk needs a `.gitignore` ABOVE the working directory, and `fixture:` spreads a project INTO it.
 - **The document cannot make the claim.** Two are bridges: `cli.run('<case>.spec.yaml')` runs the document, then code adds a byte-exact directory golden or an exhaustive file list. A bridged document is excluded from the plugin's glob in `vitest.config.ts`, so it runs once.
 
