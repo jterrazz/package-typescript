@@ -2,7 +2,7 @@
 # Variable: oxfmt
 
 ```ts
-const oxfmt: ConfigObject;
+const oxfmt: OxfmtConfig;
 ```
 
-Defined in: [index.d.ts:3](https://github.com/jterrazz/package-typescript/blob/main/src/index.d.ts#L3)
+Defined in: index.d.ts:4
