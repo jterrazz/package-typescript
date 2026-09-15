@@ -1,0 +1,11 @@
+{
+    "name": "consumer-next",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "devDependencies": {
+        "@jterrazz/typescript": "*",
+        "@types/node": "*",
+        "vitest": "*"
+    }
+}

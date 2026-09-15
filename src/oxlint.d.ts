@@ -1,31 +1,15 @@
+/*
+ * The shape of a lint config is oxlint's own fact, so this entry does not
+ * restate it: `OxlintConfig` and `OxlintOverride` are re-exported from the
+ * tool, under the names a consumer already reads here. A hand copy drifts —
+ * this one had `plugins?: string[]` where oxlint takes a closed union, and a
+ * consumer's `defineConfig({ extends: [node] })` stopped type-checking.
+ */
+
+import { type OxlintConfig } from 'oxlint';
+
 /** A rule entry as oxlint reads it: a level, or a level and its options. */
-type RuleEntry = 'error' | 'off' | ['error', ...unknown[]];
-
-/** A scoped block. Its rule options REPLACE the base entry — they never merge. */
-type OxlintOverride = {
-    files: string[];
-    rules: Record<string, RuleEntry>;
-};
-
-/** A plain oxlint configuration object: what every export of this entry is. */
-type OxlintConfig = {
-    /** oxlint's own schema key, and whatever key a later oxlint adds. */
-    [key: string]: unknown;
-    env?: Record<string, boolean>;
-    extends?: OxlintConfig[];
-    globals?: Record<string, 'off' | 'readonly' | 'writable'>;
-    ignorePatterns?: string[];
-    jsPlugins?: string[];
-    options?: {
-        reportUnusedDisableDirectives?: 'error' | 'off' | 'warn';
-        typeAware?: boolean;
-        typeCheck?: boolean;
-    };
-    overrides?: OxlintOverride[];
-    plugins?: string[];
-    rules?: Record<string, RuleEntry>;
-    settings?: Record<string, unknown>;
-};
+type RuleEntry = NonNullable<OxlintConfig['rules']>[string];
 
 /** One layer of a map: the files that belong to it, and what they may not import. */
 type Layer = {
@@ -62,6 +46,7 @@ declare function compose(...configs: OxlintConfig[]): OxlintConfig;
 declare function layers(definition: { id?: string; map: readonly Layer[] }): OxlintConfig;
 
 export { defineConfig } from 'oxlint';
+export { type OxlintConfig, type OxlintOverride } from 'oxlint';
 export {
     astro,
     bun,
@@ -74,7 +59,5 @@ export {
     library,
     next,
     node,
-    type OxlintConfig,
-    type OxlintOverride,
     type RuleEntry,
 };

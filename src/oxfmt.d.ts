@@ -1,35 +1,19 @@
-/** Where an import statement goes, and in what order — oxfmt's own sorter. */
-type SortImports = {
-    groups?: (string | string[])[];
-    ignoreCase?: boolean;
-    internalPattern?: string[];
-    newlinesBetween?: boolean;
-    order?: 'asc' | 'desc';
-};
+/*
+ * The shape of a formatting config is oxfmt's own fact, so this entry does not
+ * restate it: `OxfmtConfig` and the two sorter shapes are re-exported from the
+ * tool, under the names a consumer already reads here. A hand copy drifts —
+ * this one had grown an `endOfLine: 'auto'` oxfmt does not accept, and a
+ * consumer's `defineConfig(base)` stopped type-checking because of it.
+ */
 
-/** Which class-holding calls `sortTailwindcss` reorders, beyond class/className. */
-type SortTailwindcss = {
-    attributes?: string[];
-    functions?: string[];
-};
-
-/** A plain oxfmt configuration object. */
-type OxfmtConfig = {
-    bracketSpacing?: boolean;
-    endOfLine?: 'auto' | 'cr' | 'crlf' | 'lf';
-    ignorePatterns?: string[];
-    printWidth?: number;
-    semi?: boolean;
-    singleQuote?: boolean;
-    sortImports?: boolean | SortImports;
-    sortPackageJson?: boolean | { sortScripts?: boolean };
-    sortTailwindcss?: boolean | SortTailwindcss;
-    tabWidth?: number;
-    trailingComma?: 'all' | 'es5' | 'none';
-    useTabs?: boolean;
-};
+import { type OxfmtConfig } from 'oxfmt';
 
 declare const base: OxfmtConfig;
 
 export { defineConfig } from 'oxfmt';
-export { base, type OxfmtConfig, type SortImports, type SortTailwindcss };
+export {
+    type OxfmtConfig,
+    type SortImportsUserConfig as SortImports,
+    type SortTailwindcssUserConfig as SortTailwindcss,
+} from 'oxfmt';
+export { base };

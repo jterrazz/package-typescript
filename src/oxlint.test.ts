@@ -50,12 +50,20 @@ test('concatenates and dedupes ignorePatterns', () => {
     expect(merged.ignorePatterns).toStrictEqual(['dist/**', 'node_modules/**', '**/_fixtures/**']);
 });
 
-test('takes unknown scalar keys from the last config', () => {
-    // Given - configs disagreeing on a scalar key
-    const merged = compose({ somethingElse: 1 }, { somethingElse: 2 });
+test('takes a key the merge tables do not name from the last config that sets it', () => {
+    /*
+     * Given - configs disagreeing on `categories`: neither concatenated nor
+     * shallow-merged, so it falls to the last rule of the table. No config this
+     * package SHIPS carries one — every rule is decided by name — and that is
+     * exactly why it is the key available to state the fallback with.
+     */
+    const merged = compose(
+        { categories: { correctness: 'off' } },
+        { categories: { correctness: 'error' } },
+    );
 
-    // Then - last wins
-    expect(merged.somethingElse).toBe(2);
+    // Then - last wins, which is the rule for every key the three tables leave out
+    expect(merged.categories).toStrictEqual({ correctness: 'error' });
 });
 
 test('ignores null and undefined configs', () => {
