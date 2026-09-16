@@ -359,16 +359,20 @@ run_checks() {
     local format_status=0
     if [ "$FIX_MODE" = true ]; then
         # A fixer that changes MEANING is never applied unattended: the rules
-        # marked `unsafe` in the manifest are allowed for THIS run only, so
-        # `fix` leaves them alone and `check` still reports them for a human.
-        local unsafe_fixers=()
-        while IFS= read -r flag; do
-            [ -n "$flag" ] && unsafe_fixers+=("$flag")
-        done < <(node "$PACKAGE_ROOT/lib/unsafe-fixers.js")
+        # marked `unsafe` in the manifest are turned off for THIS run by a
+        # wrapper config written beside the consumer's own, so `fix` leaves
+        # them alone and `check` still reports them for a human.
+        local fix_config="oxlint.fix.config.mjs"
+        local fix_args=()
+        if [ -n "$OXLINT_CONFIG" ]; then
+            node "$PACKAGE_ROOT/lib/unsafe-fixers.js" "$PWD/$OXLINT_CONFIG" "$fix_config"
+            fix_args=(-c "$fix_config")
+        fi
 
-        "$OXLINT" --type-aware --fix "${unsafe_fixers[@]}" "${LINT_ARGS[@]}" \
+        "$OXLINT" --type-aware --fix "${fix_args[@]}" "${LINT_ARGS[@]}" \
             > "$tmp_dir/lint.log" 2>&1 ||
             lint_status=$?
+        rm -f "$fix_config"
         "$OXFMT" > "$tmp_dir/format.log" 2>&1 || format_status=$?
     else
         "$OXLINT" --type-aware "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 &

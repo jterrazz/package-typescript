@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, expect, test } from 'vitest';
@@ -81,4 +81,28 @@ test('keeps a directive that names an unsafe fixer used, so fix stays green', ()
     // Then - the verdict is the check's, where the rule is armed and the directive used
     expect(fixed.status).toBe(0);
     expect(fixed.stdout).not.toContain('Unused oxlint-disable directive');
+});
+
+test('leaves the fixer alone where an override of the consumer arms the rule again', () => {
+    // Given - the rule off in the base config and armed by an override, the vitest block's shape
+    writeFileSync(
+        join(project, 'oxlint.config.ts'),
+        [
+            'export default {',
+            "    plugins: ['unicorn'],",
+            "    rules: { 'unicorn/no-useless-undefined': 'off' },",
+            "    overrides: [{ files: ['**/*.ts'], rules: { 'unicorn/no-useless-undefined': 'error' } }],",
+            '};',
+            '',
+        ].join('\n'),
+    );
+    writeFileSync(join(project, 'index.ts'), SOURCE);
+
+    // When - the fix runs
+    const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+
+    // Then - the argument survives the rewrite, and the wrapper left no trace
+    expect(fixed.status).toBe(1);
+    expect(readFileSync(join(project, 'index.ts'), 'utf8')).toContain('take(undefined)');
+    expect(existsSync(join(project, 'oxlint.fix.config.mjs'))).toBe(false);
 });
