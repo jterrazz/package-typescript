@@ -22,9 +22,25 @@ import { fragment, on, scoped } from '../_contract.js';
 
 /**
  * Build a fragment from a layer map. Each layer is
- * `{ name, files, deny, allow?, message }`: `files` are the globs that BELONG
- * to the layer, `deny` the specifier globs it may not import, `allow` the
- * exceptions carved out of them.
+ * `{ name, files, deny, allow?, allowTypeImports?, message }`: `files` are the
+ * globs that BELONG to the layer, `deny` the specifier globs it may not
+ * import, `allow` the exceptions carved out of them, and `allowTypeImports`
+ * lets a type-only import cross — a type is a contract, not a dependency at
+ * runtime.
+ */
+/**
+ * @typedef {object} Layer One row of a layer map.
+ * @property {string} name What the layer is called in a refusal.
+ * @property {readonly string[]} files The globs that belong to the layer.
+ * @property {readonly string[]} deny The specifier globs it may not import.
+ * @property {readonly string[]} [allow] Exceptions carved out of `deny`.
+ * @property {boolean} [allowTypeImports] Whether a type-only import may cross.
+ * @property {string} message What a refusal says.
+ */
+
+/**
+ * @param {{ id?: string, map: readonly Layer[] }} definition The map, and the id the fragment answers to.
+ * @returns {Omit<ReturnType<typeof fragment>, 'overrides'> & { overrides: readonly import('../_contract.js').Scoped[] }} The fragment, one override per layer.
  */
 export function layers({ id = 'layers', map }) {
     assertDisjoint(id, map);
@@ -44,6 +60,9 @@ export function layers({ id = 'layers', map }) {
                                         ...(layer.allow ?? []).map((glob) => `!${glob}`),
                                     ],
                                     message: layer.message,
+                                    ...(layer.allowTypeImports === true
+                                        ? { allowTypeImports: true }
+                                        : {}),
                                 },
                             ],
                         },

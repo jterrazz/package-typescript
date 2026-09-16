@@ -90,6 +90,8 @@ Three properties of oxlint shape the generated config, all three permanent:
 - The `regex` matcher is **Rust regex, which has no lookahead**. "features may not import features, except common" is two globs: the deny glob, then the same glob negated with `!`.
 - `no-restricted-imports` matches the **specifier string**, never a resolved path. `../beta/thing.js` does not carry the layer name and passes. A map is a textual boundary; a graph boundary is dependency-cruiser's.
 
+A layer that declares `allowTypeImports: true` lets a type-only import cross its boundary: a type is a contract, not a runtime dependency, and a port may name the adapter's shape without loading it.
+
 A map whose layers share a `files` glob is refused at build time rather than shipped: with replace semantics, the second override would silently erase the first.
 
 ### `import/no-cycle`
