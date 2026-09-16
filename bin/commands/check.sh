@@ -614,8 +614,11 @@ run_checks() {
     # Bash decides whether the file is there; the script decides what it says.
     #
     # What fix mode judges is what SURVIVED the rewrite, so its machine-readable
-    # run is made here, after the fixer, and in the foreground.
-    if [ -f "$BASELINE_FILE" ]; then
+    # run is made here, after the fixer, and in the foreground — with the unsafe
+    # fixers armed again, so a directive that names one of them is used, not
+    # reported unused. The fixer's own exit code is never the verdict: it ran
+    # with those rules allowed. Without a baseline the judge wants zero.
+    if [ -f "$BASELINE_FILE" ] || [ "$FIX_MODE" = true ]; then
         if [ -n "$lint_json_pid" ]; then
             wait $lint_json_pid
         else

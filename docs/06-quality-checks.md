@@ -150,7 +150,7 @@ The second is the silent one: a `.cjs` config, or a `.js` config in a package th
 
 ### The fixers fix mode refuses
 
-A fixer that changes MEANING is never applied unattended, so the oxlint run of fix mode allows each rule marked `unsafe` in the manifest — the rewrite does not land, the diagnostic stays for check mode, and a human answers it. The list, and what each rewrite does, is [Lint presets](07-lint-presets.md).
+A fixer that changes MEANING is never applied unattended, so the oxlint run of fix mode allows each rule marked `unsafe` in the manifest — the rewrite does not land, the diagnostic stays — `fix` and `check` report it alike — and a human answers it. The list, and what each rewrite does, is [Lint presets](07-lint-presets.md).
 
 ### The two rewriters run in order
 

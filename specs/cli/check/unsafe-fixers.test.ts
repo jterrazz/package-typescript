@@ -11,8 +11,9 @@ import { afterAll, expect, test } from 'vitest';
  * repository's lint run ([Testing](../../../docs/03-testing.md)).
  *
  * `unicorn/no-useless-undefined` stands for the eight: its fixer strips an
- * argument the callee requires, so `fix` must leave the line alone while
- * `check` keeps reporting it — the answer is a human's.
+ * argument the callee requires, so `fix` must leave the line alone and
+ * report it exactly as `check` does — the answer is a human's, and the two
+ * commands read one verdict on one tree.
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
@@ -53,12 +54,31 @@ test('leaves a meaning-changing fixer alone and still reports it', () => {
     // When - the fix runs
     const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
 
-    // Then - the argument is still there, and the pass is green about it
-    expect(fixed.status).toBe(0);
+    // Then - the argument is still there, and fix reports what it left
+    expect(fixed.status).toBe(1);
+    expect(fixed.stdout).toContain('no-useless-undefined');
     expect(readFileSync(join(project, 'index.ts'), 'utf8')).toContain('take(undefined)');
 
     // Then - the check still names the rule, because the answer is a human's
     const checked = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
     expect(checked.status).toBe(1);
     expect(checked.stdout).toContain('no-useless-undefined');
+});
+
+test('keeps a directive that names an unsafe fixer used, so fix stays green', () => {
+    // Given - the same project, the one diagnostic suppressed with its reason
+    writeFileSync(
+        join(project, 'index.ts'),
+        SOURCE.replace(
+            'export const taken',
+            '// oxlint-disable-next-line unicorn/no-useless-undefined -- the callee requires it\nexport const taken',
+        ),
+    );
+
+    // When - the fix runs with that rule allowed for the rewrite
+    const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+
+    // Then - the verdict is the check's, where the rule is armed and the directive used
+    expect(fixed.status).toBe(0);
+    expect(fixed.stdout).not.toContain('Unused oxlint-disable directive');
 });
