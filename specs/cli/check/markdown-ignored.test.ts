@@ -34,7 +34,7 @@ test('forgives a page naming a build product git ignores, and refuses one naming
     mkdirSync(join(project, 'apps/web'), { recursive: true });
     writeFileSync(
         join(project, 'README.md'),
-        'The bundle lands at `apps/web/dist/index.js` once built; the notes at `apps/notes/absent.md` never existed.\n',
+        'The bundle lands at `apps/web/dist/index.js`, the unpacked tree at `apps/web/dist`, once built; the notes at `apps/notes/absent.md` never existed.\n',
     );
     execFileSync('git', ['add', '.'], { cwd: project });
 
@@ -43,5 +43,6 @@ test('forgives a page naming a build product git ignores, and refuses one naming
 
     // Then - the ignored bundle is no finding, the absent notes are
     expect(checked.stdout).not.toContain('`apps/web/dist/index.js` names nothing');
+    expect(checked.stdout).not.toContain('`apps/web/dist` names nothing');
     expect(checked.stdout).toContain('`apps/notes/absent.md` names nothing on disk');
 });
