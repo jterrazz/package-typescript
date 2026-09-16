@@ -69,7 +69,6 @@ export default fragment({
                 'no-useless-error-capture-stack-trace',
                 'no-useless-fallback-in-spread',
                 'no-useless-length-check',
-                'no-useless-promise-resolve-reject',
                 'no-useless-spread',
                 'no-useless-switch-case',
                 'no-zero-fractions',
@@ -167,6 +166,10 @@ export default fragment({
         'unicorn/prefer-import-meta-properties': unsafeFix(
             on(),
             "rewrites `fileURLToPath(new URL('.', import.meta.url))` into `import.meta.dirname`, which carries no trailing slash",
+        ),
+        'unicorn/no-useless-promise-resolve-reject': unsafeFix(
+            on(),
+            'unwraps `Promise.resolve({ … })` in an arrow body into a bare object literal, which is a block',
         ),
 
         // -- Off, each with its one reason -------------------------------------

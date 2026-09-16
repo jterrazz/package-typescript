@@ -49,7 +49,6 @@ const ON_IN_TESTS = [
     'padding-around-test-blocks',
     'prefer-called-exactly-once-with',
     'prefer-called-once',
-    'prefer-called-with',
     'prefer-comparison-matcher',
     'prefer-each',
     'prefer-equality-matcher',
@@ -63,7 +62,6 @@ const ON_IN_TESTS = [
     'prefer-mock-return-shorthand',
     'prefer-snapshot-hint',
     'prefer-spy-on',
-    'prefer-strict-boolean-matchers',
     'prefer-strict-equal',
     'prefer-to-be',
     'prefer-to-be-object',
@@ -104,6 +102,14 @@ const REQUIRE_MOCK_TYPE_PARAMETERS = unsafeFix(
     on(),
     "rewrites `vi.mock('x', f)` into `vi.mock(import('x'), f)`, after which the factory owes the module's full type",
 );
+const PREFER_STRICT_BOOLEAN_MATCHERS = unsafeFix(
+    on(),
+    'rewrites `toBeTruthy()` into `toBe(true)` whatever the subject is — an element, a string — which is never `true`',
+);
+const PREFER_CALLED_WITH = unsafeFix(
+    on(),
+    'rewrites `toHaveBeenCalled()` into `toHaveBeenCalledWith()`, an assertion of NO arguments',
+);
 
 export default fragment({
     id: 'vitest',
@@ -117,6 +123,8 @@ export default fragment({
                 'vitest/consistent-test-it': CONSISTENT_TEST_IT,
                 'vitest/prefer-lowercase-title': PREFER_LOWERCASE_TITLE,
                 'vitest/require-mock-type-parameters': REQUIRE_MOCK_TYPE_PARAMETERS,
+                'vitest/prefer-strict-boolean-matchers': PREFER_STRICT_BOOLEAN_MATCHERS,
+                'vitest/prefer-called-with': PREFER_CALLED_WITH,
 
                 'vitest/no-conditional-in-test': off({
                     by: "vitest/no-conditional-expect — the defect is an assertion that may not run, and that rule names it; this one also refuses a golden suite's TEST_UPDATE branch and every comparator",

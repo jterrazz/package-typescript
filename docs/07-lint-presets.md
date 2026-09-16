@@ -105,10 +105,13 @@ A fixer that changes MEANING is never applied unattended. The rules below stay a
 - `typescript/consistent-type-definitions` — rewrites a `declare module` augmentation into an alias, which no longer merges
 - `typescript/no-confusing-void-expression` — wraps a returned promise, after which nothing awaits it
 - `typescript/no-unnecessary-type-assertion` — drops a cast a widened platform type needs
+- `unicorn/no-useless-promise-resolve-reject` — unwraps `Promise.resolve({ … })` in an arrow body into a bare object literal, which is a block
 - `unicorn/no-useless-undefined` — strips a REQUIRED argument, `mockReturnValue(undefined)` included (TS2554)
 - `unicorn/prefer-import-meta-properties` — rewrites `fileURLToPath(new URL('.', import.meta.url))` into `import.meta.dirname`, which carries no trailing slash
 - `vitest/consistent-test-it` — rewrites `it(` into `test(` and leaves `import { it }` behind
+- `vitest/prefer-called-with` — rewrites `toHaveBeenCalled()` into `toHaveBeenCalledWith()`, an assertion of NO arguments
 - `vitest/prefer-lowercase-title` — lower-cases the first character blindly: `CLI …` becomes `cLI …`
+- `vitest/prefer-strict-boolean-matchers` — rewrites `toBeTruthy()` into `toBe(true)` whatever the subject is — an element, a string — which is never `true`
 - `vitest/require-mock-type-parameters` — rewrites `vi.mock('x', f)` into `vi.mock(import('x'), f)`, after which the factory owes the module's full type
 
 <!-- /GENERATED:fixers -->
