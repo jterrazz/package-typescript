@@ -34,7 +34,7 @@ test.each([
     expect(() => require.resolve(specifier)).not.toThrow();
 });
 
-test('the oxlint entry exports the seven profiles and the layer-map builders', () => {
+test('the oxlint entry exports the seven profiles, the layer-map builders and the nested form', () => {
     // Given - the tool-facing oxlint entry
     // Then - its surface is exactly what a consumer's config names
     expect(Object.keys(oxlintEntry).toSorted()).toStrictEqual([
@@ -47,6 +47,7 @@ test('the oxlint entry exports the seven profiles and the layer-map builders', (
         'hexagonal',
         'layers',
         'library',
+        'nested',
         'next',
         'node',
         'react',
@@ -68,6 +69,7 @@ test('the barrel carries the same profiles the oxlint entry does', () => {
         'expo',
         'hexagonal',
         'library',
+        'nested',
         'next',
         'node',
         'react',

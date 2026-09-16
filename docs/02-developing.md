@@ -171,3 +171,18 @@ Two standing rules bind every change here:
 - [Building](05-building.md) — build, bundle, start, dev.
 - [Quality checks](06-quality-checks.md) — `check` / `fix`.
 - [Repo structure](09-repo-structure.md) — how a repo is organized.
+
+### A subtree on another profile
+
+A workspace whose members share one profile needs one root config. A subtree
+that IS another shape — a React client inside a Node service — takes a nested
+`oxlint.config.ts` of its own, which oxlint applies to that subtree. Linter
+options belong to the root config only, and the root's already turn type
+information on for the whole tree, so the nested file ships the profile
+through `nested()`:
+
+```ts
+import { compose, defineConfig, nested, react } from '@jterrazz/typescript/oxlint';
+
+export default defineConfig(nested(compose(react, testing)));
+```

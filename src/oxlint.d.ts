@@ -46,6 +46,12 @@ declare function compose(...configs: OxlintConfig[]): OxlintConfig;
  */
 declare function layers(definition: { id?: string; map: readonly Layer[] }): OxlintConfig;
 
+/**
+ * A config for a nested oxlint.config: the profile without the linter
+ * `options` oxlint accepts in the root config only.
+ */
+declare function nested(config: OxlintConfig): OxlintConfig;
+
 export { defineConfig } from 'oxlint';
 export { type OxlintConfig, type OxlintOverride } from 'oxlint';
 export {
@@ -58,6 +64,7 @@ export {
     type Layer,
     layers,
     library,
+    nested,
     next,
     node,
     react,

@@ -48,3 +48,14 @@ export const hexagonal = compile(hexagonalFragment);
 export function layers(definition) {
     return compile(layersFragment(definition));
 }
+
+/**
+ * A config for a NESTED oxlint.config: oxlint accepts linter `options` in the
+ * root config only, and the root's already turn type information on for the
+ * whole tree, so a subtree's profile ships without its own.
+ */
+export function nested(config) {
+    const { options: _rootOnly, ...subtree } = config;
+
+    return subtree;
+}

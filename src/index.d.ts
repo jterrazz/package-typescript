@@ -9,6 +9,7 @@ declare const oxlintProfiles: {
     expo: OxlintConfig;
     hexagonal: OxlintConfig;
     library: OxlintConfig;
+    nested: (config: OxlintConfig) => OxlintConfig;
     next: OxlintConfig;
     node: OxlintConfig;
     react: OxlintConfig;

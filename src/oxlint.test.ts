@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { compose, defineConfig, hexagonal, layers } from './oxlint.js';
+import { compose, defineConfig, hexagonal, layers, nested, react } from './oxlint.js';
 
 test('concatenates and dedupes plugin lists', () => {
     // Given - two configs sharing one jsPlugin
@@ -138,4 +138,15 @@ test("re-exports oxlint's own defineConfig", () => {
 
     // Then - the entry carries the tool's helper, which returns the config unchanged
     expect(defineConfig(config)).toBe(config);
+});
+
+test('a nested config carries no linter options, which oxlint reads in the root only', () => {
+    // Given - a profile, which ships the options every root config needs
+    expect(react.options).toBeDefined();
+
+    // Then - its nested form keeps everything but them
+    const subtree = nested(compose(react, { rules: { curly: 'off' } }));
+    expect(subtree.options).toBeUndefined();
+    expect(subtree.plugins).toStrictEqual(react.plugins);
+    expect(subtree.rules?.curly).toBe('off');
 });
