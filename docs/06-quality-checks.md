@@ -281,7 +281,7 @@ The backtick rule reads a closed roster of opening segments — `apps/`, `bin/`,
 
 ## The Names (tree) pass
 
-What a project calls its own parts, swept under the roots where a project keeps what it wrote: `apps/`, `bin/`, `lib/`, `packages/`, `specs/`, `src/`, `tests/`. Each root's OWN name is the toolchain's vocabulary rather than the project's choice, so it is never judged — `lib/` sits on this list and on the grab-bag roster at once, and only what a project put inside it is the project's to name.
+What a project calls its own parts, swept under the roots where a project keeps what it wrote: `apps/`, `bin/`, `lib/`, `packages/`, `specs/`, `src/`, `tests/`. Each root's OWN name is the toolchain's vocabulary rather than the project's choice, so it is never judged — `lib/` sits on this list and on the grab-bag roster at once, and only what a project put inside it is the project's to name. A directory below an `app/` router root is a Next.js route segment — a URL the product serves, not a name the tree chose — and is not judged either; the files inside it still are.
 
 | Rule             | Refuses                                                                 |
 | ---------------- | ----------------------------------------------------------------------- |
