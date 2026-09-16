@@ -17,14 +17,17 @@ else
     PROJECT_ROOT=$(pwd)
 fi
 
-# Get the real directory where this script lives (resolve symlinks)
+# The PHYSICAL directory this script lives in, symlinks resolved on every hop.
+# `cd -P` matters: under pnpm the package sits behind a symlinked prefix, and
+# a shim found from the logical path execs a relative target that lands
+# beside the wrong parent.
 SCRIPT_PATH="$0"
 while [ -L "$SCRIPT_PATH" ]; do
-    LINK_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+    LINK_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" && pwd)"
     SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
     [[ $SCRIPT_PATH != /* ]] && SCRIPT_PATH="$LINK_DIR/$SCRIPT_PATH"
 done
-SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" && pwd)"
 PACKAGE_ROOT="$SCRIPT_DIR/.."
 
 # Find binaries - check package's node_modules first, then project's (handles npm hoisting)
