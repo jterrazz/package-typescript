@@ -126,7 +126,6 @@ export default fragment({
                 'prefer-regexp-exec',
                 'prefer-return-this-type',
                 'prefer-string-starts-ends-with',
-                'promise-function-async',
                 'related-getter-setter-pairs',
                 'require-array-sort-compare',
                 'require-await',
@@ -162,6 +161,10 @@ export default fragment({
         'typescript/no-confusing-void-expression': unsafeFix(
             typeAware(),
             'wraps a returned promise, after which nothing awaits it',
+        ),
+        'typescript/promise-function-async': unsafeFix(
+            typeAware(),
+            'wraps a function that hands out an existing promise in `async … await`, so the caller receives a fresh promise nobody has claimed',
         ),
         'typescript/no-unnecessary-type-assertion': unsafeFix(
             typeAware(),

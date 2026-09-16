@@ -105,6 +105,7 @@ A fixer that changes MEANING is never applied unattended. The rules below stay a
 - `typescript/consistent-type-definitions` — rewrites a `declare module` augmentation into an alias, which no longer merges
 - `typescript/no-confusing-void-expression` — wraps a returned promise, after which nothing awaits it
 - `typescript/no-unnecessary-type-assertion` — drops a cast a widened platform type needs
+- `typescript/promise-function-async` — wraps a function that hands out an existing promise in `async … await`, so the caller receives a fresh promise nobody has claimed
 - `unicorn/no-useless-promise-resolve-reject` — unwraps `Promise.resolve({ … })` in an arrow body into a bare object literal, which is a block
 - `unicorn/no-useless-undefined` — strips a REQUIRED argument, `mockReturnValue(undefined)` included (TS2554)
 - `unicorn/prefer-import-meta-properties` — rewrites `fileURLToPath(new URL('.', import.meta.url))` into `import.meta.dirname`, which carries no trailing slash
