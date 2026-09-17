@@ -11,7 +11,11 @@ import { allOn, fragment, off, on, scoped, unsafeFix } from './_contract.js';
  * `exclusive-pairs.test.ts` proves no profile ever arms both.
  */
 
-/** Where a vitest rule applies. Nothing outside these globs is a test. */
+/**
+ * Where a vitest rule applies. Nothing outside these globs is a vitest file —
+ * a Playwright spec is `*.e2e.ts`, which no glob here names, and that suffix
+ * is the convention (docs/07-lint-presets.md, "Estate conventions").
+ */
 export const TEST_FILES = Object.freeze([
     '**/*.{test,spec,test-d,spec-d}.{ts,tsx,js,jsx}',
     '**/specs/**/*.{ts,tsx}',
