@@ -1,6 +1,6 @@
 # ADR-004: Sorting is formatting
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-15
 
 ## Context

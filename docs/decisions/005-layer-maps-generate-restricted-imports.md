@@ -1,6 +1,6 @@
 # ADR-005: A layer map generates the restricted-import overrides
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-15
 
 ## Context

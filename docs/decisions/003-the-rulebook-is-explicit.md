@@ -1,6 +1,6 @@
 # ADR-003: The rulebook is explicit — every rule decided, no categories
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-15
 
 ## Context

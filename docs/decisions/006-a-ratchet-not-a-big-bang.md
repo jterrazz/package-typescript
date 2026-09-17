@@ -1,6 +1,6 @@
 # ADR-006: A ratchet, not a big bang
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-15
 
 Written at decision time, as part of v10 — the release that turns type-aware

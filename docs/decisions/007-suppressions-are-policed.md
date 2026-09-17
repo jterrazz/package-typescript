@@ -1,6 +1,6 @@
 # ADR-007: Suppressions are policed
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-15
 
 Written at decision time, as part of v10. The evidence is the audit of the
