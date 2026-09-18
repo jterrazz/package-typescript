@@ -13,8 +13,9 @@ import { allOn, fragment, off, on, scoped, unsafeFix } from './_contract.js';
 
 /**
  * Where a vitest rule applies. Nothing outside these globs is a vitest file —
- * a Playwright spec is `*.e2e.ts`, which no glob here names, and that suffix
- * is the convention (docs/07-lint-presets.md, "Estate conventions").
+ * a Playwright spec is `*.e2e.ts` and a jest-expo render test `*.render.tsx`,
+ * which no glob here names: a file another runner owns takes that runner's
+ * suffix (docs/07-lint-presets.md, "Estate conventions").
  */
 export const TEST_FILES = Object.freeze([
     '**/*.{test,spec,test-d,spec-d}.{ts,tsx,js,jsx}',

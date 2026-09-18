@@ -143,7 +143,7 @@ Several `off` reasons of kind `convention` name this page. Here is what they nam
 - **A one-shot CLI script has no event loop to protect** (`node/no-sync`), and configuration arrives from the environment at the edge (`node/no-process-env`).
 - **The estate compiles to ESNext on Node 24**, where optional chaining and object spread are native syntax (`oxc/no-optional-chaining`, `oxc/no-rest-spread-properties`).
 - **A spec states its assertions, not their count**, and `vitest.config.ts` owns the timeout once (`vitest/prefer-expect-assertions`, `vitest/require-test-timeout`).
-- **A vitest file is `*.test.ts` or `*.spec.ts`, or lives under `specs/` or `__tests__/`; a Playwright file is `*.e2e.ts`.** The vitest rules read every file the first three name as one of theirs, and a browser spec that shared the suffix would be handed vitest's `expect` in place of Playwright's. The `.e2e.ts` suffix is outside every vitest glob by construction, so nothing has to be ignored.
+- **A vitest file is `*.test.ts` or `*.spec.ts`, or lives under `specs/` or `__tests__/`; a file another runner owns takes that runner's suffix.** The vitest rules read every file the first three name as one of theirs, and a spec that shared the suffix would be handed vitest's `expect` in place of its runner's. A Playwright file is `*.e2e.ts`; a jest-expo render test is `*.render.tsx`. Both are outside every vitest glob by construction, so nothing has to be ignored, and both stay in the type program.
 
 ## Unused code (knip)
 
