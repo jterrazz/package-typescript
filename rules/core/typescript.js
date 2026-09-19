@@ -37,6 +37,23 @@ export default fragment({
             files: ['**/*.js', '**/*.cjs', '**/*.mjs'],
             rules: Object.fromEntries(UNTYPED_IN_JAVASCRIPT),
         }),
+        /*
+         * A declaration file is where module augmentation lives, and only an
+         * interface merges into an existing one: a `type` alias REDECLARES the
+         * name and every member of the original is lost. The rule's fixer is
+         * already marked unsafe, so `fix` leaves the block alone — but `check`
+         * kept asking every augmentation for a suppression it can never earn.
+         */
+        scoped({
+            files: ['**/*.d.ts'],
+            rules: {
+                'typescript/consistent-type-definitions': off({
+                    by: 'TypeScript — an augmentation merges only as an interface, and a declaration file is where augmentations live',
+                    kind: 'covered',
+                }),
+            },
+            since: '10.2.0',
+        }),
     ],
     rules: {
         ...allOn(

@@ -159,3 +159,42 @@ test('leaves a type-aware fixer alone — the double cast the call still needs',
     expect(fixed.status).toBe(1);
     expect(fixed.stdout).toContain('no-unnecessary-type-assertion');
 });
+
+const AUGMENTATION = `declare module 'some-library' {
+    interface Options {
+        update: boolean;
+    }
+}
+
+export {};
+`;
+
+test('leaves a declare module augmentation an interface, and keeps its export {}', () => {
+    // Given - a project whose one file augments a library, with both rewriters armed
+    writeFileSync(
+        join(project, 'tsconfig.json'),
+        '{ "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true }, "include": ["index.ts"] }\n',
+    );
+    writeFileSync(
+        join(project, 'oxlint.config.ts'),
+        [
+            'export default {',
+            "    plugins: ['typescript'],",
+            '    rules: {',
+            "        'typescript/consistent-type-definitions': ['error', 'type'],",
+            "        'typescript/no-useless-empty-export': 'error',",
+            '    },',
+            '};',
+            '',
+        ].join('\n'),
+    );
+    writeFileSync(join(project, 'index.ts'), AUGMENTATION);
+
+    // When - the fix runs
+    spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+
+    // Then - the block still merges: an interface, and the export that makes it an augmentation
+    const fixed = readFileSync(join(project, 'index.ts'), 'utf8');
+    expect(fixed).toContain('interface Options');
+    expect(fixed).toContain('export {};');
+});
