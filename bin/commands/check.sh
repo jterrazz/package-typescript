@@ -108,7 +108,6 @@ CHECKER=$(find_project_binary jterrazz-test-check)
 # The number is the module's, not this script's: two commands gate on it.
 CHECKER_FLOOR=$(node "$PACKAGE_ROOT/lib/test-package.js" --floor)
 
-
 # ── The unit is the workspace package, not the repository ────────────────────
 # Every gate measures from the NEAREST package.json. A single-package project
 # has exactly one — the cwd — and nothing below changes for it. A workspace
@@ -738,19 +737,20 @@ run_checks() {
     # that did not apply is absent; every pass that ran prints the same block.
     join_logs "$tmp_dir/checker.log" "${checker_failed_logs[@]}"
     join_logs "$tmp_dir/docs.log" "${docs_failed_logs[@]}"
+    join_logs "$tmp_dir/publish.log" "${publish_failed_logs[@]}"
 
     # The member pass is behind the binary that answers it. When a member
     # resolves an older @jterrazz/test the pass says so once, rather than
-    # leaving a reader to believe every member was asked.
-    local checker_notice=""
+    # leaving a reader to believe every member was asked — and a pass that has
+    # something to say asks for its log the way a writer does.
+    local checker_write=""
     if [ "$checker_dormant" -gt 0 ]; then
-        checker_notice="writer"
+        checker_write="writer"
         printf 'the member pass needs @jterrazz/test %s; %d member(s) resolve an older one and were not asked\n' \
             "$CHECKER_FLOOR" "$checker_dormant" | cat - "$tmp_dir/checker.log" \
             > "$tmp_dir/checker-reported.log"
         mv "$tmp_dir/checker-reported.log" "$tmp_dir/checker.log"
     fi
-    join_logs "$tmp_dir/publish.log" "${publish_failed_logs[@]}"
 
     local lint_label="Oxlint Check"
     local format_label="Oxfmt Check"
@@ -771,7 +771,7 @@ run_checks() {
         report_pass "Knip (unused code)" $knip_status "$tmp_dir/knip.log"
     { [ ${#checker_pids[@]} -gt 0 ] || [ "$checker_dormant" -gt 0 ]; } &&
         report_pass "Test Conventions (@jterrazz/test)" $checker_status "$tmp_dir/checker.log" \
-            "$checker_notice"
+            "$checker_write"
     [ -n "$docs_layout_pid" ] &&
         report_pass "Docs (layout)" $docs_layout_status "$tmp_dir/docs-layout.log"
     [ ${#docs_pids[@]} -gt 0 ] &&
