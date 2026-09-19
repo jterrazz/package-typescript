@@ -9,18 +9,23 @@ import { describe, expect, test } from 'vitest';
  * one verdict the project owns rather than the toolchain — and the ground is a
  * lockfile, which `fixture:` can spread but `INIT_CWD` is what the product
  * command reads, so the run names its own root.
+ *
+ * Every run starts one directory ABOVE the fixture, which is the shape npm
+ * gives a script started from a workspace root: `INIT_CWD` is the project and
+ * the working directory is somebody else's. A run whose two agreed would hold
+ * nothing about which of them the command reads.
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const FIXTURES = resolve(import.meta.dirname, '_fixtures/browser-pin');
 
-/** `typescript doctor` run as a consumer runs it, from inside the fixture. */
+/** `typescript doctor` run as a consumer runs it: the fixture is `INIT_CWD`. */
 function doctorIn(fixture: string): { status: null | number; stdout: string } {
-    const cwd = resolve(FIXTURES, fixture);
+    const root = resolve(FIXTURES, fixture);
     const result = spawnSync('bash', [BIN, 'doctor'], {
-        cwd,
+        cwd: FIXTURES,
         encoding: 'utf8',
-        env: { ...process.env, INIT_CWD: cwd },
+        env: { ...process.env, INIT_CWD: root },
     });
 
     return { status: result.status, stdout: result.stdout };
@@ -52,12 +57,33 @@ describe('the browser provider pinned to its runner', () => {
         expect(status).toBe(1);
     });
 
+    test('reads a bun.lock, trailing commas and all', () => {
+        // Given - a bun workspace whose provider resolved a patch behind the runner
+        // When - the doctor reads it
+        const { status, stdout } = doctorIn('bun-skewed');
+
+        // Then - the pin is checked, not passed over: bun.lock is JSON once the commas go
+        expect(stdout).toContain('4.1.9');
+        expect(stdout).toContain('must equal it exactly');
+        expect(status).toBe(1);
+    });
+
     test('says so where the lockfile is one it does not parse', () => {
         // Given - a project declaring the provider under a lockfile this report cannot read
         // When - the doctor reads it
         const { status, stdout } = doctorIn('unread');
 
         // Then - the gap is stated rather than passed over, and it fails nothing
+        expect(stdout).toContain('pnpm-lock.yaml is not parsed here');
+        expect(status).toBe(0);
+    });
+
+    test('states the gap for a provider declared by a member rather than the root', () => {
+        // Given - a workspace whose root declares nothing and whose member runs browser mode
+        // When - the doctor reads it under a lockfile it cannot parse
+        const { status, stdout } = doctorIn('unread-member');
+
+        // Then - the notice fires: the provider belongs to whichever package runs browser mode
         expect(stdout).toContain('pnpm-lock.yaml is not parsed here');
         expect(status).toBe(0);
     });

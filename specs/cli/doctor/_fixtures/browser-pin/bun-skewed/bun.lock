@@ -1,0 +1,16 @@
+{
+  "lockfileVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "fixture-browser-pin-bun-skewed",
+      "devDependencies": {
+        "@vitest/browser-playwright": "4.1.10",
+        "vitest": "4.1.10",
+      },
+    },
+  },
+  "packages": {
+    "@vitest/browser-playwright": ["@vitest/browser-playwright@4.1.9", "", {}, "sha512-aaa=="],
+    "vitest": ["vitest@4.1.10", "", { "bin": { "vitest": "./vitest.mjs" } }, "sha512-bbb=="],
+  },
+}
