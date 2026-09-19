@@ -38,19 +38,20 @@ Each `check` document states the **whole** combined output of the run, not the f
 
 One block is spanned for good: oxlint's own report. The linter picks its reporter from the environment — GitHub workflow commands under `GITHUB_ACTIONS`, one compact line per diagnostic under an AI agent, miette's framed rendering in a terminal — so its text is a fact about the machine, not about the run. No document states an oxlint diagnostic, and no suite parses one: the rulebook suites read `--format=json` through `diagnosticsOf`, and a `check` document claims the verdict our own passes print beneath the linter's block.
 
-## The rulebook has seven suites
+## The rulebook has eight suites
 
-The presets are the one part of this package a document cannot reach: `check` loads a preset from the consumer's `node_modules`, and a copied fixture has none. So `specs/cli/preset/` drives the tools directly — the B9w exception `oxlint.specification.ts` states — and seven suites divide the claim between them.
+The presets are the one part of this package a document cannot reach: `check` loads a preset from the consumer's `node_modules`, and a copied fixture has none. So `specs/cli/preset/` drives the tools directly — the B9w exception `oxlint.specification.ts` states — and eight suites divide the claim between them.
 
-| Suite             | Claims                                                                        |
-| ----------------- | ----------------------------------------------------------------------------- |
-| `resolved-config` | each profile resolves to the rule set its golden records, marker by marker    |
-| `rule-surface`    | every non-nursery rule of every loaded plugin is decided, and no `categories` |
-| `fixpoint`        | oxlint's fixes and oxfmt's reach a fixed point — no rule fights the formatter |
-| `behaviour`       | a fixture written to break rules reports exactly the diagnostics it should    |
-| `exclusive-pairs` | every `off` of kind `exclusive` names a rule that really is on, and conflicts |
-| `declarations`    | every `.d.ts` carries the value surface of the `.js` beside it                |
-| `install-matrix`  | one consumer per profile installs under pnpm-strict and checks green          |
+| Suite                 | Claims                                                                        |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `resolved-config`     | each profile resolves to the rule set its golden records, marker by marker    |
+| `rule-surface`        | every non-nursery rule of every loaded plugin is decided, and no `categories` |
+| `fixpoint`            | oxlint's fixes and oxfmt's reach a fixed point — no rule fights the formatter |
+| `behaviour`           | a fixture written to break rules reports exactly the diagnostics it should    |
+| `exclusive-pairs`     | every `off` of kind `exclusive` names a rule that really is on, and conflicts |
+| `declarations`        | every `.d.ts` carries the value surface of the `.js` beside it                |
+| `install-matrix`      | one consumer per profile installs under pnpm-strict and checks green          |
+| `module-augmentation` | a `declare module` block keeps the interface that merges, and its `export {}` |
 
 The last one is the outside view, and it is the one that fails when the corpus is wrong: seven tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/_fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so an eighth profile earns a consumer by existing. The two config files are the one thing the ground does NOT carry: the runner writes them, for the same reason as above, and that heredoc is the single place the documented form is stated for all seven.
 
