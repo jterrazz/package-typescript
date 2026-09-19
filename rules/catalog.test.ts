@@ -66,6 +66,16 @@ test('every decision carries the version it was taken in', () => {
     }
 });
 
+test('the skill reference routes the vitest scope instead of restating it', () => {
+    // Given - the projection an agent reads
+    const reference = renderReference();
+
+    // Then - the vitest block names its owner, and no row spells a glob out
+    expect(reference).toContain("@jterrazz/test's catalogue owns the shapes");
+    expect(reference).not.toContain('__tests__');
+    expect(reference).not.toContain('{test,spec,test-d,spec-d}');
+});
+
 test.each(Object.entries(PROJECTIONS))(
     'the %s carries the catalogue the manifest renders',
     (_name, { markers, page, render: project }) => {
