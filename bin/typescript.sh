@@ -229,18 +229,20 @@ case "$COMMAND" in
         # a project adopting a stricter version of THAT rulebook needs the same
         # ratchet. Its findings enter the one file under their own namespace,
         # where the installed @jterrazz/test answers `--format json`.
+        # Binary and version come from the one install this project resolves —
+        # the same answer `check` reads, from the same module, so the file is
+        # recorded by the checker that will later be judged against it.
         CHECKER_ARGS=()
-        if node "$PACKAGE_ROOT/lib/test-package.js" . \
-            --at-least "$(node "$PACKAGE_ROOT/lib/test-package.js" --floor)" > /dev/null 2>&1; then
-            if [ -x "node_modules/.bin/jterrazz-test-check" ]; then
-                CHECKER="$PWD/node_modules/.bin/jterrazz-test-check"
-            else
-                CHECKER=$(find_binary jterrazz-test-check)
+        CHECKER_FLOOR=$(node "$PACKAGE_ROOT/lib/test-package.js" --floor)
+        if node "$PACKAGE_ROOT/lib/test-package.js" . --at-least "$CHECKER_FLOOR" \
+            > /dev/null 2>&1; then
+            CHECKER=$(node "$PACKAGE_ROOT/lib/test-package.js" . --bin 2>/dev/null || true)
+            if [ -n "$CHECKER" ]; then
+                CHECKER_REPORT=$(mktemp)
+                trap 'rm -f "$BASELINE_REPORT" "$CHECKER_REPORT"' EXIT
+                node "$CHECKER" --format json > "$CHECKER_REPORT" 2>/dev/null || true
+                CHECKER_ARGS=(--checker "$CHECKER_REPORT")
             fi
-            CHECKER_REPORT=$(mktemp)
-            trap 'rm -f "$BASELINE_REPORT" "$CHECKER_REPORT"' EXIT
-            "$CHECKER" --format json > "$CHECKER_REPORT" 2>/dev/null || true
-            CHECKER_ARGS=(--checker "$CHECKER_REPORT")
         fi
 
         node "$PACKAGE_ROOT/lib/check-baseline.js" "$BASELINE_REPORT" . \

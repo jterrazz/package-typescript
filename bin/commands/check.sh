@@ -140,10 +140,9 @@ nearest_package_dir() {
 
 # The @jterrazz/test conventions checker (D4 tokens, C8/C9 fixtures) runs where
 # the package is a consumer, and a package is one on either evidence: its own
-# manifest names @jterrazz/test, or it RESOLVES one from an ancestor. The second
-# is what npm's hoisting makes of a monorepo — a workspace declares the
-# dependency once at the root and every member loads it — and reading the
-# manifest alone left those members unchecked.
+# manifest names @jterrazz/test, or it RESOLVES one from an ancestor — which is
+# what npm's hoisting makes of a monorepo, where a workspace declares the
+# dependency once at the root and every member loads it.
 project_uses_jterrazz_test() {
     local dir="${1:-.}"
     [ -f "$dir/package.json" ] || return 1
@@ -151,17 +150,38 @@ project_uses_jterrazz_test() {
     node "$PACKAGE_ROOT/lib/test-package.js" "$dir" > /dev/null 2>&1
 }
 
-# A member the checker can be run FOR: it resolves @jterrazz/test, and the
-# release it resolves answers `--member`. A member that resolves an older one
-# is counted, so the pass can say once that it is dormant rather than pretend
-# it ran.
+# A member the checker can be run FOR at all. A member that resolves an older
+# release is counted, so the pass can say once that it is dormant rather than
+# pretend it ran.
 member_resolves_checker() {
     node "$PACKAGE_ROOT/lib/test-package.js" "${1:-.}" > /dev/null 2>&1
 }
 
-member_checker_answers_member_flag() {
-    node "$PACKAGE_ROOT/lib/test-package.js" "${1:-.}" --at-least "$CHECKER_FLOOR" \
-        > /dev/null 2>&1
+# The checker a directory RUNS, into CHECKER_COMMAND. Version and binary come
+# from the one install the directory resolves: a member whose @jterrazz/test is
+# nested rather than hoisted owns a different release from the root's, and a
+# published consumer has no `node_modules/.bin` of this package's to fall back
+# on. Returns 1 when the directory resolves nothing that answers the flags.
+member_checker() {
+    local dir="${1:-.}" bin
+    node "$PACKAGE_ROOT/lib/test-package.js" "$dir" --at-least "$CHECKER_FLOOR" \
+        > /dev/null 2>&1 || return 1
+    bin=$(node "$PACKAGE_ROOT/lib/test-package.js" "$dir" --bin 2>/dev/null) || return 1
+    [ -n "$bin" ] || return 1
+    CHECKER_COMMAND=(node "$bin")
+}
+
+# The same, for the tree pass, which every release answers: no floor, and the
+# toolchain's own lookup for a project that declares @jterrazz/test without an
+# install this walk can reach.
+tree_checker() {
+    local bin
+    bin=$(node "$PACKAGE_ROOT/lib/test-package.js" "${1:-.}" --bin 2>/dev/null)
+    if [ -n "$bin" ]; then
+        CHECKER_COMMAND=(node "$bin")
+    else
+        CHECKER_COMMAND=("$CHECKER")
+    fi
 }
 
 # An Astro project, read off its manifest. `.astro` is the one file shape oxfmt
@@ -611,7 +631,8 @@ run_checks() {
             local owner
             owner=$(nearest_package_dir "$(dirname "$specs_root")") || continue
             project_uses_jterrazz_test "$owner" || continue
-            "$CHECKER" "$specs_root" > "$tmp_dir/checker-$checker_index.log" 2>&1 &
+            tree_checker "$owner"
+            "${CHECKER_COMMAND[@]}" "$specs_root" > "$tmp_dir/checker-$checker_index.log" 2>&1 &
             checker_pids+=($!)
             checker_logs+=("$tmp_dir/checker-$checker_index.log")
             checker_index=$((checker_index + 1))
@@ -620,11 +641,18 @@ run_checks() {
         local member
         for member in "." "${WORKSPACE_MEMBERS[@]}"; do
             member_resolves_checker "$member" || continue
-            if ! member_checker_answers_member_flag "$member"; then
+            if ! member_checker "$member"; then
                 checker_dormant=$((checker_dormant + 1))
+                printf 'the member pass needs @jterrazz/test %s; %s resolves %s\n' \
+                    "$CHECKER_FLOOR" \
+                    "$([ "$member" = "." ] && printf 'this project' || printf '%s' "$member")" \
+                    "$(node "$PACKAGE_ROOT/lib/test-package.js" "$member" 2>/dev/null \
+                        || printf 'none this walk reaches')" \
+                    >> "$tmp_dir/checker-dormant.log"
                 continue
             fi
-            "$CHECKER" --member "$member" > "$tmp_dir/checker-$checker_index.log" 2>&1 &
+            "${CHECKER_COMMAND[@]}" --member "$member" \
+                > "$tmp_dir/checker-$checker_index.log" 2>&1 &
             checker_pids+=($!)
             checker_logs+=("$tmp_dir/checker-$checker_index.log")
             checker_index=$((checker_index + 1))
@@ -676,9 +704,8 @@ run_checks() {
         # under their own namespace in the same file — one ratchet, two
         # rulebooks, and a rule at zero refused on either side.
         local baseline_checker=()
-        if node "$PACKAGE_ROOT/lib/test-package.js" . --at-least "$CHECKER_FLOOR" \
-            > /dev/null 2>&1; then
-            "$CHECKER" --format json > "$tmp_dir/checker.json" 2>/dev/null || true
+        if member_checker .; then
+            "${CHECKER_COMMAND[@]}" --format json > "$tmp_dir/checker.json" 2>/dev/null || true
             baseline_checker=(--checker "$tmp_dir/checker.json")
         fi
 
@@ -739,15 +766,14 @@ run_checks() {
     join_logs "$tmp_dir/docs.log" "${docs_failed_logs[@]}"
     join_logs "$tmp_dir/publish.log" "${publish_failed_logs[@]}"
 
-    # The member pass is behind the binary that answers it. When a member
-    # resolves an older @jterrazz/test the pass says so once, rather than
-    # leaving a reader to believe every member was asked — and a pass that has
-    # something to say asks for its log the way a writer does.
+    # The member pass is behind the release that answers it: where a member
+    # resolves an older one the pass names it, rather than leaving a reader to
+    # believe every member was asked — and a pass that has something to say
+    # asks for its log the way a writer does.
     local checker_write=""
     if [ "$checker_dormant" -gt 0 ]; then
         checker_write="writer"
-        printf 'the member pass needs @jterrazz/test %s; %d member(s) resolve an older one and were not asked\n' \
-            "$CHECKER_FLOOR" "$checker_dormant" | cat - "$tmp_dir/checker.log" \
+        cat "$tmp_dir/checker-dormant.log" "$tmp_dir/checker.log" \
             > "$tmp_dir/checker-reported.log"
         mv "$tmp_dir/checker-reported.log" "$tmp_dir/checker.log"
     fi
