@@ -204,7 +204,7 @@ case "$COMMAND" in
         # cannot disagree with what node will load.
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Checking the toolchain...\n\n"
 
-        exec node "$PACKAGE_ROOT/lib/doctor.js"
+        exec node "$PACKAGE_ROOT/lib/doctor.js" "$PROJECT_ROOT"
         ;;
 
     baseline)
