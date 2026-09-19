@@ -1,6 +1,6 @@
 # ADR-008: A rule stays until its new owner ships
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-19
 
 Written at decision time, while building the 10.2 asks.
