@@ -21,7 +21,7 @@ runs:
            RUN  Gitignore (artefacts)
 
           Artefacts belong under .artifacts/<tool>/ at the project root:
-            ✗ .gitignore names coverage/ — its home is .artifacts/coverage/
+            ✗ .gitignore names coverage/ — its home is .artifacts/vitest/coverage/
             ✗ .gitignore names *.tsbuildinfo — its home is .artifacts/tsc/
             ✗ .gitignore does not ignore .artifacts/ — add it
             · !docs/keep.md — a negation rescues a tracked file, left for you
