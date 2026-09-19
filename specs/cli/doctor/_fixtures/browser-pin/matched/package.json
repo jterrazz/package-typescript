@@ -1,0 +1,8 @@
+{
+  "name": "fixture-browser-pin-matched",
+  "private": true,
+  "devDependencies": {
+    "@vitest/browser-playwright": "4.1.10",
+    "vitest": "4.1.10"
+  }
+}
