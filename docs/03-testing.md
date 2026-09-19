@@ -9,14 +9,14 @@ npm run lint    # this package's own CLI, run on this package
 
 ## Two suites, two speeds
 
-`vitest.config.ts` declares two projects:
+`vitest.config.ts` declares two projects, through `@jterrazz/test/vitest`'s own project helpers — `unit()` and `cli()`:
 
 | Project | Runs                                                                      | Speed                        |
 | ------- | ------------------------------------------------------------------------- | ---------------------------- |
-| `fast`  | `src/**` and `rules/**` unit tests, plus the exports and declaration ones | milliseconds, pure functions |
-| `e2e`   | everything else under `specs/` — the product command                      | seconds, real processes      |
+| `unit`  | `src/**` and `rules/**` unit tests, plus the exports and declaration ones | milliseconds, pure functions |
+| `cli`   | everything else under `specs/` — the product command                      | seconds, real processes      |
 
-The `fast` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`rules/*.test.ts`), the manual's rule engine over in-memory trees (`src/docs.test.ts`), and the two that read the package's own surface — `exports.test.ts` resolves every public subpath, `declarations.test.ts` holds each `.d.ts` to the value surface of the `.js` beside it. Nothing there spawns anything.
+The `unit` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`rules/*.test.ts`), the manual's rule engine over in-memory trees (`src/docs.test.ts`), and the two that read the package's own surface — `exports.test.ts` resolves every public subpath, `declarations.test.ts` holds each `.d.ts` to the value surface of the `.js` beside it. Nothing there spawns anything.
 
 ## A scenario is a document
 
