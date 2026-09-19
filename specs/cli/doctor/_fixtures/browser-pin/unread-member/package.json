@@ -1,0 +1,5 @@
+{
+  "name": "fixture-browser-pin-unread-member",
+  "private": true,
+  "workspaces": ["apps/*"]
+}
