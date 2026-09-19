@@ -98,7 +98,16 @@ find_project_binary() {
 # and the consumer is precisely the project that no longer declares it.
 PRETTIER_ASTRO_CONFIG="$PACKAGE_ROOT/presets/prettier/astro.json"
 PRETTIER_ASTRO_PLUGIN=$(cd "$PACKAGE_ROOT" && node -e 'process.stdout.write(require.resolve("prettier-plugin-astro"))' 2>/dev/null)
-CHECKER=$(find_binary jterrazz-test-check)
+# The conventions checker is the CONSUMER's binary, like astro's: this package
+# runs it, it does not own it, and the version a project installed is the
+# rulebook it agreed to. So the lookup starts at the project and falls back
+# here only for a project that has no install of its own.
+CHECKER=$(find_project_binary jterrazz-test-check)
+
+# The release of @jterrazz/test that answers `--member`. Below it the member
+# pass has no binary to call, and the tree passes run alone.
+CHECKER_MEMBER_FLOOR="15.3.0"
+
 
 # ── The unit is the workspace package, not the repository ────────────────────
 # Every gate measures from the NEAREST package.json. A single-package project
@@ -130,12 +139,30 @@ nearest_package_dir() {
     done
 }
 
-# The @jterrazz/test conventions checker (D4 tokens, C8/C9 fixtures) runs only when the
-# owning package depends on @jterrazz/test — auto-detected from its package.json.
+# The @jterrazz/test conventions checker (D4 tokens, C8/C9 fixtures) runs where
+# the package is a consumer, and a package is one on either evidence: its own
+# manifest names @jterrazz/test, or it RESOLVES one from an ancestor. The second
+# is what npm's hoisting makes of a monorepo — a workspace declares the
+# dependency once at the root and every member loads it — and reading the
+# manifest alone left those members unchecked.
 project_uses_jterrazz_test() {
     local dir="${1:-.}"
     [ -f "$dir/package.json" ] || return 1
-    node -e 'const {readFileSync}=require("node:fs");const p=JSON.parse(readFileSync(process.argv[1],"utf8"));const d={...p.dependencies,...p.devDependencies,...p.peerDependencies};process.exit(d["@jterrazz/test"]?0:1)' "$dir/package.json" 2>/dev/null
+    node -e 'const {readFileSync}=require("node:fs");const p=JSON.parse(readFileSync(process.argv[1],"utf8"));const d={...p.dependencies,...p.devDependencies,...p.peerDependencies};process.exit(d["@jterrazz/test"]?0:1)' "$dir/package.json" 2>/dev/null && return 0
+    node "$PACKAGE_ROOT/lib/test-package.js" "$dir" > /dev/null 2>&1
+}
+
+# A member the checker can be run FOR: it resolves @jterrazz/test, and the
+# release it resolves answers `--member`. A member that resolves an older one
+# is counted, so the pass can say once that it is dormant rather than pretend
+# it ran.
+member_resolves_checker() {
+    node "$PACKAGE_ROOT/lib/test-package.js" "${1:-.}" > /dev/null 2>&1
+}
+
+member_checker_answers_member_flag() {
+    node "$PACKAGE_ROOT/lib/test-package.js" "${1:-.}" --at-least "$CHECKER_MEMBER_FLOOR" \
+        > /dev/null 2>&1
 }
 
 # An Astro project, read off its manifest. `.astro` is the one file shape oxfmt
@@ -569,12 +596,15 @@ run_checks() {
         done
     fi
 
-    # Conventions checker: only in check mode, once per specs root the workspace
-    # owns, gated by the package that OWNS that root — a member may depend on
-    # @jterrazz/test while the root does not, and the reverse.
+    # Conventions checker: only in check mode, and in two shapes. One run per
+    # specs root the workspace owns, gated by the package that OWNS that root —
+    # a member may use @jterrazz/test while the root does not, and the reverse.
+    # And one run per workspace member that RESOLVES @jterrazz/test, `--member`,
+    # which is the half that reaches a package owning no `specs/` at all.
     local checker_pids=()
     local checker_logs=()
     local checker_status=0
+    local checker_dormant=0
     if [ "$FIX_MODE" = false ]; then
         local checker_index=0
         while IFS= read -r specs_root; do
@@ -587,6 +617,19 @@ run_checks() {
             checker_logs+=("$tmp_dir/checker-$checker_index.log")
             checker_index=$((checker_index + 1))
         done < <(discover_specs_roots)
+
+        local member
+        for member in "." "${WORKSPACE_MEMBERS[@]}"; do
+            member_resolves_checker "$member" || continue
+            if ! member_checker_answers_member_flag "$member"; then
+                checker_dormant=$((checker_dormant + 1))
+                continue
+            fi
+            "$CHECKER" --member "$member" > "$tmp_dir/checker-$checker_index.log" 2>&1 &
+            checker_pids+=($!)
+            checker_logs+=("$tmp_dir/checker-$checker_index.log")
+            checker_index=$((checker_index + 1))
+        done
     fi
 
     # Docs (sync): only in check mode, and only for a package that has generated
@@ -684,6 +727,18 @@ run_checks() {
     # that did not apply is absent; every pass that ran prints the same block.
     join_logs "$tmp_dir/checker.log" "${checker_failed_logs[@]}"
     join_logs "$tmp_dir/docs.log" "${docs_failed_logs[@]}"
+
+    # The member pass is behind the binary that answers it. When a member
+    # resolves an older @jterrazz/test the pass says so once, rather than
+    # leaving a reader to believe every member was asked.
+    local checker_notice=""
+    if [ "$checker_dormant" -gt 0 ]; then
+        checker_notice="writer"
+        printf 'the member pass needs @jterrazz/test %s; %d member(s) resolve an older one and were not asked\n' \
+            "$CHECKER_MEMBER_FLOOR" "$checker_dormant" | cat - "$tmp_dir/checker.log" \
+            > "$tmp_dir/checker-reported.log"
+        mv "$tmp_dir/checker-reported.log" "$tmp_dir/checker.log"
+    fi
     join_logs "$tmp_dir/publish.log" "${publish_failed_logs[@]}"
 
     local lint_label="Oxlint Check"
@@ -703,8 +758,9 @@ run_checks() {
         report_pass "Gitignore (artefacts)" $gitignore_status "$tmp_dir/gitignore.log" writer
     [ "$FIX_MODE" = false ] &&
         report_pass "Knip (unused code)" $knip_status "$tmp_dir/knip.log"
-    [ ${#checker_pids[@]} -gt 0 ] &&
-        report_pass "Test Conventions (@jterrazz/test)" $checker_status "$tmp_dir/checker.log"
+    { [ ${#checker_pids[@]} -gt 0 ] || [ "$checker_dormant" -gt 0 ]; } &&
+        report_pass "Test Conventions (@jterrazz/test)" $checker_status "$tmp_dir/checker.log" \
+            "$checker_notice"
     [ -n "$docs_layout_pid" ] &&
         report_pass "Docs (layout)" $docs_layout_status "$tmp_dir/docs-layout.log"
     [ ${#docs_pids[@]} -gt 0 ] &&
