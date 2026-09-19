@@ -1,0 +1,4 @@
+node_modules/
+
+# Build, test and lint artefacts (@jterrazz/typescript)
+.artifacts/
