@@ -114,7 +114,7 @@ A local `compilerOption` is a **smell, not a shortcut**. It says the preset lack
 
 ## Where a tool's output goes
 
-Every build, test and lint artefact lives under `.artifacts/<tool>/` at the project root — one folder per tool that writes, `.artifacts/tsc/` for the incremental buildinfo, `.artifacts/coverage/` for coverage, and so on. One directory to ignore, one to delete, and no tool's droppings beside the source.
+Every build, test and lint artefact lives under `.artifacts/<tool>/` at the project root — one folder per tool that writes, `.artifacts/tsc/` for the incremental buildinfo, `.artifacts/vitest/coverage/` for coverage, and so on. Coverage is the runner's output, so it takes the runner's folder and no other: `@jterrazz/test`'s vitest preset sets `coverage.reportsDirectory` there, and the artefact gate names the same path, so a project has one coverage directory rather than two. One directory to ignore, one to delete, and no tool's droppings beside the source.
 
 `dist` is the one exception: a build's **product** stays beside `src/` and is published from there ([Building](05-building.md)). It is not an artefact — it is what the package ships.
 

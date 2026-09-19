@@ -69,7 +69,9 @@ describe('the gitignore gate in a workspace', () => {
 
         // Then - the gate names the MEMBER's own file, and never repeats the "not ignored" error
         expect(status).toBe(1);
-        expect(stdout).toContain('.gitignore names coverage/ — its home is .artifacts/coverage/');
+        expect(stdout).toContain(
+            '.gitignore names coverage/ — its home is .artifacts/vitest/coverage/',
+        );
         expect(stdout).not.toContain('does not ignore .artifacts/');
     });
 });
