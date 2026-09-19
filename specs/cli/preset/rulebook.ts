@@ -124,6 +124,7 @@ export function oxfmt(cwd: string, args: string[]): { status: number; stdout: st
 
 /** What `--print-config` says about a profile, in the shape the suites read. */
 export type ResolvedConfig = {
+    overrides?: { files: string[]; rules: Record<string, unknown> }[];
     plugins: string[];
     rules: Record<string, unknown>;
 };
