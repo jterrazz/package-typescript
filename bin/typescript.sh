@@ -225,7 +225,26 @@ case "$COMMAND" in
         # A non-zero exit is the whole point of the recording, not a failure.
         "$OXLINT" --type-aware --format json "$@" > "$BASELINE_REPORT" 2>/dev/null || true
 
-        node "$PACKAGE_ROOT/lib/check-baseline.js" "$BASELINE_REPORT" . --write
+        # The conventions checker judges the same tree from the other side, and
+        # a project adopting a stricter version of THAT rulebook needs the same
+        # ratchet. Its findings enter the one file under their own namespace,
+        # where the installed @jterrazz/test answers `--format json`.
+        CHECKER_ARGS=()
+        if node "$PACKAGE_ROOT/lib/test-package.js" . \
+            --at-least "$(node "$PACKAGE_ROOT/lib/test-package.js" --floor)" > /dev/null 2>&1; then
+            if [ -x "node_modules/.bin/jterrazz-test-check" ]; then
+                CHECKER="$PWD/node_modules/.bin/jterrazz-test-check"
+            else
+                CHECKER=$(find_binary jterrazz-test-check)
+            fi
+            CHECKER_REPORT=$(mktemp)
+            trap 'rm -f "$BASELINE_REPORT" "$CHECKER_REPORT"' EXIT
+            "$CHECKER" --format json > "$CHECKER_REPORT" 2>/dev/null || true
+            CHECKER_ARGS=(--checker "$CHECKER_REPORT")
+        fi
+
+        node "$PACKAGE_ROOT/lib/check-baseline.js" "$BASELINE_REPORT" . \
+            "${CHECKER_ARGS[@]}" --write
 
         # The file is tracked, so it is the formatter's like every other tracked
         # file — written here, shaped by the project's own oxfmt, never both.

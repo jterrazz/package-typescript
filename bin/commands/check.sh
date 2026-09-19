@@ -104,9 +104,9 @@ PRETTIER_ASTRO_PLUGIN=$(cd "$PACKAGE_ROOT" && node -e 'process.stdout.write(requ
 # here only for a project that has no install of its own.
 CHECKER=$(find_project_binary jterrazz-test-check)
 
-# The release of @jterrazz/test that answers `--member`. Below it the member
-# pass has no binary to call, and the tree passes run alone.
-CHECKER_MEMBER_FLOOR="15.3.0"
+# The release of @jterrazz/test that answers `--member` and `--format json`.
+# The number is the module's, not this script's: two commands gate on it.
+CHECKER_FLOOR=$(node "$PACKAGE_ROOT/lib/test-package.js" --floor)
 
 
 # ── The unit is the workspace package, not the repository ────────────────────
@@ -161,7 +161,7 @@ member_resolves_checker() {
 }
 
 member_checker_answers_member_flag() {
-    node "$PACKAGE_ROOT/lib/test-package.js" "${1:-.}" --at-least "$CHECKER_MEMBER_FLOOR" \
+    node "$PACKAGE_ROOT/lib/test-package.js" "${1:-.}" --at-least "$CHECKER_FLOOR" \
         > /dev/null 2>&1
 }
 
@@ -672,8 +672,19 @@ run_checks() {
             "$OXLINT" --type-aware --format json "${LINT_ARGS[@]}" \
                 > "$tmp_dir/lint.json" 2>/dev/null
         fi
+        # The other reporter on the same tree. Where the installed
+        # @jterrazz/test answers `--format json`, its findings are counted
+        # under their own namespace in the same file — one ratchet, two
+        # rulebooks, and a rule at zero refused on either side.
+        local baseline_checker=()
+        if node "$PACKAGE_ROOT/lib/test-package.js" . --at-least "$CHECKER_FLOOR" \
+            > /dev/null 2>&1; then
+            "$CHECKER" --format json > "$tmp_dir/checker.json" 2>/dev/null || true
+            baseline_checker=(--checker "$tmp_dir/checker.json")
+        fi
+
         node "$PACKAGE_ROOT/lib/check-baseline.js" "$tmp_dir/lint.json" . \
-            >> "$tmp_dir/lint.log" 2>&1
+            "${baseline_checker[@]}" >> "$tmp_dir/lint.log" 2>&1
         lint_status=$?
     fi
 
@@ -735,7 +746,7 @@ run_checks() {
     if [ "$checker_dormant" -gt 0 ]; then
         checker_notice="writer"
         printf 'the member pass needs @jterrazz/test %s; %d member(s) resolve an older one and were not asked\n' \
-            "$CHECKER_MEMBER_FLOOR" "$checker_dormant" | cat - "$tmp_dir/checker.log" \
+            "$CHECKER_FLOOR" "$checker_dormant" | cat - "$tmp_dir/checker.log" \
             > "$tmp_dir/checker-reported.log"
         mv "$tmp_dir/checker-reported.log" "$tmp_dir/checker.log"
     fi

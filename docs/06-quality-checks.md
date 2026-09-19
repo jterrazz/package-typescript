@@ -180,6 +180,8 @@ Three things fail a run that has one, all under `baseline-ratchet`:
 
 The third is what makes the file shrink. Without it a baseline records a debt that was paid a year ago and nothing ever says so.
 
+The file records two reporters, not one. `@jterrazz/test`'s conventions checker judges the same tree from the other side — how a spec is written rather than what the code does — and a project adopting a stricter version of THAT rulebook needs the same ratchet for the same reason. Its `--format json` findings are merged before the counting, under the namespace its own codes carry: `jterrazz-check(d4)` is recorded as `jterrazz-check/d4`, beside `eslint/no-debugger`, in one flat file. Severity is never read — a finding a release ships at `warn` is exactly the debt a ratchet exists to hold down — and the three refusals above are the same three, whichever reporter names the id. The merge happens only where the installed `@jterrazz/test` answers `--format json` (15.3.0); below it the file is the linter's alone.
+
 `fix` is judged by the same file as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green.
 
 ### Recording it
