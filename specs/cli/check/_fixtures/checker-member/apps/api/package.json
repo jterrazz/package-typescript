@@ -1,0 +1,5 @@
+{
+  "name": "fixture-checker-member-api",
+  "version": "1.0.0",
+  "main": "specs/http/response.test.ts"
+}

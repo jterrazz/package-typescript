@@ -14,29 +14,29 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 
 `typescript check` runs up to fifteen passes. Three spawn a tool on every invocation, knip and four tree gates run on every `check`, and the other seven are opt-in — they appear only when the project qualifies.
 
-| Pass                              | Tool                        | When it runs                                                 |
-| --------------------------------- | --------------------------- | ------------------------------------------------------------ |
-| TypeScript Check                  | tsc (TypeScript 7, Go)      | always                                                       |
-| Oxlint Check                      | oxlint (`--type-aware`)     | always (judged by `oxlint.baseline.json` where there is one) |
-| Oxfmt Check                       | oxfmt (Rust)                | always                                                       |
-| Gitignore (artefacts)             | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own  |
-| Knip (unused code)                | knip (Node)                 | always (check only — it is not run in fix)                   |
-| Test Conventions (@jterrazz/test) | conventions checker         | per package that depends on `@jterrazz/test` + owns `specs/` |
-| Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)    |
-| Docs (sync)                       | `typescript docs --check`   | per package that has committed docs (`docs/reference/`)      |
-| Publish (packaging)               | publint + attw              | per package the registry would accept (not `private`)        |
-| Architecture (layer map)          | dependency-cruiser          | check: a `.dependency-cruiser.*` at the project root         |
-| Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)          |
-| Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)       |
-| Markdown (prose)                  | the prose gate              | always (check only — a paragraph is not machine-split)       |
-| Names (tree)                      | the naming gate             | always (check only — a rename is a move, not a rewrite)      |
-| Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)     |
+| Pass                              | Tool                        | When it runs                                                          |
+| --------------------------------- | --------------------------- | --------------------------------------------------------------------- |
+| TypeScript Check                  | tsc (TypeScript 7, Go)      | always                                                                |
+| Oxlint Check                      | oxlint (`--type-aware`)     | always (judged by `oxlint.baseline.json` where there is one)          |
+| Oxfmt Check                       | oxfmt (Rust)                | always                                                                |
+| Gitignore (artefacts)             | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own           |
+| Knip (unused code)                | knip (Node)                 | always (check only — it is not run in fix)                            |
+| Test Conventions (@jterrazz/test) | conventions checker         | per `specs/` root, and once per member that resolves `@jterrazz/test` |
+| Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)             |
+| Docs (sync)                       | `typescript docs --check`   | per package that has committed docs (`docs/reference/`)               |
+| Publish (packaging)               | publint + attw              | per package the registry would accept (not `private`)                 |
+| Architecture (layer map)          | dependency-cruiser          | check: a `.dependency-cruiser.*` at the project root                  |
+| Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)                   |
+| Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)                |
+| Markdown (prose)                  | the prose gate              | always (check only — a paragraph is not machine-split)                |
+| Names (tree)                      | the naming gate             | always (check only — a rename is a move, not a rewrite)               |
+| Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)              |
 
 `typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate and the suppression gate in parallel — knip, the conventions checker, the two Docs passes and the remaining tree gates are check-only (they are read-only gates, not fixers).
 
 ### In a workspace
 
-When the `package.json` at the cwd declares `workspaces`, the two per-package passes run once per member that qualifies — `apps/*/specs`, `packages/*/docs/reference` and the rest are gates of their own, not files the root happens to contain. A member is a directory a workspace glob matches that holds a `package.json`; the pass reports one line and prints the log of any run that failed.
+When the `package.json` at the cwd declares `workspaces`, the per-package passes run once per member that qualifies — `apps/*/specs`, `packages/*/docs/reference` and the rest are gates of their own, not files the root happens to contain. A member is a directory a workspace glob matches that holds a `package.json`; the pass reports one line and prints the log of any run that failed.
 
 The Docs (layout) pass measures from neither: its unit is the repository, and the section below says why.
 
@@ -69,6 +69,16 @@ One more exception joins the list CONDITIONALLY: `.next`, but only when the proj
 ### What `typescript fix` rewrites
 
 Fix mode rewrites the package's OWN `.gitignore` only — never an ancestor's, which is a different project's file, and never one that does not exist, since fix repairs a file, it does not create one. The artefact lines go, `.artifacts/` arrives, and everything else — the comments, the blank lines, the order, the project's own paths — survives untouched. It reports every line it removed and prints the file's negations, which it never touches: a `!` line rescues a tracked file, so what to do with one is a judgement, not a rewrite. A committed artefact is reported in fix mode too and still fails the run — untracking a file is not something a formatter should decide.
+
+## The Test Conventions pass
+
+`@jterrazz/test` ships the checker; this package runs it, and the question it answers is "does this project write specs the way the framework says". It runs in two shapes, and both are needed because they answer for different things.
+
+One run per `specs/` root the workspace owns — the root's own, plus the first one found at or below each member — judging the tree: the document grammar, the fixtures, the goldens. And one run per workspace MEMBER, `--member <dir>`, judging what the member has rather than what its specs tree holds: a package with a `test` script and no `vitest.config.ts` owns a question no specs root can be asked, and a package with no `specs/` at all was previously never reached.
+
+A member is a consumer of `@jterrazz/test` on either evidence: its own manifest names it, or it RESOLVES one from an ancestor. The second is what npm makes of a monorepo — a workspace declares the dependency once at the root and every member loads it — and reading the manifest alone left jterrazz-os's console and CLI members unchecked while their specs sat right there. The resolution is the ancestor walk itself, `node_modules/@jterrazz/test/package.json` from the member upward, rather than `require.resolve`: the package's `exports` map does not publish `./package.json`, and a gate does not depend on a map the package is free to change.
+
+The member pass is behind the release that answers it. `--member` arrives in `@jterrazz/test` 15.3.0; where a member resolves an older one the pass says so in one line and the tree passes run alone, rather than leaving a reader to believe every member was asked.
 
 ## The Docs (layout) pass
 
