@@ -40,6 +40,35 @@ function levelOf(entry: unknown): string {
     return Array.isArray(entry) ? String(entry[0]) : String(entry);
 }
 
+/*
+ * The three rules that catch an un-awaited assertion. A test file is where
+ * they earn the most: Playwright recommends `no-floating-promises` on a spec
+ * tree precisely because `expect.element(…)` and every async matcher return a
+ * promise, and a spec that forgets the `await` passes by not asserting.
+ */
+const UNAWAITED_PROMISE_RULES = [
+    'typescript/await-thenable',
+    'typescript/no-floating-promises',
+    'typescript/no-misused-promises',
+];
+
+test.each(PROFILES)('$name arms the un-awaited-promise rules on a test file too', ({ name }) => {
+    // Given - the profile, resolved by oxlint itself
+    const config = printConfig(name);
+
+    for (const rule of UNAWAITED_PROMISE_RULES) {
+        // Then - the base config denies it, which is what a file inherits
+        expect.soft(levelOf(config.rules[rule]), `${name}: ${rule} in the base`).toBe('deny');
+
+        // Then - and no override relaxes it, so the vitest globs inherit it unchanged
+        for (const override of config.overrides ?? []) {
+            expect
+                .soft(override.rules[rule], `${name}: ${rule} under ${override.files.join(', ')}`)
+                .toBeUndefined();
+        }
+    }
+});
+
 test.each(PROFILES)('$name resolves to the rule set its golden records', ({ name }) => {
     // Given - the profile, resolved by oxlint itself
     const { rules } = printConfig(name);
