@@ -165,3 +165,40 @@ test('refuses a checker id that grew, one nobody recorded, and one that reached 
     // Then - the entry is owed a deletion, which is what makes the file shrink
     expect(run('check').stdout).toContain('jterrazz-check/c9 is at zero');
 });
+
+/** The verdict the report printed for one pass, or `absent` when it did not run. */
+function verdict(stdout: string, label: string): string {
+    const index = stdout.indexOf(label);
+
+    return index === -1
+        ? 'absent'
+        : (/✓ Passed|✗ Failed/u.exec(stdout.slice(index))?.[0] ?? 'absent');
+}
+
+test('holds the pass that reported the debt, and prints what it is holding', () => {
+    // Given - a recorded baseline, and a checker that fails its member pass on those same findings
+    run('baseline');
+
+    // When - the checks run
+    const { stdout } = run('check');
+
+    // Then - both passes the one file judges are green, and the findings are on the page anyway
+    expect(verdict(stdout, 'Test Conventions')).toBe('✓ Passed');
+    expect(verdict(stdout, 'Oxlint Check')).toBe('✓ Passed');
+    expect(stdout).toContain("oxlint.baseline.json is this pass's verdict too");
+    expect(stdout).toContain('jterrazz-check(d4) specs/http/response.spec.yaml');
+});
+
+test('sets the checker entries aside on a run that could not measure them', () => {
+    // Given - a baseline recorded with the checker's ids in it
+    run('baseline');
+
+    // When - the install drops below the release that answers `--format json`
+    writeFileSync(
+        join(project, 'node_modules/@jterrazz/test/package.json'),
+        `${JSON.stringify({ bin: { 'jterrazz-test-check': 'dist/checker.js' }, name: '@jterrazz/test', version: '15.2.0' }, null, 2)}\n`,
+    );
+
+    // Then - nothing measured them, so nothing says their debt reached zero
+    expect(run('check').stdout).not.toContain('is at zero');
+});

@@ -624,6 +624,7 @@ run_checks() {
     local checker_logs=()
     local checker_status=0
     local checker_dormant=0
+    local checker_ratcheted=false
     if [ "$FIX_MODE" = false ]; then
         local checker_index=0
         while IFS= read -r specs_root; do
@@ -707,6 +708,7 @@ run_checks() {
         if member_checker .; then
             "${CHECKER_COMMAND[@]}" --format json > "$tmp_dir/checker.json" 2>/dev/null || true
             baseline_checker=(--checker "$tmp_dir/checker.json")
+            [ -f "$BASELINE_FILE" ] && checker_ratcheted=true
         fi
 
         node "$PACKAGE_ROOT/lib/check-baseline.js" "$tmp_dir/lint.json" . \
@@ -737,6 +739,15 @@ run_checks() {
         index=$((index + 1))
     done
 
+    # The ratchet is the verdict for BOTH reporters or for neither. The
+    # checker's findings were counted into `oxlint.baseline.json` under their
+    # own namespace, so an id that has not moved is recorded debt here exactly
+    # as it is in the oxlint pass, and refusing it here would fail one debt
+    # twice. The log still prints: debt a reader cannot see is debt nobody pays.
+    if [ "$checker_ratcheted" = true ]; then
+        checker_status=0
+    fi
+
     local publish_failed_logs=()
     index=0
     for pid in "${publish_pids[@]}"; do
@@ -766,16 +777,23 @@ run_checks() {
     join_logs "$tmp_dir/docs.log" "${docs_failed_logs[@]}"
     join_logs "$tmp_dir/publish.log" "${publish_failed_logs[@]}"
 
-    # The member pass is behind the release that answers it: where a member
-    # resolves an older one the pass names it, rather than leaving a reader to
-    # believe every member was asked — and a pass that has something to say
-    # asks for its log the way a writer does.
+    # Two things this pass says even when it is green, so it asks for its log
+    # the way a writer does: which findings the ratchet is holding, and which
+    # member resolves a release too old to answer `--member` — a reader left
+    # with silence would believe every member was asked.
     local checker_write=""
+    if [ "$checker_ratcheted" = true ] && [ -s "$tmp_dir/checker.log" ]; then
+        printf '%s is this pass'"'"'s verdict too — what follows is recorded debt\n\n' \
+            "$BASELINE_FILE" | cat - "$tmp_dir/checker.log" > "$tmp_dir/checker-reported.log"
+        mv "$tmp_dir/checker-reported.log" "$tmp_dir/checker.log"
+    fi
     if [ "$checker_dormant" -gt 0 ]; then
-        checker_write="writer"
         cat "$tmp_dir/checker-dormant.log" "$tmp_dir/checker.log" \
             > "$tmp_dir/checker-reported.log"
         mv "$tmp_dir/checker-reported.log" "$tmp_dir/checker.log"
+    fi
+    if [ "$checker_dormant" -gt 0 ] || [ "$checker_ratcheted" = true ]; then
+        checker_write="writer"
     fi
 
     local lint_label="Oxlint Check"
