@@ -106,3 +106,56 @@ test('leaves the fixer alone where an override of the consumer arms the rule aga
     expect(readFileSync(join(project, 'index.ts'), 'utf8')).toContain('take(undefined)');
     expect(existsSync(join(project, 'oxlint.fix.config.mjs'))).toBe(false);
 });
+
+/*
+ * The same claim, one layer down. Every test above arms a rule oxlint itself
+ * decides; the wrapper's `overrides` block is oxlint's own vocabulary and
+ * reaching it is oxlint's job. A TYPE-AWARE rule is not oxlint's: it runs in
+ * `tsgolint`, a separate binary oxlint hands the file to, and nothing here
+ * held that half — the rewrite below is the one a spike measured in
+ * @jterrazz/test, where a broken module augmentation widened a parameter to
+ * `any` and the fixer then read the cast that reached it as unnecessary.
+ */
+test('leaves a type-aware fixer alone — the double cast the call still needs', () => {
+    // Given - a project whose one diagnostic is a type-aware unsafe fixer
+    writeFileSync(
+        join(project, 'tsconfig.json'),
+        '{ "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true }, "include": ["index.ts"] }\n',
+    );
+    writeFileSync(
+        join(project, 'oxlint.config.ts'),
+        [
+            'export default {',
+            '    options: { typeAware: true },',
+            "    plugins: ['typescript'],",
+            "    rules: { 'typescript/no-unnecessary-type-assertion': 'error' },",
+            '};',
+            '',
+        ].join('\n'),
+    );
+    writeFileSync(
+        join(project, 'index.ts'),
+        [
+            'export function takes(value: string): string {',
+            '    return value;',
+            '}',
+            '',
+            'declare const widened: any;',
+            '',
+            'export const taken = takes(widened as unknown as string);',
+            '',
+        ].join('\n'),
+    );
+
+    // When - the fix runs
+    const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+
+    // Then - the cast survives, so the file still says which type the call receives
+    expect(readFileSync(join(project, 'index.ts'), 'utf8')).toContain(
+        'widened as unknown as string',
+    );
+
+    // Then - and the rule is still reported, because the answer is a human's
+    expect(fixed.status).toBe(1);
+    expect(fixed.stdout).toContain('no-unnecessary-type-assertion');
+});
