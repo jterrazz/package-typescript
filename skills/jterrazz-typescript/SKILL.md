@@ -13,7 +13,7 @@ Three surfaces, one CLI (`bin/typescript.sh`):
 
 - **Build** — `build` (app: ESM + types), `bundle` (library: ESM + CJS + types), `start`, `dev`, `clean`.
 - **Check** — `check` runs up to fifteen passes in parallel, each printing a header and a verdict in one fixed order: tsc, oxlint (`--type-aware`), oxfmt, the artefact gate, knip, the conventions checker, the two Docs passes, publish, architecture, Astro, and the four tree gates — suppressions, markdown, names, secrets. A pass that does not apply prints nothing. It ends on a drift report. `fix` auto-repairs lint + format, rewrites the `.gitignore`, settles suppression spellings and formats `.astro`.
-- **Adopt** — `doctor` reports the installed tool versions against the declared ranges; `baseline` records `oxlint.baseline.json`, the ratchet a project adopts a stricter release with.
+- **Adopt** — `doctor` reports the installed tool versions against the declared ranges, and holds `@vitest/browser-playwright` to vitest's exact version where the lockfile resolves it; `baseline` records `oxlint.baseline.json`, the ratchet a project adopts a stricter release with — the linter's diagnostics and the conventions checker's, in one flat file.
 - **Docs** — `docs` compiles the source barrel into a **committed** projection (`docs/reference/`); `docs --check` verifies it is in sync.
 
 A project names ONE of seven profiles — `node`, `library`, `next`, `astro`, `expo`, `bun`, `react` — in its `oxlint.config.ts`, and the matching tsconfig preset in its `tsconfig.json`. Every rule of every loaded plugin is decided by name, at `error` or at `off` with one of five recorded reasons; there is no warn tier, and a profile never relaxes what the profiles share. There is no dependency auto-detection.
