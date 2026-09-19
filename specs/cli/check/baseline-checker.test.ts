@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, expect, test } from 'vitest';
@@ -7,34 +7,45 @@ import { afterEach, beforeEach, expect, test } from 'vitest';
 /*
  * A chain with a STUB checker, for the reason the member pass has one: the
  * `--format json` this reads arrives in a release of @jterrazz/test that is
- * not out, so the only ground that proves the code path today is a binary on
- * the project's own `node_modules/.bin` that answers it.
+ * not out, so the only ground that proves the code path today is an install
+ * whose own `bin` entry answers it.
  *
  * The claim is the ratchet's, not the checker's: one flat file records both
  * reporters, the checker's findings under the namespace its own codes carry,
- * and every refusal the file already made for an oxlint rule it makes for a
- * `jterrazz-check` one.
+ * every refusal the file already made for an oxlint rule it makes for a
+ * `jterrazz-check` one — and the pass that reports those findings is judged by
+ * the file rather than by the binary's exit code, or recorded debt would fail
+ * the run the ratchet just held.
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
 let project = '';
 
-/** A checker whose `--format json` reports exactly the findings given. */
+/**
+ * A checker reporting exactly the findings given: as JSON for the ratchet, and
+ * as the human line a member pass prints — which FAILS, the way the real one
+ * does when it has something to say. That failure is the point of the last
+ * test: the run is green anyway, because the file records the debt.
+ */
 function stubReporting(findings: { code: string }[]): string {
     return `#!/usr/bin/env node
+const findings = ${JSON.stringify(JSON.stringify({ diagnostics: findings }))};
 if (process.argv.includes('--format')) {
-    process.stdout.write(${JSON.stringify(JSON.stringify({ diagnostics: findings }))});
+    process.stdout.write(findings);
+    process.exit(0);
 }
-process.exit(0);
+for (const diagnostic of JSON.parse(findings).diagnostics) {
+    process.stdout.write(\`\${diagnostic.code} \${diagnostic.file} \${diagnostic.message}\n\`);
+}
+process.exit(1);
 `;
 }
 
 /** Rewrite the stub so the next run reports a different tree. */
 function reporting(...codes: string[]): void {
-    const binary = join(project, 'node_modules/.bin/jterrazz-test-check');
     writeFileSync(
-        binary,
+        join(project, 'node_modules/@jterrazz/test/dist/checker.js'),
         stubReporting(
             codes.map((code) => ({
                 code,
@@ -45,7 +56,6 @@ function reporting(...codes: string[]): void {
             })),
         ),
     );
-    chmodSync(binary, 0o755);
 }
 
 beforeEach(() => {
@@ -65,12 +75,11 @@ beforeEach(() => {
     writeFileSync(join(project, 'index.ts'), 'export const value = 1;\n');
 
     const installed = join(project, 'node_modules/@jterrazz/test');
-    mkdirSync(installed, { recursive: true });
+    mkdirSync(join(installed, 'dist'), { recursive: true });
     writeFileSync(
         join(installed, 'package.json'),
-        `${JSON.stringify({ name: '@jterrazz/test', version: '15.3.0' }, null, 2)}\n`,
+        `${JSON.stringify({ bin: { 'jterrazz-test-check': 'dist/checker.js' }, name: '@jterrazz/test', version: '15.3.0' }, null, 2)}\n`,
     );
-    mkdirSync(join(project, 'node_modules/.bin'), { recursive: true });
 
     reporting('jterrazz-check(d4)', 'jterrazz-check(d4)', 'jterrazz-check(c9)');
 });
