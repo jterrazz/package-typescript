@@ -123,6 +123,8 @@ A fixer that changes MEANING is never applied unattended. The rules below stay a
 
 The first entry of that list is the one a scope also answers. An augmentation merges into an existing declaration only as an INTERFACE — a `type` alias redeclares the name, and every member of the original is lost — and the `export {}` beside it is what makes a file carrying `declare module` an augmentation rather than an ambient redeclaration. So `typescript/consistent-type-definitions` is OFF in `**/*.d.ts`, where augmentation is what a file is for, and on everywhere else, where the block is one part of a source file and a human answers the report with a suppression inside it. `typescript/no-useless-empty-export` stays on: it fires only where the file is already a module by another export, which is the case the `export {}` adds nothing to.
 
+The scope is the file's, because oxlint scopes by path and no override can name an AST node. A package that ships its augmentation from a `.ts` entry — so the built types always carry it — therefore keeps a suppression inside the block, and that is the answer, not a gap: moving the block to a `.d.ts` the package publishes in `types` is the other one.
+
 ## The formatting decisions
 
 100-char print width, 4-space indentation, single quotes, trailing commas everywhere, semicolons, LF. Those four do not move: twenty-eight repositories are written that way and two of them hold signed attestation bytes a reflow would invalidate.

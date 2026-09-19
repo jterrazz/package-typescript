@@ -40,9 +40,9 @@ export default fragment({
         /*
          * A declaration file is where module augmentation lives, and only an
          * interface merges into an existing one: a `type` alias REDECLARES the
-         * name and every member of the original is lost. The rule's fixer is
-         * already marked unsafe, so `fix` leaves the block alone — but `check`
-         * kept asking every augmentation for a suppression it can never earn.
+         * name and every member of the original is lost. A `.ts` file carrying
+         * an augmentation is still reported — the scope is the file's purpose,
+         * and oxlint scopes by path — and answers with a suppression.
          */
         scoped({
             files: ['**/*.d.ts'],
