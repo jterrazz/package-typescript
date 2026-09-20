@@ -46,7 +46,7 @@ Each `check` document states the **whole** combined output of the run, not the f
 
 One block is spanned for good: oxlint's own report. The linter picks its reporter from the environment — GitHub workflow commands under `GITHUB_ACTIONS`, one compact line per diagnostic under an AI agent, miette's framed rendering in a terminal — so its text is a fact about the machine, not about the run. No document states an oxlint diagnostic, and no suite parses one: the rulebook suites read `--format=json` through `diagnosticsOf`, and a `check` document claims the verdict our own passes print beneath the linter's block.
 
-## The rulebook has eight suites
+## The rulebook has seven suites
 
 The presets are the one part of this package a document cannot reach: `check` loads a preset from the consumer's `node_modules`, and a copied fixture has none. So `specs/cli/preset/` drives the tools directly — the B9w exception `oxlint.specification.ts` states — and seven suites divide the claim between them.
 
