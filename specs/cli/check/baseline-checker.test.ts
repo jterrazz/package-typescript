@@ -204,6 +204,42 @@ test('enrols a second reporter with one line, not a refusal per finding', () => 
     expect(stdout).not.toContain('has 2 diagnostic(s) and no entry');
 });
 
+test('attributes the enrolment notice to Test Conventions, never to Oxlint Check', () => {
+    // Given - a baseline that predates the checker: recorded, but with no jterrazz-check/* key
+    writeFileSync(join(project, 'oxlint.baseline.json'), '{}\n');
+
+    // When - check runs against a checker reporting findings the file has never seen
+    const { stdout } = run('check');
+
+    // Then - the pass that judges the checker's side fails and names it
+    expect(verdict(stdout, 'Test Conventions')).toBe('✗ Failed');
+    expect(stdout).toContain("run 'typescript baseline' once to enrol");
+
+    // Then - the linter's own pass never speaks for the checker's debt
+    expect(verdict(stdout, 'Oxlint Check')).toBe('✓ Passed');
+});
+
+test('attributes a grown checker breach to Test Conventions, never to Oxlint Check', () => {
+    // Given - an enrolled baseline
+    run('baseline');
+
+    // When - the same id reports once more, growing past what was recorded
+    reporting(
+        'jterrazz-check(d4)',
+        'jterrazz-check(d4)',
+        'jterrazz-check(d4)',
+        'jterrazz-check(c9)',
+    );
+    const { stdout } = run('check');
+
+    // Then - the pass that judges the checker's side fails and names it
+    expect(verdict(stdout, 'Test Conventions')).toBe('✗ Failed');
+    expect(stdout).toContain('jterrazz-check/d4 is at 3, above its baseline of 2');
+
+    // Then - the linter's own pass stays green: nothing of its own moved
+    expect(verdict(stdout, 'Oxlint Check')).toBe('✓ Passed');
+});
+
 test('sets the checker entries aside on a run that could not measure them', () => {
     // Given - a baseline recorded with the checker's ids in it
     run('baseline');
