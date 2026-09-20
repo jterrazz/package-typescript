@@ -47,7 +47,14 @@ test('leaves a meaning-changing fixer alone and still reports it', () => {
     );
     writeFileSync(
         join(project, 'oxlint.config.ts'),
-        'export default { plugins: ["unicorn"], rules: { "unicorn/no-useless-undefined": "error" } };\n',
+        [
+            'export default {',
+            "    options: { reportUnusedDisableDirectives: 'error' },",
+            "    plugins: ['unicorn'],",
+            "    rules: { 'unicorn/no-useless-undefined': 'error' },",
+            '};',
+            '',
+        ].join('\n'),
     );
     writeFileSync(join(project, 'index.ts'), SOURCE);
 
@@ -66,7 +73,7 @@ test('leaves a meaning-changing fixer alone and still reports it', () => {
 });
 
 test('keeps a directive that names an unsafe fixer used, so fix stays green', () => {
-    // Given - the same project, the one diagnostic suppressed with its reason
+    // Given - the same project, reporting unused directives as every profile does, one diagnostic suppressed with its reason
     writeFileSync(
         join(project, 'index.ts'),
         SOURCE.replace(
@@ -80,6 +87,30 @@ test('keeps a directive that names an unsafe fixer used, so fix stays green', ()
 
     // Then - the verdict is the check's, where the rule is armed and the directive used
     expect(fixed.status).toBe(0);
+    expect(fixed.stdout).not.toContain('Unused oxlint-disable directive');
+});
+
+/*
+ * The wrapper turns twelve rules off for its own run, and a run that has just
+ * disarmed a rule cannot judge a directive naming it: the evidence is the
+ * wrapper's, not the project's. Only reachable in a log the pass PRINTS, which
+ * is a failing one — hence the second, unsuppressed call below.
+ */
+test('never calls a directive dead because the wrapper disarmed its rule', () => {
+    // Given - the same project, one call suppressed with its reason and one left to report
+    writeFileSync(
+        join(project, 'index.ts'),
+        `${SOURCE.replace(
+            'export const taken',
+            '// oxlint-disable-next-line unicorn/no-useless-undefined -- the callee requires it\nexport const taken',
+        )}\nexport const other = take(undefined);\n`,
+    );
+
+    // When - the fix runs, and fails on the call nothing suppresses
+    const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+
+    // Then - the log names that call, and never the live directive above it
+    expect(fixed.stdout).toContain('no-useless-undefined');
     expect(fixed.stdout).not.toContain('Unused oxlint-disable directive');
 });
 

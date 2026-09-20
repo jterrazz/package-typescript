@@ -168,6 +168,8 @@ A fixer that changes MEANING is never applied unattended, so the oxlint run of f
 
 The allowance is a wrapper config the pass writes at the project root and deletes after the run. It goes there and nowhere else, because oxlint resolves `ignorePatterns` against the directory its config sits in — and the run it configures IGNORES it, so no diagnostic ever names a path the operator cannot open and no tree can ever clear.
 
+That wrapper also stops the run reporting UNUSED DIRECTIVES. Every profile ships `reportUnusedDisableDirectives`, and a run that has just turned twelve rules off cannot judge a directive naming one of them — the rule is off for that run alone, and the directive would be called dead on evidence the wrapper itself created. An unused directive is reported by the check-shaped run made after the fixer, where the consumer's own rules are armed again, and by `check`.
+
 ### The two rewriters run in order
 
 Every pass of `check` runs in parallel, and `fix` keeps that — except for the two passes that WRITE. `oxlint --fix` and `oxfmt` rewrite the same files, so in parallel whichever finishes second lands its own copy over the other's work, and the `check` that follows fails on what the fix had just settled. In fix mode they run one after the other, the linter first; every read-only pass still runs beside them.
