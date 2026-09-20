@@ -108,6 +108,38 @@ test('leaves the fixer alone where an override of the consumer arms the rule aga
 });
 
 /*
+ * The wrapper is the pass's own file: it is written at the project root, read
+ * by the run it configures and deleted after it. A diagnostic against it names
+ * a path the operator cannot open and no tree can ever clear, so the run that
+ * writes it ignores it.
+ */
+test('never reports the wrapper config it writes for the run', () => {
+    // Given - a project arming the two rules the wrapper's own first line breaks
+    writeFileSync(
+        join(project, 'oxlint.config.ts'),
+        [
+            'export default {',
+            "    plugins: ['import', 'unicorn'],",
+            '    rules: {',
+            "        'import/extensions': ['error', 'always'],",
+            "        'import/no-absolute-path': 'error',",
+            "        'unicorn/no-useless-undefined': 'error',",
+            '    },',
+            '};',
+            '',
+        ].join('\n'),
+    );
+    writeFileSync(join(project, 'index.ts'), SOURCE);
+
+    // When - the fix runs, with a diagnostic of the tree's own to keep the log on the stream
+    const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+
+    // Then - it names the tree's diagnostic, and no file the tree does not hold
+    expect(fixed.stdout).toContain('no-useless-undefined');
+    expect(fixed.stdout).not.toContain('oxlint.fix.config');
+});
+
+/*
  * The same claim, one layer down. Every test above arms a rule oxlint itself
  * decides; the wrapper's `overrides` block is oxlint's own vocabulary and
  * reaching it is oxlint's job. A TYPE-AWARE rule is not oxlint's: it runs in
