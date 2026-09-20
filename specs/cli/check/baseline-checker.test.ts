@@ -189,6 +189,21 @@ test('holds the pass that reported the debt, and prints what it is holding', () 
     expect(stdout).toContain('jterrazz-check(d4) specs/http/response.spec.yaml');
 });
 
+test('enrols a second reporter with one line, not a refusal per finding', () => {
+    // Given - a baseline that predates the checker: recorded, but with no jterrazz-check/* key
+    writeFileSync(join(project, 'oxlint.baseline.json'), '{}\n');
+
+    // When - check runs against a checker reporting three findings across two ids
+    const { stdout } = run('check');
+
+    // Then - one line names the gesture instead of a refusal per finding
+    expect(stdout).toContain(
+        "oxlint.baseline.json records one reporter — run 'typescript baseline' once to enrol @jterrazz/test's 3 finding(s)",
+    );
+    expect(stdout).not.toContain('has 1 diagnostic(s) and no entry');
+    expect(stdout).not.toContain('has 2 diagnostic(s) and no entry');
+});
+
 test('sets the checker entries aside on a run that could not measure them', () => {
     // Given - a baseline recorded with the checker's ids in it
     run('baseline');
