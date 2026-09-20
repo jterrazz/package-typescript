@@ -31,7 +31,6 @@ export const TEST_FILES = Object.freeze([
  */
 const ON_IN_TESTS = [
     'consistent-each-for',
-    'consistent-test-filename',
     'consistent-vitest-vi',
     'expect-expect',
     'hoisted-apis-on-top',
@@ -118,6 +117,21 @@ const PREFER_CALLED_WITH = unsafeFix(
     'rewrites `toHaveBeenCalled()` into `toHaveBeenCalledWith()`, an assertion of NO arguments',
 );
 
+/*
+ * The filename floor. The rule's own default pattern names `<name>.test.ts`
+ * alone, which refuses every file of a `specs/` tree written to
+ * `@jterrazz/test` 16's convention — its ADR-006 renamed each one `.spec.ts`,
+ * and a repository composing this profile without that package's `testing`
+ * fragment was told to undo the rename. Both spellings are the estate's, and
+ * this is where a profile says so.
+ *
+ * It stays a FLOOR: `testing` sets the same rule with a pattern of its own
+ * (C12, which also fixes the extensions a `.spec` may take) and composes after
+ * a profile, so its options win wherever it is present — an override's options
+ * REPLACE rather than merge (ADR-008).
+ */
+const CONSISTENT_TEST_FILENAME = on([{ pattern: String.raw`.*\.(spec|test)\.[tj]sx?$` }]);
+
 /** The reason the three ADR-008 named a new owner for: `@jterrazz/test`'s `testing` fragment. */
 const COVERED_BY_TESTING = { by: '@jterrazz/test testing', kind: 'covered' };
 
@@ -130,6 +144,7 @@ export default fragment({
             rules: {
                 ...allOn(ON_IN_TESTS),
 
+                'vitest/consistent-test-filename': CONSISTENT_TEST_FILENAME,
                 'vitest/consistent-test-it': CONSISTENT_TEST_IT,
                 'vitest/prefer-lowercase-title': PREFER_LOWERCASE_TITLE,
                 'vitest/require-mock-type-parameters': REQUIRE_MOCK_TYPE_PARAMETERS,
