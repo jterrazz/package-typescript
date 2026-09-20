@@ -12,6 +12,7 @@
     },
     "files": [
         "bin",
+        "docs",
         "lib",
         "presets",
         "rules",
