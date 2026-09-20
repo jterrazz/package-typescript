@@ -1,0 +1,8 @@
+{
+  "name": "fixture-same-file-export",
+  "version": "1.0.0",
+  "dependencies": {
+    "@jterrazz/test": "^15.0.0",
+    "@jterrazz/typescript": "^10.0.0"
+  }
+}

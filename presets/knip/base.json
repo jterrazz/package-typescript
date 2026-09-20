@@ -2,6 +2,11 @@
     "$schema": "https://unpkg.com/knip@6/schema.json",
     "ignoreDependencies": ["@jterrazz/test", "@jterrazz/typescript"],
     "ignoreBinaries": ["oxlint", "oxfmt"],
+    // An export used in its own file is not dead: the A4 idiom exports `cleanup`
+    // for the same file's `afterAll`, and a CLI capsule exports its flags for the
+    // sibling test that reads them back. Without this, every consumer of
+    // `@jterrazz/test` would have to restate the line in its own `knip.json`.
+    "ignoreExportsUsedInFile": true,
     // Knip's own oxlint/oxfmt/vitest/tsdown plugins auto-enable only when
     // that PACKAGE is a direct dependency of the project (`hasDependency`
     // reads package.json). A consumer of this preset declares only
