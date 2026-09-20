@@ -408,11 +408,17 @@ run_checks() {
         # marked `unsafe` in the manifest are turned off for THIS run by a
         # wrapper config written beside the consumer's own, so `fix` leaves
         # them alone and `check` still reports them for a human.
+        #
+        # The wrapper sits at the project root because oxlint resolves
+        # `ignorePatterns` against the directory its config sits in — and it is
+        # ignored by the very run it configures. It is written by this pass and
+        # deleted by it, so a diagnostic against it names a file the operator
+        # cannot open and no tree can ever clear.
         local fix_config="oxlint.fix.config.mjs"
         local fix_args=()
         if [ -n "$OXLINT_CONFIG" ]; then
             node "$PACKAGE_ROOT/lib/unsafe-fixers.js" "$PWD/$OXLINT_CONFIG" "$fix_config"
-            fix_args=(-c "$fix_config")
+            fix_args=(-c "$fix_config" --ignore-pattern "$fix_config")
         fi
 
         "$OXLINT" --type-aware --fix "${fix_args[@]}" "${LINT_ARGS[@]}" \

@@ -166,6 +166,8 @@ The second is the silent one: a `.cjs` config, or a `.js` config in a package th
 
 A fixer that changes MEANING is never applied unattended, so the oxlint run of fix mode allows each rule marked `unsafe` in the manifest — the rewrite does not land, the diagnostic stays — `fix` and `check` report it alike — and a human answers it. The list, and what each rewrite does, is [Lint presets](07-lint-presets.md).
 
+The allowance is a wrapper config the pass writes at the project root and deletes after the run. It goes there and nowhere else, because oxlint resolves `ignorePatterns` against the directory its config sits in — and the run it configures IGNORES it, so no diagnostic ever names a path the operator cannot open and no tree can ever clear.
+
 ### The two rewriters run in order
 
 Every pass of `check` runs in parallel, and `fix` keeps that — except for the two passes that WRITE. `oxlint --fix` and `oxfmt` rewrite the same files, so in parallel whichever finishes second lands its own copy over the other's work, and the `check` that follows fails on what the fix had just settled. In fix mode they run one after the other, the linter first; every read-only pass still runs beside them.
