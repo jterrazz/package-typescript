@@ -23,7 +23,12 @@ export const TEST_FILES = Object.freeze([
     '**/__tests__/**/*.{ts,tsx,js,jsx}',
 ]);
 
-/** Every vitest rule that is on. The list is the roster minus the eight offs below. */
+/**
+ * Every vitest rule that is on. The list is the roster minus the offs below
+ * and the three `@jterrazz/test testing` now owns with options (ADR-008):
+ * `max-nested-describe`, `no-restricted-matchers` and
+ * `no-restricted-vi-methods`.
+ */
 const ON_IN_TESTS = [
     'consistent-each-for',
     'consistent-test-filename',
@@ -31,7 +36,6 @@ const ON_IN_TESTS = [
     'expect-expect',
     'hoisted-apis-on-top',
     'max-expects',
-    'max-nested-describe',
     'no-alias-methods',
     'no-commented-out-tests',
     'no-conditional-expect',
@@ -44,8 +48,6 @@ const ON_IN_TESTS = [
     'no-interpolation-in-snapshots',
     'no-large-snapshots',
     'no-mocks-import',
-    'no-restricted-matchers',
-    'no-restricted-vi-methods',
     'no-standalone-expect',
     'no-test-prefixes',
     'no-test-return-statement',
@@ -116,6 +118,9 @@ const PREFER_CALLED_WITH = unsafeFix(
     'rewrites `toHaveBeenCalled()` into `toHaveBeenCalledWith()`, an assertion of NO arguments',
 );
 
+/** The reason the three ADR-008 named a new owner for: `@jterrazz/test`'s `testing` fragment. */
+const COVERED_BY_TESTING = { by: '@jterrazz/test testing', kind: 'covered' };
+
 export default fragment({
     id: 'vitest',
     plugins: ['vitest'],
@@ -130,6 +135,20 @@ export default fragment({
                 'vitest/require-mock-type-parameters': REQUIRE_MOCK_TYPE_PARAMETERS,
                 'vitest/prefer-strict-boolean-matchers': PREFER_STRICT_BOOLEAN_MATCHERS,
                 'vitest/prefer-called-with': PREFER_CALLED_WITH,
+
+                /*
+                 * ADR-008: an override's options REPLACE rather than merge, so
+                 * two owners setting the same rule is a rule whose
+                 * configuration depends on composition order. `@jterrazz/test`
+                 * 16.0's `testing` fragment sets these three WITH the options
+                 * this vocabulary owns (the seven snapshot matchers, the four
+                 * `vi` methods, `max: 1`) and composes after this profile, so
+                 * its options win — this rulebook lets go of the option-less
+                 * copy rather than hold a decision two owners can disagree on.
+                 */
+                'vitest/max-nested-describe': off(COVERED_BY_TESTING, '10.3.0'),
+                'vitest/no-restricted-matchers': off(COVERED_BY_TESTING, '10.3.0'),
+                'vitest/no-restricted-vi-methods': off(COVERED_BY_TESTING, '10.3.0'),
 
                 'vitest/no-conditional-in-test': off({
                     by: "vitest/no-conditional-expect — the defect is an assertion that may not run, and that rule names it; this one also refuses a golden suite's TEST_UPDATE branch and every comparator",
