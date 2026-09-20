@@ -20,7 +20,7 @@ A project names ONE of seven profiles — `node`, `library`, `next`, `astro`, `e
 
 ## Where to look
 
-The full knowledge lives in the package's own corpus — route into it, do not restate it. Read the relevant chapter straight from the repo:
+The full knowledge lives in the package's own corpus — route into it, do not restate it. Read the relevant chapter at `node_modules/@jterrazz/typescript/docs/` — this repo's own tree when the toolchain itself is what changed:
 
 | Task                                                | Chapter                     |
 | --------------------------------------------------- | --------------------------- |
