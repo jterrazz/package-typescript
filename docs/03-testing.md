@@ -82,7 +82,7 @@ Under `specs/cli/` every spec is a `.spec.ts` whatever door it takes — the suf
 - **The cwd must sit below the ground.** The gitignore gate's ancestor walk needs a `.gitignore` ABOVE the working directory, and `fixture:` spreads a project INTO it.
 - **The document cannot make the claim.** Two are bridges: `cli.run('<case>.spec.yaml')` runs the document, then code adds a byte-exact directory golden or an exhaustive file list. A bridged document is excluded from the plugin's glob in `vitest.config.ts`, so it runs once.
 
-The first three exceptions reach no `cli` chain at all, which is what `c18-module-test-under-facet` refuses: a spec under a facet folder is expected to import that facet's runner. Twenty-seven of them are recorded in `oxlint.baseline.json` for that reason, and paying the debt means deciding whether the rulebook suites become a first-level suite of their own — C12 allows a non-facet first level — rather than rewriting them one by one.
+The first three exceptions reach no `cli` chain at all, which is what `c18-module-test-under-facet` refuses: a spec under a facet folder is expected to import that facet's runner. Twenty-four of them are recorded in `oxlint.baseline.json` for that reason, and the shape that pays the debt is now named rather than open — the third door, the same one `specs/surface/` took: the rulebook suites become a first-level suite of their own, in one move, rather than being rewritten one by one.
 
 ## Where a fixture lives
 
