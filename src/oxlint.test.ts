@@ -92,8 +92,7 @@ test('gives a layer map one override per layer, complete', () => {
         ],
     });
 
-    // Then - the layer's whole pattern list sits inside its own override,
-    // Because an oxlint override REPLACES the base entry and never merges it
+    // Then - the layer's whole pattern list sits inside its own override, because an oxlint override REPLACES the base entry and never merges it
     expect(fragment.overrides).toStrictEqual([
         {
             files: ['**/core/**'],
