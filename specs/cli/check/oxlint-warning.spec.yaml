@@ -1,0 +1,76 @@
+description: reads a warn-severity diagnostic as debt, and reads it the same way in check and in fix
+fixture: warnings/unrecorded/
+runs:
+    # oxlint leaves its exit code at 0 for a warning, and a pass that passed
+    # prints no log — so the whole warn tier used to be invisible here while
+    # `fix`, judged on the diagnostics themselves, failed on it. The linter's
+    # own block is spanned for the usual reason (its reporter is a fact about
+    # the machine); what is claimed is the verdict, which is ours.
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+          {{any}}
+          eslint/no-debugger  1 diagnostic(s), and the project keeps no baseline
+          Fix them, or run 'typescript baseline' to record where the project stands.
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
+    - command: fix
+      exit: 1
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+          {{any}}
+          eslint/no-debugger  1 diagnostic(s), and the project keeps no baseline
+          Fix them, or run 'typescript baseline' to record where the project stands.
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✗ Some checks failed
