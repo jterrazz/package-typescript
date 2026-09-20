@@ -76,8 +76,7 @@ test.each(PROFILES)('$name fixes what it owns and says what it refuses', ({ name
 });
 
 test('the hexagonal layer map refuses an edge and carves out features/common', () => {
-    // Given - a hexagonal tree with one legal import and one edge per layer,
-    // Linted by the node profile composed with the hexagonal map
+    // Given - a hexagonal tree with one legal import and one edge per layer, linted by the node profile composed with the hexagonal map
     using work = sandbox(resolve(FIXTURES, 'hexagonal', 'input'), 'node', 'node', ['hexagonal']);
     const report = oxlint(work.path, ['-c', work.config, '--format=json', ...work.files]);
 

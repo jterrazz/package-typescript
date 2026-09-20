@@ -51,9 +51,12 @@ test.each(PROFILES)('$name ships no categories switch', ({ name }) => {
     // Given - the compiled profile a consumer extends
     const compiled = JSON.stringify(PROFILE_TABLE[name]);
 
+    /*
+     * A category arms rules of plugins the config never names: inert until a
+     * framework config activates the plugin, and firing unannounced from then.
+     */
+
     // Then - nothing in the manifest reaches for a category
-    // (a category arms rules of plugins the config never names, inert until a
-    // Framework config activates the plugin and then firing unannounced)
     expect(compiled).not.toContain('categories');
 });
 
@@ -84,9 +87,12 @@ test('gives every off one of the five recorded reasons', () => {
 });
 
 test('keeps only the perfectionist rules oxfmt does not sort', () => {
+    /*
+     * Measured on a fixture: oxfmt's `sortImports` reorders import STATEMENTS
+     * and leaves the named specifiers inside one statement alone.
+     */
+
     // Given - oxfmt owns import order, package.json key order and Tailwind class order
-    // (measured on a fixture: sortImports reorders import STATEMENTS and leaves
-    // The named specifiers inside one statement alone)
     const OWNED_BY_OXFMT = new Set(['perfectionist/sort-imports', 'perfectionist/sort-exports']);
 
     // Then - no perfectionist rule the rulebook keeps is one of them
