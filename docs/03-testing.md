@@ -11,12 +11,14 @@ npm run lint    # this package's own CLI, run on this package
 
 `vitest.config.ts` declares two projects, through `@jterrazz/test/vitest`'s own project helpers — `unit()` and `cli()`:
 
-| Project | Runs                                                                      | Speed                        |
-| ------- | ------------------------------------------------------------------------- | ---------------------------- |
-| `unit`  | `src/**` and `rules/**` unit tests, plus the exports and declaration ones | milliseconds, pure functions |
-| `cli`   | everything else under `specs/` — the product command                      | seconds, real processes      |
+| Project | Runs                                                | Speed                        |
+| ------- | --------------------------------------------------- | ---------------------------- |
+| `unit`  | `src/**/*.test.ts` and `rules/**/*.test.ts`         | milliseconds, pure functions |
+| `cli`   | everything under `specs/cli/` — the product command | seconds, real processes      |
 
-The `unit` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`rules/*.test.ts`), the manual's rule engine over in-memory trees (`src/docs.test.ts`), and the two that read the package's own surface — `exports.test.ts` resolves every public subpath, `declarations.test.ts` holds each `.d.ts` to the value surface of the `.js` beside it. Nothing there spawns anything.
+Neither project states a glob: the suffix does. A `*.test.ts` is a module test and sits beside its module, which here is `src/` and `rules/`; a `*.spec.ts` is the assembled product and sits under `specs/<facet>/`. `unit()` collects the first, `cli()` the second plus every `<case>.spec.yaml`, so `vitest.config.ts` names only the two bridged documents it excludes.
+
+The `unit` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`rules/*.test.ts`), and the manual's rule engine over in-memory trees (`src/docs.test.ts`). Nothing there spawns anything. The two that read the package's own surface — `exports.spec.ts` resolves every public subpath, `declarations.spec.ts` holds each `.d.ts` to the value surface of the `.js` beside it — are specifications rather than module tests: neither has one module to sit beside, so both stay under `specs/cli/preset/` and run in the `cli` project.
 
 ## A scenario is a document
 
@@ -65,15 +67,17 @@ TEST_UPDATE=1 npm test
 
 It rewrites the `_expected/` trees, the resolved-config rosters, the catalogue section of [Lint presets](07-lint-presets.md), and the `stdout` of every spec document. Two things about it are worth knowing before reaching for it. A `{{any}}` token SURVIVES, but the real output is appended after it — so a document spanning a block it is not about is hand-edited, never regenerated. And the catalogue table comes out unaligned; `typescript fix` puts the columns back, and the freshness test compares cells, not padding.
 
-## When a `.test.ts` is the right answer
+## When a chain of code is the right answer
 
-A chain of code is the exception, and each one says which exception it is:
+Under `specs/cli/` every spec is a `.spec.ts` whatever door it takes — the suffix says the assembled product, not which runner reaches it. A document is still the default, and a chain of code is the exception; each one says which exception it is:
 
 - **The binary is not the product.** oxfmt and oxlint run directly in the rulebook suites, and three install sandboxes run a shell script — the split install, the pnpm-strict one that proves a consumer's configs load with one devDependency declared, and the profile matrix above.
 - **The stream has no byte-exact form.** `dev/` waits on a marker instead.
 - **The ground cannot be a fixture.** A fixture is copied, not initialised, so a scenario needing a real git repository builds one in a temp directory: the committed-artefact claim, and the Docs (layout) pass, which asks its question only where a repository is. A project whose `oxlint.config.*` cannot LOAD, or whose config ARMS a rule at `error` over its own deliberately broken tree, is the same case for a different reason — oxlint reads every config under this repository, fixtures included, so either one committed here would fail this repository's own lint run ([Quality checks](06-quality-checks.md)).
 - **The cwd must sit below the ground.** The gitignore gate's ancestor walk needs a `.gitignore` ABOVE the working directory, and `fixture:` spreads a project INTO it.
 - **The document cannot make the claim.** Two are bridges: `cli.run('<case>.spec.yaml')` runs the document, then code adds a byte-exact directory golden or an exhaustive file list. A bridged document is excluded from the plugin's glob in `vitest.config.ts`, so it runs once.
+
+The first three exceptions reach no `cli` chain at all, which is what `c18-module-test-under-facet` refuses: a spec under a facet folder is expected to import that facet's runner. Twenty-seven of them are recorded in `oxlint.baseline.json` for that reason, and paying the debt means deciding whether the rulebook suites become a first-level suite of their own — C12 allows a non-facet first level — rather than rewriting them one by one.
 
 ## Where a fixture lives
 

@@ -20,8 +20,8 @@ export default defineConfig(node);
 
 | Kind         | What it claims                                                      | Proved by                                  |
 | ------------ | ------------------------------------------------------------------- | ------------------------------------------ |
-| `formatter`  | It fights oxfmt — the two rewrite the same bytes                    | `specs/cli/preset/fixpoint.test.ts`        |
-| `exclusive`  | It cannot hold beside a rule that is on, which it names             | `specs/cli/preset/exclusive-pairs.test.ts` |
+| `formatter`  | It fights oxfmt — the two rewrite the same bytes                    | `specs/cli/preset/fixpoint.spec.ts`        |
+| `exclusive`  | It cannot hold beside a rule that is on, which it names             | `specs/cli/preset/exclusive-pairs.spec.ts` |
 | `convention` | It refuses a convention the estate holds, whose page it names       | the page                                   |
 | `evidence`   | A measured false-positive rate on real estate code, cited           | the measurement                            |
 | `covered`    | TypeScript, or a stronger rule that is on, already names the defect | the named rule                             |
