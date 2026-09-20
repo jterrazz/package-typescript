@@ -55,7 +55,7 @@ The full corpus lives in [`docs/`](docs/):
 - [Docs pipeline](docs/08-docs-pipeline.md) — the `typescript docs` compiler.
 - [Repo structure](docs/09-repo-structure.md) — pointer to the shared doctrine; what's TypeScript-specific here.
 
-For agents: read the chapters and the generated [`docs/reference/`](docs/reference/) tree straight from the repo, plus the [`skills/jterrazz-typescript`](skills/jterrazz-typescript/SKILL.md) Claude Code skill (the toolchain) and its generated [rule reference](skills/jterrazz-typescript/references/rules.md). The repo-structure doctrine itself is a Claude Code skill too — `jterrazz-repo-structure`, shipped from [`jterrazz-studio`](https://github.com/jterrazz/jterrazz-studio).
+For agents: read the chapters and the generated [`docs/reference/`](docs/reference/) tree from wherever they resolve — this repo when the toolchain itself is the change, `node_modules/@jterrazz/typescript/docs/` when a consumer is — plus the [`skills/jterrazz-typescript`](skills/jterrazz-typescript/SKILL.md) Claude Code skill (the toolchain) and its generated [rule reference](skills/jterrazz-typescript/references/rules.md). The repo-structure doctrine itself is a Claude Code skill too — `jterrazz-repo-structure`, shipped from [`jterrazz-studio`](https://github.com/jterrazz/jterrazz-studio).
 
 ## License
 
