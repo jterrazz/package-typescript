@@ -13,12 +13,18 @@ npm run lint    # this package's own CLI, run on this package
 
 | Project | Runs                                                | Speed                        |
 | ------- | --------------------------------------------------- | ---------------------------- |
-| `unit`  | `src/**/*.test.ts` and `rules/**/*.test.ts`         | milliseconds, pure functions |
+| `unit`  | `src/`, `rules/` and `specs/surface/`               | milliseconds, pure functions |
 | `cli`   | everything under `specs/cli/` — the product command | seconds, real processes      |
 
-Neither project states a glob: the suffix does. A `*.test.ts` is a module test and sits beside its module, which here is `src/` and `rules/`; a `*.spec.ts` is the assembled product and sits under `specs/<facet>/`. `unit()` collects the first, `cli()` the second plus every `<case>.spec.yaml`, so `vitest.config.ts` names only the two bridged documents it excludes.
+The suffix says which project a file belongs to. A `*.test.ts` is a module test and sits beside its module, which here is `src/` and `rules/`; a `*.spec.ts` is the assembled product and sits under `specs/<facet>/`. `unit()` collects the first, `cli()` the second plus every `<case>.spec.yaml`, so the `cli` project names only the two bridged documents it excludes. `unit()` is the one that states its globs, because one tree it collects lives under `specs/` and the default set excludes that folder whole.
 
-The `unit` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`rules/*.test.ts`), and the manual's rule engine over in-memory trees (`src/docs.test.ts`). Nothing there spawns anything. The two that read the package's own surface — `exports.spec.ts` resolves every public subpath, `declarations.spec.ts` holds each `.d.ts` to the value surface of the `.js` beside it — are specifications rather than module tests: neither has one module to sit beside, so both stay under `specs/cli/preset/` and run in the `cli` project.
+The `unit` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`rules/*.test.ts`), and the manual's rule engine over in-memory trees (`src/docs.test.ts`). Nothing there spawns anything.
+
+### `specs/surface/` — the repository suite
+
+Two files under `specs/surface/package/` read this package's own published tree rather than one module: `exports.test.ts` resolves every public subpath, and `declarations.test.ts` holds each `.d.ts` to the value surface of the `.js` beside it. Neither has a module to sit beside — they resolve every module there is — and neither reaches a runner, since nothing is started.
+
+That shape is the THIRD DOOR the conventions name: a first-level folder under `specs/` that is no facet, covering a tree instead of a product served through an entry. C18 and C20 do not reach it, its files carry the unit's `.test.ts`, and `unit()` collects them by glob. C1 still judges the shape, at the depth this project declares — the default — so the two asset-less files group in a domain folder, `package/`, exactly as they would under a facet. The constitution owns the rule — `@jterrazz/test`'s `docs/18-conventions.md`, "The third door: a repository suite".
 
 ## A scenario is a document
 
@@ -42,7 +48,7 @@ One block is spanned for good: oxlint's own report. The linter picks its reporte
 
 ## The rulebook has eight suites
 
-The presets are the one part of this package a document cannot reach: `check` loads a preset from the consumer's `node_modules`, and a copied fixture has none. So `specs/cli/preset/` drives the tools directly — the B9w exception `oxlint.specification.ts` states — and eight suites divide the claim between them.
+The presets are the one part of this package a document cannot reach: `check` loads a preset from the consumer's `node_modules`, and a copied fixture has none. So `specs/cli/preset/` drives the tools directly — the B9w exception `oxlint.specification.ts` states — and seven suites divide the claim between them.
 
 | Suite                 | Claims                                                                        |
 | --------------------- | ----------------------------------------------------------------------------- |
@@ -51,7 +57,6 @@ The presets are the one part of this package a document cannot reach: `check` lo
 | `fixpoint`            | oxlint's fixes and oxfmt's reach a fixed point — no rule fights the formatter |
 | `behaviour`           | a fixture written to break rules reports exactly the diagnostics it should    |
 | `exclusive-pairs`     | every `off` of kind `exclusive` names a rule that really is on, and conflicts |
-| `declarations`        | every `.d.ts` carries the value surface of the `.js` beside it                |
 | `install-matrix`      | one consumer per profile installs under pnpm-strict and checks green          |
 | `module-augmentation` | a `declare module` block keeps the interface that merges, and its `export {}` |
 
