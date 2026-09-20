@@ -427,7 +427,14 @@ run_checks() {
         rm -f "$fix_config"
         "$OXFMT" > "$tmp_dir/format.log" 2>&1 || format_status=$?
     else
-        "$OXLINT" --type-aware "${LINT_ARGS[@]}" > "$tmp_dir/lint.log" 2>&1 &
+        # `--deny-warnings` is what makes check and fix read the same tree. A
+        # warn-severity diagnostic leaves oxlint's exit code at 0, and a pass
+        # that passed prints no log — so the whole warn tier was invisible to
+        # `check` while `fix`, judged on the diagnostics themselves, failed on
+        # it. Severity is never read here either: a finding a release ships at
+        # `warn` is exactly the debt a ratchet exists to hold down.
+        "$OXLINT" --type-aware --deny-warnings "${LINT_ARGS[@]}" \
+            > "$tmp_dir/lint.log" 2>&1 &
         lint_pid=$!
     fi
 
@@ -695,12 +702,17 @@ run_checks() {
     # check mode, or `fix` then `check` reads red then green on the same tree.
     # Bash decides whether the file is there; the script decides what it says.
     #
+    # A project with NO baseline is judged rule by rule all the same, as soon as
+    # the linter has anything to say: the same lines `fix` prints, naming what
+    # each rule owes and the one gesture that records it. Reaching the ratchet
+    # through `check` is what an adoption's step 4 asks for.
+    #
     # What fix mode judges is what SURVIVED the rewrite, so its machine-readable
     # run is made here, after the fixer, and in the foreground — with the unsafe
     # fixers armed again, so a directive that names one of them is used, not
     # reported unused. The fixer's own exit code is never the verdict: it ran
     # with those rules allowed. Without a baseline the judge wants zero.
-    if [ -f "$BASELINE_FILE" ] || [ "$FIX_MODE" = true ]; then
+    if [ -f "$BASELINE_FILE" ] || [ "$FIX_MODE" = true ] || [ "$lint_status" -ne 0 ]; then
         if [ -n "$lint_json_pid" ]; then
             wait $lint_json_pid
         else
@@ -712,7 +724,7 @@ run_checks() {
         # under their own namespace in the same file — one ratchet, two
         # rulebooks, and a rule at zero refused on either side.
         local baseline_checker=()
-        if member_checker .; then
+        if { [ -f "$BASELINE_FILE" ] || [ "$FIX_MODE" = true ]; } && member_checker .; then
             "${CHECKER_COMMAND[@]}" --format json > "$tmp_dir/checker.json" 2>/dev/null || true
             baseline_checker=(--checker "$tmp_dir/checker.json")
             # Zeroing the pass below on the checker's say-so is only honest once
@@ -737,7 +749,16 @@ run_checks() {
             node "$PACKAGE_ROOT/lib/check-baseline.js" "$tmp_dir/lint.json" . \
                 "${baseline_checker[@]}" > "$tmp_dir/ratchet-oxlint.log" \
                 2> "$tmp_dir/ratchet-checker.log"
-            [ -s "$tmp_dir/ratchet-oxlint.log" ] && lint_status=1 || lint_status=0
+            # With a file to ratchet, its verdict REPLACES the linter's exit
+            # code — recorded debt is what the project is allowed. Without one
+            # the judge only ever escalates: it says which rules owe what and
+            # names the gesture, and a refusal the linter raised for a reason
+            # no diagnostic carries (an unparsed config) is not forgiven here.
+            if [ -f "$BASELINE_FILE" ]; then
+                [ -s "$tmp_dir/ratchet-oxlint.log" ] && lint_status=1 || lint_status=0
+            elif [ -s "$tmp_dir/ratchet-oxlint.log" ]; then
+                lint_status=1
+            fi
             cat "$tmp_dir/ratchet-oxlint.log" >> "$tmp_dir/lint.log"
             [ -s "$tmp_dir/ratchet-checker.log" ] && checker_ratchet_broken=true
         fi

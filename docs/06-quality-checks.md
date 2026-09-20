@@ -170,13 +170,19 @@ The allowance is a wrapper config the pass writes at the project root and delete
 
 That wrapper also stops the run reporting UNUSED DIRECTIVES. Every profile ships `reportUnusedDisableDirectives`, and a run that has just turned twelve rules off cannot judge a directive naming one of them — the rule is off for that run alone, and the directive would be called dead on evidence the wrapper itself created. An unused directive is reported by the check-shaped run made after the fixer, where the consumer's own rules are armed again, and by `check`.
 
+### A warning is a diagnostic
+
+oxlint leaves its exit code at 0 for a warn-severity diagnostic, and a pass that passed prints no log — so `check` was silent on a tree `fix` failed, and the ratchet an adoption reaches for could not be reached through `check` at all. The check run passes `--deny-warnings`: every diagnostic the linter reports is printed and judged, whatever severity armed it.
+
+The rulebook this package ships has no warn tier — a rule is on at `error` or off with a recorded reason — but a JS plugin composed beside it may have one, and `@jterrazz/test` does: its `<family><n>w-…` redundancy heuristics ship at `warn` on purpose. A heuristic nobody is shown is a heuristic nobody answers.
+
 ### The two rewriters run in order
 
 Every pass of `check` runs in parallel, and `fix` keeps that — except for the two passes that WRITE. `oxlint --fix` and `oxfmt` rewrite the same files, so in parallel whichever finishes second lands its own copy over the other's work, and the `check` that follows fails on what the fix had just settled. In fix mode they run one after the other, the linter first; every read-only pass still runs beside them.
 
 ## The ratchet
 
-A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. `oxlint.baseline.json` is the second — a tracked `{ "<rule>": <count> }` at the project root, and the oxlint pass is judged by it rather than by oxlint's exit code. Without the file a single diagnostic fails the pass, exactly as before.
+A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. `oxlint.baseline.json` is the second — a tracked `{ "<rule>": <count> }` at the project root, and the oxlint pass is judged by it rather than by oxlint's exit code. Without the file a single diagnostic fails the pass, exactly as before — and the pass still names the rule it belongs to and the gesture that records it, so a project meets the ratchet on its first red run rather than after reading this page.
 
 Three things fail a run that has one, all under `baseline-ratchet`:
 
@@ -194,7 +200,7 @@ A baseline recorded before this second reporter existed holds no `jterrazz-check
 
 Where the file holds those entries, it is the **Test Conventions pass's verdict too**, not only the linter's. Both reporters were counted into one file, so refusing in that pass what the ratchet just held would fail the same debt twice. The pass's own runs still print what they found — recorded debt a reader cannot see is debt nobody pays — under a line naming the file that is holding it. A `jterrazz-check/*` breach — the enrolment notice above among them — is reported and failed there, never under `Oxlint Check`: that pass speaks for `oxlint`'s own rules alone.
 
-`fix` is judged by the same file as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green.
+`fix` is judged by the same file as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green. The pair reads the same tree where there is NO file either: both count the diagnostics, both print the same lines, and neither reads severity.
 
 ### Recording it
 
