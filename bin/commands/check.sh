@@ -625,6 +625,7 @@ run_checks() {
     local checker_status=0
     local checker_dormant=0
     local checker_ratcheted=false
+    local checker_ratchet_broken=false
     if [ "$FIX_MODE" = false ]; then
         local checker_index=0
         while IFS= read -r specs_root; do
@@ -708,12 +709,32 @@ run_checks() {
         if member_checker .; then
             "${CHECKER_COMMAND[@]}" --format json > "$tmp_dir/checker.json" 2>/dev/null || true
             baseline_checker=(--checker "$tmp_dir/checker.json")
-            [ -f "$BASELINE_FILE" ] && checker_ratcheted=true
+            # Zeroing the pass below on the checker's say-so is only honest once
+            # the file actually HOLDS its findings — a baseline with none yet is
+            # not enrolled, and its debt is not the ratchet's to forgive.
+            if [ -f "$BASELINE_FILE" ] && grep -q '"jterrazz-check/' "$BASELINE_FILE"; then
+                checker_ratcheted=true
+            fi
         fi
 
-        node "$PACKAGE_ROOT/lib/check-baseline.js" "$tmp_dir/lint.json" . \
-            "${baseline_checker[@]}" >> "$tmp_dir/lint.log" 2>&1
-        lint_status=$?
+        # In fix mode there is no Test Conventions pass to carry a checker
+        # breach (the checker itself never runs there), so both reporters
+        # still speak through the one verdict this pass already owns. In
+        # check mode each reporter's breach is attributed to the pass that
+        # judges it: the script prints oxlint's refusals on stdout and the
+        # checker's — the enrolment notice among them — on stderr.
+        if [ "$FIX_MODE" = true ]; then
+            node "$PACKAGE_ROOT/lib/check-baseline.js" "$tmp_dir/lint.json" . \
+                "${baseline_checker[@]}" >> "$tmp_dir/lint.log" 2>&1
+            lint_status=$?
+        else
+            node "$PACKAGE_ROOT/lib/check-baseline.js" "$tmp_dir/lint.json" . \
+                "${baseline_checker[@]}" > "$tmp_dir/ratchet-oxlint.log" \
+                2> "$tmp_dir/ratchet-checker.log"
+            [ -s "$tmp_dir/ratchet-oxlint.log" ] && lint_status=1 || lint_status=0
+            cat "$tmp_dir/ratchet-oxlint.log" >> "$tmp_dir/lint.log"
+            [ -s "$tmp_dir/ratchet-checker.log" ] && checker_ratchet_broken=true
+        fi
     fi
 
     [ -n "$format_pid" ] && { wait $format_pid; format_status=$?; }
@@ -748,6 +769,13 @@ run_checks() {
         checker_status=0
     fi
 
+    # But the ratchet still has the last word: a checker id that grew, that
+    # nobody recorded, or that only now enrols, is this pass's debt to name —
+    # never the oxlint pass's, whichever way the loop above just left it.
+    if [ "$checker_ratchet_broken" = true ]; then
+        checker_status=1
+    fi
+
     local publish_failed_logs=()
     index=0
     for pid in "${publish_pids[@]}"; do
@@ -776,6 +804,14 @@ run_checks() {
     join_logs "$tmp_dir/checker.log" "${checker_failed_logs[@]}"
     join_logs "$tmp_dir/docs.log" "${docs_failed_logs[@]}"
     join_logs "$tmp_dir/publish.log" "${publish_failed_logs[@]}"
+
+    # The checker's own ratchet breach — a grown id, one nobody recorded, or
+    # the enrolment notice — is this pass's log to carry, never the oxlint
+    # pass's; `join_logs` above rebuilds the file from the raw runs alone, so
+    # it is appended after, not folded into the block that just ran.
+    if [ "$checker_ratchet_broken" = true ] && [ -s "$tmp_dir/ratchet-checker.log" ]; then
+        cat "$tmp_dir/ratchet-checker.log" >> "$tmp_dir/checker.log"
+    fi
 
     # Two things this pass says even when it is green, so it asks for its log
     # the way a writer does: which findings the ratchet is holding, and which
