@@ -3,15 +3,11 @@ import { cli, defineSpecConfig, unit } from '@jterrazz/test/vitest';
 export default defineSpecConfig({
     test: {
         projects: [
-            unit({
-                exclude: ['**/*.test.tsx'],
-                include: [
-                    'specs/cli/preset/declarations.test.ts',
-                    'specs/cli/preset/exports.test.ts',
-                    'rules/**/*.test.ts',
-                    'src/**/*.test.ts',
-                ],
-            }),
+            /*
+             * The canonical globs — every `.test.ts` outside `specs/`, which here
+             * is `src/` and `rules/`.
+             */
+            unit(),
             /*
              * The spec documents run here, beside the chains that still need code.
              * `cli()` binds every `<case>.spec.yaml` to ONE runner, and the one this
@@ -21,10 +17,8 @@ export default defineSpecConfig({
              */
             cli({
                 exclude: [
-                    'specs/cli/preset/declarations.test.ts',
-                    'specs/cli/preset/exports.test.ts',
                     /*
-                     * Bridged documents: a .test.ts beside each one runs it and adds the
+                     * Bridged documents: a .spec.ts beside each one runs it and adds the
                      * assertion the format has no vocabulary for. Collecting them here
                      * too would compile the same typedoc projection twice.
                      */
