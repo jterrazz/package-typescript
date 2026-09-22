@@ -38,7 +38,6 @@ const OXFMT = resolve(REPOSITORY, 'node_modules/.bin/oxfmt');
 /** Every profile this package ships, and the tsconfig preset each one is linted under. */
 export const PROFILES = Object.freeze([
     { name: 'node', tsconfig: 'node' },
-    { name: 'library', tsconfig: 'library' },
     { name: 'next', tsconfig: 'next' },
     { name: 'astro', tsconfig: 'astro' },
     { name: 'expo', tsconfig: 'expo' },

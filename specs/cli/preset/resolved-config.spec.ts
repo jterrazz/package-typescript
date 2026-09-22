@@ -27,7 +27,6 @@ const GOLDENS: Record<string, string> = {
     astro: 'astro.rules.txt',
     bun: 'bun.rules.txt',
     expo: 'expo.rules.txt',
-    library: 'library.rules.txt',
     next: 'next.rules.txt',
     node: 'node.rules.txt',
     react: 'react.rules.txt',

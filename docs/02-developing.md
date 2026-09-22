@@ -10,17 +10,19 @@ Two audiences read this chapter: a project being wired onto the toolchain, first
 
 ## 1. Pick a profile
 
-A project names ONE profile, and that name answers for both its lint rules and its TypeScript configuration. There are seven, and six tsconfig presets behind them — `bun` alone sits on the node compiler settings.
+A project names ONE lint profile, and the tsconfig preset beside it follows from the same choice. There are six profiles and six tsconfig presets, and they differ in one place each way: `bun` sits on the node compiler settings, and a package published to a registry lints as `node` but compiles under `library`.
 
-| Profile   | For                                | `extends` in `tsconfig.json`            |
-| --------- | ---------------------------------- | --------------------------------------- |
-| `node`    | services and command-line tools    | `@jterrazz/typescript/tsconfig/node`    |
-| `library` | a package published to a registry  | `@jterrazz/typescript/tsconfig/library` |
-| `next`    | a Next.js application              | `@jterrazz/typescript/tsconfig/next`    |
-| `astro`   | an Astro site                      | `@jterrazz/typescript/tsconfig/astro`   |
-| `expo`    | an Expo / React Native application | `@jterrazz/typescript/tsconfig/expo`    |
-| `bun`     | a project on the Bun runtime       | `@jterrazz/typescript/tsconfig/node`    |
-| `react`   | React with no framework under it   | `@jterrazz/typescript/tsconfig/react`   |
+| Profile | For                                | `extends` in `tsconfig.json`            |
+| ------- | ---------------------------------- | --------------------------------------- |
+| `node`  | services and command-line tools    | `@jterrazz/typescript/tsconfig/node`    |
+| `node`  | a package published to a registry  | `@jterrazz/typescript/tsconfig/library` |
+| `next`  | a Next.js application              | `@jterrazz/typescript/tsconfig/next`    |
+| `astro` | an Astro site                      | `@jterrazz/typescript/tsconfig/astro`   |
+| `expo`  | an Expo / React Native application | `@jterrazz/typescript/tsconfig/expo`    |
+| `bun`   | a project on the Bun runtime       | `@jterrazz/typescript/tsconfig/node`    |
+| `react` | React with no framework under it   | `@jterrazz/typescript/tsconfig/react`   |
+
+A published package has no lint profile of its own because it would hold no rule of its own: what it adds is its tsconfig preset and its build preset, and the rulebook is `node`'s.
 
 ```json
 { "extends": "@jterrazz/typescript/tsconfig/node" }
@@ -60,7 +62,7 @@ Swap `node` for the profile you picked — the import name and the profile name 
 
 Each config names `@jterrazz/typescript` and nothing else — the preset and the tool's own `defineConfig` both arrive from it. Importing `defineConfig` from `oxlint` or `oxfmt` directly asks the project to declare those packages as well, which is the shape below refusing to hold.
 
-That form is every profile's, `library` included: what used to make a published package name `OxlintConfig` in its config files was `isolatedDeclarations` in the tsconfig preset, and that guarantee has moved to where it belongs — see the build presets below.
+That form is every profile's, a published package's included: what used to make a published package name `OxlintConfig` in its config files was `isolatedDeclarations` in the tsconfig preset, and that guarantee has moved to where it belongs — see the build presets below.
 
 A project with several public subpaths needs no build config at all: `build` and `bundle` read their entries off the `exports` map ([Building](05-building.md)). A project that owns a `tsdown.config.ts` anyway imports the build preset from the same place, and it ships a declaration so the import is typed rather than `any`:
 

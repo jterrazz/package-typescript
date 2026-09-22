@@ -8,7 +8,6 @@ declare const oxlintProfiles: {
     bun: OxlintConfig;
     expo: OxlintConfig;
     hexagonal: OxlintConfig;
-    library: OxlintConfig;
     nested: (config: OxlintConfig) => OxlintConfig;
     next: OxlintConfig;
     node: OxlintConfig;

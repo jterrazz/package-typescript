@@ -24,7 +24,6 @@ declare const astro: OxlintConfig;
 declare const bun: OxlintConfig;
 declare const expo: OxlintConfig;
 declare const hexagonal: OxlintConfig;
-declare const library: OxlintConfig;
 declare const next: OxlintConfig;
 declare const node: OxlintConfig;
 declare const react: OxlintConfig;
@@ -63,7 +62,6 @@ export {
     HEXAGONAL_MAP,
     type Layer,
     layers,
-    library,
     nested,
     next,
     node,

@@ -76,11 +76,6 @@ export const PROFILES = Object.freeze({
         fragments: [...CORE, react, a11y, reactNative],
         ignorePatterns: [...IGNORED],
     },
-    library: {
-        env: { builtin: true, node: true },
-        fragments: [...CORE],
-        ignorePatterns: [...IGNORED],
-    },
     next: {
         env: { browser: true, builtin: true, node: true },
         fragments: [...CORE, react, a11y, next],

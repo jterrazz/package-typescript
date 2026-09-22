@@ -8,7 +8,6 @@ import {
     expo,
     hexagonal,
     layers,
-    library,
     nested,
     next,
     node,
@@ -163,7 +162,7 @@ test('a nested config carries no linter options, which oxlint reads in the root 
     expect(subtree.rules?.curly).toBe('off');
 });
 
-test.each(Object.entries({ astro, bun, expo, library, next, node, react }))(
+test.each(Object.entries({ astro, bun, expo, next, node, react }))(
     'the %s profile never lints the ground a spec stands on',
     (_name, profile) => {
         // Given - a profile a consumer names

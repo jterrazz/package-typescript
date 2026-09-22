@@ -95,7 +95,7 @@ test.each(TSDOWN_PRESETS)(
         /*
          * A bundler config is a `.ts` file in every consumer, so the preset it
          * imports needs a declaration or the import is `any` — and under the
-         * `library` profile, where `allowJs` is off, TS7016 instead.
+         * `library` tsconfig preset, where `allowJs` is off, TS7016 instead.
          */
 
         // Given - one shipped tsdown preset, read twice: as a module, and as a declaration

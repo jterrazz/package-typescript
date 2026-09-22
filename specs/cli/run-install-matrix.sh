@@ -46,8 +46,9 @@ done
 ln -sfn "$PACKAGE_ROOT/node_modules/.bin" "$STORE/.bin"
 
 for consumer in "$CONSUMERS"/*/; do
-    profile=$(basename "$consumer")
-    project="$SANDBOX/$profile"
+    name=$(basename "$consumer")
+    profile=${name%%-*}
+    project="$SANDBOX/$name"
     mkdir -p "$project/node_modules/@jterrazz"
     cp -R "$consumer". "$project/"
 
@@ -79,16 +80,16 @@ EOF
     # resolve from its root, or a green check below says nothing.
     for tool in oxlint oxfmt knip; do
         if node --input-type=module -e "await import('$tool')" > /dev/null 2>&1; then
-            echo "not a strict layout: $tool resolves from the $profile consumer"
+            echo "not a strict layout: $tool resolves from the $name consumer"
             exit 1
         fi
     done
 
-    if bash "$PKG/bin/typescript.sh" check > "$SANDBOX/$profile.log" 2>&1; then
-        echo "checked: $profile"
+    if bash "$PKG/bin/typescript.sh" check > "$SANDBOX/$name.log" 2>&1; then
+        echo "checked: $name"
     else
-        echo "FAILED: $profile"
-        cat "$SANDBOX/$profile.log"
+        echo "FAILED: $name"
+        cat "$SANDBOX/$name.log"
         exit 1
     fi
 done

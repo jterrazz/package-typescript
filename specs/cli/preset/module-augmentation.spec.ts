@@ -21,7 +21,7 @@ const FIXTURE = new URL('fixtures/augmentation/', import.meta.url).pathname;
 
 /** The rule ids one file's diagnostics name, in oxlint's own vocabulary. */
 function rulesOn(file: string): string[] {
-    using work = sandbox(FIXTURE, 'library', 'library');
+    using work = sandbox(FIXTURE, 'node', 'library');
     const report = oxlint(work.path, ['-c', work.config, '--format=json', file]);
 
     return diagnosticsOf(report).map((diagnostic) => diagnostic.code);
