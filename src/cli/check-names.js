@@ -107,6 +107,7 @@ const ECOSYSTEM_ROOTS = Object.freeze({
     android: 'React Native and Expo — the native Android project',
     app: 'Next.js App Router and Expo Router — routes are read off this folder',
     bin: "npm — the files a package's `bin` entry links as commands",
+    config: "node-config — the default folder its `require('config')` reads",
     ios: 'React Native and Expo — the native iOS project',
     pages: 'Next.js Pages Router — routes are read off this folder',
     prisma: 'Prisma — the schema and migrations its CLI reads by default',

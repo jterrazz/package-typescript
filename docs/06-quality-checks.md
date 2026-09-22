@@ -354,6 +354,7 @@ A root beside the spine stands on one of two codified grounds, and every other r
 | `android/` | React Native and Expo — the native Android project                      |
 | `app/`     | the Next.js App Router and Expo Router — routes are read off it         |
 | `bin/`     | npm — the files a package's `bin` entry links as commands               |
+| `config/`  | node-config — the default folder its `require('config')` reads          |
 | `ios/`     | React Native and Expo — the native iOS project                          |
 | `pages/`   | the Next.js Pages Router — routes are read off it                       |
 | `prisma/`  | Prisma — the schema and migrations its CLI reads by default             |
