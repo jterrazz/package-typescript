@@ -377,6 +377,32 @@ run_checks() {
 
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
 
+    # The members the conventions checker is run FOR, chosen before oxlint
+    # starts: a member run judges the `jterrazz(*)` diagnostics this pass sets
+    # aside, and it reads them off the oxlint report made here — so whether
+    # that report is written at all depends on this list. Check mode only.
+    local checker_members=()
+    local checker_member_bins=()
+    local checker_dormant=0
+    if [ "$FIX_MODE" = false ]; then
+        local member
+        for member in "." "${WORKSPACE_MEMBERS[@]}"; do
+            member_resolves_checker "$member" || continue
+            if ! member_checker "$member"; then
+                checker_dormant=$((checker_dormant + 1))
+                printf 'the member pass needs @jterrazz/test %s; %s resolves %s\n' \
+                    "$CHECKER_FLOOR" \
+                    "$([ "$member" = "." ] && printf 'this project' || printf '%s' "$member")" \
+                    "$(node "$PACKAGE_ROOT/src/cli/test-package.js" "$member" 2>/dev/null \
+                        || printf 'none this walk reaches')" \
+                    >> "$tmp_dir/checker-dormant.log"
+                continue
+            fi
+            checker_members+=("$member")
+            checker_member_bins+=("${CHECKER_COMMAND[1]}")
+        done
+    fi
+
     # Run all tools in parallel
     "$TSC" --noEmit > "$tmp_dir/type.log" 2>&1 &
     local type_pid=$!
@@ -434,8 +460,13 @@ run_checks() {
     # In check mode it runs BESIDE the human one, on the same bytes. In fix mode
     # it cannot: the bytes change under the fixer, so the machine-readable run
     # is made after it, below.
+    #
+    # It is also the report the conventions checker's member runs read, handed
+    # over with `--oxlint-report`: the checker judges the `jterrazz(*)`
+    # diagnostics of this one run instead of linting the project a second time.
     local lint_json_pid=""
-    if [ "$FIX_MODE" = false ] && [ -f "$BASELINE_FILE" ]; then
+    local lint_json_waited=false
+    if [ "$FIX_MODE" = false ] && { [ -f "$BASELINE_FILE" ] || [ ${#checker_members[@]} -gt 0 ]; }; then
         "$OXLINT" --type-aware --format json "${LINT_ARGS[@]}" \
             > "$tmp_dir/lint.json" 2>/dev/null &
         lint_json_pid=$!
@@ -622,11 +653,12 @@ run_checks() {
     # specs root the workspace owns, gated by the package that OWNS that root —
     # a member may use @jterrazz/test while the root does not, and the reverse.
     # And one run per workspace member that RESOLVES @jterrazz/test, `--member`,
-    # which is the half that reaches a package owning no `specs/` at all.
+    # which is the half that reaches a package owning no `specs/` at all. The
+    # member runs start once the oxlint report is written, and each is handed
+    # it; the tree runs read no oxlint diagnostic and start at once.
     local checker_pids=()
     local checker_logs=()
     local checker_status=0
-    local checker_dormant=0
     if [ "$FIX_MODE" = false ]; then
         local checker_index=0
         while IFS= read -r specs_root; do
@@ -641,20 +673,15 @@ run_checks() {
             checker_index=$((checker_index + 1))
         done < <(discover_specs_roots)
 
-        local member
-        for member in "." "${WORKSPACE_MEMBERS[@]}"; do
-            member_resolves_checker "$member" || continue
-            if ! member_checker "$member"; then
-                checker_dormant=$((checker_dormant + 1))
-                printf 'the member pass needs @jterrazz/test %s; %s resolves %s\n' \
-                    "$CHECKER_FLOOR" \
-                    "$([ "$member" = "." ] && printf 'this project' || printf '%s' "$member")" \
-                    "$(node "$PACKAGE_ROOT/src/cli/test-package.js" "$member" 2>/dev/null \
-                        || printf 'none this walk reaches')" \
-                    >> "$tmp_dir/checker-dormant.log"
-                continue
-            fi
-            "${CHECKER_COMMAND[@]}" --member "$member" \
+        if [ ${#checker_members[@]} -gt 0 ]; then
+            wait $lint_json_pid
+            lint_json_waited=true
+        fi
+        local member_index=0
+        for member in "${checker_members[@]}"; do
+            local member_bin="${checker_member_bins[$member_index]}"
+            member_index=$((member_index + 1))
+            node "$member_bin" --member "$member" --oxlint-report "$tmp_dir/lint.json" \
                 > "$tmp_dir/checker-$checker_index.log" 2>&1 &
             checker_pids+=($!)
             checker_logs+=("$tmp_dir/checker-$checker_index.log")
@@ -689,7 +716,7 @@ run_checks() {
     # with those rules allowed.
     if [ -f "$BASELINE_FILE" ] || [ "$FIX_MODE" = true ] || [ "$lint_status" -ne 0 ]; then
         if [ -n "$lint_json_pid" ]; then
-            wait $lint_json_pid
+            [ "$lint_json_waited" = true ] || wait $lint_json_pid
         else
             "$OXLINT" --type-aware --format json "${LINT_ARGS[@]}" \
                 > "$tmp_dir/lint.json" 2>/dev/null

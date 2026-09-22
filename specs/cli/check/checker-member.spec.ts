@@ -21,15 +21,29 @@ import { afterEach, describe, expect, test } from 'vitest';
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const FIXTURE = resolve(import.meta.dirname, 'fixtures/checker-member');
 
-/** A checker that answers `--member`, and says under which name it was run. */
+/**
+ * A checker that answers `--member`, and says under which name it was run —
+ * and, for a member run, whether the oxlint report it was handed is there to
+ * read, since it runs no oxlint of its own.
+ */
 function stub(name: string): string {
     return `#!/usr/bin/env node
+const { readFileSync } = require('node:fs');
 const args = process.argv.slice(2);
 const member = args.indexOf('--member');
+const flag = args.indexOf('--oxlint-report');
+function reportOf() {
+    if (flag === -1) return 'none';
+    try {
+        return Array.isArray(JSON.parse(readFileSync(args[flag + 1], 'utf8')).diagnostics) ? 'read' : 'unreadable';
+    } catch {
+        return 'unreadable';
+    }
+}
 process.stdout.write(
     member === -1
-        ? \`${name} tree pass: \${args[0]}\\n\`
-        : \`${name} member pass: \${args[member + 1]}\\n\`,
+        ? \`${name} tree pass: \${args[0]} (oxlint report: \${reportOf()})\\n\`
+        : \`${name} member pass: \${args[member + 1]} (oxlint report: \${reportOf()})\\n\`,
 );
 process.exit(1);
 `;
@@ -78,13 +92,27 @@ describe('the conventions checker in a workspace', () => {
         const { status, stdout } = check(workspace('15.3.0'));
 
         // Then - every member is asked, the one that owns no specs/ included
-        expect(stdout).toContain('root member pass: .');
+        expect(stdout).toContain('root member pass: . ');
         expect(stdout).toContain('root member pass: apps/api');
         expect(stdout).toContain('root member pass: apps/web');
 
         // Then - and the tree pass still runs per specs root, on a member that declares nothing
         expect(stdout).toContain('root tree pass: apps/api/specs');
         expect(status).toBe(1);
+    });
+
+    test('hands every member run the oxlint report the check wrote, and the tree runs none', () => {
+        // Given - a workspace whose root resolves a checker that answers the member flag
+        // When - the quality checks run at the root
+        const { stdout } = check(workspace('15.3.0'));
+
+        // Then - each member run reads the one report the oxlint pass wrote, already complete
+        expect(stdout).toContain('root member pass: . (oxlint report: read)');
+        expect(stdout).toContain('root member pass: apps/api (oxlint report: read)');
+        expect(stdout).toContain('root member pass: apps/web (oxlint report: read)');
+
+        // Then - and the tree run, which reads no oxlint diagnostic, is handed nothing
+        expect(stdout).toContain('root tree pass: apps/api/specs (oxlint report: none)');
     });
 
     test('says which member resolves a release too old to answer the flag', () => {
