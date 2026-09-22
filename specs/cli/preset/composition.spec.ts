@@ -15,13 +15,13 @@ import { cli as oxlintCli } from '../oxlint.specification.js';
  */
 
 const NODE_CONFIG = resolve(import.meta.dirname, '../../../presets/oxlint/profiles/node.js');
-const COMPOSED_CONFIG = resolve(import.meta.dirname, '_fixtures/composed.config.ts');
+const COMPOSED_CONFIG = resolve(import.meta.dirname, 'fixtures/composed.config.ts');
 
 describe('composable presets (explicit wiring)', () => {
     test('enables the jterrazz rules when the consumer composes the testing fragment', async () => {
         // Given - a probe spec linted with a config that composes node + testing
         const result = await oxlintCli
-            .fixture('enabled/')
+            .fixtureDirectory('./fixtures/enabled/')
             .exec(`-c ${COMPOSED_CONFIG} probe.test.ts`);
 
         // Then - a jterrazz convention rule fires on the probe spec
@@ -30,7 +30,9 @@ describe('composable presets (explicit wiring)', () => {
 
     test('stays silent when the consumer does not compose testing', async () => {
         // Given - the same probe linted with the bare node preset (no testing fragment)
-        const result = await oxlintCli.fixture('enabled/').exec(`-c ${NODE_CONFIG} probe.test.ts`);
+        const result = await oxlintCli
+            .fixtureDirectory('./fixtures/enabled/')
+            .exec(`-c ${NODE_CONFIG} probe.test.ts`);
 
         // Then - no jterrazz rule is registered: wiring is explicit, never auto-detected
         expect(result.stdout).not.toContain('jterrazz');

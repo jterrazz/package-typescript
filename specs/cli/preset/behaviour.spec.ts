@@ -13,7 +13,7 @@ import type { Diagnostic } from './rulebook.js';
  * our goldens.
  *
  * Two goldens per profile, and the split is the point. The tree under
- * `_expected/behaviour/<profile>/` holds ONLY the files `--fix` rewrote, so the
+ * `expected/behaviour/<profile>/` holds ONLY the files `--fix` rewrote, so the
  * diff of a pull request is exactly the behavioural delta; a file the fixer
  * leaves alone is absent, which is how a reasoned `off` states itself. The
  * report golden beside it is what still speaks after the fix.
@@ -21,8 +21,8 @@ import type { Diagnostic } from './rulebook.js';
  * Regenerate both with `TEST_UPDATE=1 npm test`.
  */
 
-const FIXTURES = resolve(import.meta.dirname, '_fixtures/behaviour');
-const EXPECTED = resolve(import.meta.dirname, '_expected/behaviour');
+const FIXTURES = resolve(import.meta.dirname, 'fixtures/behaviour');
+const EXPECTED = resolve(import.meta.dirname, 'expected/behaviour');
 const UPDATING = process.env.TEST_UPDATE === '1';
 
 /** The rule ids a run names, with the file each one landed on, sorted. */

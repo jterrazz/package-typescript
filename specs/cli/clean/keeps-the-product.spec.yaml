@@ -1,5 +1,5 @@
 description: leaves dist/ alone — the product is not an artefact
-fixture: built-app/
+fixture: ./fixtures/built-app/
 runs:
     - command: clean
       exit: 0

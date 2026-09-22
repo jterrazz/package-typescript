@@ -1,5 +1,5 @@
 description: compiles every entry the package's exports map publishes
-fixture: multi-entry/
+fixture: ./fixtures/multi-entry/
 runs:
     - command: build
       exit: 0

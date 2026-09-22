@@ -1,5 +1,5 @@
 description: disables export rules for published libraries
-fixture: knip/library-exports/
+fixture: ./fixtures/knip/library-exports/
 runs:
     - command: check
       exit: 1

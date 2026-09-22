@@ -1,5 +1,5 @@
 description: names a missing map, an unnumbered chapter and every absent spine chapter
-fixture: no-spine/
+fixture: ./fixtures/no-spine/
 runs:
     - command: docs-layout .
       exit: 1

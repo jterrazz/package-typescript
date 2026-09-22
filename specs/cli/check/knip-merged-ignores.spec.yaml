@@ -1,5 +1,5 @@
 description: merges project ignoreDependencies with the base config
-fixture: knip/with-overrides/
+fixture: ./fixtures/knip/with-overrides/
 runs:
     - command: check
       exit: 1

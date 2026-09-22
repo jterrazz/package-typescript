@@ -1,5 +1,5 @@
 description: fails a tree whose folder names no subject and whose file names one in half
-fixture: names/vague/
+fixture: ./fixtures/names/vague/
 runs:
     - command: check
       exit: 1

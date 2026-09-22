@@ -14,5 +14,5 @@ test('resolves each tool independently when npm splits them between bin dirs', a
 
     // Then - the whole check output matches: every tool is found and runs, wherever npm placed it
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toMatch('resolution.txt');
+    expect(result.stdout).toMatchFile('./expected/resolution.txt');
 });

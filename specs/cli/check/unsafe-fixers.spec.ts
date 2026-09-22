@@ -7,7 +7,7 @@ import { afterAll, expect, test } from 'vitest';
 /*
  * A chain, for the ground's sake: the claim needs the rule armed at `error`,
  * and oxlint loads every config under this repository — an armed one committed
- * under `_fixtures/` would report on its own broken tree during this
+ * under `fixtures/` would report on its own broken tree during this
  * repository's lint run ([Testing](../../../docs/03-testing.md)).
  *
  * `unicorn/no-useless-undefined` stands for the eight: its fixer strips an

@@ -7,7 +7,7 @@ import { describe, expect, test } from 'vitest';
  * the product under test IS the shipped tsconfig preset, and `typescript check`
  * cannot exercise it — check loads the preset from the consumer's node_modules,
  * which a copied temp-workdir fixture does not have. So a consumer tsconfig that
- * extends the preset by a repo-relative path lives under _fixtures/, and tsc is
+ * extends the preset by a repo-relative path lives under fixtures/, and tsc is
  * asked to resolve it with `--showConfig` from that directory.
  *
  * The law: a preset's `include`/`exclude` must be scoped to the CONSUMER, never
@@ -29,7 +29,7 @@ type ResolvedConfig = {
 };
 
 function resolvedConfig(fixture: string): ResolvedConfig {
-    const dir = resolve(import.meta.dirname, '_fixtures', fixture);
+    const dir = resolve(import.meta.dirname, 'fixtures', fixture);
     const stdout = execFileSync(TSC, ['--showConfig'], { cwd: dir, encoding: 'utf8' });
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tsc's own --showConfig output is tsc's contract
     const config = JSON.parse(stdout) as {
@@ -76,7 +76,7 @@ describe.each([
 
 test('leaves the ground a spec stands on out of the compiled file set', () => {
     // Given - a consumer whose specs/ holds each of the four ground folders beside a contract
-    const dir = resolve(import.meta.dirname, '_fixtures', 'tsconfig-ground');
+    const dir = resolve(import.meta.dirname, 'fixtures', 'tsconfig-ground');
 
     // When - tsc lists the files the node preset compiles
     const listed = execFileSync(TSC, ['--listFilesOnly'], { cwd: dir, encoding: 'utf8' })

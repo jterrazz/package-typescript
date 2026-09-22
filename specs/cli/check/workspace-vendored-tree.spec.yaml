@@ -1,5 +1,5 @@
 description: stays out of a foreign tree vendored inside a member
-fixture: workspace-foreign/
+fixture: ./fixtures/workspace-foreign/
 runs:
     - command: check
       exit: 1

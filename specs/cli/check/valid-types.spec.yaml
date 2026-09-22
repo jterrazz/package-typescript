@@ -1,5 +1,5 @@
 description: passes for valid typed code
-fixture: typechecker/valid/
+fixture: ./fixtures/typechecker/valid/
 runs:
     - command: check
       exit: 1

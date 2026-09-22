@@ -1,5 +1,4 @@
 {
     "extends": "./presets/tsconfig/node.json",
-    "include": ["specs/**/*.ts", "src/**/*", "lib/**/*.js", "lint/**/*", "presets/**/*.js"],
-    "exclude": ["node_modules", "dist", "**/_fixtures/**", "**/_expected/**"]
+    "include": ["specs/**/*.ts", "src/**/*", "lib/**/*.js", "lint/**/*", "presets/**/*.js"]
 }

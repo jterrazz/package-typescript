@@ -8,7 +8,7 @@
 set -e
 
 PACKAGE_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-CONSUMERS="$PACKAGE_ROOT/specs/cli/preset/_fixtures/install-matrix"
+CONSUMERS="$PACKAGE_ROOT/specs/cli/preset/fixtures/install-matrix"
 
 # perfectionist sorts the specifiers inside one import statement, and a
 # consumer's config is linted like everything else it writes.

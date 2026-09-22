@@ -1,5 +1,5 @@
 description: generates type declarations exposing the public API
-fixture: sample-lib/
+fixture: ./fixtures/sample-lib/
 runs:
     - command: bundle
       exit: 0

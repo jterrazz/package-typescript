@@ -1,5 +1,5 @@
 description: fails the oxlint pass on a CommonJS config, which oxlint drops in silence
-fixture: oxlint-config/commonjs/
+fixture: ./fixtures/oxlint-config/commonjs/
 runs:
     - command: check
       exit: 1

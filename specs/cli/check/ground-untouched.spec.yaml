@@ -1,5 +1,5 @@
 description: says nothing about the ground a spec stands on, however broken that ground is
-fixture: ground/untouched/
+fixture: ./fixtures/ground/untouched/
 runs:
     - command: check
       exit: 0

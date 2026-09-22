@@ -1,5 +1,5 @@
 description: fails a module graph that crosses the layer map the project declared
-fixture: architecture-map/crossed/
+fixture: ./fixtures/architecture-map/crossed/
 runs:
     - command: check
       exit: 1

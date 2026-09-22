@@ -27,7 +27,7 @@ afterEach(() => {
 
 function checkFromMember(fixture: string): { status: null | number; stdout: string } {
     workDir = mkdtempSync(resolve(tmpdir(), 'spec-gitignore-workspace-'));
-    cpSync(resolve(import.meta.dirname, '_fixtures/gitignore', fixture), workDir, {
+    cpSync(resolve(import.meta.dirname, 'fixtures/gitignore', fixture), workDir, {
         recursive: true,
     });
 

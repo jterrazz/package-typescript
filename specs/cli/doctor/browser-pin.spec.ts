@@ -17,7 +17,7 @@ import { describe, expect, test } from 'vitest';
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-const FIXTURES = resolve(import.meta.dirname, '_fixtures/browser-pin');
+const FIXTURES = resolve(import.meta.dirname, 'fixtures/browser-pin');
 
 /** `typescript doctor` run as a consumer runs it: the fixture is `INIT_CWD`. */
 function doctorIn(fixture: string): { status: null | number; stdout: string } {

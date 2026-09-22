@@ -1,5 +1,5 @@
 description: names every suppression that is misspelled, unreasoned or already dead
-fixture: suppressions/looking-away/
+fixture: ./fixtures/suppressions/looking-away/
 runs:
     - command: check
       exit: 1

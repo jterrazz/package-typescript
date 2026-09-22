@@ -1,5 +1,5 @@
 description: concatenates arrays from the base and project configs
-fixture: knip/merge-arrays/
+fixture: ./fixtures/knip/merge-arrays/
 runs:
     - command: check
       exit: 1

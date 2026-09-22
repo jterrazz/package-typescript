@@ -1,5 +1,5 @@
 description: bundles a library successfully
-fixture: sample-lib/
+fixture: ./fixtures/sample-lib/
 runs:
     - command: bundle
       exit: 0

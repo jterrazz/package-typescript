@@ -1,5 +1,5 @@
 description: names a repository that carries no manual at all
-fixture: no-manual/
+fixture: ./fixtures/no-manual/
 runs:
     - command: docs-layout .
       exit: 1

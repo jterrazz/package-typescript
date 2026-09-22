@@ -15,7 +15,7 @@ import { afterAll, expect, test } from 'vitest';
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-const FIXTURE = resolve(import.meta.dirname, '_fixtures/secrets/leaked');
+const FIXTURE = resolve(import.meta.dirname, 'fixtures/secrets/leaked');
 
 const project = mkdtempSync(resolve(tmpdir(), 'spec-secrets-'));
 

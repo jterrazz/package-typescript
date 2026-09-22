@@ -17,17 +17,17 @@ import { cli as oxlintCli } from '../oxlint.specification.js';
  * `off` here names one of the five recorded reasons. It cannot reach for
  * `@jterrazz/test` 16.0 itself: that fragment is not released, and this
  * package cannot depend on an unreleased version of a package that already
- * depends on it. `_fixtures/vitest-rule-owner.config.ts` stands in for it.
+ * depends on it. `fixtures/vitest-rule-owner.config.ts` stands in for it.
  */
 
 const NODE_CONFIG = resolve(import.meta.dirname, '../../../presets/oxlint/profiles/node.js');
-const OWNER_CONFIG = resolve(import.meta.dirname, '_fixtures/vitest-rule-owner.config.ts');
+const OWNER_CONFIG = resolve(import.meta.dirname, 'fixtures/vitest-rule-owner.config.ts');
 
 describe('a rule marked covered answers to whichever fragment composes it', () => {
     test('the bare profile stays silent — covered, its options owed elsewhere', async () => {
         // Given - a snapshot matcher linted under the bare node profile alone
         const result = await oxlintCli
-            .fixture('covered-vitest-rules/')
+            .fixtureDirectory('./fixtures/covered-vitest-rules/')
             .exec(`-c ${NODE_CONFIG} probe.test.ts`);
 
         // Then - no rule fires: the profile turned it off, not this file
@@ -37,7 +37,7 @@ describe('a rule marked covered answers to whichever fragment composes it', () =
     test('the fragment that took the rule over decides the file', async () => {
         // Given - the same file, this time with the owning fragment composed after the profile
         const result = await oxlintCli
-            .fixture('covered-vitest-rules/')
+            .fixtureDirectory('./fixtures/covered-vitest-rules/')
             .exec(`-c ${OWNER_CONFIG} probe.test.ts`);
 
         // Then - the option-carrying override fires, because it composes last

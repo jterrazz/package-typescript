@@ -1,5 +1,5 @@
 description: fails a ratchet that moved the wrong way, a rule that owes nothing, and debt nobody recorded
-fixture: baseline/beyond/
+fixture: ./fixtures/baseline/beyond/
 runs:
     - command: check
       exit: 1

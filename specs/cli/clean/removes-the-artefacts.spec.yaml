@@ -1,5 +1,5 @@
 description: removes what the tools wrote under .artifacts/
-fixture: $FIXTURES/incremental-app/
+fixture: ../../fixtures/incremental-app/
 runs:
     - command: check
       exit: 0

@@ -1,5 +1,5 @@
 description: auto-ignores plugin and scoped addon devDependencies
-fixture: knip/plugin-deps/
+fixture: ./fixtures/knip/plugin-deps/
 runs:
     - command: check
       exit: 1

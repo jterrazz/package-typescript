@@ -19,7 +19,7 @@ import { afterEach, describe, expect, test } from 'vitest';
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-const FIXTURE = resolve(import.meta.dirname, '_fixtures/checker-member');
+const FIXTURE = resolve(import.meta.dirname, 'fixtures/checker-member');
 
 /** A checker that answers `--member`, and says under which name it was run. */
 function stub(name: string): string {

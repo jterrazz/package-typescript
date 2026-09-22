@@ -1,5 +1,5 @@
 description: fails a fix run on a tree that owes nothing, because the ratchet moved and the entry stayed
-fixture: baseline/settled/
+fixture: ./fixtures/baseline/settled/
 runs:
     - command: fix
       exit: 1

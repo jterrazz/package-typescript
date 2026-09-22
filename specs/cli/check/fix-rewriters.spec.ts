@@ -7,7 +7,7 @@ import { afterAll, expect, test } from 'vitest';
 /*
  * A chain, for the ground's sake: the claim needs rules armed at `error` on a
  * file that is also badly formatted, and oxlint loads every config under this
- * repository — an armed one committed under `_fixtures/` would report on its
+ * repository — an armed one committed under `fixtures/` would report on its
  * own broken tree during this repository's lint run
  * ([Testing](../../../docs/03-testing.md)).
  *

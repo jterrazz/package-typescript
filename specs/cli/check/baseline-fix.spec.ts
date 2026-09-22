@@ -8,7 +8,7 @@ import { afterAll, expect, test } from 'vitest';
  * A chain, not a document, for the ground's sake: the claim needs a rule armed
  * at `error`, so that oxlint's own exit code is 1 and only the ratchet can make
  * the run green. oxlint LOADS every config it finds under this repository,
- * fixtures included, so an armed config committed under `_fixtures/` would
+ * fixtures included, so an armed config committed under `fixtures/` would
  * report on its own broken tree during this repository's lint run
  * ([Testing](../../../docs/03-testing.md)). The project is built in a temp
  * directory instead.

@@ -1,5 +1,5 @@
 description: fails a page whose link and whose backticked path name nothing on disk
-fixture: markdown/stale-coordinates/
+fixture: ./fixtures/markdown/stale-coordinates/
 runs:
     - command: check
       exit: 1

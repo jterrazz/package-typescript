@@ -1,5 +1,5 @@
 description: runs the four quality tools and passes on a clean project
-fixture: kitchen-sink/
+fixture: ./fixtures/kitchen-sink/
 runs:
     - command: check
       exit: 0

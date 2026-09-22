@@ -1,5 +1,5 @@
 description: passes a tree named for its domain, where a construct word is only one part of a name
-fixture: names/domain/
+fixture: ./fixtures/names/domain/
 runs:
     - command: check
       exit: 0

@@ -13,8 +13,8 @@ import { afterAll, expect, test } from 'vitest';
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-const FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/on-convention');
-const TURBO_FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/turbo');
+const FIXTURE = resolve(import.meta.dirname, 'fixtures/gitignore/on-convention');
+const TURBO_FIXTURE = resolve(import.meta.dirname, 'fixtures/gitignore/turbo');
 
 const workDir = mkdtempSync(resolve(tmpdir(), 'spec-committed-artefact-'));
 const turboWorkDir = mkdtempSync(resolve(tmpdir(), 'spec-committed-turbo-'));

@@ -1,5 +1,5 @@
 description: skips the checker when the project does not depend on @jterrazz/test
-fixture: disabled/
+fixture: ./fixtures/disabled/
 runs:
     - command: check
       exit: 1

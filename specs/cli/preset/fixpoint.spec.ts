@@ -16,7 +16,7 @@ import { diagnosticsOf, oxfmt, oxlint, PROFILES, sandbox } from './rulebook.js';
  * the shapes that have ping-ponged before.
  */
 
-const FIXTURES = resolve(import.meta.dirname, '_fixtures/fixpoint');
+const FIXTURES = resolve(import.meta.dirname, 'fixtures/fixpoint');
 
 /** Every source file of a sandbox, by name, with its bytes. */
 function snapshot(directory: string): Record<string, string> {

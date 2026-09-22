@@ -1,5 +1,5 @@
 description: passes with no local knip.json when the base config covers dependencies
-fixture: knip/no-config/
+fixture: ./fixtures/knip/no-config/
 runs:
     - command: check
       exit: 1

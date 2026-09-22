@@ -17,7 +17,7 @@ import { diagnosticsOf, oxlint, sandbox } from './rulebook.js';
  * drives oxlint directly, the B9w exception `oxlint.specification.ts` states.
  */
 
-const FIXTURE = new URL('_fixtures/augmentation/', import.meta.url).pathname;
+const FIXTURE = new URL('fixtures/augmentation/', import.meta.url).pathname;
 
 /** The rule ids one file's diagnostics name, in oxlint's own vocabulary. */
 function rulesOn(file: string): string[] {

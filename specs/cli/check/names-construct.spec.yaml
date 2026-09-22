@@ -1,5 +1,5 @@
 description: fails a tree whose files and folders are named after a construct of the language
-fixture: names/construct/
+fixture: ./fixtures/names/construct/
 runs:
     - command: check
       exit: 1

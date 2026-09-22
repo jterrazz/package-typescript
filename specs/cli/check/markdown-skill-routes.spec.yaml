@@ -1,5 +1,5 @@
 description: fails a skill that routes to a chapter its package does not ship, and passes the one it does
-fixture: markdown/skill-routes/
+fixture: ./fixtures/markdown/skill-routes/
 runs:
     - command: check
       exit: 1

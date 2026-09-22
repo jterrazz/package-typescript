@@ -12,7 +12,7 @@ import { cli as installMatrixCli } from '../install-matrix.specification.js';
  * preset it names exists, the documented config form type-checks under it, and
  * `typescript check` is green on a project that has done nothing wrong.
  *
- * `specs/cli/preset/_fixtures/install-matrix/<profile>/` is the ground, and the
+ * `specs/cli/preset/fixtures/install-matrix/<profile>/` is the ground, and the
  * profile it is for IS its directory name — the runner reads the roster off the
  * tree, so an eighth profile earns a consumer by existing.
  */

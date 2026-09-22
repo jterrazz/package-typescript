@@ -1,5 +1,5 @@
 description: asks a workspace whose member ships an image for its operating chapter
-fixture: workspace-member-image/
+fixture: ./fixtures/workspace-member-image/
 runs:
     - command: docs-layout .
       exit: 1

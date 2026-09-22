@@ -15,7 +15,7 @@ import { afterAll, expect, test } from 'vitest';
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-const FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/on-convention');
+const FIXTURE = resolve(import.meta.dirname, 'fixtures/gitignore/on-convention');
 
 const repository = mkdtempSync(resolve(tmpdir(), 'spec-docs-layout-repo-'));
 const looseDirectory = mkdtempSync(resolve(tmpdir(), 'spec-docs-layout-loose-'));

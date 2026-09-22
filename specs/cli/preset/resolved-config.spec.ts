@@ -20,7 +20,7 @@ import { printConfig, PROFILES } from './rulebook.js';
  * with `TEST_UPDATE=1 npm test`.
  */
 
-const EXPECTED = resolve(import.meta.dirname, '_expected');
+const EXPECTED = resolve(import.meta.dirname, 'expected');
 
 /** One golden per profile, named here so the file is reachable by a reader too. */
 const GOLDENS: Record<string, string> = {

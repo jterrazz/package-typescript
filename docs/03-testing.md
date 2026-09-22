@@ -60,7 +60,7 @@ The presets are the one part of this package a document cannot reach: `check` lo
 | `install-matrix`      | one consumer per profile installs under pnpm-strict and checks green          |
 | `module-augmentation` | a `declare module` block keeps the interface that merges, and its `export {}` |
 
-The last one is the outside view, and it is the one that fails when the corpus is wrong: seven tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/_fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so an eighth profile earns a consumer by existing. The two config files are the one thing the ground does NOT carry: the runner writes them, for the same reason as above, and that heredoc is the single place the documented form is stated for all seven.
+The last one is the outside view, and it is the one that fails when the corpus is wrong: seven tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so an eighth profile earns a consumer by existing. The two config files are the one thing the ground does NOT carry: the runner writes them, for the same reason as above, and that heredoc is the single place the documented form is stated for all seven.
 
 ### Regenerating a golden
 
@@ -70,7 +70,7 @@ Every golden of this repository takes the same gesture:
 TEST_UPDATE=1 npm test
 ```
 
-It rewrites the `_expected/` trees, the resolved-config rosters, the catalogue section of [Lint presets](07-lint-presets.md), and the `stdout` of every spec document. Two things about it are worth knowing before reaching for it. A `{{any}}` token SURVIVES, but the real output is appended after it — so a document spanning a block it is not about is hand-edited, never regenerated. And the catalogue table comes out unaligned; `typescript fix` puts the columns back, and the freshness test compares cells, not padding.
+It rewrites the `expected/` trees, the resolved-config rosters, the catalogue section of [Lint presets](07-lint-presets.md), and the `stdout` of every spec document. Two things about it are worth knowing before reaching for it. A `{{any}}` token SURVIVES, but the real output is appended after it — so a document spanning a block it is not about is hand-edited, never regenerated. And the catalogue table comes out unaligned; `typescript fix` puts the columns back, and the freshness test compares cells, not padding.
 
 ## When a chain of code is the right answer
 
@@ -85,9 +85,9 @@ The first three exceptions reach no `cli` chain at all, which is what `c18-modul
 
 ## Where a fixture lives
 
-What a spec stands on carries a leading underscore. The shared pool is `specs/_fixtures/`, reached as `fixture: $FIXTURES/…`, and it holds only what SEVERAL domains use — `sample-app`, `incremental-app`. A fixture one domain alone reaches for lives beside that domain, in `specs/cli/<domain>/_fixtures/`, and is named by its relative form. Goldens are `_expected/`.
+What a spec stands on sits in four bare folders `@jterrazz/test` 17 reserves under `specs/`: `fixtures/`, `expected/`, `seeds/` and `requests/`. The shared pool is `specs/fixtures/`, and it holds only what SEVERAL domains use — `sample-app`, `incremental-app`. A fixture one domain alone reaches for lives beside that domain, in `specs/cli/<domain>/fixtures/`. Either way a spec names it by its path from the spec file, spelled in full — `fixture: ./fixtures/sample-lib/`, `fixture: ../../fixtures/sample-app/`, `.fixtureFile('./fixtures/formatter/wrong-style.ts')` — and a golden the same way, `toMatchFile('./expected/resolution.txt')`.
 
-That is `@jterrazz/test` 16's layout, and this repository's specs keep it until they move to the 17 runner. The presets it ships already name 17's bare ground — `fixtures/`, `expected/`, `seeds/`, `requests/` under `specs/` — so its own run carries the two old names itself, and nothing else does: `npm run lint` and `npm run lint:fix` pass them as `--ignore-pattern`, and `oxfmt.config.ts`, `knip.json` and `tsconfig.json` each hold one line for them. The lines go with the migration.
+The presets this repository ships name those four folders, and its own run takes them from the presets like any consumer: no ignore of its own in the lint scripts, `oxfmt.config.ts`, `knip.json` or `tsconfig.json`.
 
 The domains today: `build`, `check` (the passes, each stating the whole run), `clean`, `dev`, `docs-layout` (the manual's rules, one document per family), `doctor`, `help`, `preset`, `start`.
 

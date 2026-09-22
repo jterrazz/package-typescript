@@ -22,7 +22,7 @@ describe('format checking', () => {
     test('detects unformatted code', async () => {
         // Given - a file with wrong formatting staged in the cwd
         const result = await oxfmtCli
-            .fixture('formatter/wrong-style.ts')
+            .fixtureFile('./fixtures/formatter/wrong-style.ts')
             .exec(`--check --config ${CONFIG_PATH} wrong-style.ts`);
 
         // Then - the check fails
@@ -32,7 +32,7 @@ describe('format checking', () => {
     test('passes for properly formatted code', async () => {
         // Given - a file with correct formatting staged in the cwd
         const result = await oxfmtCli
-            .fixture('formatter/correct-style.ts')
+            .fixtureFile('./fixtures/formatter/correct-style.ts')
             .exec(`--check --config ${CONFIG_PATH} correct-style.ts`);
 
         // Then - the check passes
@@ -44,7 +44,7 @@ describe('format fixing', () => {
     test('formats unformatted code correctly', async () => {
         // Given - the wrong-style file formatted in place
         const result = await oxfmtCli
-            .fixture('formatter/wrong-style.ts')
+            .fixtureFile('./fixtures/formatter/wrong-style.ts')
             .exec(`--config ${CONFIG_PATH} wrong-style.ts`);
 
         // Then - the file is rewritten with the correct style
@@ -59,13 +59,13 @@ describe('format fixing', () => {
     test('is idempotent when formatting already-correct code', async () => {
         // Given - an already-correct file formatted in place
         const result = await oxfmtCli
-            .fixture('formatter/correct-style.ts')
+            .fixtureFile('./fixtures/formatter/correct-style.ts')
             .exec(`--config ${CONFIG_PATH} correct-style.ts`);
 
         // Then - the file is unchanged after formatting
         expect(result.exitCode).toBe(0);
         const original = readFileSync(
-            resolve(import.meta.dirname, '_fixtures/formatter/correct-style.ts'),
+            resolve(import.meta.dirname, 'fixtures/formatter/correct-style.ts'),
             'utf8',
         );
         expect(result.file('correct-style.ts').content).toContain(original.trim());
@@ -78,7 +78,7 @@ describe('config options', () => {
     beforeAll(async () => {
         // Format the wrong-style file so the applied style options can be inspected.
         result = await oxfmtCli
-            .fixture('formatter/wrong-style.ts')
+            .fixtureFile('./fixtures/formatter/wrong-style.ts')
             .exec(`--config ${CONFIG_PATH} wrong-style.ts`);
     });
 

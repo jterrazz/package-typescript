@@ -1,5 +1,5 @@
 description: passes a project whose diagnostics stay under the counts it recorded
-fixture: baseline/within/
+fixture: ./fixtures/baseline/within/
 runs:
     - command: check
       exit: 0
