@@ -9,7 +9,7 @@ import { defineConfig } from 'oxfmt';
  * The three sorters are the fourth law of the rulebook: sorting is formatting.
  * oxfmt owns import order, package.json key order and Tailwind class order, so
  * no lint rule reorders those bytes and no two tools fight over them
- * ([Lint presets](../../docs/07-lint-presets.md)).
+ * ([Lint presets](../../../docs/07-lint-presets.md)).
  */
 export default defineConfig({
     bracketSpacing: true,

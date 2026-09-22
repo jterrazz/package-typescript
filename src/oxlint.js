@@ -27,13 +27,13 @@ export { merge as compose } from '../lint/compile.js';
  * dependency — the one-devDependency shape holds on every package manager. */
 export { defineConfig } from 'oxlint';
 
-export { default as astro } from '../presets/oxlint/profiles/astro.js';
-export { default as bun } from '../presets/oxlint/profiles/bun.js';
-export { default as expo } from '../presets/oxlint/profiles/expo.js';
-export { default as library } from '../presets/oxlint/profiles/library.js';
-export { default as next } from '../presets/oxlint/profiles/next.js';
-export { default as node } from '../presets/oxlint/profiles/node.js';
-export { default as react } from '../presets/oxlint/profiles/react.js';
+export { default as astro } from './presets/oxlint/profiles/astro.js';
+export { default as bun } from './presets/oxlint/profiles/bun.js';
+export { default as expo } from './presets/oxlint/profiles/expo.js';
+export { default as library } from './presets/oxlint/profiles/library.js';
+export { default as next } from './presets/oxlint/profiles/next.js';
+export { default as node } from './presets/oxlint/profiles/node.js';
+export { default as react } from './presets/oxlint/profiles/react.js';
 
 export { HEXAGONAL_MAP } from '../lint/architecture/hexagonal.js';
 

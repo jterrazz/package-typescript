@@ -10,7 +10,7 @@
  * a CLI `--allow` stops at the base config, and a rule the consumer's own
  * overrides arm again (the vitest block, on the test globs) would still
  * rewrite. Check mode keeps every one of them armed: the diagnostic is still
- * owed an answer, from a human ([Quality checks](../docs/06-quality-checks.md)).
+ * owed an answer, from a human ([Quality checks](../../docs/06-quality-checks.md)).
  *
  * The file is written beside the consumer's config, never elsewhere: oxlint
  * resolves `ignorePatterns` against the directory its config sits in. The run
@@ -30,7 +30,7 @@
 import { writeFileSync } from 'node:fs';
 import { argv } from 'node:process';
 
-import { unsafeFixers } from '../lint/catalog.js';
+import { unsafeFixers } from '../../lint/catalog.js';
 
 /** The wrapper module's source, for a JSON or an ES module config. */
 export function wrapperOf(consumerConfig) {

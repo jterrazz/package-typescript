@@ -14,7 +14,7 @@ import { cli as oxlintCli } from '../oxlint.specification.js';
  * absence probe, not a full-surface snapshot, which is resolved-config's.
  */
 
-const NODE_CONFIG = resolve(import.meta.dirname, '../../../presets/oxlint/profiles/node.js');
+const NODE_CONFIG = resolve(import.meta.dirname, '../../../src/presets/oxlint/profiles/node.js');
 const COMPOSED_CONFIG = resolve(import.meta.dirname, 'fixtures/composed.config.ts');
 
 describe('composable presets (explicit wiring)', () => {

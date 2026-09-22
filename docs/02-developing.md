@@ -155,7 +155,7 @@ npm test        # the two vitest suites (Testing)
 npm run lint    # this package's own CLI, run on this package
 ```
 
-Where a new thing goes follows the layers ([Architecture](01-architecture.md)): a new gate is a node script in `lib/` plus the lines in `bin/commands/check.sh` that decide whether it applies; a lint decision is a line of a fragment under `lint/`, never a config; a new configuration is a file under `presets/`; a new importable entry is a `.js` and a hand-written `.d.ts` in `src/`, an `exports` subpath, and a row in the resolution test.
+Where a new thing goes follows the layers ([Architecture](01-architecture.md)): a new gate is a node script in `src/cli/` plus the lines in `bin/commands/check.sh` that decide whether it applies; a lint decision is a line of a fragment under `lint/`, never a config; a new configuration is a file under `src/presets/`; a new importable entry is a `.js` and a hand-written `.d.ts` in `src/`, an `exports` subpath, and a row in the resolution test.
 
 One standing rule binds every change here: **a change to the public surface reaches three places.** `README.md`, the chapter that owns the subject, and `skills/jterrazz-typescript/SKILL.md`, which routes into the chapter and never restates it — and the Markdown (prose) pass fails a skill naming a chapter that does not exist.
 

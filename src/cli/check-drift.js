@@ -26,13 +26,13 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { PROFILES } from '../lint/profiles.js';
+import { PROFILES } from '../../lint/profiles.js';
 import { readBaseline } from './check-baseline.js';
 import { countSuppressions } from './check-suppressions.js';
 import { toolVersions } from './doctor.js';
 import { ignorePatternsOf } from './tracked-files.js';
 
-const PACKAGE_ROOT = resolve(import.meta.dirname, '..');
+const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 
 /** Where a consumer declares its rules, in the order oxlint looks. */
 const CONFIGS = [
@@ -143,7 +143,7 @@ const profileRules =
         : (resolvedRules(
               root,
               oxlint,
-              join(PACKAGE_ROOT, 'presets/oxlint/profiles', `${profileName}.js`),
+              join(PACKAGE_ROOT, 'src/presets/oxlint/profiles', `${profileName}.js`),
           ) ?? {});
 
 const off = turnedOff(profileRules, consumerRules);

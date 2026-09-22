@@ -96,7 +96,7 @@ find_project_binary() {
 # The plugin is passed as a RESOLVED PATH, not as a name in the config: prettier
 # resolves a plugin name from the working directory, which is the consumer's,
 # and the consumer is precisely the project that no longer declares it.
-PRETTIER_ASTRO_CONFIG="$PACKAGE_ROOT/presets/prettier/astro.json"
+PRETTIER_ASTRO_CONFIG="$PACKAGE_ROOT/src/presets/prettier/astro.json"
 PRETTIER_ASTRO_PLUGIN=$(cd "$PACKAGE_ROOT" && node -e 'process.stdout.write(require.resolve("prettier-plugin-astro"))' 2>/dev/null)
 # The conventions checker is the CONSUMER's binary, like astro's: this package
 # runs it, it does not own it, and the version a project installed is the
@@ -106,7 +106,7 @@ CHECKER=$(find_project_binary jterrazz-test-check)
 
 # The release of @jterrazz/test that answers `--member` and `--format json`.
 # The number is the module's, not this script's: two commands gate on it.
-CHECKER_FLOOR=$(node "$PACKAGE_ROOT/lib/test-package.js" --floor)
+CHECKER_FLOOR=$(node "$PACKAGE_ROOT/src/cli/test-package.js" --floor)
 
 # ── The unit is the workspace package, not the repository ────────────────────
 # Every gate measures from the NEAREST package.json. A single-package project
@@ -122,7 +122,7 @@ CHECKER_FLOOR=$(node "$PACKAGE_ROOT/lib/test-package.js" --floor)
 WORKSPACE_MEMBERS=()
 while IFS= read -r workspace_member; do
     [ -n "$workspace_member" ] && WORKSPACE_MEMBERS+=("$workspace_member")
-done < <(node "$PACKAGE_ROOT/lib/workspace-members.js" 2>/dev/null)
+done < <(node "$PACKAGE_ROOT/src/cli/workspace-members.js" 2>/dev/null)
 
 # The nearest package.json OWNS a directory. Walk up from the given path and
 # stop at the cwd — a gate never asks a question above the project it runs in.
@@ -147,14 +147,14 @@ project_uses_jterrazz_test() {
     local dir="${1:-.}"
     [ -f "$dir/package.json" ] || return 1
     node -e 'const {readFileSync}=require("node:fs");const p=JSON.parse(readFileSync(process.argv[1],"utf8"));const d={...p.dependencies,...p.devDependencies,...p.peerDependencies};process.exit(d["@jterrazz/test"]?0:1)' "$dir/package.json" 2>/dev/null && return 0
-    node "$PACKAGE_ROOT/lib/test-package.js" "$dir" > /dev/null 2>&1
+    node "$PACKAGE_ROOT/src/cli/test-package.js" "$dir" > /dev/null 2>&1
 }
 
 # A member the checker can be run FOR at all. A member that resolves an older
 # release is counted, so the pass can say once that it is dormant rather than
 # pretend it ran.
 member_resolves_checker() {
-    node "$PACKAGE_ROOT/lib/test-package.js" "${1:-.}" > /dev/null 2>&1
+    node "$PACKAGE_ROOT/src/cli/test-package.js" "${1:-.}" > /dev/null 2>&1
 }
 
 # The checker a directory RUNS, into CHECKER_COMMAND. Version and binary come
@@ -164,9 +164,9 @@ member_resolves_checker() {
 # on. Returns 1 when the directory resolves nothing that answers the flags.
 member_checker() {
     local dir="${1:-.}" bin
-    node "$PACKAGE_ROOT/lib/test-package.js" "$dir" --at-least "$CHECKER_FLOOR" \
+    node "$PACKAGE_ROOT/src/cli/test-package.js" "$dir" --at-least "$CHECKER_FLOOR" \
         > /dev/null 2>&1 || return 1
-    bin=$(node "$PACKAGE_ROOT/lib/test-package.js" "$dir" --bin 2>/dev/null) || return 1
+    bin=$(node "$PACKAGE_ROOT/src/cli/test-package.js" "$dir" --bin 2>/dev/null) || return 1
     [ -n "$bin" ] || return 1
     CHECKER_COMMAND=(node "$bin")
 }
@@ -176,7 +176,7 @@ member_checker() {
 # install this walk can reach.
 tree_checker() {
     local bin
-    bin=$(node "$PACKAGE_ROOT/lib/test-package.js" "${1:-.}" --bin 2>/dev/null)
+    bin=$(node "$PACKAGE_ROOT/src/cli/test-package.js" "${1:-.}" --bin 2>/dev/null)
     if [ -n "$bin" ]; then
         CHECKER_COMMAND=(node "$bin")
     else
@@ -405,7 +405,7 @@ run_checks() {
         local fix_config="oxlint.fix.config.mjs"
         local fix_args=()
         if [ -n "$OXLINT_CONFIG" ]; then
-            node "$PACKAGE_ROOT/lib/unsafe-fixers.js" "$PWD/$OXLINT_CONFIG" "$fix_config"
+            node "$PACKAGE_ROOT/src/cli/unsafe-fixers.js" "$PWD/$OXLINT_CONFIG" "$fix_config"
             fix_args=(-c "$fix_config" --ignore-pattern "$fix_config")
         fi
 
@@ -457,12 +457,12 @@ run_checks() {
     local knip_pid=""
     local knip_status=0
     if [ "$FIX_MODE" = false ]; then
-        local knip_base="$PACKAGE_ROOT/presets/knip/base.json"
+        local knip_base="$PACKAGE_ROOT/src/presets/knip/config.json"
         local knip_project=""
         [ -f "knip.json" ] && knip_project="knip.json"
         [ -f "knip.jsonc" ] && knip_project="knip.jsonc"
 
-        node "$PACKAGE_ROOT/lib/merge-knip-config.js" "$knip_base" $knip_project > "$tmp_dir/knip-merged.json"
+        node "$PACKAGE_ROOT/src/cli/merge-knip-config.js" "$knip_base" $knip_project > "$tmp_dir/knip-merged.json"
         "$KNIP" --no-progress --no-config-hints --config "$tmp_dir/knip-merged.json" > "$tmp_dir/knip.log" 2>&1 &
         knip_pid=$!
     fi
@@ -482,14 +482,14 @@ run_checks() {
     local gitignore_applicable=false
     if [ -f ".gitignore" ]; then
         gitignore_applicable=true
-    elif [ "$FIX_MODE" = false ] && node "$PACKAGE_ROOT/lib/check-gitignore.js" --has-ancestor > /dev/null 2>&1; then
+    elif [ "$FIX_MODE" = false ] && node "$PACKAGE_ROOT/src/cli/check-gitignore.js" --has-ancestor > /dev/null 2>&1; then
         gitignore_applicable=true
     fi
     if [ "$gitignore_applicable" = true ]; then
         if [ "$FIX_MODE" = true ]; then
-            node "$PACKAGE_ROOT/lib/check-gitignore.js" --fix > "$tmp_dir/gitignore.log" 2>&1 &
+            node "$PACKAGE_ROOT/src/cli/check-gitignore.js" --fix > "$tmp_dir/gitignore.log" 2>&1 &
         else
-            node "$PACKAGE_ROOT/lib/check-gitignore.js" > "$tmp_dir/gitignore.log" 2>&1 &
+            node "$PACKAGE_ROOT/src/cli/check-gitignore.js" > "$tmp_dir/gitignore.log" 2>&1 &
         fi
         gitignore_pid=$!
     fi
@@ -505,7 +505,7 @@ run_checks() {
     local docs_layout_pid=""
     local docs_layout_status=0
     if [ "$FIX_MODE" = false ] && [ -e ".git" ]; then
-        node "$PACKAGE_ROOT/lib/check-docs.js" > "$tmp_dir/docs-layout.log" 2>&1 &
+        node "$PACKAGE_ROOT/src/cli/check-docs.js" > "$tmp_dir/docs-layout.log" 2>&1 &
         docs_layout_pid=$!
     fi
 
@@ -517,7 +517,7 @@ run_checks() {
     local suppressions_status=0
     local suppressions_fix=()
     [ "$FIX_MODE" = true ] && suppressions_fix=(--fix)
-    node "$PACKAGE_ROOT/lib/check-suppressions.js" . --oxlint "$OXLINT" \
+    node "$PACKAGE_ROOT/src/cli/check-suppressions.js" . --oxlint "$OXLINT" \
         "${suppressions_fix[@]}" "${LINT_ARGS[@]}" > "$tmp_dir/suppressions.log" 2>&1 &
     suppressions_pid=$!
 
@@ -528,7 +528,7 @@ run_checks() {
     local markdown_pid=""
     local markdown_status=0
     if [ "$FIX_MODE" = false ]; then
-        node "$PACKAGE_ROOT/lib/check-markdown.js" . "${LINT_ARGS[@]}" \
+        node "$PACKAGE_ROOT/src/cli/check-markdown.js" . "${LINT_ARGS[@]}" \
             > "$tmp_dir/markdown.log" 2>&1 &
         markdown_pid=$!
     fi
@@ -539,7 +539,7 @@ run_checks() {
     local names_pid=""
     local names_status=0
     if [ "$FIX_MODE" = false ]; then
-        node "$PACKAGE_ROOT/lib/check-names.js" . "${LINT_ARGS[@]}" > "$tmp_dir/names.log" 2>&1 &
+        node "$PACKAGE_ROOT/src/cli/check-names.js" . "${LINT_ARGS[@]}" > "$tmp_dir/names.log" 2>&1 &
         names_pid=$!
     fi
 
@@ -550,7 +550,7 @@ run_checks() {
     local secrets_pid=""
     local secrets_status=0
     if [ "$FIX_MODE" = false ]; then
-        node "$PACKAGE_ROOT/lib/check-secrets.js" . "${LINT_ARGS[@]}" \
+        node "$PACKAGE_ROOT/src/cli/check-secrets.js" . "${LINT_ARGS[@]}" \
             > "$tmp_dir/secrets.log" 2>&1 &
         secrets_pid=$!
     fi
@@ -592,7 +592,7 @@ run_checks() {
     if [ "$FIX_MODE" = false ] &&
         { [ -f ".dependency-cruiser.cjs" ] || [ -f ".dependency-cruiser.js" ] ||
             [ -f ".dependency-cruiser.mjs" ]; }; then
-        node "$PACKAGE_ROOT/lib/check-architecture.js" . --depcruise "$DEPCRUISE" \
+        node "$PACKAGE_ROOT/src/cli/check-architecture.js" . --depcruise "$DEPCRUISE" \
             > "$tmp_dir/architecture.log" 2>&1 &
         architecture_pid=$!
     fi
@@ -607,7 +607,7 @@ run_checks() {
         local publish_index=0
         for publish_root in "." "${WORKSPACE_MEMBERS[@]}"; do
             project_is_publishable "$publish_root" || continue
-            node "$PACKAGE_ROOT/lib/check-publish.js" "$publish_root" \
+            node "$PACKAGE_ROOT/src/cli/check-publish.js" "$publish_root" \
                 --publint "$PUBLINT" --attw "$ATTW" \
                 > "$tmp_dir/publish-$publish_index.log" 2>&1 &
             publish_pids+=($!)
@@ -649,7 +649,7 @@ run_checks() {
                 printf 'the member pass needs @jterrazz/test %s; %s resolves %s\n' \
                     "$CHECKER_FLOOR" \
                     "$([ "$member" = "." ] && printf 'this project' || printf '%s' "$member")" \
-                    "$(node "$PACKAGE_ROOT/lib/test-package.js" "$member" 2>/dev/null \
+                    "$(node "$PACKAGE_ROOT/src/cli/test-package.js" "$member" 2>/dev/null \
                         || printf 'none this walk reaches')" \
                     >> "$tmp_dir/checker-dormant.log"
                 continue
@@ -711,11 +711,11 @@ run_checks() {
         # judges it: the script prints oxlint's refusals on stdout and the
         # checker's — the enrolment notice among them — on stderr.
         if [ "$FIX_MODE" = true ]; then
-            node "$PACKAGE_ROOT/lib/check-baseline.js" "$tmp_dir/lint.json" . \
+            node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$tmp_dir/lint.json" . \
                 "${baseline_checker[@]}" >> "$tmp_dir/lint.log" 2>&1
             lint_status=$?
         else
-            node "$PACKAGE_ROOT/lib/check-baseline.js" "$tmp_dir/lint.json" . \
+            node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$tmp_dir/lint.json" . \
                 "${baseline_checker[@]}" > "$tmp_dir/ratchet-oxlint.log" \
                 2> "$tmp_dir/ratchet-checker.log"
             # With a file to ratchet, its verdict REPLACES the linter's exit
@@ -862,7 +862,7 @@ run_checks() {
     local drift_status=0
     if [ "$FIX_MODE" = false ] && [ -n "$OXLINT_CONFIG" ]; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} DRIFT ${NC} Deviations from the profile\n\n"
-        node "$PACKAGE_ROOT/lib/check-drift.js" . --oxlint "$OXLINT" "${LINT_ARGS[@]}"
+        node "$PACKAGE_ROOT/src/cli/check-drift.js" . --oxlint "$OXLINT" "${LINT_ARGS[@]}"
         drift_status=$?
     fi
 

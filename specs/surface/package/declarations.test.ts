@@ -15,7 +15,7 @@ import { expect, test } from 'vitest';
  */
 
 const ROOT = resolve(import.meta.dirname, '../../../src');
-const PRESETS = resolve(import.meta.dirname, '../../../presets/tsdown');
+const PRESETS = resolve(import.meta.dirname, '../../../src/presets/tsdown');
 
 /** The four importable entries, each a `.js` and the `.d.ts` written beside it. */
 const ENTRIES = ['docs', 'index', 'oxfmt', 'oxlint'] as const;
@@ -90,7 +90,7 @@ test.each(ENTRIES)('src/%s.js and its declaration carry the same exports', async
 });
 
 test.each(TSDOWN_PRESETS)(
-    'presets/tsdown/%s.js and its declaration carry the same exports',
+    'src/presets/tsdown/%s.js and its declaration carry the same exports',
     async (preset) => {
         /*
          * A bundler config is a `.ts` file in every consumer, so the preset it

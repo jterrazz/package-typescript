@@ -20,7 +20,7 @@ import { cli as oxlintCli } from '../oxlint.specification.js';
  * depends on it. `fixtures/vitest-rule-owner.config.ts` stands in for it.
  */
 
-const NODE_CONFIG = resolve(import.meta.dirname, '../../../presets/oxlint/profiles/node.js');
+const NODE_CONFIG = resolve(import.meta.dirname, '../../../src/presets/oxlint/profiles/node.js');
 const OWNER_CONFIG = resolve(import.meta.dirname, 'fixtures/vitest-rule-owner.config.ts');
 
 describe('a rule marked covered answers to whichever fragment composes it', () => {

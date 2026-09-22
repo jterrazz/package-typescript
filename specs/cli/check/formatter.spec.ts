@@ -14,7 +14,7 @@ import { cli as oxfmtCli } from '../oxfmt.specification.js';
  * our product is the PRESET, so each probe targets one style decision the preset
  * makes (quotes, semicolons, indentation), not oxfmt's overall formatting.
  */
-const CONFIG_PATH = resolve(import.meta.dirname, '../../../presets/oxfmt/index.js');
+const CONFIG_PATH = resolve(import.meta.dirname, '../../../src/presets/oxfmt/index.js');
 
 type FormatResult = Awaited<ReturnType<typeof oxfmtCli.exec>>;
 

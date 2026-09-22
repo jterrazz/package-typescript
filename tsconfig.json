@@ -1,4 +1,4 @@
 {
-    "extends": "./presets/tsconfig/node.json",
-    "include": ["specs/**/*.ts", "src/**/*", "lib/**/*.js", "lint/**/*", "presets/**/*.js"]
+    "extends": "./src/presets/tsconfig/node.json",
+    "include": ["specs/**/*.ts", "src/**/*", "lint/**/*"]
 }

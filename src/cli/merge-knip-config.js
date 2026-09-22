@@ -4,7 +4,7 @@
  * Merges the base knip config with an optional project-local knip.json,
  * then applies dynamic detection rules based on the project's package.json and file structure.
  *
- * Usage: node merge-knip-config.js <base.json> [project-knip.json]
+ * Usage: node merge-knip-config.js <preset.json> [project-knip.json]
  *
  * The project file is read as JSONC — comments and trailing commas — so an
  * ignore can carry the reason it exists. Every entry knip is told to overlook

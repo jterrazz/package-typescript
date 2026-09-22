@@ -48,11 +48,11 @@ export const PROFILES = Object.freeze([
 
 /** The profile config file a consumer's own config re-exports. */
 export function profilePath(name: string): string {
-    return resolve(REPOSITORY, 'presets/oxlint/profiles', `${name}.js`);
+    return resolve(REPOSITORY, 'src/presets/oxlint/profiles', `${name}.js`);
 }
 
 /** The formatting preset oxfmt is pointed at. */
-export const OXFMT_CONFIG = resolve(REPOSITORY, 'presets/oxfmt/index.js');
+export const OXFMT_CONFIG = resolve(REPOSITORY, 'src/presets/oxfmt/index.js');
 
 /** A disposable copy of a fixture, wired the way a consumer wires a profile. */
 export function sandbox(
@@ -86,7 +86,7 @@ export function sandbox(
     writeFileSync(
         resolve(path, 'tsconfig.json'),
         `${JSON.stringify(
-            { extends: resolve(REPOSITORY, 'presets/tsconfig', `${tsconfigPreset}.json`) },
+            { extends: resolve(REPOSITORY, 'src/presets/tsconfig', `${tsconfigPreset}.json`) },
             null,
             4,
         )}\n`,

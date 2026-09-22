@@ -337,7 +337,7 @@ The root's own folders are the same in every repository: `src/` the product's co
 | `names-skill-file`   | refused: a file under `skills/` that is not `skills/<skill>/SKILL.md` |
 | `names-root-foreign` | reported, never refused: a root folder outside the spine              |
 
-A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A root outside the spine is reported rather than refused because a package may still need one — this one ships `bin/`, `lib/` and `presets/` — and whether the spine lets a package declare its own is not decided yet. The pass prints the line on a green run, since a report nobody is shown is a report nobody reads. A dot-folder (`.github/`) is the tools', never the spine's.
+A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A root outside the spine is reported rather than refused because a package may still need one — this one ships `bin/` — and whether the spine lets a package declare its own is not decided yet. The pass prints the line on a green run, since a report nobody is shown is a report nobody reads. A dot-folder (`.github/`) is the tools', never the spine's.
 
 ### What the ratchet records
 

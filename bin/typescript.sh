@@ -80,7 +80,7 @@ run_tsdown() {
     local entries=()
     while IFS= read -r entry; do
         [ -n "$entry" ] && entries+=("$entry")
-    done < <(node "$PACKAGE_ROOT/lib/entry-points.js" "$PROJECT_ROOT")
+    done < <(node "$PACKAGE_ROOT/src/cli/entry-points.js" "$PROJECT_ROOT")
 
     if ! "$TSDOWN" --config "$CONFIG_PATH" --cwd "$PROJECT_ROOT" "${entries[@]}"; then
         printf "${RED}Error: Build failed${NC}\n"
@@ -92,11 +92,11 @@ run_tsdown() {
 
 case "$COMMAND" in
     build)
-        run_tsdown "$SCRIPT_DIR/../presets/tsdown/build.js" "Building application (ESM + types)"
+        run_tsdown "$SCRIPT_DIR/../src/presets/tsdown/build.js" "Building application (ESM + types)"
         ;;
 
     bundle)
-        run_tsdown "$SCRIPT_DIR/../presets/tsdown/bundle.js" "Bundling library (ESM + CJS + types)"
+        run_tsdown "$SCRIPT_DIR/../src/presets/tsdown/bundle.js" "Bundling library (ESM + CJS + types)"
         ;;
 
     start)
@@ -105,7 +105,7 @@ case "$COMMAND" in
         ;;
 
     dev)
-        CONFIG_PATH="$SCRIPT_DIR/../presets/tsdown/build.js"
+        CONFIG_PATH="$SCRIPT_DIR/../src/presets/tsdown/build.js"
 
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Starting dev mode...\n\n"
 
@@ -137,7 +137,7 @@ case "$COMMAND" in
         # Docs (layout) pass, reachable by a repository that has no npm project
         # to hang it on (a Go, Rust or Ansible tree wiring it into `make lint`
         # through npx). It takes the repository root and needs nothing installed.
-        exec node "$PACKAGE_ROOT/lib/check-docs.js" "${1:-$PROJECT_ROOT}"
+        exec node "$PACKAGE_ROOT/src/cli/check-docs.js" "${1:-$PROJECT_ROOT}"
         ;;
 
     doctor)
@@ -147,7 +147,7 @@ case "$COMMAND" in
         # cannot disagree with what node will load.
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Checking the toolchain...\n\n"
 
-        exec node "$PACKAGE_ROOT/lib/doctor.js" "$PROJECT_ROOT"
+        exec node "$PACKAGE_ROOT/src/cli/doctor.js" "$PROJECT_ROOT"
         ;;
 
     baseline)
@@ -176,10 +176,10 @@ case "$COMMAND" in
         # the same answer `check` reads, from the same module, so the file is
         # recorded by the checker that will later be judged against it.
         CHECKER_ARGS=()
-        CHECKER_FLOOR=$(node "$PACKAGE_ROOT/lib/test-package.js" --floor)
-        if node "$PACKAGE_ROOT/lib/test-package.js" . --at-least "$CHECKER_FLOOR" \
+        CHECKER_FLOOR=$(node "$PACKAGE_ROOT/src/cli/test-package.js" --floor)
+        if node "$PACKAGE_ROOT/src/cli/test-package.js" . --at-least "$CHECKER_FLOOR" \
             > /dev/null 2>&1; then
-            CHECKER=$(node "$PACKAGE_ROOT/lib/test-package.js" . --bin 2>/dev/null || true)
+            CHECKER=$(node "$PACKAGE_ROOT/src/cli/test-package.js" . --bin 2>/dev/null || true)
             if [ -n "$CHECKER" ]; then
                 CHECKER_REPORT=$(mktemp)
                 trap 'rm -f "$BASELINE_REPORT" "$CHECKER_REPORT"' EXIT
@@ -193,9 +193,9 @@ case "$COMMAND" in
         # has not renamed yet is recorded debt rather than a red run.
         NAMES_REPORT=$(mktemp)
         trap 'rm -f "$BASELINE_REPORT" "${CHECKER_REPORT:-}" "$NAMES_REPORT"' EXIT
-        node "$PACKAGE_ROOT/lib/check-names.js" . --format json "$@" > "$NAMES_REPORT" 2>/dev/null || true
+        node "$PACKAGE_ROOT/src/cli/check-names.js" . --format json "$@" > "$NAMES_REPORT" 2>/dev/null || true
 
-        node "$PACKAGE_ROOT/lib/check-baseline.js" "$BASELINE_REPORT" . \
+        node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$BASELINE_REPORT" . \
             "${CHECKER_ARGS[@]}" --names "$NAMES_REPORT" --write
 
         # The file is tracked, so it is the formatter's like every other tracked

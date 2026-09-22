@@ -16,8 +16,8 @@ mkdir -p "$PKG/node_modules/.bin" "$SANDBOX/node_modules/.bin"
 
 # Install the package files (scripts resolve paths relative to themselves)
 cp -R "$PACKAGE_ROOT/bin" "$PKG/bin"
-cp -R "$PACKAGE_ROOT/lib" "$PKG/lib"
-cp -R "$PACKAGE_ROOT/presets" "$PKG/presets"
+cp -R "$PACKAGE_ROOT/lint" "$PKG/lint"
+cp -R "$PACKAGE_ROOT/src" "$PKG/src"
 
 # Stub tools hoisted at the consumer root...
 for tool in tsc oxfmt knip; do

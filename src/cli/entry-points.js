@@ -6,7 +6,7 @@
  * A package with several public subpaths — `./register`, `./testing`, `./oxlint`
  * — used to need a `tsdown.config.ts` of its own to name them, which means
  * declaring tsdown as a dependency, which is the one-devDependency contract
- * broken ([Developing](../docs/02-developing.md)). The map already says what
+ * broken ([Developing](../../docs/02-developing.md)). The map already says what
  * the package publishes, so the build reads it there.
  *
  * The rule: every subpath whose target is a file under `dist/` is compiled from

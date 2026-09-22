@@ -35,45 +35,45 @@ No build step — this package ships JS directly. It dogfoods its own CLI (`npm 
 
 ```
 bin/
-├── typescript.sh          # CLI entry (build, bundle, start, dev, docs-layout, doctor, baseline, tsc, check, fix, clean)
-├── find-tsc.sh            # The TS7 Go compiler by platform — sourced by the CLI and by the check script
+├── typescript.sh             # CLI entry (build, bundle, start, dev, docs-layout, doctor, baseline, tsc, check, fix, clean)
+├── find-tsc.sh               # The TS7 Go compiler by platform — sourced by the CLI and by the check script
 └── commands/
-    └── check.sh           # Fourteen passes in parallel; each that RAN prints a header and a verdict, in one fixed order
+    └── check.sh              # Fourteen passes in parallel; each that RAN prints a header and a verdict, in one fixed order
 
-lib/check-architecture.js  # The declared layer map against the resolved graph — the Architecture gate (dependency-cruiser)
-lib/check-baseline.js      # The oxlint ratchet — counts that may fall and never rise; `typescript baseline` writes it
-lib/check-drift.js         # How far the project stands from its profile — the drift report, `--json` for a machine
-lib/check-docs.js          # The manual's shape, read off the repository's docs/ — the reader behind the Docs (layout) pass
-lib/check-gitignore.js     # The artefact convention, read off the project's .gitignore — check | --fix
-lib/check-markdown.js      # Every tracked page's coordinates and readability floors — the Markdown (prose) gate
-lib/check-names.js         # What the tree calls its own parts — the Names (tree) gate
-lib/check-publish.js       # The exports map against the tarball — the Publish gate (publint + attw)
-lib/check-secrets.js       # No committed file carries a live credential — the Secrets gate (gitleaks, else patterns)
-lib/check-suppressions.js  # Every disable directive is spelled, reasoned and live — the Suppressions gate, check | --fix
+src/cli/check-architecture.js # The declared layer map against the resolved graph — the Architecture gate (dependency-cruiser)
+src/cli/check-baseline.js     # The oxlint ratchet — counts that may fall and never rise; `typescript baseline` writes it
+src/cli/check-drift.js        # How far the project stands from its profile — the drift report, `--json` for a machine
+src/cli/check-docs.js         # The manual's shape, read off the repository's docs/ — the reader behind the Docs (layout) pass
+src/cli/check-gitignore.js    # The artefact convention, read off the project's .gitignore — check | --fix
+src/cli/check-markdown.js     # Every tracked page's coordinates and readability floors — the Markdown (prose) gate
+src/cli/check-names.js        # What the tree calls its own parts — the Names (tree) gate
+src/cli/check-publish.js      # The exports map against the tarball — the Publish gate (publint + attw)
+src/cli/check-secrets.js      # No committed file carries a live credential — the Secrets gate (gitleaks, else patterns)
+src/cli/check-suppressions.js # Every disable directive is spelled, reasoned and live — the Suppressions gate, check | --fix
 
-lib/doctor.js              # Installed tool versions against the declared ranges — `typescript doctor`
-lib/entry-points.js        # The entries a build compiles, read off the consumer's own exports map
-lib/merge-knip-config.js   # Merges knip base preset with project-local knip.json (read as JSONC)
-lib/tracked-files.js       # The one sweep every tree gate starts from — git ls-files, or a walk where there is no git
-lib/unsafe-fixers.js       # The rules `fix` must not let oxlint rewrite, as the flags that allow them for one run
-lib/workspace-members.js   # Lists the consumer's workspace members — the unit each per-package gate measures from
+src/cli/doctor.js             # Installed tool versions against the declared ranges — `typescript doctor`
+src/cli/entry-points.js       # The entries a build compiles, read off the consumer's own exports map
+src/cli/merge-knip-config.js  # Merges knip base preset with project-local knip.json (read as JSONC)
+src/cli/tracked-files.js      # The one sweep every tree gate starts from — git ls-files, or a walk where there is no git
+src/cli/unsafe-fixers.js      # The rules `fix` must not let oxlint rewrite, as the flags that allow them for one run
+src/cli/workspace-members.js  # Lists the consumer's workspace members — the unit each per-package gate measures from
 
-lint/                      # The lint manifest — every rule of every loaded plugin decided by name
-├── _contract.js           # fragment() / on() / off() / unsafeFix() — refuses an unreasoned decision, at load time
-├── compile.js             # fragment -> the plain oxlint config object; `merge()` is the exported compose()
-├── profiles.js            # Which fragments each of the seven profiles carries, and its ignore patterns
-├── catalog.js             # The catalogue, rendered into the chapter's table and its fixer list
+lint/                         # The lint manifest — every rule of every loaded plugin decided by name
+├── _contract.js              # fragment() / on() / off() / unsafeFix() — refuses an unreasoned decision, at load time
+├── compile.js                # fragment -> the plain oxlint config object; `merge()` is the exported compose()
+├── profiles.js               # Which fragments each of the seven profiles carries, and its ignore patterns
+├── catalog.js                # The catalogue, rendered into the chapter's table and its fixer list
 ├── language/ · react.js · next.js · astro.js · a11y.js · bundler.js · vitest.js · sorted.js · react-native.js
-└── architecture/          # hexagonal.js (the map this package ships) and layers.js (the builder)
+└── architecture/             # hexagonal.js (the map this package ships) and layers.js (the builder)
 
-presets/
+src/presets/
 ├── tsconfig/ · tsdown/ · oxlint/profiles/ (the seven, compiled) · oxfmt/ · knip/ · prettier/ (.astro only)
-src/index.js + index.d.ts  # Package entry — exports { oxfmt, oxlint } profiles (JS-shipped, no build)
-src/oxlint.js · oxfmt.js   # The tool-facing entries — the profiles, compose(), layers(), each tool's defineConfig
-src/docs.js + docs.d.ts    # The manual's rules, pure — auditDocs(tree), exported at ./docs for a second reader
-docs/                      # The corpus: numbered chapters and decisions/
-skills/                    # The Claude Code skill — one hand-written SKILL.md
-specs/                     # Product specifications (@jterrazz/test) — the shape is docs/03-testing.md
+src/index.js + index.d.ts     # Package entry — exports { oxfmt, oxlint } profiles (JS-shipped, no build)
+src/oxlint.js · oxfmt.js      # The tool-facing entries — the profiles, compose(), layers(), each tool's defineConfig
+src/docs.js + docs.d.ts       # The manual's rules, pure — auditDocs(tree), exported at ./docs for a second reader
+docs/                         # The corpus: numbered chapters and decisions/
+skills/                       # The Claude Code skill — one hand-written SKILL.md
+specs/                        # Product specifications (@jterrazz/test) — the shape is docs/03-testing.md
 ```
 
 ## Commands

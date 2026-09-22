@@ -1,3 +1,3 @@
 {
-    "extends": "../../../../../presets/tsconfig/react.json"
+    "extends": "../../../../../src/presets/tsconfig/react.json"
 }

@@ -1,7 +1,7 @@
 import { defineConfig } from 'oxlint';
 
-import { profile } from '../../../lint/compile.js';
-import { PROFILES } from '../../../lint/profiles.js';
+import { profile } from '../../../../lint/compile.js';
+import { PROFILES } from '../../../../lint/profiles.js';
 
 /*
  * A published package: the node rulebook, unchanged. What a library adds is

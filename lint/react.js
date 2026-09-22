@@ -141,7 +141,7 @@ export default fragment({
             kind: 'convention',
         }),
         'react/react-in-jsx-scope': off({
-            by: 'presets/tsconfig/next.json — the automatic JSX runtime (jsx: react-jsx) imports it',
+            by: 'src/presets/tsconfig/next.json — the automatic JSX runtime (jsx: react-jsx) imports it',
             kind: 'covered',
         }),
 

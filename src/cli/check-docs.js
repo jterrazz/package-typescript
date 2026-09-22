@@ -22,7 +22,7 @@
  * place the workspace shows through is the `04-operating.md` presence test,
  * whose Dockerfile and `.infrastructure/` clauses are read at the root AND at
  * every workspace member's root — a monorepo deploys from a member as readily
- * as from its root ([Architecture](../docs/01-architecture.md), "The unit is the
+ * as from its root ([Architecture](../../docs/01-architecture.md), "The unit is the
  * workspace package").
  * The publishable clause stays on the ROOT manifest: a private root that holds
  * a publishable member is a question for its owner, not a verdict for a gate.
@@ -32,7 +32,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { auditDocs, HEAD_LINES } from '../src/docs.js';
+import { auditDocs, HEAD_LINES } from '../docs.js';
 import { workspaceMembers } from './workspace-members.js';
 
 /** Every markdown link target of a page, in the order the page carries them. */

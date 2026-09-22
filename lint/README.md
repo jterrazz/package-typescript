@@ -1,6 +1,6 @@
 # `lint/` — the manifest
 
-One nature lives here: a DECISION about a lint rule. Never a config object, never a path, never a tool invocation — those are `presets/`'s and `bin/`'s. What the decisions mean, and the four laws they answer to, is [Lint presets](../docs/07-lint-presets.md); this page only says where each thing is.
+One nature lives here: a DECISION about a lint rule. Never a config object, never a path, never a tool invocation — those are `src/presets/`'s and `bin/`'s. What the decisions mean, and the four laws they answer to, is [Lint presets](../docs/07-lint-presets.md); this page only says where each thing is.
 
 | File                                                                               | Holds                                                                                                                                                                                                      |
 | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

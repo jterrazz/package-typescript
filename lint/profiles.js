@@ -21,7 +21,7 @@ import vitest from './vitest.js';
  * no profile sets a core rule to `off`
  * ([Lint presets](../docs/07-lint-presets.md)).
  *
- * `presets/oxlint/profiles/<name>.js` is this table compiled; nothing else
+ * `src/presets/oxlint/profiles/<name>.js` is this table compiled; nothing else
  * decides what a profile holds.
  */
 

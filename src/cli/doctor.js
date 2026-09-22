@@ -36,7 +36,7 @@ import process, { argv, cwd, exit, stdout } from 'node:process';
 import { workspaceMembers } from './workspace-members.js';
 
 const require = createRequire(import.meta.url);
-const PACKAGE_ROOT = resolve(import.meta.dirname, '..');
+const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 
 /** A manifest off the disk. Every version this file reports is read this way. */
 function manifestAt(path) {

@@ -13,9 +13,7 @@
     "files": [
         "bin",
         "docs",
-        "lib",
         "lint",
-        "presets",
         "src"
     ],
     "type": "module",
@@ -38,25 +36,25 @@
             "types": "./src/oxlint.d.ts",
             "default": "./src/oxlint.js"
         },
-        "./tsconfig/*": "./presets/tsconfig/*.json",
-        "./tsconfig/*.json": "./presets/tsconfig/*.json",
+        "./tsconfig/*": "./src/presets/tsconfig/*.json",
+        "./tsconfig/*.json": "./src/presets/tsconfig/*.json",
         "./tsdown/*": {
-            "types": "./presets/tsdown/*.d.ts",
-            "default": "./presets/tsdown/*.js"
+            "types": "./src/presets/tsdown/*.d.ts",
+            "default": "./src/presets/tsdown/*.js"
         },
         "./tsdown/*.js": {
-            "types": "./presets/tsdown/*.d.ts",
-            "default": "./presets/tsdown/*.js"
+            "types": "./src/presets/tsdown/*.d.ts",
+            "default": "./src/presets/tsdown/*.js"
         },
-        "./presets/tsconfig/*": "./presets/tsconfig/*.json",
-        "./presets/tsconfig/*.json": "./presets/tsconfig/*.json",
+        "./presets/tsconfig/*": "./src/presets/tsconfig/*.json",
+        "./presets/tsconfig/*.json": "./src/presets/tsconfig/*.json",
         "./presets/tsdown/*": {
-            "types": "./presets/tsdown/*.d.ts",
-            "default": "./presets/tsdown/*.js"
+            "types": "./src/presets/tsdown/*.d.ts",
+            "default": "./src/presets/tsdown/*.js"
         },
         "./presets/tsdown/*.js": {
-            "types": "./presets/tsdown/*.d.ts",
-            "default": "./presets/tsdown/*.js"
+            "types": "./src/presets/tsdown/*.d.ts",
+            "default": "./src/presets/tsdown/*.js"
         }
     },
     "publishConfig": {

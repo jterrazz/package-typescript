@@ -4,27 +4,27 @@ One devDependency holds a project's whole toolchain, and this chapter says what 
 
 The package is five layers that never mix: a shell CLI that orchestrates processes, node gates that answer one question each, the rulebook every lint decision is taken in, config presets a consumer's own files extend, and an importable surface for what code has to reach directly.
 
-| Layer      | Holds                                                                   | Reached by                              |
-| ---------- | ----------------------------------------------------------------------- | --------------------------------------- |
-| `bin/`     | `typescript.sh` and its commands — the orchestration, in bash           | the `typescript` binary                 |
-| `lib/`     | one node script per gate that needs more than a process spawn           | `bin/`, and nothing else                |
-| `lint/`    | the lint manifest — every rule decided by name, and the compiler for it | `presets/oxlint/`, and `src/oxlint.js`  |
-| `presets/` | tsconfig, tsdown, oxlint, oxfmt and knip configurations                 | a consumer's config files, by `extends` |
-| `src/`     | the importable entries — the lint presets, and the manual's rule engine | a consumer's `import`                   |
+| Layer          | Holds                                                                   | Reached by                                 |
+| -------------- | ----------------------------------------------------------------------- | ------------------------------------------ |
+| `bin/`         | `typescript.sh` and its commands — the orchestration, in bash           | the `typescript` binary                    |
+| `src/cli/`     | one node script per gate that needs more than a process spawn           | `bin/`, and nothing else                   |
+| `lint/`        | the lint manifest — every rule decided by name, and the compiler for it | `src/presets/oxlint/`, and `src/oxlint.js` |
+| `src/presets/` | tsconfig, tsdown, oxlint, oxfmt and knip configurations                 | a consumer's config files, by `extends`    |
+| `src/`         | the importable entries — the lint presets, and the manual's rule engine | a consumer's `import`                      |
 
-Only `src/` and `lint/` of these are folders of the repository spine every root carries ([Repo structure](08-repo-structure.md)). `bin/`, `lib/` and `presets/` are product code outside it, and this package's own `check` reports all three under the Names (tree) pass rather than moving them: whether a package may declare roots of its own is not decided yet.
+The code the package ships sits under `src/`, the one spine folder that holds product code ([Repo structure](08-repo-structure.md)); `lint/` is the spine's too. `bin/` is the one root beside them, and it is npm's: a package's `bin` entry is where a registry install links the command from.
 
 ## The rulebook layer
 
 `lint/` is a manifest, not a config: one fragment per plugin, stating a decision per rule, and `lint/_contract.js` refusing at load time a fragment that breaks either invariant — a level is `error` or `off`, and an `off` carries one of five recorded reasons.
 
-Three steps and nothing between them. `lint/profiles.js` says which fragments each profile carries; `lint/compile.js` turns a fragment into the plain oxlint config object oxlint itself reads, and merges those objects; `presets/oxlint/profiles/<name>.js` is that table compiled, and it is what a consumer's `extends` names. The rule decisions are [Lint presets](07-lint-presets.md)'s, catalogued there from the same manifest.
+Three steps and nothing between them. `lint/profiles.js` says which fragments each profile carries; `lint/compile.js` turns a fragment into the plain oxlint config object oxlint itself reads, and merges those objects; `src/presets/oxlint/profiles/<name>.js` is that table compiled, and it is what a consumer's `extends` names. The rule decisions are [Lint presets](07-lint-presets.md)'s, catalogued there from the same manifest.
 
 ## No build step
 
-This package ships JavaScript directly: what is committed is what is published (`files` names `bin`, `docs`, `lib`, `lint`, `presets`, `src`). `npm run build` is a comment, and the `src/*.d.ts` files are hand-written beside their `.js`.
+This package ships JavaScript directly: what is committed is what is published (`files` names `bin`, `docs`, `lint`, `src`). `npm run build` is a comment, and the `src/*.d.ts` files are hand-written beside their `.js`.
 
-That is a deliberate exception to what the toolchain asks of everyone else, and it buys two things. A toolchain that had to build itself would need a second toolchain to do it; and a consumer reading `lib/check-gitignore.js` in its own `node_modules` reads the source, not a bundle.
+That is a deliberate exception to what the toolchain asks of everyone else, and it buys two things. A toolchain that had to build itself would need a second toolchain to do it; and a consumer reading `src/cli/check-gitignore.js` in its own `node_modules` reads the source, not a bundle.
 
 ## Why the CLI is bash
 
@@ -59,7 +59,7 @@ The ordinary `typescript` dependency stays on ^6 because two consumers need the 
 
 ## The unit is the workspace package
 
-Every per-package gate measures from the nearest `package.json`, never from the repository: a workspace root runs those gates once per member, and a single-package project is the one run it always was. `lib/workspace-members.js` answers what the members are, and every caller asks it rather than guessing.
+Every per-package gate measures from the nearest `package.json`, never from the repository: a workspace root runs those gates once per member, and a single-package project is the one run it always was. `src/cli/workspace-members.js` answers what the members are, and every caller asks it rather than guessing.
 
 The one gate that measures from the repository instead is the manual's, because a manual answers for a whole tree ([Quality checks](06-quality-checks.md)).
 
