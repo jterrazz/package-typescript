@@ -6,7 +6,7 @@ runs:
       stdout: |4
            TYPESCRIPT  Recording the oxlint baseline...
 
-          oxlint.baseline.json written — 1 diagnostic(s) across 1 rule(s)
+          typescript.baseline.json written — 1 diagnostic(s) across 1 rule(s)
     - command: check
       exit: 0
       stdout: |4

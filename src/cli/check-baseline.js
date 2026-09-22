@@ -5,9 +5,9 @@
  *
  * A project adopting a stricter rulebook has two honest options — burn every
  * diagnostic down before the first green run, or record where it stands and
- * refuse to go backwards. `oxlint.baseline.json` is the second: `{ "<rule>":
- * <count> }`, tracked, and read by the oxlint pass instead of the raw exit
- * code. Without the file a single diagnostic fails, exactly as before.
+ * refuse to go backwards. `typescript.baseline.json` is the second: `{
+ * "<rule>": <count> }`, tracked, and read by the oxlint pass instead of the raw
+ * exit code. Without the file every diagnostic this package owns is a failure.
  *
  * Three things fail a run that has one:
  *
@@ -18,62 +18,46 @@
  * The third is what makes the file shrink. Without it a baseline records a debt
  * that was paid years ago and nothing ever says so.
  *
- * One file, two reporters. `@jterrazz/test`'s conventions checker judges the
- * same tree from the other side — how a spec is written rather than what the
- * code does — and a project adopting a stricter version of THAT rulebook needs
- * the same ratchet for the same reason. Its `--format json` diagnostics are
- * merged before the counting, under keys its own `jterrazz-check(<id>)` codes
- * namespace (`jterrazz-check/<id>`), so one flat file records both and neither
- * reporter can be recorded twice. Severity is not read: a finding a release
- * ships at `warn` is exactly the debt a ratchet exists to hold down.
+ * The file holds this package's rules and nothing else. oxlint's JSON report
+ * also carries the `jterrazz(*)` rules a consumer composes in from
+ * `@jterrazz/test`'s `testing` fragment; those, and the conventions checker's
+ * `jterrazz-check/*` findings, are `test.baseline.json`'s — that package
+ * records and judges them. So a diagnostic whose plugin is `jterrazz` is set
+ * aside before the counting, and an entry under either of that package's
+ * namespaces in THIS file is refused as misplaced: one finding, one file, one
+ * judge.
  *
- * A run made with no checker report — the installed `@jterrazz/test` is below
- * the release that answers `--format json`, or there is none — judges the
- * linter's entries alone. The recorded `jterrazz-check/*` entries are set aside
- * rather than read as debts that reached zero: nothing measured them, and the
- * third refusal below would otherwise delete a file the next install needs.
- *
- * A checker report given against a file that holds NO `jterrazz-check/*` entry
- * yet is a second reporter joining an oxlint-only file — the upgrade, not new
- * debt. The ratchet still fails it (a green gate that lies is worse), but
- * names the gesture in ONE line rather than refusing every finding by rule:
- * the per-rule refusals return once `typescript baseline` has recorded at
- * least one `jterrazz-check/*` entry. The oxlint side is judged exactly as
- * before either way.
- *
- * The two reporters' breaches print on two streams, so each is attributed to
- * the pass that judges it: oxlint's on stdout, the checker's — the per-rule
- * refusals and the one-line upgrade notice alike — on stderr.
- *
- * A third reporter is recorded here and judged elsewhere: the Names (tree)
+ * A second reporter is recorded here and judged elsewhere: the Names (tree)
  * pass's findings enter the file under `names/<rule>` when `--names <json>`
  * is given to `--write`, and that pass reads its own entries back. So a
  * judging run sets every `names/*` entry aside — this is not the judge of it.
  *
- * Usage: node check-baseline.js <oxlint-json> [root] [--checker <json>] [--names <json>] [--write]
+ * Usage: node check-baseline.js <oxlint-json> [root] [--names <json>] [--write]
+ *                               [--linter-exit <code>]
  *
  * `--write` rewrites the file from the current counts — that is `typescript
  * baseline`, a command of its own because it RECORDS rather than checks or
- * repairs. Exit code: 0 when the ratchet holds, 1 otherwise.
+ * repairs. `--linter-exit` is the exit code of the human run beside the JSON
+ * one: a linter that failed with no diagnostic at all failed for a reason no
+ * count can forgive (a config it could not load), and the judge says so.
+ * Exit code: 0 when the ratchet holds, 1 otherwise.
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { argv, exit, stderr, stdout } from 'node:process';
+import { argv, exit, stdout } from 'node:process';
 
 /** The file, at the project root, tracked beside the config it ratchets. */
-export const BASELINE = 'oxlint.baseline.json';
+export const BASELINE = 'typescript.baseline.json';
 
-/** The namespace the conventions checker's ids take in the file. */
-const CHECKER_NAMESPACE = 'jterrazz-check/';
+/** The file `@jterrazz/test` records its own rules in — named here only to send an entry there. */
+const TEST_BASELINE = 'test.baseline.json';
+
+/** The namespaces `@jterrazz/test` owns: its oxlint plugin's rules and its checker's ids. */
+const TEST_NAMESPACES = ['jterrazz/', 'jterrazz-check/'];
 
 /** The namespace the Names (tree) pass's rules take in the file — that pass judges them. */
 const NAMES_NAMESPACE = 'names/';
-
-/** A judge() line names its rule first, so the namespace prefix is enough. */
-function isCheckerReason(reason) {
-    return reason.startsWith(CHECKER_NAMESPACE);
-}
 
 /** `eslint(no-debugger)` is how oxlint's JSON spells `eslint/no-debugger`. */
 function ruleOf(code) {
@@ -82,11 +66,14 @@ function ruleOf(code) {
     return match === null ? (code ?? 'unknown') : `${match.groups.plugin}/${match.groups.rule}`;
 }
 
+/** Whether a rule key is `@jterrazz/test`'s to record and judge. */
+export function isTestOwned(rule) {
+    return TEST_NAMESPACES.some((namespace) => rule.startsWith(namespace));
+}
+
 /**
- * The diagnostics a report carries, whichever reporter wrote it. oxlint hands
- * back an object with a `diagnostics` array; the conventions checker's
- * `--format json` is read in both shapes it may take, so the merge does not
- * depend on one of them staying fixed.
+ * The diagnostics a report carries. oxlint hands back an object with a
+ * `diagnostics` array; the Names pass's `--format json` takes the same shape.
  */
 export function diagnosticsOf(report) {
     if (Array.isArray(report)) {
@@ -96,13 +83,15 @@ export function diagnosticsOf(report) {
     return Array.isArray(report?.diagnostics) ? report.diagnostics : [];
 }
 
-/** How many diagnostics each rule accounts for, across every report given. */
+/** How many diagnostics each rule THIS package owns accounts for, across every report given. */
 export function countsOf(...reports) {
     const counts = {};
     for (const report of reports) {
         for (const diagnostic of diagnosticsOf(report)) {
             const rule = ruleOf(diagnostic.code);
-            counts[rule] = (counts[rule] ?? 0) + 1;
+            if (!isTestOwned(rule)) {
+                counts[rule] = (counts[rule] ?? 0) + 1;
+            }
         }
     }
 
@@ -139,7 +128,11 @@ export function judge(counts, baseline) {
     }
 
     for (const rule of Object.keys(baseline).toSorted()) {
-        if ((counts[rule] ?? 0) === 0) {
+        if (isTestOwned(rule)) {
+            broken.push(
+                `${rule} is @jterrazz/test's rule — its entry belongs in ${TEST_BASELINE}, which that package records and judges`,
+            );
+        } else if ((counts[rule] ?? 0) === 0) {
             broken.push(`${rule} is at zero — the ratchet moved, delete its entry`);
         }
     }
@@ -166,9 +159,9 @@ function valueOf(flag) {
 /* Imported for the ratchet's reading, run for the gate — never both at once. */
 if (import.meta.main) {
     const isWrite = argv.includes('--write');
-    const checkerPath = valueOf('--checker');
     const namesPath = valueOf('--names');
-    const flagValues = new Set([checkerPath, namesPath].filter((value) => value !== undefined));
+    const linterExit = valueOf('--linter-exit');
+    const flagValues = new Set([namesPath, linterExit].filter((value) => value !== undefined));
     const positional = argv
         .slice(2)
         .filter((argument) => !argument.startsWith('--') && !flagValues.has(argument));
@@ -185,23 +178,6 @@ if (import.meta.main) {
         exit(1);
     }
 
-    /*
-     * The checker's report is optional and its absence is not a failure: the
-     * flag is passed only where the installed @jterrazz/test answers
-     * `--format json`, and a project on an older one keeps an oxlint-only file.
-     */
-    let checkerReport = [];
-    if (checkerPath !== undefined) {
-        try {
-            checkerReport = JSON.parse(readFileSync(checkerPath, 'utf8'));
-        } catch {
-            stdout.write(
-                `the conventions checker wrote no JSON report at ${checkerPath} — the baseline cannot be read\n`,
-            );
-            exit(1);
-        }
-    }
-
     /* Recorded only: the Names (tree) pass judges its own entries. */
     let namesReport = [];
     if (isWrite && namesPath !== undefined) {
@@ -212,7 +188,7 @@ if (import.meta.main) {
         }
     }
 
-    const counts = countsOf(report, checkerReport, namesReport);
+    const counts = countsOf(report, namesReport);
 
     if (isWrite) {
         const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
@@ -223,26 +199,19 @@ if (import.meta.main) {
         exit(0);
     }
 
-    const whole = readBaseline(root);
-    const recorded =
-        whole === null
-            ? null
-            : Object.fromEntries(
-                  Object.entries(whole).filter(([rule]) => !rule.startsWith(NAMES_NAMESPACE)),
-              );
-
     /*
-     * Nobody measured the checker's side of the file on this run, so nobody
-     * gets to say its debts are paid.
+     * A linter that failed and reported nothing failed on something no
+     * diagnostic carries; setting test-owned findings aside must not turn
+     * that into a green pass.
      */
-    const baseline =
-        recorded === null || checkerPath !== undefined
-            ? recorded
-            : Object.fromEntries(
-                  Object.entries(recorded).filter(([rule]) => !rule.startsWith(CHECKER_NAMESPACE)),
-              );
+    if (linterExit !== undefined && linterExit !== '0' && diagnosticsOf(report).length === 0) {
+        stdout.write(`oxlint exited ${linterExit} with no diagnostic — its own output says why\n`);
+        exit(1);
+    }
 
-    if (baseline === null) {
+    const whole = readBaseline(root);
+
+    if (whole === null) {
         const rules = Object.keys(counts).toSorted();
         for (const rule of rules) {
             stdout.write(
@@ -257,54 +226,17 @@ if (import.meta.main) {
         exit(rules.length > 0 ? 1 : 0);
     }
 
-    /*
-     * A checker report against a file the checker never entered yet is an
-     * upgrade, not a debt list: refusing it rule by rule would print, on a
-     * first install, exactly as many refusals as the checker has findings —
-     * every one of them the same gesture ('typescript baseline') said once.
-     */
-    const enrolling =
-        checkerPath !== undefined &&
-        !Object.keys(baseline).some((rule) => rule.startsWith(CHECKER_NAMESPACE));
+    const baseline = Object.fromEntries(
+        Object.entries(whole).filter(([rule]) => !rule.startsWith(NAMES_NAMESPACE)),
+    );
+    const broken = judge(counts, baseline);
 
-    let oxlintBroken;
-    let checkerBroken;
-    let enrolNotice;
-
-    if (enrolling) {
-        const findings = diagnosticsOf(checkerReport).length;
-        oxlintBroken = judge(countsOf(report), baseline);
-        checkerBroken = [];
-        enrolNotice =
-            findings > 0
-                ? `${BASELINE} records one reporter — run 'typescript baseline' once to enrol @jterrazz/test's ${findings} finding(s)`
-                : undefined;
-    } else {
-        const broken = judge(counts, baseline);
-        oxlintBroken = broken.filter((reason) => !isCheckerReason(reason));
-        checkerBroken = broken.filter((reason) => isCheckerReason(reason));
-        enrolNotice = undefined;
-    }
-
-    for (const reason of oxlintBroken) {
+    for (const reason of broken) {
         stdout.write(`baseline-ratchet  ${BASELINE}  ${reason}\n`);
     }
-    if (oxlintBroken.length > 0) {
+    if (broken.length > 0) {
         stdout.write("Run 'typescript baseline' to record where the project actually stands.\n");
     }
 
-    for (const reason of checkerBroken) {
-        stderr.write(`baseline-ratchet  ${BASELINE}  ${reason}\n`);
-    }
-    if (checkerBroken.length > 0) {
-        stderr.write("Run 'typescript baseline' to record where the project actually stands.\n");
-    }
-    if (enrolNotice !== undefined) {
-        stderr.write(`${enrolNotice}\n`);
-    }
-
-    const brokenTotal =
-        oxlintBroken.length + checkerBroken.length + (enrolNotice === undefined ? 0 : 1);
-
-    exit(brokenTotal > 0 ? 1 : 0);
+    exit(broken.length > 0 ? 1 : 0);
 }

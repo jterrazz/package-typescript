@@ -26,8 +26,8 @@
  * Prints the resolved version — or, with `--bin`, the absolute path of the
  * checker entry the install declares. Exit code: 0 when it resolves — and,
  * with `--at-least`, when it is that version or newer — 1 otherwise. `--floor`
- * prints the release the checker's own flags arrive in, so the callers that
- * gate on it read one number rather than each keeping a copy.
+ * prints the release the checker's `--member` flag arrives in, so a caller
+ * that gates on it reads one number rather than keeping a copy.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -43,9 +43,9 @@ const PACKAGE = '@jterrazz/test';
 const CHECKER_BIN = 'jterrazz-test-check';
 
 /**
- * The release that answers the flags `typescript check` and `typescript
- * baseline` call it with — `--member` and `--format json`. Below it both are
- * skipped, and the gates say so rather than pretending they ran.
+ * The release that answers the flag `typescript check` calls it with —
+ * `--member`. Below it the member pass is skipped, and the gate says so rather
+ * than pretending it ran.
  */
 export const CHECKER_FLOOR = '15.3.0';
 

@@ -68,7 +68,9 @@ done
 
 # The ratchet's file, at the project root. Its presence is what turns the oxlint
 # pass from "no diagnostic at all" into "no diagnostic above what was recorded".
-BASELINE_FILE="oxlint.baseline.json"
+# It holds this package's rules only; `jterrazz(*)` diagnostics in the same
+# oxlint report are @jterrazz/test's, recorded and judged in its own file.
+BASELINE_FILE="typescript.baseline.json"
 
 TSC=$(find_tsc)
 OXLINT=$(find_binary oxlint)
@@ -104,8 +106,8 @@ PRETTIER_ASTRO_PLUGIN=$(cd "$PACKAGE_ROOT" && node -e 'process.stdout.write(requ
 # here only for a project that has no install of its own.
 CHECKER=$(find_project_binary jterrazz-test-check)
 
-# The release of @jterrazz/test that answers `--member` and `--format json`.
-# The number is the module's, not this script's: two commands gate on it.
+# The release of @jterrazz/test that answers `--member`. The number is the
+# module's, not this script's: the module owns the lookup it gates.
 CHECKER_FLOOR=$(node "$PACKAGE_ROOT/src/cli/test-package.js" --floor)
 
 # ── The unit is the workspace package, not the repository ────────────────────
@@ -625,8 +627,6 @@ run_checks() {
     local checker_logs=()
     local checker_status=0
     local checker_dormant=0
-    local checker_ratcheted=false
-    local checker_ratchet_broken=false
     if [ "$FIX_MODE" = false ]; then
         local checker_index=0
         while IFS= read -r specs_root; do
@@ -676,11 +676,17 @@ run_checks() {
     # each rule owes and the one gesture that records it. Reaching the ratchet
     # through `check` is what an adoption's step 4 asks for.
     #
+    # Either way the judge counts this package's rules only. A `jterrazz(*)`
+    # diagnostic fails oxlint's exit code but is @jterrazz/test's to judge,
+    # so the verdict always comes from the script once oxlint has spoken — and
+    # the script is told the linter's exit code, so a failure no diagnostic
+    # carries (an unparsed config) is never forgiven.
+    #
     # What fix mode judges is what SURVIVED the rewrite, so its machine-readable
     # run is made here, after the fixer, and in the foreground — with the unsafe
     # fixers armed again, so a directive that names one of them is used, not
     # reported unused. The fixer's own exit code is never the verdict: it ran
-    # with those rules allowed. Without a baseline the judge wants zero.
+    # with those rules allowed.
     if [ -f "$BASELINE_FILE" ] || [ "$FIX_MODE" = true ] || [ "$lint_status" -ne 0 ]; then
         if [ -n "$lint_json_pid" ]; then
             wait $lint_json_pid
@@ -688,49 +694,13 @@ run_checks() {
             "$OXLINT" --type-aware --format json "${LINT_ARGS[@]}" \
                 > "$tmp_dir/lint.json" 2>/dev/null
         fi
-        # The other reporter on the same tree. Where the installed
-        # @jterrazz/test answers `--format json`, its findings are counted
-        # under their own namespace in the same file — one ratchet, two
-        # rulebooks, and a rule at zero refused on either side.
-        local baseline_checker=()
-        if { [ -f "$BASELINE_FILE" ] || [ "$FIX_MODE" = true ]; } && member_checker .; then
-            "${CHECKER_COMMAND[@]}" --format json > "$tmp_dir/checker.json" 2>/dev/null || true
-            baseline_checker=(--checker "$tmp_dir/checker.json")
-            # Zeroing the pass below on the checker's say-so is only honest once
-            # the file actually HOLDS its findings — a baseline with none yet is
-            # not enrolled, and its debt is not the ratchet's to forgive.
-            if [ -f "$BASELINE_FILE" ] && grep -q '"jterrazz-check/' "$BASELINE_FILE"; then
-                checker_ratcheted=true
-            fi
-        fi
 
-        # In fix mode there is no Test Conventions pass to carry a checker
-        # breach (the checker itself never runs there), so both reporters
-        # still speak through the one verdict this pass already owns. In
-        # check mode each reporter's breach is attributed to the pass that
-        # judges it: the script prints oxlint's refusals on stdout and the
-        # checker's — the enrolment notice among them — on stderr.
-        if [ "$FIX_MODE" = true ]; then
-            node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$tmp_dir/lint.json" . \
-                "${baseline_checker[@]}" >> "$tmp_dir/lint.log" 2>&1
-            lint_status=$?
-        else
-            node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$tmp_dir/lint.json" . \
-                "${baseline_checker[@]}" > "$tmp_dir/ratchet-oxlint.log" \
-                2> "$tmp_dir/ratchet-checker.log"
-            # With a file to ratchet, its verdict REPLACES the linter's exit
-            # code — recorded debt is what the project is allowed. Without one
-            # the judge only ever escalates: it says which rules owe what and
-            # names the gesture, and a refusal the linter raised for a reason
-            # no diagnostic carries (an unparsed config) is not forgiven here.
-            if [ -f "$BASELINE_FILE" ]; then
-                [ -s "$tmp_dir/ratchet-oxlint.log" ] && lint_status=1 || lint_status=0
-            elif [ -s "$tmp_dir/ratchet-oxlint.log" ]; then
-                lint_status=1
-            fi
-            cat "$tmp_dir/ratchet-oxlint.log" >> "$tmp_dir/lint.log"
-            [ -s "$tmp_dir/ratchet-checker.log" ] && checker_ratchet_broken=true
-        fi
+        local linter_exit=()
+        [ "$FIX_MODE" = false ] && linter_exit=(--linter-exit "$lint_status")
+        node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$tmp_dir/lint.json" . \
+            "${linter_exit[@]}" > "$tmp_dir/ratchet.log" 2>&1
+        lint_status=$?
+        cat "$tmp_dir/ratchet.log" >> "$tmp_dir/lint.log"
     fi
 
     [ -n "$format_pid" ] && { wait $format_pid; format_status=$?; }
@@ -756,22 +726,6 @@ run_checks() {
         index=$((index + 1))
     done
 
-    # The ratchet is the verdict for BOTH reporters or for neither. The
-    # checker's findings were counted into `oxlint.baseline.json` under their
-    # own namespace, so an id that has not moved is recorded debt here exactly
-    # as it is in the oxlint pass, and refusing it here would fail one debt
-    # twice. The log still prints: debt a reader cannot see is debt nobody pays.
-    if [ "$checker_ratcheted" = true ]; then
-        checker_status=0
-    fi
-
-    # But the ratchet still has the last word: a checker id that grew, that
-    # nobody recorded, or that only now enrols, is this pass's debt to name —
-    # never the oxlint pass's, whichever way the loop above just left it.
-    if [ "$checker_ratchet_broken" = true ]; then
-        checker_status=1
-    fi
-
     local publish_failed_logs=()
     index=0
     for pid in "${publish_pids[@]}"; do
@@ -790,30 +744,18 @@ run_checks() {
     join_logs "$tmp_dir/checker.log" "${checker_failed_logs[@]}"
     join_logs "$tmp_dir/publish.log" "${publish_failed_logs[@]}"
 
-    # The checker's own ratchet breach — a grown id, one nobody recorded, or
-    # the enrolment notice — is this pass's log to carry, never the oxlint
-    # pass's; `join_logs` above rebuilds the file from the raw runs alone, so
-    # it is appended after, not folded into the block that just ran.
-    if [ "$checker_ratchet_broken" = true ] && [ -s "$tmp_dir/ratchet-checker.log" ]; then
-        cat "$tmp_dir/ratchet-checker.log" >> "$tmp_dir/checker.log"
-    fi
-
-    # Two things this pass says even when it is green, so it asks for its log
-    # the way a writer does: which findings the ratchet is holding, and which
-    # member resolves a release too old to answer `--member` — a reader left
-    # with silence would believe every member was asked.
+    # The checker's exit code is this pass's verdict, whatever it records:
+    # @jterrazz/test judges its own findings against its own file.
+    #
+    # One thing this pass says even when it is green, so it asks for its log
+    # the way a writer does: which member resolves a release too old to answer
+    # `--member` — a reader left with silence would believe every member was
+    # asked.
     local checker_write=""
-    if [ "$checker_ratcheted" = true ] && [ -s "$tmp_dir/checker.log" ]; then
-        printf '%s is this pass'"'"'s verdict too — what follows is recorded debt\n\n' \
-            "$BASELINE_FILE" | cat - "$tmp_dir/checker.log" > "$tmp_dir/checker-reported.log"
-        mv "$tmp_dir/checker-reported.log" "$tmp_dir/checker.log"
-    fi
     if [ "$checker_dormant" -gt 0 ]; then
         cat "$tmp_dir/checker-dormant.log" "$tmp_dir/checker.log" \
             > "$tmp_dir/checker-reported.log"
         mv "$tmp_dir/checker-reported.log" "$tmp_dir/checker.log"
-    fi
-    if [ "$checker_dormant" -gt 0 ] || [ "$checker_ratcheted" = true ]; then
         checker_write="writer"
     fi
 

@@ -48,7 +48,7 @@ test('passes fix and check alike on a tree whose diagnostics stay within the bas
         join(project, 'oxlint.config.ts'),
         'export default { rules: { "no-debugger": "error" } };\n',
     );
-    writeFileSync(join(project, 'oxlint.baseline.json'), '{\n  "eslint/no-debugger": 2\n}\n');
+    writeFileSync(join(project, 'typescript.baseline.json'), '{\n  "eslint/no-debugger": 2\n}\n');
 
     // When - the two gestures a developer runs back to back
     const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });

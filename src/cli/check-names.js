@@ -23,7 +23,7 @@
  *
  * One line per violation, `<rule>  <path>  <message>`. Every rule carries the
  * code `names(<rule>)`, which the ratchet records as `names/<rule>`: where
- * `oxlint.baseline.json` holds a `names/*` entry, the counts are judged against
+ * `typescript.baseline.json` holds a `names/*` entry, the counts are judged against
  * it the way the linter's are, and a held count prints nothing. `--format json`
  * is the report `typescript baseline` records from.
  *

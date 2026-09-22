@@ -154,7 +154,9 @@ case "$COMMAND" in
         # The ratchet, recorded. A command of its own because it neither checks
         # nor repairs: it writes down where the project actually stands, so the
         # oxlint pass can refuse to let that number rise. `fix --baseline` would
-        # bury a rewrite of a tracked file inside the everyday gesture.
+        # bury a rewrite of a tracked file inside the everyday gesture. It
+        # records this package's rules only: `jterrazz(*)` and the conventions
+        # checker's findings are @jterrazz/test's, in its own file.
         cd "$PROJECT_ROOT"
 
         add_tsgolint_to_path
@@ -168,40 +170,20 @@ case "$COMMAND" in
         # A non-zero exit is the whole point of the recording, not a failure.
         "$OXLINT" --type-aware --format json "$@" > "$BASELINE_REPORT" 2>/dev/null || true
 
-        # The conventions checker judges the same tree from the other side, and
-        # a project adopting a stricter version of THAT rulebook needs the same
-        # ratchet. Its findings enter the one file under their own namespace,
-        # where the installed @jterrazz/test answers `--format json`.
-        # Binary and version come from the one install this project resolves —
-        # the same answer `check` reads, from the same module, so the file is
-        # recorded by the checker that will later be judged against it.
-        CHECKER_ARGS=()
-        CHECKER_FLOOR=$(node "$PACKAGE_ROOT/src/cli/test-package.js" --floor)
-        if node "$PACKAGE_ROOT/src/cli/test-package.js" . --at-least "$CHECKER_FLOOR" \
-            > /dev/null 2>&1; then
-            CHECKER=$(node "$PACKAGE_ROOT/src/cli/test-package.js" . --bin 2>/dev/null || true)
-            if [ -n "$CHECKER" ]; then
-                CHECKER_REPORT=$(mktemp)
-                trap 'rm -f "$BASELINE_REPORT" "$CHECKER_REPORT"' EXIT
-                node "$CHECKER" --format json > "$CHECKER_REPORT" 2>/dev/null || true
-                CHECKER_ARGS=(--checker "$CHECKER_REPORT")
-            fi
-        fi
-
         # The Names (tree) pass's findings take the same file, under `names/`:
         # that pass reads its own entries back, so a construct name a project
         # has not renamed yet is recorded debt rather than a red run.
         NAMES_REPORT=$(mktemp)
-        trap 'rm -f "$BASELINE_REPORT" "${CHECKER_REPORT:-}" "$NAMES_REPORT"' EXIT
+        trap 'rm -f "$BASELINE_REPORT" "$NAMES_REPORT"' EXIT
         node "$PACKAGE_ROOT/src/cli/check-names.js" . --format json "$@" > "$NAMES_REPORT" 2>/dev/null || true
 
         node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$BASELINE_REPORT" . \
-            "${CHECKER_ARGS[@]}" --names "$NAMES_REPORT" --write
+            --names "$NAMES_REPORT" --write
 
         # The file is tracked, so it is the formatter's like every other tracked
         # file — written here, shaped by the project's own oxfmt, never both.
         OXFMT=$(find_binary oxfmt)
-        "$OXFMT" oxlint.baseline.json > /dev/null 2>&1 || true
+        "$OXFMT" typescript.baseline.json > /dev/null 2>&1 || true
         ;;
 
     tsc)
