@@ -18,17 +18,17 @@ test('reports every tool of the toolchain against the range this package declare
     // Then - the report names each tool the passes spawn, and node itself
     expect(result.exitCode).toBe(0);
     for (const tool of ['node', 'tsc (Go)', 'typescript', 'oxlint', 'oxfmt', 'knip']) {
-        expect(result.stdout.toString()).toContain(tool);
+        expect(result.stdout.text).toContain(tool);
     }
 
     // Then - the range beside each one is the range the manifest declares
     for (const name of ['knip', 'oxfmt', 'oxlint', 'oxlint-tsgolint', 'typescript'] as const) {
-        expect(result.stdout.toString()).toContain(manifest.dependencies[name]);
+        expect(result.stdout.text).toContain(manifest.dependencies[name]);
     }
-    expect(result.stdout.toString()).toContain(manifest.engines.node);
+    expect(result.stdout.text).toContain(manifest.engines.node);
 
     // Then - nothing installed here is older than what the toolchain asks for
-    expect(result.stdout.toString()).not.toContain('old');
-    expect(result.stdout.toString()).not.toContain('absent');
-    expect(result.stdout.toString()).toContain('Every tool is in range.');
+    expect(result.stdout.text).not.toContain('old');
+    expect(result.stdout.text).not.toContain('absent');
+    expect(result.stdout.text).toContain('Every tool is in range.');
 });

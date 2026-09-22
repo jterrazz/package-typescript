@@ -28,7 +28,7 @@ test('every profile installs strict and checks green', async () => {
     // Then - every consumer passed `typescript check`
     expect(result.exitCode).toBe(0);
     for (const consumer of ['astro', 'bun', 'expo', 'next', 'node', 'node-published', 'react']) {
-        expect(result.stdout.toString()).toContain(`checked: ${consumer}`);
+        expect(result.stdout.text).toContain(`checked: ${consumer}`);
     }
     // Seven strict installs, not one: the chain earns four times the e2e budget.
 }, 120_000);

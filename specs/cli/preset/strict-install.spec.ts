@@ -13,8 +13,8 @@ test('loads the documented configs where only @jterrazz/typescript is declared',
 
     // Then - the sandbox is strict, and both configs still load — a config imports the package alone
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('unreachable from the consumer root: oxlint');
-    expect(result.stdout).toContain('unreachable from the consumer root: oxfmt');
-    expect(result.stdout).toContain('loaded: oxlint.config.ts');
-    expect(result.stdout).toContain('loaded: oxfmt.config.ts');
+    expect(result.stdout.text).toContain('unreachable from the consumer root: oxlint');
+    expect(result.stdout.text).toContain('unreachable from the consumer root: oxfmt');
+    expect(result.stdout.text).toContain('loaded: oxlint.config.ts');
+    expect(result.stdout.text).toContain('loaded: oxfmt.config.ts');
 });

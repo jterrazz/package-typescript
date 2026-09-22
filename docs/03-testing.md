@@ -32,7 +32,7 @@ That shape is the THIRD DOOR the conventions name: a first-level folder under `s
 
 ```yaml
 description: what the scenario claims # the vitest title
-fixture: gitignore/old-layout/ # the ground it stands on
+fixture: ./fixtures/gitignore/old-layout/ # the ground it stands on, by its path
 runs:
     - command: check # the session, one entry per invocation
       exit: 1
@@ -85,7 +85,7 @@ The first three exceptions reach no `cli` chain at all, which is what `c18-modul
 
 ## Where a fixture lives
 
-What a spec stands on sits in four bare folders `@jterrazz/test` 17 reserves wherever a test stands on a file: `fixtures/`, `expected/`, `seeds/` and `requests/`. The shared pool is `specs/fixtures/`, and it holds only what SEVERAL domains use — `sample-app`, `incremental-app`. A fixture one domain alone reaches for lives beside that domain, in `specs/cli/<domain>/fixtures/`. Either way a spec names it by its path from the spec file, spelled in full — `fixture: ./fixtures/sample-lib/`, `fixture: ../../fixtures/sample-app/`, `.fixtureFile('./fixtures/formatter/wrong-style.ts')` — and a golden the same way, `toMatchFile('./expected/resolution.txt')`.
+What a spec stands on sits in four bare folders `@jterrazz/test` 17 reserves wherever a test stands on a file: `fixtures/`, `expected/`, `seeds/` and `requests/`. The shared pool is `specs/fixtures/`, and it holds only what SEVERAL domains use — `sample-app`, `incremental-app`. A fixture one domain alone reaches for lives beside that domain, in `specs/cli/<domain>/fixtures/`. Either way a spec names it by its path from the spec file, spelled in full, and a string is never a path: a chain hands the disk over as `file()` or `directory()` — `.fixture(file('./fixtures/formatter/wrong-style.ts'))`, `.fixture(directory('../../fixtures/sample-app/'))` — and a golden the same way, `toMatch(file('./expected/resolution.txt'))`. A document's `fixture:` takes the same paths, its trailing `/` saying which of the two it is: `fixture: ./fixtures/sample-lib/` spreads a directory. A stream compared as a value reads `result.stdout.text`.
 
 The presets this repository ships ignore those four folders wherever they sit, and its own run takes them from the presets like any consumer: no ignore of its own in the lint scripts, `oxfmt.config.ts`, `knip.json` or `tsconfig.json`.
 

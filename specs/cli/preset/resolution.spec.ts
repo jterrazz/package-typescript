@@ -1,3 +1,4 @@
+import { file } from '@jterrazz/test';
 import { expect, test } from 'vitest';
 
 import { PACKAGE_ROOT, cli as resolutionCli } from '../resolution.specification.js';
@@ -14,5 +15,5 @@ test('resolves each tool independently when npm splits them between bin dirs', a
 
     // Then - the whole check output matches: every tool is found and runs, wherever npm placed it
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toMatchFile('./expected/resolution.txt');
+    expect(result.stdout).toMatch(file('./expected/resolution.txt'));
 });
