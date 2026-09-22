@@ -33,7 +33,6 @@ runs:
            RUN  Names (tree)
 
           names-construct  lint/constants.ts  `constants.ts` names a construct of the language — name it for the subject it holds
-          names-construct  specs/setup.ts  `setup.ts` names a construct of the language — name it for the subject it holds
           names-construct  src/interfaces  `interfaces` names a construct of the language — name it for the subject it holds
           names-construct  src/order.types.ts  `order.types.ts` names a construct of the language — name it for the subject it holds
           names-construct  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds

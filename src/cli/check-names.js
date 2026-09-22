@@ -44,7 +44,6 @@ import { ignorePatternsOf, trackedFiles } from './tracked-files.js';
 const GRAB_BAG = new Set([
     'base',
     'common',
-    'core',
     'helpers',
     'lib',
     'misc',
@@ -60,7 +59,7 @@ const GRAB_BAG = new Set([
  * `helpers`, `common`, `shared`, `misc`, `lib` — are that roster's, so a name
  * is reported once.
  */
-const CONSTRUCTS = new Set(['constants', 'helper', 'interfaces', 'setup', 'type', 'types', 'util']);
+const CONSTRUCTS = new Set(['constants', 'helper', 'interfaces', 'type', 'types', 'util']);
 
 /** The construct a file names as a SUFFIX: `order.types.ts` is `types.ts` again. */
 const CONSTRUCT_SUFFIX = 'types';

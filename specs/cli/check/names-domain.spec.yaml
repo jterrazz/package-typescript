@@ -1,4 +1,4 @@
-description: passes a tree named for its domain, where a construct word is only one part of a name
+description: passes a tree named for its domain, a `core/` and a `setup.ts` among it
 fixture: ./fixtures/names/domain/
 runs:
     - command: check

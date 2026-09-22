@@ -46,7 +46,7 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 
 ## Before writing
 
-- A file is named for its subject in the domain: never `types.ts`, `utils.ts`, `constants.ts`, `setup.ts`, nor a `*.types.ts` suffix. `index.ts` is a barrel and stays.
+- A file is named for its subject in the domain: never `types.ts`, `utils.ts`, `constants.ts`, nor a `*.types.ts` suffix. `index.ts` is a barrel and stays.
 - A suppression carries its reason: `// oxlint-disable-next-line <rule> -- why`, and `@ts-expect-error` with a description.
 - Every artefact lives under `.artifacts/<tool>/`; `dist/` is the product, not an artefact.
 - A `knip.json` ignore carries a `//` reason above it — the file is read as JSONC.
