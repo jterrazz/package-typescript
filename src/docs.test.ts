@@ -105,26 +105,34 @@ test('names a map link that leaves the manual', () => {
         links: { 'docs/README.md': [...(manual().links['docs/README.md'] ?? []), '../README.md'] },
     });
 
-    // Then - the map routes to chapters, decisions/ and reference/, and nothing else
+    // Then - the map routes to chapters and decisions/, and nothing else
     expect(sentence(tree, 'docs-map-foreign-link')).toBe(
         'docs/README.md links ../README.md: the map routes to its own chapters and nothing else',
     );
 });
 
-test('lets the map route to decisions/ and reference/', () => {
-    // Given - the two folders a map may point at
+test('lets the map route to decisions/', () => {
+    // Given - the one folder a map may point at
+    const tree = manual({
+        links: { 'docs/README.md': [...(manual().links['docs/README.md'] ?? []), 'decisions/'] },
+    });
+
+    // Then - it is not foreign
+    expect(rules(tree)).toStrictEqual([]);
+});
+
+test('names a map link into a generated reference', () => {
+    // Given - a map routing to an API projection
     const tree = manual({
         links: {
-            'docs/README.md': [
-                ...(manual().links['docs/README.md'] ?? []),
-                'decisions/',
-                'reference/index.md',
-            ],
+            'docs/README.md': [...(manual().links['docs/README.md'] ?? []), 'reference/index.md'],
         },
     });
 
-    // Then - neither is foreign
-    expect(rules(tree)).toStrictEqual([]);
+    // Then - the map routes to its own chapters and nothing else
+    expect(sentence(tree, 'docs-map-foreign-link')).toBe(
+        'docs/README.md links reference/index.md: the map routes to its own chapters and nothing else',
+    );
 });
 
 test('names a chapter that is not NN-kebab.md', () => {
@@ -272,13 +280,13 @@ test('names a chapter that is a journal, not a subject', () => {
     );
 });
 
-test('names a subfolder that is none of the three', () => {
+test('names a subfolder that is none of the two', () => {
     // Given - a folder of dated QA passes under docs/
     const tree = manual({ files: [...manual().files, 'docs/qa/', 'docs/qa/2026-01.md'] });
 
-    // Then - the three are named
+    // Then - the two are named
     expect(sentence(tree, 'docs-foreign-folder')).toBe(
-        'docs/qa/ is not one of decisions/, reference/, _assets/',
+        'docs/qa/ is not one of decisions/, _assets/',
     );
 });
 
@@ -554,21 +562,8 @@ test('names a decisions folder with no mold', () => {
     );
 });
 
-test('names a reference page carrying no generation marker', () => {
-    // Given - a hand-authored page inside the projection
-    const tree = manual({
-        files: [...manual().files, 'docs/reference/', 'docs/reference/index.md'],
-        heads: { 'docs/reference/index.md': ['# API'] },
-    });
-
-    // Then - reference/ is a projection, never authored
-    expect(sentence(tree, 'docs-reference-unstamped')).toBe(
-        'docs/reference/index.md carries no GENERATED marker — reference/ is a projection, never authored',
-    );
-});
-
-test('passes a stamped reference page', () => {
-    // Given - the marker the docs compiler writes on its first line
+test('names a generated reference, stamped or not', () => {
+    // Given - the projection a docs compiler wrote, with its marker
     const tree = manual({
         files: [...manual().files, 'docs/reference/', 'docs/reference/index.md'],
         heads: {
@@ -576,8 +571,11 @@ test('passes a stamped reference page', () => {
         },
     });
 
-    // Then - nothing to say
-    expect(rules(tree)).toStrictEqual([]);
+    // Then - the API is the types, and the folder is refused once, by its own rule
+    expect(rules(tree)).toStrictEqual(['docs-reference-generated']);
+    expect(sentence(tree, 'docs-reference-generated')).toBe(
+        'docs/reference/ is a generated API reference — the API is the types, and the manual holds no copy of them',
+    );
 });
 
 test('names a repository whose brief does not route to the manual', () => {

@@ -38,6 +38,7 @@ runs:
 
            RUN  Names (tree)
 
+          names-construct  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds
           ✓ Passed
 
            RUN  Secrets (credentials)

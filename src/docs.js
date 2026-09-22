@@ -24,7 +24,15 @@ const SPINE = ['01-architecture.md', '02-developing.md', '03-testing.md', '04-op
 const REQUIRED_SPINE = SPINE.slice(0, 3);
 
 /** The only subfolders `docs/` may hold. */
-const SUBFOLDERS = new Set(['_assets/', 'decisions/', 'reference/']);
+const SUBFOLDERS = new Set(['_assets/', 'decisions/']);
+
+/**
+ * The folder a generated API reference takes. The API is the types a
+ * consumer's editor resolves, and a projection of them into the manual is a
+ * second copy — refused by name, so the sentence says why rather than only
+ * that the folder is foreign.
+ */
+const GENERATED_REFERENCE = 'reference/';
 
 /**
  * The closed roster of journal words. A chapter names a SUBJECT the repository
@@ -68,9 +76,6 @@ const DECISION_HEADING = /^# ADR-(?<number>\d{3}): \S/u;
 
 /** The `**Status:**` line of a decision record, wherever it sits in the head. */
 const DECISION_STATUS = /^\*\*Status:\*\*\s*(?<status>.+?)\s*$/u;
-
-/** The marker every file under `reference/` carries — it is generated, never authored. */
-const GENERATED = 'GENERATED';
 
 /** A link with a scheme (`https:`, `mailto:`) cites; it never reaches into a tree. */
 const SCHEME = /^[a-z][\d+.a-z-]*:/iu;
@@ -170,11 +175,7 @@ function auditMap(report, { chapters, files, links }) {
 
     for (const link of links) {
         const target = targetPath(link);
-        const routes =
-            target === '' ||
-            isChapterLink(target) ||
-            target.startsWith('decisions/') ||
-            target.startsWith('reference/');
+        const routes = target === '' || isChapterLink(target) || target.startsWith('decisions/');
 
         if (!routes) {
             report(
@@ -299,18 +300,20 @@ function auditDecisionNumbers(report, records) {
     }
 }
 
-/** What sits directly under `docs/` and is neither the map, a chapter, nor one of the three folders. */
+/** What sits directly under `docs/` and is neither the map, a chapter, nor one of the two folders. */
 function auditFolder(report, { children }) {
     for (const path of children) {
         const name = path.slice('docs/'.length);
 
-        if (name.endsWith('/')) {
+        if (name === GENERATED_REFERENCE) {
+            report(
+                'docs-reference-generated',
+                path,
+                `${path} is a generated API reference — the API is the types, and the manual holds no copy of them`,
+            );
+        } else if (name.endsWith('/')) {
             if (!SUBFOLDERS.has(name)) {
-                report(
-                    'docs-foreign-folder',
-                    path,
-                    `${path} is not one of decisions/, reference/, _assets/`,
-                );
+                report('docs-foreign-folder', path, `${path} is not one of decisions/, _assets/`);
             }
         } else if (name !== 'README.md' && !/^\d/u.test(name)) {
             report(
@@ -385,22 +388,6 @@ function auditDecisions(report, { files, heads }) {
     }
 }
 
-/** Every page under `reference/` says so on its first line: it is a projection. */
-function auditReference(report, { files, heads }) {
-    for (const entry of under(files, 'reference/')) {
-        if (!entry.name.endsWith('.md')) {
-            continue;
-        }
-        if (!(heads[entry.path]?.[0] ?? '').includes(GENERATED)) {
-            report(
-                'docs-reference-unstamped',
-                entry.path,
-                `${entry.path} carries no ${GENERATED} marker — reference/ is a projection, never authored`,
-            );
-        }
-    }
-}
-
 /** No page of the manual reaches into a tree the repository does not own. */
 function auditLinks(report, { files, links }) {
     for (const path of files) {
@@ -458,7 +445,6 @@ export function auditDocs(tree) {
     auditChapters(report, { chapters, ships: tree.ships });
     auditFolder(report, { children });
     auditDecisions(report, { files, heads });
-    auditReference(report, { files, heads });
 
     if (tree.agents === null || !(tree.agents ?? '').includes('docs/README.md')) {
         report(

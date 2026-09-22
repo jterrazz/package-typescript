@@ -89,21 +89,22 @@ Its unit is the **repository**, not the package: a manual answers for a whole tr
 
 Nothing else gates it. A repository with **no** `docs/` at all is not exempt; it is the case the rule exists for, and it fails on `docs-absent`.
 
-The spine itself is language-agnostic doctrine, and it is [`jterrazz-studio`'s](https://github.com/jterrazz/jterrazz-studio/blob/main/docs/08-repo-structure.md): the four fixed names, the three subfolders, the water line between a repository's manual and its brand's wiki. What this chapter owns is the rule ids and what each one refuses. The sentence a rule prints is not here — it lives in the engine, so a page and a gate cannot drift.
+The spine itself is language-agnostic doctrine, and it is [`jterrazz-studio`'s](https://github.com/jterrazz/jterrazz-studio/blob/main/docs/08-repo-structure.md): the four fixed names, the subfolders, the water line between a repository's manual and its brand's wiki. What this chapter owns is the rule ids and what each one refuses. The sentence a rule prints is not here — it lives in the engine, so a page and a gate cannot drift.
 
 | Rule                       | Refuses                                                                    |
 | -------------------------- | -------------------------------------------------------------------------- |
 | `docs-absent`              | no `docs/` at the repository root                                          |
 | `docs-map-missing`         | a `docs/` with no `README.md`                                              |
 | `docs-map-drift`           | a map and a chapter list that are not bijective                            |
-| `docs-map-foreign-link`    | a map link to anything but a chapter, `decisions/` or `reference/`         |
+| `docs-map-foreign-link`    | a map link to anything but a chapter or `decisions/`                       |
 | `docs-chapter-name`        | a chapter that is not `NN-kebab.md`                                        |
 | `docs-chapter-numbering`   | numbers that skip (04 aside), or one number on two files                   |
 | `docs-spine-name`          | a chapter sitting on a reserved number under another name                  |
 | `docs-spine-missing`       | an absent `01-architecture.md`, `02-developing.md` or `03-testing.md`      |
 | `docs-operating-missing`   | an absent `04-operating.md` when the presence test below fires             |
 | `docs-journal-chapter`     | a chapter named for the state of a piece of work, not for a subject        |
-| `docs-foreign-folder`      | a subfolder of `docs/` other than `decisions/`, `reference/`, `_assets/`   |
+| `docs-foreign-folder`      | a subfolder of `docs/` other than `decisions/` and `_assets/`              |
+| `docs-reference-generated` | a `docs/reference/` — a generated API reference is a copy of the types     |
 | `docs-loose-file`          | a file directly under `docs/` that is neither the map nor a chapter        |
 | `docs-decision-name`       | a record in `decisions/` that is not `NNN-kebab.md`                        |
 | `docs-decision-heading`    | a record opening on anything but `# ADR-NNN: Title`, or on another number  |
@@ -112,7 +113,6 @@ The spine itself is language-agnostic doctrine, and it is [`jterrazz-studio`'s](
 | `docs-decision-number`     | one ADR number claimed by two records                                      |
 | `docs-decision-index`      | a hand-written `decisions/README.md` — an index is a copy                  |
 | `docs-template-missing`    | a `decisions/` with no `_template.md` beside the records                   |
-| `docs-reference-unstamped` | a page under `reference/` carrying no generation marker on its first line  |
 | `docs-agents-route`        | a repository whose root `AGENTS.md` is absent or does not route to the map |
 | `docs-cross-repo-link`     | a link from `docs/` reaching into another repository's tree                |
 
@@ -327,6 +327,19 @@ What a project calls its own parts, swept under the roots where a project keeps 
 All three rosters are closed and all live in the gate, in one executable copy. Grab-bag: `base`, `common`, `core`, `helpers`, `lib`, `misc`, `shared`, `stuff`, `tools`, `utils` — a leading `_` exempts one, because it marks a row rather than a subject. Construct: `constants`, `helper`, `interfaces`, `setup`, `type`, `types`, `util`, and the `.types.ts` suffix — a word the grab-bag already refuses is reported once, under that roster, and the `_` marker does not excuse a construct. Shortcut: `auth`, `cfg`, `impl`, `infra`, `k8s`, `pkg`, `repo`, `repos`, `svc`, `tmp` — and the `_` marker does NOT excuse one, since it states a position, not whether the name is whole.
 
 A construct is judged on the WHOLE name: `setup-wizard.ts` names a subject and passes, `setup.ts` names a moment of the language's life and fails. `index.ts` is a barrel — a structural role, not a category — and no roster holds it. The ground a spec stands on is never swept at all, so a fixture may be called anything its scenario needs.
+
+### The repository spine
+
+The root's own folders are the same in every repository: `src/` the product's code, `lint/` the lint rules a package ships, `specs/` the specifications, `docs/` the manual, `skills/` one short page per skill — and `apps/` or `packages/` where a workspace keeps its members, each a spine of its own. What the tree calls a root is therefore judged too.
+
+| Rule                 | Says                                                                  |
+| -------------------- | --------------------------------------------------------------------- |
+| `names-skill-file`   | refused: a file under `skills/` that is not `skills/<skill>/SKILL.md` |
+| `names-root-foreign` | reported, never refused: a root folder outside the spine              |
+
+A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A root outside the spine is reported rather than refused because a package may still need one — this one ships `bin/`, `lib/` and `presets/` — and whether the spine lets a package declare its own is not decided yet. The pass prints the line on a green run, since a report nobody is shown is a report nobody reads. A dot-folder (`.github/`) is the tools', never the spine's.
+
+### What the ratchet records
 
 Every rule carries the code `names(<rule>)`, and the ratchet records it as `names/<rule>`: `typescript baseline` writes the pass's counts into `oxlint.baseline.json` beside the linter's, and where the file holds a `names/*` entry this pass is judged by it, with the three refusals of [the ratchet](#the-ratchet). A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
 

@@ -10,4 +10,4 @@ runs:
           docs-journal-chapter  docs/05-design-exploration.md  docs/05-design-exploration.md names a journal, not a subject — exploration; the record is an ADR, the history is git's
           docs-journal-chapter  docs/05-notes.md  docs/05-notes.md names a journal, not a subject — notes; the record is an ADR, the history is git's
           docs-loose-file  docs/automations.md  docs/automations.md is neither the map nor a chapter — number it, or move it under _assets/
-          docs-foreign-folder  docs/qa/  docs/qa/ is not one of decisions/, reference/, _assets/
+          docs-foreign-folder  docs/qa/  docs/qa/ is not one of decisions/, _assets/

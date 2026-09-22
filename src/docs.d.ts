@@ -8,8 +8,8 @@ export type DocsTree = {
      */
     readonly files: readonly string[];
     /**
-     * The opening lines of each file a rule reads — a decision record's head, a
-     * reference page's generation stamp. The reader supplies the first
+     * The opening lines of each file a rule reads — a decision record's head.
+     * The reader supplies the first
      * `HEAD_LINES` of every markdown file under `docs/`; no rule looks further
      * down a page, so a `**Status:**` below that line is a status the manual
      * does not declare.

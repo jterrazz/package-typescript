@@ -848,7 +848,9 @@ run_checks() {
     report_pass "Suppressions (directives)" $suppressions_status "$tmp_dir/suppressions.log" "$write"
     [ -n "$markdown_pid" ] &&
         report_pass "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
-    [ -n "$names_pid" ] && report_pass "Names (tree)" $names_status "$tmp_dir/names.log"
+    # A green Names pass still speaks: a root outside the spine is reported,
+    # never refused, and a report nobody is shown is a report nobody reads.
+    [ -n "$names_pid" ] && report_pass "Names (tree)" $names_status "$tmp_dir/names.log" writer
     [ -n "$secrets_pid" ] && report_pass "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
 
     # Drift: the report, not a gate — how far this project stands from the

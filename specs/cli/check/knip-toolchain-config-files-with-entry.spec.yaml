@@ -36,6 +36,7 @@ runs:
 
            RUN  Names (tree)
 
+          names-root-foreign  scripts/  `scripts/` is a root outside the spine (src, lint, specs, docs, skills) — reported, not refused
           ✓ Passed
 
            RUN  Secrets (credentials)
