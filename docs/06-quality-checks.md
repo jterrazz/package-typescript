@@ -192,7 +192,7 @@ Three things fail a run that has one, all under `baseline-ratchet`:
 
 The third is what makes the file shrink. Without it a baseline records a debt that was paid a year ago and nothing ever says so.
 
-The file records two reporters, not one. `@jterrazz/test`'s conventions checker judges the same tree from the other side — how a spec is written rather than what the code does — and a project adopting a stricter version of THAT rulebook needs the same ratchet for the same reason. Its `--format json` findings are merged before the counting, under the namespace its own codes carry: `jterrazz-check(d4)` is recorded as `jterrazz-check/d4`, beside `eslint/no-debugger`, in one flat file. Severity is never read — a finding a release ships at `warn` is exactly the debt a ratchet exists to hold down — and the three refusals above are the same three, whichever reporter names the id.
+The file records three reporters, not one. `@jterrazz/test`'s conventions checker judges the same tree from the other side — how a spec is written rather than what the code does — and a project adopting a stricter version of THAT rulebook needs the same ratchet for the same reason. Its `--format json` findings are merged before the counting, under the namespace its own codes carry: `jterrazz-check(d4)` is recorded as `jterrazz-check/d4`, beside `eslint/no-debugger`, in one flat file. Severity is never read — a finding a release ships at `warn` is exactly the debt a ratchet exists to hold down — and the three refusals above are the same three, whichever reporter names the id. The third reporter is the Names (tree) pass, which reads its own `names/*` entries back ([its section](#the-names-tree-pass)).
 
 One run answers for the checker's side: `jterrazz-test-check --format json` at the project root, made by `baseline` when it records and by `check` when it judges, with no path and no `--member` — so the contract the ratchet rests on is that a path-less run reports what the pass's own runs report, every `specs/` root and every member. It is made only where the installed `@jterrazz/test` answers the flag (15.3.0). Below it no `jterrazz-check` count exists, and the recorded `jterrazz-check/*` entries are set ASIDE rather than read as debts that reached zero: nothing measured them, and the third refusal would otherwise ask a project to delete the entries its next install needs.
 
@@ -315,14 +315,19 @@ A path of somebody ELSE's tree — a library's chapter showing where the thing i
 
 ## The Names (tree) pass
 
-What a project calls its own parts, swept under the roots where a project keeps what it wrote: `apps/`, `bin/`, `lib/`, `packages/`, `specs/`, `src/`, `tests/`. Each root's OWN name is the toolchain's vocabulary rather than the project's choice, so it is never judged — `lib/` sits on this list and on the grab-bag roster at once, and only what a project put inside it is the project's to name. A directory below an `app/` router root is a Next.js route segment — a URL the product serves, not a name the tree chose — and is not judged either; the files inside it still are.
+What a project calls its own parts, swept under the roots where a project keeps what it wrote: `apps/`, `bin/`, `lib/`, `lint/`, `packages/`, `specs/`, `src/`, `tests/`. Each root's OWN name is the toolchain's vocabulary rather than the project's choice, so it is never judged — `lib/` sits on this list and on the grab-bag roster at once, and only what a project put inside it is the project's to name. A directory below an `app/` router root is a Next.js route segment — a URL the product serves, not a name the tree chose — and is not judged either; the files inside it still are.
 
-| Rule             | Refuses                                                                 |
-| ---------------- | ----------------------------------------------------------------------- |
-| `names-grab-bag` | a directory or file stem that says nothing: it holds what nobody placed |
-| `names-shortcut` | a name, or one hyphen segment of it, written in half                    |
+| Rule              | Refuses                                                                     |
+| ----------------- | --------------------------------------------------------------------------- |
+| `names-grab-bag`  | a directory or file stem that says nothing: it holds whatever nobody placed |
+| `names-construct` | a directory or file named for a construct of the language, not the domain   |
+| `names-shortcut`  | a name, or one hyphen segment of it, written in half                        |
 
-Both rosters are closed and both live in the gate, in one executable copy. Grab-bag: `base`, `common`, `core`, `helpers`, `lib`, `misc`, `shared`, `stuff`, `tools`, `utils` — a leading `_` exempts one, because it marks a row rather than a subject. Shortcut: `auth`, `cfg`, `impl`, `infra`, `k8s`, `pkg`, `repo`, `repos`, `svc`, `tmp` — and the `_` marker does NOT excuse one, since it states a position, not whether the name is whole.
+All three rosters are closed and all live in the gate, in one executable copy. Grab-bag: `base`, `common`, `core`, `helpers`, `lib`, `misc`, `shared`, `stuff`, `tools`, `utils` — a leading `_` exempts one, because it marks a row rather than a subject. Construct: `constants`, `helper`, `interfaces`, `setup`, `type`, `types`, `util`, and the `.types.ts` suffix — a word the grab-bag already refuses is reported once, under that roster, and the `_` marker does not excuse a construct. Shortcut: `auth`, `cfg`, `impl`, `infra`, `k8s`, `pkg`, `repo`, `repos`, `svc`, `tmp` — and the `_` marker does NOT excuse one, since it states a position, not whether the name is whole.
+
+A construct is judged on the WHOLE name: `setup-wizard.ts` names a subject and passes, `setup.ts` names a moment of the language's life and fails. `index.ts` is a barrel — a structural role, not a category — and no roster holds it. The ground a spec stands on is never swept at all, so a fixture may be called anything its scenario needs.
+
+Every rule carries the code `names(<rule>)`, and the ratchet records it as `names/<rule>`: `typescript baseline` writes the pass's counts into `oxlint.baseline.json` beside the linter's, and where the file holds a `names/*` entry this pass is judged by it, with the three refusals of [the ratchet](#the-ratchet). A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
 
 ## The Secrets (credentials) pass
 

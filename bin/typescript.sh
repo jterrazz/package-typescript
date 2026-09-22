@@ -245,8 +245,15 @@ case "$COMMAND" in
             fi
         fi
 
+        # The Names (tree) pass's findings take the same file, under `names/`:
+        # that pass reads its own entries back, so a construct name a project
+        # has not renamed yet is recorded debt rather than a red run.
+        NAMES_REPORT=$(mktemp)
+        trap 'rm -f "$BASELINE_REPORT" "${CHECKER_REPORT:-}" "$NAMES_REPORT"' EXIT
+        node "$PACKAGE_ROOT/lib/check-names.js" . --format json "$@" > "$NAMES_REPORT" 2>/dev/null || true
+
         node "$PACKAGE_ROOT/lib/check-baseline.js" "$BASELINE_REPORT" . \
-            "${CHECKER_ARGS[@]}" --write
+            "${CHECKER_ARGS[@]}" --names "$NAMES_REPORT" --write
 
         # The file is tracked, so it is the formatter's like every other tracked
         # file — written here, shaped by the project's own oxfmt, never both.

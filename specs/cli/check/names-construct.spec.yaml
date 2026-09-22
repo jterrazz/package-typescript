@@ -1,0 +1,48 @@
+description: fails a tree whose files and folders are named after a construct of the language
+fixture: names/construct/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          names-construct  lint/constants.ts  `constants.ts` names a construct of the language — name it for the subject it holds
+          names-construct  specs/setup.ts  `setup.ts` names a construct of the language — name it for the subject it holds
+          names-construct  src/interfaces  `interfaces` names a construct of the language — name it for the subject it holds
+          names-construct  src/order.types.ts  `order.types.ts` names a construct of the language — name it for the subject it holds
+          names-construct  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds
+          ✗ Failed with exit code 1
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

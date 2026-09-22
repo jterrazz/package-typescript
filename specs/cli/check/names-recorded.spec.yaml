@@ -1,0 +1,49 @@
+description: records a construct name in the ratchet, and the run it records is green
+fixture: names/recorded/
+runs:
+    - command: baseline
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Recording the oxlint baseline...
+
+          oxlint.baseline.json written — 1 diagnostic(s) across 1 rule(s)
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed
