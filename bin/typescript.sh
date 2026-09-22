@@ -210,7 +210,7 @@ case "$COMMAND" in
         printf "  dev          Build, run, and rebuild on changes\n"
         printf "  docs-layout  Check a repository's docs/ against the manual spine\n"
         printf "  doctor       Report the installed tool versions against the declared ranges\n"
-        printf "  baseline     Record the oxlint baseline this project may not exceed\n"
+        printf "  baseline     Record oxlint's own rules and Names into typescript.baseline.json\n"
         printf "  tsc          Run the TypeScript 7 compiler this package ships (emit, --build)\n"
         printf "  check        Check types, lint, formatting, and unused code\n"
         printf "  fix          Auto-fix lint and formatting issues\n"
