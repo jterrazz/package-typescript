@@ -5,9 +5,14 @@
   "main": "index.ts",
   "jterrazz": {
     "roots": {
-      "docker": "",
-      "migrations": "the SQL the release job applies before the service starts",
-      "scripts": "the release scripts the CI workflow runs"
+      "deploy": "the manifests the deploy job applies"
+    },
+    "typescript": {
+      "roots": {
+        "docker": "",
+        "migrations": "the SQL the release job applies before the service starts",
+        "scripts": "the release scripts the CI workflow runs"
+      }
     }
   }
 }

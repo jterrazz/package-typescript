@@ -18,7 +18,8 @@
  * skill is one `skills/<skill>/SKILL.md` and nothing beside it. Beside the
  * spine a root stands only on a codified ground: a name the ecosystem imposes
  * (`ECOSYSTEM_ROOTS`), or one the repository declares in its `package.json`
- * under `jterrazz.roots`, each with its reason. Any other root is refused.
+ * under `jterrazz.typescript.roots`, each with its reason. Any other root is
+ * refused.
  *
  * Usage: node check-names.js [root] [--ignore-pattern <glob>]… [--format json]
  *
@@ -112,8 +113,12 @@ const ECOSYSTEM_ROOTS = Object.freeze({
     public: 'Next.js, Astro and Vite — static files served verbatim at the site root',
 });
 
-/** Where a repository declares the roots it keeps beyond the spine: `package.json`'s `jterrazz.roots`. */
-const DECLARATION = 'jterrazz.roots';
+/**
+ * Where a repository declares the roots it keeps beyond the spine:
+ * `package.json`'s `jterrazz.typescript.roots` — the `jterrazz` key holds one
+ * settings object per package of the family, and this package reads only its own.
+ */
+const DECLARATION = 'jterrazz.typescript.roots';
 
 /** The one file a skill is: `skills/<skill>/SKILL.md`. */
 const SKILL_FILE = /^skills\/[^/]+\/SKILL\.md$/u;
@@ -209,8 +214,9 @@ function findingsOf(files) {
 
 /**
  * The roots a repository declares beyond the spine, each with its reason, read
- * off `package.json`'s `jterrazz.roots` — `{ "<folder>": "<reason>" }`. An
- * absent key declares nothing.
+ * off `package.json`'s `jterrazz.typescript.roots` — `{ "<folder>": "<reason>" }`.
+ * An absent key declares nothing, and a root declared anywhere else in the
+ * manifest is not read.
  */
 function declaredRootsOf(root) {
     const manifest = join(root, 'package.json');
@@ -219,7 +225,7 @@ function declaredRootsOf(root) {
     }
 
     try {
-        const roots = JSON.parse(readFileSync(manifest, 'utf8'))?.jterrazz?.roots;
+        const roots = JSON.parse(readFileSync(manifest, 'utf8'))?.jterrazz?.typescript?.roots;
 
         return roots !== null && typeof roots === 'object' && !Array.isArray(roots) ? roots : {};
     } catch {

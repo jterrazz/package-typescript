@@ -334,12 +334,12 @@ A construct is judged on the WHOLE name: `type-registry.ts` names a subject and 
 
 The root's own folders are the same in every repository: `src/` the product's code, `lint/` the lint rules a package ships, `specs/` the specifications, `docs/` the manual, `skills/` one short page per skill — and `apps/` or `packages/` where a workspace keeps its members, each a spine of its own. What the tree calls a root is therefore judged too.
 
-| Rule                    | Refuses                                                                |
-| ----------------------- | ---------------------------------------------------------------------- |
-| `names-skill-file`      | a file under `skills/` that is not `skills/<skill>/SKILL.md`           |
-| `names-root-foreign`    | a root folder outside the spine that nothing codifies                  |
-| `names-root-unreasoned` | a root declared in `jterrazz.roots` with no reason beside it           |
-| `names-root-stale`      | a root declared in `jterrazz.roots` that holds no tracked file anymore |
+| Rule                    | Refuses                                                                           |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| `names-skill-file`      | a file under `skills/` that is not `skills/<skill>/SKILL.md`                      |
+| `names-root-foreign`    | a root folder outside the spine that nothing codifies                             |
+| `names-root-unreasoned` | a root declared in `jterrazz.typescript.roots` with no reason beside it           |
+| `names-root-stale`      | a root declared in `jterrazz.typescript.roots` that holds no tracked file anymore |
 
 A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
 
@@ -359,19 +359,21 @@ A root beside the spine stands on one of two codified grounds, and every other r
 
 The list is closed and short on purpose. `scripts/`, `docker/` or `migrations/` are conventions, not impositions: every tool that reads one takes its path as an argument, so the repository chose the folder and says why.
 
-The second ground is that saying: the repository declares the root in its `package.json`, under `jterrazz.roots`, each with its reason.
+The second ground is that saying: the repository declares the root in its `package.json`, under `jterrazz.typescript.roots`, each with its reason.
 
 ```json
 {
     "jterrazz": {
-        "roots": {
-            "scripts": "the release scripts the CI workflow runs"
+        "typescript": {
+            "roots": {
+                "scripts": "the release scripts the CI workflow runs"
+            }
         }
     }
 }
 ```
 
-`package.json` holds it because it is the one manifest every repository has, and oxlint's config schema is closed. The reason is not decoration: an entry without one is refused (`names-root-unreasoned`), and an entry whose folder holds no tracked file anymore is refused too (`names-root-stale`), so the list shrinks as the tree does. A base package that composes others keeps its broader roots through this same declaration, never through an exemption in the gate.
+`package.json` holds it because it is the one manifest every repository has, and oxlint's config schema is closed. Its `jterrazz` key holds one settings object per package of the family, each package reading only its own, so a root declared anywhere else in the manifest is not read. The reason is not decoration: an entry without one is refused (`names-root-unreasoned`), and an entry whose folder holds no tracked file anymore is refused too (`names-root-stale`), so the list shrinks as the tree does. A base package that composes others keeps its broader roots through this same declaration, never through an exemption in the gate.
 
 ### What the ratchet records
 

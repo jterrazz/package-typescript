@@ -5,8 +5,10 @@
     "@jterrazz/typescript": "^9.1.0"
   },
   "jterrazz": {
-    "roots": {
-      "scripts": "the seed script CI invokes, never imported"
+    "typescript": {
+      "roots": {
+        "scripts": "the seed script CI invokes, never imported"
+      }
     }
   }
 }

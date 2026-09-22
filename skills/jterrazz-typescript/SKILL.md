@@ -51,7 +51,7 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 - Every artefact lives under `.artifacts/<tool>/`; `dist/` is the product, not an artefact.
 - A `knip.json` ignore carries a `//` reason above it — the file is read as JSONC.
 - The API is the types: there is no generated reference, and `docs/` never holds one.
-- A repository root holds `src/`, `lint/`, `specs/`, `docs/`, `skills/` — any other root folder fails Names (tree) unless the ecosystem imposes it (`bin/`, `public/`, `app/`…) or `package.json`'s `jterrazz.roots` declares it with a reason.
+- A repository root holds `src/`, `lint/`, `specs/`, `docs/`, `skills/` — any other root folder fails Names (tree) unless the ecosystem imposes it (`bin/`, `public/`, `app/`…) or `package.json`'s `jterrazz.typescript.roots` declares it with a reason.
 - A local `compilerOption` is a smell — the preset is where the fix belongs.
 
 ## The chapter to read next
