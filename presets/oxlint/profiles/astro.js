@@ -1,7 +1,7 @@
 import { defineConfig } from 'oxlint';
 
-import { profile } from '../../../rules/compile.js';
-import { PROFILES } from '../../../rules/profiles.js';
+import { profile } from '../../../lint/compile.js';
+import { PROFILES } from '../../../lint/profiles.js';
 
 /*
  * Astro: the rulebook, plus React (an island is a React component here),

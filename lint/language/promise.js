@@ -6,7 +6,7 @@ import { allOn, fragment, off } from '../_contract.js';
  * chain are the ones that cannot hold beside `prefer-await-to-then`.
  */
 export default fragment({
-    id: 'core/promise',
+    id: 'language/promise',
     plugins: ['promise'],
     rules: {
         ...allOn(

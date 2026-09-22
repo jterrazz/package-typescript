@@ -1,4 +1,4 @@
-# `rules/` — the manifest
+# `lint/` — the manifest
 
 One nature lives here: a DECISION about a lint rule. Never a config object, never a path, never a tool invocation — those are `presets/`'s and `bin/`'s. What the decisions mean, and the four laws they answer to, is [Lint presets](../docs/07-lint-presets.md); this page only says where each thing is.
 
@@ -8,7 +8,7 @@ One nature lives here: a DECISION about a lint rule. Never a config object, neve
 | `compile.js`                                                                       | fragment → plain oxlint config, and the deterministic merge behind `compose()`. It never emits `categories`                                                                                                |
 | `profiles.js`                                                                      | which fragments each of the seven profiles carries, and what none of them lints                                                                                                                            |
 | `catalog.js`                                                                       | every decision as one list, and the markdown the chapter carries between its `GENERATED` markers                                                                                                           |
-| `core/`                                                                            | one file per plugin of the rulebook every profile holds: `eslint`, `typescript`, `unicorn`, `oxc`, `import`, `promise`, `node`, `jsdoc`                                                                    |
+| `language/`                                                                        | one file per plugin of the rulebook every profile holds, whatever its framework: `eslint`, `typescript`, `unicorn`, `oxc`, `import`, `promise`, `node`, `jsdoc`                                            |
 | `react.js` · `a11y.js` · `next.js` · `react-native.js` · `astro.js` · `bundler.js` | what a framework profile adds to that rulebook, and what a bundled tree with no framework still owes                                                                                                       |
 | `vitest.js`                                                                        | the test-file rules, as an `overrides` block — they read a test and say nothing about anything else                                                                                                        |
 | `sorted.js`                                                                        | perfectionist: only what oxfmt does not sort                                                                                                                                                               |

@@ -5,8 +5,8 @@ import { allOn, fragment, off, on } from '../_contract.js';
  *
  * `import/extensions` is the one rule two platforms answer differently: Node
  * ESM resolves a specifier literally and needs the `.js`, a bundler resolves it
- * and refuses one. Core states the Node answer; `rules/next.js`,
- * `rules/astro.js`, `rules/react-native.js` and `rules/bundler.js` re-decide it
+ * and refuses one. Core states the Node answer; `lint/next.js`,
+ * `lint/astro.js`, `lint/react-native.js` and `lint/bundler.js` re-decide it
  * for their platform, at `error` either way — a profile changes the convention,
  * never the level.
  *
@@ -35,7 +35,7 @@ export const EXTENSIONS_ALWAYS = on(['always', { ignorePackages: true, ...ASSETS
 export const EXTENSIONS_NEVER = on(['never', ASSETS]);
 
 export default fragment({
-    id: 'core/import',
+    id: 'language/import',
     plugins: ['import'],
     rules: {
         ...allOn(

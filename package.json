@@ -14,8 +14,8 @@
         "bin",
         "docs",
         "lib",
+        "lint",
         "presets",
-        "rules",
         "src"
     ],
     "type": "module",

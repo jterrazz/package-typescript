@@ -310,7 +310,7 @@ A skill is read from the install, where nothing can correct it, so one more rule
 
 The three numbers are the readability floor of the shared doctrine, not the craft it asks for: the gap between them is a reader's pass, not a red gate. They are named constants at the top of the gate, and no page keeps a second copy of them.
 
-The backtick rule reads a closed roster of opening segments — `apps/`, `bin/`, `lib/`, `packages/`, `presets/`, `specs/`, `tests/` — because without one every `a/b` in a sentence would be read as a coordinate. `docs/` and `src/` are deliberately off it: every repository has both, so a page teaching a convention writes `src/index.ts` about the READER's tree, not about its own. A relative LINK into either is still judged, because that one names a real target.
+The backtick rule reads a closed roster of opening segments — `apps/`, `bin/`, `lib/`, `lint/`, `packages/`, `presets/`, `specs/`, `tests/` — because without one every `a/b` in a sentence would be read as a coordinate. `docs/` and `src/` are deliberately off it: every repository has both, so a page teaching a convention writes `src/index.ts` about the READER's tree, not about its own. A relative LINK into either is still judged, because that one names a real target.
 
 A path of somebody ELSE's tree — a library's chapter showing where the thing it ships lands in a consumer — is shown in a code fence, never in backticked prose. The rule reads a backticked coordinate as this repository's own and is right to: the alternative is an allow-list, and the first path that stops existing is the one nobody notices. A fenced block is exempt, so the example that teaches a consumer stays exactly where a reader wants it.
 

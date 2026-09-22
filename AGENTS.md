@@ -58,12 +58,12 @@ lib/tracked-files.js       # The one sweep every tree gate starts from — git l
 lib/unsafe-fixers.js       # The rules `fix` must not let oxlint rewrite, as the flags that allow them for one run
 lib/workspace-members.js   # Lists the consumer's workspace members — the unit each per-package gate measures from
 
-rules/                     # The lint manifest — every rule of every loaded plugin decided by name
+lint/                      # The lint manifest — every rule of every loaded plugin decided by name
 ├── _contract.js           # fragment() / on() / off() / unsafeFix() — refuses an unreasoned decision, at load time
 ├── compile.js             # fragment -> the plain oxlint config object; `merge()` is the exported compose()
 ├── profiles.js            # Which fragments each of the seven profiles carries, and its ignore patterns
 ├── catalog.js             # The catalogue, rendered into the chapter's table and its fixer list
-├── core/ · react.js · next.js · astro.js · a11y.js · bundler.js · vitest.js · sorted.js · react-native.js
+├── language/ · react.js · next.js · astro.js · a11y.js · bundler.js · vitest.js · sorted.js · react-native.js
 └── architecture/          # hexagonal.js (the map this package ships) and layers.js (the builder)
 
 presets/
@@ -87,4 +87,4 @@ specs/                     # Product specifications (@jterrazz/test) — the sha
 
 ## Standing rule
 
-A change to the public API updates `README.md`, the `docs/` chapters, and `skills/jterrazz-typescript/SKILL.md`. A change to a LINT DECISION is a line of a fragment under `rules/` and nothing else — the chapter's catalogue is its projection, regenerated with `TEST_UPDATE=1 npm test`. The repo-structure doctrine itself now lives in `jterrazz-studio` — never author it here or in a skill; route to it from `docs/08-repo-structure.md`.
+A change to the public API updates `README.md`, the `docs/` chapters, and `skills/jterrazz-typescript/SKILL.md`. A change to a LINT DECISION is a line of a fragment under `lint/` and nothing else — the chapter's catalogue is its projection, regenerated with `TEST_UPDATE=1 npm test`. The repo-structure doctrine itself now lives in `jterrazz-studio` — never author it here or in a skill; route to it from `docs/08-repo-structure.md`.

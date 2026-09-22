@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { catalog } from '../../../rules/catalog.js';
+import { catalog } from '../../../lint/catalog.js';
 import { printConfig, PROFILES } from './rulebook.js';
 
 /*

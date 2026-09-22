@@ -4,7 +4,7 @@ import { allOn, fragment, off } from '../_contract.js';
  * The `node` plugin, all 11 rules decided by name.
  */
 export default fragment({
-    id: 'core/node',
+    id: 'language/node',
     plugins: ['node'],
     rules: {
         ...allOn(

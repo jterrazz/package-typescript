@@ -13,12 +13,12 @@ npm run lint    # this package's own CLI, run on this package
 
 | Project | Runs                                                | Speed                        |
 | ------- | --------------------------------------------------- | ---------------------------- |
-| `unit`  | `src/`, `rules/` and `specs/surface/`               | milliseconds, pure functions |
+| `unit`  | `src/`, `lint/` and `specs/surface/`                | milliseconds, pure functions |
 | `cli`   | everything under `specs/cli/` — the product command | seconds, real processes      |
 
-The suffix says which project a file belongs to. A `*.test.ts` is a module test and sits beside its module, which here is `src/` and `rules/`; a `*.spec.ts` is the assembled product and sits under `specs/<facet>/`. `unit()` collects the first, `cli()` the second plus every `<case>.spec.yaml`, and the `cli` project states nothing of its own. `unit()` is the one that states its globs, because one tree it collects lives under `specs/` and the default set excludes that folder whole.
+The suffix says which project a file belongs to. A `*.test.ts` is a module test and sits beside its module, which here is `src/` and `lint/`; a `*.spec.ts` is the assembled product and sits under `specs/<facet>/`. `unit()` collects the first, `cli()` the second plus every `<case>.spec.yaml`, and the `cli` project states nothing of its own. `unit()` is the one that states its globs, because one tree it collects lives under `specs/` and the default set excludes that folder whole.
 
-The `unit` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`rules/*.test.ts`), and the manual's rule engine over in-memory trees (`src/docs.test.ts`). Nothing there spawns anything.
+The `unit` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`lint/*.test.ts`), and the manual's rule engine over in-memory trees (`src/docs.test.ts`). Nothing there spawns anything.
 
 ### `specs/surface/` — the repository suite
 

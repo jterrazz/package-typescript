@@ -4,7 +4,7 @@ export default defineSpecConfig({
     test: {
         projects: [
             /*
-             * `src/` and `rules/` hold the module tests, and `specs/surface/` is
+             * `src/` and `lint/` hold the module tests, and `specs/surface/` is
              * the repository suite — the third door: a first-level folder under
              * `specs/` that is no facet, covering this package's published tree
              * rather than a product reached through an entry. The globs are
@@ -12,7 +12,7 @@ export default defineSpecConfig({
              */
             unit({
                 exclude: ['**/*.test.tsx'],
-                include: ['rules/**/*.test.ts', 'specs/surface/**/*.test.ts', 'src/**/*.test.ts'],
+                include: ['lint/**/*.test.ts', 'specs/surface/**/*.test.ts', 'src/**/*.test.ts'],
             }),
             /*
              * The spec documents run here, beside the chains that still need code.

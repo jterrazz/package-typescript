@@ -1,5 +1,5 @@
 import { fragment, off, on, scoped } from './_contract.js';
-import { ASSETS } from './core/import.js';
+import { ASSETS } from './language/import.js';
 
 /*
  * Astro. oxlint parses an `.astro` file's script body but not its frontmatter

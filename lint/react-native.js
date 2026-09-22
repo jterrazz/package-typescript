@@ -1,5 +1,5 @@
 import { fragment, on } from './_contract.js';
-import { EXTENSIONS_NEVER } from './core/import.js';
+import { EXTENSIONS_NEVER } from './language/import.js';
 
 /*
  * React Native. oxlint 1.83 ships no `react-native` plugin, so this fragment

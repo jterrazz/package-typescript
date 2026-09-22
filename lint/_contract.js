@@ -6,7 +6,7 @@
  *     import { fragment, off, on } from '../_contract.js';
  *
  *     export default fragment({
- *         id: 'core/promise',
+ *         id: 'language/promise',
  *         plugins: ['promise'],
  *         since: '10.0.0',
  *         rules: {

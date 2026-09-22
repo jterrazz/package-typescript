@@ -1,6 +1,6 @@
 # Lint presets
 
-Every rule of every plugin this package loads is decided by name, at `error` or at `off` with a recorded reason — that manifest is `rules/`, and a profile is a pre-composed, tested slice of it that a consumer names in one line.
+Every rule of every plugin this package loads is decided by name, at `error` or at `off` with a recorded reason — that manifest is `lint/`, and a profile is a pre-composed, tested slice of it that a consumer names in one line.
 
 ```ts
 // oxlint.config.ts
@@ -26,7 +26,7 @@ export default defineConfig(node);
 | `evidence`   | A measured false-positive rate on real estate code, cited           | the measurement                            |
 | `covered`    | TypeScript, or a stronger rule that is on, already names the defect | the named rule                             |
 
-`rules/_contract.js` refuses a fragment that breaks either invariant at load time, so a rulebook with an unreasoned `off` cannot be imported at all.
+`lint/_contract.js` refuses a fragment that breaks either invariant at load time, so a rulebook with an unreasoned `off` cannot be imported at all.
 
 ## The profiles
 
@@ -192,7 +192,7 @@ The base preset declares no `workspaces`, so the key reaches knip exactly as wri
 
 ## The catalogue
 
-Every decision, the profiles that carry it, its state, the reason behind an `off`, and the version it was taken in. This section is a projection of `rules/`, regenerated with `TEST_UPDATE=1 npm test` and freshness-tested by `rules/catalog.test.ts` — never hand-edited.
+Every decision, the profiles that carry it, its state, the reason behind an `off`, and the version it was taken in. This section is a projection of `lint/`, regenerated with `TEST_UPDATE=1 npm test` and freshness-tested by `lint/catalog.test.ts` — never hand-edited.
 
 <!-- GENERATED -->
 

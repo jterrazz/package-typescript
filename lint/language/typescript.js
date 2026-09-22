@@ -30,7 +30,7 @@ const UNTYPED_IN_JAVASCRIPT = [
 ].map((rule) => [`typescript/${rule}`, off(UNTYPED_BY_CONSTRUCTION)]);
 
 export default fragment({
-    id: 'core/typescript',
+    id: 'language/typescript',
     plugins: ['typescript'],
     overrides: [
         scoped({

@@ -8,19 +8,19 @@ The package is five layers that never mix: a shell CLI that orchestrates process
 | ---------- | ----------------------------------------------------------------------- | --------------------------------------- |
 | `bin/`     | `typescript.sh` and its commands — the orchestration, in bash           | the `typescript` binary                 |
 | `lib/`     | one node script per gate that needs more than a process spawn           | `bin/`, and nothing else                |
-| `rules/`   | the lint manifest — every rule decided by name, and the compiler for it | `presets/oxlint/`, and `src/oxlint.js`  |
+| `lint/`    | the lint manifest — every rule decided by name, and the compiler for it | `presets/oxlint/`, and `src/oxlint.js`  |
 | `presets/` | tsconfig, tsdown, oxlint, oxfmt and knip configurations                 | a consumer's config files, by `extends` |
 | `src/`     | the importable entries — the lint presets, and the manual's rule engine | a consumer's `import`                   |
 
 ## The rulebook layer
 
-`rules/` is a manifest, not a config: one fragment per plugin, stating a decision per rule, and `rules/_contract.js` refusing at load time a fragment that breaks either invariant — a level is `error` or `off`, and an `off` carries one of five recorded reasons.
+`lint/` is a manifest, not a config: one fragment per plugin, stating a decision per rule, and `lint/_contract.js` refusing at load time a fragment that breaks either invariant — a level is `error` or `off`, and an `off` carries one of five recorded reasons.
 
-Three steps and nothing between them. `rules/profiles.js` says which fragments each profile carries; `rules/compile.js` turns a fragment into the plain oxlint config object oxlint itself reads, and merges those objects; `presets/oxlint/profiles/<name>.js` is that table compiled, and it is what a consumer's `extends` names. The rule decisions are [Lint presets](07-lint-presets.md)'s, catalogued there from the same manifest.
+Three steps and nothing between them. `lint/profiles.js` says which fragments each profile carries; `lint/compile.js` turns a fragment into the plain oxlint config object oxlint itself reads, and merges those objects; `presets/oxlint/profiles/<name>.js` is that table compiled, and it is what a consumer's `extends` names. The rule decisions are [Lint presets](07-lint-presets.md)'s, catalogued there from the same manifest.
 
 ## No build step
 
-This package ships JavaScript directly: what is committed is what is published (`files` names `bin`, `lib`, `presets`, `rules`, `src`). `npm run build` is a comment, and the `src/*.d.ts` files are hand-written beside their `.js`.
+This package ships JavaScript directly: what is committed is what is published (`files` names `bin`, `docs`, `lib`, `lint`, `presets`, `src`). `npm run build` is a comment, and the `src/*.d.ts` files are hand-written beside their `.js`.
 
 That is a deliberate exception to what the toolchain asks of everyone else, and it buys two things. A toolchain that had to build itself would need a second toolchain to do it; and a consumer reading `lib/check-gitignore.js` in its own `node_modules` reads the source, not a bundle.
 

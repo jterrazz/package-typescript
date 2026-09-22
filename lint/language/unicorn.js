@@ -6,7 +6,7 @@ import { allOn, fragment, off, on, unsafeFix } from '../_contract.js';
  * bytes, and the fixpoint suite is what proves it (specs/cli/preset).
  */
 export default fragment({
-    id: 'core/unicorn',
+    id: 'language/unicorn',
     plugins: ['unicorn'],
     rules: {
         ...allOn(

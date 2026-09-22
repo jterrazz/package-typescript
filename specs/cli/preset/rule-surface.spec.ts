@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest';
 
-import { REASON_KINDS } from '../../../rules/_contract.js';
-import { catalog } from '../../../rules/catalog.js';
-import { PROFILES as PROFILE_TABLE } from '../../../rules/profiles.js';
+import { REASON_KINDS } from '../../../lint/_contract.js';
+import { catalog } from '../../../lint/catalog.js';
+import { PROFILES as PROFILE_TABLE } from '../../../lint/profiles.js';
 import { printConfig, PROFILES, roster } from './rulebook.js';
 
 /*

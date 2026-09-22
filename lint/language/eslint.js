@@ -6,7 +6,7 @@ import { allOn, fragment, off, on } from '../_contract.js';
  * each carries the one reason that justifies it.
  */
 export default fragment({
-    id: 'core/eslint',
+    id: 'language/eslint',
     plugins: ['eslint'],
     rules: {
         ...allOn([

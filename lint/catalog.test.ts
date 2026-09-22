@@ -8,7 +8,7 @@ import { catalog, FIXER_MARKERS, MARKERS, render, renderFixers } from './catalog
  * The catalogue has one reader and one source: `docs/07-lint-presets.md`
  * carries the reason and the version behind every decision, and the list of
  * fixers `fix` refuses. Both are tables between two markers, both are
- * PROJECTIONS of `rules/`, and this suite fails either one that has drifted.
+ * PROJECTIONS of `lint/`, and this suite fails either one that has drifted.
  * Regenerate with `TEST_UPDATE=1 npm test`, the gesture every other golden
  * here takes.
  *

@@ -17,7 +17,7 @@ import { PROFILES } from './profiles.js';
  * The catalogue: every decision of every profile, with the profiles that carry
  * it. It is the one place the rulebook is readable as a list, and the GENERATED
  * section of [Lint presets](../docs/07-lint-presets.md) is its projection —
- * `rules/catalog.test.ts` fails a chapter that has drifted from it.
+ * `lint/catalog.test.ts` fails a chapter that has drifted from it.
  *
  * Composition is last-wins per rule, so the catalogue resolves each profile
  * first and groups after: `import/extensions` is `always` under node and

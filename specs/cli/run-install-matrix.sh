@@ -25,7 +25,7 @@ mkdir -p "$PKG" "$STORE/@jterrazz"
 
 # The package as published (its `files`), plus the manifest carrying its exports
 cp -R "$PACKAGE_ROOT/bin" "$PACKAGE_ROOT/lib" "$PACKAGE_ROOT/presets" \
-    "$PACKAGE_ROOT/rules" "$PACKAGE_ROOT/src" "$PKG/"
+    "$PACKAGE_ROOT/lint" "$PACKAGE_ROOT/src" "$PKG/"
 cp "$PACKAGE_ROOT/package.json" "$PKG/package.json"
 
 # The package's own dependencies, in the store BESIDE it — every one of them,

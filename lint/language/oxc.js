@@ -6,7 +6,7 @@ import { allOn, fragment, off } from '../_contract.js';
  * the estate compiles to — and they are the only three that are off.
  */
 export default fragment({
-    id: 'core/oxc',
+    id: 'language/oxc',
     plugins: ['oxc'],
     rules: {
         ...allOn(

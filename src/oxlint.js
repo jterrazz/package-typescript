@@ -10,15 +10,15 @@
  * What each profile carries, and why every rule of every loaded plugin is
  * decided by name, is [Lint presets](../docs/07-lint-presets.md).
  *
- * `rules/` holds the manifest — decisions, with a reason behind every `off`.
+ * `lint/` holds the manifest — decisions, with a reason behind every `off`.
  * What crosses this file is always a plain oxlint config, compiled from it.
  */
 
-import hexagonalFragment from '../rules/architecture/hexagonal.js';
-import { layers as layersFragment } from '../rules/architecture/layers.js';
-import { compile } from '../rules/compile.js';
+import hexagonalFragment from '../lint/architecture/hexagonal.js';
+import { layers as layersFragment } from '../lint/architecture/layers.js';
+import { compile } from '../lint/compile.js';
 
-export { merge as compose } from '../rules/compile.js';
+export { merge as compose } from '../lint/compile.js';
 
 /* Oxlint's own `defineConfig`, re-exported from here: a bare
  * `import { defineConfig } from 'oxlint'` in a consumer's config resolves only
@@ -35,7 +35,7 @@ export { default as next } from '../presets/oxlint/profiles/next.js';
 export { default as node } from '../presets/oxlint/profiles/node.js';
 export { default as react } from '../presets/oxlint/profiles/react.js';
 
-export { HEXAGONAL_MAP } from '../rules/architecture/hexagonal.js';
+export { HEXAGONAL_MAP } from '../lint/architecture/hexagonal.js';
 
 /** The hexagonal layer map, ready to compose beside a profile. */
 export const hexagonal = compile(hexagonalFragment);

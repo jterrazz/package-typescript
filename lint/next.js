@@ -1,5 +1,5 @@
 import { allOn, fragment, off, scoped } from './_contract.js';
-import { EXTENSIONS_NEVER } from './core/import.js';
+import { EXTENSIONS_NEVER } from './language/import.js';
 
 /*
  * The `nextjs` plugin, all 21 rules on, plus the two decisions Next's own
