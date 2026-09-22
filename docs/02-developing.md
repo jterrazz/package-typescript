@@ -145,7 +145,7 @@ typescript doctor     # every tool, what is installed, and the range this releas
 typescript baseline   # record today's diagnostics, so the count may only fall
 ```
 
-`doctor` is the first read after a bump: one row per tool, with a verdict. `baseline` is only needed where the bump lands red — it writes `oxlint.baseline.json` from the linter's diagnostics, the conventions checker's and the Names (tree) pass's alike, and from then on the oxlint pass refuses any rule going up, refuses a rule nobody recorded, and refuses an entry that has reached zero. When to reach for each is [Operating](04-operating.md)'s; what the ratchet refuses is [Quality checks](06-quality-checks.md)'s.
+`doctor` is the first read after a bump: one row per tool, with a verdict. `baseline` is only needed where the bump lands red — it writes `oxlint.baseline.json` from the linter's diagnostics, the conventions checker's and the Names (tree) pass's alike, and from then on the pass that owns each entry — the oxlint pass, the conventions pass, the Names pass — refuses any rule going up, refuses a rule nobody recorded, and refuses an entry that has reached zero. When to reach for each is [Operating](04-operating.md)'s; what the ratchet refuses is [Quality checks](06-quality-checks.md)'s.
 
 ## Working on this package
 

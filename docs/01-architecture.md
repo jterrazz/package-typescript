@@ -12,6 +12,8 @@ The package is five layers that never mix: a shell CLI that orchestrates process
 | `presets/` | tsconfig, tsdown, oxlint, oxfmt and knip configurations                 | a consumer's config files, by `extends` |
 | `src/`     | the importable entries — the lint presets, and the manual's rule engine | a consumer's `import`                   |
 
+Only `src/` and `lint/` of these are folders of the repository spine every root carries ([Repo structure](08-repo-structure.md)). `bin/`, `lib/` and `presets/` are product code outside it, and this package's own `check` reports all three under the Names (tree) pass rather than moving them: whether a package may declare roots of its own is not decided yet.
+
 ## The rulebook layer
 
 `lint/` is a manifest, not a config: one fragment per plugin, stating a decision per rule, and `lint/_contract.js` refusing at load time a fragment that breaks either invariant — a level is `error` or `off`, and an `off` carries one of five recorded reasons.
