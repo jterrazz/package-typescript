@@ -1,8 +1,8 @@
-description: omits the Docs sync pass when the project has no generated docs
-fixture: kitchen-sink/
+description: fails a skill that routes to a chapter its package does not ship, and passes the one it does
+fixture: markdown/skill-routes/
 runs:
     - command: check
-      exit: 0
+      exit: 1
       stdout: |4
            START  Running quality checks
 
@@ -22,17 +22,14 @@ runs:
 
           ✓ Passed
 
-           RUN  Publish (packaging)
-
-          ✓ Passed
-
            RUN  Suppressions (directives)
 
           ✓ Passed
 
            RUN  Markdown (prose)
 
-          ✓ Passed
+          markdown-chapter-missing  skills/shop/SKILL.md  docs/06-quality-checks.md is no chapter this package ships
+          ✗ Failed with exit code 1
 
            RUN  Names (tree)
 
@@ -44,4 +41,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✓ All checks passed
+          ✗ Some checks failed

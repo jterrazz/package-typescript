@@ -1,6 +1,6 @@
 # Agent brief — `@jterrazz/typescript`
 
-The complete TypeScript toolchain for the @jterrazz ecosystem: builds, quality checks, and API docs. Zero config for consumers. This file **routes**; it does not restate what the corpus already says.
+The complete TypeScript toolchain for the @jterrazz ecosystem: builds and quality checks. Zero config for consumers. This file **routes**; it does not restate what the corpus already says.
 
 ## Where knowledge lives (route here first)
 
@@ -15,14 +15,11 @@ The consumer-facing corpus is `docs/` + `README.md`, mapped by `docs/README.md`.
 | build / bundle / start / dev                   | `docs/05-building.md`       |
 | check / fix and their passes                   | `docs/06-quality-checks.md` |
 | oxlint presets, `compose`, architecture, knip  | `docs/07-lint-presets.md`   |
-| the `typescript docs` compiler                 | `docs/08-docs-pipeline.md`  |
-| repo doctrine (corpus / injection / compiler)  | `docs/09-repo-structure.md` |
+| repo doctrine (corpus / injection / compiler)  | `docs/08-repo-structure.md` |
 
-The first four chapters are the spine every repository of the ecosystem carries — architecture, developing, testing, operating — and this repository's own gate refuses a tree that breaks it (`docs/06-quality-checks.md`, the Docs (layout) pass). The doctrine behind the spine is `jterrazz-studio`'s, routed to from `docs/09-repo-structure.md`.
+The first four chapters are the spine every repository of the ecosystem carries — architecture, developing, testing, operating — and this repository's own gate refuses a tree that breaks it (`docs/06-quality-checks.md`, the Docs (layout) pass). The doctrine behind the spine is `jterrazz-studio`'s, routed to from `docs/08-repo-structure.md`.
 
-`docs/reference/` is a **generated projection** — never hand-edit it (regenerate with `typescript docs`).
-
-One Claude Code skill routes into this corpus: `skills/jterrazz-typescript/` (building, checking, linting, formatting, docs generation). It does not restate the corpus — it routes into it. Its one reference page, `references/rules.md`, is GENERATED from `rules/` and freshness-tested by `rules/catalog.test.ts`; never hand-edit it. The repo-structure doctrine itself is a separate skill, `jterrazz-repo-structure`, which now ships from `jterrazz-studio`.
+One Claude Code skill routes into this corpus: `skills/jterrazz-typescript/SKILL.md` — what to run, what each failing pass means, the chapter to read next. It is hand-written, it never restates a chapter, and the Markdown (prose) pass fails it when it names a chapter that does not exist. The repo-structure doctrine itself is a separate skill, `jterrazz-repo-structure`, which now ships from `jterrazz-studio`.
 
 `CLAUDE.md` at the root is a symlink to this file: one brief, two names, no second copy.
 
@@ -38,11 +35,10 @@ No build step — this package ships JS directly. It dogfoods its own CLI (`npm 
 
 ```
 bin/
-├── typescript.sh          # CLI entry (build, bundle, start, dev, docs [--check], docs-layout, doctor, baseline, tsc, check, fix, clean)
+├── typescript.sh          # CLI entry (build, bundle, start, dev, docs-layout, doctor, baseline, tsc, check, fix, clean)
 ├── find-tsc.sh            # The TS7 Go compiler by platform — sourced by the CLI and by the check script
 └── commands/
-    ├── check.sh           # Fifteen passes in parallel; each that RAN prints a header and a verdict, in one fixed order
-    └── docs.sh            # The docs compiler: typedoc reference tree, generate | --check
+    └── check.sh           # Fourteen passes in parallel; each that RAN prints a header and a verdict, in one fixed order
 
 lib/check-architecture.js  # The declared layer map against the resolved graph — the Architecture gate (dependency-cruiser)
 lib/check-baseline.js      # The oxlint ratchet — counts that may fall and never rise; `typescript baseline` writes it
@@ -66,7 +62,7 @@ rules/                     # The lint manifest — every rule of every loaded pl
 ├── _contract.js           # fragment() / on() / off() / unsafeFix() — refuses an unreasoned decision, at load time
 ├── compile.js             # fragment -> the plain oxlint config object; `merge()` is the exported compose()
 ├── profiles.js            # Which fragments each of the seven profiles carries, and its ignore patterns
-├── catalog.js             # The catalogue, rendered twice — the chapter's table and the skill's reference
+├── catalog.js             # The catalogue, rendered into the chapter's table and its fixer list
 ├── core/ · react.js · next.js · astro.js · a11y.js · bundler.js · vitest.js · sorted.js · react-native.js
 └── architecture/          # hexagonal.js (the map this package ships) and layers.js (the builder)
 
@@ -75,21 +71,20 @@ presets/
 src/index.js + index.d.ts  # Package entry — exports { oxfmt, oxlint } profiles (JS-shipped, no build)
 src/oxlint.js · oxfmt.js   # The tool-facing entries — the profiles, compose(), layers(), each tool's defineConfig
 src/docs.js + docs.d.ts    # The manual's rules, pure — auditDocs(tree), exported at ./docs for a second reader
-docs/                      # The corpus: numbered chapters + the generated reference/ projection
-skills/                    # The Claude Code skill, with a GENERATED references/rules.md off the manifest
+docs/                      # The corpus: numbered chapters and decisions/
+skills/                    # The Claude Code skill — one hand-written SKILL.md
 specs/                     # Product specifications (@jterrazz/test) — the shape is docs/03-testing.md
 ```
 
 ## Commands
 
-| Task                                    | Command                    |
-| --------------------------------------- | -------------------------- |
-| Run all tests                           | `npm test`                 |
-| Lint + format + typecheck + knip + docs | `npm run lint`             |
-| Auto-fix lint issues                    | `npm run lint:fix`         |
-| Regenerate docs projections             | `./bin/typescript.sh docs` |
-| Regenerate every golden and projection  | `TEST_UPDATE=1 npm test`   |
+| Task                                    | Command                  |
+| --------------------------------------- | ------------------------ |
+| Run all tests                           | `npm test`               |
+| Lint + format + typecheck + knip + docs | `npm run lint`           |
+| Auto-fix lint issues                    | `npm run lint:fix`       |
+| Regenerate every golden and projection  | `TEST_UPDATE=1 npm test` |
 
 ## Standing rule
 
-A change to the corpus (README or a chapter) or the public API means **regenerate the projections in the same change** (`./bin/typescript.sh docs`) — the Docs (sync) pass will fail otherwise. A change to the public API also updates `README.md`, the `docs/` chapters, and `skills/jterrazz-typescript/`. A change to a LINT DECISION is a line of a fragment under `rules/` and nothing else — the chapter's catalogue and the skill's reference are both projections of it, regenerated with `TEST_UPDATE=1 npm test`. The repo-structure doctrine itself now lives in `jterrazz-studio` — never author it here or in a skill; route to it from `docs/09-repo-structure.md`.
+A change to the public API updates `README.md`, the `docs/` chapters, and `skills/jterrazz-typescript/SKILL.md`. A change to a LINT DECISION is a line of a fragment under `rules/` and nothing else — the chapter's catalogue is its projection, regenerated with `TEST_UPDATE=1 npm test`. The repo-structure doctrine itself now lives in `jterrazz-studio` — never author it here or in a skill; route to it from `docs/08-repo-structure.md`.

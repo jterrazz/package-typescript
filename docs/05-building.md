@@ -50,4 +50,3 @@ your-project/
 ## Related
 
 - [Developing](02-developing.md) — install and config.
-- [Docs pipeline](08-docs-pipeline.md) — the `docs` compiler for libraries.

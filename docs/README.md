@@ -1,6 +1,6 @@
 # @jterrazz/typescript — documentation
 
-The complete TypeScript toolchain for the `@jterrazz` ecosystem: one devDependency that builds, checks, lints, formats and documents a project. A consumer wires three config files at the shipped presets and calls `typescript check` / `typescript fix`; there is nothing else to configure.
+The complete TypeScript toolchain for the `@jterrazz` ecosystem: one devDependency that builds, checks, lints and formats a project. A consumer wires three config files at the shipped presets and calls `typescript check` / `typescript fix`; there is nothing else to configure.
 
 This corpus is where that knowledge is authored. `AGENTS.md` and the `jterrazz-typescript` skill route into it; they never restate it.
 
@@ -17,10 +17,7 @@ The first four chapters are the spine every repository carries; the rest are thi
 | [05 — Building](05-building.md)             | `build`, `bundle`, `start`, `dev` — what each produces and for which project shape         |
 | [06 — Quality checks](06-quality-checks.md) | `check` and `fix`: the passes they run, in parallel, and what makes each one fail          |
 | [07 — Lint presets](07-lint-presets.md)     | The oxlint presets, `compose`, the architecture rules, and the knip configuration          |
-| [08 — Docs pipeline](08-docs-pipeline.md)   | The `typescript docs` compiler and the committed `docs/reference/` projection              |
-| [09 — Repo structure](09-repo-structure.md) | The TypeScript-specific half of the shared repo doctrine; the rest lives in the skill      |
-
-`docs/reference/` is a generated projection, not a chapter — regenerate it with `typescript docs`, never hand-edit it.
+| [08 — Repo structure](08-repo-structure.md) | The TypeScript-specific half of the shared repo doctrine; the rest lives in the skill      |
 
 ## Decisions
 

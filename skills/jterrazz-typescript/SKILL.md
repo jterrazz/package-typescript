@@ -1,85 +1,67 @@
 ---
 name: jterrazz-typescript
-description: Use when building, checking, linting, formatting, or configuring a TypeScript project with @jterrazz/typescript — build/bundle/dev/start, typescript check|fix failures, oxlint/oxfmt/knip/tsconfig presets, compose() lint config, docs generation command.
+description: Use when building, checking, linting, formatting, or configuring a TypeScript project with @jterrazz/typescript — build/bundle/dev/start, a failing `typescript check` pass, oxlint/oxfmt/knip/tsconfig presets, compose() lint config, the ratchet.
 ---
 
 # @jterrazz/typescript
 
-The complete TypeScript toolchain for the @jterrazz ecosystem — defines how every project builds, lints, formats, and documents. Zero-config, fully compiled: tsdown/Rolldown (Rust) for builds, oxlint/oxfmt (Rust) for lint and format, tsc (TypeScript 7, Go) for type checking, knip for unused code, typedoc for API docs.
+One devDependency that builds, checks, lints and formats a project. The manual is the package's `docs/`, read from the install — `node_modules/@jterrazz/typescript/docs/` — or from this repository when the toolchain itself is the change. This page decides what to run and which chapter to open; the chapter owns the rule.
 
-## Mental model
+## What to run
 
-Three surfaces, one CLI (`bin/typescript.sh`):
+| Gesture                  | When                                                                  |
+| ------------------------ | --------------------------------------------------------------------- |
+| `typescript fix`         | before every commit — lint fixes, formatting, `.gitignore`, spellings |
+| `typescript check`       | the gate — every pass in parallel, then the drift report              |
+| `typescript build`       | an application: ESM + types into `dist/`                              |
+| `typescript bundle`      | a library: ESM + CJS + types, entries read off the `exports` map      |
+| `typescript doctor`      | first read after a bump: installed tools against the declared ranges  |
+| `typescript baseline`    | a bump lands red: record today's counts, which may then only fall     |
+| `typescript docs-layout` | a repository with no npm project: the manual's shape, alone           |
 
-- **Build** — `build` (app: ESM + types), `bundle` (library: ESM + CJS + types), `start`, `dev`, `clean`.
-- **Check** — `check` runs up to fifteen passes in parallel, each printing a header and a verdict in one fixed order: tsc, oxlint (`--type-aware`), oxfmt, the artefact gate, knip, the conventions checker, the two Docs passes, publish, architecture, Astro, and the four tree gates — suppressions, markdown, names, secrets. A pass that does not apply prints nothing. It ends on a drift report. `fix` auto-repairs lint + format, rewrites the `.gitignore`, settles suppression spellings and formats `.astro`.
-- **Adopt** — `doctor` reports the installed tool versions against the declared ranges, and holds `@vitest/browser-playwright` to vitest's exact version where the lockfile resolves it; `baseline` records `oxlint.baseline.json`, the ratchet a project adopts a stricter release with — the linter's diagnostics and the conventions checker's, in one flat file.
-- **Docs** — `docs` compiles the source barrel into a **committed** projection (`docs/reference/`); `docs --check` verifies it is in sync.
+A project names ONE profile — `node`, `library`, `next`, `astro`, `expo`, `bun`, `react` — in `oxlint.config.ts` and the matching preset in `tsconfig.json`, and its three config files import `@jterrazz/typescript` and nothing else. The wiring is `docs/02-developing.md`.
 
-A project names ONE of seven profiles — `node`, `library`, `next`, `astro`, `expo`, `bun`, `react` — in its `oxlint.config.ts`, and the matching tsconfig preset in its `tsconfig.json`. Every rule of every loaded plugin is decided by name, at `error` or at `off` with one of five recorded reasons; there is no warn tier, and a profile never relaxes what the profiles share. There is no dependency auto-detection.
+## What a failing pass means
 
-## Where to look
+Every pass that ran prints a `RUN` header and one verdict; a pass that did not apply prints nothing. Each rule id below is explained in `docs/06-quality-checks.md`, under the pass's own section.
 
-The full knowledge lives in the package's own corpus — route into it, do not restate it. Read the relevant chapter at `node_modules/@jterrazz/typescript/docs/` — this repo's own tree when the toolchain itself is what changed:
+| Pass                      | It failed because                                                          |
+| ------------------------- | -------------------------------------------------------------------------- |
+| TypeScript Check          | tsc 7 refused a type                                                       |
+| Oxlint Check              | a rule of the profile fired, or a `baseline-ratchet` count moved           |
+| Oxfmt Check               | a file is not formatted — `typescript fix`                                 |
+| Gitignore (artefacts)     | an artefact is named or committed outside `.artifacts/<tool>/`             |
+| Knip (unused code)        | a file, export or dependency nothing uses                                  |
+| Test Conventions          | `@jterrazz/test`'s checker refused a spec — its own manual owns the id     |
+| Docs (layout)             | the repository's `docs/` breaks the manual's spine                         |
+| Publish (packaging)       | the `exports` map promises a file the tarball does not carry               |
+| Architecture (layer map)  | an import crosses the declared layer map                                   |
+| Astro (check + format)    | `astro check` or prettier refused a `.astro` file                          |
+| Suppressions (directives) | a disable directive is misspelled, unreasoned, or names a dead rule        |
+| Markdown (prose)          | a page cites a path that is gone, or a block runs past its floor           |
+| Names (tree)              | a name says nothing, names a construct (`types.ts`), or is written in half |
+| Secrets (credentials)     | a committed line looks like a live credential                              |
 
-| Task                                                | Chapter                     |
-| --------------------------------------------------- | --------------------------- |
-| Setting up a project                                | `docs/02-developing.md`     |
-| Where a tool's output goes (`.artifacts/`)          | `docs/02-developing.md`     |
-| Build issues (build/bundle/start/dev)               | `docs/05-building.md`       |
-| `check` / `fix` failing                             | `docs/06-quality-checks.md` |
-| The shape of `docs/` (the spine, the lint)          | `docs/06-quality-checks.md` |
-| Lint rules, profiles, `compose`, architecture, knip | `docs/07-lint-presets.md`   |
-| Whether a specific rule is on, and why              | `references/rules.md`       |
-| Docs pipeline (`typescript docs`)                   | `docs/08-docs-pipeline.md`  |
+The drift report closes the run; its one refusal is a profile rule turned off with no `// reason:` beside it.
 
-Organizing the repo itself — where knowledge lives, corpus vs skills vs the compiler — is a separate capability: see the `jterrazz-repo-structure` skill, which ships from [`jterrazz-studio`](https://github.com/jterrazz/jterrazz-studio).
+## Before writing
 
-## Quick setup
+- A file is named for its subject in the domain: never `types.ts`, `utils.ts`, `constants.ts`, `setup.ts`, nor a `*.types.ts` suffix. `index.ts` is a barrel and stays.
+- A suppression carries its reason: `// oxlint-disable-next-line <rule> -- why`, and `@ts-expect-error` with a description.
+- Every artefact lives under `.artifacts/<tool>/`; `dist/` is the product, not an artefact.
+- A `knip.json` ignore carries a `//` reason above it — the file is read as JSONC.
+- The API is the types: there is no generated reference, and `docs/` never holds one.
+- A local `compilerOption` is a smell — the preset is where the fix belongs.
 
-```bash
-npm install @jterrazz/typescript --save-dev
-```
+## The chapter to read next
 
-```json
-// tsconfig.json — the profile's preset: /node, /library, /next, /expo, /react
-// (astro and bun sit on /node)
-{ "extends": "@jterrazz/typescript/tsconfig/node" }
-```
-
-```ts
-// oxlint.config.ts — the same word as the tsconfig preset
-import { defineConfig, node } from '@jterrazz/typescript/oxlint';
-export default defineConfig(node); // or library, next, astro, expo, bun, react
-```
-
-```ts
-// oxfmt.config.ts
-import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
-export default defineConfig(base);
-```
-
-A config imports `@jterrazz/typescript` and nothing else — `defineConfig` included. Naming `oxlint` or `oxfmt` directly breaks under pnpm's strict `node_modules` (`ERR_MODULE_NOT_FOUND`), where only what the project declares resolves.
-
-Projects using `@jterrazz/test` compose its lint fragment explicitly:
-
-```ts
-import { testing } from '@jterrazz/test/oxlint';
-import { compose, defineConfig, node } from '@jterrazz/typescript/oxlint';
-export default defineConfig(compose(node, testing));
-```
-
-`isolatedDeclarations` is the `bundle` preset's: `typescript bundle` refuses an export whose type it would have to infer, and the config files of every profile — `library` included — are the one form above.
-
-## Always
-
-- Entry point is `src/index.ts` (the single public barrel); use `.js` extensions in relative imports.
-- Add TSDoc to every public export — `typescript docs` derives the reference from it.
-- Run `typescript fix` before committing, not just `typescript check`.
-- A suppression carries its reason: `// oxlint-disable-next-line <rule> -- why`, and `@ts-expect-error` with a description. `eslint-disable`, `biome-ignore` and `@ts-ignore` are refused.
-- Turning a profile rule off in `oxlint.config.ts` needs a `// reason:` comment on that line, or the drift report refuses the run.
-- The oxlint config is ESM — `oxlint.config.ts` or `.mjs`. A CommonJS one is dropped whole and in silence by oxlint, and `check` fails the run for it.
-- After a bump: `typescript doctor` reads the installed tools against the declared ranges, and `typescript baseline` records today's diagnostics where the bump lands red — the count may then only fall.
-- A `knip.json` entry carries its reason: the file is read as JSONC, so a `//` line above an ignore says why it is there.
-- Every artefact lives under `.artifacts/<tool>/` at the project root, and `.artifacts/` is gitignored; `dist` is the one exception (the product). `typescript clean` empties it — see `docs/02-developing.md`.
-- `typescript docs` writes a **committed** projection under `docs/reference/` — commit it, and regenerate in the same change that touches the source (`check` runs a Docs sync pass). Never hand-edit a generated file, and never gitignore `docs/`.
+| Question                                       | Chapter                     |
+| ---------------------------------------------- | --------------------------- |
+| the layers, the exports map, the two compilers | `docs/01-architecture.md`   |
+| wiring a project, `.artifacts/`, a bump        | `docs/02-developing.md`     |
+| how this toolchain proves itself               | `docs/03-testing.md`        |
+| which number moves on a release                | `docs/04-operating.md`      |
+| `build`, `bundle`, `start`, `dev`              | `docs/05-building.md`       |
+| a failing pass, a rule id, the ratchet         | `docs/06-quality-checks.md` |
+| a lint rule, a profile, `compose()`, knip      | `docs/07-lint-presets.md`   |
+| what a repository root holds                   | `docs/08-repo-structure.md` |

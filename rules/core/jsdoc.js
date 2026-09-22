@@ -2,11 +2,11 @@ import { allOn, fragment, off } from '../_contract.js';
 
 /*
  * The `jsdoc` plugin, all 23 rules decided by name. JSDoc is never REQUIRED —
- * TypeScript carries the types and `typescript docs` derives the reference from
- * them — but a block that is written must be well formed.
+ * TypeScript carries the types, and the types are the API a reader is handed —
+ * but a block that is written must be well formed.
  */
 const BY_TYPESCRIPT = {
-    by: 'TypeScript — the signature carries the type, and `typescript docs` reads it from there',
+    by: 'TypeScript — the signature carries the type, and the types are the API',
     kind: 'covered',
 };
 

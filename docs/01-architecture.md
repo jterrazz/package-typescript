@@ -26,7 +26,7 @@ That is a deliberate exception to what the toolchain asks of everyone else, and 
 
 ## Why the CLI is bash
 
-`typescript check` runs up to fifteen passes, most of them separate processes — tsc, oxlint, oxfmt, knip, publint, dependency-cruiser and node scripts of this package's own. Bash starts them all with `&`, `wait`s on each pid, and reports each in one fixed order ([Quality checks](06-quality-checks.md)). A node orchestrator would add a process, a startup, and a dependency to reach the same fan-out.
+`typescript check` runs up to fourteen passes, most of them separate processes — tsc, oxlint, oxfmt, knip, publint, dependency-cruiser and node scripts of this package's own. Bash starts them all with `&`, `wait`s on each pid, and reports each in one fixed order ([Quality checks](06-quality-checks.md)). A node orchestrator would add a process, a startup, and a dependency to reach the same fan-out.
 
 The rule the split follows: **bash decides whether a gate applies; node decides what the gate says.** Whether a `.gitignore` exists, whether a repository is a repository, which workspace members own a `specs/` — those are one-line tests in `check.sh`. What is wrong with a `.gitignore`, or with a `docs/` tree, is a node script's, because the answer needs parsing and a rule roster.
 
@@ -51,7 +51,7 @@ Each one re-exports the underlying tool's `defineConfig` on purpose: a consumer'
 
 `typescript check` type-checks with the official TypeScript 7 Go compiler, pulled in through the per-platform `@typescript/typescript-*` optionalDependencies and resolved by path in `check.sh`.
 
-The ordinary `typescript` dependency stays on ^6 because two consumers need the JavaScript compiler API that the Go package no longer ships: typedoc (peer range 5–6) and `eslint-plugin-perfectionist`, which does a bare `require('typescript')`.
+The ordinary `typescript` dependency stays on ^6 because two consumers need the JavaScript compiler API that the Go package no longer ships: `dependency-cruiser` (a `typescript <7` peer) and `eslint-plugin-perfectionist`, which does a bare `require('typescript')`.
 
 **Never add `typescript@7`, or an npm alias of it, to this tree.** Under pnpm's hoist fallback it can hijack perfectionist's lookup and fail intermittently with `isExternalModuleNameRelative is not a function`.
 
@@ -65,4 +65,4 @@ The one gate that measures from the repository instead is the manual's, because 
 
 - [Developing](02-developing.md) — wiring a project onto these layers.
 - [Quality checks](06-quality-checks.md) — what the gates are, and what each refuses.
-- [Repo structure](09-repo-structure.md) — the shared doctrine this layout answers to.
+- [Repo structure](08-repo-structure.md) — the shared doctrine this layout answers to.

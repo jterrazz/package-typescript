@@ -21,17 +21,7 @@ export default defineSpecConfig({
              * runners — oxfmt, oxlint, run-split-install.sh — therefore keep their
              * chains: a document cannot name the binary it runs.
              */
-            cli({
-                exclude: [
-                    /*
-                     * Bridged documents: a .spec.ts beside each one runs it and adds the
-                     * assertion the format has no vocabulary for. Collecting them here
-                     * too would compile the same typedoc projection twice.
-                     */
-                    'specs/cli/docs/projection.spec.yaml',
-                    'specs/cli/docs/workspace-members.spec.yaml',
-                ],
-            }),
+            cli(),
         ],
     },
 });

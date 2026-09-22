@@ -12,7 +12,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 
 ## The passes
 
-`typescript check` runs up to fifteen passes. Three spawn a tool on every invocation, knip and four tree gates run on every `check`, and the other seven are opt-in — they appear only when the project qualifies.
+`typescript check` runs up to fourteen passes. Three spawn a tool on every invocation, knip and four tree gates run on every `check`, and the other six are opt-in — they appear only when the project qualifies.
 
 | Pass                              | Tool                        | When it runs                                                      |
 | --------------------------------- | --------------------------- | ----------------------------------------------------------------- |
@@ -23,7 +23,6 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Knip (unused code)                | knip (Node)                 | always (check only — it is not run in fix)                        |
 | Test Conventions (@jterrazz/test) | conventions checker         | per `specs/` root; per member resolving `@jterrazz/test` ≥ 15.3.0 |
 | Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)         |
-| Docs (sync)                       | `typescript docs --check`   | per package that has committed docs (`docs/reference/`)           |
 | Publish (packaging)               | publint + attw              | per package the registry would accept (not `private`)             |
 | Architecture (layer map)          | dependency-cruiser          | check: a `.dependency-cruiser.*` at the project root              |
 | Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)               |
@@ -32,11 +31,11 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Names (tree)                      | the naming gate             | always (check only — a rename is a move, not a rewrite)           |
 | Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)          |
 
-`typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate and the suppression gate in parallel — knip, the conventions checker, the two Docs passes and the remaining tree gates are check-only (they are read-only gates, not fixers).
+`typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate and the suppression gate in parallel — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
 
 ### In a workspace
 
-When the `package.json` at the cwd declares `workspaces`, the per-package passes run once per member that qualifies — `apps/*/specs`, `packages/*/docs/reference` and the rest are gates of their own, not files the root happens to contain. A member is a directory a workspace glob matches that holds a `package.json`; the pass reports one line and prints the log of any run that failed.
+When the `package.json` at the cwd declares `workspaces`, the per-package passes run once per member that qualifies — `apps/*/specs`, `packages/*/package.json` and the rest are gates of their own, not files the root happens to contain. A member is a directory a workspace glob matches that holds a `package.json`; the pass reports one line and prints the log of any run that failed.
 
 The Docs (layout) pass measures from neither: its unit is the repository, and the section below says why.
 
@@ -131,7 +130,7 @@ npx --yes --package=@jterrazz/typescript -- typescript docs-layout .
 
 The `--package` flag and the bin name are both spelled out on purpose: the shorter `npx @jterrazz/typescript docs-layout .` lets npm infer the command from the package name, and that inferred name — `typescript` — collides with the `typescript` package this one depends on, which crashes npm's resolution of the ephemeral install tree on some npm/Node combinations even though the short form works on others.
 
-The same gate, on any tree: a Go, Rust or Ansible repository wires that line into its own `make lint`. It needs nothing installed, takes the repository root as its argument, and prints one line per violation as `<rule>  <path>  <message>`. Unlike the pass it never asks whether the tree is a repository — the operator already said so by running it. It is `docs-layout`, and not `docs check`, because `typescript docs --check` already exists and asks a different question ([Docs pipeline](08-docs-pipeline.md)).
+The same gate, on any tree: a Go, Rust or Ansible repository wires that line into its own `make lint`. It needs nothing installed, takes the repository root as its argument, and prints one line per violation as `<rule>  <path>  <message>`. Unlike the pass it never asks whether the tree is a repository — the operator already said so by running it. It is `docs-layout` because the pass it runs is Docs (layout): one name for the gate, whichever door reaches it.
 
 ### Reusing the rules
 
@@ -237,7 +236,7 @@ oxlint's `no-restricted-imports` reads a path and a pattern; dependency-cruiser 
 
 A cruise starts from `src/` wherever there is one, and from whichever of `apps/`, `packages/` and `lib/` exist otherwise — a map never has to restate the shape of the tree it is about.
 
-`dependency-cruiser` declares a `typescript <7` peer, and this tree satisfies it: the ordinary `typescript` dependency here is the ^6 JavaScript compiler API that typedoc and perfectionist already need ([Architecture](01-architecture.md)). That is also why the TS7 Go compiler stays out of `node_modules` under the name `typescript`.
+`dependency-cruiser` declares a `typescript <7` peer, and this tree satisfies it: the ordinary `typescript` dependency here is the ^6 JavaScript compiler API that perfectionist already needs ([Architecture](01-architecture.md)). That is also why the TS7 Go compiler stays out of `node_modules` under the name `typescript`.
 
 ## The Astro (check + format) pass
 
@@ -297,7 +296,7 @@ It never invents a reason, and it never deletes a directive: both are the author
 
 ## The Markdown (prose) pass
 
-Every tracked `*.md` outside `docs/reference/` and outside any `_`-prefixed row — a fixture, a golden, a template, all of them another project's tree — is read for two things: whether its coordinates resolve, and whether its blocks breathe.
+Every tracked `*.md` outside any `_`-prefixed row — a fixture, a golden, a template, all of them another project's tree — is read for two things: whether its coordinates resolve, and whether its blocks breathe.
 
 | Rule                    | Refuses                                                                    |
 | ----------------------- | -------------------------------------------------------------------------- |
@@ -306,6 +305,8 @@ Every tracked `*.md` outside `docs/reference/` and outside any `_`-prefixed row 
 | `markdown-block-long`   | a paragraph, or one list item, running past twelve lines                   |
 | `markdown-fence-long`   | a fenced block running fifteen lines with no blank one in it               |
 | `markdown-section-flat` | a `##` section over thirty prose lines carrying neither a `###` nor a list |
+
+A skill is read from the install, where nothing can correct it, so one more rule reads a page under `skills/` alone: `markdown-chapter-missing` refuses a `docs/NN-name.md` it names that its package does not ship. The chapter is resolved beside the skill's own `skills/` folder, the package root it is published from.
 
 The three numbers are the readability floor of the shared doctrine, not the craft it asks for: the gap between them is a reader's pass, not a red gate. They are named constants at the top of the gate, and no page keeps a second copy of them.
 
@@ -350,10 +351,6 @@ Which engine runs is decided inside the gate rather than in `check.sh`, because 
 
 **There is no exception list, and there will not be one.** A hit is forgiven by exactly one thing: the same line declaring itself `fake`, `dummy`, `example`, `sample`, `synthetic` or `redacted`. A path allow-list is the first place a real leak hides, so the only way to silence this gate is to make the line say what it is.
 
-## The Docs (sync) pass
-
-Once a project has generated its committed docs, `check` guards them: it regenerates the projections into a temp dir and diffs them against what is committed. A drift — a hand-edited reference file, a chapter changed without regenerating — fails the pass and tells you to run `typescript docs`. See [Docs pipeline](08-docs-pipeline.md).
-
 ## Pitfalls
 
 - **A nested `oxlint.config.*` is LOADED wherever it sits.** oxlint discovers every config under the project and loads them all before it lints anything — `ignorePatterns` decides which FILES are linted, never which configs are read. So a fixture tree carrying a config that cannot load fails the parent project's own run, and a project whose specs stand on consumer projects writes those configs at run time instead of committing them ([Testing](03-testing.md)).
@@ -365,4 +362,3 @@ Once a project has generated its committed docs, `check` guards them: it regener
 ## Related
 
 - [Lint presets](07-lint-presets.md) — oxlint presets, compose, architecture.
-- [Docs pipeline](08-docs-pipeline.md) — what the Docs pass checks.

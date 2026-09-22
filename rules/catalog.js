@@ -37,9 +37,6 @@ export const FIXER_MARKERS = Object.freeze({
     start: '<!-- GENERATED:fixers -->',
 });
 
-/** Every profile there is, so a decision carried by all of them says `all`. */
-const EVERY_PROFILE = Object.keys(PROFILES).length;
-
 /** Every decision, in rule order, one entry per distinct decision. */
 export function catalog() {
     /** @type {Map<string, Entry>} */
@@ -78,48 +75,6 @@ export function render() {
         '| --- | --- | --- | --- | --- |',
         ...rows,
     ].join('\n');
-}
-
-/**
- * The same catalogue, trimmed for an agent: what the rule is, whether it runs,
- * the reason in one clause, and where. No `since` column — an agent is reading
- * to answer "may I write this", not "when was this decided", and the chapter
- * carries that half.
- */
-export function renderReference() {
-    const rows = catalog().map((entry) => {
-        const state = entry.level === 'off' ? 'off' : 'on';
-        const why = entry.level === 'off' ? reasonClause(entry.reason) : agentScopeOf(entry);
-        const where = entry.profiles.length === EVERY_PROFILE ? 'all' : entry.profiles.join(', ');
-
-        return `| \`${entry.rule}\` | ${state} | ${why} | ${where} |`;
-    });
-
-    return ['| Rule | State | Why | Profiles |', '| --- | --- | --- | --- |', ...rows].join('\n');
-}
-
-/** Where the vitest fragment applies, named by its owner rather than spelled out. */
-const TEST_FILE_ROUTE = "scoped to test files — @jterrazz/test's catalogue owns the shapes";
-
-/**
- * The scope an AGENT is owed. Seventy-odd vitest rows each restated the same
- * three globs, and one of them — the `__tests__` directory shape — is a layout
- * the test package's own rulebook refuses: a page an agent reads to decide
- * where to put a file would have been advertising it seventy times. So the
- * vitest block names its owner and the agent goes there for the shapes, which
- * is the package that decides them.
- */
-function agentScopeOf(entry) {
-    if (entry.fragment === 'vitest' && entry.scoped !== undefined) {
-        return TEST_FILE_ROUTE;
-    }
-
-    return scopeOf(entry);
-}
-
-/** An `off` in one clause: its kind, and the first thing its reason names. */
-function reasonClause({ by, kind }) {
-    return `${kind}: ${by.split(' — ')[0]}`;
 }
 
 /** One profile's decisions, its fragments applied left to right, last wins per rule and scope. */

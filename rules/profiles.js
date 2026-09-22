@@ -75,7 +75,7 @@ export const PROFILES = Object.freeze({
     library: {
         env: { builtin: true, node: true },
         fragments: [...CORE],
-        ignorePatterns: [...IGNORED, 'docs/reference/**'],
+        ignorePatterns: [...IGNORED],
     },
     next: {
         env: { browser: true, builtin: true, node: true },

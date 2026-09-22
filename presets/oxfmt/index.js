@@ -42,13 +42,10 @@ export default defineConfig({
     tabWidth: 4,
     trailingComma: 'all',
     useTabs: false,
-    /* `typescript docs` writes the byte-for-byte typedoc tree to docs/reference/ —
-     * formatting it would fight the Docs (sync) pass, so skip it by default.
-     * Asset trees and build caches are not source either — and a content tree
+    /* Asset trees and build caches are not source — and a content tree
      * can hold signed bytes (jterrazz-web's attestations), where one formatter
      * pass invalidates every proof. */
     ignorePatterns: [
-        'docs/reference',
         'dist/**',
         'assets/**',
         'public/**',

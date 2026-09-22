@@ -35,8 +35,8 @@ find_binary() {
 
 # Type checking uses the official TypeScript 7 Go compiler, pulled in through
 # the per-platform @typescript/typescript-* packages instead of a second
-# package named "typescript": typedoc and eslint-plugin-perfectionist load
-# the JS API from the "typescript" name (v6 here), and any typescript@7 in
+# package named "typescript": eslint-plugin-perfectionist and
+# dependency-cruiser load the JS API from the "typescript" name (v6 here), and any typescript@7 in
 # the tree can hijack that lookup under pnpm's hoist fallback. The lookup is
 # shared with the CLI's `tsc` passthrough, so it lives in one file.
 # shellcheck source=../find-tsc.sh
@@ -112,7 +112,7 @@ CHECKER_FLOOR=$(node "$PACKAGE_ROOT/lib/test-package.js" --floor)
 # Every gate measures from the NEAREST package.json. A single-package project
 # has exactly one — the cwd — and nothing below changes for it. A workspace
 # root has one per member, and the per-member gates run once per member
-# instead of once for a root that owns neither the specs nor the docs.
+# instead of once for a root that owns none of the specs.
 #
 # Root-only by nature, and deliberately left alone: tsc, oxlint and oxfmt
 # measure from their CONFIG file, not from a package, and each already walks
@@ -243,18 +243,6 @@ discover_specs_roots() {
             done < <(find "$member" \
                 \( -name node_modules -o -name dist -o -name .git \) -prune -o \
                 -type d -name specs -prune -print 2>/dev/null)
-        done
-    } | LC_ALL=C sort -u
-}
-
-# Every package that owns a committed docs projection. A package's docs sit at
-# its own root — that IS the nearest-package.json rule, so no walk is needed.
-discover_docs_roots() {
-    {
-        [ -d "docs/reference" ] && printf '%s\n' "."
-        local member
-        for member in "${WORKSPACE_MEMBERS[@]}"; do
-            [ -d "$member/docs/reference" ] && printf '%s\n' "$member"
         done
     } | LC_ALL=C sort -u
 }
@@ -674,25 +662,6 @@ run_checks() {
         done
     fi
 
-    # Docs (sync): only in check mode, and only for a package that has generated
-    # its committed docs (docs/reference/ exists — opt-in by first generation).
-    # Delegates to docs.sh --check: regenerate into a temp dir, diff the
-    # committed projections. Never duplicates the compiler's logic.
-    local docs_pids=()
-    local docs_logs=()
-    local docs_status=0
-    if [ "$FIX_MODE" = false ]; then
-        local docs_index=0
-        while IFS= read -r docs_root; do
-            [ -n "$docs_root" ] || continue
-            bash "$SCRIPT_DIR/docs.sh" "$(cd "$docs_root" && pwd)" "$PACKAGE_ROOT" --check \
-                > "$tmp_dir/docs-$docs_index.log" 2>&1 &
-            docs_pids+=($!)
-            docs_logs+=("$tmp_dir/docs-$docs_index.log")
-            docs_index=$((docs_index + 1))
-        done < <(discover_docs_roots)
-    fi
-
     # Wait and collect statuses
     wait $type_pid;   local type_status=$?
     [ -n "$lint_pid" ] && { wait $lint_pid; lint_status=$?; }
@@ -813,23 +782,12 @@ run_checks() {
         index=$((index + 1))
     done
 
-    local docs_failed_logs=()
-    index=0
-    for pid in "${docs_pids[@]}"; do
-        if ! wait "$pid"; then
-            docs_status=1
-            docs_failed_logs+=("${docs_logs[$index]}")
-        fi
-        index=$((index + 1))
-    done
-
     # ── The report ───────────────────────────────────────────────────────────
     # One order, and it is the chapter's: the three tools, the artefact gate,
-    # knip, the conventions checker, the two Docs passes, then the gates a
+    # knip, the conventions checker, the Docs (layout) pass, then the gates a
     # project opts into and the four that read its tree on every run. A pass
     # that did not apply is absent; every pass that ran prints the same block.
     join_logs "$tmp_dir/checker.log" "${checker_failed_logs[@]}"
-    join_logs "$tmp_dir/docs.log" "${docs_failed_logs[@]}"
     join_logs "$tmp_dir/publish.log" "${publish_failed_logs[@]}"
 
     # The checker's own ratchet breach — a grown id, one nobody recorded, or
@@ -881,8 +839,6 @@ run_checks() {
             "$checker_write"
     [ -n "$docs_layout_pid" ] &&
         report_pass "Docs (layout)" $docs_layout_status "$tmp_dir/docs-layout.log"
-    [ ${#docs_pids[@]} -gt 0 ] &&
-        report_pass "Docs (sync)" $docs_status "$tmp_dir/docs.log"
     [ ${#publish_pids[@]} -gt 0 ] &&
         report_pass "Publish (packaging)" $publish_status "$tmp_dir/publish.log"
     [ -n "$architecture_pid" ] &&
@@ -915,7 +871,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $docs_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ] && [ $publish_status -eq 0 ] && [ $architecture_status -eq 0 ] && [ $astro_status -eq 0 ] && [ $drift_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ] && [ $publish_status -eq 0 ] && [ $architecture_status -eq 0 ] && [ $astro_status -eq 0 ] && [ $drift_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

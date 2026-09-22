@@ -12,7 +12,6 @@ runs:
             bundle       Bundle library (ESM + CJS + types)
             start        Run the built application
             dev          Build, run, and rebuild on changes
-            docs         Generate the committed docs/reference tree; --check verifies sync
             docs-layout  Check a repository's docs/ against the manual spine
             doctor       Report the installed tool versions against the declared ranges
             baseline     Record the oxlint baseline this project may not exceed
@@ -26,8 +25,6 @@ runs:
             typescript bundle
             typescript start
             typescript dev
-            typescript docs
-            typescript docs --check
             typescript docs-layout .
             typescript doctor
             typescript baseline

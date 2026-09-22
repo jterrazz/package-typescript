@@ -89,12 +89,11 @@ Applications:
 }
 ```
 
-Libraries (bundle instead of build, and generate docs):
+Libraries (bundle instead of build):
 
 ```json
 {
     "build": "typescript bundle",
-    "docs": "typescript docs",
     "lint": "typescript check",
     "lint:fix": "typescript fix"
 }
@@ -106,7 +105,7 @@ A repository that EMITS with project references runs the compiler directly, and 
 
 That is the whole contract, and it is meant to stay that size:
 
-- **One devDependency** — `@jterrazz/typescript`. tsc, oxlint, oxfmt, knip, tsdown and typedoc are its own dependencies and arrive with it; installing one of them directly gives a project two opinions about its own toolchain, and the versions drift apart from there. It holds under npm, pnpm and bun alike, and pnpm is the one that proves it: its `node_modules` resolves only what the project itself declares, so a config naming any other package would fail there with `ERR_MODULE_NOT_FOUND`.
+- **One devDependency** — `@jterrazz/typescript`. tsc, oxlint, oxfmt, knip and tsdown are its own dependencies and arrive with it; installing one of them directly gives a project two opinions about its own toolchain, and the versions drift apart from there. It holds under npm, pnpm and bun alike, and pnpm is the one that proves it: its `node_modules` resolves only what the project itself declares, so a config naming any other package would fail there with `ERR_MODULE_NOT_FOUND`.
 - **Two commands** — `typescript check` and `typescript fix`. Every gate is behind them, so a script that calls a tool underneath skips the passes the CLI orchestrates.
 - **One line of tsconfig** — the `extends` above, and nothing beside it. In a workspace that is one line per member: the unit the toolchain measures from is the package, not the repository ([Quality checks](06-quality-checks.md)).
 
@@ -135,7 +134,7 @@ The exceptions the gate never touches — a closed list, plus `.next` under one 
 
 - Entry point is `src/index.ts` — the single public barrel.
 - Use `.js` extensions in relative imports: `import { foo } from './bar.js'`.
-- Add TSDoc to every public export — `typescript docs` derives the reference from it.
+- The API is the types: a public export's signature is its documentation, and no generated reference sits beside it.
 
 ## Taking a bump
 
@@ -158,17 +157,14 @@ npm run lint    # this package's own CLI, run on this package
 
 Where a new thing goes follows the layers ([Architecture](01-architecture.md)): a new gate is a node script in `lib/` plus the lines in `bin/commands/check.sh` that decide whether it applies; a lint decision is a line of a fragment under `rules/`, never a config; a new configuration is a file under `presets/`; a new importable entry is a `.js` and a hand-written `.d.ts` in `src/`, an `exports` subpath, and a row in the resolution test.
 
-Two standing rules bind every change here:
-
-- **Regenerate the projection in the same change.** Touching the corpus or the public API and forgetting `./bin/typescript.sh docs` fails the Docs (sync) pass — see [Docs pipeline](08-docs-pipeline.md).
-- **A change to the public surface reaches three places.** `README.md`, the chapter that owns the subject, and `skills/jterrazz-typescript/SKILL.md`, which routes into the chapter and never restates it.
+One standing rule binds every change here: **a change to the public surface reaches three places.** `README.md`, the chapter that owns the subject, and `skills/jterrazz-typescript/SKILL.md`, which routes into the chapter and never restates it — and the Markdown (prose) pass fails a skill naming a chapter that does not exist.
 
 ## Related
 
 - [Architecture](01-architecture.md) — the layers a change lands in.
 - [Building](05-building.md) — build, bundle, start, dev.
 - [Quality checks](06-quality-checks.md) — `check` / `fix`.
-- [Repo structure](09-repo-structure.md) — how a repo is organized.
+- [Repo structure](08-repo-structure.md) — how a repo is organized.
 
 ### A subtree on another profile
 
