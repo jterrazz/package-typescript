@@ -51,9 +51,11 @@ export default defineConfig({
         'public/**',
         '.next/**',
         '.expo/**',
-        // A spec's input is deliberately mis-shaped and its golden is
-        // Byte-for-byte; formatting either would rewrite the claim.
-        '**/_fixtures/**',
-        '**/_expected/**',
+        // A spec's ground is deliberately mis-shaped or held byte for byte;
+        // formatting any of it would rewrite the claim.
+        '**/specs/**/fixtures/**',
+        '**/specs/**/expected/**',
+        '**/specs/**/seeds/**',
+        '**/specs/**/requests/**',
     ],
 });

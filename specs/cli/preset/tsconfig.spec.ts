@@ -73,3 +73,18 @@ describe.each([
         expect(resolve(dir, buildInfo)).toBe(resolve(dir, '.artifacts/tsc/tsconfig.tsbuildinfo'));
     });
 });
+
+test('leaves the ground a spec stands on out of the compiled file set', () => {
+    // Given - a consumer whose specs/ holds each of the four ground folders beside a contract
+    const dir = resolve(import.meta.dirname, '_fixtures', 'tsconfig-ground');
+
+    // When - tsc lists the files the node preset compiles
+    const listed = execFileSync(TSC, ['--listFilesOnly'], { cwd: dir, encoding: 'utf8' })
+        .split('\n')
+        .filter((path) => path.startsWith(dir))
+        .map((path) => path.slice(dir.length + 1))
+        .toSorted();
+
+    // Then - the contract and the product's own fixtures/ compile; the ground never does
+    expect(listed).toStrictEqual(['specs/orders/contracts/order.ts', 'src/fixtures/catalog.ts']);
+});

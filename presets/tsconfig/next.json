@@ -35,7 +35,9 @@
     ],
     "exclude": [
         "${configDir}/node_modules",
-        "${configDir}/**/_fixtures",
-        "${configDir}/**/_expected"
+        "${configDir}/**/specs/**/fixtures",
+        "${configDir}/**/specs/**/expected",
+        "${configDir}/**/specs/**/seeds",
+        "${configDir}/**/specs/**/requests"
     ]
 }

@@ -296,7 +296,7 @@ It never invents a reason, and it never deletes a directive: both are the author
 
 ## The Markdown (prose) pass
 
-Every tracked `*.md` outside any `_`-prefixed row — a fixture, a golden, a template, all of them another project's tree — is read for two things: whether its coordinates resolve, and whether its blocks breathe.
+Every tracked `*.md` outside the ground a spec stands on — `fixtures/`, `expected/`, `seeds/` and `requests/` under `specs/`, another project's tree — is read for two things: whether its coordinates resolve, and whether its blocks breathe.
 
 | Rule                    | Refuses                                                                    |
 | ----------------------- | -------------------------------------------------------------------------- |

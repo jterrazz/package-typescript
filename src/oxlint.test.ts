@@ -1,6 +1,19 @@
 import { expect, test } from 'vitest';
 
-import { compose, defineConfig, hexagonal, layers, nested, react } from './oxlint.js';
+import {
+    astro,
+    bun,
+    compose,
+    defineConfig,
+    expo,
+    hexagonal,
+    layers,
+    library,
+    nested,
+    next,
+    node,
+    react,
+} from './oxlint.js';
 
 test('concatenates and dedupes plugin lists', () => {
     // Given - two configs sharing one jsPlugin
@@ -43,11 +56,15 @@ test('concatenates and dedupes ignorePatterns', () => {
     // Given - overlapping ignore lists
     const merged = compose(
         { ignorePatterns: ['dist/**', 'node_modules/**'] },
-        { ignorePatterns: ['node_modules/**', '**/_fixtures/**'] },
+        { ignorePatterns: ['node_modules/**', '**/specs/**/fixtures/**'] },
     );
 
     // Then - one entry each
-    expect(merged.ignorePatterns).toStrictEqual(['dist/**', 'node_modules/**', '**/_fixtures/**']);
+    expect(merged.ignorePatterns).toStrictEqual([
+        'dist/**',
+        'node_modules/**',
+        '**/specs/**/fixtures/**',
+    ]);
 });
 
 test('takes a key the merge tables do not name from the last config that sets it', () => {
@@ -149,3 +166,22 @@ test('a nested config carries no linter options, which oxlint reads in the root 
     expect(subtree.plugins).toStrictEqual(react.plugins);
     expect(subtree.rules?.curly).toBe('off');
 });
+
+test.each(Object.entries({ astro, bun, expo, library, next, node, react }))(
+    'the %s profile never lints the ground a spec stands on',
+    (_name, profile) => {
+        // Given - a profile a consumer names
+        // Then - the four folders @jterrazz/test reserves under specs/ are ignored, and nothing underscored
+        expect(profile.ignorePatterns).toStrictEqual(
+            expect.arrayContaining([
+                '**/specs/**/fixtures/**',
+                '**/specs/**/expected/**',
+                '**/specs/**/seeds/**',
+                '**/specs/**/requests/**',
+            ]),
+        );
+        expect(profile.ignorePatterns?.filter((pattern) => pattern.includes('/_'))).toStrictEqual(
+            [],
+        );
+    },
+);

@@ -18,6 +18,20 @@ test('gives the formatter the three sorters, so no lint rule owns an order', () 
     });
 });
 
+test('leaves the ground a spec stands on unformatted, by its bare names', () => {
+    // Given - the shared preset
+    // Then - the four folders @jterrazz/test reserves under specs/ are skipped, and nothing underscored
+    expect(base.ignorePatterns).toStrictEqual(
+        expect.arrayContaining([
+            '**/specs/**/fixtures/**',
+            '**/specs/**/expected/**',
+            '**/specs/**/seeds/**',
+            '**/specs/**/requests/**',
+        ]),
+    );
+    expect(base.ignorePatterns?.filter((pattern) => pattern.includes('/_'))).toStrictEqual([]);
+});
+
 test("re-exports oxfmt's own defineConfig", () => {
     // Given - a config a consumer would write, with oxfmt declared nowhere in its project
     const config = { printWidth: 80 };

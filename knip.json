@@ -7,5 +7,9 @@
         "lib/check-gitignore.js",
         "lib/merge-knip-config.js",
         "lib/workspace-members.js"
-    ]
+    ],
+    // This repository's own specs still stand on @jterrazz/test 16's underscored
+    // ground, which the preset no longer names; these go with the migration of
+    // specs/ to the 17 runner.
+    "ignore": ["specs/**/_fixtures/**", "specs/**/_expected/**"]
 }

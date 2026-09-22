@@ -85,7 +85,9 @@ The first three exceptions reach no `cli` chain at all, which is what `c18-modul
 
 ## Where a fixture lives
 
-What a spec stands on carries a leading underscore. The shared pool is `specs/_fixtures/`, reached as `fixture: $FIXTURES/…`, and it holds only what SEVERAL domains use — `sample-app`, `sample-documented`, `incremental-app`. A fixture one domain alone reaches for lives beside that domain, in `specs/cli/<domain>/_fixtures/`, and is named by its relative form. Goldens are `_expected/`.
+What a spec stands on carries a leading underscore. The shared pool is `specs/_fixtures/`, reached as `fixture: $FIXTURES/…`, and it holds only what SEVERAL domains use — `sample-app`, `incremental-app`. A fixture one domain alone reaches for lives beside that domain, in `specs/cli/<domain>/_fixtures/`, and is named by its relative form. Goldens are `_expected/`.
+
+That is `@jterrazz/test` 16's layout, and this repository's specs keep it until they move to the 17 runner. The presets it ships already name 17's bare ground — `fixtures/`, `expected/`, `seeds/`, `requests/` under `specs/` — so its own run carries the two old names itself, and nothing else does: `npm run lint` and `npm run lint:fix` pass them as `--ignore-pattern`, and `oxfmt.config.ts`, `knip.json` and `tsconfig.json` each hold one line for them. The lines go with the migration.
 
 The domains today: `build`, `check` (the passes, each stating the whole run), `clean`, `dev`, `docs-layout` (the manual's rules, one document per family), `doctor`, `help`, `preset`, `start`.
 
