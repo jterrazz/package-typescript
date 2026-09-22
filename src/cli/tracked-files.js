@@ -2,12 +2,14 @@
  * The files a project would carry into a commit — the one sweep every
  * tree-reading gate starts from.
  *
- * `git ls-files --cached --others --exclude-standard` is the answer wherever
- * there is a git tree: it names what is tracked AND what the next `git add`
- * would track, so a file fails a gate before it is committed, not after. A
- * directory git knows nothing about — a fixture the spec runner copied, a tree
- * nobody has `git init`ed — is walked instead, because a gate that goes silent
- * outside git is a gate that passes on everything.
+ * `git ls-files --cached` is the answer wherever there is a git tree: it names
+ * what is TRACKED, and nothing a gate has not yet been told to carry — an
+ * untracked, non-ignored directory (`data/`, a local scratch folder nobody
+ * added) is not a finding, so a baseline recorded on a clean checkout reads
+ * the same locally, where such a directory is free to exist. A directory git
+ * knows nothing about — a fixture the spec runner copied, a tree nobody has
+ * `git init`ed — is walked instead, because a gate that goes silent outside
+ * git is a gate that passes on everything.
  *
  * The sweep REFUSES an answer that is empty while the tree is not. A read that
  * silently sees nothing turns every rule above it vacuously green, which is the
@@ -41,14 +43,14 @@ const UNSWEPT = new Set([
 /** Extensions whose bytes are not text — reading them for patterns is noise. */
 const BINARY = /\.(?:avif|bin|gif|ico|jpeg|jpg|lock|mp4|pdf|png|svg|ttf|webp|woff2?|zip)$/iu;
 
-/** Every path git carries or would carry, or null when there is no git tree here. */
+/** Every path git tracks, or null when there is no git tree here. */
 function gitSweep(root) {
     try {
-        return execFileSync(
-            'git',
-            ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
-            { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-        )
+        return execFileSync('git', ['ls-files', '--cached', '-z'], {
+            cwd: root,
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'ignore'],
+        })
             .split('\0')
             .filter((path) => path !== '');
     } catch {
