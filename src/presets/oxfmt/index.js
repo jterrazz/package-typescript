@@ -53,9 +53,9 @@ export default defineConfig({
         '.expo/**',
         // A spec's ground is deliberately mis-shaped or held byte for byte;
         // formatting any of it would rewrite the claim.
-        '**/specs/**/fixtures/**',
-        '**/specs/**/expected/**',
-        '**/specs/**/seeds/**',
-        '**/specs/**/requests/**',
+        '**/fixtures/**',
+        '**/expected/**',
+        '**/seeds/**',
+        '**/requests/**',
     ],
 });

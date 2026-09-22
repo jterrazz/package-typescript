@@ -19,8 +19,8 @@
  *
  * Dynamic detection:
  *   - Published library (main/exports/publishConfig) → disable exports/types/files rules
- *   - Auto-ignore docs/** and the ground under specs/ (fixtures, expected, seeds,
- *     requests) — at the root AND inside every workspace member, because the
+ *   - Auto-ignore docs/** and the ground a test stands on (fixtures, expected,
+ *     seeds, requests), wherever it sits — at the root AND inside every workspace member, because the
  *     convention is the package's and knip resolves `ignore` globs from the root
  *   - Vitest workspace workaround → explicit vitest config when vitest is a dependency
  *
@@ -34,8 +34,11 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 
 import { workspaceMembers } from './workspace-members.js';
 
-/** The folders @jterrazz/test reserves under specs/ for what a scenario stands on. */
+/** The folders @jterrazz/test reserves, wherever a test stands, for what it stands on. */
 const GROUND = new Set(['expected', 'fixtures', 'requests', 'seeds']);
+
+/** Folders no scan descends into: installs, build output, and the tools' dot-folders. */
+const UNSCANNED = new Set(['dist', 'node_modules']);
 
 /**
  * Drops `//` and block comments, leaving everything inside a string literal
@@ -218,14 +221,12 @@ for (const unit of units) {
         conventionIgnores.push(`${prefix}docs/**`);
     }
 
-    // The ground is @jterrazz/test's four reserved folders, under specs/ only.
-    if (existsSync(`${prefix}specs`)) {
-        findConventionDirs(`${prefix}specs`, 0);
-    }
+    // The ground is @jterrazz/test's four reserved folders, wherever they sit.
+    findConventionDirs(unit, 0);
 }
 
 function findConventionDirs(dir, depth) {
-    if (depth > 3) {
+    if (depth > 6) {
         return;
     }
     let entries;
@@ -238,10 +239,11 @@ function findConventionDirs(dir, depth) {
         if (!entry.isDirectory()) {
             continue;
         }
+        const path = dir === '.' ? entry.name : `${dir}/${entry.name}`;
         if (GROUND.has(entry.name)) {
-            conventionIgnores.push(`${dir}/${entry.name}/**`);
-        } else if (entry.name !== 'node_modules') {
-            findConventionDirs(`${dir}/${entry.name}`, depth + 1);
+            conventionIgnores.push(`${path}/**`);
+        } else if (!UNSCANNED.has(entry.name) && !entry.name.startsWith('.')) {
+            findConventionDirs(path, depth + 1);
         }
     }
 }

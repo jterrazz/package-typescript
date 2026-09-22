@@ -56,15 +56,11 @@ test('concatenates and dedupes ignorePatterns', () => {
     // Given - overlapping ignore lists
     const merged = compose(
         { ignorePatterns: ['dist/**', 'node_modules/**'] },
-        { ignorePatterns: ['node_modules/**', '**/specs/**/fixtures/**'] },
+        { ignorePatterns: ['node_modules/**', '**/fixtures/**'] },
     );
 
     // Then - one entry each
-    expect(merged.ignorePatterns).toStrictEqual([
-        'dist/**',
-        'node_modules/**',
-        '**/specs/**/fixtures/**',
-    ]);
+    expect(merged.ignorePatterns).toStrictEqual(['dist/**', 'node_modules/**', '**/fixtures/**']);
 });
 
 test('takes a key the merge tables do not name from the last config that sets it', () => {
@@ -171,13 +167,13 @@ test.each(Object.entries({ astro, bun, expo, library, next, node, react }))(
     'the %s profile never lints the ground a spec stands on',
     (_name, profile) => {
         // Given - a profile a consumer names
-        // Then - the four folders @jterrazz/test reserves under specs/ are ignored, and nothing underscored
+        // Then - the four folders @jterrazz/test reserves are ignored wherever they sit, and nothing underscored
         expect(profile.ignorePatterns).toStrictEqual(
             expect.arrayContaining([
-                '**/specs/**/fixtures/**',
-                '**/specs/**/expected/**',
-                '**/specs/**/seeds/**',
-                '**/specs/**/requests/**',
+                '**/fixtures/**',
+                '**/expected/**',
+                '**/seeds/**',
+                '**/requests/**',
             ]),
         );
         expect(profile.ignorePatterns?.filter((pattern) => pattern.includes('/_'))).toStrictEqual(

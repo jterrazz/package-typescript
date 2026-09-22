@@ -47,14 +47,15 @@ export const CORE = Object.freeze([
 const IGNORED = Object.freeze([
     'dist/**',
     'node_modules/**',
-    // The ground a spec stands on — its inputs, its goldens, its database
-    // state and its requests — is @jterrazz/test's four reserved folders
-    // under specs/: an input is deliberately broken and a golden is held
-    // byte for byte, so none of it is source and none of it is linted.
-    '**/specs/**/fixtures/**',
-    '**/specs/**/expected/**',
-    '**/specs/**/seeds/**',
-    '**/specs/**/requests/**',
+    // The ground a test stands on — its inputs, its goldens, its database
+    // state and its requests — is @jterrazz/test's four reserved folders,
+    // wherever a test stands (under specs/, and beside a module under src/):
+    // an input is deliberately broken and a golden is held byte for byte,
+    // so none of it is source and none of it is linted.
+    '**/fixtures/**',
+    '**/expected/**',
+    '**/seeds/**',
+    '**/requests/**',
 ]);
 
 /** Every profile, by the name a consumer imports. */

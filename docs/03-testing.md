@@ -85,9 +85,9 @@ The first three exceptions reach no `cli` chain at all, which is what `c18-modul
 
 ## Where a fixture lives
 
-What a spec stands on sits in four bare folders `@jterrazz/test` 17 reserves under `specs/`: `fixtures/`, `expected/`, `seeds/` and `requests/`. The shared pool is `specs/fixtures/`, and it holds only what SEVERAL domains use — `sample-app`, `incremental-app`. A fixture one domain alone reaches for lives beside that domain, in `specs/cli/<domain>/fixtures/`. Either way a spec names it by its path from the spec file, spelled in full — `fixture: ./fixtures/sample-lib/`, `fixture: ../../fixtures/sample-app/`, `.fixtureFile('./fixtures/formatter/wrong-style.ts')` — and a golden the same way, `toMatchFile('./expected/resolution.txt')`.
+What a spec stands on sits in four bare folders `@jterrazz/test` 17 reserves wherever a test stands on a file: `fixtures/`, `expected/`, `seeds/` and `requests/`. The shared pool is `specs/fixtures/`, and it holds only what SEVERAL domains use — `sample-app`, `incremental-app`. A fixture one domain alone reaches for lives beside that domain, in `specs/cli/<domain>/fixtures/`. Either way a spec names it by its path from the spec file, spelled in full — `fixture: ./fixtures/sample-lib/`, `fixture: ../../fixtures/sample-app/`, `.fixtureFile('./fixtures/formatter/wrong-style.ts')` — and a golden the same way, `toMatchFile('./expected/resolution.txt')`.
 
-The presets this repository ships name those four folders, and its own run takes them from the presets like any consumer: no ignore of its own in the lint scripts, `oxfmt.config.ts`, `knip.json` or `tsconfig.json`.
+The presets this repository ships ignore those four folders wherever they sit, and its own run takes them from the presets like any consumer: no ignore of its own in the lint scripts, `oxfmt.config.ts`, `knip.json` or `tsconfig.json`.
 
 The domains today: `build`, `check` (the passes, each stating the whole run), `clean`, `dev`, `docs-layout` (the manual's rules, one document per family), `doctor`, `help`, `preset`, `start`.
 

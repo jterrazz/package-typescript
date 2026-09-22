@@ -20,13 +20,13 @@ test('gives the formatter the three sorters, so no lint rule owns an order', () 
 
 test('leaves the ground a spec stands on unformatted, by its bare names', () => {
     // Given - the shared preset
-    // Then - the four folders @jterrazz/test reserves under specs/ are skipped, and nothing underscored
+    // Then - the four folders @jterrazz/test reserves are skipped wherever they sit, and nothing underscored
     expect(base.ignorePatterns).toStrictEqual(
         expect.arrayContaining([
-            '**/specs/**/fixtures/**',
-            '**/specs/**/expected/**',
-            '**/specs/**/seeds/**',
-            '**/specs/**/requests/**',
+            '**/fixtures/**',
+            '**/expected/**',
+            '**/seeds/**',
+            '**/requests/**',
         ]),
     );
     expect(base.ignorePatterns?.filter((pattern) => pattern.includes('/_'))).toStrictEqual([]);

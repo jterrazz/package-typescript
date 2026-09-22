@@ -96,19 +96,18 @@ function holdsSomething(root) {
 }
 
 /**
- * The ground a spec stands on, by the four names `@jterrazz/test` reserves
- * under `specs/`. The names are only ground there: a `src/fixtures/` is the
- * product's own code, and a `contracts/` a spec imports is TypeScript, not
- * ground.
+ * The ground a test stands on, by the four names `@jterrazz/test` reserves
+ * wherever a test stands — under `specs/`, and beside a module under `src/`.
+ * A `contracts/` a spec imports is TypeScript, not ground.
  */
 const GROUND = new Set(['expected', 'fixtures', 'requests', 'seeds']);
 
-/** Whether a path lies under the ground a scenario mounts rather than in the project. */
+/** Whether a path lies under the ground a test mounts rather than in the project. */
 function isGround(path) {
-    const segments = path.split('/');
-    const specs = segments.indexOf('specs');
-
-    return specs !== -1 && segments.slice(specs + 1, -1).some((segment) => GROUND.has(segment));
+    return path
+        .split('/')
+        .slice(0, -1)
+        .some((segment) => GROUND.has(segment));
 }
 
 /**

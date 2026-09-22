@@ -159,7 +159,7 @@ Several `off` reasons of kind `convention` name this page. Here is what they nam
 
 - `@jterrazz/*` packages auto-ignored.
 - Published libraries: `exports` / `types` / `files` rules auto-disabled.
-- Convention paths auto-ignored — `docs/`, and the ground a spec stands on: `fixtures/`, `expected/`, `seeds/` and `requests/` wherever they sit under `specs/`, the four folders `@jterrazz/test` reserves there. At the root and inside every workspace member, because the convention belongs to the package. The underscored names of `@jterrazz/test` 16 (`_fixtures/`, `_expected/`) are no longer recognised.
+- Convention paths auto-ignored — `docs/`, and the ground a test stands on: `fixtures/`, `expected/`, `seeds/` and `requests/` wherever they sit, the four folders `@jterrazz/test` reserves everywhere a test stands on a file — the same four the oxlint profiles, the oxfmt preset and the tsconfig presets leave out. At the root and inside every workspace member, because the convention belongs to the package. The underscored names of `@jterrazz/test` 16 (`_fixtures/`, `_expected/`) are no longer recognised.
 - Plugin dependencies (`*-plugin-*`, `@scope/*`) auto-ignored.
 - The toolchain's own config files — `oxlint.config.ts`, `oxfmt.config.ts`, `vitest.config.*`, `tsdown.config.*` — are named as `entry`, so they read as used even though a consumer never declares oxlint, oxfmt, vitest or tsdown itself: knip's own plugins for those tools only auto-enable when the tool is a DIRECT dependency, and this preset's contract is one devDependency ([Developing](02-developing.md)).
 

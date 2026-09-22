@@ -74,8 +74,8 @@ describe.each([
     });
 });
 
-test('leaves the ground a spec stands on out of the compiled file set', () => {
-    // Given - a consumer whose specs/ holds each of the four ground folders beside a contract
+test('leaves the ground a test stands on out of the compiled file set, wherever it sits', () => {
+    // Given - a consumer whose specs/ holds each of the four ground folders beside a contract, and whose src/ holds a module test's fixtures/
     const dir = resolve(import.meta.dirname, 'fixtures', 'tsconfig-ground');
 
     // When - tsc lists the files the node preset compiles
@@ -85,6 +85,6 @@ test('leaves the ground a spec stands on out of the compiled file set', () => {
         .map((path) => path.slice(dir.length + 1))
         .toSorted();
 
-    // Then - the contract and the product's own fixtures/ compile; the ground never does
-    expect(listed).toStrictEqual(['specs/orders/contracts/order.ts', 'src/fixtures/catalog.ts']);
+    // Then - the contract and the product compile; the ground never does, under specs/ or src/
+    expect(listed).toStrictEqual(['specs/orders/contracts/order.ts', 'src/catalog/catalog.ts']);
 });

@@ -1,4 +1,4 @@
-description: says nothing about the ground a spec stands on, however broken that ground is
+description: says nothing about the ground a test stands on, under specs/ or src/, however broken
 fixture: ./fixtures/ground/untouched/
 runs:
     - command: check
