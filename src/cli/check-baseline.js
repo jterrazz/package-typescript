@@ -50,8 +50,8 @@ import { argv, exit, stdout } from 'node:process';
 /** The file, at the project root, tracked beside the config it ratchets. */
 export const BASELINE = 'typescript.baseline.json';
 
-/** The file `@jterrazz/test` records its own rules in — named here only to send an entry there. */
-const TEST_BASELINE = 'test.baseline.json';
+/** The file `@jterrazz/test` records its own rules in — that package writes and judges it. */
+export const TEST_BASELINE = 'test.baseline.json';
 
 /** The namespaces `@jterrazz/test` owns: its oxlint plugin's rules and its checker's ids. */
 const TEST_NAMESPACES = ['jterrazz/', 'jterrazz-check/'];
@@ -98,9 +98,9 @@ export function countsOf(...reports) {
     return counts;
 }
 
-/** The recorded counts, or null when the project does not keep a baseline. */
-export function readBaseline(root) {
-    const path = join(root, BASELINE);
+/** The recorded counts of `file` (defaulting to this package's own), or null when it is absent. */
+export function readBaseline(root, file = BASELINE) {
+    const path = join(root, file);
     if (!existsSync(path)) {
         return null;
     }

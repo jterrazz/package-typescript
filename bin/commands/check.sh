@@ -817,9 +817,7 @@ run_checks() {
     report_pass "Suppressions (directives)" $suppressions_status "$tmp_dir/suppressions.log" "$write"
     [ -n "$markdown_pid" ] &&
         report_pass "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
-    # A green Names pass still speaks: a finding the ratchet holds is printed,
-    # and recorded debt nobody is shown is debt nobody pays.
-    [ -n "$names_pid" ] && report_pass "Names (tree)" $names_status "$tmp_dir/names.log" writer
+    [ -n "$names_pid" ] && report_pass "Names (tree)" $names_status "$tmp_dir/names.log"
     [ -n "$secrets_pid" ] && report_pass "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
 
     # Drift: the report, not a gate — how far this project stands from the

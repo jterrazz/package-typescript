@@ -1,0 +1,54 @@
+description: the drift report names both ratchet files, each with its own total
+fixture: ./fixtures/drift/two-ratchets/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          baseline-ratchet  typescript.baseline.json  eslint/no-debugger is at zero — the ratchet moved, delete its entry
+          Run 'typescript baseline' to record where the project actually stands.
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                   none of this package's
+            rules off vs profile      not measured
+            suppressions              0
+            typescript.baseline.json  7
+            test.baseline.json        3
+            tool versions             in range
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

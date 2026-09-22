@@ -67,7 +67,7 @@ test('refuses a rule the profile has on, turned off with no reason beside it', (
 
     // Then - the report names the profile, and refuses the rule turned off in silence
     expect(silent.stdout).toContain('Deviations from the profile');
-    expect(silent.stdout).toContain('profile               node');
+    expect(silent.stdout).toContain('profile                   node');
     expect(silent.stdout).toContain(
         "drift-unreasoned  oxlint.config.ts  no-debugger is off and the line that turns it off carries no '// reason:'",
     );
@@ -99,6 +99,6 @@ test('accepts the same rule turned off, once the line that turns it off says why
      */
 
     // Then - the rule is still REPORTED as off, and no longer refused: it is a decision now
-    expect(reasoned.stdout).toContain('rules off vs profile  1 (no-debugger)');
+    expect(reasoned.stdout).toContain('rules off vs profile      1 (no-debugger)');
     expect(reasoned.stdout).not.toContain('drift-unreasoned');
 });

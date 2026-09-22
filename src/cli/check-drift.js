@@ -27,7 +27,7 @@ import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
 import { PROFILES } from '../../lint/profiles.js';
-import { readBaseline } from './check-baseline.js';
+import { BASELINE, readBaseline, TEST_BASELINE } from './check-baseline.js';
 import { countSuppressions } from './check-suppressions.js';
 import { toolVersions } from './doctor.js';
 import { ignorePatternsOf } from './tracked-files.js';
@@ -153,9 +153,17 @@ const unreasoned = off.filter((rule) => {
     return line === undefined || !REASON.test(line);
 });
 
-const baseline = readBaseline(root);
-const baselineTotal =
-    baseline === null ? null : Object.values(baseline).reduce((sum, count) => sum + count, 0);
+/** A ratchet's total, or null when the project keeps no such file. */
+function totalOf(file) {
+    const recorded = readBaseline(root, file);
+
+    return recorded === null
+        ? null
+        : Object.values(recorded).reduce((sum, count) => sum + count, 0);
+}
+
+const baselineTotal = totalOf(BASELINE);
+const testBaselineTotal = totalOf(TEST_BASELINE);
 const suppressions = countSuppressions(root, ignorePatternsOf(argv));
 const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
 
@@ -167,6 +175,7 @@ if (isJson) {
                 profile: profileName,
                 rulesOff: off,
                 suppressions,
+                testBaseline: testBaselineTotal,
                 tools: behind,
                 unreasoned,
             },
@@ -186,18 +195,30 @@ function rulesOffLine() {
     return off.length === 0 ? 'none' : `${off.length} (${off.join(', ')})`;
 }
 
-stdout.write(`  profile               ${profileName ?? "none of this package's"}\n`);
-stdout.write(`  rules off vs profile  ${rulesOffLine()}\n`);
-stdout.write(`  suppressions          ${suppressions}\n`);
-stdout.write(`  baseline              ${baselineTotal === null ? 'absent' : baselineTotal}\n`);
+/* The longest label is a ratchet's own filename, so every row aligns to it. */
+const LABEL_WIDTH = Math.max(BASELINE.length, TEST_BASELINE.length) + 2;
+
+/** One row of the block: a label, padded to the widest one, then its value. */
+function row(label, value) {
+    return `  ${label.padEnd(LABEL_WIDTH)}${value}\n`;
+}
+
+stdout.write(row('profile', profileName ?? "none of this package's"));
+stdout.write(row('rules off vs profile', rulesOffLine()));
+stdout.write(row('suppressions', suppressions));
+stdout.write(row(BASELINE, baselineTotal === null ? 'absent' : baselineTotal));
+if (testBaselineTotal !== null) {
+    stdout.write(row(TEST_BASELINE, testBaselineTotal));
+}
 stdout.write(
-    `  tool versions         ${
+    row(
+        'tool versions',
         behind.length === 0
             ? 'in range'
             : behind
                   .map(({ installed, name, verdict }) => `${name} ${installed} ${verdict}`)
-                  .join(', ')
-    }\n`,
+                  .join(', '),
+    ),
 );
 
 for (const rule of unreasoned) {
