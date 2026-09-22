@@ -4,7 +4,7 @@
 
 Every pass that RAN prints the same block, in one fixed order: a `RUN` header carrying its name, whatever it has to say, and one verdict line. A pass that did not apply — no Astro in the project, no declared layer map — prints nothing at all, because it answered no question.
 
-What sits between the header and the verdict is the one variable. A failing pass prints its whole captured log; a passing one stays silent, unless it WROTE something — `fix` changed a file the operator owns, and silence would hide that. A tool's success chatter never reaches the stream, so a green run is byte-identical on every platform.
+What sits between the header and the verdict is the one variable. A failing pass prints its whole captured log; a passing one stays silent, unless it WROTE something — `fix` changed a file the operator owns, and silence would hide that — or a ratchet held it, which the Oxlint pass states in one line ([the ratchet](#the-ratchet)). A tool's success chatter never reaches the stream, so a green run is byte-identical on every platform.
 
 The order is the table below, top to bottom, and the drift report closes the run.
 
@@ -194,6 +194,14 @@ Three things fail a run that has one, all under `baseline-ratchet`:
 - an entry whose count is now **zero** — the ratchet moved, so the entry goes.
 
 The third is what makes the file shrink. Without it a baseline records a debt that was paid a year ago and nothing ever says so.
+
+A run the file holds says so once, whole, and never finding by finding. The Oxlint pass prints one line for it, the shape `@jterrazz/test`'s checker gives its own file:
+
+```text
+typescript.baseline.json: 2 held across 2 rules
+```
+
+The count is every finding the file holds today — the linter's and the Names pass's alike — and the rules are the entries still carrying one. The line prints only on `check`, and only when both of the file's judges hold; a broken side prints its evidence in its own pass instead, and the line stays away.
 
 ### One owner per entry
 

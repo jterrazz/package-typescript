@@ -300,7 +300,9 @@ done
 # What sits between the header and the verdict is the one variable: a failing
 # pass prints its whole captured log, and a passing one stays silent unless it
 # WROTE something. `fix` changed a file the operator owns and silence would hide
-# it, so a writer asks for its log with the fourth argument; a reader's success
+# it, so a writer asks for its log with the fourth argument — and so does the
+# oxlint pass when the ratchet holds, for the one line that says what
+# `typescript.baseline.json` holds; a reader's success
 # chatter — oxlint's summary, which its reporter prints on a runner and in a
 # terminal and drops under an AI agent — never reaches the stream, so a green
 # run is byte-identical everywhere.
@@ -418,6 +420,7 @@ run_checks() {
     # which `fix` then `check` fails on formatting the fix had just settled.
     local lint_pid=""
     local lint_status=0
+    local lint_held=false
     local format_status=0
     if [ "$FIX_MODE" = true ]; then
         # A fixer that changes MEANING is never applied unattended: the rules
@@ -571,8 +574,10 @@ run_checks() {
     # choosing the name it moves to is the work the rule is asking for.
     local names_pid=""
     local names_status=0
+    local names_pid_waited=false
     if [ "$FIX_MODE" = false ]; then
-        node "$PACKAGE_ROOT/src/cli/check-names.js" . "${LINT_ARGS[@]}" > "$tmp_dir/names.log" 2>&1 &
+        node "$PACKAGE_ROOT/src/cli/check-names.js" . "${LINT_ARGS[@]}" \
+            --report "$tmp_dir/names.json" > "$tmp_dir/names.log" 2>&1 &
         names_pid=$!
     fi
 
@@ -722,12 +727,29 @@ run_checks() {
                 > "$tmp_dir/lint.json" 2>/dev/null
         fi
 
+        # The file has two reporters, and a green run states it once, whole:
+        # the Names pass's report joins the judge, which prints the file's one
+        # held line when both sides sit within it — and nothing else, since a
+        # held finding is the ratchet doing its job.
         local linter_exit=()
-        [ "$FIX_MODE" = false ] && linter_exit=(--linter-exit "$lint_status")
+        local names_report=()
+        if [ "$FIX_MODE" = false ]; then
+            linter_exit=(--linter-exit "$lint_status")
+            if [ -n "$names_pid" ] && [ -f "$BASELINE_FILE" ]; then
+                wait $names_pid
+                names_status=$?
+                names_pid_waited=true
+                names_report=(--names "$tmp_dir/names.json")
+            fi
+        fi
         node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$tmp_dir/lint.json" . \
-            "${linter_exit[@]}" > "$tmp_dir/ratchet.log" 2>&1
+            "${linter_exit[@]}" "${names_report[@]}" > "$tmp_dir/ratchet.log" 2>&1
         lint_status=$?
-        cat "$tmp_dir/ratchet.log" >> "$tmp_dir/lint.log"
+        if [ "$lint_status" -eq 0 ] && [ ${#names_report[@]} -gt 0 ]; then
+            lint_held=true
+        else
+            cat "$tmp_dir/ratchet.log" >> "$tmp_dir/lint.log"
+        fi
     fi
 
     [ -n "$format_pid" ] && { wait $format_pid; format_status=$?; }
@@ -738,7 +760,7 @@ run_checks() {
     [ -n "$markdown_pid" ] && { wait $markdown_pid; markdown_status=$?; }
     [ -n "$architecture_pid" ] && { wait $architecture_pid; architecture_status=$?; }
     [ -n "$astro_pid" ] && { wait $astro_pid; astro_status=$?; }
-    [ -n "$names_pid" ] && { wait $names_pid; names_status=$?; }
+    [ -n "$names_pid" ] && [ "$names_pid_waited" = false ] && { wait $names_pid; names_status=$?; }
     [ -n "$secrets_pid" ] && { wait $secrets_pid; secrets_status=$?; }
 
     # One pass, N runs: the pass fails if any run failed, and only the logs of
@@ -796,8 +818,16 @@ run_checks() {
     fi
 
     judge_lint_config
+    # A green pass judged by the ratchet says one thing: the file's held line,
+    # never the linter's chatter around it.
+    local lint_log="$tmp_dir/lint.log"
+    local lint_speaks=""
+    if [ "$lint_status" -eq 0 ] && [ "$lint_held" = true ]; then
+        lint_log="$tmp_dir/ratchet.log"
+        lint_speaks="writer"
+    fi
     report_pass "TypeScript Check" $type_status "$tmp_dir/type.log"
-    report_pass "$lint_label" $lint_status "$tmp_dir/lint.log"
+    report_pass "$lint_label" $lint_status "$lint_log" "$lint_speaks"
     report_pass "$format_label" $format_status "$tmp_dir/format.log"
     [ -n "$gitignore_pid" ] &&
         report_pass "Gitignore (artefacts)" $gitignore_status "$tmp_dir/gitignore.log" writer

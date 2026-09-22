@@ -22,19 +22,22 @@
  * refused.
  *
  * Usage: node check-names.js [root] [--ignore-pattern <glob>]… [--format json]
+ *                             [--report <path>]
  *
  * One line per violation, `<rule>  <path>  <message>`. Every rule carries the
  * code `names(<rule>)`, which the ratchet records as `names/<rule>`: where
  * `typescript.baseline.json` holds a `names/*` entry, the counts are judged against
  * it the way the linter's are, and a held count prints nothing. `--format json`
- * is the report `typescript baseline` records from.
+ * is the report `typescript baseline` records from; `--report <path>` writes
+ * that same report to a file beside the human run, for the line `check` prints
+ * about the whole ratchet file.
  *
  * Exit code: 0 when every name claims a subject or the ratchet holds, 1
  * otherwise. No `--fix`: renaming a file is a move, and choosing the name it
  * moves to is the work the rule is asking for.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
@@ -297,19 +300,47 @@ const NAMESPACE = 'names/';
 /** A finding as the ratchet reads one: `names(<rule>)` becomes `names/<rule>`. */
 const codeOf = (rule) => `names(${rule})`;
 
-const root = resolve(argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.');
+/** The flags that take a value, so a value is never read as the root. */
+const VALUED_FLAGS = new Set(['--format', '--ignore-pattern', '--report']);
+
+/** The value an argument list carries after a flag, or undefined when it has none. */
+const valueOf = (flag) => {
+    const index = argv.indexOf(flag);
+
+    return index === -1 ? undefined : argv[index + 1];
+};
+
+const root = resolve(
+    argv
+        .slice(2)
+        .find(
+            (argument, index, rest) =>
+                !argument.startsWith('--') && !VALUED_FLAGS.has(rest[index - 1] ?? ''),
+        ) ?? '.',
+);
 const files = trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) });
 const findings = [...findingsOf(files), ...spineOf(files, declaredRootsOf(root))];
 
+/** The findings as the ratchet reads a report: oxlint's JSON shape, one code per rule. */
+const report = () =>
+    `${JSON.stringify({
+        diagnostics: findings.map(({ message, path, rule }) => ({
+            code: codeOf(rule),
+            filename: path,
+            message,
+            severity: 'error',
+        })),
+    })}\n`;
+
 if (argv.includes('--format')) {
-    const diagnostics = findings.map(({ message, path, rule }) => ({
-        code: codeOf(rule),
-        filename: path,
-        message,
-        severity: 'error',
-    }));
-    stdout.write(`${JSON.stringify({ diagnostics })}\n`);
+    stdout.write(report());
     exit(0);
+}
+
+/* `check` reads the same findings back to state what the whole ratchet file holds. */
+const reportPath = valueOf('--report');
+if (reportPath !== undefined) {
+    writeFileSync(reportPath, report());
 }
 
 for (const { message, path, rule } of findings) {

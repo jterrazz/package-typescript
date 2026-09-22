@@ -32,6 +32,13 @@
  * is given to `--write`, and that pass reads its own entries back. So a
  * judging run sets every `names/*` entry aside — this is not the judge of it.
  *
+ * A green run speaks once about the file, never about a held finding: given
+ * `--names <json>` beside a judging run, it prints one line for the WHOLE file
+ * — `typescript.baseline.json: <n> held across <k> rules`, the shape
+ * `@jterrazz/test` gives `test.baseline.json` — when both reporters' counts
+ * sit within it. Where either side breaks the ratchet it prints no summary:
+ * the pass that owns the broken entry prints the evidence.
+ *
  * Usage: node check-baseline.js <oxlint-json> [root] [--names <json>] [--write]
  *                               [--linter-exit <code>]
  *
@@ -140,6 +147,18 @@ export function judge(counts, baseline) {
     return broken;
 }
 
+/**
+ * The one line a green ratchet prints: what the file holds, by count and by
+ * rule. The findings themselves print only with a failing verdict, where they
+ * are the evidence.
+ */
+export function heldSummary(counts) {
+    const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+    const rules = Object.keys(counts).length;
+
+    return `${BASELINE}: ${total} held across ${rules} rule${rules === 1 ? '' : 's'}`;
+}
+
 /** The file's text: sorted, two-space, so a diff reads as a burn-down. */
 function serialise(counts) {
     const sorted = Object.fromEntries(
@@ -178,9 +197,9 @@ if (import.meta.main) {
         exit(1);
     }
 
-    /* Recorded only: the Names (tree) pass judges its own entries. */
+    /* Recorded, or summed into the file's line — never judged: the Names (tree) pass judges its own entries. */
     let namesReport = [];
-    if (isWrite && namesPath !== undefined) {
+    if (namesPath !== undefined) {
         try {
             namesReport = JSON.parse(readFileSync(namesPath, 'utf8'));
         } catch {
@@ -189,6 +208,7 @@ if (import.meta.main) {
     }
 
     const counts = countsOf(report, namesReport);
+    const linterCounts = countsOf(report);
 
     if (isWrite) {
         const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
@@ -212,10 +232,10 @@ if (import.meta.main) {
     const whole = readBaseline(root);
 
     if (whole === null) {
-        const rules = Object.keys(counts).toSorted();
+        const rules = Object.keys(linterCounts).toSorted();
         for (const rule of rules) {
             stdout.write(
-                `${rule}  ${counts[rule]} diagnostic(s), and the project keeps no baseline\n`,
+                `${rule}  ${linterCounts[rule]} diagnostic(s), and the project keeps no baseline\n`,
             );
         }
         if (rules.length > 0) {
@@ -229,14 +249,19 @@ if (import.meta.main) {
     const baseline = Object.fromEntries(
         Object.entries(whole).filter(([rule]) => !rule.startsWith(NAMES_NAMESPACE)),
     );
-    const broken = judge(counts, baseline);
+    const broken = judge(linterCounts, baseline);
 
     for (const reason of broken) {
         stdout.write(`baseline-ratchet  ${BASELINE}  ${reason}\n`);
     }
     if (broken.length > 0) {
         stdout.write("Run 'typescript baseline' to record where the project actually stands.\n");
+        exit(1);
     }
 
-    exit(broken.length > 0 ? 1 : 0);
+    if (namesPath !== undefined && judge(counts, whole).length === 0) {
+        stdout.write(`${heldSummary(counts)}\n`);
+    }
+
+    exit(0);
 }

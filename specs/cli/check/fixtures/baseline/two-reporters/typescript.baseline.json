@@ -1,0 +1,4 @@
+{
+  "eslint/no-debugger": 1,
+  "names/names-construct": 1
+}

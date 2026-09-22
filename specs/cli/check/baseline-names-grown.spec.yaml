@@ -1,0 +1,47 @@
+description: prints no held line while the Names side of the ratchet file has grown
+fixture: ./fixtures/baseline/names-grown/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          names-construct  src/constants.ts  `constants.ts` names a construct of the language — name it for the subject it holds
+          names-construct  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds
+          baseline-ratchet  typescript.baseline.json  names/names-construct is at 2, above its baseline of 1
+          Run 'typescript baseline' to record where the project actually stands.
+          ✗ Failed with exit code 1
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
