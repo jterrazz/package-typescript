@@ -15,9 +15,10 @@
  * The root's own folders are the SPINE, the same five in every repository:
  * `src/`, `lint/`, `specs/`, `docs/`, `skills/` — and `apps/` or `packages/`
  * where a workspace holds its members, each carrying a spine of its own. A
- * skill is one `skills/<skill>/SKILL.md` and nothing beside it. Any other
- * root folder is REPORTED, not refused: a line under the pass, never a
- * failure, until the spine decides whether a package may declare one.
+ * skill is one `skills/<skill>/SKILL.md` and nothing beside it. Beside the
+ * spine a root stands only on a codified ground: a name the ecosystem imposes
+ * (`ECOSYSTEM_ROOTS`), or one the repository declares in its `package.json`
+ * under `jterrazz.roots`, each with its reason. Any other root is refused.
  *
  * Usage: node check-names.js [root] [--ignore-pattern <glob>]… [--format json]
  *
@@ -32,7 +33,8 @@
  * moves to is the work the rule is asking for.
  */
 
-import { resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
 import { BASELINE, judge, readBaseline } from './check-baseline.js';
@@ -95,6 +97,24 @@ const SPINE = new Set(['docs', 'lint', 'skills', 'specs', 'src']);
 
 /** Where a workspace root keeps its members, each one a spine of its own. */
 const MEMBER_ROOTS = new Set(['apps', 'packages']);
+
+/**
+ * The roots a tool outside this package fixes by name: the repository does
+ * not choose them, so it owes no declaration for them. Each maps to the tool
+ * that imposes it.
+ */
+const ECOSYSTEM_ROOTS = Object.freeze({
+    android: 'React Native and Expo — the native Android project',
+    app: 'Next.js App Router and Expo Router — routes are read off this folder',
+    bin: "npm — the files a package's `bin` entry links as commands",
+    ios: 'React Native and Expo — the native iOS project',
+    pages: 'Next.js Pages Router — routes are read off this folder',
+    prisma: 'Prisma — the schema and migrations its CLI reads by default',
+    public: 'Next.js, Astro and Vite — static files served verbatim at the site root',
+});
+
+/** Where a repository declares the roots it keeps beyond the spine: `package.json`'s `jterrazz.roots`. */
+const DECLARATION = 'jterrazz.roots';
 
 /** The one file a skill is: `skills/<skill>/SKILL.md`. */
 const SKILL_FILE = /^skills\/[^/]+\/SKILL\.md$/u;
@@ -188,8 +208,28 @@ function findingsOf(files) {
     return findings;
 }
 
-/** What the root's own folders owe the spine: a skill holds one file, and a foreign root is reported. */
-function spineOf(files) {
+/**
+ * The roots a repository declares beyond the spine, each with its reason, read
+ * off `package.json`'s `jterrazz.roots` — `{ "<folder>": "<reason>" }`. An
+ * absent key declares nothing.
+ */
+function declaredRootsOf(root) {
+    const manifest = join(root, 'package.json');
+    if (!existsSync(manifest)) {
+        return {};
+    }
+
+    try {
+        const roots = JSON.parse(readFileSync(manifest, 'utf8'))?.jterrazz?.roots;
+
+        return roots !== null && typeof roots === 'object' && !Array.isArray(roots) ? roots : {};
+    } catch {
+        return {};
+    }
+}
+
+/** What the root's own folders owe the spine: a skill holds one file, and a root stands on a codified ground. */
+function spineOf(files, declared) {
     const findings = [];
     const roots = new Set();
 
@@ -208,16 +248,41 @@ function spineOf(files) {
         }
     }
 
-    const warnings = [...roots]
-        .filter((root) => !SPINE.has(root) && !MEMBER_ROOTS.has(root))
-        .toSorted((left, right) => (left < right ? -1 : 1))
-        .map((root) => ({
-            message: `\`${root}/\` is a root outside the spine (src, lint, specs, docs, skills) — reported, not refused`,
-            path: `${root}/`,
-            rule: 'names-root-foreign',
-        }));
+    const isCodified = (root) =>
+        SPINE.has(root) ||
+        MEMBER_ROOTS.has(root) ||
+        Object.hasOwn(ECOSYSTEM_ROOTS, root) ||
+        Object.hasOwn(declared, root);
 
-    return { findings, warnings };
+    for (const root of [...roots].toSorted((left, right) => (left < right ? -1 : 1))) {
+        if (!isCodified(root)) {
+            findings.push({
+                message: `\`${root}/\` is a root outside the spine — move it under src/, or declare it in package.json's \`${DECLARATION}\` with its reason`,
+                path: `${root}/`,
+                rule: 'names-root-foreign',
+            });
+        }
+    }
+
+    for (const [root, reason] of Object.entries(declared).toSorted(([left], [right]) =>
+        left < right ? -1 : 1,
+    )) {
+        if (typeof reason !== 'string' || reason.trim() === '') {
+            findings.push({
+                message: `\`${root}/\` is declared in \`${DECLARATION}\` with no reason — say why the repository keeps it`,
+                path: `${root}/`,
+                rule: 'names-root-unreasoned',
+            });
+        } else if (!roots.has(root)) {
+            findings.push({
+                message: `\`${root}/\` is declared in \`${DECLARATION}\` and holds no tracked file — delete the entry`,
+                path: `${root}/`,
+                rule: 'names-root-stale',
+            });
+        }
+    }
+
+    return findings;
 }
 
 /** The namespace the pass's rules take in the ratchet's file. */
@@ -228,8 +293,7 @@ const codeOf = (rule) => `names(${rule})`;
 
 const root = resolve(argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.');
 const files = trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) });
-const spine = spineOf(files);
-const findings = [...findingsOf(files), ...spine.findings];
+const findings = [...findingsOf(files), ...spineOf(files, declaredRootsOf(root))];
 
 if (argv.includes('--format')) {
     const diagnostics = findings.map(({ message, path, rule }) => ({
@@ -243,9 +307,6 @@ if (argv.includes('--format')) {
 }
 
 for (const { message, path, rule } of findings) {
-    stdout.write(`${rule}  ${path}  ${message}\n`);
-}
-for (const { message, path, rule } of spine.warnings) {
     stdout.write(`${rule}  ${path}  ${message}\n`);
 }
 

@@ -6,7 +6,7 @@ What is TypeScript-specific stays here: this repo is a **package**, and a packag
 
 The doctrine's `docs/` spine — the four fixed chapter names, the two subfolders, the `AGENTS.md` route — is the one part this toolchain does not merely follow: it enforces it, for every repository of the ecosystem, whatever the language. The doctrine's text stays `jterrazz-studio`'s; the rule ids and what each one refuses are [Quality checks](06-quality-checks.md)'s, where they are executable.
 
-The root is held to a spine as well — `src/`, `lint/`, `specs/`, `docs/`, `skills/`, and `apps/` or `packages/` in a workspace. The Names (tree) pass refuses a skill that is more than its `SKILL.md` and reports any other root folder, this repository's own `bin/` among them ([Quality checks](06-quality-checks.md#the-repository-spine)).
+The root is held to a spine as well — `src/`, `lint/`, `specs/`, `docs/`, `skills/`, and `apps/` or `packages/` in a workspace. The Names (tree) pass refuses a skill that is more than its `SKILL.md`, and any other root folder unless the ecosystem imposes it (npm's `bin/`, a framework's `public/`) or the repository declares it with a reason ([Quality checks](06-quality-checks.md#the-repository-spine)).
 
 ## Related
 

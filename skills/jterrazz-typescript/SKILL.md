@@ -25,22 +25,22 @@ A project names ONE profile — `node`, `library`, `next`, `astro`, `expo`, `bun
 
 Every pass that ran prints a `RUN` header and one verdict; a pass that did not apply prints nothing. Each rule id below is explained in `docs/06-quality-checks.md`, under the pass's own section.
 
-| Pass                      | It failed because                                                                                                  |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| TypeScript Check          | tsc 7 refused a type                                                                                               |
-| Oxlint Check              | a rule of the profile fired, or a `baseline-ratchet` count moved                                                   |
-| Oxfmt Check               | a file is not formatted — `typescript fix`                                                                         |
-| Gitignore (artefacts)     | an artefact is named or committed outside `.artifacts/<tool>/`                                                     |
-| Knip (unused code)        | a file, export or dependency nothing uses                                                                          |
-| Test Conventions          | `@jterrazz/test`'s checker refused a spec — its own manual owns the id                                             |
-| Docs (layout)             | the repository's `docs/` breaks the manual's spine, or holds a generated `reference/`                              |
-| Publish (packaging)       | the `exports` map promises a file the tarball does not carry                                                       |
-| Architecture (layer map)  | an import crosses the declared layer map                                                                           |
-| Astro (check + format)    | `astro check` or prettier refused a `.astro` file                                                                  |
-| Suppressions (directives) | a disable directive is misspelled, unreasoned, or names a dead rule                                                |
-| Markdown (prose)          | a page cites a path that is gone, or a block runs past its floor                                                   |
-| Names (tree)              | a name says nothing, names a construct (`types.ts`), is written in half, or a skill holds more than its `SKILL.md` |
-| Secrets (credentials)     | a committed line looks like a live credential                                                                      |
+| Pass                      | It failed because                                                                                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| TypeScript Check          | tsc 7 refused a type                                                                                                                                         |
+| Oxlint Check              | a rule of the profile fired, or a `baseline-ratchet` count moved                                                                                             |
+| Oxfmt Check               | a file is not formatted — `typescript fix`                                                                                                                   |
+| Gitignore (artefacts)     | an artefact is named or committed outside `.artifacts/<tool>/`                                                                                               |
+| Knip (unused code)        | a file, export or dependency nothing uses                                                                                                                    |
+| Test Conventions          | `@jterrazz/test`'s checker refused a spec — its own manual owns the id                                                                                       |
+| Docs (layout)             | the repository's `docs/` breaks the manual's spine, or holds a generated `reference/`                                                                        |
+| Publish (packaging)       | the `exports` map promises a file the tarball does not carry                                                                                                 |
+| Architecture (layer map)  | an import crosses the declared layer map                                                                                                                     |
+| Astro (check + format)    | `astro check` or prettier refused a `.astro` file                                                                                                            |
+| Suppressions (directives) | a disable directive is misspelled, unreasoned, or names a dead rule                                                                                          |
+| Markdown (prose)          | a page cites a path that is gone, or a block runs past its floor                                                                                             |
+| Names (tree)              | a name says nothing, names a construct (`types.ts`), is written in half, a skill holds more than its `SKILL.md`, or a root sits outside the spine undeclared |
+| Secrets (credentials)     | a committed line looks like a live credential                                                                                                                |
 
 The drift report closes the run; its one refusal is a profile rule turned off with no `// reason:` beside it.
 
@@ -51,7 +51,7 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 - Every artefact lives under `.artifacts/<tool>/`; `dist/` is the product, not an artefact.
 - A `knip.json` ignore carries a `//` reason above it — the file is read as JSONC.
 - The API is the types: there is no generated reference, and `docs/` never holds one.
-- A repository root holds `src/`, `lint/`, `specs/`, `docs/`, `skills/` — any other root folder is reported under Names (tree).
+- A repository root holds `src/`, `lint/`, `specs/`, `docs/`, `skills/` — any other root folder fails Names (tree) unless the ecosystem imposes it (`bin/`, `public/`, `app/`…) or `package.json`'s `jterrazz.roots` declares it with a reason.
 - A local `compilerOption` is a smell — the preset is where the fix belongs.
 
 ## The chapter to read next

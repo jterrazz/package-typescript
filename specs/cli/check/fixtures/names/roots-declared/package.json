@@ -1,0 +1,13 @@
+{
+  "name": "fixture-names-roots-declared",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "jterrazz": {
+    "roots": {
+      "docker": "",
+      "migrations": "the SQL the release job applies before the service starts",
+      "scripts": "the release scripts the CI workflow runs"
+    }
+  }
+}

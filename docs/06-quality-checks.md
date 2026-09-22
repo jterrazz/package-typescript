@@ -334,12 +334,44 @@ A construct is judged on the WHOLE name: `setup-wizard.ts` names a subject and p
 
 The root's own folders are the same in every repository: `src/` the product's code, `lint/` the lint rules a package ships, `specs/` the specifications, `docs/` the manual, `skills/` one short page per skill — and `apps/` or `packages/` where a workspace keeps its members, each a spine of its own. What the tree calls a root is therefore judged too.
 
-| Rule                 | Says                                                                  |
-| -------------------- | --------------------------------------------------------------------- |
-| `names-skill-file`   | refused: a file under `skills/` that is not `skills/<skill>/SKILL.md` |
-| `names-root-foreign` | reported, never refused: a root folder outside the spine              |
+| Rule                    | Refuses                                                                |
+| ----------------------- | ---------------------------------------------------------------------- |
+| `names-skill-file`      | a file under `skills/` that is not `skills/<skill>/SKILL.md`           |
+| `names-root-foreign`    | a root folder outside the spine that nothing codifies                  |
+| `names-root-unreasoned` | a root declared in `jterrazz.roots` with no reason beside it           |
+| `names-root-stale`      | a root declared in `jterrazz.roots` that holds no tracked file anymore |
 
-A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A root outside the spine is reported rather than refused because a package may still need one — this one ships `bin/` — and whether the spine lets a package declare its own is not decided yet. The pass prints the line on a green run, since a report nobody is shown is a report nobody reads. A dot-folder (`.github/`) is the tools', never the spine's.
+A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
+
+#### A root beside the spine
+
+A root beside the spine stands on one of two codified grounds, and every other root is refused. The first is a name a tool outside this package imposes, so the repository did not choose it and owes no declaration for it:
+
+| Root       | Imposed by                                                              |
+| ---------- | ----------------------------------------------------------------------- |
+| `android/` | React Native and Expo — the native Android project                      |
+| `app/`     | the Next.js App Router and Expo Router — routes are read off it         |
+| `bin/`     | npm — the files a package's `bin` entry links as commands               |
+| `ios/`     | React Native and Expo — the native iOS project                          |
+| `pages/`   | the Next.js Pages Router — routes are read off it                       |
+| `prisma/`  | Prisma — the schema and migrations its CLI reads by default             |
+| `public/`  | Next.js, Astro and Vite — static files served verbatim at the site root |
+
+The list is closed and short on purpose. `scripts/`, `docker/` or `migrations/` are conventions, not impositions: every tool that reads one takes its path as an argument, so the repository chose the folder and says why.
+
+The second ground is that saying: the repository declares the root in its `package.json`, under `jterrazz.roots`, each with its reason.
+
+```json
+{
+    "jterrazz": {
+        "roots": {
+            "scripts": "the release scripts the CI workflow runs"
+        }
+    }
+}
+```
+
+`package.json` holds it because it is the one manifest every repository has, and oxlint's config schema is closed. The reason is not decoration: an entry without one is refused (`names-root-unreasoned`), and an entry whose folder holds no tracked file anymore is refused too (`names-root-stale`), so the list shrinks as the tree does. A base package that composes others keeps its broader roots through this same declaration, never through an exemption in the gate.
 
 ### What the ratchet records
 

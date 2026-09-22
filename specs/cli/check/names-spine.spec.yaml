@@ -1,4 +1,4 @@
-description: fails a skill holding more than its SKILL.md, and reports a root outside the spine
+description: fails a skill holding more than its SKILL.md, and a root outside the spine nobody declared
 fixture: ./fixtures/names/spine/
 runs:
     - command: check
@@ -33,7 +33,7 @@ runs:
            RUN  Names (tree)
 
           names-skill-file  skills/shop/references/rules.md  a skill is one `skills/<skill>/SKILL.md` — `skills/shop/references/rules.md` sits beside it
-          names-root-foreign  scripts/  `scripts/` is a root outside the spine (src, lint, specs, docs, skills) — reported, not refused
+          names-root-foreign  scripts/  `scripts/` is a root outside the spine — move it under src/, or declare it in package.json's `jterrazz.roots` with its reason
           ✗ Failed with exit code 1
 
            RUN  Secrets (credentials)
