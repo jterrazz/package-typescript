@@ -1,0 +1,48 @@
+description: refuses a Names rule nobody recorded, and a Names entry the tree has paid down to zero
+fixture: ./fixtures/baseline/names-moved/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          names-shortcut  src/repo-client.ts  `repo-client` is a word written in half — spell it whole
+          names-construct  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds
+          baseline-ratchet  typescript.baseline.json  names/names-shortcut has 1 diagnostic(s) and no entry — it is new debt
+          baseline-ratchet  typescript.baseline.json  names/names-grab-bag is at zero — the ratchet moved, delete its entry
+          Run 'typescript baseline' to record where the project actually stands.
+          ✗ Failed with exit code 1
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

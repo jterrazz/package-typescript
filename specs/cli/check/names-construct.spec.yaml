@@ -33,9 +33,13 @@ runs:
            RUN  Names (tree)
 
           names-construct  lint/constants.ts  `constants.ts` names a construct of the language — name it for the subject it holds
+          names-construct  specs/orders/constants.ts  `constants.ts` names a construct of the language — name it for the subject it holds
+          names-construct  src/helper.ts  `helper.ts` names a construct of the language — name it for the subject it holds
           names-construct  src/interfaces  `interfaces` names a construct of the language — name it for the subject it holds
           names-construct  src/order.types.ts  `order.types.ts` names a construct of the language — name it for the subject it holds
+          names-construct  src/type.ts  `type.ts` names a construct of the language — name it for the subject it holds
           names-construct  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds
+          names-construct  src/util.ts  `util.ts` names a construct of the language — name it for the subject it holds
           ✗ Failed with exit code 1
 
            RUN  Secrets (credentials)
