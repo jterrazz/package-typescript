@@ -110,6 +110,33 @@ test("records none of @jterrazz/test's diagnostics", () => {
     expect(JSON.parse(written)).toStrictEqual({ 'eslint/no-debugger': 1 });
 });
 
+test("leaves @jterrazz/test's own file byte for byte", () => {
+    // Given - a test.baseline.json in a shape no formatter would leave, beside a debugger this package records
+    const recorded = '{"jterrazz/x1-every-file":2,   "jterrazz-check/c9": 1}';
+    writeFileSync(join(project, 'test.baseline.json'), recorded);
+    writeFileSync(join(project, 'index.ts'), 'export function stop(): void {\n    debugger;\n}\n');
+
+    // When - the baseline is recorded
+    run('baseline');
+
+    // Then - the other package's file is untouched, its bytes included
+    expect(readFileSync(join(project, 'test.baseline.json'), 'utf8')).toBe(recorded);
+});
+
+test("hands the file it writes to the project's own formatter", () => {
+    // Given - a project whose formatter indents by four, and one debugger
+    writeFileSync(join(project, '.oxfmtrc.json'), '{ "tabWidth": 4 }\n');
+    writeFileSync(join(project, 'index.ts'), 'export function stop(): void {\n    debugger;\n}\n');
+
+    // When - the baseline is recorded
+    run('baseline');
+
+    // Then - the file is in the formatter's shape, not the writer's two spaces
+    expect(readFileSync(join(project, 'typescript.baseline.json'), 'utf8')).toBe(
+        '{\n    "eslint/no-debugger": 1\n}\n',
+    );
+});
+
 test('keeps the oxlint pass green when every diagnostic is a `jterrazz(*)` one', () => {
     // Given - no baseline, and a plugin that fails oxlint on every file
     // When - the checks run
