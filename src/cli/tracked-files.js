@@ -28,6 +28,7 @@
 import { execFileSync } from 'node:child_process';
 import { lstatSync, readdirSync, readFileSync } from 'node:fs';
 import { join, matchesGlob } from 'node:path';
+import { exit, stderr } from 'node:process';
 
 /** Never source, never prose: what no gate of this toolchain has a question about. */
 const UNSWEPT = new Set([
@@ -113,18 +114,29 @@ function isGround(path) {
         .some((segment) => GROUND.has(segment));
 }
 
+/** The sweep refused an answer: the tree holds something, and no file of it reached a gate. */
+export class EmptySweepError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'EmptySweepError';
+    }
+}
+
 /**
  * The sweep, filtered by what the run was told to overlook. `ignorePatterns`
  * carries the `--ignore-pattern` globs `check` received, so one flag answers
  * for the linter and for every gate that reads the same tree.
  */
 export function trackedFiles(root = '.', { ignorePatterns = [] } = {}) {
-    const swept = gitSweep(root) ?? walkSweep(root);
+    const tracked = gitSweep(root);
+    const swept = tracked ?? walkSweep(root);
 
     if (swept.length === 0) {
         if (holdsSomething(root)) {
-            throw new Error(
-                `nothing to read under ${root} — a gate sweeping no file passes on every file`,
+            throw new EmptySweepError(
+                tracked === null
+                    ? `nothing to read under ${root}: it holds folders and no file — add the project's files, then run again`
+                    : `nothing to read under ${root}: the repository tracks no file yet — git add the project's files, then run again`,
             );
         }
 
@@ -136,6 +148,23 @@ export function trackedFiles(root = '.', { ignorePatterns = [] } = {}) {
         .filter((path) => !isGround(path))
         .filter((path) => !ignorePatterns.some((pattern) => matchesGlob(path, pattern)))
         .toSorted((left, right) => (left < right ? -1 : 1));
+}
+
+/**
+ * What a gate's entry point reads through: the value `read` returns, or — when
+ * the sweep refused an answer — its one line on stderr and exit code 1.
+ */
+export function orRefused(read) {
+    try {
+        return read();
+    } catch (error) {
+        if (!(error instanceof EmptySweepError)) {
+            throw error;
+        }
+        stderr.write(`${error.message}\n`);
+
+        return exit(1);
+    }
 }
 
 /**

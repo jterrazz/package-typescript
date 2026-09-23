@@ -47,7 +47,7 @@ import { argv, exit, stdout } from 'node:process';
 
 import { BASELINE, judge, readBaseline } from './check-baseline.js';
 import { isRepositoryRoot } from './repository-root.js';
-import { ignorePatternsOf, trackedFiles } from './tracked-files.js';
+import { ignorePatternsOf, orRefused, trackedFiles } from './tracked-files.js';
 import { workspaceMembers } from './workspace-members.js';
 
 /** Names that say nothing: a folder or a file called one of these holds whatever nobody placed. */
@@ -473,7 +473,7 @@ const root = resolve(
                 !argument.startsWith('--') && !VALUED_FLAGS.has(rest[index - 1] ?? ''),
         ) ?? '.',
 );
-const files = trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) });
+const files = orRefused(() => trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) }));
 const findings = [...findingsOf(files), ...spinesOf(root, files), ...makefileOf(root, files)];
 
 /** The findings as the ratchet reads a report: oxlint's JSON shape, one code per rule. */

@@ -29,7 +29,7 @@ import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { ignorePatternsOf, readText, trackedFiles } from './tracked-files.js';
+import { ignorePatternsOf, orRefused, readText, trackedFiles } from './tracked-files.js';
 
 /** A paragraph, or one list item with its continuations, past this is a wall. */
 const PROSE_BLOCK_LIMIT = 12;
@@ -330,9 +330,9 @@ function auditPage(root, path, markdown) {
 }
 
 const root = resolve(argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.');
-const pages = trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) }).filter((path) =>
-    path.endsWith('.md'),
-);
+const pages = orRefused(() =>
+    trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) }),
+).filter((path) => path.endsWith('.md'));
 
 let failed = false;
 for (const path of pages) {

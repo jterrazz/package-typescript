@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { ignorePatternsOf, readText, trackedFiles } from './tracked-files.js';
+import { ignorePatternsOf, orRefused, readText, trackedFiles } from './tracked-files.js';
 
 /** The ten shapes, each with the rule id a finding is reported under. */
 const PATTERNS = [
@@ -119,7 +119,7 @@ function runGitleaks(root, files) {
 }
 
 const root = resolve(argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.');
-const files = trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) });
+const files = orRefused(() => trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) }));
 
 const gitleaks = runGitleaks(root, files);
 if (gitleaks !== null) {

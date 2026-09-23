@@ -30,7 +30,7 @@ import { PROFILES } from '../../lint/profiles.js';
 import { BASELINE, readBaseline, TEST_BASELINE } from './check-baseline.js';
 import { countSuppressions } from './check-suppressions.js';
 import { toolVersions } from './doctor.js';
-import { ignorePatternsOf } from './tracked-files.js';
+import { ignorePatternsOf, orRefused } from './tracked-files.js';
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 
@@ -164,7 +164,7 @@ function totalOf(file) {
 
 const baselineTotal = totalOf(BASELINE);
 const testBaselineTotal = totalOf(TEST_BASELINE);
-const suppressions = countSuppressions(root, ignorePatternsOf(argv));
+const suppressions = orRefused(() => countSuppressions(root, ignorePatternsOf(argv)));
 const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
 
 if (isJson) {

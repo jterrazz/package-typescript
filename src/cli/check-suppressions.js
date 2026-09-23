@@ -25,7 +25,7 @@ import { writeFileSync } from 'node:fs';
 import { join, matchesGlob, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { ignorePatternsOf, readText, trackedFiles } from './tracked-files.js';
+import { ignorePatternsOf, orRefused, readText, trackedFiles } from './tracked-files.js';
 
 /** What a linter and a type-checker read — the files a directive can live in. */
 export const SOURCE = /\.(?:astro|[cm]?[jt]sx?|svelte|vue)$/u;
@@ -519,9 +519,9 @@ if (import.meta.main) {
         }) ?? '.',
     );
 
-    const sources = trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) }).filter((path) =>
-        SOURCE.test(path),
-    );
+    const sources = orRefused(() =>
+        trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) }),
+    ).filter((path) => SOURCE.test(path));
 
     /* The resolved config costs an oxlint run, so it is read only once a directive asks for it. */
     let config;

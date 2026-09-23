@@ -2,6 +2,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 import { expect, onTestFinished, test } from 'vitest';
 
 /*
@@ -162,7 +163,24 @@ test('judges the tracked files alone in every tree gate, the linter included', (
     expect(readFileSync(join(project, 'typescript.baseline.json'), 'utf8')).toBe('{}\n');
 });
 
-test('refuses to judge a repository that tracks nothing yet, rather than pass it', () => {
+/** What a pass printed between its header and its verdict, colours stripped, blank lines dropped. */
+function saidBy(stdout: string, label: string, next: string): string[] {
+    return stripVTControlCharacters(passOf(stdout, label, next))
+        .split('\n')
+        .slice(1, -1)
+        .filter(
+            (line) => line.trim() !== '' && !line.includes(' RUN ') && !line.includes('Failed'),
+        );
+}
+
+const TREE_GATES = [
+    ['Suppressions (directives)', 'Markdown (prose)'],
+    ['Markdown (prose)', 'Names (tree)'],
+    ['Names (tree)', 'Secrets (credentials)'],
+    ['Secrets (credentials)', 'END'],
+] as const;
+
+test('refuses to judge a repository that tracks nothing yet, in one line that says what to do', () => {
     // Given - a repository initialised over a tree nobody has added
     const project = projectWith({ isRepository: false, makefile: SIX_TARGETS });
     execFileSync('git', ['init', '--quiet'], { cwd: project });
@@ -173,12 +191,36 @@ test('refuses to judge a repository that tracks nothing yet, rather than pass it
         encoding: 'utf8',
         env: inProject(project),
     });
-    const refusal = `nothing to read under ${realpathSync(project)}`;
+    const refusal = `nothing to read under ${realpathSync(project)}: the repository tracks no file yet — git add the project's files, then run again`;
 
-    // Then - every tree gate names the empty sweep and fails, where a silent one would pass on everything
-    expect(passOf(result.stdout, 'Markdown (prose)', 'Names (tree)')).toContain(refusal);
-    expect(passOf(result.stdout, 'Names (tree)', 'Secrets (credentials)')).toContain(refusal);
-    expect(passOf(result.stdout, 'Secrets (credentials)', 'END')).toContain(refusal);
+    // Then - every tree gate says that one line, and no stack, and the run fails where a silent gate would pass on everything
+    for (const [label, next] of TREE_GATES) {
+        expect(saidBy(result.stdout, label, next)).toStrictEqual([refusal]);
+    }
+    expect(result.status).toBe(1);
+});
+
+test('refuses to judge a directory outside git that holds folders and no file, in one line', () => {
+    // Given - a directory no repository holds, with one empty folder in it
+    const created = mkdtempSync(resolve(tmpdir(), 'spec-names-foldered-'));
+    onTestFinished(() => {
+        rmSync(created, { force: true, recursive: true });
+    });
+    const project = realpathSync(created);
+    mkdirSync(join(project, 'src'));
+
+    // When - the quality checks run
+    const result = spawnSync('bash', [BIN, 'check'], {
+        cwd: project,
+        encoding: 'utf8',
+        env: inProject(project),
+    });
+    const refusal = `nothing to read under ${project}: it holds folders and no file — add the project's files, then run again`;
+
+    // Then - every tree gate says that one line, and the run fails
+    for (const [label, next] of TREE_GATES) {
+        expect(saidBy(result.stdout, label, next)).toStrictEqual([refusal]);
+    }
     expect(result.status).toBe(1);
 });
 
