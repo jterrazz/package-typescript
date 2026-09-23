@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { expect, onTestFinished, test } from 'vitest';
@@ -118,6 +118,48 @@ test('never reports a root nobody has git added, tracked or clean alike', () => 
     // Then - the untracked root is no finding, and the Names pass is green
     expect(names).not.toContain('data/');
     expect(names).toContain('Passed');
+});
+
+/** One pass of a report, from its header to the next pass's. */
+function passOf(stdout: string, label: string, next: string): string {
+    return stdout.slice(stdout.indexOf(label), stdout.indexOf(next));
+}
+
+test('judges the tracked files alone in every tree gate, the linter included', () => {
+    // Given - a green repository, and an untracked data/ folder holding a broken link, a live-looking key and a debugger statement
+    const project = projectWith({ makefile: SIX_TARGETS });
+    mkdirSync(join(project, 'data'));
+    /* Spelled in two halves, so this file carries no key of its own. */
+    const key = ['AKIA', 'Q7RJ4KDNPZ2WX6TB'].join('');
+    writeFileSync(
+        join(project, 'data/NOTES.md'),
+        `# Scratch\n\nSee [the plan](./missing.md) and the key ${key}.\n`,
+    );
+    writeFileSync(
+        join(project, 'data/scratch.ts'),
+        'export function stop(): void {\n    debugger;\n}\n',
+    );
+
+    // When - the quality checks run, and the baseline is recorded
+    const result = spawnSync('bash', [BIN, 'check'], {
+        cwd: project,
+        encoding: 'utf8',
+        env: inProject(project),
+    });
+    execFileSync('bash', [BIN, 'baseline'], {
+        cwd: project,
+        encoding: 'utf8',
+        env: inProject(project),
+    });
+    const lint = passOf(result.stdout, 'Oxlint Check', 'Oxfmt Check');
+    const markdown = passOf(result.stdout, 'Markdown (prose)', 'Names (tree)');
+    const secrets = passOf(result.stdout, 'Secrets (credentials)', 'END');
+
+    // Then - no gate reads the untracked folder: each pass is green, and the baseline records nothing
+    expect(lint).toContain('Passed');
+    expect(markdown).toContain('Passed');
+    expect(secrets).toContain('Passed');
+    expect(readFileSync(join(project, 'typescript.baseline.json'), 'utf8')).toBe('{}\n');
 });
 
 test('accepts a repository whose Makefile answers the six gestures', () => {

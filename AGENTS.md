@@ -53,6 +53,7 @@ src/cli/check-suppressions.js # Every disable directive is spelled, reasoned and
 
 src/cli/doctor.js             # Installed tool versions against the declared ranges — `typescript doctor`
 src/cli/entry-points.js       # The entries a build compiles, read off the consumer's own exports map
+src/cli/lint-targets.js       # The tracked files oxlint is handed — the sweep every tree gate reads, never the directory
 src/cli/merge-knip-config.js  # Merges knip base preset with project-local knip.json (read as JSONC)
 src/cli/tracked-files.js      # The one sweep every tree gate starts from — git ls-files, or a walk where there is no git
 src/cli/unsafe-fixers.js      # The rules `fix` must not let oxlint rewrite, as the flags that allow them for one run

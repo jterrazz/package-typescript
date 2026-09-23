@@ -39,7 +39,7 @@ When the `package.json` at the cwd declares `workspaces`, the per-package passes
 
 The Docs (layout) pass measures from neither: its unit is the repository, and the section below says why.
 
-The other four passes are root-only, and that is not an omission. tsc, oxlint and oxfmt measure from their **config file**, not from a package, and each already walks the whole tree from the cwd. Knip reads the workspace globs itself and reports per member from a single run, so a second invocation per member would only double-report.
+The other four passes are root-only, and that is not an omission. tsc, oxlint and oxfmt measure from their **config file**, not from a package, and each already reaches the whole tree from the cwd — oxlint through the tracked files it is handed. Knip reads the workspace globs itself and reports per member from a single run, so a second invocation per member would only double-report.
 
 Discovery never leaves the workspace. A candidate is dropped when git ignores it — clones, workbenches and build output live under gitignored paths — and when the walk had to cross a nested `.git` or a `package.json` that no workspace glob claims to reach it: a vendored project's conventions are its own, not yours.
 
@@ -151,6 +151,8 @@ const violations = auditDocs(tree); // -> [{ rule, path, message }, …]
 ## The Oxlint pass
 
 `--type-aware` is passed explicitly and unconditionally. The rules it unlocks are the ones no syntactic linter can express, and a flag that is only sometimes passed is a rule set that is only sometimes enforced. Those rules run in `tsgolint`, a separate binary oxlint looks up on PATH; `oxlint-tsgolint` is a dependency of this package, and `check.sh` puts the directory holding it in front of PATH for its own children, so a consumer never installs or configures anything.
+
+The linter is handed the tracked files it parses rather than the directory, the same sweep every tree gate reads: a scratch folder nobody has added is linted by no run, and counted into no baseline, so a clean checkout and a laptop read the same verdict. `--ignore-pattern` and the profiles' own ignores still apply on top.
 
 ### The two refusals that are not diagnostics
 

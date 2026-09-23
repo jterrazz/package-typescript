@@ -167,8 +167,23 @@ case "$COMMAND" in
 
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Recording the oxlint baseline...\n\n"
 
+        # The files `check` hands the linter — the tracked ones it parses — so
+        # the file records what a clean checkout reports. An empty list records
+        # nothing; a sweep that could not answer hands oxlint the directory.
+        LINT_TARGETS=()
+        LINT_LISTED=true
+        LISTED=$(node "$PACKAGE_ROOT/src/cli/lint-targets.js" . "$@" 2>/dev/null) || LINT_LISTED=false
+        while IFS= read -r target; do
+            [ -n "$target" ] && LINT_TARGETS+=("$target")
+        done <<< "$LISTED"
+
         # A non-zero exit is the whole point of the recording, not a failure.
-        "$OXLINT" --type-aware --format json "$@" > "$BASELINE_REPORT" 2>/dev/null || true
+        if [ "$LINT_LISTED" = true ] && [ ${#LINT_TARGETS[@]} -eq 0 ]; then
+            printf '{ "diagnostics": [] }\n' > "$BASELINE_REPORT"
+        else
+            "$OXLINT" --type-aware --format json "$@" "${LINT_TARGETS[@]}" \
+                > "$BASELINE_REPORT" 2>/dev/null || true
+        fi
 
         # The Names (tree) pass's findings take the same file, under `names/`:
         # that pass reads its own entries back, so a construct name a project

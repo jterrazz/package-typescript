@@ -291,6 +291,34 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# ── What oxlint is handed ────────────────────────────────────────────────────
+# The tracked files it parses — the list every tree gate judges — and never the
+# directory, which also holds what nobody has added: a scratch folder linted
+# here is a finding no clean checkout reproduces. An empty list is a project
+# with nothing to lint. A sweep that could not answer hands oxlint the
+# directory instead, as a gate must never go silent on a read it did not make.
+LINT_TARGETS=()
+LINT_NOTHING=false
+read_lint_targets() {
+    local listed target
+    listed=$(node "$PACKAGE_ROOT/src/cli/lint-targets.js" . "${LINT_ARGS[@]}" 2>/dev/null) || return 0
+    while IFS= read -r target; do
+        [ -n "$target" ] && LINT_TARGETS+=("$target")
+    done <<< "$listed"
+    [ ${#LINT_TARGETS[@]} -eq 0 ] && LINT_NOTHING=true
+    return 0
+}
+
+# oxlint over those files. With nothing to lint it reports nothing: an empty
+# JSON report where one was asked for, and a clean exit.
+run_oxlint() {
+    if [ "$LINT_NOTHING" = true ]; then
+        case " $* " in *" --format json "*) printf '{ "diagnostics": [] }\n' ;; esac
+        return 0
+    fi
+    "$OXLINT" "$@" "${LINT_TARGETS[@]}"
+}
+
 # ── How a pass speaks ────────────────────────────────────────────────────────
 # Every pass that RAN prints the same three things, in the same order: a `RUN`
 # header carrying its label, whatever it has to say, and one verdict line. A
@@ -379,6 +407,8 @@ run_checks() {
 
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
 
+    read_lint_targets
+
     # The members the conventions checker is run FOR, chosen before oxlint
     # starts: a member run judges the `jterrazz(*)` diagnostics this pass sets
     # aside, and it reads them off the oxlint report made here — so whether
@@ -440,7 +470,7 @@ run_checks() {
             fix_args=(-c "$fix_config" --ignore-pattern "$fix_config")
         fi
 
-        "$OXLINT" --type-aware --fix "${fix_args[@]}" "${LINT_ARGS[@]}" \
+        run_oxlint --type-aware --fix "${fix_args[@]}" "${LINT_ARGS[@]}" \
             > "$tmp_dir/lint.log" 2>&1 ||
             lint_status=$?
         rm -f "$fix_config"
@@ -452,7 +482,7 @@ run_checks() {
         # `check` while `fix`, judged on the diagnostics themselves, failed on
         # it. Severity is never read here either: a finding a release ships at
         # `warn` is exactly the debt a ratchet exists to hold down.
-        "$OXLINT" --type-aware --deny-warnings "${LINT_ARGS[@]}" \
+        run_oxlint --type-aware --deny-warnings "${LINT_ARGS[@]}" \
             > "$tmp_dir/lint.log" 2>&1 &
         lint_pid=$!
     fi
@@ -470,7 +500,7 @@ run_checks() {
     local lint_json_pid=""
     local lint_json_waited=false
     if [ "$FIX_MODE" = false ] && { [ -f "$BASELINE_FILE" ] || [ ${#checker_members[@]} -gt 0 ]; }; then
-        "$OXLINT" --type-aware --format json "${LINT_ARGS[@]}" \
+        run_oxlint --type-aware --format json "${LINT_ARGS[@]}" \
             > "$tmp_dir/lint.json" 2>/dev/null &
         lint_json_pid=$!
     fi
@@ -723,7 +753,7 @@ run_checks() {
         if [ -n "$lint_json_pid" ]; then
             [ "$lint_json_waited" = true ] || wait $lint_json_pid
         else
-            "$OXLINT" --type-aware --format json "${LINT_ARGS[@]}" \
+            run_oxlint --type-aware --format json "${LINT_ARGS[@]}" \
                 > "$tmp_dir/lint.json" 2>/dev/null
         fi
 
