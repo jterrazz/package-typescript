@@ -42,7 +42,7 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { basename, join, matchesGlob, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
 import { judge, LABEL, readBaseline } from './check-baseline.js';
@@ -295,22 +295,101 @@ function targetsOfExports(exports) {
 /** The one spine folder a unit keeps on a condition: the lint rules it SHIPS. */
 const LINT_ROOT = 'lint';
 
+/** The build configs a unit may keep beside its manifest, in the order tsdown looks. */
+const BUILD_CONFIGS = [
+    'tsdown.config.ts',
+    'tsdown.config.mts',
+    'tsdown.config.cts',
+    'tsdown.config.js',
+    'tsdown.config.mjs',
+    'tsdown.config.cjs',
+];
+
+/** Where a build writes when its config names no `outDir`. */
+const DEFAULT_OUT_DIR = 'dist';
+
+/** A build entry's source under `lint/`, keyed or bare: `oxlint: 'lint/plugin.ts'`, `'lint/cli.ts'`. */
+const LINT_ENTRY =
+    /(?:(?:(?<quoted>['"])(?<quotedKey>[^'"]+)\k<quoted>|(?<key>[\w$-]+))\s*:\s*)?['"](?:\.\/)?(?<source>lint\/[^'"]+)['"]/gu;
+
+/** The config keys that hold entries rather than name one. */
+const ENTRY_KEYS = new Set(['entry', 'input']);
+
+/** The path a manifest field names, without the leading `./`. */
+const plain = (path) => path.replace(/^\.\//u, '');
+
 /**
- * Whether a unit ships its `lint/`: a `files` entry or an `exports` target
- * reaches into it. A `lint/` nothing publishes holds rules no consumer
- * receives, which is `src/` under another name.
+ * The outputs a unit's build compiles from `lint/`, as `<outDir>/<name>` —
+ * read off the build config's text: a keyed entry is named for its key, a
+ * bare one for its file. The config is a module a bundler loads, so it is
+ * read, never run.
  */
-function shipsLint(manifest) {
+function lintOutputsOf(unit) {
+    const config = BUILD_CONFIGS.find((name) => existsSync(join(unit, name)));
+    if (config === undefined) {
+        return [];
+    }
+
+    const text = readFileSync(join(unit, config), 'utf8');
+    const outDir = plain(
+        /outDir\s*:\s*['"](?<dir>[^'"]+)['"]/u.exec(text)?.groups.dir ?? DEFAULT_OUT_DIR,
+    );
+
+    return [...text.matchAll(LINT_ENTRY)].map(({ groups }) => {
+        const key = groups.quotedKey ?? groups.key;
+        const name =
+            key === undefined || ENTRY_KEYS.has(key)
+                ? basename(groups.source).replace(/\.[^.]+$/u, '')
+                : key;
+
+        return `${outDir.replace(/\/$/u, '')}/${name}`;
+    });
+}
+
+/** Whether a `files` list publishes `path`: the last entry that matches it decides, a `!` excluding. */
+function filesPublish(files, path) {
+    let published = false;
+    for (const entry of files) {
+        if (typeof entry !== 'string') {
+            continue;
+        }
+        const excludes = entry.startsWith('!');
+        const pattern = plain(excludes ? entry.slice(1) : entry).replace(/\/$/u, '');
+        if (path === pattern || path.startsWith(`${pattern}/`) || matchesGlob(path, pattern)) {
+            published = !excludes;
+        }
+    }
+
+    return published;
+}
+
+/**
+ * Whether a unit ships its `lint/`. Directly — a `files` entry or an
+ * `exports` target reaches into it — or through its build: an entry of its
+ * bundler config compiles a `lint/` source, and what it compiles to is
+ * published, by an `exports`, `bin` or `main` target or by `files`. A
+ * `lint/` nothing publishes holds rules no consumer receives, which is
+ * `src/` under another name.
+ */
+function shipsLint(manifest, unit) {
     const files = Array.isArray(manifest.files) ? manifest.files : [];
     const byFiles = files.some(
         (entry) =>
             typeof entry === 'string' && /^(?:\.\/)?lint(?:\/|$)/u.test(entry.replace(/^!.*/u, '')),
     );
-    const byExports = targetsOfExports(manifest.exports).some((target) =>
-        /^\.\/lint(?:\/|$)/u.test(target),
+    const targets = [
+        ...targetsOfExports(manifest.exports),
+        ...targetsOfExports(manifest.bin),
+        ...targetsOfExports(manifest.main),
+    ].map((target) => plain(target));
+    const byExports = targets.some((target) => /^lint(?:\/|$)/u.test(target));
+    const byBuild = lintOutputsOf(unit).some(
+        (output) =>
+            targets.some((target) => target.startsWith(`${output}.`)) ||
+            filesPublish(files, `${output}.js`),
     );
 
-    return byFiles || byExports;
+    return byFiles || byExports || byBuild;
 }
 
 /** Where a root stands outside the spine, said in the words that name its remedy. */
@@ -320,7 +399,7 @@ function foreignRoot(root, prefix) {
     return {
         message:
             root === LINT_ROOT
-                ? `\`${prefix}lint/\` holds the lint rules a package ships, and ${manifestPath}'s \`files\` and \`exports\` never reach it — ship it, or move it under src/`
+                ? `\`${prefix}lint/\` holds the lint rules a package ships, and neither ${manifestPath} nor its build publishes it — ship it, or move it under src/`
                 : `\`${prefix}${root}/\` is a root outside the spine — move it under src/, or declare it in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` with its reason`,
         path: `${prefix}${root}/`,
         rule: 'names-root-foreign',
@@ -358,7 +437,8 @@ function declarationOf(declared, roots, prefix) {
  * findings are named from the repository root, through `prefix`, and send the
  * reader to the unit's own `package.json` and settings file.
  */
-function spineOf(files, manifest, settings, prefix = '') {
+function spineOf(files, unit, settings, prefix = '') {
+    const manifest = manifestOf(unit);
     const findings = [];
     const roots = new Set();
     const declared = settings.roots;
@@ -386,7 +466,7 @@ function spineOf(files, manifest, settings, prefix = '') {
     }
 
     const isCodified = (root) =>
-        (SPINE.has(root) && (root !== LINT_ROOT || shipsLint(manifest))) ||
+        (SPINE.has(root) && (root !== LINT_ROOT || shipsLint(manifest, unit))) ||
         MEMBER_ROOTS.has(root) ||
         Object.hasOwn(ECOSYSTEM_ROOTS, root) ||
         Object.hasOwn(declared, root);
@@ -417,7 +497,7 @@ async function spinesOf(root, files) {
     return [
         ...spineOf(
             files.filter((file) => memberOf(file) === undefined),
-            manifestOf(root),
+            root,
             await settingsOf(root),
         ),
         ...members.flatMap((member, index) =>
@@ -425,7 +505,7 @@ async function spinesOf(root, files) {
                 files
                     .filter((file) => file.startsWith(`${member}/`))
                     .map((file) => file.slice(member.length + 1)),
-                manifestOf(join(root, member)),
+                join(root, member),
                 memberSettings[index],
                 `${member}/`,
             ),

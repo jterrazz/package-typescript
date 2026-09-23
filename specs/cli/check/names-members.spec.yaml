@@ -33,7 +33,7 @@ runs:
            RUN  Names (tree)
 
           names-root-foreign  apps/api/scripts/  `apps/api/scripts/` is a root outside the spine — move it under src/, or declare it in apps/api/jterrazz.config.ts's `typescript.roots` with its reason
-          names-root-foreign  apps/web/lint/  `apps/web/lint/` holds the lint rules a package ships, and apps/web/package.json's `files` and `exports` never reach it — ship it, or move it under src/
+          names-root-foreign  apps/web/lint/  `apps/web/lint/` holds the lint rules a package ships, and neither apps/web/package.json nor its build publishes it — ship it, or move it under src/
           ✗ Failed with exit code 1
 
            RUN  Secrets (credentials)

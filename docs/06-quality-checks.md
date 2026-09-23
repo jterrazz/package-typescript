@@ -372,9 +372,11 @@ The root's own folders are the same in every repository: `src/` the product's co
 
 A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
 
-`lint/` stands on the spine only where the package SHIPS it: an entry of its `package.json`'s `files`, or a target of its `exports`, reaches into it. A `lint/` nothing publishes holds rules no consumer receives — `src/` under another name — and is refused as `names-root-foreign`.
+`lint/` stands on the spine only where the package SHIPS it, and it ships it one of two ways. Directly: an entry of its `package.json`'s `files`, or a target of its `exports`, reaches into `lint/`. Or through its build: an entry of its `tsdown.config.*` compiles a `lint/` source, and the output it compiles to — `dist/<entry>`, or under the config's `outDir` — is published by an `exports`, `bin` or `main` target, or by a `files` entry no later `!` entry takes back. A package that ships its rules as `dist/oxlint.js`, built from a `plugin.ts` under `lint/`, is the case the second way exists for.
 
-A workspace member is a spine of its own, judged the same way from its own folder: its first-level folders owe the spine, its `lint/` answers to its own `files` and `exports`, and it declares the roots it keeps beyond the spine in its own `jterrazz.config.ts`. The `Makefile` stays the repository root's.
+A `lint/` nothing publishes holds rules no consumer receives — `src/` under another name — and is refused as `names-root-foreign`. The build config is read as text, never run: an entry is named for its key, `oxlint: 'lint/plugin.ts'`, or for its file where it has none.
+
+A workspace member is a spine of its own, judged the same way from its own folder: its first-level folders owe the spine, its `lint/` answers to its own `files`, `exports` and build, and it declares the roots it keeps beyond the spine in its own `jterrazz.config.ts`. The `Makefile` stays the repository root's.
 
 #### The six gestures
 

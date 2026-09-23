@@ -1,0 +1,13 @@
+{
+  "name": "fixture-names-lint-unshipped",
+  "version": "1.0.0",
+  "private": true,
+  "files": [
+    "dist",
+    "!dist/catalog.*"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  }
+}
