@@ -9,6 +9,7 @@ set -e
 
 PACKAGE_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 CONSUMERS="$PACKAGE_ROOT/specs/cli/preset/fixtures/install-matrix"
+ASTRO_PACKAGE="$PACKAGE_ROOT/specs/cli/preset/fixtures/astro-package"
 
 # perfectionist sorts the specifiers inside one import statement, and a
 # consumer's config is linted like everything else it writes.
@@ -57,6 +58,19 @@ for consumer in "$CONSUMERS"/*/; do
     mkdir -p "$project/node_modules/@types"
     ln -sfn "$PACKAGE_ROOT/node_modules/@types/node" "$project/node_modules/@types/node"
     ln -sfn "$PACKAGE_ROOT/node_modules/vitest" "$project/node_modules/vitest"
+
+    # `astro` is the consumer's own dependency, and the astro preset extends
+    # Astro's tsconfig: tsc resolves that name walking up from the package's
+    # real path. pnpm's store sits inside the consumer's node_modules, so the
+    # walk reaches the consumer's astro; this store sits beside the consumer,
+    # so a second link stands where the walk looks. The package is a stand-in.
+    rm -f "$STORE/astro"
+    if grep -q '"astro"' "$project/package.json"; then
+        ln -sfn "$ASTRO_PACKAGE" "$project/node_modules/astro"
+        ln -sfn "$ASTRO_PACKAGE" "$STORE/astro"
+        mkdir -p "$project/node_modules/.bin"
+        ln -sfn "$ASTRO_PACKAGE/bin/astro.js" "$project/node_modules/.bin/astro"
+    fi
 
     # The two config files are WRITTEN here, not committed with the consumer:
     # oxlint discovers every `oxlint.config.*` under this repository, fixture

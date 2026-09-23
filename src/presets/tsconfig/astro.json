@@ -1,5 +1,6 @@
 {
     "display": "Astro",
+    "extends": "astro/tsconfigs/strict",
     "exclude": [
         "${configDir}/node_modules",
         "${configDir}/dist",

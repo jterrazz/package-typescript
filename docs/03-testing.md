@@ -62,6 +62,8 @@ The presets are the one part of this package a document cannot reach: `check` lo
 
 The last one is the outside view, and it is the one that fails when the corpus is wrong: seven tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so an eighth profile earns a consumer by existing. The two config files are the one thing the ground does NOT carry: the runner writes them, for the same reason as above, and that heredoc is the single place the documented form is stated for all seven.
 
+The `astro` consumer declares `astro`, because the preset it extends stands on Astro's own. What the runner links there is a stand-in, `specs/cli/preset/fixtures/astro-package/` — Astro's strict tsconfig and a CLI whose `check` has no template to refuse — at the consumer's root, and again beside the package in the sandbox's store, which sits outside the consumer where pnpm's would sit inside it.
+
 ### Regenerating a golden
 
 Every golden of this repository takes the same gesture:

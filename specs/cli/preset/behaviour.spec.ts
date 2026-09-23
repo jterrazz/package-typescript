@@ -134,8 +134,8 @@ test('refuses a directive naming a @jterrazz/test rule the plugin does not ship'
     // Given - the node profile composed with @jterrazz/test's testing fragment, and a directive naming a retired rule
     using work = sandbox(resolve(FIXTURES, 'node', 'input'), 'node', 'node');
     symlinkSync(
-        resolve(import.meta.dirname, '../../../node_modules/@jterrazz'),
-        resolve(work.path, 'node_modules/@jterrazz'),
+        resolve(import.meta.dirname, '../../../node_modules/@jterrazz/test'),
+        resolve(work.path, 'node_modules/@jterrazz/test'),
         'dir',
     );
     const entry = resolve(import.meta.dirname, '../../../src/oxlint.js');

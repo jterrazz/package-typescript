@@ -53,6 +53,32 @@ export function profilePath(name: string): string {
 /** The formatting preset oxfmt is pointed at. */
 export const OXFMT_CONFIG = resolve(REPOSITORY, 'src/presets/oxfmt/index.js');
 
+/**
+ * The tsconfig presets as a consumer holds them — a real directory under
+ * `node_modules/@jterrazz/typescript`, never a link, since tsc resolves a
+ * preset's own `extends` from its real path — beside the `astro` the astro
+ * preset extends, a stand-in carrying Astro's strict tsconfig.
+ */
+export function installTsconfigPresets(project: string): void {
+    const installed = resolve(project, 'node_modules/@jterrazz/typescript');
+    mkdirSync(installed, { recursive: true });
+    cpSync(resolve(REPOSITORY, 'package.json'), resolve(installed, 'package.json'));
+    cpSync(
+        resolve(REPOSITORY, 'src/presets/tsconfig'),
+        resolve(installed, 'src/presets/tsconfig'),
+        {
+            recursive: true,
+        },
+    );
+    cpSync(
+        resolve(import.meta.dirname, 'fixtures/astro-package'),
+        resolve(project, 'node_modules/astro'),
+        {
+            recursive: true,
+        },
+    );
+}
+
 /** A disposable copy of a fixture, wired the way a consumer wires a profile. */
 export function sandbox(
     fixture: string,
@@ -82,13 +108,10 @@ export function sandbox(
         'dir',
     );
 
+    installTsconfigPresets(path);
     writeFileSync(
         resolve(path, 'tsconfig.json'),
-        `${JSON.stringify(
-            { extends: resolve(REPOSITORY, 'src/presets/tsconfig', `${tsconfigPreset}.json`) },
-            null,
-            4,
-        )}\n`,
+        `${JSON.stringify({ extends: `@jterrazz/typescript/tsconfig/${tsconfigPreset}` }, null, 4)}\n`,
     );
 
     const config = resolve(path, 'oxlint.config.js');

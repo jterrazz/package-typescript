@@ -30,13 +30,13 @@ A published package has no lint profile of its own because it would hold no rule
 
 That line is the whole file. Every preset scopes its `include` and `exclude` to `${configDir}` — the directory of the `tsconfig.json` that extends it — so a project inherits the right file set without restating one.
 
-**Astro is the one profile whose tsconfig takes two names.** Astro ships the file set its own tooling needs, and this package cannot extend a dependency the consumer owns, so the consumer composes them — ours for the strict flags and the JSX runtime, Astro's for what it knows about `.astro` files:
+**The `astro` preset stands on Astro's own.** It extends `astro/tsconfigs/strict` first — the file set Astro's tooling needs, `.astro/types.d.ts` included — and then states ours on top, so the strict flags, the React JSX runtime and the ground `exclude` are the ones that hold. The consumer still writes one line:
 
 ```json
-{ "extends": ["@jterrazz/typescript/tsconfig/astro", "astro/tsconfigs/strict"] }
+{ "extends": "@jterrazz/typescript/tsconfig/astro" }
 ```
 
-The `astro` preset states no `include` for that reason: the later entry wins, and the file set is Astro's.
+`astro` is the consumer's dependency, never this package's: an Astro site already installs it, and the preset's `extends` resolves it from the consumer's `node_modules`.
 
 `node` keeps `allowJs` on and `library` turns it off, and the split is deliberate: a service may still carry a `.js` file — the rulebook scopes decisions to `**/*.js` on the strength of it ([Lint presets](07-lint-presets.md)) — while a published package emits its declarations without a type-checker, which cannot be done from JavaScript.
 

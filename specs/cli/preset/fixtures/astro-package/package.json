@@ -1,0 +1,12 @@
+{
+    "name": "astro",
+    "version": "7.3.1",
+    "type": "module",
+    "bin": {
+        "astro": "bin/astro.js"
+    },
+    "exports": {
+        "./tsconfigs/*.json": "./tsconfigs/*",
+        "./tsconfigs/*": "./tsconfigs/*.json"
+    }
+}
