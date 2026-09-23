@@ -24,7 +24,8 @@ const FIXTURE = resolve(import.meta.dirname, 'fixtures/checker-member');
 /**
  * A checker that answers `--member`, and says under which name it was run —
  * and, for a member run, whether the oxlint report it was handed is there to
- * read, since it runs no oxlint of its own.
+ * read and how many `jterrazz(*)` diagnostics it carries, since it runs no
+ * oxlint of its own and judges exactly those.
  */
 function stub(name: string): string {
     return `#!/usr/bin/env node
@@ -35,7 +36,10 @@ const flag = args.indexOf('--oxlint-report');
 function reportOf() {
     if (flag === -1) return 'none';
     try {
-        return Array.isArray(JSON.parse(readFileSync(args[flag + 1], 'utf8')).diagnostics) ? 'read' : 'unreadable';
+        const { diagnostics } = JSON.parse(readFileSync(args[flag + 1], 'utf8'));
+        if (!Array.isArray(diagnostics)) return 'unreadable';
+        const plugin = diagnostics.filter(({ code }) => String(code).startsWith('jterrazz(')).length;
+        return \`read, \${plugin} jterrazz\`;
     } catch {
         return 'unreadable';
     }
@@ -68,6 +72,34 @@ afterEach(() => {
         workDir = '';
     }
 });
+
+/** A plugin under the name @jterrazz/test ships, reporting once, on apps/web's one source file. */
+const PLUGIN = `export default {
+    meta: { name: 'jterrazz' },
+    rules: {
+        'x1-once': {
+            create(context) {
+                return {
+                    Program(node) {
+                        if (context.filename.endsWith('apps/web/src/index.ts')) {
+                            context.report({ message: 'reported by the stub plugin', node });
+                        }
+                    },
+                };
+            },
+        },
+    },
+};
+`;
+
+/** The plugin armed in the workspace's own oxlint config, so the check's report carries one of its diagnostics. */
+function armPlugin(dir: string): void {
+    writeFileSync(join(dir, 'plugin.mjs'), PLUGIN);
+    writeFileSync(
+        join(dir, 'oxlint.config.ts'),
+        "export default { ignorePatterns: ['plugin.mjs'], jsPlugins: ['./plugin.mjs'], rules: { 'jterrazz/x1-once': 'error' } };\n",
+    );
+}
 
 /** One run of the product command in `dir`. */
 function check(dir: string): { status: null | number; stdout: string } {
@@ -102,14 +134,17 @@ describe('the conventions checker in a workspace', () => {
     });
 
     test('hands every member run the oxlint report the check wrote, and the tree runs none', () => {
-        // Given - a workspace whose root resolves a checker that answers the member flag
-        // When - the quality checks run at the root
-        const { stdout } = check(workspace('15.3.0'));
+        // Given - a workspace whose root resolves a checker that answers the member flag, and arms a plugin rule reporting once
+        const root = workspace('15.3.0');
+        armPlugin(root);
 
-        // Then - each member run reads the one report the oxlint pass wrote, already complete
-        expect(stdout).toContain('root member pass: . (oxlint report: read)');
-        expect(stdout).toContain('root member pass: apps/api (oxlint report: read)');
-        expect(stdout).toContain('root member pass: apps/web (oxlint report: read)');
+        // When - the quality checks run at the root
+        const { stdout } = check(root);
+
+        // Then - each member run reads the one report the oxlint pass wrote, complete, the plugin's diagnostic in it
+        expect(stdout).toContain('root member pass: . (oxlint report: read, 1 jterrazz)');
+        expect(stdout).toContain('root member pass: apps/api (oxlint report: read, 1 jterrazz)');
+        expect(stdout).toContain('root member pass: apps/web (oxlint report: read, 1 jterrazz)');
 
         // Then - and the tree run, which reads no oxlint diagnostic, is handed nothing
         expect(stdout).toContain('root tree pass: apps/api/specs (oxlint report: none)');
