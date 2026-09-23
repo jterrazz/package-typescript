@@ -403,7 +403,7 @@ Every rule carries the code `names(<rule>)`, and the ratchet records it as `name
 
 ## The Secrets (credentials) pass
 
-No file the project would commit carries a live-looking credential. Two engines answer that one question: where `gitleaks` is on PATH it runs as `gitleaks dir . --no-banner --redact`, so a finding names the file and never reprints the secret; where it is not, ten patterns over the tracked text answer well enough to stop the leak that actually happens — a token pasted into a note and committed with it.
+No file the project would commit carries a live-looking credential. Two engines answer that one question, over the same files — the tracked ones, the ground a test stands on and `--ignore-pattern` left out, as for every tree gate. Where `gitleaks` is on PATH it runs as `gitleaks dir . --no-banner --redact` over a copy of exactly those files, so a finding names the file and never reprints the secret; where it is not, ten patterns over their text answer well enough to stop the leak that actually happens — a token pasted into a note and committed with it.
 
 Which engine runs is decided inside the gate rather than in `check.sh`, because the gate applies either way. Bash decides whether a pass applies; this one always does, and what changes is only who answers.
 

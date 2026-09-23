@@ -3,11 +3,13 @@
 /**
  * No file the project would commit carries a live-looking credential.
  *
- * Two engines, one gate. Where `gitleaks` is on PATH it is the better scanner
- * and this gate is its runner — `gitleaks dir . --redact`, so a finding names
- * the file and never reprints the secret. Where it is not, ten patterns over
- * the tracked text answer the same question well enough to stop the leak that
- * actually happens: a token pasted into a note and committed with it.
+ * Two engines, one gate, one set of files: the tracked sweep every tree gate
+ * starts from, the ground a spec stands on and `--ignore-pattern` left out.
+ * Where `gitleaks` is on PATH it is the better scanner and this gate is its
+ * runner — `gitleaks dir . --redact` over a copy of exactly those files, so a
+ * finding names the file and never reprints the secret. Where it is not, ten
+ * patterns over the same files answer the question well enough to stop the
+ * leak that actually happens: a token pasted into a note and committed with it.
  *
  * Which engine runs is decided HERE and not in `check.sh`, because the gate
  * applies either way — bash decides whether a gate applies, and this one always
@@ -25,7 +27,9 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
+import { copyFileSync, lstatSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
 import { ignorePatternsOf, readText, trackedFiles } from './tracked-files.js';
@@ -67,24 +71,57 @@ const PATTERNS = [
 /** The one predicate that lets a hit through: the line must declare itself fake. */
 const isSynthetic = (line) => /dummy|example|fake|redacted|sample|synthetic/iu.test(line);
 
-/** Gitleaks, when the machine has it — the better scanner, run redacted. */
-function runGitleaks(root) {
+/**
+ * The files this gate judges, copied into a directory of their own: gitleaks
+ * reads a DIRECTORY, and the project's directory holds what this gate never
+ * judges — an untracked scratch folder, the ground a spec stands on, what
+ * `--ignore-pattern` overlooks. The copy keeps every path as the project
+ * spells it, so a finding names the project's own file. A symlink is left out,
+ * as the pattern engine leaves it: its content is judged at its target.
+ */
+function stageFiles(root, files) {
+    const staged = mkdtempSync(join(tmpdir(), 'typescript-secrets-'));
+    for (const path of files) {
+        const source = join(root, path);
+        try {
+            if (!lstatSync(source).isFile()) {
+                continue;
+            }
+            mkdirSync(dirname(join(staged, path)), { recursive: true });
+            copyFileSync(source, join(staged, path));
+        } catch {
+            /* A tracked file gone from the disk has nothing left to leak. */
+        }
+    }
+
+    return staged;
+}
+
+/** Gitleaks, when the machine has it — the better scanner, run redacted over the judged files. */
+function runGitleaks(root, files) {
     const probe = spawnSync('gitleaks', ['version'], { stdio: 'ignore' });
     if (probe.error) {
         return null;
     }
 
-    const run = spawnSync('gitleaks', ['dir', '.', '--no-banner', '--redact', '--exit-code', '1'], {
-        cwd: root,
-        encoding: 'utf8',
-    });
+    const staged = stageFiles(root, files);
+    try {
+        const run = spawnSync(
+            'gitleaks',
+            ['dir', '.', '--no-banner', '--redact', '--exit-code', '1'],
+            { cwd: staged, encoding: 'utf8' },
+        );
 
-    return { output: `${run.stdout ?? ''}${run.stderr ?? ''}`, status: run.status ?? 1 };
+        return { output: `${run.stdout ?? ''}${run.stderr ?? ''}`, status: run.status ?? 1 };
+    } finally {
+        rmSync(staged, { force: true, recursive: true });
+    }
 }
 
 const root = resolve(argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.');
+const files = trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) });
 
-const gitleaks = runGitleaks(root);
+const gitleaks = runGitleaks(root, files);
 if (gitleaks !== null) {
     if (gitleaks.status !== 0) {
         stdout.write(gitleaks.output);
@@ -93,7 +130,7 @@ if (gitleaks !== null) {
 }
 
 let failed = false;
-for (const path of trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) })) {
+for (const path of files) {
     const text = readText(root, path);
     if (text === null) {
         continue;
