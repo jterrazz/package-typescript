@@ -283,7 +283,7 @@ Not a pass: a report, printed at the end of every `check` that has an oxlint con
   tool versions             in range
 ```
 
-A rule turned off, a suppression written, a baseline entry recorded and a tool left behind are the four ways a project drifts. Three of them are one line; the baseline is named by BOTH ratchet files this toolchain family writes — `typescript.baseline.json` always, `test.baseline.json` only where the project keeps one — because a count with no file beside it says nothing about which debt it is. `--json` prints the same reading for a machine, which is how a fleet-wide sweep collects the table.
+A rule turned off, a suppression written, a baseline entry recorded and a tool left behind are the four ways a project drifts. Three of them are one line; the baseline is named by BOTH ratchet files this toolchain family writes — `typescript.baseline.json` always, `test.baseline.json` only where the project keeps one — because a count with no file beside it says nothing about which debt it is. `typescript check --json` prints the same reading for a machine — the block under the `DRIFT` header becomes one JSON object, every pass above it still prints for a human — which is how a fleet-wide sweep collects the table.
 
 **The profile is read off the consumer's config, and a config that names none is NOT measured.** A project extending no profile of this package is not drifting from one, it never joined it, and reporting two hundred rules as "off" would say nothing about anything. The name comes from the config's own `import`, which is the only evidence there is: oxlint's config schema is closed, so a compiled profile cannot carry its own name through to `--print-config`.
 

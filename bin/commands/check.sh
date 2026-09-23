@@ -278,12 +278,18 @@ else
     shift
 fi
 
-# Parse remaining args
+# Parse remaining args. `--json` is the drift report's: the fleet reads that
+# block as one JSON object, and every pass still prints for a human.
+DRIFT_ARGS=()
 while [[ $# -gt 0 ]]; do
     case $1 in
         --ignore-pattern)
             LINT_ARGS+=("$1" "$2")
             shift 2
+            ;;
+        --json)
+            DRIFT_ARGS+=("$1")
+            shift
             ;;
         *)
             shift
@@ -936,7 +942,7 @@ run_checks() {
     local drift_status=0
     if [ "$FIX_MODE" = false ] && [ -n "$OXLINT_CONFIG" ]; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} DRIFT ${NC} Deviations from the profile\n\n"
-        node "$PACKAGE_ROOT/src/cli/check-drift.js" . --oxlint "$OXLINT" "${LINT_ARGS[@]}"
+        node "$PACKAGE_ROOT/src/cli/check-drift.js" . --oxlint "$OXLINT" "${LINT_ARGS[@]}" "${DRIFT_ARGS[@]}"
         drift_status=$?
     fi
 

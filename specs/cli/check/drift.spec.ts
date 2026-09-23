@@ -154,26 +154,22 @@ test('counts the suppressions, and names a tool left behind its range', () => {
     expect(drift).toContain('tool versions             knip 0.0.1 old\n');
 });
 
-test('prints the same reading for a machine under --json', () => {
+test('prints the same reading for a machine under check --json', () => {
     // Given - the same project, on the same toolchain
     const toolchain = toolchainWith({ knip: '0.0.1' });
     const directory = suppressingProject(toolchain);
 
-    // When - the drift report is asked for its machine form
-    const result = spawnSync(
-        'node',
-        [
-            join(toolchain, 'src/cli/check-drift.js'),
-            '.',
-            '--oxlint',
-            join(PACKAGE_ROOT, 'node_modules/.bin/oxlint'),
-            '--json',
-        ],
-        { cwd: directory, encoding: 'utf8' },
-    );
+    // When - the quality checks run with --json
+    const result = spawnSync('bash', [join(toolchain, 'bin/typescript.sh'), 'check', '--json'], {
+        cwd: directory,
+        encoding: 'utf8',
+    });
+    const start = result.stdout.indexOf('Deviations from the profile');
+    const drift = result.stdout.slice(start, result.stdout.indexOf(' END ', start));
+    const reading = drift.slice(drift.indexOf('{'), drift.lastIndexOf('}') + 1);
 
-    // Then - one JSON object carries every row the human block prints
-    expect(JSON.parse(result.stdout)).toStrictEqual({
+    // Then - the drift block is one JSON object carrying every row the human block prints
+    expect(JSON.parse(reading)).toStrictEqual({
         baseline: null,
         profile: 'node',
         rulesOff: [],
@@ -184,5 +180,4 @@ test('prints the same reading for a machine under --json', () => {
         ],
         unreasoned: [],
     });
-    expect(result.status).toBe(0);
 });
