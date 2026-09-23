@@ -351,8 +351,18 @@ The root's own folders are the same in every repository: `src/` the product's co
 | `names-root-foreign`    | a root folder outside the spine that nothing codifies                             |
 | `names-root-unreasoned` | a root declared in `jterrazz.typescript.roots` with no reason beside it           |
 | `names-root-stale`      | a root declared in `jterrazz.typescript.roots` that holds no tracked file anymore |
+| `names-makefile-absent` | a repository root with no tracked `Makefile`                                      |
+| `names-makefile-target` | one of the six gestures a repository's `Makefile` writes no rule for              |
 
 A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
+
+#### The six gestures
+
+Every repository answers the same six at its root, whatever the language under it: `make install`, `make build`, `make lint`, `make fix`, `make test` and `make check`. The flows speak only these, so a session that has never opened the repository still knows how to install, prove and repair it. What each recipe runs is the repository's; that the rule exists is the contract.
+
+The contract is asked where a REPOSITORY is — a `.git` beside the project, as for [the Docs (layout) pass](#the-docs-layout-pass) — and the `Makefile` must be tracked, like every file a tree gate reads. A workspace member owes nothing: the repository's root answers for every member, and a member linted on its own is never asked.
+
+A target counts when the `Makefile`'s own text writes a rule for it — `lint:`, `install build:`, `test::` — and an assignment (`LINT := …`) or a comment is no rule. A file the `Makefile` `include`s is not read, so the six stay written where a reader opens first.
 
 #### A root beside the spine
 

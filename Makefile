@@ -1,4 +1,4 @@
-.PHONY: build lint test install
+.PHONY: install build lint fix test check
 
 node_modules/.install: package-lock.json
 	npm ci
@@ -12,5 +12,10 @@ build: node_modules/.install
 lint: node_modules/.install
 	npm run lint
 
+fix: node_modules/.install
+	npm run lint:fix
+
 test: node_modules/.install
 	npm test
+
+check: lint test

@@ -26,10 +26,10 @@ One Claude Code skill routes into this corpus: `skills/jterrazz-typescript/SKILL
 ## Setup
 
 ```bash
-npm install
+make install
 ```
 
-No build step — this package ships JS directly. It dogfoods its own CLI (`npm run lint` → `./bin/typescript.sh check`).
+No build step — this package ships JS directly. It dogfoods its own CLI (`make lint` → `npm run lint` → `./bin/typescript.sh check`).
 
 ## Repo layout
 
@@ -78,12 +78,15 @@ specs/                        # Product specifications (@jterrazz/test) — the 
 
 ## Commands
 
-| Task                                    | Command                  |
-| --------------------------------------- | ------------------------ |
-| Run all tests                           | `npm test`               |
-| Lint + format + typecheck + knip + docs | `npm run lint`           |
-| Auto-fix lint issues                    | `npm run lint:fix`       |
-| Regenerate every golden and projection  | `TEST_UPDATE=1 npm test` |
+| Task                                    | Command                   |
+| --------------------------------------- | ------------------------- |
+| Install from the lockfile               | `make install`            |
+| Build (nothing to build — JS ships)     | `make build`              |
+| Lint + format + typecheck + knip + docs | `make lint`               |
+| Auto-fix lint issues                    | `make fix`                |
+| Run all tests                           | `make test`               |
+| The gate before a commit: lint, test    | `make check`              |
+| Regenerate every golden and projection  | `TEST_UPDATE=1 make test` |
 
 ## Standing rule
 

@@ -19,7 +19,9 @@
  * spine a root stands only on a codified ground: a name the ecosystem imposes
  * (`ECOSYSTEM_ROOTS`), or one the repository declares in its `package.json`
  * under `jterrazz.typescript.roots`, each with its reason. Any other root is
- * refused.
+ * refused. A repository's root also carries a tracked `Makefile` answering
+ * `install`, `build`, `lint`, `fix`, `test` and `check` — the gestures the
+ * flows speak.
  *
  * Usage: node check-names.js [root] [--ignore-pattern <glob>]… [--format json]
  *                             [--report <path>]
@@ -42,6 +44,7 @@ import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
 import { BASELINE, judge, readBaseline } from './check-baseline.js';
+import { isRepositoryRoot } from './repository-root.js';
 import { ignorePatternsOf, trackedFiles } from './tracked-files.js';
 
 /** Names that say nothing: a folder or a file called one of these holds whatever nobody placed. */
@@ -123,6 +126,22 @@ const ECOSYSTEM_ROOTS = Object.freeze({
  * settings object per package of the family, and this package reads only its own.
  */
 const DECLARATION = 'jterrazz.typescript.roots';
+
+/**
+ * The gestures every repository answers at its root, and the only ones the
+ * flows speak: `make <target>` is the same verb whatever the language under
+ * it. A workspace member owes none of them — the repository does.
+ */
+const MAKE_TARGETS = Object.freeze(['install', 'build', 'lint', 'fix', 'test', 'check']);
+
+/** The file those gestures live in, at the repository root. */
+const MAKEFILE = 'Makefile';
+
+/**
+ * A rule line: targets before a `:` or `::` that does not open an assignment
+ * (`:=`, `::=`). A recipe line opens on a tab and never matches.
+ */
+const RULE_LINE = /^(?<targets>[^\s:#=][^:#=]*?)\s*(?:::|:)(?![:=])/u;
 
 /** The one file a skill is: `skills/<skill>/SKILL.md`. */
 const SKILL_FILE = /^skills\/[^/]+\/SKILL\.md$/u;
@@ -294,6 +313,48 @@ function spineOf(files, declared) {
     return findings;
 }
 
+/** Every target a Makefile's own text writes a rule for. */
+function targetsOf(text) {
+    const targets = new Set();
+    for (const line of text.split('\n')) {
+        const match = RULE_LINE.exec(line);
+        for (const target of match?.groups.targets.split(/\s+/u) ?? []) {
+            targets.add(target);
+        }
+    }
+
+    return targets;
+}
+
+/**
+ * What a repository's root owes the flows: a tracked Makefile answering the
+ * six gestures. Asked only where a repository is — a `.git` beside the root —
+ * so a workspace member, a fixture or a bare directory is never asked.
+ */
+function makefileOf(root, files) {
+    if (!isRepositoryRoot(root)) {
+        return [];
+    }
+    const gestures = `${MAKE_TARGETS.slice(0, -1).join(', ')} and ${MAKE_TARGETS.at(-1)}`;
+    if (!files.includes(MAKEFILE)) {
+        return [
+            {
+                message: `the repository has no tracked Makefile — every repository answers \`make\` ${gestures}`,
+                path: MAKEFILE,
+                rule: 'names-makefile-absent',
+            },
+        ];
+    }
+
+    const targets = targetsOf(readFileSync(join(root, MAKEFILE), 'utf8'));
+
+    return MAKE_TARGETS.filter((target) => !targets.has(target)).map((target) => ({
+        message: `\`make ${target}\` has no rule — every repository answers \`make\` ${gestures}`,
+        path: MAKEFILE,
+        rule: 'names-makefile-target',
+    }));
+}
+
 /** The namespace the pass's rules take in the ratchet's file. */
 const NAMESPACE = 'names/';
 
@@ -319,7 +380,11 @@ const root = resolve(
         ) ?? '.',
 );
 const files = trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) });
-const findings = [...findingsOf(files), ...spineOf(files, declaredRootsOf(root))];
+const findings = [
+    ...findingsOf(files),
+    ...spineOf(files, declaredRootsOf(root)),
+    ...makefileOf(root, files),
+];
 
 /** The findings as the ratchet reads a report: oxlint's JSON shape, one code per rule. */
 const report = () =>

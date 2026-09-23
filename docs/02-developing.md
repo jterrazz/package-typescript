@@ -103,12 +103,34 @@ Libraries (bundle instead of build):
 
 A repository that EMITS with project references runs the compiler directly, and names it through the CLI so the version is the toolchain's: `"build": "typescript tsc --build"` ([Building](05-building.md)).
 
+## 4. Answer the six gestures in a Makefile
+
+The repository's root keeps a `Makefile` with a rule for each of the six gestures every repository answers — the flows speak only these, and the Names (tree) pass refuses a repository that misses one ([Quality checks](06-quality-checks.md#the-six-gestures)):
+
+```make
+.PHONY: install build lint fix test check
+
+install:
+	npm ci
+
+build lint test:
+	npm run $@
+
+fix:
+	npm run lint:fix
+
+check: lint test
+```
+
+A workspace keeps one, at its root; a member owes none.
+
 ## The shape a consumer keeps
 
 That is the whole contract, and it is meant to stay that size:
 
 - **One devDependency** — `@jterrazz/typescript`. tsc, oxlint, oxfmt, knip and tsdown are its own dependencies and arrive with it; installing one of them directly gives a project two opinions about its own toolchain, and the versions drift apart from there. It holds under npm, pnpm and bun alike, and pnpm is the one that proves it: its `node_modules` resolves only what the project itself declares, so a config naming any other package would fail there with `ERR_MODULE_NOT_FOUND`.
 - **Two commands** — `typescript check` and `typescript fix`. Every gate is behind them, so a script that calls a tool underneath skips the passes the CLI orchestrates.
+- **Six gestures** — the `Makefile` rules above, the one door a reader who has never opened the repository knows.
 - **One line of tsconfig** — the `extends` above, and nothing beside it. In a workspace that is one line per member: the unit the toolchain measures from is the package, not the repository ([Quality checks](06-quality-checks.md)).
 
 A local `compilerOption` is a **smell, not a shortcut**. It says the preset lacks something, and it settles that lack for one project in a place nobody else reads — so the next project rediscovers the same gap and answers it differently. Name what is missing and change the preset instead: the fix belongs upstream, where every project gets the same answer.
@@ -151,11 +173,14 @@ typescript baseline   # record today's diagnostics, so the count may only fall
 
 ## Working on this package
 
-```bash
-npm install     # there is no build step — the package ships JS directly
-npm test        # the two vitest suites (Testing)
-npm run lint    # this package's own CLI, run on this package
-```
+| Gesture        | Runs                                                            |
+| -------------- | --------------------------------------------------------------- |
+| `make install` | `npm ci`, once per change of the lockfile                       |
+| `make build`   | nothing to build — the package ships JS directly                |
+| `make lint`    | this package's own CLI, `typescript check`, run on this package |
+| `make fix`     | `typescript fix`, on this package                               |
+| `make test`    | the two vitest suites ([Testing](03-testing.md))                |
+| `make check`   | `make lint`, then `make test` — the gate before a commit        |
 
 Where a new thing goes follows the layers ([Architecture](01-architecture.md)): a new gate is a node script in `src/cli/` plus the lines in `bin/commands/check.sh` that decide whether it applies; a lint decision is a line of a fragment under `lint/`, never a config; a new configuration is a file under `src/presets/`; a new importable entry is a `.js` and a hand-written `.d.ts` in `src/`, an `exports` subpath, and a row in the resolution test.
 
