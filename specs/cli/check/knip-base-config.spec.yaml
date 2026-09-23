@@ -1,4 +1,4 @@
-description: passes with no local knip.json when the base config covers dependencies
+description: passes with no local knip.json, the base config covering dependencies, and keeps no knip cache
 fixture: ./fixtures/knip/no-config/
 runs:
     - command: check
@@ -45,3 +45,7 @@ runs:
            END  Finalizing quality checks
 
           ✗ Some checks failed
+      files:
+          # Knip runs uncached: its --cache validates a glob against the
+          # directories that held a match, and misses a file added elsewhere.
+          node_modules/.cache/knip: absent
