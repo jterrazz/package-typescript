@@ -1,7 +1,9 @@
 import { file } from '@jterrazz/test';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { beforeAll, describe, expect, test } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { beforeAll, describe, expect, onTestFinished, test } from 'vitest';
 
 import { cli as oxfmtCli } from '../oxfmt.specification.js';
 
@@ -16,6 +18,8 @@ import { cli as oxfmtCli } from '../oxfmt.specification.js';
  * makes (quotes, semicolons, indentation), not oxfmt's overall formatting.
  */
 const CONFIG_PATH = resolve(import.meta.dirname, '../../../src/presets/oxfmt/index.js');
+const ENTRY = resolve(import.meta.dirname, '../../../src/oxfmt.js');
+const OXFMT = resolve(import.meta.dirname, '../../../node_modules/.bin/oxfmt');
 
 type FormatResult = Awaited<ReturnType<typeof oxfmtCli.exec>>;
 
@@ -38,6 +42,52 @@ describe('format checking', () => {
 
         // Then - the check passes
         expect(result.exitCode).toBe(0);
+    });
+});
+
+/*
+ * The preset's ignores resolve against the CONFIG's directory, so they hold
+ * only where a consumer's own config composes the preset at its root — the
+ * way every project wires it — and never under `--config <preset>`. The tree
+ * is copied beside such a config, which names this checkout's entry by path.
+ */
+describe('what the preset leaves alone', () => {
+    test('formats none of the asset trees, build caches and ground a project holds', () => {
+        // Given - the same unformatted file at the root and under every tree the preset ignores, beside a consumer config
+        const created = mkdtempSync(resolve(tmpdir(), 'spec-formatter-ignores-'));
+        onTestFinished(() => {
+            rmSync(created, { force: true, recursive: true });
+        });
+        cpSync(resolve(import.meta.dirname, 'fixtures/formatter/asset-trees'), created, {
+            recursive: true,
+        });
+        /* A tracked `.next/` is the committed artefact the Gitignore pass refuses, so it is made here. */
+        mkdirSync(join(created, '.next'));
+        cpSync(join(created, 'index.ts'), join(created, '.next/app.ts'));
+        writeFileSync(
+            join(created, 'oxfmt.config.ts'),
+            `import { base, defineConfig } from '${ENTRY}';\n\nexport default defineConfig(base);\n`,
+        );
+
+        // When - oxfmt checks the whole tree
+        const result = spawnSync(OXFMT, ['--check'], { cwd: created, encoding: 'utf8' });
+
+        // Then - the root file alone is reported
+        expect(result.status).toBe(1);
+        expect(result.stdout).toMatch(/^index\.ts /mu);
+        for (const tree of [
+            'public',
+            'assets',
+            '.next',
+            '.expo',
+            'dist',
+            'fixtures',
+            'expected',
+            'seeds',
+            'requests',
+        ]) {
+            expect(result.stdout).not.toContain(`${tree}/app.ts`);
+        }
     });
 });
 
