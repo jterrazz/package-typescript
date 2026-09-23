@@ -39,7 +39,7 @@ When the `package.json` at the cwd declares `workspaces`, the per-package passes
 
 The Docs (layout) pass measures from neither: its unit is the repository, and the section below says why.
 
-The other four passes are root-only, and that is not an omission. tsc, oxlint and oxfmt measure from their **config file**, not from a package, and each already reaches the whole tree from the cwd — oxlint through the tracked files it is handed. Knip reads the workspace globs itself and reports per member from a single run, so a second invocation per member would only double-report.
+The other four passes are root-only, and that is not an omission. tsc, oxlint and oxfmt measure from their **config file**, not from a package, and each already reaches the whole tree from the cwd — oxlint and oxfmt through the tracked files they are handed. Knip reads the workspace globs itself and reports per member from a single run, so a second invocation per member would only double-report.
 
 Discovery never leaves the workspace. A candidate is dropped when git ignores it — clones, workbenches and build output live under gitignored paths — and when the walk had to cross a nested `.git` or a `package.json` that no workspace glob claims to reach it: a vendored project's conventions are its own, not yours.
 
@@ -186,6 +186,10 @@ The rulebook this package ships has no warn tier — a rule is on at `error` or 
 ### The two rewriters run in order
 
 Every pass of `check` runs in parallel, and `fix` keeps that — except for the two passes that WRITE. `oxlint --fix` and `oxfmt` rewrite the same files, so in parallel whichever finishes second lands its own copy over the other's work, and the `check` that follows fails on what the fix had just settled. In fix mode they run one after the other, the linter first; every read-only pass still runs beside them.
+
+## The Oxfmt pass
+
+The formatter is handed the same sweep, whole rather than cut to the shapes a linter parses, and it skips a file it has no parser for. So it judges neither the ground a test stands on nor a file nobody has added, and that holds whether or not the project carries an `oxfmt.config.ts` whose ignores would say so. `fix` writes through the same list, so it never reformats either one. The preset's own ignores — `public/`, `assets/` and the rest — still apply on top.
 
 ## The ratchet
 

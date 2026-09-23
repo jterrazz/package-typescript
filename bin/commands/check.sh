@@ -319,6 +319,34 @@ run_oxlint() {
     "$OXLINT" "$@" "${LINT_TARGETS[@]}"
 }
 
+# ── What oxfmt is handed ─────────────────────────────────────────────────────
+# The same tracked, ground-free sweep, whole rather than cut to source: oxfmt
+# skips a file it has no parser for. Handed the list, the formatter never
+# judges the ground or an untracked file, whether or not the project carries
+# an oxfmt config whose ignores would say so. The fallbacks are oxlint's.
+FORMAT_TARGETS=()
+FORMAT_NOTHING=false
+read_format_targets() {
+    local listed target
+    listed=$(node "$PACKAGE_ROOT/src/cli/lint-targets.js" . --all "${LINT_ARGS[@]}" 2>/dev/null) || return 0
+    while IFS= read -r target; do
+        [ -n "$target" ] && FORMAT_TARGETS+=("$target")
+    done <<< "$listed"
+    [ ${#FORMAT_TARGETS[@]} -eq 0 ] && FORMAT_NOTHING=true
+    return 0
+}
+
+# oxfmt over those files. A list holding only shapes it does not parse is
+# nothing to format, not an error.
+run_oxfmt() {
+    [ "$FORMAT_NOTHING" = true ] && return 0
+    if [ ${#FORMAT_TARGETS[@]} -eq 0 ]; then
+        "$OXFMT" "$@"
+    else
+        "$OXFMT" "$@" --no-error-on-unmatched-pattern "${FORMAT_TARGETS[@]}"
+    fi
+}
+
 # ── How a pass speaks ────────────────────────────────────────────────────────
 # Every pass that RAN prints the same three things, in the same order: a `RUN`
 # header carrying its label, whatever it has to say, and one verdict line. A
@@ -408,6 +436,7 @@ run_checks() {
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
 
     read_lint_targets
+    read_format_targets
 
     # The members the conventions checker is run FOR, chosen before oxlint
     # starts: a member run judges the `jterrazz(*)` diagnostics this pass sets
@@ -474,7 +503,7 @@ run_checks() {
             > "$tmp_dir/lint.log" 2>&1 ||
             lint_status=$?
         rm -f "$fix_config"
-        "$OXFMT" > "$tmp_dir/format.log" 2>&1 || format_status=$?
+        run_oxfmt > "$tmp_dir/format.log" 2>&1 || format_status=$?
     else
         # `--deny-warnings` is what makes check and fix read the same tree. A
         # warn-severity diagnostic leaves oxlint's exit code at 0, and a pass
@@ -507,7 +536,7 @@ run_checks() {
 
     local format_pid=""
     if [ "$FIX_MODE" = false ]; then
-        "$OXFMT" --check > "$tmp_dir/format.log" 2>&1 &
+        run_oxfmt --check > "$tmp_dir/format.log" 2>&1 &
         format_pid=$!
     fi
 
