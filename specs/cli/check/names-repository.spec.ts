@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { expect, onTestFinished, test } from 'vitest';
@@ -160,6 +160,26 @@ test('judges the tracked files alone in every tree gate, the linter included', (
     expect(markdown).toContain('Passed');
     expect(secrets).toContain('Passed');
     expect(readFileSync(join(project, 'typescript.baseline.json'), 'utf8')).toBe('{}\n');
+});
+
+test('refuses to judge a repository that tracks nothing yet, rather than pass it', () => {
+    // Given - a repository initialised over a tree nobody has added
+    const project = projectWith({ isRepository: false, makefile: SIX_TARGETS });
+    execFileSync('git', ['init', '--quiet'], { cwd: project });
+
+    // When - the quality checks run
+    const result = spawnSync('bash', [BIN, 'check'], {
+        cwd: project,
+        encoding: 'utf8',
+        env: inProject(project),
+    });
+    const refusal = `nothing to read under ${realpathSync(project)}`;
+
+    // Then - every tree gate names the empty sweep and fails, where a silent one would pass on everything
+    expect(passOf(result.stdout, 'Markdown (prose)', 'Names (tree)')).toContain(refusal);
+    expect(passOf(result.stdout, 'Names (tree)', 'Secrets (credentials)')).toContain(refusal);
+    expect(passOf(result.stdout, 'Secrets (credentials)', 'END')).toContain(refusal);
+    expect(result.status).toBe(1);
 });
 
 test('accepts a repository whose Makefile answers the six gestures', () => {
