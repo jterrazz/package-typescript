@@ -1,4 +1,12 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    existsSync,
+    mkdirSync,
+    readdirSync,
+    readFileSync,
+    rmSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, test } from 'vitest';
 
@@ -113,4 +121,40 @@ test('keeps a behaviour or fixpoint ground only for a profile the rulebook ships
         (entry) => !owners.has((entry.split('/').at(-1) ?? '').replace(/\.report\.txt$/u, '')),
     );
     expect(orphans).toStrictEqual([]);
+});
+
+/*
+ * A directive naming a rule the plugin no longer ships suppresses nothing, and
+ * the rulebook's `reportUnusedDisableDirectives` is what refuses it — the
+ * Suppressions pass cannot, since a JS plugin's rules never reach
+ * `--print-config`. The sandbox composes the real @jterrazz/test fragment, the
+ * way a consumer does, so the plugin is loaded and the rule is simply not in it.
+ */
+test('refuses a directive naming a @jterrazz/test rule the plugin does not ship', () => {
+    // Given - the node profile composed with @jterrazz/test's testing fragment, and a directive naming a retired rule
+    using work = sandbox(resolve(FIXTURES, 'node', 'input'), 'node', 'node');
+    symlinkSync(
+        resolve(import.meta.dirname, '../../../node_modules/@jterrazz'),
+        resolve(work.path, 'node_modules/@jterrazz'),
+        'dir',
+    );
+    const entry = resolve(import.meta.dirname, '../../../src/oxlint.js');
+    writeFileSync(
+        work.config,
+        `import { testing } from '@jterrazz/test/oxlint';\nimport { compose, node } from '${entry}';\n\nexport default compose(node, testing);\n`,
+    );
+    writeFileSync(
+        resolve(work.path, 'retired.ts'),
+        "export function pause(): string {\n    // oxlint-disable-next-line jterrazz/z9-retired-rule -- kept from a release that had it\n    return 'paused';\n}\n",
+    );
+
+    // When - oxlint reads that file under the composed rulebook
+    const report = oxlint(work.path, ['-c', work.config, '--format=json', 'retired.ts']);
+
+    // Then - the directive itself is the one finding, on its own line, at error
+    expect(
+        diagnosticsOf(report).map(
+            ({ labels, message, severity }) => `${labels[0]?.span.line} ${severity} ${message}`,
+        ),
+    ).toStrictEqual(['2 error Unused oxlint-disable directive (no problems were reported).']);
 });

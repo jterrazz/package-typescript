@@ -140,6 +140,7 @@ export type Diagnostic = {
     code: string;
     filename: string;
     labels: { span: { column: number; line: number } }[];
+    message: string;
     severity: string;
 };
 
