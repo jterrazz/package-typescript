@@ -1,7 +1,10 @@
+import { spawnSync } from 'node:child_process';
+import { join } from 'node:path';
 import { expect, test } from 'vitest';
 
 import manifest from '../../../package.json' with { type: 'json' };
 import { cli } from '../cli.specification.js';
+import { toolchainWith } from '../toolchain-sandbox.js';
 
 /*
  * A chain, not a document: every number in this report is a version, and a
@@ -9,7 +12,28 @@ import { cli } from '../cli.specification.js';
  * without anything being wrong. What is claimed here is the shape and the
  * JOIN — the ranges the report prints are the ones package.json declares, and
  * the verdict column answers for every tool the toolchain runs.
+ *
+ * The three verdicts other than `ok` need an install that disagrees with the
+ * ranges, so they run a copy of the package standing on one
+ * (`toolchain-sandbox.ts`); what they claim is the verdict and the exit, never
+ * a real version.
  */
+
+/** `typescript doctor` of a sandboxed toolchain, the sandbox its own project. */
+function doctorOf(root: string): { rows: string[]; status: null | number; verdict: string } {
+    const result = spawnSync('bash', [join(root, 'bin/typescript.sh'), 'doctor'], {
+        cwd: root,
+        encoding: 'utf8',
+        env: { ...process.env, INIT_CWD: root },
+    });
+    const lines = result.stdout.split('\n');
+
+    return {
+        rows: lines.filter((line) => /^ {2}\S/u.test(line)),
+        status: result.status,
+        verdict: lines.find((line) => /^(?:A tool|Every tool)/u.test(line)) ?? '',
+    };
+}
 
 test('reports every tool of the toolchain against the range this package declares', async () => {
     // Given - the toolchain installed as this repository's own devDependencies
@@ -31,4 +55,35 @@ test('reports every tool of the toolchain against the range this package declare
     expect(result.stdout.text).not.toContain('old');
     expect(result.stdout.text).not.toContain('absent');
     expect(result.stdout.text).toContain('Every tool is in range.');
+});
+
+test('fails on a tool older than its range, and on one that is not installed', () => {
+    // Given - a toolchain whose oxlint claims 0.0.1 and whose knip is missing
+    const root = toolchainWith({ knip: null, oxlint: '0.0.1' });
+
+    // When - the doctor reads it
+    const { rows, status, verdict } = doctorOf(root);
+
+    // Then - each row carries its verdict, and the report fails on both
+    expect(rows).toContainEqual(expect.stringMatching(/^ {2}oxlint +0\.0\.1 +\S+ +old$/u));
+    expect(rows).toContainEqual(expect.stringMatching(/^ {2}knip +— +\S+ +absent$/u));
+    expect(verdict).toBe(
+        'A tool older than its range enforces an older rulebook without saying so.',
+    );
+    expect(status).toBe(1);
+});
+
+test('warns on a tool ahead of its range, and does not fail', () => {
+    // Given - a toolchain whose oxfmt claims a release far past its range
+    const root = toolchainWith({ oxfmt: '99.0.0' });
+
+    // When - the doctor reads it
+    const { rows, status, verdict } = doctorOf(root);
+
+    // Then - the row says newer, and the report leaves the decision to the project
+    expect(rows).toContainEqual(expect.stringMatching(/^ {2}oxfmt +99\.0\.0 +\S+ +newer$/u));
+    expect(verdict).toBe(
+        'A tool ahead of its range may be fine; the toolchain does not get to decide.',
+    );
+    expect(status).toBe(0);
 });

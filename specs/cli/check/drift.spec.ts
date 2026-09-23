@@ -2,7 +2,10 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterAll, expect, test } from 'vitest';
+import { afterAll, expect, onTestFinished, test } from 'vitest';
+
+import manifest from '../../../package.json' with { type: 'json' };
+import { toolchainWith } from '../toolchain-sandbox.js';
 
 /*
  * A chain, not a document — and the product command all the same. What no
@@ -12,6 +15,9 @@ import { afterAll, expect, test } from 'vitest';
  * would have made, which is also the only honest way to read a real consumer
  * config: the drift report measures a project against the profile it extends,
  * and a project that extends nothing has nothing to have drifted from.
+ *
+ * The rows that read an INSTALL stand on a copy of the package beside one
+ * that disagrees with its ranges (`toolchain-sandbox.ts`), linked the same way.
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
@@ -101,4 +107,82 @@ test('accepts the same rule turned off, once the line that turns it off says why
     // Then - the rule is still REPORTED as off, and no longer refused: it is a decision now
     expect(reasoned.stdout).toContain('rules off vs profile      1 (no-debugger)');
     expect(reasoned.stdout).not.toContain('drift-unreasoned');
+});
+
+/** A node-profile project linked at `toolchain`, one reasoned suppression in its source. */
+function suppressingProject(toolchain: string): string {
+    const directory = mkdtempSync(resolve(tmpdir(), 'spec-drift-rows-'));
+    onTestFinished(() => {
+        rmSync(directory, { force: true, recursive: true });
+    });
+    writeFileSync(
+        join(directory, 'package.json'),
+        '{ "name": "spec-drift-rows", "private": true, "type": "module" }\n',
+    );
+    writeFileSync(
+        join(directory, 'tsconfig.json'),
+        '{ "compilerOptions": { "strict": true, "noEmit": true }, "include": ["**/*.ts"] }\n',
+    );
+    writeFileSync(
+        join(directory, 'index.ts'),
+        'export function stop(): void {\n    // oxlint-disable-next-line no-debugger -- the pause is the point\n    debugger;\n}\n',
+    );
+    writeFileSync(
+        join(directory, 'oxlint.config.ts'),
+        "import { node } from '@jterrazz/typescript/oxlint';\n\nexport default node;\n",
+    );
+    mkdirSync(join(directory, 'node_modules/@jterrazz'), { recursive: true });
+    symlinkSync(toolchain, join(directory, 'node_modules/@jterrazz/typescript'), 'dir');
+
+    return directory;
+}
+
+test('counts the suppressions, and names a tool left behind its range', () => {
+    // Given - a project with one reasoned suppression, on a toolchain whose knip claims 0.0.1
+    const toolchain = toolchainWith({ knip: '0.0.1' });
+    const directory = suppressingProject(toolchain);
+
+    // When - the quality checks run there
+    const result = spawnSync('bash', [join(toolchain, 'bin/typescript.sh'), 'check'], {
+        cwd: directory,
+        encoding: 'utf8',
+    });
+    const drift = result.stdout.slice(result.stdout.indexOf('Deviations from the profile'));
+
+    // Then - the report counts the directive, and names the one tool that deviates
+    expect(drift).toContain('suppressions              1\n');
+    expect(drift).toContain('tool versions             knip 0.0.1 old\n');
+});
+
+test('prints the same reading for a machine under --json', () => {
+    // Given - the same project, on the same toolchain
+    const toolchain = toolchainWith({ knip: '0.0.1' });
+    const directory = suppressingProject(toolchain);
+
+    // When - the drift report is asked for its machine form
+    const result = spawnSync(
+        'node',
+        [
+            join(toolchain, 'src/cli/check-drift.js'),
+            '.',
+            '--oxlint',
+            join(PACKAGE_ROOT, 'node_modules/.bin/oxlint'),
+            '--json',
+        ],
+        { cwd: directory, encoding: 'utf8' },
+    );
+
+    // Then - one JSON object carries every row the human block prints
+    expect(JSON.parse(result.stdout)).toStrictEqual({
+        baseline: null,
+        profile: 'node',
+        rulesOff: [],
+        suppressions: 1,
+        testBaseline: null,
+        tools: [
+            { installed: '0.0.1', name: 'knip', range: manifest.dependencies.knip, verdict: 'old' },
+        ],
+        unreasoned: [],
+    });
+    expect(result.status).toBe(0);
 });
