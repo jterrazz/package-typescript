@@ -1,0 +1,34 @@
+description: answers `docs` with the help banner — the API reference compiler it ran is gone
+runs:
+    - command: docs
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          Usage: typescript <command>
+
+          Commands:
+            build        Build application (ESM + types)
+            bundle       Bundle library (ESM + CJS + types)
+            start        Run the built application
+            dev          Build, run, and rebuild on changes
+            docs-layout  Check a repository's docs/ against the manual spine
+            doctor       Report the installed tool versions against the declared ranges
+            baseline     Record oxlint's own rules and Names into typescript.baseline.json
+            tsc          Run the TypeScript 7 compiler this package ships (emit, --build)
+            check        Check types, lint, formatting, and unused code
+            fix          Auto-fix lint and formatting issues
+            clean        Remove .artifacts/ — dist/ stays, it is the build's product
+
+          Examples:
+            typescript build
+            typescript bundle
+            typescript start
+            typescript dev
+            typescript docs-layout .
+            typescript doctor
+            typescript baseline
+            typescript tsc --build
+            typescript check
+            typescript fix
+            typescript clean

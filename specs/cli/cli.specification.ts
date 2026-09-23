@@ -3,7 +3,8 @@ import { resolve } from 'node:path';
 import { afterAll } from 'vitest';
 
 // The ONE real runner: every spec goes through the product command
-// (`typescript build|bundle|dev|start|docs|check|fix`), never a tool underneath it.
+// (`typescript build|bundle|dev|start|docs-layout|doctor|baseline|tsc|check|fix|clean`),
+// never a tool underneath it.
 const BIN = resolve(import.meta.dirname, '../../bin/typescript.sh');
 
 /*
