@@ -69,6 +69,37 @@ test('refuses a committed credential, and forgives the line that declares itself
     expect(result.stdout).not.toContain('line 5');
 });
 
+test('names each of the ten shapes the built-in engine knows, by its own rule and line', () => {
+    // Given - the same notes, carrying one credential of every shape below the two keys
+    const created = mkdtempSync(resolve(tmpdir(), 'spec-secrets-shapes-'));
+    onTestFinished(() => {
+        rmSync(created, { force: true, recursive: true });
+    });
+    cpSync(FIXTURE, created, { recursive: true });
+
+    // When - the quality checks run with the built-in patterns answering
+    const result = spawnSync('bash', [BIN, 'check'], {
+        cwd: created,
+        encoding: 'utf8',
+        env: { ...process.env, PATH: pathWithoutGitleaks() },
+    });
+    const findings = result.stdout.split('\n').filter((line) => line.startsWith('secrets-'));
+
+    // Then - one finding per shape, each under its own rule id, on its own line
+    expect(findings).toStrictEqual([
+        'secrets-aws-key  NOTES.md  line 3 looks like an aws access key',
+        'secrets-private-key  NOTES.md  line 9 looks like a private key block',
+        'secrets-github-token  NOTES.md  line 10 looks like a github token',
+        'secrets-slack-token  NOTES.md  line 11 looks like a slack token',
+        'secrets-tailscale-key  NOTES.md  line 12 looks like a tailscale key',
+        'secrets-jwt  NOTES.md  line 13 looks like a signed jwt',
+        'secrets-grafana-token  NOTES.md  line 14 looks like a grafana token',
+        'secrets-api-key  NOTES.md  line 15 looks like an api key',
+        'secrets-iban  NOTES.md  line 16 looks like an iban',
+        'secrets-service-token  NOTES.md  line 17 looks like a service token',
+    ]);
+});
+
 /** A `gitleaks` that answers `version`, and records what a scan was handed beside itself. */
 function gitleaksStub(): { directory: string; record: string } {
     const directory = mkdtempSync(resolve(tmpdir(), 'spec-secrets-gitleaks-'));
