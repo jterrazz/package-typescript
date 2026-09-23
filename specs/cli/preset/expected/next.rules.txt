@@ -1,3 +1,7 @@
+env browser=true builtin=true node=true
+globals
+options reportUnusedDisableDirectives=deny typeAware=true
+
 accessor-pairs
 array-callback-return
 arrow-body-style

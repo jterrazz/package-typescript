@@ -18,6 +18,10 @@ import { printConfig, PROFILES } from './rulebook.js';
  * Names only: a rule's options are the manifest's business, and a name list
  * survives an option reshuffle upstream without going red for it. Regenerate
  * with `TEST_UPDATE=1 npm test`.
+ *
+ * Above the roster, three lines a profile decides beside its rules: the
+ * environments it turns on, the globals it declares — a runtime's own, like
+ * Bun's — and the linter options every run is held to.
  */
 
 const EXPECTED = resolve(import.meta.dirname, 'expected');
@@ -68,12 +72,26 @@ test.each(PROFILES)('$name arms the un-awaited-promise rules on a test file too'
     }
 });
 
+/** `key=value` pairs of one resolved section, sorted, on one line. */
+function sectionOf(label: string, section: Record<string, unknown> = {}): string {
+    const pairs = Object.entries(section)
+        .toSorted(([left], [right]) => left.localeCompare(right))
+        .map(([key, value]) => `${key}=${String(value)}`);
+
+    return `${label} ${pairs.join(' ')}`.trimEnd();
+}
+
 test.each(PROFILES)('$name resolves to the rule set its golden records', ({ name }) => {
     // Given - the profile, resolved by oxlint itself
-    const { rules } = printConfig(name);
+    const { env, globals, options, rules } = printConfig(name);
 
-    // Then - the sorted roster matches the golden, marker by marker
-    const report = `${Object.keys(rules)
+    // Then - its environments, globals and options, then the sorted roster, match the golden marker by marker
+    const header = [
+        sectionOf('env', env),
+        sectionOf('globals', globals),
+        sectionOf('options', options),
+    ].join('\n');
+    const report = `${header}\n\n${Object.keys(rules)
         .toSorted((left, right) => left.localeCompare(right))
         .map((rule) => `${MARKERS[levelOf(rules[rule])] ?? '? '}${rule}`)
         .join('\n')}\n`;
