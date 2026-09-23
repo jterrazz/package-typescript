@@ -1,0 +1,7 @@
+{
+  "name": "fixture-names-members",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ]
+}

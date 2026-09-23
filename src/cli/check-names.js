@@ -13,12 +13,14 @@
  * sitting side by side.
  *
  * The root's own folders are the SPINE, the same five in every repository:
- * `src/`, `lint/`, `specs/`, `docs/`, `skills/` — and `apps/` or `packages/`
- * where a workspace holds its members, each carrying a spine of its own. A
+ * `src/`, `lint/`, `specs/`, `docs/`, `skills/` — `lint/` only where the
+ * package ships it — and `apps/` or `packages/` where a workspace holds its
+ * members, each carrying a spine of its own, judged the same way. A
  * skill is one `skills/<skill>/SKILL.md` and nothing beside it. Beside the
  * spine a root stands only on a codified ground: a name the ecosystem imposes
- * (`ECOSYSTEM_ROOTS`), or one the repository declares in its `package.json`
- * under `jterrazz.typescript.roots`, each with its reason. Any other root is
+ * (`ECOSYSTEM_ROOTS`), or one the unit — the repository, or the member —
+ * declares in its own `package.json` under `jterrazz.typescript.roots`, each
+ * with its reason. Any other root is
  * refused. A repository's root also carries a tracked `Makefile` answering
  * `install`, `build`, `lint`, `fix`, `test` and `check` — the gestures the
  * flows speak.
@@ -46,6 +48,7 @@ import { argv, exit, stdout } from 'node:process';
 import { BASELINE, judge, readBaseline } from './check-baseline.js';
 import { isRepositoryRoot } from './repository-root.js';
 import { ignorePatternsOf, trackedFiles } from './tracked-files.js';
+import { workspaceMembers } from './workspace-members.js';
 
 /** Names that say nothing: a folder or a file called one of these holds whatever nobody placed. */
 const GRAB_BAG = new Set([
@@ -235,31 +238,116 @@ function findingsOf(files) {
     return findings;
 }
 
-/**
- * The roots a repository declares beyond the spine, each with its reason, read
- * off `package.json`'s `jterrazz.typescript.roots` — `{ "<folder>": "<reason>" }`.
- * An absent key declares nothing, and a root declared anywhere else in the
- * manifest is not read.
- */
-function declaredRootsOf(root) {
-    const manifest = join(root, 'package.json');
+/** A unit's parsed `package.json`, or an empty object where there is none to read. */
+function manifestOf(unit) {
+    const manifest = join(unit, 'package.json');
     if (!existsSync(manifest)) {
         return {};
     }
 
     try {
-        const roots = JSON.parse(readFileSync(manifest, 'utf8'))?.jterrazz?.typescript?.roots;
+        const parsed = JSON.parse(readFileSync(manifest, 'utf8'));
 
-        return roots !== null && typeof roots === 'object' && !Array.isArray(roots) ? roots : {};
+        return parsed !== null && typeof parsed === 'object' ? parsed : {};
     } catch {
         return {};
     }
 }
 
-/** What the root's own folders owe the spine: a skill holds one file, and a root stands on a codified ground. */
-function spineOf(files, declared) {
+/**
+ * The roots a unit declares beyond the spine, each with its reason, read off
+ * its `package.json`'s `jterrazz.typescript.roots` — `{ "<folder>": "<reason>" }`.
+ * An absent key declares nothing, and a root declared anywhere else in the
+ * manifest is not read.
+ */
+function declaredRootsOf(manifest) {
+    const roots = manifest.jterrazz?.typescript?.roots;
+
+    return roots !== null && typeof roots === 'object' && !Array.isArray(roots) ? roots : {};
+}
+
+/** Every string an `exports` map points at, however deeply its conditions nest. */
+function targetsOfExports(exports) {
+    if (typeof exports === 'string') {
+        return [exports];
+    }
+    if (exports === null || typeof exports !== 'object') {
+        return [];
+    }
+
+    return Object.values(exports).flatMap((value) => targetsOfExports(value));
+}
+
+/** The one spine folder a unit keeps on a condition: the lint rules it SHIPS. */
+const LINT_ROOT = 'lint';
+
+/**
+ * Whether a unit ships its `lint/`: a `files` entry or an `exports` target
+ * reaches into it. A `lint/` nothing publishes holds rules no consumer
+ * receives, which is `src/` under another name.
+ */
+function shipsLint(manifest) {
+    const files = Array.isArray(manifest.files) ? manifest.files : [];
+    const byFiles = files.some(
+        (entry) =>
+            typeof entry === 'string' && /^(?:\.\/)?lint(?:\/|$)/u.test(entry.replace(/^!.*/u, '')),
+    );
+    const byExports = targetsOfExports(manifest.exports).some((target) =>
+        /^\.\/lint(?:\/|$)/u.test(target),
+    );
+
+    return byFiles || byExports;
+}
+
+/** Where a root stands outside the spine, said in the words that name its remedy. */
+function foreignRoot(root, prefix) {
+    const manifestPath = `${prefix}package.json`;
+
+    return {
+        message:
+            root === LINT_ROOT
+                ? `\`${prefix}lint/\` holds the lint rules a package ships, and ${manifestPath}'s \`files\` and \`exports\` never reach it — ship it, or move it under src/`
+                : `\`${prefix}${root}/\` is a root outside the spine — move it under src/, or declare it in ${manifestPath}'s \`${DECLARATION}\` with its reason`,
+        path: `${prefix}${root}/`,
+        rule: 'names-root-foreign',
+    };
+}
+
+/** What a unit's declaration owes: a reason per root, and a root that still holds a file. */
+function declarationOf(declared, roots, prefix) {
+    const findings = [];
+
+    for (const [root, reason] of Object.entries(declared).toSorted(([left], [right]) =>
+        left < right ? -1 : 1,
+    )) {
+        if (typeof reason !== 'string' || reason.trim() === '') {
+            findings.push({
+                message: `\`${prefix}${root}/\` is declared in \`${DECLARATION}\` with no reason — say why the repository keeps it`,
+                path: `${prefix}${root}/`,
+                rule: 'names-root-unreasoned',
+            });
+        } else if (!roots.has(root)) {
+            findings.push({
+                message: `\`${prefix}${root}/\` is declared in \`${DECLARATION}\` and holds no tracked file — delete the entry`,
+                path: `${prefix}${root}/`,
+                rule: 'names-root-stale',
+            });
+        }
+    }
+
+    return findings;
+}
+
+/**
+ * What one unit's own folders owe the spine: a skill holds one file, and a
+ * root stands on a codified ground. `files` are relative to the unit; the
+ * findings are named from the repository root, through `prefix`, and send the
+ * reader to the unit's own `package.json`.
+ */
+function spineOf(files, manifest, prefix = '') {
     const findings = [];
     const roots = new Set();
+    const declared = declaredRootsOf(manifest);
 
     for (const file of files) {
         const [first, ...rest] = file.split('/');
@@ -269,48 +357,54 @@ function spineOf(files, declared) {
         roots.add(first);
         if (first === 'skills' && !SKILL_FILE.test(file)) {
             findings.push({
-                message: `a skill is one \`skills/<skill>/SKILL.md\` — \`${file}\` sits beside it`,
-                path: file,
+                message: `a skill is one \`skills/<skill>/SKILL.md\` — \`${prefix}${file}\` sits beside it`,
+                path: `${prefix}${file}`,
                 rule: 'names-skill-file',
             });
         }
     }
 
     const isCodified = (root) =>
-        SPINE.has(root) ||
+        (SPINE.has(root) && (root !== LINT_ROOT || shipsLint(manifest))) ||
         MEMBER_ROOTS.has(root) ||
         Object.hasOwn(ECOSYSTEM_ROOTS, root) ||
         Object.hasOwn(declared, root);
 
-    for (const root of [...roots].toSorted((left, right) => (left < right ? -1 : 1))) {
-        if (!isCodified(root)) {
-            findings.push({
-                message: `\`${root}/\` is a root outside the spine — move it under src/, or declare it in package.json's \`${DECLARATION}\` with its reason`,
-                path: `${root}/`,
-                rule: 'names-root-foreign',
-            });
-        }
-    }
+    return [
+        ...findings,
+        ...[...roots]
+            .toSorted((left, right) => (left < right ? -1 : 1))
+            .filter((root) => !isCodified(root))
+            .map((root) => foreignRoot(root, prefix)),
+        ...declarationOf(declared, roots, prefix),
+    ];
+}
 
-    for (const [root, reason] of Object.entries(declared).toSorted(([left], [right]) =>
-        left < right ? -1 : 1,
-    )) {
-        if (typeof reason !== 'string' || reason.trim() === '') {
-            findings.push({
-                message: `\`${root}/\` is declared in \`${DECLARATION}\` with no reason — say why the repository keeps it`,
-                path: `${root}/`,
-                rule: 'names-root-unreasoned',
-            });
-        } else if (!roots.has(root)) {
-            findings.push({
-                message: `\`${root}/\` is declared in \`${DECLARATION}\` and holds no tracked file — delete the entry`,
-                path: `${root}/`,
-                rule: 'names-root-stale',
-            });
-        }
-    }
+/**
+ * The spine of the repository root, and of every workspace member: a member
+ * is a package of its own, so its folders owe the same spine, and it declares
+ * its own roots in its own `package.json`. A file belongs to the member that
+ * holds it, and to the root otherwise.
+ */
+function spinesOf(root, files) {
+    const members = workspaceMembers(root);
+    const memberOf = (file) => members.find((member) => file.startsWith(`${member}/`));
 
-    return findings;
+    return [
+        ...spineOf(
+            files.filter((file) => memberOf(file) === undefined),
+            manifestOf(root),
+        ),
+        ...members.flatMap((member) =>
+            spineOf(
+                files
+                    .filter((file) => file.startsWith(`${member}/`))
+                    .map((file) => file.slice(member.length + 1)),
+                manifestOf(join(root, member)),
+                `${member}/`,
+            ),
+        ),
+    ];
 }
 
 /** Every target a Makefile's own text writes a rule for. */
@@ -380,11 +474,7 @@ const root = resolve(
         ) ?? '.',
 );
 const files = trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) });
-const findings = [
-    ...findingsOf(files),
-    ...spineOf(files, declaredRootsOf(root)),
-    ...makefileOf(root, files),
-];
+const findings = [...findingsOf(files), ...spinesOf(root, files), ...makefileOf(root, files)];
 
 /** The findings as the ratchet reads a report: oxlint's JSON shape, one code per rule. */
 const report = () =>

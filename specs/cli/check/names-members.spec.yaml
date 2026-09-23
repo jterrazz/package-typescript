@@ -1,0 +1,45 @@
+description: holds every workspace member to a spine of its own, lint/ only where the member ships it
+fixture: ./fixtures/names/members/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          names-root-foreign  apps/api/scripts/  `apps/api/scripts/` is a root outside the spine — move it under src/, or declare it in apps/api/package.json's `jterrazz.typescript.roots` with its reason
+          names-root-foreign  apps/web/lint/  `apps/web/lint/` holds the lint rules a package ships, and apps/web/package.json's `files` and `exports` never reach it — ship it, or move it under src/
+          ✗ Failed with exit code 1
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
