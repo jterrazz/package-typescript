@@ -92,3 +92,21 @@ test('the hexagonal layer map refuses an edge and carves out features/common', (
         'presentation/features/alpha/reads-beta.ts',
     ]);
 });
+
+test('keeps a behaviour or fixpoint ground only for a profile the rulebook ships', () => {
+    // Given - every entry of the behaviour goldens and of the behaviour and fixpoint fixtures
+    const owners = new Set<string>([...PROFILES.map(({ name }) => name), 'hexagonal']);
+    const entries = [
+        ...readdirSync(EXPECTED).map((entry) => `expected/behaviour/${entry}`),
+        ...readdirSync(FIXTURES).map((entry) => `fixtures/behaviour/${entry}`),
+        ...readdirSync(resolve(import.meta.dirname, 'fixtures/fixpoint')).map(
+            (entry) => `fixtures/fixpoint/${entry}`,
+        ),
+    ];
+
+    // Then - each one is named for a shipped profile or the layer map, and none outlives one
+    const orphans = entries.filter(
+        (entry) => !owners.has((entry.split('/').at(-1) ?? '').replace(/\.report\.txt$/u, '')),
+    );
+    expect(orphans).toStrictEqual([]);
+});
