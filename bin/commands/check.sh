@@ -694,6 +694,7 @@ run_checks() {
     local checker_pids=()
     local checker_logs=()
     local checker_status=0
+    local checker_root_log=""
     if [ "$FIX_MODE" = false ]; then
         local checker_index=0
         while IFS= read -r specs_root; do
@@ -712,12 +713,21 @@ run_checks() {
             wait $lint_json_pid
             lint_json_waited=true
         fi
+        # The run over the project root is the one @jterrazz/test's ratchet
+        # judges, and the one whose green verdict is the held line of
+        # `test.baseline.json` — asked for alone with `--summary`, which a
+        # release that predates it ignores.
         local member_index=0
         for member in "${checker_members[@]}"; do
             local member_bin="${checker_member_bins[$member_index]}"
+            local summary=()
             member_index=$((member_index + 1))
+            if [ "$member" = "." ]; then
+                summary=(--summary)
+                checker_root_log="$tmp_dir/checker-$checker_index.log"
+            fi
             node "$member_bin" --member "$member" --oxlint-report "$tmp_dir/lint.json" \
-                > "$tmp_dir/checker-$checker_index.log" 2>&1 &
+                "${summary[@]}" > "$tmp_dir/checker-$checker_index.log" 2>&1 &
             checker_pids+=($!)
             checker_logs+=("$tmp_dir/checker-$checker_index.log")
             checker_index=$((checker_index + 1))
@@ -826,15 +836,23 @@ run_checks() {
     # The checker's exit code is this pass's verdict, whatever it records:
     # @jterrazz/test judges its own findings against its own file.
     #
-    # One thing this pass says even when it is green, so it asks for its log
+    # Two things this pass says even when it is green, so it asks for its log
     # the way a writer does: which member resolves a release too old to answer
     # `--member` — a reader left with silence would believe every member was
-    # asked.
+    # asked — and what the other ratchet file holds.
     local checker_write=""
     if [ "$checker_dormant" -gt 0 ]; then
         cat "$tmp_dir/checker-dormant.log" "$tmp_dir/checker.log" \
             > "$tmp_dir/checker-reported.log"
         mv "$tmp_dir/checker-reported.log" "$tmp_dir/checker.log"
+        checker_write="writer"
+    fi
+    # And, on a green pass, the held line of `test.baseline.json` — the same
+    # one line the oxlint pass prints for its own file, and only in that exact
+    # shape, so a release printing its longer form adds nothing here.
+    if [ "$checker_status" -eq 0 ] && [ -n "$checker_root_log" ] &&
+        grep -E '^test\.baseline\.json: [0-9]+ held across [0-9]+ rules?$' "$checker_root_log" \
+            >> "$tmp_dir/checker.log"; then
         checker_write="writer"
     fi
 

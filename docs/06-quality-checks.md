@@ -81,6 +81,8 @@ The binary is resolved from that same install, not from a name on `PATH` or a `n
 
 The pass's verdict is the checker's exit code, and nothing here forgives it: `@jterrazz/test` records its own debt and judges it, in its own file ([the ratchet](#the-ratchet)).
 
+A green pass says one thing about that file: the held line of the run over the project root, `test.baseline.json: <n> held across <k> rules`, the shape the Oxlint pass gives its own. The run is asked for it alone with `--summary`, which `@jterrazz/test` 17 answers; a release that predates the flag prints a longer line, and the pass leaves it out rather than echo a second shape.
+
 The member runs judge the `jterrazz(*)` diagnostics the oxlint pass sets aside, and they read them off that pass's own report: `check` writes oxlint's JSON report once and hands it to every member run with `--oxlint-report <path>`, starting those runs once the report is complete. A tree run reads no oxlint diagnostic and is handed nothing. A checker started by hand, with no report, runs oxlint itself — so `check` never lints the project a second time for the checker.
 
 The member pass is behind the release that answers it. `--member` arrives in `@jterrazz/test` 15.3.0; where a member resolves an older one the pass names that member and the version it found, and the tree passes run alone, rather than leaving a reader to believe every member was asked. The tree pass asks for no floor — every release answers it.

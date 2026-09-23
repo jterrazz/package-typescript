@@ -159,6 +159,32 @@ test("takes the checker's exit code as the Test Conventions verdict", () => {
     expect(stdout).toContain('a finding the stub always reports');
 });
 
+/** A green checker that answers the root run with its held line — alone under `--summary`, as 17 does. */
+const HELD_CHECKER = `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[args.indexOf('--member') + 1] === '.') {
+    const held = 'test.baseline.json: 3 held across 2 rules';
+    process.stdout.write(args.includes('--summary') ? held + '\\n' : held + ' — conventions checker (tree)\\n');
+}
+process.exit(0);
+`;
+
+test("states @jterrazz/test's held line under the Test Conventions pass on a green run", () => {
+    // Given - a checker whose root run holds its ratchet
+    writeFileSync(join(project, 'node_modules/@jterrazz/test/dist/checker.js'), HELD_CHECKER);
+
+    // When - the checks run
+    const { stdout } = run('check');
+    const conventions = stdout.slice(
+        stdout.indexOf('Test Conventions'),
+        stdout.indexOf('Suppressions (directives)'),
+    );
+
+    // Then - the pass is green and says what the other ratchet file holds, in the one short line
+    expect(conventions).toContain('test.baseline.json: 3 held across 2 rules\n');
+    expect(conventions).toContain('✓ Passed');
+});
+
 test("refuses an entry of @jterrazz/test's in this package's file", () => {
     // Given - a baseline that still carries both packages' keys
     writeFileSync(
