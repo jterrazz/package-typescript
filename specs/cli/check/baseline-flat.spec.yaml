@@ -1,0 +1,50 @@
+description: refuses a jterrazz.baseline.json whose counts sit outside a section
+fixture: ./fixtures/baseline/flat/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          baseline-unreadable  jterrazz.baseline.json  keys `eslint/no-debugger` to something that is not a section of counts
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
+    - command: baseline
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  Recording the oxlint baseline...
+
+          jterrazz.baseline.json keys `eslint/no-debugger` to something that is not a section of counts — the typescript section cannot be written beside the others

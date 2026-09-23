@@ -44,11 +44,11 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            profile                   none of this package's
-            rules off vs profile      not measured
-            suppressions              0
-            typescript.baseline.json  absent
-            tool versions             in range
+            profile                              none of this package's
+            rules off vs profile                 not measured
+            suppressions                         0
+            jterrazz.baseline.json › typescript  absent
+            tool versions                        in range
 
            END  Finalizing quality checks
 

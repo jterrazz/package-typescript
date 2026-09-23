@@ -1,0 +1,8 @@
+{
+  "typescript": {
+    "eslint/no-debugger": 7
+  },
+  "test": {
+    "jterrazz/b9w-product-command": 3
+  }
+}

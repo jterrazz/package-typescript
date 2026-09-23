@@ -153,7 +153,7 @@ function checkAndRecord(project: string): { baseline: string; stdout: string } {
     });
 
     return {
-        baseline: readFileSync(join(project, 'typescript.baseline.json'), 'utf8'),
+        baseline: readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8'),
         stdout: result.stdout,
     };
 }
@@ -172,8 +172,7 @@ test('judges an untracked folder git does not ignore in every tree gate, the lin
     expect(passOf(stdout, 'Names (tree)', 'Secrets (credentials)')).toContain('data/');
     expect(passOf(stdout, 'Secrets (credentials)', 'END')).toContain('data/NOTES.md');
     expect(JSON.parse(baseline)).toMatchObject({
-        'eslint/no-debugger': 1,
-        'names/names-root-foreign': 1,
+        typescript: { 'eslint/no-debugger': 1, 'names/names-root-foreign': 1 },
     });
 });
 
@@ -188,7 +187,7 @@ test('judges no folder git ignores, in any tree gate, the linter included', () =
 
     // Then - no gate reads the ignored folder: each pass is green, and the baseline records nothing
     expect(treeVerdictsOf(stdout)).toStrictEqual(['Passed', 'Passed', 'Passed', 'Passed']);
-    expect(baseline).toBe('{}\n');
+    expect(JSON.parse(baseline)).toStrictEqual({ typescript: {} });
 });
 
 /** What a pass printed between its header and its verdict, colours stripped, blank lines dropped. */
@@ -356,8 +355,8 @@ test('records a missing gesture in the ratchet, and the run it records is green'
         result.stdout.indexOf('Secrets (credentials)'),
     );
 
-    // Then - the entry holds both, the file states it in its one line, and the Names pass is green
-    expect(result.stdout).toContain('typescript.baseline.json: 2 held across 1 rule');
+    // Then - the entry holds both, the section states it in its one line, and the Names pass is green
+    expect(result.stdout).toContain('jterrazz.baseline.json › typescript: 2 held across 1 rule');
     expect(names).not.toContain('names-makefile');
     expect(names).toContain('Passed');
 });

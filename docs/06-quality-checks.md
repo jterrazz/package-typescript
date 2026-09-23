@@ -14,22 +14,22 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 
 `typescript check` runs up to fourteen passes. Three spawn a tool on every invocation, knip and four tree gates run on every `check`, and the other six are opt-in — they appear only when the project qualifies.
 
-| Pass                              | Tool                        | When it runs                                                      |
-| --------------------------------- | --------------------------- | ----------------------------------------------------------------- |
-| TypeScript Check                  | tsc (TypeScript 7, Go)      | always                                                            |
-| Oxlint Check                      | oxlint (`--type-aware`)     | always (judged by `typescript.baseline.json` where there is one)  |
-| Oxfmt Check                       | oxfmt (Rust)                | always                                                            |
-| Gitignore (artefacts)             | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own       |
-| Knip (unused code)                | knip (Node)                 | always (check only — it is not run in fix)                        |
-| Test Conventions (@jterrazz/test) | conventions checker         | per `specs/` root; per member resolving `@jterrazz/test` ≥ 15.3.0 |
-| Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)         |
-| Publish (packaging)               | publint + attw              | per package the registry would accept (not `private`)             |
-| Architecture (layer map)          | dependency-cruiser          | check: a `.dependency-cruiser.*` at the project root              |
-| Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)               |
-| Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)            |
-| Markdown (prose)                  | the prose gate              | always (check only — a paragraph is not machine-split)            |
-| Names (tree)                      | the naming gate             | always (check only — a rename is a move, not a rewrite)           |
-| Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)          |
+| Pass                              | Tool                        | When it runs                                                             |
+| --------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
+| TypeScript Check                  | tsc (TypeScript 7, Go)      | always                                                                   |
+| Oxlint Check                      | oxlint (`--type-aware`)     | always (judged by the ratchet's `typescript` section where there is one) |
+| Oxfmt Check                       | oxfmt (Rust)                | always                                                                   |
+| Gitignore (artefacts)             | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own              |
+| Knip (unused code)                | knip (Node)                 | always (check only — it is not run in fix)                               |
+| Test Conventions (@jterrazz/test) | conventions checker         | per `specs/` root; per member resolving `@jterrazz/test` ≥ 15.3.0        |
+| Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)                |
+| Publish (packaging)               | publint + attw              | per package the registry would accept (not `private`)                    |
+| Architecture (layer map)          | dependency-cruiser          | check: a `.dependency-cruiser.*` at the project root                     |
+| Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)                      |
+| Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)                   |
+| Markdown (prose)                  | the prose gate              | always (check only — a paragraph is not machine-split)                   |
+| Names (tree)                      | the naming gate             | always (check only — a rename is a move, not a rewrite)                  |
+| Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                 |
 
 `typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate and the suppression gate in parallel — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
 
@@ -79,9 +79,9 @@ A member is a consumer of `@jterrazz/test` on either evidence: its own manifest 
 
 The binary is resolved from that same install, not from a name on `PATH` or a `node_modules/.bin` shim: a member whose `@jterrazz/test` is nested rather than hoisted holds a different release from the root's, and both halves of the question — which version, which executable — must come from one answer.
 
-The pass's verdict is the checker's exit code, and nothing here forgives it: `@jterrazz/test` records its own debt and judges it, in its own file ([the ratchet](#the-ratchet)).
+The pass's verdict is the checker's exit code, and nothing here forgives it: `@jterrazz/test` records its own debt and judges it, in its own section of the ratchet file ([the ratchet](#the-ratchet)).
 
-A green pass says one thing about that file: the held line of the run over the project root, `test.baseline.json: <n> held across <k> rules`, the shape the Oxlint pass gives its own. The run is asked for it alone with `--summary`, which `@jterrazz/test` 17 answers; a release that predates the flag prints a longer line, and the pass leaves it out rather than echo a second shape.
+A green pass says one thing about that section: the held line of the run over the project root, `jterrazz.baseline.json › test: <n> held across <k> rules`, the shape the Oxlint pass gives its own. The run is asked for it alone with `--summary`, which `@jterrazz/test` 17 answers; a line in any other shape — a release that predates the flag, or one that still names `test.baseline.json` — is left out rather than echoed as a second shape.
 
 The member runs judge the `jterrazz(*)` diagnostics the oxlint pass sets aside, and they read them off that pass's own report: `check` writes oxlint's JSON report once and hands it to every member run with `--oxlint-report <path>`, starting those runs once the report is complete. A tree run reads no oxlint diagnostic and is handed nothing. A checker started by hand, with no report, runs oxlint itself — so `check` never lints the project a second time for the checker.
 
@@ -193,7 +193,7 @@ The formatter is handed the same sweep, whole rather than cut to the shapes a li
 
 ## The ratchet
 
-A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. `typescript.baseline.json` is the second — a tracked `{ "<rule>": <count> }` at the project root, and the oxlint pass is judged by it rather than by oxlint's exit code. Without the file every diagnostic this package owns fails the pass — and the pass still names the rule it belongs to and the gesture that records it, so a project meets the ratchet on its first red run rather than after reading this page.
+A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. `jterrazz.baseline.json` is the second — one tracked file at the project root for the whole family, one section per package, `{ "typescript": { "<rule>": <count> }, "test": { … } }` — and the oxlint pass is judged by its `typescript` section rather than by oxlint's exit code. Without that section every diagnostic this package owns fails the pass — and the pass still names the rule it belongs to and the gesture that records it, so a project meets the ratchet on its first red run rather than after reading this page.
 
 Three things fail a run that has one, all under `baseline-ratchet`:
 
@@ -201,25 +201,25 @@ Three things fail a run that has one, all under `baseline-ratchet`:
 - a rule with diagnostics and **no entry** — a rule nobody recorded owing;
 - an entry whose count is now **zero** — the ratchet moved, so the entry goes.
 
-The third is what makes the file shrink. Without it a baseline records a debt that was paid a year ago and nothing ever says so.
+The third is what makes the section shrink. Without it a baseline records a debt that was paid a year ago and nothing ever says so.
 
-A run the file holds says so once, whole, and never finding by finding. The Oxlint pass prints one line for it, the shape `@jterrazz/test`'s checker gives its own file:
+A run the section holds says so once, whole, and never finding by finding. The Oxlint pass prints one line for it, the shape `@jterrazz/test`'s checker gives its own section:
 
 ```text
-typescript.baseline.json: 2 held across 2 rules
+jterrazz.baseline.json › typescript: 2 held across 2 rules
 ```
 
-The count is every finding the file holds today — the linter's and the Names pass's alike — and the rules are the entries still carrying one. The line prints only on `check`, and only when both of the file's judges hold; a broken side prints its evidence in its own pass instead, and the line stays away.
+The count is every finding the section holds today — the linter's and the Names pass's alike — and the rules are the entries still carrying one. The line prints only on `check`, and only when both of the section's judges hold; a broken side prints its evidence in its own pass instead, and the line stays away.
 
 ### One owner per entry
 
-The ratchet splits by owner, and each package's command writes its own file. `typescript.baseline.json` holds oxlint's own rules and the Names (tree) pass's `names/*` entries ([its section](#the-names-tree-pass)). Every `jterrazz(*)` rule and every conventions-checker finding is `test.baseline.json`'s, in the same shape at the same root, which `@jterrazz/test` writes and judges.
+The ratchet splits by owner, and each package's command writes its own section of the one file. The `typescript` section holds oxlint's own rules and the Names (tree) pass's `names/*` entries ([its section](#the-names-tree-pass)). Every `jterrazz(*)` rule and every conventions-checker finding is the `test` section's, in the same shape, which `@jterrazz/test` writes and judges. `typescript baseline` rewrites its own section and leaves every other byte of the file as it was.
 
-One oxlint run carries both packages' rules, because a consumer composes `@jterrazz/test`'s `testing` fragment into its config. One filter on the plugin name keeps any finding from being counted twice: a diagnostic whose code is `jterrazz(<rule>)` is set aside before this package counts, and the oxlint pass is green when those are all the linter reported. An entry under `jterrazz/` or `jterrazz-check/` in `typescript.baseline.json` is refused as misplaced, naming `test.baseline.json` — a finding lives in one file and answers to one judge.
+One oxlint run carries both packages' rules, because a consumer composes `@jterrazz/test`'s `testing` fragment into its config. One filter on the plugin name keeps any finding from being counted twice: a diagnostic whose code is `jterrazz(<rule>)` is set aside before this package counts, and the oxlint pass is green when those are all the linter reported. An entry under `jterrazz/` or `jterrazz-check/` in the `typescript` section is refused as misplaced, naming `jterrazz.baseline.json › test` — a finding lives in one section and answers to one judge.
 
 The judge is told oxlint's exit code, so the split never forgives a failure no diagnostic carries: a linter that exits non-zero with an empty report failed on something else (a config it could not load), and the pass stays red. Severity is never read — a finding a release ships at `warn` is exactly the debt a ratchet exists to hold down.
 
-`fix` is judged by the same file as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green. The pair reads the same tree where there is NO file either: both count the diagnostics, both print the same lines, and neither reads severity.
+`fix` is judged by the same section as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green. The pair reads the same tree where there is NO section either: both count the diagnostics, both print the same lines, and neither reads severity.
 
 ### Recording it
 
@@ -227,9 +227,14 @@ The judge is told oxlint's exit code, so the split never forgives a failure no d
 typescript baseline
 ```
 
-A command of its own, because it neither checks nor repairs: it writes down where the project actually stands. `fix --baseline` would bury the rewrite of a tracked file inside the gesture a developer runs twenty times a day. The file is written from the current counts of this package's rules, then handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape. `test.baseline.json` is recorded by `@jterrazz/test`'s own command, never by this one.
+A command of its own, because it neither checks nor repairs: it writes down where the project actually stands. `fix --baseline` would bury the rewrite of a tracked file inside the gesture a developer runs twenty times a day. The `typescript` section is written from the current counts of this package's rules, then the file is handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape. The `test` section is recorded by `@jterrazz/test`'s own command, never by this one, and a file this command cannot read as sections is refused rather than rewritten.
 
-This package keeps no `typescript.baseline.json`, and that is the ratchet's own rule showing: turning type-aware linting on found seven diagnostics in its own source, the seven were fixed rather than recorded, and an entry at zero is an entry that goes. The toolchain is consumer #1 of the rulebook it ships, so its own tree is the one place the debt is never carried.
+Two more refusals keep the file honest, both in the Oxlint pass:
+
+- `baseline-unreadable` — a `jterrazz.baseline.json` that is not JSON, or that holds a top-level key whose value is not a section of counts: a flat `{ "<rule>": <count> }` copied from an older file is the common case.
+- `baseline-legacy` — a `typescript.baseline.json`, `test.baseline.json` or `oxlint.baseline.json` still at the root. None is read; each is named with the section its entries move to, and the pass stays red until it is gone.
+
+This repository's `jterrazz.baseline.json` holds no `typescript` section, and that is the ratchet's own rule showing: turning type-aware linting on found seven diagnostics in its own source, the seven were fixed rather than recorded, and an entry at zero is an entry that goes. The toolchain is consumer #1 of the rulebook it ships, so its own tree is the one place the debt is never carried.
 
 ## The Publish (packaging) pass
 
@@ -275,15 +280,15 @@ Not a pass: a report, printed at the end of every `check` that has an oxlint con
 ```text
  DRIFT  Deviations from the profile
 
-  profile                   node
-  rules off vs profile      none
-  suppressions              2
-  typescript.baseline.json  7
-  test.baseline.json        3
-  tool versions             in range
+  profile                              node
+  rules off vs profile                 none
+  suppressions                         2
+  jterrazz.baseline.json › typescript  7
+  jterrazz.baseline.json › test        3
+  tool versions                        in range
 ```
 
-A rule turned off, a suppression written, a baseline entry recorded and a tool left behind are the four ways a project drifts. Three of them are one line; the baseline is named by BOTH ratchet files this toolchain family writes — `typescript.baseline.json` always, `test.baseline.json` only where the project keeps one — because a count with no file beside it says nothing about which debt it is. `typescript check --json` prints the same reading for a machine — the block under the `DRIFT` header becomes one JSON object, every pass above it still prints for a human — which is how a fleet-wide sweep collects the table.
+A rule turned off, a suppression written, a baseline entry recorded and a tool left behind are the four ways a project drifts. Three of them are one line; the baseline is named by BOTH sections this toolchain family writes — `typescript` always, `test` only where the project keeps one — because a count with no section beside it says nothing about which debt it is. `typescript check --json` prints the same reading for a machine — the block under the `DRIFT` header becomes one JSON object, every pass above it still prints for a human — which is how a fleet-wide sweep collects the table.
 
 **The profile is read off the consumer's config, and a config that names none is NOT measured.** A project extending no profile of this package is not drifting from one, it never joined it, and reporting two hundred rules as "off" would say nothing about anything. The name comes from the config's own `import`, which is the only evidence there is: oxlint's config schema is closed, so a compiled profile cannot carry its own name through to `--print-config`.
 
@@ -410,7 +415,7 @@ The file holds one section per package of the family, each package reading only 
 
 ### What the ratchet records
 
-Every rule carries the code `names(<rule>)`, and the ratchet records it as `names/<rule>`: `typescript baseline` writes the pass's counts into `typescript.baseline.json` beside the linter's, and where the file holds a `names/*` entry this pass is judged by it, with the three refusals of [the ratchet](#the-ratchet). A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
+Every rule carries the code `names(<rule>)`, and the ratchet records it as `names/<rule>`: `typescript baseline` writes the pass's counts into the `typescript` section of `jterrazz.baseline.json` beside the linter's, and where the section holds a `names/*` entry this pass is judged by it, with the three refusals of [the ratchet](#the-ratchet). A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
 
 ## The Secrets (credentials) pass
 

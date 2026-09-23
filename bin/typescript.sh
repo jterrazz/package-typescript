@@ -155,8 +155,9 @@ case "$COMMAND" in
         # nor repairs: it writes down where the project actually stands, so the
         # oxlint pass can refuse to let that number rise. `fix --baseline` would
         # bury a rewrite of a tracked file inside the everyday gesture. It
-        # records this package's rules only: `jterrazz(*)` and the conventions
-        # checker's findings are @jterrazz/test's, in its own file.
+        # records this package's rules only, in the `typescript` section of
+        # jterrazz.baseline.json: `jterrazz(*)` and the conventions checker's
+        # findings are @jterrazz/test's, in its `test` section, left as it was.
         cd "$PROJECT_ROOT"
 
         add_tsgolint_to_path
@@ -185,7 +186,7 @@ case "$COMMAND" in
                 > "$BASELINE_REPORT" 2>/dev/null || true
         fi
 
-        # The Names (tree) pass's findings take the same file, under `names/`:
+        # The Names (tree) pass's findings take the same section, under `names/`:
         # that pass reads its own entries back, so a construct name a project
         # has not renamed yet is recorded debt rather than a red run.
         NAMES_REPORT=$(mktemp)
@@ -193,12 +194,12 @@ case "$COMMAND" in
         node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/src/cli/check-names.js" . --format json "$@" > "$NAMES_REPORT" 2>/dev/null || true
 
         node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$BASELINE_REPORT" . \
-            --names "$NAMES_REPORT" --write
+            --names "$NAMES_REPORT" --write || exit 1
 
         # The file is tracked, so it is the formatter's like every other tracked
         # file — written here, shaped by the project's own oxfmt, never both.
         OXFMT=$(find_binary oxfmt)
-        "$OXFMT" typescript.baseline.json > /dev/null 2>&1 || true
+        "$OXFMT" jterrazz.baseline.json > /dev/null 2>&1 || true
         ;;
 
     tsc)
@@ -225,7 +226,7 @@ case "$COMMAND" in
         printf "  dev          Build, run, and rebuild on changes\n"
         printf "  docs-layout  Check a repository's docs/ against the manual spine\n"
         printf "  doctor       Report the installed tool versions against the declared ranges\n"
-        printf "  baseline     Record oxlint's own rules and Names into typescript.baseline.json\n"
+        printf "  baseline     Record oxlint's own rules and Names into jterrazz.baseline.json\n"
         printf "  tsc          Run the TypeScript 7 compiler this package ships (emit, --build)\n"
         printf "  check        Check types, lint, formatting, and unused code\n"
         printf "  fix          Auto-fix lint and formatting issues\n"

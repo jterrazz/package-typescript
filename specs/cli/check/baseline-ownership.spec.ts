@@ -12,10 +12,11 @@ import { afterEach, beforeEach, expect, test } from 'vitest';
  * installed as the project's @jterrazz/test, so the pass's verdict is exactly
  * the exit code the stub was told to give.
  *
- * The claim is the ratchet's split: `typescript.baseline.json` records and
- * judges this package's rules only. A `jterrazz(*)` diagnostic in oxlint's
- * report and a `jterrazz-check(*)` finding are @jterrazz/test's, in its own
- * file — never counted here, never forgiven here.
+ * The claim is the ratchet's split: the `typescript` section of
+ * `jterrazz.baseline.json` records and judges this package's rules only. A
+ * `jterrazz(*)` diagnostic in oxlint's report and a `jterrazz-check(*)`
+ * finding are @jterrazz/test's, in its `test` section of the same file —
+ * never counted here, never forgiven here, and never rewritten here.
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
@@ -105,22 +106,27 @@ test("records none of @jterrazz/test's diagnostics", () => {
     // When - the baseline is recorded
     run('baseline');
 
-    // Then - the file carries this package's rule and nothing of the plugin's
-    const written = readFileSync(join(project, 'typescript.baseline.json'), 'utf8');
-    expect(JSON.parse(written)).toStrictEqual({ 'eslint/no-debugger': 1 });
+    // Then - the section carries this package's rule and nothing of the plugin's
+    const written = readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8');
+    expect(JSON.parse(written)).toStrictEqual({ typescript: { 'eslint/no-debugger': 1 } });
 });
 
-test("leaves @jterrazz/test's own file byte for byte", () => {
-    // Given - a test.baseline.json in a shape no formatter would leave, beside a debugger this package records
-    const recorded = '{"jterrazz/x1-every-file":2,   "jterrazz-check/c9": 1}';
-    writeFileSync(join(project, 'test.baseline.json'), recorded);
+test("leaves @jterrazz/test's section byte for byte", () => {
+    // Given - a test section on one line, keys unsorted, beside a stale typescript one and a debugger this package records
+    const section = '{ "jterrazz/x1-every-file": 2, "jterrazz-check/c9": 1 }';
+    writeFileSync(
+        join(project, 'jterrazz.baseline.json'),
+        `{\n  "test": ${section},\n  "typescript": { "eslint/no-var": 4 }\n}\n`,
+    );
     writeFileSync(join(project, 'index.ts'), 'export function stop(): void {\n    debugger;\n}\n');
 
     // When - the baseline is recorded
     run('baseline');
 
-    // Then - the other package's file is untouched, its bytes included
-    expect(readFileSync(join(project, 'test.baseline.json'), 'utf8')).toBe(recorded);
+    // Then - only this package's section moved, and the other one's bytes are the ones it wrote
+    expect(readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8')).toBe(
+        `{\n  "test": ${section},\n  "typescript": {\n    "eslint/no-debugger": 1\n  }\n}\n`,
+    );
 });
 
 test("hands the file it writes to the project's own formatter", () => {
@@ -132,8 +138,8 @@ test("hands the file it writes to the project's own formatter", () => {
     run('baseline');
 
     // Then - the file is in the formatter's shape, not the writer's two spaces
-    expect(readFileSync(join(project, 'typescript.baseline.json'), 'utf8')).toBe(
-        '{\n    "eslint/no-debugger": 1\n}\n',
+    expect(readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8')).toBe(
+        '{\n    "typescript": {\n        "eslint/no-debugger": 1\n    }\n}\n',
     );
 });
 
@@ -163,7 +169,7 @@ test("takes the checker's exit code as the Test Conventions verdict", () => {
 const HELD_CHECKER = `#!/usr/bin/env node
 const args = process.argv.slice(2);
 if (args[args.indexOf('--member') + 1] === '.') {
-    const held = 'test.baseline.json: 3 held across 2 rules';
+    const held = 'jterrazz.baseline.json › test: 3 held across 2 rules';
     process.stdout.write(args.includes('--summary') ? held + '\\n' : held + ' — conventions checker (tree)\\n');
 }
 process.exit(0);
@@ -180,27 +186,27 @@ test("states @jterrazz/test's held line under the Test Conventions pass on a gre
         stdout.indexOf('Suppressions (directives)'),
     );
 
-    // Then - the pass is green and says what the other ratchet file holds, in the one short line
-    expect(conventions).toContain('test.baseline.json: 3 held across 2 rules\n');
+    // Then - the pass is green and says what the other ratchet section holds, in the one short line
+    expect(conventions).toContain('jterrazz.baseline.json › test: 3 held across 2 rules\n');
     expect(conventions).toContain('✓ Passed');
 });
 
-test("refuses an entry of @jterrazz/test's in this package's file", () => {
-    // Given - a baseline that still carries both packages' keys
+test("refuses an entry of @jterrazz/test's in this package's section", () => {
+    // Given - a typescript section that still carries both packages' keys
     writeFileSync(
-        join(project, 'typescript.baseline.json'),
-        '{\n  "jterrazz-check/c9": 1,\n  "jterrazz/x1-every-file": 2\n}\n',
+        join(project, 'jterrazz.baseline.json'),
+        '{\n  "typescript": { "jterrazz-check/c9": 1, "jterrazz/x1-every-file": 2 }\n}\n',
     );
 
     // When - the checks run
     const { stdout } = run('check');
 
-    // Then - each entry is sent to the file that owns it
+    // Then - each entry is sent to the section that owns it
     expect(stdout).toContain(
-        "jterrazz-check/c9 is @jterrazz/test's rule — its entry belongs in test.baseline.json",
+        "jterrazz-check/c9 is @jterrazz/test's rule — its entry belongs in jterrazz.baseline.json › test",
     );
     expect(stdout).toContain(
-        "jterrazz/x1-every-file is @jterrazz/test's rule — its entry belongs in test.baseline.json",
+        "jterrazz/x1-every-file is @jterrazz/test's rule — its entry belongs in jterrazz.baseline.json › test",
     );
     expect(verdict(stdout, 'Oxlint Check')).toBe('✗ Failed');
 });

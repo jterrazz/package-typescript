@@ -12,7 +12,7 @@ runs:
 
            RUN  Oxlint Check
 
-          baseline-ratchet  typescript.baseline.json  eslint/no-debugger is at zero — the ratchet moved, delete its entry
+          baseline-ratchet  jterrazz.baseline.json › typescript  eslint/no-debugger is at zero — the ratchet moved, delete its entry
           Run 'typescript baseline' to record where the project actually stands.
           ✗ Failed with exit code 1
 
@@ -42,12 +42,12 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            profile                   none of this package's
-            rules off vs profile      not measured
-            suppressions              0
-            typescript.baseline.json  7
-            test.baseline.json        3
-            tool versions             in range
+            profile                              none of this package's
+            rules off vs profile                 not measured
+            suppressions                         0
+            jterrazz.baseline.json › typescript  7
+            jterrazz.baseline.json › test        3
+            tool versions                        in range
 
            END  Finalizing quality checks
 

@@ -30,11 +30,11 @@
  *
  * One line per violation, `<rule>  <path>  <message>`. Every rule carries the
  * code `names(<rule>)`, which the ratchet records as `names/<rule>`: where
- * `typescript.baseline.json` holds a `names/*` entry, the counts are judged against
+ * `jterrazz.baseline.json › typescript` holds a `names/*` entry, the counts are judged against
  * it the way the linter's are, and a held count prints nothing. `--format json`
  * is the report `typescript baseline` records from; `--report <path>` writes
  * that same report to a file beside the human run, for the line `check` prints
- * about the whole ratchet file.
+ * about the whole ratchet section.
  *
  * Exit code: 0 when every name claims a subject or the ratchet holds, 1
  * otherwise. No `--fix`: renaming a file is a move, and choosing the name it
@@ -45,7 +45,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { BASELINE, judge, readBaseline } from './check-baseline.js';
+import { judge, LABEL, readBaseline } from './check-baseline.js';
 import { readSection, SETTINGS_FILE } from './jterrazz-config.js';
 import { ignorePatternsOf, orRefused, projectFiles } from './project-files.js';
 import { isRepositoryRoot } from './repository-root.js';
@@ -522,7 +522,7 @@ if (argv.includes('--format')) {
     exit(0);
 }
 
-/* `check` reads the same findings back to state what the whole ratchet file holds. */
+/* `check` reads the same findings back to state what the whole ratchet section holds. */
 const reportPath = valueOf('--report');
 if (reportPath !== undefined) {
     writeFileSync(reportPath, report());
@@ -552,7 +552,7 @@ for (const { rule } of findings) {
 
 const broken = judge(counts, recorded);
 for (const reason of broken) {
-    stdout.write(`baseline-ratchet  ${BASELINE}  ${reason}\n`);
+    stdout.write(`baseline-ratchet  ${LABEL}  ${reason}\n`);
 }
 if (broken.length > 0) {
     stdout.write("Run 'typescript baseline' to record where the project actually stands.\n");

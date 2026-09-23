@@ -12,7 +12,7 @@ runs:
 
            RUN  Oxlint Check
 
-          typescript.baseline.json: 2 held across 2 rules
+          jterrazz.baseline.json › typescript: 2 held across 2 rules
           ✓ Passed
 
            RUN  Oxfmt Check

@@ -66,11 +66,22 @@ for candidate in oxlint.config.ts oxlint.config.mjs oxlint.config.js oxlint.conf
     [ -f "$candidate" ] && { OXLINT_CONFIG="$candidate"; break; }
 done
 
-# The ratchet's file, at the project root. Its presence is what turns the oxlint
-# pass from "no diagnostic at all" into "no diagnostic above what was recorded".
-# It holds this package's rules only; `jterrazz(*)` diagnostics in the same
-# oxlint report are @jterrazz/test's, recorded and judged in its own file.
-BASELINE_FILE="typescript.baseline.json"
+# The ratchet's file, at the project root, one section per package of the
+# family. Its `typescript` section is what turns the oxlint pass from "no
+# diagnostic at all" into "no diagnostic above what was recorded"; the
+# `jterrazz(*)` diagnostics in the same oxlint report are @jterrazz/test's,
+# recorded and judged in its `test` section.
+BASELINE_FILE="jterrazz.baseline.json"
+
+# A file of the per-package layout is never read, and its presence alone
+# fails the oxlint pass, so the judge runs wherever one is left.
+ratchet_file_present() {
+    local file
+    for file in "$BASELINE_FILE" typescript.baseline.json test.baseline.json oxlint.baseline.json; do
+        [ -f "$file" ] && return 0
+    done
+    return 1
+}
 
 TSC=$(find_tsc)
 OXLINT=$(find_binary oxlint)
@@ -364,7 +375,7 @@ run_oxfmt() {
 # WROTE something. `fix` changed a file the operator owns and silence would hide
 # it, so a writer asks for its log with the fourth argument — and so does the
 # oxlint pass when the ratchet holds, for the one line that says what
-# `typescript.baseline.json` holds; a reader's success
+# `jterrazz.baseline.json › typescript` holds; a reader's success
 # chatter — oxlint's summary, which its reporter prints on a runner and in a
 # terminal and drops under an AI agent — never reaches the stream, so a green
 # run is byte-identical everywhere.
@@ -534,7 +545,7 @@ run_checks() {
     # diagnostics of this one run instead of linting the project a second time.
     local lint_json_pid=""
     local lint_json_waited=false
-    if [ "$FIX_MODE" = false ] && { [ -f "$BASELINE_FILE" ] || [ ${#checker_members[@]} -gt 0 ]; }; then
+    if [ "$FIX_MODE" = false ] && { ratchet_file_present || [ ${#checker_members[@]} -gt 0 ]; }; then
         run_oxlint --type-aware --format json "${LINT_ARGS[@]}" \
             > "$tmp_dir/lint.json" 2>/dev/null &
         lint_json_pid=$!
@@ -753,8 +764,8 @@ run_checks() {
         fi
         # The run over the project root is the one @jterrazz/test's ratchet
         # judges, and the one whose green verdict is the held line of
-        # `test.baseline.json` — asked for alone with `--summary`, which a
-        # release that predates it ignores.
+        # `jterrazz.baseline.json › test` — asked for alone with `--summary`,
+        # which a release that predates it ignores.
         local member_index=0
         for member in "${checker_members[@]}"; do
             local member_bin="${checker_member_bins[$member_index]}"
@@ -797,7 +808,7 @@ run_checks() {
     # fixers armed again, so a directive that names one of them is used, not
     # reported unused. The fixer's own exit code is never the verdict: it ran
     # with those rules allowed.
-    if [ -f "$BASELINE_FILE" ] || [ "$FIX_MODE" = true ] || [ "$lint_status" -ne 0 ]; then
+    if ratchet_file_present || [ "$FIX_MODE" = true ] || [ "$lint_status" -ne 0 ]; then
         if [ -n "$lint_json_pid" ]; then
             [ "$lint_json_waited" = true ] || wait $lint_json_pid
         else
@@ -805,7 +816,7 @@ run_checks() {
                 > "$tmp_dir/lint.json" 2>/dev/null
         fi
 
-        # The file has two reporters, and a green run states it once, whole:
+        # The section has two reporters, and a green run states it once, whole:
         # the Names pass's report joins the judge, which prints the file's one
         # held line when both sides sit within it — and nothing else, since a
         # held finding is the ratchet doing its job.
@@ -872,12 +883,12 @@ run_checks() {
     join_logs "$tmp_dir/publish.log" "${publish_failed_logs[@]}"
 
     # The checker's exit code is this pass's verdict, whatever it records:
-    # @jterrazz/test judges its own findings against its own file.
+    # @jterrazz/test judges its own findings against its own section.
     #
     # Two things this pass says even when it is green, so it asks for its log
     # the way a writer does: which member resolves a release too old to answer
     # `--member` — a reader left with silence would believe every member was
-    # asked — and what the other ratchet file holds.
+    # asked — and what the other ratchet section holds.
     local checker_write=""
     if [ "$checker_dormant" -gt 0 ]; then
         cat "$tmp_dir/checker-dormant.log" "$tmp_dir/checker.log" \
@@ -885,11 +896,11 @@ run_checks() {
         mv "$tmp_dir/checker-reported.log" "$tmp_dir/checker.log"
         checker_write="writer"
     fi
-    # And, on a green pass, the held line of `test.baseline.json` — the same
-    # one line the oxlint pass prints for its own file, and only in that exact
-    # shape, so a release printing its longer form adds nothing here.
+    # And, on a green pass, the held line of `jterrazz.baseline.json › test` —
+    # the same one line the oxlint pass prints for its own section, and only in
+    # that exact shape, so a release printing another form adds nothing here.
     if [ "$checker_status" -eq 0 ] && [ -n "$checker_root_log" ] &&
-        grep -E '^test\.baseline\.json: [0-9]+ held across [0-9]+ rules?$' "$checker_root_log" \
+        grep -E '^jterrazz\.baseline\.json › test: [0-9]+ held across [0-9]+ rules?$' "$checker_root_log" \
             >> "$tmp_dir/checker.log"; then
         checker_write="writer"
     fi
@@ -904,7 +915,7 @@ run_checks() {
     fi
 
     judge_lint_config
-    # A green pass judged by the ratchet says one thing: the file's held line,
+    # A green pass judged by the ratchet says one thing: the section's held line,
     # never the linter's chatter around it.
     local lint_log="$tmp_dir/lint.log"
     local lint_speaks=""
