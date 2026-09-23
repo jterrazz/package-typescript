@@ -16,9 +16,10 @@
  * one failure mode a gate must never have — and a genuinely bare directory,
  * which the sandboxes of `specs/cli/` build, is told apart from it by looking.
  *
- * It also refuses to answer for the GROUND a spec stands on: `fixtures/`,
- * `expected/`, `seeds/` and `requests/` anywhere under a `specs/` folder hold
- * a tree deliberately broken, a golden held byte for byte, database state and
+ * It also refuses to answer for the GROUND a test stands on: `fixtures/`,
+ * `expected/`, `seeds/` and `requests/` wherever a path passes through one —
+ * under `specs/`, beside a module under `src/`, anywhere — hold a tree
+ * deliberately broken, a golden held byte for byte, database state and
  * the requests a scenario sends — each belonging to the scenario that mounts
  * it, not to the project carrying it. A gate judges that tree where the
  * scenario runs it, on its own ground, and never twice.
