@@ -25,11 +25,15 @@ const FIXTURES = resolve(import.meta.dirname, 'fixtures/behaviour');
 const EXPECTED = resolve(import.meta.dirname, 'expected/behaviour');
 const UPDATING = process.env.TEST_UPDATE === '1';
 
-/** The rule ids a run names, with the file each one landed on, sorted. */
+/** The rule ids a run names, each with the file, line and column it landed on, sorted. */
 function rulesOf(diagnostics: Diagnostic[]): string {
     const lines = diagnostics
         .filter((diagnostic) => diagnostic.severity === 'error')
-        .map((diagnostic) => `${diagnostic.filename} ${diagnostic.code}`);
+        .map(({ code, filename, labels }) => {
+            const { column = 0, line = 0 } = labels[0]?.span ?? {};
+
+            return `${filename}:${line}:${column} ${code}`;
+        });
     return `${lines.toSorted((left, right) => left.localeCompare(right)).join('\n')}\n`;
 }
 

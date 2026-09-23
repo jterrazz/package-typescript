@@ -1,2 +1,2 @@
-our-options.tsx import(extensions)
-our-options.tsx react(function-component-definition)
+our-options.tsx:10:22 react(function-component-definition)
+our-options.tsx:7:1 import(extensions)

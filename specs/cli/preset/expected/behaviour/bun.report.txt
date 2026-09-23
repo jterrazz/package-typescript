@@ -1,2 +1,2 @@
-our-options.ts eslint(max-params)
-our-options.ts import(extensions)
+our-options.ts:11:21 eslint(max-params)
+our-options.ts:21:1 import(extensions)

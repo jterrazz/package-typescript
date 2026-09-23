@@ -130,11 +130,13 @@ export type ResolvedConfig = {
 
 /**
  * One diagnostic of `oxlint --format=json`, in the fields the suites read.
- * `code` is the rule id in oxlint's own vocabulary — `eslint(max-params)`.
+ * `code` is the rule id in oxlint's own vocabulary — `eslint(max-params)` —
+ * and the first label's span is where it landed.
  */
 export type Diagnostic = {
     code: string;
     filename: string;
+    labels: { span: { column: number; line: number } }[];
     severity: string;
 };
 
