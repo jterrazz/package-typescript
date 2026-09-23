@@ -1,12 +1,5 @@
 {
   "name": "fixture-names-members-web",
   "private": true,
-  "main": "src/index.ts",
-  "jterrazz": {
-    "typescript": {
-      "roots": {
-        "migrations": "the database migrations the deploy job runs"
-      }
-    }
-  }
+  "main": "src/index.ts"
 }

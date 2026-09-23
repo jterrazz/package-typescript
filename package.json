@@ -24,6 +24,10 @@
             "types": "./src/index.d.ts",
             "default": "./src/index.js"
         },
+        "./config": {
+            "types": "./src/config.d.ts",
+            "default": "./src/config.js"
+        },
         "./docs": {
             "types": "./src/docs.d.ts",
             "default": "./src/docs.js"

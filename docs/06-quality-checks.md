@@ -355,20 +355,21 @@ A construct is judged on the WHOLE name: `type-registry.ts` names a subject and 
 
 The root's own folders are the same in every repository: `src/` the product's code, `lint/` the lint rules a package ships, `specs/` the specifications, `docs/` the manual, `skills/` one short page per skill — and `apps/` or `packages/` where a workspace keeps its members, each a spine of its own. What the tree calls a root is therefore judged too.
 
-| Rule                    | Refuses                                                                               |
-| ----------------------- | ------------------------------------------------------------------------------------- |
-| `names-skill-file`      | a file under `skills/` that is not `skills/<skill>/SKILL.md`                          |
-| `names-root-foreign`    | a root folder outside the spine that nothing codifies                                 |
-| `names-root-unreasoned` | a root declared in `jterrazz.typescript.roots` with no reason beside it               |
-| `names-root-stale`      | a root declared in `jterrazz.typescript.roots` that holds no file git does not ignore |
-| `names-makefile-absent` | a repository root with no `Makefile`, or one git ignores                              |
-| `names-makefile-target` | one of the six gestures a repository's `Makefile` writes no rule for                  |
+| Rule                    | Refuses                                                                                 |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| `names-skill-file`      | a file under `skills/` that is not `skills/<skill>/SKILL.md`                            |
+| `names-root-foreign`    | a root folder outside the spine that nothing codifies                                   |
+| `names-root-unreasoned` | a root declared in `typescript.roots` with no reason beside it                          |
+| `names-root-stale`      | a root declared in `typescript.roots` that holds no file git does not ignore            |
+| `names-config-invalid`  | a `jterrazz.config.ts` that does not load, or whose settings are not the declared shape |
+| `names-makefile-absent` | a repository root with no `Makefile`, or one git ignores                                |
+| `names-makefile-target` | one of the six gestures a repository's `Makefile` writes no rule for                    |
 
 A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
 
 `lint/` stands on the spine only where the package SHIPS it: an entry of its `package.json`'s `files`, or a target of its `exports`, reaches into it. A `lint/` nothing publishes holds rules no consumer receives — `src/` under another name — and is refused as `names-root-foreign`.
 
-A workspace member is a spine of its own, judged the same way from its own folder: its first-level folders owe the spine, its `lint/` answers to its own `files` and `exports`, and it declares the roots it keeps beyond the spine in its own `package.json`. The `Makefile` stays the repository root's.
+A workspace member is a spine of its own, judged the same way from its own folder: its first-level folders owe the spine, its `lint/` answers to its own `files` and `exports`, and it declares the roots it keeps beyond the spine in its own `jterrazz.config.ts`. The `Makefile` stays the repository root's.
 
 #### The six gestures
 
@@ -395,21 +396,17 @@ A root beside the spine stands on one of two codified grounds, and every other r
 
 The list is closed and short on purpose. `scripts/`, `docker/` or `migrations/` are conventions, not impositions: every tool that reads one takes its path as an argument, so the repository chose the folder and says why.
 
-The second ground is that saying: the repository declares the root in its `package.json`, under `jterrazz.typescript.roots`, each with its reason.
+The second ground is that saying: the repository declares the root in its settings file, `jterrazz.config.ts`, under `typescript.roots`, each with its reason ([Developing](02-developing.md#5-state-a-setting-where-there-is-one)).
 
-```json
-{
-    "jterrazz": {
-        "typescript": {
-            "roots": {
-                "scripts": "the release scripts the CI workflow runs"
-            }
-        }
-    }
-}
+```ts
+import { defineConfig } from '@jterrazz/typescript/config';
+
+export default defineConfig({
+    typescript: { roots: { scripts: 'the release scripts the CI workflow runs' } },
+});
 ```
 
-`package.json` holds it because it is the one manifest every repository has, and oxlint's config schema is closed. Its `jterrazz` key holds one settings object per package of the family, each package reading only its own, so a root declared anywhere else in the manifest is not read. The reason is not decoration: an entry without one is refused (`names-root-unreasoned`), and an entry whose folder holds no file git does not ignore is refused too (`names-root-stale`), so the list shrinks as the tree does. A base package that composes others keeps its broader roots through this same declaration, never through an exemption in the gate.
+The file holds one section per package of the family, each package reading only its own, so a root declared anywhere else — a `jterrazz` key in `package.json` included — is not read. A file that does not load, or whose `typescript.roots` is not an object mapping each folder to its reason, is refused as `names-config-invalid`, and the roots it meant to declare stand undeclared until it is fixed. The reason is not decoration: an entry without one is refused (`names-root-unreasoned`), and an entry whose folder holds no file git does not ignore is refused too (`names-root-stale`), so the list shrinks as the tree does. A base package that composes others keeps its broader roots through this same declaration, never through an exemption in the gate.
 
 ### What the ratchet records
 

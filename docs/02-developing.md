@@ -124,6 +124,23 @@ check: lint test
 
 A workspace keeps one, at its root; a member owes none.
 
+## 5. State a setting, where there is one
+
+A repository with nothing to say about the toolchain keeps no settings file. One that has something states it in `jterrazz.config.ts` at its root, one section per package of the family:
+
+```ts
+// jterrazz.config.ts
+import { defineConfig } from '@jterrazz/typescript/config';
+
+export default defineConfig({
+    typescript: { roots: { scripts: 'the release scripts the CI workflow runs' } },
+});
+```
+
+The file belongs to the whole family, and this package owns it: `defineConfig` types every section a package of the family declares, and `@jterrazz/test` adds its own, `test`. Each package reads its own section and nothing else. The one setting of the `typescript` section is `roots`, the folders a repository keeps beside its spine ([Quality checks](06-quality-checks.md#a-root-beside-the-spine)).
+
+Node loads the file itself, with its types stripped, so it needs no build and no tool beside the toolchain. A missing file is no settings at all; a file that does not load, or holds no settings object, is a finding of the pass that reads it. A workspace member keeps its own beside its `package.json`, for what that member alone declares.
+
 ## The shape a consumer keeps
 
 That is the whole contract, and it is meant to stay that size:

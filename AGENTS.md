@@ -53,6 +53,7 @@ src/cli/check-suppressions.js # Every disable directive is spelled, reasoned and
 
 src/cli/doctor.js             # Installed tool versions against the declared ranges — `typescript doctor`
 src/cli/entry-points.js       # The entries a build compiles, read off the consumer's own exports map
+src/cli/jterrazz-config.js    # A unit's jterrazz.config.ts, loaded — one package's section, or the problem that stops it
 src/cli/lint-targets.js       # The project files oxlint and oxfmt are handed — the sweep every tree gate reads, never the directory
 src/cli/merge-knip-config.js  # Merges knip base preset with project-local knip.json (read as JSONC)
 src/cli/project-files.js      # The one sweep every tree gate starts from — every file git does not ignore, or a walk where there is no git
@@ -72,6 +73,7 @@ src/presets/
 src/index.js + index.d.ts     # Package entry — exports { oxfmt, oxlint } profiles (JS-shipped, no build)
 src/oxlint.js · oxfmt.js      # The tool-facing entries — the profiles, compose(), layers(), each tool's defineConfig
 src/docs.js + docs.d.ts       # The manual's rules, pure — auditDocs(tree), exported at ./docs for a second reader
+src/config.js + config.d.ts   # defineConfig() and JterrazzConfig — the family's settings file, exported at ./config
 docs/                         # The corpus: numbered chapters and decisions/
 skills/                       # The Claude Code skill — one hand-written SKILL.md
 specs/                        # Product specifications (@jterrazz/test) — the shape is docs/03-testing.md

@@ -1,4 +1,4 @@
-description: accepts an imposed root or one under jterrazz.typescript.roots, refuses every other
+description: accepts an imposed root or one jterrazz.config.ts declares, and refuses every other
 fixture: ./fixtures/names/roots-declared/
 runs:
     - command: check
@@ -32,9 +32,9 @@ runs:
 
            RUN  Names (tree)
 
-          names-root-foreign  deploy/  `deploy/` is a root outside the spine — move it under src/, or declare it in package.json's `jterrazz.typescript.roots` with its reason
-          names-root-unreasoned  docker/  `docker/` is declared in `jterrazz.typescript.roots` with no reason — say why the repository keeps it
-          names-root-stale  migrations/  `migrations/` is declared in `jterrazz.typescript.roots` and holds no file — delete the entry
+          names-root-foreign  deploy/  `deploy/` is a root outside the spine — move it under src/, or declare it in jterrazz.config.ts's `typescript.roots` with its reason
+          names-root-unreasoned  docker/  `docker/` is declared in jterrazz.config.ts's `typescript.roots` with no reason — say why the repository keeps it
+          names-root-stale  migrations/  `migrations/` is declared in jterrazz.config.ts's `typescript.roots` and holds no file — delete the entry
           ✗ Failed with exit code 1
 
            RUN  Secrets (credentials)

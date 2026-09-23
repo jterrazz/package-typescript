@@ -17,8 +17,8 @@ import { expect, test } from 'vitest';
 const ROOT = resolve(import.meta.dirname, '../../../src');
 const PRESETS = resolve(import.meta.dirname, '../../../src/presets/tsdown');
 
-/** The four importable entries, each a `.js` and the `.d.ts` written beside it. */
-const ENTRIES = ['docs', 'index', 'oxfmt', 'oxlint'] as const;
+/** The five importable entries, each a `.js` and the `.d.ts` written beside it. */
+const ENTRIES = ['config', 'docs', 'index', 'oxfmt', 'oxlint'] as const;
 
 /** The tsdown presets, reached as `@jterrazz/typescript/tsdown/<name>.js`. */
 const TSDOWN_PRESETS = ['build', 'bundle'] as const;

@@ -2,12 +2,5 @@
   "name": "fixture-workspace-api",
   "devDependencies": {
     "@jterrazz/test": "^9.0.0"
-  },
-  "jterrazz": {
-    "typescript": {
-      "roots": {
-        "vendor": "a foreign project vendored in, which the conventions checker must not cross into"
-      }
-    }
   }
 }

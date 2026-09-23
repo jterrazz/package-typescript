@@ -190,7 +190,7 @@ case "$COMMAND" in
         # has not renamed yet is recorded debt rather than a red run.
         NAMES_REPORT=$(mktemp)
         trap 'rm -f "$BASELINE_REPORT" "$NAMES_REPORT"' EXIT
-        node "$PACKAGE_ROOT/src/cli/check-names.js" . --format json "$@" > "$NAMES_REPORT" 2>/dev/null || true
+        node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/src/cli/check-names.js" . --format json "$@" > "$NAMES_REPORT" 2>/dev/null || true
 
         node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$BASELINE_REPORT" . \
             --names "$NAMES_REPORT" --write

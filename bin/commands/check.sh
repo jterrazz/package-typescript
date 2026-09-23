@@ -637,11 +637,14 @@ run_checks() {
     # Names: what the project calls its own parts, under the roots where a
     # project keeps what it wrote. Check-only — renaming a file is a move, and
     # choosing the name it moves to is the work the rule is asking for.
+    # It loads `jterrazz.config.ts`, and Node warns on stderr while it
+    # reparses a `.ts` as ESM in a project without `"type": "module"` — noise
+    # about the loading, never about the tree.
     local names_pid=""
     local names_status=0
     local names_pid_waited=false
     if [ "$FIX_MODE" = false ]; then
-        node "$PACKAGE_ROOT/src/cli/check-names.js" . "${LINT_ARGS[@]}" \
+        node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/src/cli/check-names.js" . "${LINT_ARGS[@]}" \
             --report "$tmp_dir/names.json" > "$tmp_dir/names.log" 2>&1 &
         names_pid=$!
     fi

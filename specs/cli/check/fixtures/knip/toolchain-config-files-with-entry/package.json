@@ -3,12 +3,5 @@
   "version": "1.0.0",
   "devDependencies": {
     "@jterrazz/typescript": "^9.1.0"
-  },
-  "jterrazz": {
-    "typescript": {
-      "roots": {
-        "scripts": "the seed script CI invokes, never imported"
-      }
-    }
   }
 }

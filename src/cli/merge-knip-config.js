@@ -19,6 +19,7 @@
  *
  * Dynamic detection:
  *   - Published library (main/exports/publishConfig) → disable exports/types/files rules
+ *   - Auto-ignore a member's jterrazz.config.ts, loaded by the toolchain and never imported
  *   - Auto-ignore docs/** and the ground a test stands on (fixtures, expected,
  *     seeds, requests), wherever it sits — at the root AND inside every workspace member, because the
  *     convention is the package's and knip resolves `ignore` globs from the root
@@ -219,6 +220,12 @@ for (const unit of units) {
 
     if (existsSync(`${prefix}docs`)) {
         conventionIgnores.push(`${prefix}docs/**`);
+    }
+
+    // A member's settings file is the toolchain's to load, never imported —
+    // the preset's `entry` names the root's, and reaches no member.
+    if (prefix !== '' && existsSync(`${prefix}jterrazz.config.ts`)) {
+        conventionIgnores.push(`${prefix}jterrazz.config.ts`);
     }
 
     // The ground is @jterrazz/test's four reserved folders, wherever they sit.

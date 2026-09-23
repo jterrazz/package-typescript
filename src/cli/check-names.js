@@ -19,9 +19,9 @@
  * skill is one `skills/<skill>/SKILL.md` and nothing beside it. Beside the
  * spine a root stands only on a codified ground: a name the ecosystem imposes
  * (`ECOSYSTEM_ROOTS`), or one the unit — the repository, or the member —
- * declares in its own `package.json` under `jterrazz.typescript.roots`, each
- * with its reason. Any other root is
- * refused. A repository's root also carries a `Makefile` answering
+ * declares in its own `jterrazz.config.ts` under `typescript.roots`, each
+ * with its reason. Any other root is refused, and a settings file that does
+ * not load is refused too. A repository's root also carries a `Makefile` answering
  * `install`, `build`, `lint`, `fix`, `test` and `check` — the gestures the
  * flows speak.
  *
@@ -46,6 +46,7 @@ import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
 import { BASELINE, judge, readBaseline } from './check-baseline.js';
+import { readSection, SETTINGS_FILE } from './jterrazz-config.js';
 import { ignorePatternsOf, orRefused, projectFiles } from './project-files.js';
 import { isRepositoryRoot } from './repository-root.js';
 import { workspaceMembers } from './workspace-members.js';
@@ -124,11 +125,11 @@ const ECOSYSTEM_ROOTS = Object.freeze({
 });
 
 /**
- * Where a repository declares the roots it keeps beyond the spine:
- * `package.json`'s `jterrazz.typescript.roots` — the `jterrazz` key holds one
- * settings object per package of the family, and this package reads only its own.
+ * Where a unit declares the roots it keeps beyond the spine: the `roots` of
+ * its settings file's `typescript` section — the file holds one section per
+ * package of the family, and this package reads only its own.
  */
-const DECLARATION = 'jterrazz.typescript.roots';
+const DECLARATION = 'typescript.roots';
 
 /**
  * The gestures every repository answers at its root, and the only ones the
@@ -255,15 +256,28 @@ function manifestOf(unit) {
 }
 
 /**
- * The roots a unit declares beyond the spine, each with its reason, read off
- * its `package.json`'s `jterrazz.typescript.roots` — `{ "<folder>": "<reason>" }`.
- * An absent key declares nothing, and a root declared anywhere else in the
- * manifest is not read.
+ * What a unit's settings file declares for this package — its roots beyond
+ * the spine, `{ "<folder>": "<reason>" }` — and the one sentence that says why
+ * the file could not be read, or null. An absent file or key declares nothing.
  */
-function declaredRootsOf(manifest) {
-    const roots = manifest.jterrazz?.typescript?.roots;
+async function settingsOf(unit) {
+    const { problem, section } = await readSection(unit, 'typescript');
+    if (problem !== null) {
+        return { problem, roots: {} };
+    }
 
-    return roots !== null && typeof roots === 'object' && !Array.isArray(roots) ? roots : {};
+    const { roots } = section;
+    if (roots === undefined) {
+        return { problem: null, roots: {} };
+    }
+    if (roots === null || typeof roots !== 'object' || Array.isArray(roots)) {
+        return {
+            problem: `holds a \`${DECLARATION}\` that is not an object mapping each folder to its reason`,
+            roots: {},
+        };
+    }
+
+    return { problem: null, roots };
 }
 
 /** Every string an `exports` map points at, however deeply its conditions nest. */
@@ -307,7 +321,7 @@ function foreignRoot(root, prefix) {
         message:
             root === LINT_ROOT
                 ? `\`${prefix}lint/\` holds the lint rules a package ships, and ${manifestPath}'s \`files\` and \`exports\` never reach it — ship it, or move it under src/`
-                : `\`${prefix}${root}/\` is a root outside the spine — move it under src/, or declare it in ${manifestPath}'s \`${DECLARATION}\` with its reason`,
+                : `\`${prefix}${root}/\` is a root outside the spine — move it under src/, or declare it in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` with its reason`,
         path: `${prefix}${root}/`,
         rule: 'names-root-foreign',
     };
@@ -322,13 +336,13 @@ function declarationOf(declared, roots, prefix) {
     )) {
         if (typeof reason !== 'string' || reason.trim() === '') {
             findings.push({
-                message: `\`${prefix}${root}/\` is declared in \`${DECLARATION}\` with no reason — say why the repository keeps it`,
+                message: `\`${prefix}${root}/\` is declared in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` with no reason — say why the repository keeps it`,
                 path: `${prefix}${root}/`,
                 rule: 'names-root-unreasoned',
             });
         } else if (!roots.has(root)) {
             findings.push({
-                message: `\`${prefix}${root}/\` is declared in \`${DECLARATION}\` and holds no file — delete the entry`,
+                message: `\`${prefix}${root}/\` is declared in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` and holds no file — delete the entry`,
                 path: `${prefix}${root}/`,
                 rule: 'names-root-stale',
             });
@@ -342,12 +356,19 @@ function declarationOf(declared, roots, prefix) {
  * What one unit's own folders owe the spine: a skill holds one file, and a
  * root stands on a codified ground. `files` are relative to the unit; the
  * findings are named from the repository root, through `prefix`, and send the
- * reader to the unit's own `package.json`.
+ * reader to the unit's own `package.json` and settings file.
  */
-function spineOf(files, manifest, prefix = '') {
+function spineOf(files, manifest, settings, prefix = '') {
     const findings = [];
     const roots = new Set();
-    const declared = declaredRootsOf(manifest);
+    const declared = settings.roots;
+    if (settings.problem !== null) {
+        findings.push({
+            message: `\`${prefix}${SETTINGS_FILE}\` ${settings.problem}`,
+            path: `${prefix}${SETTINGS_FILE}`,
+            rule: 'names-config-invalid',
+        });
+    }
 
     for (const file of files) {
         const [first, ...rest] = file.split('/');
@@ -383,24 +404,29 @@ function spineOf(files, manifest, prefix = '') {
 /**
  * The spine of the repository root, and of every workspace member: a member
  * is a package of its own, so its folders owe the same spine, and it declares
- * its own roots in its own `package.json`. A file belongs to the member that
+ * its own roots in its own settings file. A file belongs to the member that
  * holds it, and to the root otherwise.
  */
-function spinesOf(root, files) {
+async function spinesOf(root, files) {
     const members = workspaceMembers(root);
     const memberOf = (file) => members.find((member) => file.startsWith(`${member}/`));
+    const memberSettings = await Promise.all(
+        members.map(async (member) => await settingsOf(join(root, member))),
+    );
 
     return [
         ...spineOf(
             files.filter((file) => memberOf(file) === undefined),
             manifestOf(root),
+            await settingsOf(root),
         ),
-        ...members.flatMap((member) =>
+        ...members.flatMap((member, index) =>
             spineOf(
                 files
                     .filter((file) => file.startsWith(`${member}/`))
                     .map((file) => file.slice(member.length + 1)),
                 manifestOf(join(root, member)),
+                memberSettings[index],
                 `${member}/`,
             ),
         ),
@@ -474,7 +500,11 @@ const root = resolve(
         ) ?? '.',
 );
 const files = orRefused(() => projectFiles(root, { ignorePatterns: ignorePatternsOf(argv) }));
-const findings = [...findingsOf(files), ...spinesOf(root, files), ...makefileOf(root, files)];
+const findings = [
+    ...findingsOf(files),
+    ...(await spinesOf(root, files)),
+    ...makefileOf(root, files),
+];
 
 /** The findings as the ratchet reads a report: oxlint's JSON shape, one code per rule. */
 const report = () =>

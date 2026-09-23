@@ -11,6 +11,7 @@ const oxfmtEntry = await import('../../../src/oxfmt.js');
 // Self-reference resolution — the exports map must cover every consumer-facing subpath.
 test.each([
     '@jterrazz/typescript',
+    '@jterrazz/typescript/config',
     '@jterrazz/typescript/docs',
     '@jterrazz/typescript/oxfmt',
     '@jterrazz/typescript/oxlint',
