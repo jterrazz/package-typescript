@@ -23,7 +23,7 @@ import { afterAll, expect, onTestFinished, test } from 'vitest';
  * fails the run, and the line that declares itself fake does not. The other
  * engine is named the same way — a `gitleaks` on PATH that records what it was
  * handed — and the ground there is a real repository, since what the engine
- * must receive is the TRACKED set.
+ * must receive is every file git does NOT ignore.
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
@@ -123,8 +123,8 @@ function gitleaksStub(): { directory: string; record: string } {
     return { directory, record };
 }
 
-test('hands gitleaks the tracked files a tree gate judges, and nothing beside them', () => {
-    // Given - a repository with tracked notes, a tracked spec ground, a tracked folder the run is told to overlook, and an untracked scratch file
+test('hands gitleaks every file git does not ignore that a tree gate judges, and nothing beside them', () => {
+    // Given - a repository with tracked notes, a tracked spec ground, a tracked folder the run is told to overlook, an untracked scratch file and an ignored one
     const created = mkdtempSync(resolve(tmpdir(), 'spec-secrets-engine-'));
     onTestFinished(() => {
         rmSync(created, { force: true, recursive: true });
@@ -146,6 +146,8 @@ test('hands gitleaks the tracked files a tree gate judges, and nothing beside th
     execFileSync('git', ['add', '.'], { cwd: repository });
     mkdirSync(join(repository, 'data'));
     writeFileSync(join(repository, 'data/scratch.md'), '# Never staged\n');
+    writeFileSync(join(repository, 'data/local.md'), '# Ignored\n');
+    writeFileSync(join(repository, '.gitignore'), 'data/local.md\n');
     const { directory, record } = gitleaksStub();
 
     // When - the quality checks run with a recording gitleaks first on PATH, told to overlook notes/
@@ -156,11 +158,13 @@ test('hands gitleaks the tracked files a tree gate judges, and nothing beside th
     });
     const [argv = '', cwd = '', ...scanned] = readFileSync(record, 'utf8').trim().split('\n');
 
-    // Then - gitleaks scans a directory holding exactly the tracked, ground-free, not-overlooked files
+    // Then - gitleaks scans a directory holding exactly the non-ignored, ground-free, not-overlooked files
     expect(argv).toBe('argv dir . --no-banner --redact --exit-code 1');
     expect(cwd.startsWith(`cwd ${repository}`)).toBe(false);
     expect(scanned).toStrictEqual([
+        './.gitignore',
         './NOTES.md',
+        './data/scratch.md',
         './index.ts',
         './package.json',
         './tsconfig.json',

@@ -3,7 +3,7 @@
 /**
  * No file the project would commit carries a live-looking credential.
  *
- * Two engines, one gate, one set of files: the tracked sweep every tree gate
+ * Two engines, one gate, one set of files: the project files every tree gate
  * starts from, the ground a spec stands on and `--ignore-pattern` left out.
  * Where `gitleaks` is on PATH it is the better scanner and this gate is its
  * runner — `gitleaks dir . --redact` over a copy of exactly those files, so a
@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { ignorePatternsOf, orRefused, readText, trackedFiles } from './tracked-files.js';
+import { ignorePatternsOf, orRefused, projectFiles, readText } from './project-files.js';
 
 /** The ten shapes, each with the rule id a finding is reported under. */
 const PATTERNS = [
@@ -74,7 +74,7 @@ const isSynthetic = (line) => /dummy|example|fake|redacted|sample|synthetic/iu.t
 /**
  * The files this gate judges, copied into a directory of their own: gitleaks
  * reads a DIRECTORY, and the project's directory holds what this gate never
- * judges — an untracked scratch folder, the ground a spec stands on, what
+ * judges — an ignored path, the ground a spec stands on, what
  * `--ignore-pattern` overlooks. The copy keeps every path as the project
  * spells it, so a finding names the project's own file. A symlink is left out,
  * as the pattern engine leaves it: its content is judged at its target.
@@ -90,7 +90,7 @@ function stageFiles(root, files) {
             mkdirSync(dirname(join(staged, path)), { recursive: true });
             copyFileSync(source, join(staged, path));
         } catch {
-            /* A tracked file gone from the disk has nothing left to leak. */
+            /* A file gone from the disk has nothing left to leak. */
         }
     }
 
@@ -119,7 +119,7 @@ function runGitleaks(root, files) {
 }
 
 const root = resolve(argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.');
-const files = orRefused(() => trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) }));
+const files = orRefused(() => projectFiles(root, { ignorePatterns: ignorePatternsOf(argv) }));
 
 const gitleaks = runGitleaks(root, files);
 if (gitleaks !== null) {

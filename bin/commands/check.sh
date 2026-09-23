@@ -298,9 +298,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # ── What oxlint is handed ────────────────────────────────────────────────────
-# The tracked files it parses — the list every tree gate judges — and never the
-# directory, which also holds what nobody has added: a scratch folder linted
-# here is a finding no clean checkout reproduces. An empty list is a project
+# The project's files it parses — the list every tree gate judges, everything
+# git does not ignore — and never the directory, whose walk answers to the
+# tool's own ignores rather than to that one law. An empty list is a project
 # with nothing to lint. A sweep that could not answer hands oxlint the
 # directory instead, as a gate must never go silent on a read it did not make.
 LINT_TARGETS=()
@@ -326,9 +326,9 @@ run_oxlint() {
 }
 
 # ── What oxfmt is handed ─────────────────────────────────────────────────────
-# The same tracked, ground-free sweep, whole rather than cut to source: oxfmt
-# skips a file it has no parser for. Handed the list, the formatter never
-# judges the ground or an untracked file, whether or not the project carries
+# The same ground-free sweep, whole rather than cut to source: oxfmt skips a
+# file it has no parser for. Handed the list, the formatter never judges the
+# ground or an ignored file, whether or not the project carries
 # an oxfmt config whose ignores would say so. The fallbacks are oxlint's.
 FORMAT_TARGETS=()
 FORMAT_NOTHING=false

@@ -39,7 +39,7 @@ When the `package.json` at the cwd declares `workspaces`, the per-package passes
 
 The Docs (layout) pass measures from neither: its unit is the repository, and the section below says why.
 
-The other four passes are root-only, and that is not an omission. tsc, oxlint and oxfmt measure from their **config file**, not from a package, and each already reaches the whole tree from the cwd — oxlint and oxfmt through the tracked files they are handed. Knip reads the workspace globs itself and reports per member from a single run, so a second invocation per member would only double-report.
+The other four passes are root-only, and that is not an omission. tsc, oxlint and oxfmt measure from their **config file**, not from a package, and each already reaches the whole tree from the cwd — oxlint and oxfmt through the project's files they are handed. Knip reads the workspace globs itself and reports per member from a single run, so a second invocation per member would only double-report.
 
 Discovery never leaves the workspace. A candidate is dropped when git ignores it — clones, workbenches and build output live under gitignored paths — and when the walk had to cross a nested `.git` or a `package.json` that no workspace glob claims to reach it: a vendored project's conventions are its own, not yours.
 
@@ -154,7 +154,7 @@ const violations = auditDocs(tree); // -> [{ rule, path, message }, …]
 
 `--type-aware` is passed explicitly and unconditionally. The rules it unlocks are the ones no syntactic linter can express, and a flag that is only sometimes passed is a rule set that is only sometimes enforced. Those rules run in `tsgolint`, a separate binary oxlint looks up on PATH; `oxlint-tsgolint` is a dependency of this package, and `check.sh` puts the directory holding it in front of PATH for its own children, so a consumer never installs or configures anything.
 
-The linter is handed the tracked files it parses rather than the directory, the same sweep every tree gate reads: a scratch folder nobody has added is linted by no run, and counted into no baseline, so a clean checkout and a laptop read the same verdict. `--ignore-pattern` and the profiles' own ignores still apply on top.
+The linter is handed the project's files it parses rather than the directory, the same sweep every tree gate reads: every file git does not ignore — tracked, or new and not yet added — and nothing git ignores. A new module is linted before anyone runs `git add`, and a local data folder the gates must not read belongs in `.gitignore`, so the CLI, CI, the baseline and the editor judge one tree. Outside a git checkout the sweep walks the disk. `--ignore-pattern` and the profiles' own ignores still apply on top.
 
 ### The two refusals that are not diagnostics
 
@@ -189,7 +189,7 @@ Every pass of `check` runs in parallel, and `fix` keeps that — except for the 
 
 ## The Oxfmt pass
 
-The formatter is handed the same sweep, whole rather than cut to the shapes a linter parses, and it skips a file it has no parser for. So it judges neither the ground a test stands on nor a file nobody has added, and that holds whether or not the project carries an `oxfmt.config.ts` whose ignores would say so. `fix` writes through the same list, so it never reformats either one. The preset's own ignores — `public/`, `assets/` and the rest — still apply on top.
+The formatter is handed the same sweep, whole rather than cut to the shapes a linter parses, and it skips a file it has no parser for. So it judges neither the ground a test stands on nor a path git ignores, and that holds whether or not the project carries an `oxfmt.config.ts` whose ignores would say so. `fix` writes through the same list: it formats a new file before `git add`, and never reformats the ground or an ignored path. The preset's own ignores — `public/`, `assets/` and the rest — still apply on top.
 
 ## The ratchet
 
@@ -319,7 +319,7 @@ It never invents a reason, and it never deletes a directive: both are the author
 
 ## The Markdown (prose) pass
 
-Every tracked `*.md` outside the ground a test stands on — a `fixtures/`, `expected/`, `seeds/` or `requests/` folder wherever it sits, another project's tree — is read for two things: whether its coordinates resolve, and whether its blocks breathe.
+Every `*.md` git does not ignore, outside the ground a test stands on — a `fixtures/`, `expected/`, `seeds/` or `requests/` folder wherever it sits, another project's tree — is read for two things: whether its coordinates resolve, and whether its blocks breathe.
 
 | Rule                    | Refuses                                                                    |
 | ----------------------- | -------------------------------------------------------------------------- |
@@ -355,14 +355,14 @@ A construct is judged on the WHOLE name: `type-registry.ts` names a subject and 
 
 The root's own folders are the same in every repository: `src/` the product's code, `lint/` the lint rules a package ships, `specs/` the specifications, `docs/` the manual, `skills/` one short page per skill — and `apps/` or `packages/` where a workspace keeps its members, each a spine of its own. What the tree calls a root is therefore judged too.
 
-| Rule                    | Refuses                                                                           |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| `names-skill-file`      | a file under `skills/` that is not `skills/<skill>/SKILL.md`                      |
-| `names-root-foreign`    | a root folder outside the spine that nothing codifies                             |
-| `names-root-unreasoned` | a root declared in `jterrazz.typescript.roots` with no reason beside it           |
-| `names-root-stale`      | a root declared in `jterrazz.typescript.roots` that holds no tracked file anymore |
-| `names-makefile-absent` | a repository root with no tracked `Makefile`                                      |
-| `names-makefile-target` | one of the six gestures a repository's `Makefile` writes no rule for              |
+| Rule                    | Refuses                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------- |
+| `names-skill-file`      | a file under `skills/` that is not `skills/<skill>/SKILL.md`                          |
+| `names-root-foreign`    | a root folder outside the spine that nothing codifies                                 |
+| `names-root-unreasoned` | a root declared in `jterrazz.typescript.roots` with no reason beside it               |
+| `names-root-stale`      | a root declared in `jterrazz.typescript.roots` that holds no file git does not ignore |
+| `names-makefile-absent` | a repository root with no `Makefile`, or one git ignores                              |
+| `names-makefile-target` | one of the six gestures a repository's `Makefile` writes no rule for                  |
 
 A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
 
@@ -374,7 +374,7 @@ A workspace member is a spine of its own, judged the same way from its own folde
 
 Every repository answers the same six at its root, whatever the language under it: `make install`, `make build`, `make lint`, `make fix`, `make test` and `make check`. The flows speak only these, so a session that has never opened the repository still knows how to install, prove and repair it. What each recipe runs is the repository's; that the rule exists is the contract.
 
-The contract is asked where a REPOSITORY is — a `.git` beside the project, as for [the Docs (layout) pass](#the-docs-layout-pass) — and the `Makefile` must be tracked, like every file a tree gate reads. A workspace member owes nothing: the repository's root answers for every member, and a member linted on its own is never asked.
+The contract is asked where a REPOSITORY is — a `.git` beside the project, as for [the Docs (layout) pass](#the-docs-layout-pass) — and an ignored `Makefile` counts for none, like every path a tree gate skips. A workspace member owes nothing: the repository's root answers for every member, and a member linted on its own is never asked.
 
 A target counts when the `Makefile`'s own text writes a rule for it — `lint:`, `install build:`, `test::` — and an assignment (`LINT := …`) or a comment is no rule. A file the `Makefile` `include`s is not read, so the six stay written where a reader opens first.
 
@@ -409,7 +409,7 @@ The second ground is that saying: the repository declares the root in its `packa
 }
 ```
 
-`package.json` holds it because it is the one manifest every repository has, and oxlint's config schema is closed. Its `jterrazz` key holds one settings object per package of the family, each package reading only its own, so a root declared anywhere else in the manifest is not read. The reason is not decoration: an entry without one is refused (`names-root-unreasoned`), and an entry whose folder holds no tracked file anymore is refused too (`names-root-stale`), so the list shrinks as the tree does. A base package that composes others keeps its broader roots through this same declaration, never through an exemption in the gate.
+`package.json` holds it because it is the one manifest every repository has, and oxlint's config schema is closed. Its `jterrazz` key holds one settings object per package of the family, each package reading only its own, so a root declared anywhere else in the manifest is not read. The reason is not decoration: an entry without one is refused (`names-root-unreasoned`), and an entry whose folder holds no file git does not ignore is refused too (`names-root-stale`), so the list shrinks as the tree does. A base package that composes others keeps its broader roots through this same declaration, never through an exemption in the gate.
 
 ### What the ratchet records
 
@@ -417,7 +417,7 @@ Every rule carries the code `names(<rule>)`, and the ratchet records it as `name
 
 ## The Secrets (credentials) pass
 
-No file the project would commit carries a live-looking credential. Two engines answer that one question, over the same files — the tracked ones, the ground a test stands on and `--ignore-pattern` left out, as for every tree gate. Where `gitleaks` is on PATH it runs as `gitleaks dir . --no-banner --redact` over a copy of exactly those files, so a finding names the file and never reprints the secret; where it is not, ten patterns over their text answer well enough to stop the leak that actually happens — a token pasted into a note and committed with it.
+No file the project would commit carries a live-looking credential. Two engines answer that one question, over the same files — every one git does not ignore, the ground a test stands on and `--ignore-pattern` left out, as for every tree gate. Where `gitleaks` is on PATH it runs as `gitleaks dir . --no-banner --redact` over a copy of exactly those files, so a finding names the file and never reprints the secret; where it is not, ten patterns over their text answer well enough to stop the leak that actually happens — a token pasted into a note and committed with it.
 
 Which engine runs is decided inside the gate rather than in `check.sh`, because the gate applies either way. Bash decides whether a pass applies; this one always does, and what changes is only who answers.
 

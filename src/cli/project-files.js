@@ -1,13 +1,14 @@
 /**
- * The files a project would carry into a commit — the one sweep every
- * tree-reading gate starts from.
+ * The files a project is made of — everything git does not ignore — and the
+ * one sweep every tree-reading gate starts from.
  *
- * `git ls-files --cached` is the answer wherever there is a git tree: it names
- * what is TRACKED, and nothing a gate has not yet been told to carry — an
- * untracked, non-ignored directory (`data/`, a local scratch folder nobody
- * added) is not a finding, so a baseline recorded on a clean checkout reads
- * the same locally, where such a directory is free to exist. A directory git
- * knows nothing about — a fixture the spec runner copied, a tree nobody has
+ * `git ls-files --cached --others --exclude-standard` is the answer wherever
+ * there is a git tree: what is tracked, and what is untracked but not
+ * ignored, less a tracked file deleted from the disk. Only a `.gitignore`d
+ * path is out, so a new file is judged before anyone runs `git add`, and a
+ * local data folder the gates must not read belongs in `.gitignore`. The CLI,
+ * CI, the baseline and the editor read this one law. A directory git knows
+ * nothing about — a fixture the spec runner copied, a tree nobody has
  * `git init`ed — is walked instead, because a gate that goes silent outside
  * git is a gate that passes on everything.
  *
@@ -45,16 +46,24 @@ const UNSWEPT = new Set([
 /** Extensions whose bytes are not text — reading them for patterns is noise. */
 const BINARY = /\.(?:avif|bin|gif|ico|jpeg|jpg|lock|mp4|pdf|png|svg|ttf|webp|woff2?|zip)$/iu;
 
-/** Every path git tracks, or null when there is no git tree here. */
+/** Every path git does not ignore and the disk still holds, or null when there is no git tree here. */
 function gitSweep(root) {
-    try {
-        return execFileSync('git', ['ls-files', '--cached', '-z'], {
+    const listed = (flags) =>
+        execFileSync('git', ['ls-files', ...flags, '-z'], {
             cwd: root,
             encoding: 'utf8',
+            maxBuffer: 256 * 1024 * 1024,
             stdio: ['ignore', 'pipe', 'ignore'],
         })
             .split('\0')
             .filter((path) => path !== '');
+
+    try {
+        const deleted = new Set(listed(['--deleted']));
+
+        return [...new Set(listed(['--cached', '--others', '--exclude-standard']))].filter(
+            (path) => !deleted.has(path),
+        );
     } catch {
         return null;
     }
@@ -127,16 +136,16 @@ export class EmptySweepError extends Error {
  * carries the `--ignore-pattern` globs `check` received, so one flag answers
  * for the linter and for every gate that reads the same tree.
  */
-export function trackedFiles(root = '.', { ignorePatterns = [] } = {}) {
-    const tracked = gitSweep(root);
-    const swept = tracked ?? walkSweep(root);
+export function projectFiles(root = '.', { ignorePatterns = [] } = {}) {
+    const listed = gitSweep(root);
+    const swept = listed ?? walkSweep(root);
 
     if (swept.length === 0) {
         if (holdsSomething(root)) {
             throw new EmptySweepError(
-                tracked === null
+                listed === null
                     ? `nothing to read under ${root}: it holds folders and no file — add the project's files, then run again`
-                    : `nothing to read under ${root}: the repository tracks no file yet — git add the project's files, then run again`,
+                    : `nothing to read under ${root}: git ignores every file it holds — take the project's files out of .gitignore, then run again`,
             );
         }
 
@@ -168,7 +177,7 @@ export function orRefused(read) {
 }
 
 /**
- * A tracked file's text, or null when there is no text to read: bytes, a file
+ * A project file's text, or null when there is no text to read: bytes, a file
  * too large to be prose or source, one that is gone, or a SYMLINK — whose
  * content belongs to its target, and is judged there once instead of twice.
  */

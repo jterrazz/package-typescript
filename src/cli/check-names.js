@@ -21,7 +21,7 @@
  * (`ECOSYSTEM_ROOTS`), or one the unit — the repository, or the member —
  * declares in its own `package.json` under `jterrazz.typescript.roots`, each
  * with its reason. Any other root is
- * refused. A repository's root also carries a tracked `Makefile` answering
+ * refused. A repository's root also carries a `Makefile` answering
  * `install`, `build`, `lint`, `fix`, `test` and `check` — the gestures the
  * flows speak.
  *
@@ -46,8 +46,8 @@ import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
 import { BASELINE, judge, readBaseline } from './check-baseline.js';
+import { ignorePatternsOf, orRefused, projectFiles } from './project-files.js';
 import { isRepositoryRoot } from './repository-root.js';
-import { ignorePatternsOf, orRefused, trackedFiles } from './tracked-files.js';
 import { workspaceMembers } from './workspace-members.js';
 
 /** Names that say nothing: a folder or a file called one of these holds whatever nobody placed. */
@@ -328,7 +328,7 @@ function declarationOf(declared, roots, prefix) {
             });
         } else if (!roots.has(root)) {
             findings.push({
-                message: `\`${prefix}${root}/\` is declared in \`${DECLARATION}\` and holds no tracked file — delete the entry`,
+                message: `\`${prefix}${root}/\` is declared in \`${DECLARATION}\` and holds no file — delete the entry`,
                 path: `${prefix}${root}/`,
                 rule: 'names-root-stale',
             });
@@ -421,7 +421,7 @@ function targetsOf(text) {
 }
 
 /**
- * What a repository's root owes the flows: a tracked Makefile answering the
+ * What a repository's root owes the flows: a Makefile answering the
  * six gestures. Asked only where a repository is — a `.git` beside the root —
  * so a workspace member, a fixture or a bare directory is never asked.
  */
@@ -433,7 +433,7 @@ function makefileOf(root, files) {
     if (!files.includes(MAKEFILE)) {
         return [
             {
-                message: `the repository has no tracked Makefile — every repository answers \`make\` ${gestures}`,
+                message: `the repository has no Makefile — every repository answers \`make\` ${gestures}`,
                 path: MAKEFILE,
                 rule: 'names-makefile-absent',
             },
@@ -473,7 +473,7 @@ const root = resolve(
                 !argument.startsWith('--') && !VALUED_FLAGS.has(rest[index - 1] ?? ''),
         ) ?? '.',
 );
-const files = orRefused(() => trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) }));
+const files = orRefused(() => projectFiles(root, { ignorePatterns: ignorePatternsOf(argv) }));
 const findings = [...findingsOf(files), ...spinesOf(root, files), ...makefileOf(root, files)];
 
 /** The findings as the ratchet reads a report: oxlint's JSON shape, one code per rule. */

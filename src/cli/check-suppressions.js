@@ -25,7 +25,7 @@ import { writeFileSync } from 'node:fs';
 import { join, matchesGlob, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { ignorePatternsOf, orRefused, readText, trackedFiles } from './tracked-files.js';
+import { ignorePatternsOf, orRefused, projectFiles, readText } from './project-files.js';
 
 /** What a linter and a type-checker read — the files a directive can live in. */
 export const SOURCE = /\.(?:astro|[cm]?[jt]sx?|svelte|vue)$/u;
@@ -476,14 +476,14 @@ function auditSource(root, path, configOf) {
 }
 
 /**
- * How many directives the tracked source carries — the number the drift report
+ * How many directives the project's source carries — the number the drift report
  * prints. It lives here because the shapes that count as a directive are this
  * file's, and a second copy of them is a second definition of "suppression".
  */
 export function countSuppressions(root, ignorePatterns = []) {
     let found = 0;
 
-    for (const path of trackedFiles(root, { ignorePatterns }).filter((file) => SOURCE.test(file))) {
+    for (const path of projectFiles(root, { ignorePatterns }).filter((file) => SOURCE.test(file))) {
         const text = readText(root, path);
         if (text === null) {
             continue;
@@ -520,7 +520,7 @@ if (import.meta.main) {
     );
 
     const sources = orRefused(() =>
-        trackedFiles(root, { ignorePatterns: ignorePatternsOf(argv) }),
+        projectFiles(root, { ignorePatterns: ignorePatternsOf(argv) }),
     ).filter((path) => SOURCE.test(path));
 
     /* The resolved config costs an oxlint run, so it is read only once a directive asks for it. */

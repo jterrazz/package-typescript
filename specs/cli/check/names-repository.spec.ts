@@ -8,8 +8,8 @@ import { expect, onTestFinished, test } from 'vitest';
 /*
  * A chain, for the ground's sake: what the Names pass asks of a REPOSITORY
  * needs one, and a fixture cannot be one — git refuses to track a nested
- * `.git`, the runner copies files rather than initialising a repository, and a
- * copied fixture has every file it carries already staged.
+ * `.git`, and the runner copies files rather than initialising a repository,
+ * so what git ignores, and what it tracks, a fixture cannot say.
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
@@ -107,28 +107,25 @@ function namesPassOf(project: string): string {
     );
 }
 
-test('never reports a root nobody has git added, tracked or clean alike', () => {
-    // Given - a tracked project answering the six gestures, and a local data/ folder nobody has staged
-    const project = projectWith({ makefile: SIX_TARGETS });
-    mkdirSync(join(project, 'data'));
-    writeFileSync(join(project, 'data/report.txt'), 'a local scratch note, never staged\n');
-
-    // When - the quality checks run without that folder ever staged
-    const names = namesPassOf(project);
-
-    // Then - the untracked root is no finding, and the Names pass is green
-    expect(names).not.toContain('data/');
-    expect(names).toContain('Passed');
-});
-
 /** One pass of a report, from its header to the next pass's. */
 function passOf(stdout: string, label: string, next: string): string {
     return stdout.slice(stdout.indexOf(label), stdout.indexOf(next));
 }
 
-test('judges the tracked files alone in every tree gate, the linter included', () => {
-    // Given - a green repository, and an untracked data/ folder holding a broken link, a live-looking key and a debugger statement
-    const project = projectWith({ makefile: SIX_TARGETS });
+/** Whether the four tree gates and the linter passed or failed, in report order. */
+function treeVerdictsOf(stdout: string): string[] {
+    return [
+        ['Oxlint Check', 'Oxfmt Check'],
+        ['Markdown (prose)', 'Names (tree)'],
+        ['Names (tree)', 'Secrets (credentials)'],
+        ['Secrets (credentials)', 'END'],
+    ].map(([label = '', next = '']) =>
+        passOf(stdout, label, next).includes('✓ Passed') ? 'Passed' : 'Failed',
+    );
+}
+
+/** A data/ folder nobody has added, holding a broken link, a live-looking key and a debugger statement. */
+function writeDataFolder(project: string): void {
     mkdirSync(join(project, 'data'));
     /* Spelled in two halves, so this file carries no key of its own. */
     const key = ['AKIA', 'Q7RJ4KDNPZ2WX6TB'].join('');
@@ -140,8 +137,10 @@ test('judges the tracked files alone in every tree gate, the linter included', (
         join(project, 'data/scratch.ts'),
         'export function stop(): void {\n    debugger;\n}\n',
     );
+}
 
-    // When - the quality checks run, and the baseline is recorded
+/** A check and a baseline recording over the project, the check's report and the recorded file. */
+function checkAndRecord(project: string): { baseline: string; stdout: string } {
     const result = spawnSync('bash', [BIN, 'check'], {
         cwd: project,
         encoding: 'utf8',
@@ -152,15 +151,44 @@ test('judges the tracked files alone in every tree gate, the linter included', (
         encoding: 'utf8',
         env: inProject(project),
     });
-    const lint = passOf(result.stdout, 'Oxlint Check', 'Oxfmt Check');
-    const markdown = passOf(result.stdout, 'Markdown (prose)', 'Names (tree)');
-    const secrets = passOf(result.stdout, 'Secrets (credentials)', 'END');
 
-    // Then - no gate reads the untracked folder: each pass is green, and the baseline records nothing
-    expect(lint).toContain('Passed');
-    expect(markdown).toContain('Passed');
-    expect(secrets).toContain('Passed');
-    expect(readFileSync(join(project, 'typescript.baseline.json'), 'utf8')).toBe('{}\n');
+    return {
+        baseline: readFileSync(join(project, 'typescript.baseline.json'), 'utf8'),
+        stdout: result.stdout,
+    };
+}
+
+test('judges an untracked folder git does not ignore in every tree gate, the linter included', () => {
+    // Given - a green repository, and a data/ folder nobody has added and nothing ignores
+    const project = projectWith({ makefile: SIX_TARGETS });
+    writeDataFolder(project);
+
+    // When - the quality checks run, and the baseline is recorded
+    const { baseline, stdout } = checkAndRecord(project);
+
+    // Then - every gate reads the folder: each fails, naming what it holds, and the baseline records the linter's finding and the root
+    expect(treeVerdictsOf(stdout)).toStrictEqual(['Failed', 'Failed', 'Failed', 'Failed']);
+    expect(passOf(stdout, 'Markdown (prose)', 'Names (tree)')).toContain('data/NOTES.md');
+    expect(passOf(stdout, 'Names (tree)', 'Secrets (credentials)')).toContain('data/');
+    expect(passOf(stdout, 'Secrets (credentials)', 'END')).toContain('data/NOTES.md');
+    expect(JSON.parse(baseline)).toMatchObject({
+        'eslint/no-debugger': 1,
+        'names/names-root-foreign': 1,
+    });
+});
+
+test('judges no folder git ignores, in any tree gate, the linter included', () => {
+    // Given - the same repository and data/ folder, the folder named in .gitignore
+    const project = projectWith({ makefile: SIX_TARGETS });
+    writeDataFolder(project);
+    writeFileSync(join(project, '.gitignore'), 'data/\n');
+
+    // When - the quality checks run, and the baseline is recorded
+    const { baseline, stdout } = checkAndRecord(project);
+
+    // Then - no gate reads the ignored folder: each pass is green, and the baseline records nothing
+    expect(treeVerdictsOf(stdout)).toStrictEqual(['Passed', 'Passed', 'Passed', 'Passed']);
+    expect(baseline).toBe('{}\n');
 });
 
 /** What a pass printed between its header and its verdict, colours stripped, blank lines dropped. */
@@ -180,9 +208,23 @@ const TREE_GATES = [
     ['Secrets (credentials)', 'END'],
 ] as const;
 
-test('refuses to judge a repository that tracks nothing yet, in one line that says what to do', () => {
+test('judges a repository nobody has added a file to yet, its Makefile included', () => {
     // Given - a repository initialised over a tree nobody has added
     const project = projectWith({ isRepository: false, makefile: SIX_TARGETS });
+    execFileSync('git', ['init', '--quiet'], { cwd: project });
+
+    // When - the quality checks run
+    const names = namesPassOf(project);
+
+    // Then - the new Makefile answers the contract, and the Names pass is green
+    expect(names).not.toContain('names-makefile');
+    expect(names).toContain('Passed');
+});
+
+test('refuses to judge a repository whose every file git ignores, in one line that says what to do', () => {
+    // Given - a repository whose .gitignore ignores every file, itself included
+    const project = projectWith({ isRepository: false, makefile: SIX_TARGETS });
+    writeFileSync(join(project, '.gitignore'), '*\n');
     execFileSync('git', ['init', '--quiet'], { cwd: project });
 
     // When - the quality checks run
@@ -191,7 +233,7 @@ test('refuses to judge a repository that tracks nothing yet, in one line that sa
         encoding: 'utf8',
         env: inProject(project),
     });
-    const refusal = `nothing to read under ${realpathSync(project)}: the repository tracks no file yet — git add the project's files, then run again`;
+    const refusal = `nothing to read under ${realpathSync(project)}: git ignores every file it holds — take the project's files out of .gitignore, then run again`;
 
     // Then - every tree gate says that one line, and no stack, and the run fails where a silent gate would pass on everything
     for (const [label, next] of TREE_GATES) {
@@ -255,7 +297,7 @@ test('names each gesture a repository Makefile has no rule for', () => {
     expect(names).toContain('Failed with exit code 1');
 });
 
-test('refuses a repository with no tracked Makefile at all', () => {
+test('refuses a repository with no Makefile at all', () => {
     // Given - a repository with no Makefile
     const project = projectWith({});
 
@@ -264,8 +306,21 @@ test('refuses a repository with no tracked Makefile at all', () => {
 
     // Then - the absence is one finding
     expect(names).toContain(
-        'names-makefile-absent  Makefile  the repository has no tracked Makefile — every repository answers `make` install, build, lint, fix, test and check',
+        'names-makefile-absent  Makefile  the repository has no Makefile — every repository answers `make` install, build, lint, fix, test and check',
     );
+    expect(names).toContain('Failed with exit code 1');
+});
+
+test('refuses a repository whose tracked Makefile is deleted from the disk', () => {
+    // Given - a repository that tracks a Makefile, since deleted and not yet committed
+    const project = projectWith({ makefile: SIX_TARGETS });
+    rmSync(join(project, 'Makefile'));
+
+    // When - the quality checks run
+    const names = namesPassOf(project);
+
+    // Then - the deleted file answers nothing, and the absence is one finding
+    expect(names).toContain('names-makefile-absent');
     expect(names).toContain('Failed with exit code 1');
 });
 

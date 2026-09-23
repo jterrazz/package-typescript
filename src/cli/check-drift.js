@@ -30,7 +30,7 @@ import { PROFILES } from '../../lint/profiles.js';
 import { BASELINE, readBaseline, TEST_BASELINE } from './check-baseline.js';
 import { countSuppressions } from './check-suppressions.js';
 import { toolVersions } from './doctor.js';
-import { ignorePatternsOf, orRefused } from './tracked-files.js';
+import { ignorePatternsOf, orRefused } from './project-files.js';
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 

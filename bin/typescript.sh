@@ -167,8 +167,8 @@ case "$COMMAND" in
 
         printf "${CYAN_BG}${BRIGHT_WHITE} TYPESCRIPT ${NC} Recording the oxlint baseline...\n\n"
 
-        # The files `check` hands the linter — the tracked ones it parses — so
-        # the file records what a clean checkout reports. An empty list records
+        # The files `check` hands the linter — the project's files it parses —
+        # so the file records what `check` reports. An empty list records
         # nothing; a sweep that could not answer hands oxlint the directory.
         LINT_TARGETS=()
         LINT_LISTED=true

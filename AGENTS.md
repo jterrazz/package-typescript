@@ -45,7 +45,7 @@ src/cli/check-baseline.js     # The oxlint ratchet — counts that may fall and 
 src/cli/check-drift.js        # How far the project stands from its profile — the drift report, `--json` for a machine
 src/cli/check-docs.js         # The manual's shape, read off the repository's docs/ — the reader behind the Docs (layout) pass
 src/cli/check-gitignore.js    # The artefact convention, read off the project's .gitignore — check | --fix
-src/cli/check-markdown.js     # Every tracked page's coordinates and readability floors — the Markdown (prose) gate
+src/cli/check-markdown.js     # Every project page's coordinates and readability floors — the Markdown (prose) gate
 src/cli/check-names.js        # What the tree calls its own parts — the Names (tree) gate
 src/cli/check-publish.js      # The exports map against the tarball — the Publish gate (publint + attw)
 src/cli/check-secrets.js      # No committed file carries a live credential — the Secrets gate (gitleaks, else patterns)
@@ -53,9 +53,9 @@ src/cli/check-suppressions.js # Every disable directive is spelled, reasoned and
 
 src/cli/doctor.js             # Installed tool versions against the declared ranges — `typescript doctor`
 src/cli/entry-points.js       # The entries a build compiles, read off the consumer's own exports map
-src/cli/lint-targets.js       # The tracked files oxlint and oxfmt are handed — the sweep every tree gate reads, never the directory
+src/cli/lint-targets.js       # The project files oxlint and oxfmt are handed — the sweep every tree gate reads, never the directory
 src/cli/merge-knip-config.js  # Merges knip base preset with project-local knip.json (read as JSONC)
-src/cli/tracked-files.js      # The one sweep every tree gate starts from — git ls-files, or a walk where there is no git
+src/cli/project-files.js      # The one sweep every tree gate starts from — every file git does not ignore, or a walk where there is no git
 src/cli/unsafe-fixers.js      # The rules `fix` must not let oxlint rewrite, as the flags that allow them for one run
 src/cli/workspace-members.js  # Lists the consumer's workspace members — the unit each per-package gate measures from
 
