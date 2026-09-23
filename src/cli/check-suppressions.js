@@ -35,9 +35,9 @@ const REASON = ' -- ';
 
 /**
  * A directive is only a directive where a checker reads one: at the OPENING of
- * a comment. Prose about a suppression, and a string carrying its spelling —
- * this file is made of both — is not a suppression, and neither oxlint nor tsc
- * would treat it as one.
+ * a comment. Prose about a suppression is not a suppression, and neither oxlint
+ * nor tsc would treat it as one; a string carrying its spelling never reaches
+ * this pattern at all, since only a comment is read (`commentSpansOf`).
  */
 const COMMENT = String.raw`(?:\/\/|\/\*+|^\s*\*(?!\/))\s*`;
 
@@ -52,6 +52,133 @@ const TS_DIRECTIVE = new RegExp(`${COMMENT}@ts-(?<kind>expect-error|ignore)(?<ta
 
 /** Biome's, which no project of this toolchain runs. */
 const BIOME = new RegExp(`${COMMENT}biome-ignore\\b`, 'u');
+
+/** The quotes a one-line string literal opens with. */
+const QUOTES = new Set(['"', "'"]);
+
+/**
+ * One character of a line read inside a block comment: where it closes, the
+ * span it ran over is a comment. Returns the column the reading resumes at.
+ */
+function readBlock(reading, line, column, spans) {
+    if (line[column] === '*' && line[column + 1] === '/') {
+        spans.push([reading.blockStart, column + 2]);
+        reading.state = 'code';
+
+        return column + 2;
+    }
+
+    return column + 1;
+}
+
+/** One character inside a template literal: its end, or a `${` that is code again. */
+function readTemplate(reading, line, column) {
+    const char = line[column];
+    if (char === '\\') {
+        return column + 2;
+    }
+    if (char === '`') {
+        reading.state = 'code';
+    } else if (char === '$' && line[column + 1] === '{') {
+        reading.templates.push(0);
+        reading.state = 'code';
+
+        return column + 2;
+    }
+
+    return column + 1;
+}
+
+/** One character inside a quoted string: its escape, or its closing quote. */
+function readQuoted(reading, line, column) {
+    const char = line[column];
+    if (char === '\\') {
+        return column + 2;
+    }
+    if (char === reading.state) {
+        reading.state = 'code';
+    }
+
+    return column + 1;
+}
+
+/** A brace in code: inside a template's `${…}`, the one that closes it returns to the template. */
+function readBrace(reading, char) {
+    const { templates } = reading;
+    if (templates.length === 0) {
+        return;
+    }
+    if (char === '{') {
+        templates[templates.length - 1] += 1;
+    } else if (templates.at(-1) === 0) {
+        templates.pop();
+        reading.state = 'template';
+    } else {
+        templates[templates.length - 1] -= 1;
+    }
+}
+
+/** One character of code: a comment, a literal or a brace opens here, or nothing does. */
+function readCode(reading, line, column, spans) {
+    const char = line[column];
+    const next = line[column + 1];
+    if (char === '/' && next === '/') {
+        spans.push([column, line.length]);
+
+        return line.length;
+    }
+    if (char === '/' && next === '*') {
+        reading.blockStart = column;
+        reading.state = 'block';
+
+        return column + 2;
+    }
+    if (char === '`') {
+        reading.state = 'template';
+    } else if (QUOTES.has(char)) {
+        reading.state = char;
+    } else if (char === '{' || char === '}') {
+        readBrace(reading, char);
+    }
+
+    return column + 1;
+}
+
+/** The reader of each state, by the state's name; a quote character names its own. */
+const READERS = { block: readBlock, code: readCode, template: readTemplate };
+
+/**
+ * The comments each line of a source carries, as `[start, end)` spans of that
+ * line, read outside every string and template literal: a directive spelled
+ * inside a string is text a program prints, never one a checker reads. A
+ * template literal and a block comment run across lines, and a `${…}` inside a
+ * template is code again, so the reading carries its state from one line to
+ * the next. A regular-expression literal is read as code.
+ */
+function commentSpansOf(text) {
+    const reading = { blockStart: 0, state: 'code', templates: [] };
+
+    return text.split('\n').map((line) => {
+        const spans = [];
+        if (QUOTES.has(reading.state)) {
+            reading.state = 'code';
+        }
+        reading.blockStart = 0;
+
+        let column = 0;
+        while (column < line.length) {
+            column = (READERS[reading.state] ?? readQuoted)(reading, line, column, spans);
+        }
+        if (reading.state === 'block') {
+            spans.push([reading.blockStart, line.length]);
+        }
+
+        return spans;
+    });
+}
+
+/** Every comment of one line, as the text a checker would read. */
+const commentsOf = (line, spans) => spans.map(([start, end]) => line.slice(start, end));
 
 /** The rules a directive names: everything before the reason, comma-separated. */
 function rulesOf(tail) {
@@ -187,18 +314,27 @@ function standingOf(name, config) {
     return severity === undefined || severity === 'allow' ? 'dead' : 'live';
 }
 
-/** Every violation one line carries, and the line a `--fix` would leave behind. */
-function auditLine(line, number, config) {
+/**
+ * Every violation one line's comments carry, and the line a `--fix` would
+ * leave behind: only a comment is read, and only a comment is rewritten.
+ */
+function auditLine(line, number, config, spans) {
     const found = [];
-    let fixed = line;
+    let fixed = '';
+    let from = 0;
 
-    for (const audit of [auditBiome, auditDisables, auditTypeScript]) {
-        const { fixed: rewritten, found: reported } = audit(fixed, number, config);
-        found.push(...reported);
-        fixed = rewritten;
+    for (const [start, end] of spans) {
+        let comment = line.slice(start, end);
+        for (const audit of [auditBiome, auditDisables, auditTypeScript]) {
+            const { fixed: rewritten, found: reported } = audit(comment, number, config);
+            found.push(...reported);
+            comment = rewritten;
+        }
+        fixed += `${line.slice(from, start)}${comment}`;
+        from = end;
     }
 
-    return { fixed, found };
+    return { fixed: `${fixed}${line.slice(from)}`, found };
 }
 
 /** Biome's spelling, which no project of this toolchain runs and no fix rewrites. */
@@ -324,9 +460,10 @@ function auditSource(root, path, configOf) {
     const config = configAt(path, configOf());
     const kept = [];
     const violations = [];
+    const spans = commentSpansOf(text);
 
     for (const [index, line] of text.split('\n').entries()) {
-        const { fixed, found } = auditLine(line, index + 1, config);
+        const { fixed, found } = auditLine(line, index + 1, config, spans[index] ?? []);
         kept.push(fixed);
         for (const violation of found) {
             violations.push({ ...violation, rewritable: fixed !== line });
@@ -351,11 +488,14 @@ export function countSuppressions(root, ignorePatterns = []) {
         if (text === null) {
             continue;
         }
-        for (const line of text.split('\n')) {
-            found +=
-                [...line.matchAll(DISABLE)].length +
-                [...line.matchAll(TS_DIRECTIVE)].length +
-                (BIOME.test(line) ? 1 : 0);
+        const spans = commentSpansOf(text);
+        for (const [index, line] of text.split('\n').entries()) {
+            for (const comment of commentsOf(line, spans[index] ?? [])) {
+                found +=
+                    [...comment.matchAll(DISABLE)].length +
+                    [...comment.matchAll(TS_DIRECTIVE)].length +
+                    (BIOME.test(comment) ? 1 : 0);
+            }
         }
     }
 
