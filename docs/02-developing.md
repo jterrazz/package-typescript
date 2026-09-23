@@ -122,7 +122,7 @@ fix:
 check: lint test
 ```
 
-A workspace keeps one, at its root; a member owes none.
+A workspace keeps one, at its root; a member owes none. A repository with more than one fixer — `@jterrazz/test`'s beside this one — runs every one of them whatever the one before it said, by the recipe [Quality checks](06-quality-checks.md#the-six-gestures) gives.
 
 ## 5. State a setting, where there is one
 
@@ -190,14 +190,14 @@ typescript baseline   # record today's diagnostics, so the count may only fall
 
 ## Working on this package
 
-| Gesture        | Runs                                                            |
-| -------------- | --------------------------------------------------------------- |
-| `make install` | `npm ci`, once per change of the lockfile                       |
-| `make build`   | nothing to build — the package ships JS directly                |
-| `make lint`    | this package's own CLI, `typescript check`, run on this package |
-| `make fix`     | `typescript fix`, on this package                               |
-| `make test`    | the two vitest suites ([Testing](03-testing.md))                |
-| `make check`   | `make lint`, then `make test` — the gate before a commit        |
+| Gesture        | Runs                                                                          |
+| -------------- | ----------------------------------------------------------------------------- |
+| `make install` | `npm ci`, once per change of the lockfile                                     |
+| `make build`   | nothing to build — the package ships JS directly                              |
+| `make lint`    | this package's own CLI, `typescript check`, run on this package               |
+| `make fix`     | `typescript fix`, then `@jterrazz/test`'s mover, each whatever the other said |
+| `make test`    | the two vitest suites ([Testing](03-testing.md))                              |
+| `make check`   | `make lint`, then `make test` — the gate before a commit                      |
 
 Where a new thing goes follows the layers ([Architecture](01-architecture.md)): a new gate is a node script in `src/cli/` plus the lines in `bin/commands/check.sh` that decide whether it applies; a lint decision is a line of a fragment under `lint/`, never a config; a new configuration is a file under `src/presets/`; a new importable entry is a `.js` and a hand-written `.d.ts` in `src/`, an `exports` subpath, and a row in the resolution test.
 

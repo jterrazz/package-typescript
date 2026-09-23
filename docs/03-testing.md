@@ -18,13 +18,13 @@ npm run lint    # this package's own CLI, run on this package
 
 The suffix says which project a file belongs to. A `*.test.ts` is a module test and sits beside its module, which here is `src/` and `lint/`; a `*.spec.ts` is the assembled product and sits under `specs/<facet>/`. `unit()` collects the first, `cli()` the second plus every `<case>.spec.yaml`, and the `cli` project states nothing of its own. `unit()` is the one that states its globs, because one tree it collects lives under `specs/` and the default set excludes that folder whole.
 
-The `unit` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`lint/*.test.ts`), and the manual's rule engine over in-memory trees (`src/docs.test.ts`). Nothing there spawns anything.
+The `unit` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`lint/*.test.ts`), and the manual's rule engine over in-memory trees (`src/docs.test.ts`). Nothing there spawns anything but `make`, over stubs, where the `fix` recipe is proved.
 
 ### `specs/surface/` — the repository suite
 
-Two files under `specs/surface/package/` read this package's own published tree rather than one module: `exports.test.ts` resolves every public subpath, and `declarations.test.ts` holds each `.d.ts` to the value surface of the `.js` beside it. Neither has a module to sit beside — they resolve every module there is — and neither reaches a runner, since nothing is started.
+The files under `specs/surface/package/` read this package's own published tree rather than one module: `exports.test.ts` resolves every public subpath, `declarations.test.ts` holds each `.d.ts` to the value surface of the `.js` beside it, and `makefile.test.ts` runs the `fix` recipe [Quality checks](06-quality-checks.md#the-six-gestures) hands consumers — and this repository's own — over stubbed fixers. None has a module to sit beside — each reads the whole package — and none reaches a runner, since nothing is served.
 
-That shape is the THIRD DOOR the conventions name: a first-level folder under `specs/` that is no facet, covering a tree instead of a product served through an entry. C18 and C20 do not reach it, its files carry the unit's `.test.ts`, and `unit()` collects them by glob. C1 still judges the shape, at the depth this project declares — the default — so the two asset-less files group in a domain folder, `package/`, exactly as they would under a facet. The constitution owns the rule — `@jterrazz/test`'s `docs/18-conventions.md`, "The third door: a repository suite".
+That shape is the THIRD DOOR the conventions name: a first-level folder under `specs/` that is no facet, covering a tree instead of a product served through an entry. C18 and C20 do not reach it, its files carry the unit's `.test.ts`, and `unit()` collects them by glob. C1 still judges the shape, at the depth this project declares — the default — so the asset-less files group in a domain folder, `package/`, exactly as they would under a facet. The constitution owns the rule — `@jterrazz/test`'s `docs/18-conventions.md`, "The third door: a repository suite".
 
 ## A scenario is a document
 

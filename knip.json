@@ -7,5 +7,6 @@
         "src/cli/check-gitignore.js",
         "src/cli/merge-knip-config.js",
         "src/cli/workspace-members.js"
-    ]
+    ],
+    "ignoreBinaries": ["make"]
 }
