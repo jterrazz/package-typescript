@@ -1,0 +1,41 @@
+description: rewrites the tree before it reports the diagnostic no baseline records
+fixture: ./fixtures/warnings/unformatted/
+runs:
+    # The verdict is the surviving diagnostic's, and it may not cost the tree
+    # the rewrite: `fix` settles what it can, then reports what it could not.
+    # The linter's own block is spanned: its reporter is a fact about the
+    # machine, and what is claimed is the verdict and the file.
+    - command: fix
+      exit: 1
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+          {{any}}
+          eslint/no-debugger  1 diagnostic(s), and the project keeps no baseline
+          Fix them, or run 'typescript baseline' to record where the project stands.
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✗ Some checks failed
+      files:
+          index.ts:
+              equals: |
+                  export const gamma = 3;
+
+                  export function paused(): void {
+                    debugger;
+                  }
