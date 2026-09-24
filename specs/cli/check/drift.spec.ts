@@ -22,6 +22,9 @@ import { toolchainWith } from '../toolchain-sandbox.js';
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../../..');
+const DRIFT = join(PACKAGE_ROOT, 'src/cli/check-drift.js');
+const OXLINT = join(PACKAGE_ROOT, 'node_modules/.bin/oxlint');
+const DEFAULT_PROFILE = join(PACKAGE_ROOT, 'src/presets/oxlint/profiles/node.js');
 
 const project = mkdtempSync(resolve(tmpdir(), 'spec-drift-'));
 
@@ -82,6 +85,24 @@ function suppressingProject(toolchain: string): string {
     );
     mkdirSync(join(directory, 'node_modules/@jterrazz'), { recursive: true });
     symlinkSync(toolchain, join(directory, 'node_modules/@jterrazz/typescript'), 'dir');
+
+    return directory;
+}
+
+/** A project with no oxlint config of its own, one file, and the files given beside it. */
+function configlessProject(files: Record<string, string> = {}): string {
+    const directory = mkdtempSync(resolve(tmpdir(), 'spec-drift-configless-'));
+    onTestFinished(() => {
+        rmSync(directory, { force: true, recursive: true });
+    });
+    writeFileSync(
+        join(directory, 'package.json'),
+        '{ "name": "spec-drift-configless", "private": true, "type": "module" }\n',
+    );
+    writeFileSync(join(directory, 'index.ts'), 'export const title = "spec";\n');
+    for (const [name, content] of Object.entries(files)) {
+        writeFileSync(join(directory, name), content);
+    }
 
     return directory;
 }
@@ -214,6 +235,24 @@ describe('drift', () => {
                 },
             ],
             unreasoned: [],
+        });
+    });
+
+    test('reads a baseline file that is not JSON as unreadable, for a person and a machine', () => {
+        // Given - a configless project whose jterrazz.baseline.json does not parse
+        const directory = configlessProject({ 'jterrazz.baseline.json': '{ not json\n' });
+        const args = [DRIFT, directory, '--oxlint', OXLINT, '-c', DEFAULT_PROFILE];
+
+        // When - the drift report reads it, then reads it for a machine
+        const human = spawnSync('node', args, { encoding: 'utf8' });
+        const machine = spawnSync('node', [...args, '--json'], { encoding: 'utf8' });
+
+        // Then - neither reading claims a count the file was never read for
+        expect(human.stdout).toContain('jterrazz.baseline.json › typescript  unreadable\n');
+        expect(human.stdout).not.toContain('nothing held');
+        expect(JSON.parse(machine.stdout)).toMatchObject({
+            baseline: 'unreadable',
+            testBaseline: 'unreadable',
         });
     });
 });

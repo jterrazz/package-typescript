@@ -29,7 +29,14 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { LABEL, labelOf, readBaseline, SECTION, TEST_SECTION } from './check-baseline.js';
+import {
+    LABEL,
+    labelOf,
+    readBaseline,
+    readRatchet,
+    SECTION,
+    TEST_SECTION,
+} from './check-baseline.js';
 import { countSuppressions } from './check-suppressions.js';
 import { toolVersions } from './doctor.js';
 import CONFIGS from './oxlint-config-names.json' with { type: 'json' };
@@ -182,8 +189,14 @@ const unreasoned = off.filter((rule) => {
     return line === undefined || !REASON.test(line);
 });
 
-/** A ratchet section's total, or null when the project records nothing there. */
+/* A file the Oxlint pass refuses as `baseline-unreadable` holds no count either row may claim. */
+const isUnreadable = readRatchet(root).problem !== null;
+
+/** A ratchet section's total, null when the project records no such section, `unreadable` when the file cannot be read. */
 function totalOf(section) {
+    if (isUnreadable) {
+        return 'unreadable';
+    }
     const recorded = readBaseline(root, section);
 
     return recorded === null
@@ -225,8 +238,11 @@ function rulesOffLine() {
     return off.length === 0 ? 'none' : `${off.length} (${off.join(', ')})`;
 }
 
-/** A ratchet section's row value: its total, or `nothing held` — the Oxlint pass's words — for a section absent or holding no entry. */
+/** A ratchet section's row value: its total, `nothing held` — the Oxlint pass's words — for a section absent or holding no entry, `unreadable` for a file that cannot be read. */
 function heldOf(section) {
+    if (isUnreadable) {
+        return 'unreadable';
+    }
     const recorded = readBaseline(root, section) ?? {};
 
     return Object.keys(recorded).length === 0
