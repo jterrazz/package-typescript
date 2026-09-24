@@ -40,6 +40,7 @@
             "types": "./src/oxlint.d.ts",
             "default": "./src/oxlint.js"
         },
+        "./oxlint-config-names": "./src/cli/oxlint-config-names.json",
         "./tsconfig/*": "./src/presets/tsconfig/*.json",
         "./tsconfig/*.json": "./src/presets/tsconfig/*.json",
         "./tsdown/*": {

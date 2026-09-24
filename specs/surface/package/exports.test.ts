@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
 import { expect, test } from 'vitest';
 
 import defaultExport, { oxfmt, oxlint } from '../../../src/index.js';
@@ -15,6 +16,7 @@ test.each([
     '@jterrazz/typescript/docs',
     '@jterrazz/typescript/oxfmt',
     '@jterrazz/typescript/oxlint',
+    '@jterrazz/typescript/oxlint-config-names',
     '@jterrazz/typescript/tsconfig/node',
     '@jterrazz/typescript/tsconfig/node.json',
     '@jterrazz/typescript/tsconfig/library',
@@ -33,6 +35,16 @@ test.each([
     // Given - a consumer-facing package subpath
     // Then - the specifier resolves to a real file
     expect(() => require.resolve(specifier)).not.toThrow();
+});
+
+test('the config-name list a sibling imports is the file the toolchain reads', () => {
+    // Given - the list by its public specifier
+    const exported = require.resolve('@jterrazz/typescript/oxlint-config-names');
+
+    // Then - it is the one file check, fix and the drift report read, not a copy
+    expect(exported).toBe(
+        resolve(import.meta.dirname, '../../../src/cli/oxlint-config-names.json'),
+    );
 });
 
 test('the oxlint entry exports the six profiles, the layer-map builders and the nested form', () => {

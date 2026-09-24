@@ -14,8 +14,9 @@
 
 # The project's own oxlint config, in the order oxlint looks for one — the
 # names of `src/cli/oxlint-config-names.json`, the one list this file and
-# `check-drift.js` both read, so a project counts as having a config in the
-# drift report exactly when it does here. Captured whole, on one line, rather
+# `check-drift.js` both read — and the package exports, as
+# `./oxlint-config-names`, for a sibling to read too — so a project counts as
+# having a config in the drift report exactly when it does here. Captured whole, on one line, rather
 # than streamed: a `break` on the first match closing a live pipe early left
 # `node` writing into a reader that had gone, and it does not catch EPIPE.
 OXLINT_CONFIG_NAMES=$(node -e 'const {readFileSync}=require("node:fs");process.stdout.write(JSON.parse(readFileSync(process.argv[1],"utf8")).join(" "))' "$PACKAGE_ROOT/src/cli/oxlint-config-names.json")
