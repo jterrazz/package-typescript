@@ -63,7 +63,7 @@ ASTRO_PKG=$(build_store "$SANDBOX/astro-store" with-astro)
 # Every consumer is laid out and proved strict first, then all of them are
 # checked at once: the checks share nothing but the read-only stores.
 names=()
-pids=()
+packages=()
 for consumer in "$CONSUMERS"/*/; do
     name=$(basename "$consumer")
     profile=${name%%-*}
@@ -109,8 +109,14 @@ EOF
         fi
     done
 
-    (cd "$project" && bash "$package/bin/typescript.sh" check > "$SANDBOX/$name.log" 2>&1) &
     names+=("$name")
+    packages+=("$package")
+done
+
+pids=()
+for index in "${!names[@]}"; do
+    name=${names[$index]}
+    (cd "$SANDBOX/$name" && bash "${packages[$index]}/bin/typescript.sh" check > "$SANDBOX/$name.log" 2>&1) &
     pids+=($!)
 done
 
