@@ -1,11 +1,17 @@
 import { allOn, fragment, off, on, scoped, typeAware, unsafeFix } from '../_contract.js';
 
 /*
- * The `typescript` plugin, all 108 non-nursery rules decided by name. Fifty-one
- * of them need type information: they run because every profile ships
- * `options.typeAware`, which `oxlint-tsgolint` answers (it embeds its own
- * TypeScript, so a consumer is not forced onto TypeScript 7 to get them).
+ * The `typescript` plugin, all 110 rules decided by name: the 108 non-nursery
+ * ones, and the two nursery ones tsgolint answers — every rule tsgolint runs is
+ * decided, whatever upstream's category, so a tsgolint release never adds a
+ * check no profile names. Fifty-nine of them need type information: they run
+ * because every profile ships `options.typeAware`, which `oxlint-tsgolint`
+ * answers (it embeds its own TypeScript, so a consumer is not forced onto
+ * TypeScript 7 to get them).
  */
+
+/** The release the nursery type-aware decisions were taken in. */
+const NURSERY_SINCE = '11.0.0';
 /*
  * A JavaScript file has no parameter types. Every value flowing through one is
  * `any` by construction, so the unsafe-any family reports the LANGUAGE, not a
@@ -208,6 +214,9 @@ export default fragment({
             { ignorePrimitives: { boolean: true } },
         ]),
         'typescript/method-signature-style': on(['property']),
+        /* Nursery upstream, decided because tsgolint runs it: 0 reports on
+         * this package, and `fix` writes the chain it asks for. */
+        'typescript/prefer-optional-chain': { ...typeAware(), since: NURSERY_SINCE },
         'typescript/return-await': typeAware(['always']),
 
         // -- Off, each with its one reason -------------------------------------
@@ -231,6 +240,13 @@ export default fragment({
             by: 'typescript/no-non-null-assertion — its fix is the `!` assertion that rule forbids, so no edit closes both',
             kind: 'exclusive',
         }),
+        'typescript/no-unnecessary-condition': off(
+            {
+                by: 'measured on this package — 8 reports, not one a defect: a `while (true)` loop, a flag read off parsed JSON, and `?? ""` guards on the `spawnSync` streams @types/node types non-null and Node leaves null when the spawn fails',
+                kind: 'evidence',
+            },
+            NURSERY_SINCE,
+        ),
         'typescript/no-var-requires': off({
             by: 'typescript/no-require-imports — its upstream successor',
             kind: 'covered',

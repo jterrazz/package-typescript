@@ -33,3 +33,8 @@ export function firstEven(values: number[]): number | undefined {
 
 // id-length — off (evidence): a conventional short binding is not a defect.
 export const pairs = [1, 2, 3].map((n) => n * 2);
+
+// typescript/no-unnecessary-condition — off (evidence): 8 reports on this package, none a defect.
+export function streamOf(output: string): string {
+    return output ?? '';
+}

@@ -484,6 +484,7 @@ typescript/no-require-imports
 typescript/no-restricted-types
 typescript/no-this-alias
 typescript/no-unnecessary-boolean-literal-compare
+- typescript/no-unnecessary-condition
 typescript/no-unnecessary-parameter-property-assignment
 typescript/no-unnecessary-qualifier
 typescript/no-unnecessary-template-expression
@@ -518,6 +519,7 @@ typescript/prefer-includes
 typescript/prefer-literal-enum-member
 typescript/prefer-namespace-keyword
 typescript/prefer-nullish-coalescing
+typescript/prefer-optional-chain
 typescript/prefer-promise-reject-errors
 typescript/prefer-readonly
 - typescript/prefer-readonly-parameter-types

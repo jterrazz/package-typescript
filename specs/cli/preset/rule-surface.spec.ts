@@ -39,12 +39,27 @@ test.each(PROFILES)('$name decides every non-nursery rule of every plugin it loa
     expect(missing, `${name} leaves ${missing.length} rules undecided`).toStrictEqual([]);
 });
 
-test('decides no nursery rule — upstream calls them unstable', () => {
-    // Given - the nursery rules of this oxlint
-    const nursery = RULES.filter((rule) => rule.category === 'nursery').map((rule) => idOf(rule));
+test('decides no nursery rule tsgolint does not run — upstream calls them unstable', () => {
+    // Given - the nursery rules of this oxlint that need no type information
+    const nursery = RULES.filter((rule) => rule.category === 'nursery' && !rule.type_aware).map(
+        (rule) => idOf(rule),
+    );
 
     // Then - none of them is in the manifest
     expect(nursery.filter((rule) => DECIDED.has(rule))).toStrictEqual([]);
+});
+
+test('decides every rule the installed tsgolint runs, by name, nursery included', () => {
+    // Given - every rule the pinned oxlint hands to tsgolint
+    const typeAware = RULES.filter((rule) => rule.type_aware).map((rule) => idOf(rule));
+    expect(typeAware.length).toBeGreaterThan(0);
+
+    // Then - the manifest decides each one
+    const undecided = typeAware.filter((rule) => !DECIDED.has(rule));
+    expect(
+        undecided,
+        `found: ${undecided.join(', ')} — type-aware, and decided nowhere in lint/ · why: every rule tsgolint runs is decided by name, so a tsgolint release never adds a check no profile names · fix: decide each in lint/language/typescript.js — \`typeAware()\`, or \`off()\` with its reason · read: docs/07-lint-presets.md#the-four-laws`,
+    ).toStrictEqual([]);
 });
 
 test.each(PROFILES)('$name ships no categories switch', ({ name }) => {

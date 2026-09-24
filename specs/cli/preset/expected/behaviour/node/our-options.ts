@@ -32,3 +32,8 @@ export function timeoutOf(options: Options): number {
 
 // import/extensions: always — a relative import that Node ESM cannot resolve.
 export { label } from './reasoned-offs';
+
+// typescript/prefer-optional-chain — nursery upstream, on here: the fixer writes the chain.
+export function nameOf(user: undefined | { name: string }): string | undefined {
+    return user?.name;
+}

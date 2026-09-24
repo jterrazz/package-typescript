@@ -50,15 +50,15 @@ One block is spanned for good: oxlint's own report. The linter picks its reporte
 
 The presets are the one part of this package a document cannot reach: `check` loads a preset from the consumer's `node_modules`, and a copied fixture has none. So `specs/cli/preset/` drives the tools directly — the B9w exception `oxlint.specification.ts` states — and seven suites divide the claim between them.
 
-| Suite                 | Claims                                                                        |
-| --------------------- | ----------------------------------------------------------------------------- |
-| `resolved-config`     | each profile resolves to the rule set its golden records, marker by marker    |
-| `rule-surface`        | every non-nursery rule of every loaded plugin is decided, and no `categories` |
-| `fixpoint`            | oxlint's fixes and oxfmt's reach a fixed point — no rule fights the formatter |
-| `behaviour`           | a fixture written to break rules reports exactly the diagnostics it should    |
-| `exclusive-pairs`     | every `off` of kind `exclusive` names a rule that really is on, and conflicts |
-| `install-matrix`      | one consumer per profile installs under pnpm-strict and checks green          |
-| `module-augmentation` | a `declare module` block keeps the interface that merges, and its `export {}` |
+| Suite                 | Claims                                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `resolved-config`     | each profile resolves to the rule set its golden records, marker by marker                              |
+| `rule-surface`        | every non-nursery rule of every loaded plugin is decided, every type-aware one too, and no `categories` |
+| `fixpoint`            | oxlint's fixes and oxfmt's reach a fixed point — no rule fights the formatter                           |
+| `behaviour`           | a fixture written to break rules reports exactly the diagnostics it should                              |
+| `exclusive-pairs`     | every `off` of kind `exclusive` names a rule that really is on, and conflicts                           |
+| `install-matrix`      | one consumer per profile installs under pnpm-strict and checks green                                    |
+| `module-augmentation` | a `declare module` block keeps the interface that merges, and its `export {}`                           |
 
 The last one is the outside view, and it is the one that fails when the corpus is wrong: seven tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so an eighth profile earns a consumer by existing. The two config files are the one thing the ground does NOT carry: the runner writes them, for the same reason as above, and that heredoc is the single place the documented form is stated for all seven.
 
