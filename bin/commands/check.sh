@@ -65,23 +65,6 @@ add_tsgolint_to_path
 # shellcheck source=../tool-configs.sh
 . "$SCRIPT_DIR/../tool-configs.sh"
 
-# The ratchet's file, at the project root, one section per package of the
-# family. Its `typescript` section is what turns the oxlint pass from "no
-# diagnostic at all" into "no diagnostic above what was recorded"; the
-# `jterrazz(*)` diagnostics in the same oxlint report are @jterrazz/test's,
-# recorded and judged in its `test` section.
-BASELINE_FILE="jterrazz.baseline.json"
-
-# A file of the per-package layout is never read, and its presence alone
-# fails the oxlint pass, so the judge runs wherever one is left.
-ratchet_file_present() {
-    local file
-    for file in "$BASELINE_FILE" typescript.baseline.json test.baseline.json oxlint.baseline.json; do
-        [ -f "$file" ] && return 0
-    done
-    return 1
-}
-
 TSC=$(find_tsc)
 OXLINT=$(find_binary oxlint)
 OXFMT=$(find_binary oxfmt)
@@ -666,7 +649,6 @@ run_checks() {
     # about the loading, never about the tree.
     local names_pid=""
     local names_status=0
-    local names_pid_waited=false
     local names_mode=(--report "$tmp_dir/names.json")
     [ "$FIX_MODE" = true ] && names_mode=(--fix)
     node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/src/cli/check-names.js" . "${LINT_ARGS[@]}" \
@@ -798,15 +780,17 @@ run_checks() {
     wait $type_pid;   local type_status=$?
     [ -n "$lint_pid" ] && [ "$lint_waited" = false ] && { wait $lint_pid; lint_status=$?; }
 
-    # The ratchet, where the project keeps one: the pass is judged by what the
-    # baseline tolerates, not by oxlint's exit code — in FIX mode as much as in
-    # check mode, or `fix` then `check` reads red then green on the same tree.
-    # Bash decides whether the file is there; the script decides what it says.
+    # The ratchet judges every run: the pass is judged by what the section
+    # tolerates, not by oxlint's exit code — in FIX mode as much as in check
+    # mode, or `fix` then `check` reads red then green on the same tree. The
+    # script reads the file, whether it is there, and a per-package file left
+    # beside it.
     #
-    # A project with NO baseline is judged rule by rule all the same, as soon as
+    # A project with NO section is judged rule by rule all the same, as soon as
     # the linter has anything to say: the same lines `fix` prints, naming what
     # each rule owes and the one gesture that records it. Reaching the ratchet
-    # through `check` is what an adoption's step 4 asks for.
+    # through `check` is what an adoption's step 4 asks for. Green, it holds
+    # nothing, and says so as an emptied section does.
     #
     # Either way the judge counts this package's rules only. A `jterrazz(*)`
     # diagnostic fails oxlint's exit code but is @jterrazz/test's to judge,
@@ -819,45 +803,37 @@ run_checks() {
     # fixers armed again, so a directive that names one of them is used, not
     # reported unused. The fixer's own exit code is never the verdict: it ran
     # with those rules allowed.
-    if ratchet_file_present || [ "$FIX_MODE" = true ] || [ "$lint_status" -ne 0 ]; then
-        if [ "$FIX_MODE" = true ]; then
-            run_oxlint --type-aware --format json "${LINT_ARGS[@]}" \
-                > "$tmp_dir/lint.json" 2>/dev/null
-        fi
+    if [ "$FIX_MODE" = true ]; then
+        run_oxlint --type-aware --format json "${LINT_ARGS[@]}" \
+            > "$tmp_dir/lint.json" 2>/dev/null
+    fi
 
-        # The section has two reporters, and a green run states it once, whole:
-        # the Names pass's report joins the judge, which prints the file's one
-        # held line when both sides stand at it — and nothing else, since a
-        # held finding is the ratchet doing its job.
-        #
-        # In fix mode the judge re-records the linter's entries that fell, and
-        # the Names pass its own: two writers of one file, so the Names pass
-        # has finished before this one reads it.
-        local linter_exit=()
-        local names_report=()
-        local ratchet_fix=()
-        if [ "$FIX_MODE" = true ]; then
-            ratchet_fix=(--fix)
-            wait $names_pid
-            names_status=$?
-            names_pid_waited=true
-        else
-            linter_exit=(--linter-exit "$lint_status")
-            if [ -n "$names_pid" ] && [ -f "$BASELINE_FILE" ]; then
-                wait $names_pid
-                names_status=$?
-                names_pid_waited=true
-                names_report=(--names "$tmp_dir/names.json")
-            fi
-        fi
-        node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$tmp_dir/lint.json" . \
-            "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" > "$tmp_dir/ratchet.log" 2>&1
-        lint_status=$?
-        if [ "$lint_status" -eq 0 ] && [ ${#names_report[@]} -gt 0 ]; then
-            lint_held=true
-        else
-            cat "$tmp_dir/ratchet.log" >> "$tmp_dir/lint.log"
-        fi
+    # The section has two reporters, and a green run states it once, whole:
+    # the Names pass's report joins the judge, which prints the file's one
+    # held line when both sides stand at it — and nothing else, since a
+    # held finding is the ratchet doing its job.
+    #
+    # In fix mode the judge re-records the linter's entries that fell, and
+    # the Names pass its own: two writers of one file, so the Names pass
+    # has finished before this one reads it.
+    wait $names_pid
+    names_status=$?
+    local linter_exit=()
+    local names_report=()
+    local ratchet_fix=()
+    if [ "$FIX_MODE" = true ]; then
+        ratchet_fix=(--fix)
+    else
+        linter_exit=(--linter-exit "$lint_status")
+        names_report=(--names "$tmp_dir/names.json")
+    fi
+    node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$tmp_dir/lint.json" . \
+        "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" > "$tmp_dir/ratchet.log" 2>&1
+    lint_status=$?
+    if [ "$lint_status" -eq 0 ] && [ ${#names_report[@]} -gt 0 ]; then
+        lint_held=true
+    else
+        cat "$tmp_dir/ratchet.log" >> "$tmp_dir/lint.log"
     fi
 
     [ -n "$format_pid" ] && { wait $format_pid; format_status=$?; }
@@ -868,7 +844,6 @@ run_checks() {
     [ -n "$markdown_pid" ] && { wait $markdown_pid; markdown_status=$?; }
     [ -n "$architecture_pid" ] && { wait $architecture_pid; architecture_status=$?; }
     [ -n "$astro_pid" ] && { wait $astro_pid; astro_status=$?; }
-    [ -n "$names_pid" ] && [ "$names_pid_waited" = false ] && { wait $names_pid; names_status=$?; }
     [ -n "$secrets_pid" ] && { wait $secrets_pid; secrets_status=$?; }
 
     # One pass, N runs: the pass fails if any run failed, and only the logs of

@@ -44,8 +44,8 @@
  * `--names <json>` beside a judging run, it prints one line for the WHOLE
  * section — `jterrazz.baseline.json › typescript: <n> held across <k> rules`,
  * the shape `@jterrazz/test` gives its own, or `… typescript: nothing held` for
- * a section holding no entry — when both reporters' counts
- * stand at it. Where either side breaks the ratchet it prints no summary: the
+ * a section holding no entry or no section at all — when both reporters'
+ * counts stand at it. Where either side breaks the ratchet it prints no summary: the
  * pass that owns the broken entry prints the evidence.
  *
  * A file of the per-package layout — `typescript.baseline.json`,
@@ -277,7 +277,7 @@ export function reRecord(root, counts, owns) {
 
 /**
  * The one line a green ratchet prints: what the file holds, by count and by
- * rule, or `nothing held` for a section that holds no entry. The findings
+ * rule, or `nothing held` for a section that holds no entry, or for none. The findings
  * themselves print only with a failing verdict, where they are the evidence.
  */
 export function heldSummary(counts) {
@@ -503,7 +503,13 @@ if (import.meta.main) {
                 "Fix them, or run 'typescript baseline' to record where the project stands.\n",
             );
         }
-        exit(rules.length > 0 || legacy.length > 0 ? 1 : 0);
+        if (rules.length > 0 || legacy.length > 0) {
+            exit(1);
+        }
+        if (namesPath !== undefined && judge(counts, {}).length === 0) {
+            stdout.write(`${heldSummary({})}\n`);
+        }
+        exit(0);
     }
 
     /* The linter's entries are this run's to re-record; the Names pass re-records its own. */

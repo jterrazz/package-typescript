@@ -25,8 +25,9 @@ for tool in tsc oxfmt knip; do
     chmod +x "$SANDBOX/node_modules/.bin/$tool"
 done
 
-# ...except oxlint, nested under the package itself
-printf '#!/bin/sh\necho "oxlint-stub-ran"\n' > "$PKG/node_modules/.bin/oxlint"
+# ...except oxlint, nested under the package itself, answering with the empty
+# report the ratchet reads
+printf '#!/bin/sh\necho '"'"'{ "diagnostics": [] }'"'"'\n' > "$PKG/node_modules/.bin/oxlint"
 chmod +x "$PKG/node_modules/.bin/oxlint"
 
 cd "$SANDBOX"

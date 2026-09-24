@@ -255,7 +255,7 @@ A run the section holds says so once, whole, and never finding by finding. The O
 jterrazz.baseline.json › typescript: 2 held across 2 rules
 ```
 
-The count is every finding the section holds today — the linter's and the Names pass's alike — and the rules are the entries still carrying one; the section being exact, both are what the file records, and what the drift report prints. A section holding no entry reads `jterrazz.baseline.json › typescript: nothing held`. The line prints only on `check`, and only when both of the section's judges hold; a broken side prints its evidence in its own pass instead, and the line stays away.
+The count is every finding the section holds today — the linter's and the Names pass's alike — and the rules are the entries still carrying one; the section being exact, both are what the file records, and what the drift report prints. A section holding no entry reads `jterrazz.baseline.json › typescript: nothing held`, and so does a project keeping no `typescript` section, or no file at all — the one phrase `@jterrazz/test` prints for a project keeping no `test` section. The line prints only on `check`, and only when both of the section's judges hold; a broken side prints its evidence in its own pass instead, and the line stays away.
 
 ### One owner per entry
 

@@ -24,6 +24,7 @@ describe('resolution', () => {
 
              RUN  Oxlint Check
 
+            jterrazz.baseline.json › typescript: nothing held
             ✓ Passed
 
              RUN  Oxfmt Check
