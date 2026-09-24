@@ -62,7 +62,6 @@ const ON_IN_TESTS = [
     'prefer-expect-type-of',
     'prefer-hooks-in-order',
     'prefer-hooks-on-top',
-    'prefer-import-in-mock',
     'prefer-importing-vitest-globals',
     'prefer-mock-promise-shorthand',
     'prefer-mock-return-shorthand',
@@ -86,7 +85,7 @@ const ON_IN_TESTS = [
 ].map((rule) => `vitest/${rule}`);
 
 /*
- * The three vitest fixers that change meaning, so `fix` never applies them and
+ * The five vitest fixers that change meaning, so `fix` never applies them and
  * `check` still reports them. They are named here rather than inline because a
  * decision three calls deep inside an override reads as nesting, not as a
  * decision.
@@ -104,7 +103,7 @@ const PREFER_LOWERCASE_TITLE = unsafeFix(
     on(),
     'lower-cases the first character blindly: `CLI …` becomes `cLI …`',
 );
-const REQUIRE_MOCK_TYPE_PARAMETERS = unsafeFix(
+const PREFER_IMPORT_IN_MOCK = unsafeFix(
     on(),
     "rewrites `vi.mock('x', f)` into `vi.mock(import('x'), f)`, after which the factory owes the module's full type",
 );
@@ -147,7 +146,8 @@ export default fragment({
                 'vitest/consistent-test-filename': CONSISTENT_TEST_FILENAME,
                 'vitest/consistent-test-it': CONSISTENT_TEST_IT,
                 'vitest/prefer-lowercase-title': PREFER_LOWERCASE_TITLE,
-                'vitest/require-mock-type-parameters': REQUIRE_MOCK_TYPE_PARAMETERS,
+                'vitest/prefer-import-in-mock': PREFER_IMPORT_IN_MOCK,
+                'vitest/require-mock-type-parameters': on(),
                 'vitest/prefer-strict-boolean-matchers': PREFER_STRICT_BOOLEAN_MATCHERS,
                 'vitest/prefer-called-with': PREFER_CALLED_WITH,
 

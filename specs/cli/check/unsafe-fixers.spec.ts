@@ -124,6 +124,19 @@ describe('unsafe-fixers', () => {
         expect(fixed.stdout.text).toContain('no-unnecessary-type-assertion');
     });
 
+    test('leaves a mock factory keyed by its module name, which owes no module type', async () => {
+        // Given - a project on the default profile, whose one test mocks a module by name with a partial factory
+        // When - the fix runs
+        const fixed = await caseOf('mock-factory').exec('fix');
+
+        // Then - the name survives, so the factory still owes only what it returns
+        expect(fixed.file('index.test.ts').content).toContain("vi.mock('node:fs'");
+
+        // Then - and the rule is still reported, because the answer is a human's
+        expect(fixed.exitCode).toBe(1);
+        expect(fixed.stdout.text).toContain('prefer-import-in-mock');
+    });
+
     test('leaves a declare module augmentation an interface, and keeps its export {}', async () => {
         // Given - a project whose one file augments a library, with both rewriters armed
         // When - the fix runs

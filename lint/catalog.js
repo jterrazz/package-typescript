@@ -118,8 +118,11 @@ function scopeOf(entry) {
  * `check` reports them and a human answers them; `fix` runs with each one
  * allowed, so the rewrite is never applied
  * ([Quality checks](../docs/06-quality-checks.md)).
+ *
+ * @returns {{ rule: string, why: string }[]} Each rule once, sorted by name.
  */
 export function unsafeFixers() {
+    /** @type {Map<string, string>} */
     const seen = new Map();
     for (const entry of catalog()) {
         if (entry.fixer === 'unsafe' && !seen.has(entry.rule)) {

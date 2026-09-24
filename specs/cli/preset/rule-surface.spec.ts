@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { REASON_KINDS } from '../../../lint/_contract.js';
-import { catalog } from '../../../lint/catalog.js';
+import { catalog, unsafeFixers } from '../../../lint/catalog.js';
 import { PROFILES as PROFILE_TABLE } from '../../../lint/profiles.js';
 import { printConfig, PROFILES, roster } from './rulebook.js';
 
@@ -90,6 +90,38 @@ describe('rule-surface', () => {
             .map((entry) => entry.rule);
 
         expect(wrong).toStrictEqual([]);
+    });
+
+    /*
+     * The fix kinds plain `oxlint --fix` applies, measured against 1.85 rule by
+     * rule: a `conditional_dangerous` fixer rewrote a `declare module` block
+     * without `--fix-dangerously`. Every other kind is a fixer `--fix` leaves
+     * alone, or no fixer at all — and a rule the wrapper disarms for nothing is
+     * a mark that says something false about its fixer.
+     */
+    const APPLIED_BY_FIX = new Set([
+        'conditional_dangerous_fix',
+        'conditional_dangerous_fix_or_suggestion',
+        'conditional_fix',
+        'conditional_safe_fix_or_suggestion',
+        'fixable_fix',
+        'fixable_safe_fix_or_suggestion',
+    ]);
+
+    test('marks a fixer unsafe only where plain --fix would apply it', () => {
+        // Given - the fix kind the pinned oxlint gives each rule
+        const upstream = new Map(RULES.map((rule) => [idOf(rule), rule.fix]));
+
+        // Then - every rule the fix wrapper disarms has a fixer plain --fix runs
+        const idle = unsafeFixers()
+            .map(({ rule }) => rule)
+            .filter((rule) => !APPLIED_BY_FIX.has(upstream.get(rule) ?? ''))
+            .map((rule) => `${rule} (${upstream.get(rule) ?? 'unknown'})`);
+
+        expect(
+            idle,
+            `found: ${idle.join(', ')} — marked unsafe, and plain --fix never applies its fixer · fix: find the rule whose fixer makes the rewrite its reason names, and mark that one · read: docs/07-lint-presets.md#fixers-that-lie`,
+        ).toStrictEqual([]);
     });
 
     test('gives every off one of the five recorded reasons', () => {

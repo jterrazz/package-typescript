@@ -170,6 +170,7 @@ export type Diagnostic = {
 /** One row of `oxlint --rules --format=json`. */
 export type RosterEntry = {
     category: string;
+    fix: string;
     scope: string;
     type_aware: boolean;
     value: string;

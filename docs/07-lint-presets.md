@@ -113,9 +113,9 @@ A fixer that changes MEANING is never applied unattended. The rules below stay a
 - `unicorn/prefer-import-meta-properties` — rewrites `fileURLToPath(new URL('.', import.meta.url))` into `import.meta.dirname`, which carries no trailing slash
 - `vitest/consistent-test-it` — rewrites `it(` into `test(` and leaves `import { it }` behind
 - `vitest/prefer-called-with` — rewrites `toHaveBeenCalled()` into `toHaveBeenCalledWith()`, an assertion of NO arguments
+- `vitest/prefer-import-in-mock` — rewrites `vi.mock('x', f)` into `vi.mock(import('x'), f)`, after which the factory owes the module's full type
 - `vitest/prefer-lowercase-title` — lower-cases the first character blindly: `CLI …` becomes `cLI …`
 - `vitest/prefer-strict-boolean-matchers` — rewrites `toBeTruthy()` into `toBe(true)` whatever the subject is — an element, a string — which is never `true`
-- `vitest/require-mock-type-parameters` — rewrites `vi.mock('x', f)` into `vi.mock(import('x'), f)`, after which the factory owes the module's full type
 
 <!-- /GENERATED:fixers -->
 
