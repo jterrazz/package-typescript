@@ -396,13 +396,15 @@ The contract is asked where a REPOSITORY is — a `.git` beside the project, as 
 
 A target counts when the `Makefile`'s own text writes a rule for it — `lint:`, `install build:`, `test::` — and an assignment (`LINT := …`) or a comment is no rule. A file the `Makefile` `include`s is not read, so the six stay written where a reader opens first.
 
-`fix` runs every fixer the repository has, each whatever the one before it said, and fails at the end if any of them did. Make stops a recipe at its first failing line, so fixers written one per line leave the next unrun whenever one reports — and a toolchain fixer failing on debt it cannot settle would keep `@jterrazz/test`'s mover from migrating the tree. The recipe runs them in one shell and carries the verdict to its end:
+`fix` runs every fixer the repository has, each whatever the one before it said, and fails at the end if any of them did. Make stops a recipe at its first failing line, so fixers written one per line leave the next unrun whenever one reports — a checker failing on debt it cannot settle would keep the formatter from the files it had just rewritten. The recipe runs them in one shell and carries the verdict to its end.
+
+The order is the second half of the contract: `@jterrazz/test`'s checker first, `typescript fix` last. The checker's fixers write source — a `describe` wrapped, a ground file inlined — and the toolchain's formatter runs after them, so the last writer of every file is the one `check` judges its format by:
 
 ```make
 fix:
 	@status=0; \
-	npx typescript fix || status=1; \
 	npx jterrazz-test-check --fix || status=1; \
+	npx typescript fix || status=1; \
 	exit $$status
 ```
 
