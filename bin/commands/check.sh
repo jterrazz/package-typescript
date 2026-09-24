@@ -410,7 +410,7 @@ judge_lint_config() {
     cjs=$(commonjs_oxlint_config)
     local refusals=""
 
-    if grep -q 'Failed to parse oxlint configuration file' "$tmp_dir/lint.log" 2>/dev/null; then
+    if grep -q 'Failed to parse oxlint configuration file' "$tmp_dir/lint.log" "$tmp_dir/lint.json" 2>/dev/null; then
         refusals+="oxlint-config-unparsed  ${OXLINT_CONFIG}  oxlint refused this config and linted nothing — its own report is above"$'\n'
     fi
     if [ -n "$cjs" ]; then
@@ -528,28 +528,19 @@ run_checks() {
         # `check` while `fix`, judged on the diagnostics themselves, failed on
         # it. Severity is never read here either: a finding a release ships at
         # `warn` is exactly the debt a ratchet exists to hold down.
-        run_oxlint --type-aware --deny-warnings "${LINT_ARGS[@]}" \
-            > "$tmp_dir/lint.log" 2>&1 &
+        #
+        # ONE run, machine-readable, and every reader reads it: the ratchet
+        # judges it rule by rule, the conventions checker's member runs take it
+        # with `--oxlint-report` instead of linting the project again, and a
+        # failing pass prints it back in the form oxlint would have printed
+        # (src/cli/oxlint-report.js). Its standard error is kept apart, so the
+        # report stays the one thing on standard output.
+        run_oxlint --type-aware --deny-warnings --format json "${LINT_ARGS[@]}" \
+            > "$tmp_dir/lint.json" 2> "$tmp_dir/lint.err" &
         lint_pid=$!
+        : > "$tmp_dir/lint.log"
     fi
-
-    # The same run, machine-readable, so the ratchet can be judged rule by rule.
-    # A second invocation rather than a reformat of the first: the human log is
-    # what a failing pass prints, and neither form can be derived from the other.
-    # In check mode it runs BESIDE the human one, on the same bytes. In fix mode
-    # it cannot: the bytes change under the fixer, so the machine-readable run
-    # is made after it, below.
-    #
-    # It is also the report the conventions checker's member runs read, handed
-    # over with `--oxlint-report`: the checker judges the `jterrazz(*)`
-    # diagnostics of this one run instead of linting the project a second time.
-    local lint_json_pid=""
-    local lint_json_waited=false
-    if [ "$FIX_MODE" = false ] && { ratchet_file_present || [ ${#checker_members[@]} -gt 0 ]; }; then
-        run_oxlint --type-aware --format json "${LINT_ARGS[@]}" \
-            > "$tmp_dir/lint.json" 2>/dev/null &
-        lint_json_pid=$!
-    fi
+    local lint_waited=false
 
     local format_pid=""
     if [ "$FIX_MODE" = false ]; then
@@ -761,8 +752,9 @@ run_checks() {
         done < <(discover_specs_roots)
 
         if [ ${#checker_members[@]} -gt 0 ]; then
-            wait $lint_json_pid
-            lint_json_waited=true
+            wait $lint_pid
+            lint_status=$?
+            lint_waited=true
         fi
         # The run over the project root is the one @jterrazz/test's ratchet
         # judges, and the one whose green verdict is the held line of
@@ -787,7 +779,7 @@ run_checks() {
 
     # Wait and collect statuses
     wait $type_pid;   local type_status=$?
-    [ -n "$lint_pid" ] && { wait $lint_pid; lint_status=$?; }
+    [ -n "$lint_pid" ] && [ "$lint_waited" = false ] && { wait $lint_pid; lint_status=$?; }
 
     # The ratchet, where the project keeps one: the pass is judged by what the
     # baseline tolerates, not by oxlint's exit code — in FIX mode as much as in
@@ -811,9 +803,7 @@ run_checks() {
     # reported unused. The fixer's own exit code is never the verdict: it ran
     # with those rules allowed.
     if ratchet_file_present || [ "$FIX_MODE" = true ] || [ "$lint_status" -ne 0 ]; then
-        if [ -n "$lint_json_pid" ]; then
-            [ "$lint_json_waited" = true ] || wait $lint_json_pid
-        else
+        if [ "$FIX_MODE" = true ]; then
             run_oxlint --type-aware --format json "${LINT_ARGS[@]}" \
                 > "$tmp_dir/lint.json" 2>/dev/null
         fi
@@ -917,6 +907,16 @@ run_checks() {
     fi
 
     judge_lint_config
+    # A failing check pass prints the linter's report first, drawn from the one
+    # run, then what the ratchet and the config judge added beneath it.
+    if [ "$FIX_MODE" = false ] && [ "$lint_status" -ne 0 ]; then
+        {
+            node "$PACKAGE_ROOT/src/cli/oxlint-report.js" "$tmp_dir/lint.json" "$tmp_dir/lint.err" \
+                --oxlint "$OXLINT"
+            cat "$tmp_dir/lint.log"
+        } > "$tmp_dir/lint-shown.log"
+        mv "$tmp_dir/lint-shown.log" "$tmp_dir/lint.log"
+    fi
     # A green pass judged by the ratchet says one thing: the section's held line,
     # never the linter's chatter around it.
     local lint_log="$tmp_dir/lint.log"

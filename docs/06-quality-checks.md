@@ -156,6 +156,16 @@ const violations = auditDocs(tree); // -> [{ rule, path, message }, …]
 
 The linter is handed the project's files it parses rather than the directory, the same sweep every tree gate reads: every file git does not ignore — tracked, or new and not yet added — and nothing git ignores. A new module is linted before anyone runs `git add`, and a local data folder the gates must not read belongs in `.gitignore`, so the CLI, CI, the baseline and the editor judge one tree. Outside a git checkout the sweep walks the disk. `--ignore-pattern` and the profiles' own ignores still apply on top.
 
+### One run, and the log drawn from it
+
+`check` runs the type-aware linter once, for its JSON report, and every reader of the pass reads that one report: the ratchet judges it rule by rule, the conventions checker's member runs take it instead of linting the project again, and a failing pass prints it. The type-aware run is the costliest process of a check — a JS plugin's rules run on one thread, and tsgolint builds the whole program — so a second run for a second format would double the pass for nothing it can say.
+
+What a failing pass prints is still oxlint's own report, drawn from the JSON in the form oxlint picks for the environment: one line per diagnostic under an AI agent, GitHub workflow commands on a GitHub runner, and the framed report anywhere else, in colour where `CI` or `FORCE_COLOR` asks for it. The form is never guessed: the same binary, in the same environment, lints a one-line file, and its answer names the form. Whatever oxlint printed before its report — `No files found to lint`, or a config it could not parse and the report that never came — is printed as it came, then its standard error.
+
+One thing the JSON report does not carry: which label a rule marks as its primary one. A framed diagnostic with several labels therefore names its first label's line and column in the frame's header, where oxlint would name the primary label's.
+
+`fix` keeps its own two runs: the fixer, whose log is what it rewrote, then the JSON run the ratchet judges, made after it because the bytes have changed.
+
 ### The two refusals that are not diagnostics
 
 A lint run can be green about nothing, and neither way shows up as a diagnostic. Both are the pass refusing, both are written into its own log, and both fail it — after them the verdict is on what the linter RAN, not on what it managed to exit with.

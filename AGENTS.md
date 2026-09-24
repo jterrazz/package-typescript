@@ -57,6 +57,7 @@ src/cli/entry-points.js       # The entries a build compiles, read off the consu
 src/cli/jterrazz-config.js    # A unit's jterrazz.config.ts, loaded — one package's section, or the problem that stops it
 src/cli/lint-targets.js       # The project files oxlint and oxfmt are handed — the sweep every tree gate reads, never the directory
 src/cli/merge-knip-config.js  # Merges knip base preset with project-local knip.json (read as JSONC)
+src/cli/oxlint-report.js      # The Oxlint pass's log, drawn from the one JSON run in the form oxlint picks — oxlint-report-*.js draw it
 src/cli/project-files.js      # The one sweep every tree gate starts from — every file git does not ignore, or a walk where there is no git
 src/cli/unsafe-fixers.js      # The rules `fix` must not let oxlint rewrite, as the flags that allow them for one run
 src/cli/workspace-members.js  # Lists the consumer's workspace members — the unit each per-package gate measures from

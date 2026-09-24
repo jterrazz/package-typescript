@@ -1,0 +1,15 @@
+{
+    "rules": {
+        "eqeqeq": "error",
+        "func-style": ["warn", "expression"],
+        "max-lines": ["error", { "max": 20 }],
+        "max-lines-per-function": ["error", { "max": 4 }],
+        "no-debugger": "warn",
+        "no-dupe-keys": "error",
+        "no-duplicate-case": "error",
+        "no-self-assign": "error",
+        "no-unused-vars": "warn",
+        "no-var": "error",
+        "typescript/consistent-type-definitions": ["error", "type"]
+    }
+}
