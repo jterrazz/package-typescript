@@ -240,13 +240,14 @@ The formatter is handed the same sweep, whole rather than cut to the shapes a li
 
 A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. `jterrazz.baseline.json` is the second — one tracked file at the project root for the whole family, one section per package, `{ "typescript": { "<rule>": <count> }, "test": { … } }` — and the oxlint pass is judged by its `typescript` section rather than by oxlint's exit code. Without that section every diagnostic this package owns fails the pass — and the pass still names the rule it belongs to and the gesture that records it, so a project meets the ratchet on its first red run rather than after reading this page.
 
-Three things fail a run that has one, all under `baseline-ratchet`:
+The section is EXACT: an entry states where the project stands, never a ceiling. Four things fail a run that has one, all under `baseline-ratchet`:
 
 - a rule whose count **exceeds** its entry — the debt grew;
 - a rule with diagnostics and **no entry** — a rule nobody recorded owing;
+- a rule whose count is **below** its entry — the debt fell, so the entry is re-recorded;
 - an entry whose count is now **zero** — the ratchet moved, so the entry goes.
 
-The third is what makes the section shrink. Without it a baseline records a debt that was paid a year ago and nothing ever says so.
+The two falls are what make the section shrink. Without them a baseline records a debt that was paid a year ago and nothing ever says so, and the slack a fallen entry leaves lets new debt grow back into it unseen.
 
 A run the section holds says so once, whole, and never finding by finding. The Oxlint pass prints one line for it, the shape `@jterrazz/test`'s checker gives its own section:
 
@@ -254,7 +255,7 @@ A run the section holds says so once, whole, and never finding by finding. The O
 jterrazz.baseline.json › typescript: 2 held across 2 rules
 ```
 
-The count is every finding the section holds today — the linter's and the Names pass's alike — and the rules are the entries still carrying one. The line prints only on `check`, and only when both of the section's judges hold; a broken side prints its evidence in its own pass instead, and the line stays away.
+The count is every finding the section holds today — the linter's and the Names pass's alike — and the rules are the entries still carrying one; the section being exact, both are what the file records, and what the drift report prints. The line prints only on `check`, and only when both of the section's judges hold; a broken side prints its evidence in its own pass instead, and the line stays away.
 
 ### One owner per entry
 
@@ -264,7 +265,7 @@ One oxlint run carries both packages' rules, because a consumer composes `@jterr
 
 The judge is told oxlint's exit code, so the split never forgives a failure no diagnostic carries: a linter that exits non-zero with an empty report failed on something else (a config it could not load), and the pass stays red. Severity is never read — a finding a release ships at `warn` is exactly the debt a ratchet exists to hold down.
 
-`fix` is judged by the same section as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green. The pair reads the same tree where there is NO section either: both count the diagnostics, both print the same lines, and neither reads severity.
+`fix` is judged by the same section as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Before it judges, `fix` re-records what FELL: an entry whose count is below it is lowered to that count, and one at zero is dropped, each named in its pass — `re-recorded jterrazz.baseline.json › typescript › <rule> <was> → <now>`, the linter's entries under the Oxlint pass and the `names/*` ones under the Names pass. It never raises an entry nor adds a key: debt that grew is written only by `typescript baseline`, by hand. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green. The pair reads the same tree where there is NO section either: both count the diagnostics, both print the same lines, and neither reads severity.
 
 ### Recording it
 
@@ -272,7 +273,7 @@ The judge is told oxlint's exit code, so the split never forgives a failure no d
 typescript baseline
 ```
 
-A command of its own, because it neither checks nor repairs: it writes down where the project actually stands. `fix --baseline` would bury the rewrite of a tracked file inside the gesture a developer runs twenty times a day. The `typescript` section is written from the current counts of this package's rules, then the file is handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape. The `test` section is recorded by `@jterrazz/test`'s own command, never by this one, and a file this command cannot read as sections is refused rather than rewritten.
+A command of its own, because it neither checks nor repairs: it writes down where the project actually stands, debt that grew included. `fix --baseline` would bury that rewrite inside the gesture a developer runs twenty times a day; `fix` records only the falls, which can make the file shrink and never let it grow. The `typescript` section is written from the current counts of this package's rules, then the file is handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape. The `test` section is recorded by `@jterrazz/test`'s own command, never by this one, and a file this command cannot read as sections is refused rather than rewritten.
 
 Two more refusals keep the file honest, both in the Oxlint pass:
 
@@ -488,7 +489,7 @@ A directory holding only empty directories is empty, and is named once, at its t
 
 ### What the ratchet records
 
-Every rule carries the code `names(<rule>)`, and the ratchet records it as `names/<rule>`: `typescript baseline` writes the pass's counts into the `typescript` section of `jterrazz.baseline.json` beside the linter's, and where the section holds a `names/*` entry this pass is judged by it, with the three refusals of [the ratchet](#the-ratchet). A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
+Every rule carries the code `names(<rule>)`, and the ratchet records it as `names/<rule>`: `typescript baseline` writes the pass's counts into the `typescript` section of `jterrazz.baseline.json` beside the linter's, and where the section holds a `names/*` entry this pass is judged by it, exactly, with the four refusals of [the ratchet](#the-ratchet) — and `typescript fix` re-records the entries that fell, as it does the linter's. A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
 
 ## The Secrets (credentials) pass
 

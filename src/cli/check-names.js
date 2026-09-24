@@ -42,15 +42,17 @@
  *
  * Exit code: 0 when every name claims a subject or the ratchet holds, 1
  * otherwise. `--fix` deletes the empty directories first, printing each one,
- * and judges the tree that is left. It renames nothing: a rename is a move,
- * and choosing the name it moves to is the work the rule is asking for.
+ * re-records every `names/*` entry whose count fell — lowered, or dropped at
+ * zero, never raised — and judges the tree that is left. It renames nothing:
+ * a rename is a move, and choosing the name it moves to is the work the rule
+ * is asking for.
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, matchesGlob, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { judge, LABEL, readBaseline } from './check-baseline.js';
+import { judge, LABEL, readBaseline, reRecord } from './check-baseline.js';
 import { emptyDirectories, removeEmptyDirectory } from './empty-directories.js';
 import { readSection, SETTINGS_FILE } from './jterrazz-config.js';
 import { ignorePatternsOf, orRefused, projectFiles } from './project-files.js';
@@ -639,9 +641,10 @@ for (const { message, path, rule } of findings) {
  * it records none — or there is no file — every finding is a failure, exactly
  * as before a ratchet existed.
  */
-const recorded = Object.fromEntries(
-    Object.entries(readBaseline(root) ?? {}).filter(([rule]) => rule.startsWith(NAMESPACE)),
-);
+const ownedOf = (section) =>
+    Object.fromEntries(Object.entries(section).filter(([rule]) => rule.startsWith(NAMESPACE)));
+
+let recorded = ownedOf(readBaseline(root) ?? {});
 
 if (Object.keys(recorded).length === 0) {
     exit(findings.length > 0 ? 1 : 0);
@@ -650,6 +653,14 @@ if (Object.keys(recorded).length === 0) {
 const counts = {};
 for (const { rule } of findings) {
     counts[`${NAMESPACE}${rule}`] = (counts[`${NAMESPACE}${rule}`] ?? 0) + 1;
+}
+
+if (argv.includes('--fix')) {
+    const { lines, section } = reRecord(root, counts, (rule) => rule.startsWith(NAMESPACE));
+    for (const line of lines) {
+        stdout.write(`${line}\n`);
+    }
+    recorded = ownedOf(section);
 }
 
 const broken = judge(counts, recorded);

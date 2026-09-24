@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * The migration ratchet: a count per rule that may fall and never rise.
+ * The migration ratchet: a count per rule, exact, that a fix lowers and never raises.
  *
  * A project adopting a stricter rulebook has two honest options — burn every
  * diagnostic down before the first green run, or record where it stands and
@@ -11,14 +11,19 @@
  * instead of the raw exit code. Without this package's section every
  * diagnostic this package owns is a failure.
  *
- * Three things fail a run that has one:
+ * The section is EXACT: an entry states where the project stands, never a
+ * ceiling. Four things fail a run that has one:
  *
  * - a rule whose count EXCEEDS its entry — the debt grew;
  * - a rule with diagnostics and NO entry — a rule nobody recorded owing;
+ * - a rule whose count is BELOW its entry — the debt fell, so the entry is
+ *   re-recorded;
  * - an entry whose count is now zero — the ratchet moved, so the entry goes.
  *
- * The third is what makes the file shrink. Without it a baseline records a debt
- * that was paid years ago and nothing ever says so.
+ * The two falls are what make the file shrink, and they are what `--fix`
+ * records (`tightened`): it lowers an entry that fell and drops one at zero,
+ * then judges. It never raises an entry nor adds a key — debt that grew is
+ * written only by `typescript baseline`.
  *
  * The `typescript` section holds this package's rules and nothing else.
  * oxlint's JSON report also carries the `jterrazz(*)` rules a consumer
@@ -38,8 +43,8 @@
  * A green run speaks once about the section, never about a held finding: given
  * `--names <json>` beside a judging run, it prints one line for the WHOLE
  * section — `jterrazz.baseline.json › typescript: <n> held across <k> rules`,
- * the shape `@jterrazz/test` gives its own — when both reporters' counts sit
- * within it. Where either side breaks the ratchet it prints no summary: the
+ * the shape `@jterrazz/test` gives its own — when both reporters' counts
+ * stand at it. Where either side breaks the ratchet it prints no summary: the
  * pass that owns the broken entry prints the evidence.
  *
  * A file of the per-package layout — `typescript.baseline.json`,
@@ -47,14 +52,16 @@
  * fails the run with the section its entries move to.
  *
  * Usage: node check-baseline.js <oxlint-json> [root] [--names <json>] [--write]
- *                               [--linter-exit <code>]
+ *                               [--fix] [--linter-exit <code>]
  *
  * `--write` rewrites the section from the current counts — that is
  * `typescript baseline`, a command of its own because it RECORDS rather than
  * checks or repairs. `--linter-exit` is the exit code of the human run beside
  * the JSON one: a linter that failed with no diagnostic at all failed for a
  * reason no count can forgive (a config it could not load), and the judge
- * says so. Exit code: 0 when the ratchet holds, 1 otherwise.
+ * says so. `--fix` re-records the linter's entries that fell, naming each,
+ * and leaves the `names/*` entries to the Names pass's own `--fix`. Exit code:
+ * 0 when the ratchet holds, 1 otherwise.
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -203,6 +210,10 @@ export function judge(counts, baseline) {
             broken.push(`${rule} has ${count} diagnostic(s) and no entry — it is new debt`);
         } else if (count > allowed) {
             broken.push(`${rule} is at ${count}, above its baseline of ${allowed}`);
+        } else if (count < allowed) {
+            broken.push(
+                `${rule} is at ${count}, below its baseline of ${allowed} — the debt fell, \`typescript fix\` re-records it`,
+            );
         }
     }
 
@@ -220,6 +231,50 @@ export function judge(counts, baseline) {
 }
 
 /**
+ * The section a fix records: every entry `owns` accepts lowered to the count
+ * that fell below it, and dropped at zero — never raised, and no key added,
+ * which would record debt that grew. Every other entry is kept as it is.
+ * `undefined` when nothing fell.
+ */
+export function tightened(counts, baseline, owns) {
+    const next = {};
+    let fell = false;
+    for (const [rule, allowed] of Object.entries(baseline)) {
+        const count = owns(rule) ? Math.min(counts[rule] ?? 0, allowed) : allowed;
+        fell ||= count < allowed;
+        if (count > 0) {
+            next[rule] = count;
+        }
+    }
+
+    return fell ? next : undefined;
+}
+
+/**
+ * Under `fix`, write the section `tightened` returns, every other byte of the
+ * file kept. Returns the section the verdict is judged against and one line
+ * per entry the fix moved.
+ */
+export function reRecord(root, counts, owns) {
+    const held = readBaseline(root) ?? {};
+    const next = tightened(counts, held, owns);
+    if (next === undefined) {
+        return { lines: [], section: held };
+    }
+
+    const path = join(root, BASELINE);
+    const text = readFileSync(path, 'utf8');
+    const written = serialise(next, indentOf(text));
+    writeFileSync(path, withSection(text, written));
+    const lines = Object.keys(held)
+        .toSorted()
+        .filter((rule) => (next[rule] ?? 0) !== held[rule])
+        .map((rule) => `re-recorded ${LABEL} › ${rule} ${held[rule]} → ${next[rule] ?? 0}`);
+
+    return { lines, section: next };
+}
+
+/**
  * The one line a green ratchet prints: what the file holds, by count and by
  * rule. The findings themselves print only with a failing verdict, where they
  * are the evidence.
@@ -231,13 +286,22 @@ export function heldSummary(counts) {
     return `${LABEL}: ${total} held across ${rules} rule${rules === 1 ? '' : 's'}`;
 }
 
-/** A section's text: sorted, so a diff reads as a burn-down. The formatter owns its indent. */
-function serialise(counts) {
+/**
+ * A section's text: sorted, so a diff reads as a burn-down, nested one `indent`
+ * under the file's top level. The formatter owns the indent of a file it has
+ * formatted; a rewrite reads it off the file, so it keeps that shape.
+ */
+function serialise(counts, indent = '  ') {
     const sorted = Object.fromEntries(
         Object.entries(counts).toSorted(([left], [right]) => (left < right ? -1 : 1)),
     );
 
-    return JSON.stringify(sorted, null, 2).replaceAll('\n', '\n  ');
+    return JSON.stringify(sorted, null, indent).replaceAll('\n', `\n${indent}`);
+}
+
+/** The indent of a file's first member, or two spaces where it has none on a line of its own. */
+function indentOf(text) {
+    return /\n(?<indent>[ \t]+)"/u.exec(text)?.groups.indent ?? '  ';
 }
 
 /** Where the JSON value starting at `start` ends — past its closing bracket, quote or literal. */
@@ -349,6 +413,7 @@ function valueOf(flag) {
 /* Imported for the ratchet's reading, run for the gate — never both at once. */
 if (import.meta.main) {
     const isWrite = argv.includes('--write');
+    const isFix = argv.includes('--fix');
     const namesPath = valueOf('--names');
     const linterExit = valueOf('--linter-exit');
     const flagValues = new Set([namesPath, linterExit].filter((value) => value !== undefined));
@@ -437,8 +502,22 @@ if (import.meta.main) {
         exit(rules.length > 0 || legacy.length > 0 ? 1 : 0);
     }
 
+    /* The linter's entries are this run's to re-record; the Names pass re-records its own. */
+    let section = whole;
+    if (isFix) {
+        const { lines, section: recorded } = reRecord(
+            root,
+            linterCounts,
+            (rule) => !rule.startsWith(NAMES_NAMESPACE) && !isTestOwned(rule),
+        );
+        for (const line of lines) {
+            stdout.write(`${line}\n`);
+        }
+        section = recorded;
+    }
+
     const baseline = Object.fromEntries(
-        Object.entries(whole).filter(([rule]) => !rule.startsWith(NAMES_NAMESPACE)),
+        Object.entries(section).filter(([rule]) => !rule.startsWith(NAMES_NAMESPACE)),
     );
     const broken = judge(linterCounts, baseline);
 
@@ -453,7 +532,7 @@ if (import.meta.main) {
         exit(1);
     }
 
-    if (namesPath !== undefined && judge(counts, whole).length === 0) {
+    if (namesPath !== undefined && judge(counts, section).length === 0) {
         stdout.write(`${heldSummary(counts)}\n`);
     }
 

@@ -1,4 +1,4 @@
-description: passes fix and check alike on a project whose diagnostics stay under the counts it recorded
+description: passes fix and check alike on a project whose diagnostics stand at the counts it recorded
 fixture: ./fixtures/baseline/within/
 runs:
     # The pair, on one tree: the two `debugger` statements are errors, so

@@ -1,0 +1,138 @@
+description: fails a ratchet whose debt fell below what it recorded, until fix re-records it
+fixture: ./fixtures/baseline/fell/
+runs:
+    # The section is exact: one `debugger` and one construct file stand under
+    # entries of two each. `check` names both falls, each in the pass that
+    # judges it; `fix` lowers both entries and keeps the `test` section byte
+    # for byte; the `check` after it holds.
+    - command: check
+      exit: 1
+      # The oxlint pass prints the linter's own report first, and that block
+      # has no fixed shape (baseline-beyond.spec.yaml says why).
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+          {{any}}
+          baseline-ratchet  jterrazz.baseline.json › typescript  eslint/no-debugger is at 1, below its baseline of 2 — the debt fell, `typescript fix` re-records it
+          Run 'typescript baseline' to record where the project actually stands.
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          names-construct  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds
+          baseline-ratchet  jterrazz.baseline.json › typescript  names/names-construct is at 1, below its baseline of 2 — the debt fell, `typescript fix` re-records it
+          Run 'typescript baseline' to record where the project actually stands.
+          ✗ Failed with exit code 1
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
+    - command: fix
+      exit: 0
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+
+          re-recorded jterrazz.baseline.json › typescript › eslint/no-debugger 2 → 1
+          ✓ Passed
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          names-construct  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds
+          re-recorded jterrazz.baseline.json › typescript › names/names-construct 2 → 1
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✓ All checks passed
+      files:
+          jterrazz.baseline.json:
+              equals: |
+                  {
+                      "typescript": {
+                          "eslint/no-debugger": 1,
+                          "names/names-construct": 1
+                      },
+                      "test": {
+                          "jterrazz/some-rule": 3
+                      }
+                  }
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          jterrazz.baseline.json › typescript: 2 held across 2 rules
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

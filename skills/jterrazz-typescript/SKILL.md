@@ -16,7 +16,7 @@ One devDependency that builds, checks, lints and formats a project. The manual i
 | `typescript build`       | an application: ESM + types into `dist/`                                                 |
 | `typescript bundle`      | a library: ESM + CJS + types, entries read off the `exports` map                         |
 | `typescript doctor`      | first read after a bump: installed tools against the declared ranges                     |
-| `typescript baseline`    | a bump lands red: record today's counts, which may then only fall                        |
+| `typescript baseline`    | a bump lands red: record today's counts, exact — `fix` re-records one that fell          |
 | `typescript docs-layout` | a repository with no npm project: the manual's shape, alone                              |
 
 A project names ONE profile — `node`, `next`, `astro`, `expo`, `bun`, `react` — in `oxlint.config.ts` and the matching preset in `tsconfig.json` (a published package: `node`, with the `library` tsconfig), and its three config files import `@jterrazz/typescript` and nothing else. The wiring is `docs/02-developing.md`.

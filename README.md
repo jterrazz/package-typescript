@@ -17,9 +17,9 @@ npx typescript start           # Run the built application
 npx typescript dev             # Build, run, and rebuild on changes
 npx typescript docs-layout .   # Check a repository's docs/ against the manual spine
 npx typescript check           # Every quality pass, in parallel, ending on a drift report
-npx typescript fix             # Auto-fix lint, formatting, the .gitignore and suppression spellings
+npx typescript fix             # Auto-fix lint, formatting, the .gitignore, suppression spellings, fallen baseline counts
 npx typescript doctor          # Installed tool versions against the ranges this release declares
-npx typescript baseline        # Record today's oxlint diagnostics, so the count may only fall
+npx typescript baseline        # Record today's oxlint diagnostics, so the count may only fall — fix re-records a fall
 npx typescript clean           # Remove .artifacts/ (dist/ stays — it is the product)
 ```
 

@@ -42,7 +42,7 @@ bin/
     └── check.sh              # Fourteen passes in parallel; each that RAN prints a header and a verdict, in one fixed order
 
 src/cli/check-architecture.js # The declared layer map against the resolved graph — the Architecture gate (dependency-cruiser)
-src/cli/check-baseline.js     # The oxlint ratchet — counts that may fall and never rise; `typescript baseline` writes it
+src/cli/check-baseline.js     # The oxlint ratchet — exact counts; `fix` re-records what fell, `typescript baseline` writes it
 src/cli/check-drift.js        # How far the project stands from its profile — the drift report, `--json` for a machine
 src/cli/check-docs.js         # The manual's shape, read off the repository's docs/ — the reader behind the Docs (layout) pass
 src/cli/check-gitignore.js    # The artefact convention, read off the project's .gitignore — check | --fix

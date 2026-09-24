@@ -1,13 +1,11 @@
-description: fails a fix run on a tree that owes nothing, because the ratchet moved and the entry stayed
+description: drops the entry a fix run finds at zero, on a tree that owes nothing
 fixture: ./fixtures/baseline/settled/
 runs:
+    # oxlint itself exits 0 here: the fixer leaves a clean tree. The ratchet
+    # moved and the entry stayed, and a paid debt is a fall the fix records:
+    # the entry goes, the pass names it, and the run is green.
     - command: fix
-      exit: 1
-      # oxlint itself exits 0 here: the fixer leaves a clean tree. What it
-      # prints for that is the environment's — a summary line under
-      # GITHUB_ACTIONS, nothing in a terminal — so the block is spanned
-      # ([Testing](../../../docs/03-testing.md)). What is claimed is the
-      # ratchet's verdict, which fix mode is judged by exactly as check mode is.
+      exit: 0
       stdout: |4
            START  Running quality fixes
 
@@ -16,10 +14,9 @@ runs:
           ✓ Passed
 
            RUN  Oxlint Fix
-          {{any}}
-          baseline-ratchet  jterrazz.baseline.json › typescript  eslint/no-debugger is at zero — the ratchet moved, delete its entry
-          Run 'typescript baseline' to record where the project actually stands.
-          ✗ Failed with exit code 1
+
+          re-recorded jterrazz.baseline.json › typescript › eslint/no-debugger 2 → 0
+          ✓ Passed
 
            RUN  Oxfmt Format
 
@@ -35,4 +32,10 @@ runs:
 
            END  Finalizing quality fixes
 
-          ✗ Some checks failed
+          ✓ All checks passed
+      files:
+          jterrazz.baseline.json:
+              equals: |
+                  {
+                      "typescript": {}
+                  }

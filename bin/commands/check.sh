@@ -830,11 +830,21 @@ run_checks() {
 
         # The section has two reporters, and a green run states it once, whole:
         # the Names pass's report joins the judge, which prints the file's one
-        # held line when both sides sit within it — and nothing else, since a
+        # held line when both sides stand at it — and nothing else, since a
         # held finding is the ratchet doing its job.
+        #
+        # In fix mode the judge re-records the linter's entries that fell, and
+        # the Names pass its own: two writers of one file, so the Names pass
+        # has finished before this one reads it.
         local linter_exit=()
         local names_report=()
-        if [ "$FIX_MODE" = false ]; then
+        local ratchet_fix=()
+        if [ "$FIX_MODE" = true ]; then
+            ratchet_fix=(--fix)
+            wait $names_pid
+            names_status=$?
+            names_pid_waited=true
+        else
             linter_exit=(--linter-exit "$lint_status")
             if [ -n "$names_pid" ] && [ -f "$BASELINE_FILE" ]; then
                 wait $names_pid
@@ -844,7 +854,7 @@ run_checks() {
             fi
         fi
         node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$tmp_dir/lint.json" . \
-            "${linter_exit[@]}" "${names_report[@]}" > "$tmp_dir/ratchet.log" 2>&1
+            "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" > "$tmp_dir/ratchet.log" 2>&1
         lint_status=$?
         if [ "$lint_status" -eq 0 ] && [ ${#names_report[@]} -gt 0 ]; then
             lint_held=true
@@ -942,6 +952,11 @@ run_checks() {
     local lint_log="$tmp_dir/lint.log"
     local lint_speaks=""
     if [ "$lint_status" -eq 0 ] && [ "$lint_held" = true ]; then
+        lint_log="$tmp_dir/ratchet.log"
+        lint_speaks="writer"
+    fi
+    # A green fix that re-recorded an entry wrote a tracked file, and says which.
+    if [ "$FIX_MODE" = true ] && [ "$lint_status" -eq 0 ] && [ -s "$tmp_dir/ratchet.log" ]; then
         lint_log="$tmp_dir/ratchet.log"
         lint_speaks="writer"
     fi
