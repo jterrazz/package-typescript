@@ -29,7 +29,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { LABEL, labelOf, readBaseline, TEST_SECTION } from './check-baseline.js';
+import { LABEL, labelOf, readBaseline, SECTION, TEST_SECTION } from './check-baseline.js';
 import { countSuppressions } from './check-suppressions.js';
 import { toolVersions } from './doctor.js';
 import CONFIGS from './oxlint-config-names.json' with { type: 'json' };
@@ -224,6 +224,15 @@ function rulesOffLine() {
     return off.length === 0 ? 'none' : `${off.length} (${off.join(', ')})`;
 }
 
+/** A ratchet section's row value: its total, or `nothing held` — the Oxlint pass's words — for a section absent or holding no entry. */
+function heldOf(section) {
+    const recorded = readBaseline(root, section) ?? {};
+
+    return Object.keys(recorded).length === 0
+        ? 'nothing held'
+        : Object.values(recorded).reduce((sum, count) => sum + count, 0);
+}
+
 /* The longest label is a ratchet section's, so every row aligns to it. */
 const LABEL_WIDTH = Math.max(LABEL.length, labelOf(TEST_SECTION).length) + 2;
 
@@ -242,9 +251,9 @@ stdout.write(
 );
 stdout.write(row('rules off vs profile', rulesOffLine()));
 stdout.write(row('suppressions', suppressions));
-stdout.write(row(LABEL, baselineTotal === null ? 'absent' : baselineTotal));
-if (testBaselineTotal !== null) {
-    stdout.write(row(labelOf(TEST_SECTION), testBaselineTotal));
+stdout.write(row(LABEL, heldOf(SECTION)));
+if (readBaseline(root, TEST_SECTION) !== null) {
+    stdout.write(row(labelOf(TEST_SECTION), heldOf(TEST_SECTION)));
 }
 stdout.write(
     row(

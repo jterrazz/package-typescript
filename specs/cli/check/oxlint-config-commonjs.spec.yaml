@@ -50,7 +50,7 @@ runs:
             profile                              none of this package's
             rules off vs profile                 not measured
             suppressions                         0
-            jterrazz.baseline.json › typescript  absent
+            jterrazz.baseline.json › typescript  nothing held
             tool versions                        in range
 
            END  Finalizing quality checks
