@@ -119,8 +119,8 @@ jsx_a11y/tabindex-no-positive
 logical-assignment-operators
 max-classes-per-file
 max-depth
-- max-lines
-- max-lines-per-function
+max-lines
+max-lines-per-function
 max-nested-callbacks
 max-params
 - max-statements

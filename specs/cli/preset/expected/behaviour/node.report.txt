@@ -1,2 +1,4 @@
 our-options.ts:20:21 eslint(max-params)
 our-options.ts:34:1 import(extensions)
+sized.ts:117:8 eslint(max-lines-per-function)
+sized.ts:335:29 eslint(max-lines)

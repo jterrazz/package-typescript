@@ -234,7 +234,7 @@ Two more refusals keep the file honest, both in the Oxlint pass:
 - `baseline-unreadable` — a `jterrazz.baseline.json` that is not JSON, or that holds a top-level key whose value is not a section of counts: a flat `{ "<rule>": <count> }` copied from an older file is the common case.
 - `baseline-legacy` — a `typescript.baseline.json`, `test.baseline.json` or `oxlint.baseline.json` still at the root. None is read; each is named with the section its entries move to, and the pass stays red until it is gone.
 
-This repository's `jterrazz.baseline.json` holds no `typescript` section, and that is the ratchet's own rule showing: turning type-aware linting on found seven diagnostics in its own source, the seven were fixed rather than recorded, and an entry at zero is an entry that goes. The toolchain is consumer #1 of the rulebook it ships, so its own tree is the one place the debt is never carried.
+This repository's `typescript` section holds one entry, `eslint/max-lines`: the size caps turned on in 11.0.0 found nine files past 300 lines in its own source, splitting each is a change of its own, and the entry is what stops a tenth. Turning type-aware linting on had found seven diagnostics, and those were fixed rather than recorded. The toolchain is consumer #1 of the rulebook it ships, so its own tree carries only the debt a new rule found, and only until it is paid.
 
 ## The Publish (packaging) pass
 

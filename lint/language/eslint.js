@@ -1,13 +1,34 @@
-import { allOn, fragment, off, on } from '../_contract.js';
+import { allOn, fragment, off, on, scoped } from '../_contract.js';
 
 /*
  * The `eslint` plugin: oxlint's port of the ESLint core rules, all 183
  * non-nursery ones decided by name. The offs below are the whole list, and
  * each carries the one reason that justifies it.
  */
+/** The release the size decisions were taken in. */
+const SIZE_SINCE = '11.0.0';
+
 export default fragment({
     id: 'language/eslint',
     plugins: ['eslint'],
+    overrides: [
+        /*
+         * A spec file's size has one judge: `@jterrazz/test`'s C33, at 400
+         * lines, reaches every `*.spec.ts` and nothing else, and its message
+         * groups the tests by title — where the cut goes. The two caps never
+         * judge one file.
+         */
+        scoped({
+            files: ['**/*.spec.ts'],
+            rules: {
+                'max-lines': off({
+                    by: '@jterrazz/test C33 — a spec file holds at most 400 lines, and one cap judges a file',
+                    kind: 'covered',
+                }),
+            },
+            since: SIZE_SINCE,
+        }),
+    ],
     rules: {
         ...allOn([
             'accessor-pairs',
@@ -165,9 +186,15 @@ export default fragment({
 
         // -- On, at the strictest value the option carries --------------------
         'arrow-body-style': on(['as-needed']),
-        complexity: on([12]),
+        /* `modified`: a `switch` counts once, however many cases it holds —
+         * a dispatch over a closed union is one decision, not N paths to test. */
+        complexity: { ...on([{ max: 12, variant: 'modified' }]), since: SIZE_SINCE },
         'func-style': on(['declaration', { allowArrowFunctions: true }]),
         'max-depth': on([4]),
+        /* Size is not complexity: a long file or function can have one path.
+         * Both caps count every line, comments included, as C33 does. */
+        'max-lines': { ...on([{ max: 300 }]), since: SIZE_SINCE },
+        'max-lines-per-function': { ...on([{ max: 60 }]), since: SIZE_SINCE },
         'max-params': on([4]),
         'no-duplicate-imports': on([{ allowSeparateTypeImports: true }]),
         'no-unmodified-loop-condition': on([{ checkConditionalExpressions: true }]),
@@ -201,9 +228,14 @@ export default fragment({
             kind: 'evidence',
         }),
         'init-declarations': off({ by: 'no-unassigned-vars, prefer-const', kind: 'covered' }),
-        'max-lines': off({ by: 'complexity (12)', kind: 'covered' }),
-        'max-lines-per-function': off({ by: 'complexity (12)', kind: 'covered' }),
-        'max-statements': off({ by: 'complexity (12)', kind: 'covered' }),
+        /* oxfmt writes one statement per line, so the function cap bounds the count. */
+        'max-statements': off(
+            {
+                by: 'max-lines-per-function (60) — oxfmt puts one statement per line',
+                kind: 'covered',
+            },
+            SIZE_SINCE,
+        ),
         'no-continue': off({ by: 'max-depth (4)', kind: 'exclusive' }),
         'no-implied-eval': off({ by: 'typescript/no-implied-eval', kind: 'covered' }),
         'no-lonely-if': off({ by: 'unicorn/no-lonely-if', kind: 'covered' }),

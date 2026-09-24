@@ -1,4 +1,7 @@
 {
+    "typescript": {
+        "eslint/max-lines": 9
+    },
     "test": {
         "jterrazz-check/c18": 25,
         "jterrazz/d19w-probe-cluster": 7,
