@@ -14,7 +14,7 @@ describe('dev', () => {
     test('shows the startup message', async () => {
         // Given - dev mode on a sample app, resolved once the banner appears
         const result = await cli
-            .fixture(directory('../../fixtures/sample-app/'))
+            .fixture(directory('../../shared/fixtures/sample-app/'))
             .exec('dev', { timeout: 10_000, waitFor: 'Starting dev mode' });
 
         // Then - the banner and startup message appear
@@ -26,7 +26,7 @@ describe('dev', () => {
     test('builds and runs the app in watch mode', async () => {
         // Given - dev mode on a sample app, resolved once the app output appears
         const result = await cli
-            .fixture(directory('../../fixtures/sample-app/'))
+            .fixture(directory('../../shared/fixtures/sample-app/'))
             .exec('dev', { timeout: 15_000, waitFor: 'Hello from sample app' });
 
         // Then - the app output appears (the build succeeded and the app ran)

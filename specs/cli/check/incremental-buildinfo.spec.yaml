@@ -3,7 +3,7 @@ description: leaves the incremental buildinfo under .artifacts/tsc/
 # has no node_modules to extend the preset from, and the preset's own claim is
 # specs/cli/preset/tsconfig.test.ts's. What this document states is the product
 # behaviour — a check leaves its artefact in the convention's place, nowhere else.
-fixture: ../../fixtures/incremental-app/
+fixture: ../../shared/fixtures/incremental-app/
 runs:
     - command: check
       exit: 0

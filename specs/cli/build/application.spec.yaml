@@ -1,5 +1,5 @@
 description: builds an application successfully
-fixture: ../../fixtures/sample-app/
+fixture: ../../shared/fixtures/sample-app/
 runs:
     - command: build
       exit: 0
