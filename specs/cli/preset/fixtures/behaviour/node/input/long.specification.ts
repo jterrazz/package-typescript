@@ -1,7 +1,7 @@
 /*
  * A specification file is not a spec: `max-lines` holds it at 300 and
  * `max-lines-per-function` at 60, as any source file. The function below is
- * sixty-one lines, one past the cap, and the narration carries the file past 300.
+ * sixty-one lines and this file is 301, each one past its cap.
  */
 
 export function assembled(input: number): number {
@@ -297,24 +297,5 @@ export function assembled(input: number): number {
  * line 227 of the harness's narration
  * line 228 of the harness's narration
  * line 229 of the harness's narration
- * line 230 of the harness's narration
- * line 231 of the harness's narration
- * line 232 of the harness's narration
- * line 233 of the harness's narration
- * line 234 of the harness's narration
- * line 235 of the harness's narration
- * line 236 of the harness's narration
- * line 237 of the harness's narration
- * line 238 of the harness's narration
- * line 239 of the harness's narration
- * line 240 of the harness's narration
- * line 241 of the harness's narration
- * line 242 of the harness's narration
- * line 243 of the harness's narration
- * line 244 of the harness's narration
- * line 245 of the harness's narration
- * line 246 of the harness's narration
- * line 247 of the harness's narration
- * line 248 of the harness's narration
  */
 export const HARNESS = 'assembled';

@@ -2,8 +2,8 @@
  * The size and complexity decisions, each at the edge it draws, one case on each
  * side of it. `complexity` is 12 in its `modified` variant, where a `switch`
  * counts once; a function holds 60 lines, where upstream's default is 50; a file
- * holds 300 — `sized-at-cap.ts` is exactly that, and this one is longer, so it
- * is reported once, at its last line.
+ * holds 300 — `sized-at-cap.ts` is exactly that, `long.specification.ts` is 301,
+ * and this one is longer, so it is reported once, at its last line.
  */
 
 // complexity: modified — fifteen paths under the classic count, one decision here.

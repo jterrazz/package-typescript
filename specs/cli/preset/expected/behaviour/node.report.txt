@@ -1,5 +1,5 @@
 grouped-long.test.ts:321:4 eslint(max-lines)
-long.specification.ts:320:36 eslint(max-lines)
+long.specification.ts:301:36 eslint(max-lines)
 long.specification.ts:7:8 eslint(max-lines-per-function)
 our-options.ts:20:21 eslint(max-params)
 our-options.ts:34:1 import(extensions)
