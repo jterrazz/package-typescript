@@ -6,9 +6,9 @@
  *
  * `check` lints once, with `--format json`, because every reader of the run
  * needs the report — the ratchet counts it, the conventions checker's member
- * runs judge their rules in it — and only a failing pass needs the log. That
- * log is what a reader of the pass has always seen, so it is the linter's
- * own: the same lines, in the same order, in the same colours.
+ * runs judge their rules in it — and only a pass with something to show needs
+ * the log. That log is what a reader of the pass has always seen, so it is the
+ * linter's own: the same lines, in the same order, in the same colours.
  *
  * Which form that is, oxlint decides from the environment — one line per
  * diagnostic under an AI agent, GitHub workflow commands on a GitHub runner,
@@ -21,7 +21,13 @@
  * config it could not parse and the report that never came — is printed as it
  * came, then its standard error, then the report drawn.
  *
- * Usage: node oxlint-report.js <stdout-file> <stderr-file> --oxlint <binary>
+ * The pass also draws it when it PASSED and the Test Conventions pass failed:
+ * the checker judges the `jterrazz(*)` diagnostics off this same report and
+ * leaves printing them here, so a broken `test` section still shows where each
+ * one stands. `--if-diagnostics` asks for that log, which is nothing at all
+ * when the report holds no diagnostic.
+ *
+ * Usage: node oxlint-report.js <stdout-file> <stderr-file> --oxlint <binary> [--if-diagnostics]
  */
 
 import { spawnSync } from 'node:child_process';
@@ -124,6 +130,11 @@ export function renderReport(report, form, read) {
     return typeof report.number_of_files === 'number' ? `${body}${closingLines(report)}` : body;
 }
 
+/** Whether the report carries a diagnostic to draw. */
+function holdsDiagnostics(report) {
+    return (report?.diagnostics ?? []).length > 0;
+}
+
 function readOrNothing(path) {
     try {
         return readFileSync(path);
@@ -137,11 +148,14 @@ function main() {
     const oxlint = argv[argv.indexOf('--oxlint') + 1];
     if (stdoutFile === undefined || stderrFile === undefined || oxlint === undefined) {
         stdout.write(
-            'Usage: node oxlint-report.js <stdout-file> <stderr-file> --oxlint <binary>\n',
+            'Usage: node oxlint-report.js <stdout-file> <stderr-file> --oxlint <binary> [--if-diagnostics]\n',
         );
         exit(2);
     }
     const { before, report } = splitReport(readOrNothing(stdoutFile)?.toString('utf8') ?? '');
+    if (argv.includes('--if-diagnostics') && !holdsDiagnostics(report)) {
+        return;
+    }
     const errors = readOrNothing(stderrFile)?.toString('utf8') ?? '';
     const drawn = report === null ? '' : renderReport(report, probeForm(oxlint), readOrNothing);
     stdout.write(`${before}${errors}${drawn}`);

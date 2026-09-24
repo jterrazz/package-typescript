@@ -66,11 +66,15 @@ function groundOf(): string {
  * npm sets it for whatever script started this suite, and `baseline` reads it
  * as the project it records — a runner's variable would send the write here.
  */
-function run(project: string, command: string): { status: null | number; stdout: string } {
+function run(
+    project: string,
+    command: string,
+    env: NodeJS.ProcessEnv = process.env,
+): { status: null | number; stdout: string } {
     const result = spawnSync('bash', [BIN, command], {
         cwd: project,
         encoding: 'utf8',
-        env: { ...process.env, INIT_CWD: project },
+        env: { ...env, INIT_CWD: project },
     });
 
     return { status: result.status, stdout: result.stdout };
@@ -164,6 +168,60 @@ describe('baseline-ownership', () => {
         // Then - this package's file forgives nothing of the checker's
         expect(verdict(stdout, 'Test Conventions')).toBe('✗ Failed');
         expect(stdout).toContain('a finding the stub always reports');
+    });
+
+    /** A checker whose `test` section breaks on the plugin's rule — it counts that diagnostic and leaves printing it to oxlint's pass, as 17 does. */
+    const COUNTING_CHECKER = `#!/usr/bin/env node
+process.stdout.write("conventions checker: 1 plugin diagnostic judged, printed by oxlint's own pass\\n");
+process.exit(1);
+`;
+
+    test("prints a `jterrazz(*)` diagnostic's location once when only @jterrazz/test's section breaks", () => {
+        // Given - a checker failing on the plugin's rule alone, and nothing this package owns reported
+        const project = groundOf();
+        writeFileSync(
+            join(project, 'node_modules/@jterrazz/test/dist/checker.js'),
+            COUNTING_CHECKER,
+        );
+
+        // When - the checks run
+        const { stdout } = run(project, 'check');
+        const oxlint = stdout.slice(stdout.indexOf('Oxlint Check'), stdout.indexOf('Oxfmt Check'));
+
+        // Then - the oxlint pass keeps its own verdict and prints the diagnostic, where it stands
+        expect(verdict(stdout, 'Oxlint Check')).toBe('✓ Passed');
+        expect(oxlint).toContain('index.ts');
+
+        // Then - each of its two diagnostics, the config's and index.ts's, once across the whole run
+        expect(oxlint.split('reported by the stub plugin')).toHaveLength(3);
+        expect(stdout.split('reported by the stub plugin')).toHaveLength(3);
+        expect(verdict(stdout, 'Test Conventions')).toBe('✗ Failed');
+    });
+
+    /*
+     * The framed form is the one that closes on a summary, `Finished in …`, even
+     * over no diagnostic at all; an environment carrying nothing but PATH and
+     * HOME is where oxlint picks it, whatever agent or runner the suite is in.
+     */
+    test('draws nothing under a green oxlint pass when no diagnostic stands behind the broken section', () => {
+        // Given - a checker failing, and a config arming no rule, in the framed form's environment
+        const project = groundOf();
+        writeFileSync(join(project, 'oxlint.config.ts'), 'export default { rules: {} };\n');
+        writeFileSync(
+            join(project, 'node_modules/@jterrazz/test/dist/checker.js'),
+            COUNTING_CHECKER,
+        );
+
+        // When - the checks run
+        const { stdout } = run(project, 'check', {
+            HOME: process.env.HOME,
+            PATH: process.env.PATH,
+        });
+        const oxlint = stdout.slice(stdout.indexOf('Oxlint Check'), stdout.indexOf('Oxfmt Check'));
+
+        // Then - the pass says only its verdict
+        expect(oxlint).not.toContain('Finished in');
+        expect(verdict(stdout, 'Oxlint Check')).toBe('✓ Passed');
     });
 
     /** A green checker that answers the root run with its held line — alone under `--summary`, as 17 does. */

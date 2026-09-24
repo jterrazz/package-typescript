@@ -945,6 +945,19 @@ run_checks() {
         lint_log="$tmp_dir/ratchet.log"
         lint_speaks="writer"
     fi
+    # Unless @jterrazz/test's section broke: its checker judges the `jterrazz(*)`
+    # diagnostics off this same report and leaves printing them to this pass, so
+    # a green pass still draws the report — the one print of each diagnostic —
+    # above whatever it would have said. A report with none draws nothing.
+    if [ "$FIX_MODE" = false ] && [ "$lint_status" -eq 0 ] && [ "$checker_status" -ne 0 ]; then
+        node "$PACKAGE_ROOT/src/cli/oxlint-report.js" "$tmp_dir/lint.json" "$tmp_dir/lint.err" \
+            --oxlint "$OXLINT" --if-diagnostics > "$tmp_dir/lint-drawn.log"
+        if [ -s "$tmp_dir/lint-drawn.log" ]; then
+            [ -n "$lint_speaks" ] && cat "$lint_log" >> "$tmp_dir/lint-drawn.log"
+            lint_log="$tmp_dir/lint-drawn.log"
+            lint_speaks="writer"
+        fi
+    fi
     report_pass "TypeScript Check" $type_status "$tmp_dir/type.log"
     report_pass "$lint_label" $lint_status "$lint_log" "$lint_speaks"
     report_pass "$format_label" $format_status "$tmp_dir/format.log"
