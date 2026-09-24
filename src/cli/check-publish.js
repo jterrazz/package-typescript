@@ -24,6 +24,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, matchesGlob, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
+import { stripVTControlCharacters } from 'node:util';
 
 import {
     builtChunks,
@@ -120,11 +121,34 @@ for (const target of [...new Set(targets)].toSorted((left, right) => (left < rig
     }
 }
 
+/** The build's chunks, or the one line a build that fails earns in their stead. */
+async function chunksOrFinding() {
+    try {
+        return { chunks: await builtChunks(root, targets), line: null };
+    } catch (error) {
+        const reason =
+            stripVTControlCharacters(error instanceof Error ? error.message : String(error))
+                .split('\n')
+                .map((line) => line.trim())
+                .find((line) => line !== '' && !/^Build failed with \d+ errors?:$/u.test(line)) ??
+            'tsdown gave no reason';
+
+        return {
+            chunks: null,
+            line: `publish-build  package.json  found: the build failed — ${reason} · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else \`typescript bundle\` · read: @jterrazz/typescript's docs/06-quality-checks.md#the-build-guard\n`,
+        };
+    }
+}
+
 const reader = await testMaterialReader(root);
-const chunks = reader === null ? null : await builtChunks(root, targets);
-for (const { message, path, rule } of reader === null || chunks === null
+const built = reader === null ? { chunks: null, line: null } : await chunksOrFinding();
+if (built.line !== null) {
+    stdout.write(built.line);
+    failed = true;
+}
+for (const { message, path, rule } of reader === null || built.chunks === null
     ? []
-    : testMaterialFindings({ chunks, manifest, reader, root })) {
+    : testMaterialFindings({ chunks: built.chunks, manifest, reader, root })) {
     stdout.write(`${rule}  ${path}  ${message}\n`);
     failed = true;
 }

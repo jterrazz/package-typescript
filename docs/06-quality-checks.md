@@ -293,6 +293,7 @@ It runs once per package the registry would accept — one that names an entry (
 | `publish-exports-target` | an `exports`, `main` or `types` target that is not on disk |
 | `publish-files`          | a target `files` does not reach — it 404s in a consumer    |
 | `publish-test-material`  | a shipped file compiled from test material                 |
+| `publish-build`          | a build the guard below cannot run, because it fails       |
 
 Beside them run `publint --strict` on the packed tarball and `attw --pack . --profile esm-only` on the declarations, and each prints its own report verbatim when it refuses.
 
@@ -311,6 +312,8 @@ That build leaves the disk alone as far as tsdown lets it: no chunk is written, 
 - a specifier it leaves external, when `testPackageOf` names it and the package declares it neither in `dependencies` nor in `peerDependencies` — a test tool ships its runtime on purpose.
 
 What test material IS is `@jterrazz/test`'s alone: the two readers are the ones its F2 rule judges by, published on its `./oxlint` entry, and the pass loads them rather than keeping a copy — from the install the package resolves, else, when that install publishes no reader or the package resolves none, from the one the toolchain reaches by name. Where neither publishes them, and in a package with no build — no config of its own and no target under `dist/`, like this package — nothing is judged. The finding states itself in four parts and sends its reader to F2's row, where the definition lives.
+
+A build that fails is a finding too. `publish-build` names tsdown's first error in the same four parts, and the pass carries on to publint and attw, so one run still says everything else it knows.
 
 The second source is for a package that loads no reader of its own. It reaches past the repository boundary [test-package.js](../src/cli/test-package.js) keeps, since it resolves by node's rules from the toolchain's own location. In a consumer it mostly lands on the consumer's own install, or on none under a strict layout. The package that relies on it is a fixture of this repository copied where no `node_modules` sits.
 
