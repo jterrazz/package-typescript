@@ -41,3 +41,41 @@ runs:
            END  Finalizing quality checks
 
           ✓ All checks passed
+    # The same glob under fix: the fixers that would rewrite the file — the
+    # linter's, the directive rewriter — and the gates that would fail it are
+    # all handed it, so the run is green and notes/ keeps every byte.
+    - command: fix --ignore-pattern 'notes/**'
+      exit: 0
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+
+          ✓ Passed
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✓ All checks passed
+      files:
+          notes/utils/scratch.ts:
+              equals: |
+                  // eslint-disable-next-line no-unused-vars
+                  export function stop(): void {
+                      debugger;
+                  }
