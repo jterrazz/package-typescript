@@ -305,6 +305,8 @@ The first two rule ids overlap publint on purpose. They read the SOURCE TREE and
 
 A published build never carries test material, and `publish-test-material` refuses one that does. The pass builds the package as it builds — its own `tsdown.config.*`, else the `bundle` preset over the entries its `exports` map earns — and reads each chunk's module ids off a `generateBundle` hook.
 
+Without a config of its own, that build IS `typescript bundle`'s: the same preset file, and the entries the same [entry-points.js](../src/cli/entry-points.js) reads off the map. Each chunk is named as the build writes it — `.js` and `.cjs` under the preset, and `.mjs` for an ESM chunk of a config that sets no extension — so `files` is asked about the path the tarball holds.
+
 That build leaves the disk alone as far as tsdown lets it: no chunk is written, and the config's `copy`, `exe` and `onSuccess` are switched off. A config's own `hooks` are the one thing an inline option cannot switch off, so a `build:done` hook that writes still writes.
 
 A file `files` ships is judged on three counts:

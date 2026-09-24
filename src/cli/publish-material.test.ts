@@ -1,7 +1,8 @@
 import { materialAt, testPackageOf } from '@jterrazz/test/oxlint';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { build } from 'tsdown';
 import { expect, onTestFinished, test } from 'vitest';
 
 import { builtChunks, testMaterialFindings, testMaterialReader } from './publish-material.js';
@@ -143,6 +144,26 @@ test('builds a package by its own config, leaving the disk as it found it', asyn
     expect(chunks?.map(({ file }) => file)).toStrictEqual(['dist/index.mjs', 'dist/testing.mjs']);
     expect(existsSync(join(unit, 'dist'))).toBe(false);
     expect(existsSync(join(unit, 'ON_SUCCESS_RAN'))).toBe(false);
+});
+
+test("names each chunk as the package's own build writes it", async () => {
+    // Given - a module package whose own config sets no extension, so tsdown picks `.mjs`
+    const unit = packageWith({
+        'package.json': '{ "type": "module" }\n',
+        'src/index.ts': 'export const one = 1;\n',
+        'tsdown.config.mjs': "export default { entry: ['src/index.ts'], dts: false };\n",
+    });
+
+    // When - the guard builds it, and then the package builds itself
+    const chunks = await builtChunks(unit, []);
+    await build({ config: join(unit, 'tsdown.config.mjs'), cwd: unit, logLevel: 'silent' });
+
+    // Then - the guard's names are the files the build wrote
+    expect(chunks?.map(({ file }) => file)).toStrictEqual(
+        readdirSync(join(unit, 'dist'))
+            .filter((name) => /\.[cm]?js$/u.test(name))
+            .map((name) => `dist/${name}`),
+    );
 });
 
 /** A repository whose own install of `@jterrazz/test` publishes `oxlint` as its `./oxlint` entry. */

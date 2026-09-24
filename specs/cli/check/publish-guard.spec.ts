@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
@@ -54,6 +54,14 @@ function publishPass(stdout: string): string[] {
         .filter((line) => line.trim() !== '');
 }
 
+/** The files a build wrote that a runtime loads — no map, no declaration. */
+function chunksOn(root: string): string[] {
+    return readdirSync(join(root, 'dist'))
+        .filter((name) => /\.[cm]?js$/u.test(name))
+        .map((name) => `dist/${name}`)
+        .toSorted();
+}
+
 /** The one finding a chunk compiled from the fixtures module earns. */
 const fixturesFinding = (file: string): string =>
     `publish-test-material  ${file}  found: ${file} is compiled from src/domain/user.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge F2 names, or take the module out of the entry · read: @jterrazz/test's docs/19-linting.md#f2-no-test-imports-in-prod`;
@@ -62,7 +70,7 @@ const BUILD_FINDING =
     "publish-build  package.json  found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else `typescript bundle` · read: @jterrazz/typescript's docs/06-quality-checks.md#the-build-guard";
 
 describe('publish-guard', () => {
-    test('fails a build whose entry is compiled from a fixtures module', () => {
+    test('fails a build whose entry is compiled from a fixtures module, naming each file `bundle` wrote', () => {
         // Given - a library whose entry imports a fixtures module, resolving @jterrazz/test, built by `typescript bundle`
         const root = consumer('fixtures-module/');
         expect(run(root, 'bundle').status).toBe(0);
@@ -70,10 +78,10 @@ describe('publish-guard', () => {
         // When - the quality checks run
         const { stdout } = run(root, 'check');
 
-        // Then - the pass fails on one finding per chunk
+        // Then - the pass fails on one finding per chunk, each named as the build wrote it
+        expect(chunksOn(root)).toStrictEqual(['dist/index.cjs', 'dist/index.js']);
         expect(publishPass(stdout)).toStrictEqual([
-            fixturesFinding('dist/index.cjs'),
-            fixturesFinding('dist/index.js'),
+            ...chunksOn(root).map((file) => fixturesFinding(file)),
             '✗ Failed with exit code 1',
         ]);
     });
