@@ -200,6 +200,7 @@ describe('drift', () => {
         // Then - the drift block is one JSON object carrying every row the human block prints
         expect(JSON.parse(reading)).toStrictEqual({
             baseline: null,
+            config: 'own',
             profile: 'node',
             rulesOff: [],
             suppressions: 1,

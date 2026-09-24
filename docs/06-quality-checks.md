@@ -362,7 +362,7 @@ A rule turned off, a suppression written, a baseline entry recorded and a tool l
 
 **The profile is read off the consumer's config, and a config that names none is NOT measured.** A project extending no profile of this package is not drifting from one, it never joined it, and reporting two hundred rules as "off" would say nothing about anything. The name comes from the config's own `import`, which is the only evidence there is: oxlint's config schema is closed, so a compiled profile cannot carry its own name through to `--print-config`.
 
-A project with no oxlint config of its own is measured against the default `check` hands its linter, the `node` profile: its profile line reads `node (the default — no config of its own)`, and `--json` names it `node`. The default is the profile itself, so no rule is off it and nothing can be unreasoned; the other three numbers are the project's as for any other.
+A project with no oxlint config of its own is measured against the default `check` hands its linter, the `node` profile: its profile line reads `node (the default — no config of its own)`, and `--json` names it `node` with `config: "default"` — where a project whose own config extends `node` reads `config: "own"`, so a fleet sweep tells the two apart. The default is the profile itself, so no rule is off it and nothing can be unreasoned; the other three numbers are the project's as for any other.
 
 The versions line reports only what deviates. The full table is `typescript doctor`'s, and printing it on every run would put a number that changes with every dependency bump in front of a reader looking for what changed in their own tree.
 

@@ -201,6 +201,7 @@ if (isJson) {
         `${JSON.stringify(
             {
                 baseline: baselineTotal,
+                config: configName === undefined ? 'default' : 'own',
                 profile: profileName,
                 rulesOff: off,
                 suppressions,
