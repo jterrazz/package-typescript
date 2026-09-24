@@ -30,7 +30,7 @@ afterAll(() => {
 });
 
 /** A project wired at this checkout the way an install would wire it. */
-function stand(config: string): void {
+function stand(config: string, configName = 'oxlint.config.ts'): void {
     writeFileSync(
         join(project, 'package.json'),
         `${JSON.stringify(
@@ -50,7 +50,12 @@ function stand(config: string): void {
     } catch {
         /* Already linked by an earlier case of this chain. */
     }
-    writeFileSync(join(project, 'oxlint.config.ts'), config);
+    for (const name of ['oxlint.config.ts', 'oxlint.config.mts']) {
+        if (name !== configName) {
+            rmSync(join(project, name), { force: true });
+        }
+    }
+    writeFileSync(join(project, configName), config);
 }
 
 /** A node-profile project linked at `toolchain`, one reasoned suppression in its source. */
@@ -136,6 +141,25 @@ describe('drift', () => {
         // Then - the rule is still REPORTED as off, and no longer refused: it is a decision now
         expect(reasoned.stdout).toContain('rules off vs profile                 1 (no-debugger)');
         expect(reasoned.stdout).not.toContain('drift-unreasoned');
+    });
+
+    test('reads the profile off oxlint.config.mts, one of the names oxlint itself looks for', () => {
+        // Given - the project's config sits at .mts rather than .ts, oxlint's own second candidate
+        stand(
+            [
+                "import { node } from '@jterrazz/typescript/oxlint';",
+                '',
+                'export default node;',
+                '',
+            ].join('\n'),
+            'oxlint.config.mts',
+        );
+
+        // When - the quality checks run there
+        const result = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+
+        // Then - the drift report finds the profile at that name too, not "none of this package's"
+        expect(result.stdout).toContain('profile                              node');
     });
 
     test('counts the suppressions, and names a tool left behind its range', () => {

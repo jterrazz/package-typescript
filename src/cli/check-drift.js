@@ -30,18 +30,10 @@ import { PROFILES } from '../../lint/profiles.js';
 import { LABEL, labelOf, readBaseline, TEST_SECTION } from './check-baseline.js';
 import { countSuppressions } from './check-suppressions.js';
 import { toolVersions } from './doctor.js';
+import CONFIGS from './oxlint-config-names.json' with { type: 'json' };
 import { ignorePatternsOf, orRefused } from './project-files.js';
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
-
-/** Where a consumer declares its rules, in the order oxlint looks. */
-const CONFIGS = [
-    'oxlint.config.ts',
-    'oxlint.config.mjs',
-    'oxlint.config.js',
-    'oxlint.config.cjs',
-    '.oxlintrc.json',
-];
 
 /** The profiles this package ships, read off the manifest that defines them. */
 const PROFILE_NAMES = new Set(Object.keys(PROFILES));
@@ -132,6 +124,9 @@ const root = resolve(
     }) ?? '.',
 );
 
+// CONFIGS is `oxlint-config-names.json`'s — the same list `tool-configs.sh`
+// hands oxlint, so a project counts as having a config here exactly when
+// `check`/`fix` treat it as having one.
 const configName = CONFIGS.find((name) => existsSync(join(root, name)));
 const source = configName === undefined ? null : readFileSync(join(root, configName), 'utf8');
 const profileName = profileOf(source);

@@ -12,11 +12,14 @@
 #
 # `PACKAGE_ROOT` is the caller's, resolved before this file is sourced.
 
-# The project's own configs, in the order each tool looks for them.
+# The project's own oxlint config, in the order oxlint looks for one — the
+# names of `src/cli/oxlint-config-names.json`, the one list this file and
+# `check-drift.js` both read, so a project counts as having a config in the
+# drift report exactly when it does here.
 OXLINT_CONFIG=""
-for candidate in oxlint.config.ts oxlint.config.mts oxlint.config.mjs oxlint.config.js oxlint.config.cjs .oxlintrc.json .oxlintrc.jsonc; do
+while IFS= read -r candidate; do
     [ -f "$candidate" ] && { OXLINT_CONFIG="$candidate"; break; }
-done
+done < <(node -e 'const {readFileSync}=require("node:fs");for(const n of JSON.parse(readFileSync(process.argv[1],"utf8")))process.stdout.write(n+"\n")' "$PACKAGE_ROOT/src/cli/oxlint-config-names.json")
 OXFMT_CONFIG=""
 for candidate in .oxfmtrc.json .oxfmtrc.jsonc oxfmt.config.ts oxfmt.config.mts; do
     [ -f "$candidate" ] && { OXFMT_CONFIG="$candidate"; break; }
