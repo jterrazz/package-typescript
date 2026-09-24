@@ -28,6 +28,23 @@ export default fragment({
             },
             since: SIZE_SINCE,
         }),
+        /*
+         * A test file's size per function has one judge too: its one
+         * `describe` (@jterrazz/test's C31) is a function as long as the file,
+         * and C34 caps what the function cap would have caught there, a test
+         * body, at the same 60 lines. The globs are the three suffixes that
+         * declare tests, the set C34 reads.
+         */
+        scoped({
+            files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts'],
+            rules: {
+                'max-lines-per-function': off({
+                    by: "@jterrazz/test C34 — a test body holds at most 60 lines, and a test file's one describe is as long as the file",
+                    kind: 'covered',
+                }),
+            },
+            since: SIZE_SINCE,
+        }),
     ],
     rules: {
         ...allOn([

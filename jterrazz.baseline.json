@@ -1,7 +1,6 @@
 {
     "typescript": {
-        "eslint/max-lines": 9,
-        "eslint/max-lines-per-function": 13
+        "eslint/max-lines": 9
     },
     "test": {
         "jterrazz-check/c18": 25,
