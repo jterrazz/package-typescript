@@ -1,0 +1,70 @@
+description: fails a build whose entry is compiled from a fixtures module
+fixture: ./fixtures/publish/fixtures-module/
+runs:
+    - command: bundle
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Bundling library (ESM + CJS + types)...
+
+          ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
+          ℹ config file: {{path}} 
+          ℹ entry: src/index.ts
+          ℹ tsconfig: tsconfig.json
+          ℹ Build start
+          {{any}}
+          Build completed
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          jterrazz.baseline.json › typescript: nothing held
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Publish (packaging)
+
+          publish-test-material  dist/index.cjs  found: dist/index.cjs is compiled from src/domain/user.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge F2 names, or take the module out of the entry · read: @jterrazz/test's docs/19-linting.md#f2-no-test-imports-in-prod
+          publish-test-material  dist/index.js  found: dist/index.js is compiled from src/domain/user.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge F2 names, or take the module out of the entry · read: @jterrazz/test's docs/19-linting.md#f2-no-test-imports-in-prod
+          ✗ Failed with exit code 1
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            jterrazz.baseline.json › typescript  absent
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

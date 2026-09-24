@@ -1,0 +1,70 @@
+description: passes the same package once its entry no longer imports the fixtures module
+fixture:
+    - ./fixtures/publish/fixtures-module/
+    - ./fixtures/publish/fixtures-module-cut/
+runs:
+    - command: bundle
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Bundling library (ESM + CJS + types)...
+
+          ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
+          ℹ config file: {{path}} 
+          ℹ entry: src/index.ts
+          ℹ tsconfig: tsconfig.json
+          ℹ Build start
+          {{any}}
+          Build completed
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          jterrazz.baseline.json › typescript: nothing held
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Publish (packaging)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            jterrazz.baseline.json › typescript  absent
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

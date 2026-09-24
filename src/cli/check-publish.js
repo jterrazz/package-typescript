@@ -9,7 +9,8 @@
  * type declaration a modern resolver cannot see. The two tools that know those
  * failure modes best run here — `publint` on the packed tarball, and
  * `@arethetypeswrong/cli` on the declarations — beside the two joins only the
- * source tree can answer.
+ * source tree can answer, and the build guard: no shipped file is compiled
+ * from test material ([publish-material.js](publish-material.js)).
  *
  * Usage: node check-publish.js [root] [--publint <path>] [--attw <path>]
  *
@@ -23,6 +24,8 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, matchesGlob, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
+
+import { builtChunks, testMaterialFindings, testMaterialReader } from './publish-material.js';
 
 /** Npm ships these whatever `files` says, so neither rule asks about them. */
 const ALWAYS_PACKED = /^(?:package\.json|readme|license|licence|changelog)/iu;
@@ -134,6 +137,16 @@ for (const target of [...new Set(targets)].toSorted((left, right) => (left < rig
         );
         failed = true;
     }
+}
+
+const reader = await testMaterialReader(root);
+const chunks = reader === null ? null : await builtChunks(root, targets);
+const shipped = (chunks ?? []).filter(({ file }) => files.length === 0 || isPacked(files, file));
+for (const { message, path, rule } of reader === null
+    ? []
+    : testMaterialFindings({ chunks: shipped, manifest, reader, root })) {
+    stdout.write(`${rule}  ${path}  ${message}\n`);
+    failed = true;
 }
 
 for (const [name, binary, args] of [

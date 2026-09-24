@@ -23,7 +23,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Knip (unused code)                | knip (Node)                 | always (check only — it is not run in fix)                               |
 | Test Conventions (@jterrazz/test) | conventions checker         | per `specs/` root; per member resolving `@jterrazz/test` ≥ 15.3.0        |
 | Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)                |
-| Publish (packaging)               | publint + attw              | per package the registry would accept (not `private`)                    |
+| Publish (packaging)               | publint + attw + a build    | per package the registry would accept (not `private`)                    |
 | Architecture (layer map)          | dependency-cruiser          | check: a `.dependency-cruiser.*` at the project root                     |
 | Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)                      |
 | Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)                   |
@@ -292,12 +292,23 @@ It runs once per package the registry would accept — one that names an entry (
 | ------------------------ | ---------------------------------------------------------- |
 | `publish-exports-target` | an `exports`, `main` or `types` target that is not on disk |
 | `publish-files`          | a target `files` does not reach — it 404s in a consumer    |
+| `publish-test-material`  | a shipped file compiled from test material                 |
 
 Beside them run `publint --strict` on the packed tarball and `attw --pack . --profile esm-only` on the declarations, and each prints its own report verbatim when it refuses.
 
-The two rule ids overlap publint on purpose. They read the SOURCE TREE and it reads the TARBALL, which means they answer where npm is not reachable and they keep a stable id whatever publint's wording does next. A gate's vocabulary is its own.
+The first two rule ids overlap publint on purpose. They read the SOURCE TREE and it reads the TARBALL, which means they answer where npm is not reachable and they keep a stable id whatever publint's wording does next. A gate's vocabulary is its own.
 
 **Both tools are dependencies of this package rather than tsdown flags.** tsdown 0.23 can run them behind `--publint` and `--attw`, but only during a build — and `check` has to judge a package that does not build, which is exactly what this one is.
+
+### The build guard
+
+A published build never carries test material, and `publish-test-material` refuses one that does. The pass builds the package as it builds — its own `tsdown.config.*`, else the `bundle` preset over the entries its `exports` map earns — with nothing written, and reads each chunk's module ids off a `generateBundle` hook. A file `files` ships is judged on three counts:
+
+- a module of the package's own compiled into it, when `materialAt` names it — a `*.fixtures.ts`, a test file, ground, the specs tree, a contract;
+- an installed module compiled into it, when `testPackageOf` names its package — bundling `vitest` is never meant;
+- a specifier it leaves external, when `testPackageOf` names it and the package declares it neither in `dependencies` nor in `peerDependencies` — a test tool ships its runtime on purpose.
+
+What test material IS is `@jterrazz/test`'s alone: the two readers are the ones its F2 rule judges by, published on its `./oxlint` entry, and the pass loads them rather than keeping a copy — from the install the package resolves, else from the one the toolchain reaches by name. Where neither publishes them, and in a package with no build — no config of its own and no target under `dist/`, like this package — nothing is judged. The finding states itself in four parts and sends its reader to F2's row, where the definition lives.
 
 ## The Architecture (layer map) pass
 

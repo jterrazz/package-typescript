@@ -48,7 +48,7 @@ src/cli/check-docs.js         # The manual's shape, read off the repository's do
 src/cli/check-gitignore.js    # The artefact convention, read off the project's .gitignore — check | --fix
 src/cli/check-markdown.js     # Every project page's coordinates and readability floors — the Markdown (prose) gate
 src/cli/check-names.js        # What the tree calls its own parts, and its empty directories — the Names (tree) gate, check | --fix
-src/cli/check-publish.js      # The exports map against the tarball — the Publish gate (publint + attw)
+src/cli/check-publish.js      # The exports map against the tarball — the Publish gate (publint + attw + the build guard)
 src/cli/check-secrets.js      # No committed file carries a live credential — the Secrets gate (gitleaks, else patterns)
 src/cli/check-suppressions.js # Every disable directive is spelled, reasoned and live — the Suppressions gate, check | --fix
 
@@ -60,6 +60,7 @@ src/cli/lint-targets.js       # The project files oxlint and oxfmt are handed �
 src/cli/merge-knip-config.js  # Merges knip base preset with project-local knip.json (read as JSONC)
 src/cli/oxlint-report.js      # The Oxlint pass's log, drawn from the one JSON run in the form oxlint picks — oxlint-report-*.js draw it
 src/cli/project-files.js      # The one sweep every tree gate starts from — every file git does not ignore, or a walk where there is no git
+src/cli/publish-material.js   # The build guard — which shipped file is compiled from test material, by @jterrazz/test's reader
 src/cli/unsafe-fixers.js      # The rules `fix` must not let oxlint rewrite, as one wrapped config per config scope
 src/cli/workspace-members.js  # Lists the consumer's workspace members — the unit each per-package gate measures from
 
