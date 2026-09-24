@@ -302,7 +302,9 @@ The first two rule ids overlap publint on purpose. They read the SOURCE TREE and
 
 ### The build guard
 
-A published build never carries test material, and `publish-test-material` refuses one that does. The pass builds the package as it builds — its own `tsdown.config.*`, else the `bundle` preset over the entries its `exports` map earns — with nothing written, and reads each chunk's module ids off a `generateBundle` hook. A file `files` ships is judged on three counts:
+A published build never carries test material, and `publish-test-material` refuses one that does. The pass builds the package as it builds — its own `tsdown.config.*`, else the `bundle` preset over the entries its `exports` map earns — and reads each chunk's module ids off a `generateBundle` hook.
+
+That build leaves the disk alone as far as tsdown lets it: no chunk is written, and the config's `copy`, `exe` and `onSuccess` are switched off. A config's own `hooks` are the one thing an inline option cannot switch off, so a `build:done` hook that writes still writes. A file `files` ships is judged on three counts:
 
 - a module of the package's own compiled into it, when `materialAt` names it — a `*.fixtures.ts`, a test file, ground, the specs tree, a contract;
 - an installed module compiled into it, when `testPackageOf` names its package — bundling `vitest` is never meant;

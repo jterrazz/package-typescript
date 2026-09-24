@@ -10,8 +10,10 @@
  *
  * The evidence is the build's module graph. The package is built as it
  * builds — its own `tsdown.config.*`, else the `bundle` preset over the
- * entries its `exports` map earns — with nothing written, and a plugin's
- * `generateBundle` hook lists each chunk's module ids by the file it lands in.
+ * entries its `exports` map earns — with no chunk written, no `copy`, no
+ * executable and no `onSuccess` command; a config's own `hooks` still run.
+ * A plugin's `generateBundle` hook lists each chunk's module ids by the file
+ * it lands in.
  */
 
 import { existsSync, readdirSync } from 'node:fs';
@@ -111,7 +113,8 @@ function buildOf(root, targets) {
 /**
  * Every chunk the package's build would write: its path from the package
  * root, the module ids compiled into it, and the specifiers it leaves to the
- * importer. Null when the package has no build. Nothing is written.
+ * importer. Null when the package has no build. No chunk is written, and
+ * the config's `copy`, `exe` and `onSuccess` are switched off.
  */
 export async function builtChunks(root, targets) {
     const build = buildOf(root, targets);
@@ -120,16 +123,20 @@ export async function builtChunks(root, targets) {
     }
 
     const { build: tsdown } = await import('tsdown');
+    /** @type {{ externals: string[], file: string, moduleIds: string[] }[]} */
     const chunks = [];
     await tsdown({
         attw: false,
         clean: false,
         config: build.config,
+        copy: false,
         cwd: root,
         dts: false,
         ...(build.entry === undefined ? {} : { entry: build.entry }),
+        exe: false,
         exports: false,
         logLevel: 'silent',
+        onSuccess: false,
         plugins: [
             {
                 generateBundle(options, bundle) {

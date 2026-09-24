@@ -1,13 +1,30 @@
 import { materialAt, testPackageOf } from '@jterrazz/test/oxlint';
-import { expect, test } from 'vitest';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { expect, onTestFinished, test } from 'vitest';
 
-import { testMaterialFindings } from './publish-material.js';
+import { builtChunks, testMaterialFindings } from './publish-material.js';
 
 /** The reader the guard loads, straight from its owner. */
 const reader = { materialAt, testPackageOf };
 
 /** A package root no disk holds, so every path below it is read whole. */
 const root = '/package';
+
+/** A package on disk for this test alone, holding `tree` — path to content. */
+function packageWith(tree: Record<string, string>): string {
+    const unit = mkdtempSync(join(tmpdir(), 'publish-material-'));
+    onTestFinished(() => {
+        rmSync(unit, { force: true, recursive: true });
+    });
+    for (const [path, content] of Object.entries(tree)) {
+        mkdirSync(dirname(join(unit, path)), { recursive: true });
+        writeFileSync(join(unit, path), content);
+    }
+
+    return unit;
+}
 
 /** The `found` part of each finding, the rest being the same four-part frame. */
 const found = (findings: { message: string }[]): string[] =>
@@ -76,4 +93,32 @@ test('names an external test package the manifest does not declare to run', () =
             rule: 'publish-test-material',
         },
     ]);
+});
+
+test('builds a package by its own config, leaving the disk as it found it', async () => {
+    // Given - a package whose own config builds two entries, copies an asset and runs a command
+    const unit = packageWith({
+        'assets/note.txt': 'note\n',
+        'package.json': '{ "type": "module" }\n',
+        'src/index.ts': 'export const one = 1;\n',
+        'src/testing.ts': 'export const two = 2;\n',
+        'tsdown.config.mjs': [
+            "import { writeFileSync } from 'node:fs';",
+            'export default {',
+            "    copy: [{ from: 'assets/note.txt', to: 'dist' }],",
+            "    entry: ['src/index.ts', 'src/testing.ts'],",
+            "    format: 'esm',",
+            "    onSuccess: () => writeFileSync(new URL('ON_SUCCESS_RAN', import.meta.url), ''),",
+            '};',
+            '',
+        ].join('\n'),
+    });
+
+    // When - the guard builds it
+    const chunks = await builtChunks(unit, []);
+
+    // Then - both entries are listed, and nothing was copied, emitted or run
+    expect(chunks?.map(({ file }) => file)).toStrictEqual(['dist/index.mjs', 'dist/testing.mjs']);
+    expect(existsSync(join(unit, 'dist'))).toBe(false);
+    expect(existsSync(join(unit, 'ON_SUCCESS_RAN'))).toBe(false);
 });
