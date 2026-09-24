@@ -1,5 +1,8 @@
 import { cli, defineSpecConfig, unit } from '@jterrazz/test/vitest';
 
+/** The per-test budget of a `cli` spec, which runs the whole toolchain — the reason is docs/03-testing.md's. */
+const TOOLCHAIN_BUDGET_MS = 120_000;
+
 export default defineSpecConfig({
     test: {
         projects: [
@@ -21,7 +24,7 @@ export default defineSpecConfig({
              * runners — oxfmt, oxlint, run-split-install.sh — therefore keep their
              * chains: a document cannot name the binary it runs.
              */
-            cli(),
+            cli({ timeout: TOOLCHAIN_BUDGET_MS }),
         ],
     },
 });

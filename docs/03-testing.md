@@ -16,6 +16,8 @@ npm run lint    # this package's own CLI, run on this package
 | `unit`  | `src/`, `lint/` and `specs/surface/`                | milliseconds, pure functions |
 | `cli`   | everything under `specs/cli/` — the product command | seconds, real processes      |
 
+A `cli` test has a budget of its own: `TOOLCHAIN_BUDGET_MS`, 120 s, in `vitest.config.ts`, where the preset gives every other test 30 s. What that project runs is the whole toolchain — the compiler, the type-aware linter, knip and every tree gate — once or twice per test, beside every other file of the project running at the same time. Its duration is therefore a fact about the machine's load more than about the run, and a budget cut to an idle machine fails a correct test on a busy one; 120 s holds two runs on a loaded machine, and a run that hangs still fails.
+
 The suffix says which project a file belongs to. A `*.test.ts` is a module test and sits beside its module, which here is `src/` and `lint/`; a `*.spec.ts` is the assembled product and sits under `specs/<facet>/`. `unit()` collects the first, `cli()` the second plus every `<case>.spec.yaml`, and the `cli` project states nothing of its own. `unit()` is the one that states its globs, because one tree it collects lives under `specs/` and the default set excludes that folder whole.
 
 The `unit` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`lint/*.test.ts`), and the manual's rule engine over in-memory trees (`src/docs.test.ts`). Nothing there spawns anything but `make`, over stubs, where the `fix` recipe is proved.
