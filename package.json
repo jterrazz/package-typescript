@@ -86,7 +86,7 @@
     },
     "devDependencies": {
         "@jterrazz/test": "file:../package-test",
-        "@types/node": "^26.1.1",
+        "@types/node": "^26.6.2",
         "vitest": "^5.0.1"
     },
     "optionalDependencies": {
