@@ -242,7 +242,9 @@ stdout.write(
         behind.length === 0
             ? 'in range'
             : behind
-                  .map(({ installed, name, verdict }) => `${name} ${installed} ${verdict}`)
+                  .map(({ installed, name, verdict }) =>
+                      installed === null ? `${name} ${verdict}` : `${name} ${installed} ${verdict}`,
+                  )
                   .join(', '),
     ),
 );

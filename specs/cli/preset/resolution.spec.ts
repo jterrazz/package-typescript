@@ -57,7 +57,7 @@ describe('resolution', () => {
               rules off vs profile                 none
               suppressions                         0
               jterrazz.baseline.json › typescript  absent
-              tool versions                        tsc (Go) null absent, typescript null absent, oxlint null absent, oxfmt null absent, oxlint-tsgolint null absent, knip null absent
+              tool versions                        tsc (Go) absent, typescript absent, oxlint absent, oxfmt absent, oxlint-tsgolint absent, knip absent
 
              END  Finalizing quality checks
 
