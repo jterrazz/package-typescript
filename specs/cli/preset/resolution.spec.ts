@@ -51,6 +51,14 @@ describe('resolution', () => {
 
             ✓ Passed
 
+             DRIFT  Deviations from the profile
+
+              profile                              node (the default — no config of its own)
+              rules off vs profile                 none
+              suppressions                         0
+              jterrazz.baseline.json › typescript  absent
+              tool versions                        tsc (Go) null absent, typescript null absent, oxlint null absent, oxfmt null absent, oxlint-tsgolint null absent, knip null absent
+
              END  Finalizing quality checks
 
             ✓ All checks passed

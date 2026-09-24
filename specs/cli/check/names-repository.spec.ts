@@ -118,7 +118,7 @@ function treeVerdictsOf(stdout: string): string[] {
         ['Oxlint Check', 'Oxfmt Check'],
         ['Markdown (prose)', 'Names (tree)'],
         ['Names (tree)', 'Secrets (credentials)'],
-        ['Secrets (credentials)', 'END'],
+        ['Secrets (credentials)', 'DRIFT'],
     ].map(([label = '', next = '']) =>
         passOf(stdout, label, next).includes('✓ Passed') ? 'Passed' : 'Failed',
     );
@@ -181,7 +181,7 @@ describe('names-repository', () => {
         expect(treeVerdictsOf(stdout)).toStrictEqual(['Failed', 'Failed', 'Failed', 'Failed']);
         expect(passOf(stdout, 'Markdown (prose)', 'Names (tree)')).toContain('data/NOTES.md');
         expect(passOf(stdout, 'Names (tree)', 'Secrets (credentials)')).toContain('data/');
-        expect(passOf(stdout, 'Secrets (credentials)', 'END')).toContain('data/NOTES.md');
+        expect(passOf(stdout, 'Secrets (credentials)', 'DRIFT')).toContain('data/NOTES.md');
         expect(JSON.parse(baseline)).toMatchObject({
             typescript: { 'eslint/no-debugger': 1, 'names/names-root-foreign': 1 },
         });
@@ -205,7 +205,7 @@ describe('names-repository', () => {
         ['Suppressions (directives)', 'Markdown (prose)'],
         ['Markdown (prose)', 'Names (tree)'],
         ['Names (tree)', 'Secrets (credentials)'],
-        ['Secrets (credentials)', 'END'],
+        ['Secrets (credentials)', 'DRIFT'],
     ] as const;
 
     test('judges a repository nobody has added a file to yet, its Makefile included', () => {

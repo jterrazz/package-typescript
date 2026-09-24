@@ -43,6 +43,14 @@ runs:
 
           ✓ Passed
 
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            jterrazz.baseline.json › typescript  2
+            tool versions                        in range
+
            END  Finalizing quality checks
 
           ✗ Some checks failed

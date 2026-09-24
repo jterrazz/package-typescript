@@ -18,6 +18,7 @@ mkdir -p "$PKG/node_modules/.bin" "$SANDBOX/node_modules/.bin"
 cp -R "$PACKAGE_ROOT/bin" "$PKG/bin"
 cp -R "$PACKAGE_ROOT/lint" "$PKG/lint"
 cp -R "$PACKAGE_ROOT/src" "$PKG/src"
+cp "$PACKAGE_ROOT/package.json" "$PKG/package.json"
 
 # Stub tools hoisted at the consumer root...
 for tool in tsc oxfmt knip; do

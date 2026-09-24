@@ -49,6 +49,15 @@ runs:
 
           ✓ Passed
 
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            jterrazz.baseline.json › typescript  4
+            jterrazz.baseline.json › test        3
+            tool versions                        in range
+
            END  Finalizing quality checks
 
           ✗ Some checks failed
@@ -132,6 +141,15 @@ runs:
            RUN  Secrets (credentials)
 
           ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            jterrazz.baseline.json › typescript  2
+            jterrazz.baseline.json › test        3
+            tool versions                        in range
 
            END  Finalizing quality checks
 

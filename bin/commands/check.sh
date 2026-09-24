@@ -59,9 +59,9 @@ add_tsgolint_to_path() {
 
 add_tsgolint_to_path
 
-# The config a consumer declares its rules in — the one thing that makes the
-# drift report answerable. Without one there is no profile to have drifted from,
-# and the linter runs the toolchain's default.
+# The config a consumer declares its rules in, and the one the drift report
+# reads its profile off. Without one the linter runs the toolchain's default,
+# and the drift report measures the project against that.
 # shellcheck source=../tool-configs.sh
 . "$SCRIPT_DIR/../tool-configs.sh"
 
@@ -977,9 +977,10 @@ run_checks() {
     # able to say by how much without opening every config. Only a rule turned
     # off with no reason beside it actually fails the run.
     local drift_status=0
-    if [ "$FIX_MODE" = false ] && [ -n "$OXLINT_CONFIG" ]; then
+    if [ "$FIX_MODE" = false ]; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} DRIFT ${NC} Deviations from the profile\n\n"
-        node "$PACKAGE_ROOT/src/cli/check-drift.js" . --oxlint "$OXLINT" "${LINT_ARGS[@]}" "${DRIFT_ARGS[@]}"
+        node "$PACKAGE_ROOT/src/cli/check-drift.js" . --oxlint "$OXLINT" "${OXLINT_CONFIG_ARGS[@]}" \
+            "${LINT_ARGS[@]}" "${DRIFT_ARGS[@]}"
         drift_status=$?
     fi
 

@@ -1,0 +1,61 @@
+description: measures a project with no oxlint config of its own against the default it is handed
+fixture: ./fixtures/kitchen-sink/
+runs:
+    # The machine's reading: the profile the default IS, and nothing off it.
+    - command: check --json
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          jterrazz.baseline.json › typescript: nothing held
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Publish (packaging)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+          {
+            "baseline": null,
+            "profile": "node",
+            "rulesOff": [],
+            "suppressions": 0,
+            "testBaseline": null,
+            "tools": [],
+            "unreasoned": []
+          }
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

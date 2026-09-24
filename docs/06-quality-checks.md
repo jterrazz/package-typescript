@@ -321,7 +321,7 @@ Both halves run in `fix` too: prettier writes, `astro check` is read-only wherev
 
 ## The drift report
 
-Not a pass: a report, printed at the end of every `check` that has an oxlint config to read. Four numbers, because the alternative is what the estate had — twenty-eight repositories each quietly a little further from the shared rulebook, and nobody able to say by how much without opening twenty-eight config files.
+Not a pass: a report, printed at the end of every `check`. Four numbers, because the alternative is what the estate had — twenty-eight repositories each quietly a little further from the shared rulebook, and nobody able to say by how much without opening twenty-eight config files.
 
 ```text
  DRIFT  Deviations from the profile
@@ -337,6 +337,8 @@ Not a pass: a report, printed at the end of every `check` that has an oxlint con
 A rule turned off, a suppression written, a baseline entry recorded and a tool left behind are the four ways a project drifts. Three of them are one line; the baseline is named by BOTH sections this toolchain family writes — `typescript` always, `test` only where the project keeps one — because a count with no section beside it says nothing about which debt it is. `typescript check --json` prints the same reading for a machine — the block under the `DRIFT` header becomes one JSON object, every pass above it still prints for a human — which is how a fleet-wide sweep collects the table.
 
 **The profile is read off the consumer's config, and a config that names none is NOT measured.** A project extending no profile of this package is not drifting from one, it never joined it, and reporting two hundred rules as "off" would say nothing about anything. The name comes from the config's own `import`, which is the only evidence there is: oxlint's config schema is closed, so a compiled profile cannot carry its own name through to `--print-config`.
+
+A project with no oxlint config of its own is measured against the default `check` hands its linter, the `node` profile: its profile line reads `node (the default — no config of its own)`, and `--json` names it `node`. The default is the profile itself, so no rule is off it and nothing can be unreasoned; the other three numbers are the project's as for any other.
 
 The versions line reports only what deviates. The full table is `typescript doctor`'s, and printing it on every run would put a number that changes with every dependency bump in front of a reader looking for what changed in their own tree.
 
