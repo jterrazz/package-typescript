@@ -310,7 +310,9 @@ That build leaves the disk alone as far as tsdown lets it: no chunk is written, 
 - an installed module compiled into it, when `testPackageOf` names its package — bundling `vitest` is never meant;
 - a specifier it leaves external, when `testPackageOf` names it and the package declares it neither in `dependencies` nor in `peerDependencies` — a test tool ships its runtime on purpose.
 
-What test material IS is `@jterrazz/test`'s alone: the two readers are the ones its F2 rule judges by, published on its `./oxlint` entry, and the pass loads them rather than keeping a copy — from the install the package resolves, else from the one the toolchain reaches by name. Where neither publishes them, and in a package with no build — no config of its own and no target under `dist/`, like this package — nothing is judged. The finding states itself in four parts and sends its reader to F2's row, where the definition lives.
+What test material IS is `@jterrazz/test`'s alone: the two readers are the ones its F2 rule judges by, published on its `./oxlint` entry, and the pass loads them rather than keeping a copy — from the install the package resolves, else, when that install publishes no reader or the package resolves none, from the one the toolchain reaches by name. Where neither publishes them, and in a package with no build — no config of its own and no target under `dist/`, like this package — nothing is judged. The finding states itself in four parts and sends its reader to F2's row, where the definition lives.
+
+The second source is for a package that loads no reader of its own. It reaches past the repository boundary [test-package.js](../src/cli/test-package.js) keeps, since it resolves by node's rules from the toolchain's own location. In a consumer it mostly lands on the consumer's own install, or on none under a strict layout. The package that relies on it is a fixture of this repository copied where no `node_modules` sits.
 
 ## The Architecture (layer map) pass
 

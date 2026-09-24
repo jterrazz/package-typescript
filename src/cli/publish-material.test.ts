@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { expect, onTestFinished, test } from 'vitest';
 
-import { builtChunks, testMaterialFindings } from './publish-material.js';
+import { builtChunks, testMaterialFindings, testMaterialReader } from './publish-material.js';
 
 /** The reader the guard loads, straight from its owner. */
 const reader = { materialAt, testPackageOf };
@@ -121,4 +121,36 @@ test('builds a package by its own config, leaving the disk as it found it', asyn
     expect(chunks?.map(({ file }) => file)).toStrictEqual(['dist/index.mjs', 'dist/testing.mjs']);
     expect(existsSync(join(unit, 'dist'))).toBe(false);
     expect(existsSync(join(unit, 'ON_SUCCESS_RAN'))).toBe(false);
+});
+
+/** A repository whose own install of `@jterrazz/test` publishes `oxlint` as its `./oxlint` entry. */
+function repositoryInstalling(oxlint: string): string {
+    return packageWith({
+        '.git/HEAD': 'ref: refs/heads/main\n',
+        'node_modules/@jterrazz/test/oxlint.mjs': oxlint,
+        'node_modules/@jterrazz/test/package.json': JSON.stringify({
+            exports: { './oxlint': { import: './oxlint.mjs' } },
+            name: '@jterrazz/test',
+        }),
+        'package.json': '{ "type": "module" }\n',
+    });
+}
+
+test('loads the reader from the install the package resolves', async () => {
+    // Given - an install whose ./oxlint entry publishes both readers
+    const unit = repositoryInstalling(
+        "export const materialAt = () => 'own';\nexport const testPackageOf = () => 'own';\n",
+    );
+
+    // Then - the readers are that install's
+    const loaded = await testMaterialReader(unit);
+    expect(loaded?.materialAt('/package/src/index.ts')).toBe('own');
+});
+
+test("falls back to the toolchain's reader where the install publishes none", async () => {
+    // Given - an older install whose ./oxlint entry carries no reader
+    const unit = repositoryInstalling('export default {};\n');
+
+    // Then - the readers are the ones the toolchain reaches by name
+    await expect(testMaterialReader(unit)).resolves.toStrictEqual(reader);
 });

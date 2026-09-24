@@ -5,8 +5,9 @@
  * What test material IS belongs to `@jterrazz/test` alone — the reader its F2
  * rule judges by, `materialAt` and `testPackageOf`, published on its
  * `./oxlint` entry. This module never holds a copy: it loads the reader from
- * the install the package itself resolves, else from the one the toolchain
- * reaches by name, and judges nothing where neither publishes it.
+ * the install the package itself resolves, else — when that install publishes
+ * none, or the package resolves none — from the one the toolchain reaches by
+ * name, and judges nothing where neither publishes it.
  *
  * The evidence is the build's module graph. The package is built as it
  * builds — its own `tsdown.config.*`, else the `bundle` preset over the
@@ -72,18 +73,30 @@ function readerOf({ materialAt, testPackageOf }) {
         : null;
 }
 
-/**
- * `@jterrazz/test`'s reader of test material: from the install `root`
- * resolves, else from the one the toolchain reaches by name — null when
- * neither publishes it.
- */
-export async function testMaterialReader(root) {
-    const entry = projectToolEntry(root);
+/** The readers a module specifier publishes — null when it publishes none or does not load. */
+async function readerAt(specifier) {
     try {
-        return readerOf(await import(entry ?? '@jterrazz/test/oxlint'));
+        return readerOf(await import(specifier));
     } catch {
         return null;
     }
+}
+
+/**
+ * `@jterrazz/test`'s reader of test material: from the install `root`
+ * resolves, else — when that install publishes none, or there is none — from
+ * the one the toolchain reaches by name; null when neither publishes it.
+ *
+ * @returns {Promise<{
+ *     materialAt: (path: string) => string | undefined,
+ *     testPackageOf: (specifier: string) => string | undefined,
+ * } | null>} the two readers, or null
+ */
+export async function testMaterialReader(root) {
+    const entry = projectToolEntry(root);
+    const own = entry === null ? null : await readerAt(entry);
+
+    return await (own ?? readerAt('@jterrazz/test/oxlint'));
 }
 
 /**
