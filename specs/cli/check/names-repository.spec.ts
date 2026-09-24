@@ -278,6 +278,20 @@ describe('names-repository', () => {
         expect(names).toContain('Passed');
     });
 
+    test('accepts a repository whose Makefile answers more than the six gestures', () => {
+        // Given - a repository whose Makefile writes the six, then a test-mobile and a release of its own
+        const project = projectWith({
+            makefile: `${SIX_TARGETS}\ntest-mobile:\n\tnpm run test:mobile\n\nrelease:\n\tnpm publish\n`,
+        });
+
+        // When - the quality checks run
+        const names = namesPassOf(project);
+
+        // Then - the contract only requires, so the extra targets are no finding, and the Names pass is green
+        expect(names).not.toContain('names-');
+        expect(names).toContain('✓ Passed');
+    });
+
     test('names each gesture a repository Makefile has no rule for', () => {
         // Given - a Makefile with no fix and no check, an assignment and a comment standing in for them
         const project = projectWith({ makefile: FOUR_TARGETS });
