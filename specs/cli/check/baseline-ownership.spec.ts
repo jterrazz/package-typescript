@@ -5,12 +5,10 @@ import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 /*
- * A chain in a temp directory, for two reasons. The ground arms a JS plugin
- * named `jterrazz` at `error` — oxlint LOADS every config under this
- * repository, so a committed one would report during this repository's own
- * lint run ([Testing](../../../docs/03-testing.md)). And the checker is a STUB
- * installed as the project's @jterrazz/test, so the pass's verdict is exactly
- * the exit code the stub was told to give.
+ * A chain in a temp directory. The ground arms a JS plugin named `jterrazz`
+ * at `error`, and the checker is a STUB installed as the project's
+ * @jterrazz/test, so the pass's verdict is exactly the exit code the stub was
+ * told to give.
  *
  * The claim is the ratchet's split: the `typescript` section of
  * `jterrazz.baseline.json` records and judges this package's rules only. A

@@ -476,7 +476,7 @@ Which engine runs is decided inside the gate rather than in `check.sh`, because 
 
 ## Pitfalls
 
-- **A nested `oxlint.config.*` is LOADED wherever it sits.** oxlint discovers every config under the project and loads them all before it lints anything — `ignorePatterns` decides which FILES are linted, never which configs are read. So a fixture tree carrying a config that cannot load fails the parent project's own run, and a project whose specs stand on consumer projects writes those configs at run time instead of committing them ([Testing](03-testing.md)).
+- **A nested `oxlint.config.*` is loaded only on the path of a file oxlint is handed.** `check` hands it the sweep, which never holds the ground a test stands on, so a config committed under `fixtures/` is never read, armed or broken. Handed a directory instead — the fallback when the sweep could not answer — oxlint discovers every config beneath it and loads them all before it lints anything, and one that cannot load fails the run.
 - **An ignore without a reason is the expected form of nothing.** Every entry in the project's `knip.json` tells the gate to overlook something, and the next reader has to re-derive why. The file is read as JSONC, so the reason goes beside the entry as a `//` comment — that is the form this toolchain expects, and the shape of the file is [Lint presets](07-lint-presets.md)'s.
 - **An export used in its own file is not dead.** The base preset sets `ignoreExportsUsedInFile: true`, so the A4 idiom's same-file `cleanup` and a capsule's flags read back by its sibling test never need a project-local `knip.json` line to stay unreported.
 - **Knip is check-only.** Fix mode never runs it because its remedies (deleting exports, files, deps) are destructive.

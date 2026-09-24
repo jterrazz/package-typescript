@@ -123,10 +123,9 @@ describe('oxlint-report', () => {
     );
 
     /*
-     * The run count needs a ground no fixture can be: oxlint loads every config
-     * under this repository, fixtures included, so a committed config loading
-     * this plugin would count — and write — during this repository's own lint
-     * run. The project is built in a temp directory, and the product started on it.
+     * The run count is read off a JS plugin that records every oxlint process
+     * loading it. The project is built in a temp directory, and the product
+     * started on it.
      */
 
     /** A JS plugin that writes one line per oxlint process that loads it: the arguments it was started with. */

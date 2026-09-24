@@ -5,11 +5,8 @@ import { join, resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
 /*
- * A chain, for the ground's sake: the claim needs rules armed at `error` on a
- * file that is also badly formatted, and oxlint loads every config under this
- * repository — an armed one committed under `fixtures/` would report on its
- * own broken tree during this repository's lint run
- * ([Testing](../../../docs/03-testing.md)).
+ * A chain over a project built in a temp directory. The claim needs rules
+ * armed at `error` on a file that is also badly formatted.
  *
  * What it claims is the end of the gesture: after `fix`, `check` agrees. Run in
  * parallel, whichever of `oxlint --fix` and `oxfmt` finishes second writes its
