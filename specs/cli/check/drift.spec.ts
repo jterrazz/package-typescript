@@ -1,10 +1,10 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { afterAll, describe, expect, onTestFinished, test } from 'vitest';
+import { afterAll, describe, expect, test } from 'vitest';
 
 import manifest from '../../../package.json' with { type: 'json' };
+import { newDirectory, temporaryDirectory } from '../temporary-directory.js';
 import { toolchainWith } from '../toolchain-sandbox.js';
 
 /*
@@ -23,7 +23,7 @@ import { toolchainWith } from '../toolchain-sandbox.js';
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../../..');
 
-const project = mkdtempSync(resolve(tmpdir(), 'spec-drift-'));
+const project = newDirectory('spec-drift-');
 
 afterAll(() => {
     rmSync(project, { force: true, recursive: true });
@@ -60,10 +60,7 @@ function stand(config: string, configName = 'oxlint.config.ts'): void {
 
 /** A node-profile project linked at `toolchain`, one reasoned suppression in its source. */
 function suppressingProject(toolchain: string): string {
-    const directory = mkdtempSync(resolve(tmpdir(), 'spec-drift-rows-'));
-    onTestFinished(() => {
-        rmSync(directory, { force: true, recursive: true });
-    });
+    const directory = temporaryDirectory('spec-drift-rows-');
     writeFileSync(
         join(directory, 'package.json'),
         '{ "name": "spec-drift-rows", "private": true, "type": "module" }\n',

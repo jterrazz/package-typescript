@@ -1,11 +1,11 @@
 import { file } from '@jterrazz/test';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { beforeAll, describe, expect, onTestFinished, test } from 'vitest';
+import { beforeAll, describe, expect, test } from 'vitest';
 
 import { cli as oxfmtCli } from '../oxfmt.specification.js';
+import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, not a document: it drives the oxfmt binary (the B9w exception
@@ -61,10 +61,7 @@ describe('formatter', () => {
      */
     test('formats none of the asset trees, build caches and ground a project holds', () => {
         // Given - the same unformatted file at the root and under every tree the preset ignores, beside a consumer config
-        const created = mkdtempSync(resolve(tmpdir(), 'spec-formatter-ignores-'));
-        onTestFinished(() => {
-            rmSync(created, { force: true, recursive: true });
-        });
+        const created = temporaryDirectory('spec-formatter-ignores-');
         cpSync(resolve(import.meta.dirname, 'fixtures/formatter/asset-trees'), created, {
             recursive: true,
         });

@@ -3,15 +3,15 @@ import {
     chmodSync,
     cpSync,
     mkdirSync,
-    mkdtempSync,
     readFileSync,
     realpathSync,
     rmSync,
     writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
-import { afterAll, describe, expect, onTestFinished, test } from 'vitest';
+import { afterAll, describe, expect, test } from 'vitest';
+
+import { newDirectory, temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, not a document — and the product command all the same. What no
@@ -29,7 +29,7 @@ import { afterAll, describe, expect, onTestFinished, test } from 'vitest';
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const FIXTURE = resolve(import.meta.dirname, 'fixtures/secrets/leaked');
 
-const project = mkdtempSync(resolve(tmpdir(), 'spec-secrets-'));
+const project = newDirectory('spec-secrets-');
 
 afterAll(() => {
     rmSync(project, { force: true, recursive: true });
@@ -49,10 +49,7 @@ function pathWithoutGitleaks(): string {
 
 /** A `gitleaks` that answers `version`, and records what a scan was handed beside itself. */
 function gitleaksStub(): { directory: string; record: string } {
-    const directory = mkdtempSync(resolve(tmpdir(), 'spec-secrets-gitleaks-'));
-    onTestFinished(() => {
-        rmSync(directory, { force: true, recursive: true });
-    });
+    const directory = temporaryDirectory('spec-secrets-gitleaks-');
     const record = join(directory, 'record.txt');
     const stub = join(directory, 'gitleaks');
     writeFileSync(
@@ -95,10 +92,7 @@ describe('secrets', () => {
 
     test('names each of the ten shapes the built-in engine knows, by its own rule and line', () => {
         // Given - the same notes, carrying one credential of every shape below the two keys
-        const created = mkdtempSync(resolve(tmpdir(), 'spec-secrets-shapes-'));
-        onTestFinished(() => {
-            rmSync(created, { force: true, recursive: true });
-        });
+        const created = temporaryDirectory('spec-secrets-shapes-');
         cpSync(FIXTURE, created, { recursive: true });
 
         // When - the quality checks run with the built-in patterns answering
@@ -126,10 +120,7 @@ describe('secrets', () => {
 
     test('hands gitleaks every file git does not ignore that a tree gate judges, and nothing beside them', () => {
         // Given - a repository with tracked notes, a tracked spec ground, a tracked folder the run is told to overlook, an untracked scratch file and an ignored one
-        const created = mkdtempSync(resolve(tmpdir(), 'spec-secrets-engine-'));
-        onTestFinished(() => {
-            rmSync(created, { force: true, recursive: true });
-        });
+        const created = temporaryDirectory('spec-secrets-engine-');
         const repository = realpathSync(created);
         const files: Record<string, string> = {
             'NOTES.md': '# Notes\n',

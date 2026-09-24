@@ -1,8 +1,8 @@
 import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { expect, test } from 'vitest';
+import { expect, onTestFinished, test } from 'vitest';
 
 /*
  * The `fix` recipe is proved by running it: make, over stubs standing in for
@@ -32,6 +32,9 @@ function runFix(
     stubs: Record<string, string>,
 ): { calls: string; status: null | number } {
     const bin = mkdtempSync(join(tmpdir(), 'makefile-fix-'));
+    onTestFinished(() => {
+        rmSync(bin, { force: true, recursive: true });
+    });
     const log = join(bin, 'calls.log');
     writeFileSync(log, '');
     for (const [command, body] of Object.entries(stubs)) {
@@ -55,6 +58,9 @@ test.each([
     ({ checker, toolchain }) => {
         // Given - the chapter's recipe, over a toolchain fixer and a checker that exit as told
         const chapter = mkdtempSync(join(tmpdir(), 'makefile-chapter-'));
+        onTestFinished(() => {
+            rmSync(chapter, { force: true, recursive: true });
+        });
         const makefile = join(chapter, 'Makefile');
         writeFileSync(makefile, chapterRecipe());
 

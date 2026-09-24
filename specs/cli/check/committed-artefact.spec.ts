@@ -1,8 +1,9 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
+
+import { newDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, not a document — and the product command all the same. What no
@@ -16,8 +17,8 @@ const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const FIXTURE = resolve(import.meta.dirname, 'fixtures/gitignore/on-convention');
 const TURBO_FIXTURE = resolve(import.meta.dirname, 'fixtures/gitignore/turbo');
 
-const workDir = mkdtempSync(resolve(tmpdir(), 'spec-committed-artefact-'));
-const turboWorkDir = mkdtempSync(resolve(tmpdir(), 'spec-committed-turbo-'));
+const workDir = newDirectory('spec-committed-artefact-');
+const turboWorkDir = newDirectory('spec-committed-turbo-');
 
 afterAll(() => {
     rmSync(workDir, { force: true, recursive: true });

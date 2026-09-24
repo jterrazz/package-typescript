@@ -1,12 +1,12 @@
 import { directory } from '@jterrazz/test';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { cli } from '../cli.specification.js';
+import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * The config the linter and the formatter run with. A project that keeps one
@@ -21,10 +21,7 @@ const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
 /** `check` run from the project folder of a copy of the decoy tree. */
 function checkBelowDecoy(): string {
-    const tree = mkdtempSync(resolve(tmpdir(), 'spec-default-config-'));
-    onTestFinished(() => {
-        rmSync(tree, { force: true, recursive: true });
-    });
+    const tree = temporaryDirectory('spec-default-config-');
     cpSync(resolve(import.meta.dirname, 'fixtures/default-config/decoy-parent'), tree, {
         recursive: true,
     });

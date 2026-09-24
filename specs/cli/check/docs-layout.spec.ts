@@ -1,8 +1,9 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
+
+import { newDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, not a document — and the product command all the same. What no
@@ -17,8 +18,8 @@ import { afterAll, describe, expect, test } from 'vitest';
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const FIXTURE = resolve(import.meta.dirname, 'fixtures/gitignore/on-convention');
 
-const repository = mkdtempSync(resolve(tmpdir(), 'spec-docs-layout-repo-'));
-const looseDirectory = mkdtempSync(resolve(tmpdir(), 'spec-docs-layout-loose-'));
+const repository = newDirectory('spec-docs-layout-repo-');
+const looseDirectory = newDirectory('spec-docs-layout-loose-');
 
 afterAll(() => {
     rmSync(repository, { force: true, recursive: true });

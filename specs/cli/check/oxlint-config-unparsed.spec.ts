@@ -1,8 +1,9 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { afterAll, describe, expect, onTestFinished, test } from 'vitest';
+import { afterAll, describe, expect, test } from 'vitest';
+
+import { newDirectory, temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, not a document — and the product command all the same. What no
@@ -22,7 +23,7 @@ import { afterAll, describe, expect, onTestFinished, test } from 'vitest';
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const JUDGE = resolve(import.meta.dirname, '../../../src/cli/check-baseline.js');
 
-const project = mkdtempSync(resolve(tmpdir(), 'spec-oxlint-config-'));
+const project = newDirectory('spec-oxlint-config-');
 
 afterAll(() => {
     rmSync(project, { force: true, recursive: true });
@@ -30,10 +31,7 @@ afterAll(() => {
 
 /** A temp directory of the given files, removed when the test ends. */
 function projectOf(files: Record<string, string>): string {
-    const directory = mkdtempSync(resolve(tmpdir(), 'spec-oxlint-refusal-'));
-    onTestFinished(() => {
-        rmSync(directory, { force: true, recursive: true });
-    });
+    const directory = temporaryDirectory('spec-oxlint-refusal-');
     for (const [path, content] of Object.entries(files)) {
         writeFileSync(join(directory, path), content);
     }

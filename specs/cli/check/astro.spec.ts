@@ -1,8 +1,9 @@
 import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { chmodSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
+
+import { newDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, not a document — and the product command all the same. What no
@@ -15,7 +16,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
-const project = mkdtempSync(resolve(tmpdir(), 'spec-astro-'));
+const project = newDirectory('spec-astro-');
 
 afterAll(() => {
     rmSync(project, { force: true, recursive: true });

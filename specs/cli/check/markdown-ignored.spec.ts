@@ -1,8 +1,9 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
+
+import { newDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, for the ground's sake: a coordinate git IGNORES needs a real
@@ -11,7 +12,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
-const project = mkdtempSync(resolve(tmpdir(), 'spec-markdown-ignored-'));
+const project = newDirectory('spec-markdown-ignored-');
 
 afterAll(() => {
     rmSync(project, { force: true, recursive: true });
