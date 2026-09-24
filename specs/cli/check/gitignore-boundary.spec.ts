@@ -3,6 +3,7 @@ import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { onlyPasses } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -39,7 +40,11 @@ function checkFromClone(boundary: 'directory' | 'file' | 'none'): {
         writeFileSync(join(clone, '.git'), `gitdir: ${join(workDir, 'bare.git')}\n`);
     }
 
-    const result = spawnSync('bash', [BIN, 'check'], { cwd: clone, encoding: 'utf8' });
+    const result = spawnSync('bash', [BIN, 'check'], {
+        cwd: clone,
+        encoding: 'utf8',
+        env: { ...process.env, ...onlyPasses('gitignore') },
+    });
 
     return { status: result.status, stdout: result.stdout };
 }

@@ -3,6 +3,7 @@ import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { onlyPasses } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -93,9 +94,13 @@ function armPlugin(dir: string): void {
     );
 }
 
-/** One run of the product command in `dir`. */
+/** One run of the conventions pass in `dir`. */
 function check(dir: string): { status: null | number; stdout: string } {
-    const result = spawnSync('bash', [BIN, 'check'], { cwd: dir, encoding: 'utf8' });
+    const result = spawnSync('bash', [BIN, 'check'], {
+        cwd: dir,
+        encoding: 'utf8',
+        env: { ...process.env, ...onlyPasses('conventions') },
+    });
 
     return { status: result.status, stdout: result.stdout };
 }

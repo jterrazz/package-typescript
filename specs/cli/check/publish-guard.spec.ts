@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
+import { onlyPasses, passOf } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -49,12 +50,16 @@ function consumerOfStub(fixture: string, oxlint: string): string {
     return root;
 }
 
-/** One run of the product command in `dir`, colours stripped. */
-function run(dir: string, command: string): { status: null | number; stdout: string } {
+/** One run of the product command in `dir`, with `env` over the suite's, colours stripped. */
+function run(
+    dir: string,
+    command: string,
+    env: Record<string, string> = {},
+): { status: null | number; stdout: string } {
     const result = spawnSync('bash', [BIN, command], {
         cwd: dir,
         encoding: 'utf8',
-        env: { ...process.env, INIT_CWD: dir },
+        env: { ...process.env, ...env, INIT_CWD: dir },
     });
 
     return { status: result.status, stdout: stripVTControlCharacters(result.stdout) };
@@ -62,10 +67,7 @@ function run(dir: string, command: string): { status: null | number; stdout: str
 
 /** What the Publish pass printed under its header, its verdict included, one line per entry. */
 function publishPass(stdout: string): string[] {
-    const block = stdout.slice(stdout.indexOf(' RUN  Publish (packaging)'));
-    const end = block.indexOf(' RUN ', 1);
-
-    return (end === -1 ? block : block.slice(0, end))
+    return passOf(stdout, 'Publish (packaging)')
         .split('\n')
         .slice(1)
         .filter((line) => line.trim() !== '');
@@ -93,7 +95,7 @@ describe('publish-guard', () => {
         expect(run(root, 'bundle').status).toBe(0);
 
         // When - the quality checks run
-        const { stdout } = run(root, 'check');
+        const { stdout } = run(root, 'check', onlyPasses('publish'));
 
         // Then - the pass fails on one finding per chunk of the second export, each named as the build wrote it
         expect(chunksOn(root)).toStrictEqual([
@@ -115,7 +117,7 @@ describe('publish-guard', () => {
         expect(run(root, 'bundle').status).toBe(0);
 
         // When - the quality checks run
-        const { stdout } = run(root, 'check');
+        const { stdout } = run(root, 'check', onlyPasses('publish'));
 
         // Then - the pass is green and says nothing
         expect(publishPass(stdout)).toStrictEqual(['✓ Passed']);
@@ -126,7 +128,7 @@ describe('publish-guard', () => {
         const root = consumerOfStub('own-build/', 'export default {};\n');
 
         // When - the quality checks run
-        const { stdout } = run(root, 'check');
+        const { stdout } = run(root, 'check', onlyPasses('publish'));
 
         // Then - the pass names the missing reader, and passes
         expect(publishPass(stdout)).toStrictEqual([
@@ -140,7 +142,7 @@ describe('publish-guard', () => {
         const root = consumerOfStub('own-build/', "throw new Error('the reader broke');\n");
 
         // When - the quality checks run
-        const { stdout } = run(root, 'check');
+        const { stdout } = run(root, 'check', onlyPasses('publish'));
 
         // Then - the pass says the entry failed to load, not that it is older than 17
         expect(publishPass(stdout)).toStrictEqual([
@@ -154,7 +156,7 @@ describe('publish-guard', () => {
         const root = consumer('broken-build-alone/');
 
         // When - the quality checks run
-        const { stdout } = run(root, 'check');
+        const { stdout } = run(root, 'check', onlyPasses('publish'));
 
         // Then - the build's one line is the pass's whole report, and it fails the pass
         expect(publishPass(stdout)).toStrictEqual([BUILD_FINDING, '✗ Failed with exit code 1']);
@@ -165,7 +167,7 @@ describe('publish-guard', () => {
         const root = consumer('broken-build/');
 
         // When - the quality checks run
-        const { stdout } = run(root, 'check');
+        const { stdout } = run(root, 'check', onlyPasses('publish'));
 
         // Then - the `files` line, the build line, then publint's own report under the same failed verdict
         const pass = publishPass(stdout);

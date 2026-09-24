@@ -3,6 +3,7 @@ import { cpSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { onlyPasses } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -26,6 +27,7 @@ function checkFromMember(fixture: string): { status: null | number; stdout: stri
     const result = spawnSync('bash', [BIN, 'check'], {
         cwd: resolve(workDir, 'packages/foo'),
         encoding: 'utf8',
+        env: { ...process.env, ...onlyPasses('gitignore') },
     });
 
     return { status: result.status, stdout: result.stdout };

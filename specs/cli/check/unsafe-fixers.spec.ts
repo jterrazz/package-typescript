@@ -1,6 +1,7 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
+import { onlyPasses } from '../check-passes.js';
 import { cli } from '../cli.specification.js';
 
 /*
@@ -19,9 +20,10 @@ import { cli } from '../cli.specification.js';
  * commands read one verdict on one tree.
  */
 
-/** The runner on the project, with one case's config and source laid over it. */
+/** The runner on the project, with one case's config and source laid over it, running the linter's pass alone. */
 const caseOf = (name: string) =>
     cli
+        .env(onlyPasses('oxlint'))
         .fixture(directory('./fixtures/unsafe-fixers/project/'))
         .fixture(directory(`./fixtures/unsafe-fixers/${name}/`));
 

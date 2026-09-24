@@ -3,6 +3,7 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { onlyPasses } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -148,7 +149,7 @@ describe('baseline-ownership', () => {
         // Given - no baseline, and a plugin that fails oxlint on every file
         const project = groundOf();
         // When - the checks run
-        const { stdout } = run(project, 'check');
+        const { stdout } = run(project, 'check', { ...process.env, ...onlyPasses('oxlint') });
 
         // Then - oxlint's exit code is not the verdict: nothing this package owns was reported
         expect(verdict(stdout, 'Oxlint Check')).toBe('✓ Passed');
@@ -161,7 +162,7 @@ describe('baseline-ownership', () => {
         run(project, 'baseline');
 
         // When - the checks run
-        const { stdout } = run(project, 'check');
+        const { stdout } = run(project, 'check', { ...process.env, ...onlyPasses('conventions') });
 
         // Then - this package's file forgives nothing of the checker's
         expect(verdict(stdout, 'Test Conventions')).toBe('✗ Failed');
@@ -183,7 +184,10 @@ process.exit(1);
         );
 
         // When - the checks run
-        const { stdout } = run(project, 'check');
+        const { stdout } = run(project, 'check', {
+            ...process.env,
+            ...onlyPasses('oxlint', 'oxfmt', 'conventions'),
+        });
         const oxlint = stdout.slice(stdout.indexOf('Oxlint Check'), stdout.indexOf('Oxfmt Check'));
 
         // Then - the oxlint pass keeps its own verdict and prints the diagnostic, where it stands
@@ -214,6 +218,7 @@ process.exit(1);
         const { stdout } = run(project, 'check', {
             HOME: process.env.HOME,
             PATH: process.env.PATH,
+            ...onlyPasses('oxlint', 'oxfmt', 'conventions'),
         });
         const oxlint = stdout.slice(stdout.indexOf('Oxlint Check'), stdout.indexOf('Oxfmt Check'));
 
@@ -240,7 +245,10 @@ process.exit(0);
         writeFileSync(join(project, 'node_modules/@jterrazz/test/dist/checker.js'), HELD_CHECKER);
 
         // When - the checks run
-        const { stdout } = run(project, 'check');
+        const { stdout } = run(project, 'check', {
+            ...process.env,
+            ...onlyPasses('conventions', 'suppressions'),
+        });
         const conventions = stdout.slice(
             stdout.indexOf('Test Conventions'),
             stdout.indexOf('Suppressions (directives)'),
@@ -257,7 +265,7 @@ process.exit(0);
         writeFileSync(join(project, 'node_modules/@jterrazz/test/dist/checker.js'), HELD_CHECKER);
 
         // When - the checks run
-        run(project, 'check');
+        run(project, 'check', { ...process.env, ...onlyPasses('conventions') });
         const argv = readFileSync(
             join(project, 'node_modules/@jterrazz/test/dist/root-argv.json'),
             'utf8',
@@ -286,7 +294,10 @@ process.exit(0);
         );
 
         // When - the checks run
-        const { stdout } = run(project, 'check');
+        const { stdout } = run(project, 'check', {
+            ...process.env,
+            ...onlyPasses('conventions', 'suppressions'),
+        });
         const conventions = stdout.slice(
             stdout.indexOf('Test Conventions'),
             stdout.indexOf('Suppressions (directives)'),
@@ -306,7 +317,7 @@ process.exit(0);
         );
 
         // When - the checks run
-        const { stdout } = run(project, 'check');
+        const { stdout } = run(project, 'check', { ...process.env, ...onlyPasses('oxlint') });
 
         // Then - each entry is sent to the section that owns it
         expect(stdout).toContain(

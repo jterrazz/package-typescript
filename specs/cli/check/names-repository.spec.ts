@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
+import { onlyPasses, passOf } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -91,34 +92,21 @@ function projectWith({
     return project;
 }
 
-/** What the Names (tree) pass printed, header to verdict. */
+/** What the Names (tree) pass printed, header to verdict, in a run of that pass alone. */
 function namesPassOf(project: string): string {
     const result = spawnSync('bash', [BIN, 'check'], {
         cwd: project,
         encoding: 'utf8',
-        env: inProject(project),
+        env: inProject(project, onlyPasses('names')),
     });
 
-    return result.stdout.slice(
-        result.stdout.indexOf('Names (tree)'),
-        result.stdout.indexOf('Secrets (credentials)'),
-    );
-}
-
-/** One pass of a report, from its header to the next pass's. */
-function passOf(stdout: string, label: string, next: string): string {
-    return stdout.slice(stdout.indexOf(label), stdout.indexOf(next));
+    return passOf(result.stdout, 'Names (tree)');
 }
 
 /** Whether the four tree gates and the linter passed or failed, in report order. */
 function treeVerdictsOf(stdout: string): string[] {
-    return [
-        ['Oxlint Check', 'Oxfmt Check'],
-        ['Markdown (prose)', 'Names (tree)'],
-        ['Names (tree)', 'Secrets (credentials)'],
-        ['Secrets (credentials)', 'DRIFT'],
-    ].map(([label = '', next = '']) =>
-        passOf(stdout, label, next).includes('✓ Passed') ? 'Passed' : 'Failed',
+    return ['Oxlint Check', 'Markdown (prose)', 'Names (tree)', 'Secrets (credentials)'].map(
+        (label) => (passOf(stdout, label).includes('✓ Passed') ? 'Passed' : 'Failed'),
     );
 }
 
@@ -137,12 +125,12 @@ function writeDataFolder(project: string): void {
     );
 }
 
-/** A check and a baseline recording over the project, the check's report and the recorded file. */
+/** A check of the linter and the tree gates and a baseline recording over the project, the check's report and the recorded file. */
 function checkAndRecord(project: string): { baseline: string; stdout: string } {
     const result = spawnSync('bash', [BIN, 'check'], {
         cwd: project,
         encoding: 'utf8',
-        env: inProject(project),
+        env: inProject(project, onlyPasses('oxlint', 'markdown', 'names', 'secrets')),
     });
     execFileSync('bash', [BIN, 'baseline'], {
         cwd: project,
@@ -157,8 +145,8 @@ function checkAndRecord(project: string): { baseline: string; stdout: string } {
 }
 
 /** What a pass printed between its header and its verdict, colours stripped, blank lines dropped. */
-function saidBy(stdout: string, label: string, next: string): string[] {
-    return stripVTControlCharacters(passOf(stdout, label, next))
+function saidBy(stdout: string, label: string): string[] {
+    return stripVTControlCharacters(passOf(stdout, label))
         .split('\n')
         .slice(1, -1)
         .filter(
@@ -177,9 +165,9 @@ describe('names-repository', () => {
 
         // Then - every gate reads the folder: each fails, naming what it holds, and the baseline records the linter's finding and the root
         expect(treeVerdictsOf(stdout)).toStrictEqual(['Failed', 'Failed', 'Failed', 'Failed']);
-        expect(passOf(stdout, 'Markdown (prose)', 'Names (tree)')).toContain('data/NOTES.md');
-        expect(passOf(stdout, 'Names (tree)', 'Secrets (credentials)')).toContain('data/');
-        expect(passOf(stdout, 'Secrets (credentials)', 'DRIFT')).toContain('data/NOTES.md');
+        expect(passOf(stdout, 'Markdown (prose)')).toContain('data/NOTES.md');
+        expect(passOf(stdout, 'Names (tree)')).toContain('data/');
+        expect(passOf(stdout, 'Secrets (credentials)')).toContain('data/NOTES.md');
         expect(JSON.parse(baseline)).toMatchObject({
             typescript: { 'eslint/no-debugger': 1, 'names/names-root-foreign': 1 },
         });
@@ -200,11 +188,12 @@ describe('names-repository', () => {
     });
 
     const TREE_GATES = [
-        ['Suppressions (directives)', 'Markdown (prose)'],
-        ['Markdown (prose)', 'Names (tree)'],
-        ['Names (tree)', 'Secrets (credentials)'],
-        ['Secrets (credentials)', 'DRIFT'],
+        'Suppressions (directives)',
+        'Markdown (prose)',
+        'Names (tree)',
+        'Secrets (credentials)',
     ] as const;
+    const TREE_PASSES = onlyPasses('suppressions', 'markdown', 'names', 'secrets');
 
     test('judges a repository nobody has added a file to yet, its Makefile included', () => {
         // Given - a repository initialised over a tree nobody has added
@@ -225,17 +214,17 @@ describe('names-repository', () => {
         writeFileSync(join(project, '.gitignore'), '*\n');
         execFileSync('git', ['init', '--quiet'], { cwd: project });
 
-        // When - the quality checks run
+        // When - the tree gates run
         const result = spawnSync('bash', [BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
-            env: inProject(project),
+            env: inProject(project, TREE_PASSES),
         });
         const refusal = `nothing to read under ${realpathSync(project)}: git ignores every file it holds — take the project's files out of .gitignore, then run again`;
 
         // Then - every tree gate says that one line, and no stack, and the run fails where a silent gate would pass on everything
-        for (const [label, next] of TREE_GATES) {
-            expect(saidBy(result.stdout, label, next)).toStrictEqual([refusal]);
+        for (const label of TREE_GATES) {
+            expect(saidBy(result.stdout, label)).toStrictEqual([refusal]);
         }
         expect(result.status).toBe(1);
     });
@@ -246,17 +235,17 @@ describe('names-repository', () => {
         const project = realpathSync(created);
         mkdirSync(join(project, 'src'));
 
-        // When - the quality checks run
+        // When - the tree gates run
         const result = spawnSync('bash', [BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
-            env: inProject(project),
+            env: inProject(project, TREE_PASSES),
         });
         const refusal = `nothing to read under ${project}: it holds folders and no file — add the project's files, then run again`;
 
         // Then - every tree gate says that one line, and the run fails
-        for (const [label, next] of TREE_GATES) {
-            expect(saidBy(result.stdout, label, next)).toStrictEqual([refusal]);
+        for (const label of TREE_GATES) {
+            expect(saidBy(result.stdout, label)).toStrictEqual([refusal]);
         }
         expect(result.status).toBe(1);
     });
@@ -354,16 +343,13 @@ describe('names-repository', () => {
             env: inProject(project),
         });
 
-        // When - the quality checks run
+        // When - the linter and the Names pass run
         const result = spawnSync('bash', [BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
-            env: inProject(project),
+            env: inProject(project, onlyPasses('oxlint', 'names')),
         });
-        const names = result.stdout.slice(
-            result.stdout.indexOf('Names (tree)'),
-            result.stdout.indexOf('Secrets (credentials)'),
-        );
+        const names = passOf(result.stdout, 'Names (tree)');
 
         // Then - the entry holds both, the section states it in its one line, and the Names pass is green
         expect(result.stdout).toContain(
@@ -375,6 +361,6 @@ describe('names-repository', () => {
 });
 
 /** npm's INIT_CWD names the project the CLI answers for; a chain started under npm must name its own. */
-function inProject(project: string): NodeJS.ProcessEnv {
-    return { ...process.env, INIT_CWD: project };
+function inProject(project: string, env: Record<string, string> = {}): NodeJS.ProcessEnv {
+    return { ...process.env, ...env, INIT_CWD: project };
 }

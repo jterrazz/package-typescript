@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
+import { onlyPasses } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -63,7 +64,7 @@ function repositoryWithEmptyDirectories(): string {
     return project;
 }
 
-/** What the Names (tree) pass of a run printed between its header and its verdict, and the verdict. */
+/** What the Names (tree) pass, run alone, printed between its header and its verdict, and the verdict. */
 function namesPassOf(
     project: string,
     command: 'check' | 'fix',
@@ -72,7 +73,7 @@ function namesPassOf(
     const { stdout } = spawnSync('bash', [BIN, command, ...options], {
         cwd: project,
         encoding: 'utf8',
-        env: { ...process.env, INIT_CWD: project },
+        env: { ...process.env, ...onlyPasses('names'), INIT_CWD: project },
     });
     const plain = stripVTControlCharacters(stdout);
     const pass = plain.slice(plain.indexOf('Names (tree)'));

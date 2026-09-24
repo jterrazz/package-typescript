@@ -4,6 +4,7 @@ import { cpSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { onlyPasses } from '../check-passes.js';
 import { cli } from '../cli.specification.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
@@ -108,7 +109,7 @@ describe('oxlint-report', () => {
 
             // When - the quality checks run there, in the same environment
             const result = await cli
-                .env(formOnly(form))
+                .env({ ...formOnly(form), ...onlyPasses('oxlint') })
                 .fixture(directory('./fixtures/oxlint-report/'))
                 .exec('check');
 

@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { onlyPasses, passOf } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -47,17 +48,15 @@ function projectWith({
     return project;
 }
 
-/** The Oxfmt pass of a run, from its header to its verdict. */
+/** The Oxfmt pass of a run of that pass alone, from its header to its verdict. */
 function formatPassOf(project: string, command: 'check' | 'fix'): string {
     const { stdout } = spawnSync('bash', [BIN, command], {
         cwd: project,
         encoding: 'utf8',
-        env: { ...process.env, INIT_CWD: project },
+        env: { ...process.env, ...onlyPasses('oxfmt'), INIT_CWD: project },
     });
 
-    const start = stdout.indexOf('Oxfmt');
-
-    return stdout.slice(start, stdout.indexOf(' RUN ', start));
+    return passOf(stdout, 'Oxfmt');
 }
 
 describe('format-sweep', () => {
