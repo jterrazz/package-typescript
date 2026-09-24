@@ -45,6 +45,22 @@ export default fragment({
             },
             since: SIZE_SINCE,
         }),
+        /*
+         * `max-statements` is covered by the function cap everywhere that cap
+         * is on; under the same three suffixes it is off (the override
+         * above), it is C34 that bounds a test body's statement count
+         * instead, at the same 60 lines.
+         */
+        scoped({
+            files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts'],
+            rules: {
+                'max-statements': off({
+                    by: "@jterrazz/test C34 — a test body holds at most 60 lines, and oxfmt puts one statement per line",
+                    kind: 'covered',
+                }),
+            },
+            since: SIZE_SINCE,
+        }),
     ],
     rules: {
         ...allOn([
@@ -245,7 +261,10 @@ export default fragment({
             kind: 'evidence',
         }),
         'init-declarations': off({ by: 'no-unassigned-vars, prefer-const', kind: 'covered' }),
-        /* oxfmt writes one statement per line, so the function cap bounds the count. */
+        /* oxfmt writes one statement per line, so a function's cap bounds its
+         * statement count — max-lines-per-function outside a test file, where
+         * that cap is itself off and @jterrazz/test's C34 takes its place
+         * (the scoped override below). */
         'max-statements': off(
             {
                 by: 'max-lines-per-function (60) — oxfmt puts one statement per line',
