@@ -305,7 +305,9 @@ The first two rule ids overlap publint on purpose. They read the SOURCE TREE and
 
 A published build never carries test material, and `publish-test-material` refuses one that does. The pass builds the package as it builds — its own `tsdown.config.*`, else the `bundle` preset over the entries its `exports` map earns — and reads each chunk's module ids off a `generateBundle` hook.
 
-That build leaves the disk alone as far as tsdown lets it: no chunk is written, and the config's `copy`, `exe` and `onSuccess` are switched off. A config's own `hooks` are the one thing an inline option cannot switch off, so a `build:done` hook that writes still writes. A file `files` ships is judged on three counts:
+That build leaves the disk alone as far as tsdown lets it: no chunk is written, and the config's `copy`, `exe` and `onSuccess` are switched off. A config's own `hooks` are the one thing an inline option cannot switch off, so a `build:done` hook that writes still writes.
+
+A file `files` ships is judged on three counts:
 
 - a module of the package's own compiled into it, when `materialAt` names it — a `*.fixtures.ts`, a test file, ground, the specs tree, a contract;
 - an installed module compiled into it, when `testPackageOf` names its package — bundling `vitest` is never meant;
@@ -313,9 +315,9 @@ That build leaves the disk alone as far as tsdown lets it: no chunk is written, 
 
 What test material IS is `@jterrazz/test`'s alone: the two readers are the ones its F2 rule judges by, published on its `./oxlint` entry, and the pass loads them rather than keeping a copy — from the install the package resolves, else, when that install publishes no reader or the package resolves none, from the one the toolchain reaches by name. Where neither publishes them, and in a package with no build — no config of its own and no target under `dist/`, like this package — nothing is judged. The finding states itself in four parts and sends its reader to F2's row, where the definition lives.
 
-A build that fails is a finding too. `publish-build` names tsdown's first error in the same four parts, and the pass carries on to publint and attw, so one run still says everything else it knows.
-
 The second source is for a package that loads no reader of its own. It reaches past the repository boundary [test-package.js](../src/cli/test-package.js) keeps, since it resolves by node's rules from the toolchain's own location. In a consumer it mostly lands on the consumer's own install, or on none under a strict layout. The package that relies on it is a fixture of this repository copied where no `node_modules` sits.
+
+A build that fails is a finding too. `publish-build` names tsdown's first error in the same four parts, and the pass carries on to publint and attw, so one run still says everything else it knows.
 
 ## The Architecture (layer map) pass
 
