@@ -79,10 +79,13 @@ function resolvedConfig(dir: string): ResolvedConfig {
 /** Every tsconfig preset this package ships, by the name a consumer extends. */
 const PRESETS = ['node', 'library', 'next', 'astro', 'expo', 'react'] as const;
 
-describe.each(PRESETS.map((preset) => [preset, `tsconfig-${preset}`]))(
-    '%s preset',
-    (preset, fixture) => {
-        test('scopes the compiled file set to the consumer that extends it', () => {
+/** Each preset, beside the fixture consumer that extends it. */
+const FIXTURES = PRESETS.map((preset) => [preset, `tsconfig-${preset}`] as const);
+
+describe('tsconfig', () => {
+    test.each(FIXTURES)(
+        'the %s preset scopes the compiled file set to the consumer that extends it',
+        (preset, fixture) => {
             // Given - a consumer tsconfig that extends the preset and overrides nothing
             const { dir, scoped } = resolvedConfig(consumer(fixture, preset));
 
@@ -92,9 +95,12 @@ describe.each(PRESETS.map((preset) => [preset, `tsconfig-${preset}`]))(
                 const absolute = isAbsolute(entry) ? entry : resolve(dir, entry);
                 expect(absolute.startsWith(dir + sep)).toBe(true);
             }
-        });
+        },
+    );
 
-        test('compiles incrementally into the consumer artefacts directory', () => {
+    test.each(FIXTURES)(
+        'the %s preset compiles incrementally into the consumer artefacts directory',
+        (preset, fixture) => {
             // Given - the same consumer tsconfig
             const { compilerOptions, dir } = resolvedConfig(consumer(fixture, preset));
 
@@ -104,45 +110,50 @@ describe.each(PRESETS.map((preset) => [preset, `tsconfig-${preset}`]))(
             expect(resolve(dir, buildInfo)).toBe(
                 resolve(dir, '.artifacts/tsc/tsconfig.tsbuildinfo'),
             );
-        });
-    },
-);
-
-/* One ground tree is held against every preset. */
-test.each(PRESETS)(
-    'the %s preset leaves the ground a test stands on out of the compiled file set, wherever it sits',
-    (preset) => {
-        // Given - a consumer whose specs/ holds each of the four ground folders beside a contract, and whose src/ holds a module test's fixtures/
-        const dir = consumer('tsconfig-ground', preset);
-
-        // When - tsc lists the files the preset compiles
-        const listed = execFileSync(TSC, ['--listFilesOnly'], { cwd: dir, encoding: 'utf8' })
-            .split('\n')
-            .filter((path) => path.startsWith(dir))
-            .map((path) => path.slice(dir.length + 1))
-            .toSorted();
-
-        // Then - the contract and the product compile; the ground never does, under specs/ or src/
-        expect(listed).toStrictEqual(['specs/orders/contracts/order.ts', 'src/catalog/catalog.ts']);
-    },
-);
-
-test('the astro preset extends Astro strict, and its own ground and JSX runtime win', () => {
-    // Given - an Astro consumer that writes the one extends the chapter documents
-    const { compilerOptions, dir, exclude } = resolvedConfig(consumer('tsconfig-astro', 'astro'));
-
-    // Then - Astro's settings arrive underneath, and ours are the ones that hold
-    expect(compilerOptions.allowImportingTsExtensions).toBe(true);
-    expect(compilerOptions.jsx).toBe('react-jsx');
-    expect(exclude.map((entry) => relative(dir, entry))).toStrictEqual(
-        expect.arrayContaining([
-            'node_modules',
-            'dist',
-            '.artifacts',
-            '**/fixtures',
-            '**/expected',
-            '**/seeds',
-            '**/requests',
-        ]),
+        },
     );
+
+    /* One ground tree is held against every preset. */
+    test.each(PRESETS)(
+        'the %s preset leaves the ground a test stands on out of the compiled file set, wherever it sits',
+        (preset) => {
+            // Given - a consumer whose specs/ holds each of the four ground folders beside a contract, and whose src/ holds a module test's fixtures/
+            const dir = consumer('tsconfig-ground', preset);
+
+            // When - tsc lists the files the preset compiles
+            const listed = execFileSync(TSC, ['--listFilesOnly'], { cwd: dir, encoding: 'utf8' })
+                .split('\n')
+                .filter((path) => path.startsWith(dir))
+                .map((path) => path.slice(dir.length + 1))
+                .toSorted();
+
+            // Then - the contract and the product compile; the ground never does, under specs/ or src/
+            expect(listed).toStrictEqual([
+                'specs/orders/contracts/order.ts',
+                'src/catalog/catalog.ts',
+            ]);
+        },
+    );
+
+    test('the astro preset extends Astro strict, and its own ground and JSX runtime win', () => {
+        // Given - an Astro consumer that writes the one extends the chapter documents
+        const { compilerOptions, dir, exclude } = resolvedConfig(
+            consumer('tsconfig-astro', 'astro'),
+        );
+
+        // Then - Astro's settings arrive underneath, and ours are the ones that hold
+        expect(compilerOptions.allowImportingTsExtensions).toBe(true);
+        expect(compilerOptions.jsx).toBe('react-jsx');
+        expect(exclude.map((entry) => relative(dir, entry))).toStrictEqual(
+            expect.arrayContaining([
+                'node_modules',
+                'dist',
+                '.artifacts',
+                '**/fixtures',
+                '**/expected',
+                '**/seeds',
+                '**/requests',
+            ]),
+        );
+    });
 });

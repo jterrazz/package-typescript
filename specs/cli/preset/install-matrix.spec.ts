@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { cli as installMatrixCli } from '../install-matrix.specification.js';
 
@@ -21,14 +21,24 @@ import { cli as installMatrixCli } from '../install-matrix.specification.js';
  * preset.
  */
 
-test('every profile installs strict and checks green', async () => {
-    // Given - one consumer per profile, each installed the way pnpm installs
-    const result = await installMatrixCli.exec();
+describe('install-matrix', () => {
+    test('every profile installs strict and checks green', async () => {
+        // Given - one consumer per profile, each installed the way pnpm installs
+        const result = await installMatrixCli.exec();
 
-    // Then - every consumer passed `typescript check`
-    expect(result.exitCode).toBe(0);
-    for (const consumer of ['astro', 'bun', 'expo', 'next', 'node', 'node-published', 'react']) {
-        expect(result.stdout.text).toContain(`checked: ${consumer}`);
-    }
-    // Seven strict installs, not one: the chain earns four times the e2e budget.
-}, 120_000);
+        // Then - every consumer passed `typescript check`
+        expect(result.exitCode).toBe(0);
+        for (const consumer of [
+            'astro',
+            'bun',
+            'expo',
+            'next',
+            'node',
+            'node-published',
+            'react',
+        ]) {
+            expect(result.stdout.text).toContain(`checked: ${consumer}`);
+        }
+        // Seven strict installs, not one: the chain earns four times the e2e budget.
+    }, 120_000);
+});

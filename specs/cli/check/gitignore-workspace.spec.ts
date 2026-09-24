@@ -39,7 +39,7 @@ function checkFromMember(fixture: string): { status: null | number; stdout: stri
     return { status: result.status, stdout: result.stdout };
 }
 
-describe('the gitignore gate in a workspace', () => {
+describe('gitignore-workspace', () => {
     test('passes a member with no .gitignore of its own when the root ignores .artifacts/', () => {
         // Given - a workspace root that holds the convention, a member with none of its own
         // When - the member runs its own quality checks

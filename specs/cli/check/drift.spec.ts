@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterAll, expect, onTestFinished, test } from 'vitest';
+import { afterAll, describe, expect, onTestFinished, test } from 'vitest';
 
 import manifest from '../../../package.json' with { type: 'json' };
 import { toolchainWith } from '../toolchain-sandbox.js';
@@ -53,62 +53,6 @@ function stand(config: string): void {
     writeFileSync(join(project, 'oxlint.config.ts'), config);
 }
 
-test('refuses a rule the profile has on, turned off with no reason beside it', () => {
-    // Given - a project on the node profile that silently turns a rule off
-    stand(
-        [
-            "import { compose, node } from '@jterrazz/typescript/oxlint';",
-            '',
-            'export default compose(node, {',
-            '    rules: {',
-            "        'no-debugger': 'off',",
-            '    },',
-            '});',
-            '',
-        ].join('\n'),
-    );
-
-    // When - the quality checks run there
-    const silent = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
-
-    // Then - the report names the profile, and refuses the rule turned off in silence
-    expect(silent.stdout).toContain('Deviations from the profile');
-    expect(silent.stdout).toContain('profile                              node');
-    expect(silent.stdout).toContain(
-        "drift-unreasoned  oxlint.config.ts  no-debugger is off and the line that turns it off carries no '// reason:'",
-    );
-    expect(silent.status).toBe(1);
-});
-
-test('accepts the same rule turned off, once the line that turns it off says why', () => {
-    // Given - the same rule turned off, with the reason on the line that turns it off
-    stand(
-        [
-            "import { compose, node } from '@jterrazz/typescript/oxlint';",
-            '',
-            'export default compose(node, {',
-            '    rules: {',
-            "        'no-debugger': 'off', // reason: the debugger IS the product here",
-            '    },',
-            '});',
-            '',
-        ].join('\n'),
-    );
-
-    // When - the quality checks run again
-    const reasoned = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
-
-    /*
-     * The run's own exit code is not the claim here — a sandbox that links this
-     * checkout into its node_modules lints and formats what it finds there,
-     * which is this repository, not the case.
-     */
-
-    // Then - the rule is still REPORTED as off, and no longer refused: it is a decision now
-    expect(reasoned.stdout).toContain('rules off vs profile                 1 (no-debugger)');
-    expect(reasoned.stdout).not.toContain('drift-unreasoned');
-});
-
 /** A node-profile project linked at `toolchain`, one reasoned suppression in its source. */
 function suppressingProject(toolchain: string): string {
     const directory = mkdtempSync(resolve(tmpdir(), 'spec-drift-rows-'));
@@ -137,47 +81,114 @@ function suppressingProject(toolchain: string): string {
     return directory;
 }
 
-test('counts the suppressions, and names a tool left behind its range', () => {
-    // Given - a project with one reasoned suppression, on a toolchain whose knip claims 0.0.1
-    const toolchain = toolchainWith({ knip: '0.0.1' });
-    const directory = suppressingProject(toolchain);
+describe('drift', () => {
+    test('refuses a rule the profile has on, turned off with no reason beside it', () => {
+        // Given - a project on the node profile that silently turns a rule off
+        stand(
+            [
+                "import { compose, node } from '@jterrazz/typescript/oxlint';",
+                '',
+                'export default compose(node, {',
+                '    rules: {',
+                "        'no-debugger': 'off',",
+                '    },',
+                '});',
+                '',
+            ].join('\n'),
+        );
 
-    // When - the quality checks run there
-    const result = spawnSync('bash', [join(toolchain, 'bin/typescript.sh'), 'check'], {
-        cwd: directory,
-        encoding: 'utf8',
+        // When - the quality checks run there
+        const silent = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+
+        // Then - the report names the profile, and refuses the rule turned off in silence
+        expect(silent.stdout).toContain('Deviations from the profile');
+        expect(silent.stdout).toContain('profile                              node');
+        expect(silent.stdout).toContain(
+            "drift-unreasoned  oxlint.config.ts  no-debugger is off and the line that turns it off carries no '// reason:'",
+        );
+        expect(silent.status).toBe(1);
     });
-    const drift = result.stdout.slice(result.stdout.indexOf('Deviations from the profile'));
 
-    // Then - the report counts the directive, and names the one tool that deviates
-    expect(drift).toContain('suppressions                         1\n');
-    expect(drift).toContain('tool versions                        knip 0.0.1 old\n');
-});
+    test('accepts the same rule turned off, once the line that turns it off says why', () => {
+        // Given - the same rule turned off, with the reason on the line that turns it off
+        stand(
+            [
+                "import { compose, node } from '@jterrazz/typescript/oxlint';",
+                '',
+                'export default compose(node, {',
+                '    rules: {',
+                "        'no-debugger': 'off', // reason: the debugger IS the product here",
+                '    },',
+                '});',
+                '',
+            ].join('\n'),
+        );
 
-test('prints the same reading for a machine under check --json', () => {
-    // Given - the same project, on the same toolchain
-    const toolchain = toolchainWith({ knip: '0.0.1' });
-    const directory = suppressingProject(toolchain);
+        // When - the quality checks run again
+        const reasoned = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
 
-    // When - the quality checks run with --json
-    const result = spawnSync('bash', [join(toolchain, 'bin/typescript.sh'), 'check', '--json'], {
-        cwd: directory,
-        encoding: 'utf8',
+        /*
+         * The run's own exit code is not the claim here — a sandbox that links this
+         * checkout into its node_modules lints and formats what it finds there,
+         * which is this repository, not the case.
+         */
+
+        // Then - the rule is still REPORTED as off, and no longer refused: it is a decision now
+        expect(reasoned.stdout).toContain('rules off vs profile                 1 (no-debugger)');
+        expect(reasoned.stdout).not.toContain('drift-unreasoned');
     });
-    const start = result.stdout.indexOf('Deviations from the profile');
-    const drift = result.stdout.slice(start, result.stdout.indexOf(' END ', start));
-    const reading = drift.slice(drift.indexOf('{'), drift.lastIndexOf('}') + 1);
 
-    // Then - the drift block is one JSON object carrying every row the human block prints
-    expect(JSON.parse(reading)).toStrictEqual({
-        baseline: null,
-        profile: 'node',
-        rulesOff: [],
-        suppressions: 1,
-        testBaseline: null,
-        tools: [
-            { installed: '0.0.1', name: 'knip', range: manifest.dependencies.knip, verdict: 'old' },
-        ],
-        unreasoned: [],
+    test('counts the suppressions, and names a tool left behind its range', () => {
+        // Given - a project with one reasoned suppression, on a toolchain whose knip claims 0.0.1
+        const toolchain = toolchainWith({ knip: '0.0.1' });
+        const directory = suppressingProject(toolchain);
+
+        // When - the quality checks run there
+        const result = spawnSync('bash', [join(toolchain, 'bin/typescript.sh'), 'check'], {
+            cwd: directory,
+            encoding: 'utf8',
+        });
+        const drift = result.stdout.slice(result.stdout.indexOf('Deviations from the profile'));
+
+        // Then - the report counts the directive, and names the one tool that deviates
+        expect(drift).toContain('suppressions                         1\n');
+        expect(drift).toContain('tool versions                        knip 0.0.1 old\n');
+    });
+
+    test('prints the same reading for a machine under check --json', () => {
+        // Given - the same project, on the same toolchain
+        const toolchain = toolchainWith({ knip: '0.0.1' });
+        const directory = suppressingProject(toolchain);
+
+        // When - the quality checks run with --json
+        const result = spawnSync(
+            'bash',
+            [join(toolchain, 'bin/typescript.sh'), 'check', '--json'],
+            {
+                cwd: directory,
+                encoding: 'utf8',
+            },
+        );
+        const start = result.stdout.indexOf('Deviations from the profile');
+        const drift = result.stdout.slice(start, result.stdout.indexOf(' END ', start));
+        const reading = drift.slice(drift.indexOf('{'), drift.lastIndexOf('}') + 1);
+
+        // Then - the drift block is one JSON object carrying every row the human block prints
+        expect(JSON.parse(reading)).toStrictEqual({
+            baseline: null,
+            profile: 'node',
+            rulesOff: [],
+            suppressions: 1,
+            testBaseline: null,
+            tools: [
+                {
+                    installed: '0.0.1',
+                    name: 'knip',
+                    range: manifest.dependencies.knip,
+                    verdict: 'old',
+                },
+            ],
+            unreasoned: [],
+        });
     });
 });

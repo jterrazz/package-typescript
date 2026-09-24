@@ -18,7 +18,7 @@ import { cli as oxlintCli } from '../oxlint.specification.js';
 const NODE_CONFIG = resolve(import.meta.dirname, '../../../src/presets/oxlint/profiles/node.js');
 const COMPOSED_CONFIG = resolve(import.meta.dirname, 'fixtures/composed.config.ts');
 
-describe('composable presets (explicit wiring)', () => {
+describe('composition', () => {
     test('enables the jterrazz rules when the consumer composes the testing fragment', async () => {
         // Given - a probe spec linted with a config that composes node + testing
         const result = await oxlintCli

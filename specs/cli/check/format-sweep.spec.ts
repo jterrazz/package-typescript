@@ -2,7 +2,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { expect, onTestFinished, test } from 'vitest';
+import { describe, expect, onTestFinished, test } from 'vitest';
 
 /*
  * A chain, for the ground's sake: what separates a file git ignores from one
@@ -62,42 +62,44 @@ function formatPassOf(project: string, command: 'check' | 'fix'): string {
     return stdout.slice(start, stdout.indexOf(' RUN ', start));
 }
 
-test('judges no ground file and no ignored file, with no oxfmt config to say so', () => {
-    // Given - formatted source files, tracked and new, beside a misformatted ground file and a misformatted ignored file
-    const project = projectWith({ newSource: FORMATTED, trackedSource: FORMATTED });
+describe('format-sweep', () => {
+    test('judges no ground file and no ignored file, with no oxfmt config to say so', () => {
+        // Given - formatted source files, tracked and new, beside a misformatted ground file and a misformatted ignored file
+        const project = projectWith({ newSource: FORMATTED, trackedSource: FORMATTED });
 
-    // When - the quality checks run
-    const format = formatPassOf(project, 'check');
+        // When - the quality checks run
+        const format = formatPassOf(project, 'check');
 
-    // Then - the Oxfmt pass is green
-    expect(format).toContain('Passed');
-});
+        // Then - the Oxfmt pass is green
+        expect(format).toContain('Passed');
+    });
 
-test('refuses the source files it would reformat, tracked or new, and only those', () => {
-    // Given - the same project, whose tracked source file and new source file are misformatted
-    const project = projectWith({ newSource: MISFORMATTED, trackedSource: MISFORMATTED });
+    test('refuses the source files it would reformat, tracked or new, and only those', () => {
+        // Given - the same project, whose tracked source file and new source file are misformatted
+        const project = projectWith({ newSource: MISFORMATTED, trackedSource: MISFORMATTED });
 
-    // When - the quality checks run
-    const format = formatPassOf(project, 'check');
+        // When - the quality checks run
+        const format = formatPassOf(project, 'check');
 
-    // Then - the Oxfmt pass fails on the two source files alone
-    expect(format).toContain('src/index.ts');
-    expect(format).toContain('src/added.ts');
-    expect(format).not.toContain('broken.ts');
-    expect(format).not.toContain('scratch.ts');
-    expect(format).toContain('Failed');
-});
+        // Then - the Oxfmt pass fails on the two source files alone
+        expect(format).toContain('src/index.ts');
+        expect(format).toContain('src/added.ts');
+        expect(format).not.toContain('broken.ts');
+        expect(format).not.toContain('scratch.ts');
+        expect(format).toContain('Failed');
+    });
 
-test('rewrites the new file without a git add, and leaves the ground and the ignored file as they were', () => {
-    // Given - the same project, whose tracked source file and new source file are misformatted
-    const project = projectWith({ newSource: MISFORMATTED, trackedSource: MISFORMATTED });
+    test('rewrites the new file without a git add, and leaves the ground and the ignored file as they were', () => {
+        // Given - the same project, whose tracked source file and new source file are misformatted
+        const project = projectWith({ newSource: MISFORMATTED, trackedSource: MISFORMATTED });
 
-    // When - the fixes run
-    formatPassOf(project, 'fix');
+        // When - the fixes run
+        formatPassOf(project, 'fix');
 
-    // Then - both source files are formatted, and neither of the others moved
-    expect(readFileSync(join(project, 'src/index.ts'), 'utf8')).toBe(FORMATTED);
-    expect(readFileSync(join(project, 'src/added.ts'), 'utf8')).toBe(FORMATTED);
-    expect(readFileSync(join(project, 'specs/fixtures/broken.ts'), 'utf8')).toBe(MISFORMATTED);
-    expect(readFileSync(join(project, 'local/scratch.ts'), 'utf8')).toBe(MISFORMATTED);
+        // Then - both source files are formatted, and neither of the others moved
+        expect(readFileSync(join(project, 'src/index.ts'), 'utf8')).toBe(FORMATTED);
+        expect(readFileSync(join(project, 'src/added.ts'), 'utf8')).toBe(FORMATTED);
+        expect(readFileSync(join(project, 'specs/fixtures/broken.ts'), 'utf8')).toBe(MISFORMATTED);
+        expect(readFileSync(join(project, 'local/scratch.ts'), 'utf8')).toBe(MISFORMATTED);
+    });
 });

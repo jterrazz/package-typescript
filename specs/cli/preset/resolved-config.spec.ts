@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { printConfig, PROFILES } from './rulebook.js';
 
@@ -55,23 +55,6 @@ const UNAWAITED_PROMISE_RULES = [
     'typescript/no-misused-promises',
 ];
 
-test.each(PROFILES)('$name arms the un-awaited-promise rules on a test file too', ({ name }) => {
-    // Given - the profile, resolved by oxlint itself
-    const config = printConfig(name);
-
-    for (const rule of UNAWAITED_PROMISE_RULES) {
-        // Then - the base config denies it, which is what a file inherits
-        expect.soft(levelOf(config.rules[rule]), `${name}: ${rule} in the base`).toBe('deny');
-
-        // Then - and no override relaxes it, so the vitest globs inherit it unchanged
-        for (const override of config.overrides ?? []) {
-            expect
-                .soft(override.rules[rule], `${name}: ${rule} under ${override.files.join(', ')}`)
-                .toBeUndefined();
-        }
-    }
-});
-
 /** `key=value` pairs of one resolved section, sorted, on one line. */
 function sectionOf(label: string, section: Record<string, unknown> = {}): string {
     const pairs = Object.entries(section)
@@ -81,24 +64,51 @@ function sectionOf(label: string, section: Record<string, unknown> = {}): string
     return `${label} ${pairs.join(' ')}`.trimEnd();
 }
 
-test.each(PROFILES)('$name resolves to the rule set its golden records', ({ name }) => {
-    // Given - the profile, resolved by oxlint itself
-    const { env, globals, options, rules } = printConfig(name);
+describe('resolved-config', () => {
+    test.each(PROFILES)(
+        '$name arms the un-awaited-promise rules on a test file too',
+        ({ name }) => {
+            // Given - the profile, resolved by oxlint itself
+            const config = printConfig(name);
 
-    // Then - its environments, globals and options, then the sorted roster, match the golden marker by marker
-    const header = [
-        sectionOf('env', env),
-        sectionOf('globals', globals),
-        sectionOf('options', options),
-    ].join('\n');
-    const report = `${header}\n\n${Object.keys(rules)
-        .toSorted((left, right) => left.localeCompare(right))
-        .map((rule) => `${MARKERS[levelOf(rules[rule])] ?? '? '}${rule}`)
-        .join('\n')}\n`;
-    const golden = resolve(EXPECTED, GOLDENS[name] ?? '');
+            for (const rule of UNAWAITED_PROMISE_RULES) {
+                // Then - the base config denies it, which is what a file inherits
+                expect
+                    .soft(levelOf(config.rules[rule]), `${name}: ${rule} in the base`)
+                    .toBe('deny');
 
-    if (process.env.TEST_UPDATE === '1') {
-        writeFileSync(golden, report);
-    }
-    expect(report).toBe(readFileSync(golden, 'utf8'));
+                // Then - and no override relaxes it, so the vitest globs inherit it unchanged
+                for (const override of config.overrides ?? []) {
+                    expect
+                        .soft(
+                            override.rules[rule],
+                            `${name}: ${rule} under ${override.files.join(', ')}`,
+                        )
+                        .toBeUndefined();
+                }
+            }
+        },
+    );
+
+    test.each(PROFILES)('$name resolves to the rule set its golden records', ({ name }) => {
+        // Given - the profile, resolved by oxlint itself
+        const { env, globals, options, rules } = printConfig(name);
+
+        // Then - its environments, globals and options, then the sorted roster, match the golden marker by marker
+        const header = [
+            sectionOf('env', env),
+            sectionOf('globals', globals),
+            sectionOf('options', options),
+        ].join('\n');
+        const report = `${header}\n\n${Object.keys(rules)
+            .toSorted((left, right) => left.localeCompare(right))
+            .map((rule) => `${MARKERS[levelOf(rules[rule])] ?? '? '}${rule}`)
+            .join('\n')}\n`;
+        const golden = resolve(EXPECTED, GOLDENS[name] ?? '');
+
+        if (process.env.TEST_UPDATE === '1') {
+            writeFileSync(golden, report);
+        }
+        expect(report).toBe(readFileSync(golden, 'utf8'));
+    });
 });

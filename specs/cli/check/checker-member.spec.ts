@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterEach, expect, test } from 'vitest';
+import { afterEach, describe, expect, test } from 'vitest';
 
 /*
  * A chain, not a document, and a STUB checker rather than the real one. The
@@ -117,81 +117,83 @@ function workspace(version: string): string {
     return workDir;
 }
 
-test('runs the member pass once per member that resolves @jterrazz/test', () => {
-    // Given - a workspace whose only declaration is the root's, one member with specs and one without
-    // When - the quality checks run at the root
-    const { status, stdout } = check(workspace('15.3.0'));
+describe('checker-member', () => {
+    test('runs the member pass once per member that resolves @jterrazz/test', () => {
+        // Given - a workspace whose only declaration is the root's, one member with specs and one without
+        // When - the quality checks run at the root
+        const { status, stdout } = check(workspace('15.3.0'));
 
-    // Then - every member is asked, the one that owns no specs/ included
-    expect(stdout).toContain('root member pass: . ');
-    expect(stdout).toContain('root member pass: apps/api');
-    expect(stdout).toContain('root member pass: apps/web');
+        // Then - every member is asked, the one that owns no specs/ included
+        expect(stdout).toContain('root member pass: . ');
+        expect(stdout).toContain('root member pass: apps/api');
+        expect(stdout).toContain('root member pass: apps/web');
 
-    // Then - and the tree pass still runs per specs root, on a member that declares nothing
-    expect(stdout).toContain('root tree pass: apps/api/specs');
-    expect(status).toBe(1);
-});
+        // Then - and the tree pass still runs per specs root, on a member that declares nothing
+        expect(stdout).toContain('root tree pass: apps/api/specs');
+        expect(status).toBe(1);
+    });
 
-test('hands every member run the oxlint report the check wrote, and the tree runs none', () => {
-    // Given - a workspace whose root resolves a checker that answers the member flag, and arms a plugin rule reporting once
-    const root = workspace('15.3.0');
-    armPlugin(root);
+    test('hands every member run the oxlint report the check wrote, and the tree runs none', () => {
+        // Given - a workspace whose root resolves a checker that answers the member flag, and arms a plugin rule reporting once
+        const root = workspace('15.3.0');
+        armPlugin(root);
 
-    // When - the quality checks run at the root
-    const { stdout } = check(root);
+        // When - the quality checks run at the root
+        const { stdout } = check(root);
 
-    // Then - each member run reads the one report the oxlint pass wrote, complete, the plugin's diagnostic in it
-    expect(stdout).toContain('root member pass: . (oxlint report: read, 1 jterrazz)');
-    expect(stdout).toContain('root member pass: apps/api (oxlint report: read, 1 jterrazz)');
-    expect(stdout).toContain('root member pass: apps/web (oxlint report: read, 1 jterrazz)');
+        // Then - each member run reads the one report the oxlint pass wrote, complete, the plugin's diagnostic in it
+        expect(stdout).toContain('root member pass: . (oxlint report: read, 1 jterrazz)');
+        expect(stdout).toContain('root member pass: apps/api (oxlint report: read, 1 jterrazz)');
+        expect(stdout).toContain('root member pass: apps/web (oxlint report: read, 1 jterrazz)');
 
-    // Then - and the tree run, which reads no oxlint diagnostic, is handed nothing
-    expect(stdout).toContain('root tree pass: apps/api/specs (oxlint report: none)');
-});
+        // Then - and the tree run, which reads no oxlint diagnostic, is handed nothing
+        expect(stdout).toContain('root tree pass: apps/api/specs (oxlint report: none)');
+    });
 
-test('says which member resolves a release too old to answer the flag', () => {
-    // Given - the same workspace on a release that answers no --member flag
-    // When - the quality checks run at the root
-    const { stdout } = check(workspace('15.2.0'));
+    test('says which member resolves a release too old to answer the flag', () => {
+        // Given - the same workspace on a release that answers no --member flag
+        // When - the quality checks run at the root
+        const { stdout } = check(workspace('15.2.0'));
 
-    // Then - the tree pass still runs, and the pass names the version rather than a count
-    expect(stdout).toContain('root tree pass: apps/api/specs');
-    expect(stdout).not.toContain('root member pass');
-    expect(stdout).toContain('the member pass needs @jterrazz/test 15.3.0');
-    expect(stdout).toContain('resolves 15.2.0');
-});
+        // Then - the tree pass still runs, and the pass names the version rather than a count
+        expect(stdout).toContain('root tree pass: apps/api/specs');
+        expect(stdout).not.toContain('root member pass');
+        expect(stdout).toContain('the member pass needs @jterrazz/test 15.3.0');
+        expect(stdout).toContain('resolves 15.2.0');
+    });
 
-test('runs the checker a member resolves, not the one the root hoisted', () => {
-    // Given - a member carrying its own nested install beside the root's
-    const root = workspace('15.3.0');
-    install(join(root, 'apps/api'), '15.3.0', 'nested');
+    test('runs the checker a member resolves, not the one the root hoisted', () => {
+        // Given - a member carrying its own nested install beside the root's
+        const root = workspace('15.3.0');
+        install(join(root, 'apps/api'), '15.3.0', 'nested');
 
-    // When - the quality checks run at the root
-    const { stdout } = check(root);
+        // When - the quality checks run at the root
+        const { stdout } = check(root);
 
-    // Then - the member is judged by its own binary, and every other one by the root's
-    expect(stdout).toContain('nested member pass: apps/api');
-    expect(stdout).not.toContain('root member pass: apps/api');
-    expect(stdout).toContain('root member pass: apps/web');
-});
+        // Then - the member is judged by its own binary, and every other one by the root's
+        expect(stdout).toContain('nested member pass: apps/api');
+        expect(stdout).not.toContain('root member pass: apps/api');
+        expect(stdout).toContain('root member pass: apps/web');
+    });
 
-test('never makes a consumer of a project by what the tree around it installed', () => {
-    // Given - a repository checked out inside another tree that installs @jterrazz/test
-    workDir = mkdtempSync(resolve(tmpdir(), 'spec-checker-boundary-'));
-    install(workDir, '15.3.0', 'outer');
-    const project = join(workDir, 'project');
-    mkdirSync(join(project, 'specs'), { recursive: true });
-    writeFileSync(join(project, '.git'), 'gitdir: /nowhere\n');
-    writeFileSync(
-        join(project, 'package.json'),
-        `${JSON.stringify({ name: 'spec-checker-boundary', private: true }, null, 2)}\n`,
-    );
-    writeFileSync(join(project, 'specs/index.test.ts'), 'export const value = 1;\n');
+    test('never makes a consumer of a project by what the tree around it installed', () => {
+        // Given - a repository checked out inside another tree that installs @jterrazz/test
+        workDir = mkdtempSync(resolve(tmpdir(), 'spec-checker-boundary-'));
+        install(workDir, '15.3.0', 'outer');
+        const project = join(workDir, 'project');
+        mkdirSync(join(project, 'specs'), { recursive: true });
+        writeFileSync(join(project, '.git'), 'gitdir: /nowhere\n');
+        writeFileSync(
+            join(project, 'package.json'),
+            `${JSON.stringify({ name: 'spec-checker-boundary', private: true }, null, 2)}\n`,
+        );
+        writeFileSync(join(project, 'specs/index.test.ts'), 'export const value = 1;\n');
 
-    // When - the quality checks run inside it
-    const { stdout } = check(project);
+        // When - the quality checks run inside it
+        const { stdout } = check(project);
 
-    // Then - the pass does not exist: the install above the boundary is another project's
-    expect(stdout).not.toContain('Test Conventions');
-    expect(stdout).not.toContain('outer');
+        // Then - the pass does not exist: the install above the boundary is another project's
+        expect(stdout).not.toContain('Test Conventions');
+        expect(stdout).not.toContain('outer');
+    });
 });

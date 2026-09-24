@@ -24,7 +24,7 @@ import { cli as oxlintCli } from '../oxlint.specification.js';
 const NODE_CONFIG = resolve(import.meta.dirname, '../../../src/presets/oxlint/profiles/node.js');
 const OWNER_CONFIG = resolve(import.meta.dirname, 'fixtures/vitest-rule-owner.config.ts');
 
-describe('a rule marked covered answers to whichever fragment composes it', () => {
+describe('covered-by-testing', () => {
     test('the bare profile stays silent — covered, its options owed elsewhere', async () => {
         // Given - a snapshot matcher linted under the bare node profile alone
         const result = await oxlintCli

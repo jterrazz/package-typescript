@@ -26,7 +26,7 @@ runs:
 
            RUN  Test Conventions (@jterrazz/test)
 
-          http/expected/response.txt:1:1: error jterrazz-check(d4): unknown token {{string}} — the D4 vocabulary is frozen (known: {{any}})
+          http/expected/response.txt:1:1: error jterrazz-check(d4): found: the unknown token {{any}} · read: docs/19-linting.md#d4-unknown-token
 
           conventions checker: 1 error(s) found under {{workdir}}/apps/api/specs
           ✗ Failed with exit code 1

@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { REASON_KINDS } from '../../../lint/_contract.js';
 import { catalog } from '../../../lint/catalog.js';
@@ -24,97 +24,107 @@ function idOf(rule: { scope: string; value: string }): string {
 const RULES = roster();
 const DECIDED = new Set(catalog().map((entry) => entry.rule));
 
-test.each(PROFILES)('$name decides every non-nursery rule of every plugin it loads', ({ name }) => {
-    // Given - the plugins the profile actually loads, as oxlint resolves them
-    const plugins = new Set(printConfig(name).plugins);
+describe('rule-surface', () => {
+    test.each(PROFILES)(
+        '$name decides every non-nursery rule of every plugin it loads',
+        ({ name }) => {
+            // Given - the plugins the profile actually loads, as oxlint resolves them
+            const plugins = new Set(printConfig(name).plugins);
 
-    // Then - every non-nursery rule of each of them is in the manifest
-    const missing = RULES.filter(
-        (rule) =>
-            rule.category !== 'nursery' &&
-            plugins.has(rule.scope.replaceAll('_', '-')) &&
-            !DECIDED.has(idOf(rule)),
-    ).map((rule) => idOf(rule));
+            // Then - every non-nursery rule of each of them is in the manifest
+            const missing = RULES.filter(
+                (rule) =>
+                    rule.category !== 'nursery' &&
+                    plugins.has(rule.scope.replaceAll('_', '-')) &&
+                    !DECIDED.has(idOf(rule)),
+            ).map((rule) => idOf(rule));
 
-    expect(missing, `${name} leaves ${missing.length} rules undecided`).toStrictEqual([]);
-});
-
-test('decides no nursery rule tsgolint does not run — upstream calls them unstable', () => {
-    // Given - the nursery rules of this oxlint that need no type information
-    const nursery = RULES.filter((rule) => rule.category === 'nursery' && !rule.type_aware).map(
-        (rule) => idOf(rule),
+            expect(missing, `${name} leaves ${missing.length} rules undecided`).toStrictEqual([]);
+        },
     );
 
-    // Then - none of them is in the manifest
-    expect(nursery.filter((rule) => DECIDED.has(rule))).toStrictEqual([]);
-});
+    test('decides no nursery rule tsgolint does not run — upstream calls them unstable', () => {
+        // Given - the nursery rules of this oxlint that need no type information
+        const nursery = RULES.filter((rule) => rule.category === 'nursery' && !rule.type_aware).map(
+            (rule) => idOf(rule),
+        );
 
-test('decides every rule the installed tsgolint runs, by name, nursery included', () => {
-    // Given - every rule the pinned oxlint hands to tsgolint
-    const typeAware = RULES.filter((rule) => rule.type_aware).map((rule) => idOf(rule));
-    expect(typeAware.length).toBeGreaterThan(0);
+        // Then - none of them is in the manifest
+        expect(nursery.filter((rule) => DECIDED.has(rule))).toStrictEqual([]);
+    });
 
-    // Then - the manifest decides each one
-    const undecided = typeAware.filter((rule) => !DECIDED.has(rule));
-    expect(
-        undecided,
-        `found: ${undecided.join(', ')} — type-aware, and decided nowhere in lint/ · why: every rule tsgolint runs is decided by name, so a tsgolint release never adds a check no profile names · fix: decide each in lint/language/typescript.js — \`typeAware()\`, or \`off()\` with its reason · read: docs/07-lint-presets.md#the-four-laws`,
-    ).toStrictEqual([]);
-});
+    test('decides every rule the installed tsgolint runs, by name, nursery included', () => {
+        // Given - every rule the pinned oxlint hands to tsgolint
+        const typeAware = RULES.filter((rule) => rule.type_aware).map((rule) => idOf(rule));
+        expect(typeAware.length).toBeGreaterThan(0);
 
-test.each(PROFILES)('$name ships no categories switch', ({ name }) => {
-    // Given - the compiled profile a consumer extends
-    const compiled = JSON.stringify(PROFILE_TABLE[name]);
+        // Then - the manifest decides each one
+        const undecided = typeAware.filter((rule) => !DECIDED.has(rule));
+        expect(
+            undecided,
+            `found: ${undecided.join(', ')} — type-aware, and decided nowhere in lint/ · why: every rule tsgolint runs is decided by name, so a tsgolint release never adds a check no profile names · fix: decide each in lint/language/typescript.js — \`typeAware()\`, or \`off()\` with its reason · read: docs/07-lint-presets.md#the-four-laws`,
+        ).toStrictEqual([]);
+    });
 
-    /*
-     * A category arms rules of plugins the config never names: inert until a
-     * framework config activates the plugin, and firing unannounced from then.
-     */
+    test.each(PROFILES)('$name ships no categories switch', ({ name }) => {
+        // Given - the compiled profile a consumer extends
+        const compiled = JSON.stringify(PROFILE_TABLE[name]);
 
-    // Then - nothing in the manifest reaches for a category
-    expect(compiled).not.toContain('categories');
-});
+        /*
+         * A category arms rules of plugins the config never names: inert until a
+         * framework config activates the plugin, and firing unannounced from then.
+         */
 
-test('marks a rule type-aware when, and only when, oxlint says it is', () => {
-    // Given - the manifest's own type-aware marks
-    const upstream = new Map(RULES.map((rule) => [idOf(rule), rule.type_aware]));
+        // Then - nothing in the manifest reaches for a category
+        expect(compiled).not.toContain('categories');
+    });
 
-    // Then - each one matches the pinned oxlint's answer
-    const wrong = catalog()
-        .filter((entry) => entry.level === 'error' && upstream.has(entry.rule))
-        .filter((entry) => Boolean(entry.typeAware) !== upstream.get(entry.rule))
-        .map((entry) => entry.rule);
+    test('marks a rule type-aware when, and only when, oxlint says it is', () => {
+        // Given - the manifest's own type-aware marks
+        const upstream = new Map(RULES.map((rule) => [idOf(rule), rule.type_aware]));
 
-    expect(wrong).toStrictEqual([]);
-});
+        // Then - each one matches the pinned oxlint's answer
+        const wrong = catalog()
+            .filter((entry) => entry.level === 'error' && upstream.has(entry.rule))
+            .filter((entry) => Boolean(entry.typeAware) !== upstream.get(entry.rule))
+            .map((entry) => entry.rule);
 
-test('gives every off one of the five recorded reasons', () => {
-    // Given - every rule the rulebook turns off
-    const offs = catalog().filter((entry) => entry.level === 'off');
-    expect(offs.length).toBeGreaterThan(0);
+        expect(wrong).toStrictEqual([]);
+    });
 
-    // Then - each one names its kind and what carries it
-    for (const entry of offs) {
-        const reason = entry.reason ?? { by: '', kind: 'none' };
-        expect.soft(REASON_KINDS, `${entry.rule} has kind "${reason.kind}"`).toContain(reason.kind);
-        expect.soft(reason.by, `${entry.rule} names nothing`).not.toBe('');
-    }
-});
+    test('gives every off one of the five recorded reasons', () => {
+        // Given - every rule the rulebook turns off
+        const offs = catalog().filter((entry) => entry.level === 'off');
+        expect(offs.length).toBeGreaterThan(0);
 
-test('keeps only the perfectionist rules oxfmt does not sort', () => {
-    /*
-     * Measured on a fixture: oxfmt's `sortImports` reorders import STATEMENTS
-     * and leaves the named specifiers inside one statement alone.
-     */
+        // Then - each one names its kind and what carries it
+        for (const entry of offs) {
+            const reason = entry.reason ?? { by: '', kind: 'none' };
+            expect
+                .soft(REASON_KINDS, `${entry.rule} has kind "${reason.kind}"`)
+                .toContain(reason.kind);
+            expect.soft(reason.by, `${entry.rule} names nothing`).not.toBe('');
+        }
+    });
 
-    // Given - oxfmt owns import order, package.json key order and Tailwind class order
-    const OWNED_BY_OXFMT = new Set(['perfectionist/sort-imports', 'perfectionist/sort-exports']);
+    test('keeps only the perfectionist rules oxfmt does not sort', () => {
+        /*
+         * Measured on a fixture: oxfmt's `sortImports` reorders import STATEMENTS
+         * and leaves the named specifiers inside one statement alone.
+         */
 
-    // Then - no perfectionist rule the rulebook keeps is one of them
-    const kept = catalog()
-        .filter((entry) => entry.rule.startsWith('perfectionist/') && entry.level === 'error')
-        .map((entry) => entry.rule);
+        // Given - oxfmt owns import order, package.json key order and Tailwind class order
+        const OWNED_BY_OXFMT = new Set([
+            'perfectionist/sort-imports',
+            'perfectionist/sort-exports',
+        ]);
 
-    expect(kept.length).toBeGreaterThan(0);
-    expect(kept.filter((rule) => OWNED_BY_OXFMT.has(rule))).toStrictEqual([]);
+        // Then - no perfectionist rule the rulebook keeps is one of them
+        const kept = catalog()
+            .filter((entry) => entry.rule.startsWith('perfectionist/') && entry.level === 'error')
+            .map((entry) => entry.rule);
+
+        expect(kept.length).toBeGreaterThan(0);
+        expect(kept.filter((rule) => OWNED_BY_OXFMT.has(rule))).toStrictEqual([]);
+    });
 });

@@ -1,10 +1,12 @@
 {
     "typescript": {
-        "eslint/max-lines": 9
+        "eslint/max-lines": 9,
+        "eslint/max-lines-per-function": 13
     },
     "test": {
         "jterrazz-check/c18": 25,
         "jterrazz/d19w-probe-cluster": 7,
+        "jterrazz/d29-no-foreign-expectation": 2,
         "jterrazz/j6w-given-in-the-test": 17
     }
 }

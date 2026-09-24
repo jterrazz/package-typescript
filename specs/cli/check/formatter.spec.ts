@@ -23,7 +23,16 @@ const OXFMT = resolve(import.meta.dirname, '../../../node_modules/.bin/oxfmt');
 
 type FormatResult = Awaited<ReturnType<typeof oxfmtCli.exec>>;
 
-describe('format checking', () => {
+describe('formatter', () => {
+    let formatted: FormatResult;
+
+    beforeAll(async () => {
+        // Format the wrong-style file so the applied style options can be inspected.
+        formatted = await oxfmtCli
+            .fixture(file('./fixtures/formatter/wrong-style.ts'))
+            .exec(`--config ${CONFIG_PATH} wrong-style.ts`);
+    });
+
     test('detects unformatted code', async () => {
         // Given - a file with wrong formatting staged in the cwd
         const result = await oxfmtCli
@@ -43,15 +52,13 @@ describe('format checking', () => {
         // Then - the check passes
         expect(result.exitCode).toBe(0);
     });
-});
 
-/*
- * The preset's ignores resolve against the CONFIG's directory, so they hold
- * only where a consumer's own config composes the preset at its root — the
- * way every project wires it — and never under `--config <preset>`. The tree
- * is copied beside such a config, which names this checkout's entry by path.
- */
-describe('what the preset leaves alone', () => {
+    /*
+     * The preset's ignores resolve against the CONFIG's directory, so they hold
+     * only where a consumer's own config composes the preset at its root — the
+     * way every project wires it — and never under `--config <preset>`. The tree
+     * is copied beside such a config, which names this checkout's entry by path.
+     */
     test('formats none of the asset trees, build caches and ground a project holds', () => {
         // Given - the same unformatted file at the root and under every tree the preset ignores, beside a consumer config
         const created = mkdtempSync(resolve(tmpdir(), 'spec-formatter-ignores-'));
@@ -89,9 +96,7 @@ describe('what the preset leaves alone', () => {
             expect(result.stdout).not.toContain(`${tree}/app.ts`);
         }
     });
-});
 
-describe('format fixing', () => {
     test('formats unformatted code correctly', async () => {
         // Given - the wrong-style file formatted in place
         const result = await oxfmtCli
@@ -121,33 +126,22 @@ describe('format fixing', () => {
         );
         expect(result.file('correct-style.ts').content).toContain(original.trim());
     });
-});
-
-describe('config options', () => {
-    let result: FormatResult;
-
-    beforeAll(async () => {
-        // Format the wrong-style file so the applied style options can be inspected.
-        result = await oxfmtCli
-            .fixture(file('./fixtures/formatter/wrong-style.ts'))
-            .exec(`--config ${CONFIG_PATH} wrong-style.ts`);
-    });
 
     test('uses single quotes', () => {
         // Given - the formatted wrong-style file
         // Then - imports use single quotes
-        expect(result.file('wrong-style.ts').content).toContain("'fs'");
+        expect(formatted.file('wrong-style.ts').content).toContain("'fs'");
     });
 
     test('uses semicolons', () => {
         // Given - the formatted wrong-style file
         // Then - statements end with semicolons
-        expect(result.file('wrong-style.ts').content).toMatch(/;\s*$/mu);
+        expect(formatted.file('wrong-style.ts').content).toMatch(/;\s*$/mu);
     });
 
     test('uses four-space indentation', () => {
         // Given - the formatted wrong-style file
         // Then - indented lines use four spaces
-        expect(result.file('wrong-style.ts').content).toMatch(/^\s{4}const/mu);
+        expect(formatted.file('wrong-style.ts').content).toMatch(/^\s{4}const/mu);
     });
 });

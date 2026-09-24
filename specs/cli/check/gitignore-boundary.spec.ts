@@ -52,7 +52,7 @@ function checkFromClone(boundary: 'directory' | 'file' | 'none'): {
     return { status: result.status, stdout: result.stdout };
 }
 
-describe('the gitignore gate at a repository boundary', () => {
+describe('gitignore-boundary', () => {
     test("reads the parent's .gitignore when nothing marks a boundary", () => {
         // Given - a project nested in a workspace root whose .gitignore names an artefact
         // When - the nested project runs its own quality checks

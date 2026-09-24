@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
-import { expect, onTestFinished, test } from 'vitest';
+import { describe, expect, onTestFinished, test } from 'vitest';
 
 /*
  * A chain, for the ground's sake: git tracks no directory, so a fixture can
@@ -70,42 +70,44 @@ function namesPassOf(project: string, command: 'check' | 'fix'): string[] {
         .filter((line) => line !== '');
 }
 
-test('names each empty directory git does not ignore, once at its top, in four parts', () => {
-    // Given - a repository holding an empty folder, a folder of empty folders, and empty folders git ignores or never reads
-    const project = repositoryWithEmptyDirectories();
+describe('names-empty-directory', () => {
+    test('names each empty directory git does not ignore, once at its top, in four parts', () => {
+        // Given - a repository holding an empty folder, a folder of empty folders, and empty folders git ignores or never reads
+        const project = repositoryWithEmptyDirectories();
 
-    // When - the quality checks run
-    const names = namesPassOf(project, 'check');
+        // When - the quality checks run
+        const names = namesPassOf(project, 'check');
 
-    // Then - the two empty trees are named at their top, each as a lesson, and nothing else is
-    expect(names).toStrictEqual([
-        'names-directory-empty  src/abandoned/  found: `src/abandoned/` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it — `typescript fix` does — or put the file it was made for in it · read: docs/06-quality-checks.md#an-empty-directory',
-        'names-directory-empty  src/scaffold/  found: `src/scaffold/` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it — `typescript fix` does — or put the file it was made for in it · read: docs/06-quality-checks.md#an-empty-directory',
-        '✗ Failed with exit code 1',
-    ]);
-});
+        // Then - the two empty trees are named at their top, each as a lesson, and nothing else is
+        expect(names).toStrictEqual([
+            'names-directory-empty  src/abandoned/  found: `src/abandoned/` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it — `typescript fix` does — or put the file it was made for in it · read: docs/06-quality-checks.md#an-empty-directory',
+            'names-directory-empty  src/scaffold/  found: `src/scaffold/` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it — `typescript fix` does — or put the file it was made for in it · read: docs/06-quality-checks.md#an-empty-directory',
+            '✗ Failed with exit code 1',
+        ]);
+    });
 
-test('deletes each empty directory git does not ignore, and leaves the rest where it stands', () => {
-    // Given - the same repository
-    const project = repositoryWithEmptyDirectories();
+    test('deletes each empty directory git does not ignore, and leaves the rest where it stands', () => {
+        // Given - the same repository
+        const project = repositoryWithEmptyDirectories();
 
-    // When - the quality fixes run
-    const names = namesPassOf(project, 'fix');
+        // When - the quality fixes run
+        const names = namesPassOf(project, 'fix');
 
-    // Then - the pass says what it removed and passes, the two empty trees are gone, and the ignored and unread folders stay
-    expect(names).toStrictEqual([
-        'removed  src/abandoned/  an empty directory',
-        'removed  src/scaffold/  an empty directory',
-        '✓ Passed',
-    ]);
-    expect(EMPTY.map((directory) => existsSync(join(project, directory)))).toStrictEqual([
-        false,
-        false,
-    ]);
-    expect(existsSync(join(project, 'src'))).toBe(true);
-    expect(KEPT.map((directory) => existsSync(join(project, directory)))).toStrictEqual([
-        true,
-        true,
-        true,
-    ]);
+        // Then - the pass says what it removed and passes, the two empty trees are gone, and the ignored and unread folders stay
+        expect(names).toStrictEqual([
+            'removed  src/abandoned/  an empty directory',
+            'removed  src/scaffold/  an empty directory',
+            '✓ Passed',
+        ]);
+        expect(EMPTY.map((directory) => existsSync(join(project, directory)))).toStrictEqual([
+            false,
+            false,
+        ]);
+        expect(existsSync(join(project, 'src'))).toBe(true);
+        expect(KEPT.map((directory) => existsSync(join(project, directory)))).toStrictEqual([
+            true,
+            true,
+            true,
+        ]);
+    });
 });

@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterAll, expect, test } from 'vitest';
+import { afterAll, describe, expect, test } from 'vitest';
 
 /*
  * A chain, for the ground's sake: the claim needs rules armed at `error` on a
@@ -27,34 +27,36 @@ afterAll(() => {
     rmSync(project, { force: true, recursive: true });
 });
 
-test('leaves a tree that check passes, after both rewriters have run', () => {
-    // Given - a project whose one file needs a lint fix AND a reformat
-    writeFileSync(
-        join(project, 'package.json'),
-        `${JSON.stringify(
-            { name: 'spec-fix-rewriters', private: true, type: 'module', version: '1.0.0' },
-            null,
-            2,
-        )}\n`,
-    );
-    writeFileSync(
-        join(project, 'tsconfig.json'),
-        '{ "compilerOptions": { "strict": true, "noEmit": true }, "include": ["index.ts"] }\n',
-    );
-    writeFileSync(
-        join(project, 'oxlint.config.ts'),
-        'export default { rules: { "one-var": ["error", "never"] } };\n',
-    );
-    writeFileSync(
-        join(project, 'index.ts'),
-        'export const label = "x";\nexport const alpha = 1, beta = 2;\n',
-    );
+describe('fix-rewriters', () => {
+    test('leaves a tree that check passes, after both rewriters have run', () => {
+        // Given - a project whose one file needs a lint fix AND a reformat
+        writeFileSync(
+            join(project, 'package.json'),
+            `${JSON.stringify(
+                { name: 'spec-fix-rewriters', private: true, type: 'module', version: '1.0.0' },
+                null,
+                2,
+            )}\n`,
+        );
+        writeFileSync(
+            join(project, 'tsconfig.json'),
+            '{ "compilerOptions": { "strict": true, "noEmit": true }, "include": ["index.ts"] }\n',
+        );
+        writeFileSync(
+            join(project, 'oxlint.config.ts'),
+            'export default { rules: { "one-var": ["error", "never"] } };\n',
+        );
+        writeFileSync(
+            join(project, 'index.ts'),
+            'export const label = "x";\nexport const alpha = 1, beta = 2;\n',
+        );
 
-    // When - the two gestures, in the order a developer runs them
-    const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
-    const checked = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+        // When - the two gestures, in the order a developer runs them
+        const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+        const checked = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
 
-    // Then - the fix settled both rewriters' work, and the check agrees with it
-    expect(fixed.status).toBe(0);
-    expect(checked.status).toBe(0);
+        // Then - the fix settled both rewriters' work, and the check agrees with it
+        expect(fixed.status).toBe(0);
+        expect(checked.status).toBe(0);
+    });
 });

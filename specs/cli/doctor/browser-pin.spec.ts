@@ -31,7 +31,7 @@ function doctorIn(fixture: string): { status: null | number; stdout: string } {
     return { status: result.status, stdout: result.stdout };
 }
 
-describe('the browser provider pinned to its runner', () => {
+describe('browser-pin', () => {
     test('passes a lockfile that resolves both to the same version', () => {
         // Given - a project whose lockfile pins the provider at vitest's own version
         // When - the doctor reads it

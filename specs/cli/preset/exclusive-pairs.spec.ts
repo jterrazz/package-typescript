@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { catalog } from '../../../lint/catalog.js';
 import { printConfig, PROFILES } from './rulebook.js';
@@ -82,14 +82,6 @@ function levelsOf(rule: string): string[] {
     return DECISIONS.filter((entry) => entry.rule === rule).map((entry) => entry.level);
 }
 
-test.each(PAIRS)('%s and %s are never both on', (left, right, why) => {
-    // Given - a pair that cannot both be armed
-    const armed = [left, right].filter((rule) => levelsOf(rule).includes('error'));
-
-    // Then - the rulebook keeps exactly one of them
-    expect(armed, `${left} and ${right}: ${why}`).toHaveLength(1);
-});
-
 /** Whether a resolved config arms a rule, in oxlint's own vocabulary. */
 function isArmed(rules: Record<string, unknown>, rule: string): boolean {
     const entry = rules[rule];
@@ -97,13 +89,23 @@ function isArmed(rules: Record<string, unknown>, rule: string): boolean {
     return level === 'deny' || level === 'warn';
 }
 
-test.each(PROFILES)('$name arms one rule of every exclusive pair', ({ name }) => {
-    // Given - the profile as oxlint resolves it
-    const { rules } = printConfig(name);
+describe('exclusive-pairs', () => {
+    test.each(PAIRS)('%s and %s are never both on', (left, right, why) => {
+        // Given - a pair that cannot both be armed
+        const armed = [left, right].filter((rule) => levelsOf(rule).includes('error'));
 
-    // Then - no resolved config has both halves of a pair
-    const both = PAIRS.filter(([left, right]) => isArmed(rules, left) && isArmed(rules, right)).map(
-        ([left, right, why]) => `${left} vs ${right} — ${why}`,
-    );
-    expect(both, `${name} arms both halves of a pair`).toStrictEqual([]);
+        // Then - the rulebook keeps exactly one of them
+        expect(armed, `${left} and ${right}: ${why}`).toHaveLength(1);
+    });
+
+    test.each(PROFILES)('$name arms one rule of every exclusive pair', ({ name }) => {
+        // Given - the profile as oxlint resolves it
+        const { rules } = printConfig(name);
+
+        // Then - no resolved config has both halves of a pair
+        const both = PAIRS.filter(
+            ([left, right]) => isArmed(rules, left) && isArmed(rules, right),
+        ).map(([left, right, why]) => `${left} vs ${right} — ${why}`);
+        expect(both, `${name} arms both halves of a pair`).toStrictEqual([]);
+    });
 });

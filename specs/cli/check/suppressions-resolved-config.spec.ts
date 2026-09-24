@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { afterEach, expect, test } from 'vitest';
+import { afterEach, describe, expect, test } from 'vitest';
 
 /*
  * A chain, not a document — and the product command all the same. What no
@@ -116,66 +116,68 @@ function checkPluginProjectWith(source: string): { status: null | number; stdout
     });
 }
 
-test('leaves a directive on a JS plugin rule alone, allow entry or not', () => {
-    // Given - a directive on the plugin's live rule, suppressing a diagnostic oxlint really reports
-    // When - the quality checks run there
-    const result = checkPluginProjectWith(
-        '// oxlint-disable-next-line demo/other -- the rule is live, and its name never reaches --print-config\n' +
-            'export const flagged = "what the rule would report without this directive";\n',
-    );
+describe('suppressions-resolved-config', () => {
+    test('leaves a directive on a JS plugin rule alone, allow entry or not', () => {
+        // Given - a directive on the plugin's live rule, suppressing a diagnostic oxlint really reports
+        // When - the quality checks run there
+        const result = checkPluginProjectWith(
+            '// oxlint-disable-next-line demo/other -- the rule is live, and its name never reaches --print-config\n' +
+                'export const flagged = "what the rule would report without this directive";\n',
+        );
 
-    // Then - the gate says nothing about it, and the whole run is green
-    expect(result.stdout).not.toContain('suppressions-dead');
-    expect(result.status).toBe(0);
-});
-
-test('still names a dead core rule in a project that loads a JS plugin', () => {
-    // Given - the same project, plus a directive on a core rule this config leaves off
-    // When - the quality checks run there
-    const result = checkPluginProjectWith(
-        '// oxlint-disable-next-line demo/other -- the plugin rule is live, so the gate stays silent\n' +
-            'export const flagged = "what the rule would report without this directive";\n' +
-            '\n' +
-            '// oxlint-disable-next-line no-console -- kept from a config that had it on\n' +
-            'export const nothing = "";\n',
-    );
-
-    // Then - only the core rule is called dead, and the run fails on it
-    expect(result.stdout).toContain(
-        'suppressions-dead  index.ts  line 4 disables no-console, which the resolved config does not have on',
-    );
-    expect(result.stdout).not.toContain('demo/other');
-    expect(result.status).toBe(1);
-});
-
-test('leaves a directive alone where an override arms the rule it names', () => {
-    // Given - a rule the top level leaves off, armed for test files, and a directive in one
-    // When - the quality checks run there
-    const result = checkProject('suppressions-scoped-live', {
-        'index.test.ts':
-            '// oxlint-disable-next-line no-var -- the override arms the rule for this file\n' +
-            'export var live = "what the rule would report without this directive";\n',
-        'oxlint.config.ts': SCOPED_CONFIG,
+        // Then - the gate says nothing about it, and the whole run is green
+        expect(result.stdout).not.toContain('suppressions-dead');
+        expect(result.status).toBe(0);
     });
 
-    // Then - the gate says nothing about it, and the whole run is green
-    expect(result.stdout).not.toContain('suppressions-dead');
-    expect(result.status).toBe(0);
-});
+    test('still names a dead core rule in a project that loads a JS plugin', () => {
+        // Given - the same project, plus a directive on a core rule this config leaves off
+        // When - the quality checks run there
+        const result = checkPluginProjectWith(
+            '// oxlint-disable-next-line demo/other -- the plugin rule is live, so the gate stays silent\n' +
+                'export const flagged = "what the rule would report without this directive";\n' +
+                '\n' +
+                '// oxlint-disable-next-line no-console -- kept from a config that had it on\n' +
+                'export const nothing = "";\n',
+        );
 
-test('calls the same directive dead in a file the override does not name', () => {
-    // Given - that directive again, this time in a file no override reaches
-    // When - the quality checks run there
-    const result = checkProject('suppressions-scoped-dead', {
-        'index.ts':
-            '// oxlint-disable-next-line no-var -- no override reaches this file\n' +
-            'export const dead = "the same directive, where the rule is off";\n',
-        'oxlint.config.ts': SCOPED_CONFIG,
+        // Then - only the core rule is called dead, and the run fails on it
+        expect(result.stdout).toContain(
+            'suppressions-dead  index.ts  line 4 disables no-console, which the resolved config does not have on',
+        );
+        expect(result.stdout).not.toContain('demo/other');
+        expect(result.status).toBe(1);
     });
 
-    // Then - it is named dead, and the run fails on it
-    expect(result.stdout).toContain(
-        'suppressions-dead  index.ts  line 1 disables no-var, which the resolved config does not have on',
-    );
-    expect(result.status).toBe(1);
+    test('leaves a directive alone where an override arms the rule it names', () => {
+        // Given - a rule the top level leaves off, armed for test files, and a directive in one
+        // When - the quality checks run there
+        const result = checkProject('suppressions-scoped-live', {
+            'index.test.ts':
+                '// oxlint-disable-next-line no-var -- the override arms the rule for this file\n' +
+                'export var live = "what the rule would report without this directive";\n',
+            'oxlint.config.ts': SCOPED_CONFIG,
+        });
+
+        // Then - the gate says nothing about it, and the whole run is green
+        expect(result.stdout).not.toContain('suppressions-dead');
+        expect(result.status).toBe(0);
+    });
+
+    test('calls the same directive dead in a file the override does not name', () => {
+        // Given - that directive again, this time in a file no override reaches
+        // When - the quality checks run there
+        const result = checkProject('suppressions-scoped-dead', {
+            'index.ts':
+                '// oxlint-disable-next-line no-var -- no override reaches this file\n' +
+                'export const dead = "the same directive, where the rule is off";\n',
+            'oxlint.config.ts': SCOPED_CONFIG,
+        });
+
+        // Then - it is named dead, and the run fails on it
+        expect(result.stdout).toContain(
+            'suppressions-dead  index.ts  line 1 disables no-var, which the resolved config does not have on',
+        );
+        expect(result.status).toBe(1);
+    });
 });

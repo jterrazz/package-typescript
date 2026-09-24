@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterAll, expect, test } from 'vitest';
+import { afterAll, describe, expect, test } from 'vitest';
 
 /*
  * A chain, for the ground's sake: the claim needs the rule armed at `error`,
@@ -31,199 +31,200 @@ const SOURCE = `export function take(value: string | undefined): string {
 export const taken = take(undefined);
 `;
 
-test('leaves a meaning-changing fixer alone and still reports it', () => {
-    // Given - a project whose only diagnostic is one of the unsafe fixers
-    writeFileSync(
-        join(project, 'package.json'),
-        `${JSON.stringify(
-            { name: 'spec-unsafe-fixers', private: true, type: 'module', version: '1.0.0' },
-            null,
-            2,
-        )}\n`,
-    );
-    writeFileSync(
-        join(project, 'tsconfig.json'),
-        '{ "compilerOptions": { "strict": true, "noEmit": true }, "include": ["index.ts"] }\n',
-    );
-    writeFileSync(
-        join(project, 'oxlint.config.ts'),
-        [
-            'export default {',
-            "    options: { reportUnusedDisableDirectives: 'error' },",
-            "    plugins: ['unicorn'],",
-            "    rules: { 'unicorn/no-useless-undefined': 'error' },",
-            '};',
-            '',
-        ].join('\n'),
-    );
-    writeFileSync(join(project, 'index.ts'), SOURCE);
+describe('unsafe-fixers', () => {
+    test('leaves a meaning-changing fixer alone and still reports it', () => {
+        // Given - a project whose only diagnostic is one of the unsafe fixers
+        writeFileSync(
+            join(project, 'package.json'),
+            `${JSON.stringify(
+                { name: 'spec-unsafe-fixers', private: true, type: 'module', version: '1.0.0' },
+                null,
+                2,
+            )}\n`,
+        );
+        writeFileSync(
+            join(project, 'tsconfig.json'),
+            '{ "compilerOptions": { "strict": true, "noEmit": true }, "include": ["index.ts"] }\n',
+        );
+        writeFileSync(
+            join(project, 'oxlint.config.ts'),
+            [
+                'export default {',
+                "    options: { reportUnusedDisableDirectives: 'error' },",
+                "    plugins: ['unicorn'],",
+                "    rules: { 'unicorn/no-useless-undefined': 'error' },",
+                '};',
+                '',
+            ].join('\n'),
+        );
+        writeFileSync(join(project, 'index.ts'), SOURCE);
 
-    // When - the fix runs
-    const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+        // When - the fix runs
+        const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
 
-    // Then - the argument is still there, and fix reports what it left
-    expect(fixed.status).toBe(1);
-    expect(fixed.stdout).toContain('no-useless-undefined');
-    expect(readFileSync(join(project, 'index.ts'), 'utf8')).toContain('take(undefined)');
+        // Then - the argument is still there, and fix reports what it left
+        expect(fixed.status).toBe(1);
+        expect(fixed.stdout).toContain('no-useless-undefined');
+        expect(readFileSync(join(project, 'index.ts'), 'utf8')).toContain('take(undefined)');
 
-    // Then - the check still names the rule, because the answer is a human's
-    const checked = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
-    expect(checked.status).toBe(1);
-    expect(checked.stdout).toContain('no-useless-undefined');
-});
+        // Then - the check still names the rule, because the answer is a human's
+        const checked = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+        expect(checked.status).toBe(1);
+        expect(checked.stdout).toContain('no-useless-undefined');
+    });
 
-test('keeps a directive that names an unsafe fixer used, so fix stays green', () => {
-    // Given - the same project, reporting unused directives as every profile does, one diagnostic suppressed with its reason
-    writeFileSync(
-        join(project, 'index.ts'),
-        SOURCE.replace(
-            'export const taken',
-            '// oxlint-disable-next-line unicorn/no-useless-undefined -- the callee requires it\nexport const taken',
-        ),
-    );
+    test('keeps a directive that names an unsafe fixer used, so fix stays green', () => {
+        // Given - the same project, reporting unused directives as every profile does, one diagnostic suppressed with its reason
+        writeFileSync(
+            join(project, 'index.ts'),
+            SOURCE.replace(
+                'export const taken',
+                '// oxlint-disable-next-line unicorn/no-useless-undefined -- the callee requires it\nexport const taken',
+            ),
+        );
 
-    // When - the fix runs with that rule allowed for the rewrite
-    const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+        // When - the fix runs with that rule allowed for the rewrite
+        const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
 
-    // Then - the verdict is the check's, where the rule is armed and the directive used
-    expect(fixed.status).toBe(0);
-    expect(fixed.stdout).not.toContain('Unused oxlint-disable directive');
-});
+        // Then - the verdict is the check's, where the rule is armed and the directive used
+        expect(fixed.status).toBe(0);
+        expect(fixed.stdout).not.toContain('Unused oxlint-disable directive');
+    });
 
-/*
- * The wrapper turns twelve rules off for its own run, and a run that has just
- * disarmed a rule cannot judge a directive naming it: the evidence is the
- * wrapper's, not the project's. Only reachable in a log the pass PRINTS, which
- * is a failing one — hence the second, unsuppressed call below.
- */
-test('never calls a directive dead because the wrapper disarmed its rule', () => {
-    // Given - the same project, one call suppressed with its reason and one left to report
-    writeFileSync(
-        join(project, 'index.ts'),
-        `${SOURCE.replace(
-            'export const taken',
-            '// oxlint-disable-next-line unicorn/no-useless-undefined -- the callee requires it\nexport const taken',
-        )}\nexport const other = take(undefined);\n`,
-    );
+    /*
+     * The wrapper turns twelve rules off for its own run, and a run that has just
+     * disarmed a rule cannot judge a directive naming it: the evidence is the
+     * wrapper's, not the project's. Only reachable in a log the pass PRINTS, which
+     * is a failing one — hence the second, unsuppressed call below.
+     */
+    test('never calls a directive dead because the wrapper disarmed its rule', () => {
+        // Given - the same project, one call suppressed with its reason and one left to report
+        writeFileSync(
+            join(project, 'index.ts'),
+            `${SOURCE.replace(
+                'export const taken',
+                '// oxlint-disable-next-line unicorn/no-useless-undefined -- the callee requires it\nexport const taken',
+            )}\nexport const other = take(undefined);\n`,
+        );
 
-    // When - the fix runs, and fails on the call nothing suppresses
-    const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+        // When - the fix runs, and fails on the call nothing suppresses
+        const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
 
-    // Then - the log names that call, and never the live directive above it
-    expect(fixed.stdout).toContain('no-useless-undefined');
-    expect(fixed.stdout).not.toContain('Unused oxlint-disable directive');
-});
+        // Then - the log names that call, and never the live directive above it
+        expect(fixed.stdout).toContain('no-useless-undefined');
+        expect(fixed.stdout).not.toContain('Unused oxlint-disable directive');
+    });
 
-test('leaves the fixer alone where an override of the consumer arms the rule again', () => {
-    // Given - the rule off in the base config and armed by an override, the vitest block's shape
-    writeFileSync(
-        join(project, 'oxlint.config.ts'),
-        [
-            'export default {',
-            "    plugins: ['unicorn'],",
-            "    rules: { 'unicorn/no-useless-undefined': 'off' },",
-            "    overrides: [{ files: ['**/*.ts'], rules: { 'unicorn/no-useless-undefined': 'error' } }],",
-            '};',
-            '',
-        ].join('\n'),
-    );
-    writeFileSync(join(project, 'index.ts'), SOURCE);
+    test('leaves the fixer alone where an override of the consumer arms the rule again', () => {
+        // Given - the rule off in the base config and armed by an override, the vitest block's shape
+        writeFileSync(
+            join(project, 'oxlint.config.ts'),
+            [
+                'export default {',
+                "    plugins: ['unicorn'],",
+                "    rules: { 'unicorn/no-useless-undefined': 'off' },",
+                "    overrides: [{ files: ['**/*.ts'], rules: { 'unicorn/no-useless-undefined': 'error' } }],",
+                '};',
+                '',
+            ].join('\n'),
+        );
+        writeFileSync(join(project, 'index.ts'), SOURCE);
 
-    // When - the fix runs
-    const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+        // When - the fix runs
+        const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
 
-    // Then - the argument survives the rewrite, and the wrapper left no trace
-    expect(fixed.status).toBe(1);
-    expect(readFileSync(join(project, 'index.ts'), 'utf8')).toContain('take(undefined)');
-    expect(existsSync(join(project, 'oxlint.fix.config.mjs'))).toBe(false);
-});
+        // Then - the argument survives the rewrite, and the wrapper left no trace
+        expect(fixed.status).toBe(1);
+        expect(readFileSync(join(project, 'index.ts'), 'utf8')).toContain('take(undefined)');
+        expect(existsSync(join(project, 'oxlint.fix.config.mjs'))).toBe(false);
+    });
 
-/*
- * The wrapper is the pass's own file: it is written at the project root, read
- * by the run it configures and deleted after it. A diagnostic against it names
- * a path the operator cannot open and no tree can ever clear, so the run that
- * writes it ignores it.
- */
-test('never reports the wrapper config it writes for the run', () => {
-    // Given - a project arming the two rules the wrapper's own first line breaks
-    writeFileSync(
-        join(project, 'oxlint.config.ts'),
-        [
-            'export default {',
-            "    plugins: ['import', 'unicorn'],",
-            '    rules: {',
-            "        'import/extensions': ['error', 'always'],",
-            "        'import/no-absolute-path': 'error',",
-            "        'unicorn/no-useless-undefined': 'error',",
-            '    },',
-            '};',
-            '',
-        ].join('\n'),
-    );
-    writeFileSync(join(project, 'index.ts'), SOURCE);
+    /*
+     * The wrapper is the pass's own file: it is written at the project root, read
+     * by the run it configures and deleted after it. A diagnostic against it names
+     * a path the operator cannot open and no tree can ever clear, so the run that
+     * writes it ignores it.
+     */
+    test('never reports the wrapper config it writes for the run', () => {
+        // Given - a project arming the two rules the wrapper's own first line breaks
+        writeFileSync(
+            join(project, 'oxlint.config.ts'),
+            [
+                'export default {',
+                "    plugins: ['import', 'unicorn'],",
+                '    rules: {',
+                "        'import/extensions': ['error', 'always'],",
+                "        'import/no-absolute-path': 'error',",
+                "        'unicorn/no-useless-undefined': 'error',",
+                '    },',
+                '};',
+                '',
+            ].join('\n'),
+        );
+        writeFileSync(join(project, 'index.ts'), SOURCE);
 
-    // When - the fix runs, with a diagnostic of the tree's own to keep the log on the stream
-    const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+        // When - the fix runs, with a diagnostic of the tree's own to keep the log on the stream
+        const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
 
-    // Then - it names the tree's diagnostic, and no file the tree does not hold
-    expect(fixed.stdout).toContain('no-useless-undefined');
-    expect(fixed.stdout).not.toContain('oxlint.fix.config');
-});
+        // Then - it names the tree's diagnostic, and no file the tree does not hold
+        expect(fixed.stdout).toContain('no-useless-undefined');
+        expect(fixed.stdout).not.toContain('oxlint.fix.config');
+    });
 
-/*
- * The same claim, one layer down. Every test above arms a rule oxlint itself
- * decides; the wrapper's `overrides` block is oxlint's own vocabulary and
- * reaching it is oxlint's job. A TYPE-AWARE rule is not oxlint's: it runs in
- * `tsgolint`, a separate binary oxlint hands the file to, and nothing here
- * held that half — the rewrite below is the one a spike measured in
- * @jterrazz/test, where a broken module augmentation widened a parameter to
- * `any` and the fixer then read the cast that reached it as unnecessary.
- */
-test('leaves a type-aware fixer alone — the double cast the call still needs', () => {
-    // Given - a project whose one diagnostic is a type-aware unsafe fixer
-    writeFileSync(
-        join(project, 'tsconfig.json'),
-        '{ "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true }, "include": ["index.ts"] }\n',
-    );
-    writeFileSync(
-        join(project, 'oxlint.config.ts'),
-        [
-            'export default {',
-            '    options: { typeAware: true },',
-            "    plugins: ['typescript'],",
-            "    rules: { 'typescript/no-unnecessary-type-assertion': 'error' },",
-            '};',
-            '',
-        ].join('\n'),
-    );
-    writeFileSync(
-        join(project, 'index.ts'),
-        [
-            'export function takes(value: string): string {',
-            '    return value;',
-            '}',
-            '',
-            'declare const widened: any;',
-            '',
-            'export const taken = takes(widened as unknown as string);',
-            '',
-        ].join('\n'),
-    );
+    /*
+     * The same claim, one layer down. Every test above arms a rule oxlint itself
+     * decides; the wrapper's `overrides` block is oxlint's own vocabulary and
+     * reaching it is oxlint's job. A TYPE-AWARE rule is not oxlint's: it runs in
+     * `tsgolint`, a separate binary oxlint hands the file to, and nothing here
+     * held that half — the rewrite below is the one a spike measured in
+     * @jterrazz/test, where a broken module augmentation widened a parameter to
+     * `any` and the fixer then read the cast that reached it as unnecessary.
+     */
+    test('leaves a type-aware fixer alone — the double cast the call still needs', () => {
+        // Given - a project whose one diagnostic is a type-aware unsafe fixer
+        writeFileSync(
+            join(project, 'tsconfig.json'),
+            '{ "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true }, "include": ["index.ts"] }\n',
+        );
+        writeFileSync(
+            join(project, 'oxlint.config.ts'),
+            [
+                'export default {',
+                '    options: { typeAware: true },',
+                "    plugins: ['typescript'],",
+                "    rules: { 'typescript/no-unnecessary-type-assertion': 'error' },",
+                '};',
+                '',
+            ].join('\n'),
+        );
+        writeFileSync(
+            join(project, 'index.ts'),
+            [
+                'export function takes(value: string): string {',
+                '    return value;',
+                '}',
+                '',
+                'declare const widened: any;',
+                '',
+                'export const taken = takes(widened as unknown as string);',
+                '',
+            ].join('\n'),
+        );
 
-    // When - the fix runs
-    const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+        // When - the fix runs
+        const fixed = spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
 
-    // Then - the cast survives, so the file still says which type the call receives
-    expect(readFileSync(join(project, 'index.ts'), 'utf8')).toContain(
-        'widened as unknown as string',
-    );
+        // Then - the cast survives, so the file still says which type the call receives
+        expect(readFileSync(join(project, 'index.ts'), 'utf8')).toContain(
+            'widened as unknown as string',
+        );
 
-    // Then - and the rule is still reported, because the answer is a human's
-    expect(fixed.status).toBe(1);
-    expect(fixed.stdout).toContain('no-unnecessary-type-assertion');
-});
+        // Then - and the rule is still reported, because the answer is a human's
+        expect(fixed.status).toBe(1);
+        expect(fixed.stdout).toContain('no-unnecessary-type-assertion');
+    });
 
-const AUGMENTATION = `declare module 'some-library' {
+    const AUGMENTATION = `declare module 'some-library' {
     interface Options {
         update: boolean;
     }
@@ -232,32 +233,33 @@ const AUGMENTATION = `declare module 'some-library' {
 export {};
 `;
 
-test('leaves a declare module augmentation an interface, and keeps its export {}', () => {
-    // Given - a project whose one file augments a library, with both rewriters armed
-    writeFileSync(
-        join(project, 'tsconfig.json'),
-        '{ "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true }, "include": ["index.ts"] }\n',
-    );
-    writeFileSync(
-        join(project, 'oxlint.config.ts'),
-        [
-            'export default {',
-            "    plugins: ['typescript'],",
-            '    rules: {',
-            "        'typescript/consistent-type-definitions': ['error', 'type'],",
-            "        'typescript/no-useless-empty-export': 'error',",
-            '    },',
-            '};',
-            '',
-        ].join('\n'),
-    );
-    writeFileSync(join(project, 'index.ts'), AUGMENTATION);
+    test('leaves a declare module augmentation an interface, and keeps its export {}', () => {
+        // Given - a project whose one file augments a library, with both rewriters armed
+        writeFileSync(
+            join(project, 'tsconfig.json'),
+            '{ "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true }, "include": ["index.ts"] }\n',
+        );
+        writeFileSync(
+            join(project, 'oxlint.config.ts'),
+            [
+                'export default {',
+                "    plugins: ['typescript'],",
+                '    rules: {',
+                "        'typescript/consistent-type-definitions': ['error', 'type'],",
+                "        'typescript/no-useless-empty-export': 'error',",
+                '    },',
+                '};',
+                '',
+            ].join('\n'),
+        );
+        writeFileSync(join(project, 'index.ts'), AUGMENTATION);
 
-    // When - the fix runs
-    spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+        // When - the fix runs
+        spawnSync('bash', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
 
-    // Then - the block still merges: an interface, and the export that makes it an augmentation
-    const fixed = readFileSync(join(project, 'index.ts'), 'utf8');
-    expect(fixed).toContain('interface Options');
-    expect(fixed).toContain('export {};');
+        // Then - the block still merges: an interface, and the export that makes it an augmentation
+        const fixed = readFileSync(join(project, 'index.ts'), 'utf8');
+        expect(fixed).toContain('interface Options');
+        expect(fixed).toContain('export {};');
+    });
 });

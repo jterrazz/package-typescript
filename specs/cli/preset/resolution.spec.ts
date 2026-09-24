@@ -1,5 +1,4 @@
-import { file } from '@jterrazz/test';
-import { expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { PACKAGE_ROOT, cli as resolutionCli } from '../resolution.specification.js';
 
@@ -9,11 +8,51 @@ import { PACKAGE_ROOT, cli as resolutionCli } from '../resolution.specification.
  * name a path that moves with the machine.
  */
 
-test('resolves each tool independently when npm splits them between bin dirs', async () => {
-    // Given - oxlint nested under the package, the other tools hoisted to the consumer root
-    const result = await resolutionCli.exec(PACKAGE_ROOT);
+describe('resolution', () => {
+    test('resolves each tool independently when npm splits them between bin dirs', async () => {
+        // Given - oxlint nested under the package, the other tools hoisted to the consumer root
+        const result = await resolutionCli.exec(PACKAGE_ROOT);
 
-    // Then - the whole check output matches: every tool is found and runs, wherever npm placed it
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toMatch(file('./expected/resolution.txt'));
+        // Then - the whole check output matches: every tool is found and runs, wherever npm placed it
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(`
+             START  Running quality checks
+
+             RUN  TypeScript Check
+
+            ✓ Passed
+
+             RUN  Oxlint Check
+
+            ✓ Passed
+
+             RUN  Oxfmt Check
+
+            ✓ Passed
+
+             RUN  Knip (unused code)
+
+            ✓ Passed
+
+             RUN  Suppressions (directives)
+
+            ✓ Passed
+
+             RUN  Markdown (prose)
+
+            ✓ Passed
+
+             RUN  Names (tree)
+
+            ✓ Passed
+
+             RUN  Secrets (credentials)
+
+            ✓ Passed
+
+             END  Finalizing quality checks
+
+            ✓ All checks passed
+        `);
+    });
 });
