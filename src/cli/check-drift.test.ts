@@ -47,6 +47,22 @@ test('reads a baseline file that is not JSON as unreadable, for a person and a m
     });
 });
 
+test('keeps an emptied section apart from an absent one for a machine', () => {
+    // Given - a configless project keeping a typescript section with no entry, and no test section
+    const directory = configlessProject({ 'jterrazz.baseline.json': '{ "typescript": {} }\n' });
+
+    // When - the drift report reads it for a machine
+    const machine = spawnSync(
+        'node',
+        [DRIFT, directory, '--oxlint', OXLINT, '-c', DEFAULT_PROFILE, '--json'],
+        { encoding: 'utf8' },
+    );
+
+    // Then - the emptied section totals 0, the absent one is null
+    expect(JSON.parse(machine.stdout)).toMatchObject({ baseline: 0, testBaseline: null });
+    expect(machine.status).toBe(0);
+});
+
 test('resolves the default profile once for a project with no config of its own', () => {
     // Given - a configless project, and a linter that notes each config it is asked to print
     const directory = configlessProject();
