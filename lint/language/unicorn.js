@@ -115,7 +115,6 @@ export default fragment({
                 'prefer-set-has',
                 'prefer-set-size',
                 'prefer-single-call',
-                'prefer-spread',
                 'prefer-string-raw',
                 'prefer-string-replace-all',
                 'prefer-string-slice',
@@ -205,6 +204,13 @@ export default fragment({
             by: 'typescript/prefer-includes — the type-aware rule of the same name',
             kind: 'covered',
         }),
+        'unicorn/prefer-spread': off(
+            {
+                by: "typescript/no-misused-spread — its fixer turns `Array.from(word)` and `word.split('')` into `[...word]`, the string spread the type-aware rule refuses, and it takes no option to leave strings alone",
+                kind: 'exclusive',
+            },
+            '11.0.0',
+        ),
         'unicorn/prefer-string-starts-ends-with': off({
             by: 'typescript/prefer-string-starts-ends-with — the type-aware rule of the same name',
             kind: 'covered',

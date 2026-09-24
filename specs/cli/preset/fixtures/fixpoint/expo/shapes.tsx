@@ -16,3 +16,13 @@ export function label(count: number): string {
 export function Badge({ tone, label: text }: { label: string; tone: string }): React.JSX.Element {
     return <output className={tone}>{text}</output>;
 }
+
+// A string cut into its characters: unicorn/prefer-spread rewrites each call
+// into `[...word]`, which typescript/no-misused-spread refuses.
+export function letters(word: string): string[] {
+    return Array.from(word);
+}
+
+export function characters(word: string): string[] {
+    return word.split('');
+}

@@ -6,8 +6,9 @@ import { printConfig, PROFILES } from './rulebook.js';
 /*
  * Two rules that demand opposite shapes cannot both be armed: whichever a file
  * satisfies, the other reports it, and no edit closes both. The pairs below are
- * the ones this rulebook meets — Ultracite's list, plus the two the estate's
- * own decisions create.
+ * the ones this rulebook meets — Ultracite's list, the two the estate's own
+ * decisions create, and one where a fixer writes the shape a type-aware rule
+ * refuses.
  *
  * This suite is the reason `off` carries a `kind`: every `exclusive` off names
  * the rule it cannot stand beside, and the two claims are checked against each
@@ -67,6 +68,11 @@ const PAIRS = Object.freeze([
         'typescript/no-non-null-assertion',
         'typescript/non-nullable-type-assertion-style',
         'one forbids the `!` assertion the other fix asks for',
+    ],
+    [
+        'unicorn/prefer-spread',
+        'typescript/no-misused-spread',
+        'one rewrites a string into `[...word]`, the other refuses that spread',
     ],
     [
         'vitest/no-hooks',

@@ -515,7 +515,7 @@ unicorn/prefer-response-static-json
 unicorn/prefer-set-has
 unicorn/prefer-set-size
 unicorn/prefer-single-call
-unicorn/prefer-spread
+- unicorn/prefer-spread
 unicorn/prefer-string-raw
 unicorn/prefer-string-replace-all
 unicorn/prefer-string-slice
