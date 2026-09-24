@@ -160,10 +160,20 @@ const defaultProfile =
 const profileName = defaultProfile ?? profileOf(source);
 
 const consumerRules = resolvedRules(root, oxlint, configName === undefined ? handed : null) ?? {};
-const profileRules =
-    profileName === null
-        ? {}
-        : (resolvedRules(root, oxlint, join(PROFILES_AT, `${profileName}.js`)) ?? {});
+
+/* A project on the handed default already resolved its profile: the consumer's rules ARE the profile's. */
+function profileRulesOf() {
+    if (profileName === null) {
+        return {};
+    }
+    if (defaultProfile !== null) {
+        return consumerRules;
+    }
+
+    return resolvedRules(root, oxlint, join(PROFILES_AT, `${profileName}.js`)) ?? {};
+}
+
+const profileRules = profileRulesOf();
 
 const off = turnedOff(profileRules, consumerRules);
 const unreasoned = off.filter((rule) => {
