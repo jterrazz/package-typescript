@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { expect, onTestFinished, test } from 'vitest';
@@ -109,4 +109,24 @@ test('prints no held line for a kept section when the Names pass wrote no report
     // Then - the linter's side holds, and nothing is claimed for the side nobody read
     expect(result.stdout).toBe('');
     expect(result.status).toBe(0);
+});
+
+test('refuses to rewrite the section when the Names pass wrote no report', () => {
+    // Given - a section holding a Names entry beside a linter one, and no Names report
+    const baseline = '{ "typescript": { "eslint/no-var": 1, "names/names-construct": 2 } }\n';
+    const { report, root } = groundOf(baseline);
+
+    // When - the section is recorded
+    const result = spawnSync(
+        'node',
+        [JUDGE, report, root, '--names', join(root, 'names.json'), '--write'],
+        { encoding: 'utf8' },
+    );
+
+    // Then - it is refused, and every byte of the file is as it was
+    expect(result.stdout).toBe(
+        "the Names (tree) pass wrote no report — the typescript section is left as it was; 'typescript check' prints why\n",
+    );
+    expect(result.status).toBe(1);
+    expect(readFileSync(join(root, 'jterrazz.baseline.json'), 'utf8')).toBe(baseline);
 });

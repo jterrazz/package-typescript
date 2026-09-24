@@ -273,7 +273,7 @@ The judge is told oxlint's exit code, so the split never forgives a failure no d
 typescript baseline
 ```
 
-A command of its own, because it neither checks nor repairs: it writes down where the project actually stands, debt that grew included. `fix --baseline` would bury that rewrite inside the gesture a developer runs twenty times a day; `fix` records only the falls, which can make the file shrink and never let it grow. The `typescript` section is written from the current counts of this package's rules, then the file is handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape. The `test` section is recorded by `@jterrazz/test`'s own command, never by this one, and a file this command cannot read as sections is refused rather than rewritten.
+A command of its own, because it neither checks nor repairs: it writes down where the project actually stands, debt that grew included. `fix --baseline` would bury that rewrite inside the gesture a developer runs twenty times a day; `fix` records only the falls, which can make the file shrink and never let it grow. The `typescript` section is written from the current counts of this package's rules, then the file is handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape. The `test` section is recorded by `@jterrazz/test`'s own command, never by this one, and a file this command cannot read as sections is refused rather than rewritten. So is a run whose Names (tree) pass wrote no report: the section's `names/*` side is unknown, and writing it would erase that debt rather than record it — `typescript check` prints why the pass died.
 
 Two more refusals keep the file honest, both in the Oxlint pass:
 

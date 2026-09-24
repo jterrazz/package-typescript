@@ -441,7 +441,8 @@ if (import.meta.main) {
     /*
      * Recorded, or summed into the file's line — never judged: the Names (tree)
      * pass judges its own entries. Null when that pass wrote no report: it
-     * died, so its side of the section is unknown and no held line is printed.
+     * died, so its side of the section is unknown — no held line is printed,
+     * and the section is not rewritten.
      */
     let namesReport = null;
     if (namesPath !== undefined) {
@@ -457,6 +458,12 @@ if (import.meta.main) {
     const linterCounts = countsOf(report);
 
     if (isWrite) {
+        if (namesPath !== undefined && namesReport === null) {
+            stdout.write(
+                `the Names (tree) pass wrote no report — the ${SECTION} section is left as it was; 'typescript check' prints why\n`,
+            );
+            exit(1);
+        }
         const { problem } = readRatchet(root);
         if (problem !== null) {
             stdout.write(
