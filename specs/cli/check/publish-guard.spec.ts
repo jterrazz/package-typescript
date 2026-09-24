@@ -70,24 +70,30 @@ const BUILD_FINDING =
     "publish-build  package.json  found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else `typescript bundle` · read: @jterrazz/typescript's docs/06-quality-checks.md#the-build-guard";
 
 describe('publish-guard', () => {
-    test('fails a build whose entry is compiled from a fixtures module, naming each file `bundle` wrote', () => {
-        // Given - a library whose entry imports a fixtures module, resolving @jterrazz/test, built by `typescript bundle`
+    test('fails a build whose second export is compiled from a fixtures module, naming each file `bundle` wrote', () => {
+        // Given - a library whose second export imports a fixtures module, resolving @jterrazz/test, built by `typescript bundle`
         const root = consumer('fixtures-module/');
         expect(run(root, 'bundle').status).toBe(0);
 
         // When - the quality checks run
         const { stdout } = run(root, 'check');
 
-        // Then - the pass fails on one finding per chunk, each named as the build wrote it
-        expect(chunksOn(root)).toStrictEqual(['dist/index.cjs', 'dist/index.js']);
+        // Then - the pass fails on one finding per chunk of the second export, each named as the build wrote it
+        expect(chunksOn(root)).toStrictEqual([
+            'dist/extra.cjs',
+            'dist/extra.js',
+            'dist/index.cjs',
+            'dist/index.js',
+        ]);
         expect(publishPass(stdout)).toStrictEqual([
-            ...chunksOn(root).map((file) => fixturesFinding(file)),
+            fixturesFinding('dist/extra.cjs'),
+            fixturesFinding('dist/extra.js'),
             '✗ Failed with exit code 1',
         ]);
     });
 
-    test('passes the same package once its entry no longer imports the fixtures module', () => {
-        // Given - the same library with the import cut, built by `typescript bundle`
+    test('passes the same package once its second export no longer imports the fixtures module', () => {
+        // Given - the same library with that import cut, built by `typescript bundle`
         const root = consumer('fixtures-module/', 'fixtures-module-cut/');
         expect(run(root, 'bundle').status).toBe(0);
 

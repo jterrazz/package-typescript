@@ -8,7 +8,7 @@ runs:
 
           ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
           ℹ config file: {{path}} 
-          ℹ entry: src/index.ts
+          ℹ entry: src/extra.ts, src/index.ts
           ℹ tsconfig: tsconfig.json
           ℹ Build start
           {{any}}
