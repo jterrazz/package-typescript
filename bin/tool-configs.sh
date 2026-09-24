@@ -15,11 +15,14 @@
 # The project's own oxlint config, in the order oxlint looks for one — the
 # names of `src/cli/oxlint-config-names.json`, the one list this file and
 # `check-drift.js` both read, so a project counts as having a config in the
-# drift report exactly when it does here.
+# drift report exactly when it does here. Captured whole, on one line, rather
+# than streamed: a `break` on the first match closing a live pipe early left
+# `node` writing into a reader that had gone, and it does not catch EPIPE.
+OXLINT_CONFIG_NAMES=$(node -e 'const {readFileSync}=require("node:fs");process.stdout.write(JSON.parse(readFileSync(process.argv[1],"utf8")).join(" "))' "$PACKAGE_ROOT/src/cli/oxlint-config-names.json")
 OXLINT_CONFIG=""
-while IFS= read -r candidate; do
+for candidate in $OXLINT_CONFIG_NAMES; do
     [ -f "$candidate" ] && { OXLINT_CONFIG="$candidate"; break; }
-done < <(node -e 'const {readFileSync}=require("node:fs");for(const n of JSON.parse(readFileSync(process.argv[1],"utf8")))process.stdout.write(n+"\n")' "$PACKAGE_ROOT/src/cli/oxlint-config-names.json")
+done
 OXFMT_CONFIG=""
 for candidate in .oxfmtrc.json .oxfmtrc.jsonc oxfmt.config.ts oxfmt.config.mts; do
     [ -f "$candidate" ] && { OXFMT_CONFIG="$candidate"; break; }
