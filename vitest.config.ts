@@ -14,11 +14,21 @@ export default defineSpecConfig({
              * `specs/` that is no facet, covering this package's published tree
              * rather than a product reached through an entry. The globs are
              * stated outright because the default set excludes `specs/` whole.
+             *
+             * No module test mocks a module or writes a global, so one worker's
+             * files share their module graph (`isolate: false`).
              */
-            unit({
-                exclude: ['**/*.test.tsx'],
-                include: ['lint/**/*.test.ts', 'specs/surface/**/*.test.ts', 'src/**/*.test.ts'],
-            }),
+            mergeConfig(
+                unit({
+                    exclude: ['**/*.test.tsx'],
+                    include: [
+                        'lint/**/*.test.ts',
+                        'specs/surface/**/*.test.ts',
+                        'src/**/*.test.ts',
+                    ],
+                }),
+                { test: { isolate: false } },
+            ),
             /*
              * The spec documents run here, beside the chains that still need code.
              * `cli()` binds every `<case>.spec.yaml` to ONE runner, and the one this
