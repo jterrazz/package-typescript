@@ -96,7 +96,7 @@ export function weighed(input: number): number {
     return score;
 }
 
-// complexity: 12 — twelve decisions and the function's own path, one past the cap.
+// complexity: 13 — twelve decisions and the function's own path, one past the cap.
 export function tangled(input: number): number {
     let score = 0;
     if (input > 0) {
