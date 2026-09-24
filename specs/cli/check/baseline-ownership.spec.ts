@@ -251,6 +251,35 @@ process.exit(0);
         expect(conventions).toContain('✓ Passed');
     });
 
+    /** A green checker whose root run keeps no `test` section — it prints the empty form, as 17 does. */
+    const NOTHING_HELD_CHECKER = `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[args.indexOf('--member') + 1] === '.') {
+    process.stdout.write('jterrazz.baseline.json › test: nothing held\\n');
+}
+process.exit(0);
+`;
+
+    test("states @jterrazz/test's empty section under the Test Conventions pass on a green run", () => {
+        // Given - a checker whose root run holds nothing
+        const project = groundOf();
+        writeFileSync(
+            join(project, 'node_modules/@jterrazz/test/dist/checker.js'),
+            NOTHING_HELD_CHECKER,
+        );
+
+        // When - the checks run
+        const { stdout } = run(project, 'check');
+        const conventions = stdout.slice(
+            stdout.indexOf('Test Conventions'),
+            stdout.indexOf('Suppressions (directives)'),
+        );
+
+        // Then - the pass is green and names the section as holding nothing
+        expect(conventions).toContain('jterrazz.baseline.json › test: nothing held\n');
+        expect(conventions).toContain('✓ Passed');
+    });
+
     test("refuses an entry of @jterrazz/test's in this package's section", () => {
         // Given - a typescript section that still carries both packages' keys
         const project = groundOf();

@@ -919,10 +919,11 @@ run_checks() {
         checker_write="writer"
     fi
     # And, on a green pass, the held line of `jterrazz.baseline.json › test` —
-    # the same one line the oxlint pass prints for its own section, and only in
-    # that exact shape, so a release printing another form adds nothing here.
+    # the same one line the oxlint pass prints for its own section, in one of
+    # its two exact shapes (a count, or `nothing held`), so a release printing
+    # another form adds nothing here.
     if [ "$checker_status" -eq 0 ] && [ -n "$checker_root_log" ] &&
-        grep -E '^jterrazz\.baseline\.json › test: [0-9]+ held across [0-9]+ rules?$' "$checker_root_log" \
+        grep -E '^jterrazz\.baseline\.json › test: ([0-9]+ held across [0-9]+ rules?|nothing held)$' "$checker_root_log" \
             >> "$tmp_dir/checker.log"; then
         checker_write="writer"
     fi
