@@ -4,7 +4,9 @@ runs:
     - command: check
       exit: 1
       # The fixture is a preset case with no tsconfig, so tsc prints its help and
-      # refuses — the compiler's block, not this document's subject.
+      # refuses — the compiler's block, not this document's subject. The linter's
+      # is spanned too: the probe's `vitest` resolves to nothing here, so the
+      # default profile's type-aware rules read every call in it as `any`.
       stdout: |4
            START  Running quality checks
 
@@ -15,20 +17,12 @@ runs:
           ✗ Failed with exit code 1
 
            RUN  Oxlint Check
-
-          ✓ Passed
+          {{any}}
+          ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
 
-          Checking formatting...
-
-          package.json ({{duration}})
-          probe.test.ts ({{duration}})
-
-          Format issues found in above 2 files. Run without `--check` to fix.
-          Finished in {{duration}} on 2 files using {{int}} threads.
-          No config found, using defaults. Please add a config file or try `oxfmt --init` if needed.
-          ✗ Failed with exit code 1
+          ✓ Passed
 
            RUN  Knip (unused code)
 

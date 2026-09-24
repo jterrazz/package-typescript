@@ -130,13 +130,13 @@ describe('baseline-ownership', () => {
 
         // Then - only this package's section moved, and the other one's bytes are the ones it wrote
         expect(readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8')).toBe(
-            `{\n  "test": ${section},\n  "typescript": {\n    "eslint/no-debugger": 1\n  }\n}\n`,
+            `{\n    "test": ${section},\n    "typescript": {\n        "eslint/no-debugger": 1\n    }\n}\n`,
         );
     });
 
     test("hands the file it writes to the project's own formatter", () => {
-        // Given - a project whose formatter indents by four, and one debugger
-        writeFileSync(join(project, '.oxfmtrc.json'), '{ "tabWidth": 4 }\n');
+        // Given - a project whose formatter indents with tabs, and one debugger
+        writeFileSync(join(project, '.oxfmtrc.json'), '{ "useTabs": true }\n');
         writeFileSync(
             join(project, 'index.ts'),
             'export function stop(): void {\n    debugger;\n}\n',
@@ -145,9 +145,9 @@ describe('baseline-ownership', () => {
         // When - the baseline is recorded
         run('baseline');
 
-        // Then - the file is in the formatter's shape, not the writer's two spaces
+        // Then - the file is in the project's shape, not the writer's two spaces nor the default's four
         expect(readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8')).toBe(
-            '{\n    "typescript": {\n        "eslint/no-debugger": 1\n    }\n}\n',
+            '{\n\t"typescript": {\n\t\t"eslint/no-debugger": 1\n\t}\n}\n',
         );
     });
 

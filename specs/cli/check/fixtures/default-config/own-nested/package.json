@@ -1,0 +1,7 @@
+{
+    "name": "fixture-own-nested",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "src/strict.ts"
+}

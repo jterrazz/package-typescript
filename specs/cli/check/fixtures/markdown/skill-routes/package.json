@@ -1,6 +1,6 @@
 {
-  "name": "fixture-markdown-skill-routes",
-  "version": "1.0.0",
-  "private": true,
-  "main": "index.ts"
+    "name": "fixture-markdown-skill-routes",
+    "version": "1.0.0",
+    "private": true,
+    "main": "index.ts"
 }

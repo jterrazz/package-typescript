@@ -1,7 +1,7 @@
-export interface Order {
-  id: string;
-}
+export type Order = {
+    id: string;
+};
 
 export function describeOrder(order: Order): string {
-  return `order ${order.id}`;
+    return `order ${order.id}`;
 }

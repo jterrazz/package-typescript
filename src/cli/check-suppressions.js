@@ -8,8 +8,11 @@
  * it is spelled in the vocabulary of the tools this project actually runs, it
  * carries the reason it was taken, and it names a rule that is still live.
  *
- * Usage: node check-suppressions.js [root] [--fix] [--oxlint <path>]
+ * Usage: node check-suppressions.js [root] [--fix] [--oxlint <path>] [-c <config>]
  *        [--ignore-pattern <glob>]…
+ *
+ * `-c` is the config the linter is handed when the project keeps none of its
+ * own, so the rules a directive is judged against are the ones the run applies.
  *
  * `--fix` rewrites the two spellings a machine can settle: an
  * `eslint-disable*` whose every named rule resolves becomes `oxlint-disable*`,
@@ -215,10 +218,10 @@ const anywhere = (glob) => (glob.includes('/') ? glob : `**/${glob}`);
  * rule dead. The namespaces returned are therefore the ones the printed config
  * can ANSWER for: the plugins it loaded, and never a JS plugin's.
  */
-function resolveConfig(root, oxlint) {
+function resolveConfig(root, oxlint, config) {
     let printed;
     try {
-        printed = execFileSync(oxlint, ['--print-config'], {
+        printed = execFileSync(oxlint, ['--print-config', ...(config ? ['-c', config] : [])], {
             cwd: root,
             encoding: 'utf8',
             stdio: ['ignore', 'pipe', 'ignore'],
@@ -507,6 +510,7 @@ if (import.meta.main) {
     const isFix = argv.includes('--fix');
     const oxlintAt = argv[argv.indexOf('--oxlint') + 1];
     const oxlint = argv.includes('--oxlint') && oxlintAt !== undefined ? oxlintAt : 'oxlint';
+    const handed = argv.includes('-c') ? argv[argv.indexOf('-c') + 1] : undefined;
     const root = resolve(
         argv.slice(2).find((argument, index) => {
             const previous = argv[index + 1];
@@ -514,6 +518,7 @@ if (import.meta.main) {
             return (
                 !argument.startsWith('--') &&
                 previous !== '--oxlint' &&
+                previous !== '-c' &&
                 previous !== '--ignore-pattern'
             );
         }) ?? '.',
@@ -525,7 +530,8 @@ if (import.meta.main) {
 
     /* The resolved config costs an oxlint run, so it is read only once a directive asks for it. */
     let config;
-    const configOf = () => (config === undefined ? (config = resolveConfig(root, oxlint)) : config);
+    const configOf = () =>
+        config === undefined ? (config = resolveConfig(root, oxlint, handed)) : config;
 
     let failed = false;
     const rewritten = [];

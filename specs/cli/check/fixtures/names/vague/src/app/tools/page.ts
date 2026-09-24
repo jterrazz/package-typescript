@@ -1,1 +1,1 @@
-export const page = "tools";
+export const page = 'tools';

@@ -1,3 +1,3 @@
 export function start(): string {
-  return "started";
+    return 'started';
 }

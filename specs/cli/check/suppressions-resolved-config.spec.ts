@@ -24,20 +24,22 @@ const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
 /** A JS plugin at its smallest: one namespace, two rules, no dependency. */
 const PLUGIN = `export default {
-  meta: { name: "demo" },
-  rules: {
-    one: { create: () => ({}), meta: { messages: { never: "never reported." } } },
-    other: {
-      create: (context) => ({
-        VariableDeclarator(node) {
-          if (node.id?.name === "flagged") {
-            context.report({ messageId: "flagged", node });
-          }
+    meta: { name: 'demo' },
+    rules: {
+        one: { create: () => ({}), meta: { messages: { never: 'never reported.' } } },
+        other: {
+            create: (context) => ({
+                VariableDeclarator(node) {
+                    if (node.id?.name === 'flagged') {
+                        context.report({ messageId: 'flagged', node });
+                    }
+                },
+            }),
+            meta: {
+                messages: { flagged: 'a binding named flagged is what this rule is armed for.' },
+            },
         },
-      }),
-      meta: { messages: { flagged: "a binding named flagged is what this rule is armed for." } },
     },
-  },
 };
 `;
 
@@ -48,9 +50,9 @@ const PLUGIN = `export default {
  * namespace read as one the config could answer for.
  */
 const PLUGIN_CONFIG = `export default {
-  jsPlugins: ["./demo-plugin.js"],
-  overrides: [{ files: ["**/*.ts"], rules: { "demo/one": "allow" } }],
-  rules: { "demo/other": "error" },
+    jsPlugins: ['./demo-plugin.js'],
+    overrides: [{ files: ['**/*.ts'], rules: { 'demo/one': 'allow' } }],
+    rules: { 'demo/other': 'error' },
 };
 `;
 
@@ -61,8 +63,8 @@ const PLUGIN_CONFIG = `export default {
  * directives dead.
  */
 const SCOPED_CONFIG = `export default {
-  overrides: [{ files: ["**/*.test.ts"], rules: { "no-var": "error" } }],
-  rules: { "no-var": "allow" },
+    overrides: [{ files: ['**/*.test.ts'], rules: { 'no-var': 'error' } }],
+    rules: { 'no-var': 'allow' },
 };
 `;
 
@@ -78,11 +80,11 @@ afterEach(() => {
 /* Written as text, in the order the formatter sorts a manifest into: the run is
  * claimed green, so every pass of it — oxfmt's included — has to be. */
 const manifestOf = (name: string) => `{
-  "name": "${name}",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "main": "index.ts"
+    "name": "${name}",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "index.ts"
 }
 `;
 
@@ -122,7 +124,7 @@ describe('suppressions-resolved-config', () => {
         // When - the quality checks run there
         const result = checkPluginProjectWith(
             '// oxlint-disable-next-line demo/other -- the rule is live, and its name never reaches --print-config\n' +
-                'export const flagged = "what the rule would report without this directive";\n',
+                "export const flagged = 'what the rule would report without this directive';\n",
         );
 
         // Then - the gate says nothing about it, and the whole run is green
@@ -135,10 +137,10 @@ describe('suppressions-resolved-config', () => {
         // When - the quality checks run there
         const result = checkPluginProjectWith(
             '// oxlint-disable-next-line demo/other -- the plugin rule is live, so the gate stays silent\n' +
-                'export const flagged = "what the rule would report without this directive";\n' +
+                "export const flagged = 'what the rule would report without this directive';\n" +
                 '\n' +
                 '// oxlint-disable-next-line no-console -- kept from a config that had it on\n' +
-                'export const nothing = "";\n',
+                "export const nothing = '';\n",
         );
 
         // Then - only the core rule is called dead, and the run fails on it
@@ -155,7 +157,7 @@ describe('suppressions-resolved-config', () => {
         const result = checkProject('suppressions-scoped-live', {
             'index.test.ts':
                 '// oxlint-disable-next-line no-var -- the override arms the rule for this file\n' +
-                'export var live = "what the rule would report without this directive";\n',
+                "export var live = 'what the rule would report without this directive';\n",
             'oxlint.config.ts': SCOPED_CONFIG,
         });
 
@@ -170,7 +172,7 @@ describe('suppressions-resolved-config', () => {
         const result = checkProject('suppressions-scoped-dead', {
             'index.ts':
                 '// oxlint-disable-next-line no-var -- no override reaches this file\n' +
-                'export const dead = "the same directive, where the rule is off";\n',
+                "export const dead = 'the same directive, where the rule is off';\n",
             'oxlint.config.ts': SCOPED_CONFIG,
         });
 

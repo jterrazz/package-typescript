@@ -1,7 +1,7 @@
 {
-  "name": "fixture-drift-two-ratchets",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "main": "index.ts"
+    "name": "fixture-drift-two-ratchets",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "index.ts"
 }

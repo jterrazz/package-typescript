@@ -1,0 +1,46 @@
+description: leaves an unsafe fixer of the default profile alone in a project with no config of its own
+fixture: ./fixtures/default-config/unsafe-fixer/
+runs:
+    # The fixer runs by the default profile wrapped like a project's own
+    # config, its meaning-changing fixers off: `take(undefined)` keeps the
+    # argument its callee requires, and the diagnostic is left for a human.
+    # The linter's own block is spanned: its reporter is a fact about the
+    # machine, and what is claimed is the verdict and the file.
+    - command: fix
+      exit: 1
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+          {{any}}
+          unicorn/no-useless-undefined  1 diagnostic(s), and the project keeps no baseline
+          Fix them, or run 'typescript baseline' to record where the project stands.
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✗ Some checks failed
+      files:
+          index.ts:
+              equals: |
+                  export function take(value: string | undefined): string {
+                      return value ?? 'none';
+                  }
+
+                  export const taken = take(undefined);

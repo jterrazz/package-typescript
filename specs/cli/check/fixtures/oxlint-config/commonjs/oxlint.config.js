@@ -1,3 +1,3 @@
 module.exports = {
-  rules: { "no-debugger": "error" },
+    rules: { 'no-debugger': 'error' },
 };

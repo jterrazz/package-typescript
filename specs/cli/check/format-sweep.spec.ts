@@ -33,7 +33,7 @@ function projectWith({
     });
     writeFileSync(
         join(project, 'package.json'),
-        `${JSON.stringify({ name: 'spec-format-sweep', version: '1.0.0', private: true }, null, 2)}\n`,
+        `${JSON.stringify({ name: 'spec-format-sweep', version: '1.0.0', private: true }, null, 4)}\n`,
     );
     writeFileSync(join(project, '.gitignore'), 'local/\n');
     mkdirSync(join(project, 'src'));

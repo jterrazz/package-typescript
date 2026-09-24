@@ -1,5 +1,7 @@
 {
-  "name": "fixture-gitignore-repository-boundary",
-  "private": true,
-  "workspaces": ["clone"]
+    "name": "fixture-gitignore-repository-boundary",
+    "private": true,
+    "workspaces": [
+        "clone"
+    ]
 }

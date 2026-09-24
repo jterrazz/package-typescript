@@ -1,3 +1,3 @@
 export function greeter() {
-  return "greeter";
+    return 'greeter';
 }

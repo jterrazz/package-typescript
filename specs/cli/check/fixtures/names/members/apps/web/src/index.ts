@@ -1,3 +1,3 @@
-import { order } from "../lint/order.js";
+import { order } from '../lint/order.js';
 
 export const web = `web ${order}`;

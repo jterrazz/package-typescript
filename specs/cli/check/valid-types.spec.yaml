@@ -16,15 +16,7 @@ runs:
 
            RUN  Oxfmt Check
 
-          Checking formatting...
-
-          tsconfig.json ({{duration}})
-          types.ts ({{duration}})
-
-          Format issues found in above 2 files. Run without `--check` to fix.
-          Finished in {{duration}} on 2 files using {{int}} threads.
-          No config found, using defaults. Please add a config file or try `oxfmt --init` if needed.
-          ✗ Failed with exit code 1
+          ✓ Passed
 
            RUN  Knip (unused code)
 

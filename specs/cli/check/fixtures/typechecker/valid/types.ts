@@ -1,5 +1,5 @@
-const message: string = 'hello';
-const count: number = 42;
+const message: string = greet('world');
+const count: number = message.length;
 
 function greet(name: string): string {
     return `Hello, ${name}!`;

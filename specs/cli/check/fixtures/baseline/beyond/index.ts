@@ -1,11 +1,11 @@
 export function first(): void {
-  debugger;
+    debugger;
 }
 
 export function second(): void {
-  debugger;
+    debugger;
 }
 
 export function third(): void {
-  const unread = "never looked at";
+    const unread = 'never looked at';
 }

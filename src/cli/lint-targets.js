@@ -9,7 +9,11 @@
  * exactly what every other tree gate judges: never the ground a test stands
  * on, never a path git ignores, whatever the tool's own walk would reach.
  *
- * Usage: node lint-targets.js [root] [--all] [--ignore-pattern <glob>]…
+ * Usage: node lint-targets.js [root] [--all] [--ignores-of <config>] [--ignore-pattern <glob>]…
+ *
+ * `--ignores-of` names a config the tool is handed by path, the toolchain's
+ * default: the tool resolves its `ignorePatterns` against the config's own
+ * directory, where they reach nothing, so the sweep leaves out what they name.
  *
  * One path per line, relative to the root. Exit code: 0 with the list —
  * empty when the project holds nothing the tool reads, which the caller reads
@@ -20,15 +24,20 @@
 
 import { resolve } from 'node:path';
 import { argv, exit, stderr, stdout } from 'node:process';
+import { pathToFileURL } from 'node:url';
 
 import { SOURCE } from './check-suppressions.js';
 import { ignorePatternsOf, projectFiles } from './project-files.js';
 
 const root = resolve(argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.');
 const every = argv.includes('--all');
+const handed = argv.includes('--ignores-of') ? argv[argv.indexOf('--ignores-of') + 1] : undefined;
 
 try {
-    const targets = projectFiles(root, { ignorePatterns: ignorePatternsOf(argv) }).filter(
+    const config =
+        handed === undefined ? undefined : await import(pathToFileURL(resolve(handed)).href);
+    const ignorePatterns = [...ignorePatternsOf(argv), ...(config?.default.ignorePatterns ?? [])];
+    const targets = projectFiles(root, { ignorePatterns }).filter(
         (path) => every || SOURCE.test(path),
     );
     stdout.write(targets.map((path) => `${path}\n`).join(''));

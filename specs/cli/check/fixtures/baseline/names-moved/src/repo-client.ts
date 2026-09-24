@@ -1,1 +1,1 @@
-export const fetchRepository = (): string => "repository";
+export const fetchRepository = (): string => 'repository';

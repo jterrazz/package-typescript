@@ -3,6 +3,10 @@ fixture: ./fixtures/suppressions/looking-away/
 runs:
     - command: check
       exit: 1
+      # The directives this fixture writes wrong are the linter's findings too,
+      # under the default profile a project with no config of its own runs:
+      # its own report is spanned (its reporter is a fact about the machine),
+      # and its ratchet lines, which are ours, are stated.
       stdout: |4
            START  Running quality checks
 
@@ -11,8 +15,12 @@ runs:
           ✓ Passed
 
            RUN  Oxlint Check
-
-          ✓ Passed
+          {{any}}
+          typescript/ban-ts-comment  1 diagnostic(s), and the project keeps no baseline
+          typescript/prefer-ts-expect-error  1 diagnostic(s), and the project keeps no baseline
+          unknown  4 diagnostic(s), and the project keeps no baseline
+          Fix them, or run 'typescript baseline' to record where the project stands.
+          ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
 
@@ -26,7 +34,7 @@ runs:
 
           suppressions-spelling  index.ts  line 1 spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it
           suppressions-reason  index.ts  line 4 disables no-unused-vars with no '-- reason' after it
-          suppressions-dead  index.ts  line 7 disables no-console, which the resolved config does not have on
+          suppressions-dead  index.ts  line 7 disables capitalized-comments, which the resolved config does not have on
           suppressions-spelling  index.ts  line 10 spells @ts-ignore, which stays silent once the error is gone — @ts-expect-error does not
           suppressions-reason  index.ts  line 10 carries a TypeScript suppression with no description of what it is for
           ✗ Failed with exit code 1

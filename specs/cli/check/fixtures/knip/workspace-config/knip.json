@@ -1,8 +1,8 @@
 {
-  "$schema": "https://unpkg.com/knip@6/schema.json",
-  "workspaces": {
-    "apps/api": {
-      "ignoreDependencies": ["some-local-dep"]
+    "$schema": "https://unpkg.com/knip@6/schema.json",
+    "workspaces": {
+        "apps/api": {
+            "ignoreDependencies": ["some-local-dep"]
+        }
     }
-  }
 }

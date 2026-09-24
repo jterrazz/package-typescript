@@ -1,3 +1,3 @@
-import "vitepress";
+export { defineConfig } from 'vitepress';
 
-export const hello = "world";
+export const hello = 'world';

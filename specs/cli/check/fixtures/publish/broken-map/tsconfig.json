@@ -1,4 +1,4 @@
 {
-  "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true, "allowJs": true },
-  "include": ["**/*.js"]
+    "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true, "allowJs": true },
+    "include": ["**/*.js"]
 }

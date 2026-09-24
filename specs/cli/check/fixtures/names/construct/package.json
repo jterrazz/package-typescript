@@ -1,10 +1,10 @@
 {
-  "name": "fixture-names-construct",
-  "version": "1.0.0",
-  "private": true,
-  "files": [
-    "index.ts",
-    "lint"
-  ],
-  "main": "index.ts"
+    "name": "fixture-names-construct",
+    "version": "1.0.0",
+    "private": true,
+    "files": [
+        "index.ts",
+        "lint"
+    ],
+    "main": "index.ts"
 }

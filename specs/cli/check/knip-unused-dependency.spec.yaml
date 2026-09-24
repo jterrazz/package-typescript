@@ -25,7 +25,7 @@ runs:
            RUN  Knip (unused code)
 
           Unused dependencies (1)
-          totally-unused-pkg  package.json:5:6
+          totally-unused-pkg  package.json:5:10
           ✗ Failed with exit code 1
 
            RUN  Suppressions (directives)

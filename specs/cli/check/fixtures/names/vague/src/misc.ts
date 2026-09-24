@@ -1,1 +1,1 @@
-export const noop = (): void => {};
+export const identity = (value: string): string => value;

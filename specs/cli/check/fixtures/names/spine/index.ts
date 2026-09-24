@@ -1,5 +1,5 @@
-import { release } from "./scripts/release.js";
+import { release } from './scripts/release.js';
 
 export function run(): string {
-  return release();
+    return release();
 }

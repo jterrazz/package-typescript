@@ -1,5 +1,5 @@
 export default {
-  typescript: {
-    roots: ["scripts"],
-  },
+    typescript: {
+        roots: ['scripts'],
+    },
 };

@@ -1,3 +1,3 @@
 export function prepare(): string {
-  return "ready";
+    return 'ready';
 }

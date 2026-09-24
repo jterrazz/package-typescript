@@ -60,11 +60,10 @@ add_tsgolint_to_path() {
 add_tsgolint_to_path
 
 # The config a consumer declares its rules in — the one thing that makes the
-# drift report answerable. Without one there is no profile to have drifted from.
-OXLINT_CONFIG=""
-for candidate in oxlint.config.ts oxlint.config.mjs oxlint.config.js oxlint.config.cjs .oxlintrc.json; do
-    [ -f "$candidate" ] && { OXLINT_CONFIG="$candidate"; break; }
-done
+# drift report answerable. Without one there is no profile to have drifted from,
+# and the linter runs the toolchain's default.
+# shellcheck source=../tool-configs.sh
+. "$SCRIPT_DIR/../tool-configs.sh"
 
 # The ratchet's file, at the project root, one section per package of the
 # family. Its `typescript` section is what turns the oxlint pass from "no
@@ -318,7 +317,7 @@ LINT_TARGETS=()
 LINT_NOTHING=false
 read_lint_targets() {
     local listed target
-    listed=$(node "$PACKAGE_ROOT/src/cli/lint-targets.js" . "${LINT_ARGS[@]}" 2>/dev/null) || return 0
+    listed=$(node "$PACKAGE_ROOT/src/cli/lint-targets.js" . "${OXLINT_TARGET_ARGS[@]}" "${LINT_ARGS[@]}" 2>/dev/null) || return 0
     while IFS= read -r target; do
         [ -n "$target" ] && LINT_TARGETS+=("$target")
     done <<< "$listed"
@@ -326,14 +325,17 @@ read_lint_targets() {
     return 0
 }
 
-# oxlint over those files. With nothing to lint it reports nothing: an empty
-# JSON report where one was asked for, and a clean exit.
+# oxlint over those files, with the config it runs by — unless the caller
+# hands one of its own. With nothing to lint it reports nothing: an empty JSON
+# report where one was asked for, and a clean exit.
 run_oxlint() {
     if [ "$LINT_NOTHING" = true ]; then
         case " $* " in *" --format json "*) printf '{ "diagnostics": [] }\n' ;; esac
         return 0
     fi
-    "$OXLINT" "$@" "${LINT_TARGETS[@]}"
+    local config=("${OXLINT_CONFIG_ARGS[@]}")
+    case " $* " in *" -c "*) config=() ;; esac
+    "$OXLINT" "${config[@]}" "$@" "${LINT_TARGETS[@]}"
 }
 
 # ── What oxfmt is handed ─────────────────────────────────────────────────────
@@ -345,7 +347,7 @@ FORMAT_TARGETS=()
 FORMAT_NOTHING=false
 read_format_targets() {
     local listed target
-    listed=$(node "$PACKAGE_ROOT/src/cli/lint-targets.js" . --all "${LINT_ARGS[@]}" 2>/dev/null) || return 0
+    listed=$(node "$PACKAGE_ROOT/src/cli/lint-targets.js" . --all "${OXFMT_TARGET_ARGS[@]}" "${LINT_ARGS[@]}" 2>/dev/null) || return 0
     while IFS= read -r target; do
         [ -n "$target" ] && FORMAT_TARGETS+=("$target")
     done <<< "$listed"
@@ -358,9 +360,9 @@ read_format_targets() {
 run_oxfmt() {
     [ "$FORMAT_NOTHING" = true ] && return 0
     if [ ${#FORMAT_TARGETS[@]} -eq 0 ]; then
-        "$OXFMT" "$@"
+        "$OXFMT" "${OXFMT_CONFIG_ARGS[@]}" "$@"
     else
-        "$OXFMT" "$@" --no-error-on-unmatched-pattern "${FORMAT_TARGETS[@]}"
+        "$OXFMT" "${OXFMT_CONFIG_ARGS[@]}" "$@" --no-error-on-unmatched-pattern "${FORMAT_TARGETS[@]}"
     fi
 }
 
@@ -501,8 +503,9 @@ run_checks() {
     if [ "$FIX_MODE" = true ]; then
         # A fixer that changes MEANING is never applied unattended: the rules
         # marked `unsafe` in the manifest are turned off for THIS run by a
-        # wrapper config written beside the consumer's own, so `fix` leaves
-        # them alone and `check` still reports them for a human.
+        # wrapper around the config the linter runs by — the consumer's own, or
+        # the default — so `fix` leaves them alone and `check` still reports
+        # them for a human.
         #
         # The wrapper sits at the project root because oxlint resolves
         # `ignorePatterns` against the directory its config sits in — and it is
@@ -510,11 +513,10 @@ run_checks() {
         # deleted by it, so a diagnostic against it names a file the operator
         # cannot open and no tree can ever clear.
         local fix_config="oxlint.fix.config.mjs"
-        local fix_args=()
-        if [ -n "$OXLINT_CONFIG" ]; then
-            node "$PACKAGE_ROOT/src/cli/unsafe-fixers.js" "$PWD/$OXLINT_CONFIG" "$fix_config"
-            fix_args=(-c "$fix_config" --ignore-pattern "$fix_config")
-        fi
+        local base_config="$DEFAULT_OXLINT_CONFIG"
+        [ -n "$OXLINT_CONFIG" ] && base_config="$PWD/$OXLINT_CONFIG"
+        node "$PACKAGE_ROOT/src/cli/unsafe-fixers.js" "$base_config" "$fix_config"
+        local fix_args=(-c "$fix_config" --ignore-pattern "$fix_config")
 
         run_oxlint --type-aware --fix "${fix_args[@]}" "${LINT_ARGS[@]}" \
             > "$tmp_dir/lint.log" 2>&1 ||
@@ -621,7 +623,7 @@ run_checks() {
     local suppressions_fix=()
     [ "$FIX_MODE" = true ] && suppressions_fix=(--fix)
     node "$PACKAGE_ROOT/src/cli/check-suppressions.js" . --oxlint "$OXLINT" \
-        "${suppressions_fix[@]}" "${LINT_ARGS[@]}" > "$tmp_dir/suppressions.log" 2>&1 &
+        "${OXLINT_CONFIG_ARGS[@]}" "${suppressions_fix[@]}" "${LINT_ARGS[@]}" > "$tmp_dir/suppressions.log" 2>&1 &
     suppressions_pid=$!
 
     # Markdown (prose): every tracked page's coordinates resolve, and its blocks

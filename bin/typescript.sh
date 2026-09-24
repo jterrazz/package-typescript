@@ -163,6 +163,8 @@ case "$COMMAND" in
         add_tsgolint_to_path
 
         OXLINT=$(find_binary oxlint)
+        # shellcheck source=tool-configs.sh
+        . "$SCRIPT_DIR/tool-configs.sh"
         BASELINE_REPORT=$(mktemp)
         trap 'rm -f "$BASELINE_REPORT"' EXIT
 
@@ -173,7 +175,7 @@ case "$COMMAND" in
         # nothing; a sweep that could not answer hands oxlint the directory.
         LINT_TARGETS=()
         LINT_LISTED=true
-        LISTED=$(node "$PACKAGE_ROOT/src/cli/lint-targets.js" . "$@" 2>/dev/null) || LINT_LISTED=false
+        LISTED=$(node "$PACKAGE_ROOT/src/cli/lint-targets.js" . "${OXLINT_TARGET_ARGS[@]}" "$@" 2>/dev/null) || LINT_LISTED=false
         while IFS= read -r target; do
             [ -n "$target" ] && LINT_TARGETS+=("$target")
         done <<< "$LISTED"
@@ -182,7 +184,7 @@ case "$COMMAND" in
         if [ "$LINT_LISTED" = true ] && [ ${#LINT_TARGETS[@]} -eq 0 ]; then
             printf '{ "diagnostics": [] }\n' > "$BASELINE_REPORT"
         else
-            "$OXLINT" --type-aware --format json "$@" "${LINT_TARGETS[@]}" \
+            "$OXLINT" "${OXLINT_CONFIG_ARGS[@]}" --type-aware --format json "$@" "${LINT_TARGETS[@]}" \
                 > "$BASELINE_REPORT" 2>/dev/null || true
         fi
 
@@ -197,9 +199,9 @@ case "$COMMAND" in
             --names "$NAMES_REPORT" --write || exit 1
 
         # The file is tracked, so it is the formatter's like every other tracked
-        # file — written here, shaped by the project's own oxfmt, never both.
+        # file — written here, shaped by the formatter `check` runs, never both.
         OXFMT=$(find_binary oxfmt)
-        "$OXFMT" jterrazz.baseline.json > /dev/null 2>&1 || true
+        "$OXFMT" "${OXFMT_CONFIG_ARGS[@]}" jterrazz.baseline.json > /dev/null 2>&1 || true
         ;;
 
     tsc)

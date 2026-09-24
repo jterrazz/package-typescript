@@ -1,12 +1,12 @@
 {
-  "name": "fixture-names-lint-built",
-  "version": "1.0.0",
-  "private": true,
-  "files": [
-    "dist/oxlint.js"
-  ],
-  "type": "module",
-  "exports": {
-    "./oxlint": "./dist/oxlint.js"
-  }
+    "name": "fixture-names-lint-built",
+    "version": "1.0.0",
+    "private": true,
+    "files": [
+        "dist/oxlint.js"
+    ],
+    "type": "module",
+    "exports": {
+        "./oxlint": "./dist/oxlint.js"
+    }
 }

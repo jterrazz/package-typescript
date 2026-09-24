@@ -156,6 +156,12 @@ const violations = auditDocs(tree); // -> [{ rule, path, message }, …]
 
 The linter is handed the project's files it parses rather than the directory, the same sweep every tree gate reads: every file git does not ignore — tracked, or new and not yet added — and nothing git ignores. A new module is linted before anyone runs `git add`, and a local data folder the gates must not read belongs in `.gitignore`, so the CLI, CI, the baseline and the editor judge one tree. Outside a git checkout the sweep walks the disk. `--ignore-pattern` and the profiles' own ignores still apply on top.
 
+### The config it runs with
+
+A project that keeps an oxlint config at its root — `oxlint.config.ts`, `.mts`, `.mjs`, `.js` or `.cjs`, `.oxlintrc.json` or `.jsonc` — is linted by it, and oxlint finds it, and the nested configs beneath it, where it looks. A project that keeps none is handed the toolchain's default, the `node` profile, by path. Left to itself oxlint would walk up the tree for a config and apply whatever the folder the project sits in happens to hold, a temp folder or a workbench of clones among them. `baseline` hands the same default, so the file records what `check` reports.
+
+A config handed by path resolves its `ignorePatterns` against its own directory, which is this package's. So the sweep leaves out what the default's patterns name instead, and a project with no config is spared the same folders as one whose config composes the profile.
+
 ### One run, and the log drawn from it
 
 `check` runs the type-aware linter once, for its JSON report, and every reader of the pass reads that one report: the ratchet judges it rule by rule, the conventions checker's member runs take it instead of linting the project again, and a failing pass prints it. The type-aware run is the costliest process of a check — a JS plugin's rules run on one thread, and tsgolint builds the whole program — so a second run for a second format would double the pass for nothing it can say.
@@ -183,7 +189,7 @@ The second is the silent one: a `.cjs` config, or a `.js` config in a package th
 
 A fixer that changes MEANING is never applied unattended, so the oxlint run of fix mode allows each rule marked `unsafe` in the manifest — the rewrite does not land, the diagnostic stays — `fix` and `check` report it alike — and a human answers it. The list, and what each rewrite does, is [Lint presets](07-lint-presets.md).
 
-The allowance is a wrapper config the pass writes at the project root and deletes after the run. It goes there and nowhere else, because oxlint resolves `ignorePatterns` against the directory its config sits in — and the run it configures IGNORES it, so no diagnostic ever names a path the operator cannot open and no tree can ever clear.
+The allowance is a wrapper config around the one the linter runs with — the project's own, or the default where it keeps none — that the pass writes at the project root and deletes after the run. It goes there and nowhere else, because oxlint resolves `ignorePatterns` against the directory its config sits in — and the run it configures IGNORES it, so no diagnostic ever names a path the operator cannot open and no tree can ever clear.
 
 That wrapper also stops the run reporting UNUSED DIRECTIVES. Every profile ships `reportUnusedDisableDirectives`, and a run that has just turned twelve rules off cannot judge a directive naming one of them — the rule is off for that run alone, and the directive would be called dead on evidence the wrapper itself created. An unused directive is reported by the check-shaped run made after the fixer, where the consumer's own rules are armed again, and by `check`.
 
@@ -199,7 +205,7 @@ Every pass of `check` runs in parallel, and `fix` keeps that — except for the 
 
 ## The Oxfmt pass
 
-The formatter is handed the same sweep, whole rather than cut to the shapes a linter parses, and it skips a file it has no parser for. So it judges neither the ground a test stands on nor a path git ignores, and that holds whether or not the project carries an `oxfmt.config.ts` whose ignores would say so. `fix` writes through the same list: it formats a new file before `git add`, and never reformats the ground or an ignored path. The preset's own ignores — `public/`, `assets/` and the rest — still apply on top.
+The formatter is handed the same sweep, whole rather than cut to the shapes a linter parses, and it skips a file it has no parser for. A project with no formatter config of its own — `.oxfmtrc.json`, `.oxfmtrc.jsonc`, `oxfmt.config.ts` or `.mts` — is handed the preset by path, for the linter's reason, and the sweep leaves out what the preset's ignores name. So it judges neither the ground a test stands on nor a path git ignores, and that holds whether or not the project carries an `oxfmt.config.ts` whose ignores would say so. `fix` writes through the same list: it formats a new file before `git add`, and never reformats the ground or an ignored path. The preset's own ignores — `public/`, `assets/` and the rest — still apply on top.
 
 ## The ratchet
 

@@ -1,5 +1,7 @@
 {
-  "name": "fixture-gitignore-workspace-root-covers",
-  "private": true,
-  "workspaces": ["packages/*"]
+    "name": "fixture-gitignore-workspace-root-covers",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ]
 }

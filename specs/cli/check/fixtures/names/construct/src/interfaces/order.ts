@@ -1,3 +1,3 @@
-export interface Order {
-  id: string;
-}
+export type Order = {
+    id: string;
+};

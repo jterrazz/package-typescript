@@ -1,3 +1,3 @@
 export function openWizard(): string {
-  return "wizard";
+    return 'wizard';
 }

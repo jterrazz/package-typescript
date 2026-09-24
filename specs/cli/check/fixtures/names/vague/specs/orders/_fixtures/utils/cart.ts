@@ -1,1 +1,1 @@
-export const cart = ["apple"];
+export const cart = ['apple'];

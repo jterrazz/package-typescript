@@ -37,6 +37,7 @@ No build step — this package ships JS directly. It dogfoods its own CLI (`make
 bin/
 ├── typescript.sh             # CLI entry (build, bundle, start, dev, docs-layout, doctor, baseline, tsc, check, fix, clean)
 ├── find-tsc.sh               # The TS7 Go compiler by platform — sourced by the CLI and by the check script
+├── tool-configs.sh           # The config oxlint and oxfmt run with — the project's own, else the default — sourced by the same two
 └── commands/
     └── check.sh              # Fourteen passes in parallel; each that RAN prints a header and a verdict, in one fixed order
 

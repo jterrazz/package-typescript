@@ -1,1 +1,1 @@
-export const RULES = ["no-debugger"];
+export const RULES = ['no-debugger'];

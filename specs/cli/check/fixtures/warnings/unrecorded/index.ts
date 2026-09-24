@@ -1,3 +1,3 @@
 export function paused(): void {
-  debugger;
+    debugger;
 }

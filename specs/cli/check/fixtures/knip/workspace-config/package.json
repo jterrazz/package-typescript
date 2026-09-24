@@ -1,7 +1,7 @@
 {
-  "name": "fixture-knip-workspace-config",
-  "private": true,
-  "workspaces": [
-    "apps/*"
-  ]
+    "name": "fixture-knip-workspace-config",
+    "private": true,
+    "workspaces": [
+        "apps/*"
+    ]
 }

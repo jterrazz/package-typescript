@@ -1,4 +1,6 @@
 {
     "name": "consumer-enabled",
-    "devDependencies": { "@jterrazz/test": "^9.0.0" }
+    "devDependencies": {
+        "@jterrazz/test": "^9.0.0"
+    }
 }

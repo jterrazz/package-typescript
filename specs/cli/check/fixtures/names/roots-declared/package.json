@@ -1,13 +1,13 @@
 {
-  "name": "fixture-names-roots-declared",
-  "version": "1.0.0",
-  "private": true,
-  "main": "index.ts",
-  "jterrazz": {
-    "typescript": {
-      "roots": {
-        "deploy": "the manifests the deploy job applies"
-      }
+    "name": "fixture-names-roots-declared",
+    "version": "1.0.0",
+    "private": true,
+    "main": "index.ts",
+    "jterrazz": {
+        "typescript": {
+            "roots": {
+                "deploy": "the manifests the deploy job applies"
+            }
+        }
     }
-  }
 }

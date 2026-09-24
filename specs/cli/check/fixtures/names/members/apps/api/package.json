@@ -1,8 +1,8 @@
 {
-  "name": "fixture-names-members-api",
-  "private": true,
-  "main": "src/index.ts",
-  "exports": {
-    "./lint": "./lint/rules.js"
-  }
+    "name": "fixture-names-members-api",
+    "private": true,
+    "main": "src/index.ts",
+    "exports": {
+        "./lint": "./lint/rules.js"
+    }
 }

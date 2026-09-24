@@ -1,7 +1,7 @@
 export function first(): void {
-  debugger;
+    debugger;
 }
 
 export function second(): void {
-  debugger;
+    debugger;
 }

@@ -1,6 +1,6 @@
 {
-  "typescript": {
-    "names/names-construct": 1,
-    "names/names-grab-bag": 1
-  }
+    "typescript": {
+        "names/names-construct": 1,
+        "names/names-grab-bag": 1
+    }
 }

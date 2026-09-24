@@ -1,3 +1,3 @@
-export interface Receipt {
-  id: string;
-}
+export type Receipt = {
+    id: string;
+};
