@@ -50,9 +50,10 @@ runs:
            END  Finalizing quality checks
 
           ✓ All checks passed
-    # The same glob under fix: the fixers that would rewrite the file — the
-    # linter's, the directive rewriter — and the gates that would fail it are
-    # all handed it, so the run is green and notes/ keeps every byte.
+    # The same glob under fix: the sweep leaves notes/ out of what the linter
+    # is handed, and the directive rewriter and the tree gates read the glob
+    # themselves, so the run is green and notes/ keeps every byte. The linter
+    # reading the glob itself is ignore-pattern-directory-handed's.
     - command: fix --ignore-pattern 'notes/**'
       exit: 0
       stdout: |4
