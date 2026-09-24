@@ -58,23 +58,13 @@ import { isRepositoryRoot } from './repository-root.js';
 import { workspaceMembers } from './workspace-members.js';
 
 /** Names that say nothing: a folder or a file called one of these holds whatever nobody placed. */
-const GRAB_BAG = new Set([
-    'base',
-    'common',
-    'helpers',
-    'lib',
-    'misc',
-    'shared',
-    'stuff',
-    'tools',
-    'utils',
-]);
+const GRAB_BAG = new Set(['base', 'common', 'helpers', 'lib', 'misc', 'stuff', 'tools', 'utils']);
 
 /**
  * Names that say which construct of the language a file holds rather than
  * which subject of the domain. The words a grab-bag already refuses — `utils`,
- * `helpers`, `common`, `shared`, `misc`, `lib` — are that roster's, so a name
- * is reported once.
+ * `helpers`, `common`, `misc`, `lib` — are that roster's, so a name is
+ * reported once.
  */
 const CONSTRUCTS = new Set(['constants', 'helper', 'interfaces', 'type', 'types', 'util']);
 

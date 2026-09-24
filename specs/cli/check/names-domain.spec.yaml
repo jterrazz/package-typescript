@@ -1,4 +1,4 @@
-description: passes a tree named for its domain, a `core/` and a `setup.ts` among it
+description: passes a tree named for its domain, a `core/`, a `setup.ts` and a `shared/` among it
 fixture: ./fixtures/names/domain/
 runs:
     - command: check

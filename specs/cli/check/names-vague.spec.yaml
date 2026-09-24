@@ -37,7 +37,6 @@ runs:
           names-shortcut  src/gateway/repo-client.ts  `repo-client` is a word written in half — spell it whole
           names-grab-bag  src/helpers.ts  `helpers` names no subject — it holds whatever nobody placed
           names-grab-bag  src/misc.ts  `misc` names no subject — it holds whatever nobody placed
-          names-grab-bag  src/shared  `shared` names no subject — it holds whatever nobody placed
           names-grab-bag  src/utils  `utils` names no subject — it holds whatever nobody placed
           ✗ Failed with exit code 1
 
