@@ -25,10 +25,13 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, matchesGlob, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { builtChunks, testMaterialFindings, testMaterialReader } from './publish-material.js';
-
-/** Npm ships these whatever `files` says, so neither rule asks about them. */
-const ALWAYS_PACKED = /^(?:package\.json|readme|license|licence|changelog)/iu;
+import {
+    builtChunks,
+    isPacked,
+    plain,
+    testMaterialFindings,
+    testMaterialReader,
+} from './publish-material.js';
 
 /** Every string an exports map points at, wherever the conditions nest. */
 function targetsOf(exports) {
@@ -44,9 +47,6 @@ function targetsOf(exports) {
 
     return [];
 }
-
-/** A target with no `./` in front, which is how `files` spells the same path. */
-const plain = (target) => target.replace(/^\.\//u, '');
 
 /**
  * Whether a target resolves on disk. A wildcard names a family rather than a
@@ -68,25 +68,6 @@ function resolvesOnDisk(root, target) {
     } catch {
         return false;
     }
-}
-
-/** Whether `files` reaches a target: by its own entry, or by a directory above it. */
-function isPacked(files, target) {
-    const path = plain(target);
-    if (ALWAYS_PACKED.test(path)) {
-        return true;
-    }
-
-    return files.some((entry) => {
-        const packed = plain(entry).replace(/\/$/u, '');
-
-        return (
-            path === packed ||
-            path.startsWith(`${packed}/`) ||
-            matchesGlob(path, packed) ||
-            matchesGlob(path, `${packed}/**`)
-        );
-    });
 }
 
 /** One tool's verdict, with its report kept for the failing case. */
@@ -131,7 +112,7 @@ for (const target of [...new Set(targets)].toSorted((left, right) => (left < rig
         failed = true;
         continue;
     }
-    if (files.length > 0 && !isPacked(files, target)) {
+    if (!isPacked(files, target)) {
         stdout.write(
             `publish-files  package.json  ${target} is outside "files" — it resolves here and 404s in a consumer\n`,
         );
@@ -141,10 +122,9 @@ for (const target of [...new Set(targets)].toSorted((left, right) => (left < rig
 
 const reader = await testMaterialReader(root);
 const chunks = reader === null ? null : await builtChunks(root, targets);
-const shipped = (chunks ?? []).filter(({ file }) => files.length === 0 || isPacked(files, file));
-for (const { message, path, rule } of reader === null
+for (const { message, path, rule } of reader === null || chunks === null
     ? []
-    : testMaterialFindings({ chunks: shipped, manifest, reader, root })) {
+    : testMaterialFindings({ chunks, manifest, reader, root })) {
     stdout.write(`${rule}  ${path}  ${message}\n`);
     failed = true;
 }

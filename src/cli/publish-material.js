@@ -14,11 +14,12 @@
  * entries its `exports` map earns — with no chunk written, no `copy`, no
  * executable and no `onSuccess` command; a config's own `hooks` still run.
  * A plugin's `generateBundle` hook lists each chunk's module ids by the file
- * it lands in.
+ * it lands in. Only a chunk the tarball carries is judged, and what it
+ * carries — `isPacked` — is answered here for the pass's `files` rule too.
  */
 
 import { existsSync, readdirSync } from 'node:fs';
-import { dirname, isAbsolute, join, relative, sep } from 'node:path';
+import { dirname, isAbsolute, join, matchesGlob, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { entryPoints } from './entry-points.js';
@@ -179,6 +180,34 @@ export async function builtChunks(root, targets) {
     return chunks.toSorted((left, right) => (left.file < right.file ? -1 : 1));
 }
 
+/** Npm ships these whatever `files` says. */
+const ALWAYS_PACKED = /^(?:package\.json|readme|license|licence|changelog)/iu;
+
+/** A target with no `./` in front, which is how `files` spells the same path. */
+export const plain = (target) => target.replace(/^\.\//u, '');
+
+/**
+ * Whether the tarball carries a path: always where `files` is empty or
+ * absent, else when an entry reaches it — its own, or a directory above it.
+ */
+export function isPacked(files, target) {
+    const path = plain(target);
+    if (files.length === 0 || ALWAYS_PACKED.test(path)) {
+        return true;
+    }
+
+    return files.some((entry) => {
+        const packed = plain(entry).replace(/\/$/u, '');
+
+        return (
+            path === packed ||
+            path.startsWith(`${packed}/`) ||
+            matchesGlob(path, packed) ||
+            matchesGlob(path, `${packed}/**`)
+        );
+    });
+}
+
 /** The package an installed module id belongs to — `vitest`, `@vitest/expect`. */
 function installedPackageOf(id) {
     const below = id.slice(id.lastIndexOf(NODE_MODULES) + NODE_MODULES.length).split(sep);
@@ -207,7 +236,8 @@ function finding(file, found, fix) {
 }
 
 /**
- * The findings a build's chunks earn, judged by `reader`. A module compiled
+ * The findings a build's chunks earn, judged by `reader` — only for a chunk
+ * the manifest's `files` ships. A module compiled
  * in is test material by `materialAt` when it is the package's own, by
  * `testPackageOf` when it is installed; a specifier left external is judged by
  * `testPackageOf` unless the package declares it to run in production.
@@ -219,7 +249,8 @@ export function testMaterialFindings({ chunks, manifest, reader, root }) {
     ]);
     const findings = [];
 
-    for (const { externals, file, moduleIds } of chunks) {
+    const shipped = chunks.filter(({ file }) => isPacked(manifest.files ?? [], file));
+    for (const { externals, file, moduleIds } of shipped) {
         for (const id of moduleIds.filter((candidate) => isAbsolute(candidate)).toSorted()) {
             if (id.includes(NODE_MODULES)) {
                 const name = reader.testPackageOf(installedPackageOf(id));

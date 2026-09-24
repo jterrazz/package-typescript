@@ -95,6 +95,28 @@ test('names an external test package the manifest does not declare to run', () =
     ]);
 });
 
+test('judges only the chunks `files` ships', () => {
+    // Given - two chunks compiled from a fixtures module, one of them left out of `files`
+    const chunks = ['dist/index.js', 'dist/testing.js'].map((file) => ({
+        externals: [],
+        file,
+        moduleIds: ['/package/src/domain/user.fixtures.ts'],
+    }));
+
+    // Then - `files` naming one ships that one alone; no `files` ships both
+    expect(
+        found(
+            testMaterialFindings({ chunks, manifest: { files: ['dist/index.js'] }, reader, root }),
+        ),
+    ).toStrictEqual([
+        'found: dist/index.js is compiled from src/domain/user.fixtures.ts, a test file',
+    ]);
+    expect(found(testMaterialFindings({ chunks, manifest: {}, reader, root }))).toStrictEqual([
+        'found: dist/index.js is compiled from src/domain/user.fixtures.ts, a test file',
+        'found: dist/testing.js is compiled from src/domain/user.fixtures.ts, a test file',
+    ]);
+});
+
 test('builds a package by its own config, leaving the disk as it found it', async () => {
     // Given - a package whose own config builds two entries, copies an asset and runs a command
     const unit = packageWith({
