@@ -47,6 +47,20 @@ test('reads a baseline file that is not JSON as unreadable, for a person and a m
     });
 });
 
+test('prints no test row for a person when the baseline file is unreadable', () => {
+    // Given - a configless project whose jterrazz.baseline.json does not parse
+    const directory = configlessProject({ 'jterrazz.baseline.json': '{ not json\n' });
+
+    // When - the drift report reads it for a person
+    const human = spawnSync('node', [DRIFT, directory, '--oxlint', OXLINT, '-c', DEFAULT_PROFILE], {
+        encoding: 'utf8',
+    });
+
+    // Then - a file never read says no test section is kept, so no row claims one
+    expect(human.stdout).not.toContain('jterrazz.baseline.json › test');
+    expect(human.status).toBe(0);
+});
+
 test('keeps an emptied section apart from an absent one for a machine', () => {
     // Given - a configless project keeping a typescript section with no entry, and no test section
     const directory = configlessProject({ 'jterrazz.baseline.json': '{ "typescript": {} }\n' });
