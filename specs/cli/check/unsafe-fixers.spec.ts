@@ -88,14 +88,18 @@ describe('unsafe-fixers', () => {
      * The wrapper is the pass's own file: it is written at the project root, read
      * by the run it configures and deleted after it. A diagnostic against it names
      * a path the operator cannot open and no tree can ever clear, so the run that
-     * writes it ignores it.
+     * writes it ignores it — including one an EARLIER run left behind, when it
+     * crashed before its own `rm -f` ran, and this one's sweep would otherwise
+     * pick up as an ordinary untracked file.
      */
-    test('never reports the wrapper config it writes for the run', async () => {
-        // Given - a project arming the two rules the wrapper's own first line breaks
+    test('never reports the wrapper config, including one a crashed run left behind', async () => {
+        // Given - a project whose oxlint.fix.config.mjs already sits at its root — an
+        // absolute import, the shape a crashed prior run's own wrapper would leave —
+        // and a rule armed that names exactly that: import/no-absolute-path
         // When - the fix runs, with a diagnostic of the tree's own to keep the log on the stream
         const fixed = await caseOf('wrapper-rules').exec('fix');
 
-        // Then - it names the tree's diagnostic, and no file the tree does not hold
+        // Then - it names the tree's diagnostic, and never the leftover wrapper
         expect(fixed.stdout.text).toContain('no-useless-undefined');
         expect(fixed.stdout.text).not.toContain('oxlint.fix.config');
     });
