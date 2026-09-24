@@ -1,17 +1,10 @@
 import { spawnSync } from 'node:child_process';
-import {
-    cpSync,
-    mkdirSync,
-    mkdtempSync,
-    readdirSync,
-    rmSync,
-    symlinkSync,
-    writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, mkdirSync, readdirSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
+
+import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, not a document: the build guard judges by the @jterrazz/test the
@@ -27,10 +20,7 @@ const INSTALLED = resolve(import.meta.dirname, '../../../node_modules/@jterrazz/
 
 /** The fixtures spread into one temp directory, in order, with @jterrazz/test installed. */
 function consumer(...fixtures: string[]): string {
-    const root = mkdtempSync(resolve(tmpdir(), 'spec-publish-guard-'));
-    onTestFinished(() => {
-        rmSync(root, { force: true, recursive: true });
-    });
+    const root = temporaryDirectory('spec-publish-guard-');
     for (const fixture of fixtures) {
         cpSync(join(FIXTURES, fixture), root, { recursive: true });
     }
@@ -42,10 +32,7 @@ function consumer(...fixtures: string[]): string {
 
 /** `fixture` in a temp directory, beside a stub install of @jterrazz/test whose `./oxlint` entry is `oxlint`. */
 function consumerOfStub(fixture: string, oxlint: string): string {
-    const root = mkdtempSync(resolve(tmpdir(), 'spec-publish-guard-'));
-    onTestFinished(() => {
-        rmSync(root, { force: true, recursive: true });
-    });
+    const root = temporaryDirectory('spec-publish-guard-');
     cpSync(join(FIXTURES, fixture), root, { recursive: true });
     const install = join(root, 'node_modules/@jterrazz/test');
     mkdirSync(install, { recursive: true });

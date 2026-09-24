@@ -1,15 +1,8 @@
 import { execFileSync } from 'node:child_process';
-import {
-    cpSync,
-    mkdirSync,
-    mkdtempSync,
-    readdirSync,
-    rmSync,
-    symlinkSync,
-    writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, mkdirSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+
+import { newDirectory } from '../temporary-directory.js';
 
 /*
  * What the rulebook suites stand on. Not a `@jterrazz/test` specification: the
@@ -86,7 +79,7 @@ export function sandbox(
     tsconfigPreset: string,
     also: string[] = [],
 ): Disposable & { config: string; files: string[]; path: string } {
-    const path = mkdtempSync(resolve(tmpdir(), 'jterrazz-rulebook-'));
+    const path = newDirectory('jterrazz-rulebook-');
 
     cpSync(fixture, path, { recursive: true });
     mkdirSync(resolve(path, 'node_modules/.bin'), { recursive: true });

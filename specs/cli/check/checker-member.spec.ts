@@ -1,8 +1,9 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { afterEach, describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
+
+import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, not a document, and a STUB checker rather than the real one. The
@@ -64,15 +65,6 @@ function install(dir: string, version: string, name: string): void {
     writeFileSync(join(installed, 'dist/checker.js'), stub(name));
 }
 
-let workDir = '';
-
-afterEach(() => {
-    if (workDir) {
-        rmSync(workDir, { force: true, recursive: true });
-        workDir = '';
-    }
-});
-
 /** A plugin under the name @jterrazz/test ships, reporting once, on apps/web's one source file. */
 const PLUGIN = `export default {
     meta: { name: 'jterrazz' },
@@ -110,7 +102,7 @@ function check(dir: string): { status: null | number; stdout: string } {
 
 /** The fixture workspace, with a @jterrazz/test of `version` at its root. */
 function workspace(version: string): string {
-    workDir = mkdtempSync(resolve(tmpdir(), 'spec-checker-member-'));
+    const workDir = temporaryDirectory('spec-checker-member-');
     cpSync(FIXTURE, workDir, { recursive: true });
     install(workDir, version, 'root');
 
@@ -178,7 +170,7 @@ describe('checker-member', () => {
 
     test('never makes a consumer of a project by what the tree around it installed', () => {
         // Given - a repository checked out inside another tree that installs @jterrazz/test
-        workDir = mkdtempSync(resolve(tmpdir(), 'spec-checker-boundary-'));
+        const workDir = temporaryDirectory('spec-checker-boundary-');
         install(workDir, '15.3.0', 'outer');
         const project = join(workDir, 'project');
         mkdirSync(join(project, 'specs'), { recursive: true });

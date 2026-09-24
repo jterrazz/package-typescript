@@ -1,9 +1,9 @@
 import { execFileSync } from 'node:child_process';
-import { cpSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
+import { temporaryDirectory } from '../temporary-directory.js';
 import { installTsconfigPresets } from './rulebook.js';
 
 /*
@@ -43,10 +43,7 @@ type ResolvedConfig = {
 
 /** A consumer standing on `ground`, with the package installed and its tsconfig extending `preset`. */
 function consumer(ground: string, preset: string): string {
-    const created = mkdtempSync(resolve(tmpdir(), `spec-tsconfig-${preset}-`));
-    onTestFinished(() => {
-        rmSync(created, { force: true, recursive: true });
-    });
+    const created = temporaryDirectory(`spec-tsconfig-${preset}-`);
     const dir = realpathSync(created);
     cpSync(resolve(import.meta.dirname, 'fixtures', ground), dir, { recursive: true });
     installTsconfigPresets(dir);

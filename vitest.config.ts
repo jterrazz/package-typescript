@@ -1,4 +1,6 @@
 import { cli, defineSpecConfig, unit } from '@jterrazz/test/vitest';
+import { resolve } from 'node:path';
+import { mergeConfig } from 'vitest/config';
 
 /** The per-test budget of a `cli` spec, which runs the whole toolchain — the reason is docs/03-testing.md's. */
 const TOOLCHAIN_BUDGET_MS = 120_000;
@@ -23,8 +25,14 @@ export default defineSpecConfig({
              * repo tests through is the product command (B9). The three B9w exception
              * runners — oxfmt, oxlint, run-split-install.sh — therefore keep their
              * chains: a document cannot name the binary it runs.
+             *
+             * Every directory the project creates sits under one temp root per run.
              */
-            cli({ timeout: TOOLCHAIN_BUDGET_MS }),
+            mergeConfig(cli({ timeout: TOOLCHAIN_BUDGET_MS }), {
+                test: {
+                    globalSetup: [resolve(import.meta.dirname, 'specs/cli/run-temp-root.ts')],
+                },
+            }),
         ],
     },
 });

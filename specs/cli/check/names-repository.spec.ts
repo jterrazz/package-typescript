@@ -1,9 +1,10 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
+
+import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, for the ground's sake: what the Names pass asks of a REPOSITORY
@@ -62,10 +63,7 @@ function projectWith({
     isRepository?: boolean;
     makefile?: string;
 }): string {
-    const project = mkdtempSync(resolve(tmpdir(), 'spec-names-repository-'));
-    onTestFinished(() => {
-        rmSync(project, { force: true, recursive: true });
-    });
+    const project = temporaryDirectory('spec-names-repository-');
     writeFileSync(
         join(project, 'package.json'),
         `${JSON.stringify(
@@ -244,10 +242,7 @@ describe('names-repository', () => {
 
     test('refuses to judge a directory outside git that holds folders and no file, in one line', () => {
         // Given - a directory no repository holds, with one empty folder in it
-        const created = mkdtempSync(resolve(tmpdir(), 'spec-names-foldered-'));
-        onTestFinished(() => {
-            rmSync(created, { force: true, recursive: true });
-        });
+        const created = temporaryDirectory('spec-names-foldered-');
         const project = realpathSync(created);
         mkdirSync(join(project, 'src'));
 

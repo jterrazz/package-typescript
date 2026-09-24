@@ -1,8 +1,9 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
+
+import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, for the ground's sake: what separates a file git ignores from one
@@ -27,10 +28,7 @@ function projectWith({
     newSource: string;
     trackedSource: string;
 }): string {
-    const project = mkdtempSync(resolve(tmpdir(), 'spec-format-sweep-'));
-    onTestFinished(() => {
-        rmSync(project, { force: true, recursive: true });
-    });
+    const project = temporaryDirectory('spec-format-sweep-');
     writeFileSync(
         join(project, 'package.json'),
         `${JSON.stringify({ name: 'spec-format-sweep', version: '1.0.0', private: true }, null, 4)}\n`,

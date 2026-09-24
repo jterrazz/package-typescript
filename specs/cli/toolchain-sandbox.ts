@@ -1,15 +1,7 @@
-import {
-    cpSync,
-    mkdirSync,
-    mkdtempSync,
-    readdirSync,
-    rmSync,
-    symlinkSync,
-    writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, mkdirSync, readdirSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { onTestFinished } from 'vitest';
+
+import { temporaryDirectory } from './temporary-directory.js';
 
 /*
  * What the version-reading specs stand on: a copy of this package whose
@@ -28,10 +20,7 @@ const REPOSITORY = resolve(import.meta.dirname, '../..');
  * out. Returns the sandbox's root; its `bin/typescript.sh` is the product.
  */
 export function toolchainWith(tools: Record<string, null | string>): string {
-    const root = mkdtempSync(resolve(tmpdir(), 'spec-toolchain-'));
-    onTestFinished(() => {
-        rmSync(root, { force: true, recursive: true });
-    });
+    const root = temporaryDirectory('spec-toolchain-');
 
     for (const entry of ['bin', 'lint', 'src', 'package.json']) {
         cpSync(join(REPOSITORY, entry), join(root, entry), { recursive: true });

@@ -1,9 +1,10 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
+
+import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, for the ground's sake: git tracks no directory, so a fixture can
@@ -40,10 +41,7 @@ const OVERLOOKING = ['--ignore-pattern', 'drafts/**'];
 
 /** A green repository carrying every kind of empty directory, and the kinds that are not one. */
 function repositoryWithEmptyDirectories(): string {
-    const project = mkdtempSync(resolve(tmpdir(), 'spec-names-empty-'));
-    onTestFinished(() => {
-        rmSync(project, { force: true, recursive: true });
-    });
+    const project = temporaryDirectory('spec-names-empty-');
     writeFileSync(
         join(project, 'package.json'),
         `${JSON.stringify({ main: 'src/index.ts', name: 'spec-names-empty', private: true, version: '1.0.0' }, null, 2)}\n`,

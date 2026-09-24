@@ -1,8 +1,9 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { afterEach, describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
+
+import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, not a document — and the product command all the same. What no
@@ -16,17 +17,8 @@ import { afterEach, describe, expect, test } from 'vitest';
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
-let workDir = '';
-
-afterEach(() => {
-    if (workDir) {
-        rmSync(workDir, { force: true, recursive: true });
-        workDir = '';
-    }
-});
-
 function checkFromMember(fixture: string): { status: null | number; stdout: string } {
-    workDir = mkdtempSync(resolve(tmpdir(), 'spec-gitignore-workspace-'));
+    const workDir = temporaryDirectory('spec-gitignore-workspace-');
     cpSync(resolve(import.meta.dirname, 'fixtures/gitignore', fixture), workDir, {
         recursive: true,
     });

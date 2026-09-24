@@ -1,8 +1,9 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { afterEach, describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
+
+import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, not a document: the ground is a repository INSIDE another
@@ -19,21 +20,12 @@ const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 /** The ancestor's offending line, as the gate would print it from the clone. */
 const ANCESTOR_COMPLAINT = '.gitignore names coverage/';
 
-let workDir = '';
-
-afterEach(() => {
-    if (workDir) {
-        rmSync(workDir, { force: true, recursive: true });
-        workDir = '';
-    }
-});
-
 /** The fixture spread into a temp tree, with `boundary` written into the clone. */
 function checkFromClone(boundary: 'directory' | 'file' | 'none'): {
     status: null | number;
     stdout: string;
 } {
-    workDir = mkdtempSync(resolve(tmpdir(), 'spec-gitignore-boundary-'));
+    const workDir = temporaryDirectory('spec-gitignore-boundary-');
     cpSync(resolve(import.meta.dirname, 'fixtures/gitignore/repository-boundary'), workDir, {
         recursive: true,
     });

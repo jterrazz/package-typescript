@@ -1,8 +1,9 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
+
+import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * A chain in a temp directory, for the two parts of the ground a fixture
@@ -42,10 +43,7 @@ const CONFIG = `export default {
 
 /** The fixture in a temp directory, with its config and a stub @jterrazz/test whose checker exits 0 — removed when the test ends. */
 function groundOf(): string {
-    const project = mkdtempSync(resolve(tmpdir(), 'spec-baseline-ownership-'));
-    onTestFinished(() => {
-        rmSync(project, { force: true, recursive: true });
-    });
+    const project = temporaryDirectory('spec-baseline-ownership-');
     cpSync(resolve(import.meta.dirname, 'fixtures/baseline/ownership'), project, {
         recursive: true,
     });

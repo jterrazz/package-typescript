@@ -1,11 +1,11 @@
 import { directory } from '@jterrazz/test';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { cli } from '../cli.specification.js';
+import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * The product through its runner, and oxlint beside it as the oracle: the
@@ -45,10 +45,7 @@ function formOnly(form: Record<string, string>): Record<string, null | string> {
 
 /** oxlint alone over a copy of the fixture, in this environment with the case's form variables. */
 function oxlintAlone(form: Record<string, string>): string {
-    const project = mkdtempSync(resolve(tmpdir(), 'spec-oxlint-report-'));
-    onTestFinished(() => {
-        rmSync(project, { force: true, recursive: true });
-    });
+    const project = temporaryDirectory('spec-oxlint-report-');
     cpSync(SHAPES, project, { recursive: true });
     const kept = Object.entries(process.env).filter(
         ([variable]) => !FORM_VARIABLES.includes(variable),
