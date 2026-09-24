@@ -93,9 +93,7 @@ describe('unsafe-fixers', () => {
      * pick up as an ordinary untracked file.
      */
     test('never reports the wrapper config, including one a crashed run left behind', async () => {
-        // Given - a project whose oxlint.fix.config.mjs already sits at its root — an
-        // absolute import, the shape a crashed prior run's own wrapper would leave —
-        // and a rule armed that names exactly that: import/no-absolute-path
+        // Given - a project whose oxlint.fix.config.mjs, an absolute import, already sits at its root — the shape a crashed prior run's own wrapper would leave, and a rule armed that names exactly that
         // When - the fix runs, with a diagnostic of the tree's own to keep the log on the stream
         const fixed = await caseOf('wrapper-rules').exec('fix');
 
