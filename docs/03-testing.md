@@ -20,7 +20,7 @@ A `cli` test has a budget of its own: `TOOLCHAIN_BUDGET_MS`, 120 s, in `vitest.c
 
 The suffix says which project a file belongs to. A `*.test.ts` is a module test and sits beside its module, which here is `src/` and `lint/`; a `*.spec.ts` is the assembled product and sits under `specs/<facet>/`. `unit()` collects the first, `cli()` the second plus every `<case>.spec.yaml`, and the `cli` project states nothing of its own. `unit()` is the one that states its globs, because one tree it collects lives under `specs/` and the default set excludes that folder whole.
 
-The `unit` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`lint/*.test.ts`), and the manual's rule engine over in-memory trees (`src/docs.test.ts`). Nothing there spawns anything but `make`, over stubs, where the `fix` recipe is proved.
+The `unit` project is where a pure function is proved: `compose()`, the rulebook contract and its catalogue (`lint/*.test.ts`), and the manual's rule engine over in-memory trees (`src/docs.test.ts`). Nothing there spawns anything but `make`, over stubs, where the `fix` recipe is proved, and `git`, where the sweep every tree gate starts from reads a repository's index (`src/cli/project-files.test.ts`).
 
 ### `specs/surface/` — the repository suite
 
