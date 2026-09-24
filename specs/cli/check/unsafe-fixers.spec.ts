@@ -13,7 +13,7 @@ import { cli } from '../cli.specification.js';
  * naming `options` is refused wherever oxlint walks this repository, and
  * `@jterrazz/test`'s checker, run alone, walks it whole.
  *
- * `unicorn/no-useless-undefined` stands for the eight: its fixer strips an
+ * `unicorn/no-useless-undefined` stands for the twelve: its fixer strips an
  * argument the callee requires, so `fix` must leave the line alone and
  * report it exactly as `check` does — the answer is a human's, and the two
  * commands read one verdict on one tree.
@@ -122,6 +122,37 @@ describe('unsafe-fixers', () => {
         // Then - and the rule is still reported, because the answer is a human's
         expect(fixed.exitCode).toBe(1);
         expect(fixed.stdout.text).toContain('no-unnecessary-type-assertion');
+    });
+
+    /*
+     * oxlint reads a `sub/oxlint.config.*` as the WHOLE config of its subtree —
+     * it replaces the root's rules there, it does not extend them — and `check`
+     * lints by exactly that. The fixer runs each config's own scope under that
+     * config, so it rewrites by the rules `check` will judge.
+     */
+    test("applies a nested config's profile in fix, as check reads it", async () => {
+        // Given - a root arming prefer-const, and a subtree whose own config turns it off and arms prefer-node-protocol
+        // When - the fix runs
+        const fixed = await caseOf('nested').exec('fix');
+
+        // Then - the root's fixer rewrote the root file, and the subtree's the subtree's
+        expect(fixed.file('index.ts').content).toContain('const root');
+        expect(fixed.file('sub/index.ts').content).toContain("from 'node:path'");
+
+        // Then - and the rule the subtree turned off did not reach it
+        expect(fixed.file('sub/index.ts').content).toContain('let nested');
+    });
+
+    test('leaves an unsafe fixer alone under a nested config too, and leaves no wrapper there', async () => {
+        // Given - the same subtree, arming one of the unsafe fixers in its own config
+        // When - the fix runs
+        const fixed = await caseOf('nested').exec('fix');
+
+        // Then - the argument survives, the rule is still reported, and the subtree's wrapper is gone
+        expect(fixed.file('sub/index.ts').content).toContain('take(undefined)');
+        expect(fixed.exitCode).toBe(1);
+        expect(fixed.stdout.text).toContain('no-useless-undefined');
+        expect(fixed.file('sub/oxlint.fix.config.mjs').exists).toBe(false);
     });
 
     test('leaves a mock factory keyed by its module name, which owes no module type', async () => {

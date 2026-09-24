@@ -60,7 +60,7 @@ src/cli/lint-targets.js       # The project files oxlint and oxfmt are handed �
 src/cli/merge-knip-config.js  # Merges knip base preset with project-local knip.json (read as JSONC)
 src/cli/oxlint-report.js      # The Oxlint pass's log, drawn from the one JSON run in the form oxlint picks — oxlint-report-*.js draw it
 src/cli/project-files.js      # The one sweep every tree gate starts from — every file git does not ignore, or a walk where there is no git
-src/cli/unsafe-fixers.js      # The rules `fix` must not let oxlint rewrite, as the flags that allow them for one run
+src/cli/unsafe-fixers.js      # The rules `fix` must not let oxlint rewrite, as one wrapped config per config scope
 src/cli/workspace-members.js  # Lists the consumer's workspace members — the unit each per-package gate measures from
 
 lint/                         # The lint manifest — every rule of every loaded plugin decided by name

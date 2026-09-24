@@ -507,21 +507,39 @@ run_checks() {
         # the default — so `fix` leaves them alone and `check` still reports
         # them for a human.
         #
-        # The wrapper sits at the project root because oxlint resolves
-        # `ignorePatterns` against the directory its config sits in — and it is
-        # ignored by the very run it configures. It is written by this pass and
-        # deleted by it, so a diagnostic against it names a file the operator
-        # cannot open and no tree can ever clear.
-        local fix_config="oxlint.fix.config.mjs"
-        local base_config="$DEFAULT_OXLINT_CONFIG"
-        [ -n "$OXLINT_CONFIG" ] && base_config="$PWD/$OXLINT_CONFIG"
-        node "$PACKAGE_ROOT/src/cli/unsafe-fixers.js" "$base_config" "$fix_config"
-        local fix_args=(-c "$fix_config" --ignore-pattern "$fix_config")
-
-        run_oxlint --type-aware --fix "${fix_args[@]}" "${LINT_ARGS[@]}" \
-            > "$tmp_dir/lint.log" 2>&1 ||
-            lint_status=$?
-        rm -f "$fix_config"
+        # One run per config scope: `-c` switches nested-config discovery off,
+        # so a subtree with an `oxlint.config.*` of its own is fixed by its own
+        # wrapped config, the one `check` reads it by. A project on the default
+        # config has one scope, as `check` hands the default with `-c` too.
+        #
+        # Each wrapper sits beside the config it wraps, because oxlint resolves
+        # `ignorePatterns` against the directory its config sits in — and every
+        # run ignores the wrapper's name. It is written by this pass and deleted
+        # by it, so a diagnostic against it names a file the operator cannot
+        # open and no tree can ever clear.
+        if [ "$LINT_NOTHING" = false ]; then
+            local fix_wrapper="oxlint.fix.config.mjs"
+            local base_config="$DEFAULT_OXLINT_CONFIG"
+            local scope_mode="flat"
+            if [ -n "$OXLINT_CONFIG" ]; then
+                base_config="$PWD/$OXLINT_CONFIG"
+                scope_mode="nested"
+            fi
+            local fix_scopes wrapper listing target
+            fix_scopes=$(printf '%s\n' "${LINT_TARGETS[@]}" |
+                node "$PACKAGE_ROOT/src/cli/unsafe-fixers.js" "$base_config" "$scope_mode" "$tmp_dir")
+            while IFS=$'\t' read -r wrapper listing; do
+                [ -n "$wrapper" ] || continue
+                local scope_targets=()
+                while IFS= read -r target; do
+                    [ -n "$target" ] && scope_targets+=("$target")
+                done < "$listing"
+                "$OXLINT" --type-aware --fix -c "$wrapper" --ignore-pattern "$fix_wrapper" \
+                    "${LINT_ARGS[@]}" "${scope_targets[@]}" >> "$tmp_dir/lint.log" 2>&1 ||
+                    lint_status=$?
+                rm -f "$wrapper"
+            done <<< "$fix_scopes"
+        fi
         run_oxfmt > "$tmp_dir/format.log" 2>&1 || format_status=$?
     else
         # `--deny-warnings` is what makes check and fix read the same tree. A

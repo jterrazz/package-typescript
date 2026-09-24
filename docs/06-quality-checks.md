@@ -187,13 +187,38 @@ The second is the silent one: a `.cjs` config, or a `.js` config in a package th
 
 ### The fixers fix mode refuses
 
-A fixer that changes MEANING is never applied unattended, so the oxlint run of fix mode allows each rule marked `unsafe` in the manifest — the rewrite does not land, the diagnostic stays — `fix` and `check` report it alike — and a human answers it. The list, and what each rewrite does, is [Lint presets](07-lint-presets.md).
+A fixer that changes MEANING is never applied unattended, so the oxlint run of fix mode turns off each rule marked `unsafe` in the manifest — the rewrite does not land, the diagnostic stays — `fix` and `check` report it alike — and a human answers it. The list, and what each rewrite does, is [Lint presets](07-lint-presets.md).
 
-The allowance is a wrapper config around the one the linter runs with — the project's own, or the default where it keeps none — that the pass writes at the project root and deletes after the run. It goes there and nowhere else, because oxlint resolves `ignorePatterns` against the directory its config sits in — and the run it configures IGNORES it, so no diagnostic ever names a path the operator cannot open and no tree can ever clear.
+oxlint has a safe/dangerous split of its own — `--fix` applies the safe fixes, `--fix-dangerously` the rest — and it covers none of the twelve. Measured on oxlint 1.85, each rule alone on a sample that triggers it:
+
+| Rule                                        | oxlint's fix kind                | Plain `--fix` rewrites                                  |
+| ------------------------------------------- | -------------------------------- | ------------------------------------------------------- |
+| `typescript/consistent-type-definitions`    | `conditional_dangerous_fix`      | yes — a `declare module` interface into a `type`        |
+| `typescript/no-confusing-void-expression`   | `fixable_safe_fix_or_suggestion` | yes — an arrow's void body into a block                 |
+| `typescript/no-unnecessary-type-assertion`  | `fixable_fix`                    | yes — `s as string` into `s`                            |
+| `typescript/promise-function-async`         | `conditional_fix`                | yes — adds `async` to a promise-returning function      |
+| `unicorn/no-useless-promise-resolve-reject` | `fixable_fix`                    | yes — `return Promise.resolve(1)` into `return 1`       |
+| `unicorn/no-useless-undefined`              | `fixable_fix`                    | yes — `take(undefined)` into `take()`                   |
+| `unicorn/prefer-import-meta-properties`     | `fixable_fix`                    | yes — `fileURLToPath(new URL('.', …))` into the dirname |
+| `vitest/consistent-test-it`                 | `fixable_fix`                    | yes — `it(` into `test(`                                |
+| `vitest/prefer-called-with`                 | `fixable_fix`                    | yes — `toHaveBeenCalled()` into `…CalledWith()`         |
+| `vitest/prefer-import-in-mock`              | `fixable_fix`                    | yes — `vi.mock('x', f)` into `vi.mock(import('x'), f)`  |
+| `vitest/prefer-lowercase-title`             | `fixable_fix`                    | yes — `'Hello'` into `'hello'`                          |
+| `vitest/prefer-strict-boolean-matchers`     | `fixable_fix`                    | yes — `toBeTruthy()` into `toBe(true)`                  |
+
+So the toolchain keeps its own switch, and the rule-surface suite keeps it honest: a rule marked `unsafe` must carry a fix kind plain `--fix` applies, or the suite names it. A mark on a rule with no fixer, or one oxlint already keeps behind `--fix-dangerously`, is a mark that says something false.
+
+The switch is a wrapper config around the one the linter runs with — the project's own, or the default where it keeps none — that the pass writes beside that config and deletes after the run. It goes there and nowhere else, because oxlint resolves `ignorePatterns` and override globs against the directory its config sits in — and every run IGNORES the wrapper's name, so no diagnostic ever names a path the operator cannot open and no tree can ever clear.
 
 That wrapper also stops the run reporting UNUSED DIRECTIVES. Every profile ships `reportUnusedDisableDirectives`, and a run that has just turned twelve rules off cannot judge a directive naming one of them — the rule is off for that run alone, and the directive would be called dead on evidence the wrapper itself created. An unused directive is reported by the check-shaped run made after the fixer, where the consumer's own rules are armed again, and by `check`.
 
-It is handed to oxlint with `-c`, and `-c` is also what turns off NESTED config discovery for that one run: a `sub/oxlint.config.*` a `check` would load and merge is not read while the fixer runs, so a rule that subtree turns off, on, or differently reads there as the top level's rule instead — armed where the subtree turned it off, silent where the subtree armed it, its own fixer running or not accordingly. The fixer's own log, and only it, carries this gap: the check-shaped run made after it reads nested configs as `check` always does, so the ratchet it judges, and `check` itself, are never fooled by it — only what the fixer rewrote, or reported, along the way can be.
+### A nested config fixes its own subtree
+
+The fixer runs once per config scope. A wrapper is handed to oxlint with `-c`, and `-c` turns NESTED config discovery off for that run — so a project whose root config has a `sub/oxlint.config.*` beneath it gets one wrapped run for the files that config governs, and one for the rest. Each file is rewritten by the config `check` lints it by: the closest one above it.
+
+It is one run per scope, not one config with the subtree folded in as an override, because oxlint's nested config REPLACES the root's rules in its subtree rather than extending them. An override can only add to what the root arms; it cannot take back a root rule the subtree never names.
+
+A project with no config of its own is one scope. `check` hands the default with `-c` as well, so neither run reads a nested config there.
 
 ### A warning is a diagnostic
 
