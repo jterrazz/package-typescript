@@ -1,5 +1,13 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import {
+    chmodSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    rmSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, describe, expect, onTestFinished, test } from 'vitest';
@@ -254,5 +262,28 @@ describe('drift', () => {
             baseline: 'unreadable',
             testBaseline: 'unreadable',
         });
+    });
+
+    test('resolves the default profile once for a project with no config of its own', () => {
+        // Given - a configless project, and a linter that notes each config it is asked to print
+        const directory = configlessProject();
+        const calls = join(directory, 'print-config.log');
+        const counting = join(directory, 'counting-oxlint.sh');
+        writeFileSync(
+            counting,
+            `#!/usr/bin/env bash\ncase " $* " in *" --print-config "*) echo called >> '${calls}' ;; esac\nexec '${OXLINT}' "$@"\n`,
+        );
+        chmodSync(counting, 0o755);
+
+        // When - the drift report measures it against the handed default
+        const result = spawnSync(
+            'node',
+            [DRIFT, directory, '--oxlint', counting, '-c', DEFAULT_PROFILE],
+            { encoding: 'utf8' },
+        );
+
+        // Then - the default IS the profile, so one resolution serves both sides
+        expect(result.stdout).toContain('rules off vs profile                 none\n');
+        expect(readFileSync(calls, 'utf8')).toBe('called\n');
     });
 });
