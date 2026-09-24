@@ -1,6 +1,26 @@
-import { expect, test } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { expect, onTestFinished, test } from 'vitest';
 
 import { heldSummary, judge, tightened } from './check-baseline.js';
+
+/** The judge as `check` runs it: `check-baseline.js <report> <root> [--names <path>] [--write]`. */
+const JUDGE = resolve(import.meta.dirname, 'check-baseline.js');
+
+/** A root holding the given jterrazz.baseline.json, a clean oxlint report beside it — removed when the test ends. */
+function groundOf(baseline: string): { report: string; root: string } {
+    const root = mkdtempSync(resolve(tmpdir(), 'check-baseline-'));
+    onTestFinished(() => {
+        rmSync(root, { force: true, recursive: true });
+    });
+    writeFileSync(join(root, 'jterrazz.baseline.json'), baseline);
+    const report = join(root, 'lint.json');
+    writeFileSync(report, '{ "diagnostics": [] }\n');
+
+    return { report, root };
+}
 
 /** Every entry this package's linter half owns. */
 const linterOwns = (rule: string): boolean => !rule.startsWith('names/');
@@ -75,4 +95,18 @@ test('counts one rule held once in the singular', () => {
 
     // Then - the count and the rule, both singular
     expect(heldSummary(counts)).toBe('jterrazz.baseline.json › typescript: 1 held across 1 rule');
+});
+
+test('prints no held line for a kept section when the Names pass wrote no report', () => {
+    // Given - a root keeping an empty typescript section, and a Names report that was never written
+    const { report, root } = groundOf('{ "typescript": {} }\n');
+
+    // When - the judge reads a clean linter report
+    const result = spawnSync('node', [JUDGE, report, root, '--names', join(root, 'names.json')], {
+        encoding: 'utf8',
+    });
+
+    // Then - the linter's side holds, and nothing is claimed for the side nobody read
+    expect(result.stdout).toBe('');
+    expect(result.status).toBe(0);
 });
