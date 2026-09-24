@@ -39,3 +39,46 @@ runs:
                   {
                       "typescript": {}
                   }
+    # The section the fix emptied is still the project's ratchet: a green check
+    # names it as holding nothing, the phrase @jterrazz/test gives its own.
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          jterrazz.baseline.json › typescript: nothing held
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

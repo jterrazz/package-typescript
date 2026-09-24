@@ -276,12 +276,15 @@ export function reRecord(root, counts, owns) {
 
 /**
  * The one line a green ratchet prints: what the file holds, by count and by
- * rule. The findings themselves print only with a failing verdict, where they
- * are the evidence.
+ * rule, or `nothing held` for a section that holds no entry. The findings
+ * themselves print only with a failing verdict, where they are the evidence.
  */
 export function heldSummary(counts) {
     const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
     const rules = Object.keys(counts).length;
+    if (rules === 0) {
+        return `${LABEL}: nothing held`;
+    }
 
     return `${LABEL}: ${total} held across ${rules} rule${rules === 1 ? '' : 's'}`;
 }
