@@ -8,7 +8,7 @@ set -e
 
 PACKAGE_ROOT="$1"
 
-SANDBOX=$(mktemp -d -t split-install-XXXXXX)
+SANDBOX=$(mktemp -d "${TMPDIR:-/tmp}/split-install-XXXXXX")
 trap 'rm -rf "$SANDBOX"' EXIT
 
 PKG="$SANDBOX/node_modules/@jterrazz/typescript"

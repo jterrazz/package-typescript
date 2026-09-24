@@ -10,7 +10,7 @@ set -e
 
 PACKAGE_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-SANDBOX=$(mktemp -d -t strict-install-XXXXXX)
+SANDBOX=$(mktemp -d "${TMPDIR:-/tmp}/strict-install-XXXXXX")
 trap 'rm -rf "$SANDBOX"' EXIT
 
 STORE="$SANDBOX/node_modules/.pnpm/@jterrazz+typescript/node_modules"

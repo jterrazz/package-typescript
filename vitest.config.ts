@@ -36,7 +36,7 @@ export default defineSpecConfig({
              * runners — oxfmt, oxlint, run-split-install.sh — therefore keep their
              * chains: a document cannot name the binary it runs.
              *
-             * Every directory the project creates sits under one temp root per run.
+             * Every directory a spec creates sits under one temp root per run.
              */
             mergeConfig(cli({ timeout: TOOLCHAIN_BUDGET_MS }), {
                 test: {

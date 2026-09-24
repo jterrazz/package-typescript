@@ -17,7 +17,7 @@ named_imports() {
     printf '%s\n' "$@" | LC_ALL=C sort -f | paste -sd, - | sed 's/,/, /g'
 }
 
-SANDBOX=$(mktemp -d -t install-matrix-XXXXXX)
+SANDBOX=$(mktemp -d "${TMPDIR:-/tmp}/install-matrix-XXXXXX")
 trap 'rm -rf "$SANDBOX"' EXIT
 
 # The store: the package as published (its `files`), the manifest carrying its
