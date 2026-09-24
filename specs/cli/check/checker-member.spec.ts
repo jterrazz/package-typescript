@@ -16,8 +16,10 @@ import { temporaryDirectory } from '../temporary-directory.js';
  * The ground carries what a fixture cannot: `node_modules` is gitignored at
  * this repository's root, so every install the walk resolves is built here.
  *
- * The stubs exit 1 on purpose. A passing pass prints nothing — that is the
- * report's contract — so a stub that succeeded would leave the claim unmade.
+ * The stubs exit 1 unless a case asks otherwise. A passing pass prints
+ * nothing — that is the report's contract — so a stub that succeeded would
+ * leave the claim unmade; only a case that asserts on the verdict itself
+ * installs one that passes.
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
@@ -29,7 +31,7 @@ const FIXTURE = resolve(import.meta.dirname, 'fixtures/checker-member');
  * read and how many `jterrazz(*)` diagnostics it carries, since it runs no
  * oxlint of its own and judges exactly those.
  */
-function stub(name: string): string {
+function stub(name: string, exit: 0 | 1): string {
     return `#!/usr/bin/env node
 const { readFileSync } = require('node:fs');
 const args = process.argv.slice(2);
@@ -51,19 +53,19 @@ process.stdout.write(
         ? \`${name} tree pass: \${args[0]} (oxlint report: \${reportOf()})\\n\`
         : \`${name} member pass: \${args[member + 1]} (oxlint report: \${reportOf()})\\n\`,
 );
-process.exit(1);
+process.exit(${exit});
 `;
 }
 
-/** An install of @jterrazz/test under `dir`, publishing the checker as its bin. */
-function install(dir: string, version: string, name: string): void {
+/** An install of @jterrazz/test under `dir`, publishing the checker as its bin, which exits `exit`. */
+function install(dir: string, version: string, name: string, exit: 0 | 1 = 1): void {
     const installed = join(dir, 'node_modules/@jterrazz/test');
     mkdirSync(join(installed, 'dist'), { recursive: true });
     writeFileSync(
         join(installed, 'package.json'),
         `${JSON.stringify({ bin: { 'jterrazz-test-check': 'dist/checker.js' }, name: '@jterrazz/test', version }, null, 2)}\n`,
     );
-    writeFileSync(join(installed, 'dist/checker.js'), stub(name));
+    writeFileSync(join(installed, 'dist/checker.js'), stub(name, exit));
 }
 
 /** A plugin under the name @jterrazz/test ships, reporting once, on apps/web's one source file. */
@@ -105,11 +107,11 @@ function check(dir: string): { status: null | number; stdout: string } {
     return { status: result.status, stdout: result.stdout };
 }
 
-/** The fixture workspace, with a @jterrazz/test of `version` at its root. */
-function workspace(version: string): string {
+/** The fixture workspace, with a @jterrazz/test of `version` at its root, whose checker exits `exit`. */
+function workspace(version: string, exit: 0 | 1 = 1): string {
     const workDir = temporaryDirectory('spec-checker-member-');
     cpSync(FIXTURE, workDir, { recursive: true });
-    install(workDir, version, 'root');
+    install(workDir, version, 'root', exit);
 
     return workDir;
 }
@@ -145,6 +147,21 @@ describe('checker-member', () => {
 
         // Then - and the tree run, which reads no oxlint diagnostic, is handed nothing
         expect(stdout).toContain('root tree pass: apps/api/specs (oxlint report: none)');
+    });
+
+    test('passes a conventions run whose checker passes, whatever the linter it ran for the members says', () => {
+        // Given - a workspace whose checker passes, and whose armed plugin fails the linter the member runs read
+        const root = workspace('15.3.0', 0);
+        armPlugin(root);
+
+        // When - the conventions pass alone runs at the root
+        const { status, stdout } = check(root);
+
+        // Then - the linter ran for the members' sake only: it prints nothing and weighs nothing in the verdict
+        expect(stdout).toContain('Test Conventions (@jterrazz/test)');
+        expect(stdout).not.toContain('Oxlint Check');
+        expect(stdout).toContain('All checks passed');
+        expect(status).toBe(0);
     });
 
     test('says which member resolves a release too old to answer the flag', () => {

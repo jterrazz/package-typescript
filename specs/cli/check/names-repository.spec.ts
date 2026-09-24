@@ -309,6 +309,24 @@ describe('names-repository', () => {
         expect(names).toContain('Failed with exit code 1');
     });
 
+    test('passes a linter run whatever the Names pass it ran for the ratchet says', () => {
+        // Given - a repository with no Makefile, which the Names pass refuses and the linter does not
+        const project = projectWith({});
+
+        // When - the linter alone runs
+        const result = spawnSync('bash', [BIN, 'check'], {
+            cwd: project,
+            encoding: 'utf8',
+            env: inProject(project, onlyPasses('oxlint')),
+        });
+
+        // Then - the Names pass ran for the ratchet's sake only: it prints nothing and weighs nothing in the verdict
+        expect(result.stdout).toContain('Oxlint Check');
+        expect(result.stdout).not.toContain('Names (tree)');
+        expect(result.stdout).toContain('All checks passed');
+        expect(result.status).toBe(0);
+    });
+
     test('refuses a repository whose tracked Makefile is deleted from the disk', () => {
         // Given - a repository that tracks a Makefile, since deleted and not yet committed
         const project = projectWith({ makefile: SIX_TARGETS });
