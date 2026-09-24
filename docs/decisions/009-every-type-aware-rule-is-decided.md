@@ -1,6 +1,6 @@
 # ADR-009: Every type-aware rule is decided by name, nursery included
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-24
 
 Written 2026-09-24 from the evidence it was reconstructed from: commit a2d94b8 (`feat(rulebook): every rule tsgolint runs is decided by name, nursery included`) and the rule-surface suite it extended.
