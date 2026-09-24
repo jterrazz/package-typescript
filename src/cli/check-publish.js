@@ -17,14 +17,15 @@
  * One line per violation of this gate's own rules, `<rule>  <path>
  * <message>`; each tool's own report is printed verbatim under its name when it
  * refuses. A package with a build but no reader of test material gets one
- * line saying why, passing or not; its build still runs. Exit code: 0 when the package is publishable, 1
+ * line saying why — and, below the root, naming the member — passing or not;
+ * its build still runs. Exit code: 0 when the package is publishable, 1
  * otherwise. No `--fix`: an exports map is a contract, not a formatting choice.
  */
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, join, matchesGlob, resolve } from 'node:path';
-import { argv, exit, stdout } from 'node:process';
+import { dirname, join, matchesGlob, relative, resolve } from 'node:path';
+import { argv, cwd, exit, stdout } from 'node:process';
 import { stripVTControlCharacters } from 'node:util';
 
 import {
@@ -152,13 +153,16 @@ const NOTHING_TO_JUDGE = {
         `the @jterrazz/test this package resolves publishes a \`./oxlint\` entry that fails to load — ${error}`,
 };
 
+/** The workspace member this run is about, empty at the root. */
+const member = relative(cwd(), root);
+
 const build = buildOf(root, targets);
 if (build !== null) {
     const loaded = await testMaterialReader(root);
     const reader = 'reader' in loaded ? loaded.reader : null;
     if (reader === null) {
         stdout.write(
-            `publish-test-material: nothing to judge — ${NOTHING_TO_JUDGE[loaded.reason](loaded)}\n`,
+            `publish-test-material: nothing to judge${member === '' ? '' : ` in ${member}`} — ${NOTHING_TO_JUDGE[loaded.reason](loaded)}\n`,
         );
     }
     const built = await chunksOrFinding(build);

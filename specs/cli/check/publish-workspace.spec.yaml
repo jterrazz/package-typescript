@@ -1,0 +1,58 @@
+description: names the member each nothing-to-judge note is about, in a workspace of two publishable packages
+fixture: ./fixtures/publish/workspace/
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          jterrazz.baseline.json › typescript: nothing held
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Publish (packaging)
+
+          publish-test-material: nothing to judge in packages/alpha — no @jterrazz/test resolves from this package, and what test material is is its to say
+          publish-test-material: nothing to judge in packages/beta — no @jterrazz/test resolves from this package, and what test material is is its to say
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            jterrazz.baseline.json › typescript  absent
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed
