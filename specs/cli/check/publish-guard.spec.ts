@@ -1,5 +1,13 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync, symlinkSync } from 'node:fs';
+import {
+    cpSync,
+    mkdirSync,
+    mkdtempSync,
+    readdirSync,
+    rmSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
@@ -28,6 +36,28 @@ function consumer(...fixtures: string[]): string {
     }
     mkdirSync(join(root, 'node_modules/@jterrazz'), { recursive: true });
     symlinkSync(INSTALLED, join(root, 'node_modules/@jterrazz/test'), 'dir');
+
+    return root;
+}
+
+/** `fixture` in a temp directory, beside a stub install of @jterrazz/test whose `./oxlint` entry is `oxlint`. */
+function consumerOfStub(fixture: string, oxlint: string): string {
+    const root = mkdtempSync(resolve(tmpdir(), 'spec-publish-guard-'));
+    onTestFinished(() => {
+        rmSync(root, { force: true, recursive: true });
+    });
+    cpSync(join(FIXTURES, fixture), root, { recursive: true });
+    const install = join(root, 'node_modules/@jterrazz/test');
+    mkdirSync(install, { recursive: true });
+    writeFileSync(join(install, 'oxlint.mjs'), oxlint);
+    writeFileSync(
+        join(install, 'package.json'),
+        JSON.stringify({
+            exports: { './oxlint': { import: './oxlint.mjs' } },
+            name: '@jterrazz/test',
+            version: '16.0.0',
+        }),
+    );
 
     return root;
 }
@@ -102,6 +132,34 @@ describe('publish-guard', () => {
 
         // Then - the pass is green and says nothing
         expect(publishPass(stdout)).toStrictEqual(['✓ Passed']);
+    });
+
+    test('passes a build whose @jterrazz/test publishes no reader, saying so', () => {
+        // Given - a package that builds, beside an install whose ./oxlint entry carries no reader
+        const root = consumerOfStub('own-build/', 'export default {};\n');
+
+        // When - the quality checks run
+        const { stdout } = run(root, 'check');
+
+        // Then - the pass names the missing reader, and passes
+        expect(publishPass(stdout)).toStrictEqual([
+            'publish-test-material: nothing to judge — the @jterrazz/test this package resolves publishes no reader of test material on `./oxlint` (17.0.0 and later do)',
+            '✓ Passed',
+        ]);
+    });
+
+    test('passes a build whose @jterrazz/test reader fails to load, naming what it threw', () => {
+        // Given - a package that builds, beside an install whose ./oxlint entry throws on import
+        const root = consumerOfStub('own-build/', "throw new Error('the reader broke');\n");
+
+        // When - the quality checks run
+        const { stdout } = run(root, 'check');
+
+        // Then - the pass says the entry failed to load, not that it is older than 17
+        expect(publishPass(stdout)).toStrictEqual([
+            'publish-test-material: nothing to judge — the @jterrazz/test this package resolves publishes a `./oxlint` entry that fails to load — the reader broke',
+            '✓ Passed',
+        ]);
     });
 
     test('fails the pass on a build that fails, and nothing else', () => {

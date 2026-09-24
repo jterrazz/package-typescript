@@ -144,9 +144,12 @@ async function chunksOrFinding(build) {
 
 /** Why the build guard has nothing to judge, said on a passing run too. */
 const NOTHING_TO_JUDGE = {
-    absent: 'no @jterrazz/test resolves from this package, and what test material is is its to say',
-    readerless:
+    absent: () =>
+        'no @jterrazz/test resolves from this package, and what test material is is its to say',
+    readerless: () =>
         'the @jterrazz/test this package resolves publishes no reader of test material on `./oxlint` (17.0.0 and later do)',
+    unloadable: ({ error }) =>
+        `the @jterrazz/test this package resolves publishes a \`./oxlint\` entry that fails to load — ${error}`,
 };
 
 const build = buildOf(root, targets);
@@ -155,7 +158,7 @@ if (build !== null) {
     const reader = 'reader' in loaded ? loaded.reader : null;
     if (reader === null) {
         stdout.write(
-            `publish-test-material: nothing to judge — ${NOTHING_TO_JUDGE[loaded.reason]}\n`,
+            `publish-test-material: nothing to judge — ${NOTHING_TO_JUDGE[loaded.reason](loaded)}\n`,
         );
     }
     const built = await chunksOrFinding(build);

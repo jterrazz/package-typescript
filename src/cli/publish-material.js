@@ -6,8 +6,9 @@
  * rule judges by, `materialAt` and `testPackageOf`, published on its
  * `./oxlint` entry. This module never holds a copy: it loads the reader from
  * the install the package itself resolves, and from nowhere else — the
- * toolchain's own install is never asked. A package that resolves none, or
- * one that publishes no reader, has nothing judged.
+ * toolchain's own install is never asked. A package that resolves none, one
+ * that publishes no reader, or one whose reader does not load, has nothing
+ * judged.
  *
  * The evidence is the build's module graph. The package is built as it
  * builds — its own `tsdown.config.*`, else the `bundle` preset over the
@@ -65,11 +66,13 @@ function readerOf({ materialAt, testPackageOf }) {
 /**
  * `@jterrazz/test`'s reader of test material, from the install `root`
  * resolves: `absent` when it resolves none, `readerless` when that install
- * publishes no reader or its entry does not load.
+ * publishes no reader, `unloadable` — with the first line of what it threw —
+ * when its entry does not load.
  *
  * @returns {Promise<
  *     | { reader: { materialAt: (path: string) => string | undefined, testPackageOf: (specifier: string) => string | undefined } }
  *     | { reason: 'absent' | 'readerless' }
+ *     | { error: string, reason: 'unloadable' }
  * >} the two readers, or why there are none
  */
 export async function testMaterialReader(root) {
@@ -82,13 +85,18 @@ export async function testMaterialReader(root) {
     if (entry === null || !existsSync(entry)) {
         return { reason: 'readerless' };
     }
+    let loaded;
     try {
-        const reader = readerOf(await import(pathToFileURL(entry).href));
-
-        return reader === null ? { reason: 'readerless' } : { reader };
-    } catch {
-        return { reason: 'readerless' };
+        loaded = await import(pathToFileURL(entry).href);
+    } catch (error) {
+        return {
+            error: (error instanceof Error ? error.message : String(error)).split('\n')[0],
+            reason: 'unloadable',
+        };
     }
+    const reader = readerOf(loaded);
+
+    return reader === null ? { reason: 'readerless' } : { reader };
 }
 
 /**

@@ -319,7 +319,7 @@ What test material IS is `@jterrazz/test`'s alone: the two readers are the ones 
 
 The readers come from the install the package resolves, found by the walk [test-package.js](../src/cli/test-package.js) keeps, and from nowhere else. The toolchain's own `@jterrazz/test` is never asked: it is the toolchain's dependency, not the package's, and it would judge a package by a definition the package never chose.
 
-A package with a build that resolves none, or resolves one before 17.0.0 that publishes no reader, has nothing to judge. The pass says so in one line, `publish-test-material: nothing to judge`, with the reason — and builds all the same, so a build that fails still fails the pass. A package with no build — no config of its own and no target under `dist/`, like this package — hears nothing: there is no build to judge, and none to fail.
+A package with a build that resolves none, or resolves one before 17.0.0 that publishes no reader, has nothing to judge. The pass says so in one line, `publish-test-material: nothing to judge`, with the reason — and builds all the same, so a build that fails still fails the pass. An install whose `./oxlint` entry throws on import is named for that, with the first line of what it threw, rather than taken for one older than 17.0.0. A package with no build — no config of its own and no target under `dist/`, like this package — hears nothing: there is no build to judge, and none to fail.
 
 A build that fails is a finding too. `publish-build` names tsdown's first error in the same four parts, and the pass carries on to publint and attw, so one run still says everything else it knows.
 

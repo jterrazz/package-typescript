@@ -1,0 +1,12 @@
+{
+    "name": "fixture-publish-own-build",
+    "version": "1.0.0",
+    "files": [
+        "index.js"
+    ],
+    "type": "module",
+    "main": "index.js",
+    "exports": {
+        ".": "./index.js"
+    }
+}
