@@ -4,7 +4,9 @@ runs:
     # The fixture holds one file, under an unswept `dist/`: the sweep sees
     # nothing and refuses, so the linter is handed the directory — and only the
     # forwarded glob keeps it off `app/`. tsc has no tsconfig and prints its
-    # manual, the compiler's block; the linter's own line is oxlint's.
+    # manual, the compiler's block. The linter's pass is pinned on purpose
+    # in two lines: oxlint's own, naming the cause — the glob left it no
+    # file — then the judge's consequence, that no report was written.
     - command: check --ignore-pattern 'app/**'
       exit: 1
       stdout: |4
@@ -18,7 +20,7 @@ runs:
 
            RUN  Oxlint Check
 
-          {{any}}
+          No files found to lint. Please check your paths and ignore patterns.
           oxlint wrote no JSON report at {{path}} — the baseline cannot be read
           ✗ Failed with exit code 1
 
@@ -77,7 +79,7 @@ runs:
 
            RUN  Oxlint Fix
 
-          {{any}}
+          No files found to lint. Please check your paths and ignore patterns.
           oxlint wrote no JSON report at {{path}} — the baseline cannot be read
           ✗ Failed with exit code 1
 
