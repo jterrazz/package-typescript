@@ -22,7 +22,17 @@ const SIX_TARGETS = [
 
 /** The empty directories a working copy is left with, and one of each kind nothing may touch. */
 const EMPTY = ['src/abandoned', 'src/scaffold/domain/entities'];
-const KEPT = ['.artifacts/tsc', 'dist/types', 'local/draft', 'node_modules/stale', 'vendor/.git'];
+const KEPT = [
+    '.artifacts/tsc',
+    '.next/cache',
+    '.turbo/cache',
+    '.vite/deps',
+    'coverage/tmp',
+    'dist/types',
+    'local/draft',
+    'node_modules/stale',
+    'vendor/.git',
+];
 
 /** An empty directory only an `--ignore-pattern` glob keeps, and the glob. */
 const OVERLOOKED = 'drafts/wip';
