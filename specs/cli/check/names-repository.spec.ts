@@ -5,6 +5,7 @@ import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
 import { onlyPasses, passOf } from '../check-passes.js';
+import { inProject, namesPassOf, projectWith, SIX_TARGETS } from '../repository-ground.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -15,28 +16,6 @@ import { temporaryDirectory } from '../temporary-directory.js';
  */
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-
-const SIX_TARGETS = [
-    '.PHONY: install build lint fix test check',
-    '',
-    'install:',
-    '\tnpm ci',
-    '',
-    'build:',
-    '\tnpm run build',
-    '',
-    'lint:',
-    '\tnpm run lint',
-    '',
-    'fix:',
-    '\tnpm run lint:fix',
-    '',
-    'test:',
-    '\tnpm test',
-    '',
-    'check: lint test',
-    '',
-].join('\n');
 
 const FOUR_TARGETS = [
     '.PHONY: install build lint test',
@@ -55,53 +34,6 @@ const FOUR_TARGETS = [
     '# fix: a comment is not a rule',
     '',
 ].join('\n');
-
-/** A small green project, a repository or a bare directory, with the Makefile given. */
-function projectWith({
-    isRepository = true,
-    makefile,
-}: {
-    isRepository?: boolean;
-    makefile?: string;
-}): string {
-    const project = temporaryDirectory('spec-names-repository-');
-    writeFileSync(
-        join(project, 'package.json'),
-        `${JSON.stringify(
-            { main: 'index.ts', name: 'spec-names-repository', private: true, version: '1.0.0' },
-            null,
-            2,
-        )}\n`,
-    );
-    writeFileSync(
-        join(project, 'tsconfig.json'),
-        '{ "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true }, "include": ["**/*.ts"] }\n',
-    );
-    writeFileSync(
-        join(project, 'index.ts'),
-        'export function run(): string {\n  return "ran";\n}\n',
-    );
-    if (makefile !== undefined) {
-        writeFileSync(join(project, 'Makefile'), makefile);
-    }
-    if (isRepository) {
-        execFileSync('git', ['init', '--quiet'], { cwd: project });
-        execFileSync('git', ['add', '.'], { cwd: project });
-    }
-
-    return project;
-}
-
-/** What the Names (tree) pass printed, header to verdict, in a run of that pass alone. */
-function namesPassOf(project: string): string {
-    const result = spawnSync('bash', [BIN, 'check'], {
-        cwd: project,
-        encoding: 'utf8',
-        env: inProject(project, onlyPasses('names')),
-    });
-
-    return passOf(result.stdout, 'Names (tree)');
-}
 
 /** Whether the four tree gates and the linter passed or failed, in report order. */
 function treeVerdictsOf(stdout: string): string[] {
@@ -376,9 +308,28 @@ describe('names-repository', () => {
         expect(names).not.toContain('names-makefile');
         expect(names).toContain('Passed');
     });
-});
 
-/** npm's INIT_CWD names the project the CLI answers for; a chain started under npm must name its own. */
-function inProject(project: string, env: Record<string, string> = {}): NodeJS.ProcessEnv {
-    return { ...process.env, ...env, INIT_CWD: project };
-}
+    test('counts a missing gesture in the ratchet line of a linter run the Names pass is left out of', () => {
+        // Given - a repository missing two gestures, recorded by the baseline command
+        const project = projectWith({ makefile: FOUR_TARGETS });
+        execFileSync('bash', [BIN, 'baseline'], {
+            cwd: project,
+            encoding: 'utf8',
+            env: inProject(project),
+        });
+
+        // When - the linter alone runs
+        const result = spawnSync('bash', [BIN, 'check'], {
+            cwd: project,
+            encoding: 'utf8',
+            env: inProject(project, onlyPasses('oxlint')),
+        });
+
+        // Then - the held line counts the Names pass's report, and the Names pass prints nothing
+        expect(result.stdout).toContain(
+            'jterrazz.baseline.json › typescript: 2 held across 1 rule',
+        );
+        expect(result.stdout).not.toContain('Names (tree)');
+        expect(result.status).toBe(0);
+    });
+});
