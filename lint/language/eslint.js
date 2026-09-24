@@ -31,9 +31,9 @@ export default fragment({
         /*
          * A test file's size per function has one judge too: its one
          * `describe` (@jterrazz/test's C31) is a function as long as the file,
-         * and C34 caps what the function cap would have caught there, a test
-         * body, at the same 60 lines. The globs are the three suffixes that
-         * declare tests, the set C34 reads.
+         * and C34 caps what the two caps below would have caught there — a
+         * test body's lines, and its statements — at the same 60 lines. The
+         * globs are the three suffixes that declare tests, the set C34 reads.
          */
         scoped({
             files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts'],
@@ -42,20 +42,8 @@ export default fragment({
                     by: "@jterrazz/test C34 — a test body holds at most 60 lines, and a test file's one describe is as long as the file",
                     kind: 'covered',
                 }),
-            },
-            since: SIZE_SINCE,
-        }),
-        /*
-         * `max-statements` is covered by the function cap everywhere that cap
-         * is on; under the same three suffixes it is off (the override
-         * above), it is C34 that bounds a test body's statement count
-         * instead, at the same 60 lines.
-         */
-        scoped({
-            files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts'],
-            rules: {
                 'max-statements': off({
-                    by: "@jterrazz/test C34 — a test body holds at most 60 lines, and oxfmt puts one statement per line",
+                    by: '@jterrazz/test C34 — a test body holds at most 60 lines, and oxfmt puts one statement per line',
                     kind: 'covered',
                 }),
             },

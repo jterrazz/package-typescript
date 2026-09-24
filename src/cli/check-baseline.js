@@ -94,7 +94,7 @@ const UNUSED_DIRECTIVE = /^Unused (?:eslint|oxlint)-disable directive/u;
 
 /** `eslint(no-debugger)` is how oxlint's JSON spells `eslint/no-debugger`; an unused directive has no code. */
 function ruleOf(diagnostic) {
-    const code = diagnostic.code;
+    const { code } = diagnostic;
     if (code === undefined && UNUSED_DIRECTIVE.test(diagnostic.message ?? '')) {
         return 'oxlint/unused-directive';
     }
