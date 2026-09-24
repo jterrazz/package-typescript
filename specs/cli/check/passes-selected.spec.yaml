@@ -1,6 +1,6 @@
 description: runs and reports only the passes TYPESCRIPT_CHECK_PASSES names
 fixture: ./fixtures/typechecker/invalid/
-env: TYPESCRIPT_CHECK_PASSES=typescript,oxlint
+env: TYPESCRIPT_CHECK_PASSES=typescript,oxfmt
 runs:
     - command: check
       exit: 1
@@ -13,9 +13,8 @@ runs:
           types.ts(2,7): error TS2322: Type 'string' is not assignable to type 'number'.
           ✗ Failed with exit code 1
 
-           RUN  Oxlint Check
+           RUN  Oxfmt Check
 
-          jterrazz.baseline.json › typescript: nothing held
           ✓ Passed
 
            END  Finalizing quality checks
