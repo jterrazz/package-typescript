@@ -193,6 +193,8 @@ The allowance is a wrapper config around the one the linter runs with — the pr
 
 That wrapper also stops the run reporting UNUSED DIRECTIVES. Every profile ships `reportUnusedDisableDirectives`, and a run that has just turned twelve rules off cannot judge a directive naming one of them — the rule is off for that run alone, and the directive would be called dead on evidence the wrapper itself created. An unused directive is reported by the check-shaped run made after the fixer, where the consumer's own rules are armed again, and by `check`.
 
+It is handed to oxlint with `-c`, and `-c` is also what turns off NESTED config discovery for that one run: a `sub/oxlint.config.*` a `check` would load and merge is not read while the fixer runs, so a rule that subtree turns off, on, or differently reads there as the top level's rule instead — armed where the subtree turned it off, silent where the subtree armed it, its own fixer running or not accordingly. The fixer's own log, and only it, carries this gap: the check-shaped run made after it reads nested configs as `check` always does, so the ratchet it judges, and `check` itself, are never fooled by it — only what the fixer rewrote, or reported, along the way can be.
+
 ### A warning is a diagnostic
 
 oxlint leaves its exit code at 0 for a warn-severity diagnostic, and a pass that passed prints no log — so `check` was silent on a tree `fix` failed, and the ratchet an adoption reaches for could not be reached through `check` at all. The check run passes `--deny-warnings`: every diagnostic the linter reports is printed and judged, whatever severity armed it.
