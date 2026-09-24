@@ -1,0 +1,15 @@
+description: refuses to record the section when the Names pass wrote no report, and writes no file
+fixture: ./fixtures/baseline/names-refused/
+runs:
+    # The fixture's one file sits under an unswept `dist/`: the sweep refuses,
+    # so the Names pass dies before it reports and its side of the section is
+    # unknown. Recording anyway would write a section nobody measured; the
+    # refusal leaves the disk as it found it — here, with no baseline file.
+    - command: baseline
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  Recording the oxlint baseline...
+
+          the Names (tree) pass wrote no report — the typescript section is left as it was; 'typescript check' prints why
+      files:
+          jterrazz.baseline.json: absent
