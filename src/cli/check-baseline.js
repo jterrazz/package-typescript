@@ -89,8 +89,15 @@ const TEST_NAMESPACES = ['jterrazz/', 'jterrazz-check/'];
 /** The namespace the Names (tree) pass's rules take in the section — that pass judges them. */
 const NAMES_NAMESPACE = 'names/';
 
-/** `eslint(no-debugger)` is how oxlint's JSON spells `eslint/no-debugger`. */
-function ruleOf(code) {
+/** oxlint's own "Unused eslint/oxlint-disable directive" findings carry no `code` at all. */
+const UNUSED_DIRECTIVE = /^Unused (?:eslint|oxlint)-disable directive/u;
+
+/** `eslint(no-debugger)` is how oxlint's JSON spells `eslint/no-debugger`; an unused directive has no code. */
+function ruleOf(diagnostic) {
+    const code = diagnostic.code;
+    if (code === undefined && UNUSED_DIRECTIVE.test(diagnostic.message ?? '')) {
+        return 'oxlint/unused-directive';
+    }
     const match = /^(?<plugin>[\w-]+)\((?<rule>[^)]+)\)$/u.exec(code ?? '');
 
     return match === null ? (code ?? 'unknown') : `${match.groups.plugin}/${match.groups.rule}`;
@@ -121,7 +128,7 @@ export function countsOf(...reports) {
     const counts = {};
     for (const report of reports) {
         for (const diagnostic of diagnosticsOf(report)) {
-            const rule = ruleOf(diagnostic.code);
+            const rule = ruleOf(diagnostic);
             if (!isTestOwned(rule)) {
                 counts[rule] = (counts[rule] ?? 0) + 1;
             }

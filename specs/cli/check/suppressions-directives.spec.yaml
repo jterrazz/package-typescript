@@ -16,9 +16,9 @@ runs:
 
            RUN  Oxlint Check
           {{any}}
+          oxlint/unused-directive  4 diagnostic(s), and the project keeps no baseline
           typescript/ban-ts-comment  1 diagnostic(s), and the project keeps no baseline
           typescript/prefer-ts-expect-error  1 diagnostic(s), and the project keeps no baseline
-          unknown  4 diagnostic(s), and the project keeps no baseline
           Fix them, or run 'typescript baseline' to record where the project stands.
           ✗ Failed with exit code 1
 
