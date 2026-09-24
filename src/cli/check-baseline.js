@@ -46,7 +46,8 @@
  * the shape `@jterrazz/test` gives its own, or `… typescript: nothing held` for
  * a section holding no entry or no section at all — when both reporters'
  * counts stand at it. Where either side breaks the ratchet it prints no summary: the
- * pass that owns the broken entry prints the evidence.
+ * pass that owns the broken entry prints the evidence. Nor where the Names
+ * report cannot be read: that side is unknown, and its pass prints why.
  *
  * A file of the per-package layout — `typescript.baseline.json`,
  * `test.baseline.json`, `oxlint.baseline.json` — is never read: its presence
@@ -437,17 +438,22 @@ if (import.meta.main) {
         exit(1);
     }
 
-    /* Recorded, or summed into the file's line — never judged: the Names (tree) pass judges its own entries. */
-    let namesReport = [];
+    /*
+     * Recorded, or summed into the file's line — never judged: the Names (tree)
+     * pass judges its own entries. Null when that pass wrote no report: it
+     * died, so its side of the section is unknown and no held line is printed.
+     */
+    let namesReport = null;
     if (namesPath !== undefined) {
         try {
             namesReport = JSON.parse(readFileSync(namesPath, 'utf8'));
         } catch {
-            namesReport = [];
+            namesReport = null;
         }
     }
+    const speaksHeld = namesReport !== null;
 
-    const counts = countsOf(report, namesReport);
+    const counts = countsOf(report, namesReport ?? []);
     const linterCounts = countsOf(report);
 
     if (isWrite) {
@@ -506,7 +512,7 @@ if (import.meta.main) {
         if (rules.length > 0 || legacy.length > 0) {
             exit(1);
         }
-        if (namesPath !== undefined && judge(counts, {}).length === 0) {
+        if (speaksHeld && judge(counts, {}).length === 0) {
             stdout.write(`${heldSummary({})}\n`);
         }
         exit(0);
@@ -542,7 +548,7 @@ if (import.meta.main) {
         exit(1);
     }
 
-    if (namesPath !== undefined && judge(counts, section).length === 0) {
+    if (speaksHeld && judge(counts, section).length === 0) {
         stdout.write(`${heldSummary(counts)}\n`);
     }
 

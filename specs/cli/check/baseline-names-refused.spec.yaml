@@ -1,0 +1,63 @@
+description: states no held line when the Names pass wrote no report for the section's other side
+fixture: ./fixtures/baseline/names-refused/
+runs:
+    # The fixture's one file sits under an unswept `dist/`: the sweep refuses,
+    # so the Names pass dies before it reports while the linter, handed the
+    # directory, is green. The section's Names side is unknown, so the Oxlint
+    # pass passes without claiming what the section holds. tsc has no
+    # tsconfig and prints its manual, the compiler's block.
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          {{any}}
+
+          ✗ Failed with exit code 1
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ERROR: Unable to find package.json
+
+          Run `knip --help` or visit https://knip.dev for help
+          ✗ Failed with exit code 2
+
+           RUN  Suppressions (directives)
+
+          nothing to read under {{path}}: it holds folders and no file — add the project's files, then run again
+          ✗ Failed with exit code 1
+
+           RUN  Markdown (prose)
+
+          nothing to read under {{path}}: it holds folders and no file — add the project's files, then run again
+          ✗ Failed with exit code 1
+
+           RUN  Names (tree)
+
+          nothing to read under {{path}}: it holds folders and no file — add the project's files, then run again
+          ✗ Failed with exit code 1
+
+           RUN  Secrets (credentials)
+
+          nothing to read under {{path}}: it holds folders and no file — add the project's files, then run again
+          ✗ Failed with exit code 1
+
+           DRIFT  Deviations from the profile
+
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
+      # The drift report's refusal is its own, on standard error.
+      stderr: |
+          nothing to read under {{path}}: it holds folders and no file — add the project's files, then run again
