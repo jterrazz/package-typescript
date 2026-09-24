@@ -28,6 +28,10 @@ runs:
 
           ✓ Passed
 
+           RUN  Names (tree)
+
+          ✓ Passed
+
            END  Finalizing quality fixes
 
           ✗ Some checks failed

@@ -25,8 +25,8 @@
  * `install`, `build`, `lint`, `fix`, `test` and `check` — the gestures the
  * flows speak.
  *
- * Usage: node check-names.js [root] [--ignore-pattern <glob>]… [--format json]
- *                             [--report <path>]
+ * Usage: node check-names.js [root] [--fix] [--ignore-pattern <glob>]…
+ *                             [--format json] [--report <path>]
  *
  * One line per violation, `<rule>  <path>  <message>`. Every rule carries the
  * code `names(<rule>)`, which the ratchet records as `names/<rule>`: where
@@ -36,9 +36,14 @@
  * that same report to a file beside the human run, for the line `check` prints
  * about the whole ratchet section.
  *
+ * The tree's shape is judged on the disk as well: an empty directory git does
+ * not ignore is a finding, since git tracks no directory and one exists only
+ * on the machine that holds it.
+ *
  * Exit code: 0 when every name claims a subject or the ratchet holds, 1
- * otherwise. No `--fix`: renaming a file is a move, and choosing the name it
- * moves to is the work the rule is asking for.
+ * otherwise. `--fix` deletes the empty directories first, printing each one,
+ * and judges the tree that is left. It renames nothing: a rename is a move,
+ * and choosing the name it moves to is the work the rule is asking for.
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -46,6 +51,7 @@ import { basename, join, matchesGlob, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
 import { judge, LABEL, readBaseline } from './check-baseline.js';
+import { emptyDirectories, removeEmptyDirectory } from './empty-directories.js';
 import { readSection, SETTINGS_FILE } from './jterrazz-config.js';
 import { ignorePatternsOf, orRefused, projectFiles } from './project-files.js';
 import { isRepositoryRoot } from './repository-root.js';
@@ -555,6 +561,20 @@ function makefileOf(root, files) {
     }));
 }
 
+/** An empty directory, in the four parts every finding of the family states. */
+function emptyDirectoryFinding(path) {
+    return {
+        message: [
+            `found: \`${path}/\` holds no file`,
+            'why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there',
+            `fix: delete it — \`typescript fix\` does — or put the file it was made for in it`,
+            'read: docs/06-quality-checks.md#an-empty-directory',
+        ].join(' · '),
+        path: `${path}/`,
+        rule: 'names-directory-empty',
+    };
+}
+
 /** The namespace the pass's rules take in the ratchet's file. */
 const NAMESPACE = 'names/';
 
@@ -579,11 +599,23 @@ const root = resolve(
                 !argument.startsWith('--') && !VALUED_FLAGS.has(rest[index - 1] ?? ''),
         ) ?? '.',
 );
-const files = orRefused(() => projectFiles(root, { ignorePatterns: ignorePatternsOf(argv) }));
+const ignorePatterns = ignorePatternsOf(argv);
+const files = orRefused(() => projectFiles(root, { ignorePatterns }));
+
+/* `--fix` settles the one finding a machine can settle before the tree is judged. */
+if (argv.includes('--fix')) {
+    for (const path of emptyDirectories(root, { ignorePatterns })) {
+        if (removeEmptyDirectory(root, path)) {
+            stdout.write(`removed  ${path}/  an empty directory\n`);
+        }
+    }
+}
+
 const findings = [
     ...findingsOf(files),
     ...(await spinesOf(root, files)),
     ...makefileOf(root, files),
+    ...emptyDirectories(root, { ignorePatterns }).map((path) => emptyDirectoryFinding(path)),
 ];
 
 /** The findings as the ratchet reads a report: oxlint's JSON shape, one code per rule. */

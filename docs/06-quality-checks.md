@@ -28,10 +28,10 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)                      |
 | Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)                   |
 | Markdown (prose)                  | the prose gate              | always (check only — a paragraph is not machine-split)                   |
-| Names (tree)                      | the naming gate             | always (check only — a rename is a move, not a rewrite)                  |
+| Names (tree)                      | the naming gate             | always (check and fix — `--fix` deletes an empty directory)              |
 | Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                 |
 
-`typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate and the suppression gate in parallel — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
+`typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate and the naming gate in parallel — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
 
 ### In a workspace
 
@@ -426,6 +426,18 @@ export default defineConfig({
 ```
 
 The file holds one section per package of the family, each package reading only its own, so a root declared anywhere else — a `jterrazz` key in `package.json` included — is not read. A file that does not load, or whose `typescript.roots` is not an object mapping each folder to its reason, is refused as `names-config-invalid`, and the roots it meant to declare stand undeclared until it is fixed. The reason is not decoration: an entry without one is refused (`names-root-unreasoned`), and an entry whose folder holds no file git does not ignore is refused too (`names-root-stale`), so the list shrinks as the tree does. A base package that composes others keeps its broader roots through this same declaration, never through an exemption in the gate.
+
+### An empty directory
+
+The tree is judged on the disk as well as by its names. git tracks no directory, so an empty one exists only on the machine that holds it — a folder a fixer or a move emptied, a scaffold nobody filled — and it tells the next reader of that disk about a part of the tree that is not there.
+
+| Rule                    | Refuses                                                            |
+| ----------------------- | ------------------------------------------------------------------ |
+| `names-directory-empty` | a directory holding no file at any depth, that git does not ignore |
+
+A directory holding only empty directories is empty, and is named once, at its top. The walk never enters `.git/`, a directory holding a `.git` of its own, or a folder no gate reads — `node_modules/`, `.artifacts/`, `dist/` and the rest the sweep leaves out — and a directory git ignores, or an `--ignore-pattern` names, is left alone. The finding states itself in four parts, `found: … · why: … · fix: … · read: …`.
+
+`typescript fix` deletes each one before it judges the tree, printing a `removed` line per directory, and renames nothing else. It deletes bottom-up, one empty directory at a time, so a file that landed in one since the walk stops the deletion rather than going with it. CI never meets the rule: a fresh clone holds no empty directory.
 
 ### What the ratchet records
 

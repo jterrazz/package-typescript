@@ -46,12 +46,13 @@ src/cli/check-drift.js        # How far the project stands from its profile — 
 src/cli/check-docs.js         # The manual's shape, read off the repository's docs/ — the reader behind the Docs (layout) pass
 src/cli/check-gitignore.js    # The artefact convention, read off the project's .gitignore — check | --fix
 src/cli/check-markdown.js     # Every project page's coordinates and readability floors — the Markdown (prose) gate
-src/cli/check-names.js        # What the tree calls its own parts — the Names (tree) gate
+src/cli/check-names.js        # What the tree calls its own parts, and its empty directories — the Names (tree) gate, check | --fix
 src/cli/check-publish.js      # The exports map against the tarball — the Publish gate (publint + attw)
 src/cli/check-secrets.js      # No committed file carries a live credential — the Secrets gate (gitleaks, else patterns)
 src/cli/check-suppressions.js # Every disable directive is spelled, reasoned and live — the Suppressions gate, check | --fix
 
 src/cli/doctor.js             # Installed tool versions against the declared ranges — `typescript doctor`
+src/cli/empty-directories.js  # The working copy's empty directories, read off the disk — the Names gate reports them, `fix` deletes them
 src/cli/entry-points.js       # The entries a build compiles, read off the consumer's own exports map
 src/cli/jterrazz-config.js    # A unit's jterrazz.config.ts, loaded — one package's section, or the problem that stops it
 src/cli/lint-targets.js       # The project files oxlint and oxfmt are handed — the sweep every tree gate reads, never the directory

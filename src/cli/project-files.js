@@ -32,7 +32,7 @@ import { join, matchesGlob } from 'node:path';
 import { exit, stderr } from 'node:process';
 
 /** Never source, never prose: what no gate of this toolchain has a question about. */
-const UNSWEPT = new Set([
+export const UNSWEPT = new Set([
     '.artifacts',
     '.git',
     '.next',

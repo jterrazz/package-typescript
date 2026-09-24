@@ -646,19 +646,21 @@ run_checks() {
     fi
 
     # Names: what the project calls its own parts, under the roots where a
-    # project keeps what it wrote. Check-only — renaming a file is a move, and
-    # choosing the name it moves to is the work the rule is asking for.
+    # project keeps what it wrote, and the shape of its tree on the disk. It
+    # runs in BOTH modes — `--fix` deletes the empty directories, the one
+    # finding a machine can settle, and renames nothing: a rename is a move,
+    # and choosing the name it moves to is the work the rule is asking for.
     # It loads `jterrazz.config.ts`, and Node warns on stderr while it
     # reparses a `.ts` as ESM in a project without `"type": "module"` — noise
     # about the loading, never about the tree.
     local names_pid=""
     local names_status=0
     local names_pid_waited=false
-    if [ "$FIX_MODE" = false ]; then
-        node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/src/cli/check-names.js" . "${LINT_ARGS[@]}" \
-            --report "$tmp_dir/names.json" > "$tmp_dir/names.log" 2>&1 &
-        names_pid=$!
-    fi
+    local names_mode=(--report "$tmp_dir/names.json")
+    [ "$FIX_MODE" = true ] && names_mode=(--fix)
+    node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/src/cli/check-names.js" . "${LINT_ARGS[@]}" \
+        "${names_mode[@]}" > "$tmp_dir/names.log" 2>&1 &
+    names_pid=$!
 
     # Secrets: no file the project would commit carries a live-looking
     # credential. The gate always applies, so WHICH engine answers — gitleaks
@@ -944,7 +946,7 @@ run_checks() {
     report_pass "Suppressions (directives)" $suppressions_status "$tmp_dir/suppressions.log" "$write"
     [ -n "$markdown_pid" ] &&
         report_pass "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
-    [ -n "$names_pid" ] && report_pass "Names (tree)" $names_status "$tmp_dir/names.log"
+    report_pass "Names (tree)" $names_status "$tmp_dir/names.log" "$write"
     [ -n "$secrets_pid" ] && report_pass "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
 
     # Drift: the report, not a gate — how far this project stands from the

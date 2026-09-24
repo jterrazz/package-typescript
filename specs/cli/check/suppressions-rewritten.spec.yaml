@@ -26,6 +26,10 @@ runs:
           index.ts rewritten — the directive now names the checker this project runs
           ✗ Failed with exit code 1
 
+           RUN  Names (tree)
+
+          ✓ Passed
+
            END  Finalizing quality fixes
 
           ✗ Some checks failed
