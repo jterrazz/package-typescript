@@ -199,6 +199,8 @@ typescript baseline   # record today's diagnostics, so the count may only fall
 | `make test`    | the two vitest suites ([Testing](03-testing.md))                                |
 | `make check`   | `make lint`, then `make test` — the gate before a commit                        |
 
+A spec that asserts on one pass runs only that pass. `TYPESCRIPT_CHECK_PASSES`, a comma-separated list of pass keys, is the internal selector `check` and `fix` read: a pass it leaves out prints nothing and weighs nothing in the verdict, and a key that names no pass fails the run with the list of keys. The keys are `typescript`, `oxlint`, `oxfmt`, `gitignore`, `knip`, `conventions`, `docs`, `publish`, `architecture`, `astro`, `suppressions`, `markdown`, `names`, `secrets` and `drift`. A pass another one reads still runs, unreported: the linter under the conventions checker's member runs, and the Names pass under the ratchet's held line.
+
 Every directory the `cli` project creates sits under one temp root per run, which `specs/cli/run-temp-root.ts` points `TMPDIR` at before the first worker starts and removes when the run ends. A chain takes its scratch directory from `specs/cli/temporary-directory.ts`, which removes it when the test finishes; a stray one goes with the root.
 
 Where a new thing goes follows the layers ([Architecture](01-architecture.md)): a new gate is a node script in `src/cli/` plus the lines in `bin/commands/check.sh` that decide whether it applies; a lint decision is a line of a fragment under `lint/`, never a config; a new configuration is a file under `src/presets/`; a new importable entry is a `.js` and a hand-written `.d.ts` in `src/`, an `exports` subpath, and a row in the resolution test.

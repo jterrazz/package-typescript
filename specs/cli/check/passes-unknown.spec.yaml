@@ -1,0 +1,8 @@
+description: refuses a pass selector naming no pass, listing the passes
+fixture: ./fixtures/typechecker/invalid/
+env: TYPESCRIPT_CHECK_PASSES=typescript,lint
+runs:
+    - command: check
+      exit: 2
+      stderr: |
+          TYPESCRIPT_CHECK_PASSES names no pass: lint — the passes are typescript,oxlint,oxfmt,gitignore,knip,conventions,docs,publish,architecture,astro,suppressions,markdown,names,secrets,drift

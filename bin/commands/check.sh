@@ -290,6 +290,32 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# ── Which passes run ─────────────────────────────────────────────────────────
+# Every pass, unless TYPESCRIPT_CHECK_PASSES names some, comma-separated — an
+# internal selector, for the specs that assert on one pass. A pass left out
+# prints nothing and weighs nothing in the verdict. A pass another one reads
+# still runs, unreported: the linter's report under the member runs of the
+# conventions checker, and the Names report under the ratchet's held line.
+ALL_PASSES=(typescript oxlint oxfmt gitignore knip conventions docs publish architecture astro suppressions markdown names secrets drift)
+SELECTED_PASSES="${TYPESCRIPT_CHECK_PASSES:-}"
+if [ -n "$SELECTED_PASSES" ]; then
+    IFS=',' read -r -a requested_passes <<< "$SELECTED_PASSES"
+    for requested_pass in "${requested_passes[@]}"; do
+        case " ${ALL_PASSES[*]} " in
+            *" $requested_pass "*) ;;
+            *)
+                printf 'TYPESCRIPT_CHECK_PASSES names no pass: %s — the passes are %s\n' \
+                    "$requested_pass" "$(IFS=','; printf '%s' "${ALL_PASSES[*]}")" >&2
+                exit 2
+                ;;
+        esac
+    done
+fi
+
+selected() {
+    [ -z "$SELECTED_PASSES" ] || [[ ",$SELECTED_PASSES," == *",$1,"* ]]
+}
+
 # ── What oxlint is handed ────────────────────────────────────────────────────
 # The project's files it parses — the list every tree gate judges, everything
 # git does not ignore — and never the directory, whose walk answers to the
@@ -437,9 +463,6 @@ run_checks() {
 
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
 
-    read_lint_targets
-    read_format_targets
-
     # The members the conventions checker is run FOR, chosen before oxlint
     # starts: a member run judges the `jterrazz(*)` diagnostics this pass sets
     # aside, and it reads them off the oxlint report made here — so whether
@@ -447,7 +470,7 @@ run_checks() {
     local checker_members=()
     local checker_member_bins=()
     local checker_dormant=0
-    if [ "$FIX_MODE" = false ]; then
+    if [ "$FIX_MODE" = false ] && selected conventions; then
         local member
         for member in "." "${WORKSPACE_MEMBERS[@]}"; do
             member_resolves_checker "$member" || continue
@@ -466,9 +489,27 @@ run_checks() {
         done
     fi
 
+    # The linter runs for its pass or for a member run's report; the Names
+    # pass for its own or, in check mode, for the ratchet's held line, which
+    # counts its report.
+    local runs_oxlint=false
+    if selected oxlint || [ ${#checker_members[@]} -gt 0 ]; then
+        runs_oxlint=true
+    fi
+    local runs_names=false
+    if selected names || { selected oxlint && [ "$FIX_MODE" = false ]; }; then
+        runs_names=true
+    fi
+
+    [ "$runs_oxlint" = true ] && read_lint_targets
+    selected oxfmt && read_format_targets
+
     # Run all tools in parallel
-    "$TSC" --noEmit > "$tmp_dir/type.log" 2>&1 &
-    local type_pid=$!
+    local type_pid=""
+    if selected typescript; then
+        "$TSC" --noEmit > "$tmp_dir/type.log" 2>&1 &
+        type_pid=$!
+    fi
 
     # --type-aware is explicit and unconditional: the rules it unlocks are the
     # ones no syntactic linter can express, and a flag that is only sometimes
@@ -500,7 +541,7 @@ run_checks() {
         # run ignores the wrapper's name. It is written by this pass and deleted
         # by it, so a diagnostic against it names a file the operator cannot
         # open and no tree can ever clear.
-        if [ "$LINT_NOTHING" = false ]; then
+        if [ "$runs_oxlint" = true ] && [ "$LINT_NOTHING" = false ]; then
             local fix_wrapper="oxlint.fix.config.mjs"
             local base_config="$DEFAULT_OXLINT_CONFIG"
             local scope_mode="flat"
@@ -523,7 +564,9 @@ run_checks() {
                 rm -f "$wrapper"
             done <<< "$fix_scopes"
         fi
-        run_oxfmt > "$tmp_dir/format.log" 2>&1 || format_status=$?
+        if selected oxfmt; then
+            run_oxfmt > "$tmp_dir/format.log" 2>&1 || format_status=$?
+        fi
     else
         # `--deny-warnings` is what makes check and fix read the same tree. A
         # warn-severity diagnostic leaves oxlint's exit code at 0, and a pass
@@ -538,15 +581,17 @@ run_checks() {
         # failing pass prints it back in the form oxlint would have printed
         # (src/cli/oxlint-report.js). Its standard error is kept apart, so the
         # report stays the one thing on standard output.
-        run_oxlint --type-aware --deny-warnings --format json "${LINT_ARGS[@]}" \
-            > "$tmp_dir/lint.json" 2> "$tmp_dir/lint.err" &
-        lint_pid=$!
+        if [ "$runs_oxlint" = true ]; then
+            run_oxlint --type-aware --deny-warnings --format json "${LINT_ARGS[@]}" \
+                > "$tmp_dir/lint.json" 2> "$tmp_dir/lint.err" &
+            lint_pid=$!
+        fi
         : > "$tmp_dir/lint.log"
     fi
     local lint_waited=false
 
     local format_pid=""
-    if [ "$FIX_MODE" = false ]; then
+    if [ "$FIX_MODE" = false ] && selected oxfmt; then
         run_oxfmt --check > "$tmp_dir/format.log" 2>&1 &
         format_pid=$!
     fi
@@ -562,7 +607,7 @@ run_checks() {
     # run exits 1. A gate that can pass on stale knowledge is worse than a slow one.
     local knip_pid=""
     local knip_status=0
-    if [ "$FIX_MODE" = false ]; then
+    if [ "$FIX_MODE" = false ] && selected knip; then
         local knip_base="$PACKAGE_ROOT/src/presets/knip/config.json"
         local knip_project=""
         [ -f "knip.json" ] && knip_project="knip.json"
@@ -586,7 +631,9 @@ run_checks() {
     local gitignore_pid=""
     local gitignore_status=0
     local gitignore_applicable=false
-    if [ -f ".gitignore" ]; then
+    if ! selected gitignore; then
+        gitignore_applicable=false
+    elif [ -f ".gitignore" ]; then
         gitignore_applicable=true
     elif [ "$FIX_MODE" = false ] && node "$PACKAGE_ROOT/src/cli/check-gitignore.js" --has-ancestor > /dev/null 2>&1; then
         gitignore_applicable=true
@@ -610,7 +657,7 @@ run_checks() {
     # gate — there is no rewrite that can author a chapter.
     local docs_layout_pid=""
     local docs_layout_status=0
-    if [ "$FIX_MODE" = false ] && [ -e ".git" ]; then
+    if [ "$FIX_MODE" = false ] && selected docs && [ -e ".git" ]; then
         node "$PACKAGE_ROOT/src/cli/check-docs.js" > "$tmp_dir/docs-layout.log" 2>&1 &
         docs_layout_pid=$!
     fi
@@ -623,9 +670,11 @@ run_checks() {
     local suppressions_status=0
     local suppressions_fix=()
     [ "$FIX_MODE" = true ] && suppressions_fix=(--fix)
-    node "$PACKAGE_ROOT/src/cli/check-suppressions.js" . --oxlint "$OXLINT" \
-        "${OXLINT_CONFIG_ARGS[@]}" "${suppressions_fix[@]}" "${LINT_ARGS[@]}" > "$tmp_dir/suppressions.log" 2>&1 &
-    suppressions_pid=$!
+    if selected suppressions; then
+        node "$PACKAGE_ROOT/src/cli/check-suppressions.js" . --oxlint "$OXLINT" \
+            "${OXLINT_CONFIG_ARGS[@]}" "${suppressions_fix[@]}" "${LINT_ARGS[@]}" > "$tmp_dir/suppressions.log" 2>&1 &
+        suppressions_pid=$!
+    fi
 
     # Markdown (prose): every tracked page's coordinates resolve, and its blocks
     # breathe. Check-only — there is no rewrite that splits a paragraph into the
@@ -633,7 +682,7 @@ run_checks() {
     # linter received, so one flag answers for the whole run.
     local markdown_pid=""
     local markdown_status=0
-    if [ "$FIX_MODE" = false ]; then
+    if [ "$FIX_MODE" = false ] && selected markdown; then
         node "$PACKAGE_ROOT/src/cli/check-markdown.js" . "${LINT_ARGS[@]}" \
             > "$tmp_dir/markdown.log" 2>&1 &
         markdown_pid=$!
@@ -651,9 +700,11 @@ run_checks() {
     local names_status=0
     local names_mode=(--report "$tmp_dir/names.json")
     [ "$FIX_MODE" = true ] && names_mode=(--fix)
-    node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/src/cli/check-names.js" . "${LINT_ARGS[@]}" \
-        "${names_mode[@]}" > "$tmp_dir/names.log" 2>&1 &
-    names_pid=$!
+    if [ "$runs_names" = true ]; then
+        node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/src/cli/check-names.js" . "${LINT_ARGS[@]}" \
+            "${names_mode[@]}" > "$tmp_dir/names.log" 2>&1 &
+        names_pid=$!
+    fi
 
     # Secrets: no file the project would commit carries a live-looking
     # credential. The gate always applies, so WHICH engine answers — gitleaks
@@ -661,7 +712,7 @@ run_checks() {
     # decided inside the script, not here.
     local secrets_pid=""
     local secrets_status=0
-    if [ "$FIX_MODE" = false ]; then
+    if [ "$FIX_MODE" = false ] && selected secrets; then
         node "$PACKAGE_ROOT/src/cli/check-secrets.js" . "${LINT_ARGS[@]}" \
             > "$tmp_dir/secrets.log" 2>&1 &
         secrets_pid=$!
@@ -672,7 +723,7 @@ run_checks() {
     # writes there, and `astro check` is read-only wherever it runs.
     local astro_pid=""
     local astro_status=0
-    if project_uses_astro "."; then
+    if selected astro && project_uses_astro "."; then
         ASTRO=$(find_project_binary astro)
         # A subshell, so both halves run and both are reported — a template that
         # does not type-check is not a reason to stay quiet about its shape.
@@ -701,7 +752,7 @@ run_checks() {
     # existence: a project with no declared architecture is not in breach of one.
     local architecture_pid=""
     local architecture_status=0
-    if [ "$FIX_MODE" = false ] &&
+    if [ "$FIX_MODE" = false ] && selected architecture &&
         { [ -f ".dependency-cruiser.cjs" ] || [ -f ".dependency-cruiser.js" ] ||
             [ -f ".dependency-cruiser.mjs" ]; }; then
         node "$PACKAGE_ROOT/src/cli/check-architecture.js" . --depcruise "$DEPCRUISE" \
@@ -715,7 +766,7 @@ run_checks() {
     local publish_pids=()
     local publish_logs=()
     local publish_status=0
-    if [ "$FIX_MODE" = false ]; then
+    if [ "$FIX_MODE" = false ] && selected publish; then
         local publish_index=0
         for publish_root in "." "${WORKSPACE_MEMBERS[@]}"; do
             project_is_publishable "$publish_root" || continue
@@ -739,7 +790,7 @@ run_checks() {
     local checker_logs=()
     local checker_status=0
     local checker_root_log=""
-    if [ "$FIX_MODE" = false ]; then
+    if [ "$FIX_MODE" = false ] && selected conventions; then
         local checker_index=0
         while IFS= read -r specs_root; do
             [ -n "$specs_root" ] || continue
@@ -777,7 +828,8 @@ run_checks() {
     fi
 
     # Wait and collect statuses
-    wait $type_pid;   local type_status=$?
+    local type_status=0
+    [ -n "$type_pid" ] && { wait $type_pid; type_status=$?; }
     [ -n "$lint_pid" ] && [ "$lint_waited" = false ] && { wait $lint_pid; lint_status=$?; }
 
     # The ratchet judges every run: the pass is judged by what the section
@@ -803,7 +855,7 @@ run_checks() {
     # fixers armed again, so a directive that names one of them is used, not
     # reported unused. The fixer's own exit code is never the verdict: it ran
     # with those rules allowed.
-    if [ "$FIX_MODE" = true ]; then
+    if [ "$FIX_MODE" = true ] && [ "$runs_oxlint" = true ]; then
         run_oxlint --type-aware --format json "${LINT_ARGS[@]}" \
             > "$tmp_dir/lint.json" 2>/dev/null
     fi
@@ -816,31 +868,32 @@ run_checks() {
     # In fix mode the judge re-records the linter's entries that fell, and
     # the Names pass its own: two writers of one file, so the Names pass
     # has finished before this one reads it.
-    wait $names_pid
-    names_status=$?
-    local linter_exit=()
-    local names_report=()
-    local ratchet_fix=()
-    if [ "$FIX_MODE" = true ]; then
-        ratchet_fix=(--fix)
-    else
-        linter_exit=(--linter-exit "$lint_status")
-        names_report=(--names "$tmp_dir/names.json")
-    fi
-    node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$tmp_dir/lint.json" . \
-        "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" > "$tmp_dir/ratchet.log" 2>&1
-    lint_status=$?
-    if [ "$lint_status" -eq 0 ] && [ ${#names_report[@]} -gt 0 ]; then
-        lint_held=true
-    else
-        cat "$tmp_dir/ratchet.log" >> "$tmp_dir/lint.log"
+    [ -n "$names_pid" ] && { wait $names_pid; names_status=$?; }
+    if selected oxlint; then
+        local linter_exit=()
+        local names_report=()
+        local ratchet_fix=()
+        if [ "$FIX_MODE" = true ]; then
+            ratchet_fix=(--fix)
+        else
+            linter_exit=(--linter-exit "$lint_status")
+            names_report=(--names "$tmp_dir/names.json")
+        fi
+        node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$tmp_dir/lint.json" . \
+            "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" > "$tmp_dir/ratchet.log" 2>&1
+        lint_status=$?
+        if [ "$lint_status" -eq 0 ] && [ ${#names_report[@]} -gt 0 ]; then
+            lint_held=true
+        else
+            cat "$tmp_dir/ratchet.log" >> "$tmp_dir/lint.log"
+        fi
     fi
 
     [ -n "$format_pid" ] && { wait $format_pid; format_status=$?; }
     [ -n "$knip_pid" ] && { wait $knip_pid; knip_status=$?; }
     [ -n "$gitignore_pid" ] && { wait $gitignore_pid; gitignore_status=$?; }
     [ -n "$docs_layout_pid" ] && { wait $docs_layout_pid; docs_layout_status=$?; }
-    wait $suppressions_pid; suppressions_status=$?
+    [ -n "$suppressions_pid" ] && { wait $suppressions_pid; suppressions_status=$?; }
     [ -n "$markdown_pid" ] && { wait $markdown_pid; markdown_status=$?; }
     [ -n "$architecture_pid" ] && { wait $architecture_pid; architecture_status=$?; }
     [ -n "$astro_pid" ] && { wait $astro_pid; astro_status=$?; }
@@ -905,49 +958,56 @@ run_checks() {
         write="writer"
     fi
 
-    judge_lint_config
-    # A failing check pass prints the linter's report first, drawn from the one
-    # run, then what the ratchet and the config judge added beneath it.
-    if [ "$FIX_MODE" = false ] && [ "$lint_status" -ne 0 ]; then
-        {
-            node "$PACKAGE_ROOT/src/cli/oxlint-report.js" "$tmp_dir/lint.json" "$tmp_dir/lint.err" \
-                --oxlint "$OXLINT"
-            cat "$tmp_dir/lint.log"
-        } > "$tmp_dir/lint-shown.log"
-        mv "$tmp_dir/lint-shown.log" "$tmp_dir/lint.log"
-    fi
-    # A green pass judged by the ratchet says one thing: the section's held line,
-    # never the linter's chatter around it.
+    # A pass read only for another's sake is no verdict of this run.
     local lint_log="$tmp_dir/lint.log"
     local lint_speaks=""
-    if [ "$lint_status" -eq 0 ] && [ "$lint_held" = true ]; then
-        lint_log="$tmp_dir/ratchet.log"
-        lint_speaks="writer"
-    fi
-    # A green fix that re-recorded an entry wrote a tracked file, and says which.
-    if [ "$FIX_MODE" = true ] && [ "$lint_status" -eq 0 ] && [ -s "$tmp_dir/ratchet.log" ]; then
-        lint_log="$tmp_dir/ratchet.log"
-        lint_speaks="writer"
-    fi
-    # Unless @jterrazz/test's section broke: its checker judges the `jterrazz(*)`
-    # diagnostics off this same report and leaves printing them to this pass, so
-    # a green pass still draws the report — the one print of each diagnostic —
-    # above whatever it would have said. A report with none draws nothing.
-    if [ "$FIX_MODE" = false ] && [ "$lint_status" -eq 0 ] && [ "$checker_status" -ne 0 ]; then
-        node "$PACKAGE_ROOT/src/cli/oxlint-report.js" "$tmp_dir/lint.json" "$tmp_dir/lint.err" \
-            --oxlint "$OXLINT" --if-diagnostics > "$tmp_dir/lint-drawn.log"
-        if [ -s "$tmp_dir/lint-drawn.log" ]; then
-            [ -n "$lint_speaks" ] && cat "$lint_log" >> "$tmp_dir/lint-drawn.log"
-            lint_log="$tmp_dir/lint-drawn.log"
+    if selected oxlint; then
+        judge_lint_config
+        # A failing check pass prints the linter's report first, drawn from the one
+        # run, then what the ratchet and the config judge added beneath it.
+        if [ "$FIX_MODE" = false ] && [ "$lint_status" -ne 0 ]; then
+            {
+                node "$PACKAGE_ROOT/src/cli/oxlint-report.js" "$tmp_dir/lint.json" "$tmp_dir/lint.err" \
+                    --oxlint "$OXLINT"
+                cat "$tmp_dir/lint.log"
+            } > "$tmp_dir/lint-shown.log"
+            mv "$tmp_dir/lint-shown.log" "$tmp_dir/lint.log"
+        fi
+        # A green pass judged by the ratchet says one thing: the section's held line,
+        # never the linter's chatter around it.
+        if [ "$lint_status" -eq 0 ] && [ "$lint_held" = true ]; then
+            lint_log="$tmp_dir/ratchet.log"
             lint_speaks="writer"
         fi
+        # A green fix that re-recorded an entry wrote a tracked file, and says which.
+        if [ "$FIX_MODE" = true ] && [ "$lint_status" -eq 0 ] && [ -s "$tmp_dir/ratchet.log" ]; then
+            lint_log="$tmp_dir/ratchet.log"
+            lint_speaks="writer"
+        fi
+        # Unless @jterrazz/test's section broke: its checker judges the `jterrazz(*)`
+        # diagnostics off this same report and leaves printing them to this pass, so
+        # a green pass still draws the report — the one print of each diagnostic —
+        # above whatever it would have said. A report with none draws nothing.
+        if [ "$FIX_MODE" = false ] && [ "$lint_status" -eq 0 ] && [ "$checker_status" -ne 0 ]; then
+            node "$PACKAGE_ROOT/src/cli/oxlint-report.js" "$tmp_dir/lint.json" "$tmp_dir/lint.err" \
+                --oxlint "$OXLINT" --if-diagnostics > "$tmp_dir/lint-drawn.log"
+            if [ -s "$tmp_dir/lint-drawn.log" ]; then
+                [ -n "$lint_speaks" ] && cat "$lint_log" >> "$tmp_dir/lint-drawn.log"
+                lint_log="$tmp_dir/lint-drawn.log"
+                lint_speaks="writer"
+            fi
+        fi
+    else
+        lint_status=0
     fi
-    report_pass "TypeScript Check" $type_status "$tmp_dir/type.log"
-    report_pass "$lint_label" $lint_status "$lint_log" "$lint_speaks"
-    report_pass "$format_label" $format_status "$tmp_dir/format.log"
+    selected names || names_status=0
+
+    [ -n "$type_pid" ] && report_pass "TypeScript Check" $type_status "$tmp_dir/type.log"
+    selected oxlint && report_pass "$lint_label" $lint_status "$lint_log" "$lint_speaks"
+    selected oxfmt && report_pass "$format_label" $format_status "$tmp_dir/format.log"
     [ -n "$gitignore_pid" ] &&
         report_pass "Gitignore (artefacts)" $gitignore_status "$tmp_dir/gitignore.log" writer
-    [ "$FIX_MODE" = false ] &&
+    [ -n "$knip_pid" ] &&
         report_pass "Knip (unused code)" $knip_status "$tmp_dir/knip.log"
     { [ ${#checker_pids[@]} -gt 0 ] || [ "$checker_dormant" -gt 0 ]; } &&
         report_pass "Test Conventions (@jterrazz/test)" $checker_status "$tmp_dir/checker.log" \
@@ -960,10 +1020,11 @@ run_checks() {
         report_pass "Architecture (layer map)" $architecture_status "$tmp_dir/architecture.log"
     [ -n "$astro_pid" ] &&
         report_pass "Astro (check + format)" $astro_status "$tmp_dir/astro.log" "$write"
-    report_pass "Suppressions (directives)" $suppressions_status "$tmp_dir/suppressions.log" "$write"
+    [ -n "$suppressions_pid" ] &&
+        report_pass "Suppressions (directives)" $suppressions_status "$tmp_dir/suppressions.log" "$write"
     [ -n "$markdown_pid" ] &&
         report_pass "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
-    report_pass "Names (tree)" $names_status "$tmp_dir/names.log" "$write"
+    selected names && report_pass "Names (tree)" $names_status "$tmp_dir/names.log" "$write"
     [ -n "$secrets_pid" ] && report_pass "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
 
     # Drift: the report, not a gate — how far this project stands from the
@@ -973,7 +1034,7 @@ run_checks() {
     # able to say by how much without opening every config. Only a rule turned
     # off with no reason beside it actually fails the run.
     local drift_status=0
-    if [ "$FIX_MODE" = false ]; then
+    if [ "$FIX_MODE" = false ] && selected drift; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} DRIFT ${NC} Deviations from the profile\n\n"
         node "$PACKAGE_ROOT/src/cli/check-drift.js" . --oxlint "$OXLINT" "${OXLINT_CONFIG_ARGS[@]}" \
             "${LINT_ARGS[@]}" "${DRIFT_ARGS[@]}"

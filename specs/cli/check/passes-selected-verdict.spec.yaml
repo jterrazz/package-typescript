@@ -1,0 +1,16 @@
+description: passes a run whose named passes pass, whatever a pass left out would say
+fixture: ./fixtures/typechecker/invalid/
+env: TYPESCRIPT_CHECK_PASSES=oxfmt
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed
