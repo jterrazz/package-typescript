@@ -166,13 +166,24 @@ test('loads the reader from the install the package resolves', async () => {
 
     // Then - the readers are that install's
     const loaded = await testMaterialReader(unit);
-    expect(loaded?.materialAt('/package/src/index.ts')).toBe('own');
+    expect('reader' in loaded && loaded.reader.materialAt('/package/src/index.ts')).toBe('own');
 });
 
-test("falls back to the toolchain's reader where the install publishes none", async () => {
+test('loads no reader where the install publishes none, and never asks the toolchain', async () => {
     // Given - an older install whose ./oxlint entry carries no reader
     const unit = repositoryInstalling('export default {};\n');
 
-    // Then - the readers are the ones the toolchain reaches by name
-    await expect(testMaterialReader(unit)).resolves.toStrictEqual(reader);
+    // Then - there is no reader, though the toolchain itself installs one
+    await expect(testMaterialReader(unit)).resolves.toStrictEqual({ reason: 'readerless' });
+});
+
+test('loads no reader where the package resolves no @jterrazz/test', async () => {
+    // Given - a repository with no install at all, beside a toolchain that has one
+    const unit = packageWith({
+        '.git/HEAD': 'ref: refs/heads/main\n',
+        'package.json': '{ "type": "module" }\n',
+    });
+
+    // Then - it is absent, not borrowed from the toolchain's own location
+    await expect(testMaterialReader(unit)).resolves.toStrictEqual({ reason: 'absent' });
 });

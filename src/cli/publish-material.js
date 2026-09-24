@@ -5,9 +5,9 @@
  * What test material IS belongs to `@jterrazz/test` alone — the reader its F2
  * rule judges by, `materialAt` and `testPackageOf`, published on its
  * `./oxlint` entry. This module never holds a copy: it loads the reader from
- * the install the package itself resolves, else — when that install publishes
- * none, or the package resolves none — from the one the toolchain reaches by
- * name, and judges nothing where neither publishes it.
+ * the install the package itself resolves, and from nowhere else — the
+ * toolchain's own install is never asked. A package that resolves none, or
+ * one that publishes no reader, has nothing judged.
  *
  * The evidence is the build's module graph. The package is built as it
  * builds — its own `tsdown.config.*`, else the `bundle` preset over the
@@ -55,18 +55,6 @@ function importTarget(entry) {
     return null;
 }
 
-/** The `./oxlint` entry of the install `root` resolves, as a URL — null when there is none. */
-function projectToolEntry(root) {
-    const resolved = resolveTestPackage(root);
-    const target = importTarget(resolved?.manifest.exports?.['./oxlint']);
-    if (resolved === null || target === null) {
-        return null;
-    }
-    const entry = join(resolved.dir, target);
-
-    return existsSync(entry) ? pathToFileURL(entry).href : null;
-}
-
 /** A module's two readers, or null when it publishes them not. */
 function readerOf({ materialAt, testPackageOf }) {
     return typeof materialAt === 'function' && typeof testPackageOf === 'function'
@@ -74,30 +62,33 @@ function readerOf({ materialAt, testPackageOf }) {
         : null;
 }
 
-/** The readers a module specifier publishes — null when it publishes none or does not load. */
-async function readerAt(specifier) {
-    try {
-        return readerOf(await import(specifier));
-    } catch {
-        return null;
-    }
-}
-
 /**
- * `@jterrazz/test`'s reader of test material: from the install `root`
- * resolves, else — when that install publishes none, or there is none — from
- * the one the toolchain reaches by name; null when neither publishes it.
+ * `@jterrazz/test`'s reader of test material, from the install `root`
+ * resolves: `absent` when it resolves none, `readerless` when that install
+ * publishes no reader or its entry does not load.
  *
- * @returns {Promise<{
- *     materialAt: (path: string) => string | undefined,
- *     testPackageOf: (specifier: string) => string | undefined,
- * } | null>} the two readers, or null
+ * @returns {Promise<
+ *     | { reader: { materialAt: (path: string) => string | undefined, testPackageOf: (specifier: string) => string | undefined } }
+ *     | { reason: 'absent' | 'readerless' }
+ * >} the two readers, or why there are none
  */
 export async function testMaterialReader(root) {
-    const entry = projectToolEntry(root);
-    const own = entry === null ? null : await readerAt(entry);
+    const resolved = resolveTestPackage(root);
+    if (resolved === null) {
+        return { reason: 'absent' };
+    }
+    const target = importTarget(resolved.manifest.exports?.['./oxlint']);
+    const entry = target === null ? null : join(resolved.dir, target);
+    if (entry === null || !existsSync(entry)) {
+        return { reason: 'readerless' };
+    }
+    try {
+        const reader = readerOf(await import(pathToFileURL(entry).href));
 
-    return await (own ?? readerAt('@jterrazz/test/oxlint'));
+        return reader === null ? { reason: 'readerless' } : { reader };
+    } catch {
+        return { reason: 'readerless' };
+    }
 }
 
 /**

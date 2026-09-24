@@ -1,7 +1,5 @@
-description: passes the same package once its entry no longer imports the fixtures module
-fixture:
-    - ./fixtures/publish/fixtures-module/
-    - ./fixtures/publish/fixtures-module-cut/
+description: passes a fixtures-module build that resolves no @jterrazz/test, saying nothing is judged
+fixture: ./fixtures/publish/fixtures-module/
 runs:
     - command: bundle
       exit: 0
@@ -39,6 +37,7 @@ runs:
 
            RUN  Publish (packaging)
 
+          publish-test-material: nothing to judge — no @jterrazz/test resolves from this package, and what test material is is its to say
           ✓ Passed
 
            RUN  Suppressions (directives)

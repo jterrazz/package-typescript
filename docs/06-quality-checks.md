@@ -313,9 +313,11 @@ A file `files` ships is judged on three counts:
 - an installed module compiled into it, when `testPackageOf` names its package — bundling `vitest` is never meant;
 - a specifier it leaves external, when `testPackageOf` names it and the package declares it neither in `dependencies` nor in `peerDependencies` — a test tool ships its runtime on purpose.
 
-What test material IS is `@jterrazz/test`'s alone: the two readers are the ones its F2 rule judges by, published on its `./oxlint` entry, and the pass loads them rather than keeping a copy — from the install the package resolves, else, when that install publishes no reader or the package resolves none, from the one the toolchain reaches by name. Where neither publishes them, and in a package with no build — no config of its own and no target under `dist/`, like this package — nothing is judged. The finding states itself in four parts and sends its reader to F2's row, where the definition lives.
+What test material IS is `@jterrazz/test`'s alone: the two readers are the ones its F2 rule judges by, published on its `./oxlint` entry, and the pass loads them rather than keeping a copy. The finding states itself in four parts and sends its reader to F2's row, where the definition lives.
 
-The second source is for a package that loads no reader of its own. It reaches past the repository boundary [test-package.js](../src/cli/test-package.js) keeps, since it resolves by node's rules from the toolchain's own location. In a consumer it mostly lands on the consumer's own install, or on none under a strict layout. The package that relies on it is a fixture of this repository copied where no `node_modules` sits.
+The readers come from the install the package resolves, found by the walk [test-package.js](../src/cli/test-package.js) keeps, and from nowhere else. The toolchain's own `@jterrazz/test` is never asked: it is the toolchain's dependency, not the package's, and it would judge a package by a definition the package never chose.
+
+A package that resolves none, or resolves one before 17.0.0 that publishes no reader, has nothing to judge. The pass says so in one line, `publish-test-material: nothing to judge`, with the reason, and passes. So does a package with no build — no config of its own and no target under `dist/`, like this package — though silently: there is no build to judge.
 
 A build that fails is a finding too. `publish-build` names tsdown's first error in the same four parts, and the pass carries on to publint and attw, so one run still says everything else it knows.
 

@@ -858,14 +858,10 @@ run_checks() {
         index=$((index + 1))
     done
 
-    local publish_failed_logs=()
-    index=0
+    # A green publish run prints nothing but the build guard's one line when it
+    # had nothing to judge, so every run's log is kept: an empty one adds none.
     for pid in "${publish_pids[@]}"; do
-        if ! wait "$pid"; then
-            publish_status=1
-            publish_failed_logs+=("${publish_logs[$index]}")
-        fi
-        index=$((index + 1))
+        wait "$pid" || publish_status=1
     done
 
     # ── The report ───────────────────────────────────────────────────────────
@@ -874,7 +870,7 @@ run_checks() {
     # project opts into and the four that read its tree on every run. A pass
     # that did not apply is absent; every pass that ran prints the same block.
     join_logs "$tmp_dir/checker.log" "${checker_failed_logs[@]}"
-    join_logs "$tmp_dir/publish.log" "${publish_failed_logs[@]}"
+    join_logs "$tmp_dir/publish.log" "${publish_logs[@]}"
 
     # The checker's exit code is this pass's verdict, whatever it records:
     # @jterrazz/test judges its own findings against its own section.
@@ -959,7 +955,7 @@ run_checks() {
     [ -n "$docs_layout_pid" ] &&
         report_pass "Docs (layout)" $docs_layout_status "$tmp_dir/docs-layout.log"
     [ ${#publish_pids[@]} -gt 0 ] &&
-        report_pass "Publish (packaging)" $publish_status "$tmp_dir/publish.log"
+        report_pass "Publish (packaging)" $publish_status "$tmp_dir/publish.log" writer
     [ -n "$architecture_pid" ] &&
         report_pass "Architecture (layer map)" $architecture_status "$tmp_dir/architecture.log"
     [ -n "$astro_pid" ] &&
