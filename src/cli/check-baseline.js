@@ -43,7 +43,8 @@
  * A green run speaks once about the section, never about a held finding: given
  * `--names <json>` beside a judging run, it prints one line for the WHOLE
  * section — `jterrazz.baseline.json › typescript: <n> held across <k> rules`,
- * the shape `@jterrazz/test` gives its own — when both reporters' counts
+ * the shape `@jterrazz/test` gives its own, or `… typescript: nothing held` for
+ * a section holding no entry — when both reporters' counts
  * stand at it. Where either side breaks the ratchet it prints no summary: the
  * pass that owns the broken entry prints the evidence.
  *
