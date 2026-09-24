@@ -5,7 +5,12 @@ import { dirname, join } from 'node:path';
 import { build } from 'tsdown';
 import { expect, onTestFinished, test } from 'vitest';
 
-import { builtChunks, testMaterialFindings, testMaterialReader } from './publish-material.js';
+import {
+    buildOf,
+    builtChunks,
+    testMaterialFindings,
+    testMaterialReader,
+} from './publish-material.js';
 
 /** The reader the guard loads, straight from its owner. */
 const reader = { materialAt, testPackageOf };
@@ -138,7 +143,7 @@ test('builds a package by its own config, leaving the disk as it found it', asyn
     });
 
     // When - the guard builds it
-    const chunks = await builtChunks(unit, []);
+    const chunks = await builtChunks(unit, buildOf(unit, []));
 
     // Then - both entries are listed, and nothing was copied, emitted or run
     expect(chunks?.map(({ file }) => file)).toStrictEqual(['dist/index.mjs', 'dist/testing.mjs']);
@@ -155,7 +160,7 @@ test("names each chunk as the package's own build writes it", async () => {
     });
 
     // When - the guard builds it, and then the package builds itself
-    const chunks = await builtChunks(unit, []);
+    const chunks = await builtChunks(unit, buildOf(unit, []));
     await build({ config: join(unit, 'tsdown.config.mjs'), cwd: unit, logLevel: 'silent' });
 
     // Then - the guard's names are the files the build wrote

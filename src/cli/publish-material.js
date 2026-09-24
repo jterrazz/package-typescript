@@ -96,7 +96,7 @@ export async function testMaterialReader(root) {
  * or null when the package has no build: no config of its own, and no
  * published target under `dist/`.
  */
-function buildOf(root, targets) {
+export function buildOf(root, targets) {
     const own = readdirSync(root).find((name) => OWN_CONFIG.test(name));
     if (own !== undefined) {
         return { config: join(root, own), entry: undefined };
@@ -116,17 +116,12 @@ function buildOf(root, targets) {
 }
 
 /**
- * Every chunk the package's build would write: its path from the package
- * root, the module ids compiled into it, and the specifiers it leaves to the
- * importer. Null when the package has no build. No chunk is written, and
- * the config's `copy`, `exe` and `onSuccess` are switched off.
+ * Every chunk `build` — what `buildOf` answers — would write: its path from
+ * the package root, the module ids compiled into it, and the specifiers it
+ * leaves to the importer. No chunk is written, and the config's `copy`,
+ * `exe` and `onSuccess` are switched off.
  */
-export async function builtChunks(root, targets) {
-    const build = buildOf(root, targets);
-    if (build === null) {
-        return null;
-    }
-
+export async function builtChunks(root, build) {
     const { build: tsdown } = await import('tsdown');
     /** @type {{ externals: string[], file: string, moduleIds: string[] }[]} */
     const chunks = [];

@@ -16,8 +16,8 @@
  *
  * One line per violation of this gate's own rules, `<rule>  <path>
  * <message>`; each tool's own report is printed verbatim under its name when it
- * refuses. A package whose build guard has nothing to judge gets one line
- * saying why, passing or not. Exit code: 0 when the package is publishable, 1
+ * refuses. A package with a build but no reader of test material gets one
+ * line saying why, passing or not; its build still runs. Exit code: 0 when the package is publishable, 1
  * otherwise. No `--fix`: an exports map is a contract, not a formatting choice.
  */
 
@@ -28,6 +28,7 @@ import { argv, exit, stdout } from 'node:process';
 import { stripVTControlCharacters } from 'node:util';
 
 import {
+    buildOf,
     builtChunks,
     isPacked,
     plain,
@@ -123,9 +124,9 @@ for (const target of [...new Set(targets)].toSorted((left, right) => (left < rig
 }
 
 /** The build's chunks, or the one line a build that fails earns in their stead. */
-async function chunksOrFinding() {
+async function chunksOrFinding(build) {
     try {
-        return { chunks: await builtChunks(root, targets), line: null };
+        return { chunks: await builtChunks(root, build), line: null };
     } catch (error) {
         const reason =
             stripVTControlCharacters(error instanceof Error ? error.message : String(error))
@@ -148,21 +149,26 @@ const NOTHING_TO_JUDGE = {
         'the @jterrazz/test this package resolves publishes no reader of test material on `./oxlint` (17.0.0 and later do)',
 };
 
-const loaded = await testMaterialReader(root);
-const reader = 'reader' in loaded ? loaded.reader : null;
-if (reader === null) {
-    stdout.write(`publish-test-material: nothing to judge — ${NOTHING_TO_JUDGE[loaded.reason]}\n`);
-}
-const built = reader === null ? { chunks: null, line: null } : await chunksOrFinding();
-if (built.line !== null) {
-    stdout.write(built.line);
-    failed = true;
-}
-for (const { message, path, rule } of reader === null || built.chunks === null
-    ? []
-    : testMaterialFindings({ chunks: built.chunks, manifest, reader, root })) {
-    stdout.write(`${rule}  ${path}  ${message}\n`);
-    failed = true;
+const build = buildOf(root, targets);
+if (build !== null) {
+    const loaded = await testMaterialReader(root);
+    const reader = 'reader' in loaded ? loaded.reader : null;
+    if (reader === null) {
+        stdout.write(
+            `publish-test-material: nothing to judge — ${NOTHING_TO_JUDGE[loaded.reason]}\n`,
+        );
+    }
+    const built = await chunksOrFinding(build);
+    if (built.line !== null) {
+        stdout.write(built.line);
+        failed = true;
+    }
+    for (const { message, path, rule } of reader === null || built.chunks === null
+        ? []
+        : testMaterialFindings({ chunks: built.chunks, manifest, reader, root })) {
+        stdout.write(`${rule}  ${path}  ${message}\n`);
+        failed = true;
+    }
 }
 
 for (const [name, binary, args] of [

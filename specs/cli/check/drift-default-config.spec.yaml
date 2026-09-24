@@ -26,7 +26,6 @@ runs:
 
            RUN  Publish (packaging)
 
-          publish-test-material: nothing to judge — no @jterrazz/test resolves from this package, and what test material is is its to say
           ✓ Passed
 
            RUN  Suppressions (directives)

@@ -30,7 +30,6 @@ runs:
 
           publish-exports-target  package.json  ./farewell.js resolves to nothing on disk
           publish-files  package.json  ./greeter.js is outside "files" — it resolves here and 404s in a consumer
-          publish-test-material: nothing to judge — no @jterrazz/test resolves from this package, and what test material is is its to say
           {{any}}
           Packing files with `npm pack`...
           Linting...
