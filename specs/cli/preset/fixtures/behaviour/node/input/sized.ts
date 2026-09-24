@@ -1,8 +1,8 @@
 /*
- * The size and complexity decisions, each at the edge it draws. `complexity` is
- * 12 in its `modified` variant, where a `switch` counts once; a function holds 60
- * lines, where upstream's default is 50; a file holds 300 — and this one is
- * longer, so it is reported once, at its first line.
+ * The size and complexity decisions, each at the edge it draws, one case on each
+ * side of it. `complexity` is 12 in its `modified` variant, where a `switch`
+ * counts once; a function holds 60 lines, where upstream's default is 50; a file
+ * holds 300 — and this one is longer, so it is reported once, at its last line.
  */
 
 // complexity: modified — fifteen paths under the classic count, one decision here.
@@ -54,6 +54,87 @@ export function route(kind: string): number {
             return -1;
         }
     }
+}
+
+// complexity: 12 — eleven decisions and the function's own path, at the cap.
+export function weighed(input: number): number {
+    let score = 0;
+    if (input > 0) {
+        score += 1;
+    }
+    if (input > 1) {
+        score += 1;
+    }
+    if (input > 2) {
+        score += 1;
+    }
+    if (input > 3) {
+        score += 1;
+    }
+    if (input > 4) {
+        score += 1;
+    }
+    if (input > 5) {
+        score += 1;
+    }
+    if (input > 6) {
+        score += 1;
+    }
+    if (input > 7) {
+        score += 1;
+    }
+    if (input > 8) {
+        score += 1;
+    }
+    if (input > 9) {
+        score += 1;
+    }
+    if (input > 10) {
+        score += 1;
+    }
+    return score;
+}
+
+// complexity: 12 — twelve decisions and the function's own path, one past the cap.
+export function tangled(input: number): number {
+    let score = 0;
+    if (input > 0) {
+        score += 1;
+    }
+    if (input > 1) {
+        score += 1;
+    }
+    if (input > 2) {
+        score += 1;
+    }
+    if (input > 3) {
+        score += 1;
+    }
+    if (input > 4) {
+        score += 1;
+    }
+    if (input > 5) {
+        score += 1;
+    }
+    if (input > 6) {
+        score += 1;
+    }
+    if (input > 7) {
+        score += 1;
+    }
+    if (input > 8) {
+        score += 1;
+    }
+    if (input > 9) {
+        score += 1;
+    }
+    if (input > 10) {
+        score += 1;
+    }
+    if (input > 11) {
+        score += 1;
+    }
+    return score;
 }
 
 // max-lines-per-function: 60 — fifty-five lines, which upstream's 50 would refuse.
