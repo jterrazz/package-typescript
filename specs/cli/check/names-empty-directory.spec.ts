@@ -22,7 +22,11 @@ const SIX_TARGETS = [
 
 /** The empty directories a working copy is left with, and one of each kind nothing may touch. */
 const EMPTY = ['src/abandoned', 'src/scaffold/domain/entities'];
-const KEPT = ['local/draft', 'node_modules/stale', 'vendor/.git'];
+const KEPT = ['.artifacts/tsc', 'dist/types', 'local/draft', 'node_modules/stale', 'vendor/.git'];
+
+/** An empty directory only an `--ignore-pattern` glob keeps, and the glob. */
+const OVERLOOKED = 'drafts/wip';
+const OVERLOOKING = ['--ignore-pattern', 'drafts/**'];
 
 /** A green repository carrying every kind of empty directory, and the kinds that are not one. */
 function repositoryWithEmptyDirectories(): string {
@@ -52,8 +56,12 @@ function repositoryWithEmptyDirectories(): string {
 }
 
 /** What the Names (tree) pass of a run printed between its header and its verdict, and the verdict. */
-function namesPassOf(project: string, command: 'check' | 'fix'): string[] {
-    const { stdout } = spawnSync('bash', [BIN, command], {
+function namesPassOf(
+    project: string,
+    command: 'check' | 'fix',
+    options: readonly string[] = [],
+): string[] {
+    const { stdout } = spawnSync('bash', [BIN, command, ...options], {
         cwd: project,
         encoding: 'utf8',
         env: { ...process.env, INIT_CWD: project },
@@ -104,10 +112,40 @@ describe('names-empty-directory', () => {
             false,
         ]);
         expect(existsSync(join(project, 'src'))).toBe(true);
-        expect(KEPT.map((directory) => existsSync(join(project, directory)))).toStrictEqual([
-            true,
-            true,
-            true,
+        expect(KEPT.filter((directory) => !existsSync(join(project, directory)))).toStrictEqual([]);
+    });
+
+    test('names no empty directory an --ignore-pattern glob names', () => {
+        // Given - the same repository, with an empty folder under drafts/, which git does not ignore
+        const project = repositoryWithEmptyDirectories();
+        mkdirSync(join(project, OVERLOOKED), { recursive: true });
+
+        // When - the quality checks run with a glob naming drafts/
+        const names = namesPassOf(project, 'check', OVERLOOKING);
+
+        // Then - the two empty trees are named, and drafts/ is not
+        expect(names.filter((line) => line.includes('drafts'))).toStrictEqual([]);
+        expect(names.map((line) => line.split('  ')[1] ?? line)).toStrictEqual([
+            'src/abandoned/',
+            'src/scaffold/',
+            '✗ Failed with exit code 1',
         ]);
+    });
+
+    test('removes no empty directory an --ignore-pattern glob names', () => {
+        // Given - the same repository, with an empty folder under drafts/, which git does not ignore
+        const project = repositoryWithEmptyDirectories();
+        mkdirSync(join(project, OVERLOOKED), { recursive: true });
+
+        // When - the quality fixes run with a glob naming drafts/
+        const names = namesPassOf(project, 'fix', OVERLOOKING);
+
+        // Then - the two empty trees are removed, and drafts/wip stands
+        expect(names).toStrictEqual([
+            'removed  src/abandoned/  an empty directory',
+            'removed  src/scaffold/  an empty directory',
+            '✓ Passed',
+        ]);
+        expect(existsSync(join(project, OVERLOOKED))).toBe(true);
     });
 });
