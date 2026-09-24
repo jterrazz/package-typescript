@@ -90,6 +90,17 @@ describe('publish-guard', () => {
         expect(publishPass(stdout)).toStrictEqual(['✓ Passed']);
     });
 
+    test('fails the pass on a build that fails, and nothing else', () => {
+        // Given - a package publint and attw accept, whose own config names an entry nobody wrote
+        const root = consumer('broken-build-alone/');
+
+        // When - the quality checks run
+        const { stdout } = run(root, 'check');
+
+        // Then - the build's one line is the pass's whole report, and it fails the pass
+        expect(publishPass(stdout)).toStrictEqual([BUILD_FINDING, '✗ Failed with exit code 1']);
+    });
+
     test('carries on to publint past a build that fails', () => {
         // Given - a package whose build fails and whose map names a file `files` leaves out
         const root = consumer('broken-build/');
