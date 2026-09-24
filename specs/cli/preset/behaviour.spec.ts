@@ -61,7 +61,9 @@ test.each(PROFILES)('$name fixes what it owns and says what it refuses', ({ name
 
     if (UPDATING) {
         rmSync(tree, { force: true, recursive: true });
-        mkdirSync(tree, { recursive: true });
+        if (rewritten.length > 0) {
+            mkdirSync(tree, { recursive: true });
+        }
         for (const file of rewritten) {
             writeFileSync(resolve(tree, file), readFileSync(resolve(work.path, file), 'utf8'));
         }
