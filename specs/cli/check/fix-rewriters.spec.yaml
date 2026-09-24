@@ -1,0 +1,91 @@
+description: leaves a tree that check passes, after both rewriters have run
+fixture: ./fixtures/rewriters/lint-and-format/
+runs:
+    # The end of the gesture: after `fix`, `check` agrees. Run in parallel,
+    # whichever of `oxlint --fix` and `oxfmt` finishes second writes its copy
+    # of the file over the other's, and the check that follows fails on what
+    # the fix had just settled — measured on package-test. The interleaving is
+    # not deterministic, so this states the invariant the pair of gestures
+    # owes, on a file that needs a lint fix AND a reformat.
+    - command: fix
+      exit: 0
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+
+          ✓ Passed
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✓ All checks passed
+      files:
+          index.ts:
+              equals: |
+                  export const label = 'x';
+                  export const alpha = 1;
+                  export const beta = 2;
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              none of this package's
+            rules off vs profile                 not measured
+            suppressions                         0
+            jterrazz.baseline.json › typescript  absent
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

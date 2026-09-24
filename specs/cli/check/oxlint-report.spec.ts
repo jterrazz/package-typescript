@@ -1,8 +1,8 @@
 import { directory } from '@jterrazz/test';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
 import { cli } from '../cli.specification.js';
@@ -15,7 +15,6 @@ import { cli } from '../cli.specification.js';
  */
 
 const REPOSITORY = resolve(import.meta.dirname, '../../..');
-const BIN = resolve(REPOSITORY, 'bin/typescript.sh');
 const OXLINT = resolve(REPOSITORY, 'node_modules/.bin/oxlint');
 const SHAPES = resolve(import.meta.dirname, 'fixtures/oxlint-report');
 
@@ -124,67 +123,30 @@ describe('oxlint-report', () => {
 
     /*
      * The run count is read off a JS plugin that records every oxlint process
-     * loading it. The project is built in a temp directory, and the product
-     * started on it.
+     * loading it, in the file `RUNS_LOG` names — and nowhere when nothing names
+     * one, as when this repository's own tools load the fixture's config. The
+     * project is `fixtures/oxlint-once/project/`, one `debugger` armed at error,
+     * and the held case lays a baseline over it.
      */
-
-    /** A JS plugin that writes one line per oxlint process that loads it: the arguments it was started with. */
-    const COUNTING_PLUGIN = [
-        "import { appendFileSync } from 'node:fs';",
-        '',
-        String.raw`appendFileSync(new URL('./runs.log', import.meta.url), process.argv.slice(2).join(' ') + '\n');`,
-        '',
-        "export default { meta: { name: 'counting' }, rules: {} };",
-        '',
-    ].join('\n');
-
-    /** A project with one `debugger` armed at error, whose config loads the counting plugin. */
-    function countedProject(baseline: null | string): string {
-        const project = mkdtempSync(resolve(tmpdir(), 'spec-oxlint-once-'));
-        onTestFinished(() => {
-            rmSync(project, { force: true, recursive: true });
-        });
-        writeFileSync(join(project, 'counting.js'), COUNTING_PLUGIN);
-        writeFileSync(
-            join(project, 'index.ts'),
-            'export function paused(): void {\n    debugger;\n}\n',
-        );
-        writeFileSync(
-            join(project, 'oxlint.config.ts'),
-            'export default { jsPlugins: ["./counting.js"], rules: { "no-debugger": "error" } };\n',
-        );
-        writeFileSync(
-            join(project, 'package.json'),
-            `${JSON.stringify({ name: 'spec-oxlint-once', private: true, type: 'module', version: '1.0.0' }, null, 4)}\n`,
-        );
-        writeFileSync(
-            join(project, 'tsconfig.json'),
-            '{ "compilerOptions": { "strict": true, "noEmit": true }, "include": ["index.ts"] }\n',
-        );
-        if (baseline !== null) {
-            writeFileSync(join(project, 'jterrazz.baseline.json'), baseline);
-        }
-
-        return project;
-    }
-
     test.each([
-        { baseline: null, name: 'a failing pass with no baseline to judge it' },
-        {
-            baseline: '{\n    "typescript": { "eslint/no-debugger": 1 }\n}\n',
-            name: 'a pass the baseline holds',
-        },
+        { held: false, name: 'a failing pass with no baseline to judge it' },
+        { held: true, name: 'a pass the baseline holds' },
     ])(
         'lints the project once, for the report every reader of the pass reads — $name',
-        ({ baseline }) => {
+        async ({ held }) => {
             // Given - a project whose oxlint config loads a plugin that counts the linter runs
-            const project = countedProject(baseline);
+            const project = cli
+                .env({ RUNS_LOG: '$WORKDIR/runs.log' })
+                .fixture(directory('./fixtures/oxlint-once/project/'));
+            const counted = held
+                ? project.fixture(directory('./fixtures/oxlint-once/held/'))
+                : project;
 
             // When - the quality checks run there
-            spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+            const result = await counted.exec('check');
 
             // Then - one oxlint process linted the project; the other loads of the config only printed it
-            const runs = readFileSync(join(project, 'runs.log'), 'utf8').split('\n');
+            const runs = result.file('runs.log').content.split('\n');
             expect(runs.filter((run) => run.includes('--type-aware'))).toStrictEqual([
                 expect.stringContaining('--type-aware --deny-warnings --format json'),
             ]);

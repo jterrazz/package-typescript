@@ -1,14 +1,19 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterEach, beforeEach, describe, expect, test } from 'vitest';
+import { describe, expect, onTestFinished, test } from 'vitest';
 
 /*
- * A chain in a temp directory. The ground arms a JS plugin named `jterrazz`
- * at `error`, and the checker is a STUB installed as the project's
- * @jterrazz/test, so the pass's verdict is exactly the exit code the stub was
- * told to give.
+ * A chain in a temp directory, for the two parts of the ground a fixture
+ * cannot hold. The checker is a STUB installed as the project's
+ * @jterrazz/test, under `node_modules/`, which git never tracks. And the config
+ * arms a JS plugin named `jterrazz`, the name @jterrazz/test's own plugin holds
+ * in this repository's config: oxlint refuses two plugins by one name in one
+ * run, and @jterrazz/test's checker, run alone, walks this repository and loads
+ * every config in it. The rest of the project — the stub plugin among it — is
+ * the fixture `fixtures/baseline/ownership/`, so the pass's verdict is exactly
+ * the exit code the stub was told to give.
  *
  * The claim is the ratchet's split: the `typescript` section of
  * `jterrazz.baseline.json` records and judges this package's rules only. A
@@ -19,21 +24,6 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
-let project = '';
-
-/** A plugin that reports once on every file it reads, under the plugin name @jterrazz/test ships. */
-const PLUGIN = `export default {
-    meta: { name: 'jterrazz' },
-    rules: {
-        'x1-every-file': {
-            create(context) {
-                return { Program(node) { context.report({ message: 'reported by the stub plugin', node }); } };
-            },
-        },
-    },
-};
-`;
-
 /** A checker that prints one finding and exits with the given code. */
 function checker(exitCode: number): string {
     return `#!/usr/bin/env node
@@ -42,23 +32,24 @@ process.exit(${exitCode});
 `;
 }
 
-beforeEach(() => {
-    project = mkdtempSync(resolve(tmpdir(), 'spec-baseline-ownership-'));
-    writeFileSync(
-        join(project, 'package.json'),
-        `${JSON.stringify({ name: 'spec-baseline-ownership', private: true, type: 'module', version: '1.0.0' }, null, 2)}\n`,
-    );
-    writeFileSync(
-        join(project, 'tsconfig.json'),
-        '{ "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true }, "include": ["index.ts"] }\n',
-    );
-    writeFileSync(join(project, 'plugin.mjs'), PLUGIN);
-    writeFileSync(
-        join(project, 'oxlint.config.ts'),
-        "export default { ignorePatterns: ['node_modules/**', 'plugin.mjs'], jsPlugins: ['./plugin.mjs'], rules: { 'jterrazz/x1-every-file': 'error' } };\n",
-    );
-    writeFileSync(join(project, 'index.ts'), 'export const value = 1;\n');
+/** The project's config: the stub plugin, armed. */
+const CONFIG = `export default {
+    ignorePatterns: ['node_modules/**', 'plugin.mjs'],
+    jsPlugins: ['./plugin.mjs'],
+    rules: { 'jterrazz/x1-every-file': 'error' },
+};
+`;
 
+/** The fixture in a temp directory, with its config and a stub @jterrazz/test whose checker exits 0 — removed when the test ends. */
+function groundOf(): string {
+    const project = mkdtempSync(resolve(tmpdir(), 'spec-baseline-ownership-'));
+    onTestFinished(() => {
+        rmSync(project, { force: true, recursive: true });
+    });
+    cpSync(resolve(import.meta.dirname, 'fixtures/baseline/ownership'), project, {
+        recursive: true,
+    });
+    writeFileSync(join(project, 'oxlint.config.ts'), CONFIG);
     const installed = join(project, 'node_modules/@jterrazz/test');
     mkdirSync(join(installed, 'dist'), { recursive: true });
     writeFileSync(
@@ -66,19 +57,16 @@ beforeEach(() => {
         `${JSON.stringify({ bin: { 'jterrazz-test-check': 'dist/checker.js' }, name: '@jterrazz/test', version: '17.0.0' }, null, 2)}\n`,
     );
     writeFileSync(join(installed, 'dist/checker.js'), checker(0));
-});
 
-afterEach(() => {
-    rmSync(project, { force: true, recursive: true });
-    project = '';
-});
+    return project;
+}
 
 /**
  * One run of the product command in the project. `INIT_CWD` is named because
  * npm sets it for whatever script started this suite, and `baseline` reads it
  * as the project it records — a runner's variable would send the write here.
  */
-function run(command: string): { status: null | number; stdout: string } {
+function run(project: string, command: string): { status: null | number; stdout: string } {
     const result = spawnSync('bash', [BIN, command], {
         cwd: project,
         encoding: 'utf8',
@@ -100,13 +88,14 @@ function verdict(stdout: string, label: string): string {
 describe('baseline-ownership', () => {
     test("records none of @jterrazz/test's diagnostics", () => {
         // Given - a tree whose only oxlint diagnostic is a `jterrazz(*)` one, beside one `debugger`
+        const project = groundOf();
         writeFileSync(
             join(project, 'index.ts'),
             'export function stop(): void {\n    debugger;\n}\n',
         );
 
         // When - the baseline is recorded
-        run('baseline');
+        run(project, 'baseline');
 
         // Then - the section carries this package's rule and nothing of the plugin's
         const written = readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8');
@@ -115,6 +104,7 @@ describe('baseline-ownership', () => {
 
     test("leaves @jterrazz/test's section byte for byte", () => {
         // Given - a test section on one line, keys unsorted, beside a stale typescript one and a debugger this package records
+        const project = groundOf();
         const section = '{ "jterrazz/x1-every-file": 2, "jterrazz-check/c9": 1 }';
         writeFileSync(
             join(project, 'jterrazz.baseline.json'),
@@ -126,7 +116,7 @@ describe('baseline-ownership', () => {
         );
 
         // When - the baseline is recorded
-        run('baseline');
+        run(project, 'baseline');
 
         // Then - only this package's section moved, and the other one's bytes are the ones it wrote
         expect(readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8')).toBe(
@@ -136,6 +126,7 @@ describe('baseline-ownership', () => {
 
     test("hands the file it writes to the project's own formatter", () => {
         // Given - a project whose formatter indents with tabs, and one debugger
+        const project = groundOf();
         writeFileSync(join(project, '.oxfmtrc.json'), '{ "useTabs": true }\n');
         writeFileSync(
             join(project, 'index.ts'),
@@ -143,7 +134,7 @@ describe('baseline-ownership', () => {
         );
 
         // When - the baseline is recorded
-        run('baseline');
+        run(project, 'baseline');
 
         // Then - the file is in the project's shape, not the writer's two spaces nor the default's four
         expect(readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8')).toBe(
@@ -153,8 +144,9 @@ describe('baseline-ownership', () => {
 
     test('keeps the oxlint pass green when every diagnostic is a `jterrazz(*)` one', () => {
         // Given - no baseline, and a plugin that fails oxlint on every file
+        const project = groundOf();
         // When - the checks run
-        const { stdout } = run('check');
+        const { stdout } = run(project, 'check');
 
         // Then - oxlint's exit code is not the verdict: nothing this package owns was reported
         expect(verdict(stdout, 'Oxlint Check')).toBe('✓ Passed');
@@ -162,11 +154,12 @@ describe('baseline-ownership', () => {
 
     test("takes the checker's exit code as the Test Conventions verdict", () => {
         // Given - a checker that fails, and a recorded baseline beside it
+        const project = groundOf();
         writeFileSync(join(project, 'node_modules/@jterrazz/test/dist/checker.js'), checker(1));
-        run('baseline');
+        run(project, 'baseline');
 
         // When - the checks run
-        const { stdout } = run('check');
+        const { stdout } = run(project, 'check');
 
         // Then - this package's file forgives nothing of the checker's
         expect(verdict(stdout, 'Test Conventions')).toBe('✗ Failed');
@@ -185,10 +178,11 @@ process.exit(0);
 
     test("states @jterrazz/test's held line under the Test Conventions pass on a green run", () => {
         // Given - a checker whose root run holds its ratchet
+        const project = groundOf();
         writeFileSync(join(project, 'node_modules/@jterrazz/test/dist/checker.js'), HELD_CHECKER);
 
         // When - the checks run
-        const { stdout } = run('check');
+        const { stdout } = run(project, 'check');
         const conventions = stdout.slice(
             stdout.indexOf('Test Conventions'),
             stdout.indexOf('Suppressions (directives)'),
@@ -201,13 +195,14 @@ process.exit(0);
 
     test("refuses an entry of @jterrazz/test's in this package's section", () => {
         // Given - a typescript section that still carries both packages' keys
+        const project = groundOf();
         writeFileSync(
             join(project, 'jterrazz.baseline.json'),
             '{\n  "typescript": { "jterrazz-check/c9": 1, "jterrazz/x1-every-file": 2 }\n}\n',
         );
 
         // When - the checks run
-        const { stdout } = run('check');
+        const { stdout } = run(project, 'check');
 
         // Then - each entry is sent to the section that owns it
         expect(stdout).toContain(

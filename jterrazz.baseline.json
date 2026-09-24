@@ -3,8 +3,8 @@
         "eslint/max-lines": 9
     },
     "test": {
-        "jterrazz-check/c18": 25,
+        "jterrazz-check/c18": 22,
         "jterrazz/d19w-probe-cluster": 7,
-        "jterrazz/j6w-given-in-the-test": 17
+        "jterrazz/j6w-given-in-the-test": 12
     }
 }
