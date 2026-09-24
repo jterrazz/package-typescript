@@ -778,19 +778,16 @@ run_checks() {
         fi
         # The run over the project root is the one @jterrazz/test's ratchet
         # judges, and the one whose green verdict is the held line of
-        # `jterrazz.baseline.json › test` — asked for alone with `--summary`,
-        # which a release that predates it ignores.
+        # `jterrazz.baseline.json › test`.
         local member_index=0
         for member in "${checker_members[@]}"; do
             local member_bin="${checker_member_bins[$member_index]}"
-            local summary=()
             member_index=$((member_index + 1))
             if [ "$member" = "." ]; then
-                summary=(--summary)
                 checker_root_log="$tmp_dir/checker-$checker_index.log"
             fi
             node "$member_bin" --member "$member" --oxlint-report "$tmp_dir/lint.json" \
-                "${summary[@]}" > "$tmp_dir/checker-$checker_index.log" 2>&1 &
+                > "$tmp_dir/checker-$checker_index.log" 2>&1 &
             checker_pids+=($!)
             checker_logs+=("$tmp_dir/checker-$checker_index.log")
             checker_index=$((checker_index + 1))

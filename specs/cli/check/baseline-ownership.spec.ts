@@ -224,12 +224,14 @@ process.exit(1);
         expect(verdict(stdout, 'Oxlint Check')).toBe('✓ Passed');
     });
 
-    /** A green checker that answers the root run with its held line — alone under `--summary`, as 17 does. */
+    /** A green checker that answers the root run with its bare held line whatever its flags, as 17 does, and records that run's argv beside it. */
     const HELD_CHECKER = `#!/usr/bin/env node
+const { writeFileSync } = require('node:fs');
+const { join } = require('node:path');
 const args = process.argv.slice(2);
 if (args[args.indexOf('--member') + 1] === '.') {
-    const held = 'jterrazz.baseline.json › test: 3 held across 2 rules';
-    process.stdout.write(args.includes('--summary') ? held + '\\n' : held + ' — conventions checker (tree)\\n');
+    writeFileSync(join(__dirname, 'root-argv.json'), JSON.stringify(args));
+    process.stdout.write('jterrazz.baseline.json › test: 3 held across 2 rules\\n');
 }
 process.exit(0);
 `;
@@ -249,6 +251,23 @@ process.exit(0);
         // Then - the pass is green and says what the other ratchet section holds, in the one short line
         expect(conventions).toContain('jterrazz.baseline.json › test: 3 held across 2 rules\n');
         expect(conventions).toContain('✓ Passed');
+    });
+
+    test('asks the root run for no flag @jterrazz/test 17 dropped', () => {
+        // Given - a checker recording the argv of its root run
+        const project = groundOf();
+        writeFileSync(join(project, 'node_modules/@jterrazz/test/dist/checker.js'), HELD_CHECKER);
+
+        // When - the checks run
+        run(project, 'check');
+        const argv = readFileSync(
+            join(project, 'node_modules/@jterrazz/test/dist/root-argv.json'),
+            'utf8',
+        );
+
+        // Then - the root run is the member run over `.`, and carries no `--summary`
+        expect(JSON.parse(argv)).toContain('--member');
+        expect(JSON.parse(argv)).not.toContain('--summary');
     });
 
     /** A green checker whose root run keeps no `test` section — it prints the empty form, as 17 does. */
