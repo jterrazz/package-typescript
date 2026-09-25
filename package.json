@@ -14,7 +14,8 @@
         "bin",
         "docs",
         "lint",
-        "src"
+        "src",
+        "!**/*.test.ts"
     ],
     "type": "module",
     "main": "src/index.js",
