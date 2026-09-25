@@ -18,16 +18,17 @@ const HEADER = /^ RUN (?<label>.+)$/gmu;
 /** What a run of the check showed: every pass it reported, and its exit code. */
 export type Outcome = { passes: string[]; status: number };
 
-/** `bin check`, run in `project`, in an environment of `env` over the process's own, any selection of its own left out. */
+/** `bin check`, then `args`, run in `project`, in an environment of `env` over the process's own, any selection of its own left out. */
 export async function checkOutcome(
     bin: string,
     project: string,
     env: Record<string, string>,
+    args: string[] = [],
 ): Promise<Outcome> {
     const base = { ...process.env };
     delete base.BASH_ENV;
     delete base.TYPESCRIPT_CHECK_PASSES;
-    const child = spawn('bash', [bin, 'check'], {
+    const child = spawn('bash', [bin, 'check', ...args], {
         cwd: project,
         env: { ...base, ...env },
         stdio: ['ignore', 'pipe', 'ignore'],
@@ -60,26 +61,49 @@ function exportedSelection(): Record<string, string> {
 /** The variables that say where the project and the shell are, which a run is right to follow. */
 const LOCATION = new Set(['HOME', 'INIT_CWD', 'PATH', 'PWD']);
 
-/** Every environment variable the packed shell scripts read and never set, the location ones left out. */
-function environmentInputs(tree: string): string[] {
-    const scripts = packedFiles(tree)
+/** Every packed shell script's text, one after the other. */
+function packedScripts(tree: string): string {
+    return packedFiles(tree)
         .filter((path) => path.endsWith('.sh'))
         .map((path) => readFileSync(join(tree, path), 'utf8'))
         .join('\n');
+}
+
+/**
+ * What a shell script gives a variable its value by: an assignment, `name=`
+ * or `name+=` or `name[i]=`; a `local`, which shadows what bash inherited; a
+ * `for` loop's name; and every name a `read` fills. An `export` or a
+ * `declare` with no `=` keeps the inherited value, so it sets nothing.
+ */
+const ASSIGNS =
+    /\blocal(?:\s+-[a-zA-Z]+)*\s+(?<local>[A-Za-z_]\w*)|\bfor\s+(?<loop>[A-Za-z_]\w*)\s+in\b|\bread(?:\s+-[a-zA-Z]+(?:\s+'[^']*'|\s+"[^"]*")?)*(?<reads>(?:\s+[A-Za-z_]\w*)+)|(?:^|[\s;&|(])(?<assigned>[A-Za-z_]\w*)(?:\[[^\]]*\])?\+?=/gmu;
+
+/** Every environment variable the packed shell scripts read and never set, of any case, the location ones left out. */
+function environmentInputs(tree: string): string[] {
+    const scripts = packedScripts(tree);
     const read = new Set(
-        [...scripts.matchAll(/\$\{?(?<name>[A-Z][A-Z0-9_]*)/gu)].map(
+        [...scripts.matchAll(/\$\{?(?<name>[A-Za-z_]\w*)/gu)].map(
             (match) => match.groups?.name ?? '',
         ),
     );
     const set = new Set(
-        [
-            ...scripts.matchAll(
-                /(?:\b(?:local|export|declare(?: -[a-zA-Z]+)?|read(?: -[a-z]+)*|for)\s+|^\s*)(?<name>[A-Z][A-Z0-9_]*)\b/gmu,
+        [...scripts.matchAll(ASSIGNS)].flatMap(({ groups = {} }) =>
+            [groups.local ?? '', groups.loop ?? '', groups.assigned ?? ''].concat(
+                (groups.reads ?? '').trim().split(/\s+/u),
             ),
-        ].map((match) => match.groups?.name ?? ''),
+        ),
     );
 
     return [...read].filter((name) => !set.has(name) && !LOCATION.has(name));
+}
+
+/** Every flag a `case` arm of the packed shell scripts matches, `--json)` or `-h|--help)`. */
+export function argvFlags(tree: string): string[] {
+    const arms = [...packedScripts(tree).matchAll(/^\s*(?<arm>-[-\w|]*)\)/gmu)];
+
+    return [...new Set(arms.flatMap((match) => (match.groups?.arm ?? '').split('|')))].filter(
+        (flag) => flag.startsWith('-'),
+    );
 }
 
 /**

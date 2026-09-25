@@ -4,7 +4,7 @@ import { basename, join, resolve } from 'node:path';
 import { expect, onTestFinished, test } from 'vitest';
 
 import { fragmentsIn, walkModules } from './module-walk.js';
-import { checkOutcome, selectingEnvironments } from './packed-bin.js';
+import { argvFlags, checkOutcome, selectingEnvironments } from './packed-bin.js';
 import {
     isRecord,
     loadPacked,
@@ -165,15 +165,29 @@ test('the catalogue and the passes the tarball ships are consumer alone', async 
         rows.find((row) => row.channel === 'checker' && row.id === match.groups?.pass),
     );
 
-    // Then - the shell scripts define which passes run once, as every pass, whatever came before
-    const definitions = packedFiles(tree)
+    // Then - every `selected` the shell scripts write, outside a comment, is its one definition, as every pass, or asks about a consumer pass by name
+    const consumerPasses = new Set(
+        rows
+            .filter((row) => row.channel === 'checker' && row.audience === 'consumer')
+            .map((row) => text(row, 'id')),
+    );
+    const uses = packedFiles(tree)
         .filter((path) => path.endsWith('.sh'))
         .flatMap((path) =>
-            [
-                ...readFileSync(join(tree, path), 'utf8').matchAll(/^.*\bselected\s*\(\s*\).*$/gmu),
-            ].map((match) => `${path}: ${match[0].trim()}`),
+            readFileSync(join(tree, path), 'utf8')
+                .split('\n')
+                .filter((line) => !line.trimStart().startsWith('#'))
+                .flatMap((line) =>
+                    [...line.matchAll(/\bselected\b(?<after>\S*(?: [a-z]+\b)?)/gu)].map(
+                        (match) => ({ after: match.groups?.after ?? '', line, path }),
+                    ),
+                ),
         );
-    expect(definitions).toStrictEqual(['bin/commands/check.sh: selected() {']);
+    expect(
+        uses
+            .filter(({ after }) => !consumerPasses.has(after.trim()))
+            .map(({ line, path }) => `${path}: ${line.trim()}`),
+    ).toStrictEqual(['bin/commands/check.sh: selected() {']);
     expect(script).toContain('\nselected() {\n    return 0\n}\n');
 
     // Then - the catalogue exposes its consumer half alone, and each pass is a consumer row
@@ -217,13 +231,21 @@ test('every module the packed tree holds reaches consumer fragments alone, whate
 });
 
 test('every shell command the tarball installs runs every pass, whatever its environment holds', async () => {
-    // Given - each shell bin, run where no pass applies: bare, then under every way an environment could choose its passes
+    // Given - each shell bin, run where no pass applies: bare, then under every way an environment could choose its passes, then handed each flag its scripts match, naming a pass
     const tree = packedTree();
     const project = mkdtempSync(join(tmpdir(), 'tarball-bin-'));
     onTestFinished(() => {
         rmSync(project, { force: true, recursive: true });
     });
-    const environments = selectingEnvironments(tree, project);
+    const variants = [
+        ...Object.entries(selectingEnvironments(tree, project)).map(([name, env]) => ({
+            args: [],
+            env,
+            name,
+        })),
+        ...argvFlags(tree).map((flag) => ({ args: [flag, 'secrets'], env: {}, name: flag })),
+    ];
+    expect(variants.map(({ name }) => name)).toContain('--json');
     const bins = publishedBins(tree).filter((path) => path.endsWith('.sh'));
     expect(bins.length).toBeGreaterThan(0);
     const outcomes = await Promise.all(
@@ -231,9 +253,9 @@ test('every shell command the tarball installs runs every pass, whatever its env
             bare: await checkOutcome(join(tree, bin), project, {}),
             bin,
             runs: await Promise.all(
-                Object.entries(environments).map(async ([name, env]) => ({
+                variants.map(async ({ args, env, name }) => ({
                     name,
-                    outcome: await checkOutcome(join(tree, bin), project, env),
+                    outcome: await checkOutcome(join(tree, bin), project, env, args),
                 })),
             ),
         })),
