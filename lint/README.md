@@ -18,6 +18,6 @@ The builders enforce nothing: the invariants judge this package's fragments alon
 
 ## What proves it
 
-- `_contract.test.ts` — the invariants, audited over every shipped fragment, and the compile of a fragment.
+- `_contract.test.ts` — the invariants, audited over every fragment a module of `lint/` exports by default, profile or not, and the compile of a fragment.
 - `catalog.test.ts` — renders the chapter's projection of the manifest, and fails a chapter that has drifted from it.
 - `specs/cli/preset/` — the resolved rule set, the plugin coverage, the fixpoint against the formatter, the behaviour of each decision, and the exclusive pairs.

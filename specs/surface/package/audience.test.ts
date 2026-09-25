@@ -1,11 +1,11 @@
-import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { expect, test } from 'vitest';
 
 import { AUDIENCES } from '../../../lint/_contract.js';
 import { catalog } from '../../../lint/catalog.js';
 import { PROFILES } from '../../../lint/profiles.js';
+import { lintFragments } from './lint-fragments.js';
 
 /*
  * Every rule this package holds declares who it is for: `consumer`, meaningful
@@ -16,35 +16,17 @@ import { PROFILES } from '../../../lint/profiles.js';
 
 const ROOT = resolve(import.meta.dirname, '../../..');
 
-/** Every `.js` module under `lint/`, as a path from the package root. */
-function lintModules(directory = join(ROOT, 'lint')): string[] {
-    return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-        const path = join(directory, entry.name);
-        if (entry.isDirectory()) {
-            return lintModules(path);
-        }
-        return entry.name.endsWith('.js') ? [relative(ROOT, path)] : [];
-    });
-}
-
 /** Whether a value is an object whose keys can be read. */
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
 }
 
-/** A `lint/` module's audience, when its default export is a fragment. */
-async function declaredBy(path: string): Promise<{ audience: unknown; path: string }[]> {
-    const module: unknown = await import(pathToFileURL(join(ROOT, path)).href);
-    const fragment = isRecord(module) ? module.default : undefined;
-
-    return isRecord(fragment) && 'decisions' in fragment
-        ? [{ audience: fragment.audience, path }]
-        : [];
-}
-
 /** The fragments `lint/` declares — every module's default export that holds decisions. */
-const declared = await Promise.all(lintModules().map(declaredBy));
-const fragments = declared.flat();
+const declared = await lintFragments(ROOT);
+const fragments = declared.map(({ fragment, path }) => ({
+    audience: fragment.audience,
+    path,
+}));
 
 /** The registry of `typescript check`'s passes, one row per pass. */
 const registry: unknown = JSON.parse(readFileSync(join(ROOT, 'src/cli/check-passes.json'), 'utf8'));

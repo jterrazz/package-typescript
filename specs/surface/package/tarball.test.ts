@@ -1,9 +1,11 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { expect, onTestFinished, test } from 'vitest';
+
+import { lintFragments } from './lint-fragments.js';
 
 /*
  * What npm would publish carries `consumer` rules alone: no test file — every
@@ -69,17 +71,6 @@ async function load(tree: string, path: string): Promise<Record<string, unknown>
         throw new Error(`${path} exports nothing`);
     }
     return module;
-}
-
-/** Every `.js` module under the packed tree's `lint/`, as a path from its root. */
-function lintModules(tree: string, directory = join(tree, 'lint')): string[] {
-    return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-        const path = join(directory, entry.name);
-        if (entry.isDirectory()) {
-            return lintModules(tree, path);
-        }
-        return entry.name.endsWith('.js') ? [relative(tree, path)] : [];
-    });
 }
 
 /** The audiences a list of declarations carries, one per entry. */
@@ -156,23 +147,14 @@ test('the check the tarball ships runs every pass, with no selector of its own',
 });
 
 test('every fragment the packed lint/ holds is consumer, whether a profile carries it or not', async () => {
-    // Given - every module of the packed lint/, and the fragment each one exports by default
-    const tree = packedTree();
-    const modules = lintModules(tree);
-    expect(modules).toContain('lint/_contract.js');
-    const fragments = await Promise.all(
-        modules.map(async (path) => {
-            const module = await load(tree, path);
-            const exported = module.default;
-            return isRecord(exported) && 'decisions' in exported
-                ? [{ audience: exported.audience, path }]
-                : [];
-        }),
-    );
+    // Given - every fragment a module of the packed lint/ exports by default
+    const fragments = await lintFragments(packedTree());
 
     // Then - none of them is the package's own discipline
-    expect(fragments.flat().length).toBeGreaterThan(15);
-    for (const { audience, path } of fragments.flat()) {
-        expect.soft(audience, `${path} ships a fragment that is not consumer`).toBe('consumer');
+    expect(fragments.length).toBeGreaterThan(15);
+    for (const { fragment, path } of fragments) {
+        expect
+            .soft(fragment.audience, `${path} ships a fragment that is not consumer`)
+            .toBe('consumer');
     }
 });

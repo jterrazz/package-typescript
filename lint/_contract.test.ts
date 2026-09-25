@@ -1,23 +1,20 @@
+import { resolve } from 'node:path';
 import { expect, test } from 'vitest';
 
+import { lintFragments } from '../specs/surface/package/lint-fragments.js';
 import { fragment, off, on, REASON_KINDS, typeAware, unsafeFix } from './_contract.js';
-import hexagonal from './architecture/hexagonal.js';
 import { compile } from './compile.js';
-import { PROFILES } from './profiles.js';
 
 /*
  * The two invariants every fragment of the rulebook rests on: a decision is
  * `error` or `off` and never `warn`, and an `off` carries exactly one of the
- * five recorded reasons. They judge this package's own fragments alone — no
- * consumer can author one — so they are `self` rules: the contract ships
- * without them, and this suite audits every fragment a profile is compiled
- * from.
+ * five recorded reasons. They judge this package's own fragments alone —
+ * `fragment()` is not exported — so they are `self` rules: the contract ships
+ * without them, and this suite audits every fragment a module of `lint/`
+ * exports by default, whether a profile carries it or not.
  */
 
 const REASON = { by: 'oxfmt sortImports', kind: 'covered' } as const;
-
-/** A fragment as the audit reads it. */
-type Fragment = ReturnType<typeof fragment>;
 
 /** A value whose keys the audit reads. */
 type Loose = Record<string, unknown>;
@@ -60,11 +57,11 @@ function decisionProblems(decision: unknown): string[] {
 }
 
 /** A fragment's decision blocks: its own body, then each override's. */
-function blocksOf(one: Fragment): Loose[] {
-    const overrides: readonly unknown[] = one.overrides;
+function blocksOf(one: Loose): Loose[] {
+    const overrides: readonly unknown[] = Array.isArray(one.overrides) ? one.overrides : [];
 
     return [
-        one.decisions,
+        isRecord(one.decisions) ? one.decisions : {},
         ...overrides.map((override) =>
             isRecord(override) && isRecord(override.decisions) ? override.decisions : {},
         ),
@@ -72,7 +69,7 @@ function blocksOf(one: Fragment): Loose[] {
 }
 
 /** Everything a fragment owes the contract, as the problems it has. */
-function problemsOf(one: Fragment): string[] {
+function problemsOf(one: Loose): string[] {
     const owner = typeof one.id === 'string' && one.id !== '' ? one.id : '(no id)';
 
     return [
@@ -85,16 +82,13 @@ function problemsOf(one: Fragment): string[] {
     ];
 }
 
-test('every fragment a profile ships keeps both invariants', () => {
-    // Given - every fragment the six profiles and the hexagonal map are compiled from
-    const shipped = new Set([
-        ...Object.values(PROFILES).flatMap((one) => one.fragments),
-        hexagonal,
-    ]);
-    expect(shipped.size).toBeGreaterThan(15);
+test('every fragment lint/ declares keeps both invariants', async () => {
+    // Given - every fragment a module of lint/ exports by default, profile or not
+    const declared = await lintFragments(resolve(import.meta.dirname, '..'));
+    expect(declared.length).toBeGreaterThan(15);
 
     // Then - none breaks the contract
-    expect([...shipped].flatMap((one) => problemsOf(one))).toStrictEqual([]);
+    expect(declared.flatMap(({ fragment: one }) => problemsOf(one))).toStrictEqual([]);
 });
 
 test('names an off with no reason', () => {
