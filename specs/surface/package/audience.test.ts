@@ -66,11 +66,15 @@ function shippedModules(directory: string): string[] {
     });
 }
 
-/** The ways a shipped module refuses, each counted off its text: a throw, a rejection, an exit with anything but 0. */
+/**
+ * The ways a shipped module refuses, each counted off its text: a throw of an
+ * error it builds, with or without `new`; a rejection, whatever it rejects
+ * with; an exit with anything but a literal 0 — a variable's value included.
+ */
 const REFUSALS: Record<string, { script: RegExp; module: RegExp }> = {
-    exit: { module: /\bexit\((?!0\))/gu, script: /\bexit [1-9]/gu },
-    reject: { module: /\breject\(new\b/gu, script: /$^/gu },
-    throw: { module: /\bthrow new \w+\(/gu, script: /$^/gu },
+    exit: { module: /\bexit\((?!0\))/gu, script: /(?<![\w-])exit\s+(?:[1-9]|"?\$)/gu },
+    reject: { module: /\breject\(/gu, script: /$^/gu },
+    throw: { module: /\bthrow\s+(?:new\s+)?[\w$.]+\(/gu, script: /$^/gu },
 };
 
 test('every fragment of the rulebook declares its audience', () => {
@@ -164,6 +168,37 @@ test('every refusal a shipped module makes is a consumer row, and every row is s
                 `${text(row, 'id')} is no longer worded so in ${module}`,
             )
             .toContain(text(row, 'message'));
+    }
+});
+
+test('a refusal counts however it is spelled, and a rethrow or a clean exit does not', () => {
+    // Given - each spelling of a refusal, and each of what is none
+    const spellings: Record<string, { module?: string[]; none: string[]; script?: string[] }> = {
+        exit: {
+            module: ['exit(1);', 'process.exit(code);'],
+            none: ['exit(0);', 'exit 0', 'printf "exit code %d"', '(--linter-exit "$status")'],
+            script: ['exit 1', 'exit "$status"', 'exit $?'],
+        },
+        reject: { module: ['reject(new Error(x));', 'reject(error);', 'reject();'], none: [] },
+        throw: {
+            module: ['throw new TypeError(x);', 'throw Error(x);', 'throw errors.refused(x);'],
+            none: ['throw error;', "'only-throw-error'"],
+        },
+    };
+
+    // Then - every spelling counts once, where it is written, and nothing else counts
+    for (const [by, { module: inModule, script }] of Object.entries(REFUSALS)) {
+        const cases = spellings[by] ?? { none: [] };
+        expect.soft(by in spellings, `${by} has no spelling proved`).toBe(true);
+        for (const line of cases.module ?? []) {
+            expect.soft(line.match(inModule)?.length, `${line} is no ${by}`).toBe(1);
+        }
+        for (const line of cases.script ?? []) {
+            expect.soft(line.match(script)?.length, `${line} is no ${by}`).toBe(1);
+        }
+        for (const line of cases.none) {
+            expect.soft(line.match(inModule) ?? line.match(script), `${line} counts`).toBeNull();
+        }
     }
 });
 
