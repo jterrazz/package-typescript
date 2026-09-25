@@ -37,6 +37,10 @@ runs:
           names-root-stale  migrations/  `migrations/` is declared in jterrazz.config.ts's `typescript.roots` and holds no file — delete the entry
           ✗ Failed with exit code 1
 
+           RUN  Comments (density)
+
+          ✓ Passed
+
            RUN  Secrets (credentials)
 
           ✓ Passed

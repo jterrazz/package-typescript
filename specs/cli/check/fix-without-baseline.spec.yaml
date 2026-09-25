@@ -32,6 +32,10 @@ runs:
 
           ✓ Passed
 
+           RUN  Comments (density)
+
+          ✓ Passed
+
            END  Finalizing quality fixes
 
           ✗ Some checks failed

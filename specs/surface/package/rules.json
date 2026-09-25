@@ -67,6 +67,11 @@
     {
         "audience": "consumer",
         "channel": "checker",
+        "id": "comments"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
         "id": "secrets"
     },
     {
@@ -222,8 +227,8 @@
         "audience": "consumer",
         "by": "exit",
         "channel": "runtime",
-        "id": "baseline-no-names-report",
-        "message": "the Names (tree) pass wrote no report",
+        "id": "baseline-no-pass-report",
+        "message": "pass wrote no report — the ${SECTION} section is left as it was",
         "module": "src/cli/check-baseline.js"
     },
     {
@@ -302,6 +307,14 @@
         "audience": "consumer",
         "by": "exit",
         "channel": "runtime",
+        "id": "comments-ratchet",
+        "message": "the count is held exactly so no comment arrives unseen",
+        "module": "src/cli/check-comments.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
         "id": "doctor-out-of-range",
         "message": "exit(failed || skewed ? 1 : 0);",
         "module": "src/cli/doctor.js"
@@ -375,7 +388,7 @@
         "by": "exit",
         "channel": "runtime",
         "id": "baseline-write-failed",
-        "message": "--names \"$NAMES_REPORT\" --write || exit 1",
+        "message": "--comments \"$COMMENTS_REPORT\" --write || exit 1",
         "module": "bin/typescript.sh"
     },
     {

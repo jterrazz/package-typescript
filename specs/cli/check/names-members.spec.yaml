@@ -36,6 +36,10 @@ runs:
           names-root-foreign  apps/web/lint/  `apps/web/lint/` holds the lint rules a package ships, and neither apps/web/package.json nor its build publishes it — ship it, or move it under src/
           ✗ Failed with exit code 1
 
+           RUN  Comments (density)
+
+          ✓ Passed
+
            RUN  Secrets (credentials)
 
           ✓ Passed

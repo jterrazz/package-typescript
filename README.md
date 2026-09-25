@@ -48,7 +48,7 @@ The full corpus lives in [`docs/`](docs/):
 - [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md) — how this toolchain proves itself.
 - [Operating](docs/04-operating.md) — what publishes it, and which number moves.
 - [Building](docs/05-building.md) — `build`, `bundle`, `start`, `dev`.
-- [Quality checks](docs/06-quality-checks.md) — `check` / `fix` and their fourteen passes.
+- [Quality checks](docs/06-quality-checks.md) — `check` / `fix` and their fifteen passes.
 - [Lint presets](docs/07-lint-presets.md) — the rulebook, the six profiles, `compose`, architecture, knip.
 - [Repo structure](docs/08-repo-structure.md) — pointer to the shared doctrine; what's TypeScript-specific here.
 

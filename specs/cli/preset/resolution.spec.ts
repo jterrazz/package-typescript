@@ -47,6 +47,10 @@ describe('resolution', () => {
 
             ✓ Passed
 
+             RUN  Comments (density)
+
+            ✓ Passed
+
              RUN  Secrets (credentials)
 
             ✓ Passed

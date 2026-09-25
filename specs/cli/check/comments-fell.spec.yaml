@@ -1,0 +1,150 @@
+description: refuses comment lines fallen below the recorded count, until fix re-records the fall
+fixture: ./fixtures/comments/fell/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
+
+          comment-lines  jterrazz.baseline.json › typescript  found: 2 comment lines — 50% of 4 source lines, below the 3 recorded · why: the default is no comment — a name carries the meaning, and the count is held exactly so no comment arrives unseen, and slack left in the entry would let one arrive · fix: run 'typescript fix', which re-records the fall · read: docs/06-quality-checks.md#the-comments-density-pass
+          ✗ Failed with exit code 1
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            jterrazz.baseline.json › typescript  3
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
+    - command: fix
+      exit: 0
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+
+          ✓ Passed
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
+
+          re-recorded jterrazz.baseline.json › typescript › comments/comment-lines 3 → 2
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✓ All checks passed
+      files:
+          jterrazz.baseline.json:
+              equals: |
+                  {
+                      "typescript": {
+                          "comments/comment-lines": 2
+                      }
+                  }
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          jterrazz.baseline.json › typescript: 2 held across 1 rule
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            jterrazz.baseline.json › typescript  2
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

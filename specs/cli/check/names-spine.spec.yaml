@@ -36,6 +36,10 @@ runs:
           names-root-foreign  scripts/  `scripts/` is a root outside the spine — move it under src/, or declare it in jterrazz.config.ts's `typescript.roots` with its reason
           ✗ Failed with exit code 1
 
+           RUN  Comments (density)
+
+          ✓ Passed
+
            RUN  Secrets (credentials)
 
           ✓ Passed

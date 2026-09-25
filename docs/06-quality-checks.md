@@ -12,7 +12,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 
 ## The passes
 
-`typescript check` runs up to fourteen passes. Three spawn a tool on every invocation, knip and four tree gates run on every `check`, and the other six are opt-in — they appear only when the project qualifies.
+`typescript check` runs up to fifteen passes. Three spawn a tool on every invocation, knip and five tree gates run on every `check`, and the other six are opt-in — they appear only when the project qualifies.
 
 | Pass                              | Tool                        | When it runs                                                             |
 | --------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
@@ -29,9 +29,10 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)                   |
 | Markdown (prose)                  | the prose gate              | always (check only — a paragraph is not machine-split)                   |
 | Names (tree)                      | the naming gate             | always (check and fix — `--fix` deletes an empty directory)              |
+| Comments (density)                | the comment gate            | always (check and fix — `--fix` re-records a fall)                       |
 | Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                 |
 
-`typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate and the naming gate in parallel — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
+`typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate, the naming gate and the comment gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
 
 ### In a workspace
 
@@ -259,13 +260,13 @@ The count is every finding the section holds today — the linter's and the Name
 
 ### One owner per entry
 
-The ratchet splits by owner, and each package's command writes its own section of the one file. The `typescript` section holds oxlint's own rules and the Names (tree) pass's `names/*` entries ([its section](#the-names-tree-pass)). Every `jterrazz(*)` rule and every conventions-checker finding is the `test` section's, in the same shape, which `@jterrazz/test` writes and judges. `typescript baseline` rewrites its own section and leaves every other byte of the file as it was.
+The ratchet splits by owner, and each package's command writes its own section of the one file. The `typescript` section holds oxlint's own rules, the Names (tree) pass's `names/*` entries ([its section](#the-names-tree-pass)) and the Comments (density) pass's `comments/comment-lines` ([its section](#the-comments-density-pass)). Every `jterrazz(*)` rule and every conventions-checker finding is the `test` section's, in the same shape, which `@jterrazz/test` writes and judges. `typescript baseline` rewrites its own section and leaves every other byte of the file as it was.
 
 One oxlint run carries both packages' rules, because a consumer composes `@jterrazz/test`'s `testing` fragment into its config. One filter on the plugin name keeps any finding from being counted twice: a diagnostic whose code is `jterrazz(<rule>)` is set aside before this package counts, and the oxlint pass is green when those are all the linter reported. An entry under `jterrazz/` or `jterrazz-check/` in the `typescript` section is refused as misplaced, naming `jterrazz.baseline.json › test` — a finding lives in one section and answers to one judge.
 
 The judge is told oxlint's exit code, so the split never forgives a failure no diagnostic carries: a linter that exits non-zero with an empty report failed on something else (a config it could not load), and the pass stays red. Severity is never read — a finding a release ships at `warn` is exactly the debt a ratchet exists to hold down.
 
-`fix` is judged by the same section as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Before it judges, `fix` re-records what FELL: an entry whose count is below it is lowered to that count, and one at zero is dropped, each named in its pass — `re-recorded jterrazz.baseline.json › typescript › <rule> <was> → <now>`, the linter's entries under the Oxlint pass and the `names/*` ones under the Names pass. It never raises an entry nor adds a key: debt that grew is written only by `typescript baseline`, by hand. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green. The pair reads the same tree where there is NO section either: both count the diagnostics, both print the same lines, and neither reads severity.
+`fix` is judged by the same section as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Before it judges, `fix` re-records what FELL: an entry whose count is below it is lowered to that count, and one at zero is dropped, each named in its pass — `re-recorded jterrazz.baseline.json › typescript › <rule> <was> → <now>`, the linter's entries under the Oxlint pass, the `names/*` ones under the Names pass and `comments/comment-lines` under the Comments pass. It never raises an entry nor adds a key: debt that grew is written only by `typescript baseline`, by hand. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green. The pair reads the same tree where there is NO section either: both count the diagnostics, both print the same lines, and neither reads severity.
 
 ### Recording it
 
@@ -273,14 +274,14 @@ The judge is told oxlint's exit code, so the split never forgives a failure no d
 typescript baseline
 ```
 
-A command of its own, because it neither checks nor repairs: it writes down where the project actually stands, debt that grew included. `fix --baseline` would bury that rewrite inside the gesture a developer runs twenty times a day; `fix` records only the falls, which can make the file shrink and never let it grow. The `typescript` section is written from the current counts of this package's rules, then the file is handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape. The `test` section is recorded by `@jterrazz/test`'s own command, never by this one, and a file this command cannot read as sections is refused rather than rewritten. So is a run whose Names (tree) pass wrote no report: the section's `names/*` side is unknown, and writing it would erase that debt rather than record it — `typescript check` prints why the pass died.
+A command of its own, because it neither checks nor repairs: it writes down where the project actually stands, debt that grew included. `fix --baseline` would bury that rewrite inside the gesture a developer runs twenty times a day; `fix` records only the falls, which can make the file shrink and never let it grow. The `typescript` section is written from the current counts of this package's rules, then the file is handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape. The `test` section is recorded by `@jterrazz/test`'s own command, never by this one, and a file this command cannot read as sections is refused rather than rewritten. So is a run whose Names (tree) or Comments (density) pass wrote no report: that side of the section is unknown, and writing it would erase that debt rather than record it — `typescript check` prints why the pass died.
 
 Two more refusals keep the file honest, both in the Oxlint pass:
 
 - `baseline-unreadable` — a `jterrazz.baseline.json` that is not JSON, or that holds a top-level key whose value is not a section of counts: a flat `{ "<rule>": <count> }` copied from an older file is the common case.
 - `baseline-legacy` — a `typescript.baseline.json`, `test.baseline.json` or `oxlint.baseline.json` still at the root. None is read; each is named with the section its entries move to, and the pass stays red until it is gone.
 
-This repository's `typescript` section holds one entry, `eslint/max-lines`: the size caps turned on in 11.0.0 found nine files past 300 lines in its own source, splitting each is a change of its own, and the entry is what stops a tenth. Turning type-aware linting on had found seven diagnostics, and those were fixed rather than recorded. The toolchain is consumer #1 of the rulebook it ships, so its own tree carries only the debt a new rule found, and only until it is paid.
+This repository's `typescript` section holds two entries. `eslint/max-lines`: the size caps turned on in 11.0.0 found nine files past 300 lines in its own source, splitting each is a change of its own, and the entry is what stops a tenth. `comments/comment-lines` is the comment debt the Comments (density) pass found on the day it arrived, burned down file by file. Turning type-aware linting on had found seven diagnostics, and those were fixed rather than recorded. The toolchain is consumer #1 of the rulebook it ships, so its own tree carries only the debt a new rule found, and only until it is paid.
 
 ## The Publish (packaging) pass
 
@@ -516,6 +517,20 @@ A directory holding only empty directories is empty, and is named once, at its t
 ### What the ratchet records
 
 Every rule carries the code `names(<rule>)`, and the ratchet records it as `names/<rule>`: `typescript baseline` writes the pass's counts into the `typescript` section of `jterrazz.baseline.json` beside the linter's, and where the section holds a `names/*` entry this pass is judged by it, exactly, with the four refusals of [the ratchet](#the-ratchet) — and `typescript fix` re-records the entries that fell, as it does the linter's. A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
+
+## The Comments (density) pass
+
+The default is no comment: the code speaks through its names, and a name that needs a comment is renamed instead. So the number of comment lines a project holds is held exactly, like a debt — a new one is a decision someone records, never a drift nobody saw.
+
+**What is measured.** Every source file the Oxlint pass lints — a `.js`, `.ts`, `.jsx`, `.tsx`, `.mjs`, `.cjs`, `.mts`, `.cts`, `.astro`, `.vue` or `.svelte` that git does not ignore, tests included — outside the ground a test stands on and every `--ignore-pattern`. A file whose first five lines carry `@generated` is a tool's output, not the project's prose, and is skipped; so is every Markdown page, which is documentation, not a comment.
+
+**What a comment line is.** A physical line that any comment covers — a `//` line, a trailing `//` after code, and every line a `/* … */` block spans, its opening and closing lines included — read by the same reader the Suppressions pass reads directives with, so a `//` inside a string or a template is never one. A line whose only comment is a directive (`oxlint-disable*`, `eslint-disable*`, `@ts-expect-error`, `@ts-ignore`, `biome-ignore`) is not counted: a directive is the Suppressions pass's, and the reason it carries is required there. Nor is a test's `// Given - `, `// When - ` or `// Then - ` marker: `@jterrazz/test` requires it of every test, so it is structure, and adding a test never moves the count.
+
+| Rule            | Refuses                                                                                 |
+| --------------- | --------------------------------------------------------------------------------------- |
+| `comment-lines` | a count of comment lines different from the `comments/comment-lines` entry, or no entry |
+
+The count is recorded as `comments/comment-lines` in the `typescript` section of `jterrazz.baseline.json`, and judged with the four refusals of [the ratchet](#the-ratchet): a count above the entry, a count and no entry, a count below it, an entry left at zero. `typescript fix` lowers the entry to a count that fell, and drops it at zero; only `typescript baseline` raises it, by hand, for a comment that states what the code cannot. The finding states itself in four parts, `found: … · why: … · fix: … · read: …`, and its `found` gives the density — the lines, and their share of the measured source.
 
 ## The Secrets (credentials) pass
 

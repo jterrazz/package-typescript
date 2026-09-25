@@ -30,6 +30,10 @@ runs:
 
           ✓ Passed
 
+           RUN  Comments (density)
+
+          ✓ Passed
+
            END  Finalizing quality fixes
 
           ✓ All checks passed
@@ -64,6 +68,10 @@ runs:
           ✓ Passed
 
            RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
 
           ✓ Passed
 

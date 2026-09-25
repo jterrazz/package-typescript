@@ -28,7 +28,7 @@ That is a deliberate exception to what the toolchain asks of everyone else, and 
 
 ## Why the CLI is bash
 
-`typescript check` runs up to fourteen passes, most of them separate processes — tsc, oxlint, oxfmt, knip, publint, dependency-cruiser and node scripts of this package's own. Bash starts them all with `&`, `wait`s on each pid, and reports each in one fixed order ([Quality checks](06-quality-checks.md)). A node orchestrator would add a process, a startup, and a dependency to reach the same fan-out.
+`typescript check` runs up to fifteen passes, most of them separate processes — tsc, oxlint, oxfmt, knip, publint, dependency-cruiser and node scripts of this package's own. Bash starts them all with `&`, `wait`s on each pid, and reports each in one fixed order ([Quality checks](06-quality-checks.md)). A node orchestrator would add a process, a startup, and a dependency to reach the same fan-out.
 
 The rule the split follows: **bash decides whether a gate applies; node decides what the gate says.** Whether a `.gitignore` exists, whether a repository is a repository, which workspace members own a `specs/` — those are one-line tests in `check.sh`. What is wrong with a `.gitignore`, or with a `docs/` tree, is a node script's, because the answer needs parsing and a rule roster.
 

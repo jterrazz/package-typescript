@@ -38,6 +38,10 @@ runs:
           Run 'typescript baseline' to record where the project actually stands.
           ✗ Failed with exit code 1
 
+           RUN  Comments (density)
+
+          ✓ Passed
+
            RUN  Secrets (credentials)
 
           ✓ Passed

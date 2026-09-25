@@ -1,0 +1,97 @@
+description: refuses comment lines grown above the recorded count
+fixture: ./fixtures/comments/grown/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
+
+          comment-lines  jterrazz.baseline.json › typescript  found: 2 comment lines — 50% of 4 source lines, above the 1 recorded · why: the default is no comment — a name carries the meaning, and the count is held exactly so no comment arrives unseen · fix: delete the comment, or rename what needed it; one that states what the code cannot (an invariant, a hazard, an external system's constraint) is kept by running 'typescript baseline' · read: docs/06-quality-checks.md#the-comments-density-pass
+          ✗ Failed with exit code 1
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            jterrazz.baseline.json › typescript  1
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
+    - command: fix
+      exit: 1
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+
+          ✓ Passed
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
+
+          comment-lines  jterrazz.baseline.json › typescript  found: 2 comment lines — 50% of 4 source lines, above the 1 recorded · why: the default is no comment — a name carries the meaning, and the count is held exactly so no comment arrives unseen · fix: delete the comment, or rename what needed it; one that states what the code cannot (an invariant, a hazard, an external system's constraint) is kept by running 'typescript baseline' · read: docs/06-quality-checks.md#the-comments-density-pass
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality fixes
+
+          ✗ Some checks failed
+      files:
+          jterrazz.baseline.json:
+              equals: |
+                  {
+                      "typescript": {
+                          "comments/comment-lines": 1
+                      }
+                  }

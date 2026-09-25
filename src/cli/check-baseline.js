@@ -95,8 +95,9 @@ const LEGACY = Object.freeze({
 /** The namespaces `@jterrazz/test` owns: its oxlint plugin's rules and its checker's ids. */
 const TEST_NAMESPACES = ['jterrazz/', 'jterrazz-check/'];
 
-/** The namespace the Names (tree) pass's rules take in the section — that pass judges them. */
-const NAMES_NAMESPACE = 'names/';
+const PASS_NAMESPACES = ['names/', 'comments/'];
+
+const isPassOwned = (rule) => PASS_NAMESPACES.some((namespace) => rule.startsWith(namespace));
 
 /** oxlint's own "Unused eslint/oxlint-disable directive" findings carry no `code` at all. */
 const UNUSED_DIRECTIVE = /^Unused (?:eslint|oxlint)-disable directive/u;
@@ -415,13 +416,27 @@ function valueOf(flag) {
     return index === -1 ? undefined : argv[index + 1];
 }
 
+function reportAt(path) {
+    if (path === undefined) {
+        return null;
+    }
+    try {
+        return JSON.parse(readFileSync(path, 'utf8'));
+    } catch {
+        return null;
+    }
+}
+
 /* Imported for the ratchet's reading, run for the gate — never both at once. */
 if (import.meta.main) {
     const isWrite = argv.includes('--write');
     const isFix = argv.includes('--fix');
     const namesPath = valueOf('--names');
+    const commentsPath = valueOf('--comments');
     const linterExit = valueOf('--linter-exit');
-    const flagValues = new Set([namesPath, linterExit].filter((value) => value !== undefined));
+    const flagValues = new Set(
+        [namesPath, commentsPath, linterExit].filter((value) => value !== undefined),
+    );
     const positional = argv
         .slice(2)
         .filter((argument) => !argument.startsWith('--') && !flagValues.has(argument));
@@ -444,23 +459,20 @@ if (import.meta.main) {
      * died, so its side of the section is unknown — no held line is printed,
      * and the section is not rewritten.
      */
-    let namesReport = null;
-    if (namesPath !== undefined) {
-        try {
-            namesReport = JSON.parse(readFileSync(namesPath, 'utf8'));
-        } catch {
-            namesReport = null;
-        }
-    }
-    const speaksHeld = namesReport !== null;
+    const passReports = [
+        { label: 'Names (tree)', path: namesPath, report: reportAt(namesPath) },
+        { label: 'Comments (density)', path: commentsPath, report: reportAt(commentsPath) },
+    ].filter(({ path }) => path !== undefined);
+    const silentPass = passReports.find(({ report: written }) => written === null);
+    const speaksHeld = passReports.length > 0 && silentPass === undefined;
 
-    const counts = countsOf(report, namesReport ?? []);
+    const counts = countsOf(report, ...passReports.map(({ report: written }) => written ?? []));
     const linterCounts = countsOf(report);
 
     if (isWrite) {
-        if (namesPath !== undefined && namesReport === null) {
+        if (silentPass !== undefined) {
             stdout.write(
-                `the Names (tree) pass wrote no report — the ${SECTION} section is left as it was; 'typescript check' prints why\n`,
+                `the ${silentPass.label} pass wrote no report — the ${SECTION} section is left as it was; 'typescript check' prints why\n`,
             );
             exit(1);
         }
@@ -531,7 +543,7 @@ if (import.meta.main) {
         const { lines, section: recorded } = reRecord(
             root,
             linterCounts,
-            (rule) => !rule.startsWith(NAMES_NAMESPACE) && !isTestOwned(rule),
+            (rule) => !isPassOwned(rule) && !isTestOwned(rule),
         );
         for (const line of lines) {
             stdout.write(`${line}\n`);
@@ -540,7 +552,7 @@ if (import.meta.main) {
     }
 
     const baseline = Object.fromEntries(
-        Object.entries(section).filter(([rule]) => !rule.startsWith(NAMES_NAMESPACE)),
+        Object.entries(section).filter(([rule]) => !isPassOwned(rule)),
     );
     const broken = judge(linterCounts, baseline);
 

@@ -158,7 +158,7 @@ const READERS = { block: readBlock, code: readCode, template: readTemplate };
  * template is code again, so the reading carries its state from one line to
  * the next. A regular-expression literal is read as code.
  */
-function commentSpansOf(text) {
+export function commentSpansOf(text) {
     const reading = { blockStart: 0, state: 'code', templates: [] };
 
     return text.split('\n').map((line) => {
@@ -179,6 +179,9 @@ function commentSpansOf(text) {
         return spans;
     });
 }
+
+export const isDirective = (comment) =>
+    comment.search(DISABLE) !== -1 || comment.search(TS_DIRECTIVE) !== -1 || BIOME.test(comment);
 
 /** Every comment of one line, as the text a checker would read. */
 const commentsOf = (line, spans) => spans.map(([start, end]) => line.slice(start, end));

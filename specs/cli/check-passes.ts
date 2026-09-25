@@ -14,6 +14,7 @@ export const SELECTING_BIN = resolve(import.meta.dirname, 'check-selection.sh');
 type Pass =
     | 'architecture'
     | 'astro'
+    | 'comments'
     | 'conventions'
     | 'docs'
     | 'drift'

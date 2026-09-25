@@ -481,6 +481,10 @@ run_checks() {
     if selected names || { selected oxlint && [ "$FIX_MODE" = false ]; }; then
         runs_names=true
     fi
+    local runs_comments=false
+    if selected comments || { selected oxlint && [ "$FIX_MODE" = false ]; }; then
+        runs_comments=true
+    fi
 
     [ "$runs_oxlint" = true ] && read_lint_targets
     selected oxfmt && read_format_targets
@@ -687,6 +691,14 @@ run_checks() {
         names_pid=$!
     fi
 
+    local comments_pid=""
+    local comments_status=0
+    if [ "$runs_comments" = true ] && [ "$FIX_MODE" = false ]; then
+        node "$PACKAGE_ROOT/src/cli/check-comments.js" . "${LINT_ARGS[@]}" \
+            --report "$tmp_dir/comments.json" > "$tmp_dir/comments.log" 2>&1 &
+        comments_pid=$!
+    fi
+
     # Secrets: no file the project would commit carries a live-looking
     # credential. The gate always applies, so WHICH engine answers — gitleaks
     # where the machine has it, the built-in patterns where it does not — is
@@ -850,6 +862,12 @@ run_checks() {
     # the Names pass its own: two writers of one file, so the Names pass
     # has finished before this one reads it.
     [ -n "$names_pid" ] && { wait $names_pid; names_status=$?; }
+    [ -n "$comments_pid" ] && { wait $comments_pid; comments_status=$?; }
+    if [ "$FIX_MODE" = true ] && selected comments; then
+        node "$PACKAGE_ROOT/src/cli/check-comments.js" . "${LINT_ARGS[@]}" --fix \
+            > "$tmp_dir/comments.log" 2>&1
+        comments_status=$?
+    fi
     if selected oxlint; then
         local linter_exit=()
         local names_report=()
@@ -858,7 +876,7 @@ run_checks() {
             ratchet_fix=(--fix)
         else
             linter_exit=(--linter-exit "$lint_status")
-            names_report=(--names "$tmp_dir/names.json")
+            names_report=(--names "$tmp_dir/names.json" --comments "$tmp_dir/comments.json")
         fi
         node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$tmp_dir/lint.json" . \
             "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" > "$tmp_dir/ratchet.log" 2>&1
@@ -982,6 +1000,7 @@ run_checks() {
         lint_status=0
     fi
     selected names || names_status=0
+    selected comments || comments_status=0
 
     [ -n "$type_pid" ] && report_pass "TypeScript Check" $type_status "$tmp_dir/type.log"
     selected oxlint && report_pass "$lint_label" $lint_status "$lint_log" "$lint_speaks"
@@ -1006,6 +1025,7 @@ run_checks() {
     [ -n "$markdown_pid" ] &&
         report_pass "Markdown (prose)" $markdown_status "$tmp_dir/markdown.log"
     selected names && report_pass "Names (tree)" $names_status "$tmp_dir/names.log" "$write"
+    selected comments && report_pass "Comments (density)" $comments_status "$tmp_dir/comments.log" "$write"
     [ -n "$secrets_pid" ] && report_pass "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
 
     # Drift: the report, not a gate — how far this project stands from the
@@ -1029,7 +1049,7 @@ run_checks() {
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality checks\n\n"
     fi
 
-    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ] && [ $publish_status -eq 0 ] && [ $architecture_status -eq 0 ] && [ $astro_status -eq 0 ] && [ $drift_status -eq 0 ]; then
+    if [ $type_status -eq 0 ] && [ $lint_status -eq 0 ] && [ $format_status -eq 0 ] && [ $knip_status -eq 0 ] && [ $gitignore_status -eq 0 ] && [ $checker_status -eq 0 ] && [ $docs_layout_status -eq 0 ] && [ $markdown_status -eq 0 ] && [ $names_status -eq 0 ] && [ $comments_status -eq 0 ] && [ $secrets_status -eq 0 ] && [ $suppressions_status -eq 0 ] && [ $publish_status -eq 0 ] && [ $architecture_status -eq 0 ] && [ $astro_status -eq 0 ] && [ $drift_status -eq 0 ]; then
         printf "${GREEN}✓ All checks passed${NC}\n"
         exit 0
     else

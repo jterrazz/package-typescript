@@ -42,6 +42,10 @@ runs:
           names-construct  src/util.ts  `util.ts` names a construct of the language — name it for the subject it holds
           ✗ Failed with exit code 1
 
+           RUN  Comments (density)
+
+          ✓ Passed
+
            RUN  Secrets (credentials)
 
           ✓ Passed

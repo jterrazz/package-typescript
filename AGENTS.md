@@ -39,9 +39,10 @@ bin/
 ├── find-tsc.sh               # The TS7 Go compiler by platform — sourced by the CLI and by the check script
 ├── tool-configs.sh           # The config oxlint and oxfmt run with — the project's own, else the default — sourced by the same two
 └── commands/
-    └── check.sh              # Fourteen passes in parallel; each that RAN prints a header and a verdict, in one fixed order
+    └── check.sh              # Fifteen passes in parallel; each that RAN prints a header and a verdict, in one fixed order
 
 src/cli/check-architecture.js # The declared layer map against the resolved graph — the Architecture gate (dependency-cruiser)
+src/cli/check-comments.js     # Every comment line of the source, counted and held exactly — the Comments (density) gate, check | --fix
 src/cli/check-baseline.js     # The oxlint ratchet — exact counts; `fix` re-records what fell, `typescript baseline` writes it
 src/cli/check-drift.js        # How far the project stands from its profile — the drift report, `--json` for a machine
 src/cli/check-docs.js         # The manual's shape, read off the repository's docs/ — the reader behind the Docs (layout) pass

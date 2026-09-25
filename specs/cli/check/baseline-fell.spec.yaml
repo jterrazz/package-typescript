@@ -45,6 +45,10 @@ runs:
           Run 'typescript baseline' to record where the project actually stands.
           ✗ Failed with exit code 1
 
+           RUN  Comments (density)
+
+          ✓ Passed
+
            RUN  Secrets (credentials)
 
           ✓ Passed
@@ -87,6 +91,10 @@ runs:
 
           names-construct  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds
           re-recorded jterrazz.baseline.json › typescript › names/names-construct 2 → 1
+          ✓ Passed
+
+           RUN  Comments (density)
+
           ✓ Passed
 
            END  Finalizing quality fixes
@@ -135,6 +143,10 @@ runs:
           ✓ Passed
 
            RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
 
           ✓ Passed
 

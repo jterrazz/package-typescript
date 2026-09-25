@@ -47,6 +47,11 @@ runs:
           nothing to read under {{path}}: it holds folders and no file — add the project's files, then run again
           ✗ Failed with exit code 1
 
+           RUN  Comments (density)
+
+          nothing to read under {{path}}: it holds folders and no file — add the project's files, then run again
+          ✗ Failed with exit code 1
+
            RUN  Secrets (credentials)
 
           nothing to read under {{path}}: it holds folders and no file — add the project's files, then run again

@@ -41,6 +41,10 @@ runs:
 
           ✓ Passed
 
+           RUN  Comments (density)
+
+          ✓ Passed
+
            RUN  Secrets (credentials)
 
           ✓ Passed
@@ -80,6 +84,10 @@ runs:
           ✓ Passed
 
            RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
 
           ✓ Passed
 

@@ -1,5 +1,6 @@
 {
     "typescript": {
+        "comments/comment-lines": 3232,
         "eslint/max-lines": 9
     },
     "test": {

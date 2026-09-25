@@ -195,8 +195,12 @@ case "$COMMAND" in
         trap 'rm -f "$BASELINE_REPORT" "$NAMES_REPORT"' EXIT
         node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/src/cli/check-names.js" . --format json "$@" > "$NAMES_REPORT" 2>/dev/null || true
 
+        COMMENTS_REPORT=$(mktemp)
+        trap 'rm -f "$BASELINE_REPORT" "$NAMES_REPORT" "$COMMENTS_REPORT"' EXIT
+        node "$PACKAGE_ROOT/src/cli/check-comments.js" . --format json "$@" > "$COMMENTS_REPORT" 2>/dev/null || true
+
         node "$PACKAGE_ROOT/src/cli/check-baseline.js" "$BASELINE_REPORT" . \
-            --names "$NAMES_REPORT" --write || exit 1
+            --names "$NAMES_REPORT" --comments "$COMMENTS_REPORT" --write || exit 1
 
         # The file is tracked, so it is the formatter's like every other tracked
         # file — written here, shaped by the formatter `check` runs, never both.
@@ -228,7 +232,7 @@ case "$COMMAND" in
         printf "  dev          Build, run, and rebuild on changes\n"
         printf "  docs-layout  Check a repository's docs/ against the manual spine\n"
         printf "  doctor       Report the installed tool versions against the declared ranges\n"
-        printf "  baseline     Record oxlint's own rules and Names into jterrazz.baseline.json\n"
+        printf "  baseline     Record oxlint's own rules, Names and Comments into jterrazz.baseline.json\n"
         printf "  tsc          Run the TypeScript 7 compiler this package ships (emit, --build)\n"
         printf "  check        Check types, lint, formatting, and unused code\n"
         printf "  fix          Auto-fix lint and formatting issues\n"
