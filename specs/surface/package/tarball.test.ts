@@ -1,14 +1,15 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { expect, onTestFinished, test } from 'vitest';
 
 /*
  * What npm would publish carries `consumer` rules alone: no test file — every
  * meta-test is a `self` rule — and, loaded from the packed tree itself, a
- * rulebook, a catalogue and a pass registry that answer to consumers only.
+ * rulebook, a catalogue, a pass registry and every fragment under `lint/` that
+ * answer to consumers only.
  */
 
 const ROOT = resolve(import.meta.dirname, '../../..');
@@ -69,6 +70,17 @@ async function load(tree: string, path: string): Promise<Record<string, unknown>
     return module;
 }
 
+/** Every `.js` module under the packed tree's `lint/`, as a path from its root. */
+function lintModules(tree: string, directory = join(tree, 'lint')): string[] {
+    return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+        const path = join(directory, entry.name);
+        if (entry.isDirectory()) {
+            return lintModules(tree, path);
+        }
+        return entry.name.endsWith('.js') ? [relative(tree, path)] : [];
+    });
+}
+
 /** The audiences a list of declarations carries, one per entry. */
 function audiencesOf(entries: unknown): unknown[] {
     return (Array.isArray(entries) ? entries : []).map((entry: unknown) =>
@@ -81,8 +93,10 @@ test('the tarball carries no test file', () => {
     const { paths } = pack('--dry-run');
     expect(paths).toContain('lint/_contract.js');
 
-    // Then - no meta-test, no module test and no spec ships
-    expect(paths.filter((path) => /\.test\.ts$|^specs\//u.test(path))).toStrictEqual([]);
+    // Then - no meta-test, no module test and no spec ships, whatever its extension
+    expect(
+        paths.filter((path) => /\.(?:test|spec)\.[cm]?[jt]sx?$|^specs\//u.test(path)),
+    ).toStrictEqual([]);
 });
 
 test('the rulebook, the catalogue and the passes the tarball ships are consumer alone', async () => {
@@ -118,5 +132,27 @@ test('the rulebook, the catalogue and the passes the tarball ships are consumer 
         expect(new Set(audiences), `a ${what} ships that is not consumer`).toStrictEqual(
             new Set(['consumer']),
         );
+    }
+});
+
+test('every fragment the packed lint/ holds is consumer, whether a profile carries it or not', async () => {
+    // Given - every module of the packed lint/, and the fragment each one exports by default
+    const tree = packedTree();
+    const modules = lintModules(tree);
+    expect(modules).toContain('lint/_contract.js');
+    const fragments = await Promise.all(
+        modules.map(async (path) => {
+            const module = await load(tree, path);
+            const exported = module.default;
+            return isRecord(exported) && 'decisions' in exported
+                ? [{ audience: exported.audience, path }]
+                : [];
+        }),
+    );
+
+    // Then - none of them is the package's own discipline
+    expect(fragments.flat().length).toBeGreaterThan(15);
+    for (const { audience, path } of fragments.flat()) {
+        expect.soft(audience, `${path} ships a fragment that is not consumer`).toBe('consumer');
     }
 });

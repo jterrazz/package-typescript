@@ -15,7 +15,8 @@
         "docs",
         "lint",
         "src",
-        "!**/*.test.ts"
+        "!**/*.test.*",
+        "!**/*.spec.*"
     ],
     "type": "module",
     "main": "src/index.js",

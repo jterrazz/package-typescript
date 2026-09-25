@@ -107,7 +107,7 @@ The catalogue itself ships, since `fix` reads its unsafe fixers; the table and t
 
 One self rule still ships: the internal `TYPESCRIPT_CHECK_PASSES` selector ([Developing](02-developing.md#working-on-this-package)) lives in `bin/commands/check.sh`, because the specs drive the published command ([ADR-011](decisions/011-only-consumer-rules-ship.md)).
 
-`specs/surface/package/audience.test.ts` holds the split: every fragment and every pass declares an audience, every profile is compiled from consumer fragments alone, and the registry names exactly the passes `bin/commands/check.sh` selects. `specs/surface/package/tarball.test.ts` reads what npm would publish: no test file ships, since every meta-test is a self rule and `files` leaves out every `*.test.ts`, and the packed tree, loaded with this checkout's install beside it, exposes a catalogue of `catalog()` and `unsafeFixers()` alone, whose entries, profile fragments and pass rows are all `consumer`.
+`specs/surface/package/audience.test.ts` holds the split: every fragment and every pass declares an audience, every profile is compiled from consumer fragments alone, and the registry names exactly the passes `bin/commands/check.sh` selects. `specs/surface/package/tarball.test.ts` reads what npm would publish: no test file ships, since every meta-test is a self rule and `files` leaves out every `*.test.*` and `*.spec.*`, and the packed tree, loaded with this checkout's install beside it, exposes a catalogue of `catalog()` and `unsafeFixers()` alone, whose entries, profile fragments and pass rows are all `consumer`, as is every fragment a module of its `lint/` exports, whether a profile carries it or not.
 
 ## The self-lint is the strongest test
 

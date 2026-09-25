@@ -17,7 +17,7 @@ Every rule declares `consumer` or `self`, from the closed pair `AUDIENCES` in `l
 
 A rule mixing the two is split. The contract's builders ship and enforce nothing, and its two invariants are audited by `lint/_contract.test.ts` over every shipped fragment. This supersedes the "at load time" clause of [ADR-003](003-the-rulebook-is-explicit.md). `catalog()` and `unsafeFixers()` ship, since `fix` reads them, and the chapter's renderer lives in `lint/catalog.test.ts`.
 
-`files` leaves out every `*.test.ts`. `specs/surface/package/audience.test.ts` and `tarball.test.ts` hold the split.
+`files` leaves out every `*.test.*` and `*.spec.*`. `specs/surface/package/audience.test.ts` and `tarball.test.ts` hold the split.
 
 ## Consequences
 
