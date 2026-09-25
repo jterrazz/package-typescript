@@ -1,12 +1,6 @@
 description: leaves a tree that check passes, after both rewriters have run
 fixture: ./fixtures/rewriters/lint-and-format/
 runs:
-    # The end of the gesture: after `fix`, `check` agrees. Run in parallel,
-    # whichever of `oxlint --fix` and `oxfmt` finishes second writes its copy
-    # of the file over the other's, and the check that follows fails on what
-    # the fix had just settled — measured on package-test. The interleaving is
-    # not deterministic, so this states the invariant the pair of gestures
-    # owes, on a file that needs a lint fix AND a reformat.
     - command: fix
       exit: 0
       stdout: |4

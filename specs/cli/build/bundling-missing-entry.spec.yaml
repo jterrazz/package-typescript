@@ -12,9 +12,6 @@ runs:
           ℹ tsconfig: tsconfig.json
           ℹ Build start
           Error: Build failed
-      # The diagnostic is the subject; the rolldown/tsdown frames under it carry
-      # absolute paths and content-hashed bundle names, and say nothing about the
-      # refusal.
       stderr: |-
           {{any}}
            ERROR  Error: Build failed with 1 error:

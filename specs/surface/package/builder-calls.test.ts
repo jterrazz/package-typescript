@@ -5,22 +5,12 @@ import { expect, test } from 'vitest';
 
 import { packedFiles, packedTree } from './packed-tree.js';
 
-/*
- * The builder-call rule: every call a module makes to the fragment builder
- * states its audience in the call, as a string literal. A fragment built from
- * such a call has the audience its text shows, whoever calls the builder that
- * holds it and whenever: on import, from a consumer's `layers()`, after a turn.
- * It reads the packed tree, beside the tarball audit, whose module walk sees
- * only what an import builds.
- */
+// The module walk sees only what an import builds; a literal audience holds whoever calls the builder, and when.
 
-/** The module that exports the fragment builder, as an import names it. */
 const CONTRACT = /(?:^|\/)_contract\.js$/u;
 
-/** The builder's exported name. */
 const BUILDER = 'fragment';
 
-/** The module a statement imports or re-exports from, or nothing when it names none. */
 function specifierOf(statement: ts.Statement): string | undefined {
     const specifier =
         ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement)
@@ -29,7 +19,6 @@ function specifierOf(statement: ts.Statement): string | undefined {
     return specifier !== undefined && ts.isStringLiteral(specifier) ? specifier.text : undefined;
 }
 
-/** The local names an import of the contract binds the builder to. */
 function builderNames(named: ts.NamedImportBindings | undefined): string[] {
     return named !== undefined && ts.isNamedImports(named)
         ? named.elements
@@ -38,7 +27,6 @@ function builderNames(named: ts.NamedImportBindings | undefined): string[] {
         : [];
 }
 
-/** The names a module binds the builder to, and what it does that no audit can follow. */
 function bindings(source: ts.SourceFile): { locals: Set<string>; opaque: string[] } {
     const locals = new Set<string>();
     const opaque: string[] = [];
@@ -62,7 +50,6 @@ function bindings(source: ts.SourceFile): { locals: Set<string>; opaque: string[
     return { locals, opaque };
 }
 
-/** Why a call to the builder does not state its audience as a literal, or nothing when it does. */
 function unstated(call: ts.CallExpression): string | undefined {
     const [definition] = call.arguments;
     if (definition === undefined || !ts.isObjectLiteralExpression(definition)) {
@@ -82,7 +69,6 @@ function unstated(call: ts.CallExpression): string | undefined {
         : `computes its audience: ${audience.initializer.getText()}`;
 }
 
-/** Every place in the JavaScript module `path` of `tree` where the builder is used without a literal audience. */
 function unstatedAudiences(tree: string, path: string): string[] {
     const source = ts.createSourceFile(
         path,

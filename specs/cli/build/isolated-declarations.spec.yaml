@@ -12,9 +12,6 @@ runs:
           ℹ tsconfig: tsconfig.json
           ℹ Build start
           {{any}}
-      # The diagnostic is the subject. The frames under it carry absolute paths
-      # and say nothing about the refusal — and the guarantee is the bundle's,
-      # not the tsconfig's: nothing in this fixture asks for it.
       stderr: |-
           {{any}}
           RolldownError: TS9010: Variable must have an explicit type annotation with --isolatedDeclarations.

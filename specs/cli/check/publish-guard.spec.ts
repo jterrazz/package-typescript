@@ -7,18 +7,11 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, passOf, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, not a document: the build guard judges by the @jterrazz/test the
- * PACKAGE resolves, and `node_modules` is gitignored, so no fixture can carry
- * one. Each case copies its fixture into a temp directory and links this
- * checkout's install beside it, the way npm would. What a document can state
- * — a package resolving none — stays a document.
- */
+// `node_modules` is gitignored, so no fixture can carry the @jterrazz/test the package resolves.
 
 const FIXTURES = resolve(import.meta.dirname, 'fixtures/publish');
 const INSTALLED = resolve(import.meta.dirname, '../../../node_modules/@jterrazz/test');
 
-/** The fixtures spread into one temp directory, in order, with @jterrazz/test installed. */
 function consumer(...fixtures: string[]): string {
     const root = temporaryDirectory('spec-publish-guard-');
     for (const fixture of fixtures) {
@@ -30,7 +23,6 @@ function consumer(...fixtures: string[]): string {
     return root;
 }
 
-/** `fixture` in a temp directory, beside a stub install of @jterrazz/test whose `./oxlint` entry is `oxlint`. */
 function consumerOfStub(fixture: string, oxlint: string): string {
     const root = temporaryDirectory('spec-publish-guard-');
     cpSync(join(FIXTURES, fixture), root, { recursive: true });
@@ -49,7 +41,6 @@ function consumerOfStub(fixture: string, oxlint: string): string {
     return root;
 }
 
-/** One run of the product command in `dir`, with `env` over the suite's, colours stripped. */
 function run(
     dir: string,
     command: string,
@@ -64,7 +55,6 @@ function run(
     return { status: result.status, stdout: stripVTControlCharacters(result.stdout) };
 }
 
-/** What the Publish pass printed under its header, its verdict included, one line per entry. */
 function publishPass(stdout: string): string[] {
     return passOf(stdout, 'Publish (packaging)')
         .split('\n')
@@ -72,7 +62,6 @@ function publishPass(stdout: string): string[] {
         .filter((line) => line.trim() !== '');
 }
 
-/** The files a build wrote that a runtime loads — no map, no declaration. */
 function chunksOn(root: string): string[] {
     return readdirSync(join(root, 'dist'))
         .filter((name) => /\.[cm]?js$/u.test(name))
@@ -80,7 +69,6 @@ function chunksOn(root: string): string[] {
         .toSorted();
 }
 
-/** The one finding a chunk compiled from the fixtures module earns. */
 const fixturesFinding = (file: string): string =>
     `publish-test-material  ${file}  found: ${file} is compiled from src/domain/user.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge F2 names, or take the module out of the entry · read: @jterrazz/test's docs/19-linting.md#f2-no-test-imports-in-prod`;
 

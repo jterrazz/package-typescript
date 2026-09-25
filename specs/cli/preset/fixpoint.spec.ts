@@ -4,21 +4,10 @@ import { describe, expect, test } from 'vitest';
 
 import { diagnosticsOf, oxfmt, oxlint, PROFILES, sandbox } from './rulebook.js';
 
-/*
- * Law 2's proof. A lint fixer and the formatter can rewrite each other for
- * ever: unicorn parenthesises a nested ternary and oxfmt strips the
- * parentheses; unicorn upper-cases a hex literal and oxfmt lower-cases it. Two
- * rounds of `oxlint --fix` then `oxfmt` must land on the same bytes and report
- * nothing.
- *
- * One test replaces every "does rule X fight the formatter" question, and
- * catches the next one before a consumer does. The fixture deliberately holds
- * the shapes that have ping-ponged before.
- */
+// Two rounds of `oxlint --fix` then `oxfmt` must land on the same bytes: the fixture holds shapes that ping-ponged before.
 
 const FIXTURES = resolve(import.meta.dirname, 'fixtures/fixpoint');
 
-/** Every source file of a sandbox, by name, with its bytes. */
 function snapshot(directory: string): Record<string, string> {
     const files: Record<string, string> = {};
     for (const name of readdirSync(directory).toSorted()) {

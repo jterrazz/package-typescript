@@ -3,8 +3,6 @@ fixture: ./fixtures/knip/workspace-conventions/
 runs:
     - command: check
       exit: 1
-      # A knip fixture carries no tsconfig, so tsc prints its help and refuses —
-      # the compiler's block, not this document's subject.
       stdout: |4
            START  Running quality checks
 

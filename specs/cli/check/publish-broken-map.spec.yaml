@@ -3,9 +3,6 @@ fixture: ./fixtures/publish/broken-map/
 runs:
     - command: check
       exit: 1
-      # publint's own report follows the two rule lines, and it opens on its
-      # version — a block that belongs to the tool, not to this document. What
-      # is claimed here is the gate's own reading of the source tree.
       stdout: |4
            START  Running quality checks
 

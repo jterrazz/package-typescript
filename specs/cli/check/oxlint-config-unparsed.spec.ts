@@ -5,20 +5,9 @@ import { afterAll, describe, expect, test } from 'vitest';
 
 import { newDirectory, temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, not a document — and the product command all the same. What no
- * document can state here is the GROUND: oxlint LOADS every `oxlint.config.*`
- * it finds under the project, including one inside a tree its own
- * `ignorePatterns` excludes. A fixture carrying a config that cannot load
- * therefore fails THIS repository's own lint run, so the project is built in a
- * temp directory instead of committed.
- *
- * The other two refusals are the ratchet judge's own, for a linter run that
- * leaves nothing to count: a JSON report that is not one, and a failing exit
- * with no diagnostic behind it. The first is reached through the product; the
- * second has no oxlint run of today that produces it, so the judge is run
- * directly on the report shape it guards against.
- */
+// oxlint loads every `oxlint.config.*` under the project, even one its `ignorePatterns` excludes, so a
+// config that cannot load is built in a temp directory. No oxlint run today exits 1 with no diagnostic, so
+// the judge is run directly on that report shape.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const JUDGE = resolve(import.meta.dirname, '../../../src/cli/check-baseline.js');
@@ -29,7 +18,6 @@ afterAll(() => {
     rmSync(project, { force: true, recursive: true });
 });
 
-/** A temp directory of the given files, removed when the test ends. */
 function projectOf(files: Record<string, string>): string {
     const directory = temporaryDirectory('spec-oxlint-refusal-');
     for (const [path, content] of Object.entries(files)) {

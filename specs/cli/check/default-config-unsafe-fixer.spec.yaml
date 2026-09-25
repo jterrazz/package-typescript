@@ -1,11 +1,6 @@
 description: leaves an unsafe fixer of the default profile alone in a project with no config of its own
 fixture: ./fixtures/default-config/unsafe-fixer/
 runs:
-    # The fixer runs by the default profile wrapped like a project's own
-    # config, its meaning-changing fixers off: `take(undefined)` keeps the
-    # argument its callee requires, and the diagnostic is left for a human.
-    # The linter's own block is spanned: its reporter is a fact about the
-    # machine, and what is claimed is the verdict and the file.
     - command: fix
       exit: 1
       stdout: |4

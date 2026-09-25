@@ -4,23 +4,9 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses } from '../check-passes.js';
 import { cli } from '../cli.specification.js';
 
-/*
- * A chain, not a document: each claim is about the file `fix` leaves, read
- * by content rather than stated whole, beside the verdict. Every case is the
- * same small project, `fixtures/unsafe-fixers/project/`, with the one source
- * file of the case laid over it, and the config where the case needs its own.
- * A case that needs a root-only option — unused directives reported, type
- * information — runs the default profile, which ships both: a nested config
- * naming `options` is refused wherever oxlint walks this repository, and
- * `@jterrazz/test`'s checker, run alone, walks it whole.
- *
- * `unicorn/no-useless-undefined` stands for the twelve: its fixer strips an
- * argument the callee requires, so `fix` must leave the line alone and
- * report it exactly as `check` does — the answer is a human's, and the two
- * commands read one verdict on one tree.
- */
+// A nested config naming `options` is refused wherever oxlint walks this repository, so a case needing a
+// root-only option runs the default profile.
 
-/** The runner on the project, with one case's config and source laid over it, running the linter's pass alone. */
 const caseOf = (name: string) =>
     cli
         .env(onlyPasses('oxlint'))
@@ -59,12 +45,7 @@ describe('unsafe-fixers', () => {
         expect(fixed.stdout.text).not.toContain('Unused oxlint-disable directive');
     });
 
-    /*
-     * The wrapper turns twelve rules off for its own run, and a run that has just
-     * disarmed a rule cannot judge a directive naming it: the evidence is the
-     * wrapper's, not the project's. Only reachable in a log the pass PRINTS, which
-     * is a failing one — hence the second, unsuppressed call in the case.
-     */
+    // Only reachable in a log the pass prints, which is a failing one: hence the second, unsuppressed call.
     test('never calls a directive dead because the wrapper disarmed its rule', async () => {
         // Given - the same project, one call suppressed with its reason and one left to report
         // When - the fix runs, and fails on the call nothing suppresses
@@ -86,14 +67,7 @@ describe('unsafe-fixers', () => {
         expect(fixed.file('oxlint.fix.config.mjs').exists).toBe(false);
     });
 
-    /*
-     * The wrapper is the pass's own file: it is written at the project root, read
-     * by the run it configures and deleted after it. A diagnostic against it names
-     * a path the operator cannot open and no tree can ever clear, so the run that
-     * writes it ignores it — including one an EARLIER run left behind, when it
-     * crashed before its own `rm -f` ran, and this one's sweep would otherwise
-     * pick up as an ordinary untracked file.
-     */
+    // A crashed run can leave its wrapper behind, where this run's sweep would read it as an untracked file.
     test('never reports the wrapper config, including one a crashed run left behind', async () => {
         // Given - a project whose oxlint.fix.config.mjs, an absolute import, already sits at its root — the shape a crashed prior run's own wrapper would leave, and a rule armed that names exactly that
         // When - the fix runs, with a diagnostic of the tree's own to keep the log on the stream
@@ -104,15 +78,7 @@ describe('unsafe-fixers', () => {
         expect(fixed.stdout.text).not.toContain('oxlint.fix.config');
     });
 
-    /*
-     * The same claim, one layer down. Every case above arms a rule oxlint itself
-     * decides; the wrapper's `overrides` block is oxlint's own vocabulary and
-     * reaching it is oxlint's job. A TYPE-AWARE rule is not oxlint's: it runs in
-     * `tsgolint`, a separate binary oxlint hands the file to, and nothing here
-     * held that half — the rewrite in the case is the one a spike measured in
-     * @jterrazz/test, where a broken module augmentation widened a parameter to
-     * `any` and the fixer then read the cast that reached it as unnecessary.
-     */
+    // A type-aware rule runs in `tsgolint`, not oxlint, so the wrapper's override must reach it too.
     test('leaves a type-aware fixer alone — the double cast the call still needs', async () => {
         // Given - a project on the default profile, one of whose diagnostics is a type-aware unsafe fixer
         // When - the fix runs
@@ -126,12 +92,7 @@ describe('unsafe-fixers', () => {
         expect(fixed.stdout.text).toContain('no-unnecessary-type-assertion');
     });
 
-    /*
-     * oxlint reads a `sub/oxlint.config.*` as the WHOLE config of its subtree —
-     * it replaces the root's rules there, it does not extend them — and `check`
-     * lints by exactly that. The fixer runs each config's own scope under that
-     * config, so it rewrites by the rules `check` will judge.
-     */
+    // oxlint reads a nested config as the whole config of its subtree, replacing the root's rules.
     test("applies a nested config's profile in fix, as check reads it", async () => {
         // Given - a root arming prefer-const, and a subtree whose own config turns it off and arms prefer-node-protocol
         // When - the fix runs

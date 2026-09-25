@@ -4,15 +4,10 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { expect, onTestFinished, test } from 'vitest';
 
-/*
- * The `fix` recipe is proved by running it: make, over stubs standing in for
- * the fixers, each logging its call and exiting as told. What make does with a
- * failing line is the claim, and no reading of the text can make it.
- */
+// What make does with a failing line is the claim, and no reading of the text can make it.
 
 const ROOT = resolve(import.meta.dirname, '../../..');
 
-/** The `make` block of the chapter's "The six gestures", as a consumer copies it. */
 function chapterRecipe(): string {
     const chapter = readFileSync(resolve(ROOT, 'docs/06-quality-checks.md'), 'utf8');
     const section = chapter.slice(chapter.indexOf('#### The six gestures'));
@@ -23,10 +18,6 @@ function chapterRecipe(): string {
     return block;
 }
 
-/**
- * `make fix` from `makefile`, its install taken as done, with each command of
- * `stubs` a script that logs its call then runs the body given.
- */
 function runFix(
     makefile: string,
     stubs: Record<string, string>,

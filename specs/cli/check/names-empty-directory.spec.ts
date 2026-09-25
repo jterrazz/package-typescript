@@ -7,10 +7,7 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, for the ground's sake: git tracks no directory, so a fixture can
- * carry no empty one, and what git ignores needs a repository around it.
- */
+// git tracks no directory, so a fixture can carry no empty one.
 
 const SIX_TARGETS = [
     '.PHONY: install build lint fix test check',
@@ -20,7 +17,6 @@ const SIX_TARGETS = [
     '',
 ].join('\n');
 
-/** The empty directories a working copy is left with, and one of each kind nothing may touch. */
 const EMPTY = ['src/abandoned', 'src/scaffold/domain/entities'];
 const KEPT = [
     '.artifacts/tsc',
@@ -34,11 +30,9 @@ const KEPT = [
     'vendor/.git',
 ];
 
-/** An empty directory only an `--ignore-pattern` glob keeps, and the glob. */
 const OVERLOOKED = 'drafts/wip';
 const OVERLOOKING = ['--ignore-pattern', 'drafts/**'];
 
-/** A green repository carrying every kind of empty directory, and the kinds that are not one. */
 function repositoryWithEmptyDirectories(): string {
     const project = temporaryDirectory('spec-names-empty-');
     writeFileSync(
@@ -62,7 +56,6 @@ function repositoryWithEmptyDirectories(): string {
     return project;
 }
 
-/** What the Names (tree) pass, run alone, printed between its header and its verdict, and the verdict. */
 function namesPassOf(
     project: string,
     command: 'check' | 'fix',
@@ -76,7 +69,6 @@ function namesPassOf(
     const plain = stripVTControlCharacters(stdout);
     const pass = plain.slice(plain.indexOf('Names (tree)'));
 
-    /* The pass closes at the next header — the next pass's, or the run's end. */
     return pass
         .slice(0, pass.search(/ (?:RUN|END) /u))
         .split('\n')

@@ -8,18 +8,10 @@ import { describe, expect, test } from 'vitest';
 import { cli } from '../cli.specification.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * The config the linter and the formatter run with. A project that keeps one
- * is linted by it, nested configs included, through the runner. A project that
- * keeps none is handed the toolchain's default, and the claim there is about
- * the folder ABOVE it — a config sitting there is never read — so its cwd
- * sits below the ground, which `fixture:` spreads into rather than under: that
- * case is built in a temp directory.
- */
+// A config in the folder above a project is never read; `fixture:` spreads into its cwd, so that case is built in a temp directory.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
-/** `check` run from the project folder of a copy of the decoy tree. */
 function checkBelowDecoy(): string {
     const tree = temporaryDirectory('spec-default-config-');
     cpSync(resolve(import.meta.dirname, 'fixtures/default-config/decoy-parent'), tree, {
@@ -34,7 +26,6 @@ function checkBelowDecoy(): string {
     return stripVTControlCharacters(stdout);
 }
 
-/** The verdict one pass printed, from its header on. */
 function verdictOf(stdout: string, label: string): string {
     return /✓ Passed|✗ Failed/u.exec(stdout.slice(stdout.indexOf(label)))?.[0] ?? 'absent';
 }

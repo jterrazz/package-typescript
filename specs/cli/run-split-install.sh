@@ -1,8 +1,5 @@
 #!/bin/bash
-# Test helper: simulates an npm install where oxlint is nested under
-# @jterrazz/typescript's own node_modules while the other tools are hoisted
-# to the consumer's node_modules/.bin. Each binary must resolve independently.
-# Usage: run-split-install.sh <package-root>
+# oxlint nested under the package while the other tools are hoisted: each binary must resolve on its own.
 
 set -e
 
@@ -14,20 +11,17 @@ trap 'rm -rf "$SANDBOX"' EXIT
 PKG="$SANDBOX/node_modules/@jterrazz/typescript"
 mkdir -p "$PKG/node_modules/.bin" "$SANDBOX/node_modules/.bin"
 
-# Install the package files (scripts resolve paths relative to themselves)
 cp -R "$PACKAGE_ROOT/bin" "$PKG/bin"
 cp -R "$PACKAGE_ROOT/lint" "$PKG/lint"
 cp -R "$PACKAGE_ROOT/src" "$PKG/src"
 cp "$PACKAGE_ROOT/package.json" "$PKG/package.json"
 
-# Stub tools hoisted at the consumer root...
 for tool in tsc oxfmt knip; do
     printf '#!/bin/sh\necho "%s-stub-ran"\n' "$tool" > "$SANDBOX/node_modules/.bin/$tool"
     chmod +x "$SANDBOX/node_modules/.bin/$tool"
 done
 
-# ...except oxlint, nested under the package itself, answering with the empty
-# report the ratchet reads
+# oxlint answers with the empty report the ratchet reads.
 printf '#!/bin/sh\necho '"'"'{ "diagnostics": [] }'"'"'\n' > "$PKG/node_modules/.bin/oxlint"
 chmod +x "$PKG/node_modules/.bin/oxlint"
 

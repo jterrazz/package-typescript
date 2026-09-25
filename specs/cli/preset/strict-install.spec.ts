@@ -2,11 +2,6 @@ import { describe, expect, test } from 'vitest';
 
 import { cli as strictInstallCli } from '../strict-install.specification.js';
 
-/*
- * A chain, not a document: the sandbox runner constructs its own install tree,
- * and `literate()` binds every document of this repo to the product command.
- */
-
 describe('strict-install', () => {
     test('loads the documented configs where only @jterrazz/typescript is declared', async () => {
         // Given - a pnpm-strict install: nothing the consumer did not declare resolves from its root

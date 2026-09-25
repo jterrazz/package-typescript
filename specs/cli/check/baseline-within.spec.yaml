@@ -1,10 +1,6 @@
 description: passes fix and check alike on a project whose diagnostics stand at the counts it recorded
 fixture: ./fixtures/baseline/within/
 runs:
-    # The pair, on one tree: the two `debugger` statements are errors, so
-    # oxlint's own exit code is 1 in either mode and only the ratchet makes
-    # the run green. Judging only `check` by the baseline made
-    # `make fix && make check` print red then green wherever a project kept one.
     - command: fix
       exit: 0
       stdout: |4

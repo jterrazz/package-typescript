@@ -1,11 +1,6 @@
 description: reads a warn-severity diagnostic as debt, and reads it the same way in check and in fix
 fixture: ./fixtures/warnings/unrecorded/
 runs:
-    # oxlint leaves its exit code at 0 for a warning, and a pass that passed
-    # prints no log — so the whole warn tier used to be invisible here while
-    # `fix`, judged on the diagnostics themselves, failed on it. The linter's
-    # own block is spanned for the usual reason (its reporter is a fact about
-    # the machine); what is claimed is the verdict, which is ours.
     - command: check
       exit: 1
       stdout: |4

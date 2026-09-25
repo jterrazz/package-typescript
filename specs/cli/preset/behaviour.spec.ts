@@ -13,27 +13,13 @@ import { describe, expect, test } from 'vitest';
 import { diagnosticsOf, oxlint, PROFILES, sandbox } from './rulebook.js';
 import type { Diagnostic } from './rulebook.js';
 
-/*
- * What a decision DOES, on a file that breaks it. One case per decision this
- * package owns — a reasoned `off`, an option we set against upstream's default,
- * the extension convention — and never one per upstream rule: the library tests
- * its own rules, and repeating that here would only pin oxlint's behaviour to
- * our goldens.
- *
- * Two goldens per profile, and the split is the point. The tree under
- * `expected/behaviour/<profile>/` holds ONLY the files `--fix` rewrote, so the
- * diff of a pull request is exactly the behavioural delta; a file the fixer
- * leaves alone is absent, which is how a reasoned `off` states itself. The
- * report golden beside it is what still speaks after the fix.
- *
- * Regenerate both with `TEST_UPDATE=1 npm test`.
- */
+// One case per decision this package owns, never per upstream rule. The `expected/` tree holds only the files
+// `--fix` rewrote, so a reasoned `off` states itself by absence. Regenerate with `TEST_UPDATE=1 npm test`.
 
 const FIXTURES = resolve(import.meta.dirname, 'fixtures/behaviour');
 const EXPECTED = resolve(import.meta.dirname, 'expected/behaviour');
 const UPDATING = process.env.TEST_UPDATE === '1';
 
-/** The rule ids a run names, each with the file, line and column it landed on, sorted. */
 function rulesOf(diagnostics: Diagnostic[]): string {
     const lines = diagnostics
         .filter((diagnostic) => diagnostic.severity === 'error')
@@ -136,13 +122,7 @@ describe('behaviour', () => {
         expect(orphans).toStrictEqual([]);
     });
 
-    /*
-     * A directive naming a rule the plugin no longer ships suppresses nothing, and
-     * the rulebook's `reportUnusedDisableDirectives` is what refuses it — the
-     * Suppressions pass cannot, since a JS plugin's rules never reach
-     * `--print-config`. The sandbox composes the real @jterrazz/test fragment, the
-     * way a consumer does, so the plugin is loaded and the rule is simply not in it.
-     */
+    // A JS plugin's rules never reach `--print-config`, so only `reportUnusedDisableDirectives` refuses this.
     test('refuses a directive naming a @jterrazz/test rule the plugin does not ship', () => {
         // Given - the node profile composed with @jterrazz/test's testing fragment, and a directive naming a retired rule
         using work = sandbox(resolve(FIXTURES, 'node', 'input'), 'node', 'node');

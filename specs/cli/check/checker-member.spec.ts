@@ -6,30 +6,12 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, not a document, and a STUB checker rather than the real one. The
- * pass under test is gated on a release of @jterrazz/test that is not out yet:
- * the binary installed here answers no `--member` flag, so the only way to
- * prove the code path today is to put one that does where the product command
- * reads it from — the `bin` entry of the install the directory RESOLVES.
- *
- * The ground carries what a fixture cannot: `node_modules` is gitignored at
- * this repository's root, so every install the walk resolves is built here.
- *
- * The stubs exit 1 unless a case asks otherwise. A passing pass prints
- * nothing — that is the report's contract — so a stub that succeeded would
- * leave the claim unmade; only a case that asserts on the verdict itself
- * installs one that passes.
- */
+// `node_modules` is gitignored at this repository's root, so every install the walk resolves is built here.
+// The stubs exit 1 unless a case asks otherwise: a passing pass prints nothing, which would leave the claim unmade.
 
 const FIXTURE = resolve(import.meta.dirname, 'fixtures/checker-member');
 
-/**
- * A checker that answers `--member`, and says under which name it was run —
- * and, for a member run, whether the oxlint report it was handed is there to
- * read and how many `jterrazz(*)` diagnostics it carries, since it runs no
- * oxlint of its own and judges exactly those.
- */
+// It runs no oxlint of its own: it reports whether the handed report is there and its `jterrazz(*)` count.
 function stub(name: string, exit: 0 | 1): string {
     return `#!/usr/bin/env node
 const { readFileSync } = require('node:fs');
@@ -56,7 +38,6 @@ process.exit(${exit});
 `;
 }
 
-/** An install of @jterrazz/test under `dir`, publishing the checker as its bin, which exits `exit`. */
 function install(dir: string, version: string, name: string, exit: 0 | 1 = 1): void {
     const installed = join(dir, 'node_modules/@jterrazz/test');
     mkdirSync(join(installed, 'dist'), { recursive: true });
@@ -67,7 +48,6 @@ function install(dir: string, version: string, name: string, exit: 0 | 1 = 1): v
     writeFileSync(join(installed, 'dist/checker.js'), stub(name, exit));
 }
 
-/** A plugin under the name @jterrazz/test ships, reporting once, on apps/web's one source file. */
 const PLUGIN = `export default {
     meta: { name: 'jterrazz' },
     rules: {
@@ -86,7 +66,6 @@ const PLUGIN = `export default {
 };
 `;
 
-/** The plugin armed in the workspace's own oxlint config, so the check's report carries one of its diagnostics. */
 function armPlugin(dir: string): void {
     writeFileSync(join(dir, 'plugin.mjs'), PLUGIN);
     writeFileSync(
@@ -95,7 +74,6 @@ function armPlugin(dir: string): void {
     );
 }
 
-/** One run of the conventions pass in `dir`. */
 function check(dir: string): { status: null | number; stdout: string } {
     const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
         cwd: dir,
@@ -106,7 +84,6 @@ function check(dir: string): { status: null | number; stdout: string } {
     return { status: result.status, stdout: result.stdout };
 }
 
-/** The fixture workspace, with a @jterrazz/test of `version` at its root, whose checker exits `exit`. */
 function workspace(version: string, exit: 0 | 1 = 1): string {
     const workDir = temporaryDirectory('spec-checker-member-');
     cpSync(FIXTURE, workDir, { recursive: true });

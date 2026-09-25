@@ -5,11 +5,6 @@ import { join } from 'node:path';
 import { onlyPasses, passOf, SELECTING_BIN } from './check-passes.js';
 import { temporaryDirectory } from './temporary-directory.js';
 
-/*
- * The ground of the chains on what the Names pass asks of a repository: a
- * small green project, the Makefile given, optionally a repository.
- */
-
 export const SIX_TARGETS = [
     '.PHONY: install build lint fix test check',
     '',
@@ -32,7 +27,6 @@ export const SIX_TARGETS = [
     '',
 ].join('\n');
 
-/** A small green project, a repository or a bare directory, with the Makefile given. */
 export function projectWith({
     isRepository = true,
     makefile,
@@ -68,7 +62,6 @@ export function projectWith({
     return project;
 }
 
-/** What the Names (tree) pass printed, header to verdict, in a run of that pass alone. */
 export function namesPassOf(project: string): string {
     const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
         cwd: project,
@@ -79,7 +72,7 @@ export function namesPassOf(project: string): string {
     return passOf(result.stdout, 'Names (tree)');
 }
 
-/** npm's INIT_CWD names the project the CLI answers for; a chain started under npm must name its own. */
+// npm's INIT_CWD names the project the CLI answers for; a chain started under npm must name its own.
 export function inProject(project: string, env: Record<string, string> = {}): NodeJS.ProcessEnv {
     return { ...process.env, ...env, INIT_CWD: project };
 }

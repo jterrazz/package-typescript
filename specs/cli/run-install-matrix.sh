@@ -1,18 +1,12 @@
 #!/bin/bash
-# Test helper: one consumer per profile, installed the way pnpm installs, and
-# `typescript check` run in each. The store holds the package and its own
-# dependencies; a consumer's own node_modules holds only what its manifest
-# declares — so a config reaching for anything else fails here, as it would
-# in a real strict install.
-# Usage: run-install-matrix.sh
+# A consumer's node_modules holds only what its manifest declares, as under pnpm: a config reaching further fails here.
 set -e
 
 PACKAGE_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 CONSUMERS="$PACKAGE_ROOT/specs/cli/preset/fixtures/install-matrix"
 ASTRO_PACKAGE="$PACKAGE_ROOT/specs/cli/preset/fixtures/astro-package"
 
-# perfectionist sorts the specifiers inside one import statement, and a
-# consumer's config is linted like everything else it writes.
+# perfectionist sorts the specifiers inside one import, and a consumer's config is linted too.
 named_imports() {
     printf '%s\n' "$@" | LC_ALL=C sort -f | paste -sd, - | sed 's/,/, /g'
 }
@@ -20,16 +14,8 @@ named_imports() {
 SANDBOX=$(mktemp -d "${TMPDIR:-/tmp}/install-matrix-XXXXXX")
 trap 'rm -rf "$SANDBOX"' EXIT
 
-# The store: the package as published (its `files`), the manifest carrying its
-# exports, and the package's own dependencies BESIDE it — every one of them,
-# because `check` spawns tools the manifest lists as optional too, and a
-# half-built store would prove the toolchain broken rather than the config.
-# `with-astro` adds the stand-in: the astro preset extends Astro's tsconfig,
-# and tsc resolves that name walking up from the package's real path. pnpm's
-# store sits inside the consumer's node_modules, so the walk reaches the
-# consumer's astro; this store sits beside the consumer, so a link stands
-# where the walk looks — in the one store the astro consumers use, so no
-# other consumer can resolve it.
+# Every dependency beside the package: `check` spawns optional ones too. The astro preset extends Astro's
+# tsconfig, resolved walking up from the package's real path, so the astro store links a stand-in there.
 build_store() {
     local root="$1" astro="$2"
     local store="$root/.pnpm/@jterrazz+typescript/node_modules"
@@ -60,8 +46,6 @@ build_store() {
 PKG=$(build_store "$SANDBOX/store" without-astro)
 ASTRO_PKG=$(build_store "$SANDBOX/astro-store" with-astro)
 
-# Every consumer is laid out and proved strict first, then all of them are
-# checked at once: the checks share nothing but the read-only stores.
 names=()
 packages=()
 for consumer in "$CONSUMERS"/*/; do
@@ -71,7 +55,6 @@ for consumer in "$CONSUMERS"/*/; do
     mkdir -p "$project/node_modules/@jterrazz"
     cp -R "$consumer". "$project/"
 
-    # The links the consumer's own manifest earns, and nothing else
     package="$PKG"
     if grep -q '"astro"' "$project/package.json"; then
         package="$ASTRO_PKG"
@@ -84,11 +67,7 @@ for consumer in "$CONSUMERS"/*/; do
     ln -sfn "$PACKAGE_ROOT/node_modules/@types/node" "$project/node_modules/@types/node"
     ln -sfn "$PACKAGE_ROOT/node_modules/vitest" "$project/node_modules/vitest"
 
-    # The two config files are WRITTEN here, not committed with the consumer:
-    # oxlint discovers every `oxlint.config.*` under this repository, fixture
-    # trees included, and a config importing `@jterrazz/typescript` resolves to
-    # nothing from a fixture's own directory. Writing them is also how
-    # `run-strict-install.sh` states the documented form, in one place.
+    # Written, not committed: oxlint discovers every `oxlint.config.*` under this repository, fixtures included.
     cat > "$project/oxlint.config.ts" <<EOF
 import { $(named_imports defineConfig "$profile") } from '@jterrazz/typescript/oxlint';
 
@@ -100,8 +79,7 @@ import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
 export default defineConfig(base);
 EOF
 
-    # Strict is the whole claim: a tool the consumer never declared must not
-    # resolve from its root, or a green check below says nothing.
+    # Strict is the whole claim: an undeclared tool resolving from the root would make the check below say nothing.
     for tool in oxlint oxfmt knip; do
         if (cd "$project" && node --input-type=module -e "await import('$tool')" > /dev/null 2>&1); then
             echo "not a strict layout: $tool resolves from the $name consumer"

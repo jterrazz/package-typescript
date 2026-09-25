@@ -6,15 +6,7 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, not a document — and the product command all the same. What no
- * document can state here is the GROUND: a member run from inside a workspace,
- * with an ancestor `.gitignore` the format has no way to place ABOVE the working
- * directory `fixture:` spreads into. So the ground is built here, and the
- * product binary runs cwd'd into the member — the one thing the literate `run`
- * schema cannot express (`command` runs through the shell at the working
- * directory alone; there is no per-run `cwd`).
- */
+// A document's `run` has no per-run `cwd`, and `fixture:` cannot place an ancestor `.gitignore` above the working directory.
 
 function checkFromMember(fixture: string): { status: null | number; stdout: string } {
     const workDir = temporaryDirectory('spec-gitignore-workspace-');

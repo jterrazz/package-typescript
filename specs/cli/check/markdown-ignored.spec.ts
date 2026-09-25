@@ -5,10 +5,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 
 import { newDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, for the ground's sake: a coordinate git IGNORES needs a real
- * repository to be ignored in, and a fixture cannot be one.
- */
+// A coordinate git ignores needs a real repository, and a fixture cannot be one.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 

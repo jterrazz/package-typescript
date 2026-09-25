@@ -3,14 +3,6 @@ fixture: ./fixtures/baseline/beyond/
 runs:
     - command: check
       exit: 1
-      # The oxlint pass prints the linter's own report, and that block has no
-      # fixed shape: oxlint picks its reporter from the environment — GitHub
-      # workflow commands under GITHUB_ACTIONS, one compact line per diagnostic
-      # under an AI agent, miette's framed rendering in a terminal — and its
-      # threads finish in whatever order they finish. That is the linter's, not
-      # this document's subject. What is claimed here is the ratchet's verdict,
-      # which is ours and is ordered; it already states how many diagnostics
-      # each rule has.
       stdout: |4
            START  Running quality checks
 

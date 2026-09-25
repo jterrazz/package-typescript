@@ -1,10 +1,5 @@
 #!/bin/bash
-# Test helper: simulates pnpm's STRICT node_modules. The consumer declares one
-# devDependency, so its own node_modules holds @jterrazz/typescript and nothing
-# else — the toolchain's dependencies (oxlint, oxfmt, …) live beside the package
-# in the virtual store, reachable from it and from nowhere in the project.
-# The consumer's configs are the documented ones, importing the package alone.
-# Usage: run-strict-install.sh
+# pnpm's strict node_modules: the consumer's holds @jterrazz/typescript alone, its dependencies sit in the store.
 
 set -e
 
@@ -17,14 +12,12 @@ STORE="$SANDBOX/node_modules/.pnpm/@jterrazz+typescript/node_modules"
 PKG="$STORE/@jterrazz/typescript"
 mkdir -p "$PKG" "$STORE/.bin" "$SANDBOX/node_modules/@jterrazz" "$SANDBOX/src"
 
-# The package as published (its `files`), plus the manifest carrying its exports
 cp -R "$PACKAGE_ROOT/bin" "$PACKAGE_ROOT/lint" "$PACKAGE_ROOT/src" "$PKG/"
 cp "$PACKAGE_ROOT/package.json" "$PKG/package.json"
 
-# The single link the consumer's manifest earns
 ln -s "$PKG" "$SANDBOX/node_modules/@jterrazz/typescript"
 
-# ...and the package's own dependencies, in the store beside it — never above
+# The package's own dependencies go beside it in the store, never above.
 while IFS= read -r dep; do
     [ -n "$dep" ] || continue
     [ -e "$PACKAGE_ROOT/node_modules/$dep" ] || continue
@@ -63,8 +56,7 @@ EOF
 
 cd "$SANDBOX"
 
-# The layout is only a proof if it is really strict: a tool the consumer never
-# declared must not resolve from its root, or every claim below is vacuous.
+# A tool the consumer never declared must not resolve from its root, or every claim below is vacuous.
 for tool in oxlint oxfmt; do
     if node --input-type=module -e "await import('$tool')" > /dev/null 2>&1; then
         echo "not a strict layout: $tool resolves from the consumer root"

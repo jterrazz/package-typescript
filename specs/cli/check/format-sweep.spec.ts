@@ -6,20 +6,12 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, passOf, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, for the ground's sake: what separates a file git ignores from one
- * it does not is a repository, and a fixture cannot be one — the runner
- * copies files rather than initialising a repository.
- */
+// The runner copies files rather than initialising a repository, so a fixture cannot say what git ignores.
 
 const MISFORMATTED = 'export const shape = {wide:1}\n';
 
 const FORMATTED = 'export const shape = { wide: 1 };\n';
 
-/**
- * A repository with no oxfmt config: a tracked source file, a misformatted ground
- * file, a misformatted ignored one, and a new file nobody has added.
- */
 function projectWith({
     newSource,
     trackedSource,
@@ -46,7 +38,6 @@ function projectWith({
     return project;
 }
 
-/** The Oxfmt pass of a run of that pass alone, from its header to its verdict. */
 function formatPassOf(project: string, command: 'check' | 'fix'): string {
     const { stdout } = spawnSync('bash', [SELECTING_BIN, command], {
         cwd: project,

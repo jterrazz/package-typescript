@@ -7,18 +7,8 @@ import manifest from '../../../package.json' with { type: 'json' };
 import { newDirectory, temporaryDirectory } from '../temporary-directory.js';
 import { toolchainWith } from '../toolchain-sandbox.js';
 
-/*
- * A chain, not a document — and the product command all the same. What no
- * document can state here is the GROUND: a config that names
- * `@jterrazz/typescript/oxlint` has to RESOLVE it, and the spec runner copies a
- * fixture rather than installing one. So the project is built with the link npm
- * would have made, which is also the only honest way to read a real consumer
- * config: the drift report measures a project against the profile it extends,
- * and a project that extends nothing has nothing to have drifted from.
- *
- * The rows that read an INSTALL stand on a copy of the package beside one
- * that disagrees with its ranges (`toolchain-sandbox.ts`), linked the same way.
- */
+// A config naming `@jterrazz/typescript/oxlint` must resolve it, and the spec runner copies rather than
+// installs: the project is built with the link npm would have made.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../../..');
@@ -29,7 +19,6 @@ afterAll(() => {
     rmSync(project, { force: true, recursive: true });
 });
 
-/** A project wired at this checkout the way an install would wire it. */
 function stand(config: string, configName = 'oxlint.config.ts'): void {
     writeFileSync(
         join(project, 'package.json'),
@@ -58,7 +47,6 @@ function stand(config: string, configName = 'oxlint.config.ts'): void {
     writeFileSync(join(project, configName), config);
 }
 
-/** A node-profile project linked at `toolchain`, one reasoned suppression in its source. */
 function suppressingProject(toolchain: string): string {
     const directory = temporaryDirectory('spec-drift-rows-');
     writeFileSync(
@@ -129,11 +117,7 @@ describe('drift', () => {
         // When - the quality checks run again
         const reasoned = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
 
-        /*
-         * The run's own exit code is not the claim here — a sandbox that links this
-         * checkout into its node_modules lints and formats what it finds there,
-         * which is this repository, not the case.
-         */
+        // A sandbox linking this checkout into its node_modules lints this repository, so the exit code is not the claim.
 
         // Then - the rule is still REPORTED as off, and no longer refused: it is a decision now
         expect(reasoned.stdout).toContain('rules off vs profile                 1 (no-debugger)');

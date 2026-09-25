@@ -1,9 +1,6 @@
 description: drops the entry a fix run finds at zero, on a tree that owes nothing
 fixture: ./fixtures/baseline/settled/
 runs:
-    # oxlint itself exits 0 here: the fixer leaves a clean tree. The ratchet
-    # moved and the entry stayed, and a paid debt is a fall the fix records:
-    # the entry goes, the pass names it, and the run is green.
     - command: fix
       exit: 0
       stdout: |4
@@ -43,8 +40,6 @@ runs:
                   {
                       "typescript": {}
                   }
-    # The section the fix emptied is still the project's ratchet: a green check
-    # names it as holding nothing, the phrase @jterrazz/test gives its own.
     - command: check
       exit: 0
       stdout: |4

@@ -6,20 +6,10 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, not a document: the ground is a repository INSIDE another
- * repository, and `.git` is the one path a fixture cannot carry — git does not
- * track it. So the outer tree is a fixture and the boundary is made here.
- *
- * The claim is the ancestor walk's stop. A clone checked out under another
- * repository — every workbench under `home/<brand>/work/` is one — must not be
- * judged by the `.gitignore` of the tree it happens to sit in.
- */
+// `.git` is the one path a fixture cannot carry: git does not track it.
 
-/** The ancestor's offending line, as the gate would print it from the clone. */
 const ANCESTOR_COMPLAINT = '.gitignore names coverage/';
 
-/** The fixture spread into a temp tree, with `boundary` written into the clone. */
 function checkFromClone(boundary: 'directory' | 'file' | 'none'): {
     status: null | number;
     stdout: string;

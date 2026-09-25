@@ -8,12 +8,7 @@ import { onlyPasses, passOf, SELECTING_BIN } from '../check-passes.js';
 import { inProject, namesPassOf, projectWith, SIX_TARGETS } from '../repository-ground.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, for the ground's sake: what the Names pass asks of a REPOSITORY
- * needs one, and a fixture cannot be one — git refuses to track a nested
- * `.git`, and the runner copies files rather than initialising a repository,
- * so what git ignores, and what it tracks, a fixture cannot say.
- */
+// git refuses to track a nested `.git`, so a fixture cannot be a repository.
 
 const FOUR_TARGETS = [
     '.PHONY: install build lint test',
@@ -33,17 +28,15 @@ const FOUR_TARGETS = [
     '',
 ].join('\n');
 
-/** Whether the four tree gates and the linter passed or failed, in report order. */
 function treeVerdictsOf(stdout: string): string[] {
     return ['Oxlint Check', 'Markdown (prose)', 'Names (tree)', 'Secrets (credentials)'].map(
         (label) => (passOf(stdout, label).includes('✓ Passed') ? 'Passed' : 'Failed'),
     );
 }
 
-/** A data/ folder nobody has added, holding a broken link, a live-looking key and a debugger statement. */
 function writeDataFolder(project: string): void {
     mkdirSync(join(project, 'data'));
-    /* Spelled in two halves, so this file carries no key of its own. */
+    // Spelled in two halves, so this file carries no key of its own.
     const key = ['AKIA', 'Q7RJ4KDNPZ2WX6TB'].join('');
     writeFileSync(
         join(project, 'data/NOTES.md'),
@@ -55,7 +48,6 @@ function writeDataFolder(project: string): void {
     );
 }
 
-/** A check of the linter and the tree gates and a baseline recording over the project, the check's report and the recorded file. */
 function checkAndRecord(project: string): { baseline: string; stdout: string } {
     const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
         cwd: project,
@@ -74,7 +66,6 @@ function checkAndRecord(project: string): { baseline: string; stdout: string } {
     };
 }
 
-/** What a pass printed between its header and its verdict, colours stripped, blank lines dropped. */
 function saidBy(stdout: string, label: string): string[] {
     return stripVTControlCharacters(passOf(stdout, label))
         .split('\n')

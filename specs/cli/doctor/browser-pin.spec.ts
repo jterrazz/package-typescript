@@ -2,24 +2,11 @@ import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-/*
- * A chain, not a document, for the same reason the versions report is one:
- * every other line of `doctor` is a version, and a document stating one would
- * go red on a dependency bump with nothing wrong. What is claimed here is the
- * one verdict the project owns rather than the toolchain — and the ground is a
- * lockfile, which `fixture:` can spread but `INIT_CWD` is what the product
- * command reads, so the run names its own root.
- *
- * Every run starts one directory ABOVE the fixture, which is the shape npm
- * gives a script started from a workspace root: `INIT_CWD` is the project and
- * the working directory is somebody else's. A run whose two agreed would hold
- * nothing about which of them the command reads.
- */
+// Each run starts one directory above the fixture, as npm does from a workspace root: `INIT_CWD` is the project.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const FIXTURES = resolve(import.meta.dirname, 'fixtures/browser-pin');
 
-/** `typescript doctor` run as a consumer runs it: the fixture is `INIT_CWD`. */
 function doctorIn(fixture: string): { status: null | number; stdout: string } {
     const root = resolve(FIXTURES, fixture);
     const result = spawnSync('bash', [BIN, 'doctor'], {

@@ -5,17 +5,9 @@ import { catalog, unsafeFixers } from '../../../lint/catalog.js';
 import { PROFILES as PROFILE_TABLE } from '../../../lint/profiles.js';
 import { printConfig, PROFILES, roster } from './rulebook.js';
 
-/*
- * Law 1 of the rulebook, made mechanical: every rule of every plugin a profile
- * loads is decided by name, `categories` appears nowhere, and every `off`
- * carries one of the five recorded reasons.
- *
- * This is what keeps the word "comprehensive" true across a weekly oxlint
- * release. Nursery is the one exception, and it is upstream's: a nursery rule
- * is declared unstable, so the rulebook does not decide it at all.
- */
+// Nursery is upstream's one exception: a nursery rule is declared unstable, so the rulebook does not decide it.
 
-/** oxlint reports a plugin scope with underscores and spells the rule id with dashes. */
+// oxlint reports a plugin scope with underscores and spells the rule id with dashes.
 function idOf(rule: { scope: string; value: string }): string {
     const scope = rule.scope.replaceAll('_', '-');
     return scope === 'eslint' ? rule.value : `${scope}/${rule.value}`;
@@ -70,10 +62,7 @@ describe('rule-surface', () => {
         // Given - the compiled profile a consumer extends
         const compiled = JSON.stringify(PROFILE_TABLE[name]);
 
-        /*
-         * A category arms rules of plugins the config never names: inert until a
-         * framework config activates the plugin, and firing unannounced from then.
-         */
+        // A category arms rules of plugins the config never names, which fire unannounced once activated.
 
         // Then - nothing in the manifest reaches for a category
         expect(compiled).not.toContain('categories');
@@ -92,13 +81,7 @@ describe('rule-surface', () => {
         expect(wrong).toStrictEqual([]);
     });
 
-    /*
-     * The fix kinds plain `oxlint --fix` applies, measured against 1.85 rule by
-     * rule: a `conditional_dangerous` fixer rewrote a `declare module` block
-     * without `--fix-dangerously`. Every other kind is a fixer `--fix` leaves
-     * alone, or no fixer at all — and a rule the wrapper disarms for nothing is
-     * a mark that says something false about its fixer.
-     */
+    // Measured on 1.85: a `conditional_dangerous` fixer rewrote a `declare module` block without `--fix-dangerously`.
     const APPLIED_BY_FIX = new Set([
         'conditional_dangerous_fix',
         'conditional_dangerous_fix_or_suggestion',
@@ -140,10 +123,7 @@ describe('rule-surface', () => {
     });
 
     test('keeps only the perfectionist rules oxfmt does not sort', () => {
-        /*
-         * Measured on a fixture: oxfmt's `sortImports` reorders import STATEMENTS
-         * and leaves the named specifiers inside one statement alone.
-         */
+        // Measured: oxfmt's `sortImports` leaves the specifiers inside one statement alone.
 
         // Given - oxfmt owns import order, package.json key order and Tailwind class order
         const OWNED_BY_OXFMT = new Set([

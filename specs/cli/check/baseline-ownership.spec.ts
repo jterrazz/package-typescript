@@ -6,25 +6,9 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * A chain in a temp directory, for the two parts of the ground a fixture
- * cannot hold. The checker is a STUB installed as the project's
- * @jterrazz/test, under `node_modules/`, which git never tracks. And the config
- * arms a JS plugin named `jterrazz`, the name @jterrazz/test's own plugin holds
- * in this repository's config: oxlint refuses two plugins by one name in one
- * run, and @jterrazz/test's checker, run alone, walks this repository and loads
- * every config in it. The rest of the project — the stub plugin among it — is
- * the fixture `fixtures/baseline/ownership/`, so the pass's verdict is exactly
- * the exit code the stub was told to give.
- *
- * The claim is the ratchet's split: the `typescript` section of
- * `jterrazz.baseline.json` records and judges this package's rules only. A
- * `jterrazz(*)` diagnostic in oxlint's report and a `jterrazz-check(*)`
- * finding are @jterrazz/test's, in its `test` section of the same file —
- * never counted here, never forgiven here, and never rewritten here.
- */
+// The stub checker lives under `node_modules/`, which git never tracks. oxlint refuses two plugins by one
+// name in one run, and @jterrazz/test's checker loads every config of this repository: the fixture cannot hold these.
 
-/** A checker that prints one finding and exits with the given code. */
 function checker(exitCode: number): string {
     return `#!/usr/bin/env node
 process.stdout.write('[error] specs/x.spec.ts:1: a finding the stub always reports (C9)\\n');
@@ -32,7 +16,6 @@ process.exit(${exitCode});
 `;
 }
 
-/** The project's config: the stub plugin, armed. */
 const CONFIG = `export default {
     ignorePatterns: ['node_modules/**', 'plugin.mjs'],
     jsPlugins: ['./plugin.mjs'],
@@ -40,7 +23,6 @@ const CONFIG = `export default {
 };
 `;
 
-/** The fixture in a temp directory, with its config and a stub @jterrazz/test whose checker exits 0 — removed when the test ends. */
 function groundOf(): string {
     const project = temporaryDirectory('spec-baseline-ownership-');
     cpSync(resolve(import.meta.dirname, 'fixtures/baseline/ownership'), project, {
@@ -58,11 +40,7 @@ function groundOf(): string {
     return project;
 }
 
-/**
- * One run of the product command in the project. `INIT_CWD` is named because
- * npm sets it for whatever script started this suite, and `baseline` reads it
- * as the project it records — a runner's variable would send the write here.
- */
+// npm sets `INIT_CWD` for whatever script started this suite, and `baseline` records into it.
 function run(
     project: string,
     command: string,
@@ -77,7 +55,6 @@ function run(
     return { status: result.status, stdout: result.stdout };
 }
 
-/** The verdict the report printed for one pass, or `absent` when it did not run. */
 function verdict(stdout: string, label: string): string {
     const index = stdout.indexOf(label);
 
@@ -167,7 +144,6 @@ describe('baseline-ownership', () => {
         expect(stdout).toContain('a finding the stub always reports');
     });
 
-    /** A checker whose `test` section breaks on the plugin's rule — it counts that diagnostic and leaves printing it to oxlint's pass, as 17 does. */
     const COUNTING_CHECKER = `#!/usr/bin/env node
 process.stdout.write("conventions checker: 1 plugin diagnostic judged, printed by oxlint's own pass\\n");
 process.exit(1);
@@ -198,11 +174,7 @@ process.exit(1);
         expect(verdict(stdout, 'Test Conventions')).toBe('✗ Failed');
     });
 
-    /*
-     * The framed form is the one that closes on a summary, `Finished in …`, even
-     * over no diagnostic at all; an environment carrying nothing but PATH and
-     * HOME is where oxlint picks it, whatever agent or runner the suite is in.
-     */
+    // With nothing but PATH and HOME, oxlint picks the framed form, which closes on `Finished in …` even over nothing.
     test('draws nothing under a green oxlint pass when no diagnostic stands behind the broken section', () => {
         // Given - a checker failing, and a config arming no rule, in the framed form's environment
         const project = groundOf();
@@ -225,7 +197,6 @@ process.exit(1);
         expect(verdict(stdout, 'Oxlint Check')).toBe('✓ Passed');
     });
 
-    /** A green checker that answers the root run with its bare held line whatever its flags, as 17 does, and records that run's argv beside it. */
     const HELD_CHECKER = `#!/usr/bin/env node
 const { writeFileSync } = require('node:fs');
 const { join } = require('node:path');
@@ -274,7 +245,6 @@ process.exit(0);
         expect(JSON.parse(argv)).not.toContain('--summary');
     });
 
-    /** A green checker whose root run keeps no `test` section — it prints the empty form, as 17 does. */
     const NOTHING_HELD_CHECKER = `#!/usr/bin/env node
 const args = process.argv.slice(2);
 if (args[args.indexOf('--member') + 1] === '.') {

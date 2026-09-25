@@ -3,12 +3,6 @@ fixture: ./fixtures/baseline/beyond/
 runs:
     - command: fix
       exit: 1
-      # The oxlint pass prints the linter's own report, and that block has no
-      # fixed shape ([Testing](../../../docs/03-testing.md)). What is claimed
-      # here is the ratchet's verdict on what SURVIVED the fixer, which is ours
-      # and is ordered: the paid entry is dropped, and the rule that rose and
-      # the rule with no entry are left for `typescript baseline` — a fix never
-      # records debt that grew.
       stdout: |4
            START  Running quality fixes
 

@@ -1,8 +1,6 @@
 description: names a ratchet file keeping no typescript section as holding nothing, on a green check
 fixture: ./fixtures/baseline/sectionless/
 runs:
-    # The file keeps another package's section only: this one's is absent,
-    # and reads as an emptied one does.
     - command: check
       exit: 0
       stdout: |4

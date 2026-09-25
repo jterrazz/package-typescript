@@ -6,20 +6,8 @@ import manifest from '../../../package.json' with { type: 'json' };
 import { cli } from '../cli.specification.js';
 import { toolchainWith } from '../toolchain-sandbox.js';
 
-/*
- * A chain, not a document: every number in this report is a version, and a
- * document stating one would be a golden that a dependency bump invalidates
- * without anything being wrong. What is claimed here is the shape and the
- * JOIN — the ranges the report prints are the ones package.json declares, and
- * the verdict column answers for every tool the toolchain runs.
- *
- * The three verdicts other than `ok` need an install that disagrees with the
- * ranges, so they run a copy of the package standing on one
- * (`toolchain-sandbox.ts`); what they claim is the verdict and the exit, never
- * a real version.
- */
+// Every number here is a version, which a golden would pin to a dependency bump.
 
-/** `typescript doctor` of a sandboxed toolchain, the sandbox its own project. */
 function doctorOf(root: string): { rows: string[]; status: null | number; verdict: string } {
     const result = spawnSync('bash', [join(root, 'bin/typescript.sh'), 'doctor'], {
         cwd: root,

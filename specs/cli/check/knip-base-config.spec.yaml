@@ -3,8 +3,6 @@ fixture: ./fixtures/knip/no-config/
 runs:
     - command: check
       exit: 1
-      # A knip fixture carries no tsconfig, so tsc prints its help and refuses —
-      # the compiler's block, not this document's subject.
       stdout: |4
            START  Running quality checks
 
@@ -59,6 +57,4 @@ runs:
 
           ✗ Some checks failed
       files:
-          # Knip runs uncached: its --cache validates a glob against the
-          # directories that held a match, and misses a file added elsewhere.
           node_modules/.cache/knip: absent

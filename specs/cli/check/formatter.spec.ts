@@ -7,16 +7,7 @@ import { beforeAll, describe, expect, test } from 'vitest';
 import { cli as oxfmtCli } from '../oxfmt.specification.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, not a document: it drives the oxfmt binary (the B9w exception
- * oxfmt.specification.ts states) and `literate()` binds every document of this
- * repo to the product runner — and the claims below are regexes over a file's
- * content, where `files:` compares literal text.
- *
- * Scalpel by design: the formatted file content is oxfmt's (third-party) output —
- * our product is the PRESET, so each probe targets one style decision the preset
- * makes (quotes, semicolons, indentation), not oxfmt's overall formatting.
- */
+// Each probe targets one style decision the preset makes, never oxfmt's overall output.
 const CONFIG_PATH = resolve(import.meta.dirname, '../../../src/presets/oxfmt/index.js');
 const ENTRY = resolve(import.meta.dirname, '../../../src/oxfmt.js');
 const OXFMT = resolve(import.meta.dirname, '../../../node_modules/.bin/oxfmt');
@@ -27,7 +18,6 @@ describe('formatter', () => {
     let formatted: FormatResult;
 
     beforeAll(async () => {
-        // Format the wrong-style file so the applied style options can be inspected.
         formatted = await oxfmtCli
             .fixture(file('./fixtures/formatter/wrong-style.ts'))
             .exec(`--config ${CONFIG_PATH} wrong-style.ts`);
@@ -53,19 +43,14 @@ describe('formatter', () => {
         expect(result.exitCode).toBe(0);
     });
 
-    /*
-     * The preset's ignores resolve against the CONFIG's directory, so they hold
-     * only where a consumer's own config composes the preset at its root — the
-     * way every project wires it — and never under `--config <preset>`. The tree
-     * is copied beside such a config, which names this checkout's entry by path.
-     */
+    // The preset's ignores resolve against the config's directory, so the tree sits beside a config composing it.
     test('formats none of the asset trees, build caches and ground a project holds', () => {
         // Given - the same unformatted file at the root and under every tree the preset ignores, beside a consumer config
         const created = temporaryDirectory('spec-formatter-ignores-');
         cpSync(resolve(import.meta.dirname, 'fixtures/formatter/asset-trees'), created, {
             recursive: true,
         });
-        /* A tracked `.next/` is the committed artefact the Gitignore pass refuses, so it is made here. */
+        // A tracked `.next/` is the committed artefact the Gitignore pass refuses.
         mkdirSync(join(created, '.next'));
         cpSync(join(created, 'index.ts'), join(created, '.next/app.ts'));
         writeFileSync(

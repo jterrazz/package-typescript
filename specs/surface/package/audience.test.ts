@@ -8,54 +8,36 @@ import { catalog } from '../../../lint/catalog.js';
 import { PROFILES } from '../../../lint/profiles.js';
 import { lintFragments } from './lint-fragments.js';
 
-/*
- * The audience-audit rule: every rule this package holds declares its
- * audience — `consumer`, meaningful in any project that uses the package, or
- * `self`, this package's own suite discipline. A rulebook fragment declares it
- * for every decision it holds; every other rule is a row of the manifest
- * beside this file, `rules.json`, by channel: a pass of `typescript check`, a
- * refusal a shipped module or script throws, rejects or exits non-zero with,
- * and a meta-test. A `self` row
- * names the home that holds it — a path the package leaves out — and the
- * names the tarball audit greps for.
- */
+// A `self` row names the home that holds it — a path the package leaves out — and the names the tarball audit greps for.
 
 const ROOT = resolve(import.meta.dirname, '../../..');
 
-/** The channels a manifest row may sit on. */
 const CHANNELS = ['checker', 'meta', 'runtime'];
 
-/** Whether a value is an object whose keys can be read. */
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
 }
 
-/** A field of a manifest row, as text: empty when the row holds none. */
-function text(row: Record<string, unknown>, key: string): string {
+function fieldText(row: Record<string, unknown>, key: string): string {
     const value = row[key];
     return typeof value === 'string' ? value : '';
 }
 
-/** The fragments the package declares, wherever a module holds them. */
 const declared = await lintFragments(ROOT);
 
-/** The manifest, one row per rule no module declares for itself. */
 const parsed: unknown = JSON.parse(
     readFileSync(join(ROOT, 'specs/surface/package/rules.json'), 'utf8'),
 );
 const rows = (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
 
-/** The rows of one channel and one audience. */
 function rowsOf(channel: string, audience: string): Record<string, unknown>[] {
     return rows.filter((row) => row.channel === channel && row.audience === audience);
 }
 
-/** Two names in their alphabetical order. */
 function byName(left: string, right: string): number {
     return left.localeCompare(right);
 }
 
-/** Every module and script the package would ship, as a path from the root: tests left out. */
 function shippedModules(directory: string): string[] {
     return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
         const path = join(directory, entry.name);
@@ -66,11 +48,7 @@ function shippedModules(directory: string): string[] {
     });
 }
 
-/**
- * The ways a shipped module refuses, each counted off its text: a throw of an
- * error it builds, with or without `new`; a rejection, whatever it rejects
- * with; an exit with anything but a literal 0 — a variable's value included.
- */
+// An exit with anything but a literal 0 counts, a variable's value included.
 const REFUSALS: Record<string, { script: RegExp; module: RegExp }> = {
     exit: { module: /\bexit\((?!0\))/gu, script: /(?<![\w-])exit\s+(?:[1-9]|"?\$)/gu },
     reject: { module: /\breject\(/gu, script: /$^/gu },
@@ -108,12 +86,14 @@ test('every catalogue entry carries the audience its fragment declared', () => {
 test('every row of the manifest declares its audience, on a channel of its own', () => {
     // Given - every rule the manifest holds
     expect(rows.length).toBeGreaterThan(20);
-    const ids = rows.map((row) => text(row, 'id'));
+    const ids = rows.map((row) => fieldText(row, 'id'));
 
     // Then - each names an audience of the pair and a channel, under an id no other row takes
     for (const row of rows) {
-        expect.soft(AUDIENCES, `${text(row, 'id')} declares no audience`).toContain(row.audience);
-        expect.soft(CHANNELS, `${text(row, 'id')} sits on no channel`).toContain(row.channel);
+        expect
+            .soft(AUDIENCES, `${fieldText(row, 'id')} declares no audience`)
+            .toContain(row.audience);
+        expect.soft(CHANNELS, `${fieldText(row, 'id')} sits on no channel`).toContain(row.channel);
     }
     expect(ids.filter((id, index) => id === '' || ids.indexOf(id) !== index)).toStrictEqual([]);
 });
@@ -130,7 +110,7 @@ test('the consumer passes are exactly the passes the check selects by name', () 
     // Then - the manifest's consumer checker rows name each one, and nothing else
     expect(
         rowsOf('checker', 'consumer')
-            .map((row) => text(row, 'id'))
+            .map((row) => fieldText(row, 'id'))
             .toSorted(byName),
     ).toStrictEqual([...selected].toSorted(byName));
 });
@@ -157,17 +137,19 @@ test('every refusal a shipped module makes is a consumer row, and every row is s
         }
     }
     for (const row of runtime) {
-        const module = text(row, 'module');
+        const module = fieldText(row, 'module');
         expect
-            .soft(Object.keys(REFUSALS), `${text(row, 'id')} refuses no known way`)
+            .soft(Object.keys(REFUSALS), `${fieldText(row, 'id')} refuses no known way`)
             .toContain(row.by);
-        expect.soft(row.audience, `${text(row, 'id')} ships, so it is consumer`).toBe('consumer');
+        expect
+            .soft(row.audience, `${fieldText(row, 'id')} ships, so it is consumer`)
+            .toBe('consumer');
         expect
             .soft(
                 existsSync(join(ROOT, module)) && readFileSync(join(ROOT, module), 'utf8'),
-                `${text(row, 'id')} is no longer worded so in ${module}`,
+                `${fieldText(row, 'id')} is no longer worded so in ${module}`,
             )
-            .toContain(text(row, 'message'));
+            .toContain(fieldText(row, 'message'));
     }
 });
 
@@ -214,14 +196,16 @@ test('every self row names the home that holds it, which the package leaves out'
 
     // Then - each home exists here, ships nowhere, and holds every name the row greps for
     for (const row of self) {
-        const home = text(row, 'home');
+        const home = fieldText(row, 'home');
         const names: unknown[] = Array.isArray(row.names) ? row.names : [];
         const source = existsSync(join(ROOT, home)) ? readFileSync(join(ROOT, home), 'utf8') : '';
-        expect.soft(source, `${text(row, 'id')} has no home`).not.toBe('');
-        expect.soft(packed, `${text(row, 'id')} ships its home`).not.toContain(`"${home}"`);
-        expect.soft(text(row, 'why'), `${text(row, 'id')} says not why it stays home`).not.toBe('');
+        expect.soft(source, `${fieldText(row, 'id')} has no home`).not.toBe('');
+        expect.soft(packed, `${fieldText(row, 'id')} ships its home`).not.toContain(`"${home}"`);
         expect
-            .soft(names.length, `${text(row, 'id')} names nothing to grep for`)
+            .soft(fieldText(row, 'why'), `${fieldText(row, 'id')} says not why it stays home`)
+            .not.toBe('');
+        expect
+            .soft(names.length, `${fieldText(row, 'id')} names nothing to grep for`)
             .toBeGreaterThan(0);
         for (const name of names) {
             expect.soft(source, `${basename(home)} holds no "${String(name)}"`).toContain(name);

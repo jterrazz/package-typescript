@@ -4,20 +4,14 @@ import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-/*
- * What npm would publish, as a consumer receives it: the paths it lists, and
- * the tree it extracts to — packed once per process, beside this checkout's
- * install so its imports resolve, and removed when the process ends.
- */
+// Packed beside this checkout's install so its imports resolve, and removed when the process ends.
 
 const ROOT = resolve(import.meta.dirname, '../../..');
 
-/** Whether a value is an object whose keys can be read. */
 export function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
 }
 
-/** `npm pack`'s answer for this package, parsed: the tarball's name and the paths it holds. */
 export function pack(...flags: string[]): { filename: string; paths: string[] } {
     const run = spawnSync('npm', ['pack', '--json', '--ignore-scripts', ...flags], {
         cwd: ROOT,
@@ -45,7 +39,6 @@ export function pack(...flags: string[]): { filename: string; paths: string[] } 
 
 let extracted: string | undefined;
 
-/** The packed tree's root, extracted on the first call. */
 export function packedTree(): string {
     if (extracted !== undefined) {
         return extracted;
@@ -65,7 +58,6 @@ export function packedTree(): string {
     return extracted;
 }
 
-/** Every file the packed tree holds, as a path from its root: the install linked beside it left out. */
 export function packedFiles(tree: string, directory = tree): string[] {
     return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
         const path = join(directory, entry.name);
@@ -76,7 +68,6 @@ export function packedFiles(tree: string, directory = tree): string[] {
     });
 }
 
-/** A module of the packed tree, imported. */
 export async function loadPacked(tree: string, path: string): Promise<Record<string, unknown>> {
     const module: unknown = await import(pathToFileURL(join(tree, path)).href);
     if (!isRecord(module)) {
@@ -85,16 +76,11 @@ export async function loadPacked(tree: string, path: string): Promise<Record<str
     return module;
 }
 
-/** A text, escaped to match itself inside a regular expression. */
 function literally(text: string): string {
     return text.replaceAll(/[$()*+.?[\\\]^{|}]/gu, String.raw`\$&`);
 }
 
-/**
- * Every file an `exports` target names that Node loads. A `*` matches as Node
- * matches it: any text of one character or more, `/` included, the same text
- * wherever the target repeats it.
- */
+// A `*` matches as Node matches it: one character or more, `/` included, the same text wherever repeated.
 function targetsOf(target: unknown, files: string[]): string[] {
     if (typeof target === 'string') {
         const pattern = target.replace(/^\.\//u, '');
@@ -116,13 +102,11 @@ function targetsOf(target: unknown, files: string[]): string[] {
     );
 }
 
-/** The packed manifest, parsed. */
 function manifestOf(tree: string): Record<string, unknown> {
     const manifest: unknown = JSON.parse(readFileSync(join(tree, 'package.json'), 'utf8'));
     return isRecord(manifest) ? manifest : {};
 }
 
-/** Every file the packed `exports` map publishes, under every condition Node loads. */
 export function publishedTargets(tree: string): string[] {
     const { exports: exportsMap } = manifestOf(tree);
     const files = packedFiles(tree);
@@ -136,7 +120,6 @@ export function publishedTargets(tree: string): string[] {
     ];
 }
 
-/** Every file the packed `bin` field installs as a command, as a path from the tree's root. */
 export function publishedBins(tree: string): string[] {
     const { bin, name } = manifestOf(tree);
     const commands = typeof bin === 'string' ? { [String(name)]: bin } : isRecord(bin) ? bin : {};

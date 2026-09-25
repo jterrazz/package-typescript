@@ -2,24 +2,10 @@ import { describe, expect, test } from 'vitest';
 
 import { diagnosticsOf, oxlint, sandbox } from './rulebook.js';
 
-/*
- * Module augmentation, held against the two rules that rewrite its shape.
- *
- * An augmentation merges into an existing declaration only as an INTERFACE: a
- * `type` alias redeclares the name and every member of the original is lost.
- * And `export {}` is what makes a file carrying `declare module` an
- * augmentation rather than an ambient redeclaration of the module — dropping
- * it changes what the block means.
- *
- * A declaration file is where augmentation lives, so `consistent-type-definitions`
- * is off there and on everywhere else, where a human answers it with a
- * suppression inside the block. The rulebook is the product here, so the suite
- * drives oxlint directly, the B9w exception `oxlint.specification.ts` states.
- */
+// `export {}` is what makes a `declare module` file an augmentation rather than an ambient redeclaration.
 
 const FIXTURE = new URL('fixtures/augmentation/', import.meta.url).pathname;
 
-/** The rule ids one file's diagnostics name, in oxlint's own vocabulary. */
 function rulesOn(file: string): string[] {
     using work = sandbox(FIXTURE, 'node', 'library');
     const report = oxlint(work.path, ['-c', work.config, '--format=json', file]);

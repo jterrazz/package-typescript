@@ -7,18 +7,10 @@ import { stripVTControlCharacters } from 'node:util';
 
 import { packedFiles } from './packed-tree.js';
 
-/*
- * A packed shell command's `check`, run and read: the passes it reported and
- * how it ended, and every environment that could try to choose them.
- */
-
-/** A pass header, its colours stripped: the label after `RUN`. */
 const HEADER = /^ RUN (?<label>.+)$/gmu;
 
-/** What a run of the check showed: every pass it reported, and its exit code. */
 export type Outcome = { passes: string[]; status: number };
 
-/** `bin check`, then `args`, run in `project`, in an environment of `env` over the process's own, any selection of its own left out. */
 export async function checkOutcome(
     bin: string,
     project: string,
@@ -43,7 +35,7 @@ export async function checkOutcome(
     };
 }
 
-/** The variable bash exports a function named `selected` in, as this machine's bash spells it. */
+// As this machine's bash spells the exported-function variable.
 function exportedSelection(): Record<string, string> {
     const exported = spawnSync(
         'bash',
@@ -58,10 +50,8 @@ function exportedSelection(): Record<string, string> {
     return entry === undefined || at === -1 ? {} : { [entry.slice(0, at)]: entry.slice(at + 1) };
 }
 
-/** The variables that say where the project and the shell are, which a run is right to follow. */
 const LOCATION = new Set(['HOME', 'INIT_CWD', 'PATH', 'PWD']);
 
-/** Every packed shell script's text, one after the other. */
 function packedScripts(tree: string): string {
     return packedFiles(tree)
         .filter((path) => path.endsWith('.sh'))
@@ -69,16 +59,10 @@ function packedScripts(tree: string): string {
         .join('\n');
 }
 
-/**
- * What a shell script gives a variable its value by: an assignment, `name=`
- * or `name+=` or `name[i]=`; a `local`, which shadows what bash inherited; a
- * `for` loop's name; and every name a `read` fills. An `export` or a
- * `declare` with no `=` keeps the inherited value, so it sets nothing.
- */
+// An `export` or a `declare` with no `=` keeps the inherited value, so it sets nothing.
 const ASSIGNS =
     /\blocal(?:\s+-[a-zA-Z]+)*\s+(?<local>[A-Za-z_]\w*)|\bfor\s+(?<loop>[A-Za-z_]\w*)\s+in\b|\bread(?:\s+-[a-zA-Z]+(?:\s+'[^']*'|\s+"[^"]*")?)*(?<reads>(?:\s+[A-Za-z_]\w*)+)|(?:^|[\s;&|(])(?<assigned>[A-Za-z_]\w*)(?:\[[^\]]*\])?\+?=/gmu;
 
-/** Every environment variable the packed shell scripts read and never set, of any case, the location ones left out. */
 function environmentInputs(tree: string): string[] {
     const scripts = packedScripts(tree);
     const read = new Set(
@@ -97,7 +81,6 @@ function environmentInputs(tree: string): string[] {
     return [...read].filter((name) => !set.has(name) && !LOCATION.has(name));
 }
 
-/** Every flag a `case` arm of the packed shell scripts matches, `--json)` or `-h|--help)`. */
 export function argvFlags(tree: string): string[] {
     const arms = [...packedScripts(tree).matchAll(/^\s*(?<arm>-[-\w|]*)\)/gmu)];
 
@@ -106,12 +89,7 @@ export function argvFlags(tree: string): string[] {
     );
 }
 
-/**
- * Every environment that could try to choose which passes a packed check
- * runs, by name: a `selected` bash inherits, one the file `BASH_ENV` names
- * defines (written beside `project`), the specs' own selection, and every
- * variable the scripts read and never set, each naming a pass.
- */
+// A `selected` bash inherits, one `BASH_ENV` defines, the specs' own selection, and every variable read and never set.
 export function selectingEnvironments(
     tree: string,
     project: string,

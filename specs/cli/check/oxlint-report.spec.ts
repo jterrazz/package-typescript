@@ -8,18 +8,12 @@ import { onlyPasses } from '../check-passes.js';
 import { cli } from '../cli.specification.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * The product through its runner, and oxlint beside it as the oracle: the
- * claim is that the Oxlint pass prints what oxlint itself prints in the same
- * place, so the expected value is oxlint's own report, made over a copy of the
- * same ground in the same environment — which no document can state.
- */
+// The oracle is oxlint's own report over a copy of the same ground in the same environment.
 
 const REPOSITORY = resolve(import.meta.dirname, '../../..');
 const OXLINT = resolve(REPOSITORY, 'node_modules/.bin/oxlint');
 const SHAPES = resolve(import.meta.dirname, 'fixtures/oxlint-report');
 
-/** The environment variables oxlint reads to pick its form, cleared before each case sets its own. */
 const FORM_VARIABLES = [
     'AI_AGENT',
     'CI',
@@ -39,12 +33,10 @@ const FORM_VARIABLES = [
     'REPL_ID',
 ];
 
-/** A case's form variables, every other one unset. */
 function formOnly(form: Record<string, string>): Record<string, null | string> {
     return { ...Object.fromEntries(FORM_VARIABLES.map((variable) => [variable, null])), ...form };
 }
 
-/** oxlint alone over a copy of the fixture, in this environment with the case's form variables. */
 function oxlintAlone(form: Record<string, string>): string {
     const project = temporaryDirectory('spec-oxlint-report-');
     cpSync(SHAPES, project, { recursive: true });
@@ -64,12 +56,11 @@ function oxlintAlone(form: Record<string, string>): string {
     return linted.stdout;
 }
 
-/** A run's duration, the one thing two runs of the same lint never share. */
+// A run's duration is the one thing two runs of the same lint never share.
 function timeless(text: string): string {
     return text.replaceAll(/Finished in \d+(?:ms|\.\d+s)/gu, 'Finished in <time>');
 }
 
-/** What the Oxlint pass printed between its header and the ratchet's first line. */
 function oxlintPassOf(stdout: string): string {
     const opened = stdout.slice(stdout.indexOf('Oxlint Check\n\n') + 'Oxlint Check\n\n'.length);
 
@@ -119,13 +110,7 @@ describe('oxlint-report', () => {
         },
     );
 
-    /*
-     * The run count is read off a JS plugin that records every oxlint process
-     * loading it, in the file `RUNS_LOG` names — and nowhere when nothing names
-     * one, as when this repository's own tools load the fixture's config. The
-     * project is `fixtures/oxlint-once/project/`, one `debugger` armed at error,
-     * and the held case lays a baseline over it.
-     */
+    // A JS plugin records every oxlint process loading it in the file `RUNS_LOG` names, and nowhere without one.
     test.each([
         { held: false, name: 'a failing pass with no baseline to judge it' },
         { held: true, name: 'a pass the baseline holds' },

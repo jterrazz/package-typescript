@@ -1,14 +1,8 @@
 description: fails a ratchet whose debt fell below what it recorded, until fix re-records it
 fixture: ./fixtures/baseline/fell/
 runs:
-    # The section is exact: one `debugger` and one construct file stand under
-    # entries of two each. `check` names both falls, each in the pass that
-    # judges it; `fix` lowers both entries and keeps the `test` section byte
-    # for byte; the `check` after it holds.
     - command: check
       exit: 1
-      # The oxlint pass prints the linter's own report first, and that block
-      # has no fixed shape (baseline-beyond.spec.yaml says why).
       stdout: |4
            START  Running quality checks
 

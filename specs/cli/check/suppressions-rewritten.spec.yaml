@@ -3,10 +3,6 @@ fixture: ./fixtures/suppressions/looking-away/
 runs:
     - command: fix
       exit: 1
-      # The directives this fixture writes wrong are the linter's findings too,
-      # under the default profile a project with no config of its own runs:
-      # its own report is spanned (its reporter is a fact about the machine),
-      # and its ratchet lines, which are ours, are stated.
       stdout: |4
            START  Running quality fixes
 

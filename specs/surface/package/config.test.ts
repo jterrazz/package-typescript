@@ -2,13 +2,7 @@ import { defineConfig } from '@jterrazz/typescript/config';
 import type { JterrazzConfig } from '@jterrazz/typescript/config';
 import { expect, test } from 'vitest';
 
-/*
- * A sibling package of the family adds its section the way `@jterrazz/test`
- * does: by merging into the interface this entry exports. The TypeScript Check
- * pass type-checks this file, so the augmentation below is the claim that the
- * merge reaches `defineConfig` — and the `@ts-expect-error` lines the claim
- * that a section's shape is enforced.
- */
+// TypeScript Check type-checks this file: the augmentation and the `@ts-expect-error` lines are the claims.
 declare module '@jterrazz/typescript/config' {
     // oxlint-disable-next-line typescript/consistent-type-definitions -- an augmentation merges into an interface only; a type alias would redeclare the name
     interface JterrazzConfig {

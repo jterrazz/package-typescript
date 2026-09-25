@@ -3,19 +3,8 @@ import { describe, expect, test } from 'vitest';
 import { catalog } from '../../../lint/catalog.js';
 import { printConfig, PROFILES } from './rulebook.js';
 
-/*
- * Two rules that demand opposite shapes cannot both be armed: whichever a file
- * satisfies, the other reports it, and no edit closes both. The pairs below are
- * the ones this rulebook meets — Ultracite's list, the two the estate's own
- * decisions create, and one where a fixer writes the shape a type-aware rule
- * refuses.
- *
- * This suite is the reason `off` carries a `kind`: every `exclusive` off names
- * the rule it cannot stand beside, and the two claims are checked against each
- * other here.
- */
+// Two rules demanding opposite shapes cannot both be armed: no edit closes both.
 
-/** Pairs that cannot both be on, and the sentence that says why. */
 const PAIRS = Object.freeze([
     ['no-ternary', 'unicorn/prefer-ternary', 'one forbids the ternary the other demands'],
     ['no-continue', 'max-depth', '`continue` is what keeps a loop body flat'],
@@ -83,12 +72,10 @@ const PAIRS = Object.freeze([
 
 const DECISIONS = catalog();
 
-/** Every state a rule is in, across the profiles that carry it. */
 function levelsOf(rule: string): string[] {
     return DECISIONS.filter((entry) => entry.rule === rule).map((entry) => entry.level);
 }
 
-/** Whether a resolved config arms a rule, in oxlint's own vocabulary. */
 function isArmed(rules: Record<string, unknown>, rule: string): boolean {
     const entry = rules[rule];
     const level = Array.isArray(entry) ? String(entry[0]) : String(entry);

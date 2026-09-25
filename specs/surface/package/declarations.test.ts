@@ -2,32 +2,18 @@ import { resolve } from 'node:path';
 import ts from 'typescript';
 import { expect, test } from 'vitest';
 
-/*
- * The one thing this package's "no build step" gives up: nothing derives a
- * `.d.ts` from its `.js`, so the two are written by hand beside each other and
- * nothing but this suite holds them to the same surface. A declaration that
- * names an export the runtime does not have is a consumer's compile error
- * against a value that is not there; one that misses an export the runtime has
- * makes a documented entry invisible to TypeScript.
- *
- * Types are not the claim — `OxlintConfig`, `DocsTree` and the rest exist in
- * the declaration alone by design. What must agree is the VALUE surface.
- */
+// No build step derives a `.d.ts` from its `.js`: this suite alone holds the two value surfaces together.
 
 const ROOT = resolve(import.meta.dirname, '../../../src');
 const PRESETS = resolve(import.meta.dirname, '../../../src/presets/tsdown');
 
-/** The five importable entries, each a `.js` and the `.d.ts` written beside it. */
 const ENTRIES = ['config', 'docs', 'index', 'oxfmt', 'oxlint'] as const;
 
-/** The tsdown presets, reached as `@jterrazz/typescript/tsdown/<name>.js`. */
 const TSDOWN_PRESETS = ['build', 'bundle'] as const;
 
-/** Names in one order, so two readings of the same surface are comparable. */
 const sorted = (names: string[]): string[] =>
     names.toSorted((left, right) => left.localeCompare(right));
 
-/** Every value a declaration file exports, types and interfaces left out. */
 function declaredValues(declaration: string): string[] {
     const program = ts.createProgram([declaration], {
         module: ts.ModuleKind.ESNext,
@@ -54,13 +40,7 @@ function declaredValues(declaration: string): string[] {
     );
 }
 
-/**
- * Whether an exported name carries a value. `export { astro }`,
- * `export { X } from 'oxlint'` and `export default config` all arrive as
- * ALIASES, which say nothing themselves — the declaration behind them does,
- * and a declaration a value can be read from is exactly one TypeScript records
- * as a `valueDeclaration`.
- */
+// `export { astro }` and `export default config` arrive as aliases; the declaration behind one is its `valueDeclaration`.
 function carriesValue(checker: ts.TypeChecker, symbol: ts.Symbol): boolean {
     const aliased =
         symbol.declarations?.some(
@@ -71,7 +51,6 @@ function carriesValue(checker: ts.TypeChecker, symbol: ts.Symbol): boolean {
     return (aliased ? checker.getAliasedSymbol(symbol) : symbol).valueDeclaration !== undefined;
 }
 
-/** Every name one module exports at RUNTIME, which is the surface a consumer gets. */
 async function runtimeValues(entry: string): Promise<string[]> {
     const loaded: unknown = await import(entry);
     if (typeof loaded !== 'object' || loaded === null) {
@@ -92,11 +71,7 @@ test.each(ENTRIES)('src/%s.js and its declaration carry the same exports', async
 test.each(TSDOWN_PRESETS)(
     'src/presets/tsdown/%s.js and its declaration carry the same exports',
     async (preset) => {
-        /*
-         * A bundler config is a `.ts` file in every consumer, so the preset it
-         * imports needs a declaration or the import is `any` — and under the
-         * `library` tsconfig preset, where `allowJs` is off, TS7016 instead.
-         */
+        // Without a declaration a bundler config's import is `any`, or TS7016 under the `library` tsconfig.
 
         // Given - one shipped tsdown preset, read twice: as a module, and as a declaration
         const runtime = await runtimeValues(resolve(PRESETS, `${preset}.js`));

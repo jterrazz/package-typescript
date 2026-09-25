@@ -5,14 +5,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 
 import { newDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, not a document — and the product command all the same. What no
- * document can state here is the GROUND: the Astro pass runs the CONSUMER's
- * `astro check`, and a fixture is copied rather than installed, so the only way
- * to stand the pass up is to build a project that declares the dependency and
- * carries a binary at the path npm would have put one. The formatter half is
- * real: prettier and prettier-plugin-astro are this package's own.
- */
+// The Astro pass runs the consumer's `astro check`, so the project carries a binary where npm would put one.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
@@ -22,7 +15,6 @@ afterAll(() => {
     rmSync(project, { force: true, recursive: true });
 });
 
-/** A stand-in for the checker an Astro project installs, saying it ran. */
 function installAstroStub(): void {
     const binaries = join(project, 'node_modules/.bin');
     mkdirSync(binaries, { recursive: true });
@@ -53,7 +45,7 @@ describe('astro', () => {
         );
         mkdirSync(join(project, 'src'), { recursive: true });
         writeFileSync(join(project, 'src/page.astro'), '<p   class="wide"  >hello</p>\n');
-        /* Tsc refuses a project with no input of its own, whatever the templates say. */
+        // tsc refuses a project with no input of its own.
         writeFileSync(join(project, 'src/site.ts'), 'export const title = "spec";\n');
         installAstroStub();
 

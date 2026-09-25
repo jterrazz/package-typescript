@@ -5,13 +5,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 
 import { newDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, not a document — and the product command all the same. What no
- * document can state here is the GROUND: this scenario needs a real git
- * repository, and a fixture cannot be one (git refuses to track a nested `.git`,
- * and the runner copies files, it does not initialise a repo). So the ground is
- * built here, the product binary runs in it, and the claim is the gate's own.
- */
+// git refuses to track a nested `.git`, so a fixture cannot be the repository this needs.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const FIXTURE = resolve(import.meta.dirname, 'fixtures/gitignore/on-convention');

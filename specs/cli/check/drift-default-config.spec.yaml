@@ -1,7 +1,6 @@
 description: measures a project with no oxlint config of its own against the default it is handed
 fixture: ./fixtures/kitchen-sink/
 runs:
-    # The machine's reading: the default config, the profile it IS, and nothing off it.
     - command: check --json
       exit: 0
       stdout: |4

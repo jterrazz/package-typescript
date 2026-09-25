@@ -4,29 +4,11 @@ import { describe, expect, test } from 'vitest';
 
 import { printConfig, PROFILES } from './rulebook.js';
 
-/*
- * The resolved rule set of every profile, as a golden. An oxlint bump, or a
- * decision flipped by accident, shows as ONE line changing its marker in a diff
- * a reviewer can read. Nothing else in this repository would show a rule set
- * changing.
- *
- * Three markers, because oxlint reports three states: a bare name is on, `- `
- * is off, and `~ ` is a rule the BASE config does not decide because the
- * profile decides it inside an `overrides` block — every vitest rule, which
- * applies to test files and to nothing else.
- *
- * Names only: a rule's options are the manifest's business, and a name list
- * survives an option reshuffle upstream without going red for it. Regenerate
- * with `TEST_UPDATE=1 npm test`.
- *
- * Above the roster, three lines a profile decides beside its rules: the
- * environments it turns on, the globals it declares — a runtime's own, like
- * Bun's — and the linter options every run is held to.
- */
+// `~ ` marks a rule the base config leaves to an `overrides` block. Names only: options are the manifest's,
+// and a name list survives an upstream option reshuffle. Regenerate with `TEST_UPDATE=1 npm test`.
 
 const EXPECTED = resolve(import.meta.dirname, 'expected');
 
-/** One golden per profile, named here so the file is reachable by a reader too. */
 const GOLDENS: Record<string, string> = {
     astro: 'astro.rules.txt',
     bun: 'bun.rules.txt',
@@ -38,24 +20,17 @@ const GOLDENS: Record<string, string> = {
 
 const MARKERS: Record<string, string> = { allow: '- ', deny: '', warn: '~ ' };
 
-/** oxlint's own word for a level, with the rule's options dropped. */
 function levelOf(entry: unknown): string {
     return Array.isArray(entry) ? String(entry[0]) : String(entry);
 }
 
-/*
- * The three rules that catch an un-awaited assertion. A test file is where
- * they earn the most: Playwright recommends `no-floating-promises` on a spec
- * tree precisely because `expect.element(…)` and every async matcher return a
- * promise, and a spec that forgets the `await` passes by not asserting.
- */
+// `expect.element(…)` and every async matcher return a promise: a spec that forgets `await` passes by not asserting.
 const UNAWAITED_PROMISE_RULES = [
     'typescript/await-thenable',
     'typescript/no-floating-promises',
     'typescript/no-misused-promises',
 ];
 
-/** `key=value` pairs of one resolved section, sorted, on one line. */
 function sectionOf(label: string, section: Record<string, unknown> = {}): string {
     const pairs = Object.entries(section)
         .toSorted(([left], [right]) => left.localeCompare(right))

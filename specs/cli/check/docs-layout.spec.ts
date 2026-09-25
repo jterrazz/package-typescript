@@ -5,15 +5,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 
 import { newDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, not a document — and the product command all the same. What no
- * document can state here is the GROUND: the Docs (layout) pass asks its
- * question where a REPOSITORY is, and a fixture cannot be one (git refuses to
- * track a nested `.git`, and the runner copies files, it does not initialise a
- * repo). The shape of the pass, rule by rule, is stated by the documents of
- * `specs/cli/docs-layout/`; what is claimed here is where it speaks and where
- * it does not.
- */
+// git refuses to track a nested `.git`, so a fixture cannot be the repository the pass asks for.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const FIXTURE = resolve(import.meta.dirname, 'fixtures/gitignore/on-convention');

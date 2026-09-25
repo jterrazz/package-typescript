@@ -3,22 +3,11 @@ import { join, resolve } from 'node:path';
 
 import { temporaryDirectory } from './temporary-directory.js';
 
-/*
- * What the version-reading specs stand on: a copy of this package whose
- * `node_modules` is this checkout's, entry for entry, except for the tools a
- * case says otherwise about. The product reads every version off an INSTALLED
- * manifest beside its own code, so the only way to make one deviate is to put
- * the package beside a different install — a copy, since Node resolves a
- * symlinked script back to the checkout it points at.
- */
+// A copy, not a link: Node resolves a symlinked script back to the checkout it points at.
 
 const REPOSITORY = resolve(import.meta.dirname, '../..');
 
-/**
- * The package, copied into a temp directory, with `tools` overriding what is
- * installed: a version writes a manifest claiming it, `null` leaves the tool
- * out. Returns the sandbox's root; its `bin/typescript.sh` is the product.
- */
+// A version writes a manifest claiming it; `null` leaves the tool out.
 export function toolchainWith(tools: Record<string, null | string>): string {
     const root = temporaryDirectory('spec-toolchain-');
 

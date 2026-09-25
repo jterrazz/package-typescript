@@ -4,25 +4,15 @@ import { expect, test } from 'vitest';
 
 import { packedFiles, packedTree } from './packed-tree.js';
 
-/*
- * The shipped-links rule: a link the tarball carries lands in the tarball. A
- * relative link to a page this repository keeps home — its testing chapter,
- * its specs — is dead where a consumer reads it, in `node_modules`, so a
- * shipped page names such a page by its repository URL instead. The map,
- * `docs/README.md`, is the one exception: the Docs (layout) pass holds it to
- * a relative row for every chapter, the one left out included.
- */
+// A relative link to a page kept home is dead in `node_modules`. `docs/README.md` is the exception: the Docs
+// (layout) pass holds it to a relative row for every chapter.
 
-/** This checkout, which keeps every page a shipped link may name. */
 const ROOT = resolve(import.meta.dirname, '../../..');
 
-/** A markdown link's target, in any text: `[label](target)`. */
 const LINK = /\[[^\]\n]*\]\((?<target>[^)\s]+)\)/gu;
 
-/** A target that leaves the tree for another scheme: `https:`, `mailto:`. */
 const SCHEME = /^[a-z][a-z+.-]*:/u;
 
-/** Every relative link a packed file carries to a page this checkout keeps and the tarball does not, as `file: target`. */
 function deadLinks(tree: string, files: string[]): string[] {
     const held = new Set(files);
     const holds = (path: string): boolean =>

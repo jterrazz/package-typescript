@@ -3,10 +3,6 @@ fixture: ./fixtures/disabled/
 runs:
     - command: check
       exit: 1
-      # The fixture is a preset case with no tsconfig, so tsc prints its help and
-      # refuses — the compiler's block, not this document's subject. The linter's
-      # is spanned too: the probe's `vitest` resolves to nothing here, so the
-      # default profile's type-aware rules read every call in it as `any`.
       stdout: |4
            START  Running quality checks
 

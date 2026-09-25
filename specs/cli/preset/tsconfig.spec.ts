@@ -6,25 +6,8 @@ import { describe, expect, test } from 'vitest';
 import { temporaryDirectory } from '../temporary-directory.js';
 import { installTsconfigPresets } from './rulebook.js';
 
-/*
- * B9w exception, same shape as oxlint.specification.ts / oxfmt.specification.ts:
- * the product under test IS the shipped tsconfig preset, and `typescript check`
- * cannot exercise it — check loads the preset from the consumer's node_modules,
- * which a copied temp-workdir fixture does not have. So each scenario copies its
- * ground into a temp directory, installs the package there the way a consumer
- * holds it — a real directory under node_modules/@jterrazz/typescript, beside
- * an `astro` whose tsconfigs the astro preset extends — writes a tsconfig that
- * extends the preset by the name a consumer writes, and asks tsc to resolve it.
- *
- * The law: a preset's `include`/`exclude` must be scoped to the CONSUMER, never
- * to the preset file's own location. Relative globs in an extended config resolve
- * against the file that spells them (the preset), so `../../../../**` reached out
- * of the installed package and swept whatever sat next to node_modules.
- * `${configDir}` is the only form that means "the project extending me".
- *
- * The same form carries the artefact convention: the incremental buildinfo is a
- * tool's output, so it lands under the consumer's own `.artifacts/tsc/`.
- */
+// Relative globs in an extended config resolve against the preset file, so `../../../../**` once swept
+// whatever sat next to node_modules: `${configDir}` is the only form that means "the project extending me".
 
 const ROOT = resolve(import.meta.dirname, '../../..');
 const TSC = resolve(ROOT, 'node_modules/.bin/tsc');
@@ -41,7 +24,6 @@ type ResolvedConfig = {
     scoped: string[];
 };
 
-/** A consumer standing on `ground`, with the package installed and its tsconfig extending `preset`. */
 function consumer(ground: string, preset: string): string {
     const created = temporaryDirectory(`spec-tsconfig-${preset}-`);
     const dir = realpathSync(created);
@@ -73,10 +55,8 @@ function resolvedConfig(dir: string): ResolvedConfig {
     };
 }
 
-/** Every tsconfig preset this package ships, by the name a consumer extends. */
 const PRESETS = ['node', 'library', 'next', 'astro', 'expo', 'react'] as const;
 
-/** Each preset, beside the fixture consumer that extends it. */
 const FIXTURES = PRESETS.map((preset) => [preset, `tsconfig-${preset}`] as const);
 
 describe('tsconfig', () => {
@@ -110,7 +90,6 @@ describe('tsconfig', () => {
         },
     );
 
-    /* One ground tree is held against every preset. */
     test.each(PRESETS)(
         'the %s preset leaves the ground a test stands on out of the compiled file set, wherever it sits',
         (preset) => {

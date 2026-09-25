@@ -3,12 +3,7 @@ import { describe, expect, test } from 'vitest';
 
 import { cli } from '../cli.specification.js';
 
-/*
- * A chain, not a document. The dev command is a long-running watch process resolved at a waitFor
- * marker: the stream is cut wherever the marker happened to land, so there is no byte-exact
- * stdout to state — and a document states one for every run it names. grep is the scalpel:
- * probe the specific banner/app markers we waited for.
- */
+// The watch stream is cut wherever its waitFor marker lands, so there is no byte-exact stdout to state.
 
 describe('dev', () => {
     test('shows the startup message', async () => {

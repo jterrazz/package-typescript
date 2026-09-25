@@ -1,18 +1,6 @@
 #!/bin/bash
-# The `pass-selector` rule: the product command as this repository's specs
-# run it. The published package holds no copy, and nothing in an install's
-# environment reaches it.
-#
-# Every command goes to `bin/typescript.sh` untouched, unless it is `check` or
-# `fix` and TYPESCRIPT_CHECK_PASSES names some passes, comma-separated. Then
-# the published `bin/commands/check.sh` runs from its text, with two lines
-# replaced: its every-pass `selected`, by one that answers for the passes
-# named, and its own directory, which a script read from text cannot find. A
-# pass left out prints nothing and weighs nothing in the verdict. A pass
-# another one reads still runs, unreported: the linter's report under the
-# member runs of the conventions checker, and the Names report under the
-# ratchet's held line. The passes it may name are the `consumer` rows of the
-# checker channel of `specs/surface/package/rules.json`.
+# The published package holds no copy of this selector. It replaces check.sh's `selected` and its own-directory
+# line when TYPESCRIPT_CHECK_PASSES names passes; a pass another reads still runs, unreported.
 ROOT="$(cd -P "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BIN="$ROOT/bin/typescript.sh"
 CHECK="$ROOT/bin/commands/check.sh"

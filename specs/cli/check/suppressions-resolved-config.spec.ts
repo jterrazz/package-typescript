@@ -3,20 +3,8 @@ import { describe, expect, test } from 'vitest';
 
 import { cli } from '../cli.specification.js';
 
-/*
- * A chain, not a document. Both claims are the suppression gate's reading of
- * `oxlint --print-config`: a JS plugin's rules never reach that report, so a
- * directive naming one is never dead; and the report is resolved PER FILE, so
- * a rule the top level leaves off and an override arms is live inside the
- * files that override names, and dead outside them.
- *
- * Each config only ARMS rules — no root-only `options` key, no plugin named
- * `jterrazz` — so it is safe to commit: `typescript check` hands oxlint
- * files, never a directory, and never reads a config under the ground it
- * sits in ([Testing](../../../docs/03-testing.md)).
- */
+// Each config only arms rules — no root-only `options`, no plugin named `jterrazz` — so it is safe to commit.
 
-/** The runner on `fixtures/suppressions-resolved-config/`, a config and a case laid over `project/`. */
 const caseOf = (config: string, name: string) =>
     cli
         .fixture(directory('./fixtures/suppressions-resolved-config/project/'))

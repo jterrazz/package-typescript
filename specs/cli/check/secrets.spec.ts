@@ -13,18 +13,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 
 import { newDirectory, temporaryDirectory } from '../temporary-directory.js';
 
-/*
- * A chain, not a document — and the product command all the same. What no
- * document can state here is the MACHINE: the Secrets pass runs gitleaks where
- * the machine has it and its own ten patterns where it does not, so the block a
- * document would freeze is a property of the developer's PATH, not of the
- * command. The chain names the engine by handing over a PATH without gitleaks
- * on it, and asserts the one thing that must hold on every machine: the leak
- * fails the run, and the line that declares itself fake does not. The other
- * engine is named the same way — a `gitleaks` on PATH that records what it was
- * handed — and the ground there is a real repository, since what the engine
- * must receive is every file git does NOT ignore.
- */
+// Which engine answers depends on the machine's PATH, so the chain names it by handing over a PATH.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const FIXTURE = resolve(import.meta.dirname, 'fixtures/secrets/leaked');
@@ -35,7 +24,6 @@ afterAll(() => {
     rmSync(project, { force: true, recursive: true });
 });
 
-/** The machine's PATH, minus any directory that answers for `gitleaks`. */
 function pathWithoutGitleaks(): string {
     const probe = spawnSync('which', ['gitleaks'], { encoding: 'utf8' });
     const binary = probe.stdout.trim();
@@ -47,7 +35,6 @@ function pathWithoutGitleaks(): string {
         .join(delimiter);
 }
 
-/** A `gitleaks` that answers `version`, and records what a scan was handed beside itself. */
 function gitleaksStub(): { directory: string; record: string } {
     const directory = temporaryDirectory('spec-secrets-gitleaks-');
     const record = join(directory, 'record.txt');

@@ -15,47 +15,32 @@ import {
     publishedTargets,
 } from './packed-tree.js';
 
-/*
- * The tarball-audit rule: what npm would publish carries `consumer` rules
- * alone, judged on its content and never on its names. Loaded from the packed
- * tree itself — every entry its `exports` map publishes, every module it
- * holds, each in a child of its own, and every command its `bin` installs, run
- * — it reaches no fragment, profile decision, pass or refusal the manifest
- * (`rules.json`) holds `self`, and no environment chooses which passes its
- * check runs; and no text the tarball holds names a self rule — no id, no
- * name, no home, no fragment declared `self` — whatever file carries it.
- */
+// Judged on content, never on names: no text the tarball holds names a `self` rule, whatever file carries it.
 
 const ROOT = resolve(import.meta.dirname, '../../..');
 
-/** The profiles a consumer names. */
 const PROFILE_NAMES = ['astro', 'bun', 'expo', 'next', 'node', 'react'];
 
-/** A field of a record, as text: empty when it holds none. */
-function text(record: Record<string, unknown>, key: string): string {
+function fieldText(record: Record<string, unknown>, key: string): string {
     const value = record[key];
     return typeof value === 'string' ? value : '';
 }
 
-/** The manifest's rows, one per rule no module declares for itself. */
 const parsed: unknown = JSON.parse(
     readFileSync(join(ROOT, 'specs/surface/package/rules.json'), 'utf8'),
 );
 const rows = (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
 
-/** A function a packed module exports, called — or nothing, when it exports none by that name. */
 function call(module: Record<string, unknown>, name: string, ...args: unknown[]): unknown {
     const exported = module[name];
     return typeof exported === 'function' ? Reflect.apply(exported, undefined, args) : undefined;
 }
 
-/** The packed catalogue's entries. */
 function catalogueOf(catalogue: Record<string, unknown>): Record<string, unknown>[] {
     const entries = call(catalogue, 'catalog');
     return (Array.isArray(entries) ? entries : []).filter((entry) => isRecord(entry));
 }
 
-/** Every rule a compiled config states, at its top (scope '') or in an override, with its value. */
 function statedRules(config: unknown): { rule: string; scope: string; value: unknown }[] {
     const top = isRecord(config) && isRecord(config.rules) ? config.rules : {};
     const overrides: unknown[] =
@@ -75,7 +60,6 @@ function statedRules(config: unknown): { rule: string; scope: string; value: unk
     );
 }
 
-/** What a profile states that the catalogue does not hold for it, for a consumer, at that level. */
 function undecided(name: string, config: unknown, entries: Record<string, unknown>[]): string[] {
     return statedRules(config).flatMap(({ rule, scope, value }) => {
         const decided = entries.filter(
@@ -169,7 +153,7 @@ test('the catalogue and the passes the tarball ships are consumer alone', async 
     const consumerPasses = new Set(
         rows
             .filter((row) => row.channel === 'checker' && row.audience === 'consumer')
-            .map((row) => text(row, 'id')),
+            .map((row) => fieldText(row, 'id')),
     );
     const uses = packedFiles(tree)
         .filter((path) => path.endsWith('.sh'))
@@ -277,7 +261,7 @@ test('no text the tarball holds names a self rule', () => {
     const tokens = rows
         .flatMap((row) =>
             row.audience === 'self'
-                ? [text(row, 'id'), basename(text(row, 'home'))].concat(
+                ? [fieldText(row, 'id'), basename(fieldText(row, 'home'))].concat(
                       Array.isArray(row.names) ? row.names.map(String) : [],
                   )
                 : [],

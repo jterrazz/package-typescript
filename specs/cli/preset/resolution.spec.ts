@@ -2,11 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { PACKAGE_ROOT, cli as resolutionCli } from '../resolution.specification.js';
 
-/*
- * A chain, not a document: the sandbox runner takes this checkout's absolute path
- * as its argument, and a document's `command:` is fixed text — nothing there can
- * name a path that moves with the machine.
- */
+// A document's `command:` is fixed text and cannot name this checkout's absolute path.
 
 describe('resolution', () => {
     test('resolves each tool independently when npm splits them between bin dirs', async () => {

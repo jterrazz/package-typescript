@@ -3,9 +3,6 @@ fixture: ../../shared/fixtures/sample-app/
 runs:
     - command: start
       exit: 1
-      # Node's own refusal: the loader frames, its line numbers and the runtime
-      # banner move with every Node release, so only the sentence that names the
-      # missing artifact is stated.
       stderr: |-
           {{any}}
           Error: Cannot find module '{{workdir}}/dist/index.js'

@@ -3,12 +3,6 @@ fixture: ./fixtures/oxlint-config/commonjs/
 runs:
     - command: check
       exit: 1
-      # oxlint ran, found nothing, and printed whatever its reporter prints for
-      # a clean run — a summary of files and threads in a terminal or on a
-      # runner, nothing at all under an AI agent. That block is the linter's.
-      # What is claimed here is the refusal beneath it: the pass fails even
-      # though oxlint exited 0, because the config it was handed enforced none
-      # of the rules it named.
       stdout: |4
            START  Running quality checks
 

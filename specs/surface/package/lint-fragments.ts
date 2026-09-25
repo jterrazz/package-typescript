@@ -5,23 +5,13 @@ import { pathToFileURL } from 'node:url';
 import { fragmentsIn, isRecord } from './module-walk.js';
 import type { DeclaredFragment } from './module-walk.js';
 
-/*
- * The fragment-walk rule: every fragment a package tree declares, whether a
- * profile carries it or not — each one a module of `lint/` or `src/` holds
- * anywhere in what it exports, by default or by name, in a `.js`, `.mjs` or
- * `.cjs` module. `src/cli/` holds the executables `bin/` runs, which act when
- * imported, so the walk leaves it to the module walk, which imports each module in a child of its own (`module-walk.ts`). The tree is
- * this checkout's or a packed one, named by its package root.
- */
+// `src/cli/` holds executables that act when imported, so the module walk imports them in children of their own.
 
-/** The folders the walk imports from, and the one it never imports. */
 const WALKED = ['lint', 'src'];
 const EXECUTABLES = 'src/cli';
 
-/** A module Node loads, in either module system. */
 const MODULE = /\.[cm]?js$/u;
 
-/** Every module under `directory`, as a path from `root`, the executables left out. */
 function modulesUnder(root: string, directory: string): string[] {
     if (!existsSync(directory)) {
         return [];
@@ -35,7 +25,6 @@ function modulesUnder(root: string, directory: string): string[] {
     });
 }
 
-/** The fragments the tree under `root` declares, each module imported once. */
 export async function lintFragments(root: string): Promise<DeclaredFragment[]> {
     const modules = WALKED.flatMap((folder) => modulesUnder(root, join(root, folder)));
     const seen = new Set<unknown>();

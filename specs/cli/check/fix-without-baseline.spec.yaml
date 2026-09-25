@@ -1,10 +1,6 @@
 description: rewrites the tree before it reports the diagnostic no baseline records
 fixture: ./fixtures/warnings/unformatted/
 runs:
-    # The verdict is the surviving diagnostic's, and it may not cost the tree
-    # the rewrite: `fix` settles what it can, then reports what it could not.
-    # The linter's own block is spanned: its reporter is a fact about the
-    # machine, and what is claimed is the verdict and the file.
     - command: fix
       exit: 1
       stdout: |4

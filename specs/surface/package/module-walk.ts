@@ -8,43 +8,28 @@ import { argv, execPath } from 'node:process';
 import { setImmediate as nextTurn } from 'node:timers/promises';
 import { pathToFileURL } from 'node:url';
 
-/*
- * The module-walk rule: every fragment a module reaches, whatever the module
- * does when imported. In-process, the fragments its exports hold. In a child
- * of its own — run by Node itself, its types stripped, so this file imports
- * nothing of the repository — every fragment the import builds besides,
- * exported or not: each `fragment` a module of the tree exports is wrapped to
- * record what it builds, the process's exit is refused, and the module is
- * handed a bare command line in an empty directory, so an executable runs as
- * it would with nothing to read.
- */
+// The child runs under Node with types stripped, so this file imports nothing of the repository; the process's
+// exit is refused and the module gets a bare command line in an empty directory.
 
-/** A fragment a module reaches, and where: its module's path from the package root, then the way to it. */
 export type DeclaredFragment = {
     fragment: Record<string, unknown>;
     path: string;
 };
 
-/** What the child reports of one fragment. */
 export type WalkedFragment = { audience: unknown; id: unknown; path: string };
 
-/** The global the wrapped `fragment` records into, by its symbol's key. */
 const BUILT = '@jterrazz/typescript/module-walk';
 
-/** What a module of the tree declares when it exports the fragment builder. */
 const BUILDER = /^export function fragment\(/mu;
 
-/** Whether a value is an object whose keys can be read. */
 export function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
 }
 
-/** Whether a value is a fragment: an id and the decisions it holds. */
 function isFragment(value: unknown): value is Record<string, unknown> {
     return isRecord(value) && 'decisions' in value && 'id' in value;
 }
 
-/** Every fragment reachable from `value`, each once, named by the path that reached it first. */
 export function fragmentsIn(
     value: unknown,
     path: string,
@@ -64,7 +49,6 @@ export function fragmentsIn(
     ];
 }
 
-/** One module of `tree`, walked in a child: what it exports and what its import builds. */
 async function walkOne(tree: string, module: string, scratch: string): Promise<WalkedFragment[]> {
     const report = join(scratch, `${module.replaceAll('/', '__')}.json`);
     const cwd = mkdtempSync(join(scratch, 'cwd-'));
@@ -86,7 +70,6 @@ async function walkOne(tree: string, module: string, scratch: string): Promise<W
     }
 }
 
-/** Every module of `modules`, each walked in a child of its own, as many at once as the machine runs. */
 export async function walkModules(
     tree: string,
     modules: string[],
@@ -112,7 +95,6 @@ export async function walkModules(
     return { fragments, walked };
 }
 
-/** A loaded module's source, as text. */
 function sourceText(source: unknown): string {
     if (typeof source === 'string') {
         return source;
@@ -122,7 +104,6 @@ function sourceText(source: unknown): string {
         : '';
 }
 
-/** The child: walks the module argv names, and writes what it reached to the report argv names. */
 async function walkHere(tree: string, module: string, report: string): Promise<void> {
     const built: unknown[] = [];
     const treeUrl = pathToFileURL(realpathSync(tree)).href;
