@@ -17,8 +17,7 @@ export function Badge({ tone, label: text }: { label: string; tone: string }): R
     return <output className={tone}>{text}</output>;
 }
 
-// A string cut into its characters: unicorn/prefer-spread rewrites each call
-// into `[...word]`, which typescript/no-misused-spread refuses.
+// unicorn/prefer-spread rewrites each call into `[...word]`; no-misused-spread refuses it.
 export function letters(word: string): string[] {
     return Array.from(word);
 }

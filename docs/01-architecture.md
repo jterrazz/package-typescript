@@ -4,13 +4,14 @@ One devDependency holds a project's whole toolchain, and this chapter says what 
 
 The package is five layers that never mix: a shell CLI that orchestrates processes, node gates that answer one question each, the rulebook every lint decision is taken in, config presets a consumer's own files extend, and an importable surface for what code has to reach directly.
 
-| Layer          | Holds                                                                   | Reached by                                 |
-| -------------- | ----------------------------------------------------------------------- | ------------------------------------------ |
-| `bin/`         | `typescript.sh` and its commands — the orchestration, in bash           | the `typescript` binary                    |
-| `src/cli/`     | one node script per gate that needs more than a process spawn           | `bin/`, and nothing else                   |
-| `lint/`        | the lint manifest — every rule decided by name, and the compiler for it | `src/presets/oxlint/`, and `src/oxlint.js` |
-| `src/presets/` | tsconfig, tsdown, oxlint, oxfmt and knip configurations                 | a consumer's config files, by `extends`    |
-| `src/`         | the importable entries — the lint presets, and the manual's rule engine | a consumer's `import`                      |
+| Layer                | Holds                                                                   | Reached by                                 |
+| -------------------- | ----------------------------------------------------------------------- | ------------------------------------------ |
+| `bin/`               | `typescript.sh` and its commands — the orchestration, in bash           | the `typescript` binary                    |
+| `src/cli/`           | one node script per gate that needs more than a process spawn           | `bin/`, and nothing else                   |
+| `lint/`              | the lint manifest — every rule decided by name, and the compiler for it | `src/presets/oxlint/`, and `src/oxlint.js` |
+| `src/presets/`       | tsconfig, tsdown, oxlint, oxfmt and knip configurations                 | a consumer's config files, by `extends`    |
+| `src/`               | the importable entries — the lint presets, and the manual's rule engine | a consumer's `import`                      |
+| `src/oxlint-plugin/` | the lint rules this package writes itself, as one oxlint JS plugin      | `lint/`, by path in `jsPlugins`            |
 
 The code the package ships sits under `src/`, the one spine folder that holds product code ([Repo structure](08-repo-structure.md)); `lint/` is the spine's too. `bin/` is the one root beside them, and it is npm's: a package's `bin` entry is where a registry install links the command from.
 

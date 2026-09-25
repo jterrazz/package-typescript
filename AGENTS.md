@@ -73,6 +73,7 @@ lint/                         # The lint manifest — every rule of every loaded
 ├── language/ · react.js · next.js · astro.js · a11y.js · bundler.js · vitest.js · sorted.js · react-native.js
 └── architecture/             # hexagonal.js (the map this package ships) and layers.js (the builder)
 
+src/oxlint-plugin/            # This package's own lint rules, one oxlint JS plugin — `jterrazz-typescript/*`
 src/presets/
 ├── tsconfig/ · tsdown/ · oxlint/profiles/ (the six, compiled) · oxfmt/ · knip/ · prettier/ (.astro only)
 src/index.js + index.d.ts     # Package entry — exports { oxfmt, oxlint } profiles (JS-shipped, no build)

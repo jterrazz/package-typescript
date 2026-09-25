@@ -49,6 +49,7 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 
 - A file is named for its subject in the domain: never `types.ts`, `utils.ts`, `constants.ts`, nor a `*.types.ts` suffix. `index.ts` is a barrel and stays.
 - A file holds 300 lines and a function 60; a `*.spec.ts` is `@jterrazz/test`'s C33, at 400 — `docs/07-lint-presets.md`.
+- The default is no comment: a name carries the meaning. A comment longer than the function it sits on fails `jterrazz-typescript/comment-longer-than-function`; context that lives outside the codebase is kept with `// oxlint-disable-next-line jterrazz-typescript/comment-longer-than-function -- <the context>`.
 - A suppression carries its reason: `// oxlint-disable-next-line <rule> -- why`, and `@ts-expect-error` with a description.
 - Every artefact lives under `.artifacts/<tool>/`; `dist/` is the product, not an artefact.
 - A `knip.json` ignore carries a `//` reason above it — the file is read as JSONC.

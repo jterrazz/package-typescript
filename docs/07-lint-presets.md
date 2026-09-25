@@ -145,6 +145,22 @@ A spec file's size has one judge. `@jterrazz/test`'s C33 holds every `*.spec.ts`
 
 A test file's functions have one judge too. A test file holds one `describe` (C31), and that callback is a function as long as the file, so `max-lines-per-function` is off under the three suffixes that declare tests — `*.test.ts`, `*.test.tsx`, `*.spec.ts` — and `@jterrazz/test`'s C34 caps what it would have caught there, a test body, at the same 60 lines. Every other file, a `*.specification.ts` included, holds its functions to 60.
 
+## A comment no longer than its function
+
+The default is no comment: the code speaks through its names, and a name that needs a comment is renamed instead. `jterrazz-typescript/comment-longer-than-function` holds the one shape that rule is broken by most: a docblock taller than the code it documents, which restates the code, argues it or tells its history.
+
+It is this package's own rule, shipped as an oxlint JS plugin every profile loads, so a consumer declares nothing. It reads the comments directly above a function — a declaration, a function or arrow bound to a name, a method — as one run, where no blank line and no code separates them, and it counts every line that run spans, delimiters included. The body is the lines strictly inside its braces, or the lines of an arrow's expression, and never less than one. The rule refuses a run taller than the body, so a one-line comment always passes, and a three-line block needs three lines of body under it.
+
+Two things are not judged. A directive (`oxlint-disable*`, `@ts-expect-error`) inside the run is not documentation, and does not count. A function the package PUBLISHES — exported from a file its `exports` map or `main` names, or re-exported from one through `export … from` — is read by a consumer in an editor's hover, where a sentence is what it is for.
+
+Context that lives outside the codebase is the one comment the names cannot carry — a policy, a ticket, a decision maker, an external system's constraint. Where documenting it is truly necessary, the line says so, and the reason is required, as the Suppressions pass requires it of every directive:
+
+```ts
+// oxlint-disable-next-line jterrazz-typescript/comment-longer-than-function -- <the external context>
+```
+
+The count of comment lines a project holds is the Comments (density) pass's, [Quality checks](06-quality-checks.md#the-comments-density-pass).
+
 ## Estate conventions the rulebook rests on
 
 Several `off` reasons of kind `convention` name this page. Here is what they name:
@@ -326,6 +342,7 @@ Every decision a profile ships, the profiles that carry it, its state, the reaso
 | `jsx-a11y/role-supports-aria-props`                          | astro, expo, next, react            | on    | —                                                                                                                                                                                                                                         | 10.0.0 |
 | `jsx-a11y/scope`                                             | astro, expo, next, react            | on    | —                                                                                                                                                                                                                                         | 10.0.0 |
 | `jsx-a11y/tabindex-no-positive`                              | astro, expo, next, react            | on    | —                                                                                                                                                                                                                                         | 10.0.0 |
+| `jterrazz-typescript/comment-longer-than-function`           | astro, bun, expo, next, node, react | on    | —                                                                                                                                                                                                                                         | 11.0.0 |
 | `logical-assignment-operators`                               | astro, bun, expo, next, node, react | on    | —                                                                                                                                                                                                                                         | 10.0.0 |
 | `max-classes-per-file`                                       | astro, bun, expo, next, node, react | on    | —                                                                                                                                                                                                                                         | 10.0.0 |
 | `max-depth`                                                  | astro, bun, expo, next, node, react | on    | —                                                                                                                                                                                                                                         | 10.0.0 |

@@ -18,8 +18,7 @@ export function label(count: number): string {
 // A trailing comma and an import order the formatter owns.
 export const PATHS = [resolve('a'), resolve('b'), EOL];
 
-// A string cut into its characters: unicorn/prefer-spread rewrites each call
-// into `[...word]`, which typescript/no-misused-spread refuses.
+// unicorn/prefer-spread rewrites each call into `[...word]`; no-misused-spread refuses it.
 export function letters(word: string): string[] {
     return Array.from(word);
 }

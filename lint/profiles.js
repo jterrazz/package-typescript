@@ -4,6 +4,7 @@ import bundler from './bundler.js';
 import eslint from './language/eslint.js';
 import importPlugin from './language/import.js';
 import jsdoc from './language/jsdoc.js';
+import jterrazzTypescript from './language/jterrazz-typescript.js';
 import node from './language/node.js';
 import oxc from './language/oxc.js';
 import promise from './language/promise.js';
@@ -35,6 +36,7 @@ export const CORE = Object.freeze([
     promise,
     node,
     jsdoc,
+    jterrazzTypescript,
     sorted,
     vitest,
 ]);

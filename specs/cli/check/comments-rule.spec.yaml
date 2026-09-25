@@ -1,0 +1,58 @@
+description: refuses a comment taller than a private function, and takes a disable only with its reason
+fixture: ./fixtures/comments/rule/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+          {{any}}
+          baseline-ratchet  jterrazz.baseline.json › typescript  jterrazz-typescript/comment-longer-than-function has 1 diagnostic(s) and no entry — it is new debt
+          Run 'typescript baseline' to record where the project actually stands.
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          suppressions-reason  src/ledger.ts  line 18 disables jterrazz-typescript/comment-longer-than-function with no '-- reason' after it
+          ✗ Failed with exit code 1
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         2
+            jterrazz.baseline.json › typescript  16
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
