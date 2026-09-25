@@ -16,10 +16,8 @@ export { default as react } from './presets/oxlint/profiles/react.js';
 
 export { HEXAGONAL_MAP } from '../lint/architecture/hexagonal.js';
 
-/** The hexagonal layer map, ready to compose beside a profile. */
 export const hexagonal = compile(hexagonalFragment);
 
-// An oxlint override replaces, never merges, so each layer carries its complete pattern list.
 export function layers(definition) {
     return compile(layersFragment(definition));
 }

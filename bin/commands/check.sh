@@ -673,7 +673,6 @@ run_checks() {
         wait "$pid" || publish_status=1
     done
 
-    # The chapter's order (docs/06-quality-checks.md).
     join_logs "$tmp_dir/checker.log" "${checker_failed_logs[@]}"
     join_logs "$tmp_dir/publish.log" "${publish_logs[@]}"
 

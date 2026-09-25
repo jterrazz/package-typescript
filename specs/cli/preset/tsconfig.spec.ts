@@ -6,8 +6,8 @@ import { describe, expect, test } from 'vitest';
 import { temporaryDirectory } from '../temporary-directory.js';
 import { installTsconfigPresets } from './rulebook.js';
 
-// Relative globs in an extended config resolve against the preset file, so `../../../../**` once swept
-// whatever sat next to node_modules: `${configDir}` is the only form that means "the project extending me".
+// Relative globs in an extended config resolve against the preset file: `${configDir}` is the only form
+// that means the extending project.
 
 const ROOT = resolve(import.meta.dirname, '../../..');
 const TSC = resolve(ROOT, 'node_modules/.bin/tsc');

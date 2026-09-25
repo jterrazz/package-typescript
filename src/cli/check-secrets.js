@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
-// There is no exception list, and there will not be one: an allow-list of paths is the first place a
-// real leak hides. Only the line declaring itself fake is forgiven.
+// Only the line declaring itself fake is forgiven: an allow-list of paths is where a real leak hides.
 
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, lstatSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';

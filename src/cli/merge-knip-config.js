@@ -104,7 +104,7 @@ function withoutTrailingCommas(text) {
     return output;
 }
 
-// JSONC, so an ignore carries its reason beside it; two token classes do not earn a parser dependency.
+// JSONC, so an ignore carries its reason beside it.
 function readJsonc(path) {
     const document = readFileSync(path, 'utf8');
     const json = withoutTrailingCommas(withoutComments(document));
