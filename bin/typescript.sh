@@ -152,6 +152,7 @@ case "$COMMAND" in
         if [ "$LINT_LISTED" = true ] && [ ${#LINT_TARGETS[@]} -eq 0 ]; then
             printf '{ "diagnostics": [] }\n' > "$BASELINE_REPORT"
         else
+            # oxlint exits non-zero on the very debt this records.
             "$OXLINT" "${OXLINT_CONFIG_ARGS[@]}" --type-aware --format json "$@" "${LINT_TARGETS[@]}" \
                 > "$BASELINE_REPORT" 2>/dev/null || true
         fi

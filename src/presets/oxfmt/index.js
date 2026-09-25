@@ -1,6 +1,7 @@
 import { defineConfig } from 'oxfmt';
 
 // Sorting is formatting: oxfmt owns import, package.json and Tailwind order, so no lint rule reorders them.
+// Width, indent, quotes and commas are the estate's: every repository is written to them.
 export default defineConfig({
     bracketSpacing: true,
     endOfLine: 'lf',
