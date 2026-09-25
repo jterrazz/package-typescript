@@ -1,15 +1,11 @@
 #!/bin/bash
-# Quality checks: runs tsc, oxlint, oxfmt, and knip in parallel.
-# Called by: typescript check | typescript fix
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 CYAN_BG='\033[46m'
 BRIGHT_WHITE='\033[1;30m'
 NC='\033[0m'
 
-# Resolve symlinks to get the real script location
 SOURCE="${BASH_SOURCE[0]}"
 while [ -L "$SOURCE" ]; do
     DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
@@ -19,9 +15,7 @@ done
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 PACKAGE_ROOT="$SCRIPT_DIR/../.."
 
-# Find binaries one by one - npm may hoist some tools to the consumer's
-# node_modules/.bin and nest others under this package, so a single shared
-# bin directory cannot be assumed
+# npm may hoist a tool to the consumer's node_modules/.bin or nest it under this package.
 find_binary() {
     local name="$1"
     if [ -x "$PACKAGE_ROOT/node_modules/.bin/$name" ]; then
@@ -29,23 +23,16 @@ find_binary() {
     elif [ -x "$PACKAGE_ROOT/../../.bin/$name" ]; then
         echo "$PACKAGE_ROOT/../../.bin/$name"
     else
-        echo "$name"  # Fallback to PATH
+        echo "$name"
     fi
 }
 
-# Type checking uses the official TypeScript 7 Go compiler, pulled in through
-# the per-platform @typescript/typescript-* packages instead of a second
-# package named "typescript": eslint-plugin-perfectionist and
-# dependency-cruiser load the JS API from the "typescript" name (v6 here), and any typescript@7 in
-# the tree can hijack that lookup under pnpm's hoist fallback. The lookup is
-# shared with the CLI's `tsc` passthrough, so it lives in one file.
+# TypeScript 7 comes from the per-platform @typescript/typescript-* packages: a typescript@7 under the
+# "typescript" name would hijack the JS API perfectionist and dependency-cruiser load, under pnpm's hoist fallback.
 # shellcheck source=../find-tsc.sh
 . "$SCRIPT_DIR/../find-tsc.sh"
 
-# oxlint's type-aware rules run in `tsgolint`, a separate binary it looks up on
-# PATH — and a consumer's PATH has no reason to carry this package's bin dir. It
-# is a dependency here, so the lookup is made to succeed by putting the
-# directory that holds it in front, for this process and its children only.
+# oxlint looks `tsgolint` up on PATH, which a consumer's PATH has no reason to carry.
 add_tsgolint_to_path() {
     local tsgolint
     tsgolint=$(find_binary tsgolint)
@@ -59,9 +46,6 @@ add_tsgolint_to_path() {
 
 add_tsgolint_to_path
 
-# The config a consumer declares its rules in, and the one the drift report
-# reads its profile off. Without one the linter runs the toolchain's default,
-# and the drift report measures the project against that.
 # shellcheck source=../tool-configs.sh
 . "$SCRIPT_DIR/../tool-configs.sh"
 
@@ -74,8 +58,7 @@ PUBLINT=$(find_binary publint)
 ATTW=$(find_binary attw)
 PRETTIER=$(find_binary prettier)
 
-# `astro` is the CONSUMER's dependency, never this package's: the pass runs its
-# checker, it does not ship one. So the lookup starts at the project.
+# `astro` is the consumer's dependency: the lookup starts at the project.
 find_project_binary() {
     local name="$1"
     if [ -x "node_modules/.bin/$name" ]; then
@@ -85,42 +68,22 @@ find_project_binary() {
     fi
 }
 
-# The one file shape oxfmt does not parse. The values are the oxfmt values —
-# 100 / 4 / single / all — so a consumer never declares a formatter of its own.
-#
-# The plugin is passed as a RESOLVED PATH, not as a name in the config: prettier
-# resolves a plugin name from the working directory, which is the consumer's,
-# and the consumer is precisely the project that no longer declares it.
+# The plugin goes by resolved path: prettier resolves a plugin name from the consumer's cwd, which no longer declares it.
 PRETTIER_ASTRO_CONFIG="$PACKAGE_ROOT/src/presets/prettier/astro.json"
 PRETTIER_ASTRO_PLUGIN=$(cd "$PACKAGE_ROOT" && node -e 'process.stdout.write(require.resolve("prettier-plugin-astro"))' 2>/dev/null)
-# The conventions checker is the CONSUMER's binary, like astro's: this package
-# runs it, it does not own it, and the version a project installed is the
-# rulebook it agreed to. So the lookup starts at the project and falls back
-# here only for a project that has no install of its own.
+# The consumer's binary: the version a project installed is the rulebook it agreed to.
 CHECKER=$(find_project_binary jterrazz-test-check)
 
-# The release of @jterrazz/test that answers `--member`. The number is the
-# module's, not this script's: the module owns the lookup it gates.
 CHECKER_FLOOR=$(node "$PACKAGE_ROOT/src/cli/test-package.js" --floor)
 
-# ── The unit is the workspace package, not the repository ────────────────────
-# Every gate measures from the NEAREST package.json. A single-package project
-# has exactly one — the cwd — and nothing below changes for it. A workspace
-# root has one per member, and the per-member gates run once per member
-# instead of once for a root that owns none of the specs.
-#
-# Root-only by nature, and deliberately left alone: tsc, oxlint and oxfmt
-# measure from their CONFIG file, not from a package, and each already walks
-# the whole tree from the cwd; knip is natively workspace-aware, so a member's
-# knip config belongs under the root config's `workspaces` key, not in a second
-# invocation.
+# The unit is the workspace package. tsc, oxlint and oxfmt measure from their config and walk the tree
+# themselves; knip is workspace-aware, so a member's knip config sits under the root's `workspaces` key.
 WORKSPACE_MEMBERS=()
 while IFS= read -r workspace_member; do
     [ -n "$workspace_member" ] && WORKSPACE_MEMBERS+=("$workspace_member")
 done < <(node "$PACKAGE_ROOT/src/cli/workspace-members.js" 2>/dev/null)
 
-# The nearest package.json OWNS a directory. Walk up from the given path and
-# stop at the cwd — a gate never asks a question above the project it runs in.
+# Stops at the cwd: a gate never asks a question above the project it runs in.
 nearest_package_dir() {
     local dir="$1"
     while true; do
@@ -133,11 +96,7 @@ nearest_package_dir() {
     done
 }
 
-# The @jterrazz/test conventions checker (D4 tokens, C8/C9 fixtures) runs where
-# the package is a consumer, and a package is one on either evidence: its own
-# manifest names @jterrazz/test, or it RESOLVES one from an ancestor — which is
-# what npm's hoisting makes of a monorepo, where a workspace declares the
-# dependency once at the root and every member loads it.
+# npm hoisting makes a member a consumer of an @jterrazz/test it never declares.
 project_uses_jterrazz_test() {
     local dir="${1:-.}"
     [ -f "$dir/package.json" ] || return 1
@@ -145,18 +104,12 @@ project_uses_jterrazz_test() {
     node "$PACKAGE_ROOT/src/cli/test-package.js" "$dir" > /dev/null 2>&1
 }
 
-# A member the checker can be run FOR at all. A member that resolves an older
-# release is counted, so the pass can say once that it is dormant rather than
-# pretend it ran.
+# An older release still counts, so the pass can say once that it is dormant.
 member_resolves_checker() {
     node "$PACKAGE_ROOT/src/cli/test-package.js" "${1:-.}" > /dev/null 2>&1
 }
 
-# The checker a directory RUNS, into CHECKER_COMMAND. Version and binary come
-# from the one install the directory resolves: a member whose @jterrazz/test is
-# nested rather than hoisted owns a different release from the root's, and a
-# published consumer has no `node_modules/.bin` of this package's to fall back
-# on. Returns 1 when the directory resolves nothing that answers the flags.
+# A member whose @jterrazz/test is nested rather than hoisted owns a different release from the root's.
 member_checker() {
     local dir="${1:-.}" bin
     node "$PACKAGE_ROOT/src/cli/test-package.js" "$dir" --at-least "$CHECKER_FLOOR" \
@@ -166,9 +119,7 @@ member_checker() {
     CHECKER_COMMAND=(node "$bin")
 }
 
-# The same, for the tree pass, which every release answers: no floor, and the
-# toolchain's own lookup for a project that declares @jterrazz/test without an
-# install this walk can reach.
+# The tree pass needs no floor, and falls back to the toolchain's lookup.
 tree_checker() {
     local bin
     bin=$(node "$PACKAGE_ROOT/src/cli/test-package.js" "${1:-.}" --bin 2>/dev/null)
@@ -179,37 +130,25 @@ tree_checker() {
     fi
 }
 
-# An Astro project, read off its manifest. `.astro` is the one file shape oxfmt
-# does not parse and `astro check` is the only checker that reads a template's
-# frontmatter, so the pass exists exactly where the dependency does.
+# `astro check` is the only checker that reads a template's frontmatter.
 project_uses_astro() {
     local dir="${1:-.}"
     [ -f "$dir/package.json" ] || return 1
     node -e 'const {readFileSync}=require("node:fs");const p=JSON.parse(readFileSync(process.argv[1],"utf8"));const d={...p.dependencies,...p.devDependencies,...p.peerDependencies};process.exit(d["astro"]?0:1)' "$dir/package.json" 2>/dev/null
 }
 
-# A package the registry would accept: it names an entry (`exports`, `main`) or
-# a publish target, and it never says it is private. A private package, and a
-# workspace root that only holds members, have no tarball to be judged on.
 project_is_publishable() {
     local dir="${1:-.}"
     [ -f "$dir/package.json" ] || return 1
     node -e 'const {readFileSync}=require("node:fs");const p=JSON.parse(readFileSync(process.argv[1],"utf8"));process.exit(p.private!==true&&(p.exports||p.main||p.publishConfig)?0:1)' "$dir/package.json" 2>/dev/null
 }
 
-# A path git has been told to forget is not this workspace's source. Clones,
-# workbenches and build output live under gitignored paths, and the conventions
-# checker walks whatever root it is handed — so the filter belongs here, before
-# the handing over. Outside a git tree the question has no answer, and the
-# non-zero exit reads as "not ignored", which is the right default.
+# The conventions checker walks whatever root it is handed; outside a git tree nothing is ignored.
 path_is_gitignored() {
     git check-ignore --quiet "$1" 2>/dev/null
 }
 
-# A discovered root must belong to the member that produced it. Walk back up
-# from the candidate: a nested `.git`, or a package.json no workspace glob
-# claims, means the walk crossed OUT of this workspace into a foreign tree —
-# a vendored dependency, a sibling clone — whose conventions are not ours.
+# A nested `.git`, or a package.json no workspace glob claims, means the walk crossed into a foreign tree.
 inside_owning_member() {
     local dir member="$2"
     dir=$(dirname "$1")
@@ -222,9 +161,7 @@ inside_owning_member() {
     return 0
 }
 
-# Every specs root the workspace owns: the root's own, plus the first one found
-# At or below each member (a member that nests its facet — web/specs — counts).
-# Never descends INTO a specs tree: the fixtures under it are not specs roots.
+# Never descends into a specs tree: the fixtures under it are not specs roots.
 discover_specs_roots() {
     {
         [ -d "specs" ] && ! path_is_gitignored "specs" && printf '%s\n' "specs"
@@ -242,12 +179,7 @@ discover_specs_roots() {
     } | LC_ALL=C sort -u
 }
 
-# The name of the oxlint config, when that config is CommonJS — and nothing
-# otherwise. Everything this package ships is ESM, and so is every oxlint JS
-# plugin the estate writes; a CommonJS config cannot load either, and oxlint
-# drops what it cannot load and still exits 0. The rules a config names are the
-# whole claim of a lint run, so the shape of the config is the oxlint pass's
-# business ([Quality checks](../../docs/06-quality-checks.md)).
+# oxlint drops a config it cannot load and still exits 0; a CommonJS config cannot load an ESM preset or plugin.
 commonjs_oxlint_config() {
     case "$OXLINT_CONFIG" in
         *.cjs) printf '%s' "$OXLINT_CONFIG" ;;
@@ -259,20 +191,17 @@ commonjs_oxlint_config() {
     esac
 }
 
-# Parse command and args
 COMMAND=""
 LINT_ARGS=()
 
 if [[ "${1:-}" == -* ]] || [ -z "${1:-}" ]; then
-    # No command, everything is args
     true
 else
     COMMAND="$1"
     shift
 fi
 
-# Parse remaining args. `--json` is the drift report's: the fleet reads that
-# block as one JSON object, and every pass still prints for a human.
+# `--json` is the drift report's: the fleet reads that block as one JSON object.
 DRIFT_ARGS=()
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -290,19 +219,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# ── Which passes run ─────────────────────────────────────────────────────────
-# Every pass, whatever the environment holds: this definition replaces any
-# `selected` bash inherited or sourced before the first line.
+# Every pass; the spec harness replaces this definition by its text.
 selected() {
     return 0
 }
 
-# ── What oxlint is handed ────────────────────────────────────────────────────
-# The project's files it parses — the list every tree gate judges, everything
-# git does not ignore — and never the directory, whose walk answers to the
-# tool's own ignores rather than to that one law. An empty list is a project
-# with nothing to lint. A sweep that could not answer hands oxlint the
-# directory instead, as a gate must never go silent on a read it did not make.
+# A sweep that could not answer hands oxlint the directory: a gate never goes silent on a read it did not make.
 LINT_TARGETS=()
 LINT_NOTHING=false
 read_lint_targets() {
@@ -315,9 +237,6 @@ read_lint_targets() {
     return 0
 }
 
-# oxlint over those files, with the config it runs by — unless the caller
-# hands one of its own. With nothing to lint it reports nothing: an empty JSON
-# report where one was asked for, and a clean exit.
 run_oxlint() {
     if [ "$LINT_NOTHING" = true ]; then
         case " $* " in *" --format json "*) printf '{ "diagnostics": [] }\n' ;; esac
@@ -328,11 +247,6 @@ run_oxlint() {
     "$OXLINT" "${config[@]}" "$@" "${LINT_TARGETS[@]}"
 }
 
-# ── What oxfmt is handed ─────────────────────────────────────────────────────
-# The same ground-free sweep, whole rather than cut to source: oxfmt skips a
-# file it has no parser for. Handed the list, the formatter never judges the
-# ground or an ignored file, whether or not the project carries
-# an oxfmt config whose ignores would say so. The fallbacks are oxlint's.
 FORMAT_TARGETS=()
 FORMAT_NOTHING=false
 read_format_targets() {
@@ -345,8 +259,7 @@ read_format_targets() {
     return 0
 }
 
-# oxfmt over those files. A list holding only shapes it does not parse is
-# nothing to format, not an error.
+# A list holding only shapes oxfmt does not parse is nothing to format, not an error.
 run_oxfmt() {
     [ "$FORMAT_NOTHING" = true ] && return 0
     if [ ${#FORMAT_TARGETS[@]} -eq 0 ]; then
@@ -356,21 +269,8 @@ run_oxfmt() {
     fi
 }
 
-# ── How a pass speaks ────────────────────────────────────────────────────────
-# Every pass that RAN prints the same three things, in the same order: a `RUN`
-# header carrying its label, whatever it has to say, and one verdict line. A
-# pass that did not apply — no Astro in the project, no declared layer map —
-# prints nothing at all, because it answered no question.
-#
-# What sits between the header and the verdict is the one variable: a failing
-# pass prints its whole captured log, and a passing one stays silent unless it
-# WROTE something. `fix` changed a file the operator owns and silence would hide
-# it, so a writer asks for its log with the fourth argument — and so does the
-# oxlint pass when the ratchet holds, for the one line that says what
-# `jterrazz.baseline.json › typescript` holds; a reader's success
-# chatter — oxlint's summary, which its reporter prints on a runner and in a
-# terminal and drops under an AI agent — never reaches the stream, so a green
-# run is byte-identical everywhere.
+# A pass that did not apply prints nothing. A green pass prints its log only when it wrote something, so a
+# green run is byte-identical everywhere: oxlint's own summary differs by environment.
 report_pass() {
     local label="$1" status="$2" log="$3" writer="${4:-}"
 
@@ -385,18 +285,7 @@ report_pass() {
     fi
 }
 
-# Two ways a lint run says nothing about the rules it was supposed to enforce.
-#
-# A config oxlint cannot parse — a `jsPlugins` naming a module that is not there
-# is the common one — makes it print `Failed to parse oxlint configuration file`
-# and lint nothing; 1.83.0 exits 1 for it, and this names the refusal in the
-# toolchain's own vocabulary rather than leaving a reader with the tool's text.
-# A CommonJS config is the silent one: oxlint drops it whole, prints NOTHING and
-# exits 0, so the run is green having enforced no rule the config named.
-#
-# Both are the oxlint pass refusing, so both are written into its own log and
-# both fail it. After this, `lint_status` is the verdict on what the linter
-# actually ran, not on what it managed to exit with.
+# A config oxlint cannot parse lints nothing; a CommonJS one is dropped whole with exit 0. Both fail the pass.
 judge_lint_config() {
     local cjs
     cjs=$(commonjs_oxlint_config)
@@ -415,8 +304,6 @@ judge_lint_config() {
     lint_status=1
 }
 
-# One pass, N runs: the logs of the runs that FAILED, joined into the single log
-# the pass reports under. A green member stays silent — it is the same pass.
 join_logs() {
     local into="$1"
     shift
@@ -427,7 +314,6 @@ join_logs() {
     done
 }
 
-# Create a temporary directory for log files
 tmp_dir=$(mktemp -d)
 cleanup() { rm -rf "$tmp_dir"; }
 trap cleanup EXIT
@@ -444,10 +330,7 @@ run_checks() {
 
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
 
-    # The members the conventions checker is run FOR, chosen before oxlint
-    # starts: a member run judges the `jterrazz(*)` diagnostics this pass sets
-    # aside, and it reads them off the oxlint report made here — so whether
-    # that report is written at all depends on this list. Check mode only.
+    # Chosen before oxlint starts: whether the report is written depends on this list.
     local checker_members=()
     local checker_member_bins=()
     local checker_dormant=0
@@ -470,9 +353,6 @@ run_checks() {
         done
     fi
 
-    # The linter runs for its pass or for a member run's report; the Names
-    # pass for its own or, in check mode, for the ratchet's held line, which
-    # counts its report.
     local runs_oxlint=false
     if selected oxlint || [ ${#checker_members[@]} -gt 0 ]; then
         runs_oxlint=true
@@ -489,43 +369,21 @@ run_checks() {
     [ "$runs_oxlint" = true ] && read_lint_targets
     selected oxfmt && read_format_targets
 
-    # Run all tools in parallel
     local type_pid=""
     if selected typescript; then
         "$TSC" --noEmit > "$tmp_dir/type.log" 2>&1 &
         type_pid=$!
     fi
 
-    # --type-aware is explicit and unconditional: the rules it unlocks are the
-    # ones no syntactic linter can express, and a flag that is only sometimes
-    # passed is a rule set that is only sometimes enforced. `oxlint-tsgolint` is
-    # a dependency of this package, so it is there for every consumer.
-    #
-    # In FIX mode the two rewriters run one after the other, and they are the
-    # only pair that does: `oxlint --fix` and `oxfmt` write the same files, and
-    # in parallel the second writer lands its copy over the first's — after
-    # which `fix` then `check` fails on formatting the fix had just settled.
+    # `--type-aware` is unconditional: a rule set only sometimes passed is only sometimes enforced.
+    # In fix mode the two rewriters run in sequence: in parallel oxfmt lands its copy over oxlint's.
     local lint_pid=""
     local lint_status=0
     local lint_held=false
     local format_status=0
     if [ "$FIX_MODE" = true ]; then
-        # A fixer that changes MEANING is never applied unattended: the rules
-        # marked `unsafe` in the manifest are turned off for THIS run by a
-        # wrapper around the config the linter runs by — the consumer's own, or
-        # the default — so `fix` leaves them alone and `check` still reports
-        # them for a human.
-        #
-        # One run per config scope: `-c` switches nested-config discovery off,
-        # so a subtree with an `oxlint.config.*` of its own is fixed by its own
-        # wrapped config, the one `check` reads it by. A project on the default
-        # config has one scope, as `check` hands the default with `-c` too.
-        #
-        # Each wrapper sits beside the config it wraps, because oxlint resolves
-        # `ignorePatterns` against the directory its config sits in — and every
-        # run ignores the wrapper's name. It is written by this pass and deleted
-        # by it, so a diagnostic against it names a file the operator cannot
-        # open and no tree can ever clear.
+        # Unsafe fixers are turned off for this run by a wrapper beside each config scope's config
+        # (src/cli/unsafe-fixers.js); every run ignores the wrapper's name, and the pass deletes it.
         if [ "$runs_oxlint" = true ] && [ "$LINT_NOTHING" = false ]; then
             local fix_wrapper="oxlint.fix.config.mjs"
             local base_config="$DEFAULT_OXLINT_CONFIG"
@@ -553,19 +411,8 @@ run_checks() {
             run_oxfmt > "$tmp_dir/format.log" 2>&1 || format_status=$?
         fi
     else
-        # `--deny-warnings` is what makes check and fix read the same tree. A
-        # warn-severity diagnostic leaves oxlint's exit code at 0, and a pass
-        # that passed prints no log — so the whole warn tier was invisible to
-        # `check` while `fix`, judged on the diagnostics themselves, failed on
-        # it. Severity is never read here either: a finding a release ships at
-        # `warn` is exactly the debt a ratchet exists to hold down.
-        #
-        # ONE run, machine-readable, and every reader reads it: the ratchet
-        # judges it rule by rule, the conventions checker's member runs take it
-        # with `--oxlint-report` instead of linting the project again, and a
-        # failing pass prints it back in the form oxlint would have printed
-        # (src/cli/oxlint-report.js). Its standard error is kept apart, so the
-        # report stays the one thing on standard output.
+        # `--deny-warnings`: a warn leaves the exit code at 0 and would hide a whole tier from `check`.
+        # One JSON run, read by the ratchet, the checker's member runs and the drawn report.
         if [ "$runs_oxlint" = true ]; then
             run_oxlint --type-aware --deny-warnings --format json "${LINT_ARGS[@]}" \
                 > "$tmp_dir/lint.json" 2> "$tmp_dir/lint.err" &
@@ -581,15 +428,8 @@ run_checks() {
         format_pid=$!
     fi
 
-    # Knip: only run in check mode (fix mode is destructive)
-    # Merge base config (from this package) with optional project-local knip.json.
-    # Root-only on purpose: knip reads the workspace globs itself and reports per
-    # member from one run — a second invocation per member would double-report.
-    #
-    # Deliberately UNCACHED. Knip's `--cache` validates a cached glob against the
-    # mtimes of the directories that held a match; a file added to a directory
-    # that held none is invisible to it, and the run exits 0 where the uncached
-    # run exits 1. A gate that can pass on stale knowledge is worse than a slow one.
+    # Check mode only: knip's fix is destructive. Uncached: `--cache` misses a file added to a directory
+    # that held no match, and a gate that passes on stale knowledge is worse than a slow one.
     local knip_pid=""
     local knip_status=0
     if [ "$FIX_MODE" = false ] && selected knip; then
@@ -603,16 +443,8 @@ run_checks() {
         knip_pid=$!
     fi
 
-    # Gitignore (artefacts): the convention — every artefact under
-    # `.artifacts/<tool>/`, `dist` excepted — read off the project's own
-    # `.gitignore` AND, in check mode, the nearest ancestor `.gitignore` above it
-    # (the workspace root's — check-gitignore.js walks up to find it). Opt-in by
-    # existence: neither file names an artefact path, the gate has no question to
-    # ask. A workspace whose `lint` delegates to members needs the ancestor probed
-    # here, in bash, because it decides whether to print the pass at all — the
-    # node script decides everything past that. Fix mode stays own-file-only: it
-    # is the one gate whose remedy is a rewrite, and it never rewrites another
-    # project's `.gitignore`.
+    # The ancestor probe lives here because it decides whether the pass prints at all; fix mode never
+    # rewrites another project's `.gitignore`.
     local gitignore_pid=""
     local gitignore_status=0
     local gitignore_applicable=false
@@ -632,14 +464,7 @@ run_checks() {
         gitignore_pid=$!
     fi
 
-    # Docs (layout): the manual's shape — the map, the spine, the numbering, the
-    # three subfolders, the decision mold. Its unit is the REPOSITORY, not the
-    # package: a manual answers for the whole tree, and only its root carries the
-    # AGENTS.md that routes into it. So the pass asks its question exactly where a
-    # repository is — `.git` here, a file in a worktree and a directory in a clone.
-    # Nothing else gates it: a repository with NO docs/ is the population the rule
-    # exists for, and it fails on `docs-absent`. Check-only, like every read-only
-    # gate — there is no rewrite that can author a chapter.
+    # The unit is the repository: a `.git` here, a file in a worktree and a directory in a clone.
     local docs_layout_pid=""
     local docs_layout_status=0
     if [ "$FIX_MODE" = false ] && selected docs && [ -e ".git" ]; then
@@ -647,10 +472,6 @@ run_checks() {
         docs_layout_pid=$!
     fi
 
-    # Suppressions (directives): every place the project told a checker to look
-    # away is spelled in this toolchain's vocabulary, carries its reason, and
-    # names a rule that is still live. It runs in BOTH modes — `--fix` settles
-    # the two spellings a machine can settle, and never invents a reason.
     local suppressions_pid=""
     local suppressions_status=0
     local suppressions_fix=()
@@ -661,10 +482,6 @@ run_checks() {
         suppressions_pid=$!
     fi
 
-    # Markdown (prose): every tracked page's coordinates resolve, and its blocks
-    # breathe. Check-only — there is no rewrite that splits a paragraph into the
-    # two ideas it was carrying. It reads the same `--ignore-pattern` globs the
-    # linter received, so one flag answers for the whole run.
     local markdown_pid=""
     local markdown_status=0
     if [ "$FIX_MODE" = false ] && selected markdown; then
@@ -673,14 +490,7 @@ run_checks() {
         markdown_pid=$!
     fi
 
-    # Names: what the project calls its own parts, under the roots where a
-    # project keeps what it wrote, and the shape of its tree on the disk. It
-    # runs in BOTH modes — `--fix` deletes the empty directories, the one
-    # finding a machine can settle, and renames nothing: a rename is a move,
-    # and choosing the name it moves to is the work the rule is asking for.
-    # It loads `jterrazz.config.ts`, and Node warns on stderr while it
-    # reparses a `.ts` as ESM in a project without `"type": "module"` — noise
-    # about the loading, never about the tree.
+    # Node warns while reparsing `jterrazz.config.ts` as ESM without `"type": "module"`: noise about loading.
     local names_pid=""
     local names_status=0
     local names_mode=(--report "$tmp_dir/names.json")
@@ -699,10 +509,6 @@ run_checks() {
         comments_pid=$!
     fi
 
-    # Secrets: no file the project would commit carries a live-looking
-    # credential. The gate always applies, so WHICH engine answers — gitleaks
-    # where the machine has it, the built-in patterns where it does not — is
-    # decided inside the script, not here.
     local secrets_pid=""
     local secrets_status=0
     if [ "$FIX_MODE" = false ] && selected secrets; then
@@ -711,16 +517,11 @@ run_checks() {
         secrets_pid=$!
     fi
 
-    # Astro: the consumer's own checker, plus the formatter for the one file
-    # shape oxfmt does not parse. Both halves run in fix mode too — prettier
-    # writes there, and `astro check` is read-only wherever it runs.
     local astro_pid=""
     local astro_status=0
     if selected astro && project_uses_astro "."; then
         ASTRO=$(find_project_binary astro)
-        # A subshell, so both halves run and both are reported — a template that
-        # does not type-check is not a reason to stay quiet about its shape.
-        # `local` has no meaning past the `&`, hence the plain names.
+        # A subshell so both halves run and report; `local` has no meaning past the `&`.
         (
             "$ASTRO" check
             astro_check=$?
@@ -739,10 +540,7 @@ run_checks() {
         astro_pid=$!
     fi
 
-    # Architecture (layer map): the graph a project declared, resolved. Bash
-    # asks the one question that decides whether the gate applies at all — is
-    # there a map — and the script decides what it says. Opt-in by the file's
-    # existence: a project with no declared architecture is not in breach of one.
+    # A project with no declared layer map is in breach of none.
     local architecture_pid=""
     local architecture_status=0
     if [ "$FIX_MODE" = false ] && selected architecture &&
@@ -753,9 +551,6 @@ run_checks() {
         architecture_pid=$!
     fi
 
-    # Publish (packaging): what a published package promises, held to what the
-    # tarball will contain. Once per package the registry would accept — the
-    # unit is the workspace package, and a private one has no tarball.
     local publish_pids=()
     local publish_logs=()
     local publish_status=0
@@ -772,13 +567,8 @@ run_checks() {
         done
     fi
 
-    # Conventions checker: only in check mode, and in two shapes. One run per
-    # specs root the workspace owns, gated by the package that OWNS that root —
-    # a member may use @jterrazz/test while the root does not, and the reverse.
-    # And one run per workspace member that RESOLVES @jterrazz/test, `--member`,
-    # which is the half that reaches a package owning no `specs/` at all. The
-    # member runs start once the oxlint report is written, and each is handed
-    # it; the tree runs read no oxlint diagnostic and start at once.
+    # One run per specs root, gated by its owning package, and one `--member` run per member resolving
+    # @jterrazz/test, handed the oxlint report once it is written.
     local checker_pids=()
     local checker_logs=()
     local checker_status=0
@@ -802,9 +592,7 @@ run_checks() {
             lint_status=$?
             lint_waited=true
         fi
-        # The run over the project root is the one @jterrazz/test's ratchet
-        # judges, and the one whose green verdict is the held line of
-        # `jterrazz.baseline.json › test`.
+        # The root's run is the one @jterrazz/test's ratchet judges.
         local member_index=0
         for member in "${checker_members[@]}"; do
             local member_bin="${checker_member_bins[$member_index]}"
@@ -820,47 +608,19 @@ run_checks() {
         done
     fi
 
-    # Wait and collect statuses
     local type_status=0
     [ -n "$type_pid" ] && { wait $type_pid; type_status=$?; }
     [ -n "$lint_pid" ] && [ "$lint_waited" = false ] && { wait $lint_pid; lint_status=$?; }
 
-    # The ratchet judges every run: the pass is judged by what the section
-    # tolerates, not by oxlint's exit code — in FIX mode as much as in check
-    # mode, or `fix` then `check` reads red then green on the same tree. The
-    # script reads the file, whether it is there, and a per-package file left
-    # beside it.
-    #
-    # A project with NO section is judged rule by rule all the same, as soon as
-    # the linter has anything to say: the same lines `fix` prints, naming what
-    # each rule owes and the one gesture that records it. Reaching the ratchet
-    # through `check` is what an adoption's step 4 asks for. Green, it holds
-    # nothing, and says so as an emptied section does.
-    #
-    # Either way the judge counts this package's rules only. A `jterrazz(*)`
-    # diagnostic fails oxlint's exit code but is @jterrazz/test's to judge,
-    # so the verdict always comes from the script once oxlint has spoken — and
-    # the script is told the linter's exit code, so a failure no diagnostic
-    # carries (an unparsed config) is never forgiven.
-    #
-    # What fix mode judges is what SURVIVED the rewrite, so its machine-readable
-    # run is made here, after the fixer, and in the foreground — with the unsafe
-    # fixers armed again, so a directive that names one of them is used, not
-    # reported unused. The fixer's own exit code is never the verdict: it ran
-    # with those rules allowed.
+    # The ratchet is the verdict in both modes, or `fix` then `check` reads red then green on one tree; it is
+    # told the linter's exit code, so a failure no diagnostic carries is never forgiven. Fix mode judges what
+    # survived, with the unsafe fixers armed again so a directive naming one is used.
     if [ "$FIX_MODE" = true ] && [ "$runs_oxlint" = true ]; then
         run_oxlint --type-aware --format json "${LINT_ARGS[@]}" \
             > "$tmp_dir/lint.json" 2>/dev/null
     fi
 
-    # The section has two reporters, and a green run states it once, whole:
-    # the Names pass's report joins the judge, which prints the file's one
-    # held line when both sides stand at it — and nothing else, since a
-    # held finding is the ratchet doing its job.
-    #
-    # In fix mode the judge re-records the linter's entries that fell, and
-    # the Names pass its own: two writers of one file, so the Names pass
-    # has finished before this one reads it.
+    # Two writers of one file in fix mode: the Names pass finishes before the ratchet reads it.
     [ -n "$names_pid" ] && { wait $names_pid; names_status=$?; }
     [ -n "$comments_pid" ] && { wait $comments_pid; comments_status=$?; }
     if [ "$FIX_MODE" = true ] && selected comments; then
@@ -898,8 +658,6 @@ run_checks() {
     [ -n "$astro_pid" ] && { wait $astro_pid; astro_status=$?; }
     [ -n "$secrets_pid" ] && { wait $secrets_pid; secrets_status=$?; }
 
-    # One pass, N runs: the pass fails if any run failed, and only the logs of
-    # the runs that FAILED are printed — a green member stays silent.
     local checker_failed_logs=()
     local index=0
     for pid in "${checker_pids[@]}"; do
@@ -910,27 +668,17 @@ run_checks() {
         index=$((index + 1))
     done
 
-    # A green publish run prints nothing but the build guard's one line when it
-    # had nothing to judge, so every run's log is kept: an empty one adds none.
+    # A green run prints only the build guard's line when it had nothing to judge.
     for pid in "${publish_pids[@]}"; do
         wait "$pid" || publish_status=1
     done
 
-    # ── The report ───────────────────────────────────────────────────────────
-    # One order, and it is the chapter's: the three tools, the artefact gate,
-    # knip, the conventions checker, the Docs (layout) pass, then the gates a
-    # project opts into and the four that read its tree on every run. A pass
-    # that did not apply is absent; every pass that ran prints the same block.
+    # The chapter's order (docs/06-quality-checks.md).
     join_logs "$tmp_dir/checker.log" "${checker_failed_logs[@]}"
     join_logs "$tmp_dir/publish.log" "${publish_logs[@]}"
 
-    # The checker's exit code is this pass's verdict, whatever it records:
-    # @jterrazz/test judges its own findings against its own section.
-    #
-    # Two things this pass says even when it is green, so it asks for its log
-    # the way a writer does: which member resolves a release too old to answer
-    # `--member` — a reader left with silence would believe every member was
-    # asked — and what the other ratchet section holds.
+    # The checker's exit code is the verdict. A green pass still names a dormant member, or a reader
+    # would believe every member was asked.
     local checker_write=""
     if [ "$checker_dormant" -gt 0 ]; then
         cat "$tmp_dir/checker-dormant.log" "$tmp_dir/checker.log" \
@@ -938,10 +686,7 @@ run_checks() {
         mv "$tmp_dir/checker-reported.log" "$tmp_dir/checker.log"
         checker_write="writer"
     fi
-    # And, on a green pass, the held line of `jterrazz.baseline.json › test` —
-    # the same one line the oxlint pass prints for its own section, in one of
-    # its two exact shapes (a count, or `nothing held`), so a release printing
-    # another form adds nothing here.
+    # Only the two exact shapes, so a release printing another form adds nothing here.
     if [ "$checker_status" -eq 0 ] && [ -n "$checker_root_log" ] &&
         grep -E '^jterrazz\.baseline\.json › test: ([0-9]+ held across [0-9]+ rules?|nothing held)$' "$checker_root_log" \
             >> "$tmp_dir/checker.log"; then
@@ -957,13 +702,10 @@ run_checks() {
         write="writer"
     fi
 
-    # A pass read only for another's sake is no verdict of this run.
     local lint_log="$tmp_dir/lint.log"
     local lint_speaks=""
     if selected oxlint; then
         judge_lint_config
-        # A failing check pass prints the linter's report first, drawn from the one
-        # run, then what the ratchet and the config judge added beneath it.
         if [ "$FIX_MODE" = false ] && [ "$lint_status" -ne 0 ]; then
             {
                 node "$PACKAGE_ROOT/src/cli/oxlint-report.js" "$tmp_dir/lint.json" "$tmp_dir/lint.err" \
@@ -972,21 +714,15 @@ run_checks() {
             } > "$tmp_dir/lint-shown.log"
             mv "$tmp_dir/lint-shown.log" "$tmp_dir/lint.log"
         fi
-        # A green pass judged by the ratchet says one thing: the section's held line,
-        # never the linter's chatter around it.
         if [ "$lint_status" -eq 0 ] && [ "$lint_held" = true ]; then
             lint_log="$tmp_dir/ratchet.log"
             lint_speaks="writer"
         fi
-        # A green fix that re-recorded an entry wrote a tracked file, and says which.
         if [ "$FIX_MODE" = true ] && [ "$lint_status" -eq 0 ] && [ -s "$tmp_dir/ratchet.log" ]; then
             lint_log="$tmp_dir/ratchet.log"
             lint_speaks="writer"
         fi
-        # Unless @jterrazz/test's section broke: its checker judges the `jterrazz(*)`
-        # diagnostics off this same report and leaves printing them to this pass, so
-        # a green pass still draws the report — the one print of each diagnostic —
-        # above whatever it would have said. A report with none draws nothing.
+        # @jterrazz/test's checker leaves printing its `jterrazz(*)` diagnostics to this pass, even when it is green.
         if [ "$FIX_MODE" = false ] && [ "$lint_status" -eq 0 ] && [ "$checker_status" -ne 0 ]; then
             node "$PACKAGE_ROOT/src/cli/oxlint-report.js" "$tmp_dir/lint.json" "$tmp_dir/lint.err" \
                 --oxlint "$OXLINT" --if-diagnostics > "$tmp_dir/lint-drawn.log"
@@ -1028,12 +764,7 @@ run_checks() {
     selected comments && report_pass "Comments (density)" $comments_status "$tmp_dir/comments.log" "$write"
     [ -n "$secrets_pid" ] && report_pass "Secrets (credentials)" $secrets_status "$tmp_dir/secrets.log"
 
-    # Drift: the report, not a gate — how far this project stands from the
-    # profile it says it extends, in four numbers. It runs last and it speaks on
-    # every check, because the alternative is what the estate had: every
-    # repository quietly a little further from the shared rulebook, and nobody
-    # able to say by how much without opening every config. Only a rule turned
-    # off with no reason beside it actually fails the run.
+    # A report, not a gate: only a rule turned off with no reason beside it fails the run.
     local drift_status=0
     if [ "$FIX_MODE" = false ] && selected drift; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} DRIFT ${NC} Deviations from the profile\n\n"
@@ -1042,7 +773,6 @@ run_checks() {
         drift_status=$?
     fi
 
-    # Summary
     if [ "$FIX_MODE" = true ]; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} END ${NC} Finalizing quality fixes\n\n"
     else
