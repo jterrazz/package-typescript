@@ -3,7 +3,7 @@ import { cpSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../check-passes.js';
+import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -16,15 +16,13 @@ import { temporaryDirectory } from '../temporary-directory.js';
  * directory alone; there is no per-run `cwd`).
  */
 
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-
 function checkFromMember(fixture: string): { status: null | number; stdout: string } {
     const workDir = temporaryDirectory('spec-gitignore-workspace-');
     cpSync(resolve(import.meta.dirname, 'fixtures/gitignore', fixture), workDir, {
         recursive: true,
     });
 
-    const result = spawnSync('bash', [BIN, 'check'], {
+    const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
         cwd: resolve(workDir, 'packages/foo'),
         encoding: 'utf8',
         env: { ...process.env, ...onlyPasses('gitignore') },

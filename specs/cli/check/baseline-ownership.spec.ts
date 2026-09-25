@@ -3,7 +3,7 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../check-passes.js';
+import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -23,8 +23,6 @@ import { temporaryDirectory } from '../temporary-directory.js';
  * finding are @jterrazz/test's, in its `test` section of the same file —
  * never counted here, never forgiven here, and never rewritten here.
  */
-
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
 /** A checker that prints one finding and exits with the given code. */
 function checker(exitCode: number): string {
@@ -70,7 +68,7 @@ function run(
     command: string,
     env: NodeJS.ProcessEnv = process.env,
 ): { status: null | number; stdout: string } {
-    const result = spawnSync('bash', [BIN, command], {
+    const result = spawnSync('bash', [SELECTING_BIN, command], {
         cwd: project,
         encoding: 'utf8',
         env: { ...env, INIT_CWD: project },

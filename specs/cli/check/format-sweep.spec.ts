@@ -1,9 +1,9 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses, passOf } from '../check-passes.js';
+import { onlyPasses, passOf, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -11,8 +11,6 @@ import { temporaryDirectory } from '../temporary-directory.js';
  * it does not is a repository, and a fixture cannot be one — the runner
  * copies files rather than initialising a repository.
  */
-
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
 const MISFORMATTED = 'export const shape = {wide:1}\n';
 
@@ -50,7 +48,7 @@ function projectWith({
 
 /** The Oxfmt pass of a run of that pass alone, from its header to its verdict. */
 function formatPassOf(project: string, command: 'check' | 'fix'): string {
-    const { stdout } = spawnSync('bash', [BIN, command], {
+    const { stdout } = spawnSync('bash', [SELECTING_BIN, command], {
         cwd: project,
         encoding: 'utf8',
         env: { ...process.env, ...onlyPasses('oxfmt'), INIT_CWD: project },

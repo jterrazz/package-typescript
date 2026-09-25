@@ -1,16 +1,14 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 
-import { onlyPasses, passOf } from './check-passes.js';
+import { onlyPasses, passOf, SELECTING_BIN } from './check-passes.js';
 import { temporaryDirectory } from './temporary-directory.js';
 
 /*
  * The ground of the chains on what the Names pass asks of a repository: a
  * small green project, the Makefile given, optionally a repository.
  */
-
-const BIN = resolve(import.meta.dirname, '../../bin/typescript.sh');
 
 export const SIX_TARGETS = [
     '.PHONY: install build lint fix test check',
@@ -72,7 +70,7 @@ export function projectWith({
 
 /** What the Names (tree) pass printed, header to verdict, in a run of that pass alone. */
 export function namesPassOf(project: string): string {
-    const result = spawnSync('bash', [BIN, 'check'], {
+    const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
         cwd: project,
         encoding: 'utf8',
         env: inProject(project, onlyPasses('names')),

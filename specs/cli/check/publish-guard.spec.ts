@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses, passOf } from '../check-passes.js';
+import { onlyPasses, passOf, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -15,7 +15,6 @@ import { temporaryDirectory } from '../temporary-directory.js';
  * — a package resolving none — stays a document.
  */
 
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const FIXTURES = resolve(import.meta.dirname, 'fixtures/publish');
 const INSTALLED = resolve(import.meta.dirname, '../../../node_modules/@jterrazz/test');
 
@@ -56,7 +55,7 @@ function run(
     command: string,
     env: Record<string, string> = {},
 ): { status: null | number; stdout: string } {
-    const result = spawnSync('bash', [BIN, command], {
+    const result = spawnSync('bash', [SELECTING_BIN, command], {
         cwd: dir,
         encoding: 'utf8',
         env: { ...process.env, ...env, INIT_CWD: dir },

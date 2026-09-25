@@ -1,18 +1,16 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../check-passes.js';
+import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
  * A chain, for the ground's sake: git tracks no directory, so a fixture can
  * carry no empty one, and what git ignores needs a repository around it.
  */
-
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
 const SIX_TARGETS = [
     '.PHONY: install build lint fix test check',
@@ -70,7 +68,7 @@ function namesPassOf(
     command: 'check' | 'fix',
     options: readonly string[] = [],
 ): string[] {
-    const { stdout } = spawnSync('bash', [BIN, command, ...options], {
+    const { stdout } = spawnSync('bash', [SELECTING_BIN, command, ...options], {
         cwd: project,
         encoding: 'utf8',
         env: { ...process.env, ...onlyPasses('names'), INIT_CWD: project },

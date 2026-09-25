@@ -3,7 +3,7 @@ import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../check-passes.js';
+import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -22,7 +22,6 @@ import { temporaryDirectory } from '../temporary-directory.js';
  * installs one that passes.
  */
 
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const FIXTURE = resolve(import.meta.dirname, 'fixtures/checker-member');
 
 /**
@@ -98,7 +97,7 @@ function armPlugin(dir: string): void {
 
 /** One run of the conventions pass in `dir`. */
 function check(dir: string): { status: null | number; stdout: string } {
-    const result = spawnSync('bash', [BIN, 'check'], {
+    const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
         cwd: dir,
         encoding: 'utf8',
         env: { ...process.env, ...onlyPasses('conventions') },

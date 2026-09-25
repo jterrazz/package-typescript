@@ -1,10 +1,10 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses, passOf } from '../check-passes.js';
+import { onlyPasses, passOf, SELECTING_BIN } from '../check-passes.js';
 import { inProject, namesPassOf, projectWith, SIX_TARGETS } from '../repository-ground.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
@@ -14,8 +14,6 @@ import { temporaryDirectory } from '../temporary-directory.js';
  * `.git`, and the runner copies files rather than initialising a repository,
  * so what git ignores, and what it tracks, a fixture cannot say.
  */
-
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
 const FOUR_TARGETS = [
     '.PHONY: install build lint test',
@@ -59,12 +57,12 @@ function writeDataFolder(project: string): void {
 
 /** A check of the linter and the tree gates and a baseline recording over the project, the check's report and the recorded file. */
 function checkAndRecord(project: string): { baseline: string; stdout: string } {
-    const result = spawnSync('bash', [BIN, 'check'], {
+    const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
         cwd: project,
         encoding: 'utf8',
         env: inProject(project, onlyPasses('oxlint', 'markdown', 'names', 'secrets')),
     });
-    execFileSync('bash', [BIN, 'baseline'], {
+    execFileSync('bash', [SELECTING_BIN, 'baseline'], {
         cwd: project,
         encoding: 'utf8',
         env: inProject(project),
@@ -147,7 +145,7 @@ describe('names-repository', () => {
         execFileSync('git', ['init', '--quiet'], { cwd: project });
 
         // When - the tree gates run
-        const result = spawnSync('bash', [BIN, 'check'], {
+        const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project, TREE_PASSES),
@@ -168,7 +166,7 @@ describe('names-repository', () => {
         mkdirSync(join(project, 'src'));
 
         // When - the tree gates run
-        const result = spawnSync('bash', [BIN, 'check'], {
+        const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project, TREE_PASSES),
@@ -246,7 +244,7 @@ describe('names-repository', () => {
         const project = projectWith({});
 
         // When - the linter alone runs
-        const result = spawnSync('bash', [BIN, 'check'], {
+        const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project, onlyPasses('oxlint')),
@@ -287,14 +285,14 @@ describe('names-repository', () => {
     test('records a missing gesture in the ratchet, and the run it records is green', () => {
         // Given - a repository missing two gestures, recorded by the baseline command
         const project = projectWith({ makefile: FOUR_TARGETS });
-        execFileSync('bash', [BIN, 'baseline'], {
+        execFileSync('bash', [SELECTING_BIN, 'baseline'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project),
         });
 
         // When - the linter and the Names pass run
-        const result = spawnSync('bash', [BIN, 'check'], {
+        const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project, onlyPasses('oxlint', 'names')),
@@ -312,14 +310,14 @@ describe('names-repository', () => {
     test('counts a missing gesture in the ratchet line of a linter run the Names pass is left out of', () => {
         // Given - a repository missing two gestures, recorded by the baseline command
         const project = projectWith({ makefile: FOUR_TARGETS });
-        execFileSync('bash', [BIN, 'baseline'], {
+        execFileSync('bash', [SELECTING_BIN, 'baseline'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project),
         });
 
         // When - the linter alone runs
-        const result = spawnSync('bash', [BIN, 'check'], {
+        const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project, onlyPasses('oxlint')),

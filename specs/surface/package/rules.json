@@ -80,7 +80,7 @@
         "home": "specs/cli/check-selection.sh",
         "id": "pass-selector",
         "names": ["TYPESCRIPT_CHECK_PASSES", "names no pass"],
-        "why": "runs only the passes a spec asserts on; no consumer project needs a partial check"
+        "why": "runs only the passes a spec asserts on, from a copy of the check no install holds; no consumer project needs a partial check"
     },
     {
         "audience": "consumer",

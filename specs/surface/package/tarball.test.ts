@@ -1,10 +1,10 @@
-import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { expect, onTestFinished, test } from 'vitest';
 
 import { fragmentsIn, walkModules } from './module-walk.js';
+import { checkOutcome, selectingEnvironments } from './packed-bin.js';
 import {
     isRecord,
     loadPacked,
@@ -19,9 +19,10 @@ import {
  * The tarball-audit rule: what npm would publish carries `consumer` rules
  * alone, judged on its content and never on its names. Loaded from the packed
  * tree itself — every entry its `exports` map publishes, every module it
- * holds, each in a child of its own, and its bin run — it reaches no
- * fragment, profile decision, pass or refusal the manifest (`rules.json`)
- * holds `self`; and no text the tarball holds names a self rule — no id, no
+ * holds, each in a child of its own, and every command its `bin` installs, run
+ * — it reaches no fragment, profile decision, pass or refusal the manifest
+ * (`rules.json`) holds `self`, and no environment chooses which passes its
+ * check runs; and no text the tarball holds names a self rule — no id, no
  * name, no home, no fragment declared `self` — whatever file carries it.
  */
 
@@ -164,6 +165,17 @@ test('the catalogue and the passes the tarball ships are consumer alone', async 
         rows.find((row) => row.channel === 'checker' && row.id === match.groups?.pass),
     );
 
+    // Then - the shell scripts define which passes run once, as every pass, whatever came before
+    const definitions = packedFiles(tree)
+        .filter((path) => path.endsWith('.sh'))
+        .flatMap((path) =>
+            [
+                ...readFileSync(join(tree, path), 'utf8').matchAll(/^.*\bselected\s*\(\s*\).*$/gmu),
+            ].map((match) => `${path}: ${match[0].trim()}`),
+        );
+    expect(definitions).toStrictEqual(['bin/commands/check.sh: selected() {']);
+    expect(script).toContain('\nselected() {\n    return 0\n}\n');
+
     // Then - the catalogue exposes its consumer half alone, and each pass is a consumer row
     expect(
         Object.keys(catalogue).toSorted((left, right) => left.localeCompare(right)),
@@ -204,22 +216,37 @@ test('every module the packed tree holds reaches consumer fragments alone, whate
     }
 });
 
-test('the packed bin runs every pass, whatever a selection names', () => {
-    // Given - the published command, run where no pass applies, handed a selection of no pass
+test('every shell command the tarball installs runs every pass, whatever its environment holds', async () => {
+    // Given - each shell bin, run where no pass applies: bare, then under every way an environment could choose its passes
+    const tree = packedTree();
     const project = mkdtempSync(join(tmpdir(), 'tarball-bin-'));
     onTestFinished(() => {
         rmSync(project, { force: true, recursive: true });
     });
-    const run = spawnSync('bash', [join(packedTree(), 'bin/typescript.sh'), 'check'], {
-        cwd: project,
-        encoding: 'utf8',
-        env: { ...process.env, BASH_ENV: undefined, TYPESCRIPT_CHECK_PASSES: 'no-such-pass' },
-    });
+    const environments = selectingEnvironments(tree, project);
+    const bins = publishedBins(tree).filter((path) => path.endsWith('.sh'));
+    expect(bins.length).toBeGreaterThan(0);
+    const outcomes = await Promise.all(
+        bins.map(async (bin) => ({
+            bare: await checkOutcome(join(tree, bin), project, {}),
+            bin,
+            runs: await Promise.all(
+                Object.entries(environments).map(async ([name, env]) => ({
+                    name,
+                    outcome: await checkOutcome(join(tree, bin), project, env),
+                })),
+            ),
+        })),
+    );
 
-    // Then - nothing refuses the selection, and the passes a bare tree runs all report
-    expect(run.status).not.toBe(2);
-    expect(run.stdout).toContain('TypeScript Check');
-    expect(run.stdout).toContain('Secrets (credentials)');
+    // Then - the bare run reports the passes a bare tree runs, and every other run the same passes, to the same verdict
+    for (const { bare, bin, runs } of outcomes) {
+        expect(bare.passes).toContain('Secrets (credentials)');
+        expect(bare.passes.length).toBeGreaterThan(5);
+        for (const { name, outcome } of runs) {
+            expect.soft(outcome, `${bin} under ${name}`).toStrictEqual(bare);
+        }
+    }
 });
 
 test('no text the tarball holds names a self rule', () => {

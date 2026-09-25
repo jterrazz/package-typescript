@@ -3,7 +3,7 @@ import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../check-passes.js';
+import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
 import { temporaryDirectory } from '../temporary-directory.js';
 
 /*
@@ -15,8 +15,6 @@ import { temporaryDirectory } from '../temporary-directory.js';
  * repository — every workbench under `home/<brand>/work/` is one — must not be
  * judged by the `.gitignore` of the tree it happens to sit in.
  */
-
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
 /** The ancestor's offending line, as the gate would print it from the clone. */
 const ANCESTOR_COMPLAINT = '.gitignore names coverage/';
@@ -40,7 +38,7 @@ function checkFromClone(boundary: 'directory' | 'file' | 'none'): {
         writeFileSync(join(clone, '.git'), `gitdir: ${join(workDir, 'bare.git')}\n`);
     }
 
-    const result = spawnSync('bash', [BIN, 'check'], {
+    const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
         cwd: clone,
         encoding: 'utf8',
         env: { ...process.env, ...onlyPasses('gitignore') },

@@ -1,13 +1,12 @@
 import { specification } from '@jterrazz/test';
-import { resolve } from 'node:path';
 import { afterAll } from 'vitest';
 
-import { SELECTION } from './check-passes.js';
+import { SELECTING_BIN } from './check-passes.js';
 
 // The ONE real runner: every spec goes through the product command
 // (`typescript build|bundle|dev|start|docs-layout|doctor|baseline|tsc|check|fix|clean`),
-// never a tool underneath it.
-const BIN = resolve(import.meta.dirname, '../../bin/typescript.sh');
+// never a tool underneath it — `bin/typescript.sh`, reached through the
+// selector, which hands it every run that names no pass.
 
 /*
  * Rolldown's slow-plugin advisory, emitted on stderr when dts generation happens
@@ -29,11 +28,9 @@ function withoutSlowPluginAdvisory(text: string): string {
 
 /*
  * Every run may name its passes: the three `passes-*` documents state
- * `TYPESCRIPT_CHECK_PASSES` in their `env:`, and the selector that reads it is
- * sourced through `BASH_ENV`.
+ * `TYPESCRIPT_CHECK_PASSES` in their `env:`, which the selector reads.
  */
-export const { cli, cleanup } = await specification.cli(BIN, {
-    defaults: { BASH_ENV: SELECTION },
+export const { cli, cleanup } = await specification.cli(SELECTING_BIN, {
     transform: withoutSlowPluginAdvisory,
 });
 

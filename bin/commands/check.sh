@@ -291,13 +291,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 # ── Which passes run ─────────────────────────────────────────────────────────
-# Every pass, unless the shell defined `selected` before this script's first
-# line, from the file bash's own `BASH_ENV` names.
-if ! declare -F selected >/dev/null; then
-    selected() {
-        return 0
-    }
-fi
+# Every pass, whatever the environment holds: this definition replaces any
+# `selected` bash inherited or sourced before the first line.
+selected() {
+    return 0
+}
 
 # ── What oxlint is handed ────────────────────────────────────────────────────
 # The project's files it parses — the list every tree gate judges, everything
