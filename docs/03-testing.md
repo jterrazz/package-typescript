@@ -52,15 +52,15 @@ One block is spanned for good: oxlint's own report. The linter picks its form fr
 
 The presets are the one part of this package a document cannot reach: `check` loads a preset from the consumer's `node_modules`, and a copied fixture has none. So `specs/cli/preset/` drives the tools directly — the B9w exception `oxlint.specification.ts` states — and seven suites divide the claim between them.
 
-| Suite                 | Claims                                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `resolved-config`     | each profile resolves to the rule set its golden records, marker by marker                              |
-| `rule-surface`        | every non-nursery rule of every loaded plugin is decided, every type-aware one too, and no `categories` |
-| `fixpoint`            | oxlint's fixes and oxfmt's reach a fixed point — no rule fights the formatter                           |
-| `behaviour`           | a fixture written to break rules reports exactly the diagnostics it should                              |
-| `exclusive-pairs`     | every `off` of kind `exclusive` names a rule that really is on, and conflicts                           |
-| `install-matrix`      | one consumer per profile installs under pnpm-strict and checks green                                    |
-| `module-augmentation` | a `declare module` block keeps the interface that merges, and its `export {}`                           |
+| Suite                 | Claims                                                                                                                                                          |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resolved-config`     | each profile resolves to the rule set its golden records, marker by marker                                                                                      |
+| `rule-surface`        | every non-nursery rule of every loaded plugin is decided, every type-aware one too, and no `categories`; an `unsafe` mark sits on a fixer plain `--fix` applies |
+| `fixpoint`            | oxlint's fixes and oxfmt's reach a fixed point — no rule fights the formatter                                                                                   |
+| `behaviour`           | a fixture written to break rules reports exactly the diagnostics it should                                                                                      |
+| `exclusive-pairs`     | every `off` of kind `exclusive` names a rule that really is on, and conflicts                                                                                   |
+| `install-matrix`      | one consumer per profile installs under pnpm-strict and checks green                                                                                            |
+| `module-augmentation` | a `declare module` block keeps the interface that merges, and its `export {}`                                                                                   |
 
 The last one is the outside view, and it is the one that fails when the corpus is wrong: seven tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so an eighth profile earns a consumer by existing. The two config files are the one thing the ground does NOT carry: the runner writes them, for the same reason as above, and that heredoc is the single place the documented form is stated for all seven.
 
@@ -101,7 +101,11 @@ Every rule this package holds declares its audience: `consumer`, meaningful in a
 
 A rulebook fragment declares `audience` for every decision it holds, from the closed pair `AUDIENCES` in `lint/_contract.js`, and each catalogue entry carries it. A pass of `typescript check` declares its own in `src/cli/check-passes.json`, the registry the internal selector reads. Every fragment and every pass is `consumer` today, since each one judges a consumer's project.
 
-The self rules are the rulebook's own contract and its catalogue's projection. The contract's two invariants — a level is `error` or `off`, and an `off` carries one of the five reasons naming what carries it, as an unsafe fixer names what its rewrite changes — judge this package's fragments alone, since no consumer can author one: `lint/_contract.js` builds and enforces nothing, and `lint/_contract.test.ts` audits every fragment the six profiles and the hexagonal map are compiled from. The catalogue itself ships, since `fix` reads its unsafe fixers; the table and the fixer list [Lint presets](07-lint-presets.md) carries between its `GENERATED` markers are rendered by `lint/catalog.test.ts`, from the consumer entries alone, and held fresh there.
+The self rules are the rulebook's own contract and its catalogue's projection. The contract's two invariants — a level is `error` or `off`, and an `off` carries one of the five reasons naming what carries it, as an unsafe fixer names what its rewrite changes — judge this package's fragments alone, since no consumer can author one: `lint/_contract.js` builds and enforces nothing, and `lint/_contract.test.ts` audits every fragment the six profiles and the hexagonal map are compiled from.
+
+The catalogue itself ships, since `fix` reads its unsafe fixers; the table and the fixer list [Lint presets](07-lint-presets.md) carries between its `GENERATED` markers are rendered by `lint/catalog.test.ts`, from the consumer entries alone, and held fresh there.
+
+One self rule still ships: the internal `TYPESCRIPT_CHECK_PASSES` selector ([Developing](02-developing.md#working-on-this-package)) lives in `bin/commands/check.sh`, because the specs drive the published command ([ADR-011](decisions/011-only-consumer-rules-ship.md)).
 
 `specs/surface/package/audience.test.ts` holds the split: every fragment and every pass declares an audience, every profile is compiled from consumer fragments alone, and the registry names exactly the passes `bin/commands/check.sh` selects. `specs/surface/package/tarball.test.ts` reads what npm would publish: no test file ships, since every meta-test is a self rule and `files` leaves out every `*.test.ts`, and the packed tree, loaded with this checkout's install beside it, exposes a catalogue of `catalog()` and `unsafeFixers()` alone, whose entries, profile fragments and pass rows are all `consumer`.
 
