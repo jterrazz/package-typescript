@@ -85,20 +85,28 @@ export async function loadPacked(tree: string, path: string): Promise<Record<str
     return module;
 }
 
-/** Every file an `exports` target names that Node loads, its `*` matched against the tree's files. */
+/** A text, escaped to match itself inside a regular expression. */
+function literally(text: string): string {
+    return text.replaceAll(/[$()*+.?[\\\]^{|}]/gu, String.raw`\$&`);
+}
+
+/**
+ * Every file an `exports` target names that Node loads. A `*` matches as Node
+ * matches it: any text of one character or more, `/` included, the same text
+ * wherever the target repeats it.
+ */
 function targetsOf(target: unknown, files: string[]): string[] {
     if (typeof target === 'string') {
         const pattern = target.replace(/^\.\//u, '');
         if (!pattern.includes('*')) {
             return [pattern];
         }
-        const [head = '', tail = ''] = pattern.split('*');
-        return files.filter(
-            (path) =>
-                path.startsWith(head) &&
-                path.endsWith(tail) &&
-                !path.slice(head.length).includes('/'),
+        const [first = '', ...rest] = pattern.split('*');
+        const matcher = new RegExp(
+            `^${literally(first)}(.+)${rest.map((part) => literally(part)).join(String.raw`\1`)}$`,
+            'u',
         );
+        return files.filter((path) => matcher.test(path));
     }
     if (!isRecord(target)) {
         return [];
@@ -108,11 +116,30 @@ function targetsOf(target: unknown, files: string[]): string[] {
     );
 }
 
+/** The packed manifest, parsed. */
+function manifestOf(tree: string): Record<string, unknown> {
+    const manifest: unknown = JSON.parse(readFileSync(join(tree, 'package.json'), 'utf8'));
+    return isRecord(manifest) ? manifest : {};
+}
+
 /** Every file the packed `exports` map publishes, under every condition Node loads. */
 export function publishedTargets(tree: string): string[] {
-    const manifest: unknown = JSON.parse(readFileSync(join(tree, 'package.json'), 'utf8'));
-    const exportsMap = isRecord(manifest) && isRecord(manifest.exports) ? manifest.exports : {};
+    const { exports: exportsMap } = manifestOf(tree);
     const files = packedFiles(tree);
 
-    return [...new Set(Object.values(exportsMap).flatMap((target) => targetsOf(target, files)))];
+    return [
+        ...new Set(
+            Object.values(isRecord(exportsMap) ? exportsMap : {}).flatMap((target) =>
+                targetsOf(target, files),
+            ),
+        ),
+    ];
+}
+
+/** Every file the packed `bin` field installs as a command, as a path from the tree's root. */
+export function publishedBins(tree: string): string[] {
+    const { bin, name } = manifestOf(tree);
+    const commands = typeof bin === 'string' ? { [String(name)]: bin } : isRecord(bin) ? bin : {};
+
+    return Object.values(commands).map((path) => String(path).replace(/^\.\//u, ''));
 }

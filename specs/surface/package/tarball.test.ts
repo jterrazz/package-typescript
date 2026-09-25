@@ -4,24 +4,25 @@ import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { expect, onTestFinished, test } from 'vitest';
 
-import { fragmentsIn, lintFragments } from './lint-fragments.js';
+import { fragmentsIn, walkModules } from './module-walk.js';
 import {
     isRecord,
     loadPacked,
     pack,
     packedFiles,
     packedTree,
+    publishedBins,
     publishedTargets,
 } from './packed-tree.js';
 
 /*
  * The tarball-audit rule: what npm would publish carries `consumer` rules
  * alone, judged on its content and never on its names. Loaded from the packed
- * tree itself — every entry its `exports` map publishes, and its bin run — it
- * reaches no fragment, profile decision, pass or refusal the manifest
- * (`rules.json`) holds `self`; and no text the tarball holds names a self
- * rule — no id, no name, no home, no fragment declared `self` — whatever file
- * carries it.
+ * tree itself — every entry its `exports` map publishes, every module it
+ * holds, each in a child of its own, and its bin run — it reaches no
+ * fragment, profile decision, pass or refusal the manifest (`rules.json`)
+ * holds `self`; and no text the tarball holds names a self rule — no id, no
+ * name, no home, no fragment declared `self` — whatever file carries it.
  */
 
 const ROOT = resolve(import.meta.dirname, '../../..');
@@ -88,9 +89,9 @@ function undecided(name: string, config: unknown, entries: Record<string, unknow
         if (decided.length !== 1) {
             return [`${name} states ${rule} ${scope} with no consumer decision`];
         }
-        return scope === '' && decided[0]?.level !== level
-            ? [`${name} states ${rule} at another level`]
-            : [];
+        return decided[0]?.level === level
+            ? []
+            : [`${name} states ${rule}${scope === '' ? '' : ` in ${scope}`} at another level`];
     });
 }
 
@@ -178,15 +179,27 @@ test('the catalogue and the passes the tarball ships are consumer alone', async 
     }
 });
 
-test('every fragment the packed tree holds is consumer, whether a profile carries it or not', async () => {
-    // Given - every fragment a module of the packed lint/ or src/ exports, by default or by name
-    const fragments = await lintFragments(packedTree());
+test('every module the packed tree holds reaches consumer fragments alone, whatever it does when imported', async () => {
+    // Given - every module the tarball holds, and every command its bin installs that the next test does not run, each imported in a child of its own
+    const tree = packedTree();
+    const shellBins = new Set(publishedBins(tree).filter((path) => path.endsWith('.sh')));
+    const modules = [
+        ...new Set([
+            ...packedFiles(tree).filter((path) => /\.[cm]?js$/u.test(path)),
+            ...publishedBins(tree).filter((path) => !shellBins.has(path)),
+        ]),
+    ];
+    const { fragments, walked } = await walkModules(tree, modules);
 
-    // Then - none of them is the package's own discipline
-    expect(fragments.length).toBeGreaterThan(15);
-    for (const { fragment, path } of fragments) {
+    // Then - every module was walked, some built fragments, and none of them is the package's own discipline
+    expect(walked.toSorted()).toStrictEqual(modules.toSorted());
+    expect(modules.length).toBeGreaterThan(50);
+    expect(
+        fragments.filter(({ path }) => path.endsWith('(built on import)')).length,
+    ).toBeGreaterThan(15);
+    for (const { audience, id, path } of fragments) {
         expect
-            .soft(fragment.audience, `${path} ships a fragment that is not consumer`)
+            .soft(audience, `${path} reaches ${String(id)}, which is not consumer`)
             .toBe('consumer');
     }
 });

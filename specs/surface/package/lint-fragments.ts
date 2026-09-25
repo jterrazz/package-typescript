@@ -2,20 +2,17 @@ import { existsSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { fragmentsIn, isRecord } from './module-walk.js';
+import type { DeclaredFragment } from './module-walk.js';
+
 /*
  * The fragment-walk rule: every fragment a package tree declares, whether a
  * profile carries it or not — each one a module of `lint/` or `src/` holds
  * anywhere in what it exports, by default or by name, in a `.js`, `.mjs` or
  * `.cjs` module. `src/cli/` holds the executables `bin/` runs, which act when
- * imported, so the walk leaves it to the tarball's text audit. The tree is
+ * imported, so the walk leaves it to the module walk, which imports each module in a child of its own (`module-walk.ts`). The tree is
  * this checkout's or a packed one, named by its package root.
  */
-
-/** A fragment a module exports, and where: its module's path from the package root, then the export's. */
-export type DeclaredFragment = {
-    fragment: Record<string, unknown>;
-    path: string;
-};
 
 /** The folders the walk imports from, and the one it never imports. */
 const WALKED = ['lint', 'src'];
@@ -23,16 +20,6 @@ const EXECUTABLES = 'src/cli';
 
 /** A module Node loads, in either module system. */
 const MODULE = /\.[cm]?js$/u;
-
-/** Whether a value is an object whose keys can be read. */
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null;
-}
-
-/** Whether a value is a fragment: an id and the decisions it holds. */
-function isFragment(value: unknown): value is Record<string, unknown> {
-    return isRecord(value) && 'decisions' in value && 'id' in value;
-}
 
 /** Every module under `directory`, as a path from `root`, the executables left out. */
 function modulesUnder(root: string, directory: string): string[] {
@@ -46,26 +33,6 @@ function modulesUnder(root: string, directory: string): string[] {
         }
         return MODULE.test(entry.name) ? [relative(root, path)] : [];
     });
-}
-
-/** Every fragment reachable from `value`, each once, named by the path that reached it first. */
-export function fragmentsIn(
-    value: unknown,
-    path: string,
-    seen = new Set<unknown>(),
-): DeclaredFragment[] {
-    if (!isRecord(value) || seen.has(value)) {
-        return [];
-    }
-    seen.add(value);
-    const own = isFragment(value) ? [{ fragment: value, path }] : [];
-
-    return [
-        ...own,
-        ...Object.entries(value).flatMap(([key, inner]) =>
-            fragmentsIn(inner, `${path}.${key}`, seen),
-        ),
-    ];
 }
 
 /** The fragments the tree under `root` declares, each module imported once. */

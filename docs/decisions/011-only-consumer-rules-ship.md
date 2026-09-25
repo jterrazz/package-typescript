@@ -17,7 +17,7 @@ Every rule declares `consumer` or `self`, from the closed pair `AUDIENCES` in `l
 
 A rule mixing the two is split. The contract's builders ship and enforce nothing, and its two invariants are audited by this package's own suite over every fragment a module of `lint/` or `src/` exports, whether a profile carries it or not. This supersedes the "at load time" clause of [ADR-003](003-the-rulebook-is-explicit.md). The one refusal a consumer can reach, a fragment with no id, which `layers()` builds from the `id` it is given, keeps its consumer half in `layers()`. `catalog()` and `unsafeFixers()` ship, since `fix` reads them, and the chapter's renderer lives in the suite.
 
-`files` leaves out every `*.test.*` and `*.spec.*`, and the chapter that describes the self rules, [Testing](../03-testing.md#who-a-rule-is-for), since describing one names it. Two meta-tests hold the split: one reads this checkout, and the other reads what npm would publish, judging its content — every entry it loads, every rule a packed profile states, the bin it runs, and every file's text — never its file names.
+`files` leaves out every `*.test.*` and `*.spec.*`, and the chapter that describes the self rules, [Testing](../03-testing.md#who-a-rule-is-for), since describing one names it. Two meta-tests hold the split: one reads this checkout, and the other reads what npm would publish, judging its content — every entry it loads, every module it holds, each imported in a child of its own, every rule a packed profile states, the bin it runs, and every file's text — never its file names.
 
 ## Consequences
 
