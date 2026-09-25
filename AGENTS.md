@@ -65,7 +65,7 @@ src/cli/unsafe-fixers.js      # The rules `fix` must not let oxlint rewrite, as 
 src/cli/workspace-members.js  # Lists the consumer's workspace members — the unit each per-package gate measures from
 
 lint/                         # The lint manifest — every rule of every loaded plugin decided by name
-├── _contract.js              # fragment() / on() / off() / unsafeFix() — refuses an unreasoned decision, at load time
+├── _contract.js              # fragment() / on() / off() / unsafeFix() — builders; _contract.test.ts audits the invariants
 ├── compile.js                # fragment -> the plain oxlint config object; `merge()` is the exported compose()
 ├── profiles.js               # Which fragments each of the six profiles carries, and its ignore patterns
 ├── catalog.js                # The catalogue, rendered into the chapter's table and its fixer list

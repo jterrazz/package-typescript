@@ -26,7 +26,7 @@ export default defineConfig(node);
 | `evidence`   | A measured false-positive rate on real estate code, cited           | the measurement                            |
 | `covered`    | TypeScript, or a stronger rule that is on, already names the defect | the named rule                             |
 
-`lint/_contract.js` refuses a fragment that breaks either invariant at load time, so a rulebook with an unreasoned `off` cannot be imported at all.
+This package's own suite refuses a fragment that breaks either invariant, so no profile ships an unreasoned `off` ([Testing](03-testing.md#who-a-rule-is-for)).
 
 ## The profiles
 

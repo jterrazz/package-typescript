@@ -16,7 +16,7 @@ The code the package ships sits under `src/`, the one spine folder that holds pr
 
 ## The rulebook layer
 
-`lint/` is a manifest, not a config: one fragment per plugin, stating a decision per rule, and `lint/_contract.js` refusing at load time a fragment that breaks either invariant — a level is `error` or `off`, and an `off` carries one of five recorded reasons.
+`lint/` is a manifest, not a config: one fragment per plugin, stating a decision per rule, and this package's own suite refusing a fragment that breaks either invariant — a level is `error` or `off`, and an `off` carries one of five recorded reasons ([Testing](03-testing.md#who-a-rule-is-for)).
 
 Three steps and nothing between them. `lint/profiles.js` says which fragments each profile carries; `lint/compile.js` turns a fragment into the plain oxlint config object oxlint itself reads, and merges those objects; `src/presets/oxlint/profiles/<name>.js` is that table compiled, and it is what a consumer's `extends` names. The rule decisions are [Lint presets](07-lint-presets.md)'s, catalogued there from the same manifest.
 

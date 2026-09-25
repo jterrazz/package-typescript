@@ -17,7 +17,9 @@
  *     });
  *
  * Two invariants the whole package rests on: a decision is `error` or `off`,
- * never `warn`; and an `off` carries exactly one recorded reason.
+ * never `warn`; and an `off` carries exactly one recorded reason. They judge
+ * this package's own fragments alone, so they are `self` rules: the builders
+ * here enforce nothing, and `_contract.test.ts` audits every fragment.
  */
 
 /**
@@ -51,7 +53,7 @@ export const SINCE = '10.0.0';
  */
 export const AUDIENCES = Object.freeze(['consumer', 'self']);
 
-/** The five reasons an `off` may carry. Anything else is refused at load time. */
+/** The five reasons an `off` may carry, and no other. */
 export const REASON_KINDS = Object.freeze([
     /** Fights oxfmt — proved by the fixpoint suite. */
     'formatter',
@@ -87,7 +89,6 @@ export function allOn(rules) {
  * the decision. "Too strict" is not a reason.
  */
 export function off(reason, since) {
-    assertReason(reason);
     return Object.freeze({ level: 'off', reason: Object.freeze({ ...reason }), since });
 }
 
@@ -97,11 +98,11 @@ export function off(reason, since) {
  * marked here have each been measured turning working code into code that
  * does not compile, or into code that claims something else
  * ([Lint presets](../docs/07-lint-presets.md)).
+ *
+ * @param {{ level: 'error' | 'off', options?: unknown, typeAware?: boolean }} decision The rule's decision.
+ * @param {string} why What the rewrite changes — measured, one clause.
  */
 export function unsafeFix(decision, why) {
-    if (typeof why !== 'string' || why.length === 0) {
-        throw new TypeError('An unsafe fixer must say what its rewrite changes.');
-    }
     return Object.freeze({ ...decision, fixer: 'unsafe', fixerReason: why });
 }
 
@@ -136,14 +137,10 @@ export function fragment(definition) {
         since = SINCE,
     } = definition;
 
-    if (typeof id !== 'string' || id.length === 0) {
-        throw new TypeError('A fragment needs an id.');
-    }
-
     /** @type {Record<string, Decision>} */
     const decisions = {};
     for (const [rule, decision] of Object.entries(rules)) {
-        decisions[rule] = normalise(id, rule, decision, since);
+        decisions[rule] = normalise(rule, decision, since);
     }
 
     return Object.freeze({
@@ -192,34 +189,12 @@ export function scoped({ files, rules, since = SINCE }) {
     /** @type {Record<string, Decision>} */
     const decisions = {};
     for (const [rule, decision] of Object.entries(rules)) {
-        decisions[rule] = normalise(files.join(','), rule, decision, since);
+        decisions[rule] = normalise(rule, decision, since);
     }
     return Object.freeze({ decisions: Object.freeze(decisions), files: Object.freeze([...files]) });
 }
 
-function assertReason(reason) {
-    if (!reason || typeof reason !== 'object') {
-        throw new TypeError('An off decision needs a reason.');
-    }
-    if (!REASON_KINDS.includes(reason.kind)) {
-        throw new TypeError(`Unknown reason kind "${reason.kind}".`);
-    }
-    if (typeof reason.by !== 'string' || reason.by.length === 0) {
-        throw new TypeError(`A "${reason.kind}" reason must name what carries it.`);
-    }
-}
-
-function normalise(owner, rule, decision, since) {
-    if (!decision || typeof decision !== 'object' || typeof decision.level !== 'string') {
-        throw new TypeError(
-            `${owner}: "${rule}" is not a decision — use on(), typeAware() or off().`,
-        );
-    }
-    if (decision.level !== 'error' && decision.level !== 'off') {
-        throw new TypeError(`${owner}: "${rule}" is "${decision.level}" — a rule is error or off.`);
-    }
-    if (decision.level === 'off') {
-        assertReason(decision.reason);
-    }
+/** A decision, named by its rule and dated by its fragment unless it carries its own `since`. */
+function normalise(rule, decision, since) {
     return Object.freeze({ ...decision, rule, since: decision.since ?? since });
 }
