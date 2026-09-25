@@ -291,15 +291,12 @@ while [[ $# -gt 0 ]]; do
 done
 
 # ── Which passes run ─────────────────────────────────────────────────────────
-# Every pass. Where `check-selection.sh` sits beside this script — this
-# repository's checkout, never the published package — it redefines
-# `selected` to answer the internal selector its specs run under.
-selected() {
-    return 0
-}
-if [ -f "$SCRIPT_DIR/check-selection.sh" ]; then
-    # shellcheck source=check-selection.sh
-    . "$SCRIPT_DIR/check-selection.sh"
+# Every pass, unless the shell defined `selected` before this script's first
+# line, from the file bash's own `BASH_ENV` names.
+if ! declare -F selected >/dev/null; then
+    selected() {
+        return 0
+    }
 fi
 
 # ── What oxlint is handed ────────────────────────────────────────────────────

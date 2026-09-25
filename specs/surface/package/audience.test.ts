@@ -1,5 +1,6 @@
-import { readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { basename, join, relative, resolve } from 'node:path';
 import { expect, test } from 'vitest';
 
 import { AUDIENCES } from '../../../lint/_contract.js';
@@ -8,45 +9,69 @@ import { PROFILES } from '../../../lint/profiles.js';
 import { lintFragments } from './lint-fragments.js';
 
 /*
- * Every rule this package holds declares who it is for: `consumer`, meaningful
- * in any project that uses the package, or `self`, this package's own suite
- * discipline. A rulebook fragment declares it for every decision it holds; a
- * pass of `typescript check` declares it in `src/cli/check-passes.json`.
+ * The audience-audit rule: every rule this package holds declares its
+ * audience — `consumer`, meaningful in any project that uses the package, or
+ * `self`, this package's own suite discipline. A rulebook fragment declares it
+ * for every decision it holds; every other rule is a row of the manifest
+ * beside this file, `rules.json`, by channel: a pass of `typescript check`, a
+ * refusal a shipped module throws or exits with, and a meta-test. A `self` row
+ * names the home that holds it — a path the package leaves out — and the
+ * names the tarball audit greps for.
  */
 
 const ROOT = resolve(import.meta.dirname, '../../..');
+
+/** The channels a manifest row may sit on. */
+const CHANNELS = ['checker', 'meta', 'runtime'];
 
 /** Whether a value is an object whose keys can be read. */
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
 }
 
-/** The fragments the package declares, wherever a module of `lint/` or `src/` holds them. */
-const declared = await lintFragments(ROOT);
-const fragments = declared.map(({ fragment, path }) => ({
-    audience: fragment.audience,
-    path,
-}));
+/** A field of a manifest row, as text: empty when the row holds none. */
+function text(row: Record<string, unknown>, key: string): string {
+    const value = row[key];
+    return typeof value === 'string' ? value : '';
+}
 
-/** The registry of `typescript check`'s passes, one row per pass. */
-const registry: unknown = JSON.parse(readFileSync(join(ROOT, 'src/cli/check-passes.json'), 'utf8'));
-const passes = (Array.isArray(registry) ? registry : []).map((row: unknown) => ({
-    audience: isRecord(row) ? row.audience : undefined,
-    pass: isRecord(row) && typeof row.pass === 'string' ? row.pass : '',
-}));
+/** The fragments the package declares, wherever a module holds them. */
+const declared = await lintFragments(ROOT);
+
+/** The manifest, one row per rule no module declares for itself. */
+const parsed: unknown = JSON.parse(
+    readFileSync(join(ROOT, 'specs/surface/package/rules.json'), 'utf8'),
+);
+const rows = (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
+
+/** The rows of one channel and one audience. */
+function rowsOf(channel: string, audience: string): Record<string, unknown>[] {
+    return rows.filter((row) => row.channel === channel && row.audience === audience);
+}
 
 /** Two names in their alphabetical order. */
-function byName(left: string | undefined, right: string | undefined): number {
-    return (left ?? '').localeCompare(right ?? '');
+function byName(left: string, right: string): number {
+    return left.localeCompare(right);
+}
+
+/** Every module the package would ship, as a path from the root: tests left out. */
+function shippedModules(directory: string): string[] {
+    return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+        const path = join(directory, entry.name);
+        if (entry.isDirectory()) {
+            return shippedModules(path);
+        }
+        return /\.[cm]?js$/u.test(entry.name) ? [relative(ROOT, path)] : [];
+    });
 }
 
 test('every fragment of the rulebook declares its audience', () => {
     // Given - every fragment a module of lint/ or src/ holds, whether a profile carries it or not
-    expect(fragments.length).toBeGreaterThan(15);
+    expect(declared.length).toBeGreaterThan(15);
 
     // Then - each one names an audience of the closed pair
-    for (const { audience, path } of fragments) {
-        expect.soft(AUDIENCES, `${path} declares no audience`).toContain(audience);
+    for (const { fragment, path } of declared) {
+        expect.soft(AUDIENCES, `${path} declares no audience`).toContain(fragment.audience);
     }
 });
 
@@ -68,23 +93,85 @@ test('every catalogue entry carries the audience its fragment declared', () => {
     }
 });
 
-test('every pass of the check declares its audience', () => {
-    // Given - the registry of the check's passes
-    // Then - each row names an audience of the closed pair
-    for (const { audience, pass } of passes) {
-        expect.soft(AUDIENCES, `${pass} declares no audience`).toContain(audience);
+test('every row of the manifest declares its audience, on a channel of its own', () => {
+    // Given - every rule the manifest holds
+    expect(rows.length).toBeGreaterThan(20);
+    const ids = rows.map((row) => text(row, 'id'));
+
+    // Then - each names an audience of the pair and a channel, under an id no other row takes
+    for (const row of rows) {
+        expect.soft(AUDIENCES, `${text(row, 'id')} declares no audience`).toContain(row.audience);
+        expect.soft(CHANNELS, `${text(row, 'id')} sits on no channel`).toContain(row.channel);
+    }
+    expect(ids.filter((id, index) => id === '' || ids.indexOf(id) !== index)).toStrictEqual([]);
+});
+
+test('the consumer passes are exactly the passes the check selects by name', () => {
+    // Given - every pass the check script asks about
+    const script = readFileSync(join(ROOT, 'bin/commands/check.sh'), 'utf8');
+    const selected = new Set(
+        [...script.matchAll(/\bselected (?<pass>[a-z]+)/gu)].map(
+            (match) => match.groups?.pass ?? '',
+        ),
+    );
+
+    // Then - the manifest's consumer checker rows name each one, and nothing else
+    expect(
+        rowsOf('checker', 'consumer')
+            .map((row) => text(row, 'id'))
+            .toSorted(byName),
+    ).toStrictEqual([...selected].toSorted(byName));
+});
+
+test('every refusal a shipped module throws is a consumer row, and every row is still there', () => {
+    // Given - every module of lint/ and src/, and the runtime rows of the manifest
+    const modules = [...shippedModules(join(ROOT, 'lint')), ...shippedModules(join(ROOT, 'src'))];
+    const runtime = rows.filter((row) => row.channel === 'runtime');
+
+    // Then - a module throws as many refusals as its rows declare, each consumer, each still worded so
+    for (const module of modules) {
+        const source = readFileSync(join(ROOT, module), 'utf8');
+        const thrown = source.match(/\bthrow new \w+\(/gu)?.length ?? 0;
+        const declaredThrows = runtime.filter((row) => row.module === module && row.by === 'throw');
+        expect
+            .soft(declaredThrows.length, `${module} throws a refusal no row declares`)
+            .toBe(thrown);
+    }
+    for (const row of runtime) {
+        const module = text(row, 'module');
+        expect.soft(row.audience, `${text(row, 'id')} ships, so it is consumer`).toBe('consumer');
+        expect
+            .soft(
+                existsSync(join(ROOT, module)) && readFileSync(join(ROOT, module), 'utf8'),
+                `${text(row, 'id')} is no longer worded so in ${module}`,
+            )
+            .toContain(text(row, 'message'));
     }
 });
 
-test('the registry holds exactly the passes the check selects by name', () => {
-    // Given - every pass the check script asks the selector about
-    const script = readFileSync(join(ROOT, 'bin/commands/check.sh'), 'utf8');
-    const selected = new Set(
-        [...script.matchAll(/\bselected (?<pass>[a-z]+)/gu)].map((match) => match.groups?.pass),
-    );
+test('every self row names the home that holds it, which the package leaves out', () => {
+    // Given - every path npm would publish, and the self rows of the manifest
+    const run = spawnSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], {
+        cwd: ROOT,
+        encoding: 'utf8',
+    });
+    const packed = run.stdout;
+    const self = rows.filter((row) => row.audience === 'self');
+    expect(self.length).toBeGreaterThan(0);
 
-    // Then - the registry names each one, and nothing else
-    expect(passes.map(({ pass }) => pass).toSorted(byName)).toStrictEqual(
-        [...selected].toSorted(byName),
-    );
+    // Then - each home exists here, ships nowhere, and holds every name the row greps for
+    for (const row of self) {
+        const home = text(row, 'home');
+        const names: unknown[] = Array.isArray(row.names) ? row.names : [];
+        const source = existsSync(join(ROOT, home)) ? readFileSync(join(ROOT, home), 'utf8') : '';
+        expect.soft(source, `${text(row, 'id')} has no home`).not.toBe('');
+        expect.soft(packed, `${text(row, 'id')} ships its home`).not.toContain(`"${home}"`);
+        expect.soft(text(row, 'why'), `${text(row, 'id')} says not why it stays home`).not.toBe('');
+        expect
+            .soft(names.length, `${text(row, 'id')} names nothing to grep for`)
+            .toBeGreaterThan(0);
+        for (const name of names) {
+            expect.soft(source, `${basename(home)} holds no "${String(name)}"`).toContain(name);
+        }
+    }
 });

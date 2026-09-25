@@ -6,9 +6,9 @@ import { fragment, off, on, REASON_KINDS, typeAware, unsafeFix } from './_contra
 import { compile } from './compile.js';
 
 /*
- * The two invariants every fragment of the rulebook rests on: a decision is
- * `error` or `off` and never `warn`, and an `off` carries exactly one of the
- * five recorded reasons. They judge this package's own fragments alone —
+ * The contract-audit rule: the two invariants every fragment of the rulebook
+ * rests on — a decision is `error` or `off` and never `warn`, and an `off`
+ * carries exactly one of the five recorded reasons. They judge this package's own fragments alone —
  * `fragment()` is not exported — so they are `self` rules: the contract ships
  * without them, and this suite audits every fragment a module of `lint/` or
  * `src/` exports, by default or by name, whether a profile carries it or not.

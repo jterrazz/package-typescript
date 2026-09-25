@@ -19,7 +19,8 @@ import { PROFILES } from './profiles.js';
  * it. It is the one place the rulebook is readable as a list: `fix` reads its
  * unsafe fixers, and the GENERATED sections of
  * [Lint presets](../docs/07-lint-presets.md) are its projection, rendered and
- * held fresh by `lint/catalog.test.ts` — a `self` rule, which ships nowhere.
+ * held fresh by this package's own suite — a `self` rule, which ships nowhere
+ * ([Testing](../docs/03-testing.md)).
  *
  * Composition is last-wins per rule, so the catalogue resolves each profile
  * first and groups after: `import/extensions` is `always` under node and

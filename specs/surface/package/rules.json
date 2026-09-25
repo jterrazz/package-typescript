@@ -1,0 +1,164 @@
+[
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "typescript"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "oxlint"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "oxfmt"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "gitignore"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "knip"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "conventions"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "docs"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "publish"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "architecture"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "astro"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "suppressions"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "markdown"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "names"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "secrets"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
+        "id": "drift"
+    },
+    {
+        "audience": "self",
+        "channel": "checker",
+        "home": "specs/cli/check-selection.sh",
+        "id": "pass-selector",
+        "names": ["TYPESCRIPT_CHECK_PASSES", "names no pass"],
+        "why": "runs only the passes a spec asserts on; no consumer project needs a partial check"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
+        "id": "layer-map-id",
+        "message": "A layer map needs an id.",
+        "module": "lint/architecture/layers.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
+        "id": "layer-map-disjoint",
+        "message": "an override replaces, so one map entry would erase the other",
+        "module": "lint/architecture/layers.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
+        "id": "empty-sweep",
+        "message": "nothing to read under",
+        "module": "src/cli/project-files.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "drift-unreasoned",
+        "message": "carries no '// reason:'",
+        "module": "src/cli/check-drift.js"
+    },
+    {
+        "audience": "self",
+        "channel": "meta",
+        "home": "lint/_contract.test.ts",
+        "id": "contract-audit",
+        "names": [
+            "is off with no reason",
+            "is off for a reason of no known kind",
+            "has a reason that names nothing",
+            "a rule is error or off",
+            "marks an unsafe fixer without saying what it changes",
+            "a fragment needs an id"
+        ],
+        "why": "judges this package's own fragments; fragment() is not exported"
+    },
+    {
+        "audience": "self",
+        "channel": "meta",
+        "home": "lint/catalog.test.ts",
+        "id": "catalogue-projection",
+        "names": ["renderFixers", "FIXER_MARKERS"],
+        "why": "renders and holds fresh this repository's own chapter"
+    },
+    {
+        "audience": "self",
+        "channel": "meta",
+        "home": "specs/surface/package/audience.test.ts",
+        "id": "audience-audit",
+        "names": ["every self row names the home that holds it"],
+        "why": "reads this package's own manifest"
+    },
+    {
+        "audience": "self",
+        "channel": "meta",
+        "home": "specs/surface/package/tarball.test.ts",
+        "id": "tarball-audit",
+        "names": ["no text the tarball holds names a self rule"],
+        "why": "reads what this package would publish"
+    },
+    {
+        "audience": "self",
+        "channel": "meta",
+        "home": "specs/surface/package/lint-fragments.ts",
+        "id": "fragment-walk",
+        "names": ["lintFragments"],
+        "why": "the walk the audits above share"
+    }
+]

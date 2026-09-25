@@ -58,13 +58,13 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 
 ## The chapter to read next
 
-| Question                                                                   | Chapter                     |
-| -------------------------------------------------------------------------- | --------------------------- |
-| the layers, the exports map, the two compilers                             | `docs/01-architecture.md`   |
-| wiring a project, `.artifacts/`, a bump                                    | `docs/02-developing.md`     |
-| how this toolchain proves itself, and the rules it keeps for its own suite | `docs/03-testing.md`        |
-| which number moves on a release                                            | `docs/04-operating.md`      |
-| `build`, `bundle`, `start`, `dev`                                          | `docs/05-building.md`       |
-| a failing pass, a rule id, the ratchet                                     | `docs/06-quality-checks.md` |
-| a lint rule, a profile, `compose()`, knip                                  | `docs/07-lint-presets.md`   |
-| what a repository root holds                                               | `docs/08-repo-structure.md` |
+| Question                                                                                                                         | Chapter                     |
+| -------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| the layers, the exports map, the two compilers                                                                                   | `docs/01-architecture.md`   |
+| wiring a project, `.artifacts/`, a bump                                                                                          | `docs/02-developing.md`     |
+| how this toolchain proves itself, and the rules it keeps for its own suite — this repository alone, the install ships without it | `docs/03-testing.md`        |
+| which number moves on a release                                                                                                  | `docs/04-operating.md`      |
+| `build`, `bundle`, `start`, `dev`                                                                                                | `docs/05-building.md`       |
+| a failing pass, a rule id, the ratchet                                                                                           | `docs/06-quality-checks.md` |
+| a lint rule, a profile, `compose()`, knip                                                                                        | `docs/07-lint-presets.md`   |
+| what a repository root holds                                                                                                     | `docs/08-repo-structure.md` |

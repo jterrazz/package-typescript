@@ -17,8 +17,7 @@
         "src",
         "!**/*.test.*",
         "!**/*.spec.*",
-        "!bin/commands/check-selection.sh",
-        "!src/cli/check-passes.json"
+        "!docs/03-testing.md"
     ],
     "type": "module",
     "main": "src/index.js",

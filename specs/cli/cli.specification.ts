@@ -2,6 +2,8 @@ import { specification } from '@jterrazz/test';
 import { resolve } from 'node:path';
 import { afterAll } from 'vitest';
 
+import { SELECTION } from './check-passes.js';
+
 // The ONE real runner: every spec goes through the product command
 // (`typescript build|bundle|dev|start|docs-layout|doctor|baseline|tsc|check|fix|clean`),
 // never a tool underneath it.
@@ -25,7 +27,13 @@ function withoutSlowPluginAdvisory(text: string): string {
     return remaining.trim() === '' ? '' : remaining;
 }
 
+/*
+ * Every run may name its passes: the three `passes-*` documents state
+ * `TYPESCRIPT_CHECK_PASSES` in their `env:`, and the selector that reads it is
+ * sourced through `BASH_ENV`.
+ */
 export const { cli, cleanup } = await specification.cli(BIN, {
+    defaults: { BASH_ENV: SELECTION },
     transform: withoutSlowPluginAdvisory,
 });
 

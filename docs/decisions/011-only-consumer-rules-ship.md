@@ -13,15 +13,15 @@ The owner decided on 2026-09-24 that every rule a package of the family ships de
 
 ## Decision
 
-Every rule declares `consumer` or `self`, from the closed pair `AUDIENCES` in `lint/_contract.js`. A fragment declares it for every decision it holds, and a pass declares it in `src/cli/check-passes.json`.
+Every rule declares `consumer` or `self`, from the closed pair `AUDIENCES` in `lint/_contract.js`. A fragment declares it for every decision it holds; every other rule — a pass of the check, a refusal a shipped module throws, a meta-test — is a row of one manifest the package does not ship, and a `self` row names the home that holds it.
 
-A rule mixing the two is split. The contract's builders ship and enforce nothing, and its two invariants are audited by `lint/_contract.test.ts` over every fragment a module of `lint/` or `src/` exports, by default or by name, whether a profile carries it or not. This supersedes the "at load time" clause of [ADR-003](003-the-rulebook-is-explicit.md). The one refusal a consumer can reach, a fragment with no id, which `layers()` builds from the `id` it is given, keeps its consumer half in `layers()`. `catalog()` and `unsafeFixers()` ship, since `fix` reads them, and the chapter's renderer lives in `lint/catalog.test.ts`.
+A rule mixing the two is split. The contract's builders ship and enforce nothing, and its two invariants are audited by this package's own suite over every fragment a module of `lint/` or `src/` exports, whether a profile carries it or not. This supersedes the "at load time" clause of [ADR-003](003-the-rulebook-is-explicit.md). The one refusal a consumer can reach, a fragment with no id, which `layers()` builds from the `id` it is given, keeps its consumer half in `layers()`. `catalog()` and `unsafeFixers()` ship, since `fix` reads them, and the chapter's renderer lives in the suite.
 
-`files` leaves out every `*.test.*` and `*.spec.*`. `specs/surface/package/audience.test.ts` and `tarball.test.ts` hold the split.
+`files` leaves out every `*.test.*` and `*.spec.*`, and the chapter that describes the self rules, [Testing](../03-testing.md#who-a-rule-is-for), since describing one names it. Two meta-tests hold the split: one reads this checkout, and the other reads what npm would publish, judging its content — every entry it loads, every rule a packed profile states, the bin it runs, and every file's text — never its file names.
 
 ## Consequences
 
 - A broken fragment fails this repository's suite, the gate a release passes, instead of every import of a profile.
 - The catalogue in [Lint presets](../07-lint-presets.md) lists consumer rules alone; the self rules are described in [Testing](../03-testing.md#who-a-rule-is-for).
-- The internal `TYPESCRIPT_CHECK_PASSES` selector is a `self` rule split out of the shipped `bin/commands/check.sh`: it lives in `bin/commands/check-selection.sh`, which the check sources only where it sits beside it, and `files` leaves it and `src/cli/check-passes.json` out of the package. A published check runs every pass.
+- The internal pass selector is a `self` rule split out of the shipped `bin/commands/check.sh`, which holds no copy of it and runs every pass unless bash has already defined the selection before its first line. The selector lives under `specs/`, and the specs hand it to bash through `BASH_ENV`.
 - ADR-003 stays `Accepted` and still says a broken fragment is refused at load time. Once this record is accepted, ADR-003 carries a line under its status: superseded in part by ADR-011.

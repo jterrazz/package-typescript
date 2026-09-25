@@ -5,9 +5,9 @@ import { expect, test } from 'vitest';
 import { catalog, unsafeFixers } from './catalog.js';
 
 /*
- * The chapter's projection of the catalogue is this package's own discipline —
- * a `self` rule — so its renderer lives here, beside the check, and ships
- * nowhere. The catalogue has one reader and one source: `docs/07-lint-presets.md`
+ * The catalogue-projection rule: the chapter's projection of the catalogue is
+ * this package's own discipline — a `self` rule — so its renderer lives here,
+ * beside the check, and ships nowhere. The catalogue has one reader and one source: `docs/07-lint-presets.md`
  * carries the reason and the version behind every decision, and the list of
  * fixers `fix` refuses. Both are tables between two markers, both are
  * PROJECTIONS of `lint/`, and this suite fails either one that has drifted.

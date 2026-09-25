@@ -22,7 +22,7 @@ Three steps and nothing between them. `lint/profiles.js` says which fragments ea
 
 ## No build step
 
-This package ships JavaScript directly: what is committed is what is published (`files` names `bin`, `docs`, `lint`, `src`), save the tests beside the modules, which are this package's own and ship nowhere. `npm run build` is a comment, and the `src/*.d.ts` files are hand-written beside their `.js`.
+This package ships JavaScript directly: what is committed is what is published (`files` names `bin`, `docs`, `lint`, `src`), save the tests beside the modules and [Testing](03-testing.md), the chapter of how this package proves itself, which are its own and ship nowhere. `npm run build` is a comment, and the `src/*.d.ts` files are hand-written beside their `.js`.
 
 That is a deliberate exception to what the toolchain asks of everyone else, and it buys two things. A toolchain that had to build itself would need a second toolchain to do it; and a consumer reading `src/cli/check-gitignore.js` in its own `node_modules` reads the source, not a bundle.
 

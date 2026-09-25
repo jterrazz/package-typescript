@@ -3,12 +3,12 @@ import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 /*
- * Every fragment a package tree declares, whether a profile carries it or
- * not — each one a module of `lint/` or `src/` holds anywhere in what it
- * exports, by default or by name, in a `.js`, `.mjs` or `.cjs` module.
- * `src/cli/` holds the executables `bin/` runs, which act when imported, so
- * the walk leaves it out. The tree is this checkout's or a packed one, named
- * by its package root.
+ * The fragment-walk rule: every fragment a package tree declares, whether a
+ * profile carries it or not — each one a module of `lint/` or `src/` holds
+ * anywhere in what it exports, by default or by name, in a `.js`, `.mjs` or
+ * `.cjs` module. `src/cli/` holds the executables `bin/` runs, which act when
+ * imported, so the walk leaves it to the tarball's text audit. The tree is
+ * this checkout's or a packed one, named by its package root.
  */
 
 /** A fragment a module exports, and where: its module's path from the package root, then the export's. */
