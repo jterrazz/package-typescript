@@ -10,8 +10,8 @@ import { compile } from './compile.js';
  * `error` or `off` and never `warn`, and an `off` carries exactly one of the
  * five recorded reasons. They judge this package's own fragments alone —
  * `fragment()` is not exported — so they are `self` rules: the contract ships
- * without them, and this suite audits every fragment a module of `lint/`
- * exports by default, whether a profile carries it or not.
+ * without them, and this suite audits every fragment a module of `lint/` or
+ * `src/` exports, by default or by name, whether a profile carries it or not.
  */
 
 const REASON = { by: 'oxfmt sortImports', kind: 'covered' } as const;
@@ -83,7 +83,7 @@ function problemsOf(one: Loose): string[] {
 }
 
 test('every fragment lint/ declares keeps both invariants', async () => {
-    // Given - every fragment a module of lint/ exports by default, profile or not
+    // Given - every fragment a module of lint/ or src/ exports, profile or not
     const declared = await lintFragments(resolve(import.meta.dirname, '..'));
     expect(declared.length).toBeGreaterThan(15);
 

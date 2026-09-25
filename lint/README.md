@@ -14,10 +14,10 @@ One nature lives here: a DECISION about a lint rule. Never a config object, neve
 | `sorted.js`                                                                        | perfectionist: only what oxfmt does not sort                                                                                                                    |
 | `architecture/`                                                                    | `layers.js` turns a declared layer map into `no-restricted-imports` overrides; `hexagonal.js` is the map this package ships                                     |
 
-The builders enforce nothing: the invariants judge this package's fragments alone, so they are `self` rules, and `_contract.test.ts` audits every fragment a profile ships.
+The builders enforce nothing: the invariants judge this package's fragments alone, so they are `self` rules, and `_contract.test.ts` audits every fragment a module of `lint/` or `src/` exports, whether a profile carries it or not.
 
 ## What proves it
 
-- `_contract.test.ts` — the invariants, audited over every fragment a module of `lint/` exports by default, profile or not, and the compile of a fragment.
+- `_contract.test.ts` — the invariants, audited over every fragment a module of `lint/` or `src/` exports, by default or by name, profile or not, and the compile of a fragment.
 - `catalog.test.ts` — renders the chapter's projection of the manifest, and fails a chapter that has drifted from it.
 - `specs/cli/preset/` — the resolved rule set, the plugin coverage, the fixpoint against the formatter, the behaviour of each decision, and the exclusive pairs.

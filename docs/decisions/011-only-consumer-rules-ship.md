@@ -15,7 +15,7 @@ The owner decided on 2026-09-24 that every rule a package of the family ships de
 
 Every rule declares `consumer` or `self`, from the closed pair `AUDIENCES` in `lint/_contract.js`. A fragment declares it for every decision it holds, and a pass declares it in `src/cli/check-passes.json`.
 
-A rule mixing the two is split. The contract's builders ship and enforce nothing, and its two invariants are audited by `lint/_contract.test.ts` over every fragment a module of `lint/` exports by default, whether a profile carries it or not. This supersedes the "at load time" clause of [ADR-003](003-the-rulebook-is-explicit.md). The one refusal a consumer can reach, a fragment with no id, which `layers()` builds from the `id` it is given, keeps its consumer half in `layers()`. `catalog()` and `unsafeFixers()` ship, since `fix` reads them, and the chapter's renderer lives in `lint/catalog.test.ts`.
+A rule mixing the two is split. The contract's builders ship and enforce nothing, and its two invariants are audited by `lint/_contract.test.ts` over every fragment a module of `lint/` or `src/` exports, by default or by name, whether a profile carries it or not. This supersedes the "at load time" clause of [ADR-003](003-the-rulebook-is-explicit.md). The one refusal a consumer can reach, a fragment with no id, which `layers()` builds from the `id` it is given, keeps its consumer half in `layers()`. `catalog()` and `unsafeFixers()` ship, since `fix` reads them, and the chapter's renderer lives in `lint/catalog.test.ts`.
 
 `files` leaves out every `*.test.*` and `*.spec.*`. `specs/surface/package/audience.test.ts` and `tarball.test.ts` hold the split.
 

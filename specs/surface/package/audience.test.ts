@@ -21,7 +21,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
 }
 
-/** The fragments `lint/` declares — every module's default export that holds decisions. */
+/** The fragments the package declares, wherever a module of `lint/` or `src/` holds them. */
 const declared = await lintFragments(ROOT);
 const fragments = declared.map(({ fragment, path }) => ({
     audience: fragment.audience,
@@ -41,7 +41,7 @@ function byName(left: string | undefined, right: string | undefined): number {
 }
 
 test('every fragment of the rulebook declares its audience', () => {
-    // Given - every fragment lint/ declares, whether a profile carries it or not
+    // Given - every fragment a module of lint/ or src/ holds, whether a profile carries it or not
     expect(fragments.length).toBeGreaterThan(15);
 
     // Then - each one names an audience of the closed pair

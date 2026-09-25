@@ -146,8 +146,8 @@ test('the check the tarball ships runs every pass, with no selector of its own',
     expect(script).not.toContain('TYPESCRIPT_CHECK_PASSES');
 });
 
-test('every fragment the packed lint/ holds is consumer, whether a profile carries it or not', async () => {
-    // Given - every fragment a module of the packed lint/ exports by default
+test('every fragment the packed tree holds is consumer, whether a profile carries it or not', async () => {
+    // Given - every fragment a module of the packed lint/ or src/ exports, by default or by name
     const fragments = await lintFragments(packedTree());
 
     // Then - none of them is the package's own discipline
