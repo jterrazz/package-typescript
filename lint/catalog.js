@@ -16,27 +16,16 @@ import { PROFILES } from './profiles.js';
 
 /*
  * The catalogue: every decision of every profile, with the profiles that carry
- * it. It is the one place the rulebook is readable as a list, and the GENERATED
- * section of [Lint presets](../docs/07-lint-presets.md) is its projection —
- * `lint/catalog.test.ts` fails a chapter that has drifted from it.
+ * it. It is the one place the rulebook is readable as a list: `fix` reads its
+ * unsafe fixers, and the GENERATED sections of
+ * [Lint presets](../docs/07-lint-presets.md) are its projection, rendered and
+ * held fresh by `lint/catalog.test.ts` — a `self` rule, which ships nowhere.
  *
  * Composition is last-wins per rule, so the catalogue resolves each profile
  * first and groups after: `import/extensions` is `always` under node and
  * `never` under the bundler profiles, and a reader is owed both lines, each
  * naming only the profiles it is true for.
  */
-
-/** The fence that bounds the generated section of the chapter. */
-export const MARKERS = Object.freeze({
-    end: '<!-- /GENERATED -->',
-    start: '<!-- GENERATED -->',
-});
-
-/** The fence that bounds the list of fixers `fix` refuses to run. */
-export const FIXER_MARKERS = Object.freeze({
-    end: '<!-- /GENERATED:fixers -->',
-    start: '<!-- GENERATED:fixers -->',
-});
 
 /** Every decision, in rule order, one entry per distinct decision. */
 export function catalog() {
@@ -60,26 +49,6 @@ export function catalog() {
         (left, right) =>
             left.rule.localeCompare(right.rule) || left.fragment.localeCompare(right.fragment),
     );
-}
-
-/** The catalogue as the markdown table the chapter carries between its markers: its consumer rules alone. */
-export function render() {
-    const rows = catalog()
-        .filter((entry) => entry.audience === 'consumer')
-        .map((entry) => {
-            const state = entry.level === 'off' ? 'off' : 'on';
-            const why =
-                entry.level === 'off'
-                    ? `${entry.reason.kind} — ${entry.reason.by}`
-                    : scopeOf(entry);
-            return `| \`${entry.rule}\` | ${entry.profiles.join(', ')} | ${state} | ${why} | ${entry.since} |`;
-        });
-
-    return [
-        '| Rule | Profiles | State | Reason | Since |',
-        '| --- | --- | --- | --- | --- |',
-        ...rows,
-    ].join('\n');
 }
 
 /** One profile's decisions, its fragments applied left to right, last wins per rule and scope. */
@@ -111,14 +80,6 @@ function absorb(decisions, fragment, entries, scoped) {
     }
 }
 
-/** What an `on` entry has to say for itself: where it applies, when that is not everywhere. */
-function scopeOf(entry) {
-    if (entry.scoped === undefined) {
-        return entry.typeAware === true ? 'type-aware' : '—';
-    }
-    return `scoped to ${entry.scoped.map((glob) => `\`${glob}\``).join(', ')}`;
-}
-
 /**
  * Every rule whose own fixer changes meaning, with what the rewrite does.
  * `check` reports them and a human answers them; `fix` runs with each one
@@ -139,11 +100,4 @@ export function unsafeFixers() {
     return [...seen.entries()]
         .map(([rule, why]) => ({ rule, why }))
         .toSorted((left, right) => left.rule.localeCompare(right.rule));
-}
-
-/** The same list as the markdown the chapter carries between its fixer markers. */
-export function renderFixers() {
-    return unsafeFixers()
-        .map(({ rule, why }) => `- \`${rule}\` — ${why}`)
-        .join('\n');
 }

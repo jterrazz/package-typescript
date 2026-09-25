@@ -68,7 +68,7 @@ lint/                         # The lint manifest — every rule of every loaded
 ├── _contract.js              # fragment() / on() / off() / unsafeFix() — builders; _contract.test.ts audits the invariants
 ├── compile.js                # fragment -> the plain oxlint config object; `merge()` is the exported compose()
 ├── profiles.js               # Which fragments each of the six profiles carries, and its ignore patterns
-├── catalog.js                # The catalogue, rendered into the chapter's table and its fixer list
+├── catalog.js                # The catalogue, and the unsafe fixers `fix` reads — catalog.test.ts renders the chapter's table
 ├── language/ · react.js · next.js · astro.js · a11y.js · bundler.js · vitest.js · sorted.js · react-native.js
 └── architecture/             # hexagonal.js (the map this package ships) and layers.js (the builder)
 
