@@ -428,6 +428,14 @@
     {
         "audience": "self",
         "channel": "meta",
+        "home": "specs/surface/package/builder-calls.test.ts",
+        "id": "builder-call-audit",
+        "names": ["unstatedAudiences"],
+        "why": "reads the text of every module this package would publish, for a fragment() call whose audience is not a literal"
+    },
+    {
+        "audience": "self",
+        "channel": "meta",
         "home": "specs/surface/package/lint-fragments.ts",
         "id": "fragment-walk",
         "names": ["lintFragments"],
