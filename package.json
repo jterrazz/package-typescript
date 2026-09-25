@@ -16,7 +16,9 @@
         "lint",
         "src",
         "!**/*.test.*",
-        "!**/*.spec.*"
+        "!**/*.spec.*",
+        "!bin/commands/check-selection.sh",
+        "!src/cli/check-passes.json"
     ],
     "type": "module",
     "main": "src/index.js",

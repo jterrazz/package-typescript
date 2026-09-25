@@ -291,32 +291,16 @@ while [[ $# -gt 0 ]]; do
 done
 
 # ── Which passes run ─────────────────────────────────────────────────────────
-# Every pass, unless TYPESCRIPT_CHECK_PASSES names some, comma-separated — an
-# internal selector, for the specs that assert on one pass. A pass left out
-# prints nothing and weighs nothing in the verdict. A pass another one reads
-# still runs, unreported: the linter's report under the member runs of the
-# conventions checker, and the Names report under the ratchet's held line.
-# The passes it may name are the rows of `src/cli/check-passes.json`, each
-# with the audience it serves, read only when a selection needs checking.
-SELECTED_PASSES="${TYPESCRIPT_CHECK_PASSES:-}"
-if [ -n "$SELECTED_PASSES" ]; then
-    read -r -a ALL_PASSES <<< "$(node -e 'const {readFileSync}=require("node:fs");process.stdout.write(JSON.parse(readFileSync(process.argv[1],"utf8")).map((row)=>row.pass).join(" "))' "$PACKAGE_ROOT/src/cli/check-passes.json")"
-    IFS=',' read -r -a requested_passes <<< "$SELECTED_PASSES"
-    for requested_pass in "${requested_passes[@]}"; do
-        case " ${ALL_PASSES[*]} " in
-            *" $requested_pass "*) ;;
-            *)
-                printf 'TYPESCRIPT_CHECK_PASSES names no pass: %s — the passes are %s\n' \
-                    "$requested_pass" "$(IFS=','; printf '%s' "${ALL_PASSES[*]}")" >&2
-                exit 2
-                ;;
-        esac
-    done
-fi
-
+# Every pass. Where `check-selection.sh` sits beside this script — this
+# repository's checkout, never the published package — it redefines
+# `selected` to answer the internal selector its specs run under.
 selected() {
-    [ -z "$SELECTED_PASSES" ] || [[ ",$SELECTED_PASSES," == *",$1,"* ]]
+    return 0
 }
+if [ -f "$SCRIPT_DIR/check-selection.sh" ]; then
+    # shellcheck source=check-selection.sh
+    . "$SCRIPT_DIR/check-selection.sh"
+fi
 
 # ── What oxlint is handed ────────────────────────────────────────────────────
 # The project's files it parses — the list every tree gate judges, everything

@@ -23,4 +23,4 @@ A rule mixing the two is split. The contract's builders ship and enforce nothing
 
 - A broken fragment fails this repository's suite, the gate a release passes, instead of every import of a profile.
 - The catalogue in [Lint presets](../07-lint-presets.md) lists consumer rules alone; the self rules are described in [Testing](../03-testing.md#who-a-rule-is-for).
-- The internal `TYPESCRIPT_CHECK_PASSES` selector stays a `self` rule inside the shipped `bin/commands/check.sh`: the specs drive the published command, so it cannot move out without a second entry. It is left for the owner to decide whether it should become a consumer switch.
+- The internal `TYPESCRIPT_CHECK_PASSES` selector is a `self` rule split out of the shipped `bin/commands/check.sh`: it lives in `bin/commands/check-selection.sh`, which the check sources only where it sits beside it, and `files` leaves it and `src/cli/check-passes.json` out of the package. A published check runs every pass.

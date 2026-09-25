@@ -8,8 +8,9 @@ import { expect, onTestFinished, test } from 'vitest';
 /*
  * What npm would publish carries `consumer` rules alone: no test file — every
  * meta-test is a `self` rule — and, loaded from the packed tree itself, a
- * rulebook, a catalogue, a pass registry and every fragment under `lint/` that
- * answer to consumers only.
+ * rulebook, a catalogue, a check whose every pass the home registry declares
+ * `consumer`, and every fragment under `lint/`, all answering to consumers
+ * only. The check's internal selector and its registry stay home.
  */
 
 const ROOT = resolve(import.meta.dirname, '../../..');
@@ -105,8 +106,13 @@ test('the rulebook, the catalogue and the passes the tarball ships are consumer 
     const oxlint = await load(tree, 'src/oxlint.js');
     const catalogue = await load(tree, 'lint/catalog.js');
     const profiles = await load(tree, 'lint/profiles.js');
-    const passes: unknown = JSON.parse(
-        readFileSync(join(tree, 'src/cli/check-passes.json'), 'utf8'),
+    const script = readFileSync(join(tree, 'bin/commands/check.sh'), 'utf8');
+    const registry: unknown = JSON.parse(
+        readFileSync(join(ROOT, 'src/cli/check-passes.json'), 'utf8'),
+    );
+    const rows: unknown[] = Array.isArray(registry) ? registry : [];
+    const passes = [...script.matchAll(/\bselected (?<pass>[a-z]+)/gu)].map((match) =>
+        rows.find((row) => isRecord(row) && row.pass === match.groups?.pass),
     );
 
     // Then - the published entry loads, and every rule it reaches serves a consumer
@@ -133,6 +139,20 @@ test('the rulebook, the catalogue and the passes the tarball ships are consumer 
             new Set(['consumer']),
         );
     }
+});
+
+test('the check the tarball ships runs every pass, with no selector of its own', () => {
+    // Given - every path npm would publish, and the check script it would carry
+    const { paths } = pack('--dry-run');
+    const tree = packedTree();
+    const script = readFileSync(join(tree, 'bin/commands/check.sh'), 'utf8');
+
+    // Then - the internal selector, its refusal and its registry stay home
+    expect(paths).toContain('bin/commands/check.sh');
+    expect(
+        paths.filter((path) => /check-selection\.sh$|check-passes\.json$/u.test(path)),
+    ).toStrictEqual([]);
+    expect(script).not.toContain('TYPESCRIPT_CHECK_PASSES');
 });
 
 test('every fragment the packed lint/ holds is consumer, whether a profile carries it or not', async () => {
