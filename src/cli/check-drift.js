@@ -1,29 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * How far this project stands from the profile it says it extends.
- *
- * Four numbers, printed at the end of every `check`, because the alternative is
- * what the estate had: twenty-eight repositories each quietly a little further
- * from the shared rulebook, and nobody able to say by how much without opening
- * twenty-eight config files. A rule turned off, a suppression written, a
- * baseline entry recorded and a tool left behind are the four ways a project
- * drifts, and each of them is a number here.
- *
- * One of the four is also a GATE. A rule the profile has on may be turned off —
- * a project knows things the profile does not — but not silently: the line that
- * turns it off carries a `// reason:` comment, or the run fails on
- * `drift-unreasoned`. The other three only ever report.
- *
- * A project with no config of its own is measured against the one `check`
- * hands its linter, given here with `-c`: the toolchain's default profile.
- *
- * Usage: node check-drift.js [root] [--oxlint <path>] [-c <default-config>]
- *        [--json] [--ignore-pattern <glob>]…
- *
- * Exit code: 0 unless a rule is turned off with no reason beside it.
- */
-
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -44,24 +20,17 @@ import { ignorePatternsOf, orRefused } from './project-files.js';
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 
-/** Where the profiles this package ships sit, compiled — one `<name>.js` each. */
 const PROFILES_AT = join(PACKAGE_ROOT, 'src/presets/oxlint/profiles');
 
-/**
- * The profiles this package ships, read off their compiled files rather than
- * the manifest: the report measures against those files, and loading the
- * manifest loads every plugin the rulebook decides.
- */
+// Read off the compiled files: loading the manifest loads every plugin the rulebook decides.
 const PROFILE_NAMES = new Set(
     readdirSync(PROFILES_AT)
         .filter((name) => name.endsWith('.js'))
         .map((name) => basename(name, '.js')),
 );
 
-/** The comment that makes a rule turned off a decision rather than a drift. */
 const REASON = /\/\/\s*reason:/iu;
 
-/** A resolved rule set, as `name -> level`, or null when oxlint refused. */
 function resolvedRules(root, oxlint, configPath) {
     try {
         const printed = execFileSync(
@@ -76,21 +45,8 @@ function resolvedRules(root, oxlint, configPath) {
     }
 }
 
-/**
- * The profile a consumer config extends, read off the config's own source, or
- * null when it extends none of ours.
- *
- * The SOURCE is the evidence, and it is the only evidence available: oxlint's
- * config schema is closed — an unknown top-level key makes it print `Failed to
- * parse oxlint configuration file` — so a compiled profile cannot carry its own
- * name through to `--print-config`. A config that imports `node` from this
- * package's oxlint entry is a `node` project, and that import is what this
- * reads.
- *
- * Null matters: a project that extends no profile of ours is not DRIFTING from
- * one, it never joined it, and reporting two hundred "rules off" would say
- * nothing about anything.
- */
+// oxlint's config schema is closed, so a profile cannot carry its name to `--print-config`: the
+// config's import is the only evidence. A project on no profile of ours never joined one.
 function profileOf(source) {
     const imported =
         /import\s*\{(?<names>[^}]*)\}\s*from\s*['"]@jterrazz\/typescript\/oxlint['"]/u.exec(
@@ -101,7 +57,6 @@ function profileOf(source) {
     return named.find((name) => PROFILE_NAMES.has(name)) ?? null;
 }
 
-/** A rule the profile runs and this project does not. */
 function turnedOff(profile, consumer) {
     const off = [];
     for (const [rule, level] of Object.entries(profile).toSorted(([left], [right]) =>
@@ -119,7 +74,6 @@ function turnedOff(profile, consumer) {
     return off;
 }
 
-/** The line of the config that turns a rule off, when the config names it at all. */
 function lineNaming(source, rule) {
     const bare = rule.split('/').at(-1);
 
@@ -149,13 +103,10 @@ const root = resolve(
     }) ?? '.',
 );
 
-// CONFIGS is `oxlint-config-names.json`'s — the same list `tool-configs.sh`
-// hands oxlint, so a project counts as having a config here exactly when
-// `check`/`fix` treat it as having one.
+// The same list `tool-configs.sh` hands oxlint.
 const configName = CONFIGS.find((name) => existsSync(join(root, name)));
 const source = configName === undefined ? null : readFileSync(join(root, configName), 'utf8');
 
-/** The profile the handed default IS, when the project runs on it: one of this package's, by file name. */
 const handedName = handed === null ? null : basename(handed, '.js');
 const defaultProfile =
     configName === undefined &&
@@ -168,7 +119,7 @@ const profileName = defaultProfile ?? profileOf(source);
 
 const consumerRules = resolvedRules(root, oxlint, configName === undefined ? handed : null) ?? {};
 
-/* A project on the handed default already resolved its profile: the consumer's rules ARE the profile's. */
+// A project on the handed default already resolved its profile.
 function profileRulesOf() {
     if (profileName === null) {
         return {};
@@ -189,10 +140,9 @@ const unreasoned = off.filter((rule) => {
     return line === undefined || !REASON.test(line);
 });
 
-/* A file the Oxlint pass refuses as `baseline-unreadable` holds no count either row may claim. */
+// A file the Oxlint pass refuses as `baseline-unreadable` holds no count either row may claim.
 const isUnreadable = readRatchet(root).problem !== null;
 
-/** A ratchet section's total, null when the project records no such section, `unreadable` when the file cannot be read. */
 function totalOf(section) {
     if (isUnreadable) {
         return 'unreadable';
@@ -229,7 +179,6 @@ if (isJson) {
     exit(unreasoned.length > 0 ? 1 : 0);
 }
 
-/** The one line a reader looks for: what this project runs that the profile does not. */
 function rulesOffLine() {
     if (profileName === null) {
         return 'not measured';
@@ -238,7 +187,7 @@ function rulesOffLine() {
     return off.length === 0 ? 'none' : `${off.length} (${off.join(', ')})`;
 }
 
-/** A ratchet section's row value: its total, `nothing held` — the Oxlint pass's words — for a section absent or holding no entry, `unreadable` for a file that cannot be read. */
+// `nothing held` is the Oxlint pass's own words.
 function heldOf(section) {
     if (isUnreadable) {
         return 'unreadable';
@@ -250,10 +199,8 @@ function heldOf(section) {
         : Object.values(recorded).reduce((sum, count) => sum + count, 0);
 }
 
-/* The longest label is a ratchet section's, so every row aligns to it. */
 const LABEL_WIDTH = Math.max(LABEL.length, labelOf(TEST_SECTION).length) + 2;
 
-/** One row of the block: a label, padded to the widest one, then its value. */
 function row(label, value) {
     return `  ${label.padEnd(LABEL_WIDTH)}${value}\n`;
 }

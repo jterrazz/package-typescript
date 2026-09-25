@@ -1,8 +1,8 @@
 {
     "typescript": {
-        "comments/comment-lines": 3232,
-        "eslint/max-lines": 9,
-        "jterrazz-typescript/comment-longer-than-function": 12
+        "comments/comment-lines": 1877,
+        "eslint/max-lines": 7,
+        "jterrazz-typescript/comment-longer-than-function": 7
     },
     "test": {
         "jterrazz-check/c18": 22,

@@ -1,24 +1,12 @@
-/**
- * oxlint's framed report, drawn from its JSON one: per diagnostic a blank
- * line, the title, the source frames and the help and note beneath — and a
- * file whose frames carry a line of 1 200 bytes or more stops there and is
- * named as a minified file instead, the way oxlint cuts one short.
- *
- * Prose wraps at oxlint's width of 400 columns; a text that fits, or that
- * breaks only where it already breaks, keeps every word where it was.
- */
-
 import { drawFrames } from './oxlint-report-frame.js';
 import { styled, textWidth } from './oxlint-report-theme.js';
 
+// oxlint's own numbers: prose wraps at 400 columns, and a frame line of 1 200 bytes or more names
+// its file as minified and stops there.
 const WIDTH = 400;
 const MINIFIED_LINE_BYTES = 1200;
 
-/**
- * One line of prose wrapped at `width` columns, first fit: a word keeps the
- * spaces after it, a line keeps the spaces it opens with, and a line ends on
- * its last word, its trailing spaces dropped.
- */
+// First fit, as oxlint wraps: a word keeps the spaces after it, a line ends on its last word.
 function wrapLine(line, width) {
     const words = line.match(/[^ ]*(?: +|$)/gu)?.filter((word) => word !== '') ?? [];
     const lines = [];
@@ -36,8 +24,7 @@ function wrapLine(line, width) {
     return [...lines, current.replace(/ +$/u, '')];
 }
 
-/** Prose laid under an opening indent, every further line under the rest indent. */
-function fill(text, width, initial, rest) {
+function fillIndented(text, width, initial, rest) {
     const fits =
         !text.includes('\n') &&
         (Buffer.byteLength(initial) + Buffer.byteLength(text) <= width ||
@@ -54,7 +41,6 @@ function fill(text, width, initial, rest) {
 
 const SEVERITY_STYLE = { advice: 'advice', error: 'error', warning: 'warning' };
 
-/** The title line: the severity mark, the rule, and the message. */
 function title({ chars, styles }, diagnostic) {
     const kind = SEVERITY_STYLE[diagnostic.severity] ?? 'error';
     const style = styles[kind];
@@ -71,10 +57,9 @@ function title({ chars, styles }, diagnostic) {
         return `  ${styled(icon, style)} ${text.replace(/ +$/u, '')}\n`;
     }
 
-    return `${fill(text, WIDTH - 2, `  ${styled(icon, style)} `, `  ${styled(chars.vbar, style)} `)}\n`;
+    return `${fillIndented(text, WIDTH - 2, `  ${styled(icon, style)} `, `  ${styled(chars.vbar, style)} `)}\n`;
 }
 
-/** The help and the note under a diagnostic, where it carries them. */
 function footer({ styles }, diagnostic) {
     let text = '';
     const width = WIDTH - 4;
@@ -84,21 +69,19 @@ function footer({ styles }, diagnostic) {
         text +=
             !help.includes('\n') && Buffer.byteLength(prefix) + Buffer.byteLength(help) <= width
                 ? `${styled(prefix, styles.help)}${help.replace(/ +$/u, '')}\n`
-                : `${fill(help, width, styled(prefix, styles.help), ' '.repeat(8))}\n`;
+                : `${fillIndented(help, width, styled(prefix, styles.help), ' '.repeat(8))}\n`;
     }
     if (diagnostic.note !== undefined) {
-        text += `${fill(diagnostic.note, width, styled('  note: ', styles.note), ' '.repeat(11))}\n`;
+        text += `${fillIndented(diagnostic.note, width, styled('  note: ', styles.note), ' '.repeat(11))}\n`;
     }
 
     return text;
 }
 
-/** One diagnostic, framed. */
 function drawReport(theme, diagnostic, source) {
     return `\n${title(theme, diagnostic)}${drawFrames(theme, diagnostic, source) ?? ''}${footer(theme, diagnostic)}`;
 }
 
-/** Diagnostics in report order, cut into the runs that name one file after another. */
 function batchesOf(diagnostics) {
     const batches = [];
     for (const diagnostic of diagnostics) {
@@ -119,7 +102,6 @@ function tooLong(rendered) {
         .some((line) => Buffer.byteLength(line.replace(/\r$/u, '')) >= MINIFIED_LINE_BYTES);
 }
 
-/** Every diagnostic, framed; `sourceOf(filename)` hands back the file each one points into. */
 export function drawGraphical(theme, diagnostics, sourceOf) {
     let text = '';
     for (const batch of batchesOf(diagnostics)) {

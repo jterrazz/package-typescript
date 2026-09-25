@@ -1,34 +1,14 @@
-/**
- * The family's settings file, read: `jterrazz.config.ts` at a unit's root —
- * the repository, or a workspace member — whose default export holds one
- * section per package of the family (`@jterrazz/typescript/config`).
- *
- * Node loads the file itself, types stripped, exactly as oxlint loads
- * `oxlint.config.ts`: a dynamic `import()` of its URL. A project with no
- * `"type": "module"` makes Node print a warning while it reparses the file as
- * ESM, which is why the gates that read it run with that warning disabled.
- *
- * A missing file is no settings at all. A file that does not load, or whose
- * default export is not a settings object, is a PROBLEM the reader reports:
- * silence there would read as "nothing declared" while the repository
- * believes it declared something.
- */
+// Node loads the file as oxlint loads `oxlint.config.ts`, by a dynamic `import()`. Without
+// `"type": "module"` Node warns while reparsing it as ESM, so the gates run with that warning off.
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-/** The file, at the root of the unit it configures. */
 export const SETTINGS_FILE = 'jterrazz.config.ts';
 
-/** A plain object — never an array, never null. */
 const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 
-/**
- * One package's section of a unit's settings: `{ section, problem }`, where
- * `section` is `{}` whenever nothing usable is declared and `problem` names
- * why the file could not be read, or is null.
- */
 export async function readSection(unit, name) {
     const path = join(unit, SETTINGS_FILE);
     if (!existsSync(path)) {

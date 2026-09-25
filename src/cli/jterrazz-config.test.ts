@@ -5,7 +5,6 @@ import { expect, onTestFinished, test } from 'vitest';
 
 import { readSection } from './jterrazz-config.js';
 
-/** A unit on disk for this test alone, holding `source` as its settings file when given. */
 function unitWith(source?: string): string {
     const unit = mkdtempSync(join(tmpdir(), 'jterrazz-config-'));
     onTestFinished(() => {

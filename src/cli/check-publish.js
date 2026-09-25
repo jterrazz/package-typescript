@@ -1,27 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * What a published package promises, held to what the tarball will contain.
- *
- * Every mistake this gate refuses is invisible in the repository and fatal in
- * the registry: an `exports` entry pointing at a file nobody built, a subpath
- * left out of `files` so it resolves in development and 404s in a consumer, a
- * type declaration a modern resolver cannot see. The two tools that know those
- * failure modes best run here — `publint` on the packed tarball, and
- * `@arethetypeswrong/cli` on the declarations — beside the two joins only the
- * source tree can answer, and the build guard: no shipped file is compiled
- * from test material ([publish-material.js](publish-material.js)).
- *
- * Usage: node check-publish.js [root] [--publint <path>] [--attw <path>]
- *
- * One line per violation of this gate's own rules, `<rule>  <path>
- * <message>`; each tool's own report is printed verbatim under its name when it
- * refuses. A package with a build but no reader of test material gets one
- * line saying why — and, below the root, naming the member — passing or not;
- * its build still runs. Exit code: 0 when the package is publishable, 1
- * otherwise. No `--fix`: an exports map is a contract, not a formatting choice.
- */
-
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, matchesGlob, relative, resolve } from 'node:path';
@@ -32,12 +10,11 @@ import {
     buildOf,
     builtChunks,
     isPacked,
-    plain,
     testMaterialFindings,
     testMaterialReader,
+    withoutDotSlash,
 } from './publish-material.js';
 
-/** Every string an exports map points at, wherever the conditions nest. */
 function targetsOf(exports) {
     if (typeof exports === 'string') {
         return [exports];
@@ -52,13 +29,9 @@ function targetsOf(exports) {
     return [];
 }
 
-/**
- * Whether a target resolves on disk. A wildcard names a family rather than a
- * file, so what is asked of it is that the directory it reads from exists and
- * holds something the pattern matches.
- */
+// A wildcard names a family: its directory must exist and hold something the pattern matches.
 function resolvesOnDisk(root, target) {
-    const path = plain(target);
+    const path = withoutDotSlash(target);
     if (!path.includes('*')) {
         return existsSync(join(root, path));
     }
@@ -74,7 +47,6 @@ function resolvesOnDisk(root, target) {
     }
 }
 
-/** One tool's verdict, with its report kept for the failing case. */
 function runTool(name, binary, args, root) {
     const run = spawnSync(binary, args, { cwd: root, encoding: 'utf8' });
     if (run.error) {
@@ -124,7 +96,6 @@ for (const target of [...new Set(targets)].toSorted((left, right) => (left < rig
     }
 }
 
-/** The build's chunks, or the one line a build that fails earns in their stead. */
 async function chunksOrFinding(build) {
     try {
         return { chunks: await builtChunks(root, build), line: null };
@@ -143,7 +114,6 @@ async function chunksOrFinding(build) {
     }
 }
 
-/** Why the build guard has nothing to judge, said on a passing run too. */
 const NOTHING_TO_JUDGE = {
     absent: () =>
         'no @jterrazz/test resolves from this package, and what test material is is its to say',
@@ -153,7 +123,6 @@ const NOTHING_TO_JUDGE = {
         `the @jterrazz/test this package resolves publishes a \`./oxlint\` entry that fails to load — ${error}`,
 };
 
-/** The workspace member this run is about, empty at the root. */
 const member = relative(cwd(), root);
 
 const build = buildOf(root, targets);

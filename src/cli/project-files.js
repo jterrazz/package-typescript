@@ -1,37 +1,10 @@
-/**
- * The files a project is made of — everything git does not ignore — and the
- * one sweep every tree-reading gate starts from.
- *
- * `git ls-files --cached --others --exclude-standard` is the answer wherever
- * there is a git tree: what is tracked, and what is untracked but not
- * ignored, less a tracked file deleted from the disk. Only a `.gitignore`d
- * path is out, so a new file is judged before anyone runs `git add`, and a
- * local data folder the gates must not read belongs in `.gitignore`. The CLI,
- * CI, the baseline and the editor read this one law. A directory git knows
- * nothing about — a fixture the spec runner copied, a tree nobody has
- * `git init`ed — is walked instead, because a gate that goes silent outside
- * git is a gate that passes on everything.
- *
- * The sweep REFUSES an answer that is empty while the tree is not. A read that
- * silently sees nothing turns every rule above it vacuously green, which is the
- * one failure mode a gate must never have — and a genuinely bare directory,
- * which the sandboxes of `specs/cli/` build, is told apart from it by looking.
- *
- * It also refuses to answer for the GROUND a test stands on: `fixtures/`,
- * `expected/`, `seeds/` and `requests/` wherever a path passes through one —
- * under `specs/`, beside a module under `src/`, anywhere — hold a tree
- * deliberately broken, a golden held byte for byte, database state and
- * the requests a scenario sends — each belonging to the scenario that mounts
- * it, not to the project carrying it. A gate judges that tree where the
- * scenario runs it, on its own ground, and never twice.
- */
-
+// A sweep that is empty while the tree is not would turn every gate above it vacuously green, so it
+// throws. The ground a test stands on is its scenario's, judged where the scenario runs it, never here.
 import { execFileSync } from 'node:child_process';
 import { lstatSync, readdirSync, readFileSync } from 'node:fs';
 import { join, matchesGlob } from 'node:path';
 import { exit, stderr } from 'node:process';
 
-/** Never source, never prose: what no gate of this toolchain has a question about. */
 export const UNSWEPT = new Set([
     '.artifacts',
     '.git',
@@ -43,10 +16,8 @@ export const UNSWEPT = new Set([
     'node_modules',
 ]);
 
-/** Extensions whose bytes are not text — reading them for patterns is noise. */
 const BINARY = /\.(?:avif|bin|gif|ico|jpeg|jpg|lock|mp4|pdf|png|svg|ttf|webp|woff2?|zip)$/iu;
 
-/** Every path git does not ignore and the disk still holds, or null when there is no git tree here. */
 function gitSweep(root) {
     const listed = (flags) =>
         execFileSync('git', ['ls-files', ...flags, '-z'], {
@@ -69,7 +40,6 @@ function gitSweep(root) {
     }
 }
 
-/** The same listing, derived from the filesystem, for a tree git does not know. */
 function walkSweep(root) {
     const found = [];
 
@@ -99,7 +69,6 @@ function walkSweep(root) {
     return found;
 }
 
-/** Whether anything the gates would ever read sits at the root at all. */
 function holdsSomething(root) {
     try {
         return readdirSync(root).some((name) => !UNSWEPT.has(name));
@@ -108,14 +77,9 @@ function holdsSomething(root) {
     }
 }
 
-/**
- * The ground a test stands on, by the four names `@jterrazz/test` reserves
- * wherever a test stands — under `specs/`, and beside a module under `src/`.
- * A `contracts/` a spec imports is TypeScript, not ground.
- */
+// The names `@jterrazz/test` reserves; a `contracts/` a spec imports is TypeScript, not ground.
 const GROUND = new Set(['expected', 'fixtures', 'requests', 'seeds']);
 
-/** Whether a path lies under the ground a test mounts rather than in the project. */
 function isGround(path) {
     return path
         .split('/')
@@ -123,7 +87,6 @@ function isGround(path) {
         .some((segment) => GROUND.has(segment));
 }
 
-/** The sweep refused an answer: the tree holds something, and no file of it reached a gate. */
 export class EmptySweepError extends Error {
     constructor(message) {
         super(message);
@@ -131,11 +94,6 @@ export class EmptySweepError extends Error {
     }
 }
 
-/**
- * The sweep, filtered by what the run was told to overlook. `ignorePatterns`
- * carries the `--ignore-pattern` globs `check` received, so one flag answers
- * for the linter and for every gate that reads the same tree.
- */
 export function projectFiles(root = '.', { ignorePatterns = [] } = {}) {
     const listed = gitSweep(root);
     const swept = listed ?? walkSweep(root);
@@ -159,10 +117,6 @@ export function projectFiles(root = '.', { ignorePatterns = [] } = {}) {
         .toSorted((left, right) => (left < right ? -1 : 1));
 }
 
-/**
- * What a gate's entry point reads through: the value `read` returns, or — when
- * the sweep refused an answer — its one line on stderr and exit code 1.
- */
 export function orRefused(read) {
     try {
         return read();
@@ -176,11 +130,7 @@ export function orRefused(read) {
     }
 }
 
-/**
- * A project file's text, or null when there is no text to read: bytes, a file
- * too large to be prose or source, one that is gone, or a SYMLINK — whose
- * content belongs to its target, and is judged there once instead of twice.
- */
+// A symlink's content belongs to its target, judged there once instead of twice.
 export function readText(root, path) {
     if (BINARY.test(path)) {
         return null;
@@ -199,7 +149,6 @@ export function readText(root, path) {
     }
 }
 
-/** The `--ignore-pattern` globs of an argument list, in the order they arrived. */
 export function ignorePatternsOf(argv) {
     const patterns = [];
     for (const [index, argument] of argv.entries()) {

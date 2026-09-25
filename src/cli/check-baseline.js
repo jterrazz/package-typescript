@@ -1,108 +1,37 @@
 #!/usr/bin/env node
 
-/**
- * The migration ratchet: a count per rule, exact, that a fix lowers and never raises.
- *
- * A project adopting a stricter rulebook has two honest options — burn every
- * diagnostic down before the first green run, or record where it stands and
- * refuse to go backwards. `jterrazz.baseline.json` is the second: one file for
- * the whole toolchain family, one section per package — `{ "typescript": {
- * "<rule>": <count> }, "test": { … } }` — tracked, and read by the oxlint pass
- * instead of the raw exit code. Without this package's section every
- * diagnostic this package owns is a failure.
- *
- * The section is EXACT: an entry states where the project stands, never a
- * ceiling. Four things fail a run that has one:
- *
- * - a rule whose count EXCEEDS its entry — the debt grew;
- * - a rule with diagnostics and NO entry — a rule nobody recorded owing;
- * - a rule whose count is BELOW its entry — the debt fell, so the entry is
- *   re-recorded;
- * - an entry whose count is now zero — the ratchet moved, so the entry goes.
- *
- * The two falls are what make the file shrink, and they are what `--fix`
- * records (`tightened`): it lowers an entry that fell and drops one at zero,
- * then judges. It never raises an entry nor adds a key — debt that grew is
- * written only by `typescript baseline`.
- *
- * The `typescript` section holds this package's rules and nothing else.
- * oxlint's JSON report also carries the `jterrazz(*)` rules a consumer
- * composes in from `@jterrazz/test`'s `testing` fragment; those, and the
- * conventions checker's `jterrazz-check/*` findings, are the `test` section's
- * — that package records and judges them. So a diagnostic whose plugin is
- * `jterrazz` is set aside before the counting, and an entry under either of
- * that package's namespaces in THIS section is refused as misplaced: one
- * finding, one section, one judge. Writing the `typescript` section leaves
- * every other section's text exactly as it was.
- *
- * A second reporter is recorded here and judged elsewhere: the Names (tree)
- * pass's findings enter the section under `names/<rule>` when `--names <json>`
- * is given to `--write`, and that pass reads its own entries back. So a
- * judging run sets every `names/*` entry aside — this is not the judge of it.
- *
- * A green run speaks once about the section, never about a held finding: given
- * `--names <json>` beside a judging run, it prints one line for the WHOLE
- * section — `jterrazz.baseline.json › typescript: <n> held across <k> rules`,
- * the shape `@jterrazz/test` gives its own, or `… typescript: nothing held` for
- * a section holding no entry or no section at all — when both reporters'
- * counts stand at it. Where either side breaks the ratchet it prints no summary: the
- * pass that owns the broken entry prints the evidence. Nor where the Names
- * report cannot be read: that side is unknown, and its pass prints why.
- *
- * A file of the per-package layout — `typescript.baseline.json`,
- * `test.baseline.json`, `oxlint.baseline.json` — is never read: its presence
- * fails the run with the section its entries move to.
- *
- * Usage: node check-baseline.js <oxlint-json> [root] [--names <json>] [--write]
- *                               [--fix] [--linter-exit <code>]
- *
- * `--write` rewrites the section from the current counts — that is
- * `typescript baseline`, a command of its own because it RECORDS rather than
- * checks or repairs. `--linter-exit` is the exit code of the human run beside
- * the JSON one: a linter that failed with no diagnostic at all failed for a
- * reason no count can forgive (a config it could not load), and the judge
- * says so. `--fix` re-records the linter's entries that fell, naming each,
- * and leaves the `names/*` entries to the Names pass's own `--fix`. Exit code:
- * 0 when the ratchet holds, 1 otherwise.
- */
-
+// The section is exact: a count above OR below its entry fails, and only `typescript baseline` raises one.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-/** The file, at the project root, tracked beside the config it ratchets. */
 export const BASELINE = 'jterrazz.baseline.json';
 
-/** The section this package records and judges. */
 export const SECTION = 'typescript';
 
-/** The section `@jterrazz/test` records its own rules in — that package writes and judges it. */
 export const TEST_SECTION = 'test';
 
-/** How a section is named to a reader: the file, then the section. */
 export const labelOf = (section) => `${BASELINE} › ${section}`;
 
-/** This package's section, as every line about it names it. */
 export const LABEL = labelOf(SECTION);
 
-/** The files of the per-package layout, each mapped to the section its entries belong in. */
+// The per-package layout, never read: each file maps to the section its entries move to.
 const LEGACY = Object.freeze({
     'oxlint.baseline.json': SECTION,
     'test.baseline.json': TEST_SECTION,
     'typescript.baseline.json': SECTION,
 });
 
-/** The namespaces `@jterrazz/test` owns: its oxlint plugin's rules and its checker's ids. */
+// `@jterrazz/test` records and judges these: its oxlint plugin's rules and its checker's ids.
 const TEST_NAMESPACES = ['jterrazz/', 'jterrazz-check/'];
 
 const PASS_NAMESPACES = ['names/', 'comments/'];
 
 const isPassOwned = (rule) => PASS_NAMESPACES.some((namespace) => rule.startsWith(namespace));
 
-/** oxlint's own "Unused eslint/oxlint-disable directive" findings carry no `code` at all. */
+// oxlint's "Unused eslint/oxlint-disable directive" findings carry no `code` at all.
 const UNUSED_DIRECTIVE = /^Unused (?:eslint|oxlint)-disable directive/u;
 
-/** `eslint(no-debugger)` is how oxlint's JSON spells `eslint/no-debugger`; an unused directive has no code. */
 function ruleOf(diagnostic) {
     const { code } = diagnostic;
     if (code === undefined && UNUSED_DIRECTIVE.test(diagnostic.message ?? '')) {
@@ -113,18 +42,12 @@ function ruleOf(diagnostic) {
     return match === null ? (code ?? 'unknown') : `${match.groups.plugin}/${match.groups.rule}`;
 }
 
-/** Whether a rule key is `@jterrazz/test`'s to record and judge. */
 export function isTestOwned(rule) {
     return TEST_NAMESPACES.some((namespace) => rule.startsWith(namespace));
 }
 
-/** A plain object — never an array, never null. */
 const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 
-/**
- * The diagnostics a report carries. oxlint hands back an object with a
- * `diagnostics` array; the Names pass's `--format json` takes the same shape.
- */
 export function diagnosticsOf(report) {
     if (Array.isArray(report)) {
         return report;
@@ -133,7 +56,6 @@ export function diagnosticsOf(report) {
     return Array.isArray(report?.diagnostics) ? report.diagnostics : [];
 }
 
-/** How many diagnostics each rule THIS package owns accounts for, across every report given. */
 export function countsOf(...reports) {
     const counts = {};
     for (const report of reports) {
@@ -148,10 +70,6 @@ export function countsOf(...reports) {
     return counts;
 }
 
-/**
- * The whole file: `{ sections }` when it reads, `{ sections: null }` when the
- * project keeps none, and `{ problem }` when it is there and holds no sections.
- */
 export function readRatchet(root) {
     const path = join(root, BASELINE);
     if (!existsSync(path)) {
@@ -179,18 +97,12 @@ export function readRatchet(root) {
     return { problem: null, sections: parsed };
 }
 
-/**
- * The recorded counts of one section (this package's by default), or null
- * when the project records none there — no file, an unreadable one, or no
- * such section. The oxlint pass is the one that reports an unreadable file.
- */
 export function readBaseline(root, section = SECTION) {
     const { sections } = readRatchet(root);
 
     return sections?.[section] ?? null;
 }
 
-/** Every file of the per-package layout still at the root, with what it owes. */
 export function legacyOf(root) {
     return Object.entries(LEGACY)
         .filter(([file]) => existsSync(join(root, file)))
@@ -201,7 +113,6 @@ export function legacyOf(root) {
         );
 }
 
-/** Every way the counts break the ratchet, in the order a reader wants them. */
 export function judge(counts, baseline) {
     const broken = [];
 
@@ -233,12 +144,7 @@ export function judge(counts, baseline) {
     return broken;
 }
 
-/**
- * The section a fix records: every entry `owns` accepts lowered to the count
- * that fell below it, and dropped at zero — never raised, and no key added,
- * which would record debt that grew. Every other entry is kept as it is.
- * `undefined` when nothing fell.
- */
+// Lowers what fell and drops zeros, never raises nor adds a key: debt that grew is `typescript baseline`'s to write.
 export function tightened(counts, baseline, owns) {
     const next = {};
     let fell = false;
@@ -253,11 +159,6 @@ export function tightened(counts, baseline, owns) {
     return fell ? next : undefined;
 }
 
-/**
- * Under `fix`, write the section `tightened` returns, every other byte of the
- * file kept. Returns the section the verdict is judged against and one line
- * per entry the fix moved.
- */
 export function reRecord(root, counts, owns) {
     const held = readBaseline(root) ?? {};
     const next = tightened(counts, held, owns);
@@ -277,11 +178,6 @@ export function reRecord(root, counts, owns) {
     return { lines, section: next };
 }
 
-/**
- * The one line a green ratchet prints: what the file holds, by count and by
- * rule, or `nothing held` for a section that holds no entry, or for none. The findings
- * themselves print only with a failing verdict, where they are the evidence.
- */
 export function heldSummary(counts) {
     const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
     const rules = Object.keys(counts).length;
@@ -292,11 +188,7 @@ export function heldSummary(counts) {
     return `${LABEL}: ${total} held across ${rules} rule${rules === 1 ? '' : 's'}`;
 }
 
-/**
- * A section's text: sorted, so a diff reads as a burn-down, nested one `indent`
- * under the file's top level. The formatter owns the indent of a file it has
- * formatted; a rewrite reads it off the file, so it keeps that shape.
- */
+// The formatter owns the indent of a file it formatted, so a rewrite keeps the file's own.
 function serialise(counts, indent = '  ') {
     const sorted = Object.fromEntries(
         Object.entries(counts).toSorted(([left], [right]) => (left < right ? -1 : 1)),
@@ -305,12 +197,10 @@ function serialise(counts, indent = '  ') {
     return JSON.stringify(sorted, null, indent).replaceAll('\n', `\n${indent}`);
 }
 
-/** The indent of a file's first member, or two spaces where it has none on a line of its own. */
 function indentOf(text) {
     return /\n(?<indent>[ \t]+)"/u.exec(text)?.groups.indent ?? '  ';
 }
 
-/** Where the JSON value starting at `start` ends — past its closing bracket, quote or literal. */
 function valueEnd(text, start) {
     const first = text[start];
     if (first === '"') {
@@ -324,7 +214,6 @@ function valueEnd(text, start) {
     return match === null ? text.length : start + match.index;
 }
 
-/** Where the object or array opening at `start` ends, past its closing bracket. */
 function containerEnd(text, start) {
     let depth = 0;
     let index = start;
@@ -348,7 +237,6 @@ function containerEnd(text, start) {
     return index;
 }
 
-/** Where the string literal opening at `start` ends, past its closing quote. */
 function stringEnd(text, start) {
     let index = start + 1;
     while (index < text.length && text[index] !== '"') {
@@ -358,11 +246,7 @@ function stringEnd(text, start) {
     return index + 1;
 }
 
-/**
- * The top-level members of a JSON object's text, each with the span of its
- * value, so one value can be replaced and every other byte kept. The text has
- * already parsed, so the scan never meets malformed input.
- */
+// The text has already parsed, so the scan never meets malformed input.
 function membersOf(text) {
     const members = [];
     let index = text.indexOf('{') + 1;
@@ -386,10 +270,6 @@ function membersOf(text) {
     return members;
 }
 
-/**
- * The file's text with this package's section set to `section` — every other
- * byte as it was, so another package's section survives the rewrite whole.
- */
 function withSection(text, section) {
     const member = `"${SECTION}": ${section}`;
     if (text === null) {
@@ -409,8 +289,7 @@ function withSection(text, section) {
         : `${text.slice(0, open)}\n  ${member},\n  ${rest.trimStart()}`;
 }
 
-/** The value an argument list carries after a flag, or undefined when it has none. */
-function valueOf(flag) {
+function flagValue(flag) {
     const index = argv.indexOf(flag);
 
     return index === -1 ? undefined : argv[index + 1];
@@ -427,13 +306,12 @@ function reportAt(path) {
     }
 }
 
-/* Imported for the ratchet's reading, run for the gate — never both at once. */
 if (import.meta.main) {
     const isWrite = argv.includes('--write');
     const isFix = argv.includes('--fix');
-    const namesPath = valueOf('--names');
-    const commentsPath = valueOf('--comments');
-    const linterExit = valueOf('--linter-exit');
+    const namesPath = flagValue('--names');
+    const commentsPath = flagValue('--comments');
+    const linterExit = flagValue('--linter-exit');
     const flagValues = new Set(
         [namesPath, commentsPath, linterExit].filter((value) => value !== undefined),
     );
@@ -453,12 +331,7 @@ if (import.meta.main) {
         exit(1);
     }
 
-    /*
-     * Recorded, or summed into the file's line — never judged: the Names (tree)
-     * pass judges its own entries. Null when that pass wrote no report: it
-     * died, so its side of the section is unknown — no held line is printed,
-     * and the section is not rewritten.
-     */
+    // A pass that wrote no report died: its side is unknown, so nothing is summed or rewritten.
     const passReports = [
         { label: 'Names (tree)', path: namesPath, report: reportAt(namesPath) },
         { label: 'Comments (density)', path: commentsPath, report: reportAt(commentsPath) },
@@ -493,11 +366,7 @@ if (import.meta.main) {
         exit(0);
     }
 
-    /*
-     * A linter that failed and reported nothing failed on something no
-     * diagnostic carries; setting test-owned findings aside must not turn
-     * that into a green pass.
-     */
+    // Setting test-owned findings aside must not turn a linter that failed on no diagnostic green.
     if (linterExit !== undefined && linterExit !== '0' && diagnosticsOf(report).length === 0) {
         stdout.write(`oxlint exited ${linterExit} with no diagnostic — its own output says why\n`);
         exit(1);
@@ -537,7 +406,7 @@ if (import.meta.main) {
         exit(0);
     }
 
-    /* The linter's entries are this run's to re-record; the Names pass re-records its own. */
+    // Each pass re-records its own entries.
     let section = whole;
     if (isFix) {
         const { lines, section: recorded } = reRecord(

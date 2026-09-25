@@ -1,32 +1,8 @@
 #!/usr/bin/env node
 
-/**
- * The shape of a repository's manual, read off the filesystem and judged by
- * `@jterrazz/typescript/docs`.
- *
- * Every repository carries the same `docs/`: a map, the fixed spine —
- * architecture, developing, testing, and operating when the repository ships
- * something that runs — and its own chapters numbered contiguously after it.
- * This file is the READER: it builds the plain tree the rule engine takes
- * (`src/docs.js`) and prints what comes back. Every sentence, every rule id and
- * the journal-word roster live in the engine, so a second reader — terra,
- * sweeping clones it never installed — judges by the same copy.
- *
- * Usage: node check-docs.js [root]
- *
- * One line per violation, `<rule>  <path>  <message>`. Exit code: 0 when the
- * repository holds the shape, 1 otherwise.
- *
- * The unit is the REPOSITORY, not the package: a manual answers for the whole
- * tree, and only the root carries the `AGENTS.md` that routes into it. The one
- * place the workspace shows through is the `04-operating.md` presence test,
- * whose Dockerfile and `.infrastructure/` clauses are read at the root AND at
- * every workspace member's root — a monorepo deploys from a member as readily
- * as from its root ([Architecture](../../docs/01-architecture.md), "The unit is the
- * workspace package").
- * The publishable clause stays on the ROOT manifest: a private root that holds
- * a publishable member is a question for its owner, not a verdict for a gate.
- */
+// Only the reader: every sentence and rule id lives in `src/docs.js`, so terra judges by the same copy.
+// The Dockerfile and `.infrastructure/` clauses are read at every member's root too; the publishable
+// clause stays on the root manifest.
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -35,21 +11,14 @@ import { argv, exit, stdout } from 'node:process';
 import { auditDocs, HEAD_LINES } from '../docs.js';
 import { workspaceMembers } from './workspace-members.js';
 
-/** Every markdown link target of a page, in the order the page carries them. */
 const LINK = /!?\[[^\]]*\]\(\s*(?<target>[^\s)]+)/gu;
 
-/** Where a repository declares a deployment it owns. */
 const INFRASTRUCTURE = '.infrastructure';
 
-/**
- * Every path under `docs/`, repository-relative, directories carrying a
- * trailing slash. `docs/` itself is the first entry when it exists — its
- * absence is the whole verdict.
- */
+// `docs/` itself is the first entry when it exists — its absence is the whole verdict.
 function listDocs(root) {
     const paths = [];
 
-    /** One directory, depth-first, sorted — a listing a machine can diff. */
     function walk(relativePath) {
         paths.push(`${relativePath}/`);
 
@@ -71,7 +40,7 @@ function listDocs(root) {
     return paths;
 }
 
-/** A file's text, or null when it is not there — an unreadable file is an absent one. */
+// An unreadable file is an absent one.
 function read(path) {
     try {
         return readFileSync(path, 'utf8');
@@ -80,7 +49,6 @@ function read(path) {
     }
 }
 
-/** The head and the links of every markdown page of the tree. */
 function readPages(root, files) {
     const heads = {};
     const links = {};
@@ -98,7 +66,6 @@ function readPages(root, files) {
     return { heads, links };
 }
 
-/** A `Dockerfile`, or one of its variants, in a directory. */
 function hasDockerfile(dir) {
     try {
         return readdirSync(dir).some(
@@ -109,7 +76,6 @@ function hasDockerfile(dir) {
     }
 }
 
-/** A manifest that npm would publish — one that never says it is private. */
 function isPublishable(dir) {
     const manifest = read(join(dir, 'package.json'));
     if (manifest === null) {
@@ -123,7 +89,6 @@ function isPublishable(dir) {
     }
 }
 
-/** The three facts `04-operating.md` is asked for, read at the root and its members. */
 function readShips(root) {
     const roots = [root, ...workspaceMembers(root).map((member) => join(root, member))];
 

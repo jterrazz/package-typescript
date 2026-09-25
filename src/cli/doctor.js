@@ -1,33 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * What the toolchain is actually running, against what it says it needs.
- *
- * Every version here is read from an INSTALLED package's own manifest rather
- * than from a lockfile or a `--version` flag: a lockfile says what should have
- * been installed, and two of these tools answer `--version` in a shape of their
- * own or not at all. The declared ranges are this package's `package.json`, so
- * the two halves of every row come from the two places that can disagree.
- *
- * Usage: node doctor.js [project root]
- *
- * One row per tool: what is installed, what is declared, and the verdict. Older
- * than the range FAILS — a gate running an older linter is enforcing an older
- * rulebook without saying so. Newer WARNS: a tool ahead of its range may be
- * fine, and the toolchain is not the thing that gets to decide that.
- *
- * Then one section the PROJECT owns rather than the toolchain: a pair of
- * packages that must be pinned to the same version, read off the project's
- * lockfile. Vitest's browser provider is published from vitest's own
- * repository and versioned with it — a provider a patch away from the runner
- * loads a second copy of vitest's internals and fails at run time, in the
- * browser, with a stack nobody reads as a version skew. The lockfile is the
- * right file for this one question: it says what a fresh install resolves,
- * which is what a runner will get, where a range says only what was allowed.
- *
- * Exit code: 0 when nothing is old, absent or skewed, 1 otherwise.
- */
-
 import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
@@ -38,14 +10,13 @@ import { workspaceMembers } from './workspace-members.js';
 const require = createRequire(import.meta.url);
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 
-/** A manifest off the disk. Every version this file reports is read this way. */
+// Versions are read off installed manifests: two of these tools answer `--version` in a shape of their own.
 function manifestAt(path) {
     return JSON.parse(readFileSync(path, 'utf8'));
 }
 
 const manifest = manifestAt(resolve(PACKAGE_ROOT, 'package.json'));
 
-/** The per-platform package that carries the TypeScript 7 Go compiler here. */
 function goCompilerPackage() {
     const os = { darwin: 'darwin', linux: 'linux', win32: 'win32' }[process.platform] ?? 'linux';
     const arch = { arm: 'arm', arm64: 'arm64', x64: 'x64' }[process.arch] ?? 'x64';
@@ -53,13 +24,8 @@ function goCompilerPackage() {
     return `@typescript/typescript-${os}-${arch}`;
 }
 
-/**
- * An installed package's own version, or null when it is not there. A manifest
- * is read through the resolver first and off the disk second: a package whose
- * `exports` map does not publish `./package.json` — knip is one — is invisible
- * to `require`, and the two directories below are the same two `find_binary`
- * walks in `check.sh`.
- */
+// A package whose `exports` hides `./package.json` (knip) is invisible to `require`; the two
+// directories after it are the ones `find_binary` walks in `check.sh`.
 function installedVersion(name) {
     for (const at of [
         () => require.resolve(`${name}/package.json`),
@@ -76,17 +42,15 @@ function installedVersion(name) {
     return null;
 }
 
-/** `1.83.0` as `[1, 83, 0]`, with anything after a `-` or `+` dropped. */
-function parts(version) {
+function versionParts(version) {
     return version
         .split(/[+-]/u)[0]
         .split('.')
         .map((piece) => Number.parseInt(piece, 10) || 0);
 }
 
-/** Negative when left is older, positive when newer, zero when the same. */
-function compare(left, right) {
-    const [a, b] = [parts(left), parts(right)];
+function compareVersions(left, right) {
+    const [a, b] = [versionParts(left), versionParts(right)];
     for (let index = 0; index < 3; index += 1) {
         if ((a[index] ?? 0) !== (b[index] ?? 0)) {
             return (a[index] ?? 0) - (b[index] ?? 0);
@@ -96,14 +60,10 @@ function compare(left, right) {
     return 0;
 }
 
-/**
- * The floor a range asks for, and the first version it refuses. `^` follows
- * npm: below 1.0.0 a caret allows the patch line only, which is exactly why
- * oxfmt's range moves on every minor.
- */
+// As npm reads it: below 1.0.0 a caret allows the patch line only.
 function boundsOf(range) {
     const floor = range.replace(/^[\^>=~ ]+/u, '');
-    const [major = 0, minor = 0] = parts(floor);
+    const [major = 0, minor = 0] = versionParts(floor);
 
     if (range.startsWith('^')) {
         return { ceiling: major === 0 ? `0.${minor + 1}.0` : `${major + 1}.0.0`, floor };
@@ -118,21 +78,20 @@ function boundsOf(range) {
     return { ceiling: floor, exact: true, floor };
 }
 
-/** Where an installed version stands against a declared range. */
 function verdictOf(installed, range) {
     if (installed === null) {
         return 'absent';
     }
 
     const { ceiling, exact, floor } = boundsOf(range);
-    if (compare(installed, floor) < 0) {
+    if (compareVersions(installed, floor) < 0) {
         return 'old';
     }
     if (exact === true) {
-        return compare(installed, floor) === 0 ? 'ok' : 'newer';
+        return compareVersions(installed, floor) === 0 ? 'ok' : 'newer';
     }
 
-    return ceiling !== null && compare(installed, ceiling) >= 0 ? 'newer' : 'ok';
+    return ceiling !== null && compareVersions(installed, ceiling) >= 0 ? 'newer' : 'ok';
 }
 
 const declared = {
@@ -140,11 +99,6 @@ const declared = {
     ...manifest.optionalDependencies,
 };
 
-/**
- * Every tool the toolchain runs, with what is installed, what is declared and
- * where the two stand. The drift report reads the same rows and prints only the
- * ones that deviate, so a version is answered for in one place.
- */
 export function toolVersions() {
     return [
         ['node', process.version.replace(/^v/u, ''), manifest.engines?.node ?? '*'],
@@ -166,17 +120,13 @@ export function toolVersions() {
     }));
 }
 
-/**
- * The pair a browser-mode consumer must keep equal, and the reason the check
- * exists at all: `@vitest/browser-playwright` ships from vitest's repository
- * and carries vitest's version, so anything but an exact match is a skew.
- */
+// `@vitest/browser-playwright` ships from vitest's repository with vitest's version: a patch
+// apart loads a second copy of vitest's internals and fails in the browser.
 export const PINNED_PAIR = Object.freeze({
     provider: '@vitest/browser-playwright',
     runner: 'vitest',
 });
 
-/** Every version an npm lockfile resolves for one name: `node_modules/<name>` keys. */
 function npmVersions(text, name) {
     const suffix = `node_modules/${name}`;
     const versions = new Set();
@@ -190,11 +140,7 @@ function npmVersions(text, name) {
     return versions;
 }
 
-/**
- * The same, off a `bun.lock`. The file is JSON with trailing commas, and every
- * entry of its `packages` map opens on the `<name>@<version>` the install
- * resolved — so the one comma rule is dropped and the rest is read as JSON.
- */
+// `bun.lock` is JSON with trailing commas.
 function bunVersions(text, name) {
     const versions = new Set();
     const { packages } = JSON.parse(text.replaceAll(/,(?<trailing>\s*[\]}])/gu, '$<trailing>'));
@@ -209,17 +155,14 @@ function bunVersions(text, name) {
     return versions;
 }
 
-/** Lockfiles this report can read, in the order a resolver would find them. */
 const READ_LOCKFILES = [
     ['package-lock.json', npmVersions],
     ['npm-shrinkwrap.json', npmVersions],
     ['bun.lock', bunVersions],
 ];
 
-/** Lockfiles it cannot: a binary file and two YAML dialects, none of them JSON. */
 const UNREAD_LOCKFILES = ['bun.lockb', 'pnpm-lock.yaml', 'yarn.lock'];
 
-/** Every version a readable lockfile resolves for one name, deduplicated and sorted. */
 function lockedVersions(path, read, name) {
     try {
         return [...read(readFileSync(path, 'utf8'), name)].toSorted((left, right) =>
@@ -230,11 +173,7 @@ function lockedVersions(path, read, name) {
     }
 }
 
-/**
- * Whether a package is declared under any dependency key of the project's
- * manifest or of any workspace member's — the provider belongs to whichever
- * package runs browser mode, and in a monorepo that is a member, not the root.
- */
+// In a monorepo the member running browser mode declares the provider, not the root.
 function declaredAnywhere(root, name) {
     return ['.', ...workspaceMembers(root)].some((member) => {
         try {
@@ -249,11 +188,6 @@ function declaredAnywhere(root, name) {
     });
 }
 
-/**
- * What the project's lockfile says about the pinned pair. `null` when there is
- * no question to answer — no lockfile this report reads, and no provider
- * declared under one it does not.
- */
 export function pinnedPair(root) {
     const readable = READ_LOCKFILES.map(([name, read]) => [join(root, name), read]).find(([path]) =>
         existsSync(path),
@@ -279,12 +213,10 @@ export function pinnedPair(root) {
     return { provider, runner, verdict: matched ? 'ok' : 'skewed' };
 }
 
-/** Every version a name resolves to, in one column — `—` when the lockfile has none. */
 function versionColumn(versions) {
     return versions.length === 0 ? '—' : versions.join(', ');
 }
 
-/** The pinned-pair section, or nothing at all when the project asks no question. */
 function reportPinnedPair(root) {
     const pair = pinnedPair(root);
     if (pair === null) {
@@ -314,7 +246,6 @@ function reportPinnedPair(root) {
     return pair.verdict === 'skewed';
 }
 
-/* Imported for `toolVersions`, run for the report — never both at once. */
 if (import.meta.main) {
     const root = resolve(argv[2] ?? cwd());
     const rows = toolVersions();

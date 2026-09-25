@@ -1,28 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * Every place the project told a checker to look away.
- *
- * A suppression is a decision, and a decision the next reader cannot re-derive
- * is a defect waiting to be re-introduced. Three rules hold the whole surface:
- * it is spelled in the vocabulary of the tools this project actually runs, it
- * carries the reason it was taken, and it names a rule that is still live.
- *
- * Usage: node check-suppressions.js [root] [--fix] [--oxlint <path>] [-c <config>]
- *        [--ignore-pattern <glob>]…
- *
- * `-c` is the config the linter is handed when the project keeps none of its
- * own, so the rules a directive is judged against are the ones the run applies.
- *
- * `--fix` rewrites the two spellings a machine can settle: an
- * `eslint-disable*` whose every named rule resolves becomes `oxlint-disable*`,
- * and `@ts-ignore` becomes `@ts-expect-error`. It never invents a reason and it
- * never deletes a directive — both of those are the author's judgement.
- *
- * One line per violation, `<rule>  <path>  <message>`. Exit code: 0 when every
- * suppression is spelled, reasoned and live, 1 otherwise.
- */
-
 import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { join, matchesGlob, resolve } from 'node:path';
@@ -30,39 +7,25 @@ import { argv, exit, stdout } from 'node:process';
 
 import { ignorePatternsOf, orRefused, projectFiles, readText } from './project-files.js';
 
-/** What a linter and a type-checker read — the files a directive can live in. */
 export const SOURCE = /\.(?:astro|[cm]?[jt]sx?|svelte|vue)$/u;
 
-/** The separator oxlint reads a directive's reason after. */
 const REASON = ' -- ';
 
-/**
- * A directive is only a directive where a checker reads one: at the OPENING of
- * a comment. Prose about a suppression is not a suppression, and neither oxlint
- * nor tsc would treat it as one; a string carrying its spelling never reaches
- * this pattern at all, since only a comment is read (`commentSpansOf`).
- */
+// A checker reads a directive only at the opening of a comment; prose about one is not one.
 const COMMENT = String.raw`(?:\/\/|\/\*+|^\s*\*(?!\/))\s*`;
 
-/** A disable directive of either vocabulary, with its scope and its tail. */
 const DISABLE = new RegExp(
     `${COMMENT}(?<tool>es|ox)lint-disable(?<scope>-next-line|-line)?(?<tail>[^\n*]*)`,
     'gu',
 );
 
-/** The two TypeScript directives, with whatever description follows. */
 const TS_DIRECTIVE = new RegExp(`${COMMENT}@ts-(?<kind>expect-error|ignore)(?<tail>[^\n*]*)`, 'gu');
 
-/** Biome's, which no project of this toolchain runs. */
+// No project of this toolchain runs Biome.
 const BIOME = new RegExp(`${COMMENT}biome-ignore\\b`, 'u');
 
-/** The quotes a one-line string literal opens with. */
 const QUOTES = new Set(['"', "'"]);
 
-/**
- * One character of a line read inside a block comment: where it closes, the
- * span it ran over is a comment. Returns the column the reading resumes at.
- */
 function readBlock(reading, line, column, spans) {
     if (line[column] === '*' && line[column + 1] === '/') {
         spans.push([reading.blockStart, column + 2]);
@@ -74,7 +37,6 @@ function readBlock(reading, line, column, spans) {
     return column + 1;
 }
 
-/** One character inside a template literal: its end, or a `${` that is code again. */
 function readTemplate(reading, line, column) {
     const char = line[column];
     if (char === '\\') {
@@ -92,7 +54,6 @@ function readTemplate(reading, line, column) {
     return column + 1;
 }
 
-/** One character inside a quoted string: its escape, or its closing quote. */
 function readQuoted(reading, line, column) {
     const char = line[column];
     if (char === '\\') {
@@ -105,7 +66,6 @@ function readQuoted(reading, line, column) {
     return column + 1;
 }
 
-/** A brace in code: inside a template's `${…}`, the one that closes it returns to the template. */
 function readBrace(reading, char) {
     const { templates } = reading;
     if (templates.length === 0) {
@@ -121,7 +81,6 @@ function readBrace(reading, char) {
     }
 }
 
-/** One character of code: a comment, a literal or a brace opens here, or nothing does. */
 function readCode(reading, line, column, spans) {
     const char = line[column];
     const next = line[column + 1];
@@ -147,17 +106,10 @@ function readCode(reading, line, column, spans) {
     return column + 1;
 }
 
-/** The reader of each state, by the state's name; a quote character names its own. */
 const READERS = { block: readBlock, code: readCode, template: readTemplate };
 
-/**
- * The comments each line of a source carries, as `[start, end)` spans of that
- * line, read outside every string and template literal: a directive spelled
- * inside a string is text a program prints, never one a checker reads. A
- * template literal and a block comment run across lines, and a `${…}` inside a
- * template is code again, so the reading carries its state from one line to
- * the next. A regular-expression literal is read as code.
- */
+// A directive inside a string is text a program prints, never one a checker reads.
+// A regular-expression literal is read as code.
 export function commentSpansOf(text) {
     const reading = { blockStart: 0, state: 'code', templates: [] };
 
@@ -183,10 +135,8 @@ export function commentSpansOf(text) {
 export const isDirective = (comment) =>
     comment.search(DISABLE) !== -1 || comment.search(TS_DIRECTIVE) !== -1 || BIOME.test(comment);
 
-/** Every comment of one line, as the text a checker would read. */
 const commentsOf = (line, spans) => spans.map(([start, end]) => line.slice(start, end));
 
-/** The rules a directive names: everything before the reason, comma-separated. */
 function rulesOf(tail) {
     const named = tail.split(REASON)[0] ?? '';
 
@@ -197,30 +147,12 @@ function rulesOf(tail) {
         .filter((name) => /^[\w-]+(?:\/[\w-]+)*$/u.test(name) && name !== '');
 }
 
-/** Whether the directive carries a reason after the separator oxlint reads. */
 const hasReason = (tail) => (tail.split(REASON)[1] ?? '').replace(/\*\/\s*$/u, '').trim() !== '';
 
-/**
- * One of an override's globs, in the form a path is matched against. oxlint
- * anchors a pattern that carries a `/` at the config's own directory and reads
- * one that does not as a BASENAME, matching at any depth — `*.test.ts` names a
- * test file wherever it sits, and `src/*.ts` only the ones directly under
- * `src/`.
- */
-const anywhere = (glob) => (glob.includes('/') ? glob : `**/${glob}`);
+// oxlint reads a glob with no `/` as a basename, matching at any depth.
+const asOxlintGlob = (glob) => (glob.includes('/') ? glob : `**/${glob}`);
 
-/**
- * The config oxlint resolved for this project: the top-level `rules` map, the
- * `overrides` in the order they were written, and the plugin namespaces that
- * map knows about. Between them they hold every rule the config DECIDED, which
- * is not oxlint's whole catalogue: a rule missing from both is a rule this
- * project does not run, which is the only question asked of it.
- *
- * A JS plugin's rules never appear in `--print-config`, so a directive naming
- * one is unverifiable — and the gate says nothing rather than calling a live
- * rule dead. The namespaces returned are therefore the ones the printed config
- * can ANSWER for: the plugins it loaded, and never a JS plugin's.
- */
+// A JS plugin's rules never appear in `--print-config`: its directives are unverifiable, never dead.
 function resolveConfig(root, oxlint, config) {
     let printed;
     try {
@@ -241,7 +173,7 @@ function resolveConfig(root, oxlint, config) {
     }
 
     const overrides = (resolved.overrides ?? []).map((override) => ({
-        files: [override.files ?? []].flat().map(anywhere),
+        files: [override.files ?? []].flat().map(asOxlintGlob),
         rules: { ...override.rules },
     }));
     const decided = { ...resolved.rules };
@@ -252,13 +184,7 @@ function resolveConfig(root, oxlint, config) {
     return { namespaces: namespacesOf(resolved, decided), overrides, rules: { ...resolved.rules } };
 }
 
-/**
- * The rules this project runs FOR ONE FILE. oxlint applies an override where
- * its globs match the path and lets a later entry win, so a rule the top level
- * leaves `allow` and a test-file override arms is on inside a test file and off
- * outside it — and a directive is judged by the file it was written in, never
- * by a map the whole tree shares.
- */
+// A directive is judged by the rules of the file it was written in: overrides match by path, the later wins.
 function configAt(path, config) {
     if (config === null) {
         return null;
@@ -274,13 +200,7 @@ function configAt(path, config) {
     return { namespaces: config.namespaces, rules };
 }
 
-/**
- * The namespaces the printed config can ANSWER for. Where it loads a JS plugin,
- * a namespace outside the plugins it printed is that plugin's, and the map holds
- * at most the few of its rules a `rules` or `allow` entry happened to name —
- * never the live ones. Such a namespace is dropped rather than read as evidence
- * that every OTHER rule of it is off.
- */
+// With a JS plugin loaded, a namespace oxlint did not print is that plugin's and answers nothing.
 function namespacesOf(resolved, rules) {
     const namespaces = new Set();
     for (const name of Object.keys(rules)) {
@@ -298,7 +218,6 @@ function namespacesOf(resolved, rules) {
     return new Set([...namespaces].filter((namespace) => loaded.has(namespace)));
 }
 
-/** Where a named rule stands for one file: `live`, `dead`, or `unverifiable`. */
 function standingOf(name, config) {
     if (config === null) {
         return 'unverifiable';
@@ -306,7 +225,6 @@ function standingOf(name, config) {
 
     const namespace = name.includes('/') ? name.split('/')[0] : null;
     if (namespace !== null && !config.namespaces.has(namespace)) {
-        /* A JS plugin's namespace: its rules are absent from --print-config. */
         return 'unverifiable';
     }
 
@@ -314,16 +232,12 @@ function standingOf(name, config) {
     const level =
         config.rules[name] ??
         Object.entries(config.rules).find(([key]) => key.split('/').at(-1) === bare)?.[1];
-    /* A rule carrying options is printed as `[severity, [options]]`. */
+    // A rule carrying options is printed as `[severity, [options]]`.
     const severity = Array.isArray(level) ? level[0] : level;
 
     return severity === undefined || severity === 'allow' ? 'dead' : 'live';
 }
 
-/**
- * Every violation one line's comments carry, and the line a `--fix` would
- * leave behind: only a comment is read, and only a comment is rewritten.
- */
 function auditLine(line, number, config, spans) {
     const found = [];
     let fixed = '';
@@ -343,7 +257,6 @@ function auditLine(line, number, config, spans) {
     return { fixed: `${fixed}${line.slice(from)}`, found };
 }
 
-/** Biome's spelling, which no project of this toolchain runs and no fix rewrites. */
 function auditBiome(line, number) {
     if (!BIOME.test(line)) {
         return { fixed: line, found: [] };
@@ -360,7 +273,6 @@ function auditBiome(line, number) {
     };
 }
 
-/** The two linter vocabularies: the spelling, the reason, and the rules named. */
 function auditDisables(line, number, config) {
     const found = [];
     let fixed = line;
@@ -370,7 +282,6 @@ function auditDisables(line, number, config) {
         const named = rulesOf(tail);
 
         if (tool === 'es') {
-            /* A rewrite is only safe where the name it carries means something here. */
             const settled = isRewritable(named, config);
             if (settled) {
                 fixed = fixed.replace(`eslint-disable${scope}`, `oxlint-disable${scope}`);
@@ -385,12 +296,10 @@ function auditDisables(line, number, config) {
     return { fixed, found };
 }
 
-/** Whether every rule an eslint directive names is one this project actually runs. */
 function isRewritable(named, config) {
     return named.length > 0 && named.every((name) => standingOf(name, config) !== 'dead');
 }
 
-/** What an eslint spelling is told — which depends on whether a fix can settle it. */
 function eslintSpelling(number, named, settled) {
     return {
         message: settled
@@ -400,7 +309,6 @@ function eslintSpelling(number, named, settled) {
     };
 }
 
-/** An oxlint directive: whether it carries its reason, and whether its rules are live. */
 function auditOxlintDirective(number, tail, named, config) {
     const found = [];
 
@@ -423,7 +331,6 @@ function auditOxlintDirective(number, tail, named, config) {
     return found;
 }
 
-/** The two TypeScript directives: the spelling that stays silent, and the missing description. */
 function auditTypeScript(line, number) {
     const found = [];
     let fixed = line;
@@ -450,13 +357,6 @@ function auditTypeScript(line, number) {
     return { fixed, found };
 }
 
-/**
- * One file read and audited against the rules THAT FILE runs: every violation
- * it carries, each marked with whether a `--fix` settles that very line, and
- * the text the rewrite would leave behind — null where nothing changed. A file
- * with no directive spelling anywhere in it is skipped before a single line is
- * parsed.
- */
 function auditSource(root, path, configOf) {
     const text = readText(root, path);
     if (text === null || !/(?:es|ox)lint-disable|@ts-|biome-ignore/u.test(text)) {
@@ -481,11 +381,7 @@ function auditSource(root, path, configOf) {
     return { rewritten: rewritten === text ? null : rewritten, violations };
 }
 
-/**
- * How many directives the project's source carries — the number the drift report
- * prints. It lives here because the shapes that count as a directive are this
- * file's, and a second copy of them is a second definition of "suppression".
- */
+// The shapes that count as a directive live here, so the drift report counts through this file.
 export function countSuppressions(root, ignorePatterns = []) {
     let found = 0;
 
@@ -508,7 +404,6 @@ export function countSuppressions(root, ignorePatterns = []) {
     return found;
 }
 
-/* Imported for `countSuppressions`, run for the gate — never both at once. */
 if (import.meta.main) {
     const isFix = argv.includes('--fix');
     const oxlintAt = argv[argv.indexOf('--oxlint') + 1];
@@ -531,7 +426,6 @@ if (import.meta.main) {
         projectFiles(root, { ignorePatterns: ignorePatternsOf(argv) }),
     ).filter((path) => SOURCE.test(path));
 
-    /* The resolved config costs an oxlint run, so it is read only once a directive asks for it. */
     let config;
     const configOf = () =>
         config === undefined ? (config = resolveConfig(root, oxlint, handed)) : config;

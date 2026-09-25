@@ -1,50 +1,15 @@
 #!/usr/bin/env node
 
-/**
- * Merges the base knip config with an optional project-local knip.json,
- * then applies dynamic detection rules based on the project's package.json and file structure.
- *
- * Usage: node merge-knip-config.js <preset.json> [project-knip.json]
- *
- * The project file is read as JSONC — comments and trailing commas — so an
- * ignore can carry the reason it exists. Every entry knip is told to overlook
- * is a judgement, and a judgement with no reason beside it is re-litigated by
- * the next reader.
- *
- * Merge rules:
- *   - Arrays (ignoreDependencies, ignoreBinaries, ignore): concatenated and deduplicated
- *   - Objects (rules, vitest, etc.): project values override base
- *   - Scalars (project, entry): project value wins
- *   - $schema is always stripped from output
- *
- * Dynamic detection:
- *   - Published library (main/exports/publishConfig) → disable exports/types/files rules
- *   - Auto-ignore a member's jterrazz.config.ts, loaded by the toolchain and never imported
- *   - Auto-ignore docs/** and the ground a test stands on (fixtures, expected,
- *     seeds, requests), wherever it sits — at the root AND inside every workspace member, because the
- *     convention is the package's and knip resolves `ignore` globs from the root
- *   - Vitest workspace workaround → explicit vitest config when vitest is a dependency
- *
- * Knip itself is workspace-aware: it reads the `workspaces` globs and reports per
- * member from one run. A consumer that needs per-member knip settings spells them
- * under a `workspaces` key in its own knip.json — the base preset has none, so the
- * key passes through the merge untouched.
- */
-
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 
 import { workspaceMembers } from './workspace-members.js';
 
-/** The folders @jterrazz/test reserves, wherever a test stands, for what it stands on. */
+// The folders @jterrazz/test reserves for what a test stands on.
 const GROUND = new Set(['expected', 'fixtures', 'requests', 'seeds']);
 
-/** Folders no scan descends into: installs, build output, and the tools' dot-folders. */
 const UNSCANNED = new Set(['dist', 'node_modules']);
 
-/**
- * Drops `//` and block comments, leaving everything inside a string literal
- * alone — a comment marker in a glob (`ignore: ["**\/*.js"]`) is data.
- */
+// A comment marker inside a string (`"**/*.js"`) is data.
 function withoutComments(text) {
     let output = '';
     let index = 0;
@@ -75,11 +40,6 @@ function withoutComments(text) {
     return output;
 }
 
-/**
- * One step of a scan already inside a string literal: what it keeps, whether
- * the literal is still `open` after it, and where the scan resumes. A backslash
- * carries the character behind it, so an escaped quote never closes anything.
- */
 function inStringStep(text, index) {
     const char = text[index];
     const escaped = char === '\\';
@@ -91,26 +51,22 @@ function inStringStep(text, index) {
     };
 }
 
-/** Whether a two-character marker opens at `index`. */
 function opens(text, index, marker) {
     return text.startsWith(marker, index);
 }
 
-/** Where the scan resumes past a `//` comment: the newline that ends it. */
 function afterLine(text, index) {
     const end = text.indexOf('\n', index);
 
     return end === -1 ? text.length : end;
 }
 
-/** Where the scan resumes past a block comment: after its closing marker. */
 function afterBlock(text, index) {
     const end = text.indexOf('*/', index + 2);
 
     return end === -1 ? text.length : end + 2;
 }
 
-/** Whether the comma at `index` is the last one of its collection — `["a",]`. */
 function closesCollection(text, index) {
     if (text[index] !== ',') {
         return false;
@@ -124,7 +80,6 @@ function closesCollection(text, index) {
     return text[next] === ']' || text[next] === '}';
 }
 
-/** Drops a comma that closes its collection, outside string literals. */
 function withoutTrailingCommas(text) {
     let output = '';
     let index = 0;
@@ -149,10 +104,7 @@ function withoutTrailingCommas(text) {
     return output;
 }
 
-/**
- * Reads a JSONC document. Hand-written on purpose: no JSONC parser is in this
- * package's tree, and two token classes do not earn a dependency.
- */
+// JSONC, so an ignore carries its reason beside it; two token classes do not earn a parser dependency.
 function readJsonc(path) {
     const document = readFileSync(path, 'utf8');
     const json = withoutTrailingCommas(withoutComments(document));
@@ -196,22 +148,16 @@ for (const key of allKeys) {
     }
 }
 
-// --- Dynamic detection ---
-
 let pkg = {};
 if (existsSync('package.json')) {
     pkg = JSON.parse(readFileSync('package.json', 'utf8'));
 }
 
-// 1. Published library → disable exports/types/files rules
 if (pkg.main || pkg.exports || pkg.publishConfig) {
     merged.rules = { exports: 'off', files: 'off', types: 'off', ...merged.rules };
 }
 
-// 2. Auto-ignore convention paths that exist on disk.
-//    The convention belongs to a PACKAGE, so the scan runs once per unit — the
-//    Root and each workspace member. Knip resolves `ignore` globs from the root,
-//    So a member's paths are emitted with their member prefix.
+// Knip resolves `ignore` globs from the root, so a member's paths carry its prefix.
 const conventionIgnores = [];
 const units = ['.', ...workspaceMembers('.')];
 
@@ -222,13 +168,11 @@ for (const unit of units) {
         conventionIgnores.push(`${prefix}docs/**`);
     }
 
-    // A member's settings file is the toolchain's to load, never imported —
-    // the preset's `entry` names the root's, and reaches no member.
+    // The preset's `entry` names the root's settings file and reaches no member's.
     if (prefix !== '' && existsSync(`${prefix}jterrazz.config.ts`)) {
         conventionIgnores.push(`${prefix}jterrazz.config.ts`);
     }
 
-    // The ground is @jterrazz/test's four reserved folders, wherever they sit.
     findConventionDirs(unit, 0);
 }
 
@@ -260,8 +204,7 @@ if (conventionIgnores.length > 0) {
     merged.ignore = [...new Set([...existing, ...conventionIgnores])];
 }
 
-// 3. Vitest workspace workaround — knip crashes on vitest.workspace.ts
-//    If vitest is a dependency, explicitly set the vitest config to avoid the workspace file
+// knip crashes on vitest.workspace.ts, so a vitest dependency gets an explicit config.
 const allDeps = { ...pkg.dependencies, ...pkg.devDependencies, ...pkg.peerDependencies };
 if (allDeps.vitest && !merged.vitest) {
     if (existsSync('vitest.config.ts')) {
@@ -275,7 +218,6 @@ if (allDeps.vitest && !merged.vitest) {
     }
 }
 
-// Also ignore vitest.workspace.ts if it exists (knip can't parse it)
 if (existsSync('vitest.workspace.ts') || existsSync('vitest.workspace.js')) {
     const existing = merged.ignore || [];
     const wsFile = existsSync('vitest.workspace.ts')
@@ -284,14 +226,7 @@ if (existsSync('vitest.workspace.ts') || existsSync('vitest.workspace.js')) {
     merged.ignore = [...new Set([...existing, wsFile])];
 }
 
-// 4. Playwright at non-standard paths + string-referenced global hooks.
-//    Knip auto-discovers `playwright.config.ts` at the repo root, but
-//    Projects that keep their browser tests under a dedicated subdir
-//    (e.g. `web/playwright.config.ts`, `e2e/playwright.config.ts`,
-//    `tests/playwright.config.ts`) need an explicit entry. The global
-//    Setup/teardown files next to that config are referenced as plain
-//    Strings from `playwright.config.ts`, so knip can't trace them —
-//    Add them as entries when they exist.
+// Global setup/teardown are named as strings in the Playwright config, which knip cannot trace.
 if (allDeps['@playwright/test'] || allDeps.playwright) {
     const playwrightSearchPaths = [
         'web/playwright.config.ts',
@@ -325,14 +260,13 @@ if (allDeps['@playwright/test'] || allDeps.playwright) {
     }
 }
 
-// 5. Auto-ignore plugin/addon dependencies for known parent packages
 const prodDeps = Object.keys(pkg.dependencies || {});
 const devDeps = Object.keys(pkg.devDependencies || {});
 const peerDeps = Object.keys(pkg.peerDependencies || {});
 const allDepNames = Object.keys(allDeps);
 const autoIgnoreDeps = [];
 
-// DevDependencies that are also peerDependencies (installed locally for testing)
+// A devDependency that is also a peer is installed only to test against.
 for (const dep of devDeps) {
     if (peerDeps.includes(dep)) {
         autoIgnoreDeps.push(dep);
@@ -340,8 +274,7 @@ for (const dep of devDeps) {
 }
 
 for (const dep of [...prodDeps, ...devDeps]) {
-    // @scope/sub-package when the unscoped root is a peer or dependency
-    // E.g. @hono/node-server → hono
+    // `@hono/node-server` when `hono` is installed.
     const scopeMatch = /^@(?<scope>[^/]+)\//u.exec(dep);
     if (
         scopeMatch &&
@@ -352,22 +285,20 @@ for (const dep of [...prodDeps, ...devDeps]) {
         continue;
     }
 
-    // <parent>-plugin-* or <parent>-preset-* when <parent> is installed
-    // E.g. vitepress-plugin-llms → vitepress
+    // `vitepress-plugin-llms` when `vitepress` is installed.
     const pluginMatch = /^(?<parent>.+?)-(?:plugin|preset|transformer|loader)-/u.exec(dep);
     if (pluginMatch && allDepNames.includes(pluginMatch.groups.parent)) {
         autoIgnoreDeps.push(dep);
         continue;
     }
 
-    // eslint-plugin-* — always a runtime plugin loaded by config, never imported
+    // An eslint plugin is loaded by a config, never imported.
     if (dep.startsWith('eslint-plugin-')) {
         autoIgnoreDeps.push(dep);
     }
 }
 
-// 5. Auto-ignore production dependencies that provide binaries
-//    When a binary-only tool is in "dependencies", it's shipped for consumers (e.g. @jterrazz/typescript ships oxlint)
+// A binary-only tool in `dependencies` is shipped for consumers to run, never imported.
 for (const dep of prodDeps) {
     if (autoIgnoreDeps.includes(dep)) {
         continue;
@@ -378,7 +309,7 @@ for (const dep of prodDeps) {
             autoIgnoreDeps.push(dep);
         }
     } catch {
-        // Dep not installed locally — skip
+        // Not installed locally: nothing to read.
     }
 }
 

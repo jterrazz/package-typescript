@@ -6,10 +6,8 @@ import { expect, onTestFinished, test } from 'vitest';
 
 import { heldSummary, judge, tightened } from './check-baseline.js';
 
-/** The judge as `check` runs it: `check-baseline.js <report> <root> [--names <path>] [--write]`. */
 const JUDGE = resolve(import.meta.dirname, 'check-baseline.js');
 
-/** A root holding the given jterrazz.baseline.json, a clean oxlint report beside it — removed when the test ends. */
 function groundOf(baseline: string): { report: string; root: string } {
     const root = mkdtempSync(resolve(tmpdir(), 'check-baseline-'));
     onTestFinished(() => {
@@ -22,7 +20,6 @@ function groundOf(baseline: string): { report: string; root: string } {
     return { report, root };
 }
 
-/** Every entry this package's linter half owns. */
 const linterOwns = (rule: string): boolean => !rule.startsWith('names/');
 
 test('breaks on a count below its entry, and holds one at it', () => {

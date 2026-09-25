@@ -1,24 +1,5 @@
-/**
- * The Publish pass's build guard: no shipped file is compiled from test
- * material.
- *
- * What test material IS belongs to `@jterrazz/test` alone — the reader its F2
- * rule judges by, `materialAt` and `testPackageOf`, published on its
- * `./oxlint` entry. This module never holds a copy: it loads the reader from
- * the install the package itself resolves, and from nowhere else — the
- * toolchain's own install is never asked. A package that resolves none, one
- * that publishes no reader, or one whose reader does not load, has nothing
- * judged.
- *
- * The evidence is the build's module graph. The package is built as it
- * builds — its own `tsdown.config.*`, else the `bundle` preset over the
- * entries its `exports` map earns — with no chunk written, no `copy`, no
- * executable and no `onSuccess` command; a config's own `hooks` still run.
- * A plugin's `generateBundle` hook lists each chunk's module ids by the file
- * it lands in. Only a chunk the tarball carries is judged, and what it
- * carries — `isPacked` — is answered here for the pass's `files` rule too.
- */
-
+// What test material IS belongs to `@jterrazz/test` alone: its reader is loaded from the install
+// the package resolves, never copied here, and never from the toolchain's own install.
 import { existsSync, readdirSync } from 'node:fs';
 import { dirname, isAbsolute, join, matchesGlob, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -26,19 +7,15 @@ import { pathToFileURL } from 'node:url';
 import { entryPoints } from './entry-points.js';
 import { resolveTestPackage } from './test-package.js';
 
-/** The preset `typescript bundle` builds a library with. */
 const BUNDLE_PRESET = join(import.meta.dirname, '../presets/tsdown/bundle.js');
 
-/** A package's own build config, which tsdown would load in its stead. */
+// tsdown loads a package's own config in the preset's stead.
 const OWN_CONFIG = /^tsdown\.config\.[cm]?[jt]s$/u;
 
-/** The segment every installed module id passes through. */
 const NODE_MODULES = `${sep}node_modules${sep}`;
 
-/** Where the build lands, by the default tsdown and both presets share. */
 const BUILD_DIRECTORY = /^(?:\.\/)?dist\//u;
 
-/** The file a condition tree points an importer at, `import` first — null when it names none. */
 function importTarget(entry) {
     if (typeof entry === 'string') {
         return entry;
@@ -56,7 +33,6 @@ function importTarget(entry) {
     return null;
 }
 
-/** A module's two readers, or null when it publishes them not. */
 function readerOf({ materialAt, testPackageOf }) {
     return typeof materialAt === 'function' && typeof testPackageOf === 'function'
         ? { materialAt, testPackageOf }
@@ -64,11 +40,6 @@ function readerOf({ materialAt, testPackageOf }) {
 }
 
 /**
- * `@jterrazz/test`'s reader of test material, from the install `root`
- * resolves: `absent` when it resolves none, `readerless` when that install
- * publishes no reader, `unloadable` — with the first line of what it threw —
- * when its entry does not load.
- *
  * @returns {Promise<
  *     | { reader: { materialAt: (path: string) => string | undefined, testPackageOf: (specifier: string) => string | undefined } }
  *     | { reason: 'absent' | 'readerless' }
@@ -99,11 +70,6 @@ export async function testMaterialReader(root) {
     return reader === null ? { reason: 'readerless' } : { reader };
 }
 
-/**
- * The build config the package builds with, and the entries handed to it —
- * or null when the package has no build: no config of its own, and no
- * published target under `dist/`.
- */
 export function buildOf(root, targets) {
     const own = readdirSync(root).find((name) => OWN_CONFIG.test(name));
     if (own !== undefined) {
@@ -123,12 +89,7 @@ export function buildOf(root, targets) {
         : null;
 }
 
-/**
- * Every chunk `build` — what `buildOf` answers — would write: its path from
- * the package root, the module ids compiled into it, and the specifiers it
- * leaves to the importer. No chunk is written, and the config's `copy`,
- * `exe` and `onSuccess` are switched off.
- */
+// No chunk is written, and a config's `copy`, `exe` and `onSuccess` are switched off; its `hooks` still run.
 export async function builtChunks(root, build) {
     const { build: tsdown } = await import('tsdown');
     /** @type {{ externals: string[], file: string, moduleIds: string[] }[]} */
@@ -174,24 +135,19 @@ export async function builtChunks(root, build) {
     return chunks.toSorted((left, right) => (left.file < right.file ? -1 : 1));
 }
 
-/** Npm ships these whatever `files` says. */
+// npm ships these whatever `files` says.
 const ALWAYS_PACKED = /^(?:package\.json|readme|license|licence|changelog)/iu;
 
-/** A target with no `./` in front, which is how `files` spells the same path. */
-export const plain = (target) => target.replace(/^\.\//u, '');
+export const withoutDotSlash = (target) => target.replace(/^\.\//u, '');
 
-/**
- * Whether the tarball carries a path: always where `files` is empty or
- * absent, else when an entry reaches it — its own, or a directory above it.
- */
 export function isPacked(files, target) {
-    const path = plain(target);
+    const path = withoutDotSlash(target);
     if (files.length === 0 || ALWAYS_PACKED.test(path)) {
         return true;
     }
 
     return files.some((entry) => {
-        const packed = plain(entry).replace(/\/$/u, '');
+        const packed = withoutDotSlash(entry).replace(/\/$/u, '');
 
         return (
             path === packed ||
@@ -202,20 +158,16 @@ export function isPacked(files, target) {
     });
 }
 
-/** The package an installed module id belongs to — `vitest`, `@vitest/expect`. */
 function installedPackageOf(id) {
     const below = id.slice(id.lastIndexOf(NODE_MODULES) + NODE_MODULES.length).split(sep);
 
     return below[0]?.startsWith('@') ? `${below[0]}/${below[1]}` : below[0];
 }
 
-/** Where a finding sends its reader: the row of the rule that owns the definition. */
 const READ = "@jterrazz/test's docs/19-linting.md#f2-no-test-imports-in-prod";
 
-/** What a finding on a module compiled in asks for. */
 const CUT_THE_EDGE = 'cut the production edge F2 names, or take the module out of the entry';
 
-/** One finding, in the four parts every finding of the family states. */
 function finding(file, found, fix) {
     return {
         message: [
@@ -229,13 +181,7 @@ function finding(file, found, fix) {
     };
 }
 
-/**
- * The findings a build's chunks earn, judged by `reader` — only for a chunk
- * the manifest's `files` ships. A module compiled
- * in is test material by `materialAt` when it is the package's own, by
- * `testPackageOf` when it is installed; a specifier left external is judged by
- * `testPackageOf` unless the package declares it to run in production.
- */
+// An external specifier is judged by `testPackageOf` unless the package declares it to run in production.
 export function testMaterialFindings({ chunks, manifest, reader, root }) {
     const declared = new Set([
         ...Object.keys(manifest.dependencies ?? {}),

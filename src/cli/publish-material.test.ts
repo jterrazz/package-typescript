@@ -12,13 +12,11 @@ import {
     testMaterialReader,
 } from './publish-material.js';
 
-/** The reader the guard loads, straight from its owner. */
 const reader = { materialAt, testPackageOf };
 
-/** A package root no disk holds, so every path below it is read whole. */
+// No disk holds it, so every path below it is read whole.
 const root = '/package';
 
-/** A package on disk for this test alone, holding `tree` — path to content. */
 function packageWith(tree: Record<string, string>): string {
     const unit = mkdtempSync(join(tmpdir(), 'publish-material-'));
     onTestFinished(() => {
@@ -32,7 +30,6 @@ function packageWith(tree: Record<string, string>): string {
     return unit;
 }
 
-/** The `found` part of each finding, the rest being the same four-part frame. */
 const found = (findings: { message: string }[]): string[] =>
     findings.map(({ message }) => message.split(' · ')[0] ?? '');
 
@@ -171,7 +168,6 @@ test("names each chunk as the package's own build writes it", async () => {
     );
 });
 
-/** A repository whose own install of `@jterrazz/test` publishes `oxlint` as its `./oxlint` entry. */
 function repositoryInstalling(oxlint: string): string {
     return packageWith({
         '.git/HEAD': 'ref: refs/heads/main\n',

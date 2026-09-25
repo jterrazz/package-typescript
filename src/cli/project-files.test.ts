@@ -6,7 +6,6 @@ import { expect, onTestFinished, test } from 'vitest';
 
 import { projectFiles } from './project-files.js';
 
-/** A repository whose index tracks every path given, each file holding one line of source. */
 function repositoryTracking(paths: readonly string[]): string {
     const root = mkdtempSync(join(tmpdir(), 'project-files-'));
     onTestFinished(() => {

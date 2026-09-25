@@ -148,7 +148,7 @@
         "by": "exit",
         "channel": "runtime",
         "id": "gitignore-no-ancestor",
-        "message": "does an ancestor `.gitignore` exist above",
+        "message": "exit(ancestorPath && existsSync(ancestorPath) ? 0 : 1);",
         "module": "src/cli/check-gitignore.js"
     },
     {
@@ -180,7 +180,7 @@
         "by": "exit",
         "channel": "runtime",
         "id": "test-package-below-floor",
-        "message": "compare(version, floor) >= 0",
+        "message": "compareVersions(version, floor) >= 0",
         "module": "src/cli/test-package.js"
     },
     {

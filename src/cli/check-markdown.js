@@ -1,29 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * A repository's prose, held to what a page owes its reader: its coordinates
- * resolve, and its blocks breathe.
- *
- * Two families. **Coordinates** — every relative link and every backticked
- * repo-relative path names something on disk, because a page that cites a file
- * it cannot reach has already drifted from the tree it describes. **Floors** —
- * the mechanical half of "How a page reads": a paragraph that runs past twelve
- * lines, a fenced block that runs fifteen without breathing, a `##` section of
- * thirty lines of prose broken by neither a `###` nor a list. The three numbers
- * are a floor, not the craft the doctrine asks for; the gap between them is a
- * reader's pass, not a red gate.
- *
- * A third family is a skill's alone: the chapter it routes to exists. A skill
- * is read from the install, cut off from the tree that could correct it, so a
- * `docs/NN-name.md` it names must name a chapter its package ships.
- *
- * Usage: node check-markdown.js [root] [--ignore-pattern <glob>]…
- *
- * One line per violation, `<rule>  <path>  <message>`. Exit code: 0 when the
- * prose holds, 1 otherwise. No `--fix`: there is no rewrite that can split a
- * paragraph into the two ideas it was carrying.
- */
-
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -31,59 +7,37 @@ import { argv, exit, stdout } from 'node:process';
 
 import { ignorePatternsOf, orRefused, projectFiles, readText } from './project-files.js';
 
-/** A paragraph, or one list item with its continuations, past this is a wall. */
 const PROSE_BLOCK_LIMIT = 12;
 
-/** A fenced block is measured by its longest run with no blank line in it. */
 const FENCE_RUN_LIMIT = 15;
 
-/** A `##` section carrying neither a `###` nor a list may run this long. */
 const SECTION_PROSE_LIMIT = 30;
 
-/**
- * A chapter a skill routes to, by the address a reader opens it at: the
- * skill ships beside its package's `docs/`, so the name resolves there.
- */
+// A skill ships beside its package's `docs/`, so a chapter it names resolves there.
 const CHAPTER = /(?<![\w/.-])docs\/(?<chapter>\d{2}-[a-z\d-]+\.md)/gu;
 
-/** Where a skill's package root is: the directory holding its `skills/`. */
 const SKILL_PAGE = /^(?<root>(?:.*\/)?)skills\/[^/]+\/.+\.md$/u;
 
 const LINK = /!?\[[^\]]*\]\((?<target>[^)\s]+)\)/gu;
 
-/**
- * A backticked string that reads as a path into this repository. The roster of
- * opening segments is closed on purpose: without it every `a/b` in a sentence
- * — a URL fragment, a ratio, a unit — would be read as a coordinate.
- *
- * `docs/` and `src/` are deliberately absent, and for one reason: every
- * repository has both, so a page teaching a convention writes `src/index.ts`
- * or `docs/03-testing.md` about the READER's tree, not about its own. A
- * relative link into either is still judged — that one names a real target.
- */
+// The opening segments are closed on purpose, or every `a/b` in a sentence would read as a
+// coordinate; `docs/` and `src/` are absent because a page teaching a convention names the reader's tree.
 const BACKTICK_PATH =
     /`(?<path>(?:apps|bin|lib|lint|packages|presets|specs|tests)\/[a-zA-Z\d._/-]+)`/gu;
 
-/** A fenced example illustrates; it does not cite. */
 const withoutFences = (markdown) => markdown.replaceAll(/^```.*?^```/gmsu, '');
 
-/** A harness header at the very top of a file: metadata, and never a paragraph. */
 const FRONTMATTER = /^---\n.*?\n---\n/su;
 const FENCE = /^\s*(?:```|~~~)/u;
 const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s/u;
 const TABLE_ROW = /^\s*\|/u;
 const HEADING = /^(?<hashes>#{1,6})\s/u;
 
-/** Blanked line for line, so a reported line number still points at the page's. */
-function lines(markdown) {
+// Blanked line for line, so a reported line number still points at the page's.
+function linesWithoutFrontmatter(markdown) {
     return markdown.replace(FRONTMATTER, (block) => block.replaceAll(/[^\n]/gu, '')).split('\n');
 }
 
-/**
- * A block is the reader's unit, not the parser's: a paragraph, or a single list
- * item with its continuations. A blank line, a heading, a table row, a fence or
- * the next list marker all stop one.
- */
 function longProseBlocks(markdown) {
     let inFence = false;
     let length = 0;
@@ -98,7 +52,7 @@ function longProseBlocks(markdown) {
         length = 0;
     };
 
-    for (const [index, line] of lines(markdown).entries()) {
+    for (const [index, line] of linesWithoutFrontmatter(markdown).entries()) {
         if (FENCE.test(line)) {
             close();
             inFence = !inFence;
@@ -124,7 +78,6 @@ function longProseBlocks(markdown) {
     return found;
 }
 
-/** A fenced block is measured by its longest unbroken run: grouping is blank lines. */
 function airlessFences(markdown) {
     let inFence = false;
     let fenceStart = 0;
@@ -139,7 +92,7 @@ function airlessFences(markdown) {
         run = 0;
     };
 
-    for (const [index, line] of lines(markdown).entries()) {
+    for (const [index, line] of linesWithoutFrontmatter(markdown).entries()) {
         if (FENCE.test(line)) {
             if (inFence) {
                 close();
@@ -164,7 +117,6 @@ function airlessFences(markdown) {
     return found;
 }
 
-/** A `##` section of pure prose, carrying neither a `###` nor a list to break it up. */
 function flatSections(markdown) {
     let inFence = false;
     let title = '';
@@ -180,7 +132,7 @@ function flatSections(markdown) {
         }
     };
 
-    for (const [index, line] of lines(markdown).entries()) {
+    for (const [index, line] of linesWithoutFrontmatter(markdown).entries()) {
         if (FENCE.test(line)) {
             inFence = !inFence;
             continue;
@@ -194,7 +146,7 @@ function flatSections(markdown) {
             const level = (heading.groups?.hashes ?? '').length;
             if (level <= 2) {
                 close();
-                /* An h1 titles the page; it is not one of its questions. */
+                // An h1 titles the page; it is not one of its questions.
                 title = level === 2 ? line.trim() : '';
                 start = index + 1;
                 prose = 0;
@@ -217,7 +169,6 @@ function flatSections(markdown) {
     return found;
 }
 
-/** A link a page owns: not a URL, not an anchor, not a mail address. */
 function isRelative(target) {
     return (
         target !== '' &&
@@ -228,14 +179,9 @@ function isRelative(target) {
     );
 }
 
-/*
- * A coordinate git ignores is not stale: a build product, a workbench clone
- * or a generated tree is absent from a fresh checkout by design, and the page
- * that names it is still true. Outside a repository nothing is ignored.
- */
+// A build product or a workbench clone is absent from a fresh checkout by design; the page naming it is true.
 function isIgnored(root, target) {
-    // An absent path has no kind: `dist/` in .gitignore matches the directory
-    // form only, so both spellings are asked, one probe each (`-q` takes one).
+    // `dist/` in .gitignore matches the directory form only, and `-q` takes one path per probe.
     return [target, `${target}/`].some(
         (spelling) =>
             spawnSync('git', ['check-ignore', '-q', '--no-index', spelling], {
@@ -245,7 +191,6 @@ function isIgnored(root, target) {
     );
 }
 
-/** The links of one page that resolve to nothing, ignored coordinates forgiven. */
 function missingLinks(root, path, cited) {
     const found = [];
     for (const match of cited.matchAll(LINK)) {
@@ -266,7 +211,6 @@ function missingLinks(root, path, cited) {
     return found;
 }
 
-/** The backticked paths of one page that name nothing, ignored coordinates forgiven. */
 function missingPaths(root, path, cited) {
     const found = [];
     for (const match of cited.matchAll(BACKTICK_PATH)) {
@@ -286,7 +230,6 @@ function missingPaths(root, path, cited) {
     return found;
 }
 
-/** The chapters a skill page routes to that its package does not ship. */
 function missingChapters(root, path, cited) {
     const skill = SKILL_PAGE.exec(path);
     if (skill === null) {
@@ -307,7 +250,6 @@ function missingChapters(root, path, cited) {
     return found;
 }
 
-/** Every violation of one page, in the order the rules are declared. */
 function auditPage(root, path, markdown) {
     const cited = withoutFences(markdown);
     const found = [

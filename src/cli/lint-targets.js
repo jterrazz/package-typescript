@@ -1,26 +1,7 @@
 #!/usr/bin/env node
 
-/**
- * The files oxlint and oxfmt are handed: the project's files every tree gate
- * starts from — cut to the source shapes a linter reads, or whole with
- * `--all` for the formatter, which skips a file it has no parser for.
- *
- * Handed the list rather than a directory, the linter and the formatter judge
- * exactly what every other tree gate judges: never the ground a test stands
- * on, never a path git ignores, whatever the tool's own walk would reach.
- *
- * Usage: node lint-targets.js [root] [--all] [--ignores-of <config>] [--ignore-pattern <glob>]…
- *
- * `--ignores-of` names a config the tool is handed by path, the toolchain's
- * default: the tool resolves its `ignorePatterns` against the config's own
- * directory, where they reach nothing, so the sweep leaves out what they name.
- *
- * One path per line, relative to the root. Exit code: 0 with the list —
- * empty when the project holds nothing the tool reads, which the caller reads
- * as nothing to lint or format — and 1 when the sweep itself refused an answer, which
- * the caller reads as "hand the tool the directory", so a gate never goes
- * silent on a sweep it could not make.
- */
+// A tool handed a config by path resolves its `ignorePatterns` against the config's directory, where
+// they reach nothing: `--ignores-of` leaves them out here. Exit 1 tells the caller to hand the directory.
 
 import { resolve } from 'node:path';
 import { argv, exit, stderr, stdout } from 'node:process';

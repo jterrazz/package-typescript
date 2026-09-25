@@ -1,13 +1,5 @@
-/**
- * The two themes oxlint's framed report is drawn in when its output is not a
- * terminal, and the column arithmetic every part of the frame shares.
- *
- * oxlint draws the ASCII theme with no colour when nothing forces colour, and
- * the Unicode theme in 24-bit colour when `CI` or `FORCE_COLOR` does — the log
- * a pass captures is never a terminal, so those are the only two it can print.
- * A style is an escape prefix, or nothing at all for the plain theme, whose
- * text therefore carries no escape byte.
- */
+// A captured log is never a terminal, so oxlint draws one of two themes: ASCII with no colour, or
+// Unicode in 24-bit colour where `CI` or `FORCE_COLOR` asks.
 
 const RESET = '\u001B[0m';
 
@@ -67,24 +59,21 @@ const RGB_STYLES = Object.freeze({
     warning: '\u001B[38;2;244;191;117;1m',
 });
 
-/** The theme of a framed report: ASCII and plain, or Unicode in colour. */
 export function themeOf(coloured) {
     return coloured
         ? { chars: UNICODE, styles: RGB_STYLES }
         : { chars: ASCII, styles: PLAIN_STYLES };
 }
 
-/** A text's code points, one string each. */
 export function codePointsOf(text) {
     return text.match(/[\s\S]/gu) ?? [];
 }
 
-/** Text in a style — untouched in the plain one, which has no prefix to close. */
 export function styled(text, style) {
     return style === '' ? text : `${style}${text}${RESET}`;
 }
 
-/** East Asian wide and fullwidth blocks, and the emoji blocks drawn two columns wide. */
+// East Asian wide and fullwidth blocks, and the emoji blocks drawn two columns wide.
 const WIDE = [
     [0x11_00, 0x11_5f],
     [0x2e_80, 0x30_3e],
@@ -105,7 +94,6 @@ const WIDE = [
 
 const ZERO_WIDTH = /^[\p{Mn}\p{Me}\u200B-\u200F\u2060\uFEFF]$/u;
 
-/** How many columns one code point takes. */
 function codePointWidth(character) {
     const code = character.codePointAt(0) ?? 0;
     if (ZERO_WIDTH.test(character)) {
@@ -119,7 +107,7 @@ const SEGMENTER = new Intl.Segmenter('en', { granularity: 'grapheme' });
 
 const PICTOGRAPH = /\p{Extended_Pictographic}|\p{Regional_Indicator}/u;
 
-/** How many columns a grapheme cluster takes: an emoji sequence is one wide glyph. */
+// An emoji sequence is one wide glyph.
 function graphemeWidth(grapheme) {
     if (
         grapheme.includes('\uFE0F') ||
@@ -131,7 +119,6 @@ function graphemeWidth(grapheme) {
     return codePointsOf(grapheme).reduce((sum, character) => sum + codePointWidth(character), 0);
 }
 
-/** The width of each grapheme cluster of a text, keyed by the code point that opens it. */
 function graphemesOf(text) {
     const graphemes = [];
     let index = 0;
@@ -143,14 +130,8 @@ function graphemesOf(text) {
     return graphemes;
 }
 
-/**
- * The columns each code point of a line occupies, in order: a tab reaches the
- * next multiple of four and an escape sequence takes none. Past ASCII a code
- * point takes its grapheme's width when it opens the NEXT grapheme not yet
- * counted, and none otherwise — so, as in oxlint's own count, a tab or an
- * escape leaves the grapheme it sits on uncounted, and every code point after
- * it on that line counts zero.
- */
+// As oxlint counts: a tab or an escape leaves the grapheme it sits on uncounted, and every code
+// point after it on that line counts zero.
 export function charWidths(text) {
     // oxlint-disable-next-line no-control-regex -- the ASCII range is the test
     const graphemes = /^[\u0000-\u007F]*$/u.test(text) ? null : graphemesOf(text);
@@ -178,7 +159,6 @@ export function charWidths(text) {
     });
 }
 
-/** The columns a line of text occupies. */
 export function textWidth(text) {
     return charWidths(text).reduce((sum, width) => sum + width, 0);
 }

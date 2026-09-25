@@ -1,15 +1,4 @@
-/**
- * The empty directories of a working copy — read off the disk, since git
- * tracks no directory and a sweep of what git lists can never see one.
- *
- * A directory is empty when it holds no file at any depth: one holding only
- * empty directories is empty too, and it is named once, at its top, since
- * deleting it deletes the rest. A directory holding a `.git` is a repository of
- * its own and is never entered, and neither is a folder no gate of the
- * toolchain reads (`node_modules/`, `.artifacts/`, `dist/` …) — a tool writes
- * there while the gates run. What git ignores is the machine's, and is left
- * alone; so is what an `--ignore-pattern` glob names.
- */
+// Read off the disk: git tracks no directory, so a sweep of what git lists can never see one.
 
 import { spawnSync } from 'node:child_process';
 import { readdirSync, rmdirSync } from 'node:fs';
@@ -17,21 +6,17 @@ import { join, matchesGlob } from 'node:path';
 
 import { UNSWEPT } from './project-files.js';
 
-/** A directory holding one is a repository, a worktree or a submodule: never entered. */
+// A repository, a worktree or a submodule: never entered.
 const REPOSITORY_MARKER = '.git';
 
-/** A glob naming what a directory holds — `data/**` — names the directory as well. */
 const namedByGlob = (path, pattern) =>
     matchesGlob(path, pattern) || matchesGlob(`${path}/child`, pattern);
 
-/**
- * Every empty directory under `root` at its top, relative to it and sorted —
- * `root` itself excepted, since a project that is empty is refused elsewhere.
- */
+// `root` itself excepted: a project that is empty is refused elsewhere.
 export function emptyDirectories(root, { ignorePatterns = [] } = {}) {
     const tops = [];
 
-    /** Whether `relativePath` holds no file at any depth; its empty children join `tops` when it does. */
+    // Empty children join `tops` when the directory itself is not empty.
     function isEmpty(relativePath) {
         let entries;
         try {
@@ -76,7 +61,6 @@ export function emptyDirectories(root, { ignorePatterns = [] } = {}) {
         .toSorted((left, right) => (left < right ? -1 : 1));
 }
 
-/** The directories among `paths` git ignores, or none where `root` is in no repository. */
 function ignoredByGit(root, paths) {
     if (paths.length === 0) {
         return new Set();
@@ -99,11 +83,7 @@ function ignoredByGit(root, paths) {
     );
 }
 
-/**
- * Delete one empty directory, bottom-up, one `rmdir` at a time — so a file
- * that landed in it since it was read stops the deletion rather than going
- * with it. Whether the whole directory went.
- */
+// One `rmdir` at a time, bottom-up, so a file that landed since it was read stops the deletion.
 export function removeEmptyDirectory(root, relativePath) {
     const path = join(root, relativePath);
     try {

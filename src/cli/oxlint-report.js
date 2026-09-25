@@ -1,35 +1,7 @@
 #!/usr/bin/env node
 
-/**
- * The Oxlint pass's log, drawn from the one run `check` makes: oxlint's JSON
- * report, printed back in the form oxlint itself would have printed here.
- *
- * `check` lints once, with `--format json`, because every reader of the run
- * needs the report — the ratchet counts it, the conventions checker's member
- * runs judge their rules in it — and only a pass with something to show needs
- * the log. That log is what a reader of the pass has always seen, so it is the
- * linter's own: the same lines, in the same order, in the same colours.
- *
- * Which form that is, oxlint decides from the environment — one line per
- * diagnostic under an AI agent, GitHub workflow commands on a GitHub runner,
- * the framed report anywhere else, in colour where `CI` or `FORCE_COLOR` asks
- * for it. So the form is never guessed here: the same binary, in the same
- * environment, lints a one-line file under a config of its own, and what it
- * printed names the form.
- *
- * Whatever oxlint printed before its report — `No files found to lint`, a
- * config it could not parse and the report that never came — is printed as it
- * came, then its standard error, then the report drawn.
- *
- * The pass also draws it when it PASSED and the Test Conventions pass failed:
- * the checker judges the `jterrazz(*)` diagnostics off this same report and
- * leaves printing them here, so a broken `test` section still shows where each
- * one stands. `--if-diagnostics` asks for that log, which is nothing at all
- * when the report holds no diagnostic.
- *
- * Usage: node oxlint-report.js <stdout-file> <stderr-file> --oxlint <binary> [--if-diagnostics]
- */
-
+// oxlint picks its print form from the environment, so the form is never guessed: the same binary
+// lints a one-line probe here, and what it printed names the form.
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -43,10 +15,6 @@ import { themeOf } from './oxlint-report-theme.js';
 
 const REPORT_OPENING = '{ "diagnostics": ';
 
-/**
- * What oxlint printed, cut where its JSON report opens: the text before it,
- * and the report — or the whole text, and a null report, where none came.
- */
 export function splitReport(text) {
     const inside = text.indexOf(`\n${REPORT_OPENING}`);
     const at = text.startsWith(REPORT_OPENING) ? 0 : inside === -1 ? -1 : inside + 1;
@@ -60,7 +28,6 @@ export function splitReport(text) {
     }
 }
 
-/** The form oxlint printed a one-line lint in: `agent`, `github`, `framed` or `framed-colour`. */
 export function formOf(printed) {
     if (printed.startsWith('::')) {
         return 'github';
@@ -72,11 +39,7 @@ export function formOf(printed) {
     return printed.includes('\u001B[') ? 'framed-colour' : 'framed';
 }
 
-/**
- * Ask oxlint, in this environment, to lint one line, and read the form it
- * answered in. The config is named, never discovered: discovery is the slow
- * part of a start, and the probe must cost nothing beside the run it follows.
- */
+// The config is named, never discovered: discovery is the slow part of a start.
 function probeForm(oxlint) {
     const directory = mkdtempSync(join(tmpdir(), 'jterrazz-oxlint-form-'));
     try {
@@ -94,7 +57,6 @@ function probeForm(oxlint) {
     }
 }
 
-/** A reader of the files the report names, each read once, and null for one that is gone. */
 function sourcesFrom(read) {
     const sources = new Map();
 
@@ -111,7 +73,6 @@ function sourcesFrom(read) {
     };
 }
 
-/** The report, drawn in a form; `read(filename)` hands back a file's bytes, or null. */
 export function renderReport(report, form, read) {
     const source = sourcesFrom(read);
     const diagnostics = report.diagnostics ?? [];
@@ -130,7 +91,6 @@ export function renderReport(report, form, read) {
     return typeof report.number_of_files === 'number' ? `${body}${closingLines(report)}` : body;
 }
 
-/** Whether the report carries a diagnostic to draw. */
 function holdsDiagnostics(report) {
     return (report?.diagnostics ?? []).length > 0;
 }

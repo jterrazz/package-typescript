@@ -1,17 +1,10 @@
-/**
- * What of a source file a framed diagnostic shows: the span a label names,
- * read with one line of context above and one below, cut into lines.
- *
- * The reading is oxlint's, byte for byte, because the frame is the reader's
- * only clue to where a finding sits: offsets are UTF-8 byte offsets, CR, LF
- * and CRLF each end a line while the cut into lines splits on LF alone, and a
- * span ending on a line break reaches the line after it.
- */
+// oxlint's reading, byte for byte: UTF-8 byte offsets, CR, LF and CRLF each end a line while the
+// cut into lines splits on LF alone, and a span ending on a line break reaches the line after it.
 
 const CR = 0x0d;
 const LF = 0x0a;
 
-/** Every line break of a source — `start` is its first byte, `end` its last. */
+// `start` is a break's first byte, `end` its last.
 function breaksOf(data) {
     const breaks = [];
     for (let index = 0; index < data.length; index += 1) {
@@ -28,12 +21,10 @@ function breaksOf(data) {
     return breaks;
 }
 
-/** A source file, read once for every label that points into it. */
 export function sourceOf(data) {
     return { breaks: breaksOf(data), data };
 }
 
-/** How many of the breaks start before `end`. */
 function breaksBefore(breaks, end) {
     let low = 0;
     let high = breaks.length;
@@ -49,7 +40,6 @@ function breaksBefore(breaks, end) {
     return low;
 }
 
-/** The byte a scan starts from, and the lines behind it: one of context kept. */
 function prefixOf({ breaks, data }, offset) {
     let end = Math.min(Math.max(offset - 1, 0), data.length);
     if (end > 0 && data[end - 1] === CR) {
@@ -68,12 +58,8 @@ function prefixOf({ breaks, data }, offset) {
     };
 }
 
-/**
- * One line break met while scanning a span: a break above the span moves the
- * one line of leading context down, and a break past the span's end, once the
- * span is reached, counts toward the one line of trailing context. True once
- * that line is read.
- */
+// A break above the span moves the leading context line down; past the span, it counts toward the
+// one trailing line. True once that line is read.
 function meetBreak(state, end, span) {
     state.lineCount += 1;
     if (end < span.offset) {
@@ -96,7 +82,6 @@ function meetBreak(state, end, span) {
     return false;
 }
 
-/** Scan from the byte before the span to the end of the line after it. */
 function scan(data, state, span) {
     while (state.position < data.length) {
         const byte = data[state.position];
@@ -121,11 +106,7 @@ function scan(data, state, span) {
     }
 }
 
-/**
- * The bytes a label's frame shows — from the line above it to the line below
- * it — with the 0-based number of its first line and the count of line
- * breaks read to reach its end. Null when the span runs past the source.
- */
+// From the line above the span to the line below it; null when the span runs past the source.
 export function readSpan(source, offset, length) {
     const { data } = source;
     const prefix = prefixOf(source, offset);
@@ -163,10 +144,7 @@ export function readSpan(source, offset, length) {
     };
 }
 
-/**
- * The 1-based line and byte column of an offset, the way oxlint places a
- * diagnostic on its one-line forms. Null past the end of the file.
- */
+// 1-based, as oxlint places a diagnostic on its one-line forms.
 export function positionAt({ breaks, data }, offset) {
     if (offset > data.length) {
         return null;
@@ -181,7 +159,6 @@ export function positionAt({ breaks, data }, offset) {
     return { column: at - (last === undefined ? 0 : last.end + 1) + 1, line: before + 1 };
 }
 
-/** The 0-based line and byte column of an offset inside a frame's bytes. */
 export function lineColumnAt(contents, offset) {
     const { data } = contents;
     let relative = Math.max(offset - contents.start, 0);
@@ -204,7 +181,6 @@ export function lineColumnAt(contents, offset) {
         : { column: relative - (last.end + 1), line: contents.line + breaks.length };
 }
 
-/** A frame's bytes as numbered lines — each with its byte offset, byte length and text. */
 export function linesOf(contents) {
     const { data, start: base } = contents;
     const lines = [];

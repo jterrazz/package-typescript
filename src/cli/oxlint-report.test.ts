@@ -2,12 +2,10 @@ import { expect, test } from 'vitest';
 
 import { formOf, renderReport, splitReport } from './oxlint-report.js';
 
-/** A JSON report as oxlint writes it, around the given diagnostics. */
 function reportOf(diagnostics: unknown[]): string {
     return `{ "diagnostics": ${JSON.stringify(diagnostics)},\n  "number_of_files": 2,\n  "number_of_rules": 3,\n  "threads_count": 4,\n  "start_time": 0.0125\n}\n`;
 }
 
-/** A `debugger` statement at `offset` of `filename`, as oxlint's JSON report carries one. */
 function debuggerAt(filename: string, offset: number): unknown {
     return {
         code: 'eslint(no-debugger)',

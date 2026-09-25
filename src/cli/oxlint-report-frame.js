@@ -1,25 +1,18 @@
-/**
- * The source frames of one framed diagnostic: every label read off its file,
- * labels close enough to share lines merged into one frame, and each frame
- * drawn — `[file:line:col]`, the numbered lines with their gutter, the marks
- * under them, and the closing corner.
- */
-
 import {
-    applies,
-    appliesGutter,
     ends,
     highlightGutter,
     lineGutter,
-    lineOnly,
     multiLineEnd,
     singleLineMarks,
+    spanDrawsInGutter,
+    spanTouchesLine,
+    spanWithinLine,
     starts,
 } from './oxlint-report-marks.js';
 import { lineColumnAt, linesOf, readSpan } from './oxlint-report-source.js';
 import { charWidths, codePointsOf, styled } from './oxlint-report-theme.js';
 
-/** A source line as oxlint prints it: every tab widened to the next multiple of four. */
+// As oxlint prints it: every tab widened to the next multiple of four.
 function lineText(text) {
     if (!text.includes('\t')) {
         return text;
@@ -33,29 +26,28 @@ function lineText(text) {
         .join('');
 }
 
-/** The widest gutter any line of a frame needs: the multi-line spans it carries at once. */
 function widestGutter(lines, spans) {
     return Math.max(
         0,
         ...lines.map(
             (line) =>
-                spans.filter((span) => !lineOnly(line, span) && appliesGutter(line, span)).length,
+                spans.filter((span) => !spanWithinLine(line, span) && spanDrawsInGutter(line, span))
+                    .length,
         ),
     );
 }
 
-/** One source line of a frame, then the marks drawn under it. */
 function drawLine(theme, frame, line) {
     const { styles, chars } = theme;
     const number = styled(String(line.number).padStart(frame.linumWidth), styles.linum);
     let text = ` ${number} ${chars.vbar} ${lineGutter(theme, frame, line)}${lineText(line.text)}\n`;
-    const touching = frame.spans.filter((span) => applies(line, span));
-    const onLine = touching.filter((span) => lineOnly(line, span));
+    const touching = frame.spans.filter((span) => spanTouchesLine(line, span));
+    const onLine = touching.filter((span) => spanWithinLine(line, span));
     if (onLine.length > 0) {
         text += frame.noLinum + highlightGutter(theme, frame, line, 'single');
         text += singleLineMarks(theme, frame, line, onLine);
     }
-    for (const span of touching.filter((candidate) => !lineOnly(line, candidate))) {
+    for (const span of touching.filter((candidate) => !spanWithinLine(line, candidate))) {
         if (span.label !== undefined && ends(line, span) && !starts(line, span)) {
             text += multiLineEnd(theme, frame, line, span);
         }
@@ -64,7 +56,6 @@ function drawLine(theme, frame, line) {
     return text;
 }
 
-/** One frame: the lines `contents` holds, marked with every label of the diagnostic. */
 function drawFrame(theme, { context, contents, labels, filename }) {
     const { chars, styles } = theme;
     const lines = linesOf(contents);
@@ -101,7 +92,7 @@ function drawFrame(theme, { context, contents, labels, filename }) {
     return `${text}${' '.repeat(linumWidth + 2)}${chars.lbot}${chars.hbar.repeat(4)}\n`;
 }
 
-/** The frames of a diagnostic's labels, sorted by offset: a label reaching the lines of the last frame joins it. */
+// A label reaching the lines of the last frame joins it.
 function framesOf(source, labels) {
     const frames = [];
     for (const right of labels) {
@@ -132,10 +123,7 @@ function framesOf(source, labels) {
     return frames;
 }
 
-/**
- * Every frame of a diagnostic, drawn — nothing for one with no label or no
- * source, and null when a label points outside its source.
- */
+// Null when a label points outside its source.
 export function drawFrames(theme, diagnostic, source) {
     const labels = (diagnostic.labels ?? []).map(({ label, span }) => ({
         label,

@@ -1,30 +1,7 @@
 #!/usr/bin/env node
 
-/**
- * No file the project would commit carries a live-looking credential.
- *
- * Two engines, one gate, one set of files: the project files every tree gate
- * starts from, the ground a spec stands on and `--ignore-pattern` left out.
- * Where `gitleaks` is on PATH it is the better scanner and this gate is its
- * runner — `gitleaks dir . --redact` over a copy of exactly those files, so a
- * finding names the file and never reprints the secret. Where it is not, ten
- * patterns over the same files answer the question well enough to stop the
- * leak that actually happens: a token pasted into a note and committed with it.
- *
- * Which engine runs is decided HERE and not in `check.sh`, because the gate
- * applies either way — bash decides whether a gate applies, and this one always
- * does. What changes is only who answers.
- *
- * A hit is forgiven by one thing: the same line declaring itself fake. There is
- * no exception list, and there will not be one — an allow-list of paths is the
- * first place a real leak hides.
- *
- * Usage: node check-secrets.js [root] [--ignore-pattern <glob>]…
- *
- * One line per violation, `<rule>  <path>  <message>`. Exit code: 0 when
- * nothing looks live, 1 otherwise. No `--fix`: a leaked credential is rotated,
- * not reformatted.
- */
+// There is no exception list, and there will not be one: an allow-list of paths is the first place a
+// real leak hides. Only the line declaring itself fake is forgiven.
 
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, lstatSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
@@ -34,7 +11,6 @@ import { argv, exit, stdout } from 'node:process';
 
 import { ignorePatternsOf, orRefused, projectFiles, readText } from './project-files.js';
 
-/** The ten shapes, each with the rule id a finding is reported under. */
 const PATTERNS = [
     {
         pattern: /-----BEGIN [A-Z ]*PRIVATE KEY-----/u,
@@ -68,17 +44,9 @@ const PATTERNS = [
     { pattern: /\bst\.[\da-f]{24,}\b/u, rule: 'secrets-service-token', what: 'a service token' },
 ];
 
-/** The one predicate that lets a hit through: the line must declare itself fake. */
 const isSynthetic = (line) => /dummy|example|fake|redacted|sample|synthetic/iu.test(line);
 
-/**
- * The files this gate judges, copied into a directory of their own: gitleaks
- * reads a DIRECTORY, and the project's directory holds what this gate never
- * judges — an ignored path, the ground a spec stands on, what
- * `--ignore-pattern` overlooks. The copy keeps every path as the project
- * spells it, so a finding names the project's own file. A symlink is left out,
- * as the pattern engine leaves it: its content is judged at its target.
- */
+// gitleaks reads a directory, so the judged files are copied into one, each at the project's own path.
 function stageFiles(root, files) {
     const staged = mkdtempSync(join(tmpdir(), 'typescript-secrets-'));
     for (const path of files) {
@@ -90,14 +58,13 @@ function stageFiles(root, files) {
             mkdirSync(dirname(join(staged, path)), { recursive: true });
             copyFileSync(source, join(staged, path));
         } catch {
-            /* A file gone from the disk has nothing left to leak. */
+            // A file gone from the disk has nothing left to leak.
         }
     }
 
     return staged;
 }
 
-/** Gitleaks, when the machine has it — the better scanner, run redacted over the judged files. */
 function runGitleaks(root, files) {
     const probe = spawnSync('gitleaks', ['version'], { stdio: 'ignore' });
     if (probe.error) {

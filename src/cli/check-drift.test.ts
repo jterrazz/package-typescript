@@ -6,12 +6,10 @@ import { expect, onTestFinished, test } from 'vitest';
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 
-/** The drift report as `check` runs it: `check-drift.js <root> --oxlint <path> -c <default> [--json]`. */
 const DRIFT = resolve(import.meta.dirname, 'check-drift.js');
 const OXLINT = join(PACKAGE_ROOT, 'node_modules/.bin/oxlint');
 const DEFAULT_PROFILE = join(PACKAGE_ROOT, 'src/presets/oxlint/profiles/node.js');
 
-/** A project with no oxlint config of its own, one file, and the files given beside it — removed when the test ends. */
 function configlessProject(files: Record<string, string> = {}): string {
     const directory = mkdtempSync(resolve(tmpdir(), 'check-drift-'));
     onTestFinished(() => {
