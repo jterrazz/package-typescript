@@ -12,9 +12,7 @@ build: node_modules/.install
 lint: node_modules/.install
 	npm run lint
 
-# Every fixer runs, whatever the one before it said, and the verdict is theirs
-# combined, at the end: the test checker's first, then the toolchain's own,
-# whose formatter settles what the checker wrote.
+# Every fixer runs and the verdict comes at the end, the checker first (docs/06-quality-checks.md, "The six gestures").
 fix: node_modules/.install
 	@status=0; \
 	npx jterrazz-test-check --fix || status=1; \

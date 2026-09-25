@@ -1,4 +1,4 @@
-// Consumer #1 of the oxfmt entry, self-referenced through the exports map.
+// Self-referenced through the exports map, as a consumer imports it.
 import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
 
 export default defineConfig(base);
