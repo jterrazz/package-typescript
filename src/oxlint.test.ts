@@ -69,11 +69,6 @@ test('takes a key the merge tables do not name from the last config that sets it
         { categories: { correctness: 'error' } },
     );
 
-    /*
-     * No config this package SHIPS carries a `categories` — every rule is
-     * decided by name — and that is exactly why it is the key available here.
-     */
-
     // Then - last wins, which is the rule for every key the three tables leave out
     expect(merged.categories).toStrictEqual({ correctness: 'error' });
 });
