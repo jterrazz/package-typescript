@@ -1,30 +1,10 @@
-/*
- * The tool-facing oxlint entry (`@jterrazz/typescript/oxlint`): the six
- * profiles, the `compose()` merger, the layer-map builder, and oxlint's own
- * `defineConfig`. A consumer names a PROFILE, not a set of fragments:
- *
- *     import { defineConfig, node } from '@jterrazz/typescript/oxlint';
- *
- *     export default defineConfig(node);
- *
- * What each profile carries, and why every rule of every loaded plugin is
- * decided by name, is [Lint presets](../docs/07-lint-presets.md).
- *
- * `lint/` holds the manifest — decisions, with a reason behind every `off`.
- * What crosses this file is always a plain oxlint config, compiled from it.
- */
-
 import hexagonalFragment from '../lint/architecture/hexagonal.js';
 import { layers as layersFragment } from '../lint/architecture/layers.js';
 import { compile } from '../lint/compile.js';
 
 export { merge as compose } from '../lint/compile.js';
 
-/* Oxlint's own `defineConfig`, re-exported from here: a bare
- * `import { defineConfig } from 'oxlint'` in a consumer's config resolves only
- * where the consumer declares oxlint itself, which pnpm's strict node_modules
- * refuses to assume. Resolved from THIS package — where oxlint is a real
- * dependency — the one-devDependency shape holds on every package manager. */
+// A consumer's bare `from 'oxlint'` resolves only where it declares oxlint itself, which pnpm refuses to assume.
 export { defineConfig } from 'oxlint';
 
 export { default as astro } from './presets/oxlint/profiles/astro.js';
@@ -39,20 +19,12 @@ export { HEXAGONAL_MAP } from '../lint/architecture/hexagonal.js';
 /** The hexagonal layer map, ready to compose beside a profile. */
 export const hexagonal = compile(hexagonalFragment);
 
-/**
- * A declared layer map as an additive oxlint fragment: one
- * `no-restricted-imports` override per layer, each carrying that layer's
- * complete pattern list (an oxlint override REPLACES, it never merges).
- */
+// An oxlint override replaces, never merges, so each layer carries its complete pattern list.
 export function layers(definition) {
     return compile(layersFragment(definition));
 }
 
-/**
- * A config for a NESTED oxlint.config: oxlint accepts linter `options` in the
- * root config only, and the root's already turn type information on for the
- * whole tree, so a subtree's profile ships without its own.
- */
+// oxlint accepts linter `options` in the root config only.
 export function nested(config) {
     const { options: _rootOnly, ...subtree } = config;
 

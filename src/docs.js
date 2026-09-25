@@ -1,45 +1,18 @@
-/**
- * The shape of a repository's `docs/`, judged as a pure function.
- *
- * Every repository carries the same manual: a map at `docs/README.md`, a fixed
- * spine — architecture, developing, testing, and operating when the repository
- * ships something that runs — and its own chapters numbered contiguously after
- * it. `auditDocs` takes a plain description of that tree and returns what
- * breaks the shape. Nothing here reads the filesystem, so the same rules judge
- * a project running `typescript check` and a clone nobody installed anything
- * into.
- *
- * This module is the single executable copy of the rule ids AND of the sentence
- * each one prints. A page names the ids and what each refuses; it never spells
- * a message, so the two cannot drift.
- */
-
-/** How many opening lines of a file a rule may read — the reader supplies them. */
+// The single executable copy of the rule ids and of each sentence they print; pages name ids, never
+// messages. Nothing here reads the filesystem, so a clone nobody installed into is judged the same.
 export const HEAD_LINES = 20;
 
-/** The four reserved numbers, in order: position 01 through 04. */
 const SPINE = ['01-architecture.md', '02-developing.md', '03-testing.md', '04-operating.md'];
 
-/** The three the spine REQUIRES; 04 is required only by the presence test. */
+// 04 is required only by the presence test.
 const REQUIRED_SPINE = SPINE.slice(0, 3);
 
-/** The only subfolders `docs/` may hold. */
 const SUBFOLDERS = new Set(['_assets/', 'decisions/']);
 
-/**
- * The folder a generated API reference takes. The API is the types a
- * consumer's editor resolves, and a projection of them into the manual is a
- * second copy — refused by name, so the sentence says why rather than only
- * that the folder is foreign.
- */
+// A generated API reference is a second copy of the types an editor resolves: refused by name.
 const GENERATED_REFERENCE = 'reference/';
 
-/**
- * The closed roster of journal words. A chapter names a SUBJECT the repository
- * has, never the state of a piece of work: the record of a decision is an ADR,
- * and the history is git's. This is the roster's one copy — no page keeps a
- * second one.
- */
+// A chapter names a subject, never the state of a piece of work.
 const JOURNAL_WORDS = new Set([
     'draft',
     'exploration',
@@ -53,47 +26,33 @@ const JOURNAL_WORDS = new Set([
     'wip',
 ]);
 
-/** The closed status vocabulary of a decision record. */
 const STATUSES = new Set(['Proposed', 'Accepted', 'Deprecated']);
 
-/**
- * The fourth status carries the record that replaced it, as a link a reader
- * can follow — a citation is a place a human can look, not just a number.
- */
 const SUPERSEDED = /^Superseded by \[ADR-\d{3}\]\([^)]+\)$/u;
 
-/** The same status named but not linked — the successor exists, the citation does not. */
 const BARE_SUPERSEDED = /^Superseded by ADR-\d{3}$/u;
 
-/** What a chapter's file name must be: two digits, lowercase words, single hyphens. */
 const CHAPTER_NAME = /^\d{2}-[a-z\d]+(?:-[a-z\d]+)*\.md$/u;
 
-/** What a decision record's file name must be: three digits, then the same words. */
 const DECISION_NAME = /^\d{3}-[a-z\d]+(?:-[a-z\d]+)*\.md$/u;
 
-/** A decision record's first heading, carrying the number the file claims. */
 const DECISION_HEADING = /^# ADR-(?<number>\d{3}): \S/u;
 
-/** The `**Status:**` line of a decision record, wherever it sits in the head. */
 const DECISION_STATUS = /^\*\*Status:\*\*\s*(?<status>.+?)\s*$/u;
 
-/** A link with a scheme (`https:`, `mailto:`) cites; it never reaches into a tree. */
 const SCHEME = /^[a-z][\d+.a-z-]*:/iu;
 
-/** What each of the three presence facts means, in the sentence `04` is asked for. */
 const SHIPPING_REASONS = [
     ['dockerfile', 'an image (a Dockerfile)'],
     ['infrastructure', 'a deployment (.infrastructure/)'],
     ['publishable', 'a published package (package.json is not private)'],
 ];
 
-/** Directly under `docs/` — a file, or a directory with its trailing slash. */
 function directChildren(files) {
     return files.filter((path) => /^docs\/[^/]+\/?$/u.test(path));
 }
 
-/** Everything under a folder of `docs/`, named relative to that folder. */
-function under(files, folder) {
+function filesUnder(files, folder) {
     const prefix = `docs/${folder}`;
 
     return files
@@ -101,26 +60,19 @@ function under(files, folder) {
         .map((path) => ({ name: path.slice(prefix.length), path }));
 }
 
-/** A number as a chapter writes it — two digits, more only when it has to. */
-function padded(value) {
+function twoDigit(value) {
     return String(value).padStart(2, '0');
 }
 
-/** The link target itself, without the anchor a reader lands on. */
 function targetPath(link) {
     return link.split('#')[0].replace(/^\.\//u, '');
 }
 
-/** A link that names a chapter of the same folder — `03-testing.md`, no slash. */
 function isChapterLink(target) {
     return /^\d/u.test(target) && !target.includes('/');
 }
 
-/**
- * A link resolved against the page carrying it, `..` folded. A result that
- * still opens on `..` climbed above the repository root: it reaches into
- * another tree.
- */
+// A result still opening on `..` climbed above the repository root.
 function resolveLink(from, link) {
     const stack = [];
 
@@ -140,7 +92,6 @@ function resolveLink(from, link) {
     return stack.join('/');
 }
 
-/** The map's verdicts: it exists, it is bijective with the chapters, it routes nowhere else. */
 function auditMap(report, { chapters, files, links }) {
     if (!files.includes('docs/README.md')) {
         report(
@@ -187,7 +138,6 @@ function auditMap(report, { chapters, files, links }) {
     }
 }
 
-/** The chapters: their names, their numbering, the four reserved positions, their subjects. */
 function auditChapters(report, { chapters, ships }) {
     for (const chapter of chapters) {
         if (!CHAPTER_NAME.test(chapter.name)) {
@@ -207,7 +157,7 @@ function auditChapters(report, { chapters, ships }) {
             report(
                 'docs-spine-name',
                 chapter.path,
-                `${chapter.path} takes number ${padded(chapter.number)}, which is reserved for ${reserved}`,
+                `${chapter.path} takes number ${twoDigit(chapter.number)}, which is reserved for ${reserved}`,
             );
         }
     }
@@ -235,13 +185,10 @@ function auditChapters(report, { chapters, ships }) {
     auditChapterWords(report, chapters);
 }
 
-/** The run of numbers: contiguous from 01, one file per number, 04 the one that may be absent. */
 function auditChapterNumbering(report, chapters) {
     const numbers = chapters.map((chapter) => chapter.number).toSorted((a, b) => a - b);
     const hasOperating = numbers.includes(4);
-    // 04 is the one number the spine never requires (`docs-operating-missing`
-    // Asks for it on its own terms), so a run missing it is still contiguous —
-    // Every number from 05 on shifts down one slot to close the gap.
+    // 04 is never required by the spine, so a run missing it is contiguous with every later number shifted down.
     const expected = (index) => (!hasOperating && index + 1 >= 4 ? index + 2 : index + 1);
     const contiguous = numbers.every((number, index) => number === expected(index));
     if (numbers.length === 0 || contiguous) {
@@ -251,11 +198,10 @@ function auditChapterNumbering(report, chapters) {
     report(
         'docs-chapter-numbering',
         'docs/',
-        `chapter numbers run ${numbers.map(padded).join(', ')}: they are contiguous from 01, one file per number, except that 04 may be absent`,
+        `chapter numbers run ${numbers.map(twoDigit).join(', ')}: they are contiguous from 01, one file per number, except that 04 may be absent`,
     );
 }
 
-/** A chapter named for a journal rather than a subject — the record is an ADR. */
 function auditChapterWords(report, chapters) {
     for (const chapter of chapters) {
         const word = chapter.name.split(/[.-]/u).find((segment) => JOURNAL_WORDS.has(segment));
@@ -269,7 +215,6 @@ function auditChapterWords(report, chapters) {
     }
 }
 
-/** The run of record numbers: from 001, with no gap, and no number claimed twice. */
 function auditDecisionNumbers(report, records) {
     const numbers = [...new Set(records.map((record) => record.name.slice(0, 3)))].toSorted(
         (left, right) => left.localeCompare(right),
@@ -300,7 +245,6 @@ function auditDecisionNumbers(report, records) {
     }
 }
 
-/** What sits directly under `docs/` and is neither the map, a chapter, nor one of the two folders. */
 function auditFolder(report, { children }) {
     for (const path of children) {
         const name = path.slice('docs/'.length);
@@ -325,7 +269,6 @@ function auditFolder(report, { children }) {
     }
 }
 
-/** One decision record: the name it takes, the heading it opens on, the status it declares. */
 function auditRecord(report, record, heads) {
     const number = record.name.slice(0, 3);
     const head = heads[record.path] ?? [];
@@ -349,13 +292,12 @@ function auditRecord(report, record, heads) {
     }
 }
 
-/** The `decisions/` folder: its records, its numbering, its mold, and the index it never keeps. */
 function auditDecisions(report, { files, heads }) {
     if (!files.includes('docs/decisions/')) {
         return;
     }
 
-    const entries = under(files, 'decisions/');
+    const entries = filesUnder(files, 'decisions/');
 
     for (const entry of entries) {
         const mold = entry.name === '_template.md' || entry.name === 'README.md';
@@ -388,7 +330,6 @@ function auditDecisions(report, { files, heads }) {
     }
 }
 
-/** No page of the manual reaches into a tree the repository does not own. */
 function auditLinks(report, { files, links }) {
     for (const path of files) {
         for (const link of links[path] ?? []) {
@@ -406,13 +347,7 @@ function auditLinks(report, { files, links }) {
     }
 }
 
-/**
- * What breaks the shape of `docs/`, in rule order, each violation naming the
- * path it is about. An empty array is a compliant manual.
- *
- * A repository with no `docs/` gets exactly one violation: every other rule
- * would restate the same absence, and one sentence is the whole answer.
- */
+// A repository with no `docs/` gets exactly one violation: every other rule would restate the absence.
 export function auditDocs(tree) {
     const files = tree.files ?? [];
 

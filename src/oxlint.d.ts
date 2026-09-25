@@ -1,11 +1,3 @@
-/*
- * The shape of a lint config is oxlint's own fact, so this entry does not
- * restate it: `OxlintConfig` and `OxlintOverride` are re-exported from the
- * tool, under the names a consumer already reads here. A hand copy drifts —
- * this one had `plugins?: string[]` where oxlint takes a closed union, and a
- * consumer's `defineConfig(node)` stopped type-checking.
- */
-
 import type { OxlintConfig } from 'oxlint';
 
 /** A rule entry as oxlint reads it: a level, or a level and its options. */
@@ -31,24 +23,13 @@ declare const react: OxlintConfig;
 /** The six boundaries the `hexagonal` fragment enforces, as a declared map. */
 declare const HEXAGONAL_MAP: readonly Layer[];
 
-/**
- * Deterministic merge of oxlint config objects, left to right:
- * jsPlugins/plugins/ignorePatterns/extends concatenated and deduped,
- * rules/env/globals/options/settings shallow-merged (last wins),
- * overrides concatenated.
- */
+/** Merges oxlint configs left to right: lists concatenated and deduped, maps shallow-merged with the last winning. */
 declare function compose(...configs: OxlintConfig[]): OxlintConfig;
 
-/**
- * A declared layer map as an additive fragment: one `no-restricted-imports`
- * override per layer, each carrying that layer's complete pattern list.
- */
+/** A declared layer map as an additive fragment: one `no-restricted-imports` override per layer. */
 declare function layers(definition: { id?: string; map: readonly Layer[] }): OxlintConfig;
 
-/**
- * A config for a nested oxlint.config: the profile without the linter
- * `options` oxlint accepts in the root config only.
- */
+/** A profile for a nested oxlint.config: without the `options` oxlint accepts at the root only. */
 declare function nested(config: OxlintConfig): OxlintConfig;
 
 export { defineConfig } from 'oxlint';

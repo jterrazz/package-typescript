@@ -120,7 +120,6 @@ test('gives a layer map one override per layer, complete', () => {
     ]);
 });
 
-/** A map whose two layers claim the same files — the shape `layers()` refuses. */
 function buildOverlappingMap() {
     return layers({
         map: [

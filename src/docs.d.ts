@@ -2,18 +2,9 @@
 export type DocsTree = {
     /** The root `AGENTS.md`, its whole text, or `null` when the repository has none. */
     readonly agents: null | string;
-    /**
-     * Every path under `docs/`, repository-relative, sorted, directories carrying
-     * a trailing slash — `docs/` itself included, whose absence IS `docs-absent`.
-     */
+    /** Every path under `docs/`, sorted, a directory with its trailing slash — `docs/` itself included. */
     readonly files: readonly string[];
-    /**
-     * The opening lines of each file a rule reads — a decision record's head.
-     * The reader supplies the first
-     * `HEAD_LINES` of every markdown file under `docs/`; no rule looks further
-     * down a page, so a `**Status:**` below that line is a status the manual
-     * does not declare.
-     */
+    /** The first `HEAD_LINES` of every markdown file under `docs/`; no rule reads further down. */
     readonly heads: Readonly<Record<string, readonly string[]>>;
     /** Every markdown link target of each file under `docs/`, in the order the page carries them. */
     readonly links: Readonly<Record<string, readonly string[]>>;
