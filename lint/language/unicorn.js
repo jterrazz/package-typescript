@@ -7,6 +7,7 @@ import { allOn, fragment, off, on, unsafeFix } from '../_contract.js';
  */
 export default fragment({
     id: 'language/unicorn',
+    audience: 'consumer',
     plugins: ['unicorn'],
     rules: {
         ...allOn(

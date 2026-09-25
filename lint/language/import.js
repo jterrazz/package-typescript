@@ -36,6 +36,7 @@ export const EXTENSIONS_NEVER = on(['never', ASSETS]);
 
 export default fragment({
     id: 'language/import',
+    audience: 'consumer',
     plugins: ['import'],
     rules: {
         ...allOn(

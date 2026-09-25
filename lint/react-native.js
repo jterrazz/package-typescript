@@ -12,6 +12,7 @@ import { EXTENSIONS_NEVER } from './language/import.js';
  */
 export default fragment({
     id: 'react-native',
+    audience: 'consumer',
     globals: {
         __DEV__: 'readonly',
         ErrorUtils: 'readonly',

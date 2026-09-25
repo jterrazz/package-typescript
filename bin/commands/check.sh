@@ -296,9 +296,11 @@ done
 # prints nothing and weighs nothing in the verdict. A pass another one reads
 # still runs, unreported: the linter's report under the member runs of the
 # conventions checker, and the Names report under the ratchet's held line.
-ALL_PASSES=(typescript oxlint oxfmt gitignore knip conventions docs publish architecture astro suppressions markdown names secrets drift)
+# The passes it may name are the rows of `src/cli/check-passes.json`, each
+# with the audience it serves, read only when a selection needs checking.
 SELECTED_PASSES="${TYPESCRIPT_CHECK_PASSES:-}"
 if [ -n "$SELECTED_PASSES" ]; then
+    read -r -a ALL_PASSES <<< "$(node -e 'const {readFileSync}=require("node:fs");process.stdout.write(JSON.parse(readFileSync(process.argv[1],"utf8")).map((row)=>row.pass).join(" "))' "$PACKAGE_ROOT/src/cli/check-passes.json")"
     IFS=',' read -r -a requested_passes <<< "$SELECTED_PASSES"
     for requested_pass in "${requested_passes[@]}"; do
         case " ${ALL_PASSES[*]} " in

@@ -24,6 +24,7 @@ const NATURAL = [{ type: 'natural' }];
 
 export default fragment({
     id: 'sorted',
+    audience: 'consumer',
     jsPlugins: [require.resolve('eslint-plugin-perfectionist')],
     rules: {
         'perfectionist/sort-heritage-clauses': on(NATURAL),

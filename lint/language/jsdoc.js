@@ -12,6 +12,7 @@ const BY_TYPESCRIPT = {
 
 export default fragment({
     id: 'language/jsdoc',
+    audience: 'consumer',
     plugins: ['jsdoc'],
     rules: {
         ...allOn(

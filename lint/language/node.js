@@ -5,6 +5,7 @@ import { allOn, fragment, off } from '../_contract.js';
  */
 export default fragment({
     id: 'language/node',
+    audience: 'consumer',
     plugins: ['node'],
     rules: {
         ...allOn(

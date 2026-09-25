@@ -7,6 +7,7 @@ import { allOn, fragment } from './_contract.js';
  */
 export default fragment({
     id: 'a11y',
+    audience: 'consumer',
     plugins: ['jsx-a11y'],
     rules: allOn(
         [

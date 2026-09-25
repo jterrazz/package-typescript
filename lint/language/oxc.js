@@ -7,6 +7,7 @@ import { allOn, fragment, off } from '../_contract.js';
  */
 export default fragment({
     id: 'language/oxc',
+    audience: 'consumer',
     plugins: ['oxc'],
     rules: {
         ...allOn(

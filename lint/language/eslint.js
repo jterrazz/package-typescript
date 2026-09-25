@@ -10,6 +10,7 @@ const SIZE_SINCE = '11.0.0';
 
 export default fragment({
     id: 'language/eslint',
+    audience: 'consumer',
     plugins: ['eslint'],
     overrides: [
         /*

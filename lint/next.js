@@ -8,6 +8,7 @@ import { EXTENSIONS_NEVER } from './language/import.js';
  */
 export default fragment({
     id: 'next',
+    audience: 'consumer',
     plugins: ['nextjs'],
     ignorePatterns: ['.next/**', 'next-env.d.ts', 'assets/**', 'public/**'],
     overrides: [

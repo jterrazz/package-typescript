@@ -47,6 +47,7 @@ export function layers({ id = 'layers', map }) {
 
     return fragment({
         id,
+        audience: 'consumer',
         overrides: map.map((layer) =>
             scoped({
                 files: [...layer.files],

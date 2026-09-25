@@ -8,6 +8,7 @@ import { allOn, fragment, off, on } from './_contract.js';
  */
 export default fragment({
     id: 'react',
+    audience: 'consumer',
     plugins: ['react', 'react-perf'],
     rules: {
         ...allOn(

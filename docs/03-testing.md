@@ -95,6 +95,14 @@ The presets this repository ships ignore those four folders wherever they sit, a
 
 The domains today: `build`, `check` (the passes, each stating the whole run), `clean`, `dev`, `docs-layout` (the manual's rules, one document per family), `doctor`, `help`, `preset`, `start`.
 
+## Who a rule is for
+
+Every rule this package holds declares its audience: `consumer`, meaningful in any project that uses the package, or `self`, this package's own suite discipline. Only consumer rules ship. A self rule lives in this repository's tests and its own configs, and this chapter is where it is described: the catalogue in [Lint presets](07-lint-presets.md) lists consumer rules alone.
+
+A rulebook fragment declares `audience` for every decision it holds, from the closed pair `AUDIENCES` in `lint/_contract.js`, and each catalogue entry carries it. A pass of `typescript check` declares its own in `src/cli/check-passes.json`, the registry the internal selector reads. Every fragment and every pass is `consumer` today, since each one judges a consumer's project.
+
+`specs/surface/package/audience.test.ts` holds the split: every fragment and every pass declares an audience, every profile is compiled from consumer fragments alone, and the registry names exactly the passes `bin/commands/check.sh` selects.
+
 ## The self-lint is the strongest test
 
 `npm run lint` is `typescript check` run on this repository, so the package is the first consumer of every gate it ships:

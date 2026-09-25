@@ -13,6 +13,7 @@ import { ASSETS } from './language/import.js';
  */
 export default fragment({
     id: 'astro',
+    audience: 'consumer',
     ignorePatterns: ['.astro/**', 'assets/**', 'public/**'],
     overrides: [
         scoped({

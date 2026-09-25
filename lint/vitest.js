@@ -136,6 +136,7 @@ const COVERED_BY_TESTING = { by: '@jterrazz/test testing', kind: 'covered' };
 
 export default fragment({
     id: 'vitest',
+    audience: 'consumer',
     plugins: ['vitest'],
     overrides: [
         scoped({

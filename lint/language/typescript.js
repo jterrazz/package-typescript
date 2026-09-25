@@ -37,6 +37,7 @@ const UNTYPED_IN_JAVASCRIPT = [
 
 export default fragment({
     id: 'language/typescript',
+    audience: 'consumer',
     plugins: ['typescript'],
     overrides: [
         scoped({

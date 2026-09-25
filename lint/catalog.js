@@ -9,6 +9,7 @@ import { PROFILES } from './profiles.js';
  * @property {boolean} [typeAware] Whether it needs type information.
  * @property {readonly string[]} [scoped] The globs it applies to, when not all of them.
  * @property {string} fragment The fragment that took the decision.
+ * @property {'consumer' | 'self'} audience Who the fragment declares the decision is for.
  * @property {string} since The version the decision was taken in.
  * @property {string[]} profiles The profiles that carry it.
  */
@@ -61,14 +62,18 @@ export function catalog() {
     );
 }
 
-/** The catalogue as the markdown table the chapter carries between its markers. */
+/** The catalogue as the markdown table the chapter carries between its markers: its consumer rules alone. */
 export function render() {
-    const rows = catalog().map((entry) => {
-        const state = entry.level === 'off' ? 'off' : 'on';
-        const why =
-            entry.level === 'off' ? `${entry.reason.kind} — ${entry.reason.by}` : scopeOf(entry);
-        return `| \`${entry.rule}\` | ${entry.profiles.join(', ')} | ${state} | ${why} | ${entry.since} |`;
-    });
+    const rows = catalog()
+        .filter((entry) => entry.audience === 'consumer')
+        .map((entry) => {
+            const state = entry.level === 'off' ? 'off' : 'on';
+            const why =
+                entry.level === 'off'
+                    ? `${entry.reason.kind} — ${entry.reason.by}`
+                    : scopeOf(entry);
+            return `| \`${entry.rule}\` | ${entry.profiles.join(', ')} | ${state} | ${why} | ${entry.since} |`;
+        });
 
     return [
         '| Rule | Profiles | State | Reason | Since |',
@@ -98,6 +103,7 @@ function absorb(decisions, fragment, entries, scoped) {
     for (const [rule, decision] of Object.entries(entries)) {
         decisions.set(`${rule} @ ${scope}`, {
             ...decision,
+            audience: fragment.audience,
             fragment: fragment.id,
             rule,
             scoped,

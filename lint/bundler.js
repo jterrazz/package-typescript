@@ -13,6 +13,7 @@ import { EXTENSIONS_NEVER } from './language/import.js';
  */
 export default fragment({
     id: 'bundler',
+    audience: 'consumer',
     rules: {
         'import/extensions': EXTENSIONS_NEVER,
     },

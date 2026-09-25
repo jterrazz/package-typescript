@@ -7,6 +7,7 @@
  *
  *     export default fragment({
  *         id: 'language/promise',
+ *         audience: 'consumer',
  *         plugins: ['promise'],
  *         since: '10.0.0',
  *         rules: {
@@ -41,6 +42,14 @@
 
 /** The version this rulebook was born in — the default `since` of every decision. */
 export const SINCE = '10.0.0';
+
+/**
+ * Who a rule is FOR. A `consumer` rule means something in any project that
+ * uses this package, and only those ship; a `self` rule is this package's own
+ * suite discipline, and lives in its tests
+ * ([Testing](../docs/03-testing.md)).
+ */
+export const AUDIENCES = Object.freeze(['consumer', 'self']);
 
 /** The five reasons an `off` may carry. Anything else is refused at load time. */
 export const REASON_KINDS = Object.freeze([
@@ -108,10 +117,13 @@ export function typeAware(options) {
  * Declare a fragment: one plugin's decisions, or one framework's. `rules` maps
  * an oxlint rule id to an `on()` / `typeAware()` / `off()` decision, and every
  * decision inherits the fragment's `since` unless it carries its own.
+ * `audience` is one of `AUDIENCES`, and it is the audience of every decision
+ * the fragment holds.
  */
 export function fragment(definition) {
     const {
         id,
+        audience,
         plugins = [],
         jsPlugins = [],
         rules = {},
@@ -135,6 +147,7 @@ export function fragment(definition) {
     }
 
     return Object.freeze({
+        audience,
         decisions: Object.freeze(decisions),
         env,
         globals,
@@ -154,11 +167,16 @@ export function decisionsOf(...fragments) {
     const merged = {};
     for (const one of fragments) {
         for (const [rule, decision] of Object.entries(one.decisions)) {
-            merged[rule] = { ...decision, fragment: one.id };
+            merged[rule] = { ...decision, audience: one.audience, fragment: one.id };
         }
         for (const override of one.overrides) {
             for (const [rule, decision] of Object.entries(override.decisions ?? {})) {
-                merged[rule] = { ...decision, fragment: one.id, scoped: override.files };
+                merged[rule] = {
+                    ...decision,
+                    audience: one.audience,
+                    fragment: one.id,
+                    scoped: override.files,
+                };
             }
         }
     }
