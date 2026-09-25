@@ -101,7 +101,9 @@ Every rule this package holds declares its audience: `consumer`, meaningful in a
 
 A rulebook fragment declares `audience` for every decision it holds, from the closed pair `AUDIENCES` in `lint/_contract.js`, and each catalogue entry carries it. A pass of `typescript check` declares its own in `src/cli/check-passes.json`, the registry the internal selector reads. Every fragment and every pass is `consumer` today, since each one judges a consumer's project.
 
-The self rules are the rulebook's own contract and its catalogue's projection. The contract's two invariants — a level is `error` or `off`, and an `off` carries one of the five reasons naming what carries it, as an unsafe fixer names what its rewrite changes — judge this package's fragments alone, since no consumer can author one: `lint/_contract.js` builds and enforces nothing, and `lint/_contract.test.ts` audits every fragment the six profiles and the hexagonal map are compiled from.
+The self rules are the rulebook's own contract and its catalogue's projection. The contract's two invariants — a level is `error` or `off`, and an `off` carries one of the five reasons naming what carries it, as an unsafe fixer names what its rewrite changes — judge this package's fragments alone, since `fragment()` is not exported: `lint/_contract.js` builds and enforces nothing, and `lint/_contract.test.ts` audits every fragment the six profiles and the hexagonal map are compiled from.
+
+One refusal of the contract is split, because a consumer reaches `fragment()` through `layers()`, which forwards the `id` it is given: a fragment with no id is a self rule the audit names, and its consumer half is `layers()` refusing an `id` that is not a non-empty string.
 
 The catalogue itself ships, since `fix` reads its unsafe fixers; the table and the fixer list [Lint presets](07-lint-presets.md) carries between its `GENERATED` markers are rendered by `lint/catalog.test.ts`, from the consumer entries alone, and held fresh there.
 

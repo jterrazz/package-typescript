@@ -46,3 +46,9 @@ test('two layers claiming one files glob are refused before oxlint erases one of
     // Then - the map is refused by name
     expect(() => layers({ map })).toThrow('belongs to both "ports" and "twin"');
 });
+
+test('a map with an empty id is refused, since the fragment it compiles to answers to none', () => {
+    // Given - a map whose caller named it with an empty string
+    // Then - no fragment is built
+    expect(() => layers({ id: '', map: [LAYER] })).toThrow('A layer map needs an id.');
+});

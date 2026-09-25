@@ -43,6 +43,9 @@ import { fragment, on, scoped } from '../_contract.js';
  * @returns {Omit<ReturnType<typeof fragment>, 'overrides'> & { overrides: readonly import('../_contract.js').Scoped[] }} The fragment, one override per layer.
  */
 export function layers({ id = 'layers', map }) {
+    if (typeof id !== 'string' || id === '') {
+        throw new TypeError('A layer map needs an id.');
+    }
     assertDisjoint(id, map);
 
     return fragment({

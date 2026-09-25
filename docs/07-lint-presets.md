@@ -92,7 +92,7 @@ Three properties of oxlint shape the generated config, all three permanent:
 
 A layer that declares `allowTypeImports: true` lets a type-only import cross its boundary: a type is a contract, not a runtime dependency, and a port may name the adapter's shape without loading it.
 
-A map whose layers share a `files` glob is refused at build time rather than shipped: with replace semantics, the second override would silently erase the first.
+A map whose layers share a `files` glob is refused at build time rather than shipped: with replace semantics, the second override would silently erase the first. A map given an `id` that is not a non-empty string is refused too, since the fragment it compiles to answers to that id.
 
 ### `import/no-cycle`
 
