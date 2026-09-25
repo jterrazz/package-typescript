@@ -4,7 +4,6 @@
 const CR = 0x0d;
 const LF = 0x0a;
 
-// `start` is a break's first byte, `end` its last.
 function breaksOf(data) {
     const breaks = [];
     for (let index = 0; index < data.length; index += 1) {
@@ -14,7 +13,7 @@ function breaksOf(data) {
         }
         if (byte === CR || byte === LF) {
             const end = byte === CR && data[index + 1] === LF ? index + 1 : index;
-            breaks.push({ end, start: index });
+            breaks.push({ firstByte: index, lastByte: end });
         }
     }
 
@@ -30,7 +29,7 @@ function breaksBefore(breaks, end) {
     let high = breaks.length;
     while (low < high) {
         const middle = Math.floor((low + high) / 2);
-        if ((breaks[middle]?.start ?? 0) < end) {
+        if ((breaks[middle]?.firstByte ?? 0) < end) {
             low = middle + 1;
         } else {
             high = middle;
@@ -50,9 +49,9 @@ function prefixOf({ breaks, data }, offset) {
     const previous = breaks[lineCount - 2];
 
     return {
-        currentLineStart: last === undefined ? 0 : last.end + 1,
+        currentLineStart: last === undefined ? 0 : last.lastByte + 1,
         end,
-        leadingStart: lineCount === 0 ? null : previous === undefined ? 0 : previous.end + 1,
+        leadingStart: lineCount === 0 ? null : previous === undefined ? 0 : previous.lastByte + 1,
         lineCount,
         startLine: Math.max(lineCount - 1, 0),
     };
@@ -156,7 +155,7 @@ export function positionAt({ breaks, data }, offset) {
     const before = breaksBefore(breaks, at);
     const last = breaks[before - 1];
 
-    return { column: at - (last === undefined ? 0 : last.end + 1) + 1, line: before + 1 };
+    return { column: at - (last === undefined ? 0 : last.lastByte + 1) + 1, line: before + 1 };
 }
 
 export function lineColumnAt(contents, offset) {
@@ -178,7 +177,7 @@ export function lineColumnAt(contents, offset) {
 
     return last === undefined
         ? { column: relative, line: contents.line }
-        : { column: relative - (last.end + 1), line: contents.line + breaks.length };
+        : { column: relative - (last.lastByte + 1), line: contents.line + breaks.length };
 }
 
 export function linesOf(contents) {

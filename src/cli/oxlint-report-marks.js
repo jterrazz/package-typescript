@@ -86,8 +86,7 @@ export function lineGutter({ chars }, { maxGutter, spans }, line) {
     return `${gutter}${' '.repeat((arrow ? 1 : 3) + Math.max(maxGutter - codePointsOf(gutter).length, 0))}`;
 }
 
-// `mode` is how a label line is laid out.
-export function highlightGutter({ chars }, { maxGutter, spans }, line, mode) {
+export function highlightGutter({ chars }, { maxGutter, spans }, line, labelLayout) {
     if (maxGutter === 0) {
         return '';
     }
@@ -98,10 +97,10 @@ export function highlightGutter({ chars }, { maxGutter, spans }, line, mode) {
         .entries()) {
         if (!spanWithinLine(line, span) && ends(line, span)) {
             const repeat = Math.max(maxGutter - index, 0) + 2;
-            if (mode === 'rest') {
+            if (labelLayout === 'rest') {
                 gutter += ' '.repeat(repeat);
             } else {
-                const bar = chars.hbar.repeat(repeat - (mode === 'first' ? 1 : 0));
+                const bar = chars.hbar.repeat(repeat - (labelLayout === 'first' ? 1 : 0));
                 gutter += `${styled(chars.lbot, span.style)}${styled(bar, span.style)}`;
             }
             columns += repeat + 1;
@@ -114,13 +113,13 @@ export function highlightGutter({ chars }, { maxGutter, spans }, line, mode) {
     return `${gutter}${' '.repeat(Math.max(maxGutter + 3 - columns, 0))}`;
 }
 
-function labelLine({ chars }, text, style, mode) {
+function labelLine({ chars }, text, style, labelLayout) {
     const body = styled(text, style);
     const opening = {
         first: `${chars.lbot}${chars.hbar}${chars.rcross} ${body}`,
         rest: `  ${chars.vbar} ${body}`,
         single: `${chars.lbot}${chars.hbar}${chars.hbar} ${body}`,
-    }[mode];
+    }[labelLayout];
 
     return styled(opening, style);
 }
@@ -129,8 +128,8 @@ export function labelLines(label) {
     const [first = '', ...rest] = label.split('\n');
 
     return [
-        { mode: rest.length > 0 ? 'first' : 'single', text: first },
-        ...rest.map((text) => ({ mode: 'rest', text })),
+        { labelLayout: rest.length > 0 ? 'first' : 'single', text: first },
+        ...rest.map((text) => ({ labelLayout: 'rest', text })),
     ];
 }
 
@@ -161,18 +160,18 @@ export function singleLineMarks(theme, frame, line, onLine) {
 
     let text = `${underline}\n`;
     for (const span of onLine.toReversed()) {
-        for (const { mode, text: labelText } of span.label === undefined
+        for (const { labelLayout, text: labelText } of span.label === undefined
             ? []
             : labelLines(span.label)) {
             text += frame.noLinum + highlightGutter(theme, frame, line, 'single');
-            text += `${hangingLabel(theme, bars, span, { mode, text: labelText })}\n`;
+            text += `${hangingLabel(theme, bars, span, { labelLayout, text: labelText })}\n`;
         }
     }
 
     return text;
 }
 
-function hangingLabel(theme, bars, span, { mode, text }) {
+function hangingLabel(theme, bars, span, { labelLayout, text }) {
     let drawn = '';
     let column = 1;
     for (const bar of bars) {
@@ -180,7 +179,7 @@ function hangingLabel(theme, bars, span, { mode, text }) {
         drawn += ' '.repeat(padding);
         column += padding;
         if (sameSpan(bar.span, span)) {
-            return drawn + labelLine(theme, text, span.style, mode);
+            return drawn + labelLine(theme, text, span.style, labelLayout);
         }
         drawn += styled(theme.chars.vbar, bar.span.style);
         column += 1;
@@ -201,9 +200,9 @@ export function multiLineEnd(theme, frame, line, span) {
 
     return labelLines(span.label ?? '')
         .map(
-            ({ mode, text }) =>
-                `${frame.noLinum}${highlightGutter(theme, frame, line, mode)}` +
-                `${styled(corner[mode], span.style)} ${styled(text, span.style)}\n`,
+            ({ labelLayout, text }) =>
+                `${frame.noLinum}${highlightGutter(theme, frame, line, labelLayout)}` +
+                `${styled(corner[labelLayout], span.style)} ${styled(text, span.style)}\n`,
         )
         .join('');
 }

@@ -33,8 +33,7 @@ const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s/u;
 const TABLE_ROW = /^\s*\|/u;
 const HEADING = /^(?<hashes>#{1,6})\s/u;
 
-// Blanked line for line, so a reported line number still points at the page's.
-function linesWithoutFrontmatter(markdown) {
+function linesWithFrontmatterBlanked(markdown) {
     return markdown.replace(FRONTMATTER, (block) => block.replaceAll(/[^\n]/gu, '')).split('\n');
 }
 
@@ -52,7 +51,7 @@ function longProseBlocks(markdown) {
         length = 0;
     };
 
-    for (const [index, line] of linesWithoutFrontmatter(markdown).entries()) {
+    for (const [index, line] of linesWithFrontmatterBlanked(markdown).entries()) {
         if (FENCE.test(line)) {
             close();
             inFence = !inFence;
@@ -92,7 +91,7 @@ function airlessFences(markdown) {
         run = 0;
     };
 
-    for (const [index, line] of linesWithoutFrontmatter(markdown).entries()) {
+    for (const [index, line] of linesWithFrontmatterBlanked(markdown).entries()) {
         if (FENCE.test(line)) {
             if (inFence) {
                 close();
@@ -132,7 +131,7 @@ function flatSections(markdown) {
         }
     };
 
-    for (const [index, line] of linesWithoutFrontmatter(markdown).entries()) {
+    for (const [index, line] of linesWithFrontmatterBlanked(markdown).entries()) {
         if (FENCE.test(line)) {
             inFence = !inFence;
             continue;
