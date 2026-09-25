@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-09-15
+**Superseded in part by:** [ADR-011](011-only-consumer-rules-ship.md) — the "at load time" clause: the rulebook's invariants are audited by this package's own suite.
 
 ## Context
 

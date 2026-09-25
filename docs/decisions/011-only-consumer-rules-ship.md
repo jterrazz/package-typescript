@@ -1,6 +1,6 @@
 # ADR-011: Only consumer rules ship; the rulebook's own contract is audited at home
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-25
 
 ## Context
@@ -24,4 +24,4 @@ A rule mixing the two is split. The contract's builders ship and enforce nothing
 - A broken fragment fails this repository's suite, the gate a release passes, instead of every import of a profile.
 - The catalogue in [Lint presets](../07-lint-presets.md) lists consumer rules alone; the self rules are described in [Testing](../03-testing.md#who-a-rule-is-for).
 - The internal pass selector is a `self` rule split out of the shipped `bin/commands/check.sh`, which holds no copy of it and runs every pass whatever its environment holds. The selector lives under `specs/`: the specs run the product command through it, and it runs the published check from its text with the selection in place of the every-pass answer.
-- ADR-003 stays `Accepted` and still says a broken fragment is refused at load time. Once this record is accepted, ADR-003 carries a line under its status: superseded in part by ADR-011.
+- ADR-003 stays `Accepted`; the line under its status marks its "at load time" clause superseded by this record.
