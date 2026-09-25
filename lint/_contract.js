@@ -20,7 +20,7 @@
  * never `warn`; and an `off` carries exactly one recorded reason. They judge
  * this package's own fragments alone, so they are `self` rules: the builders
  * here enforce nothing, and this package's own suite audits every fragment
- * ([Testing](../docs/03-testing.md)).
+ * ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md)).
  */
 
 /**
@@ -50,7 +50,7 @@ export const SINCE = '10.0.0';
  * Who a rule is FOR. A `consumer` rule means something in any project that
  * uses this package, and only those ship; a `self` rule is this package's own
  * suite discipline, and lives in its tests
- * ([Testing](../docs/03-testing.md)).
+ * ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md)).
  */
 export const AUDIENCES = Object.freeze(['consumer', 'self']);
 

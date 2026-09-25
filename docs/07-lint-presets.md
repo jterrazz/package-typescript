@@ -26,7 +26,7 @@ export default defineConfig(node);
 | `evidence`   | A measured false-positive rate on real estate code, cited           | the measurement                      |
 | `covered`    | TypeScript, or a stronger rule that is on, already names the defect | the named rule                       |
 
-This package's own suite refuses a fragment that breaks either invariant, so no profile ships an unreasoned `off`; that suite, and the two above, are [Testing](03-testing.md#the-rulebook-has-seven-suites)'s.
+This package's own suite refuses a fragment that breaks either invariant, so no profile ships an unreasoned `off`; that suite, and the two above, are [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#the-rulebook-has-seven-suites)'s.
 
 ## The profiles
 
@@ -201,7 +201,7 @@ The base preset declares no `workspaces`, so the key reaches knip exactly as wri
 
 ## The catalogue
 
-Every decision a profile ships, the profiles that carry it, its state, the reason behind an `off`, and the version it was taken in. This section is a projection of `lint/`, regenerated with `TEST_UPDATE=1 npm test` — never hand-edited. It lists the rules that serve a consumer alone; the ones this package keeps for its own suite are [Testing](03-testing.md#who-a-rule-is-for)'s.
+Every decision a profile ships, the profiles that carry it, its state, the reason behind an `off`, and the version it was taken in. This section is a projection of `lint/`, regenerated with `TEST_UPDATE=1 npm test` — never hand-edited. It lists the rules that serve a consumer alone; the ones this package keeps for its own suite are [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#who-a-rule-is-for)'s.
 
 <!-- GENERATED -->
 

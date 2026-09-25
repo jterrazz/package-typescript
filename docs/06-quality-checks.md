@@ -208,7 +208,7 @@ oxlint has a safe/dangerous split of its own — `--fix` applies the safe fixes,
 | `vitest/prefer-lowercase-title`             | `fixable_fix`                    | yes — `'Hello'` into `'hello'`                          |
 | `vitest/prefer-strict-boolean-matchers`     | `fixable_fix`                    | yes — `toBeTruthy()` into `toBe(true)`                  |
 
-So the toolchain keeps its own switch. A mark on a rule with no fixer, or on one oxlint already keeps behind `--fix-dangerously`, would say something false, and this package's own suite refuses it ([Testing](03-testing.md#the-rulebook-has-seven-suites)).
+So the toolchain keeps its own switch. A mark on a rule with no fixer, or on one oxlint already keeps behind `--fix-dangerously`, would say something false, and this package's own suite refuses it ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#the-rulebook-has-seven-suites)).
 
 The switch is a wrapper config around the one the linter runs with — the project's own, or the default where it keeps none — that the pass writes beside that config and deletes after the run. It goes there and nowhere else, because oxlint resolves `ignorePatterns` and override globs against the directory its config sits in — and every run IGNORES the wrapper's name, so no diagnostic ever names a path the operator cannot open and no tree can ever clear.
 

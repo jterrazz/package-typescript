@@ -436,6 +436,14 @@
     {
         "audience": "self",
         "channel": "meta",
+        "home": "specs/surface/package/shipped-links.test.ts",
+        "id": "shipped-links",
+        "names": ["deadLinks"],
+        "why": "reads what this package would publish against this checkout"
+    },
+    {
+        "audience": "self",
+        "channel": "meta",
         "home": "specs/surface/package/lint-fragments.ts",
         "id": "fragment-walk",
         "names": ["lintFragments"],

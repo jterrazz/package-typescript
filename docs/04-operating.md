@@ -61,5 +61,5 @@ One section below that table is the PROJECT's rather than the toolchain's, and i
 
 ## Related
 
-- [Testing](03-testing.md) — what `validate.yaml` runs.
+- [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md) — what `validate.yaml` runs.
 - [Quality checks](06-quality-checks.md) — the gates a consumer inherits on a bump.

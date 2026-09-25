@@ -18,7 +18,7 @@ The builders enforce nothing: the invariants judge this package's fragments alon
 
 ## What proves it
 
-The suites that prove this folder are self rules, so they ship nowhere, and [Testing](../docs/03-testing.md#who-a-rule-is-for) names each one:
+The suites that prove this folder are self rules, so they ship nowhere, and [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#who-a-rule-is-for) names each one:
 
 - the contract's suite — the invariants, audited over every fragment the package declares, and the compile of a fragment.
 - the catalogue's suite — renders the chapter's projection of the manifest, and fails a chapter that has drifted from it.

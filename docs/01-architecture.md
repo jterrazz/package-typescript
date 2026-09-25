@@ -16,13 +16,13 @@ The code the package ships sits under `src/`, the one spine folder that holds pr
 
 ## The rulebook layer
 
-`lint/` is a manifest, not a config: one fragment per plugin, stating a decision per rule, and this package's own suite refusing a fragment that breaks either invariant — a level is `error` or `off`, and an `off` carries one of five recorded reasons ([Testing](03-testing.md#who-a-rule-is-for)).
+`lint/` is a manifest, not a config: one fragment per plugin, stating a decision per rule, and this package's own suite refusing a fragment that breaks either invariant — a level is `error` or `off`, and an `off` carries one of five recorded reasons ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#who-a-rule-is-for)).
 
 Three steps and nothing between them. `lint/profiles.js` says which fragments each profile carries; `lint/compile.js` turns a fragment into the plain oxlint config object oxlint itself reads, and merges those objects; `src/presets/oxlint/profiles/<name>.js` is that table compiled, and it is what a consumer's `extends` names. The rule decisions are [Lint presets](07-lint-presets.md)'s, catalogued there from the same manifest.
 
 ## No build step
 
-This package ships JavaScript directly: what is committed is what is published (`files` names `bin`, `docs`, `lint`, `src`), save the tests beside the modules and [Testing](03-testing.md), the chapter of how this package proves itself, which are its own and ship nowhere. `npm run build` is a comment, and the `src/*.d.ts` files are hand-written beside their `.js`.
+This package ships JavaScript directly: what is committed is what is published (`files` names `bin`, `docs`, `lint`, `src`), save the tests beside the modules and [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md), the chapter of how this package proves itself, which are its own and ship nowhere. `npm run build` is a comment, and the `src/*.d.ts` files are hand-written beside their `.js`.
 
 That is a deliberate exception to what the toolchain asks of everyone else, and it buys two things. A toolchain that had to build itself would need a second toolchain to do it; and a consumer reading `src/cli/check-gitignore.js` in its own `node_modules` reads the source, not a bundle.
 
