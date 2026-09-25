@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
-import { expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { packedFiles, packedTree } from './packed-tree.js';
 
@@ -97,12 +97,14 @@ function unstatedAudiences(tree: string, path: string): string[] {
     return found;
 }
 
-test('every fragment the tarball can build states its audience where it is built', () => {
-    // Given - every module the tarball holds
-    const tree = packedTree();
-    const modules = packedFiles(tree).filter((path) => /\.[cm]?js$/u.test(path));
-    expect(modules.length).toBeGreaterThan(50);
+describe('builder-calls', () => {
+    test('every fragment the tarball can build states its audience where it is built', () => {
+        // Given - every module the tarball holds
+        const tree = packedTree();
+        const modules = packedFiles(tree).filter((path) => /\.[cm]?js$/u.test(path));
+        expect(modules.length).toBeGreaterThan(50);
 
-    // Then - each call to the fragment builder names its audience as a literal, so no caller and no later turn can compute it
-    expect(modules.flatMap((path) => unstatedAudiences(tree, path))).toStrictEqual([]);
+        // Then - each call to the fragment builder names its audience as a literal, so no caller and no later turn can compute it
+        expect(modules.flatMap((path) => unstatedAudiences(tree, path))).toStrictEqual([]);
+    });
 });

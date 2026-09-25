@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { expect, onTestFinished, test } from 'vitest';
+import { describe, expect, onTestFinished, test } from 'vitest';
 
 // What make does with a failing line is the claim, and no reading of the text can make it.
 
@@ -40,40 +40,42 @@ function runFix(
     return { calls: readFileSync(log, 'utf8'), status: run.status };
 }
 
-test.each([
-    { checker: 0, toolchain: 1 },
-    { checker: 1, toolchain: 0 },
-    { checker: 0, toolchain: 0 },
-])(
-    'the recipe the chapter hands consumers runs the checker first and the toolchain last, and fails when either did ($toolchain, $checker)',
-    ({ checker, toolchain }) => {
-        // Given - the chapter's recipe, over a toolchain fixer and a checker that exit as told
-        const chapter = mkdtempSync(join(tmpdir(), 'makefile-chapter-'));
-        onTestFinished(() => {
-            rmSync(chapter, { force: true, recursive: true });
-        });
-        const makefile = join(chapter, 'Makefile');
-        writeFileSync(makefile, chapterRecipe());
+describe('makefile', () => {
+    test.each([
+        { checker: 0, toolchain: 1 },
+        { checker: 1, toolchain: 0 },
+        { checker: 0, toolchain: 0 },
+    ])(
+        'the recipe the chapter hands consumers runs the checker first and the toolchain last, and fails when either did ($toolchain, $checker)',
+        ({ checker, toolchain }) => {
+            // Given - the chapter's recipe, over a toolchain fixer and a checker that exit as told
+            const chapter = mkdtempSync(join(tmpdir(), 'makefile-chapter-'));
+            onTestFinished(() => {
+                rmSync(chapter, { force: true, recursive: true });
+            });
+            const makefile = join(chapter, 'Makefile');
+            writeFileSync(makefile, chapterRecipe());
+
+            // When - `make fix`
+            const run = runFix(makefile, {
+                npx: `if [ "$1" = typescript ]; then exit ${toolchain}; fi; exit ${checker}`,
+            });
+
+            // Then - both fixers ran, the formatter's last, and the verdict is theirs combined
+            expect(run.calls).toBe('npx jterrazz-test-check --fix\nnpx typescript fix\n');
+            expect(run.status === 0).toBe(toolchain === 0 && checker === 0);
+        },
+    );
+
+    test("this repository runs its own fixer after the test checker's, even when the checker fails", () => {
+        // Given - this repository's Makefile, over a test checker that fails
+        const makefile = resolve(ROOT, 'Makefile');
 
         // When - `make fix`
-        const run = runFix(makefile, {
-            npx: `if [ "$1" = typescript ]; then exit ${toolchain}; fi; exit ${checker}`,
-        });
+        const run = runFix(makefile, { npm: 'exit 0', npx: 'exit 1' });
 
-        // Then - both fixers ran, the formatter's last, and the verdict is theirs combined
-        expect(run.calls).toBe('npx jterrazz-test-check --fix\nnpx typescript fix\n');
-        expect(run.status === 0).toBe(toolchain === 0 && checker === 0);
-    },
-);
-
-test("this repository runs its own fixer after the test checker's, even when the checker fails", () => {
-    // Given - this repository's Makefile, over a test checker that fails
-    const makefile = resolve(ROOT, 'Makefile');
-
-    // When - `make fix`
-    const run = runFix(makefile, { npm: 'exit 0', npx: 'exit 1' });
-
-    // Then - the toolchain's fixer ran after it, and the run still fails
-    expect(run.calls).toBe('npx jterrazz-test-check --fix\nnpm run lint:fix\n');
-    expect(run.status).not.toBe(0);
+        // Then - the toolchain's fixer ran after it, and the run still fails
+        expect(run.calls).toBe('npx jterrazz-test-check --fix\nnpm run lint:fix\n');
+        expect(run.status).not.toBe(0);
+    });
 });

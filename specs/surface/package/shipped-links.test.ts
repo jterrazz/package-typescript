@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, normalize, resolve } from 'node:path';
-import { expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { packedFiles, packedTree } from './packed-tree.js';
 
@@ -31,14 +31,18 @@ function deadLinks(tree: string, files: string[]): string[] {
     );
 }
 
-test('every relative link the tarball carries lands in the tarball, the map aside', () => {
-    // Given - every text file npm would publish
-    const tree = packedTree();
-    const files = packedFiles(tree).filter((path) => /\.(?:[cm]?js|d\.ts|md|sh|json)$/u.test(path));
-    expect(files.filter((path) => path.endsWith('.md')).length).toBeGreaterThan(5);
+describe('shipped-links', () => {
+    test('every relative link the tarball carries lands in the tarball, the map aside', () => {
+        // Given - every text file npm would publish
+        const tree = packedTree();
+        const files = packedFiles(tree).filter((path) =>
+            /\.(?:[cm]?js|d\.ts|md|sh|json)$/u.test(path),
+        );
+        expect(files.filter((path) => path.endsWith('.md')).length).toBeGreaterThan(5);
 
-    // Then - no link but the map's rows points at a page the tarball leaves out
-    expect(
-        deadLinks(tree, files).filter((link) => !link.startsWith('docs/README.md: ')),
-    ).toStrictEqual([]);
+        // Then - no link but the map's rows points at a page the tarball leaves out
+        expect(
+            deadLinks(tree, files).filter((link) => !link.startsWith('docs/README.md: ')),
+        ).toStrictEqual([]);
+    });
 });

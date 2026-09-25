@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { lintFragments } from '../specs/surface/package/lint-fragments.js';
 import { fragment, off, on, REASON_KINDS, typeAware, unsafeFix } from './_contract.js';
@@ -70,97 +70,101 @@ function problemsOf(one: Loose): string[] {
     ];
 }
 
-test('every fragment lint/ declares keeps both invariants', async () => {
-    // Given - every fragment a module of lint/ or src/ exports, profile or not
-    const declared = await lintFragments(resolve(import.meta.dirname, '..'));
-    expect(declared.length).toBeGreaterThan(15);
+describe('_contract', () => {
+    test('every fragment lint/ declares keeps both invariants', async () => {
+        // Given - every fragment a module of lint/ or src/ exports, profile or not
+        const declared = await lintFragments(resolve(import.meta.dirname, '..'));
+        expect(declared.length).toBeGreaterThan(15);
 
-    // Then - none breaks the contract
-    expect(declared.flatMap(({ fragment: one }) => problemsOf(one))).toStrictEqual([]);
-});
-
-test('names an off with no reason', () => {
-    // Given - a decision turned off on nobody's authority
-    const probe = fragment({ id: 'probe', rules: { curly: off() } });
-
-    // Then - the audit refuses it
-    expect(problemsOf(probe)).toStrictEqual(['probe: "curly" is off with no reason']);
-});
-
-test('names a reason whose kind is not one of the five', () => {
-    // Given - a reason invented on the spot
-    const probe = fragment({
-        id: 'probe',
-        rules: { curly: off({ by: 'taste', kind: 'too-strict' }) },
+        // Then - none breaks the contract
+        expect(declared.flatMap(({ fragment: one }) => problemsOf(one))).toStrictEqual([]);
     });
 
-    // Then - the five are named and the sixth is refused
-    expect(problemsOf(probe)).toStrictEqual([
-        'probe: "curly" is off for a reason of no known kind',
-    ]);
-    expect(REASON_KINDS).toHaveLength(5);
-});
+    test('names an off with no reason', () => {
+        // Given - a decision turned off on nobody's authority
+        const probe = fragment({ id: 'probe', rules: { curly: off() } });
 
-test('names a reason that names nothing', () => {
-    // Given - a kind with no rule, page or measurement behind it
-    const probe = fragment({ id: 'probe', rules: { curly: off({ by: '', kind: 'covered' }) } });
-
-    // Then - "covered" has to say by what
-    expect(problemsOf(probe)).toStrictEqual(['probe: "curly" has a reason that names nothing']);
-});
-
-test('names a level that is neither error nor off', () => {
-    // Given - a fragment reaching for a warning tier
-    const probe = fragment({ id: 'probe', rules: { curly: { level: 'warn' } } });
-
-    // Then - there is no warn in this rulebook
-    expect(problemsOf(probe)).toStrictEqual(['probe: "curly" is "warn" — a rule is error or off']);
-});
-
-test('names an unsafe fixer that does not say what it changes', () => {
-    // Given - a fixer marked unsafe on no measurement
-    const probe = fragment({ id: 'probe', rules: { curly: unsafeFix(on(), '') } });
-
-    // Then - the mark has to carry what the rewrite does
-    expect(problemsOf(probe)).toStrictEqual([
-        'probe: "curly" marks an unsafe fixer without saying what it changes',
-    ]);
-});
-
-test('gives every decision the fragment version, unless it carries its own', () => {
-    // Given - a fragment born in one version with one decision taken later
-    const probe = fragment({
-        id: 'probe',
-        rules: { curly: on(), 'no-var': off(REASON, '10.2.0') },
-        since: '10.0.0',
+        // Then - the audit refuses it
+        expect(problemsOf(probe)).toStrictEqual(['probe: "curly" is off with no reason']);
     });
 
-    // Then - each decision states when it was taken
-    expect(probe.decisions.curly?.since).toBe('10.0.0');
-    expect(probe.decisions['no-var']?.since).toBe('10.2.0');
-});
+    test('names a reason whose kind is not one of the five', () => {
+        // Given - a reason invented on the spot
+        const probe = fragment({
+            id: 'probe',
+            rules: { curly: off({ by: 'taste', kind: 'too-strict' }) },
+        });
 
-test('compiles a fragment to a plain oxlint config, and never to a category', () => {
-    // Given - a fragment with an option, a type-aware rule and an off
-    const probe = fragment({
-        id: 'probe',
-        plugins: ['typescript'],
-        rules: {
-            curly: on(),
-            'max-depth': on([4]),
-            'no-var': off(REASON),
-            'typescript/await-thenable': typeAware(),
-        },
+        // Then - the five are named and the sixth is refused
+        expect(problemsOf(probe)).toStrictEqual([
+            'probe: "curly" is off for a reason of no known kind',
+        ]);
+        expect(REASON_KINDS).toHaveLength(5);
     });
 
-    // Then - the config states every level by name
-    expect(compile(probe)).toStrictEqual({
-        plugins: ['typescript'],
-        rules: {
-            curly: 'error',
-            'max-depth': ['error', 4],
-            'no-var': 'off',
-            'typescript/await-thenable': 'error',
-        },
+    test('names a reason that names nothing', () => {
+        // Given - a kind with no rule, page or measurement behind it
+        const probe = fragment({ id: 'probe', rules: { curly: off({ by: '', kind: 'covered' }) } });
+
+        // Then - "covered" has to say by what
+        expect(problemsOf(probe)).toStrictEqual(['probe: "curly" has a reason that names nothing']);
+    });
+
+    test('names a level that is neither error nor off', () => {
+        // Given - a fragment reaching for a warning tier
+        const probe = fragment({ id: 'probe', rules: { curly: { level: 'warn' } } });
+
+        // Then - there is no warn in this rulebook
+        expect(problemsOf(probe)).toStrictEqual([
+            'probe: "curly" is "warn" — a rule is error or off',
+        ]);
+    });
+
+    test('names an unsafe fixer that does not say what it changes', () => {
+        // Given - a fixer marked unsafe on no measurement
+        const probe = fragment({ id: 'probe', rules: { curly: unsafeFix(on(), '') } });
+
+        // Then - the mark has to carry what the rewrite does
+        expect(problemsOf(probe)).toStrictEqual([
+            'probe: "curly" marks an unsafe fixer without saying what it changes',
+        ]);
+    });
+
+    test('gives every decision the fragment version, unless it carries its own', () => {
+        // Given - a fragment born in one version with one decision taken later
+        const probe = fragment({
+            id: 'probe',
+            rules: { curly: on(), 'no-var': off(REASON, '10.2.0') },
+            since: '10.0.0',
+        });
+
+        // Then - each decision states when it was taken
+        expect(probe.decisions.curly?.since).toBe('10.0.0');
+        expect(probe.decisions['no-var']?.since).toBe('10.2.0');
+    });
+
+    test('compiles a fragment to a plain oxlint config, and never to a category', () => {
+        // Given - a fragment with an option, a type-aware rule and an off
+        const probe = fragment({
+            id: 'probe',
+            plugins: ['typescript'],
+            rules: {
+                curly: on(),
+                'max-depth': on([4]),
+                'no-var': off(REASON),
+                'typescript/await-thenable': typeAware(),
+            },
+        });
+
+        // Then - the config states every level by name
+        expect(compile(probe)).toStrictEqual({
+            plugins: ['typescript'],
+            rules: {
+                curly: 'error',
+                'max-depth': ['error', 4],
+                'no-var': 'off',
+                'typescript/await-thenable': 'error',
+            },
+        });
     });
 });

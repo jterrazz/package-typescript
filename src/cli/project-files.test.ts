@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { expect, onTestFinished, test } from 'vitest';
+import { describe, expect, onTestFinished, test } from 'vitest';
 
 import { projectFiles } from './project-files.js';
 
@@ -21,19 +21,21 @@ function repositoryTracking(paths: readonly string[]): string {
     return root;
 }
 
-test('drops a tracked file under a build folder, at the root or deeper', () => {
-    // Given - a repository whose index tracks a tool's output folder beside its source
-    const root = repositoryTracking([
-        '.artifacts/tsc/index.js',
-        '.next/server/page.js',
-        '.turbo/cache/log.js',
-        '.vite/deps/chunk.js',
-        'apps/web/.next/server/page.js',
-        'coverage/lcov-report/index.js',
-        'dist/index.js',
-        'src/index.ts',
-    ]);
+describe('project-files', () => {
+    test('drops a tracked file under a build folder, at the root or deeper', () => {
+        // Given - a repository whose index tracks a tool's output folder beside its source
+        const root = repositoryTracking([
+            '.artifacts/tsc/index.js',
+            '.next/server/page.js',
+            '.turbo/cache/log.js',
+            '.vite/deps/chunk.js',
+            'apps/web/.next/server/page.js',
+            'coverage/lcov-report/index.js',
+            'dist/index.js',
+            'src/index.ts',
+        ]);
 
-    // Then - the sweep hands every gate the source alone
-    expect(projectFiles(root)).toStrictEqual(['src/index.ts']);
+        // Then - the sweep hands every gate the source alone
+        expect(projectFiles(root)).toStrictEqual(['src/index.ts']);
+    });
 });

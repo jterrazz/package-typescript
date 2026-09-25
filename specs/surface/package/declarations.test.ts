@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import ts from 'typescript';
-import { expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 // No build step derives a `.d.ts` from its `.js`: this suite alone holds the two value surfaces together.
 
@@ -60,23 +60,25 @@ async function runtimeValues(entry: string): Promise<string[]> {
     return sorted(Object.keys(loaded));
 }
 
-test.each(ENTRIES)('src/%s.js and its declaration carry the same exports', async (entry) => {
-    // Given - one importable entry, read twice: as a module, and as a declaration
-    const runtime = await runtimeValues(resolve(ROOT, `${entry}.js`));
+describe('declarations', () => {
+    test.each(ENTRIES)('src/%s.js and its declaration carry the same exports', async (entry) => {
+        // Given - one importable entry, read twice: as a module, and as a declaration
+        const runtime = await runtimeValues(resolve(ROOT, `${entry}.js`));
 
-    // Then - every value the runtime exports is declared, and nothing is declared that is not there
-    expect(declaredValues(resolve(ROOT, `${entry}.d.ts`))).toStrictEqual(runtime);
+        // Then - every value the runtime exports is declared, and nothing is declared that is not there
+        expect(declaredValues(resolve(ROOT, `${entry}.d.ts`))).toStrictEqual(runtime);
+    });
+
+    test.each(TSDOWN_PRESETS)(
+        'src/presets/tsdown/%s.js and its declaration carry the same exports',
+        async (preset) => {
+            // Without a declaration a bundler config's import is `any`, or TS7016 under the `library` tsconfig.
+
+            // Given - one shipped tsdown preset, read twice: as a module, and as a declaration
+            const runtime = await runtimeValues(resolve(PRESETS, `${preset}.js`));
+
+            // Then - the default export is declared, and nothing else is
+            expect(declaredValues(resolve(PRESETS, `${preset}.d.ts`))).toStrictEqual(runtime);
+        },
+    );
 });
-
-test.each(TSDOWN_PRESETS)(
-    'src/presets/tsdown/%s.js and its declaration carry the same exports',
-    async (preset) => {
-        // Without a declaration a bundler config's import is `any`, or TS7016 under the `library` tsconfig.
-
-        // Given - one shipped tsdown preset, read twice: as a module, and as a declaration
-        const runtime = await runtimeValues(resolve(PRESETS, `${preset}.js`));
-
-        // Then - the default export is declared, and nothing else is
-        expect(declaredValues(resolve(PRESETS, `${preset}.d.ts`))).toStrictEqual(runtime);
-    },
-);
