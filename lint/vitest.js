@@ -1,34 +1,15 @@
 import { allOn, fragment, off, on, scoped, unsafeFix } from './_contract.js';
 
-/*
- * The `vitest` plugin, all 73 rules decided by name — inside an `overrides`
- * block, because every one of them reads a test file and says nothing about
- * anything else. The globs are the test shapes the estate writes:
- * `<name>.test.ts`, `<name>.spec.ts`, their type-test variants, and every file
- * under a `specs/` or `__tests__/` tree.
- *
- * Four of the offs are one half of an exclusive pair; the other half is on, and
- * `exclusive-pairs.test.ts` proves no profile ever arms both.
- */
+// Four offs are one half of an exclusive pair; `exclusive-pairs.test.ts` proves no profile arms both.
 
-/**
- * Where a vitest rule applies. Nothing outside these globs is a vitest file —
- * a Playwright spec is `*.e2e.ts` and a jest-expo render test `*.render.tsx`,
- * which no glob here names: a file another runner owns takes that runner's
- * suffix (docs/07-lint-presets.md, "Estate conventions").
- */
+// A file another runner owns takes that runner's suffix (`*.e2e.ts`, `*.render.tsx`), which no glob here names.
 export const TEST_FILES = Object.freeze([
     '**/*.{test,spec,test-d,spec-d}.{ts,tsx,js,jsx}',
     '**/specs/**/*.{ts,tsx}',
     '**/__tests__/**/*.{ts,tsx,js,jsx}',
 ]);
 
-/**
- * Every vitest rule that is on. The list is the roster minus the offs below
- * and the three `@jterrazz/test testing` now owns with options (ADR-008):
- * `max-nested-describe`, `no-restricted-matchers` and
- * `no-restricted-vi-methods`.
- */
+// ADR-008 gave `@jterrazz/test`'s `testing` three more, with their options.
 const ON_IN_TESTS = [
     'consistent-each-for',
     'consistent-vitest-vi',
@@ -84,17 +65,7 @@ const ON_IN_TESTS = [
     'warn-todo',
 ].map((rule) => `vitest/${rule}`);
 
-/*
- * The five vitest fixers that change meaning, so `fix` never applies them and
- * `check` still reports them. They are named here rather than inline because a
- * decision three calls deep inside an override reads as nesting, not as a
- * decision.
- *
- * `prefer-lowercase-title` carries no `allowedPrefixes`: the rule is stricter
- * than the `j5` rule @jterrazz/test retires for it — it also refuses a title
- * opening on an all-caps identifier (`HTTP 404 …`, `DI …`) — and an existing
- * title is a rename, not a case for an estate-specific escape hatch.
- */
+// Named rather than inline: a decision three calls deep inside an override reads as nesting.
 const CONSISTENT_TEST_IT = unsafeFix(
     on([{ fn: 'test' }]),
     'rewrites `it(` into `test(` and leaves `import { it }` behind',
@@ -116,22 +87,9 @@ const PREFER_CALLED_WITH = unsafeFix(
     'rewrites `toHaveBeenCalled()` into `toHaveBeenCalledWith()`, an assertion of NO arguments',
 );
 
-/*
- * The filename floor. The rule's own default pattern names `<name>.test.ts`
- * alone, which refuses every file of a `specs/` tree written to
- * `@jterrazz/test` 16's convention — its ADR-006 renamed each one `.spec.ts`,
- * and a repository composing this profile without that package's `testing`
- * fragment was told to undo the rename. Both spellings are the estate's, and
- * this is where a profile says so.
- *
- * It stays a FLOOR: `testing` sets the same rule with a pattern of its own
- * (C12, which also fixes the extensions a `.spec` may take) and composes after
- * a profile, so its options win wherever it is present — an override's options
- * REPLACE rather than merge (ADR-008).
- */
+// A floor: `testing` (C12) composes after a profile and its pattern replaces this one (ADR-008).
 const CONSISTENT_TEST_FILENAME = on([{ pattern: String.raw`.*\.(spec|test)\.[tj]sx?$` }]);
 
-/** The reason the three ADR-008 named a new owner for: `@jterrazz/test`'s `testing` fragment. */
 const COVERED_BY_TESTING = { by: '@jterrazz/test testing', kind: 'covered' };
 
 export default fragment({
@@ -152,16 +110,7 @@ export default fragment({
                 'vitest/prefer-strict-boolean-matchers': PREFER_STRICT_BOOLEAN_MATCHERS,
                 'vitest/prefer-called-with': PREFER_CALLED_WITH,
 
-                /*
-                 * ADR-008: an override's options REPLACE rather than merge, so
-                 * two owners setting the same rule is a rule whose
-                 * configuration depends on composition order. `@jterrazz/test`
-                 * 16.0's `testing` fragment sets these three WITH the options
-                 * this vocabulary owns (the seven snapshot matchers, the four
-                 * `vi` methods, `max: 1`) and composes after this profile, so
-                 * its options win — this rulebook lets go of the option-less
-                 * copy rather than hold a decision two owners can disagree on.
-                 */
+                // ADR-008: two owners of one rule's options is a config that depends on composition order.
                 'vitest/max-nested-describe': off(COVERED_BY_TESTING, '10.3.0'),
                 'vitest/no-restricted-matchers': off(COVERED_BY_TESTING, '10.3.0'),
                 'vitest/no-restricted-vi-methods': off(COVERED_BY_TESTING, '10.3.0'),
@@ -190,9 +139,6 @@ export default fragment({
                     by: 'docs/07-lint-presets.md — a spec states its assertions; counting them is bookkeeping the reader does not need',
                     kind: 'convention',
                 }),
-                /* The pair the other way round. `toBe(true)` is a strict
-                 * boolean assertion and `toBeTruthy()` is not — the fixer that
-                 * rewrote one into the other WEAKENED every spec it touched. */
                 'vitest/prefer-to-be-falsy': off({
                     by: 'vitest/prefer-strict-boolean-matchers — one asks for the strict matcher, the other for the falsy one',
                     kind: 'exclusive',
@@ -214,7 +160,6 @@ export default fragment({
                     kind: 'convention',
                 }),
 
-                // A test double is an empty function by definition.
                 'no-empty-function': off({
                     by: 'docs/07-lint-presets.md — a test double with no behaviour is an empty function',
                     kind: 'convention',

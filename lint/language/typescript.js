@@ -1,23 +1,9 @@
 import { allOn, fragment, off, on, scoped, typeAware, unsafeFix } from '../_contract.js';
 
-/*
- * The `typescript` plugin, all 110 rules decided by name: the 108 non-nursery
- * ones, and the two nursery ones tsgolint answers — every rule tsgolint runs is
- * decided, whatever upstream's category, so a tsgolint release never adds a
- * check no profile names. Fifty-nine of them need type information: they run
- * because every profile ships `options.typeAware`, which `oxlint-tsgolint`
- * answers (it embeds its own TypeScript, so a consumer is not forced onto
- * TypeScript 7 to get them).
- */
+// Every rule tsgolint runs is decided, nursery included, so a tsgolint release never adds an unnamed check.
 
-/** The release the nursery type-aware decisions were taken in. */
 const NURSERY_SINCE = '11.0.0';
-/*
- * A JavaScript file has no parameter types. Every value flowing through one is
- * `any` by construction, so the unsafe-any family reports the LANGUAGE, not a
- * defect — measured on this package's own tree, 530 reports of which not one
- * named a bug. The family stays armed everywhere TypeScript types the code.
- */
+
 const UNTYPED_BY_CONSTRUCTION = {
     by: 'TypeScript — a .js file has no parameter types, so every value in it is `any` and the rule reports the language, not a defect',
     kind: 'covered',
@@ -44,13 +30,7 @@ export default fragment({
             files: ['**/*.js', '**/*.cjs', '**/*.mjs'],
             rules: Object.fromEntries(UNTYPED_IN_JAVASCRIPT),
         }),
-        /*
-         * A declaration file is where module augmentation lives, and only an
-         * interface merges into an existing one: a `type` alias REDECLARES the
-         * name and every member of the original is lost. A `.ts` file carrying
-         * an augmentation is still reported — the scope is the file's purpose,
-         * and oxlint scopes by path — and answers with a suppression.
-         */
+        // Only an interface merges into a module augmentation; a `type` alias redeclares the name.
         scoped({
             files: ['**/*.d.ts'],
             rules: {
@@ -107,7 +87,6 @@ export default fragment({
             ].map((rule) => `typescript/${rule}`),
         ),
 
-        // -- On, and type-aware ----------------------------------------------
         ...Object.fromEntries(
             [
                 'await-thenable',
@@ -163,7 +142,6 @@ export default fragment({
             ].map((rule) => [`typescript/${rule}`, typeAware()]),
         ),
 
-        // -- On, at the strictest value the option carries ---------------------
         'typescript/array-type': on([{ default: 'array' }]),
         'typescript/ban-ts-comment': on([
             {
@@ -173,11 +151,6 @@ export default fragment({
                 'ts-nocheck': true,
             },
         ]),
-        /* Three fixers that change meaning, so `fix` never applies them and
-         * `check` still reports them: one rewrites a `declare module`
-         * augmentation into an alias that no longer merges, one wraps a
-         * returned promise so nothing awaits it, one drops a cast a widened
-         * platform type needs. */
         'typescript/consistent-type-definitions': unsafeFix(
             on(['type']),
             'rewrites a `declare module` augmentation into an alias, which no longer merges',
@@ -194,9 +167,7 @@ export default fragment({
             typeAware(),
             'drops a cast a widened platform type needs',
         ),
-        /* `separate-type-imports`, for `import/consistent-type-specifier-style`'s
-         * reason: an inline type specifier survives `verbatimModuleSyntax` as an
-         * empty runtime import. */
+        // For `import/consistent-type-specifier-style`'s reason: an inline type specifier survives as an empty import.
         'typescript/consistent-type-imports': on([
             {
                 disallowTypeAnnotations: true,
@@ -204,23 +175,17 @@ export default fragment({
                 prefer: 'type-imports',
             },
         ]),
-        /* The guard for the emit above: an all-inline type import is the shape
-         * `verbatimModuleSyntax` turns into a side effect, and this names it. */
         'typescript/no-import-type-side-effects': on(),
         'typescript/explicit-member-accessibility': on([{ accessibility: 'no-public' }]),
-        /* Booleans excepted: `false ?? x` is `false` and `false || x` is `x`,
-         * so on a boolean the two operators mean different things and the
-         * rewrite the rule asks for is not the same expression. */
+        // Booleans excepted: `false ?? x` is `false` and `false || x` is `x`.
         'typescript/prefer-nullish-coalescing': typeAware([
             { ignorePrimitives: { boolean: true } },
         ]),
         'typescript/method-signature-style': on(['property']),
-        /* Nursery upstream, decided because tsgolint runs it: 0 reports on
-         * this package, and `fix` writes the chain it asks for. */
+        // Nursery upstream, decided because tsgolint runs it.
         'typescript/prefer-optional-chain': { ...typeAware(), since: NURSERY_SINCE },
         'typescript/return-await': typeAware(['always']),
 
-        // -- Off, each with its one reason -------------------------------------
         'typescript/ban-types': off({
             by: 'typescript/no-empty-object-type, no-unsafe-function-type, no-wrapper-object-types — its three successors',
             kind: 'covered',

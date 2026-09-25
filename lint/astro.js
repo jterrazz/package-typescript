@@ -1,16 +1,7 @@
 import { fragment, off, on, scoped } from './_contract.js';
 import { ASSETS } from './language/import.js';
 
-/*
- * Astro. oxlint parses an `.astro` file's script body but not its frontmatter
- * as a module, so the three decisions below are scoped to `*.astro` alone;
- * everything else in an Astro tree is ordinary TypeScript under the core
- * rulebook.
- *
- * The restricted imports are the boundary five checkouts hand-copied before
- * this fragment existed: an Astro site is not a Next site, and reaching for
- * Next's router or its intl package is the mistake that keeps being made.
- */
+// oxlint parses an `.astro` file's script body but not its frontmatter as a module, so these decisions are scoped to `*.astro`.
 export default fragment({
     id: 'astro',
     audience: 'consumer',
@@ -29,13 +20,7 @@ export default fragment({
         }),
     ],
     rules: {
-        /*
-         * `never`, with two extensions that stay: an asset, which Vite resolves
-         * BY its extension, and `.astro` itself — Astro's `resolve.extensions`
-         * does not carry it, so a layout imported without it fails the build.
-         * An override's options REPLACE the base entry, so the whole list is
-         * restated here.
-         */
+        // Vite resolves an asset by its extension, and Astro's `resolve.extensions` does not carry `.astro`.
         'import/extensions': on(['never', { ...ASSETS, astro: 'always' }]),
         'no-restricted-imports': on([
             {

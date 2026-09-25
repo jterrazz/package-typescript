@@ -16,17 +16,8 @@ import react from './react.js';
 import sorted from './sorted.js';
 import vitest from './vitest.js';
 
-/*
- * Which fragments each profile carries. A profile ADDS a framework's plugins
- * and its ignore patterns to the core rulebook; it never subtracts from it, and
- * no profile sets a core rule to `off`
- * ([Lint presets](../docs/07-lint-presets.md)).
- *
- * `src/presets/oxlint/profiles/<name>.js` is this table compiled; nothing else
- * decides what a profile holds.
- */
+// A profile adds a framework's plugins and ignores to the core rulebook, and never sets a core rule `off`.
 
-/** The rulebook every profile carries, whatever it is written in. */
 export const CORE = Object.freeze([
     eslint,
     typescript,
@@ -41,26 +32,17 @@ export const CORE = Object.freeze([
     vitest,
 ]);
 
-/*
- * Trees no profile lints. `.artifacts/` is deliberately absent: it is
- * gitignored and oxlint reads `.gitignore` on its own, so naming it here too
- * would make it unlintable even where a caller asks for it by name.
- */
+// `.artifacts/` is absent on purpose: oxlint reads `.gitignore` itself, and naming it here would make it unlintable by name.
 const IGNORED = Object.freeze([
     'dist/**',
     'node_modules/**',
-    // The ground a test stands on — its inputs, its goldens, its database
-    // state and its requests — is @jterrazz/test's four reserved folders,
-    // wherever a test stands (under specs/, and beside a module under src/):
-    // an input is deliberately broken and a golden is held byte for byte,
-    // so none of it is source and none of it is linted.
+    // The ground a test stands on is deliberately broken or held byte for byte: none of it is source.
     '**/fixtures/**',
     '**/expected/**',
     '**/seeds/**',
     '**/requests/**',
 ]);
 
-/** Every profile, by the name a consumer imports. */
 export const PROFILES = Object.freeze({
     astro: {
         env: { astro: true, browser: true, builtin: true, node: true },

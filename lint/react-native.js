@@ -1,15 +1,8 @@
 import { fragment, on } from './_contract.js';
 import { EXTENSIONS_NEVER } from './language/import.js';
 
-/*
- * React Native. oxlint 1.83 ships no `react-native` plugin, so this fragment
- * is not a plugin roster: it is the three decisions the platform forces, plus
- * the globals its runtime defines.
- *
- * Metro resolves an import, so a specifier carries no extension — except an
- * asset, which Metro resolves BY its extension, and `require()` is how an
- * asset is named in a React Native tree.
- */
+// oxlint ships no `react-native` plugin. Metro resolves an import but resolves an asset by its extension,
+// and `require()` is how an asset is named in a React Native tree.
 export default fragment({
     id: 'react-native',
     audience: 'consumer',

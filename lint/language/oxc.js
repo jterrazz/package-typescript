@@ -1,10 +1,6 @@
 import { allOn, fragment, off } from '../_contract.js';
 
-/*
- * The `oxc` plugin, all 27 rules decided by name. Three of them are
- * downlevel-syntax restrictions — they exist for a target older than the one
- * the estate compiles to — and they are the only three that are off.
- */
+// The three offs restrict syntax for a target older than the one the estate compiles to.
 export default fragment({
     id: 'language/oxc',
     audience: 'consumer',

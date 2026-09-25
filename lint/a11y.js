@@ -1,10 +1,6 @@
 import { allOn, fragment } from './_contract.js';
 
-/*
- * The `jsx-a11y` plugin, all 36 rules on. There is no off here and no reason
- * to record: an accessibility rule describes what a person using the product
- * can reach, and the estate has no profile that may decide otherwise.
- */
+// No off here: an accessibility rule describes what a person using the product can reach.
 export default fragment({
     id: 'a11y',
     audience: 'consumer',

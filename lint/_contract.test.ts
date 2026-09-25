@@ -5,26 +5,17 @@ import { lintFragments } from '../specs/surface/package/lint-fragments.js';
 import { fragment, off, on, REASON_KINDS, typeAware, unsafeFix } from './_contract.js';
 import { compile } from './compile.js';
 
-/*
- * The contract-audit rule: the two invariants every fragment of the rulebook
- * rests on — a decision is `error` or `off` and never `warn`, and an `off`
- * carries exactly one of the five recorded reasons. They judge this package's own fragments alone —
- * `fragment()` is not exported — so they are `self` rules: the contract ships
- * without them, and this suite audits every fragment a module of `lint/` or
- * `src/` exports, by default or by name, whether a profile carries it or not.
- */
+// `fragment()` is not exported, so the contract's invariants are a `self` rule: this suite audits every
+// fragment a module of `lint/` or `src/` exports, whether a profile carries it or not.
 
 const REASON = { by: 'oxfmt sortImports', kind: 'covered' } as const;
 
-/** A value whose keys the audit reads. */
 type Loose = Record<string, unknown>;
 
-/** Whether a value is an object whose keys can be read. */
 function isRecord(value: unknown): value is Loose {
     return typeof value === 'object' && value !== null;
 }
 
-/** What an `off`'s reason lacks, if anything. */
 function reasonProblem(reason: unknown): string | undefined {
     if (!isRecord(reason) || Object.keys(reason).length === 0) {
         return 'is off with no reason';
@@ -38,7 +29,6 @@ function reasonProblem(reason: unknown): string | undefined {
     return undefined;
 }
 
-/** What one decision owes the contract, as the problems it has. */
 function decisionProblems(decision: unknown): string[] {
     if (!isRecord(decision)) {
         return ['is not a decision — use on(), typeAware() or off()'];
@@ -56,7 +46,6 @@ function decisionProblems(decision: unknown): string[] {
     ].filter((problem) => problem !== undefined);
 }
 
-/** A fragment's decision blocks: its own body, then each override's. */
 function blocksOf(one: Loose): Loose[] {
     const overrides: readonly unknown[] = Array.isArray(one.overrides) ? one.overrides : [];
 
@@ -68,7 +57,6 @@ function blocksOf(one: Loose): Loose[] {
     ];
 }
 
-/** Everything a fragment owes the contract, as the problems it has. */
 function problemsOf(one: Loose): string[] {
     const owner = typeof one.id === 'string' && one.id !== '' ? one.id : '(no id)';
 

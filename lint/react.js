@@ -1,11 +1,5 @@
 import { allOn, fragment, off, on } from './_contract.js';
 
-/*
- * The `react` and `react-perf` plugins, all 88 non-nursery rules decided by
- * name — the hooks rules, the React Compiler rules (purity, immutability,
- * static-components, preserve-manual-memoization…) and the class-era
- * correctness rules alike.
- */
 export default fragment({
     id: 'react',
     audience: 'consumer',
@@ -90,13 +84,11 @@ export default fragment({
             ].map((rule) => `react/${rule}`),
         ),
 
-        // -- On, at the value the estate's own shape asks for -------------------
         'react/function-component-definition': on([
             { namedComponents: 'function-declaration', unnamedComponents: 'arrow-function' },
         ]),
         'react/jsx-filename-extension': on([{ extensions: ['.jsx', '.tsx'] }]),
 
-        // -- Off, each with its one reason -------------------------------------
         'react-perf/jsx-no-jsx-as-prop': off({
             by: 'react/static-components, react/use-memo — the React Compiler rules decide memoisation, and an inline prop is the idiom they are written for',
             kind: 'covered',
@@ -146,11 +138,7 @@ export default fragment({
             kind: 'covered',
         }),
 
-        /*
-         * A stylesheet import IS its own assignment — `import './index.css'`
-         * is how a React tree carries its styles, whatever bundles it, and
-         * there is nothing to bind it to. One owner for every React profile.
-         */
+        // `import './index.css'` is how a React tree carries its styles: there is nothing to bind it to.
         'import/no-unassigned-import': on([{ allow: ['**/*.css', '**/*.scss'] }]),
     },
 });

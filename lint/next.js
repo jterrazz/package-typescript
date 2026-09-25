@@ -1,11 +1,7 @@
 import { allOn, fragment, off, scoped } from './_contract.js';
 import { EXTENSIONS_NEVER } from './language/import.js';
 
-/*
- * The `nextjs` plugin, all 21 rules on, plus the two decisions Next's own
- * resolution forces: a bundler resolves an import, so a specifier carries no
- * extension, and `next-env.d.ts` is a side-effect import Next writes itself.
- */
+// `next-env.d.ts` is a side-effect import Next writes itself.
 export default fragment({
     id: 'next',
     audience: 'consumer',

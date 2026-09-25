@@ -1,21 +1,9 @@
 import { allOn, fragment, off, on } from '../_contract.js';
 
-/*
- * The `import` plugin, all 31 non-nursery rules decided by name.
- *
- * `import/extensions` is the one rule two platforms answer differently: Node
- * ESM resolves a specifier literally and needs the `.js`, a bundler resolves it
- * and refuses one. Core states the Node answer; `lint/next.js`,
- * `lint/astro.js`, `lint/react-native.js` and `lint/bundler.js` re-decide it
- * for their platform, at `error` either way — a profile changes the convention,
- * never the level.
- *
- * `import/no-cycle` rides here for +0.05s. Mind what it does NOT see: oxlint's
- * implementation ignores type-only imports, so a value import one way and an
- * `import type` back is invisible to it (oxc#20551).
- */
+// `import/extensions` is re-decided per platform (next, astro, react-native, bundler), always at `error`.
+// `import/no-cycle` ignores type-only imports, so a value edge one way and a type edge back is invisible (oxc#20551).
 
-/** Asset specifiers keep their extension on every platform — a bundler resolves them by it. */
+// A bundler resolves an asset by its extension, on every platform.
 export const ASSETS = {
     avif: 'always',
     css: 'always',
@@ -63,17 +51,10 @@ export default fragment({
             ].map((rule) => `import/${rule}`),
         ),
 
-        // -- On, at the strictest value the option carries ---------------------
-        /*
-         * Top level, not inline, and `verbatimModuleSyntax` is why: under it
-         * `import { type X } from 'leaflet'` is emitted as
-         * `import {} from 'leaflet'` — a runtime side-effect import of a module
-         * that may only exist in a browser. signews-web served a 500 from it.
-         */
+        // Under `verbatimModuleSyntax`, `import { type X } from 'leaflet'` emits a runtime `import {} from 'leaflet'`.
         'import/consistent-type-specifier-style': on(['prefer-top-level']),
         'import/extensions': EXTENSIONS_ALWAYS,
 
-        // -- Off, each with its one reason -------------------------------------
         'import/exports-last': off({
             by: 'docs/07-lint-presets.md — an export sits with the declaration it exports; three repositories had refused this rule locally before the decision moved here',
             kind: 'convention',

@@ -1,27 +1,5 @@
-/*
- * The rulebook's contract: a FRAGMENT is a set of decisions, one per rule of
- * one plugin, and nothing else. `compile.js` turns a fragment into the oxlint
- * config object a profile ships.
- *
- *     import { fragment, off, on } from '../_contract.js';
- *
- *     export default fragment({
- *         id: 'language/promise',
- *         audience: 'consumer',
- *         plugins: ['promise'],
- *         since: '10.0.0',
- *         rules: {
- *             'promise/no-nesting': on(),
- *             'promise/always-return': off({ kind: 'exclusive', by: 'promise/prefer-await-to-then' }),
- *         },
- *     });
- *
- * Two invariants the whole package rests on: a decision is `error` or `off`,
- * never `warn`; and an `off` carries exactly one recorded reason. They judge
- * this package's own fragments alone, so they are `self` rules: the builders
- * here enforce nothing, and this package's own suite audits every fragment
- * ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md)).
- */
+// Two invariants the package rests on: a decision is `error` or `off`, never `warn`, and an `off`
+// carries exactly one reason. The builders enforce nothing; the package's own suite audits every fragment.
 
 /**
  * @typedef {object} Reason Why a rule is off.
@@ -43,15 +21,9 @@
  * @property {Readonly<Record<string, Decision>>} decisions What it says there.
  */
 
-/** The version this rulebook was born in — the default `since` of every decision. */
-export const SINCE = '10.0.0';
+export const RULEBOOK_BIRTH_VERSION = '10.0.0';
 
-/**
- * Who a rule is FOR. A `consumer` rule means something in any project that
- * uses this package, and only those ship; a `self` rule is this package's own
- * suite discipline, and lives in its tests
- * ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md)).
- */
+// A `consumer` rule ships; a `self` rule is this package's suite discipline and lives in its tests.
 export const AUDIENCES = Object.freeze(['consumer', 'self']);
 
 /** The five reasons an `off` may carry, and no other. */
@@ -68,60 +40,29 @@ export const REASON_KINDS = Object.freeze([
     'covered',
 ]);
 
-/**
- * A rule that is on. Every rule of the rulebook is on at `error`; the optional
- * argument is the rule's options, at their strictest sensible value.
- */
 export function on(options) {
     return Object.freeze({ level: 'error', options });
 }
 
-/**
- * Every named rule, on at `error` with its default options — the bulk of a
- * fragment, where the rule id IS the whole decision.
- */
 export function allOn(rules) {
     return Object.fromEntries(rules.map((rule) => [rule, on()]));
 }
 
-/**
- * A rule that is off, and why. `reason` is `{ kind, by }` where `kind` is one
- * of `REASON_KINDS` and `by` names the rule, page or measurement that carries
- * the decision. "Too strict" is not a reason.
- */
+// "Too strict" is not a reason.
 export function off(reason, since) {
     return Object.freeze({ level: 'off', reason: Object.freeze({ ...reason }), since });
 }
 
-/**
- * A decision whose FIXER changes meaning. The rule stays on — `check` reports
- * it and a human answers it — but `fix` never applies the rewrite: the eight
- * marked here have each been measured turning working code into code that
- * does not compile, or into code that claims something else
- * ([Lint presets](../docs/07-lint-presets.md)).
- *
- * @param {{ level: 'error' | 'off', options?: unknown, typeAware?: boolean }} decision The rule's decision.
- * @param {string} why What the rewrite changes — measured, one clause.
- */
+/** @param {{ level: 'error' | 'off', options?: unknown, typeAware?: boolean }} decision stays on for `check`; `fix` never applies its rewrite */
 export function unsafeFix(decision, why) {
     return Object.freeze({ ...decision, fixer: 'unsafe', fixerReason: why });
 }
 
-/**
- * A rule that is on and needs type information — `oxlint --type-aware`, which
- * every profile of this package turns on. The mark is what the catalogue reads.
- */
+// Every profile of this package runs `oxlint --type-aware`; the catalogue reads the mark.
 export function typeAware(options) {
     return Object.freeze({ level: 'error', options, typeAware: true });
 }
 
-/**
- * Declare a fragment: one plugin's decisions, or one framework's. `rules` maps
- * an oxlint rule id to an `on()` / `typeAware()` / `off()` decision, and every
- * decision inherits the fragment's `since` unless it carries its own.
- * `audience` is one of `AUDIENCES`, and it is the audience of every decision
- * the fragment holds.
- */
 export function fragment(definition) {
     const {
         id,
@@ -135,13 +76,13 @@ export function fragment(definition) {
         ignorePatterns = [],
         env,
         globals,
-        since = SINCE,
+        since = RULEBOOK_BIRTH_VERSION,
     } = definition;
 
     /** @type {Record<string, Decision>} */
     const decisions = {};
     for (const [rule, decision] of Object.entries(rules)) {
-        decisions[rule] = normalise(rule, decision, since);
+        decisions[rule] = decisionFor(rule, decision, since);
     }
 
     return Object.freeze({
@@ -160,7 +101,6 @@ export function fragment(definition) {
     });
 }
 
-/** Every decision of every fragment, keyed by rule id, fragments merged left to right. */
 export function decisionsOf(...fragments) {
     const merged = {};
     for (const one of fragments) {
@@ -181,21 +121,16 @@ export function decisionsOf(...fragments) {
     return merged;
 }
 
-/**
- * An `overrides` block, stated in decisions like a fragment's own body. Its
- * rule options REPLACE the base entry — they never merge — so a block states
- * the complete option list for every rule it names.
- */
-export function scoped({ files, rules, since = SINCE }) {
+// An override's rule options replace the base entry, never merge: a block states every option.
+export function scoped({ files, rules, since = RULEBOOK_BIRTH_VERSION }) {
     /** @type {Record<string, Decision>} */
     const decisions = {};
     for (const [rule, decision] of Object.entries(rules)) {
-        decisions[rule] = normalise(rule, decision, since);
+        decisions[rule] = decisionFor(rule, decision, since);
     }
     return Object.freeze({ decisions: Object.freeze(decisions), files: Object.freeze([...files]) });
 }
 
-/** A decision, named by its rule and dated by its fragment unless it carries its own `since`. */
-function normalise(rule, decision, since) {
+function decisionFor(rule, decision, since) {
     return Object.freeze({ ...decision, rule, since: decision.since ?? since });
 }

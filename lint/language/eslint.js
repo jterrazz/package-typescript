@@ -1,11 +1,5 @@
 import { allOn, fragment, off, on, scoped } from '../_contract.js';
 
-/*
- * The `eslint` plugin: oxlint's port of the ESLint core rules, all 183
- * non-nursery ones decided by name. The offs below are the whole list, and
- * each carries the one reason that justifies it.
- */
-/** The release the size decisions were taken in. */
 const SIZE_SINCE = '11.0.0';
 
 export default fragment({
@@ -13,12 +7,7 @@ export default fragment({
     audience: 'consumer',
     plugins: ['eslint'],
     overrides: [
-        /*
-         * A spec file's size has one judge: `@jterrazz/test`'s C33, at 400
-         * lines, reaches every `*.spec.ts` and nothing else, and its message
-         * groups the tests by title — where the cut goes. The two caps never
-         * judge one file.
-         */
+        // A spec file's size has one judge: `@jterrazz/test`'s C33, at 400 lines.
         scoped({
             files: ['**/*.spec.ts'],
             rules: {
@@ -29,13 +18,7 @@ export default fragment({
             },
             since: SIZE_SINCE,
         }),
-        /*
-         * A test file's size per function has one judge too: its one
-         * `describe` (@jterrazz/test's C31) is a function as long as the file,
-         * and C34 caps what the two caps below would have caught there — a
-         * test body's lines, and its statements — at the same 60 lines. The
-         * globs are the three suffixes that declare tests, the set C34 reads.
-         */
+        // A test file's one `describe` (C31) is a function as long as the file; C34 caps a test body instead.
         scoped({
             files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts'],
             rules: {
@@ -206,41 +189,28 @@ export default fragment({
             'yoda',
         ]),
 
-        // -- On, at the strictest value the option carries --------------------
         'arrow-body-style': on(['as-needed']),
-        /* `modified`: a `switch` counts once, however many cases it holds —
-         * a dispatch over a closed union is one decision, not N paths to test. */
+        // `modified`: a dispatch over a closed union is one decision, not N paths to test.
         complexity: { ...on([{ max: 12, variant: 'modified' }]), since: SIZE_SINCE },
         'func-style': on(['declaration', { allowArrowFunctions: true }]),
         'max-depth': on([4]),
-        /* Size is not complexity: a long file or function can have one path.
-         * Both caps count every line, comments included, as C33 does. */
+        // Both caps count every line, comments included, as C33 does.
         'max-lines': { ...on([{ max: 300 }]), since: SIZE_SINCE },
         'max-lines-per-function': { ...on([{ max: 60 }]), since: SIZE_SINCE },
         'max-params': on([4]),
         'no-duplicate-imports': on([{ allowSeparateTypeImports: true }]),
         'no-unmodified-loop-condition': on([{ checkConditionalExpressions: true }]),
-        /* A hoisted function declaration has no temporal dead zone, and the
-         * estate writes the public function first and its helpers below it.
-         * The defect this rule names — reading a binding before it exists — is
-         * a `let`, a `const` or a `class`, and all three stay refused. */
+        // A hoisted function declaration has no temporal dead zone; the estate writes helpers below their caller.
         'no-use-before-define': on([{ classes: true, functions: false, variables: true }]),
         'no-unused-expressions': on([
             { allowShortCircuit: true, allowTaggedTemplates: true, allowTernary: true },
         ]),
         'no-void': on([{ allowAsStatement: true }]),
-        /* The object form names what it takes; the array form past index 0
-         * counts commas, and `const [, , , operating] = SPINE` is not clearer
-         * than `SPINE[3]`. */
+        // `const [, , , operating] = SPINE` is not clearer than `SPINE[3]`.
         'prefer-destructuring': on([{ array: false, object: true }]),
-        /* `never`, not `always`. Both exist and both fix, but the `always` fixer
-         * FUSES adjacent declarations, and a comment standing between two of
-         * them is pulled inside the chain — which silently relocates the
-         * `// Given -` / `// Then -` narration @jterrazz/test requires. `never`
-         * splits chains and leaves every comment where it stands. */
+        // The `always` fixer fuses declarations and pulls a `// Given -` narration comment inside the chain.
         'one-var': on(['never']),
 
-        // -- Off, each with its one reason ------------------------------------
         'capitalized-comments': off({
             by: 'jterrazz-design — 198 of 198 reports were false positives (quality study, 2026-09-15)',
             kind: 'evidence',
@@ -250,10 +220,7 @@ export default fragment({
             kind: 'evidence',
         }),
         'init-declarations': off({ by: 'no-unassigned-vars, prefer-const', kind: 'covered' }),
-        /* oxfmt writes one statement per line, so a function's cap bounds its
-         * statement count — max-lines-per-function outside a test file, where
-         * that cap is itself off and @jterrazz/test's C34 takes its place
-         * (the scoped override below). */
+        // oxfmt writes one statement per line, so the per-function line cap bounds statements.
         'max-statements': off(
             {
                 by: 'max-lines-per-function (60) — oxfmt puts one statement per line',

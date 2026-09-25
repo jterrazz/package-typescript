@@ -1,10 +1,6 @@
 import { allOn, fragment, off } from '../_contract.js';
 
-/*
- * The `promise` plugin, all 15 non-nursery rules decided by name. The estate
- * writes `await`, so the two rules that describe a well-behaved `.then()`
- * chain are the ones that cannot hold beside `prefer-await-to-then`.
- */
+// The estate writes `await`: two rules describing a well-behaved `.then()` chain cannot hold beside `prefer-await-to-then`.
 export default fragment({
     id: 'language/promise',
     audience: 'consumer',

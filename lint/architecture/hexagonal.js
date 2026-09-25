@@ -1,11 +1,6 @@
 import { layers } from './layers.js';
 
-/*
- * The hexagonal map: the six boundaries this package has enforced since v6,
- * restated as a layer map. The dependency arrow points inward — the domain
- * knows nothing, the application knows the domain, everything else knows the
- * application.
- */
+// The dependency arrow points inward: the domain knows nothing, the application knows the domain.
 export const HEXAGONAL_MAP = Object.freeze([
     {
         deny: [

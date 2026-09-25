@@ -1,25 +1,17 @@
-/*
- * Fragment -> oxlint config. The compiler is the only place a rule level is
- * spelled, and it never emits `categories`: a category switch arms rules of
- * plugins the config never names, inert until a framework config activates the
- * plugin and then firing unannounced. Every rule of this package is decided by
- * name ([Lint presets](../docs/07-lint-presets.md)).
- */
+// Never emits `categories`: a category arms rules of plugins the config never names, which fire unannounced
+// once a framework config activates the plugin.
 
-/** The linter options every profile ships: type information on, dead directives refused. */
 export const OPTIONS = Object.freeze({
     reportUnusedDisableDirectives: 'error',
     typeAware: true,
 });
 
-/** Config keys concatenated across configs, duplicates dropped (===). */
 const CONCAT_DEDUPE = new Set(['extends', 'ignorePatterns', 'jsPlugins', 'plugins']);
-/** Config keys concatenated verbatim — order matters, no dedupe. */
+// Order matters: no dedupe.
 const CONCAT = new Set(['overrides']);
-/** Config keys shallow-merged as objects — the LAST config wins per key. */
+// The last config wins per key.
 const SHALLOW_MERGE = new Set(['env', 'globals', 'options', 'rules', 'settings']);
 
-/** One fragment as the plain oxlint config object oxlint itself reads. */
 export function compile(fragment) {
     const config = { rules: rulesOf(fragment.decisions) };
 
@@ -54,13 +46,6 @@ export function compile(fragment) {
     return config;
 }
 
-/**
- * Deterministic merge of oxlint config objects, left to right:
- * `jsPlugins` / `plugins` / `ignorePatterns` / `extends` concatenated and
- * deduped, `rules` / `env` / `globals` / `options` / `settings` shallow-merged
- * with last-wins per key, `overrides` concatenated, any other key taken from
- * the last config that sets it.
- */
 export function merge(...configs) {
     const merged = {};
     for (const config of configs) {
@@ -76,7 +61,6 @@ export function merge(...configs) {
     return merged;
 }
 
-/** How one key merges: the three tables above, then last-wins. */
 function mergeKey(key, previous, value) {
     if (CONCAT_DEDUPE.has(key)) {
         const combined = [...asArray(previous), ...asArray(value)];
@@ -98,7 +82,6 @@ function asArray(value) {
     return Array.isArray(value) ? value : [value];
 }
 
-/** A profile: fragments compiled, merged, and given the linter options. */
 export function profile({ fragments, env, globals, ignorePatterns = [] }) {
     return merge(...fragments.map((one) => compile(one)), {
         env,

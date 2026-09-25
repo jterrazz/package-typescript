@@ -1,10 +1,6 @@
 import { allOn, fragment, off, on, unsafeFix } from '../_contract.js';
 
-/*
- * The `unicorn` plugin, all 137 non-nursery rules decided by name. Two of the
- * offs are the formatter's: unicorn's fixer and oxfmt disagree about the same
- * bytes, and the fixpoint suite is what proves it (specs/cli/preset).
- */
+// Two offs are the formatter's: unicorn's fixer and oxfmt disagree about the same bytes (specs/cli/preset).
 export default fragment({
     id: 'language/unicorn',
     audience: 'consumer',
@@ -136,12 +132,8 @@ export default fragment({
             ].map((rule) => `unicorn/${rule}`),
         ),
 
-        // -- On, at the strictest value the option carries ---------------------
         'unicorn/filename-case': on([{ case: 'kebabCase' }]),
-        /* The estate imports a Node builtin by name — `import { resolve } from
-         * 'node:path'` — because that is what the type-aware rules read and what
-         * `verbatimModuleSyntax` keeps. The rule's default asks for the default
-         * import on exactly these three. */
+        // Named builtin imports are what the type-aware rules read and what `verbatimModuleSyntax` keeps.
         'unicorn/import-style': on([
             {
                 styles: {
@@ -152,13 +144,8 @@ export default fragment({
                 },
             },
         ]),
-        /* No `withDash`: the estate writes `'utf8'`, which is the rule's own
-         * default preference, and `'utf-8'` is the same encoding spelled longer. */
         'unicorn/text-encoding-identifier-case': on(),
 
-        /* Both fixers change meaning, so `fix` never applies them and `check`
-         * still reports them: one strips a REQUIRED argument, the other drops
-         * the trailing slash `new URL('.', import.meta.url)` carries. */
         'unicorn/no-useless-undefined': unsafeFix(
             on(),
             'strips a REQUIRED argument, `mockReturnValue(undefined)` included (TS2554)',
@@ -172,7 +159,6 @@ export default fragment({
             'unwraps `Promise.resolve({ … })` in an arrow body into a bare object literal, which is a block',
         ),
 
-        // -- Off, each with its one reason -------------------------------------
         'unicorn/explicit-length-check': off({
             by: 'typescript/strict-boolean-expressions — it already refuses a length used as a condition',
             kind: 'covered',

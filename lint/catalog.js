@@ -14,21 +14,9 @@ import { PROFILES } from './profiles.js';
  * @property {string[]} profiles The profiles that carry it.
  */
 
-/*
- * The catalogue: every decision of every profile, with the profiles that carry
- * it. It is the one place the rulebook is readable as a list: `fix` reads its
- * unsafe fixers, and the GENERATED sections of
- * [Lint presets](../docs/07-lint-presets.md) are its projection, rendered and
- * held fresh by this package's own suite — a `self` rule, which ships nowhere
- * ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md)).
- *
- * Composition is last-wins per rule, so the catalogue resolves each profile
- * first and groups after: `import/extensions` is `always` under node and
- * `never` under the bundler profiles, and a reader is owed both lines, each
- * naming only the profiles it is true for.
- */
+// Composition is last-wins per rule, so each profile resolves before grouping: a reader is owed
+// `import/extensions` as `always` under node and `never` under the bundler profiles, each on its own line.
 
-/** Every decision, in rule order, one entry per distinct decision. */
 export function catalog() {
     /** @type {Map<string, Entry>} */
     const grouped = new Map();
@@ -52,7 +40,6 @@ export function catalog() {
     );
 }
 
-/** One profile's decisions, its fragments applied left to right, last wins per rule and scope. */
 function resolve(definition) {
     /** @type {Map<string, Entry>} */
     const decisions = new Map();
@@ -81,14 +68,7 @@ function absorb(decisions, fragment, entries, scoped) {
     }
 }
 
-/**
- * Every rule whose own fixer changes meaning, with what the rewrite does.
- * `check` reports them and a human answers them; `fix` runs with each one
- * allowed, so the rewrite is never applied
- * ([Quality checks](../docs/06-quality-checks.md)).
- *
- * @returns {{ rule: string, why: string }[]} Each rule once, sorted by name.
- */
+/** @returns {{ rule: string, why: string }[]} each rule once, sorted by name */
 export function unsafeFixers() {
     /** @type {Map<string, string>} */
     const seen = new Map();
