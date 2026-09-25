@@ -14,7 +14,8 @@ import { lintFragments } from './lint-fragments.js';
  * `self`, this package's own suite discipline. A rulebook fragment declares it
  * for every decision it holds; every other rule is a row of the manifest
  * beside this file, `rules.json`, by channel: a pass of `typescript check`, a
- * refusal a shipped module throws or exits with, and a meta-test. A `self` row
+ * refusal a shipped module or script throws, rejects or exits non-zero with,
+ * and a meta-test. A `self` row
  * names the home that holds it — a path the package leaves out — and the
  * names the tarball audit greps for.
  */
@@ -54,16 +55,23 @@ function byName(left: string, right: string): number {
     return left.localeCompare(right);
 }
 
-/** Every module the package would ship, as a path from the root: tests left out. */
+/** Every module and script the package would ship, as a path from the root: tests left out. */
 function shippedModules(directory: string): string[] {
     return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
         const path = join(directory, entry.name);
         if (entry.isDirectory()) {
             return shippedModules(path);
         }
-        return /\.[cm]?js$/u.test(entry.name) ? [relative(ROOT, path)] : [];
+        return /\.(?:[cm]?js|sh)$/u.test(entry.name) ? [relative(ROOT, path)] : [];
     });
 }
+
+/** The ways a shipped module refuses, each counted off its text: a throw, a rejection, an exit with anything but 0. */
+const REFUSALS: Record<string, { script: RegExp; module: RegExp }> = {
+    exit: { module: /\bexit\((?!0\))/gu, script: /\bexit [1-9]/gu },
+    reject: { module: /\breject\(new\b/gu, script: /$^/gu },
+    throw: { module: /\bthrow new \w+\(/gu, script: /$^/gu },
+};
 
 test('every fragment of the rulebook declares its audience', () => {
     // Given - every fragment a module of lint/ or src/ holds, whether a profile carries it or not
@@ -123,22 +131,32 @@ test('the consumer passes are exactly the passes the check selects by name', () 
     ).toStrictEqual([...selected].toSorted(byName));
 });
 
-test('every refusal a shipped module throws is a consumer row, and every row is still there', () => {
-    // Given - every module of lint/ and src/, and the runtime rows of the manifest
-    const modules = [...shippedModules(join(ROOT, 'lint')), ...shippedModules(join(ROOT, 'src'))];
+test('every refusal a shipped module makes is a consumer row, and every row is still there', () => {
+    // Given - every module of lint/, src/ and bin/, and the runtime rows of the manifest
+    const modules = ['lint', 'src', 'bin'].flatMap((folder) => shippedModules(join(ROOT, folder)));
     const runtime = rows.filter((row) => row.channel === 'runtime');
 
-    // Then - a module throws as many refusals as its rows declare, each consumer, each still worded so
+    // Then - a module refuses in each way as often as its rows declare, each consumer, each still worded so
     for (const module of modules) {
         const source = readFileSync(join(ROOT, module), 'utf8');
-        const thrown = source.match(/\bthrow new \w+\(/gu)?.length ?? 0;
-        const declaredThrows = runtime.filter((row) => row.module === module && row.by === 'throw');
-        expect
-            .soft(declaredThrows.length, `${module} throws a refusal no row declares`)
-            .toBe(thrown);
+        for (const [by, { module: inModule, script }] of Object.entries(REFUSALS)) {
+            const made = source.match(module.endsWith('.sh') ? script : inModule)?.length ?? 0;
+            const declaredRefusals = runtime.filter(
+                (row) => row.module === module && row.by === by,
+            );
+            expect
+                .soft(
+                    declaredRefusals.length,
+                    `${module} refuses by ${by} where no row declares it`,
+                )
+                .toBe(made);
+        }
     }
     for (const row of runtime) {
         const module = text(row, 'module');
+        expect
+            .soft(Object.keys(REFUSALS), `${text(row, 'id')} refuses no known way`)
+            .toContain(row.by);
         expect.soft(row.audience, `${text(row, 'id')} ships, so it is consumer`).toBe('consumer');
         expect
             .soft(

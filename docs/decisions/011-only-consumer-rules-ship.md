@@ -13,7 +13,7 @@ The owner decided on 2026-09-24 that every rule a package of the family ships de
 
 ## Decision
 
-Every rule declares `consumer` or `self`, from the closed pair `AUDIENCES` in `lint/_contract.js`. A fragment declares it for every decision it holds; every other rule — a pass of the check, a refusal a shipped module throws, a meta-test — is a row of one manifest the package does not ship, and a `self` row names the home that holds it.
+Every rule declares `consumer` or `self`, from the closed pair `AUDIENCES` in `lint/_contract.js`. A fragment declares it for every decision it holds; every other rule — a pass of the check, a refusal a shipped module or script makes, a meta-test — is a row of one manifest the package does not ship, and a `self` row names the home that holds it.
 
 A rule mixing the two is split. The contract's builders ship and enforce nothing, and its two invariants are audited by this package's own suite over every fragment a module of `lint/` or `src/` exports, whether a profile carries it or not. This supersedes the "at load time" clause of [ADR-003](003-the-rulebook-is-explicit.md). The one refusal a consumer can reach, a fragment with no id, which `layers()` builds from the `id` it is given, keeps its consumer half in `layers()`. `catalog()` and `unsafeFixers()` ship, since `fix` reads them, and the chapter's renderer lives in the suite.
 

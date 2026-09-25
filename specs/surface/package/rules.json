@@ -115,6 +115,278 @@
         "module": "src/cli/check-drift.js"
     },
     {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "empty-sweep-exit",
+        "message": "stderr.write(`${error.message}\\n`);",
+        "module": "src/cli/project-files.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "docs-violations",
+        "message": "exit(violations.length > 0 ? 1 : 0);",
+        "module": "src/cli/check-docs.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "publish-tool-failed",
+        "message": "failed = true;",
+        "module": "src/cli/check-publish.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "gitignore-no-ancestor",
+        "message": "does an ancestor `.gitignore` exist above",
+        "module": "src/cli/check-gitignore.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "gitignore-artefacts",
+        "message": "Artefacts must never be committed:",
+        "module": "src/cli/check-gitignore.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "test-package-no-bin",
+        "message": "argv.includes('--bin')",
+        "module": "src/cli/test-package.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "test-package-absent",
+        "message": "const version = testPackageVersion(dir);",
+        "module": "src/cli/test-package.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "test-package-below-floor",
+        "message": "compare(version, floor) >= 0",
+        "module": "src/cli/test-package.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "secrets-gitleaks",
+        "message": "exit(gitleaks.status === 0 ? 0 : 1);",
+        "module": "src/cli/check-secrets.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "secrets-patterns",
+        "message": "looks like ${what}",
+        "module": "src/cli/check-secrets.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "oxlint-report-usage",
+        "message": "Usage: node oxlint-report.js",
+        "module": "src/cli/oxlint-report.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "drift-unreasoned-json",
+        "message": "unreasoned,",
+        "module": "src/cli/check-drift.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "baseline-no-report",
+        "message": "the baseline cannot be read",
+        "module": "src/cli/check-baseline.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "baseline-no-names-report",
+        "message": "the Names (tree) pass wrote no report",
+        "module": "src/cli/check-baseline.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "baseline-unwritable",
+        "message": "section cannot be written beside the others",
+        "module": "src/cli/check-baseline.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "baseline-silent-linter",
+        "message": "with no diagnostic — its own output says why",
+        "module": "src/cli/check-baseline.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "baseline-unreadable",
+        "message": "baseline-unreadable",
+        "module": "src/cli/check-baseline.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "baseline-unrecorded",
+        "message": "to record where the project stands.",
+        "module": "src/cli/check-baseline.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "baseline-ratchet",
+        "message": "baseline-ratchet",
+        "module": "src/cli/check-baseline.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "baseline-legacy",
+        "message": "baseline-legacy",
+        "module": "src/cli/check-baseline.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "suppressions-findings",
+        "message": "the directive now names the checker this project runs",
+        "module": "src/cli/check-suppressions.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "names-unrecorded",
+        "message": "exit(findings.length > 0 ? 1 : 0);",
+        "module": "src/cli/check-names.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "names-ratchet",
+        "message": "baseline-ratchet",
+        "module": "src/cli/check-names.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "doctor-out-of-range",
+        "message": "exit(failed || skewed ? 1 : 0);",
+        "module": "src/cli/doctor.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "architecture-nothing-to-cruise",
+        "message": "declares a layer map, but there is no src/",
+        "module": "src/cli/check-architecture.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "architecture-unrun",
+        "message": "depcruise could not be run",
+        "module": "src/cli/check-architecture.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "architecture-violations",
+        "message": "exit(run.status === 0 ? 0 : 1);",
+        "module": "src/cli/check-architecture.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "lint-targets-unread",
+        "message": "error instanceof Error ? error.message : String(error)",
+        "module": "src/cli/lint-targets.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "markdown-violations",
+        "message": "auditPage(root, path, markdown)",
+        "module": "src/cli/check-markdown.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "check-failed",
+        "message": "Some checks failed",
+        "module": "bin/commands/check.sh"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "check-usage",
+        "message": "Usage: check.sh <check|fix>",
+        "module": "bin/commands/check.sh"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "build-failed",
+        "message": "Error: Build failed",
+        "module": "bin/typescript.sh"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "baseline-write-failed",
+        "message": "--names \"$NAMES_REPORT\" --write || exit 1",
+        "module": "bin/typescript.sh"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "command-usage",
+        "message": "Usage: typescript <command>",
+        "module": "bin/typescript.sh"
+    },
+    {
         "audience": "self",
         "channel": "meta",
         "home": "lint/_contract.test.ts",
