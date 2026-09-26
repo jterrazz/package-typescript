@@ -318,6 +318,10 @@ tmp_dir=$(mktemp -d)
 cleanup() { rm -rf "$tmp_dir"; }
 trap cleanup EXIT
 
+rewrite_renamed_ids_before_any_pass() {
+    node "$PACKAGE_ROOT/lint/migration/rename.js" . "${LINT_ARGS[@]}" --fix > "$tmp_dir/renamed.log" 2>&1
+}
+
 run_checks() {
     local FIX_MODE="$1"
     local LABEL
@@ -330,9 +334,8 @@ run_checks() {
 
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
 
-    # An id a release renamed is rewritten where the project cites it, before any pass reads the tree.
     if [ "$FIX_MODE" = true ]; then
-        node "$PACKAGE_ROOT/lint/migration/rename.js" . "${LINT_ARGS[@]}" --fix > "$tmp_dir/renamed.log" 2>&1
+        rewrite_renamed_ids_before_any_pass
     fi
 
     # Chosen before oxlint starts: whether the report is written depends on this list.
