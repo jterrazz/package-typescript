@@ -10,6 +10,7 @@ const PRESETS = resolve(import.meta.dirname, '../../../src/presets/tsdown');
 const ENTRIES = [
     'lint/consumer/checks/docs',
     'lint/index',
+    'lint/index.docs',
     'src/config',
     'src/index',
     'src/oxfmt',

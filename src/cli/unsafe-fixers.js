@@ -8,8 +8,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { argv, cwd, stdin, stdout } from 'node:process';
 
-import { PROFILES } from '../../lint/consumer/rulebook/profiles.js';
-import { unsafeFixers } from '../../lint/engine/catalogue/decisions.js';
+import { UNSAFE_FIXERS } from '../../lint/index.unsafe-fixers.js';
 
 const WRAPPER = 'oxlint.fix.config.mjs';
 
@@ -22,7 +21,7 @@ const CONFIG_NAMES = JSON.parse(
 );
 
 export function wrapperOf(consumerConfig) {
-    const off = Object.fromEntries(unsafeFixers(PROFILES).map(({ rule }) => [rule, 'off']));
+    const off = Object.fromEntries(UNSAFE_FIXERS.map(({ rule }) => [rule, 'off']));
     const attributes = consumerConfig.endsWith('.json') ? " with { type: 'json' }" : '';
 
     return [

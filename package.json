@@ -34,8 +34,8 @@
             "default": "./src/config.js"
         },
         "./docs": {
-            "types": "./lint/consumer/checks/docs.d.ts",
-            "default": "./lint/consumer/checks/docs.js"
+            "types": "./lint/index.docs.d.ts",
+            "default": "./lint/index.docs.js"
         },
         "./oxfmt": {
             "types": "./src/oxfmt.d.ts",
