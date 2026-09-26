@@ -93,7 +93,7 @@ describe('tsconfig', () => {
     test.each(PRESETS)(
         'the %s preset leaves the ground a test stands on out of the compiled file set, wherever it sits',
         (preset) => {
-            // Given - a consumer whose specs/ holds each of the four ground folders beside a stub, and whose src/ holds a module test's _fixtures/
+            // Given - a consumer whose specs/ holds each of the four ground folders beside a `_setup/` module, and whose src/ holds a module test's _fixtures/
             const dir = consumer('tsconfig-ground', preset);
 
             // When - tsc lists the files the preset compiles
@@ -103,8 +103,11 @@ describe('tsconfig', () => {
                 .map((path) => path.slice(dir.length + 1))
                 .toSorted();
 
-            // Then - the stub and the product compile; the ground never does, under specs/ or src/
-            expect(listed).toStrictEqual(['specs/orders/stubs/order.ts', 'src/catalog/catalog.ts']);
+            // Then - the `_setup/` module and the product compile; the ground never does, under specs/ or src/
+            expect(listed).toStrictEqual([
+                'specs/orders/_setup/order.ts',
+                'src/catalog/catalog.ts',
+            ]);
         },
     );
 
