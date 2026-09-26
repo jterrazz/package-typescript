@@ -1,6 +1,6 @@
 # @jterrazz/typescript
 
-The complete TypeScript toolchain — build, run and check with zero configuration. Powered by tsdown, Oxlint, Oxfmt, TypeScript 7, and Knip. Seven profiles, one rulebook: every rule of every plugin it loads is decided by name.
+The complete TypeScript toolchain — build, run and check with zero configuration. Powered by tsdown, Oxlint, Oxfmt, TypeScript 7, and Knip. Six profiles, one rulebook: every rule of every plugin it loads is decided by name.
 
 ## Installation
 
