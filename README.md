@@ -21,6 +21,7 @@ npx typescript fix             # Auto-fix lint, formatting, the .gitignore, supp
 npx typescript doctor          # Installed tool versions against the ranges this release declares
 npx typescript baseline        # Record today's oxlint diagnostics, so the count may only fall — fix re-records a fall
 npx typescript clean           # Remove .artifacts/ (dist/ stays — it is the product)
+npx typescript tsc             # The TypeScript 7 compiler, passed through
 ```
 
 ## How it works

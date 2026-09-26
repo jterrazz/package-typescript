@@ -1,6 +1,6 @@
 # Building
 
-Four commands cover the whole build lifecycle — `build` and `bundle` produce artifacts, `start` and `dev` run them.
+Four commands cover the whole build lifecycle — `build` and `bundle` produce artifacts, `start` and `dev` run them — and `tsc` passes the compiler through beside them.
 
 The pipeline is fully compiled and Rust-fast: [tsdown](https://tsdown.dev) / [Rolldown](https://rolldown.rs) transpile, bundle, and emit declarations.
 
@@ -43,7 +43,7 @@ your-project/
 │   ├── index.ts           # Main entry point
 │   └── instrumentation.ts # Optional instrumentation entry point
 ├── dist/                  # The build's product — published from here
-├── .artifacts/            # Every tool's output, gitignored (Getting started)
+├── .artifacts/            # Every tool's output, gitignored (Developing)
 └── tsconfig.json          # Extends this package
 ```
 
