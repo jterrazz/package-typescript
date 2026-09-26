@@ -110,7 +110,6 @@ member_checker() {
     CHECKER_COMMAND=(node "$bin")
 }
 
-# The tree pass needs no floor, and falls back to the toolchain's lookup.
 tree_checker() {
     local bin
     bin=$(node "$PACKAGE_ROOT/lint/index.checker.js" test-package "${1:-.}" --bin 2>/dev/null)

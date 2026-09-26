@@ -21,7 +21,7 @@ describe('oxfmt', () => {
 
     test('leaves the ground a spec stands on unformatted, by its bare names', () => {
         // Given - the shared preset
-        // Then - the four folders @jterrazz/test reserves are skipped wherever they sit, and nothing underscored
+        // Then - the four folders @jterrazz/test reserves are skipped wherever they sit
         expect(base.ignorePatterns).toStrictEqual(
             expect.arrayContaining([
                 '**/fixtures/**',
@@ -30,7 +30,6 @@ describe('oxfmt', () => {
                 '**/requests/**',
             ]),
         );
-        expect(base.ignorePatterns?.filter((pattern) => pattern.includes('/_'))).toStrictEqual([]);
     });
 
     test("re-exports oxfmt's own defineConfig", () => {

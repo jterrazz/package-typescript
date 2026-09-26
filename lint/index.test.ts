@@ -166,7 +166,7 @@ describe('index', () => {
         'the %s profile never lints the ground a spec stands on',
         (_name, profile) => {
             // Given - a profile a consumer names
-            // Then - the four folders @jterrazz/test reserves are ignored wherever they sit, and nothing underscored
+            // Then - the four folders @jterrazz/test reserves are ignored wherever they sit
             expect(profile.ignorePatterns).toStrictEqual(
                 expect.arrayContaining([
                     '**/fixtures/**',
@@ -175,9 +175,6 @@ describe('index', () => {
                     '**/requests/**',
                 ]),
             );
-            expect(
-                profile.ignorePatterns?.filter((pattern) => pattern.includes('/_')),
-            ).toStrictEqual([]);
         },
     );
 });

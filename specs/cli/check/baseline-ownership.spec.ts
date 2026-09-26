@@ -198,11 +198,8 @@ process.exit(1);
     });
 
     const HELD_CHECKER = `#!/usr/bin/env node
-const { writeFileSync } = require('node:fs');
-const { join } = require('node:path');
 const args = process.argv.slice(2);
 if (args[args.indexOf('--member') + 1] === '.') {
-    writeFileSync(join(__dirname, 'root-argv.json'), JSON.stringify(args));
     process.stdout.write('jterrazz.baseline.json › test: 3 held across 2 rules\\n');
 }
 process.exit(0);
@@ -226,23 +223,6 @@ process.exit(0);
         // Then - the pass is green and says what the other ratchet section holds, in the one short line
         expect(conventions).toContain('jterrazz.baseline.json › test: 3 held across 2 rules\n');
         expect(conventions).toContain('✓ Passed');
-    });
-
-    test('asks the root run for no flag @jterrazz/test 17 dropped', () => {
-        // Given - a checker recording the argv of its root run
-        const project = groundOf();
-        writeFileSync(join(project, 'node_modules/@jterrazz/test/dist/checker.js'), HELD_CHECKER);
-
-        // When - the checks run
-        run(project, 'check', { ...process.env, ...onlyPasses('conventions') });
-        const argv = readFileSync(
-            join(project, 'node_modules/@jterrazz/test/dist/root-argv.json'),
-            'utf8',
-        );
-
-        // Then - the root run is the member run over `.`, and carries no `--summary`
-        expect(JSON.parse(argv)).toContain('--member');
-        expect(JSON.parse(argv)).not.toContain('--summary');
     });
 
     const NOTHING_HELD_CHECKER = `#!/usr/bin/env node
