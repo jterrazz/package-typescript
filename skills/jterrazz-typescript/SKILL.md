@@ -1,6 +1,6 @@
 ---
 name: jterrazz-typescript
-description: Use when building, checking, linting, formatting, or configuring a TypeScript project with @jterrazz/typescript — build/bundle/dev/start, a failing `typescript check` pass, oxlint/oxfmt/knip/tsconfig presets, compose() lint config, the ratchet.
+description: Use when building, checking, linting, formatting, or configuring a TypeScript project with @jterrazz/typescript — build/bundle/dev/start, a failing `typescript check` pass, oxlint/oxfmt/knip/tsconfig presets, compose() lint config, the baseline (`jterrazz.baseline.json`).
 ---
 
 # @jterrazz/typescript
@@ -68,6 +68,6 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 | how this toolchain proves itself, and the rules it keeps for its own suite — this repository alone, the install ships without it | `docs/03-testing.md`        |
 | which number moves on a release                                                                                                  | `docs/04-operating.md`      |
 | `build`, `bundle`, `start`, `dev`                                                                                                | `docs/05-building.md`       |
-| a failing pass, a rule id, the ratchet                                                                                           | `docs/06-quality-checks.md` |
+| a failing pass, a rule id, the baseline                                                                                          | `docs/06-quality-checks.md` |
 | a lint rule, a profile, `compose()`, knip                                                                                        | `docs/07-lint-presets.md`   |
 | what a repository root holds                                                                                                     | `docs/08-repo-structure.md` |

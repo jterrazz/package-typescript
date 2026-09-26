@@ -391,7 +391,7 @@ run_checks() {
         fi
     else
         # `--deny-warnings`: a warn leaves the exit code at 0 and would hide a whole tier from `check`.
-        # One JSON run, read by the ratchet, the checker's member runs and the drawn report.
+        # One JSON run, read by the baseline judge, the checker's member runs and the drawn report.
         if [ "$runs_oxlint" = true ]; then
             run_oxlint --type-aware --deny-warnings --format json "${LINT_ARGS[@]}" \
                 > "$tmp_dir/lint.json" 2> "$tmp_dir/lint.err" &
@@ -572,7 +572,7 @@ run_checks() {
             lint_status=$?
             lint_waited=true
         fi
-        # The root's run is the one @jterrazz/test's ratchet judges.
+        # The root's run is the one @jterrazz/test's baseline judges.
         local member_index=0
         for member in "${checker_members[@]}"; do
             local member_bin="${checker_member_bins[$member_index]}"
@@ -592,7 +592,7 @@ run_checks() {
     [ -n "$type_pid" ] && { wait $type_pid; type_status=$?; }
     [ -n "$lint_pid" ] && [ "$lint_waited" = false ] && { wait $lint_pid; lint_status=$?; }
 
-    # The ratchet is the verdict in both modes, or `fix` then `check` reads red then green on one tree; it is
+    # The baseline is the verdict in both modes, or `fix` then `check` reads red then green on one tree; it is
     # told the linter's exit code, so a failure no diagnostic carries is never forgiven. Fix mode judges what
     # survived, with the unsafe fixers armed again so a directive naming one is used.
     if [ "$FIX_MODE" = true ] && [ "$runs_oxlint" = true ]; then
@@ -600,7 +600,7 @@ run_checks() {
             > "$tmp_dir/lint.json" 2>/dev/null
     fi
 
-    # Two writers of one file in fix mode: the Names pass finishes before the ratchet reads it.
+    # Two writers of one file in fix mode: the Names pass finishes before the baseline judge reads it.
     [ -n "$names_pid" ] && { wait $names_pid; names_status=$?; }
     [ -n "$comments_pid" ] && { wait $comments_pid; comments_status=$?; }
     if [ "$FIX_MODE" = true ] && selected comments; then
@@ -611,20 +611,20 @@ run_checks() {
     if selected oxlint; then
         local linter_exit=()
         local names_report=()
-        local ratchet_fix=()
+        local baseline_fix=()
         if [ "$FIX_MODE" = true ]; then
-            ratchet_fix=(--fix)
+            baseline_fix=(--fix)
         else
             linter_exit=(--linter-exit "$lint_status")
             names_report=(--names "$tmp_dir/names.json" --comments "$tmp_dir/comments.json")
         fi
         node "$PACKAGE_ROOT/lint/index.checker.js" baseline "$tmp_dir/lint.json" . \
-            "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" > "$tmp_dir/ratchet.log" 2>&1
+            "${linter_exit[@]}" "${names_report[@]}" "${baseline_fix[@]}" > "$tmp_dir/baseline.log" 2>&1
         lint_status=$?
         if [ "$lint_status" -eq 0 ] && [ ${#names_report[@]} -gt 0 ]; then
             lint_held=true
         else
-            cat "$tmp_dir/ratchet.log" >> "$tmp_dir/lint.log"
+            cat "$tmp_dir/baseline.log" >> "$tmp_dir/lint.log"
         fi
     fi
 
@@ -686,11 +686,11 @@ run_checks() {
             mv "$tmp_dir/lint-shown.log" "$tmp_dir/lint.log"
         fi
         if [ "$lint_status" -eq 0 ] && [ "$lint_held" = true ]; then
-            lint_log="$tmp_dir/ratchet.log"
+            lint_log="$tmp_dir/baseline.log"
             lint_speaks="writer"
         fi
-        if [ "$FIX_MODE" = true ] && [ "$lint_status" -eq 0 ] && [ -s "$tmp_dir/ratchet.log" ]; then
-            lint_log="$tmp_dir/ratchet.log"
+        if [ "$FIX_MODE" = true ] && [ "$lint_status" -eq 0 ] && [ -s "$tmp_dir/baseline.log" ]; then
+            lint_log="$tmp_dir/baseline.log"
             lint_speaks="writer"
         fi
         # @jterrazz/test's checker leaves printing its `jterrazz(*)` diagnostics to this pass, even when it is green.

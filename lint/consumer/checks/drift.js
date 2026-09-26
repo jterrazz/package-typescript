@@ -4,10 +4,10 @@ import {
     LABEL,
     labelOf,
     readBaseline,
-    readRatchet,
     SECTION,
+    sectionOf,
     TEST_SECTION,
-} from '../../engine/baseline/ratchet.js';
+} from '../../engine/baseline/section.js';
 import { countSuppressions } from '../../engine/project/comments.js';
 import CONFIGS from '../../engine/project/oxlint-config-names.json' with { type: 'json' };
 import { printedOxlintConfig } from '../../engine/project/oxlint-config.js';
@@ -133,7 +133,7 @@ const sum = (recorded) => Object.values(recorded).reduce((total, count) => total
 
 // A file the Oxlint pass refuses as `baseline-unreadable` holds no count either row may claim.
 function baselineReader(root) {
-    const isUnreadable = readRatchet(root).problem !== null;
+    const isUnreadable = readBaseline(root).problem !== null;
 
     return {
         // `nothing held` is the Oxlint pass's own words.
@@ -141,7 +141,7 @@ function baselineReader(root) {
             if (isUnreadable) {
                 return 'unreadable';
             }
-            const recorded = readBaseline(root, section) ?? {};
+            const recorded = sectionOf(root, section) ?? {};
 
             return Object.keys(recorded).length === 0 ? 'nothing held' : sum(recorded);
         },
@@ -149,7 +149,7 @@ function baselineReader(root) {
             if (isUnreadable) {
                 return 'unreadable';
             }
-            const recorded = readBaseline(root, section);
+            const recorded = sectionOf(root, section);
 
             return recorded === null ? null : sum(recorded);
         },
@@ -177,7 +177,7 @@ function rowsOf(root, { behind, findings, off, project, suppressions }) {
         row('rules off vs profile', rulesOffOf(project.profileName, off)),
         row('suppressions', suppressions),
         row(LABEL, heldOf(SECTION)),
-        ...(readBaseline(root, TEST_SECTION) === null
+        ...(sectionOf(root, TEST_SECTION) === null
             ? []
             : [row(labelOf(TEST_SECTION), heldOf(TEST_SECTION))]),
         row('tool versions', toolsLine(behind)),

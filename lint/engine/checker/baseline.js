@@ -11,12 +11,12 @@ import {
     isTestOwned,
     judge,
     LABEL,
-    readRatchet,
+    readBaseline,
     reRecord,
     SECTION,
     serialise,
     withSection,
-} from '../baseline/ratchet.js';
+} from '../baseline/section.js';
 import { readCommandLine } from './command-line.js';
 
 function reportAt(path) {
@@ -40,7 +40,7 @@ function write(root, counts, silentPass) {
 
         return 1;
     }
-    const { problem } = readRatchet(root);
+    const { problem } = readBaseline(root);
     if (problem !== null) {
         print(
             `${BASELINE} ${problem} — the ${SECTION} section cannot be written beside the others`,
@@ -150,7 +150,7 @@ export function baseline(args, { held }) {
         return 1;
     }
 
-    const { problem, sections } = readRatchet(root);
+    const { problem, sections } = readBaseline(root);
     if (problem !== null) {
         print(`baseline-unreadable  ${BASELINE}  ${problem}`);
 

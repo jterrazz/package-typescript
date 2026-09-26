@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest';
 
-import { heldSummary, judge, tightened } from './ratchet.js';
+import { heldSummary, judge, tightened } from './section.js';
 
 const linterOwns = (rule: string): boolean => !rule.startsWith('names/');
 
-describe('ratchet', () => {
+describe('section', () => {
     test('breaks on a count below its entry, and holds one at it', () => {
         // Given - one rule that fell and one that stands at its entry
         const counts = { 'eslint/no-debugger': 1, 'eslint/no-var': 3 };

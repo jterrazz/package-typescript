@@ -57,7 +57,7 @@ export function countsOf(...reports) {
     return counts;
 }
 
-export function readRatchet(root) {
+export function readBaseline(root) {
     const path = join(root, BASELINE);
     if (!existsSync(path)) {
         return { problem: null, sections: null };
@@ -84,8 +84,8 @@ export function readRatchet(root) {
     return { problem: null, sections: parsed };
 }
 
-export function readBaseline(root, section = SECTION) {
-    const { sections } = readRatchet(root);
+export function sectionOf(root, section = SECTION) {
+    const { sections } = readBaseline(root);
 
     return sections?.[section] ?? null;
 }
@@ -138,7 +138,7 @@ export function tightened(counts, baseline, owns) {
 }
 
 export function reRecord(root, counts, owns) {
-    const held = readBaseline(root) ?? {};
+    const held = sectionOf(root) ?? {};
     const next = tightened(counts, held, owns);
     if (next === undefined) {
         return { lines: [], section: held };

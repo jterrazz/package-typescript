@@ -1,4 +1,4 @@
-import { judge, LABEL, readBaseline, reRecord } from '../baseline/ratchet.js';
+import { judge, LABEL, reRecord, sectionOf } from '../baseline/section.js';
 
 function countsOf(findings) {
     const counts = {};
@@ -13,7 +13,7 @@ function recordedOf(root, namespace, fix) {
     const owns = (rule) => rule.startsWith(namespace);
     const owned = (section) =>
         Object.fromEntries(Object.entries(section).filter(([rule]) => owns(rule)));
-    const recorded = owned(readBaseline(root) ?? {});
+    const recorded = owned(sectionOf(root) ?? {});
 
     return {
         recorded,
