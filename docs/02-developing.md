@@ -77,6 +77,17 @@ export default bundle;
 
 **`isolatedDeclarations` is the `bundle` preset's, not the `library` tsconfig's.** What it buys is a declaration emitted without a type-checker, which is a property of the PUBLISHED artefact: `typescript bundle` refuses an export whose type it would have to infer, and `tsc --noEmit` over the repository does not. In the tsconfig it also reached every spec file, where it refused the destructured export a specification hands back (TS9019).
 
+### A subtree on another profile
+
+A workspace whose members share one profile needs one root config. A subtree that IS another shape — a React client inside a Node service — takes a nested `oxlint.config.ts` of its own, which oxlint applies to that subtree. Linter options belong to the root config only, and the root's already turn type information on for the whole tree, so the nested file ships the profile through `nested()`:
+
+```ts
+import { compose, defineConfig, nested, react } from '@jterrazz/typescript/oxlint';
+import { testing } from '@jterrazz/test/oxlint';
+
+export default defineConfig(nested(compose(react, testing)));
+```
+
 ## 3. Wire the CLI into package.json
 
 Applications:
@@ -165,7 +176,7 @@ echo '.artifacts/' >> .gitignore   # or let `typescript fix` write it
 typescript clean                   # rm -rf .artifacts — dist/ is left alone
 ```
 
-The presets do the rest. All three tsconfig presets compile incrementally and put the buildinfo at `${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo`, so a warm type-check is several times faster and nothing lands at the project root. In a workspace each member writes under its own root, because `${configDir}` means "the project extending me".
+The presets do the rest. Every tsconfig preset compiles incrementally and put the buildinfo at `${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo`, so a warm type-check is several times faster and nothing lands at the project root. In a workspace each member writes under its own root, because `${configDir}` means "the project extending me".
 
 `typescript check` guards it: the [Gitignore (artefacts)](06-quality-checks.md) pass fails a `.gitignore` that still names an artefact somewhere else, and `typescript fix` rewrites it. In a workspace it reads the package's own `.gitignore` AND the nearest ancestor one above it — a workspace root that ignores `.artifacts/` covers every member, even one with no `.gitignore` of its own.
 
@@ -213,18 +224,3 @@ One standing rule binds every change here: **a change to the public surface reac
 - [Building](05-building.md) — build, bundle, start, dev.
 - [Quality checks](06-quality-checks.md) — `check` / `fix`.
 - [Repo structure](08-repo-structure.md) — how a repo is organized.
-
-### A subtree on another profile
-
-A workspace whose members share one profile needs one root config. A subtree
-that IS another shape — a React client inside a Node service — takes a nested
-`oxlint.config.ts` of its own, which oxlint applies to that subtree. Linter
-options belong to the root config only, and the root's already turn type
-information on for the whole tree, so the nested file ships the profile
-through `nested()`:
-
-```ts
-import { compose, defineConfig, nested, react } from '@jterrazz/typescript/oxlint';
-
-export default defineConfig(nested(compose(react, testing)));
-```
