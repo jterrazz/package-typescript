@@ -149,9 +149,8 @@ describe('baseline', () => {
         expect(moved).toStrictEqual([
             { from: 'names/names-construct', to: 'names/no-language-construct-name' },
         ]);
-        expect(
-            JSON.parse(readFileSync(join(root, 'jterrazz.baseline.json'), 'utf8')),
-        ).toStrictEqual({
+        const written = readFileSync(join(root, 'jterrazz.baseline.json'), 'utf8');
+        expect(JSON.parse(written)).toStrictEqual({
             typescript: { 'names/no-language-construct-name': 5 },
         });
     });
