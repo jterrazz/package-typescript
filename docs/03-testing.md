@@ -101,7 +101,7 @@ Every rule this package holds declares its audience: `consumer`, meaningful in a
 
 ### Where each rule declares it
 
-A rulebook fragment declares `audience` for every decision it holds, from the closed pair `AUDIENCES` in `lint/rulebook/decision.js`, and each catalogue entry carries it. Every other rule is a row of the manifest — `lint/catalogue/checks.json` for a consumer row, `lint/self/catalogue.json` for a self one — on one of three channels: `checker`, a pass of `typescript check`; `runtime`, a refusal a shipped module or script throws, rejects or exits non-zero with; and `meta`, a meta-test. The package holds no type-level rule. A `self` row names its `home`, the path that holds it, and the `names` it goes by.
+A rulebook fragment declares `audience` for every decision it holds, from the closed pair `AUDIENCES` in `lint/rulebook/decision.js`, and each catalogue entry carries it. Every other rule is a row of the manifest — `lint/catalogue/manifest.json` for a consumer row, `lint/self/manifest.json` for a self one — on one of three channels: `checker`, a pass of `typescript check`; `runtime`, a refusal a shipped module or script throws, rejects or exits non-zero with; and `meta`, a meta-test. The package holds no type-level rule. A `self` row names its `home`, the path that holds it, and the `names` it goes by.
 
 Every fragment, every pass and every refusal that ships is `consumer` today. The runtime rows that throw are `layers()` refusing a map with no id, and a map whose layers share a glob, and the sweep refusing a tree it cannot read. The rest exit: each executable of `lint/` and `src/cli/` and each script of `bin/` failing its verdict, its usage or a read it cannot make, one row per exit that is not 0.
 

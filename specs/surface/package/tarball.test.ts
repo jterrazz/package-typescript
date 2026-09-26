@@ -26,7 +26,7 @@ function fieldText(record: Record<string, unknown>, key: string): string {
     return typeof value === 'string' ? value : '';
 }
 
-const rows = ['lint/catalogue/checks.json', 'lint/self/catalogue.json'].flatMap((path) => {
+const rows = ['lint/catalogue/manifest.json', 'lint/self/manifest.json'].flatMap((path) => {
     const parsed: unknown = JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
     return (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
 });
