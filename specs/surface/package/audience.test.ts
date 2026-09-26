@@ -25,10 +25,12 @@ function fieldText(row: Record<string, unknown>, key: string): string {
 
 const declared = await lintFragments(ROOT);
 
-const rows = ['lint/catalogue/manifest.json', 'lint/self/manifest.json'].flatMap((path) => {
-    const parsed: unknown = JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
-    return (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
-});
+const rows = ['lint/catalogue/manifest.json', 'lint/self/catalogue/manifest.json'].flatMap(
+    (path) => {
+        const parsed: unknown = JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
+        return (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
+    },
+);
 
 function rowsOf(channel: string, audience: string): Record<string, unknown>[] {
     return rows.filter((row) => row.channel === channel && row.audience === audience);

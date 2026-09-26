@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { decisions, unsafeFixers } from '../../rulebook/decisions.js';
-import { rows } from './findings.js';
+import { rows } from '../corpus/findings.js';
 
 type Entry = ReturnType<typeof decisions>[number];
 
@@ -75,7 +75,7 @@ function isSelfRow(value: unknown): value is SelfRow {
 
 function renderSelfRules(): string {
     const parsed: unknown = JSON.parse(
-        readFileSync(resolve(import.meta.dirname, '../manifest.json'), 'utf8'),
+        readFileSync(resolve(import.meta.dirname, './manifest.json'), 'utf8'),
     );
     return [
         '| Id | Channel | Home | Why it stays self |',

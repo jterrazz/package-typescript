@@ -26,10 +26,12 @@ function fieldText(record: Record<string, unknown>, key: string): string {
     return typeof value === 'string' ? value : '';
 }
 
-const rows = ['lint/catalogue/manifest.json', 'lint/self/manifest.json'].flatMap((path) => {
-    const parsed: unknown = JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
-    return (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
-});
+const rows = ['lint/catalogue/manifest.json', 'lint/self/catalogue/manifest.json'].flatMap(
+    (path) => {
+        const parsed: unknown = JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
+        return (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
+    },
+);
 
 function call(module: Record<string, unknown>, name: string, ...args: unknown[]): unknown {
     const exported = module[name];

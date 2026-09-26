@@ -25,7 +25,7 @@
     {
         "audience": "self",
         "channel": "meta",
-        "home": "lint/self/corpus/chapter-projections.ts",
+        "home": "lint/self/catalogue/chapter-projections.ts",
         "id": "catalogue-projection",
         "names": ["renderFixers", "FIXER_MARKERS"],
         "why": "renders and holds fresh this repository's own chapter"
