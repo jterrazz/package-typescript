@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
-export const EVERY_NAME = '*';
+import { EVERY_NAME } from './importers.js';
 
 const REEXPORT_EVERY = /export\s+\*\s+(?:as\s+[\w$]+\s+)?from\s+['"](?<from>[^'"]+)['"]/gu;
 const REEXPORT_NAMED =

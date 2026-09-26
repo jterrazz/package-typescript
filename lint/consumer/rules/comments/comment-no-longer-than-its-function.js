@@ -1,4 +1,5 @@
-import { EVERY_NAME, publishedNamesOf } from '../../../engine/project/published-names.js';
+import { EVERY_NAME } from '../../../engine/project/importers.js';
+import { publishedNamesOf } from '../../../engine/project/published-names.js';
 
 export const RULE_NAME = 'comment-no-longer-than-its-function';
 
