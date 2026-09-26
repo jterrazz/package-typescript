@@ -1,4 +1,4 @@
-description: holds lint/ to its tree — the index alone at its root, eight folders, each rule under its family, none at the root of rules/
+description: holds lint/ to its tree — the index alone at its root, eight folders, each rule under its family
 fixture: ./fixtures/names/lint-tree/
 env: TYPESCRIPT_CHECK_PASSES=names
 runs:
