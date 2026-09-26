@@ -117,10 +117,8 @@ async function chunksOrFinding(build) {
 const NOTHING_TO_JUDGE = {
     absent: () =>
         'no @jterrazz/test resolves from this package, and what test material is is its to say',
-    readerless: () =>
-        'the @jterrazz/test this package resolves publishes no reader of test material on `./oxlint` (17.0.0 and later do)',
     unloadable: ({ error }) =>
-        `the @jterrazz/test this package resolves publishes a \`./oxlint\` entry that fails to load — ${error}`,
+        `the @jterrazz/test this package resolves gives no reader of test material — ${error}`,
 };
 
 const member = relative(cwd(), root);

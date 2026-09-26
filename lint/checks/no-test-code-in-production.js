@@ -35,7 +35,7 @@ function readerOf({ materialAt, testPackageOf }) {
 /**
  * @returns {Promise<
  *     | { reader: { materialAt: (path: string) => string | undefined, testPackageOf: (specifier: string) => string | undefined } }
- *     | { reason: 'absent' | 'readerless' }
+ *     | { reason: 'absent' }
  *     | { error: string, reason: 'unloadable' }
  * >} the two readers, or why there are none
  */
@@ -47,7 +47,7 @@ export async function testMaterialReader(root) {
     const target = importTarget(resolved.manifest.exports?.['./oxlint']);
     const entry = target === null ? null : join(resolved.dir, target);
     if (entry === null || !existsSync(entry)) {
-        return { reason: 'readerless' };
+        return { error: 'it has no `./oxlint` entry', reason: 'unloadable' };
     }
     let loaded;
     try {
@@ -60,7 +60,9 @@ export async function testMaterialReader(root) {
     }
     const reader = readerOf(loaded);
 
-    return reader === null ? { reason: 'readerless' } : { reader };
+    return reader === null
+        ? { error: 'its `./oxlint` entry exports no reader of test material', reason: 'unloadable' }
+        : { reader };
 }
 
 function installedPackageOf(id) {

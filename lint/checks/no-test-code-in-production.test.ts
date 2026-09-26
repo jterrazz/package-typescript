@@ -143,11 +143,14 @@ describe('no-test-code-in-production', () => {
     });
 
     test('loads no reader where the install publishes none, and never asks the toolchain', async () => {
-        // Given - an older install whose ./oxlint entry carries no reader
+        // Given - an install whose ./oxlint entry carries no reader
         const unit = repositoryInstalling('export default {};\n');
 
         // Then - there is no reader, though the toolchain itself installs one
-        await expect(testMaterialReader(unit)).resolves.toStrictEqual({ reason: 'readerless' });
+        await expect(testMaterialReader(unit)).resolves.toStrictEqual({
+            error: 'its `./oxlint` entry exports no reader of test material',
+            reason: 'unloadable',
+        });
     });
 
     test('loads no reader where the package resolves no @jterrazz/test', async () => {

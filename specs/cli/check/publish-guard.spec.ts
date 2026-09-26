@@ -34,7 +34,7 @@ function consumerOfStub(fixture: string, oxlint: string): string {
         JSON.stringify({
             exports: { './oxlint': { import: './oxlint.mjs' } },
             name: '@jterrazz/test',
-            version: '16.0.0',
+            version: '17.0.0',
         }),
     );
 
@@ -110,20 +110,6 @@ describe('publish-guard', () => {
         expect(publishPass(stdout)).toStrictEqual(['✓ Passed']);
     });
 
-    test('passes a build whose @jterrazz/test publishes no reader, saying so', () => {
-        // Given - a package that builds, beside an install whose ./oxlint entry carries no reader
-        const root = consumerOfStub('own-build/', 'export default {};\n');
-
-        // When - the quality checks run
-        const { stdout } = run(root, 'check', onlyPasses('publish'));
-
-        // Then - the pass names the missing reader, and passes
-        expect(publishPass(stdout)).toStrictEqual([
-            'publish/no-test-code-in-production: nothing to judge — the @jterrazz/test this package resolves publishes no reader of test material on `./oxlint` (17.0.0 and later do)',
-            '✓ Passed',
-        ]);
-    });
-
     test('passes a build whose @jterrazz/test reader fails to load, naming what it threw', () => {
         // Given - a package that builds, beside an install whose ./oxlint entry throws on import
         const root = consumerOfStub('own-build/', "throw new Error('the reader broke');\n");
@@ -131,9 +117,9 @@ describe('publish-guard', () => {
         // When - the quality checks run
         const { stdout } = run(root, 'check', onlyPasses('publish'));
 
-        // Then - the pass says the entry failed to load, not that it is older than 17
+        // Then - the pass names what the entry threw
         expect(publishPass(stdout)).toStrictEqual([
-            'publish/no-test-code-in-production: nothing to judge — the @jterrazz/test this package resolves publishes a `./oxlint` entry that fails to load — the reader broke',
+            'publish/no-test-code-in-production: nothing to judge — the @jterrazz/test this package resolves gives no reader of test material — the reader broke',
             '✓ Passed',
         ]);
     });
