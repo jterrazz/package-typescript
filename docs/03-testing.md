@@ -107,16 +107,22 @@ Every fragment, every pass and every refusal that ships is `consumer` today. The
 
 ### The self rules
 
-| Id                     | Channel   | Home                                      | What it judges                                                                                   |
-| ---------------------- | --------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `pass-selector`        | `checker` | `specs/cli/check-selection.sh`            | runs only the passes a spec asserts on, and refuses a key that names no pass                     |
-| `decision-invariants`  | `meta`    | `lint/self/corpus/decision-invariants.ts` | a decision's two invariants, over every fragment the package declares                            |
-| `catalogue-projection` | `meta`    | `lint/self/corpus/chapter-projections.ts` | renders the consumer entries into [Lint presets](07-lint-presets.md) and holds the chapter fresh |
-| `audience-audit`       | `meta`    | `specs/surface/package/audience.test.ts`  | that every rule declares its audience                                                            |
-| `tarball-audit`        | `meta`    | `specs/surface/package/tarball.test.ts`   | that what npm would publish carries consumer rules alone                                         |
-| `fragment-walk`        | `meta`    | `lint/self/corpus/lint-fragments.ts`      | every fragment a module of `lint/` or `src/` holds, for the three audits above                   |
-| `module-walk`          | `meta`    | `lint/self/corpus/module-walk.ts`         | every fragment a packed module reaches, each imported in a child of its own                      |
-| `findings-audit`       | `meta`    | `lint/self/corpus/findings.test.ts`       | that `lint/catalogue/findings.json` holds every id a pass or a rule prints, and no other         |
+<!-- GENERATED:self -->
+
+| Id                     | Channel   | Home                                          | Why it stays self                                                                                                            |
+| ---------------------- | --------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `pass-selector`        | `checker` | `specs/cli/check-selection.sh`                | runs only the passes a spec asserts on, from a copy of the check no install holds; no consumer project needs a partial check |
+| `decision-invariants`  | `meta`    | `lint/self/corpus/decision-invariants.ts`     | judges this package's own fragments; fragment() is not exported                                                              |
+| `catalogue-projection` | `meta`    | `lint/self/corpus/chapter-projections.ts`     | renders and holds fresh this repository's own chapter                                                                        |
+| `audience-audit`       | `meta`    | `specs/surface/package/audience.test.ts`      | reads this package's own manifest                                                                                            |
+| `tarball-audit`        | `meta`    | `specs/surface/package/tarball.test.ts`       | reads what this package would publish                                                                                        |
+| `builder-call-audit`   | `meta`    | `specs/surface/package/builder-calls.test.ts` | reads the text of every module this package would publish, for a fragment() call whose audience is not a literal             |
+| `shipped-links`        | `meta`    | `specs/surface/package/shipped-links.test.ts` | reads what this package would publish against this checkout                                                                  |
+| `fragment-walk`        | `meta`    | `lint/self/corpus/lint-fragments.ts`          | the walk the audits above share                                                                                              |
+| `module-walk`          | `meta`    | `lint/self/corpus/module-walk.ts`             | imports each module this package would publish in a child of its own, for the tarball audit                                  |
+| `findings-audit`       | `meta`    | `lint/self/corpus/findings.test.ts`           | reads this package's own passes against its own catalogue                                                                    |
+
+<!-- /GENERATED:self -->
 
 A decision's two invariants — a level is `error` or `off`, and an `off` carries one of the five reasons naming what carries it, as an unsafe fixer names what its rewrite changes — judge this package's fragments alone, since `fragment()` is not exported: `lint/rulebook/decision.js` builds and enforces nothing. The walk imports every `.js`, `.mjs` and `.cjs` module of `lint/` and `src/`, and collects every fragment anywhere in what each exports, by default or by name, whether a profile carries it or not. It leaves out `lint/checks/`, `lint/ratchet/`, `lint/reading/` and `src/cli/`, whose executables act when imported. The module walk reaches those: it imports one module in a child of its own, with every `fragment` a module of the tree exports wrapped to record what it builds, the process's exit refused, and a bare command line in an empty directory. What the module exports and what its import built are both judged.
 

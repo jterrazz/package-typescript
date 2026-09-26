@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { decisions, unsafeFixers } from '../../catalogue/decisions.js';
@@ -54,7 +55,36 @@ function renderFindings(family: string): string {
     ].join('\n');
 }
 
-const TABLED_FAMILIES = ['docs', 'publish', 'suppressions', 'markdown', 'names', 'tree', 'secrets'];
+const TABLED_FAMILIES = [
+    'docs',
+    'publish',
+    'drift',
+    'suppressions',
+    'markdown',
+    'names',
+    'tree',
+    'comments',
+    'secrets',
+];
+
+type SelfRow = { channel: string; home: string; id: string; why: string };
+
+function isSelfRow(value: unknown): value is SelfRow {
+    return typeof value === 'object' && value !== null && 'id' in value && 'home' in value;
+}
+
+function renderSelfRules(): string {
+    const parsed: unknown = JSON.parse(
+        readFileSync(resolve(import.meta.dirname, '../manifest.json'), 'utf8'),
+    );
+    return [
+        '| Id | Channel | Home | Why it stays self |',
+        '| --- | --- | --- | --- |',
+        ...(Array.isArray(parsed) ? parsed : [])
+            .filter((row) => isSelfRow(row))
+            .map((row) => `| \`${row.id}\` | \`${row.channel}\` | \`${row.home}\` | ${row.why} |`),
+    ].join('\n');
+}
 
 export const PROJECTIONS = {
     ...Object.fromEntries(
@@ -74,6 +104,11 @@ export const PROJECTIONS = {
         markers: MARKERS,
         page: resolve(import.meta.dirname, '../../../docs/07-lint-presets.md'),
         render: renderCatalogue,
+    },
+    'self rules': {
+        markers: { end: '<!-- /GENERATED:self -->', start: '<!-- GENERATED:self -->' },
+        page: resolve(import.meta.dirname, '../../../docs/03-testing.md'),
+        render: renderSelfRules,
     },
     'fixer list': {
         markers: FIXER_MARKERS,

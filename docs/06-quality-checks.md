@@ -381,7 +381,13 @@ The versions line reports only what deviates. The full table is `typescript doct
 
 ### The one thing it refuses
 
-`drift/off-rule-states-its-reason`: a rule the profile has ON, turned off by the consumer's config, with no `// reason:` comment on the line that turns it off.
+<!-- GENERATED:findings drift -->
+
+| Rule                               | Requirement                                                                   |
+| ---------------------------------- | ----------------------------------------------------------------------------- |
+| `drift/off-rule-states-its-reason` | A rule the profile has on, turned off by the project, carries its // reason:. |
+
+<!-- /GENERATED:findings drift -->
 
 A project may know things the profile does not, so turning a rule off is allowed. Doing it silently is not: the reason is what the next reader — or the next bump — needs, and a config line is where it belongs. Everything else in the report only ever reports.
 
@@ -561,9 +567,14 @@ The default is no comment: the code speaks through its names, and a name that ne
 
 **What a comment line is.** A physical line that any comment covers — a `//` line, a trailing `//` after code, and every line a `/* … */` block spans, its opening and closing lines included — read by the same reader the Suppressions pass reads directives with, so a `//` inside a string or a template is never one. A line whose only comment is a directive (`oxlint-disable*`, `eslint-disable*`, `@ts-expect-error`, `@ts-ignore`, `biome-ignore`) is not counted: a directive is the Suppressions pass's, and the reason it carries is required there. Nor is a test's `// Given - `, `// When - ` or `// Then - ` marker: `@jterrazz/test` requires it of every test, so it is structure, and adding a test never moves the count.
 
-| Rule                                          | Refuses                                                                                                      |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `comments/comment-lines-held-by-the-baseline` | a count of comment lines different from the `comments/comment-lines-held-by-the-baseline` entry, or no entry |
+<!-- GENERATED:findings comments -->
+
+| Rule                                                      | Requirement                                                                           |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `jterrazz-typescript/comment-no-longer-than-its-function` | A comment run above a function is no longer than the function it documents.           |
+| `comments/comment-lines-held-by-the-baseline`             | The count of comment lines a project holds is exactly the count its baseline records. |
+
+<!-- /GENERATED:findings comments -->
 
 The count is recorded as `comments/comment-lines-held-by-the-baseline` in the `typescript` section of `jterrazz.baseline.json`, and judged with the four refusals of [the ratchet](#the-ratchet): a count above the entry, a count and no entry, a count below it, an entry left at zero. `typescript fix` lowers the entry to a count that fell, and drops it at zero; only `typescript baseline` raises it, by hand, for a comment that states what the code cannot. The finding states itself in four parts, `found: … · why: … · fix: … · read: …`, and its `found` gives the density — the lines, and their share of the measured source.
 
