@@ -1,10 +1,6 @@
-#!/usr/bin/env node
-
-import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
-import { argv, exit, stdout } from 'node:process';
 
+import { trackedFiles } from '../../engine/project/project-files.js';
 import { isRepositoryRoot } from '../../engine/project/repository-root.js';
 
 const ARTIFACTS = '.artifacts';
@@ -61,22 +57,11 @@ const NEXT_CONFIG_FILES = [
 
 // With `output: 'export'`, Next keeps its working directory at `.next` whatever `distDir` says
 // (`next/dist/export/utils.js`, `hasCustomExportOutput`). Read as text: a config may not load here.
-function nextConfigDeclaresExport(dir) {
-    for (const name of NEXT_CONFIG_FILES) {
-        const path = join(dir, name);
-        if (!existsSync(path)) {
-            continue;
-        }
-        try {
-            if (/output\s*:\s*['"]export['"]/u.test(readFileSync(path, 'utf8'))) {
-                return true;
-            }
-        } catch {
-            // An unreadable config answers as a missing one does.
-        }
-    }
-
-    return false;
+// An unreadable config answers as a missing one does.
+function nextConfigDeclaresExport(disk, dir) {
+    return NEXT_CONFIG_FILES.some((name) =>
+        /output\s*:\s*['"]export['"]/u.test(disk.read(join(dir, name)) ?? ''),
+    );
 }
 
 const WORKSPACE_LOCKFILES = [
@@ -88,25 +73,25 @@ const WORKSPACE_LOCKFILES = [
     'yarn.lock',
 ];
 
-function isWorkspaceRoot(dir) {
-    if (WORKSPACE_LOCKFILES.some((name) => existsSync(join(dir, name)))) {
+function isWorkspaceRoot(disk, dir) {
+    if (WORKSPACE_LOCKFILES.some((name) => disk.exists(join(dir, name)))) {
         return true;
     }
 
-    const manifest = join(dir, 'package.json');
-    if (!existsSync(manifest)) {
+    const manifest = disk.read(join(dir, 'package.json'));
+    if (manifest === null) {
         return false;
     }
 
     try {
-        return JSON.parse(readFileSync(manifest, 'utf8')).workspaces !== undefined;
+        return JSON.parse(manifest).workspaces !== undefined;
     } catch {
         return false;
     }
 }
 
 // Never passes the nearest repository boundary, so a `root` with its own `.git` has no ancestor.
-function findWorkspaceRoot(root) {
+function findWorkspaceRoot(disk, root) {
     const start = resolve(root);
     if (isRepositoryRoot(start)) {
         return null;
@@ -116,7 +101,7 @@ function findWorkspaceRoot(root) {
     let parent = dirname(dir);
 
     while (dir !== parent) {
-        if (isWorkspaceRoot(dir)) {
+        if (isWorkspaceRoot(disk, dir)) {
             return dir;
         }
         if (isRepositoryRoot(dir)) {
@@ -126,7 +111,7 @@ function findWorkspaceRoot(root) {
         parent = dirname(dir);
     }
 
-    return isWorkspaceRoot(dir) ? dir : null;
+    return isWorkspaceRoot(disk, dir) ? dir : null;
 }
 
 // git's own reading: an anchored pattern in an ancestor's file never reaches a nested package.
@@ -168,9 +153,9 @@ function artefactHome(pattern, { nextIsExportDestination }) {
     return null;
 }
 
-function readLines(gitignorePath) {
-    const nextIsExportDestination = nextConfigDeclaresExport(dirname(gitignorePath));
-    const text = readFileSync(gitignorePath, 'utf8').split('\n');
+function readLines(disk, gitignorePath) {
+    const nextIsExportDestination = nextConfigDeclaresExport(disk, dirname(gitignorePath));
+    const text = (disk.read(gitignorePath) ?? '').split('\n');
 
     if (text.at(-1) === '') {
         text.pop();
@@ -192,8 +177,8 @@ function readLines(gitignorePath) {
     });
 }
 
-function readSource(path, { own, reach = () => true, root }) {
-    const lines = readLines(path);
+function readSource(disk, path, { own, reach = () => true, root }) {
+    const lines = readLines(disk, path);
 
     return {
         isIgnored: lines.some(
@@ -226,32 +211,15 @@ const TRACKED_ARTEFACT_DIRECTORIES = new Set([
 
 const TRACKED_ARTEFACT_EXTENSION = '.tsbuildinfo';
 
-// Outside a git tree there is nothing committed to judge.
 function trackedArtefacts(root) {
-    let listed;
-    try {
-        listed = execFileSync('git', ['ls-files', '-z'], {
-            cwd: root,
-            encoding: 'utf8',
-            stdio: ['ignore', 'pipe', 'ignore'],
-        });
-    } catch {
-        return [];
-    }
+    return trackedFiles(root).filter((path) => {
+        const segments = path.split('/');
 
-    return listed
-        .split('\0')
-        .filter((path) => path !== '')
-        .filter((path) => {
-            const segments = path.split('/');
-
-            return (
-                segments
-                    .slice(0, -1)
-                    .some((segment) => TRACKED_ARTEFACT_DIRECTORIES.has(segment)) ||
-                path.endsWith(TRACKED_ARTEFACT_EXTENSION)
-            );
-        });
+        return (
+            segments.slice(0, -1).some((segment) => TRACKED_ARTEFACT_DIRECTORIES.has(segment)) ||
+            path.endsWith(TRACKED_ARTEFACT_EXTENSION)
+        );
+    });
 }
 
 function rewrite(lines) {
@@ -271,81 +239,101 @@ function rewrite(lines) {
     return `${body.join('\n')}\n`;
 }
 
-const isFix = argv.includes('--fix');
-const isProbe = argv.includes('--has-ancestor');
-const root = argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.';
+function sourcesOf(context, ancestorPath) {
+    const { root } = context;
+    const ownPath = join(root, '.gitignore');
+    const sources = [];
+    if (context.exists(ownPath)) {
+        sources.push(readSource(context, ownPath, { own: true, root }));
+    }
+    if (ancestorPath !== null && context.exists(ancestorPath)) {
+        sources.push(
+            readSource(context, ancestorPath, {
+                own: false,
+                reach: (pattern) => !isAnchored(pattern),
+                root,
+            }),
+        );
+    }
 
-const workspaceRoot = findWorkspaceRoot(root);
-const ancestorPath = workspaceRoot ? join(workspaceRoot, '.gitignore') : null;
-
-if (isProbe) {
-    exit(ancestorPath && existsSync(ancestorPath) ? 0 : 1);
+    return sources;
 }
 
-const ownPath = join(root, '.gitignore');
-const sources = [];
-if (existsSync(ownPath)) {
-    sources.push(readSource(ownPath, { own: true, root }));
-}
-if (ancestorPath && existsSync(ancestorPath)) {
-    sources.push(
-        readSource(ancestorPath, { own: false, reach: (pattern) => !isAnchored(pattern), root }),
-    );
-}
-
-if (sources.length === 0) {
-    exit(0);
-}
-
-const isIgnored = sources.some((source) => source.isIgnored);
-const misplaced = sources.flatMap((source) =>
-    source.misplaced.map((line) => ({ ...line, source })),
-);
-const negations = sources.flatMap((source) => source.negations);
-
-// A workspace root's file covers every member, so a missing `.artifacts/` belongs there.
-const target = sources.find((source) => !source.own) ?? sources[0];
-
-const tracked = trackedArtefacts(root);
-
-if (isFix) {
-    // Only the package's own file: never created, and an ancestor is a different project's.
+// Only the package's own file: never created, and an ancestor is a different project's.
+function fixed(sources) {
     const own = sources.find((source) => source.own);
-    if (own) {
-        const changed = own.misplaced.length > 0 || !own.isIgnored;
-        if (changed) {
-            writeFileSync(own.path, rewrite(own.lines));
-            stdout.write('.gitignore rewritten:\n');
-            for (const line of own.misplaced) {
-                stdout.write(`  - ${line.pattern}\n`);
-            }
-            if (!own.isIgnored) {
-                stdout.write(`  + ${ARTIFACTS}/\n`);
-            }
-            for (const line of own.negations) {
-                stdout.write(`  · ${line.pattern} — a negation rescues a tracked file, kept\n`);
-            }
+    if (own === undefined || (own.misplaced.length === 0 && own.isIgnored)) {
+        return { lines: [], writes: [] };
+    }
+
+    return {
+        lines: [
+            '.gitignore rewritten:',
+            ...own.misplaced.map((line) => `  - ${line.pattern}`),
+            ...(own.isIgnored ? [] : [`  + ${ARTIFACTS}/`]),
+            ...own.negations.map(
+                (line) => `  · ${line.pattern} — a negation rescues a tracked file, kept`,
+            ),
+        ],
+        writes: [{ path: own.path, text: rewrite(own.lines) }],
+    };
+}
+
+function misplacedLines(sources) {
+    const isIgnored = sources.some((source) => source.isIgnored);
+    const misplaced = sources.flatMap((source) =>
+        source.misplaced.map((line) => ({ ...line, source })),
+    );
+    if (misplaced.length === 0 && isIgnored) {
+        return [];
+    }
+    // A workspace root's file covers every member, so a missing `.artifacts/` belongs there.
+    const target = sources.find((source) => !source.own) ?? sources[0];
+
+    return [
+        'Artefacts belong under .artifacts/<tool>/ at the project root:',
+        ...misplaced.map(
+            (line) => `  ✗ ${line.source.label} names ${line.pattern} — its home is ${line.home}`,
+        ),
+        ...(isIgnored ? [] : [`  ✗ ${target.label} does not ignore ${ARTIFACTS}/ — add it`]),
+        ...sources
+            .flatMap((source) => source.negations)
+            .map((line) => `  · ${line.pattern} — a negation rescues a tracked file, left for you`),
+        "Run 'typescript fix' to rewrite .gitignore.",
+    ];
+}
+
+export const gitignore = Object.freeze({
+    check(context) {
+        const workspaceRoot = findWorkspaceRoot(context, context.root);
+        const ancestorPath = workspaceRoot ? join(workspaceRoot, '.gitignore') : null;
+        if (context.has('--has-ancestor')) {
+            return { failed: ancestorPath === null || !context.exists(ancestorPath) };
         }
-    }
-} else if (misplaced.length > 0 || !isIgnored) {
-    stdout.write('Artefacts belong under .artifacts/<tool>/ at the project root:\n');
-    for (const line of misplaced) {
-        stdout.write(`  ✗ ${line.source.label} names ${line.pattern} — its home is ${line.home}\n`);
-    }
-    if (!isIgnored) {
-        stdout.write(`  ✗ ${target.label} does not ignore ${ARTIFACTS}/ — add it\n`);
-    }
-    for (const line of negations) {
-        stdout.write(`  · ${line.pattern} — a negation rescues a tracked file, left for you\n`);
-    }
-    stdout.write("Run 'typescript fix' to rewrite .gitignore.\n");
-}
 
-if (tracked.length > 0) {
-    stdout.write('Artefacts must never be committed:\n');
-    for (const path of tracked) {
-        stdout.write(`  ✗ ${path} is tracked — git rm --cached ${path}\n`);
-    }
-}
+        const sources = sourcesOf(context, ancestorPath);
+        if (sources.length === 0) {
+            return {};
+        }
+        const judged = context.fix
+            ? fixed(sources)
+            : { lines: misplacedLines(sources), writes: [] };
+        const tracked = trackedArtefacts(context.root);
 
-exit(tracked.length > 0 || (!isFix && (misplaced.length > 0 || !isIgnored)) ? 1 : 0);
+        return {
+            failed: tracked.length > 0 || (!context.fix && judged.lines.length > 0),
+            lines: [
+                ...judged.lines,
+                ...(tracked.length === 0
+                    ? []
+                    : [
+                          'Artefacts must never be committed:',
+                          ...tracked.map(
+                              (path) => `  ✗ ${path} is tracked — git rm --cached ${path}`,
+                          ),
+                      ]),
+            ],
+            writes: judged.writes,
+        };
+    },
+});

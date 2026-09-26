@@ -5,33 +5,31 @@ import { pathToFileURL } from 'node:url';
 import { fragmentsIn, isRecord } from './module-walk.js';
 import type { DeclaredFragment } from './module-walk.js';
 
-// These folders hold executables that act when imported, so the module walk imports them in children of their own.
-
-const WALKED = ['lint', 'src'];
-const EXECUTABLES = new Set([
-    'lint/consumer/checks',
-    'lint/engine/baseline',
-    'lint/engine/project',
-    'src/cli',
-]);
-
 const MODULE = /\.[cm]?js$/u;
 
-function modulesUnder(root: string, directory: string): string[] {
+type Walk = { executables: readonly string[]; walked: readonly string[] };
+
+function modulesUnder(root: string, directory: string, executables: Set<string>): string[] {
     if (!existsSync(directory)) {
         return [];
     }
     return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
         const path = join(directory, entry.name);
         if (entry.isDirectory()) {
-            return EXECUTABLES.has(relative(root, path)) ? [] : modulesUnder(root, path);
+            return executables.has(relative(root, path))
+                ? []
+                : modulesUnder(root, path, executables);
         }
         return MODULE.test(entry.name) ? [relative(root, path)] : [];
     });
 }
 
-export async function lintFragments(root: string): Promise<DeclaredFragment[]> {
-    const modules = WALKED.flatMap((folder) => modulesUnder(root, join(root, folder)));
+export async function lintFragments(
+    root: string,
+    { executables, walked }: Walk,
+): Promise<DeclaredFragment[]> {
+    const skipped = new Set(executables);
+    const modules = walked.flatMap((folder) => modulesUnder(root, join(root, folder), skipped));
     const seen = new Set<unknown>();
     const loaded = await Promise.all(
         modules.map(async (path) => ({

@@ -1,15 +1,10 @@
-#!/usr/bin/env node
-
-// Only the reader: every sentence and rule id lives in `docs.js`, so terra judges by the same copy.
 // The Dockerfile and `.infrastructure/` clauses are read at every member's root too; the publishable
 // clause stays on the root manifest.
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { argv, exit, stdout } from 'node:process';
+import { join } from 'node:path';
 
-import { workspaceMembers } from '../../engine/project/workspace-members.js';
-import { auditDocs, HEAD_LINES } from './docs.js';
+import { workspaceMembers } from './workspace-members.js';
 
 const LINK = /!?\[[^\]]*\]\(\s*(?<target>[^\s)]+)/gu;
 
@@ -49,7 +44,7 @@ function read(path) {
     }
 }
 
-function readPages(root, files) {
+function readPages(root, files, headLines) {
     const heads = {};
     const links = {};
 
@@ -59,7 +54,7 @@ function readPages(root, files) {
         }
 
         const text = read(join(root, path)) ?? '';
-        heads[path] = text.split('\n').slice(0, HEAD_LINES);
+        heads[path] = text.split('\n').slice(0, headLines);
         links[path] = [...text.matchAll(LINK)].map((match) => match.groups.target);
     }
 
@@ -99,18 +94,13 @@ function readShips(root) {
     };
 }
 
-const root = resolve(argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.');
-const files = listDocs(root);
+export function readDocsTree(root, headLines) {
+    const files = listDocs(root);
 
-const violations = auditDocs({
-    agents: read(join(root, 'AGENTS.md')),
-    files,
-    ...readPages(root, files),
-    ships: readShips(root),
-});
-
-for (const violation of violations) {
-    stdout.write(`${violation.rule}  ${violation.path}  ${violation.message}\n`);
+    return {
+        agents: read(join(root, 'AGENTS.md')),
+        files,
+        ...readPages(root, files, headLines),
+        ships: readShips(root),
+    };
 }
-
-exit(violations.length > 0 ? 1 : 0);

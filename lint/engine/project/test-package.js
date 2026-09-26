@@ -1,10 +1,7 @@
-#!/usr/bin/env node
-
 // Found the way node resolves, from the package outward to the repository boundary: npm hoists a
 // shared devDependency, and `@jterrazz/test`'s `exports` hides `./package.json` from `require.resolve`.
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { argv, exit, stdout } from 'node:process';
 
 import { isRepositoryRoot } from './repository-root.js';
 
@@ -56,26 +53,4 @@ export function testPackageBin(dir) {
     const path = join(resolved.dir, entry);
 
     return existsSync(path) ? path : null;
-}
-
-if (import.meta.main) {
-    const dir = argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.';
-
-    if (argv.includes('--bin')) {
-        const bin = testPackageBin(dir);
-        if (bin === null) {
-            exit(1);
-        }
-
-        stdout.write(`${bin}\n`);
-        exit(0);
-    }
-
-    const version = testPackageVersion(dir);
-    if (version === null) {
-        exit(1);
-    }
-
-    stdout.write(`${version}\n`);
-    exit(0);
 }

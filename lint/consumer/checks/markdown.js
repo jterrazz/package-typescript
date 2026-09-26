@@ -1,16 +1,6 @@
-#!/usr/bin/env node
-
-import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
-import { argv, exit, stdout } from 'node:process';
 
-import {
-    ignorePatternsOf,
-    orRefused,
-    projectFiles,
-    readText,
-} from '../../engine/project/project-files.js';
+import { isGitIgnored, readText } from '../../engine/project/project-files.js';
 
 const PROSE_BLOCK_LIMIT = 12;
 
@@ -183,19 +173,7 @@ function isRelative(target) {
     );
 }
 
-// A build product or a workbench clone is absent from a fresh checkout by design; the page naming it is true.
-function isIgnored(root, target) {
-    // `dist/` in .gitignore matches the directory form only, and `-q` takes one path per probe.
-    return [target, `${target}/`].some(
-        (spelling) =>
-            spawnSync('git', ['check-ignore', '-q', '--no-index', spelling], {
-                cwd: root,
-                stdio: 'ignore',
-            }).status === 0,
-    );
-}
-
-function missingLinks(root, path, cited) {
+function missingLinks({ exists, root }, path, cited) {
     const found = [];
     for (const match of cited.matchAll(LINK)) {
         const { target } = match.groups;
@@ -204,7 +182,7 @@ function missingLinks(root, path, cited) {
             continue;
         }
         const linked = resolve(root, dirname(path), clean);
-        if (!existsSync(linked) && !isIgnored(root, relative(root, linked))) {
+        if (!exists(linked) && !isGitIgnored(root, relative(root, linked))) {
             found.push({
                 message: `${target} resolves to nothing on disk`,
                 rule: 'markdown/link-resolves',
@@ -215,14 +193,14 @@ function missingLinks(root, path, cited) {
     return found;
 }
 
-function missingPaths(root, path, cited) {
+function missingPaths({ exists, root }, path, cited) {
     const found = [];
     for (const match of cited.matchAll(BACKTICK_PATH)) {
         const target = match.groups.path.replace(/\/$/u, '');
         if (
-            !existsSync(join(root, target)) &&
-            !existsSync(resolve(root, dirname(path), target)) &&
-            !isIgnored(root, target)
+            !exists(join(root, target)) &&
+            !exists(resolve(root, dirname(path), target)) &&
+            !isGitIgnored(root, target)
         ) {
             found.push({
                 message: `\`${target}\` names nothing on disk`,
@@ -234,7 +212,7 @@ function missingPaths(root, path, cited) {
     return found;
 }
 
-function missingChapters(root, path, cited) {
+function missingChapters({ exists, root }, path, cited) {
     const skill = SKILL_PAGE.exec(path);
     if (skill === null) {
         return [];
@@ -243,7 +221,7 @@ function missingChapters(root, path, cited) {
     const found = [];
     for (const match of cited.matchAll(CHAPTER)) {
         const { chapter } = match.groups;
-        if (!existsSync(join(root, skill.groups.root, 'docs', chapter))) {
+        if (!exists(join(root, skill.groups.root, 'docs', chapter))) {
             found.push({
                 message: `docs/${chapter} is no chapter this package ships`,
                 rule: 'markdown/chapter-reference-resolves',
@@ -254,12 +232,12 @@ function missingChapters(root, path, cited) {
     return found;
 }
 
-function auditPage(root, path, markdown) {
+function auditPage(context, path, markdown) {
     const cited = withoutFences(markdown);
     const found = [
-        ...missingLinks(root, path, cited),
-        ...missingPaths(root, path, cited),
-        ...missingChapters(root, path, cited),
+        ...missingLinks(context, path, cited),
+        ...missingPaths(context, path, cited),
+        ...missingChapters(context, path, cited),
     ];
 
     for (const reason of longProseBlocks(markdown)) {
@@ -275,21 +253,22 @@ function auditPage(root, path, markdown) {
     return found;
 }
 
-const root = resolve(argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.');
-const pages = orRefused(() =>
-    projectFiles(root, { ignorePatterns: ignorePatternsOf(argv) }),
-).filter((path) => path.endsWith('.md'));
+export const markdown = Object.freeze({
+    check(context) {
+        const findings = [];
+        for (const path of context.files().filter((file) => file.endsWith('.md'))) {
+            const text = readText(context.root, path);
+            if (text !== null) {
+                findings.push(
+                    ...auditPage(context, path, text).map(({ message, rule }) => ({
+                        message,
+                        path,
+                        rule,
+                    })),
+                );
+            }
+        }
 
-let failed = false;
-for (const path of pages) {
-    const markdown = readText(root, path);
-    if (markdown === null) {
-        continue;
-    }
-    for (const violation of auditPage(root, path, markdown)) {
-        stdout.write(`${violation.rule}  ${path}  ${violation.message}\n`);
-        failed = true;
-    }
-}
-
-exit(failed ? 1 : 0);
+        return { findings };
+    },
+});

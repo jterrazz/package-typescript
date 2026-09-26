@@ -1,10 +1,7 @@
-#!/usr/bin/env node
-
 // A member is a directory matching a glob AND holding a package.json, as the package managers rule.
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
-import { argv, stdout } from 'node:process';
 
 const SKIPPED = new Set(['dist', 'node_modules']);
 
@@ -83,11 +80,4 @@ export function workspaceMembers(root = '.') {
     walk(absolute, 0);
 
     return [...members].toSorted((left, right) => (left < right ? -1 : 1));
-}
-
-if (argv[1] && resolve(argv[1]) === import.meta.filename) {
-    const members = workspaceMembers(argv[2] ?? '.');
-    if (members.length > 0) {
-        stdout.write(`${members.join('\n')}\n`);
-    }
 }

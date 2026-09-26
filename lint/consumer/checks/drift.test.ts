@@ -6,7 +6,7 @@ import { describe, expect, onTestFinished, test } from 'vitest';
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../../..');
 
-const DRIFT = resolve(import.meta.dirname, 'drift.js');
+const CHECKER = resolve(import.meta.dirname, '../../index.checker.js');
 const OXLINT = join(PACKAGE_ROOT, 'node_modules/.bin/oxlint');
 const PROFILES = join(PACKAGE_ROOT, 'src/presets/oxlint/profiles');
 const DEFAULT_PROFILE = join(PROFILES, 'node.js');
@@ -33,7 +33,8 @@ describe('drift', () => {
         // Given - a configless project whose jterrazz.baseline.json does not parse
         const directory = configlessProject({ 'jterrazz.baseline.json': '{ not json\n' });
         const args = [
-            DRIFT,
+            CHECKER,
+            'drift',
             directory,
             '--oxlint',
             OXLINT,
@@ -63,7 +64,17 @@ describe('drift', () => {
         // When - the drift report reads it for a person
         const human = spawnSync(
             'node',
-            [DRIFT, directory, '--oxlint', OXLINT, '-c', DEFAULT_PROFILE, '--profiles', PROFILES],
+            [
+                CHECKER,
+                'drift',
+                directory,
+                '--oxlint',
+                OXLINT,
+                '-c',
+                DEFAULT_PROFILE,
+                '--profiles',
+                PROFILES,
+            ],
             {
                 encoding: 'utf8',
             },
@@ -82,7 +93,8 @@ describe('drift', () => {
         const machine = spawnSync(
             'node',
             [
-                DRIFT,
+                CHECKER,
+                'drift',
                 directory,
                 '--oxlint',
                 OXLINT,
@@ -114,7 +126,17 @@ describe('drift', () => {
         // When - the drift report measures it against the handed default
         const result = spawnSync(
             'node',
-            [DRIFT, directory, '--oxlint', counting, '-c', DEFAULT_PROFILE, '--profiles', PROFILES],
+            [
+                CHECKER,
+                'drift',
+                directory,
+                '--oxlint',
+                counting,
+                '-c',
+                DEFAULT_PROFILE,
+                '--profiles',
+                PROFILES,
+            ],
             {
                 encoding: 'utf8',
             },

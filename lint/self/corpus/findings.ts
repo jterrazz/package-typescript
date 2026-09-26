@@ -5,9 +5,6 @@ import plugin from '../../consumer/rules/plugin.js';
 
 const ROOT = resolve(import.meta.dirname, '../../..');
 
-const PASS_ID =
-    /(?:['"`]|\\n)(?<id>(?:comments|docs|drift|markdown|names|publish|secrets|suppressions)\/[a-z\d]+(?:-[a-z\d]+)*)(?![\w/-])/gu;
-
 const listed: unknown = JSON.parse(
     readFileSync(join(ROOT, 'lint/consumer/catalogue/families.json'), 'utf8'),
 );
@@ -23,6 +20,15 @@ const parsed: unknown = JSON.parse(
     readFileSync(join(ROOT, 'lint/consumer/catalogue/findings.json'), 'utf8'),
 );
 export const rows = (Array.isArray(parsed) ? parsed : []).filter((row) => isRow(row));
+
+const passes = [...new Set(rows.map((row) => row.id.split('/')[0] ?? ''))].filter(
+    (namespace) => namespace !== plugin.meta.name,
+);
+
+const PASS_ID = new RegExp(
+    `(?:['"\`]|\\\\n)(?<id>(?:${passes.join('|')})\\/[a-z\\d]+(?:-[a-z\\d]+)*)(?![\\w/-])`,
+    'gu',
+);
 
 const checks = join(ROOT, 'lint/consumer/checks');
 

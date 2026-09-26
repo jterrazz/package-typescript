@@ -105,7 +105,7 @@ The spine itself is language-agnostic doctrine, and it is the estate's, which [R
 | `docs/map-present`                             | The manual opens on its map, docs/README.md.                                 |
 | `docs/map-matches-chapters`                    | The map links every chapter, and only the chapters there are.                |
 | `docs/map-links-only-chapters`                 | The map links nothing but chapters and decisions/.                           |
-| `docs/chapter-named-by-number-and-subject`                  | A chapter is named NN-kebab.md.                                              |
+| `docs/chapter-named-by-number-and-subject`     | A chapter is named NN-kebab.md.                                              |
 | `docs/chapters-numbered-contiguously`          | Chapters are numbered without a gap, one number per file.                    |
 | `docs/spine-number-reserved`                   | A reserved spine number holds its spine chapter alone.                       |
 | `docs/spine-chapters-present`                  | The architecture, developing and testing chapters are present.               |
@@ -115,7 +115,7 @@ The spine itself is language-agnostic doctrine, and it is the estate's, which [R
 | `docs/no-unknown-subfolder`                    | The manual holds no subfolder but decisions/ and _assets/.                   |
 | `docs/no-generated-reference`                  | The manual holds no generated API reference.                                 |
 | `docs/no-cross-repository-link`                | No link of the manual reaches into another repository's tree.                |
-| `docs/decision-named-by-number-and-subject`                | A decision record is named NNN-kebab.md.                                     |
+| `docs/decision-named-by-number-and-subject`    | A decision record is named NNN-kebab.md.                                     |
 | `docs/decision-heading-carries-its-number`     | A decision record opens on # ADR-NNN: Title, with its own number.            |
 | `docs/decision-number-unique`                  | One ADR number belongs to one record.                                        |
 | `docs/decisions-numbered-contiguously`         | Decision records are numbered from 001 without a gap.                        |
@@ -457,23 +457,23 @@ The root's own folders are the same in every repository: `src/` the product's co
 
 <!-- GENERATED:findings tree -->
 
-| Rule                                     | Requirement                                                                                                                       |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `names/no-undeclared-root-folder`        | Every root folder is on the spine, imposed by a tool, or declared with its reason.                                                |
-| `names/declared-root-states-its-reason`  | A root declared in typescript.roots states why the repository keeps it.                                                           |
-| `names/declared-root-holds-files`        | A root declared in typescript.roots holds a file git does not ignore.                                                             |
-| `names/jterrazz-config-loads`            | The settings file jterrazz.config.ts loads, and its typescript section has the declared shape.                                    |
-| `names/skill-holds-only-skill-md`        | A skill is one skills/<skill>/SKILL.md and nothing beside it.                                                                     |
-| `names/repository-has-makefile`          | Every repository root carries a Makefile.                                                                                         |
-| `names/makefile-answers-every-gesture`   | The Makefile writes a rule for each of the six gestures.                                                                          |
-| `names/no-empty-directory`               | No directory of the working copy is empty.                                                                                        |
-| `names/lint-root-holds-only-index`       | The root of lint/ holds its index and nothing else.                                                                               |
-| `names/lint-folder-is-known`             | Every folder of lint/ is one of consumer, self and engine.                                                                        |
-| `names/consumer-folder-is-known`         | Every folder of lint/consumer/ is one of catalogue, rulebook, rules and checks, and no file sits at its root.                     |
-| `names/self-folder-is-known`             | Every folder of lint/self/ is one of catalogue, rules, checks and corpus, and only its index sits at its root.                    |
-| `names/engine-folder-is-known`           | Every folder of lint/engine/ is one of project, baseline, checker, catalogue, compiler and testing, and no file sits at its root. |
-| `names/audience-holds-only-declarations` | A module under lint/consumer/ or lint/self/ hands another module no function but one named for its file.                          |
-| `names/rule-file-in-its-family-folder`   | A rule file sits under rules/<family>/, the family its catalogue row declares.                                                    |
+| Rule                                     | Requirement                                                                                                                                           |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `names/no-undeclared-root-folder`        | Every root folder is on the spine, imposed by a tool, or declared with its reason.                                                                    |
+| `names/declared-root-states-its-reason`  | A root declared in typescript.roots states why the repository keeps it.                                                                               |
+| `names/declared-root-holds-files`        | A root declared in typescript.roots holds a file git does not ignore.                                                                                 |
+| `names/jterrazz-config-loads`            | The settings file jterrazz.config.ts loads, and its typescript section has the declared shape.                                                        |
+| `names/skill-holds-only-skill-md`        | A skill is one skills/<skill>/SKILL.md and nothing beside it.                                                                                         |
+| `names/repository-has-makefile`          | Every repository root carries a Makefile.                                                                                                             |
+| `names/makefile-answers-every-gesture`   | The Makefile writes a rule for each of the six gestures.                                                                                              |
+| `names/no-empty-directory`               | No directory of the working copy is empty.                                                                                                            |
+| `names/lint-root-holds-only-index`       | The root of lint/ holds its index and nothing else.                                                                                                   |
+| `names/lint-folder-is-known`             | Every folder of lint/ is one of consumer, self and engine.                                                                                            |
+| `names/consumer-folder-is-known`         | Every folder of lint/consumer/ is one of catalogue, rulebook, rules and checks, and no file sits at its root.                                         |
+| `names/self-folder-is-known`             | Every folder of lint/self/ is one of catalogue, rules, checks and corpus, and only its index sits at its root.                                        |
+| `names/engine-folder-is-known`           | Every folder of lint/engine/ is one of project, baseline, checker, catalogue, compiler and testing, and no file sits at its root.                     |
+| `names/audience-holds-only-declarations` | A module under lint/consumer/ or lint/self/ is a declaration: it runs as no program, and hands another module no function but one named for its file. |
+| `names/rule-file-in-its-family-folder`   | A rule file sits under rules/<family>/, the family its catalogue row declares.                                                                        |
 
 <!-- /GENERATED:findings tree -->
 
@@ -540,15 +540,15 @@ The file holds one section per package of the family, each package reading only 
 
 `lint/` has one tree in every repository that keeps one, whatever the package: the entry at `index`, and one folder per audience — `consumer/`, the declarations every consumer is held to; `self/`, the declarations only the repository is held to; `engine/`, what runs them and knows none — each holding what [Architecture](01-architecture.md#the-judging-layer) says it holds. A reader who knows one repository's `lint/` knows every one, so the pass holds each unit that keeps a `lint/` to it, a workspace member included.
 
-- `names/lint-root-holds-only-index` refuses a file at the root of `lint/` not named `index` — `index.ts`, `index.js`, `index.d.ts` and their tests pass.
+- `names/lint-root-holds-only-index` refuses a file at the root of `lint/` not named `index` — `index.ts`, `index.js`, `index.d.ts`, a part such as `index.checker.js`, and their tests pass.
 - `names/lint-folder-is-known` refuses a folder of `lint/` outside the three.
 - `names/consumer-folder-is-known` refuses a folder of `consumer/` outside `catalogue/`, `rulebook/`, `rules/` and `checks/`, and a file at its root.
 - `names/self-folder-is-known` refuses a folder of `self/` outside `catalogue/`, `rules/`, `checks/` and `corpus/`, and a file at its root but its `index`, which composes the self declarations with the engine.
 - `names/engine-folder-is-known` refuses a folder of `engine/` outside `project/`, `baseline/`, `checker/`, `catalogue/`, `compiler/` and `testing/`, and a file at its root.
-- `names/audience-holds-only-declarations` refuses a module of `consumer/` or `self/` that hands another module a function named for something other than its file.
+- `names/audience-holds-only-declarations` refuses a module of `consumer/` or `self/` that runs as a program, or that hands another module a function named for something other than its file.
 - `names/rule-file-in-its-family-folder` refuses a rule file of `consumer/rules/` or `self/rules/` filed at the root of `rules/`, or under a folder its catalogue row does not name.
 
-A declaration is a rule, a check, a decision on an upstream rule, a catalogue entry, or their tests, and the pass knows one by what its module exports and who reads it: each function it hands another module carries its file's name — the file's name, hyphens dropped, is part of the export's, whatever the case — so `no-snapshot-folder.ts` may export `checkNoSnapshotFolder` and `docs.js` exports `auditDocs`. A function only the module's own test imports is the declaration's own, whatever its name. Values, types and the default export are free, and so is a file that is not a module, a test, or anything under `expected/` or `fixtures/`. A part, `<name>.<part>.<ext>` beside its `<name>.<ext>`, is that declaration cut in two, and it and the declaration read each other freely. A module handing another a function named for anything else is a helper, and the engine owns the code declarations share. The modules are read as text, never run: a reader is any module of the unit that imports the file by a relative path, and it takes the names its import lists — every name, for a namespace or a dynamic import.
+A declaration is a rule, a check, a decision on an upstream rule, a catalogue entry, or their tests, and the pass knows one by what its module exports and who reads it: each function it hands another module carries its file's name — the file's name, hyphens dropped, is part of the export's, whatever the case — so `no-snapshot-folder.ts` may export `checkNoSnapshotFolder` and `docs.js` exports `auditDocs`. A function only the module's own test imports is the declaration's own, whatever its name. Values, types and the default export are free, and so is a file that is not a module, a test, or anything under `expected/` or `fixtures/`. A part, `<name>.<part>.<ext>` beside its `<name>.<ext>`, is that declaration cut in two, and it and the declaration read each other freely. A module handing another a function named for anything else is a helper, and the engine owns the code declarations share. A module that reads `process.argv`, imports `argv` or `exit` from `node:process`, calls `process.exit`, or runs under `import.meta.main` is a program, and the checker under `engine/checker/` is the one program a declaration runs through. The modules are read as text, never run: a reader is any module of the unit that imports the file by a relative path, and it takes the names its import lists — every name, for a namespace or a dynamic import.
 
 The family is read off the unit's own catalogues: every file directly under `lint/consumer/catalogue/` or `lint/self/catalogue/`, read as text and never run, where a row is any object literal stating an `id` or a `name` and a `family` — a JSON row and a TypeScript manifest row alike, the plugin prefix of an id left aside. A rule file is matched to its row by its name, its test with it. A unit with no catalogue, or a rule no row names, is held to the other rules alone: a family is never guessed.
 

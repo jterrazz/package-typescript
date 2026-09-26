@@ -25,6 +25,9 @@ const READ = 'read: docs/06-quality-checks.md#the-lint-tree';
 
 const MODULE = /\.(?:[cm]?[jt]sx?)$/u;
 
+const PROGRAM =
+    /\bimport\.meta\.main\b|\bprocess\.(?:argv|exit)\b|\bimport\s*\{[^}]*\b(?:argv|exit)\b[^}]*\}\s*from\s*['"](?:node:)?process['"]/u;
+
 const TEST_MATERIAL = /\.test(?:-d)?\.[cm]?[jt]sx?$|(?:^|\/)(?:expected|fixtures)\//u;
 
 const stemOf = (name) => name.split('.')[0] ?? '';
@@ -99,6 +102,19 @@ function helperFinding(path, names) {
     };
 }
 
+function programFinding(path) {
+    return {
+        message: [
+            `found: \`${path}\` is a program — it reads the command line, ends the process or runs when executed`,
+            'why: consumer/ and self/ hold declarations alone, and the checker is what reads a command line, runs the declarations and says how the run ended; a program filed as a declaration is engine code no lock sees',
+            'fix: move the program under engine/checker/ and hand it this declaration from an `index`, leaving here only what it judges',
+            READ,
+        ].join(' · '),
+        path,
+        rule: 'names/audience-holds-only-declarations',
+    };
+}
+
 function ruleFamilyFinding(path, place, family) {
     return {
         message: [
@@ -133,15 +149,24 @@ function misfiledRule(file, rest, families, prefix) {
     ];
 }
 
-function foreignFunctions(unit, file, fileName) {
-    if (!MODULE.test(fileName) || TEST_MATERIAL.test(file)) {
-        return [];
-    }
+const isJudged = (file, fileName) => MODULE.test(fileName) && !TEST_MATERIAL.test(file);
+
+function foreignFunctions(text, fileName) {
     const own = stemOf(fileName).replaceAll('-', '').toLowerCase();
 
-    return exportedFunctions(readText(unit, file) ?? '').filter(
-        (name) => !name.toLowerCase().includes(own),
-    );
+    return exportedFunctions(text).filter((name) => !name.toLowerCase().includes(own));
+}
+
+function declarationOf(unit, file, fileName) {
+    if (!isJudged(file, fileName)) {
+        return { findings: [], names: [] };
+    }
+    const text = readText(unit, file) ?? '';
+
+    return {
+        findings: PROGRAM.test(text) ? [programFinding] : [],
+        names: foreignFunctions(text, fileName),
+    };
 }
 
 const isOwnReader = (file, reader) => {
@@ -222,9 +247,10 @@ export function lintTreeOf(files, unit, prefix) {
             if (folder === 'rules') {
                 findings.push(...misfiledRule(file, rest, families, prefix));
             }
-            const names = foreignFunctions(unit, file, rest.at(-1));
-            if (names.length > 0) {
-                candidates.push({ file, names });
+            const judged = declarationOf(unit, file, rest.at(-1));
+            findings.push(...judged.findings.map((finding) => finding(`${prefix}${file}`)));
+            if (judged.names.length > 0) {
+                candidates.push({ file, names: judged.names });
             }
         }
     }

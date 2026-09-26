@@ -1,10 +1,5 @@
-#!/usr/bin/env node
-
-// Prints nothing when no subpath resolves, and the caller keeps the preset's single `src/index.ts`.
-
 import { existsSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { argv, stdout } from 'node:process';
+import { join } from 'node:path';
 
 // In Node's resolution order; the empty string is "no target".
 function targetOf(entry) {
@@ -56,10 +51,4 @@ export function entryPoints(root) {
     }
 
     return [...entries].toSorted((left, right) => left.localeCompare(right));
-}
-
-if (import.meta.main) {
-    for (const entry of entryPoints(resolve(argv[2] ?? '.'))) {
-        stdout.write(`${entry}\n`);
-    }
 }

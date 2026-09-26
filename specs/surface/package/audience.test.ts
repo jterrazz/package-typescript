@@ -7,6 +7,7 @@ import { PROFILES } from '../../../lint/consumer/rulebook/profiles.js';
 import { decisions } from '../../../lint/engine/catalogue/decisions.js';
 import { AUDIENCES } from '../../../lint/engine/compiler/decision.js';
 import { lintFragments } from '../../../lint/engine/testing/lint-fragments.js';
+import { FRAGMENT_WALK } from '../../../lint/self/corpus/decision-invariants.js';
 
 // A `self` row names the home that holds it — a path the package leaves out — and the names the tarball audit greps for.
 
@@ -23,7 +24,7 @@ function fieldText(row: Record<string, unknown>, key: string): string {
     return typeof value === 'string' ? value : '';
 }
 
-const declared = await lintFragments(ROOT);
+const declared = await lintFragments(ROOT, FRAGMENT_WALK);
 
 const rows = ['lint/consumer/catalogue/manifest.json', 'lint/self/catalogue/manifest.json'].flatMap(
     (path) => {

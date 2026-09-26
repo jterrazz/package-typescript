@@ -14,10 +14,7 @@ export const LABEL = labelOf(SECTION);
 // `@jterrazz/test` records and judges these: its oxlint plugin's rules and its checker's ids.
 const TEST_NAMESPACES = ['jterrazz/', 'jterrazz-check/'];
 
-const PASS_NAMESPACES = ['names/', 'comments/'];
-
-export const isPassOwned = (rule) =>
-    PASS_NAMESPACES.some((namespace) => rule.startsWith(namespace));
+export const isHeldBy = (passes, rule) => passes.some((pass) => rule.startsWith(`${pass}/`));
 
 // oxlint's "Unused eslint/oxlint-disable directive" findings carry no `code` at all.
 const UNUSED_DIRECTIVE = /^Unused (?:eslint|oxlint)-disable directive/u;

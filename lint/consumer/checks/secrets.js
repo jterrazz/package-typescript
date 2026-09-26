@@ -1,19 +1,7 @@
-#!/usr/bin/env node
-
 // Only the line declaring itself fake is forgiven: an allow-list of paths is where a real leak hides.
 
-import { spawnSync } from 'node:child_process';
-import { copyFileSync, lstatSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
-import { argv, exit, stdout } from 'node:process';
-
-import {
-    ignorePatternsOf,
-    orRefused,
-    projectFiles,
-    readText,
-} from '../../engine/project/project-files.js';
+import { runGitleaks } from '../../engine/checker/tool-run.js';
+import { readText } from '../../engine/project/project-files.js';
 
 const PATTERNS = [
     {
@@ -54,74 +42,39 @@ const PATTERNS = [
 
 const isSynthetic = (line) => /dummy|example|fake|redacted|sample|synthetic/iu.test(line);
 
-// gitleaks reads a directory, so the judged files are copied into one, each at the project's own path.
-function stageFiles(root, files) {
-    const staged = mkdtempSync(join(tmpdir(), 'typescript-secrets-'));
+function patternFindings(root, files) {
+    const findings = [];
     for (const path of files) {
-        const source = join(root, path);
-        try {
-            if (!lstatSync(source).isFile()) {
-                continue;
-            }
-            mkdirSync(dirname(join(staged, path)), { recursive: true });
-            copyFileSync(source, join(staged, path));
-        } catch {
-            // A file gone from the disk has nothing left to leak.
-        }
-    }
-
-    return staged;
-}
-
-function runGitleaks(root, files) {
-    const probe = spawnSync('gitleaks', ['version'], { stdio: 'ignore' });
-    if (probe.error) {
-        return null;
-    }
-
-    const staged = stageFiles(root, files);
-    try {
-        const run = spawnSync(
-            'gitleaks',
-            ['dir', '.', '--no-banner', '--redact', '--exit-code', '1'],
-            { cwd: staged, encoding: 'utf8' },
-        );
-
-        return { output: `${run.stdout ?? ''}${run.stderr ?? ''}`, status: run.status ?? 1 };
-    } finally {
-        rmSync(staged, { force: true, recursive: true });
-    }
-}
-
-const root = resolve(argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.');
-const files = orRefused(() => projectFiles(root, { ignorePatterns: ignorePatternsOf(argv) }));
-
-const gitleaks = runGitleaks(root, files);
-if (gitleaks !== null) {
-    if (gitleaks.status !== 0) {
-        stdout.write(gitleaks.output);
-    }
-    exit(gitleaks.status === 0 ? 0 : 1);
-}
-
-let failed = false;
-for (const path of files) {
-    const text = readText(root, path);
-    if (text === null) {
-        continue;
-    }
-
-    for (const [index, line] of text.split('\n').entries()) {
-        if (isSynthetic(line)) {
+        const text = readText(root, path);
+        if (text === null) {
             continue;
         }
-        for (const { pattern, rule, what } of PATTERNS) {
-            if (pattern.test(line)) {
-                stdout.write(`${rule}  ${path}  line ${index + 1} looks like ${what}\n`);
-                failed = true;
+        for (const [index, line] of text.split('\n').entries()) {
+            if (isSynthetic(line)) {
+                continue;
+            }
+            for (const { pattern, rule, what } of PATTERNS) {
+                if (pattern.test(line)) {
+                    findings.push({ message: `line ${index + 1} looks like ${what}`, path, rule });
+                }
             }
         }
     }
+
+    return findings;
 }
 
-exit(failed ? 1 : 0);
+export const secrets = Object.freeze({
+    check(context) {
+        const files = context.files();
+        const gitleaks = runGitleaks(context.root, files);
+        if (gitleaks !== null) {
+            return {
+                failed: gitleaks.status !== 0,
+                lines: gitleaks.status === 0 ? [] : [gitleaks.output.replace(/\n$/u, '')],
+            };
+        }
+
+        return { findings: patternFindings(context.root, files) };
+    },
+});

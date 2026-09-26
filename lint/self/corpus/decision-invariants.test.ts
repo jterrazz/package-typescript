@@ -5,12 +5,15 @@ import { PROFILES } from '../../consumer/rulebook/profiles.js';
 import { decisions } from '../../engine/catalogue/decisions.js';
 import { fragment, off, on, REASON_KINDS, unsafeFix } from '../../engine/compiler/decision.js';
 import { lintFragments } from '../../engine/testing/lint-fragments.js';
-import problemsOf from './decision-invariants.js';
+import problemsOf, { FRAGMENT_WALK } from './decision-invariants.js';
 
 describe('problemsOf', () => {
     test('every fragment lint/ declares keeps both invariants', async () => {
         // Given - every fragment a module of lint/ or src/ exports, profile or not
-        const declared = await lintFragments(resolve(import.meta.dirname, '../../..'));
+        const declared = await lintFragments(
+            resolve(import.meta.dirname, '../../..'),
+            FRAGMENT_WALK,
+        );
         expect(declared.length).toBeGreaterThan(15);
 
         // Then - none breaks either invariant

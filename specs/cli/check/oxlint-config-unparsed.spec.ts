@@ -10,7 +10,7 @@ import { newDirectory, temporaryDirectory } from '../temporary-directory.js';
 // the judge is run directly on that report shape.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-const JUDGE = resolve(import.meta.dirname, '../../../lint/engine/baseline/cli.js');
+const CHECKER = resolve(import.meta.dirname, '../../../lint/index.checker.js');
 
 const project = newDirectory('spec-oxlint-config-');
 
@@ -87,10 +87,14 @@ describe('oxlint-config-unparsed', () => {
         const directory = projectOf({ 'lint.json': '{ "diagnostics": [] }\n' });
 
         // When - the ratchet judges that run
-        const result = spawnSync('node', [JUDGE, 'lint.json', '.', '--linter-exit', '2'], {
-            cwd: directory,
-            encoding: 'utf8',
-        });
+        const result = spawnSync(
+            'node',
+            [CHECKER, 'baseline', 'lint.json', '.', '--linter-exit', '2'],
+            {
+                cwd: directory,
+                encoding: 'utf8',
+            },
+        );
 
         // Then - nothing is forgiven: the judge names the exit and fails
         expect(result.stdout).toBe(

@@ -1,13 +1,7 @@
-#!/usr/bin/env node
+import { basename, join, matchesGlob } from 'node:path';
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { basename, join, matchesGlob, resolve } from 'node:path';
-import { argv, exit, stdout } from 'node:process';
-
-import { judge, LABEL, readBaseline, reRecord } from '../../engine/baseline/ratchet.js';
-import { emptyDirectories, removeEmptyDirectory } from '../../engine/project/empty-directories.js';
+import { emptyDirectories } from '../../engine/project/empty-directories.js';
 import { readSection, SETTINGS_FILE } from '../../engine/project/jterrazz-config.js';
-import { ignorePatternsOf, orRefused, projectFiles } from '../../engine/project/project-files.js';
 import { isRepositoryRoot } from '../../engine/project/repository-root.js';
 import { workspaceMembers } from '../../engine/project/workspace-members.js';
 import { LINT_ROOT, lintTreeOf } from './names.lint-tree.js';
@@ -134,14 +128,14 @@ function findingsOf(files) {
     return findings;
 }
 
-function manifestOf(unit) {
-    const manifest = join(unit, 'package.json');
-    if (!existsSync(manifest)) {
+function manifestOf(disk, unit) {
+    const manifest = disk.read(join(unit, 'package.json'));
+    if (manifest === null) {
         return {};
     }
 
     try {
-        const parsed = JSON.parse(readFileSync(manifest, 'utf8'));
+        const parsed = JSON.parse(manifest);
 
         return parsed !== null && typeof parsed === 'object' ? parsed : {};
     } catch {
@@ -200,13 +194,13 @@ const ENTRY_KEYS = new Set(['entry', 'input']);
 const withoutDotSlash = (path) => path.replace(/^\.\//u, '');
 
 // The config is a module a bundler loads, so it is read, never run.
-function lintOutputsOf(unit) {
-    const config = BUILD_CONFIGS.find((name) => existsSync(join(unit, name)));
+function lintOutputsOf(disk, unit) {
+    const config = BUILD_CONFIGS.find((name) => disk.exists(join(unit, name)));
     if (config === undefined) {
         return [];
     }
 
-    const text = readFileSync(join(unit, config), 'utf8');
+    const text = disk.read(join(unit, config)) ?? '';
     const outDir = withoutDotSlash(
         /outDir\s*:\s*['"](?<dir>[^'"]+)['"]/u.exec(text)?.groups.dir ?? DEFAULT_OUT_DIR,
     );
@@ -239,7 +233,7 @@ function filesPublish(files, path) {
 }
 
 // A `lint/` nothing publishes holds rules no consumer receives: `src/` under another name.
-function shipsLint(manifest, unit) {
+function shipsLint(disk, manifest, unit) {
     const files = Array.isArray(manifest.files) ? manifest.files : [];
     const byFiles = files.some(
         (entry) =>
@@ -251,7 +245,7 @@ function shipsLint(manifest, unit) {
         ...targetsOfExports(manifest.main),
     ].map((target) => withoutDotSlash(target));
     const byExports = targets.some((target) => /^lint(?:\/|$)/u.test(target));
-    const byBuild = lintOutputsOf(unit).some(
+    const byBuild = lintOutputsOf(disk, unit).some(
         (output) =>
             targets.some((target) => target.startsWith(`${output}.`)) ||
             filesPublish(files, `${output}.js`),
@@ -297,8 +291,8 @@ function declarationOf(declared, roots, prefix) {
     return findings;
 }
 
-function spineOf(files, unit, settings, prefix = '') {
-    const manifest = manifestOf(unit);
+function spineOf(disk, unit, { files, prefix = '', settings }) {
+    const manifest = manifestOf(disk, unit);
     const findings = [];
     const roots = new Set();
     const declared = settings.roots;
@@ -326,7 +320,7 @@ function spineOf(files, unit, settings, prefix = '') {
     }
 
     const isCodified = (root) =>
-        (SPINE.has(root) && (root !== LINT_ROOT || shipsLint(manifest, unit))) ||
+        (SPINE.has(root) && (root !== LINT_ROOT || shipsLint(disk, manifest, unit))) ||
         MEMBER_ROOTS.has(root) ||
         Object.hasOwn(ECOSYSTEM_ROOTS, root) ||
         Object.hasOwn(declared, root);
@@ -342,7 +336,8 @@ function spineOf(files, unit, settings, prefix = '') {
     ];
 }
 
-async function spinesOf(root, files) {
+async function spinesOf(context, files) {
+    const { root } = context;
     const members = workspaceMembers(root);
     const memberOf = (file) => members.find((member) => file.startsWith(`${member}/`));
     const memberSettings = await Promise.all(
@@ -350,20 +345,18 @@ async function spinesOf(root, files) {
     );
 
     return [
-        ...spineOf(
-            files.filter((file) => memberOf(file) === undefined),
-            root,
-            await settingsOf(root),
-        ),
+        ...spineOf(context, root, {
+            files: files.filter((file) => memberOf(file) === undefined),
+            settings: await settingsOf(root),
+        }),
         ...members.flatMap((member, index) =>
-            spineOf(
-                files
+            spineOf(context, join(root, member), {
+                files: files
                     .filter((file) => file.startsWith(`${member}/`))
                     .map((file) => file.slice(member.length + 1)),
-                join(root, member),
-                memberSettings[index],
-                `${member}/`,
-            ),
+                prefix: `${member}/`,
+                settings: memberSettings[index],
+            }),
         ),
     ];
 }
@@ -381,7 +374,7 @@ function targetsOf(text) {
 }
 
 // Asked only where a `.git` stands beside the root, so a member, a fixture or a bare directory is never asked.
-function makefileOf(root, files) {
+function makefileOf({ read, root }, files) {
     if (!isRepositoryRoot(root)) {
         return [];
     }
@@ -396,7 +389,7 @@ function makefileOf(root, files) {
         ];
     }
 
-    const targets = targetsOf(readFileSync(join(root, MAKEFILE), 'utf8'));
+    const targets = targetsOf(read(join(root, MAKEFILE)) ?? '');
 
     return MAKE_TARGETS.filter((target) => !targets.has(target)).map((target) => ({
         message: `\`make ${target}\` has no rule — every repository answers \`make\` ${gestures}`,
@@ -418,97 +411,24 @@ function emptyDirectoryFinding(path) {
     };
 }
 
-const NAMESPACE = 'names/';
+export const names = Object.freeze({
+    async check(context) {
+        const files = context.files();
 
-const codeOf = (rule) => `names(${rule.slice(NAMESPACE.length)})`;
-
-const VALUED_FLAGS = new Set(['--format', '--ignore-pattern', '--report']);
-
-const flagValue = (flag) => {
-    const index = argv.indexOf(flag);
-
-    return index === -1 ? undefined : argv[index + 1];
-};
-
-const root = resolve(
-    argv
-        .slice(2)
-        .find(
-            (argument, index, rest) =>
-                !argument.startsWith('--') && !VALUED_FLAGS.has(rest[index - 1] ?? ''),
-        ) ?? '.',
-);
-const ignorePatterns = ignorePatternsOf(argv);
-const files = orRefused(() => projectFiles(root, { ignorePatterns }));
-
-if (argv.includes('--fix')) {
-    for (const path of emptyDirectories(root, { ignorePatterns })) {
-        if (removeEmptyDirectory(root, path)) {
-            stdout.write(`removed  ${path}/  an empty directory\n`);
-        }
-    }
-}
-
-const findings = [
-    ...findingsOf(files),
-    ...(await spinesOf(root, files)),
-    ...makefileOf(root, files),
-    ...emptyDirectories(root, { ignorePatterns }).map((path) => emptyDirectoryFinding(path)),
-];
-
-const report = () =>
-    `${JSON.stringify({
-        diagnostics: findings.map(({ message, path, rule }) => ({
-            code: codeOf(rule),
-            filename: path,
-            message,
-            severity: 'error',
-        })),
-    })}\n`;
-
-if (argv.includes('--format')) {
-    stdout.write(report());
-    exit(0);
-}
-
-const reportPath = flagValue('--report');
-if (reportPath !== undefined) {
-    writeFileSync(reportPath, report());
-}
-
-for (const { message, path, rule } of findings) {
-    stdout.write(`${rule}  ${path}  ${message}\n`);
-}
-
-// Where the baseline records no `names/*` entry, every finding is a failure.
-const ownedOf = (section) =>
-    Object.fromEntries(Object.entries(section).filter(([rule]) => rule.startsWith(NAMESPACE)));
-
-let recorded = ownedOf(readBaseline(root) ?? {});
-
-if (Object.keys(recorded).length === 0) {
-    exit(findings.length > 0 ? 1 : 0);
-}
-
-const counts = {};
-for (const { rule } of findings) {
-    counts[rule] = (counts[rule] ?? 0) + 1;
-}
-
-if (argv.includes('--fix')) {
-    const { lines, section } = reRecord(root, counts, (rule) => rule.startsWith(NAMESPACE));
-    for (const line of lines) {
-        stdout.write(`${line}\n`);
-    }
-    recorded = ownedOf(section);
-}
-
-const broken = judge(counts, recorded);
-for (const reason of broken) {
-    stdout.write(`baseline-ratchet  ${LABEL}  ${reason}\n`);
-}
-if (broken.length > 0) {
-    stdout.write("Run 'typescript baseline' to record where the project actually stands.\n");
-}
-
-exit(broken.length > 0 ? 1 : 0);
+        return {
+            findings: [
+                ...findingsOf(files),
+                ...(await spinesOf(context, files)),
+                ...makefileOf(context, files),
+                ...emptyDirectories(context.root, { ignorePatterns: context.ignorePatterns }).map(
+                    (path) => emptyDirectoryFinding(path),
+                ),
+            ],
+        };
+    },
+    prepare: (context) => ({
+        removals: emptyDirectories(context.root, { ignorePatterns: context.ignorePatterns }).map(
+            (directory) => ({ directory, line: `removed  ${directory}/  an empty directory` }),
+        ),
+    }),
+});

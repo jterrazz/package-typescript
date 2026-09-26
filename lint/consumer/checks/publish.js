@@ -1,9 +1,5 @@
-#!/usr/bin/env node
-
-import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, join, matchesGlob, relative, resolve } from 'node:path';
-import { argv, cwd, exit, stdout } from 'node:process';
+import { dirname, join, matchesGlob, relative } from 'node:path';
+import { cwd } from 'node:process';
 import { stripVTControlCharacters } from 'node:util';
 
 import { buildOf, builtChunks } from '../../engine/project/built-chunks.js';
@@ -26,80 +22,23 @@ function targetsOf(exports) {
 }
 
 // A wildcard names a family: its directory must exist and hold something the pattern matches.
-function resolvesOnDisk(root, target) {
+function resolvesOnDisk({ exists, list, root }, target) {
     const path = withoutDotSlash(target);
     if (!path.includes('*')) {
-        return existsSync(join(root, path));
+        return exists(join(root, path));
     }
 
     const prefix = path.slice(0, path.indexOf('*'));
     const directory = prefix.endsWith('/') ? prefix.slice(0, -1) : dirname(prefix);
+
+    return (list(join(root, directory)) ?? []).some((name) =>
+        matchesGlob(join(directory, name), path),
+    );
+}
+
+async function chunksOrFinding(root, build) {
     try {
-        return readdirSync(join(root, directory)).some((name) =>
-            matchesGlob(join(directory, name), path),
-        );
-    } catch {
-        return false;
-    }
-}
-
-function runTool(name, binary, args, root) {
-    const run = spawnSync(binary, args, { cwd: root, encoding: 'utf8' });
-    if (run.error) {
-        return { output: `${name} could not be run: ${run.error.message}\n`, status: 1 };
-    }
-
-    return { output: `${run.stdout ?? ''}${run.stderr ?? ''}`, status: run.status ?? 1 };
-}
-
-const flagged = (name, fallback) => {
-    const at = argv.indexOf(name);
-
-    return at === -1 || argv[at + 1] === undefined ? fallback : argv[at + 1];
-};
-
-const root = resolve(
-    argv.slice(2).find((argument, index) => {
-        const previous = argv[index + 1];
-
-        return (
-            !argument.startsWith('--') &&
-            previous !== '--publint' &&
-            previous !== '--attw' &&
-            previous !== '--bundle-preset'
-        );
-    }) ?? '.',
-);
-
-const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
-const files = manifest.files ?? [];
-const targets = [
-    ...targetsOf(manifest.exports ?? {}),
-    ...(manifest.main === undefined ? [] : [manifest.main]),
-    ...(manifest.types === undefined ? [] : [manifest.types]),
-];
-
-let failed = false;
-
-for (const target of [...new Set(targets)].toSorted((left, right) => (left < right ? -1 : 1))) {
-    if (!resolvesOnDisk(root, target)) {
-        stdout.write(
-            `publish/export-target-exists  package.json  ${target} resolves to nothing on disk\n`,
-        );
-        failed = true;
-        continue;
-    }
-    if (!isPacked(files, target)) {
-        stdout.write(
-            `publish/export-covered-by-files  package.json  ${target} is outside "files" — it resolves here and 404s in a consumer\n`,
-        );
-        failed = true;
-    }
-}
-
-async function chunksOrFinding(build) {
-    try {
-        return { chunks: await builtChunks(root, build), line: null };
+        return { chunks: await builtChunks(root, build), finding: null };
     } catch (error) {
         const reason =
             stripVTControlCharacters(error instanceof Error ? error.message : String(error))
@@ -110,7 +49,11 @@ async function chunksOrFinding(build) {
 
         return {
             chunks: null,
-            line: `publish/build-succeeds  package.json  found: the build failed — ${reason} · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else \`typescript bundle\` · read: @jterrazz/typescript's docs/06-quality-checks.md#the-build-guard\n`,
+            finding: {
+                message: `found: the build failed — ${reason} · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else \`typescript bundle\` · read: @jterrazz/typescript's docs/06-quality-checks.md#the-build-guard`,
+                path: 'package.json',
+                rule: 'publish/build-succeeds',
+            },
         };
     }
 }
@@ -122,39 +65,75 @@ const NOTHING_TO_JUDGE = {
         `the @jterrazz/test this package resolves gives no reader of test material — ${error}`,
 };
 
-const member = relative(cwd(), root);
+function exportFindings(context, manifest, targets) {
+    const findings = [];
+    for (const target of [...new Set(targets)].toSorted((left, right) => (left < right ? -1 : 1))) {
+        if (!resolvesOnDisk(context, target)) {
+            findings.push({
+                message: `${target} resolves to nothing on disk`,
+                path: 'package.json',
+                rule: 'publish/export-target-exists',
+            });
+        } else if (!isPacked(manifest.files ?? [], target)) {
+            findings.push({
+                message: `${target} is outside "files" — it resolves here and 404s in a consumer`,
+                path: 'package.json',
+                rule: 'publish/export-covered-by-files',
+            });
+        }
+    }
 
-const build = buildOf(root, targets, flagged('--bundle-preset'));
-if (build !== null) {
+    return findings;
+}
+
+async function buildFindings(context, manifest, build) {
+    const { root } = context;
     const loaded = await testMaterialReader(root);
     const reader = 'reader' in loaded ? loaded.reader : null;
-    if (reader === null) {
-        stdout.write(
-            `publish/no-test-code-in-production: nothing to judge${member === '' ? '' : ` in ${member}`} — ${NOTHING_TO_JUDGE[loaded.reason](loaded)}\n`,
+    const member = relative(cwd(), root);
+    const lines =
+        reader === null
+            ? [
+                  `publish/no-test-code-in-production: nothing to judge${member === '' ? '' : ` in ${member}`} — ${NOTHING_TO_JUDGE[loaded.reason](loaded)}`,
+              ]
+            : [];
+    const built = await chunksOrFinding(root, build);
+    const findings = built.finding === null ? [] : [built.finding];
+    if (reader !== null && built.chunks !== null) {
+        findings.push(
+            ...noTestCodeInProductionFindings({ chunks: built.chunks, manifest, reader, root }),
         );
     }
-    const built = await chunksOrFinding(build);
-    if (built.line !== null) {
-        stdout.write(built.line);
-        failed = true;
-    }
-    for (const { message, path, rule } of reader === null || built.chunks === null
-        ? []
-        : noTestCodeInProductionFindings({ chunks: built.chunks, manifest, reader, root })) {
-        stdout.write(`${rule}  ${path}  ${message}\n`);
-        failed = true;
-    }
+
+    return { findings, lines };
 }
 
-for (const [name, binary, args] of [
-    ['publint', flagged('--publint', 'publint'), ['--strict']],
-    ['attw', flagged('--attw', 'attw'), ['--pack', '.', '--profile', 'esm-only']],
-]) {
-    const { output, status } = runTool(name, binary, args, root);
-    if (status !== 0) {
-        stdout.write(output);
-        failed = true;
-    }
-}
+export const publish = Object.freeze({
+    async check(context) {
+        const manifest = JSON.parse(context.read(join(context.root, 'package.json')) ?? '{}');
+        const targets = [
+            ...targetsOf(manifest.exports ?? {}),
+            ...(manifest.main === undefined ? [] : [manifest.main]),
+            ...(manifest.types === undefined ? [] : [manifest.types]),
+        ];
+        const build = buildOf(context.root, targets, context.value('--bundle-preset'));
+        const built =
+            build === null
+                ? { findings: [], lines: [] }
+                : await buildFindings(context, manifest, build);
 
-exit(failed ? 1 : 0);
+        return {
+            findings: [...exportFindings(context, manifest, targets), ...built.findings],
+            lines: built.lines,
+            tools: [
+                { args: ['--strict'], flag: '--publint', name: 'publint' },
+                {
+                    args: ['--pack', '.', '--profile', 'esm-only'],
+                    flag: '--attw',
+                    name: 'attw',
+                },
+            ],
+        };
+    },
+    valued: ['--publint', '--attw', '--bundle-preset'],
+});

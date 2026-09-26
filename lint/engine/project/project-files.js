@@ -1,6 +1,6 @@
 // A sweep that is empty while the tree is not would turn every gate above it vacuously green, so it
 // throws. The ground a test stands on is its scenario's, judged where the scenario runs it, never here.
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { lstatSync, readdirSync, readFileSync } from 'node:fs';
 import { join, matchesGlob } from 'node:path';
 import { exit, stderr } from 'node:process';
@@ -37,6 +37,32 @@ function gitSweep(root) {
         );
     } catch {
         return null;
+    }
+}
+
+// `dist/` in .gitignore matches the directory form only, and `-q` takes one path per probe.
+export function isGitIgnored(root, target) {
+    return [target, `${target}/`].some(
+        (spelling) =>
+            spawnSync('git', ['check-ignore', '-q', '--no-index', spelling], {
+                cwd: root,
+                stdio: 'ignore',
+            }).status === 0,
+    );
+}
+
+// Outside a git tree there is nothing committed.
+export function trackedFiles(root) {
+    try {
+        return execFileSync('git', ['ls-files', '-z'], {
+            cwd: root,
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'ignore'],
+        })
+            .split('\0')
+            .filter((path) => path !== '');
+    } catch {
+        return [];
     }
 }
 

@@ -322,7 +322,7 @@
     {
         "family": "tree",
         "id": "names/audience-holds-only-declarations",
-        "sentence": "A module under lint/consumer/ or lint/self/ hands another module no function but one named for its file."
+        "sentence": "A module under lint/consumer/ or lint/self/ is a declaration: it runs as no program, and hands another module no function but one named for its file."
     },
     {
         "family": "tree",

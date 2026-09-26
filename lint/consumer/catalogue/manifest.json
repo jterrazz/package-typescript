@@ -107,9 +107,25 @@
         "audience": "consumer",
         "by": "exit",
         "channel": "runtime",
-        "id": "drift/off-rule-states-its-reason",
-        "message": "carries no '// reason:'",
-        "module": "lint/consumer/checks/drift.js"
+        "id": "checker-command-failed",
+        "message": "exit(await (await command())",
+        "module": "lint/engine/checker/checker.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "checker-unknown-pass",
+        "message": "the checker runs no pass named",
+        "module": "lint/engine/checker/checker.js"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "checker-pass-failed",
+        "message": "exit(await runPass(",
+        "module": "lint/engine/checker/checker.js"
     },
     {
         "audience": "consumer",
@@ -123,169 +139,9 @@
         "audience": "consumer",
         "by": "exit",
         "channel": "runtime",
-        "id": "docs-violations",
-        "message": "exit(violations.length > 0 ? 1 : 0);",
-        "module": "lint/consumer/checks/docs.cli.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "publish-tool-failed",
-        "message": "failed = true;",
-        "module": "lint/consumer/checks/publish.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "gitignore-no-ancestor",
-        "message": "exit(ancestorPath && existsSync(ancestorPath) ? 0 : 1);",
-        "module": "lint/consumer/checks/gitignore.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "gitignore-artefacts",
-        "message": "Artefacts must never be committed:",
-        "module": "lint/consumer/checks/gitignore.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "test-package-no-bin",
-        "message": "argv.includes('--bin')",
-        "module": "lint/engine/project/test-package.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "test-package-absent",
-        "message": "const version = testPackageVersion(dir);",
-        "module": "lint/engine/project/test-package.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "secrets-gitleaks",
-        "message": "exit(gitleaks.status === 0 ? 0 : 1);",
-        "module": "lint/consumer/checks/secrets.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "secrets-patterns",
-        "message": "looks like ${what}",
-        "module": "lint/consumer/checks/secrets.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
         "id": "oxlint-report-usage",
         "message": "Usage: node oxlint-report.js",
         "module": "src/cli/oxlint-report.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "drift-unreasoned-json",
-        "message": "unreasoned,",
-        "module": "lint/consumer/checks/drift.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "baseline-no-report",
-        "message": "the baseline cannot be read",
-        "module": "lint/engine/baseline/cli.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "baseline-no-pass-report",
-        "message": "pass wrote no report — the ${SECTION} section is left as it was",
-        "module": "lint/engine/baseline/cli.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "baseline-unwritable",
-        "message": "section cannot be written beside the others",
-        "module": "lint/engine/baseline/cli.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "baseline-silent-linter",
-        "message": "with no diagnostic — its own output says why",
-        "module": "lint/engine/baseline/cli.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "baseline-unreadable",
-        "message": "baseline-unreadable",
-        "module": "lint/engine/baseline/cli.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "baseline-unrecorded",
-        "message": "to record where the project stands.",
-        "module": "lint/engine/baseline/cli.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "baseline-ratchet",
-        "message": "baseline-ratchet",
-        "module": "lint/engine/baseline/cli.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "suppressions-findings",
-        "message": "the directive now names the checker this project runs",
-        "module": "lint/consumer/checks/suppressions.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "names-unrecorded",
-        "message": "exit(findings.length > 0 ? 1 : 0);",
-        "module": "lint/consumer/checks/names.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "names-ratchet",
-        "message": "baseline-ratchet",
-        "module": "lint/consumer/checks/names.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "comments-ratchet",
-        "message": "the count is held exactly so no comment arrives unseen",
-        "module": "lint/consumer/checks/comments.js"
     },
     {
         "audience": "consumer",
@@ -299,41 +155,9 @@
         "audience": "consumer",
         "by": "exit",
         "channel": "runtime",
-        "id": "architecture-nothing-to-cruise",
-        "message": "declares a layer map, but there is no src/",
-        "module": "lint/consumer/checks/architecture.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "architecture-unrun",
-        "message": "depcruise could not be run",
-        "module": "lint/consumer/checks/architecture.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "architecture-violations",
-        "message": "exit(run.status === 0 ? 0 : 1);",
-        "module": "lint/consumer/checks/architecture.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
         "id": "lint-targets-unread",
         "message": "error instanceof Error ? error.message : String(error)",
         "module": "src/cli/lint-targets.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "markdown-violations",
-        "message": "auditPage(root, path, markdown)",
-        "module": "lint/consumer/checks/markdown.js"
     },
     {
         "audience": "consumer",

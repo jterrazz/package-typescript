@@ -1,9 +1,4 @@
-#!/usr/bin/env node
-
-import { execFileSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
-import { join, matchesGlob, resolve } from 'node:path';
-import { argv, exit, stdout } from 'node:process';
+import { join, matchesGlob } from 'node:path';
 
 import {
     BIOME,
@@ -12,12 +7,8 @@ import {
     SOURCE,
     TS_DIRECTIVE,
 } from '../../engine/project/comments.js';
-import {
-    ignorePatternsOf,
-    orRefused,
-    projectFiles,
-    readText,
-} from '../../engine/project/project-files.js';
+import { printedOxlintConfig } from '../../engine/project/oxlint-config.js';
+import { readText } from '../../engine/project/project-files.js';
 
 const REASON = ' -- ';
 
@@ -38,21 +29,8 @@ const asOxlintGlob = (glob) => (glob.includes('/') ? glob : `**/${glob}`);
 
 // A JS plugin's rules never appear in `--print-config`: its directives are unverifiable, never dead.
 function resolveConfig(root, oxlint, config) {
-    let printed;
-    try {
-        printed = execFileSync(oxlint, ['--print-config', ...(config ? ['-c', config] : [])], {
-            cwd: root,
-            encoding: 'utf8',
-            stdio: ['ignore', 'pipe', 'ignore'],
-        });
-    } catch {
-        return null;
-    }
-
-    let resolved;
-    try {
-        resolved = JSON.parse(printed);
-    } catch {
+    const resolved = printedOxlintConfig(root, oxlint, config);
+    if (resolved === null) {
         return null;
     }
 
@@ -265,62 +243,41 @@ function auditSource(root, path, configOf) {
     return { rewritten: rewritten === text ? null : rewritten, violations };
 }
 
-if (import.meta.main) {
-    const isFix = argv.includes('--fix');
-    const oxlintAt = argv[argv.indexOf('--oxlint') + 1];
-    const oxlint = argv.includes('--oxlint') && oxlintAt !== undefined ? oxlintAt : 'oxlint';
-    const handed = argv.includes('-c') ? argv[argv.indexOf('-c') + 1] : undefined;
-    const root = resolve(
-        argv.slice(2).find((argument, index) => {
-            const previous = argv[index + 1];
+const SPELLING = 'suppressions/spelled-for-this-toolchain';
 
-            return (
-                !argument.startsWith('--') &&
-                previous !== '--oxlint' &&
-                previous !== '-c' &&
-                previous !== '--ignore-pattern'
-            );
-        }) ?? '.',
-    );
+export const suppressions = Object.freeze({
+    check(context) {
+        const oxlint = context.value('--oxlint', 'oxlint');
+        const handed = context.value('-c');
+        const sources = context.files().filter((path) => SOURCE.test(path));
 
-    const sources = orRefused(() =>
-        projectFiles(root, { ignorePatterns: ignorePatternsOf(argv) }),
-    ).filter((path) => SOURCE.test(path));
+        let config;
+        const configOf = () =>
+            config === undefined ? (config = resolveConfig(context.root, oxlint, handed)) : config;
 
-    let config;
-    const configOf = () =>
-        config === undefined ? (config = resolveConfig(root, oxlint, handed)) : config;
-
-    let failed = false;
-    const rewritten = [];
-
-    for (const path of sources) {
-        const audited = auditSource(root, path, configOf);
-        if (audited === null) {
-            continue;
-        }
-
-        for (const violation of audited.violations) {
-            if (
-                isFix &&
-                violation.rewritable &&
-                violation.rule === 'suppressions/spelled-for-this-toolchain'
-            ) {
+        const findings = [];
+        const rewritten = [];
+        for (const path of sources) {
+            const audited = auditSource(context.root, path, configOf);
+            if (audited === null) {
                 continue;
             }
-            stdout.write(`${violation.rule}  ${path}  ${violation.message}\n`);
-            failed = true;
+            for (const { message, rewritable, rule } of audited.violations) {
+                findings.push({ fixed: rewritable && rule === SPELLING, message, path, rule });
+            }
+            if (context.fix && audited.rewritten !== null) {
+                rewritten.push({ path, text: audited.rewritten });
+            }
         }
 
-        if (isFix && audited.rewritten !== null) {
-            writeFileSync(join(root, path), audited.rewritten);
-            rewritten.push(path);
-        }
-    }
-
-    for (const path of rewritten) {
-        stdout.write(`${path} rewritten — the directive now names the checker this project runs\n`);
-    }
-
-    exit(failed ? 1 : 0);
-}
+        return {
+            after: rewritten.map(
+                ({ path }) =>
+                    `${path} rewritten — the directive now names the checker this project runs`,
+            ),
+            findings,
+            writes: rewritten.map(({ path, text }) => ({ path: join(context.root, path), text })),
+        };
+    },
+    valued: ['--oxlint', '-c'],
+});

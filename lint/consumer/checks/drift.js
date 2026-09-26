@@ -1,9 +1,4 @@
-#!/usr/bin/env node
-
-import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
-import { argv, exit, stdout } from 'node:process';
 
 import {
     LABEL,
@@ -15,50 +10,25 @@ import {
 } from '../../engine/baseline/ratchet.js';
 import { countSuppressions } from '../../engine/project/comments.js';
 import CONFIGS from '../../engine/project/oxlint-config-names.json' with { type: 'json' };
-import { ignorePatternsOf, orRefused } from '../../engine/project/project-files.js';
+import { printedOxlintConfig } from '../../engine/project/oxlint-config.js';
+import { orRefused } from '../../engine/project/project-files.js';
 import { toolVersions } from '../../engine/project/tool-versions.js';
-
-const profilesFlag = argv.indexOf('--profiles');
-const PROFILES_AT =
-    profilesFlag === -1 || argv[profilesFlag + 1] === undefined
-        ? null
-        : resolve(argv[profilesFlag + 1]);
-
-// Read off the compiled files: loading the manifest loads every plugin the rulebook decides.
-const PROFILE_NAMES = new Set(
-    PROFILES_AT === null
-        ? []
-        : readdirSync(PROFILES_AT)
-              .filter((name) => name.endsWith('.js'))
-              .map((name) => basename(name, '.js')),
-);
 
 const REASON = /\/\/\s*reason:/iu;
 
-function resolvedRules(root, oxlint, configPath) {
-    try {
-        const printed = execFileSync(
-            oxlint,
-            configPath === null ? ['--print-config'] : ['-c', configPath, '--print-config'],
-            { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-        );
-
-        return JSON.parse(printed).rules ?? {};
-    } catch {
-        return null;
-    }
-}
+const resolvedRules = (root, oxlint, configPath) =>
+    printedOxlintConfig(root, oxlint, configPath)?.rules ?? null;
 
 // oxlint's config schema is closed, so a profile cannot carry its name to `--print-config`: the
 // config's import is the only evidence. A project on no profile of ours never joined one.
-function profileOf(source) {
+function profileOf(source, profileNames) {
     const imported =
         /import\s*\{(?<names>[^}]*)\}\s*from\s*['"]@jterrazz\/typescript\/oxlint['"]/u.exec(
             source ?? '',
         );
     const named = (imported?.groups.names ?? '').split(',').map((name) => name.trim());
 
-    return named.find((name) => PROFILE_NAMES.has(name)) ?? null;
+    return named.find((name) => profileNames.has(name)) ?? null;
 }
 
 function turnedOff(profile, consumer) {
@@ -89,102 +59,104 @@ function lineNaming(source, rule) {
         );
 }
 
-const isJson = argv.includes('--json');
-const oxlintAt = argv[argv.indexOf('--oxlint') + 1];
-const oxlint = argv.includes('--oxlint') && oxlintAt !== undefined ? oxlintAt : 'oxlint';
-const handedAt = argv[argv.indexOf('-c') + 1];
-const handed = argv.includes('-c') && handedAt !== undefined ? resolve(handedAt) : null;
-const root = resolve(
-    argv.slice(2).find((argument, index) => {
-        const previous = argv[index + 1];
+const LABEL_WIDTH = Math.max(LABEL.length, labelOf(TEST_SECTION).length) + 2;
 
-        return (
-            !argument.startsWith('-') &&
-            previous !== '--oxlint' &&
-            previous !== '--ignore-pattern' &&
-            previous !== '--profiles' &&
-            previous !== '-c'
-        );
-    }) ?? '.',
-);
+const row = (label, value) => `  ${label.padEnd(LABEL_WIDTH)}${value}`;
 
-// The same list `tool-configs.sh` hands oxlint.
-const configName = CONFIGS.find((name) => existsSync(join(root, name)));
-const source = configName === undefined ? null : readFileSync(join(root, configName), 'utf8');
-
-const handedName = handed === null ? null : basename(handed, '.js');
-const defaultProfile =
-    configName === undefined &&
-    handed !== null &&
-    dirname(handed) === PROFILES_AT &&
-    PROFILE_NAMES.has(handedName)
-        ? handedName
-        : null;
-const profileName = defaultProfile ?? profileOf(source);
-
-const consumerRules = resolvedRules(root, oxlint, configName === undefined ? handed : null) ?? {};
-
-// A project on the handed default already resolved its profile.
-function profileRulesOf() {
-    if (profileName === null) {
-        return {};
-    }
-    if (defaultProfile !== null) {
-        return consumerRules;
-    }
-
-    return resolvedRules(root, oxlint, join(PROFILES_AT, `${profileName}.js`)) ?? {};
+function toolsLine(behind) {
+    return behind.length === 0
+        ? 'in range'
+        : behind
+              .map(({ installed, name, verdict }) =>
+                  installed === null ? `${name} ${verdict}` : `${name} ${installed} ${verdict}`,
+              )
+              .join(', ');
 }
 
-const profileRules = profileRulesOf();
+// Read off the compiled files: loading the manifest loads every plugin the rulebook decides.
+function profileNamesAt(context, profilesAt) {
+    return new Set(
+        profilesAt === null
+            ? []
+            : (context.list(profilesAt) ?? [])
+                  .filter((name) => name.endsWith('.js'))
+                  .map((name) => basename(name, '.js')),
+    );
+}
 
-const off = turnedOff(profileRules, consumerRules);
-const unreasoned = off.filter((rule) => {
-    const line = lineNaming(source, rule);
+function profileOfProject(context, profilesAt, profileNames) {
+    const handedAt = context.value('-c');
+    const handed = handedAt === undefined ? null : resolve(handedAt);
+    // The same list `tool-configs.sh` hands oxlint.
+    const configName = CONFIGS.find((name) => context.exists(join(context.root, name)));
+    const source = configName === undefined ? null : context.read(join(context.root, configName));
+    const handedName = handed === null ? null : basename(handed, '.js');
+    const defaultProfile =
+        configName === undefined &&
+        handed !== null &&
+        dirname(handed) === profilesAt &&
+        profileNames.has(handedName)
+            ? handedName
+            : null;
 
-    return line === undefined || !REASON.test(line);
-});
+    return {
+        configName,
+        consumerConfig: configName === undefined ? handed : null,
+        defaultProfile,
+        profileName: defaultProfile ?? profileOf(source, profileNames),
+        source,
+    };
+}
+
+function offOf(context, project, profilesAt) {
+    const { root } = context;
+    const oxlint = context.value('--oxlint', 'oxlint');
+    const consumerRules = resolvedRules(root, oxlint, project.consumerConfig) ?? {};
+    // A project on the handed default already resolved its profile.
+    const profileRules =
+        project.profileName === null
+            ? {}
+            : project.defaultProfile === null
+              ? (resolvedRules(root, oxlint, join(profilesAt, `${project.profileName}.js`)) ?? {})
+              : consumerRules;
+    const off = turnedOff(profileRules, consumerRules);
+    const unreasoned = off.filter((rule) => {
+        const line = lineNaming(project.source, rule);
+
+        return line === undefined || !REASON.test(line);
+    });
+
+    return { off, unreasoned };
+}
+
+const sum = (recorded) => Object.values(recorded).reduce((total, count) => total + count, 0);
 
 // A file the Oxlint pass refuses as `baseline-unreadable` holds no count either row may claim.
-const isUnreadable = readRatchet(root).problem !== null;
+function baselineReader(root) {
+    const isUnreadable = readRatchet(root).problem !== null;
 
-function totalOf(section) {
-    if (isUnreadable) {
-        return 'unreadable';
-    }
-    const recorded = readBaseline(root, section);
+    return {
+        // `nothing held` is the Oxlint pass's own words.
+        heldOf: (section) => {
+            if (isUnreadable) {
+                return 'unreadable';
+            }
+            const recorded = readBaseline(root, section) ?? {};
 
-    return recorded === null
-        ? null
-        : Object.values(recorded).reduce((sum, count) => sum + count, 0);
+            return Object.keys(recorded).length === 0 ? 'nothing held' : sum(recorded);
+        },
+        totalOf: (section) => {
+            if (isUnreadable) {
+                return 'unreadable';
+            }
+            const recorded = readBaseline(root, section);
+
+            return recorded === null ? null : sum(recorded);
+        },
+    };
 }
 
-const baselineTotal = totalOf();
-const testBaselineTotal = totalOf(TEST_SECTION);
-const suppressions = orRefused(() => countSuppressions(root, ignorePatternsOf(argv)));
-const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
-
-if (isJson) {
-    stdout.write(
-        `${JSON.stringify(
-            {
-                baseline: baselineTotal,
-                config: configName === undefined ? 'default' : 'own',
-                profile: profileName,
-                rulesOff: off,
-                suppressions,
-                testBaseline: testBaselineTotal,
-                tools: behind,
-                unreasoned,
-            },
-            null,
-            2,
-        )}\n`,
-    );
-    exit(unreasoned.length > 0 ? 1 : 0);
-}
-
-function rulesOffLine() {
+function rulesOffOf(profileName, off) {
     if (profileName === null) {
         return 'not measured';
     }
@@ -192,55 +164,57 @@ function rulesOffLine() {
     return off.length === 0 ? 'none' : `${off.length} (${off.join(', ')})`;
 }
 
-// `nothing held` is the Oxlint pass's own words.
-function heldOf(section) {
-    if (isUnreadable) {
-        return 'unreadable';
-    }
-    const recorded = readBaseline(root, section) ?? {};
+function rowsOf(root, { behind, findings, off, project, suppressions }) {
+    const { heldOf } = baselineReader(root);
 
-    return Object.keys(recorded).length === 0
-        ? 'nothing held'
-        : Object.values(recorded).reduce((sum, count) => sum + count, 0);
+    return [
+        row(
+            'profile',
+            project.defaultProfile === null
+                ? (project.profileName ?? "none of this package's")
+                : `${project.defaultProfile} (the default — no config of its own)`,
+        ),
+        row('rules off vs profile', rulesOffOf(project.profileName, off)),
+        row('suppressions', suppressions),
+        row(LABEL, heldOf(SECTION)),
+        ...(readBaseline(root, TEST_SECTION) === null
+            ? []
+            : [row(labelOf(TEST_SECTION), heldOf(TEST_SECTION))]),
+        row('tool versions', toolsLine(behind)),
+        ...(findings.length > 0 ? [''] : []),
+    ];
 }
 
-const LABEL_WIDTH = Math.max(LABEL.length, labelOf(TEST_SECTION).length) + 2;
+export const drift = Object.freeze({
+    check(context) {
+        const { root } = context;
+        const profilesFlag = context.value('--profiles');
+        const profilesAt = profilesFlag === undefined ? null : resolve(profilesFlag);
+        const project = profileOfProject(context, profilesAt, profileNamesAt(context, profilesAt));
+        const { off, unreasoned } = offOf(context, project, profilesAt);
+        const { totalOf } = baselineReader(root);
+        const suppressions = orRefused(() => countSuppressions(root, context.ignorePatterns));
+        const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
+        const findings = unreasoned.map((rule) => ({
+            message: `${rule} is off and the line that turns it off carries no '// reason:'`,
+            path: project.configName ?? 'oxlint.config',
+            rule: 'drift/off-rule-states-its-reason',
+        }));
 
-function row(label, value) {
-    return `  ${label.padEnd(LABEL_WIDTH)}${value}\n`;
-}
-
-stdout.write(
-    row(
-        'profile',
-        defaultProfile === null
-            ? (profileName ?? "none of this package's")
-            : `${defaultProfile} (the default — no config of its own)`,
-    ),
-);
-stdout.write(row('rules off vs profile', rulesOffLine()));
-stdout.write(row('suppressions', suppressions));
-stdout.write(row(LABEL, heldOf(SECTION)));
-if (readBaseline(root, TEST_SECTION) !== null) {
-    stdout.write(row(labelOf(TEST_SECTION), heldOf(TEST_SECTION)));
-}
-stdout.write(
-    row(
-        'tool versions',
-        behind.length === 0
-            ? 'in range'
-            : behind
-                  .map(({ installed, name, verdict }) =>
-                      installed === null ? `${name} ${verdict}` : `${name} ${installed} ${verdict}`,
-                  )
-                  .join(', '),
-    ),
-);
-
-for (const rule of unreasoned) {
-    stdout.write(
-        `\ndrift/off-rule-states-its-reason  ${configName ?? 'oxlint.config'}  ${rule} is off and the line that turns it off carries no '// reason:'\n`,
-    );
-}
-
-exit(unreasoned.length > 0 ? 1 : 0);
+        return {
+            findings,
+            json: {
+                baseline: totalOf(),
+                config: project.configName === undefined ? 'default' : 'own',
+                profile: project.profileName,
+                rulesOff: off,
+                suppressions,
+                testBaseline: totalOf(TEST_SECTION),
+                tools: behind,
+                unreasoned,
+            },
+            lines: rowsOf(root, { behind, findings, off, project, suppressions }),
+        };
+    },
+    valued: ['--oxlint', '-c', '--profiles'],
+});
