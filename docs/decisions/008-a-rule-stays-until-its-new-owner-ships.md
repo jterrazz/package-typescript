@@ -7,8 +7,8 @@ Written at decision time, while building the 10.2 asks.
 
 ## Context
 
-ADR-002 settles who owns a convention an upstream rule already enforces: the
-rule. The estate's test framework, `@jterrazz/test`, is growing a lint
+`@jterrazz/test`'s [ADR-002](https://github.com/jterrazz/package-test/blob/main/docs/decisions/002-the-statique-channel-holds-only-what-upstream-does-not.md)
+settles who owns a convention an upstream rule already enforces: the rule. The estate's test framework, `@jterrazz/test`, is growing a lint
 fragment of its own — `testing` — that will set options on three vitest rules
 this rulebook currently arms without options:
 
