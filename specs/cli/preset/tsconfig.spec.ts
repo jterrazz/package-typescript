@@ -3,8 +3,8 @@ import { cpSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { temporaryDirectory } from '../temporary-directory.js';
-import { installTsconfigPresets } from './rulebook.js';
+import { temporaryDirectory } from '../_setup/temporary-directory.js';
+import { installTsconfigPresets } from './_setup/rulebook.js';
 
 // Relative globs in an extended config resolve against the preset file: `${configDir}` is the only form
 // that means the extending project.
@@ -27,7 +27,7 @@ type ResolvedConfig = {
 function consumer(ground: string, preset: string): string {
     const created = temporaryDirectory(`spec-tsconfig-${preset}-`);
     const dir = realpathSync(created);
-    cpSync(resolve(import.meta.dirname, 'fixtures', ground), dir, { recursive: true });
+    cpSync(resolve(import.meta.dirname, '_fixtures', ground), dir, { recursive: true });
     installTsconfigPresets(dir);
     symlinkSync(resolve(ROOT, 'node_modules/@types'), join(dir, 'node_modules/@types'), 'dir');
     writeFileSync(
@@ -122,10 +122,10 @@ describe('tsconfig', () => {
                 'node_modules',
                 'dist',
                 '.artifacts',
-                '**/fixtures',
-                '**/expected',
-                '**/seeds',
-                '**/requests',
+                '**/_fixtures',
+                '**/_expected',
+                '**/_seeds',
+                '**/_requests',
             ]),
         );
     });

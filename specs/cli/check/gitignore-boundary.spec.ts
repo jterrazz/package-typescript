@@ -3,8 +3,8 @@ import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
-import { temporaryDirectory } from '../temporary-directory.js';
+import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
+import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // `.git` is the one path a fixture cannot carry: git does not track it.
 

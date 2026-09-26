@@ -4,8 +4,8 @@ import { join, resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
 import manifest from '../../../package.json' with { type: 'json' };
-import { newDirectory, temporaryDirectory } from '../temporary-directory.js';
-import { toolchainWith } from '../toolchain-sandbox.js';
+import { newDirectory, temporaryDirectory } from '../_setup/temporary-directory.js';
+import { toolchainWith } from '../_setup/toolchain-sandbox.js';
 
 // A config naming `@jterrazz/typescript/oxlint` must resolve it, and the spec runner copies rather than
 // installs: the project is built with the link npm would have made.

@@ -4,8 +4,8 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { beforeAll, describe, expect, test } from 'vitest';
 
+import { temporaryDirectory } from '../_setup/temporary-directory.js';
 import { cli as oxfmtCli } from '../oxfmt.specification.js';
-import { temporaryDirectory } from '../temporary-directory.js';
 
 // Each probe targets one style decision the preset makes, never oxfmt's overall output.
 const CONFIG_PATH = resolve(import.meta.dirname, '../../../src/presets/oxfmt/index.js');
@@ -70,10 +70,10 @@ describe('formatter', () => {
             '.next',
             '.expo',
             'dist',
-            'fixtures',
-            'expected',
-            'seeds',
-            'requests',
+            '_fixtures',
+            '_expected',
+            '_seeds',
+            '_requests',
         ]) {
             expect(result.stdout).not.toContain(`${tree}/app.ts`);
         }

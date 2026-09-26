@@ -4,9 +4,9 @@ import { cpSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../check-passes.js';
+import { onlyPasses } from '../_setup/check-passes.js';
+import { temporaryDirectory } from '../_setup/temporary-directory.js';
 import { cli } from '../cli.specification.js';
-import { temporaryDirectory } from '../temporary-directory.js';
 
 // The oracle is oxlint's own report over a copy of the same ground in the same environment.
 

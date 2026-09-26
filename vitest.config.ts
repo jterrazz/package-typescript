@@ -21,7 +21,9 @@ export default defineSpecConfig({
             ),
             mergeConfig(cli({ timeout: TOOLCHAIN_BUDGET_MS }), {
                 test: {
-                    globalSetup: [resolve(import.meta.dirname, 'specs/cli/run-temp-root.ts')],
+                    globalSetup: [
+                        resolve(import.meta.dirname, 'specs/cli/_setup/run-temp-root.ts'),
+                    ],
                 },
             }),
         ],

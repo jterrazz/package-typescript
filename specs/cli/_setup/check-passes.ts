@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-export const SELECTING_BIN = resolve(import.meta.dirname, 'check-selection.sh');
+export const SELECTING_BIN = resolve(import.meta.dirname, '../check-selection.sh');
 
 type Pass =
     | 'architecture'

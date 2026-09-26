@@ -3,8 +3,8 @@ import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
-import { temporaryDirectory } from '../temporary-directory.js';
+import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
+import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // `node_modules` is gitignored at this repository's root, so every install the walk resolves is built here.
 // The stubs exit 1 unless a case asks otherwise: a passing pass prints nothing, which would leave the claim unmade.

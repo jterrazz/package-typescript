@@ -5,7 +5,7 @@ import { temporaryDirectory } from './temporary-directory.js';
 
 // A copy, not a link: Node resolves a symlinked script back to the checkout it points at.
 
-const REPOSITORY = resolve(import.meta.dirname, '../..');
+const REPOSITORY = resolve(import.meta.dirname, '../../..');
 
 // A version writes a manifest claiming it; `null` leaves the tool out.
 export function toolchainWith(tools: Record<string, null | string>): string {

@@ -3,8 +3,8 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses, passOf, SELECTING_BIN } from '../check-passes.js';
-import { temporaryDirectory } from '../temporary-directory.js';
+import { onlyPasses, passOf, SELECTING_BIN } from '../_setup/check-passes.js';
+import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // The runner copies files rather than initialising a repository, so a fixture cannot say what git ignores.
 
@@ -27,7 +27,7 @@ function projectWith({
     writeFileSync(join(project, '.gitignore'), 'local/\n');
     mkdirSync(join(project, 'src'));
     writeFileSync(join(project, 'src/index.ts'), trackedSource);
-    mkdirSync(join(project, 'specs/fixtures'), { recursive: true });
+    mkdirSync(join(project, 'specs/_fixtures'), { recursive: true });
     writeFileSync(join(project, 'specs/_fixtures/broken.ts'), MISFORMATTED);
     mkdirSync(join(project, 'local'));
     writeFileSync(join(project, 'local/scratch.ts'), MISFORMATTED);

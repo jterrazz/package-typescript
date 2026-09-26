@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url';
 
 // Packed beside this checkout's install so its imports resolve, and removed when the process ends.
 
-const ROOT = resolve(import.meta.dirname, '../../..');
+const ROOT = resolve(import.meta.dirname, '../../../..');
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;

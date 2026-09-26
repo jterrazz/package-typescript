@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { diagnosticsOf, oxlint, sandbox } from './rulebook.js';
+import { diagnosticsOf, oxlint, sandbox } from './_setup/rulebook.js';
 
 // `export {}` is what makes a `declare module` file an augmentation rather than an ambient redeclaration.
 

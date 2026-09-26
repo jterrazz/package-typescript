@@ -1,5 +1,5 @@
 description: emits the ESM artifact set
-fixture: ../../_shared/_fixtures/sample-app/
+fixture: ../_fixtures/sample-app/
 runs:
     - command: build
       exit: 0

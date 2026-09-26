@@ -3,8 +3,8 @@ import { cpSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
-import { temporaryDirectory } from '../temporary-directory.js';
+import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
+import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // A document's `run` has no per-run `cwd`, and `fixture:` cannot place an ancestor `.gitignore` above the working directory.
 

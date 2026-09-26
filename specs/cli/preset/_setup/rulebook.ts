@@ -2,13 +2,13 @@ import { execFileSync } from 'node:child_process';
 import { cpSync, mkdirSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { newDirectory } from '../temporary-directory.js';
+import { newDirectory } from '../../_setup/temporary-directory.js';
 
 // oxlint 1.83 hazards: `--type-aware` walks up for `node_modules/.bin/tsgolint`, or every type-aware rule
 // silently skips; and a symlinked `node_modules` under `oxlint --fix .` rewrites the real dependency tree —
 // so the sandbox links two entries and every run names its files.
 
-const REPOSITORY = resolve(import.meta.dirname, '../../..');
+const REPOSITORY = resolve(import.meta.dirname, '../../../..');
 const OXLINT = resolve(REPOSITORY, 'node_modules/.bin/oxlint');
 const OXFMT = resolve(REPOSITORY, 'node_modules/.bin/oxfmt');
 
@@ -40,7 +40,7 @@ export function installTsconfigPresets(project: string): void {
         },
     );
     cpSync(
-        resolve(import.meta.dirname, '_fixtures/astro-package'),
+        resolve(import.meta.dirname, '../_fixtures/astro-package'),
         resolve(project, 'node_modules/astro'),
         {
             recursive: true,

@@ -1,7 +1,7 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../check-passes.js';
+import { onlyPasses } from '../_setup/check-passes.js';
 import { cli } from '../cli.specification.js';
 
 // A nested config naming `options` is refused wherever oxlint walks this repository, so a case needing a

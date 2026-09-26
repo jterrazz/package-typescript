@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { diagnosticsOf, oxfmt, oxlint, PROFILES, sandbox } from './rulebook.js';
+import { diagnosticsOf, oxfmt, oxlint, PROFILES, sandbox } from './_setup/rulebook.js';
 
 // Two rounds of `oxlint --fix` then `oxfmt` must land on the same bytes over shapes the two tools both rewrite.
 

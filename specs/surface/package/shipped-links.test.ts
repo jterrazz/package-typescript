@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, normalize, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { packedFiles, packedTree } from './packed-tree.js';
+import { packedFiles, packedTree } from './_setup/packed-tree.js';
 
 // A relative link to a page kept home is dead in `node_modules`. `docs/README.md` is the exception: the Docs
 // (layout) pass holds it to a relative row for every chapter.

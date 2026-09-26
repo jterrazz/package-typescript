@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
 
-import { packedFiles, packedTree } from './packed-tree.js';
+import { packedFiles, packedTree } from './_setup/packed-tree.js';
 
 // The module walk sees only what an import builds; a literal audience holds whoever calls the builder, and when.
 

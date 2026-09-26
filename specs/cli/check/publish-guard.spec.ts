@@ -4,8 +4,8 @@ import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses, passOf, SELECTING_BIN } from '../check-passes.js';
-import { temporaryDirectory } from '../temporary-directory.js';
+import { onlyPasses, passOf, SELECTING_BIN } from '../_setup/check-passes.js';
+import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // `node_modules` is gitignored, so no fixture can carry the @jterrazz/test the package resolves.
 

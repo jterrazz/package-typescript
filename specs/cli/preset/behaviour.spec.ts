@@ -10,8 +10,8 @@ import {
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { diagnosticsOf, oxlint, PROFILES, sandbox } from './rulebook.js';
-import type { Diagnostic } from './rulebook.js';
+import { diagnosticsOf, oxlint, PROFILES, sandbox } from './_setup/rulebook.js';
+import type { Diagnostic } from './_setup/rulebook.js';
 
 // One case per decision this package owns, never per upstream rule. The `_expected/` tree holds only the files
 // `--fix` rewrote, so a reasoned `off` states itself by absence. Regenerate with `TEST_UPDATE=1 npm test`.

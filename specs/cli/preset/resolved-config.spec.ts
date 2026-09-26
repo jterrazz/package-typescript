@@ -2,12 +2,12 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { printConfig, PROFILES } from './rulebook.js';
+import { printConfig, PROFILES } from './_setup/rulebook.js';
 
 // `~ ` marks a rule the base config leaves to an `overrides` block. Names only: options are the manifest's,
 // and a name list survives an upstream option reshuffle. Regenerate with `TEST_UPDATE=1 npm test`.
 
-const EXPECTED = resolve(import.meta.dirname, 'expected');
+const EXPECTED = resolve(import.meta.dirname, '_expected');
 
 const GOLDENS: Record<string, string> = {
     astro: 'astro.rules.txt',

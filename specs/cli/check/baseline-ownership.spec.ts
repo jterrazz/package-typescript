@@ -3,8 +3,8 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses, SELECTING_BIN } from '../check-passes.js';
-import { temporaryDirectory } from '../temporary-directory.js';
+import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
+import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // The stub checker lives under `node_modules/`, which git never tracks. oxlint refuses two plugins by one
 // name in one run, and @jterrazz/test's checker loads every config of this repository: the fixture cannot hold these.

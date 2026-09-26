@@ -3,7 +3,7 @@ import { chmodSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
-import { newDirectory } from '../temporary-directory.js';
+import { newDirectory } from '../_setup/temporary-directory.js';
 
 // The Astro pass runs the consumer's `astro check`, so the project carries a binary where npm would put one.
 

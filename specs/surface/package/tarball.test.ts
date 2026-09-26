@@ -4,7 +4,7 @@ import { basename, join, resolve } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
 import { fragmentsIn, walkModules } from '../../../lint/engine/testing/module-walk.js';
-import { argvFlags, checkOutcome, selectingEnvironments } from './packed-bin.js';
+import { argvFlags, checkOutcome, selectingEnvironments } from './_setup/packed-bin.js';
 import {
     isRecord,
     loadPacked,
@@ -13,7 +13,7 @@ import {
     packedTree,
     publishedBins,
     publishedTargets,
-} from './packed-tree.js';
+} from './_setup/packed-tree.js';
 
 // Judged on content, never on names: no text the tarball holds names a `self` rule, whatever file carries it.
 
