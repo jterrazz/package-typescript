@@ -1,6 +1,6 @@
 # Repo structure
 
-The shared `@jterrazz` doctrine — the corpus, the injection layers, the compiler; projections vs presentations; root-file layout — lives in `jterrazz-studio`'s [`docs/08-repo-structure.md`](https://github.com/jterrazz/jterrazz-studio/blob/main/docs/08-repo-structure.md) and the `jterrazz-repo-structure` skill it ships. This chapter does not restate it.
+The shared `@jterrazz` doctrine — the corpus, the injection layers, the compiler; projections vs presentations; root-file layout — lives in `jterrazz-studio`'s [`docs/11-repo-structure.md`](https://github.com/jterrazz/jterrazz-studio/blob/main/docs/11-repo-structure.md) and the `jterrazz-repo-structure` skill it ships. This chapter does not restate it.
 
 What is TypeScript-specific stays here: this repo is a **package**, and a package's API is its types. No reference is generated from them — the declarations a consumer's editor resolves are the one copy, and a projection of them into `docs/` would be a second.
 
