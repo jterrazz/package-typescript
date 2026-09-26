@@ -1,11 +1,11 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
-import { PROJECTIONS, tableCells } from './catalogue-freshness.js';
+import { PROJECTIONS, tableCells } from './chapter-projections.js';
 
 // The chapter's generated tables are projections of `lint/`; `TEST_UPDATE=1 npm test` regenerates them.
 
-describe('catalogue-freshness', () => {
+describe('chapter-projections', () => {
     test.each(Object.entries(PROJECTIONS))(
         'the %s carries the catalogue the manifest renders',
         (_name, { markers, page, render: project }) => {

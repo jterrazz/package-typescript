@@ -111,7 +111,7 @@ Every fragment, every pass and every refusal that ships is `consumer` today. The
 | ---------------------- | --------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `pass-selector`        | `checker` | `specs/cli/check-selection.sh`            | runs only the passes a spec asserts on, and refuses a key that names no pass                     |
 | `decision-invariants`  | `meta`    | `lint/self/corpus/decision-invariants.ts` | a decision's two invariants, over every fragment the package declares                            |
-| `catalogue-projection` | `meta`    | `lint/self/corpus/catalogue-freshness.ts` | renders the consumer entries into [Lint presets](07-lint-presets.md) and holds the chapter fresh |
+| `catalogue-projection` | `meta`    | `lint/self/corpus/chapter-projections.ts` | renders the consumer entries into [Lint presets](07-lint-presets.md) and holds the chapter fresh |
 | `audience-audit`       | `meta`    | `specs/surface/package/audience.test.ts`  | that every rule declares its audience                                                            |
 | `tarball-audit`        | `meta`    | `specs/surface/package/tarball.test.ts`   | that what npm would publish carries consumer rules alone                                         |
 | `fragment-walk`        | `meta`    | `lint/self/corpus/lint-fragments.ts`      | every fragment a module of `lint/` or `src/` holds, for the three audits above                   |
