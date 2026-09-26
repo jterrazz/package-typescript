@@ -231,7 +231,7 @@ A project with no config of its own is one scope. `check` hands the default with
 
 oxlint leaves its exit code at 0 for a warn-severity diagnostic, and a pass that passed prints no log — so `check` was silent on a tree `fix` failed, and the ratchet an adoption reaches for could not be reached through `check` at all. The check run passes `--deny-warnings`: every diagnostic the linter reports is printed and judged, whatever severity armed it.
 
-The rulebook this package ships has no warn tier — a rule is on at `error` or off with a recorded reason — but a JS plugin composed beside it may have one, and `@jterrazz/test` does: its `<family><n>w-…` redundancy heuristics ship at `warn` on purpose. A heuristic nobody is shown is a heuristic nobody answers.
+The rulebook this package ships has no warn tier — a rule is on at `error` or off with a recorded reason — but a JS plugin composed beside it may have one, and `@jterrazz/test` does: a rule its catalogue marks `severity: 'warn'` — `no-redundant-root`, for one — ships at `warn` on purpose. A heuristic nobody is shown is a heuristic nobody answers.
 
 ### The two rewriters run in order
 
