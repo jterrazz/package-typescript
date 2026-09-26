@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
-import { decisions, unsafeFixers } from '../../../lint/catalogue/decisions.js';
 import { REASON_KINDS } from '../../../lint/rulebook/decision.js';
+import { decisions, unsafeFixers } from '../../../lint/rulebook/decisions.js';
 import { PROFILES as PROFILE_TABLE } from '../../../lint/rulebook/profiles.js';
 import { printConfig, PROFILES, roster } from './rulebook.js';
 

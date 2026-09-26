@@ -3,8 +3,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, join, relative, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { decisions } from '../../../lint/catalogue/decisions.js';
 import { AUDIENCES } from '../../../lint/rulebook/decision.js';
+import { decisions } from '../../../lint/rulebook/decisions.js';
 import { PROFILES } from '../../../lint/rulebook/profiles.js';
 import { lintFragments } from '../../../lint/self/corpus/lint-fragments.js';
 

@@ -124,7 +124,7 @@ describe('tarball', () => {
         const index = await loadPacked(tree, 'src/index.js');
         const hexagonal = await loadPacked(tree, 'lint/rulebook/architecture/hexagonal.js');
         const compiler = await loadPacked(tree, 'lint/rulebook/compile.js');
-        const entries = catalogueOf(await loadPacked(tree, 'lint/catalogue/decisions.js'));
+        const entries = catalogueOf(await loadPacked(tree, 'lint/rulebook/decisions.js'));
         const bundled = isRecord(index.oxlint) ? index.oxlint : {};
 
         // Then - each rule stated, at the top or in an override, is decided so for that profile
@@ -144,7 +144,7 @@ describe('tarball', () => {
     test('the catalogue and the passes the tarball ships are consumer alone', async () => {
         // Given - the packed catalogue, and the passes the packed check selects by name
         const tree = packedTree();
-        const catalogue = await loadPacked(tree, 'lint/catalogue/decisions.js');
+        const catalogue = await loadPacked(tree, 'lint/rulebook/decisions.js');
         const script = readFileSync(join(tree, 'bin/commands/check.sh'), 'utf8');
         const passes = [...script.matchAll(/\bselected (?<pass>[a-z]+)/gu)].map((match) =>
             rows.find((row) => row.channel === 'checker' && row.id === match.groups?.pass),

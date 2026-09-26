@@ -1,4 +1,4 @@
-import { PROFILES } from '../rulebook/profiles.js';
+import { PROFILES } from './profiles.js';
 
 /**
  * @typedef {object} Entry One decision, with the profiles that carry it.

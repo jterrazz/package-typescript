@@ -7,47 +7,59 @@ const MIGRATION = '**/migration/**';
 const SOURCE = '**/src/**';
 const SHIPPED_REACH = [SELF, MIGRATION, SOURCE];
 
+const LINT_FOLDERS = ['catalogue', 'rulebook', 'rules', 'checks', 'ratchet'] as const;
+
+type LintFolder = (typeof LINT_FOLDERS)[number];
+
+function lintFolder(
+    folder: 'reading' | LintFolder,
+    reaches: readonly LintFolder[],
+    message: string,
+) {
+    return {
+        deny: [
+            ...LINT_FOLDERS.filter((other) => other !== folder && !reaches.includes(other)).map(
+                (other) => `**/${other}/**`,
+            ),
+            ...SHIPPED_REACH,
+        ],
+        files: [`lint/${folder}/**`],
+        message: `${message}, never self/, migration/ nor src/`,
+        name: `lint/${folder}`,
+    };
+}
+
 const lintDirection = layers({
     id: 'lint-direction',
     map: [
-        {
-            deny: [
-                '**/rulebook/**',
-                '**/catalogue/**',
-                '**/rules/**',
-                '**/checks/**',
-                '**/ratchet/**',
-                ...SHIPPED_REACH,
-            ],
-            files: ['lint/reading/**'],
-            message: 'lint/reading/ is the floor — it imports no other folder of lint/',
-            name: 'lint/reading',
-        },
-        {
-            deny: [
-                '**/catalogue/**',
-                '**/rules/**',
-                '**/checks/**',
-                '**/ratchet/**',
-                ...SHIPPED_REACH,
-            ],
-            files: ['lint/rulebook/**'],
-            message:
-                'lint/rulebook/ reaches reading/ alone — rules, checks and the ratchet sit above it',
-            name: 'lint/rulebook',
-        },
-        {
-            deny: ['**/rules/**', '**/checks/**', '**/ratchet/**', ...SHIPPED_REACH],
-            files: ['lint/catalogue/**'],
-            message: 'lint/catalogue/ reaches reading/ and rulebook/ alone',
-            name: 'lint/catalogue',
-        },
+        lintFolder(
+            'reading',
+            [],
+            'lint/reading/ is the floor — it imports no other folder of lint/',
+        ),
+        lintFolder(
+            'catalogue',
+            [],
+            'lint/catalogue/ reaches reading/ alone — every rule and decision reads its sentence from it',
+        ),
+        lintFolder(
+            'rulebook',
+            ['catalogue'],
+            'lint/rulebook/ reaches catalogue/ and reading/ alone',
+        ),
+        lintFolder('rules', ['catalogue'], 'lint/rules/ reaches catalogue/ and reading/ alone'),
+        lintFolder('ratchet', ['catalogue'], 'lint/ratchet/ reaches catalogue/ and reading/ alone'),
+        lintFolder(
+            'checks',
+            ['catalogue', 'ratchet'],
+            'lint/checks/ reaches catalogue/, ratchet/ and reading/ alone',
+        ),
         {
             deny: SHIPPED_REACH,
-            files: ['lint/rules/**', 'lint/checks/**', 'lint/ratchet/**', 'lint/index.*'],
+            files: ['lint/index.*'],
             message:
                 'shipped lint/ imports neither self/ (never shipped), migration/ (deleted by the next major) nor src/ (the engine)',
-            name: 'lint/shipped',
+            name: 'lint/index',
         },
         {
             deny: [SELF, SOURCE],
