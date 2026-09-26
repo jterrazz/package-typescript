@@ -1,4 +1,3 @@
-import jterrazzTypescript from '../rules/decisions.js';
 import eslint from './eslint.js';
 import astro from './frameworks/astro.js';
 import bundler from './frameworks/bundler.js';
@@ -8,6 +7,7 @@ import react from './frameworks/react.js';
 import importPlugin from './import.js';
 import jsdoc from './jsdoc.js';
 import jsxA11y from './jsx-a11y.js';
+import jterrazzTypescript from './jterrazz-typescript.js';
 import node from './node.js';
 import oxc from './oxc.js';
 import perfectionist from './perfectionist.js';
