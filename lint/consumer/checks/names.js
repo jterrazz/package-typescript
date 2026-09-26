@@ -60,12 +60,11 @@ const SKILL_FILE = /^skills\/[^/]+\/SKILL\.md$/u;
 // Below `app/`, a Next.js directory is a URL the product serves, not a name the tree chose.
 const ROUTER_ROOT = 'app';
 
-// A `_` prefix marks a row — a fixture, a golden, a template — and a row is not a subject.
-const isOfTheRow = (name) => name.startsWith('_');
+const unmarked = (name) => name.replace(/^_/u, '').toLowerCase();
 
-const isGrabBag = (name) => !isOfTheRow(name) && GRAB_BAG.has(name.toLowerCase());
+const isGrabBag = (name) => GRAB_BAG.has(unmarked(name));
 
-const isConstruct = (name) => CONSTRUCTS.has(name.replace(/^_/u, '').toLowerCase());
+const isConstruct = (name) => CONSTRUCTS.has(unmarked(name));
 
 const hasConstructSuffix = (fileName) =>
     fileName.split('.').slice(1, -1).includes(CONSTRUCT_SUFFIX);

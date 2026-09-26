@@ -33,6 +33,7 @@ runs:
            RUN  Names (tree)
 
           names/no-grab-bag-name  specs/orders/_setup/utils  `utils` names no subject — it holds whatever nobody placed
+          names/no-grab-bag-name  src/_helpers  `_helpers` names no subject — it holds whatever nobody placed
           names/no-grab-bag-name  src/common.ts  `common` names no subject — it holds whatever nobody placed
           names/no-abbreviated-word  src/gateway/repo-client.ts  `repo-client` is a word written in half — spell it whole
           names/no-grab-bag-name  src/helpers.ts  `helpers` names no subject — it holds whatever nobody placed
