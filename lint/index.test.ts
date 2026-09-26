@@ -39,13 +39,13 @@ describe('index', () => {
         // Given - two configs disagreeing on one rule
         const merged = compose(
             { rules: { curly: 'error', 'no-ternary': 'off' } },
-            { rules: { curly: 'off', 'jterrazz/b4-given-then': 'error' } },
+            { rules: { curly: 'off', 'jterrazz/given-and-then-markers-present': 'error' } },
         );
 
         // Then - the later config wins per key, others survive
         expect(merged.rules).toStrictEqual({
             curly: 'off',
-            'jterrazz/b4-given-then': 'error',
+            'jterrazz/given-and-then-markers-present': 'error',
             'no-ternary': 'off',
         });
     });
