@@ -18,15 +18,19 @@ import CONFIGS from '../reading/oxlint-config-names.json' with { type: 'json' };
 import { ignorePatternsOf, orRefused } from '../reading/project-files.js';
 import { toolVersions } from '../reading/tool-versions.js';
 
-const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
-
-const PROFILES_AT = join(PACKAGE_ROOT, 'src/presets/oxlint/profiles');
+const profilesFlag = argv.indexOf('--profiles');
+const PROFILES_AT =
+    profilesFlag === -1 || argv[profilesFlag + 1] === undefined
+        ? null
+        : resolve(argv[profilesFlag + 1]);
 
 // Read off the compiled files: loading the manifest loads every plugin the rulebook decides.
 const PROFILE_NAMES = new Set(
-    readdirSync(PROFILES_AT)
-        .filter((name) => name.endsWith('.js'))
-        .map((name) => basename(name, '.js')),
+    PROFILES_AT === null
+        ? []
+        : readdirSync(PROFILES_AT)
+              .filter((name) => name.endsWith('.js'))
+              .map((name) => basename(name, '.js')),
 );
 
 const REASON = /\/\/\s*reason:/iu;
@@ -98,6 +102,7 @@ const root = resolve(
             !argument.startsWith('-') &&
             previous !== '--oxlint' &&
             previous !== '--ignore-pattern' &&
+            previous !== '--profiles' &&
             previous !== '-c'
         );
     }) ?? '.',

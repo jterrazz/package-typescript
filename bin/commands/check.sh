@@ -785,6 +785,7 @@ run_checks() {
     if [ "$FIX_MODE" = false ] && selected drift; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} DRIFT ${NC} Deviations from the profile\n\n"
         node "$PACKAGE_ROOT/lint/checks/drift.js" . --oxlint "$OXLINT" "${OXLINT_CONFIG_ARGS[@]}" \
+            --profiles "$PACKAGE_ROOT/src/presets/oxlint/profiles" \
             "${LINT_ARGS[@]}" "${DRIFT_ARGS[@]}"
         drift_status=$?
     fi

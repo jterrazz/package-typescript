@@ -8,7 +8,8 @@ const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 
 const DRIFT = resolve(import.meta.dirname, 'drift.js');
 const OXLINT = join(PACKAGE_ROOT, 'node_modules/.bin/oxlint');
-const DEFAULT_PROFILE = join(PACKAGE_ROOT, 'src/presets/oxlint/profiles/node.js');
+const PROFILES = join(PACKAGE_ROOT, 'src/presets/oxlint/profiles');
+const DEFAULT_PROFILE = join(PROFILES, 'node.js');
 
 function configlessProject(files: Record<string, string> = {}): string {
     const directory = mkdtempSync(resolve(tmpdir(), 'check-drift-'));
@@ -31,7 +32,16 @@ describe('drift', () => {
     test('reads a baseline file that is not JSON as unreadable, for a person and a machine', () => {
         // Given - a configless project whose jterrazz.baseline.json does not parse
         const directory = configlessProject({ 'jterrazz.baseline.json': '{ not json\n' });
-        const args = [DRIFT, directory, '--oxlint', OXLINT, '-c', DEFAULT_PROFILE];
+        const args = [
+            DRIFT,
+            directory,
+            '--oxlint',
+            OXLINT,
+            '-c',
+            DEFAULT_PROFILE,
+            '--profiles',
+            PROFILES,
+        ];
 
         // When - the drift report reads it, then reads it for a machine
         const human = spawnSync('node', args, { encoding: 'utf8' });
@@ -53,7 +63,7 @@ describe('drift', () => {
         // When - the drift report reads it for a person
         const human = spawnSync(
             'node',
-            [DRIFT, directory, '--oxlint', OXLINT, '-c', DEFAULT_PROFILE],
+            [DRIFT, directory, '--oxlint', OXLINT, '-c', DEFAULT_PROFILE, '--profiles', PROFILES],
             {
                 encoding: 'utf8',
             },
@@ -71,7 +81,17 @@ describe('drift', () => {
         // When - the drift report reads it for a machine
         const machine = spawnSync(
             'node',
-            [DRIFT, directory, '--oxlint', OXLINT, '-c', DEFAULT_PROFILE, '--json'],
+            [
+                DRIFT,
+                directory,
+                '--oxlint',
+                OXLINT,
+                '-c',
+                DEFAULT_PROFILE,
+                '--profiles',
+                PROFILES,
+                '--json',
+            ],
             { encoding: 'utf8' },
         );
 
@@ -94,7 +114,7 @@ describe('drift', () => {
         // When - the drift report measures it against the handed default
         const result = spawnSync(
             'node',
-            [DRIFT, directory, '--oxlint', counting, '-c', DEFAULT_PROFILE],
+            [DRIFT, directory, '--oxlint', counting, '-c', DEFAULT_PROFILE, '--profiles', PROFILES],
             {
                 encoding: 'utf8',
             },
