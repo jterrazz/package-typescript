@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { afterAll } from 'vitest';
 
 // Not a third-party binary, so `cli-runs-the-product-binary` does not apply: an install tree no fixture can reproduce.
-const BIN = resolve(import.meta.dirname, 'run-split-install.sh');
+const BIN = resolve(import.meta.dirname, '_setup/run-split-install.sh');
 
 export const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 

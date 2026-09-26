@@ -1,7 +1,7 @@
 #!/bin/bash
 # The published package holds no copy of this selector. It replaces check.sh's `selected` and its own-directory
 # line when TYPESCRIPT_CHECK_PASSES names passes; a pass another reads still runs, unreported.
-ROOT="$(cd -P "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT="$(cd -P "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 BIN="$ROOT/bin/typescript.sh"
 CHECK="$ROOT/bin/commands/check.sh"
 SELECTED_PASSES="${TYPESCRIPT_CHECK_PASSES:-}"

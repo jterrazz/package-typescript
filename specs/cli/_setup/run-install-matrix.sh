@@ -2,7 +2,7 @@
 # A consumer's node_modules holds only what its manifest declares, as under pnpm: a config reaching further fails here.
 set -e
 
-PACKAGE_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+PACKAGE_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 CONSUMERS="$PACKAGE_ROOT/specs/cli/preset/_fixtures/install-matrix"
 ASTRO_PACKAGE="$PACKAGE_ROOT/specs/cli/preset/_fixtures/astro-package"
 

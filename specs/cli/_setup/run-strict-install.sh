@@ -3,7 +3,7 @@
 
 set -e
 
-PACKAGE_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+PACKAGE_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 
 SANDBOX=$(mktemp -d "${TMPDIR:-/tmp}/strict-install-XXXXXX")
 trap 'rm -rf "$SANDBOX"' EXIT
