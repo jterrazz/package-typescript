@@ -10,8 +10,6 @@ import { ignorePatternsOf, orRefused, projectFiles, readText } from '../reading/
 
 const REASON = ' -- ';
 
-const commentsOf = (line, spans) => spans.map(([start, end]) => line.slice(start, end));
-
 function rulesOf(tail) {
     const named = tail.split(REASON)[0] ?? '';
 
@@ -254,29 +252,6 @@ function auditSource(root, path, configOf) {
     const rewritten = kept.join('\n');
 
     return { rewritten: rewritten === text ? null : rewritten, violations };
-}
-
-// The shapes that count as a directive live here, so the drift report counts through this file.
-export function countSuppressions(root, ignorePatterns = []) {
-    let found = 0;
-
-    for (const path of projectFiles(root, { ignorePatterns }).filter((file) => SOURCE.test(file))) {
-        const text = readText(root, path);
-        if (text === null) {
-            continue;
-        }
-        const spans = commentSpansOf(text);
-        for (const [index, line] of text.split('\n').entries()) {
-            for (const comment of commentsOf(line, spans[index] ?? [])) {
-                found +=
-                    [...comment.matchAll(DISABLE)].length +
-                    [...comment.matchAll(TS_DIRECTIVE)].length +
-                    (BIOME.test(comment) ? 1 : 0);
-            }
-        }
-    }
-
-    return found;
 }
 
 if (import.meta.main) {

@@ -13,10 +13,10 @@ import {
     SECTION,
     TEST_SECTION,
 } from '../ratchet/baseline.js';
+import { countSuppressions } from '../reading/comments.js';
 import CONFIGS from '../reading/oxlint-config-names.json' with { type: 'json' };
 import { ignorePatternsOf, orRefused } from '../reading/project-files.js';
 import { toolVersions } from '../reading/tool-versions.js';
-import { countSuppressions } from './suppressions.js';
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 

@@ -6,14 +6,8 @@ import { dirname, join, matchesGlob, relative, resolve } from 'node:path';
 import { argv, cwd, exit, stdout } from 'node:process';
 import { stripVTControlCharacters } from 'node:util';
 
-import {
-    buildOf,
-    builtChunks,
-    isPacked,
-    testMaterialFindings,
-    testMaterialReader,
-    withoutDotSlash,
-} from './test-material.js';
+import { buildOf, builtChunks, isPacked, withoutDotSlash } from '../reading/built-chunks.js';
+import { testMaterialFindings, testMaterialReader } from './publish.material.js';
 
 function targetsOf(exports) {
     if (typeof exports === 'string') {

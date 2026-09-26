@@ -1,3 +1,5 @@
+import { projectFiles, readText } from './project-files.js';
+
 export const SOURCE = /\.(?:astro|[cm]?[jt]sx?|svelte|vue)$/u;
 
 // A checker reads a directive only at the opening of a comment; prose about one is not one.
@@ -126,3 +128,27 @@ export function commentSpansOf(text) {
 
 export const isDirective = (comment) =>
     comment.search(DISABLE) !== -1 || comment.search(TS_DIRECTIVE) !== -1 || BIOME.test(comment);
+
+const commentsOf = (line, spans) => spans.map(([start, end]) => line.slice(start, end));
+
+export function countSuppressions(root, ignorePatterns = []) {
+    let found = 0;
+
+    for (const path of projectFiles(root, { ignorePatterns }).filter((file) => SOURCE.test(file))) {
+        const text = readText(root, path);
+        if (text === null) {
+            continue;
+        }
+        const spans = commentSpansOf(text);
+        for (const [index, line] of text.split('\n').entries()) {
+            for (const comment of commentsOf(line, spans[index] ?? [])) {
+                found +=
+                    [...comment.matchAll(DISABLE)].length +
+                    [...comment.matchAll(TS_DIRECTIVE)].length +
+                    (BIOME.test(comment) ? 1 : 0);
+            }
+        }
+    }
+
+    return found;
+}
