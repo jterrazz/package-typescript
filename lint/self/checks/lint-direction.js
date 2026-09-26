@@ -6,8 +6,16 @@ const ENGINE = '**/engine/**';
 const CONSUMER = '**/consumer/**';
 
 const READS = {
-    consumer: { allow: [ENGINE], deny: [SELF], reaches: 'catalogue/ and engine/ alone' },
-    self: { allow: [ENGINE, CONSUMER], deny: [], reaches: 'catalogue/, consumer/ and engine/' },
+    consumer: {
+        allow: [ENGINE],
+        deny: [SELF, SOURCE],
+        reaches: 'catalogue/ and engine/ alone, never src/',
+    },
+    self: {
+        allow: [ENGINE, CONSUMER],
+        deny: [],
+        reaches: 'catalogue/, consumer/, engine/ and src/ — never shipped, it judges the product',
+    },
 };
 
 function audienceFolder(audience, folder) {
@@ -21,11 +29,10 @@ function audienceFolder(audience, folder) {
         allow: isCatalogue ? [ENGINE] : reads.allow,
         deny: [
             ...siblings.map((other) => `**/${other}/**`),
-            ...(isCatalogue ? [CONSUMER, SELF] : reads.deny),
-            SOURCE,
+            ...(isCatalogue ? [CONSUMER, SELF, SOURCE] : reads.deny),
         ].filter((glob) => glob !== `**/${audience}/**`),
         files: [`lint/${audience}/${folder}/**`],
-        message: `lint/${audience}/${folder}/ reaches ${isCatalogue ? 'engine/ alone — it is data at the bottom of the arrow' : reads.reaches}, never src/`,
+        message: `lint/${audience}/${folder}/ reaches ${isCatalogue ? 'engine/ alone — it is data at the bottom of the arrow' : reads.reaches}`,
         name: `lint/${audience}/${folder}`,
     };
 }
@@ -48,12 +55,6 @@ export const LINT_DIRECTION = {
             message:
                 'the shipped entry imports neither self/ (never shipped) nor src/ (the command)',
             name: 'lint/index',
-        },
-        {
-            deny: [SOURCE],
-            files: ['lint/self/index.*'],
-            message: 'lint/self/ holds this repository to account through lint/, never src/',
-            name: 'lint/self/index',
         },
         {
             deny: [SELF],
