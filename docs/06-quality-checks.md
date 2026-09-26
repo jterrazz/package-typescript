@@ -98,30 +98,34 @@ Nothing else gates it. A repository with **no** `docs/` at all is not exempt; it
 
 The spine itself is language-agnostic doctrine, and it is [`jterrazz-studio`'s](https://github.com/jterrazz/jterrazz-studio/blob/main/docs/08-repo-structure.md): the four fixed names, the subfolders, the water line between a repository's manual and its brand's wiki. What this chapter owns is the rule ids and what each one refuses. The sentence a rule prints is not here — it lives in the engine, so a page and a gate cannot drift.
 
-| Rule                                           | Refuses                                                                    |
-| ---------------------------------------------- | -------------------------------------------------------------------------- |
-| `docs/manual-present`                          | no `docs/` at the repository root                                          |
-| `docs/map-present`                             | a `docs/` with no `README.md`                                              |
-| `docs/map-matches-chapters`                    | a map and a chapter list that are not bijective                            |
-| `docs/map-links-only-chapters`                 | a map link to anything but a chapter or `decisions/`                       |
-| `docs/chapter-named-nn-kebab`                  | a chapter that is not `NN-kebab.md`                                        |
-| `docs/chapters-numbered-contiguously`          | numbers that skip (04 aside), or one number on two files                   |
-| `docs/spine-number-reserved`                   | a chapter sitting on a reserved number under another name                  |
-| `docs/spine-chapters-present`                  | an absent `01-architecture.md`, `02-developing.md` or `03-testing.md`      |
-| `docs/operating-chapter-present-when-shipping` | an absent `04-operating.md` when the presence test below fires             |
-| `docs/chapter-names-a-subject`                 | a chapter named for the state of a piece of work, not for a subject        |
-| `docs/no-unknown-subfolder`                    | a subfolder of `docs/` other than `decisions/` and `_assets/`              |
-| `docs/no-generated-reference`                  | a `docs/reference/` — a generated API reference is a copy of the types     |
-| `docs/no-loose-file`                           | a file directly under `docs/` that is neither the map nor a chapter        |
-| `docs/decision-named-nnn-kebab`                | a record in `decisions/` that is not `NNN-kebab.md`                        |
-| `docs/decision-heading-carries-its-number`     | a record opening on anything but `# ADR-NNN: Title`, or on another number  |
-| `docs/decision-status-known`                   | a `**Status:**` that is absent or outside the closed vocabulary            |
-| `docs/decisions-numbered-contiguously`         | a `decisions/` folder whose numbers skip, or start above 001               |
-| `docs/decision-number-unique`                  | one ADR number claimed by two records                                      |
-| `docs/decision-listed-in-the-map`              | a hand-written `decisions/README.md` — an index is a copy                  |
-| `docs/decision-template-present`               | a `decisions/` with no `_template.md` beside the records                   |
-| `docs/agents-route-to-the-map`                 | a repository whose root `AGENTS.md` is absent or does not route to the map |
-| `docs/no-cross-repository-link`                | a link from `docs/` reaching into another repository's tree                |
+<!-- GENERATED:findings docs -->
+
+| Rule                                           | Requirement                                                                  |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| `docs/manual-present`                          | Every repository carries a docs/ manual.                                     |
+| `docs/agents-route-to-the-map`                 | The root AGENTS.md routes to the manual's map.                               |
+| `docs/map-present`                             | The manual opens on its map, docs/README.md.                                 |
+| `docs/map-matches-chapters`                    | The map links every chapter, and only the chapters there are.                |
+| `docs/map-links-only-chapters`                 | The map links nothing but chapters and decisions/.                           |
+| `docs/chapter-named-nn-kebab`                  | A chapter is named NN-kebab.md.                                              |
+| `docs/chapters-numbered-contiguously`          | Chapters are numbered without a gap, one number per file.                    |
+| `docs/spine-number-reserved`                   | A reserved spine number holds its spine chapter alone.                       |
+| `docs/spine-chapters-present`                  | The architecture, developing and testing chapters are present.               |
+| `docs/operating-chapter-present-when-shipping` | A repository that ships an image or a package carries its operating chapter. |
+| `docs/chapter-names-a-subject`                 | A chapter is named for a subject, never for the state of a piece of work.    |
+| `docs/no-loose-file`                           | Every file directly under docs/ is the map or a chapter.                     |
+| `docs/no-unknown-subfolder`                    | The manual holds no subfolder but decisions/ and _assets/.                   |
+| `docs/no-generated-reference`                  | The manual holds no generated API reference.                                 |
+| `docs/no-cross-repository-link`                | No link of the manual reaches into another repository's tree.                |
+| `docs/decision-named-nnn-kebab`                | A decision record is named NNN-kebab.md.                                     |
+| `docs/decision-heading-carries-its-number`     | A decision record opens on # ADR-NNN: Title, with its own number.            |
+| `docs/decision-number-unique`                  | One ADR number belongs to one record.                                        |
+| `docs/decisions-numbered-contiguously`         | Decision records are numbered from 001 without a gap.                        |
+| `docs/decision-status-known`                   | A decision record states a status from the closed vocabulary.                |
+| `docs/decision-listed-in-the-map`              | The decisions folder keeps no hand-written index; the map lists the records. |
+| `docs/decision-template-present`               | The decisions folder carries its _template.md.                               |
+
+<!-- /GENERATED:findings docs -->
 
 Three things about the roster are decisions, not details:
 
@@ -293,12 +297,16 @@ Every mistake this pass refuses is invisible in the repository and fatal in the 
 
 It runs once per package the registry would accept — one that names an entry (`exports`, `main`) or a `publishConfig` and never says it is `private`. A private package, and a workspace root that only holds members, have no tarball to be judged on.
 
-| Rule                                 | Refuses                                                    |
-| ------------------------------------ | ---------------------------------------------------------- |
-| `publish/export-target-exists`       | an `exports`, `main` or `types` target that is not on disk |
-| `publish/export-covered-by-files`    | a target `files` does not reach — it 404s in a consumer    |
-| `publish/no-test-code-in-production` | a shipped file compiled from test material                 |
-| `publish/build-succeeds`             | a build the guard below cannot run, because it fails       |
+<!-- GENERATED:findings publish -->
+
+| Rule                                 | Requirement                                                                 |
+| ------------------------------------ | --------------------------------------------------------------------------- |
+| `publish/export-target-exists`       | Every target the exports, main and types fields name exists on disk.        |
+| `publish/export-covered-by-files`    | Every target the exports, main and types fields name is published by files. |
+| `publish/build-succeeds`             | The build the guard reads succeeds.                                         |
+| `publish/no-test-code-in-production` | No shipped file is compiled from test material.                             |
+
+<!-- /GENERATED:findings publish -->
 
 Beside them run `publint --strict` on the packed tarball and `attw --pack . --profile esm-only` on the declarations, and each prints its own report verbatim when it refuses.
 
@@ -381,11 +389,15 @@ A project may know things the profile does not, so turning a rule off is allowed
 
 Every place the project told a checker to look away. A suppression is a decision, and a decision the next reader cannot re-derive is a defect waiting to be re-introduced, so three rules hold the whole surface.
 
-| Rule                                      | Refuses                                                                           |
-| ----------------------------------------- | --------------------------------------------------------------------------------- |
-| `suppressions/spelled-for-this-toolchain` | an `eslint-disable*`, a `biome-ignore` or a `@ts-ignore` — none of those run here |
-| `suppressions/states-its-reason`          | an `oxlint-disable*` with no `-- reason`, or a `@ts-expect-error` with no text    |
-| `suppressions/no-dead-suppression`        | a directive naming a rule the resolved config does not have on                    |
+<!-- GENERATED:findings suppressions -->
+
+| Rule                                      | Requirement                                                                                   |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `suppressions/spelled-for-this-toolchain` | A suppression is spelled for a checker this toolchain runs: oxlint-disable, @ts-expect-error. |
+| `suppressions/states-its-reason`          | Every suppression states the reason it exists.                                                |
+| `suppressions/no-dead-suppression`        | A directive names only a rule the resolved config has on.                                     |
+
+<!-- /GENERATED:findings suppressions -->
 
 A directive is read only where a checker reads one: at the OPENING of a comment. Prose about a suppression, and a string carrying its spelling — the gate's own source is made of both — is not a suppression, and neither oxlint nor tsc would treat it as one.
 
@@ -403,13 +415,18 @@ It never invents a reason, and it never deletes a directive: both are the author
 
 Every `*.md` git does not ignore, outside the ground a test stands on — a `fixtures/`, `expected/`, `seeds/` or `requests/` folder wherever it sits, another project's tree — is read for two things: whether its coordinates resolve, and whether its blocks breathe.
 
-| Rule                                    | Refuses                                                                    |
-| --------------------------------------- | -------------------------------------------------------------------------- |
-| `markdown/link-resolves`                | a relative link whose target is not on disk                                |
-| `markdown/path-resolves`                | a backticked repo-relative path naming nothing on disk                     |
-| `markdown/prose-block-is-short`         | a paragraph, or one list item, running past twelve lines                   |
-| `markdown/fenced-run-is-short`          | a fenced block running fifteen lines with no blank one in it               |
-| `markdown/long-section-has-subheadings` | a `##` section over thirty prose lines carrying neither a `###` nor a list |
+<!-- GENERATED:findings markdown -->
+
+| Rule                                    | Requirement                                                            |
+| --------------------------------------- | ---------------------------------------------------------------------- |
+| `markdown/link-resolves`                | Every relative link of a page resolves on disk.                        |
+| `markdown/path-resolves`                | Every backticked repository path of a page names something on disk.    |
+| `markdown/chapter-reference-resolves`   | Every chapter a skill names is one its package ships.                  |
+| `markdown/prose-block-is-short`         | A paragraph or a list item runs twelve lines at most.                  |
+| `markdown/fenced-run-is-short`          | A fenced block breathes within fifteen lines.                          |
+| `markdown/long-section-has-subheadings` | A section over thirty prose lines is broken by a subheading or a list. |
+
+<!-- /GENERATED:findings markdown -->
 
 A skill is read from the install, where nothing can correct it, so one more rule reads a page under `skills/` alone: `markdown/chapter-reference-resolves` refuses a `docs/NN-name.md` it names that its package does not ship. The chapter is resolved beside the skill's own `skills/` folder, the package root it is published from.
 
@@ -423,11 +440,15 @@ A path of somebody ELSE's tree — a library's chapter showing where the thing i
 
 What a project calls its own parts, swept under the roots where a project keeps what it wrote: `apps/`, `bin/`, `lib/`, `lint/`, `packages/`, `specs/`, `src/`, `tests/`. Each root's OWN name is the toolchain's vocabulary rather than the project's choice, so it is never judged — `lib/` sits on this list and on the grab-bag roster at once, and only what a project put inside it is the project's to name. A directory below an `app/` router root is a Next.js route segment — a URL the product serves, not a name the tree chose — and is not judged either; the files inside it still are.
 
-| Rule                               | Refuses                                                                     |
-| ---------------------------------- | --------------------------------------------------------------------------- |
-| `names/no-grab-bag-name`           | a directory or file stem that says nothing: it holds whatever nobody placed |
-| `names/no-language-construct-name` | a directory or file named for a construct of the language, not the domain   |
-| `names/no-abbreviated-word`        | a name, or one hyphen segment of it, written in half                        |
+<!-- GENERATED:findings names -->
+
+| Rule                               | Requirement                                                                          |
+| ---------------------------------- | ------------------------------------------------------------------------------------ |
+| `names/no-grab-bag-name`           | A directory or file is named for the subject it holds, never a grab-bag word.        |
+| `names/no-language-construct-name` | A directory or file is named for its subject, never for a construct of the language. |
+| `names/no-abbreviated-word`        | Every word of a name is spelled whole.                                               |
+
+<!-- /GENERATED:findings names -->
 
 All three rosters are closed and all live in the gate, in one executable copy. Grab-bag: `base`, `common`, `helpers`, `lib`, `misc`, `stuff`, `tools`, `utils` — a leading `_` exempts one, because it marks a row rather than a subject. Construct: `constants`, `helper`, `interfaces`, `type`, `types`, `util`, and the `.types.ts` suffix — a word the grab-bag already refuses is reported once, under that roster, and the `_` marker does not excuse a construct. Shortcut: `auth`, `cfg`, `impl`, `infra`, `k8s`, `pkg`, `repo`, `repos`, `svc`, `tmp` — and the `_` marker does NOT excuse one, since it states a position, not whether the name is whole.
 
@@ -435,17 +456,25 @@ A construct is judged on the WHOLE name: `type-registry.ts` names a subject and 
 
 ### The repository spine
 
-The root's own folders are the same in every repository: `src/` the product's code, `lint/` the lint rules a package ships, `specs/` the specifications, `docs/` the manual, `skills/` one short page per skill — and `apps/` or `packages/` where a workspace keeps its members, each a spine of its own. What the tree calls a root is therefore judged too.
+The root's own folders are the same in every repository: `src/` the product's code, `lint/` the lint rules a package ships, `specs/` the specifications, `docs/` the manual, `skills/` one short page per skill — and `apps/` or `packages/` where a workspace keeps its members, each a spine of its own. What the tree calls a root is therefore judged too. The table holds the whole `tree` family: the spine's rules, and those of [the lint tree](#the-lint-tree) and [an empty directory](#an-empty-directory) below.
 
-| Rule                                    | Refuses                                                                                 |
-| --------------------------------------- | --------------------------------------------------------------------------------------- |
-| `names/skill-holds-only-skill-md`       | a file under `skills/` that is not `skills/<skill>/SKILL.md`                            |
-| `names/no-undeclared-root-folder`       | a root folder outside the spine that nothing codifies                                   |
-| `names/declared-root-states-its-reason` | a root declared in `typescript.roots` with no reason beside it                          |
-| `names/declared-root-holds-files`       | a root declared in `typescript.roots` that holds no file git does not ignore            |
-| `names/jterrazz-config-loads`           | a `jterrazz.config.ts` that does not load, or whose settings are not the declared shape |
-| `names/repository-has-makefile`         | a repository root with no `Makefile`, or one git ignores                                |
-| `names/makefile-answers-every-gesture`  | one of the six gestures a repository's `Makefile` writes no rule for                    |
+<!-- GENERATED:findings tree -->
+
+| Rule                                    | Requirement                                                                                               |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `names/no-undeclared-root-folder`       | Every root folder is on the spine, imposed by a tool, or declared with its reason.                        |
+| `names/declared-root-states-its-reason` | A root declared in typescript.roots states why the repository keeps it.                                   |
+| `names/declared-root-holds-files`       | A root declared in typescript.roots holds a file git does not ignore.                                     |
+| `names/jterrazz-config-loads`           | The settings file jterrazz.config.ts loads, and its typescript section has the declared shape.            |
+| `names/skill-holds-only-skill-md`       | A skill is one skills/<skill>/SKILL.md and nothing beside it.                                             |
+| `names/repository-has-makefile`         | Every repository root carries a Makefile.                                                                 |
+| `names/makefile-answers-every-gesture`  | The Makefile writes a rule for each of the six gestures.                                                  |
+| `names/no-empty-directory`              | No directory of the working copy is empty.                                                                |
+| `names/lint-root-holds-only-index`      | The root of lint/ holds its index and nothing else.                                                       |
+| `names/lint-folder-is-known`            | Every folder of lint/ is one of catalogue, rulebook, rules, checks, ratchet, reading, self and migration. |
+| `names/rule-file-in-its-family-folder`  | A rule file sits under rules/<family>/, the family its catalogue row declares.                            |
+
+<!-- /GENERATED:findings tree -->
 
 A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
 
@@ -508,23 +537,13 @@ The file holds one section per package of the family, each package reading only 
 
 ### The lint tree
 
-`lint/` has one tree in every repository that keeps one, whatever the package: what it ships at `index`, and a folder for each nature of what it judges with — `catalogue/` the list, `rulebook/` the decisions on upstream rules, `rules/` the rules it writes itself, `checks/` what one file cannot see, `ratchet/` the baseline, `reading/` how a rule reads a project, `self/` what only that repository is held to, `migration/` the one-shot mover of a major. A reader who knows one repository's `lint/` knows every one, so the pass holds each unit that keeps a `lint/` to it, a workspace member included.
-
-| Rule                                   | Refuses                                                                                                        |
-| -------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `names/lint-root-holds-only-index`     | a file at the root of `lint/` whose name is not `index` — `index.ts`, `index.js`, `index.d.ts` and their tests |
-| `names/lint-folder-is-known`           | a folder at the root of `lint/` outside the eight                                                              |
-| `names/rule-file-in-its-family-folder` | a file under `lint/rules/<folder>/` whose catalogue row declares another family                                |
+`lint/` has one tree in every repository that keeps one, whatever the package: what it ships at `index`, and a folder for each nature of what it judges with — `catalogue/` the list, `rulebook/` the decisions on upstream rules, `rules/` the rules it writes itself, `checks/` what one file cannot see, `ratchet/` the baseline, `reading/` how a rule reads a project, `self/` what only that repository is held to, `migration/` the one-shot mover of a major. A reader who knows one repository's `lint/` knows every one, so the pass holds each unit that keeps a `lint/` to it, a workspace member included. `names/lint-root-holds-only-index` refuses a file at its root not named `index` — `index.ts`, `index.js`, `index.d.ts` and their tests pass; `names/lint-folder-is-known` a folder outside the eight; `names/rule-file-in-its-family-folder` a rule file filed at the root of `rules/`, or under a folder its catalogue row does not name.
 
 The family is read off the unit's own catalogue: every file directly under `lint/catalogue/`, read as text and never run, where a row is any object literal stating an `id` or a `name` and a `family` — a JSON row and a TypeScript manifest row alike, the plugin prefix of an id left aside. A rule file is matched to its row by its name, its test with it. A unit with no catalogue, or a rule no row names, is held to the first two rules alone: a family is never guessed.
 
 ### An empty directory
 
-The tree is judged on the disk as well as by its names. git tracks no directory, so an empty one exists only on the machine that holds it — a folder a fixer or a move emptied, a scaffold nobody filled — and it tells the next reader of that disk about a part of the tree that is not there.
-
-| Rule                       | Refuses                                                            |
-| -------------------------- | ------------------------------------------------------------------ |
-| `names/no-empty-directory` | a directory holding no file at any depth, that git does not ignore |
+The tree is judged on the disk as well as by its names. git tracks no directory, so an empty one exists only on the machine that holds it — a folder a fixer or a move emptied, a scaffold nobody filled — and it tells the next reader of that disk about a part of the tree that is not there. `names/no-empty-directory` refuses a directory holding no file at any depth that git does not ignore.
 
 A directory holding only empty directories is empty, and is named once, at its top. The walk never enters `.git/`, a directory holding a `.git` of its own, or a folder no gate reads — `node_modules/`, `.artifacts/`, `dist/` and the rest the sweep leaves out — and a directory git ignores, or an `--ignore-pattern` names, is left alone. The finding states itself in four parts, `found: … · why: … · fix: … · read: …`.
 
@@ -554,18 +573,22 @@ No file the project would commit carries a live-looking credential. Two engines 
 
 Which engine runs is decided inside the gate rather than in `check.sh`, because the gate applies either way. Bash decides whether a pass applies; this one always does, and what changes is only who answers.
 
-| Rule                       | Looks like            |
-| -------------------------- | --------------------- |
-| `secrets/no-private-key`   | a private key block   |
-| `secrets/no-aws-key`       | an aws access key     |
-| `secrets/no-github-token`  | a github token        |
-| `secrets/no-slack-token`   | a slack token         |
-| `secrets/no-tailscale-key` | a tailscale key       |
-| `secrets/no-signed-jwt`    | a signed jwt          |
-| `secrets/no-grafana-token` | a grafana token       |
-| `secrets/no-api-key`       | an api key            |
-| `secrets/no-iban`          | a bank account number |
-| `secrets/no-service-token` | a service token       |
+<!-- GENERATED:findings secrets -->
+
+| Rule                       | Requirement                                      |
+| -------------------------- | ------------------------------------------------ |
+| `secrets/no-private-key`   | No committed file carries a private key block.   |
+| `secrets/no-aws-key`       | No committed file carries an aws access key.     |
+| `secrets/no-github-token`  | No committed file carries a github token.        |
+| `secrets/no-slack-token`   | No committed file carries a slack token.         |
+| `secrets/no-tailscale-key` | No committed file carries a tailscale key.       |
+| `secrets/no-signed-jwt`    | No committed file carries a signed jwt.          |
+| `secrets/no-grafana-token` | No committed file carries a grafana token.       |
+| `secrets/no-api-key`       | No committed file carries an api key.            |
+| `secrets/no-iban`          | No committed file carries a bank account number. |
+| `secrets/no-service-token` | No committed file carries a service token.       |
+
+<!-- /GENERATED:findings secrets -->
 
 **There is no exception list, and there will not be one.** A hit is forgiven by exactly one thing: the same line declaring itself `fake`, `dummy`, `example`, `sample`, `synthetic` or `redacted`. A path allow-list is the first place a real leak hides, so the only way to silence this gate is to make the line say what it is.
 

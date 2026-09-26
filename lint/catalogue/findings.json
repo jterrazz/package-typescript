@@ -272,12 +272,12 @@
     {
         "family": "publish",
         "id": "publish/export-target-exists",
-        "sentence": "Every target the exports map names exists on disk."
+        "sentence": "Every target the exports, main and types fields name exists on disk."
     },
     {
         "family": "publish",
         "id": "publish/export-covered-by-files",
-        "sentence": "Every target the exports map names is published by files."
+        "sentence": "Every target the exports, main and types fields name is published by files."
     },
     {
         "family": "publish",

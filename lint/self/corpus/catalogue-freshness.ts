@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
 
 import { decisions, unsafeFixers } from '../../catalogue/decisions.js';
+import { rows } from './findings.js';
 
 type Entry = ReturnType<typeof decisions>[number];
 
@@ -41,7 +42,34 @@ function renderFixers(): string {
         .join('\n');
 }
 
+const QUALITY_CHECKS = resolve(import.meta.dirname, '../../../docs/06-quality-checks.md');
+
+function renderFindings(family: string): string {
+    return [
+        '| Rule | Requirement |',
+        '| --- | --- |',
+        ...rows
+            .filter((row) => row.family === family)
+            .map((row) => `| \`${row.id}\` | ${row.sentence} |`),
+    ].join('\n');
+}
+
+const TABLED_FAMILIES = ['docs', 'publish', 'suppressions', 'markdown', 'names', 'tree', 'secrets'];
+
 export const PROJECTIONS = {
+    ...Object.fromEntries(
+        TABLED_FAMILIES.map((family) => [
+            `${family} table`,
+            {
+                markers: {
+                    end: `<!-- /GENERATED:findings ${family} -->`,
+                    start: `<!-- GENERATED:findings ${family} -->`,
+                },
+                page: QUALITY_CHECKS,
+                render: () => renderFindings(family),
+            },
+        ]),
+    ),
     chapter: {
         markers: MARKERS,
         page: resolve(import.meta.dirname, '../../../docs/07-lint-presets.md'),

@@ -8,17 +8,10 @@ const ROOT = resolve(import.meta.dirname, '../../..');
 const PASS_ID =
     /(?:['"`]|\\n)(?<id>(?:comments|docs|drift|markdown|names|publish|secrets|suppressions)\/[a-z\d]+(?:-[a-z\d]+)*)(?![\w/-])/gu;
 
-export const FAMILIES = new Set([
-    'comments',
-    'docs',
-    'drift',
-    'markdown',
-    'names',
-    'publish',
-    'secrets',
-    'suppressions',
-    'tree',
-]);
+const listed: unknown = JSON.parse(
+    readFileSync(join(ROOT, 'lint/catalogue/families.json'), 'utf8'),
+);
+export const FAMILIES = new Set(Array.isArray(listed) ? listed : []);
 
 type Row = { family: string; id: string; sentence: string };
 
