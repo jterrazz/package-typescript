@@ -28,11 +28,11 @@ belongs where every repository's own CI already runs it.
 The rules are a pass of `typescript check`, `Docs (layout)`, and three calls
 shape it:
 
-1. **The rule engine is pure and exported.** `auditDocs(tree)` at
+1. **The rules are pure and exported.** `auditDocs(tree)` at
    `@jterrazz/typescript/docs` takes a plain description of a `docs/` tree
-   and returns violations; `node:fs` appears only in `lint/checks/docs.cli.js`.
+   and returns violations; `node:fs` appears only in `lint/consumer/checks/docs.cli.js`.
    The gate has two readers — a project it is installed in, and an estate
-   sweep over clones nothing is installed into — and one engine keeps the
+   sweep over clones nothing is installed into — and one function keeps the
    rule ids, the sentences and the journal-word roster in a single
    executable copy.
 2. **The pass measures from the REPOSITORY, not the package.** Every other

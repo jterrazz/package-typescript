@@ -55,6 +55,7 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 - A `knip.json` ignore carries a `//` reason above it — the file is read as JSONC.
 - The API is the types: there is no generated reference, and `docs/` never holds one.
 - A repository root holds `src/`, `lint/`, `specs/`, `docs/`, `skills/` — any other root folder fails Names (tree) unless the ecosystem imposes it (`bin/`, `public/`, `app/`…) or `jterrazz.config.ts` declares it under `typescript.roots` with a reason.
+- A `lint/` holds its `index` and three folders: `consumer/` and `self/` hold declarations alone, and `engine/` holds the code that runs them — `docs/06-quality-checks.md`, The lint tree.
 - A repository's root `Makefile` answers `make install`, `build`, `lint`, `fix`, `test` and `check`; a workspace member owes none of them.
 - A local `compilerOption` is a smell — the preset is where the fix belongs.
 

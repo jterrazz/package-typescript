@@ -35,8 +35,8 @@ No build step — this package ships JS directly. It dogfoods its own CLI (`make
 
 ```
 bin/      # the CLI, in bash
-lint/     # every judgement
-src/      # the engine the CLI runs, the presets, the importable entries
+lint/     # every judgement: consumer/ and self/ declare, engine/ runs
+src/      # the command's node scripts, the presets, the importable entries
 docs/     # the corpus: numbered chapters and decisions/
 skills/   # the Claude Code skill — one hand-written SKILL.md
 specs/    # product specifications (@jterrazz/test)

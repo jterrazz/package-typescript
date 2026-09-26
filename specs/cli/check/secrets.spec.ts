@@ -13,7 +13,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 
 import { newDirectory, temporaryDirectory } from '../temporary-directory.js';
 
-// Which engine answers depends on the machine's PATH, so the chain names it by handing over a PATH.
+// Which scanner answers depends on the machine's PATH, so the chain names it by handing over a PATH.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 const FIXTURE = resolve(import.meta.dirname, 'fixtures/secrets/leaked');
@@ -77,7 +77,7 @@ describe('secrets', () => {
         expect(result.stdout).not.toContain('line 5');
     });
 
-    test('names each of the ten shapes the built-in engine knows, by its own rule and line', () => {
+    test('names each of the ten shapes the built-in scanner knows, by its own rule and line', () => {
         // Given - the same notes, carrying one credential of every shape below the two keys
         const created = temporaryDirectory('spec-secrets-shapes-');
         cpSync(FIXTURE, created, { recursive: true });
@@ -107,13 +107,13 @@ describe('secrets', () => {
 
     test('hands gitleaks every file git does not ignore that a tree gate judges, and nothing beside them', () => {
         // Given - a repository with tracked notes, a tracked spec ground, a tracked folder the run is told to overlook, an untracked scratch file and an ignored one
-        const created = temporaryDirectory('spec-secrets-engine-');
+        const created = temporaryDirectory('spec-secrets-scanner-');
         const repository = realpathSync(created);
         const files: Record<string, string> = {
             'NOTES.md': '# Notes\n',
             'index.ts': 'export const title = "spec";\n',
             'notes/draft.md': '# Draft\n',
-            'package.json': '{ "name": "spec-secrets-engine", "private": true }\n',
+            'package.json': '{ "name": "spec-secrets-scanner", "private": true }\n',
             'specs/fixtures/leaky/NOTES.md': '# Ground\n',
             'tsconfig.json': '{ "compilerOptions": { "strict": true, "noEmit": true } }\n',
         };

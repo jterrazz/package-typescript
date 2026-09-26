@@ -94,7 +94,7 @@ Its unit is the **repository**, not the package: a manual answers for a whole tr
 
 Nothing else gates it. A repository with **no** `docs/` at all is not exempt; it is the case the rule exists for, and it fails on `docs/manual-present`.
 
-The spine itself is language-agnostic doctrine, and it is the estate's, which [Repo structure](08-repo-structure.md) routes to: the four fixed names, the subfolders, the water line between a repository's manual and its brand's wiki. What this chapter owns is the rule ids and what each one refuses. The sentence a rule prints is not here — it lives in the engine, so a page and a gate cannot drift.
+The spine itself is language-agnostic doctrine, and it is the estate's, which [Repo structure](08-repo-structure.md) routes to: the four fixed names, the subfolders, the water line between a repository's manual and its brand's wiki. What this chapter owns is the rule ids and what each one refuses. The sentence a rule prints is not here — it lives in the pass, `lint/consumer/checks/docs.js`, so a page and a gate cannot drift.
 
 <!-- GENERATED:findings docs -->
 
@@ -143,7 +143,7 @@ The same gate, on any tree: a Go, Rust or Ansible repository wires that line int
 
 ### Reusing the rules
 
-The engine is a pure function, exported at `@jterrazz/typescript/docs`:
+The rules are a pure function, exported at `@jterrazz/typescript/docs`:
 
 ```ts
 import { auditDocs } from '@jterrazz/typescript/docs';
@@ -309,7 +309,7 @@ The first two rule ids overlap publint on purpose. They read the SOURCE TREE and
 
 A published build never carries test material, and `publish/no-test-code-in-production` refuses one that does. The pass builds the package as it builds — its own `tsdown.config.*`, else the `bundle` preset over the entries its `exports` map earns — and reads each chunk's module ids off a `generateBundle` hook.
 
-Without a config of its own, that build IS `typescript bundle`'s: the same preset file, and the entries the same [entry-points.js](../lint/reading/entry-points.js) reads off the map. Each chunk is named as the build writes it — `.js` and `.cjs` under the preset, and `.mjs` for an ESM chunk of a config that sets no extension — so `files` is asked about the path the tarball holds.
+Without a config of its own, that build IS `typescript bundle`'s: the same preset file, and the entries the same [entry-points.js](../lint/engine/project/entry-points.js) reads off the map. Each chunk is named as the build writes it — `.js` and `.cjs` under the preset, and `.mjs` for an ESM chunk of a config that sets no extension — so `files` is asked about the path the tarball holds.
 
 That build leaves the disk alone as far as tsdown lets it: no chunk is written, and the config's `copy`, `exe` and `onSuccess` are switched off. A config's own `hooks` are the one thing an inline option cannot switch off, so a `build:done` hook that writes still writes.
 
@@ -321,7 +321,7 @@ A file `files` ships is judged on three counts:
 
 What test material IS is `@jterrazz/test`'s alone: the two readers are the ones its `no-test-code-in-production` rule judges by, published on its `./oxlint` entry, and the pass loads them rather than keeping a copy. The finding states itself in four parts and sends its reader to the `no-test-code-in-production` row, where the definition lives.
 
-The readers come from the install the package resolves, found by the walk [test-package.js](../lint/reading/test-package.js) keeps, and from nowhere else. The toolchain's own `@jterrazz/test` is never asked: it is the toolchain's dependency, not the package's, and it would judge a package by a definition the package never chose.
+The readers come from the install the package resolves, found by the walk [test-package.js](../lint/engine/project/test-package.js) keeps, and from nowhere else. The toolchain's own `@jterrazz/test` is never asked: it is the toolchain's dependency, not the package's, and it would judge a package by a definition the package never chose.
 
 A package with a build that resolves none has nothing to judge. The pass says so in one line, `publish/no-test-code-in-production: nothing to judge`, with the reason and, for a workspace member, `in <member>` — and builds all the same, so a build that fails still fails the pass. An install whose `./oxlint` entry is missing, exports no reader or throws on import is named for that, with the first line of what went wrong. A package with no build — no config of its own and no target under `dist/`, like this package — hears nothing: there is no build to judge, and none to fail.
 
@@ -457,20 +457,23 @@ The root's own folders are the same in every repository: `src/` the product's co
 
 <!-- GENERATED:findings tree -->
 
-| Rule                                    | Requirement                                                                                           |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `names/no-undeclared-root-folder`       | Every root folder is on the spine, imposed by a tool, or declared with its reason.                    |
-| `names/declared-root-states-its-reason` | A root declared in typescript.roots states why the repository keeps it.                               |
-| `names/declared-root-holds-files`       | A root declared in typescript.roots holds a file git does not ignore.                                 |
-| `names/jterrazz-config-loads`           | The settings file jterrazz.config.ts loads, and its typescript section has the declared shape.        |
-| `names/skill-holds-only-skill-md`       | A skill is one skills/<skill>/SKILL.md and nothing beside it.                                         |
-| `names/repository-has-makefile`         | Every repository root carries a Makefile.                                                             |
-| `names/makefile-answers-every-gesture`  | The Makefile writes a rule for each of the six gestures.                                              |
-| `names/no-empty-directory`              | No directory of the working copy is empty.                                                            |
-| `names/lint-root-holds-only-index`      | The root of lint/ holds its index and nothing else.                                                   |
-| `names/lint-folder-is-known`            | Every folder of lint/ is one of catalogue, rulebook, rules, checks, ratchet, reading and self.        |
-| `names/self-folder-is-known`            | Every folder of lint/self/ is one of catalogue, rulebook, rules, checks, ratchet, reading and corpus. |
-| `names/rule-file-in-its-family-folder`  | A rule file sits under rules/<family>/, the family its catalogue row declares.                        |
+| Rule                                     | Requirement                                                                                                                       |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `names/no-undeclared-root-folder`        | Every root folder is on the spine, imposed by a tool, or declared with its reason.                                                |
+| `names/declared-root-states-its-reason`  | A root declared in typescript.roots states why the repository keeps it.                                                           |
+| `names/declared-root-holds-files`        | A root declared in typescript.roots holds a file git does not ignore.                                                             |
+| `names/jterrazz-config-loads`            | The settings file jterrazz.config.ts loads, and its typescript section has the declared shape.                                    |
+| `names/skill-holds-only-skill-md`        | A skill is one skills/<skill>/SKILL.md and nothing beside it.                                                                     |
+| `names/repository-has-makefile`          | Every repository root carries a Makefile.                                                                                         |
+| `names/makefile-answers-every-gesture`   | The Makefile writes a rule for each of the six gestures.                                                                          |
+| `names/no-empty-directory`               | No directory of the working copy is empty.                                                                                        |
+| `names/lint-root-holds-only-index`       | The root of lint/ holds its index and nothing else.                                                                               |
+| `names/lint-folder-is-known`             | Every folder of lint/ is one of consumer, self and engine.                                                                        |
+| `names/consumer-folder-is-known`         | Every folder of lint/consumer/ is one of catalogue, rulebook, rules and checks, and no file sits at its root.                     |
+| `names/self-folder-is-known`             | Every folder of lint/self/ is one of catalogue, rules, checks and corpus, and only its index sits at its root.                    |
+| `names/engine-folder-is-known`           | Every folder of lint/engine/ is one of project, baseline, checker, catalogue, rulebook and testing, and no file sits at its root. |
+| `names/audience-holds-only-declarations` | A module under lint/consumer/ or lint/self/ exports no function but one named for its file.                                       |
+| `names/rule-file-in-its-family-folder`   | A rule file sits under rules/<family>/, the family its catalogue row declares.                                                    |
 
 <!-- /GENERATED:findings tree -->
 
@@ -535,9 +538,19 @@ The file holds one section per package of the family, each package reading only 
 
 ### The lint tree
 
-`lint/` has one tree in every repository that keeps one, whatever the package: what it ships at `index`, and a folder for each nature of what it judges with — `catalogue/`, `rulebook/`, `rules/`, `checks/`, `ratchet/`, `reading/`, `self/`, each holding what [Architecture](01-architecture.md#the-judging-layer) says it holds. A reader who knows one repository's `lint/` knows every one, so the pass holds each unit that keeps a `lint/` to it, a workspace member included. `names/lint-root-holds-only-index` refuses a file at its root not named `index` — `index.ts`, `index.js`, `index.d.ts` and their tests pass; `names/lint-folder-is-known` a folder outside the seven; `names/self-folder-is-known` a folder of `self/` outside the shipped six and `corpus/`, since `self/` files what only its repository is held to as the shipped tree files it; `names/rule-file-in-its-family-folder` a rule file filed at the root of `rules/`, or under a folder its catalogue row does not name.
+`lint/` has one tree in every repository that keeps one, whatever the package: the entry at `index`, and one folder per audience — `consumer/`, the declarations every consumer is held to; `self/`, the declarations only the repository is held to; `engine/`, what runs them and knows none — each holding what [Architecture](01-architecture.md#the-judging-layer) says it holds. A reader who knows one repository's `lint/` knows every one, so the pass holds each unit that keeps a `lint/` to it, a workspace member included.
 
-The family is read off the unit's own catalogue: every file directly under `lint/catalogue/`, read as text and never run, where a row is any object literal stating an `id` or a `name` and a `family` — a JSON row and a TypeScript manifest row alike, the plugin prefix of an id left aside. A rule file is matched to its row by its name, its test with it. A unit with no catalogue, or a rule no row names, is held to the first two rules alone: a family is never guessed.
+- `names/lint-root-holds-only-index` refuses a file at the root of `lint/` not named `index` — `index.ts`, `index.js`, `index.d.ts` and their tests pass.
+- `names/lint-folder-is-known` refuses a folder of `lint/` outside the three.
+- `names/consumer-folder-is-known` refuses a folder of `consumer/` outside `catalogue/`, `rulebook/`, `rules/` and `checks/`, and a file at its root.
+- `names/self-folder-is-known` refuses a folder of `self/` outside `catalogue/`, `rules/`, `checks/` and `corpus/`, and a file at its root but its `index`, which composes the self declarations with the engine.
+- `names/engine-folder-is-known` refuses a folder of `engine/` outside `project/`, `baseline/`, `checker/`, `catalogue/`, `rulebook/` and `testing/`, and a file at its root.
+- `names/audience-holds-only-declarations` refuses a module of `consumer/` or `self/` that exports a function named for something other than its file.
+- `names/rule-file-in-its-family-folder` refuses a rule file of `consumer/rules/` or `self/rules/` filed at the root of `rules/`, or under a folder its catalogue row does not name.
+
+A declaration is a rule, a check, a decision on an upstream rule, a catalogue entry, or their tests, and the pass knows one by what its module exports: each function it exports carries its file's name — the file's name, hyphens dropped, is part of the export's, whatever the case — so `no-snapshot-folder.ts` may export `checkNoSnapshotFolder` and `docs.js` exports `auditDocs`. Values, types and the default export are free, and so is a file that is not a module, a test, or anything under `expected/` or `fixtures/`. A part, `<name>.<part>.<ext>` beside its `<name>.<ext>`, is that declaration cut in two and exports what the declaration needs. A module exporting a function named for anything else offers code for other files to call — a helper — and the engine owns the code declarations share; the module is read as text, never run.
+
+The family is read off the unit's own catalogues: every file directly under `lint/consumer/catalogue/` or `lint/self/catalogue/`, read as text and never run, where a row is any object literal stating an `id` or a `name` and a `family` — a JSON row and a TypeScript manifest row alike, the plugin prefix of an id left aside. A rule file is matched to its row by its name, its test with it. A unit with no catalogue, or a rule no row names, is held to the other rules alone: a family is never guessed.
 
 ### An empty directory
 
@@ -572,9 +585,9 @@ The count is recorded as `comments/comment-lines-held-by-the-baseline` in the `t
 
 ## The Secrets (credentials) pass
 
-No file the project would commit carries a live-looking credential. Two engines answer that one question, over the same files — every one git does not ignore, the ground a test stands on and `--ignore-pattern` left out, as for every tree gate. Where `gitleaks` is on PATH it runs as `gitleaks dir . --no-banner --redact` over a copy of exactly those files, so a finding names the file and never reprints the secret; where it is not, ten patterns over their text answer well enough to stop the leak that actually happens — a token pasted into a note and committed with it.
+No file the project would commit carries a live-looking credential. Two scanners answer that one question, over the same files — every one git does not ignore, the ground a test stands on and `--ignore-pattern` left out, as for every tree gate. Where `gitleaks` is on PATH it runs as `gitleaks dir . --no-banner --redact` over a copy of exactly those files, so a finding names the file and never reprints the secret; where it is not, ten patterns over their text answer well enough to stop the leak that actually happens — a token pasted into a note and committed with it.
 
-Which engine runs is decided inside the gate rather than in `check.sh`, because the gate applies either way. Bash decides whether a pass applies; this one always does, and what changes is only who answers.
+Which scanner runs is decided inside the gate rather than in `check.sh`, because the gate applies either way. Bash decides whether a pass applies; this one always does, and what changes is only who answers.
 
 <!-- GENERATED:findings secrets -->
 
