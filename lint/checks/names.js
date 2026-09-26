@@ -5,6 +5,7 @@ import { basename, join, matchesGlob, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
 import { judge, LABEL, readBaseline, reRecord } from '../ratchet/baseline.js';
+import { catalogueFamilies } from '../reading/catalogue-families.js';
 import { emptyDirectories, removeEmptyDirectory } from '../reading/empty-directories.js';
 import { readSection, SETTINGS_FILE } from '../reading/jterrazz-config.js';
 import { ignorePatternsOf, orRefused, projectFiles } from '../reading/project-files.js';
@@ -299,6 +300,88 @@ function declarationOf(declared, roots, prefix) {
     return findings;
 }
 
+const LINT_FOLDERS = Object.freeze([
+    'catalogue',
+    'rulebook',
+    'rules',
+    'checks',
+    'ratchet',
+    'reading',
+    'self',
+    'migration',
+]);
+
+const LINT_TREE_READ = 'read: docs/06-quality-checks.md#the-lint-tree';
+
+function lintRootFinding(path) {
+    return {
+        message: [
+            `found: \`${path}\` sits at the root of lint/`,
+            'why: lint/ has one tree in every repository — its root holds the entry the package ships, `index`, and a folder names the nature of every other file',
+            `fix: move it into the folder its nature names — ${LINT_FOLDERS.join(', ')} — or into docs/ if it explains`,
+            LINT_TREE_READ,
+        ].join(' · '),
+        path,
+        rule: 'names/lint-root-holds-only-index',
+    };
+}
+
+function lintFolderFinding(path) {
+    return {
+        message: [
+            `found: \`${path}\` is not a folder of the lint tree`,
+            `why: lint/ has one tree in every repository, so its folders are the eight that name a nature — ${LINT_FOLDERS.join(', ')}`,
+            'fix: move its files where their nature puts them — a decision on an upstream rule under rulebook/, a rule of our own under rules/<family>/, a pass under checks/, a reader they share under reading/',
+            LINT_TREE_READ,
+        ].join(' · '),
+        path,
+        rule: 'names/lint-folder-is-known',
+    };
+}
+
+function ruleFamilyFinding(path, folder, family) {
+    return {
+        message: [
+            `found: \`${path}\` sits under \`rules/${folder}/\`, and its catalogue row gives it the family \`${family}\``,
+            'why: a rule file sits under the folder of its family, so the tree and the catalogue say one thing',
+            `fix: move it to \`rules/${family}/\`, or correct the family its catalogue row declares`,
+            LINT_TREE_READ,
+        ].join(' · '),
+        path,
+        rule: 'names/rule-file-in-its-family-folder',
+    };
+}
+
+function lintTreeOf(files, unit, prefix) {
+    const lintFiles = files.filter((file) => file.startsWith(`${LINT_ROOT}/`));
+    const families = catalogueFamilies(unit, lintFiles);
+    const findings = [];
+    const foreign = new Set();
+
+    for (const file of lintFiles) {
+        const [, top, folder, ...rest] = file.split('/');
+        if (folder === undefined) {
+            if (stemOf(top) !== 'index') {
+                findings.push(lintRootFinding(`${prefix}${file}`));
+            }
+        } else if (!LINT_FOLDERS.includes(top)) {
+            foreign.add(top);
+        } else if (top === 'rules' && rest.length > 0) {
+            const family = families.get(stemOf(file.split('/').at(-1)));
+            if (family !== undefined && family !== folder) {
+                findings.push(ruleFamilyFinding(`${prefix}${file}`, folder, family));
+            }
+        }
+    }
+
+    return [
+        ...findings,
+        ...[...foreign]
+            .toSorted((left, right) => (left < right ? -1 : 1))
+            .map((top) => lintFolderFinding(`${prefix}${LINT_ROOT}/${top}/`)),
+    ];
+}
+
 function spineOf(files, unit, settings, prefix = '') {
     const manifest = manifestOf(unit);
     const findings = [];
@@ -335,6 +418,7 @@ function spineOf(files, unit, settings, prefix = '') {
 
     return [
         ...findings,
+        ...lintTreeOf(files, unit, prefix),
         ...[...roots]
             .toSorted((left, right) => (left < right ? -1 : 1))
             .filter((root) => !isCodified(root))

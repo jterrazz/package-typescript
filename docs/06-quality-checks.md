@@ -449,9 +449,9 @@ The root's own folders are the same in every repository: `src/` the product's co
 
 A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
 
-`lint/` stands on the spine only where the package SHIPS it, and it ships it one of two ways. Directly: an entry of its `package.json`'s `files`, or a target of its `exports`, reaches into `lint/`. Or through its build: an entry of its `tsdown.config.*` compiles a `lint/` source, and the output it compiles to — `dist/<entry>`, or under the config's `outDir` — is published by an `exports`, `bin` or `main` target, or by a `files` entry no later `!` entry takes back. A package that ships its rules as `dist/oxlint.js`, built from a `plugin.ts` under `lint/`, is the case the second way exists for.
+`lint/` stands on the spine only where the package SHIPS it, and it ships it one of two ways. Directly: an entry of its `package.json`'s `files`, or a target of its `exports`, reaches into `lint/`. Or through its build: an entry of its `tsdown.config.*` compiles a `lint/` source, and the output it compiles to — `dist/<entry>`, or under the config's `outDir` — is published by an `exports`, `bin` or `main` target, or by a `files` entry no later `!` entry takes back. A package that ships its rules as `dist/oxlint.js`, built from an `index.ts` under `lint/`, is the case the second way exists for.
 
-A `lint/` nothing publishes holds rules no consumer receives — `src/` under another name — and is refused as `names/no-undeclared-root-folder`. The build config is read as text, never run: an entry is named for its key, `oxlint: 'lint/plugin.ts'`, or for its file where it has none.
+A `lint/` nothing publishes holds rules no consumer receives — `src/` under another name — and is refused as `names/no-undeclared-root-folder`. The build config is read as text, never run: an entry is named for its key, `oxlint: 'lint/index.ts'`, or for its file where it has none.
 
 A workspace member is a spine of its own, judged the same way from its own folder: its first-level folders owe the spine, its `lint/` answers to its own `files`, `exports` and build, and it declares the roots it keeps beyond the spine in its own `jterrazz.config.ts`. The `Makefile` stays the repository root's.
 
@@ -505,6 +505,18 @@ export default defineConfig({
 ```
 
 The file holds one section per package of the family, each package reading only its own, so a root declared anywhere else — a `jterrazz` key in `package.json` included — is not read. A file that does not load, or whose `typescript.roots` is not an object mapping each folder to its reason, is refused as `names/jterrazz-config-loads`, and the roots it meant to declare stand undeclared until it is fixed. The reason is not decoration: an entry without one is refused (`names/declared-root-states-its-reason`), and an entry whose folder holds no file git does not ignore is refused too (`names/declared-root-holds-files`), so the list shrinks as the tree does. A base package that composes others keeps its broader roots through this same declaration, never through an exemption in the gate.
+
+### The lint tree
+
+`lint/` has one tree in every repository that keeps one, whatever the package: what it ships at `index`, and a folder for each nature of what it judges with — `catalogue/` the list, `rulebook/` the decisions on upstream rules, `rules/` the rules it writes itself, `checks/` what one file cannot see, `ratchet/` the baseline, `reading/` how a rule reads a project, `self/` what only that repository is held to, `migration/` the one-shot mover of a major. A reader who knows one repository's `lint/` knows every one, so the pass holds each unit that keeps a `lint/` to it, a workspace member included.
+
+| Rule                                   | Refuses                                                                                                        |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `names/lint-root-holds-only-index`     | a file at the root of `lint/` whose name is not `index` — `index.ts`, `index.js`, `index.d.ts` and their tests |
+| `names/lint-folder-is-known`           | a folder at the root of `lint/` outside the eight                                                              |
+| `names/rule-file-in-its-family-folder` | a file under `lint/rules/<folder>/` whose catalogue row declares another family                                |
+
+The family is read off the unit's own catalogue: every file directly under `lint/catalogue/`, read as text and never run, where a row is any object literal stating an `id` or a `name` and a `family` — a JSON row and a TypeScript manifest row alike, the plugin prefix of an id left aside. A rule file is matched to its row by its name, its test with it. A unit with no catalogue, or a rule no row names, is held to the first two rules alone: a family is never guessed.
 
 ### An empty directory
 

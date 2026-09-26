@@ -293,5 +293,20 @@
         "family": "drift",
         "id": "drift/off-rule-states-its-reason",
         "sentence": "A rule the profile has on, turned off by the project, carries its // reason:."
+    },
+    {
+        "family": "tree",
+        "id": "names/lint-root-holds-only-index",
+        "sentence": "The root of lint/ holds its index and nothing else."
+    },
+    {
+        "family": "tree",
+        "id": "names/lint-folder-is-known",
+        "sentence": "Every folder of lint/ is one of catalogue, rulebook, rules, checks, ratchet, reading, self and migration."
+    },
+    {
+        "family": "tree",
+        "id": "names/rule-file-in-its-family-folder",
+        "sentence": "A rule file sits under rules/<family>/, the family its catalogue row declares."
     }
 ]

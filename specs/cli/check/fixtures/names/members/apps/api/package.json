@@ -3,6 +3,6 @@
     "private": true,
     "main": "src/index.ts",
     "exports": {
-        "./lint": "./lint/rules.js"
+        "./lint": "./lint/index.js"
     }
 }

@@ -1,0 +1,17 @@
+description: holds a lint/ with no catalogue to its root and folders, never guessing a family
+fixture: ./fixtures/names/lint-tree-uncatalogued/
+env: TYPESCRIPT_CHECK_PASSES=names
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Names (tree)
+
+          names/lint-root-holds-only-index  lint/README.md  found: `lint/README.md` sits at the root of lint/ · why: lint/ has one tree in every repository — its root holds the entry the package ships, `index`, and a folder names the nature of every other file · fix: move it into the folder its nature names — catalogue, rulebook, rules, checks, ratchet, reading, self, migration — or into docs/ if it explains · read: docs/06-quality-checks.md#the-lint-tree
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

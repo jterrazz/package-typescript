@@ -32,7 +32,7 @@ runs:
 
            RUN  Names (tree)
 
-          names/no-language-construct-name  lint/constants.ts  `constants.ts` names a construct of the language — name it for the subject it holds
+          names/no-language-construct-name  lint/checks/constants.ts  `constants.ts` names a construct of the language — name it for the subject it holds
           names/no-language-construct-name  specs/orders/constants.ts  `constants.ts` names a construct of the language — name it for the subject it holds
           names/no-language-construct-name  src/helper.ts  `helper.ts` names a construct of the language — name it for the subject it holds
           names/no-language-construct-name  src/interfaces  `interfaces` names a construct of the language — name it for the subject it holds
