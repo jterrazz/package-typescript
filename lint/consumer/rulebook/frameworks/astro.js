@@ -1,5 +1,5 @@
 import { fragment, off, on, scoped } from '../../../engine/compiler/decision.js';
-import { ASSETS } from '../import.js';
+import { IMPORT_ASSETS } from '../import.js';
 
 // oxlint parses an `.astro` file's script body but not its frontmatter as a module, so these decisions are scoped to `*.astro`.
 export default fragment({
@@ -21,7 +21,7 @@ export default fragment({
     ],
     rules: {
         // Vite resolves an asset by its extension, and Astro's `resolve.extensions` does not carry `.astro`.
-        'import/extensions': on(['never', { ...ASSETS, astro: 'always' }]),
+        'import/extensions': on(['never', { ...IMPORT_ASSETS, astro: 'always' }]),
         'no-restricted-imports': on([
             {
                 patterns: [

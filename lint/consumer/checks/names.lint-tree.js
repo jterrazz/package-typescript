@@ -1,5 +1,5 @@
 import { catalogueFamilies } from '../../engine/catalogue/families.js';
-import { exportedFunctions } from '../../engine/project/exported-functions.js';
+import { exportedFunctions, exportedValues } from '../../engine/project/exported-names.js';
 import { EVERY_NAME, importersOf } from '../../engine/project/importers.js';
 import { readText } from '../../engine/project/project-files.js';
 
@@ -93,7 +93,7 @@ function helperFinding(path, names) {
     return {
         message: [
             `found: \`${path}\` hands ${listed} to another module, named for no declaration of its file`,
-            'why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and a function a declaration exports carries its file’s name; one named for something else is code other files call, and that code is the engine’s',
+            'why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what an `index` composes; one named for something else is code or data other files share, and that is the engine’s',
             `fix: move ${names.length === 1 ? 'it' : 'them'} under engine/ — ${LINT_TREE.engine.map((folder) => `${folder}/`).join(', ')} — or, when it is this declaration’s own, name it for the file`,
             READ,
         ].join(' · '),
@@ -151,21 +151,26 @@ function misfiledRule(file, rest, families, prefix) {
 
 const isJudged = (file, fileName) => MODULE.test(fileName) && !TEST_MATERIAL.test(file);
 
-function foreignFunctions(text, fileName) {
-    const own = stemOf(fileName).replaceAll('-', '').toLowerCase();
+const bare = (name) => name.replaceAll(/[-_]/gu, '').toLowerCase();
 
-    return exportedFunctions(text).filter((name) => !name.toLowerCase().includes(own));
+function isNamedFor(name, fileName) {
+    return fileName
+        .replace(MODULE, '')
+        .split('.')
+        .some((part) => bare(name).includes(bare(part)));
 }
 
-function declarationOf(unit, file, fileName) {
+function declarationOf(unit, file, fileName, folder) {
     if (!isJudged(file, fileName)) {
-        return { findings: [], names: [] };
+        return { findings: [], functions: [], values: [] };
     }
     const text = readText(unit, file) ?? '';
+    const foreign = (names) => names.filter((name) => !isNamedFor(name, fileName));
 
     return {
         findings: PROGRAM.test(text) ? [programFinding] : [],
-        names: foreignFunctions(text, fileName),
+        functions: foreign(exportedFunctions(text)),
+        values: folder === 'catalogue' ? [] : foreign(exportedValues(text)),
     };
 }
 
@@ -179,18 +184,22 @@ const isOwnReader = (file, reader) => {
     );
 };
 
-function handedTo(file, readers, names) {
+const isComposer = (reader) =>
+    reader.startsWith(`${LINT_ROOT}/`) && isIndex(reader.slice(reader.lastIndexOf('/') + 1));
+
+function handedTo(file, readers, { functions, values }) {
     const handed = new Set();
     for (const [reader, imported] of readers) {
         if (isOwnReader(file, reader)) {
             continue;
         }
-        for (const name of names.filter((one) => imported.has(one) || imported.has(EVERY_NAME))) {
+        const judged = isComposer(reader) ? functions : [...functions, ...values];
+        for (const name of judged.filter((one) => imported.has(one) || imported.has(EVERY_NAME))) {
             handed.add(name);
         }
     }
 
-    return names.filter((name) => handed.has(name));
+    return [...functions, ...values].filter((name) => handed.has(name));
 }
 
 function sharedHelpers(unit, files, candidates) {
@@ -200,9 +209,9 @@ function sharedHelpers(unit, files, candidates) {
     const importers = importersOf(unit, files);
 
     return candidates
-        .map(({ file, names }) => ({
+        .map(({ file, ...exported }) => ({
             file,
-            names: handedTo(file, importers.get(file) ?? new Map(), names),
+            names: handedTo(file, importers.get(file) ?? new Map(), exported),
         }))
         .filter(({ names }) => names.length > 0);
 }
@@ -247,10 +256,14 @@ export function lintTreeOf(files, unit, prefix) {
             if (folder === 'rules') {
                 findings.push(...misfiledRule(file, rest, families, prefix));
             }
-            const judged = declarationOf(unit, file, rest.at(-1));
-            findings.push(...judged.findings.map((finding) => finding(`${prefix}${file}`)));
-            if (judged.names.length > 0) {
-                candidates.push({ file, names: judged.names });
+            const {
+                findings: made,
+                functions,
+                values,
+            } = declarationOf(unit, file, rest.at(-1), folder);
+            findings.push(...made.map((finding) => finding(`${prefix}${file}`)));
+            if (functions.length + values.length > 0) {
+                candidates.push({ file, functions, values });
             }
         }
     }

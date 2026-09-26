@@ -1,5 +1,5 @@
 import { allOn, fragment, off, scoped } from '../../../engine/compiler/decision.js';
-import { EXTENSIONS_NEVER } from '../import.js';
+import { IMPORT_EXTENSIONS_NEVER } from '../import.js';
 
 // `next-env.d.ts` is a side-effect import Next writes itself.
 export default fragment({
@@ -45,6 +45,6 @@ export default fragment({
             ].map((rule) => `nextjs/${rule}`),
         ),
 
-        'import/extensions': EXTENSIONS_NEVER,
+        'import/extensions': IMPORT_EXTENSIONS_NEVER,
     },
 });

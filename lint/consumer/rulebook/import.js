@@ -4,7 +4,7 @@ import { allOn, fragment, off, on } from '../../engine/compiler/decision.js';
 // `import/no-cycle` ignores type-only imports, so a value edge one way and a type edge back is invisible (oxc#20551).
 
 // A bundler resolves an asset by its extension, on every platform.
-export const ASSETS = {
+export const IMPORT_ASSETS = {
     avif: 'always',
     css: 'always',
     gif: 'always',
@@ -19,8 +19,8 @@ export const ASSETS = {
     webp: 'always',
 };
 
-export const EXTENSIONS_ALWAYS = on(['always', { ignorePackages: true, ...ASSETS }]);
-export const EXTENSIONS_NEVER = on(['never', ASSETS]);
+export const IMPORT_EXTENSIONS_ALWAYS = on(['always', { ignorePackages: true, ...IMPORT_ASSETS }]);
+export const IMPORT_EXTENSIONS_NEVER = on(['never', IMPORT_ASSETS]);
 
 export default fragment({
     id: 'import',
@@ -53,7 +53,7 @@ export default fragment({
 
         // Under `verbatimModuleSyntax`, `import { type X } from 'leaflet'` emits a runtime `import {} from 'leaflet'`.
         'import/consistent-type-specifier-style': on(['prefer-top-level']),
-        'import/extensions': EXTENSIONS_ALWAYS,
+        'import/extensions': IMPORT_EXTENSIONS_ALWAYS,
 
         'import/exports-last': off({
             by: 'docs/07-lint-presets.md — an export sits with the declaration it exports; three repositories had refused this rule locally before the decision moved here',

@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { exportedFunctions } from './exported-functions.js';
+import { exportedFunctions, exportedValues } from './exported-names.js';
 
-describe('exported-functions', () => {
+describe('exported-names', () => {
     test('names every function and class a module exports, however it is written', () => {
         // Given - a declaration, an async one, a class, arrows with and without parentheses, a generic, an ambient declaration
         const text = [
@@ -52,5 +52,21 @@ describe('exported-functions', () => {
 
         // Then - nothing is named
         expect(exportedFunctions(text)).toStrictEqual([]);
+    });
+
+    test('names every value a module exports, bound or listed, and no function, re-export or default', () => {
+        // Given - two bound values, a listed one, a function, a re-export and a default
+        const text = [
+            'export const rows = (Array.isArray(parsed) ? parsed : []).filter((row) => row);',
+            'export const HEAD_LINES = 20;',
+            'const WALK = { walked: ["lint"] };',
+            'export { WALK as FRAGMENT_WALK };',
+            'export const read = (path) => path;',
+            "export { other } from './other.js';",
+            'export default { rules: {} };',
+        ].join('\n');
+
+        // Then - the three values are named, under the names they are exported as
+        expect(exportedValues(text)).toStrictEqual(['rows', 'HEAD_LINES', 'FRAGMENT_WALK']);
     });
 });

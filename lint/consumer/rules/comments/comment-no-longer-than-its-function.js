@@ -1,7 +1,7 @@
 import { EVERY_NAME } from '../../../engine/project/importers.js';
 import { publishedNamesOf } from '../../../engine/project/published-names.js';
 
-export const RULE_NAME = 'comment-no-longer-than-its-function';
+export const COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME = 'comment-no-longer-than-its-function';
 
 const DIRECTIVE = /^\s*\*?\s*(?:(?:es|ox)lint-(?:disable|enable)|@ts-|biome-ignore)/u;
 const FUNCTIONS = new Set(['ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression']);

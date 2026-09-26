@@ -58,17 +58,20 @@ function isFunctionAt(text, start) {
     return end !== -1 && /^\s*(?::[^=;{]+)?=>/u.test(text.slice(end + 1));
 }
 
-export function exportedFunctions(text) {
-    const exported = [...text.matchAll(DECLARED)].map((match) => match.groups.name);
-    const locals = new Set([...text.matchAll(LOCAL_FUNCTION)].map((match) => match.groups.name));
+function namesOf(text) {
+    const functions = [...text.matchAll(DECLARED)].map((match) => match.groups.name);
+    const values = [];
+    const localFunctions = new Set(
+        [...text.matchAll(LOCAL_FUNCTION)].map((match) => match.groups.name),
+    );
+    const localValues = new Set();
     for (const match of text.matchAll(BOUND)) {
-        if (!isFunctionAt(text, match.index + match[0].length)) {
-            continue;
-        }
-        if (match.groups.exported === undefined) {
-            locals.add(match.groups.name);
+        const isFunction = isFunctionAt(text, match.index + match[0].length);
+        const isExported = match.groups.exported !== undefined;
+        if (isExported) {
+            (isFunction ? functions : values).push(match.groups.name);
         } else {
-            exported.push(match.groups.name);
+            (isFunction ? localFunctions : localValues).add(match.groups.name);
         }
     }
     for (const match of text.matchAll(LISTED)) {
@@ -78,11 +81,24 @@ export function exportedFunctions(text) {
                 .replace(/^type\s+/u, '')
                 .split(/\s+as\s+/u);
             const name = alias ?? local;
-            if (local !== undefined && locals.has(local) && name !== 'default') {
-                exported.push(name);
+            if (local === undefined || name === 'default') {
+                continue;
+            }
+            if (localFunctions.has(local)) {
+                functions.push(name);
+            } else if (localValues.has(local)) {
+                values.push(name);
             }
         }
     }
 
-    return [...new Set(exported)];
+    return { functions: [...new Set(functions)], values: [...new Set(values)] };
+}
+
+export function exportedFunctions(text) {
+    return namesOf(text).functions;
+}
+
+export function exportedValues(text) {
+    return namesOf(text).values;
 }

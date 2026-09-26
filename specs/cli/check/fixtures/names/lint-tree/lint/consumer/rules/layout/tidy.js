@@ -1,3 +1,4 @@
-import { listFiles } from '../../checks/tree.js';
+import { RULES } from '../../catalogue/manifest.js';
+import { listFiles, tree } from '../../checks/tree.js';
 
-export const tidy = listFiles('tidy');
+export const tidy = listFiles(tree).concat(RULES);
