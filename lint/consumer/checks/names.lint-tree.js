@@ -133,25 +133,8 @@ function misfiledRule(file, rest, families, prefix) {
     ];
 }
 
-function isPart(file, fileName, siblings) {
-    const stem = stemOf(fileName);
-    const folder = file.slice(0, file.length - fileName.length);
-    const unsuffixed = fileName.replace(/\.d\.ts$/u, '.ts');
-
-    return (
-        unsuffixed.split('.').length > 2 &&
-        siblings.some(
-            (sibling) =>
-                sibling.startsWith(folder) &&
-                !sibling.slice(folder.length).includes('/') &&
-                sibling.slice(folder.length).split('.').length === 2 &&
-                stemOf(sibling.slice(folder.length)) === stem,
-        )
-    );
-}
-
-function foreignFunctions(unit, file, fileName, lintFiles) {
-    if (!MODULE.test(fileName) || TEST_MATERIAL.test(file) || isPart(file, fileName, lintFiles)) {
+function foreignFunctions(unit, file, fileName) {
+    if (!MODULE.test(fileName) || TEST_MATERIAL.test(file)) {
         return [];
     }
     const own = stemOf(fileName).replaceAll('-', '').toLowerCase();
@@ -222,7 +205,7 @@ export function lintTreeOf(files, unit, prefix) {
             if (folder === 'rules') {
                 findings.push(...misfiledRule(file, rest, families, prefix));
             }
-            const names = foreignFunctions(unit, file, rest.at(-1), lintFiles);
+            const names = foreignFunctions(unit, file, rest.at(-1));
             if (names.length > 0) {
                 candidates.push({ file, names });
             }
