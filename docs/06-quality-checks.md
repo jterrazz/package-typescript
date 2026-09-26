@@ -328,7 +328,7 @@ A file `files` ships is judged on three counts:
 - an installed module compiled into it, when `testPackageOf` names its package — bundling `vitest` is never meant;
 - a specifier it leaves external, when `testPackageOf` names it and the package declares it neither in `dependencies` nor in `peerDependencies` — a test tool ships its runtime on purpose.
 
-What test material IS is `@jterrazz/test`'s alone: the two readers are the ones its F2 rule judges by, published on its `./oxlint` entry, and the pass loads them rather than keeping a copy. The finding states itself in four parts and sends its reader to F2's row, where the definition lives.
+What test material IS is `@jterrazz/test`'s alone: the two readers are the ones its `no-test-code-in-production` rule judges by, published on its `./oxlint` entry, and the pass loads them rather than keeping a copy. The finding states itself in four parts and sends its reader to F2's row, where the definition lives.
 
 The readers come from the install the package resolves, found by the walk [test-package.js](../lint/reading/test-package.js) keeps, and from nowhere else. The toolchain's own `@jterrazz/test` is never asked: it is the toolchain's dependency, not the package's, and it would judge a package by a definition the package never chose.
 

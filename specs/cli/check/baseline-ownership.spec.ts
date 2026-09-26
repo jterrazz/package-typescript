@@ -11,7 +11,7 @@ import { temporaryDirectory } from '../temporary-directory.js';
 
 function checker(exitCode: number): string {
     return `#!/usr/bin/env node
-process.stdout.write('[error] specs/x.spec.ts:1: a finding the stub always reports (C9)\\n');
+process.stdout.write('[error] specs/x.spec.ts:1: a finding the stub always reports (no-unused-ground)\\n');
 process.exit(${exitCode});
 `;
 }
