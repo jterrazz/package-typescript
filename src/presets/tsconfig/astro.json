@@ -5,10 +5,10 @@
         "${configDir}/node_modules",
         "${configDir}/dist",
         "${configDir}/.artifacts",
-        "${configDir}/**/fixtures",
-        "${configDir}/**/expected",
-        "${configDir}/**/seeds",
-        "${configDir}/**/requests"
+        "${configDir}/**/_fixtures",
+        "${configDir}/**/_expected",
+        "${configDir}/**/_seeds",
+        "${configDir}/**/_requests"
     ],
     "compilerOptions": {
         "allowJs": true,

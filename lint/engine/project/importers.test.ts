@@ -28,7 +28,7 @@ describe('importers', () => {
             'lint/consumer/checks/b.ts': "const loaded = await import('../../engine/tree.js');\n",
             'lint/index.ts': "export { tree } from './engine/tree.js';\n",
             'lint/engine/alone.ts': 'export const alone = 1;\n',
-            'specs/fixtures/project/reads.ts':
+            'specs/_fixtures/project/reads.ts':
                 "import { alone } from '../../../lint/engine/alone.js';\n",
         };
         const unit = unitWith(tree);

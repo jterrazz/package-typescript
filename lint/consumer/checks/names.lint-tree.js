@@ -28,7 +28,7 @@ const MODULE = /\.(?:[cm]?[jt]sx?)$/u;
 const PROGRAM =
     /\bimport\.meta\.main\b|\bprocess\.(?:argv|exit)\b|\bimport\s*\{[^}]*\b(?:argv|exit)\b[^}]*\}\s*from\s*['"](?:node:)?process['"]/u;
 
-const TEST_MATERIAL = /\.test(?:-d)?\.[cm]?[jt]sx?$|(?:^|\/)(?:expected|fixtures)\//u;
+const TEST_MATERIAL = /\.test(?:-d)?\.[cm]?[jt]sx?$|(?:^|\/)(?:_expected|_fixtures)\//u;
 
 const stemOf = (name) => name.split('.')[0] ?? '';
 

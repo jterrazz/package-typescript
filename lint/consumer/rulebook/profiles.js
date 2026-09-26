@@ -37,10 +37,10 @@ const IGNORED = Object.freeze([
     'dist/**',
     'node_modules/**',
     // The ground a test stands on is deliberately broken or held byte for byte: none of it is source.
-    '**/fixtures/**',
-    '**/expected/**',
-    '**/seeds/**',
-    '**/requests/**',
+    '**/_fixtures/**',
+    '**/_expected/**',
+    '**/_seeds/**',
+    '**/_requests/**',
 ]);
 
 export const PROFILES = Object.freeze({

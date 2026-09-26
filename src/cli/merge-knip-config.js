@@ -5,7 +5,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { workspaceMembers } from '../../lint/engine/project/workspace-members.js';
 
 // The folders @jterrazz/test reserves for what a test stands on.
-const GROUND = new Set(['expected', 'fixtures', 'requests', 'seeds']);
+const GROUND = new Set(['_expected', '_fixtures', '_requests', '_seeds']);
 
 const UNSCANNED = new Set(['dist', 'node_modules']);
 

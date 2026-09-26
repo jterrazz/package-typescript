@@ -64,14 +64,14 @@ describe('index', () => {
         // Given - overlapping ignore lists
         const merged = compose(
             { ignorePatterns: ['dist/**', 'node_modules/**'] },
-            { ignorePatterns: ['node_modules/**', '**/fixtures/**'] },
+            { ignorePatterns: ['node_modules/**', '**/_fixtures/**'] },
         );
 
         // Then - one entry each
         expect(merged.ignorePatterns).toStrictEqual([
             'dist/**',
             'node_modules/**',
-            '**/fixtures/**',
+            '**/_fixtures/**',
         ]);
     });
 
@@ -169,10 +169,10 @@ describe('index', () => {
             // Then - the four folders @jterrazz/test reserves are ignored wherever they sit
             expect(profile.ignorePatterns).toStrictEqual(
                 expect.arrayContaining([
-                    '**/fixtures/**',
-                    '**/expected/**',
-                    '**/seeds/**',
-                    '**/requests/**',
+                    '**/_fixtures/**',
+                    '**/_expected/**',
+                    '**/_seeds/**',
+                    '**/_requests/**',
                 ]),
             );
         },

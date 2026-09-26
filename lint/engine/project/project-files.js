@@ -104,7 +104,7 @@ function holdsSomething(root) {
 }
 
 // The names `@jterrazz/test` reserves; a `contracts/` a spec imports is TypeScript, not ground.
-const GROUND = new Set(['expected', 'fixtures', 'requests', 'seeds']);
+const GROUND = new Set(['_expected', '_fixtures', '_requests', '_seeds']);
 
 function isGround(path) {
     return path

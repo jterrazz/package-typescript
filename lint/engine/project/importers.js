@@ -4,7 +4,7 @@ import { readText } from './project-files.js';
 
 const MODULE = /\.(?:[cm]?[jt]sx?)$/u;
 
-const GROUND = /(?:^|[/])(?:expected|fixtures|node_modules)[/]/u;
+const GROUND = /(?:^|[/])(?:_expected|_fixtures|node_modules)[/]/u;
 
 export const EVERY_NAME = '*';
 

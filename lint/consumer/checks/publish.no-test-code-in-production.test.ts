@@ -21,7 +21,7 @@ describe('publish.no-test-code-in-production', () => {
                 moduleIds: [
                     '/package/src/index.ts',
                     '/package/src/domain/user.fixtures.ts',
-                    '/package/src/seeds/users.ts',
+                    '/package/src/_seeds/users.ts',
                 ],
             },
         ];
@@ -31,7 +31,7 @@ describe('publish.no-test-code-in-production', () => {
             found(noTestCodeInProductionFindings({ chunks, manifest: {}, reader, root })),
         ).toStrictEqual([
             'found: dist/index.js is compiled from src/domain/user.fixtures.ts, a test file',
-            'found: dist/index.js is compiled from src/seeds/users.ts, ground',
+            'found: dist/index.js is compiled from src/_seeds/users.ts, ground',
         ]);
     });
 

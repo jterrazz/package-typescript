@@ -3,10 +3,10 @@
     "include": ["${configDir}/**/*.ts", "${configDir}/**/*.tsx"],
     "exclude": [
         "${configDir}/node_modules",
-        "${configDir}/**/fixtures",
-        "${configDir}/**/expected",
-        "${configDir}/**/seeds",
-        "${configDir}/**/requests"
+        "${configDir}/**/_fixtures",
+        "${configDir}/**/_expected",
+        "${configDir}/**/_seeds",
+        "${configDir}/**/_requests"
     ],
     "compilerOptions": {
         "allowJs": true,

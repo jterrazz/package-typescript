@@ -36,9 +36,9 @@ export default defineConfig({
         '.next/**',
         '.expo/**',
         // A spec's ground is mis-shaped or held byte for byte on purpose.
-        '**/fixtures/**',
-        '**/expected/**',
-        '**/seeds/**',
-        '**/requests/**',
+        '**/_fixtures/**',
+        '**/_expected/**',
+        '**/_seeds/**',
+        '**/_requests/**',
     ],
 });

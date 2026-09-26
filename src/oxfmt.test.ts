@@ -24,10 +24,10 @@ describe('oxfmt', () => {
         // Then - the four folders @jterrazz/test reserves are skipped wherever they sit
         expect(base.ignorePatterns).toStrictEqual(
             expect.arrayContaining([
-                '**/fixtures/**',
-                '**/expected/**',
-                '**/seeds/**',
-                '**/requests/**',
+                '**/_fixtures/**',
+                '**/_expected/**',
+                '**/_seeds/**',
+                '**/_requests/**',
             ]),
         );
     });
