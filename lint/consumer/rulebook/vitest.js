@@ -1,4 +1,4 @@
-import { allOn, fragment, off, on, scoped, unsafeFix } from '../../engine/rulebook/decision.js';
+import { allOn, fragment, off, on, scoped, unsafeFix } from '../../engine/compiler/decision.js';
 
 // Four offs are one half of an exclusive pair; `exclusive-pairs.test.ts` proves no profile arms both.
 

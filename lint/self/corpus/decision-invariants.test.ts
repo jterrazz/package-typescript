@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 
 import { PROFILES } from '../../consumer/rulebook/profiles.js';
 import { decisions } from '../../engine/catalogue/decisions.js';
-import { fragment, off, on, REASON_KINDS, unsafeFix } from '../../engine/rulebook/decision.js';
+import { fragment, off, on, REASON_KINDS, unsafeFix } from '../../engine/compiler/decision.js';
 import { lintFragments } from '../../engine/testing/lint-fragments.js';
 import problemsOf from './decision-invariants.js';
 

@@ -1,4 +1,4 @@
-import { allOn, fragment, off, on } from '../../engine/rulebook/decision.js';
+import { allOn, fragment, off, on } from '../../engine/compiler/decision.js';
 
 // `import/extensions` is re-decided per platform (next, astro, react-native, bundler), always at `error`.
 // `import/no-cycle` ignores type-only imports, so a value edge one way and a type edge back is invisible (oxc#20551).

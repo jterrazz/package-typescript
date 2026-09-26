@@ -1,4 +1,4 @@
-import { layers } from '../../engine/rulebook/layers.js';
+import { layers } from '../../engine/compiler/layers.js';
 
 // The dependency arrow points inward: the domain knows nothing, the application knows the domain.
 export const HEXAGONAL_MAP = Object.freeze([

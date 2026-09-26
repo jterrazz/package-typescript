@@ -6,7 +6,7 @@ import {
     scoped,
     typeAware,
     unsafeFix,
-} from '../../engine/rulebook/decision.js';
+} from '../../engine/compiler/decision.js';
 
 // Every rule tsgolint runs is decided, nursery included, so a tsgolint release never adds an unnamed check.
 

@@ -471,7 +471,7 @@ The root's own folders are the same in every repository: `src/` the product's co
 | `names/lint-folder-is-known`             | Every folder of lint/ is one of consumer, self and engine.                                                                        |
 | `names/consumer-folder-is-known`         | Every folder of lint/consumer/ is one of catalogue, rulebook, rules and checks, and no file sits at its root.                     |
 | `names/self-folder-is-known`             | Every folder of lint/self/ is one of catalogue, rules, checks and corpus, and only its index sits at its root.                    |
-| `names/engine-folder-is-known`           | Every folder of lint/engine/ is one of project, baseline, checker, catalogue, rulebook and testing, and no file sits at its root. |
+| `names/engine-folder-is-known`           | Every folder of lint/engine/ is one of project, baseline, checker, catalogue, compiler and testing, and no file sits at its root. |
 | `names/audience-holds-only-declarations` | A module under lint/consumer/ or lint/self/ hands another module no function but one named for its file.                          |
 | `names/rule-file-in-its-family-folder`   | A rule file sits under rules/<family>/, the family its catalogue row declares.                                                    |
 
@@ -544,7 +544,7 @@ The file holds one section per package of the family, each package reading only 
 - `names/lint-folder-is-known` refuses a folder of `lint/` outside the three.
 - `names/consumer-folder-is-known` refuses a folder of `consumer/` outside `catalogue/`, `rulebook/`, `rules/` and `checks/`, and a file at its root.
 - `names/self-folder-is-known` refuses a folder of `self/` outside `catalogue/`, `rules/`, `checks/` and `corpus/`, and a file at its root but its `index`, which composes the self declarations with the engine.
-- `names/engine-folder-is-known` refuses a folder of `engine/` outside `project/`, `baseline/`, `checker/`, `catalogue/`, `rulebook/` and `testing/`, and a file at its root.
+- `names/engine-folder-is-known` refuses a folder of `engine/` outside `project/`, `baseline/`, `checker/`, `catalogue/`, `compiler/` and `testing/`, and a file at its root.
 - `names/audience-holds-only-declarations` refuses a module of `consumer/` or `self/` that hands another module a function named for something other than its file.
 - `names/rule-file-in-its-family-folder` refuses a rule file of `consumer/rules/` or `self/rules/` filed at the root of `rules/`, or under a folder its catalogue row does not name.
 

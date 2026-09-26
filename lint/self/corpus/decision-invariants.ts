@@ -1,4 +1,4 @@
-import { REASON_KINDS } from '../../engine/rulebook/decision.js';
+import { REASON_KINDS } from '../../engine/compiler/decision.js';
 
 // `fragment()` is not exported, so the decision invariants are a `self` rule, audited over every
 // fragment a module of `lint/` or `src/` exports, whether a profile carries it or not.

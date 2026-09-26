@@ -1,4 +1,4 @@
-import { allOn, fragment, off } from '../../engine/rulebook/decision.js';
+import { allOn, fragment, off } from '../../engine/compiler/decision.js';
 
 // The three offs restrict syntax for a target older than the one the estate compiles to.
 export default fragment({

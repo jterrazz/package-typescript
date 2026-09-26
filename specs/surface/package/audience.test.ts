@@ -5,7 +5,7 @@ import { describe, expect, test } from 'vitest';
 
 import { PROFILES } from '../../../lint/consumer/rulebook/profiles.js';
 import { decisions } from '../../../lint/engine/catalogue/decisions.js';
-import { AUDIENCES } from '../../../lint/engine/rulebook/decision.js';
+import { AUDIENCES } from '../../../lint/engine/compiler/decision.js';
 import { lintFragments } from '../../../lint/engine/testing/lint-fragments.js';
 
 // A `self` row names the home that holds it — a path the package leaves out — and the names the tarball audit greps for.

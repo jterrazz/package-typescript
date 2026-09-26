@@ -1,4 +1,4 @@
-import { allOn, fragment, off, scoped } from '../../../engine/rulebook/decision.js';
+import { allOn, fragment, off, scoped } from '../../../engine/compiler/decision.js';
 import { EXTENSIONS_NEVER } from '../import.js';
 
 // `next-env.d.ts` is a side-effect import Next writes itself.

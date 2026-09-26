@@ -317,7 +317,7 @@
     {
         "family": "tree",
         "id": "names/engine-folder-is-known",
-        "sentence": "Every folder of lint/engine/ is one of project, baseline, checker, catalogue, rulebook and testing, and no file sits at its root."
+        "sentence": "Every folder of lint/engine/ is one of project, baseline, checker, catalogue, compiler and testing, and no file sits at its root."
     },
     {
         "family": "tree",

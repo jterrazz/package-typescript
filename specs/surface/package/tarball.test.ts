@@ -89,7 +89,7 @@ describe('tarball', () => {
     test('the tarball carries no test file', () => {
         // Given - every path npm would publish
         const { paths } = pack('--dry-run');
-        expect(paths).toContain('lint/engine/rulebook/decision.js');
+        expect(paths).toContain('lint/engine/compiler/decision.js');
 
         // Then - no meta-test, no module test and no spec ships, whatever its extension
         expect(
@@ -128,7 +128,7 @@ describe('tarball', () => {
         const oxlint = await loadPacked(tree, 'lint/index.js');
         const index = await loadPacked(tree, 'src/index.js');
         const hexagonal = await loadPacked(tree, 'lint/consumer/rulebook/hexagonal.js');
-        const compiler = await loadPacked(tree, 'lint/engine/rulebook/compile.js');
+        const compiler = await loadPacked(tree, 'lint/engine/compiler/compile.js');
         const entries = catalogueOf(
             await loadPacked(tree, 'lint/engine/catalogue/decisions.js'),
             await loadPacked(tree, 'lint/consumer/rulebook/profiles.js'),

@@ -85,7 +85,7 @@
         "channel": "runtime",
         "id": "layer-map-id",
         "message": "A layer map needs an id.",
-        "module": "lint/engine/rulebook/layers.js"
+        "module": "lint/engine/compiler/layers.js"
     },
     {
         "audience": "consumer",
@@ -93,7 +93,7 @@
         "channel": "runtime",
         "id": "layer-map-disjoint",
         "message": "an override replaces, so one map entry would erase the other",
-        "module": "lint/engine/rulebook/layers.js"
+        "module": "lint/engine/compiler/layers.js"
     },
     {
         "audience": "consumer",

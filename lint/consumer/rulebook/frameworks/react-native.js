@@ -1,4 +1,4 @@
-import { fragment, on } from '../../../engine/rulebook/decision.js';
+import { fragment, on } from '../../../engine/compiler/decision.js';
 import { EXTENSIONS_NEVER } from '../import.js';
 
 // oxlint ships no `react-native` plugin. Metro resolves an import but resolves an asset by its extension,

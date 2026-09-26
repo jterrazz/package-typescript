@@ -1,4 +1,4 @@
-import { allOn, fragment, off } from '../../engine/rulebook/decision.js';
+import { allOn, fragment, off } from '../../engine/compiler/decision.js';
 
 export default fragment({
     id: 'node',

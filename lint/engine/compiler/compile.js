@@ -12,14 +12,14 @@ const CONCAT = new Set(['overrides']);
 // The last config wins per key.
 const SHALLOW_MERGE = new Set(['env', 'globals', 'options', 'rules', 'settings']);
 
-export function compile(fragment) {
+export function compile(fragment, pluginPaths = {}) {
     const config = { rules: rulesOf(fragment.decisions) };
 
     if (fragment.plugins.length > 0) {
         config.plugins = [...fragment.plugins];
     }
     if (fragment.jsPlugins.length > 0) {
-        config.jsPlugins = [...fragment.jsPlugins];
+        config.jsPlugins = fragment.jsPlugins.map((plugin) => pluginPaths[plugin] ?? plugin);
     }
     if (fragment.ignorePatterns.length > 0) {
         config.ignorePatterns = [...fragment.ignorePatterns];
@@ -82,8 +82,8 @@ function asArray(value) {
     return Array.isArray(value) ? value : [value];
 }
 
-export function profile({ fragments, env, globals, ignorePatterns = [] }) {
-    return merge(...fragments.map((one) => compile(one)), {
+export function profile({ fragments, env, globals, ignorePatterns = [] }, pluginPaths = {}) {
+    return merge(...fragments.map((one) => compile(one, pluginPaths)), {
         env,
         globals,
         ignorePatterns,

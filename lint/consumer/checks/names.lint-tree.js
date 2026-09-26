@@ -7,7 +7,7 @@ export const LINT_ROOT = 'lint';
 
 const TREE = Object.freeze({
     consumer: Object.freeze(['catalogue', 'rulebook', 'rules', 'checks']),
-    engine: Object.freeze(['project', 'baseline', 'checker', 'catalogue', 'rulebook', 'testing']),
+    engine: Object.freeze(['project', 'baseline', 'checker', 'catalogue', 'compiler', 'testing']),
     self: Object.freeze(['catalogue', 'rules', 'checks', 'corpus']),
 });
 
@@ -36,7 +36,7 @@ const bySorted = (left, right) => (left < right ? -1 : 1);
 const HOLDS = Object.freeze({
     consumer:
         'the declarations every consumer is held to — the catalogue, the rulebook of upstream decisions, our own rules by family, the checks',
-    engine: 'what runs the declarations and knows none of them — how a project is read, the baseline, the checker, the catalogue rendered, the rulebook compiled, the test tooling',
+    engine: 'what runs the declarations and knows none of them — how a project is read, the baseline, the checker, the catalogue rendered, the compiler of a rulebook into a config, the test tooling',
     self: 'the declarations only this repository is held to — its catalogue, its rules by family, its checks, the meta-tests of its corpus',
 });
 
