@@ -462,7 +462,7 @@ A construct is judged on the WHOLE name: `type-registry.ts` names a subject and 
 
 ### The repository spine
 
-The root's own folders are the same in every repository: `src/` the product's code, `lint/` the lint rules a package ships, `specs/` the specifications, `docs/` the manual, `skills/` one short page per skill — and `apps/` or `packages/` where a workspace keeps its members, each a spine of its own. What the tree calls a root is therefore judged too. The table holds the whole `tree` family: the spine's rules, and those of [the lint tree](#the-lint-tree) and [an empty directory](#an-empty-directory) below.
+The root's own folders are the same in every repository: `src/` the product's code, `lint/` the lint rules a package ships, `specs/` the specifications, `docs/` the manual, `skills/` one short page per skill — and `apps/` or `packages/` where a workspace keeps its members, each a spine of its own. What the tree calls a root is therefore judged too. The table holds the whole `tree` family: the spine's rules, and those of [the lint tree](#the-lint-tree) and [an empty directory](#an-empty-directory) below. The family names what a rule judges; the prefix names the pass that prints it, and the Names pass prints both families, so a `tree` rule reads `names/…` like a `names` one.
 
 <!-- GENERATED:findings tree -->
 
