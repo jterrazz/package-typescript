@@ -50,7 +50,7 @@ One block is spanned for good: oxlint's own report. The linter picks its form fr
 
 ## The rulebook has seven suites
 
-The presets are the one part of this package a document cannot reach: `check` loads a preset from the consumer's `node_modules`, and a copied fixture has none. So `specs/cli/preset/` drives the tools directly — the B9w exception `oxlint.specification.ts` states — and seven suites divide the claim between them.
+The presets are the one part of this package a document cannot reach: `check` loads a preset from the consumer's `node_modules`, and a copied fixture has none. So `specs/cli/preset/` drives the tools directly — the `cli-runs-the-product-binary` exception `oxlint.specification.ts` states — and seven suites divide the claim between them.
 
 | Suite                 | Claims                                                                                                                                                          |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |

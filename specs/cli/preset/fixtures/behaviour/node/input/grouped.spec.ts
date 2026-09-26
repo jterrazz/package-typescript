@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 /*
  * A test file's one `describe` is a function as long as the file, so the
  * function cap would refuse every file past sixty lines. The cap is off under
- * `*.spec.ts`, and `@jterrazz/test`'s C34 caps what it would have caught, a test
+ * `*.spec.ts`, and `@jterrazz/test`'s `test-body-within-line-limit` caps what it would have caught, a test
  * body. The group below spans more than sixty lines and is reported by nothing.
  */
 

@@ -7,27 +7,27 @@ export default fragment({
     audience: 'consumer',
     plugins: ['eslint'],
     overrides: [
-        // A spec file's size has one judge: `@jterrazz/test`'s C33, at 400 lines.
+        // A spec file's size has one judge: `@jterrazz/test`'s `spec-file-within-line-limit`, at 400 lines.
         scoped({
             files: ['**/*.spec.ts'],
             rules: {
                 'max-lines': off({
-                    by: '@jterrazz/test C33 — a spec file holds at most 400 lines, and one cap judges a file',
+                    by: '@jterrazz/test spec-file-within-line-limit — a spec file holds at most 400 lines, and one cap judges a file',
                     kind: 'covered',
                 }),
             },
             since: SIZE_SINCE,
         }),
-        // A test file's one `describe` (C31) is a function as long as the file; C34 caps a test body instead.
+        // A test file's one `describe` (`one-describe-per-file`) is a function as long as the file; `test-body-within-line-limit` caps a test body instead.
         scoped({
             files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts'],
             rules: {
                 'max-lines-per-function': off({
-                    by: "@jterrazz/test C34 — a test body holds at most 60 lines, and a test file's one describe is as long as the file",
+                    by: "@jterrazz/test test-body-within-line-limit — a test body holds at most 60 lines, and a test file's one describe is as long as the file",
                     kind: 'covered',
                 }),
                 'max-statements': off({
-                    by: '@jterrazz/test C34 — a test body holds at most 60 lines, and oxfmt puts one statement per line',
+                    by: '@jterrazz/test test-body-within-line-limit — a test body holds at most 60 lines, and oxfmt puts one statement per line',
                     kind: 'covered',
                 }),
             },
@@ -194,7 +194,7 @@ export default fragment({
         complexity: { ...on([{ max: 12, variant: 'modified' }]), since: SIZE_SINCE },
         'func-style': on(['declaration', { allowArrowFunctions: true }]),
         'max-depth': on([4]),
-        // Both caps count every line, comments included, as C33 does.
+        // Both caps count every line, comments included, as `spec-file-within-line-limit` does.
         'max-lines': { ...on([{ max: 300 }]), since: SIZE_SINCE },
         'max-lines-per-function': { ...on([{ max: 60 }]), since: SIZE_SINCE },
         'max-params': on([4]),
