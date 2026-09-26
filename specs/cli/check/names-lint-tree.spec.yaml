@@ -1,4 +1,4 @@
-description: holds lint/ to its tree — the index alone at its root, eight folders, each rule under its family
+description: holds lint/ to its tree, a member's too — index files at its root, eight folders, rules by family
 fixture: ./fixtures/names/lint-tree/
 env: TYPESCRIPT_CHECK_PASSES=names
 runs:
@@ -13,6 +13,7 @@ runs:
           names/rule-file-in-its-family-folder  lint/rules/layout/no-sleep.js  found: `lint/rules/layout/no-sleep.js` sits under `rules/layout/`, and its catalogue row gives it the family `chain` · why: a rule file sits under the folder of its family, so the tree and the catalogue say one thing · fix: move it to `rules/chain/`, or correct the family its catalogue row declares · read: docs/06-quality-checks.md#the-lint-tree
           names/rule-file-in-its-family-folder  lint/rules/no-sleep.js  found: `lint/rules/no-sleep.js` sits at the root of `rules/`, and its catalogue row gives it the family `chain` · why: a rule file sits under the folder of its family, so the tree and the catalogue say one thing · fix: move it to `rules/chain/`, or correct the family its catalogue row declares · read: docs/06-quality-checks.md#the-lint-tree
           names/lint-folder-is-known  lint/language/  found: `lint/language/` is not a folder of the lint tree · why: lint/ has one tree in every repository, so its folders are the eight that name a nature — catalogue, rulebook, rules, checks, ratchet, reading, self, migration · fix: move its files where their nature puts them — a decision on an upstream rule under rulebook/, a rule of our own under rules/<family>/, a pass under checks/, a reader they share under reading/ · read: docs/06-quality-checks.md#the-lint-tree
+          names/lint-folder-is-known  packages/tool/lint/scripts/  found: `packages/tool/lint/scripts/` is not a folder of the lint tree · why: lint/ has one tree in every repository, so its folders are the eight that name a nature — catalogue, rulebook, rules, checks, ratchet, reading, self, migration · fix: move its files where their nature puts them — a decision on an upstream rule under rulebook/, a rule of our own under rules/<family>/, a pass under checks/, a reader they share under reading/ · read: docs/06-quality-checks.md#the-lint-tree
           ✗ Failed with exit code 1
 
            END  Finalizing quality checks
