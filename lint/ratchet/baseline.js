@@ -5,6 +5,8 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
+import { RENAMED_IDS } from '../migration/renamed-ids.js';
+
 export const BASELINE = 'jterrazz.baseline.json';
 
 export const SECTION = 'typescript';
@@ -132,6 +134,9 @@ export function judge(counts, baseline) {
     }
 
     for (const rule of Object.keys(baseline).toSorted()) {
+        if (Object.hasOwn(RENAMED_IDS, rule)) {
+            continue;
+        }
         if (isTestOwned(rule)) {
             broken.push(
                 `${rule} is @jterrazz/test's rule — its entry belongs in ${labelOf(TEST_SECTION)}, which that package records and judges`,

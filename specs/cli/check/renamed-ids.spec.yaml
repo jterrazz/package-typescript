@@ -44,7 +44,6 @@ runs:
            RUN  Comments (density)
 
           comments/no-prose-comment-line  jterrazz.baseline.json › typescript  found: 4 comment lines — 36% of 11 source lines, and no `comments/no-prose-comment-line` entry records them · why: the default is no comment — a name carries the meaning, and the count is held exactly so no comment arrives unseen · fix: delete the comments a name can carry, then run 'typescript baseline' to record the count that is left · read: docs/06-quality-checks.md#the-comments-density-pass
-          baseline-ratchet  jterrazz.baseline.json › typescript  comments/comment-lines is at zero — the ratchet moved, delete its entry
           ✗ Failed with exit code 1
 
            RUN  Secrets (credentials)
