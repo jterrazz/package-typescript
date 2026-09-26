@@ -70,8 +70,7 @@ const hasConstructSuffix = (fileName) =>
     fileName.split('.').slice(1, -1).includes(CONSTRUCT_SUFFIX);
 
 const isShortcut = (name) =>
-    name
-        .toLowerCase()
+    unmarked(name)
         .split('-')
         .some((segment) => SHORTCUTS.has(segment));
 
