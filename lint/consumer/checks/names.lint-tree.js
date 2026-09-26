@@ -5,7 +5,7 @@ import { readText } from '../../engine/project/project-files.js';
 
 export const LINT_ROOT = 'lint';
 
-const TREE = Object.freeze({
+export const LINT_TREE = Object.freeze({
     consumer: Object.freeze(['catalogue', 'rulebook', 'rules', 'checks']),
     engine: Object.freeze(['project', 'baseline', 'checker', 'catalogue', 'compiler', 'testing']),
     self: Object.freeze(['catalogue', 'rules', 'checks', 'corpus']),
@@ -19,7 +19,7 @@ const FOLDER_RULES = Object.freeze({
     self: 'names/self-folder-is-known',
 });
 
-const LINT_FOLDERS = Object.keys(TREE);
+const LINT_FOLDERS = Object.keys(LINT_TREE);
 
 const READ = 'read: docs/06-quality-checks.md#the-lint-tree';
 
@@ -70,7 +70,7 @@ function lintFolderFinding(path) {
 }
 
 function audienceFolderFinding(path, audience, isFile) {
-    const folders = TREE[audience];
+    const folders = LINT_TREE[audience];
     const found = isFile
         ? `found: \`${path}\` sits at the root of ${audience}/`
         : `found: \`${path}\` is not a folder of ${audience}/`;
@@ -94,7 +94,7 @@ function helperFinding(path, names) {
         message: [
             `found: \`${path}\` hands ${listed} to another module, named for no declaration of its file`,
             'why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and a function a declaration exports carries its file’s name; one named for something else is code other files call, and that code is the engine’s',
-            `fix: move ${names.length === 1 ? 'it' : 'them'} under engine/ — ${TREE.engine.map((folder) => `${folder}/`).join(', ')} — or, when it is this declaration’s own, name it for the file`,
+            `fix: move ${names.length === 1 ? 'it' : 'them'} under engine/ — ${LINT_TREE.engine.map((folder) => `${folder}/`).join(', ')} — or, when it is this declaration’s own, name it for the file`,
             READ,
         ].join(' · '),
         path,
@@ -217,7 +217,7 @@ function placementOf(top, folder, rest) {
     if (rest.length === 0) {
         return top === 'self' && isIndex(folder) ? 'placed' : 'audience-root';
     }
-    if (!TREE[top].includes(folder)) {
+    if (!LINT_TREE[top].includes(folder)) {
         return 'foreign-folder';
     }
 

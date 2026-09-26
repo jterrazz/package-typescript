@@ -2,27 +2,37 @@
 import { testing } from '@jterrazz/test/oxlint';
 import { compose, defineConfig, layers, node } from '@jterrazz/typescript/oxlint';
 
+import { LINT_TREE } from './lint/consumer/checks/names.lint-tree.js';
+
 const SELF = '**/self/**';
 const SOURCE = '**/src/**';
 const ENGINE = '**/engine/**';
+const CONSUMER = '**/consumer/**';
 
-const DECLARATIONS = ['catalogue', 'rulebook', 'rules', 'checks'] as const;
+type Audience = 'consumer' | 'self';
 
-type Declaration = (typeof DECLARATIONS)[number];
+const READS: Record<Audience, { allow: string[]; deny: string[]; reaches: string }> = {
+    consumer: { allow: [ENGINE], deny: [SELF], reaches: 'catalogue/ and engine/ alone' },
+    self: { allow: [ENGINE, CONSUMER], deny: [], reaches: 'catalogue/, consumer/ and engine/' },
+};
 
-function consumerFolder(folder: Declaration, message: string) {
+function audienceFolder(audience: Audience, folder: string) {
+    const isCatalogue = folder === 'catalogue';
+    const siblings = LINT_TREE[audience].filter(
+        (other) => other !== folder && (isCatalogue || other !== 'catalogue'),
+    );
+    const reads = READS[audience];
+
     return {
-        allow: [ENGINE],
+        allow: isCatalogue ? [ENGINE] : reads.allow,
         deny: [
-            ...DECLARATIONS.filter((other) => other !== folder && other !== 'catalogue').map(
-                (other) => `**/${other}/**`,
-            ),
-            SELF,
+            ...siblings.map((other) => `**/${other}/**`),
+            ...(isCatalogue ? [CONSUMER, SELF] : reads.deny),
             SOURCE,
-        ],
-        files: [`lint/consumer/${folder}/**`],
-        message: `${message}, never self/ nor src/`,
-        name: `lint/consumer/${folder}`,
+        ].filter((glob) => glob !== `**/${audience}/**`),
+        files: [`lint/${audience}/${folder}/**`],
+        message: `lint/${audience}/${folder}/ reaches ${isCatalogue ? 'engine/ alone — every declaration reads its sentence from it' : reads.reaches}, never src/`,
+        name: `lint/${audience}/${folder}`,
     };
 }
 
@@ -30,19 +40,14 @@ const lintDirection = layers({
     id: 'lint-direction',
     map: [
         {
-            deny: ['**/consumer/**', SELF, SOURCE],
+            deny: [CONSUMER, SELF, SOURCE],
             files: ['lint/engine/**'],
             message:
                 'lint/engine/ runs declarations and knows none — it receives them from an index, never imports consumer/, self/ nor src/',
             name: 'lint/engine',
         },
-        consumerFolder(
-            'catalogue',
-            'lint/consumer/catalogue/ reaches engine/ alone — every rule and decision reads its sentence from it',
-        ),
-        consumerFolder('rulebook', 'lint/consumer/rulebook/ reaches catalogue/ and engine/ alone'),
-        consumerFolder('rules', 'lint/consumer/rules/ reaches catalogue/ and engine/ alone'),
-        consumerFolder('checks', 'lint/consumer/checks/ reaches catalogue/ and engine/ alone'),
+        ...LINT_TREE.consumer.map((folder) => audienceFolder('consumer', folder)),
+        ...LINT_TREE.self.map((folder) => audienceFolder('self', folder)),
         {
             deny: [SELF, SOURCE],
             files: ['lint/index.*'],
@@ -52,10 +57,9 @@ const lintDirection = layers({
         },
         {
             deny: [SOURCE],
-            files: ['lint/self/**'],
-            message:
-                'lint/self/ holds this repository to account through lint/, never src/ (the command)',
-            name: 'lint/self',
+            files: ['lint/self/index.*'],
+            message: 'lint/self/ holds this repository to account through lint/, never src/',
+            name: 'lint/self/index',
         },
         {
             deny: [SELF],
