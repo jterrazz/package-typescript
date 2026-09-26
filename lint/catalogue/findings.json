@@ -6,7 +6,7 @@
     },
     {
         "family": "comments",
-        "id": "comments/no-prose-comment-line",
+        "id": "comments/comment-lines-held-by-the-baseline",
         "sentence": "The count of comment lines a project holds is exactly the count its baseline records."
     },
     {

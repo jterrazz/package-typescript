@@ -1,5 +1,5 @@
 {
-    "comments/comment-lines": "comments/no-prose-comment-line",
+    "comments/comment-lines": "comments/comment-lines-held-by-the-baseline",
     "jterrazz-typescript/comment-longer-than-function": "jterrazz-typescript/comment-no-longer-than-its-function",
     "names/names-grab-bag": "names/no-grab-bag-name",
     "names/names-construct": "names/no-language-construct-name",

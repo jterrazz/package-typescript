@@ -9,7 +9,7 @@ import { commentSpansOf, isDirective, SOURCE } from '../reading/comments.js';
 import { ignorePatternsOf, orRefused, projectFiles, readText } from '../reading/project-files.js';
 
 const NAMESPACE = 'comments/';
-const ENTRY = 'comments/no-prose-comment-line';
+const ENTRY = 'comments/comment-lines-held-by-the-baseline';
 const RULE = ENTRY.slice(NAMESPACE.length);
 const GENERATED = /@generated\b/u;
 const GENERATED_HEAD_LINES = 5;
