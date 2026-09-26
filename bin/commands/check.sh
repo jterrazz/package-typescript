@@ -318,6 +318,8 @@ tmp_dir=$(mktemp -d)
 cleanup() { rm -rf "$tmp_dir"; }
 trap cleanup EXIT
 
+RENAMED_IDS=(--renamed "$PACKAGE_ROOT/lint/migration/renamed-ids.json")
+
 rewrite_renamed_ids_before_any_pass() {
     node "$PACKAGE_ROOT/lint/migration/rename.js" . "${LINT_ARGS[@]}" --fix > "$tmp_dir/renamed.log" 2>&1
 }
@@ -505,14 +507,14 @@ run_checks() {
     [ "$FIX_MODE" = true ] && names_mode=(--fix)
     if [ "$runs_names" = true ]; then
         node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/lint/checks/names.js" . "${LINT_ARGS[@]}" \
-            "${names_mode[@]}" > "$tmp_dir/names.log" 2>&1 &
+            "${names_mode[@]}" "${RENAMED_IDS[@]}" > "$tmp_dir/names.log" 2>&1 &
         names_pid=$!
     fi
 
     local comments_pid=""
     local comments_status=0
     if [ "$runs_comments" = true ] && [ "$FIX_MODE" = false ]; then
-        node "$PACKAGE_ROOT/lint/checks/comments.js" . "${LINT_ARGS[@]}" \
+        node "$PACKAGE_ROOT/lint/checks/comments.js" . "${LINT_ARGS[@]}" "${RENAMED_IDS[@]}" \
             --report "$tmp_dir/comments.json" > "$tmp_dir/comments.log" 2>&1 &
         comments_pid=$!
     fi
@@ -647,7 +649,7 @@ run_checks() {
             names_report=(--names "$tmp_dir/names.json" --comments "$tmp_dir/comments.json")
         fi
         node "$PACKAGE_ROOT/lint/ratchet/baseline.js" "$tmp_dir/lint.json" . \
-            "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" > "$tmp_dir/ratchet.log" 2>&1
+            "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" "${RENAMED_IDS[@]}" > "$tmp_dir/ratchet.log" 2>&1
         lint_status=$?
         if [ "$FIX_MODE" = true ]; then
             cat "$tmp_dir/renamed.log" "$tmp_dir/ratchet.log" > "$tmp_dir/ratchet-renamed.log"

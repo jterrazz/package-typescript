@@ -4,7 +4,7 @@ import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { judge, LABEL, readBaseline, reRecord } from '../ratchet/baseline.js';
+import { judge, LABEL, readBaseline, renamedOf, reRecord } from '../ratchet/baseline.js';
 import { commentSpansOf, isDirective, SOURCE } from '../reading/comments.js';
 import { ignorePatternsOf, orRefused, projectFiles, readText } from '../reading/project-files.js';
 
@@ -68,7 +68,7 @@ function verdictOf(count, recorded, density) {
 const ownedOf = (section) =>
     Object.fromEntries(Object.entries(section).filter(([rule]) => rule.startsWith(NAMESPACE)));
 
-const VALUED_FLAGS = new Set(['--ignore-pattern', '--report']);
+const VALUED_FLAGS = new Set(['--ignore-pattern', '--renamed', '--report']);
 
 if (import.meta.main) {
     const root = resolve(
@@ -108,7 +108,9 @@ if (import.meta.main) {
         recorded = ownedOf(section);
     }
 
-    const stray = judge(counts, recorded).filter((reason) => !reason.startsWith(`${ENTRY} `));
+    const stray = judge(counts, recorded, renamedOf(argv)).filter(
+        (reason) => !reason.startsWith(`${ENTRY} `),
+    );
     if (count !== (recorded[ENTRY] ?? 0)) {
         const density = densityOf(count, sourceLines);
         stdout.write(`${ENTRY}  ${LABEL}  ${verdictOf(count, recorded[ENTRY], density)}\n`);

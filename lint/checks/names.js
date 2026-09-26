@@ -4,7 +4,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, matchesGlob, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { judge, LABEL, readBaseline, reRecord } from '../ratchet/baseline.js';
+import { judge, LABEL, readBaseline, renamedOf, reRecord } from '../ratchet/baseline.js';
 import { catalogueFamilies } from '../reading/catalogue-families.js';
 import { emptyDirectories, removeEmptyDirectory } from '../reading/empty-directories.js';
 import { readSection, SETTINGS_FILE } from '../reading/jterrazz-config.js';
@@ -511,7 +511,7 @@ const NAMESPACE = 'names/';
 
 const codeOf = (rule) => `names(${rule.slice(NAMESPACE.length)})`;
 
-const VALUED_FLAGS = new Set(['--format', '--ignore-pattern', '--report']);
+const VALUED_FLAGS = new Set(['--format', '--ignore-pattern', '--renamed', '--report']);
 
 const flagValue = (flag) => {
     const index = argv.indexOf(flag);
@@ -592,7 +592,7 @@ if (argv.includes('--fix')) {
     recorded = ownedOf(section);
 }
 
-const broken = judge(counts, recorded);
+const broken = judge(counts, recorded, renamedOf(argv));
 for (const reason of broken) {
     stdout.write(`baseline-ratchet  ${LABEL}  ${reason}\n`);
 }

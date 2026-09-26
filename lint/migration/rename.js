@@ -8,7 +8,7 @@ import { LABEL, readBaseline, reKey } from '../ratchet/baseline.js';
 import { SOURCE } from '../reading/comments.js';
 import CONFIGS from '../reading/oxlint-config-names.json' with { type: 'json' };
 import { ignorePatternsOf, projectFiles, readText } from '../reading/project-files.js';
-import { RENAMED_IDS } from './renamed-ids.js';
+import RENAMED_IDS from './renamed-ids.json' with { type: 'json' };
 
 const READ = 'read: docs/06-quality-checks.md#a-renamed-id';
 

@@ -5,8 +5,6 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { RENAMED_IDS } from '../migration/renamed-ids.js';
-
 export const BASELINE = 'jterrazz.baseline.json';
 
 export const SECTION = 'typescript';
@@ -115,7 +113,7 @@ export function legacyOf(root) {
         );
 }
 
-export function judge(counts, baseline) {
+export function judge(counts, baseline, renamed = new Set()) {
     const broken = [];
 
     for (const [rule, count] of Object.entries(counts).toSorted(([left], [right]) =>
@@ -134,7 +132,7 @@ export function judge(counts, baseline) {
     }
 
     for (const rule of Object.keys(baseline).toSorted()) {
-        if (Object.hasOwn(RENAMED_IDS, rule)) {
+        if (renamed.has(rule)) {
             continue;
         }
         if (isTestOwned(rule)) {
@@ -201,6 +199,17 @@ export function reKey(root, renamed) {
     writeFileSync(path, withSection(text, section));
 
     return moved.toSorted().map((rule) => ({ from: rule, to: renamed[rule] }));
+}
+
+export function renamedOf(args) {
+    const index = args.indexOf('--renamed');
+    if (index === -1 || args[index + 1] === undefined) {
+        return new Set();
+    }
+
+    const renamed = JSON.parse(readFileSync(args[index + 1], 'utf8'));
+
+    return new Set(Object.keys(renamed));
 }
 
 export function heldSummary(counts) {
@@ -337,8 +346,11 @@ if (import.meta.main) {
     const namesPath = flagValue('--names');
     const commentsPath = flagValue('--comments');
     const linterExit = flagValue('--linter-exit');
+    const renamed = renamedOf(argv);
     const flagValues = new Set(
-        [namesPath, commentsPath, linterExit].filter((value) => value !== undefined),
+        [namesPath, commentsPath, linterExit, flagValue('--renamed')].filter(
+            (value) => value !== undefined,
+        ),
     );
     const positional = argv
         .slice(2)
@@ -425,7 +437,7 @@ if (import.meta.main) {
         if (rules.length > 0 || legacy.length > 0) {
             exit(1);
         }
-        if (speaksHeld && judge(counts, {}).length === 0) {
+        if (speaksHeld && judge(counts, {}, renamed).length === 0) {
             stdout.write(`${heldSummary({})}\n`);
         }
         exit(0);
@@ -448,7 +460,7 @@ if (import.meta.main) {
     const baseline = Object.fromEntries(
         Object.entries(section).filter(([rule]) => !isPassOwned(rule)),
     );
-    const broken = judge(linterCounts, baseline);
+    const broken = judge(linterCounts, baseline, renamed);
 
     for (const reason of broken) {
         stdout.write(`baseline-ratchet  ${LABEL}  ${reason}\n`);
@@ -461,7 +473,7 @@ if (import.meta.main) {
         exit(1);
     }
 
-    if (speaksHeld && judge(counts, section).length === 0) {
+    if (speaksHeld && judge(counts, section, renamed).length === 0) {
         stdout.write(`${heldSummary(counts)}\n`);
     }
 
