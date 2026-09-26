@@ -104,6 +104,10 @@ function sourceText(source: unknown): string {
         : '';
 }
 
+function keepWalking(): void {
+    // An error the module leaves behind must not end the child before it writes its report.
+}
+
 async function walkHere(tree: string, module: string, report: string): Promise<void> {
     const built: unknown[] = [];
     const treeUrl = pathToFileURL(realpathSync(tree)).href;
@@ -126,8 +130,8 @@ async function walkHere(tree: string, module: string, report: string): Promise<v
         throw new Error(`exit ${String(code)}`);
     };
     syncBuiltinESMExports();
-    process.on('uncaughtException', () => {});
-    process.on('unhandledRejection', () => {});
+    process.on('uncaughtException', keepWalking);
+    process.on('unhandledRejection', keepWalking);
     argv.splice(1, argv.length - 1, join(tree, module));
 
     let exported: unknown = {};

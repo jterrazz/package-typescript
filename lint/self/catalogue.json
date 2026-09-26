@@ -10,7 +10,7 @@
     {
         "audience": "self",
         "channel": "meta",
-        "home": "lint/rulebook/decision.test.ts",
+        "home": "lint/self/corpus/decision-invariants.ts",
         "id": "decision-invariants",
         "names": [
             "is off with no reason",
@@ -25,7 +25,7 @@
     {
         "audience": "self",
         "channel": "meta",
-        "home": "lint/catalogue/decisions.test.ts",
+        "home": "lint/self/corpus/catalogue-freshness.ts",
         "id": "catalogue-projection",
         "names": ["renderFixers", "FIXER_MARKERS"],
         "why": "renders and holds fresh this repository's own chapter"
@@ -65,7 +65,7 @@
     {
         "audience": "self",
         "channel": "meta",
-        "home": "specs/surface/package/lint-fragments.ts",
+        "home": "lint/self/corpus/lint-fragments.ts",
         "id": "fragment-walk",
         "names": ["lintFragments"],
         "why": "the walk the audits above share"
@@ -73,7 +73,7 @@
     {
         "audience": "self",
         "channel": "meta",
-        "home": "specs/surface/package/module-walk.ts",
+        "home": "lint/self/corpus/module-walk.ts",
         "id": "module-walk",
         "names": ["walkModules", "built on import"],
         "why": "imports each module this package would publish in a child of its own, for the tarball audit"
@@ -81,7 +81,7 @@
     {
         "audience": "self",
         "channel": "meta",
-        "home": "specs/surface/package/findings.test.ts",
+        "home": "lint/self/corpus/findings.test.ts",
         "id": "findings-audit",
         "names": ["the catalogue holds every id a pass or a rule prints"],
         "why": "reads this package's own passes against its own catalogue"

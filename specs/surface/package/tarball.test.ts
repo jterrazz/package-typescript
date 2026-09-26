@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { fragmentsIn, walkModules } from './module-walk.js';
+import { fragmentsIn, walkModules } from '../../../lint/self/corpus/module-walk.js';
 import { argvFlags, checkOutcome, selectingEnvironments } from './packed-bin.js';
 import {
     isRecord,
