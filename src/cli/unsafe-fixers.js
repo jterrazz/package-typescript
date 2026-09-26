@@ -14,7 +14,7 @@ const WRAPPER = 'oxlint.fix.config.mjs';
 
 // The list tool-configs.sh reads, in oxlint's lookup order.
 const CONFIG_NAMES = JSON.parse(
-    readFileSync(new URL('oxlint-config-names.json', import.meta.url), 'utf8'),
+    readFileSync(new URL('../../lint/reading/oxlint-config-names.json', import.meta.url), 'utf8'),
 );
 
 export function wrapperOf(consumerConfig) {

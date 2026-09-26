@@ -1,4 +1,4 @@
-import { EVERY_NAME, publishedNamesOf } from './published-names.js';
+import { EVERY_NAME, publishedNamesOf } from '../../reading/published-names.js';
 
 export const RULE_NAME = 'comment-longer-than-function';
 

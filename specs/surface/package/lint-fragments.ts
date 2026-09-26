@@ -5,10 +5,10 @@ import { pathToFileURL } from 'node:url';
 import { fragmentsIn, isRecord } from './module-walk.js';
 import type { DeclaredFragment } from './module-walk.js';
 
-// `src/cli/` holds executables that act when imported, so the module walk imports them in children of their own.
+// These folders hold executables that act when imported, so the module walk imports them in children of their own.
 
 const WALKED = ['lint', 'src'];
-const EXECUTABLES = 'src/cli';
+const EXECUTABLES = new Set(['lint/checks', 'lint/ratchet', 'lint/reading', 'src/cli']);
 
 const MODULE = /\.[cm]?js$/u;
 
@@ -19,7 +19,7 @@ function modulesUnder(root: string, directory: string): string[] {
     return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
         const path = join(directory, entry.name);
         if (entry.isDirectory()) {
-            return relative(root, path) === EXECUTABLES ? [] : modulesUnder(root, path);
+            return EXECUTABLES.has(relative(root, path)) ? [] : modulesUnder(root, path);
         }
         return MODULE.test(entry.name) ? [relative(root, path)] : [];
     });

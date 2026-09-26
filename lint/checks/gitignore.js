@@ -5,7 +5,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { isRepositoryRoot } from './repository-root.js';
+import { isRepositoryRoot } from '../reading/repository-root.js';
 
 const ARTIFACTS = '.artifacts';
 

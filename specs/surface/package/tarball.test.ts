@@ -120,7 +120,7 @@ describe('tarball', () => {
     test('every rule a packed profile states is a consumer decision the catalogue holds for it', async () => {
         // Given - the six profiles, as both packed entries hand them out, and the packed catalogue
         const tree = packedTree();
-        const oxlint = await loadPacked(tree, 'src/oxlint.js');
+        const oxlint = await loadPacked(tree, 'lint/index.js');
         const index = await loadPacked(tree, 'src/index.js');
         const hexagonal = await loadPacked(tree, 'lint/rulebook/architecture/hexagonal.js');
         const compiler = await loadPacked(tree, 'lint/rulebook/compile.js');

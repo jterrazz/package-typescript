@@ -1,4 +1,4 @@
-import { commentLongerThanFunction, RULE_NAME } from './comment-longer-than-function.js';
+import { commentLongerThanFunction, RULE_NAME } from './comments/comment-longer-than-function.js';
 
 export default {
     meta: { name: 'jterrazz-typescript' },

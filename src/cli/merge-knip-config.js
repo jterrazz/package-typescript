@@ -2,7 +2,7 @@
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 
-import { workspaceMembers } from './workspace-members.js';
+import { workspaceMembers } from '../../lint/reading/workspace-members.js';
 
 // The folders @jterrazz/test reserves for what a test stands on.
 const GROUND = new Set(['expected', 'fixtures', 'requests', 'seeds']);

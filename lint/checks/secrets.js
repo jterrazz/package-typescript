@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { ignorePatternsOf, orRefused, projectFiles, readText } from './project-files.js';
+import { ignorePatternsOf, orRefused, projectFiles, readText } from '../reading/project-files.js';
 
 const PATTERNS = [
     {

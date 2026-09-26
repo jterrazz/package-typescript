@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Only the reader: every sentence and rule id lives in `src/docs.js`, so terra judges by the same copy.
+// Only the reader: every sentence and rule id lives in `docs.js`, so terra judges by the same copy.
 // The Dockerfile and `.infrastructure/` clauses are read at every member's root too; the publishable
 // clause stays on the root manifest.
 
@@ -8,8 +8,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { auditDocs, HEAD_LINES } from '../docs.js';
-import { workspaceMembers } from './workspace-members.js';
+import { workspaceMembers } from '../reading/workspace-members.js';
+import { auditDocs, HEAD_LINES } from './docs.js';
 
 const LINK = /!?\[[^\]]*\]\(\s*(?<target>[^\s)]+)/gu;
 

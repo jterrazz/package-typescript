@@ -131,7 +131,7 @@ describe('behaviour', () => {
             resolve(work.path, 'node_modules/@jterrazz/test'),
             'dir',
         );
-        const entry = resolve(import.meta.dirname, '../../../src/oxlint.js');
+        const entry = resolve(import.meta.dirname, '../../../lint/index.js');
         writeFileSync(
             work.config,
             `import { testing } from '@jterrazz/test/oxlint';\nimport { compose, node } from '${entry}';\n\nexport default compose(node, testing);\n`,

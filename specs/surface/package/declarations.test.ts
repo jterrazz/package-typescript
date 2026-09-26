@@ -4,10 +4,10 @@ import { describe, expect, test } from 'vitest';
 
 // No build step derives a `.d.ts` from its `.js`: this suite alone holds the two value surfaces together.
 
-const ROOT = resolve(import.meta.dirname, '../../../src');
+const ROOT = resolve(import.meta.dirname, '../../..');
 const PRESETS = resolve(import.meta.dirname, '../../../src/presets/tsdown');
 
-const ENTRIES = ['config', 'docs', 'index', 'oxfmt', 'oxlint'] as const;
+const ENTRIES = ['lint/checks/docs', 'lint/index', 'src/config', 'src/index', 'src/oxfmt'] as const;
 
 const TSDOWN_PRESETS = ['build', 'bundle'] as const;
 
@@ -61,7 +61,7 @@ async function runtimeValues(entry: string): Promise<string[]> {
 }
 
 describe('declarations', () => {
-    test.each(ENTRIES)('src/%s.js and its declaration carry the same exports', async (entry) => {
+    test.each(ENTRIES)('%s.js and its declaration carry the same exports', async (entry) => {
         // Given - one importable entry, read twice: as a module, and as a declaration
         const runtime = await runtimeValues(resolve(ROOT, `${entry}.js`));
 

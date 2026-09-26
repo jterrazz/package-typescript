@@ -6,7 +6,7 @@ import defaultExport, { oxfmt, oxlint } from '../../../src/index.js';
 
 const require = createRequire(import.meta.url);
 
-const oxlintEntry = await import('../../../src/oxlint.js');
+const oxlintEntry = await import('../../../lint/index.js');
 const oxfmtEntry = await import('../../../src/oxfmt.js');
 
 // Self-reference resolution — the exports map must cover every consumer-facing subpath.
@@ -44,7 +44,7 @@ describe('exports', () => {
 
         // Then - it is the one file check, fix and the drift report read, not a copy
         expect(exported).toBe(
-            resolve(import.meta.dirname, '../../../src/cli/oxlint-config-names.json'),
+            resolve(import.meta.dirname, '../../../lint/reading/oxlint-config-names.json'),
         );
     });
 

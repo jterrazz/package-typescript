@@ -12,7 +12,7 @@ import {
     next,
     node,
     react,
-} from './oxlint.js';
+} from './index.js';
 
 function buildOverlappingMap() {
     return layers({
@@ -22,7 +22,7 @@ function buildOverlappingMap() {
         ],
     });
 }
-describe('oxlint', () => {
+describe('index', () => {
     test('concatenates and dedupes plugin lists', () => {
         // Given - two configs sharing one jsPlugin
         const merged = compose(

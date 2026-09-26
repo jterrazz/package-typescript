@@ -13,7 +13,7 @@ import {
     testMaterialFindings,
     testMaterialReader,
     withoutDotSlash,
-} from './publish-material.js';
+} from './test-material.js';
 
 function targetsOf(exports) {
     if (typeof exports === 'string') {

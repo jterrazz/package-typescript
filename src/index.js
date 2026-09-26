@@ -1,6 +1,6 @@
+import { nested } from '../lint/index.js';
 import hexagonalFragment from '../lint/rulebook/architecture/hexagonal.js';
 import { compile } from '../lint/rulebook/compile.js';
-import { nested } from './oxlint.js';
 import oxfmtConfig from './presets/oxfmt/index.js';
 import astroProfile from './presets/oxlint/profiles/astro.js';
 import bunProfile from './presets/oxlint/profiles/bun.js';

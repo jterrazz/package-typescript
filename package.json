@@ -33,18 +33,18 @@
             "default": "./src/config.js"
         },
         "./docs": {
-            "types": "./src/docs.d.ts",
-            "default": "./src/docs.js"
+            "types": "./lint/checks/docs.d.ts",
+            "default": "./lint/checks/docs.js"
         },
         "./oxfmt": {
             "types": "./src/oxfmt.d.ts",
             "default": "./src/oxfmt.js"
         },
         "./oxlint": {
-            "types": "./src/oxlint.d.ts",
-            "default": "./src/oxlint.js"
+            "types": "./lint/index.d.ts",
+            "default": "./lint/index.js"
         },
-        "./oxlint-config-names": "./src/cli/oxlint-config-names.json",
+        "./oxlint-config-names": "./lint/reading/oxlint-config-names.json",
         "./tsconfig/*": "./src/presets/tsconfig/*.json",
         "./tsconfig/*.json": "./src/presets/tsconfig/*.json",
         "./tsdown/*": {

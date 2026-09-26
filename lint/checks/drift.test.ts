@@ -6,7 +6,7 @@ import { describe, expect, onTestFinished, test } from 'vitest';
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 
-const DRIFT = resolve(import.meta.dirname, 'check-drift.js');
+const DRIFT = resolve(import.meta.dirname, 'drift.js');
 const OXLINT = join(PACKAGE_ROOT, 'node_modules/.bin/oxlint');
 const DEFAULT_PROFILE = join(PACKAGE_ROOT, 'src/presets/oxlint/profiles/node.js');
 
@@ -27,7 +27,7 @@ function configlessProject(files: Record<string, string> = {}): string {
     return directory;
 }
 
-describe('check-drift', () => {
+describe('drift', () => {
     test('reads a baseline file that is not JSON as unreadable, for a person and a machine', () => {
         // Given - a configless project whose jterrazz.baseline.json does not parse
         const directory = configlessProject({ 'jterrazz.baseline.json': '{ not json\n' });

@@ -12,11 +12,11 @@ import {
     readRatchet,
     SECTION,
     TEST_SECTION,
-} from './check-baseline.js';
-import { countSuppressions } from './check-suppressions.js';
-import { toolVersions } from './doctor.js';
-import CONFIGS from './oxlint-config-names.json' with { type: 'json' };
-import { ignorePatternsOf, orRefused } from './project-files.js';
+} from '../ratchet/baseline.js';
+import CONFIGS from '../reading/oxlint-config-names.json' with { type: 'json' };
+import { ignorePatternsOf, orRefused } from '../reading/project-files.js';
+import { toolVersions } from '../reading/tool-versions.js';
+import { countSuppressions } from './suppressions.js';
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 

@@ -3,10 +3,10 @@
     "entry": [
         "src/presets/**/*.js",
         "src/index.js",
-        "src/cli/check-docs.js",
-        "src/cli/check-gitignore.js",
+        "lint/checks/docs.cli.js",
+        "lint/checks/gitignore.js",
         "src/cli/merge-knip-config.js",
-        "src/cli/workspace-members.js"
+        "lint/reading/workspace-members.js"
     ],
     "ignoreBinaries": ["make"]
 }

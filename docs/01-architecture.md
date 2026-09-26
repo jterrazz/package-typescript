@@ -2,36 +2,42 @@
 
 One devDependency holds a project's whole toolchain, and this chapter says what is inside it.
 
-The package is five layers that never mix: a shell CLI that orchestrates processes, node gates that answer one question each, the rulebook every lint decision is taken in, config presets a consumer's own files extend, and an importable surface for what code has to reach directly.
+The package is two sides that never mix: `lint/` JUDGES — every rule, every pass, every verdict a project can receive — and `bin/` with `src/` RUN — the shell CLI that orchestrates processes, the config presets a consumer's own files extend, and the importable surface for what code has to reach directly. `src/` imports from `lint/`; nothing of `lint/` imports from `src/`.
 
-| Layer                | Holds                                                                   | Reached by                                 |
-| -------------------- | ----------------------------------------------------------------------- | ------------------------------------------ |
-| `bin/`               | `typescript.sh` and its commands — the orchestration, in bash           | the `typescript` binary                    |
-| `src/cli/`           | one node script per gate that needs more than a process spawn           | `bin/`, and nothing else                   |
-| `lint/`              | the lint manifest — every rule decided by name, and the compiler for it | `src/presets/oxlint/`, and `src/oxlint.js` |
-| `src/presets/`       | tsconfig, tsdown, oxlint, oxfmt and knip configurations                 | a consumer's config files, by `extends`    |
-| `src/`               | the importable entries — the lint presets, and the manual's rule engine | a consumer's `import`                      |
-| `src/oxlint-plugin/` | the lint rules this package writes itself, as one oxlint JS plugin      | `lint/`, by path in `jsPlugins`            |
+| Layer          | Holds                                                                                | Reached by                                        |
+| -------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| `bin/`         | `typescript.sh` and its commands — the orchestration, in bash                        | the `typescript` binary                           |
+| `lint/`        | every judgement: the rulebook, the catalogue, our own rules, the passes, the ratchet | `bin/`, `src/`, and a consumer through `./oxlint` |
+| `src/cli/`     | the engine's node scripts — the doctor, the lint targets, the report, the knip merge | `bin/`, and nothing else                          |
+| `src/presets/` | tsconfig, tsdown, oxlint, oxfmt and knip configurations                              | a consumer's config files, by `extends`           |
+| `src/`         | the importable entries — the barrel, `./config`, `./oxfmt`                           | a consumer's `import`                             |
 
-The code the package ships sits under `src/`, the one spine folder that holds product code ([Repo structure](08-repo-structure.md)); `lint/` is the spine's too. `bin/` is the one root beside them, and it is npm's: a package's `bin` entry is where a registry install links the command from.
+The code the package ships sits under `src/` and `lint/`, both spine folders ([Repo structure](08-repo-structure.md)). `bin/` is the one root beside them, and it is npm's: a package's `bin` entry is where a registry install links the command from.
 
-## The rulebook layer
+## The judging layer
 
-`lint/` is a manifest, not a config: one fragment per plugin, stating a decision per rule, and this package's own suite refusing a fragment that breaks either invariant — a level is `error` or `off`, and an `off` carries one of five recorded reasons ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#who-a-rule-is-for)).
+`lint/` has one tree in every repository of the estate: `index.js` is the only file at its root, and each folder below is one of eight.
 
-| Folder of `lint/` | Holds                                                                                                                                                                                                                                              |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rulebook/`       | one fragment per upstream plugin, `frameworks/` for what a framework profile adds, `architecture/` for the layer maps; `decision.js` holds the builders and the closed vocabularies, `compile.js` the compiler, `profiles.js` the table of the six |
-| `catalogue/`      | `decisions.js`, every decision as one list and the unsafe fixers `fix` refuses; `checks.json`, the consumer rows of the manifest                                                                                                                   |
-| `self/`           | what only this repository is held to and never ships: `catalogue.json`, the self rows, and `corpus/`, the suites that audit the manifest                                                                                                           |
+| Folder of `lint/` | Holds                                                                                                                                                                                                                                     |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index.js`        | the `./oxlint` entry: the six profiles compiled, `compose()`, `layers()`, `hexagonal`, `nested()`, oxlint's `defineConfig`                                                                                                                |
+| `rulebook/`       | one fragment per plugin, `frameworks/` for what a framework profile adds, `architecture/` for the layer maps; `decision.js` holds the builders and the closed vocabularies, `compile.js` the compiler, `profiles.js` the table of the six |
+| `catalogue/`      | `decisions.js`, every decision as one list and the unsafe fixers `fix` refuses; `checks.json`, the consumer rows of the manifest                                                                                                          |
+| `rules/`          | the lint rules this package writes itself, one file per rule under the folder of its family, assembled by `plugin.js` into one oxlint JS plugin                                                                                           |
+| `checks/`         | one file per pass of `typescript check` that needs more than a process spawn — what one file cannot see: the tree, the manual, the directives, the prose                                                                                  |
+| `ratchet/`        | the `typescript` section of `jterrazz.baseline.json`: read, judged exactly, lowered by `fix`                                                                                                                                              |
+| `reading/`        | how a pass reads a project: the sweep, the comment reader, the workspace members, the settings file, the entries, the installed tool versions                                                                                             |
+| `self/`           | what only this repository is held to and never ships: `catalogue.json`, the self rows of the manifest                                                                                                                                     |
 
-Three steps and nothing between them. `lint/rulebook/profiles.js` says which fragments each profile carries; `lint/rulebook/compile.js` turns a fragment into the plain oxlint config object oxlint itself reads, and merges those objects; `src/presets/oxlint/profiles/<name>.js` is that table compiled, and it is what a consumer's `extends` names. The rule decisions are [Lint presets](07-lint-presets.md)'s, catalogued there from the same manifest.
+The rulebook is a manifest, not a config: one fragment per plugin, stating a decision per rule, and this package's own suite refusing a fragment that breaks either invariant — a level is `error` or `off`, and an `off` carries one of five recorded reasons ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#who-a-rule-is-for)).
+
+Three steps and nothing between them. `lint/rulebook/profiles.js` says which fragments each profile carries; `lint/rulebook/compile.js` turns a fragment into the plain oxlint config object oxlint itself reads, and merges those objects; `lint/index.js` compiles the table, and `src/presets/oxlint/profiles/<name>.js` hands one profile to a consumer's `extends`. The rule decisions are [Lint presets](07-lint-presets.md)'s, catalogued there from the same manifest.
 
 ## No build step
 
-This package ships JavaScript directly: what is committed is what is published (`files` names `bin`, `docs`, `lint`, `src`), save the tests beside the modules and [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md), the chapter of how this package proves itself, which are its own and ship nowhere. `npm run build` is a comment, and the `src/*.d.ts` files are hand-written beside their `.js`.
+This package ships JavaScript directly: what is committed is what is published (`files` names `bin`, `docs`, `lint`, `src`), save the tests beside the modules and [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md), the chapter of how this package proves itself, which are its own and ship nowhere. `npm run build` is a comment, and every `.d.ts` is hand-written beside its `.js`.
 
-That is a deliberate exception to what the toolchain asks of everyone else, and it buys two things. A toolchain that had to build itself would need a second toolchain to do it; and a consumer reading `src/cli/check-gitignore.js` in its own `node_modules` reads the source, not a bundle.
+That is a deliberate exception to what the toolchain asks of everyone else, and it buys two things. A toolchain that had to build itself would need a second toolchain to do it; and a consumer reading `lint/checks/gitignore.js` in its own `node_modules` reads the source, not a bundle.
 
 ## Why the CLI is bash
 
@@ -72,7 +78,7 @@ The ordinary `typescript` dependency stays on ^6 because two consumers need the 
 
 ## The unit is the workspace package
 
-Every per-package gate measures from the nearest `package.json`, never from the repository: a workspace root runs those gates once per member, and a single-package project is the one run it always was. `src/cli/workspace-members.js` answers what the members are, and every caller asks it rather than guessing.
+Every per-package gate measures from the nearest `package.json`, never from the repository: a workspace root runs those gates once per member, and a single-package project is the one run it always was. `lint/reading/workspace-members.js` answers what the members are, and every caller asks it rather than guessing.
 
 The one gate that measures from the repository instead is the manual's, because a manual answers for a whole tree ([Quality checks](06-quality-checks.md)).
 

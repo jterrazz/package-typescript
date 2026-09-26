@@ -41,41 +41,26 @@ bin/
 └── commands/
     └── check.sh              # Fifteen passes in parallel; each that RAN prints a header and a verdict, in one fixed order
 
-src/cli/check-architecture.js # The declared layer map against the resolved graph — the Architecture gate (dependency-cruiser)
-src/cli/check-comments.js     # Every comment line of the source, counted and held exactly — the Comments (density) gate, check | --fix
-src/cli/check-baseline.js     # The oxlint ratchet — exact counts; `fix` re-records what fell, `typescript baseline` writes it
-src/cli/check-drift.js        # How far the project stands from its profile — the drift report, `--json` for a machine
-src/cli/check-docs.js         # The manual's shape, read off the repository's docs/ — the reader behind the Docs (layout) pass
-src/cli/check-gitignore.js    # The artefact convention, read off the project's .gitignore — check | --fix
-src/cli/check-markdown.js     # Every project page's coordinates and readability floors — the Markdown (prose) gate
-src/cli/check-names.js        # What the tree calls its own parts, and its empty directories — the Names (tree) gate, check | --fix
-src/cli/check-publish.js      # The exports map against the tarball — the Publish gate (publint + attw + the build guard)
-src/cli/check-secrets.js      # No committed file carries a live credential — the Secrets gate (gitleaks, else patterns)
-src/cli/check-suppressions.js # Every disable directive is spelled, reasoned and live — the Suppressions gate, check | --fix
+lint/                         # Every judgement — the tree is docs/01-architecture.md's; nothing here imports src/
+├── index.js + index.d.ts     # The ./oxlint entry — the six profiles compiled, compose(), layers(), hexagonal, nested()
+├── rulebook/                 # One fragment per upstream plugin, frameworks/, architecture/; decision.js, compile.js, profiles.js
+├── catalogue/                # decisions.js (every decision, the unsafe fixers) · checks.json (the consumer rows of the manifest)
+├── rules/                    # This package's own lint rules, by family — plugin.js assembles `jterrazz-typescript/*`
+├── checks/                   # One file per pass: architecture, comments, docs (+ docs.cli.js), drift, gitignore, markdown,
+│                             #   names, publish, secrets, suppressions, test-material (the build guard)
+├── ratchet/                  # baseline.js — the exact ratchet; `fix` re-records what fell, `typescript baseline` writes it
+├── reading/                  # The sweep, the comment reader, workspace members, jterrazz.config.ts, entries, tool versions
+└── self/                     # What only this repository is held to, never shipped — catalogue.json, the self rows
 
 src/cli/doctor.js             # Installed tool versions against the declared ranges — `typescript doctor`
-src/cli/empty-directories.js  # The working copy's empty directories, read off the disk — the Names gate reports them, `fix` deletes them
-src/cli/entry-points.js       # The entries a build compiles, read off the consumer's own exports map
-src/cli/jterrazz-config.js    # A unit's jterrazz.config.ts, loaded — one package's section, or the problem that stops it
 src/cli/lint-targets.js       # The project files oxlint and oxfmt are handed — the sweep every tree gate reads, never the directory
 src/cli/merge-knip-config.js  # Merges knip base preset with project-local knip.json (read as JSONC)
 src/cli/oxlint-report.js      # The Oxlint pass's log, drawn from the one JSON run in the form oxlint picks — oxlint-report-*.js draw it
-src/cli/project-files.js      # The one sweep every tree gate starts from — every file git does not ignore, or a walk where there is no git
-src/cli/publish-material.js   # The build guard — which shipped file is compiled from test material, by @jterrazz/test's reader
 src/cli/unsafe-fixers.js      # The rules `fix` must not let oxlint rewrite, as one wrapped config per config scope
-src/cli/workspace-members.js  # Lists the consumer's workspace members — the unit each per-package gate measures from
-
-lint/                         # Every lint judgement this package makes — the tree is docs/01-architecture.md's
-├── rulebook/                 # One fragment per upstream plugin, frameworks/, architecture/; decision.js, compile.js, profiles.js
-├── catalogue/                # decisions.js (every decision, the unsafe fixers) · checks.json (the consumer rows of the manifest)
-└── self/                     # What only this repository is held to, never shipped — catalogue.json, the self rows
-
-src/oxlint-plugin/            # This package's own lint rules, one oxlint JS plugin — `jterrazz-typescript/*`
 src/presets/
-├── tsconfig/ · tsdown/ · oxlint/profiles/ (the six, compiled) · oxfmt/ · knip/ · prettier/ (.astro only)
+├── tsconfig/ · tsdown/ · oxlint/profiles/ (one line each, from lint/index.js) · oxfmt/ · knip/ · prettier/ (.astro only)
 src/index.js + index.d.ts     # Package entry — exports { oxfmt, oxlint } profiles (JS-shipped, no build)
-src/oxlint.js · oxfmt.js      # The tool-facing entries — the profiles, compose(), layers(), each tool's defineConfig
-src/docs.js + docs.d.ts       # The manual's rules, pure — auditDocs(tree), exported at ./docs for a second reader
+src/oxfmt.js                  # The oxfmt entry — base, and oxfmt's defineConfig
 src/config.js + config.d.ts   # defineConfig() and JterrazzConfig — the family's settings file, exported at ./config
 docs/                         # The corpus: numbered chapters and decisions/
 skills/                       # The Claude Code skill — one hand-written SKILL.md

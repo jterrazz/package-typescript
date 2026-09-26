@@ -5,12 +5,7 @@ import { dirname, join } from 'node:path';
 import { build } from 'tsdown';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import {
-    buildOf,
-    builtChunks,
-    testMaterialFindings,
-    testMaterialReader,
-} from './publish-material.js';
+import { buildOf, builtChunks, testMaterialFindings, testMaterialReader } from './test-material.js';
 
 const reader = { materialAt, testPackageOf };
 
@@ -44,7 +39,7 @@ function repositoryInstalling(oxlint: string): string {
         'package.json': '{ "type": "module" }\n',
     });
 }
-describe('publish-material', () => {
+describe('test-material', () => {
     test('names a local module that is test material, and passes one that is not', () => {
         // Given - one shipped file compiled from an entry, a fixtures module and a ground file
         const chunks = [

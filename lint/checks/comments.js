@@ -4,9 +4,9 @@ import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { judge, LABEL, readBaseline, reRecord } from './check-baseline.js';
-import { commentSpansOf, isDirective, SOURCE } from './check-suppressions.js';
-import { ignorePatternsOf, orRefused, projectFiles, readText } from './project-files.js';
+import { judge, LABEL, readBaseline, reRecord } from '../ratchet/baseline.js';
+import { commentSpansOf, isDirective, SOURCE } from '../reading/comments.js';
+import { ignorePatternsOf, orRefused, projectFiles, readText } from '../reading/project-files.js';
 
 const NAMESPACE = 'comments/';
 const RULE = 'comment-lines';

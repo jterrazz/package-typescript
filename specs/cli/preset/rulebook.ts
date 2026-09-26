@@ -81,7 +81,7 @@ export function sandbox(
     );
 
     const config = resolve(path, 'oxlint.config.js');
-    const entry = resolve(REPOSITORY, 'src/oxlint.js');
+    const entry = resolve(REPOSITORY, 'lint/index.js');
     writeFileSync(
         config,
         `import { compose, ${[profile, ...also].join(', ')} } from '${entry}';\n\n` +

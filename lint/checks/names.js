@@ -4,12 +4,12 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, matchesGlob, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { judge, LABEL, readBaseline, reRecord } from './check-baseline.js';
-import { emptyDirectories, removeEmptyDirectory } from './empty-directories.js';
-import { readSection, SETTINGS_FILE } from './jterrazz-config.js';
-import { ignorePatternsOf, orRefused, projectFiles } from './project-files.js';
-import { isRepositoryRoot } from './repository-root.js';
-import { workspaceMembers } from './workspace-members.js';
+import { judge, LABEL, readBaseline, reRecord } from '../ratchet/baseline.js';
+import { emptyDirectories, removeEmptyDirectory } from '../reading/empty-directories.js';
+import { readSection, SETTINGS_FILE } from '../reading/jterrazz-config.js';
+import { ignorePatternsOf, orRefused, projectFiles } from '../reading/project-files.js';
+import { isRepositoryRoot } from '../reading/repository-root.js';
+import { workspaceMembers } from '../reading/workspace-members.js';
 
 const GRAB_BAG = new Set(['base', 'common', 'helpers', 'lib', 'misc', 'stuff', 'tools', 'utils']);
 

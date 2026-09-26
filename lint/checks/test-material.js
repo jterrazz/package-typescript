@@ -4,10 +4,10 @@ import { existsSync, readdirSync } from 'node:fs';
 import { dirname, isAbsolute, join, matchesGlob, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { entryPoints } from './entry-points.js';
-import { resolveTestPackage } from './test-package.js';
+import { entryPoints } from '../reading/entry-points.js';
+import { resolveTestPackage } from '../reading/test-package.js';
 
-const BUNDLE_PRESET = join(import.meta.dirname, '../presets/tsdown/bundle.js');
+const BUNDLE_PRESET = join(import.meta.dirname, '../../src/presets/tsdown/bundle.js');
 
 // tsdown loads a package's own config in the preset's stead.
 const OWN_CONFIG = /^tsdown\.config\.[cm]?[jt]s$/u;

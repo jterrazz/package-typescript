@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { commentLinesOf } from './check-comments.js';
+import { commentLinesOf } from './comments.js';
 
-describe('check-comments', () => {
+describe('comments', () => {
     test('counts every line a comment covers, a block from its opening to its closing', () => {
         // Given - a line comment, a trailing one, and a three-line block
         const text = [

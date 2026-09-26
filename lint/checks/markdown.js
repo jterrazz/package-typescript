@@ -5,7 +5,7 @@ import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { ignorePatternsOf, orRefused, projectFiles, readText } from './project-files.js';
+import { ignorePatternsOf, orRefused, projectFiles, readText } from '../reading/project-files.js';
 
 const PROSE_BLOCK_LIMIT = 12;
 

@@ -10,7 +10,7 @@ import { newDirectory, temporaryDirectory } from '../temporary-directory.js';
 // the judge is run directly on that report shape.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-const JUDGE = resolve(import.meta.dirname, '../../../src/cli/check-baseline.js');
+const JUDGE = resolve(import.meta.dirname, '../../../lint/ratchet/baseline.js');
 
 const project = newDirectory('spec-oxlint-config-');
 

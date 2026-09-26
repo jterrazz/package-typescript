@@ -1,5 +1,5 @@
+import type { OxlintConfig } from '../lint/index.js';
 import type { OxfmtConfig } from './oxfmt.js';
-import type { OxlintConfig } from './oxlint.js';
 
 declare const oxfmtConfig: OxfmtConfig;
 

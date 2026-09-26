@@ -306,7 +306,7 @@ The first two rule ids overlap publint on purpose. They read the SOURCE TREE and
 
 A published build never carries test material, and `publish-test-material` refuses one that does. The pass builds the package as it builds — its own `tsdown.config.*`, else the `bundle` preset over the entries its `exports` map earns — and reads each chunk's module ids off a `generateBundle` hook.
 
-Without a config of its own, that build IS `typescript bundle`'s: the same preset file, and the entries the same [entry-points.js](../src/cli/entry-points.js) reads off the map. Each chunk is named as the build writes it — `.js` and `.cjs` under the preset, and `.mjs` for an ESM chunk of a config that sets no extension — so `files` is asked about the path the tarball holds.
+Without a config of its own, that build IS `typescript bundle`'s: the same preset file, and the entries the same [entry-points.js](../lint/reading/entry-points.js) reads off the map. Each chunk is named as the build writes it — `.js` and `.cjs` under the preset, and `.mjs` for an ESM chunk of a config that sets no extension — so `files` is asked about the path the tarball holds.
 
 That build leaves the disk alone as far as tsdown lets it: no chunk is written, and the config's `copy`, `exe` and `onSuccess` are switched off. A config's own `hooks` are the one thing an inline option cannot switch off, so a `build:done` hook that writes still writes.
 
@@ -318,7 +318,7 @@ A file `files` ships is judged on three counts:
 
 What test material IS is `@jterrazz/test`'s alone: the two readers are the ones its F2 rule judges by, published on its `./oxlint` entry, and the pass loads them rather than keeping a copy. The finding states itself in four parts and sends its reader to F2's row, where the definition lives.
 
-The readers come from the install the package resolves, found by the walk [test-package.js](../src/cli/test-package.js) keeps, and from nowhere else. The toolchain's own `@jterrazz/test` is never asked: it is the toolchain's dependency, not the package's, and it would judge a package by a definition the package never chose.
+The readers come from the install the package resolves, found by the walk [test-package.js](../lint/reading/test-package.js) keeps, and from nowhere else. The toolchain's own `@jterrazz/test` is never asked: it is the toolchain's dependency, not the package's, and it would judge a package by a definition the package never chose.
 
 A package with a build that resolves none, or resolves one before 17.0.0 that publishes no reader, has nothing to judge. The pass says so in one line, `publish-test-material: nothing to judge`, with the reason and, for a workspace member, `in <member>` — and builds all the same, so a build that fails still fails the pass. An install whose `./oxlint` entry throws on import is named for that, with the first line of what it threw, rather than taken for one older than 17.0.0. A package with no build — no config of its own and no target under `dist/`, like this package — hears nothing: there is no build to judge, and none to fail.
 

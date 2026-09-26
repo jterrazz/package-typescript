@@ -4,9 +4,9 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { heldSummary, judge, tightened } from './check-baseline.js';
+import { heldSummary, judge, tightened } from './baseline.js';
 
-const JUDGE = resolve(import.meta.dirname, 'check-baseline.js');
+const JUDGE = resolve(import.meta.dirname, 'baseline.js');
 
 function groundOf(baseline: string): { report: string; root: string } {
     const root = mkdtempSync(resolve(tmpdir(), 'check-baseline-'));
@@ -22,7 +22,7 @@ function groundOf(baseline: string): { report: string; root: string } {
 
 const linterOwns = (rule: string): boolean => !rule.startsWith('names/');
 
-describe('check-baseline', () => {
+describe('baseline', () => {
     test('breaks on a count below its entry, and holds one at it', () => {
         // Given - one rule that fell and one that stands at its entry
         const counts = { 'eslint/no-debugger': 1, 'eslint/no-var': 3 };

@@ -101,7 +101,7 @@
         "channel": "runtime",
         "id": "empty-sweep",
         "message": "nothing to read under",
-        "module": "src/cli/project-files.js"
+        "module": "lint/reading/project-files.js"
     },
     {
         "audience": "consumer",
@@ -109,7 +109,7 @@
         "channel": "runtime",
         "id": "drift-unreasoned",
         "message": "carries no '// reason:'",
-        "module": "src/cli/check-drift.js"
+        "module": "lint/checks/drift.js"
     },
     {
         "audience": "consumer",
@@ -117,7 +117,7 @@
         "channel": "runtime",
         "id": "empty-sweep-exit",
         "message": "stderr.write(`${error.message}\\n`);",
-        "module": "src/cli/project-files.js"
+        "module": "lint/reading/project-files.js"
     },
     {
         "audience": "consumer",
@@ -125,7 +125,7 @@
         "channel": "runtime",
         "id": "docs-violations",
         "message": "exit(violations.length > 0 ? 1 : 0);",
-        "module": "src/cli/check-docs.js"
+        "module": "lint/checks/docs.cli.js"
     },
     {
         "audience": "consumer",
@@ -133,7 +133,7 @@
         "channel": "runtime",
         "id": "publish-tool-failed",
         "message": "failed = true;",
-        "module": "src/cli/check-publish.js"
+        "module": "lint/checks/publish.js"
     },
     {
         "audience": "consumer",
@@ -141,7 +141,7 @@
         "channel": "runtime",
         "id": "gitignore-no-ancestor",
         "message": "exit(ancestorPath && existsSync(ancestorPath) ? 0 : 1);",
-        "module": "src/cli/check-gitignore.js"
+        "module": "lint/checks/gitignore.js"
     },
     {
         "audience": "consumer",
@@ -149,7 +149,7 @@
         "channel": "runtime",
         "id": "gitignore-artefacts",
         "message": "Artefacts must never be committed:",
-        "module": "src/cli/check-gitignore.js"
+        "module": "lint/checks/gitignore.js"
     },
     {
         "audience": "consumer",
@@ -157,7 +157,7 @@
         "channel": "runtime",
         "id": "test-package-no-bin",
         "message": "argv.includes('--bin')",
-        "module": "src/cli/test-package.js"
+        "module": "lint/reading/test-package.js"
     },
     {
         "audience": "consumer",
@@ -165,7 +165,7 @@
         "channel": "runtime",
         "id": "test-package-absent",
         "message": "const version = testPackageVersion(dir);",
-        "module": "src/cli/test-package.js"
+        "module": "lint/reading/test-package.js"
     },
     {
         "audience": "consumer",
@@ -173,7 +173,7 @@
         "channel": "runtime",
         "id": "test-package-below-floor",
         "message": "compareVersions(version, floor) >= 0",
-        "module": "src/cli/test-package.js"
+        "module": "lint/reading/test-package.js"
     },
     {
         "audience": "consumer",
@@ -181,7 +181,7 @@
         "channel": "runtime",
         "id": "secrets-gitleaks",
         "message": "exit(gitleaks.status === 0 ? 0 : 1);",
-        "module": "src/cli/check-secrets.js"
+        "module": "lint/checks/secrets.js"
     },
     {
         "audience": "consumer",
@@ -189,7 +189,7 @@
         "channel": "runtime",
         "id": "secrets-patterns",
         "message": "looks like ${what}",
-        "module": "src/cli/check-secrets.js"
+        "module": "lint/checks/secrets.js"
     },
     {
         "audience": "consumer",
@@ -205,7 +205,7 @@
         "channel": "runtime",
         "id": "drift-unreasoned-json",
         "message": "unreasoned,",
-        "module": "src/cli/check-drift.js"
+        "module": "lint/checks/drift.js"
     },
     {
         "audience": "consumer",
@@ -213,7 +213,7 @@
         "channel": "runtime",
         "id": "baseline-no-report",
         "message": "the baseline cannot be read",
-        "module": "src/cli/check-baseline.js"
+        "module": "lint/ratchet/baseline.js"
     },
     {
         "audience": "consumer",
@@ -221,7 +221,7 @@
         "channel": "runtime",
         "id": "baseline-no-pass-report",
         "message": "pass wrote no report — the ${SECTION} section is left as it was",
-        "module": "src/cli/check-baseline.js"
+        "module": "lint/ratchet/baseline.js"
     },
     {
         "audience": "consumer",
@@ -229,7 +229,7 @@
         "channel": "runtime",
         "id": "baseline-unwritable",
         "message": "section cannot be written beside the others",
-        "module": "src/cli/check-baseline.js"
+        "module": "lint/ratchet/baseline.js"
     },
     {
         "audience": "consumer",
@@ -237,7 +237,7 @@
         "channel": "runtime",
         "id": "baseline-silent-linter",
         "message": "with no diagnostic — its own output says why",
-        "module": "src/cli/check-baseline.js"
+        "module": "lint/ratchet/baseline.js"
     },
     {
         "audience": "consumer",
@@ -245,7 +245,7 @@
         "channel": "runtime",
         "id": "baseline-unreadable",
         "message": "baseline-unreadable",
-        "module": "src/cli/check-baseline.js"
+        "module": "lint/ratchet/baseline.js"
     },
     {
         "audience": "consumer",
@@ -253,7 +253,7 @@
         "channel": "runtime",
         "id": "baseline-unrecorded",
         "message": "to record where the project stands.",
-        "module": "src/cli/check-baseline.js"
+        "module": "lint/ratchet/baseline.js"
     },
     {
         "audience": "consumer",
@@ -261,7 +261,7 @@
         "channel": "runtime",
         "id": "baseline-ratchet",
         "message": "baseline-ratchet",
-        "module": "src/cli/check-baseline.js"
+        "module": "lint/ratchet/baseline.js"
     },
     {
         "audience": "consumer",
@@ -269,7 +269,7 @@
         "channel": "runtime",
         "id": "baseline-legacy",
         "message": "baseline-legacy",
-        "module": "src/cli/check-baseline.js"
+        "module": "lint/ratchet/baseline.js"
     },
     {
         "audience": "consumer",
@@ -277,7 +277,7 @@
         "channel": "runtime",
         "id": "suppressions-findings",
         "message": "the directive now names the checker this project runs",
-        "module": "src/cli/check-suppressions.js"
+        "module": "lint/checks/suppressions.js"
     },
     {
         "audience": "consumer",
@@ -285,7 +285,7 @@
         "channel": "runtime",
         "id": "names-unrecorded",
         "message": "exit(findings.length > 0 ? 1 : 0);",
-        "module": "src/cli/check-names.js"
+        "module": "lint/checks/names.js"
     },
     {
         "audience": "consumer",
@@ -293,7 +293,7 @@
         "channel": "runtime",
         "id": "names-ratchet",
         "message": "baseline-ratchet",
-        "module": "src/cli/check-names.js"
+        "module": "lint/checks/names.js"
     },
     {
         "audience": "consumer",
@@ -301,7 +301,7 @@
         "channel": "runtime",
         "id": "comments-ratchet",
         "message": "the count is held exactly so no comment arrives unseen",
-        "module": "src/cli/check-comments.js"
+        "module": "lint/checks/comments.js"
     },
     {
         "audience": "consumer",
@@ -317,7 +317,7 @@
         "channel": "runtime",
         "id": "architecture-nothing-to-cruise",
         "message": "declares a layer map, but there is no src/",
-        "module": "src/cli/check-architecture.js"
+        "module": "lint/checks/architecture.js"
     },
     {
         "audience": "consumer",
@@ -325,7 +325,7 @@
         "channel": "runtime",
         "id": "architecture-unrun",
         "message": "depcruise could not be run",
-        "module": "src/cli/check-architecture.js"
+        "module": "lint/checks/architecture.js"
     },
     {
         "audience": "consumer",
@@ -333,7 +333,7 @@
         "channel": "runtime",
         "id": "architecture-violations",
         "message": "exit(run.status === 0 ? 0 : 1);",
-        "module": "src/cli/check-architecture.js"
+        "module": "lint/checks/architecture.js"
     },
     {
         "audience": "consumer",
@@ -349,7 +349,7 @@
         "channel": "runtime",
         "id": "markdown-violations",
         "message": "auditPage(root, path, markdown)",
-        "module": "src/cli/check-markdown.js"
+        "module": "lint/checks/markdown.js"
     },
     {
         "audience": "consumer",
