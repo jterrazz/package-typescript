@@ -124,7 +124,7 @@ describe('behaviour', () => {
 
     // A JS plugin's rules never reach `--print-config`, so only `reportUnusedDisableDirectives` refuses this.
     test('refuses a directive naming a @jterrazz/test rule the plugin does not ship', () => {
-        // Given - the node profile composed with @jterrazz/test's testing fragment, and a directive naming a retired rule
+        // Given - the node profile composed with @jterrazz/test's testing fragment, and a directive naming a rule it never shipped
         using work = sandbox(resolve(FIXTURES, 'node', 'input'), 'node', 'node');
         symlinkSync(
             resolve(import.meta.dirname, '../../../node_modules/@jterrazz/test'),
@@ -137,12 +137,12 @@ describe('behaviour', () => {
             `import { testing } from '@jterrazz/test/oxlint';\nimport { compose, node } from '${entry}';\n\nexport default compose(node, testing);\n`,
         );
         writeFileSync(
-            resolve(work.path, 'retired.ts'),
-            "export function pause(): string {\n    // oxlint-disable-next-line jterrazz/z9-retired-rule -- kept from a release that had it\n    return 'paused';\n}\n",
+            resolve(work.path, 'unshipped.ts'),
+            "export function pause(): string {\n    // oxlint-disable-next-line jterrazz/z9-unshipped-rule -- a rule the plugin never shipped\n    return 'paused';\n}\n",
         );
 
         // When - oxlint reads that file under the composed rulebook
-        const report = oxlint(work.path, ['-c', work.config, '--format=json', 'retired.ts']);
+        const report = oxlint(work.path, ['-c', work.config, '--format=json', 'unshipped.ts']);
 
         // Then - the directive itself is the one finding, on its own line, at error
         expect(
