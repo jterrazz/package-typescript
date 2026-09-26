@@ -62,7 +62,7 @@ Swap `node` for the profile you picked — the import name and the profile name 
 
 Each config names `@jterrazz/typescript` and nothing else — the preset and the tool's own `defineConfig` both arrive from it. Importing `defineConfig` from `oxlint` or `oxfmt` directly asks the project to declare those packages as well, which is the shape below refusing to hold.
 
-That form is every profile's, a published package's included: what used to make a published package name `OxlintConfig` in its config files was `isolatedDeclarations` in the tsconfig preset, and that guarantee has moved to where it belongs — see the build presets below.
+That form is every profile's, a published package's included: a published package's declarations are guaranteed by `isolatedDeclarations` in the build presets below.
 
 A project with several public subpaths needs no build config at all: `build` and `bundle` read their entries off the `exports` map ([Building](05-building.md)). A project that owns a `tsdown.config.ts` anyway imports the build preset from the same place, and it ships a declaration so the import is typed rather than `any`:
 
