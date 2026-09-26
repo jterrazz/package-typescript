@@ -15,7 +15,7 @@ const FAMILIES = new Set([
     'drift',
     'markdown',
     'names',
-    'publishing',
+    'publish',
     'secrets',
     'suppressions',
     'tree',

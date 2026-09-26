@@ -270,22 +270,22 @@
         "sentence": "The decisions folder carries its _template.md."
     },
     {
-        "family": "publishing",
+        "family": "publish",
         "id": "publish/export-target-exists",
         "sentence": "Every target the exports map names exists on disk."
     },
     {
-        "family": "publishing",
+        "family": "publish",
         "id": "publish/export-covered-by-files",
         "sentence": "Every target the exports map names is published by files."
     },
     {
-        "family": "publishing",
+        "family": "publish",
         "id": "publish/build-succeeds",
         "sentence": "The build the guard reads succeeds."
     },
     {
-        "family": "publishing",
+        "family": "publish",
         "id": "publish/no-test-code-in-production",
         "sentence": "No shipped file is compiled from test material."
     },
