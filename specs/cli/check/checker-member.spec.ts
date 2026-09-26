@@ -96,7 +96,7 @@ describe('checker-member', () => {
     test('runs the member pass once per member that resolves @jterrazz/test', () => {
         // Given - a workspace whose only declaration is the root's, one member with specs and one without
         // When - the quality checks run at the root
-        const { status, stdout } = check(workspace('15.3.0'));
+        const { status, stdout } = check(workspace('17.0.0'));
 
         // Then - every member is asked, the one that owns no specs/ included
         expect(stdout).toContain('root member pass: . ');
@@ -110,7 +110,7 @@ describe('checker-member', () => {
 
     test('hands every member run the oxlint report the check wrote, and the tree runs none', () => {
         // Given - a workspace whose root resolves a checker that answers the member flag, and arms a plugin rule reporting once
-        const root = workspace('15.3.0');
+        const root = workspace('17.0.0');
         armPlugin(root);
 
         // When - the quality checks run at the root
@@ -127,7 +127,7 @@ describe('checker-member', () => {
 
     test('passes a conventions run whose checker passes, whatever the linter it ran for the members says', () => {
         // Given - a workspace whose checker passes, and whose armed plugin fails the linter the member runs read
-        const root = workspace('15.3.0', 0);
+        const root = workspace('17.0.0', 0);
         armPlugin(root);
 
         // When - the conventions pass alone runs at the root
@@ -140,22 +140,10 @@ describe('checker-member', () => {
         expect(status).toBe(0);
     });
 
-    test('says which member resolves a release too old to answer the flag', () => {
-        // Given - the same workspace on a release that answers no --member flag
-        // When - the quality checks run at the root
-        const { stdout } = check(workspace('15.2.0'));
-
-        // Then - the tree pass still runs, and the pass names the version rather than a count
-        expect(stdout).toContain('root tree pass: apps/api/specs');
-        expect(stdout).not.toContain('root member pass');
-        expect(stdout).toContain('the member pass needs @jterrazz/test 15.3.0');
-        expect(stdout).toContain('resolves 15.2.0');
-    });
-
     test('runs the checker a member resolves, not the one the root hoisted', () => {
         // Given - a member carrying its own nested install beside the root's
-        const root = workspace('15.3.0');
-        install(join(root, 'apps/api'), '15.3.0', 'nested');
+        const root = workspace('17.0.0');
+        install(join(root, 'apps/api'), '17.0.0', 'nested');
 
         // When - the quality checks run at the root
         const { stdout } = check(root);
@@ -169,7 +157,7 @@ describe('checker-member', () => {
     test('never makes a consumer of a project by what the tree around it installed', () => {
         // Given - a repository checked out inside another tree that installs @jterrazz/test
         const workDir = temporaryDirectory('spec-checker-boundary-');
-        install(workDir, '15.3.0', 'outer');
+        install(workDir, '17.0.0', 'outer');
         const project = join(workDir, 'project');
         mkdirSync(join(project, 'specs'), { recursive: true });
         writeFileSync(join(project, '.git'), 'gitdir: /nowhere\n');

@@ -171,14 +171,6 @@
         "audience": "consumer",
         "by": "exit",
         "channel": "runtime",
-        "id": "test-package-below-floor",
-        "message": "compareVersions(version, floor) >= 0",
-        "module": "lint/reading/test-package.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
         "id": "secrets-gitleaks",
         "message": "exit(gitleaks.status === 0 ? 0 : 1);",
         "module": "lint/checks/secrets.js"

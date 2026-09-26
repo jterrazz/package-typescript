@@ -1,11 +1,11 @@
 {
     "typescript": {
-        "comments/comment-lines-held-by-the-baseline": 437,
-        "eslint/max-lines": 7
+        "comments/comment-lines-held-by-the-baseline": 435,
+        "eslint/max-lines": 6
     },
     "test": {
         "jterrazz-check/c18": 22,
-        "jterrazz/d19w-probe-cluster": 7,
+        "jterrazz/d19w-probe-cluster": 6,
         "jterrazz/j6w-given-in-the-test": 8
     }
 }

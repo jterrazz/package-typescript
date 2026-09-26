@@ -12,27 +12,6 @@ const PACKAGE = '@jterrazz/test';
 
 const CHECKER_BIN = 'jterrazz-test-check';
 
-// The release that answers `--member`; below it the member pass is skipped, and says so.
-export const CHECKER_FLOOR = '15.3.0';
-
-function versionParts(version) {
-    return version
-        .split(/[+-]/u)[0]
-        .split('.')
-        .map((piece) => Number.parseInt(piece, 10) || 0);
-}
-
-function compareVersions(left, right) {
-    const [a, b] = [versionParts(left), versionParts(right)];
-    for (let index = 0; index < 3; index += 1) {
-        if ((a[index] ?? 0) !== (b[index] ?? 0)) {
-            return (a[index] ?? 0) - (b[index] ?? 0);
-        }
-    }
-
-    return 0;
-}
-
 export function resolveTestPackage(dir) {
     let current = resolve(dir);
 
@@ -79,26 +58,8 @@ export function testPackageBin(dir) {
     return existsSync(path) ? path : null;
 }
 
-export function testPackageAtLeast(dir, floor) {
-    const version = testPackageVersion(dir);
-
-    return version !== null && compareVersions(version, floor) >= 0;
-}
-
 if (import.meta.main) {
-    if (argv.includes('--floor')) {
-        stdout.write(`${CHECKER_FLOOR}\n`);
-        exit(0);
-    }
-
-    const floorIndex = argv.indexOf('--at-least');
-    const floor = floorIndex === -1 ? null : (argv[floorIndex + 1] ?? null);
-    const dir =
-        argv
-            .slice(2)
-            .find(
-                (argument, index) => !argument.startsWith('--') && index + 2 !== floorIndex + 1,
-            ) ?? '.';
+    const dir = argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.';
 
     if (argv.includes('--bin')) {
         const bin = testPackageBin(dir);
@@ -116,5 +77,5 @@ if (import.meta.main) {
     }
 
     stdout.write(`${version}\n`);
-    exit(floor === null || compareVersions(version, floor) >= 0 ? 0 : 1);
+    exit(0);
 }

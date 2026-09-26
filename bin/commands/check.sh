@@ -74,8 +74,6 @@ PRETTIER_ASTRO_PLUGIN=$(cd "$PACKAGE_ROOT" && node -e 'process.stdout.write(requ
 # The consumer's binary: the version a project installed is the rulebook it agreed to.
 CHECKER=$(find_project_binary jterrazz-test-check)
 
-CHECKER_FLOOR=$(node "$PACKAGE_ROOT/lint/reading/test-package.js" --floor)
-
 # The unit is the workspace package. tsc, oxlint and oxfmt measure from their config and walk the tree
 # themselves; knip is workspace-aware, so a member's knip config sits under the root's `workspaces` key.
 WORKSPACE_MEMBERS=()
@@ -104,16 +102,9 @@ project_uses_jterrazz_test() {
     node "$PACKAGE_ROOT/lint/reading/test-package.js" "$dir" > /dev/null 2>&1
 }
 
-# An older release still counts, so the pass can say once that it is dormant.
-member_resolves_checker() {
-    node "$PACKAGE_ROOT/lint/reading/test-package.js" "${1:-.}" > /dev/null 2>&1
-}
-
 # A member whose @jterrazz/test is nested rather than hoisted owns a different release from the root's.
 member_checker() {
     local dir="${1:-.}" bin
-    node "$PACKAGE_ROOT/lint/reading/test-package.js" "$dir" --at-least "$CHECKER_FLOOR" \
-        > /dev/null 2>&1 || return 1
     bin=$(node "$PACKAGE_ROOT/lint/reading/test-package.js" "$dir" --bin 2>/dev/null) || return 1
     [ -n "$bin" ] || return 1
     CHECKER_COMMAND=(node "$bin")
@@ -333,21 +324,10 @@ run_checks() {
     # Chosen before oxlint starts: whether the report is written depends on this list.
     local checker_members=()
     local checker_member_bins=()
-    local checker_dormant=0
     if [ "$FIX_MODE" = false ] && selected conventions; then
         local member
         for member in "." "${WORKSPACE_MEMBERS[@]}"; do
-            member_resolves_checker "$member" || continue
-            if ! member_checker "$member"; then
-                checker_dormant=$((checker_dormant + 1))
-                printf 'the member pass needs @jterrazz/test %s; %s resolves %s\n' \
-                    "$CHECKER_FLOOR" \
-                    "$([ "$member" = "." ] && printf 'this project' || printf '%s' "$member")" \
-                    "$(node "$PACKAGE_ROOT/lint/reading/test-package.js" "$member" 2>/dev/null \
-                        || printf 'none this walk reaches')" \
-                    >> "$tmp_dir/checker-dormant.log"
-                continue
-            fi
+            member_checker "$member" || continue
             checker_members+=("$member")
             checker_member_bins+=("${CHECKER_COMMAND[1]}")
         done
@@ -677,15 +657,7 @@ run_checks() {
     join_logs "$tmp_dir/checker.log" "${checker_failed_logs[@]}"
     join_logs "$tmp_dir/publish.log" "${publish_logs[@]}"
 
-    # The checker's exit code is the verdict. A green pass still names a dormant member, or a reader
-    # would believe every member was asked.
     local checker_write=""
-    if [ "$checker_dormant" -gt 0 ]; then
-        cat "$tmp_dir/checker-dormant.log" "$tmp_dir/checker.log" \
-            > "$tmp_dir/checker-reported.log"
-        mv "$tmp_dir/checker-reported.log" "$tmp_dir/checker.log"
-        checker_write="writer"
-    fi
     # Only the two exact shapes, so a release printing another form adds nothing here.
     if [ "$checker_status" -eq 0 ] && [ -n "$checker_root_log" ] &&
         grep -E '^jterrazz\.baseline\.json › test: ([0-9]+ held across [0-9]+ rules?|nothing held)$' "$checker_root_log" \
@@ -745,7 +717,7 @@ run_checks() {
         report_pass "Gitignore (artefacts)" $gitignore_status "$tmp_dir/gitignore.log" writer
     [ -n "$knip_pid" ] &&
         report_pass "Knip (unused code)" $knip_status "$tmp_dir/knip.log"
-    { [ ${#checker_pids[@]} -gt 0 ] || [ "$checker_dormant" -gt 0 ]; } &&
+    [ ${#checker_pids[@]} -gt 0 ] &&
         report_pass "Test Conventions (@jterrazz/test)" $checker_status "$tmp_dir/checker.log" \
             "$checker_write"
     [ -n "$docs_layout_pid" ] &&

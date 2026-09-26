@@ -21,7 +21,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Oxfmt Check                       | oxfmt (Rust)                | always                                                                   |
 | Gitignore (artefacts)             | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own              |
 | Knip (unused code)                | knip (Node)                 | always (check only — it is not run in fix)                               |
-| Test Conventions (@jterrazz/test) | conventions checker         | per `specs/` root; per member resolving `@jterrazz/test` ≥ 15.3.0        |
+| Test Conventions (@jterrazz/test) | conventions checker         | per `specs/` root; per member resolving `@jterrazz/test`                 |
 | Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)                |
 | Publish (packaging)               | publint + attw + a build    | per package the registry would accept (not `private`)                    |
 | Architecture (layer map)          | dependency-cruiser          | check: a `.dependency-cruiser.*` at the project root                     |
@@ -85,8 +85,6 @@ The pass's verdict is the checker's exit code, and nothing here forgives it: `@j
 A green pass says one thing about that section: the held line of the run over the project root, `jterrazz.baseline.json › test: <n> held across <k> rules` — or `jterrazz.baseline.json › test: nothing held` for a project keeping no `test` section — the shapes the Oxlint pass gives its own. `@jterrazz/test` 17 prints that line bare on every green ratchet run, so the pass passes no flag to ask for it; a line in any other shape is left out rather than echoed as a second shape.
 
 The member runs judge the `jterrazz(*)` diagnostics the oxlint pass sets aside, and they read them off that pass's own report: `check` writes oxlint's JSON report once and hands it to every member run with `--oxlint-report <path>`, starting those runs once the report is complete. The checker prints a count of those diagnostics, not the diagnostics: where a run fails on them, the Oxlint pass prints each one ([one run, and the log drawn from it](#one-run-and-the-log-drawn-from-it)). A tree run reads no oxlint diagnostic and is handed nothing. A checker started by hand, with no report, runs oxlint itself — so `check` never lints the project a second time for the checker.
-
-The member pass is behind the release that answers it. `--member` arrives in `@jterrazz/test` 15.3.0; where a member resolves an older one the pass names that member and the version it found, and the tree passes run alone, rather than leaving a reader to believe every member was asked. The tree pass asks for no floor — every release answers it.
 
 ## The Docs (layout) pass
 
