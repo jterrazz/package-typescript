@@ -2,11 +2,11 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { catalog, unsafeFixers } from './decisions.js';
+import { decisions, unsafeFixers } from './decisions.js';
 
 // The chapter's generated tables are projections of `lint/`; `TEST_UPDATE=1 npm test` regenerates them.
 
-type Entry = ReturnType<typeof catalog>[number];
+type Entry = ReturnType<typeof decisions>[number];
 
 const MARKERS = { end: '<!-- /GENERATED -->', start: '<!-- GENERATED -->' };
 
@@ -33,7 +33,7 @@ function renderCatalogue(): string {
     return [
         '| Rule | Profiles | State | Reason | Since |',
         '| --- | --- | --- | --- | --- |',
-        ...catalog()
+        ...decisions()
             .filter((entry) => entry.audience === 'consumer')
             .map((entry) => rowOf(entry)),
     ].join('\n');
@@ -73,7 +73,7 @@ function tableCells(table: string): string[] {
 describe('decisions', () => {
     test('every decision carries the version it was taken in', () => {
         // Given - the whole catalogue
-        const entries = catalog();
+        const entries = decisions();
         expect(entries.length).toBeGreaterThan(500);
 
         // Then - each one names a semver, which is what replaces a changelog here

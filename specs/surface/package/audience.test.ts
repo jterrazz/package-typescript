@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, join, relative, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { catalog } from '../../../lint/catalogue/decisions.js';
+import { decisions } from '../../../lint/catalogue/decisions.js';
 import { AUDIENCES } from '../../../lint/rulebook/decision.js';
 import { PROFILES } from '../../../lint/rulebook/profiles.js';
 import { lintFragments } from './lint-fragments.js';
@@ -79,7 +79,7 @@ describe('audience', () => {
     test('every catalogue entry carries the audience its fragment declared', () => {
         // Given - the catalogue, every decision of every profile
         // Then - each entry says who it is for
-        for (const entry of catalog()) {
+        for (const entry of decisions()) {
             expect.soft(AUDIENCES, `${entry.rule} has no audience`).toContain(entry.audience);
         }
     });

@@ -37,7 +37,7 @@ function call(module: Record<string, unknown>, name: string, ...args: unknown[])
 }
 
 function catalogueOf(catalogue: Record<string, unknown>): Record<string, unknown>[] {
-    const entries = call(catalogue, 'catalog');
+    const entries = call(catalogue, 'decisions');
     return (Array.isArray(entries) ? entries : []).filter((entry) => isRecord(entry));
 }
 
@@ -178,7 +178,7 @@ describe('tarball', () => {
         // Then - the catalogue exposes its consumer half alone, and each pass is a consumer row
         expect(
             Object.keys(catalogue).toSorted((left, right) => left.localeCompare(right)),
-        ).toStrictEqual(['catalog', 'unsafeFixers']);
+        ).toStrictEqual(['decisions', 'unsafeFixers']);
         for (const [what, audiences] of Object.entries({
             'catalogue entry': catalogueOf(catalogue).map((entry) => entry.audience),
             'check pass': passes.map((row) => row?.audience),

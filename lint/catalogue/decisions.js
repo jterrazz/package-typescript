@@ -17,7 +17,7 @@ import { PROFILES } from '../rulebook/profiles.js';
 // Composition is last-wins per rule, so each profile resolves before grouping: a reader is owed
 // `import/extensions` as `always` under node and `never` under the bundler profiles, each on its own line.
 
-export function catalog() {
+export function decisions() {
     /** @type {Map<string, Entry>} */
     const grouped = new Map();
 
@@ -42,23 +42,23 @@ export function catalog() {
 
 function resolve(definition) {
     /** @type {Map<string, Entry>} */
-    const decisions = new Map();
+    const resolved = new Map();
 
     for (const fragment of definition.fragments) {
-        absorb(decisions, fragment, fragment.decisions);
+        absorb(resolved, fragment, fragment.decisions);
         for (const override of fragment.overrides) {
-            absorb(decisions, fragment, override.decisions, override.files);
+            absorb(resolved, fragment, override.decisions, override.files);
         }
     }
 
-    return decisions;
+    return resolved;
 }
 
-function absorb(decisions, fragment, entries, scoped) {
+function absorb(resolved, fragment, entries, scoped) {
     const scope = scoped === undefined ? '' : scoped.join(',');
 
     for (const [rule, decision] of Object.entries(entries)) {
-        decisions.set(`${rule} @ ${scope}`, {
+        resolved.set(`${rule} @ ${scope}`, {
             ...decision,
             audience: fragment.audience,
             fragment: fragment.id,
@@ -72,7 +72,7 @@ function absorb(decisions, fragment, entries, scoped) {
 export function unsafeFixers() {
     /** @type {Map<string, string>} */
     const seen = new Map();
-    for (const entry of catalog()) {
+    for (const entry of decisions()) {
         if (entry.fixer === 'unsafe' && !seen.has(entry.rule)) {
             seen.set(entry.rule, entry.fixerReason);
         }

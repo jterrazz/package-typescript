@@ -5,7 +5,7 @@ import { lintFragments } from '../../specs/surface/package/lint-fragments.js';
 import { compile } from './compile.js';
 import { fragment, off, on, REASON_KINDS, typeAware, unsafeFix } from './decision.js';
 
-// `fragment()` is not exported, so the contract's invariants are a `self` rule: this suite audits every
+// `fragment()` is not exported, so the decision invariants are a `self` rule: this suite audits every
 // fragment a module of `lint/` or `src/` exports, whether a profile carries it or not.
 
 const REASON = { by: 'oxfmt sortImports', kind: 'covered' } as const;
@@ -76,7 +76,7 @@ describe('decision', () => {
         const declared = await lintFragments(resolve(import.meta.dirname, '../..'));
         expect(declared.length).toBeGreaterThan(15);
 
-        // Then - none breaks the contract
+        // Then - none breaks either invariant
         expect(declared.flatMap(({ fragment: one }) => problemsOf(one))).toStrictEqual([]);
     });
 

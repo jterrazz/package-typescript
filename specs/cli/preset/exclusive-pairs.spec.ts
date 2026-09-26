@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { catalog } from '../../../lint/catalogue/decisions.js';
+import { decisions } from '../../../lint/catalogue/decisions.js';
 import { printConfig, PROFILES } from './rulebook.js';
 
 // Two rules demanding opposite shapes cannot both be armed: no edit closes both.
@@ -70,7 +70,7 @@ const PAIRS = Object.freeze([
     ],
 ] as const);
 
-const DECISIONS = catalog();
+const DECISIONS = decisions();
 
 function levelsOf(rule: string): string[] {
     return DECISIONS.filter((entry) => entry.rule === rule).map((entry) => entry.level);

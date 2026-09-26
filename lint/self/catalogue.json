@@ -11,7 +11,7 @@
         "audience": "self",
         "channel": "meta",
         "home": "lint/rulebook/decision.test.ts",
-        "id": "contract-audit",
+        "id": "decision-invariants",
         "names": [
             "is off with no reason",
             "is off for a reason of no known kind",

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { catalog, unsafeFixers } from '../../../lint/catalogue/decisions.js';
+import { decisions, unsafeFixers } from '../../../lint/catalogue/decisions.js';
 import { REASON_KINDS } from '../../../lint/rulebook/decision.js';
 import { PROFILES as PROFILE_TABLE } from '../../../lint/rulebook/profiles.js';
 import { printConfig, PROFILES, roster } from './rulebook.js';
@@ -14,7 +14,7 @@ function idOf(rule: { scope: string; value: string }): string {
 }
 
 const RULES = roster();
-const DECIDED = new Set(catalog().map((entry) => entry.rule));
+const DECIDED = new Set(decisions().map((entry) => entry.rule));
 
 describe('rule-surface', () => {
     test.each(PROFILES)(
@@ -73,7 +73,7 @@ describe('rule-surface', () => {
         const upstream = new Map(RULES.map((rule) => [idOf(rule), rule.type_aware]));
 
         // Then - each one matches the pinned oxlint's answer
-        const wrong = catalog()
+        const wrong = decisions()
             .filter((entry) => entry.level === 'error' && upstream.has(entry.rule))
             .filter((entry) => Boolean(entry.typeAware) !== upstream.get(entry.rule))
             .map((entry) => entry.rule);
@@ -109,7 +109,7 @@ describe('rule-surface', () => {
 
     test('gives every off one of the five recorded reasons', () => {
         // Given - every rule the rulebook turns off
-        const offs = catalog().filter((entry) => entry.level === 'off');
+        const offs = decisions().filter((entry) => entry.level === 'off');
         expect(offs.length).toBeGreaterThan(0);
 
         // Then - each one names its kind and what carries it
@@ -132,7 +132,7 @@ describe('rule-surface', () => {
         ]);
 
         // Then - no perfectionist rule the rulebook keeps is one of them
-        const kept = catalog()
+        const kept = decisions()
             .filter((entry) => entry.rule.startsWith('perfectionist/') && entry.level === 'error')
             .map((entry) => entry.rule);
 
