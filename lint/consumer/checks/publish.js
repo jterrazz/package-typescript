@@ -5,7 +5,7 @@ import { stripVTControlCharacters } from 'node:util';
 import { buildOf, builtChunks } from '../../engine/project/built-chunks.js';
 import { isPacked, withoutDotSlash } from '../../engine/project/packed-files.js';
 import { testMaterialReader } from '../../engine/project/test-material.js';
-import { noTestCodeInProductionFindings } from './no-test-code-in-production.js';
+import { noTestCodeInProductionFindings } from './publish.no-test-code-in-production.js';
 
 function targetsOf(exports) {
     if (typeof exports === 'string') {

@@ -1,7 +1,7 @@
 import { materialAt, testPackageOf } from '@jterrazz/test/oxlint';
 import { describe, expect, test } from 'vitest';
 
-import { noTestCodeInProductionFindings } from './no-test-code-in-production.js';
+import { noTestCodeInProductionFindings } from './publish.no-test-code-in-production.js';
 
 const reader = { materialAt, testPackageOf };
 
@@ -11,7 +11,7 @@ const root = '/package';
 const found = (findings: { message: string }[]): string[] =>
     findings.map(({ message }) => message.split(' · ')[0] ?? '');
 
-describe('no-test-code-in-production', () => {
+describe('publish.no-test-code-in-production', () => {
     test('names a local module that is test material, and passes one that is not', () => {
         // Given - one shipped file compiled from an entry, a fixtures module and a ground file
         const chunks = [
