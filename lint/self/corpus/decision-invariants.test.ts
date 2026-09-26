@@ -3,21 +3,36 @@ import { describe, expect, test } from 'vitest';
 
 import { PROFILES } from '../../consumer/rulebook/profiles.js';
 import { decisions } from '../../engine/catalogue/decisions.js';
-import { fragment, off, on, REASON_KINDS, unsafeFix } from '../../engine/compiler/decision.js';
+import {
+    AUDIENCES,
+    fragment,
+    off,
+    on,
+    REASON_KINDS,
+    unsafeFix,
+} from '../../engine/compiler/decision.js';
 import { lintFragments } from '../../engine/testing/lint-fragments.js';
 import problemsOf, { FRAGMENT_WALK } from './decision-invariants.js';
 
+const declared = await lintFragments(resolve(import.meta.dirname, '../../..'), FRAGMENT_WALK);
+
 describe('problemsOf', () => {
-    test('every fragment lint/ declares keeps both invariants', async () => {
+    test('every fragment lint/ declares keeps both invariants', () => {
         // Given - every fragment a module of lint/ or src/ exports, profile or not
-        const declared = await lintFragments(
-            resolve(import.meta.dirname, '../../..'),
-            FRAGMENT_WALK,
-        );
         expect(declared.length).toBeGreaterThan(15);
 
         // Then - none breaks either invariant
         expect(declared.flatMap(({ fragment: one }) => problemsOf(one))).toStrictEqual([]);
+    });
+
+    test('every fragment lint/ declares states its audience', () => {
+        // Given - every fragment a module of lint/ or src/ exports, profile or not
+        expect(declared.length).toBeGreaterThan(15);
+
+        // Then - each one names an audience of the closed pair
+        for (const { fragment: one, path } of declared) {
+            expect.soft(AUDIENCES, `${path} declares no audience`).toContain(one.audience);
+        }
     });
 
     test('every decision carries the version it was taken in', () => {

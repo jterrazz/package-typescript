@@ -27,15 +27,15 @@
         "channel": "meta",
         "home": "lint/self/corpus/chapter-projections.ts",
         "id": "catalogue-projection",
-        "names": ["renderFixers", "FIXER_MARKERS"],
+        "names": ["FIXER_MARKERS", "PROJECTIONS"],
         "why": "renders and holds fresh this repository's own chapter"
     },
     {
         "audience": "self",
         "channel": "meta",
-        "home": "specs/surface/package/audience.test.ts",
+        "home": "lint/self/corpus/audience.ts",
         "id": "audience-audit",
-        "names": ["every self row names the home that holds it"],
+        "names": ["REFUSALS", "CHANNELS"],
         "why": "reads this package's own manifest"
     },
     {
@@ -65,25 +65,9 @@
     {
         "audience": "self",
         "channel": "meta",
-        "home": "lint/engine/testing/lint-fragments.ts",
-        "id": "fragment-walk",
-        "names": ["lintFragments"],
-        "why": "the walk the audits above share"
-    },
-    {
-        "audience": "self",
-        "channel": "meta",
-        "home": "lint/engine/testing/module-walk.ts",
-        "id": "module-walk",
-        "names": ["walkModules", "built on import"],
-        "why": "imports each module this package would publish in a child of its own, for the tarball audit"
-    },
-    {
-        "audience": "self",
-        "channel": "meta",
-        "home": "lint/self/corpus/findings.test.ts",
+        "home": "lint/self/corpus/findings.ts",
         "id": "findings-audit",
-        "names": ["the catalogue holds every id a pass or a rule prints"],
+        "names": ["printedFindingIds"],
         "why": "reads this package's own passes against its own catalogue"
     }
 ]

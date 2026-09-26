@@ -1,74 +1,20 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { basename, join, relative, resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { PROFILES } from '../../../lint/consumer/rulebook/profiles.js';
-import { decisions } from '../../../lint/engine/catalogue/decisions.js';
-import { AUDIENCES } from '../../../lint/engine/compiler/decision.js';
-import { lintFragments } from '../../../lint/engine/testing/lint-fragments.js';
-import { FRAGMENT_WALK } from '../../../lint/self/corpus/decision-invariants.js';
+import { PROFILES } from '../../consumer/rulebook/profiles.js';
+import { decisions } from '../../engine/catalogue/decisions.js';
+import { AUDIENCES } from '../../engine/compiler/decision.js';
+import { CHANNELS, fieldText, REFUSALS, ROOT, rows, rowsOf, shippedModules } from './audience.js';
 
 // A `self` row names the home that holds it — a path the package leaves out — and the names the tarball audit greps for.
-
-const ROOT = resolve(import.meta.dirname, '../../..');
-
-const CHANNELS = ['checker', 'meta', 'runtime'];
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null;
-}
-
-function fieldText(row: Record<string, unknown>, key: string): string {
-    const value = row[key];
-    return typeof value === 'string' ? value : '';
-}
-
-const declared = await lintFragments(ROOT, FRAGMENT_WALK);
-
-const rows = ['lint/consumer/catalogue/manifest.json', 'lint/self/catalogue/manifest.json'].flatMap(
-    (path) => {
-        const parsed: unknown = JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
-        return (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
-    },
-);
-
-function rowsOf(channel: string, audience: string): Record<string, unknown>[] {
-    return rows.filter((row) => row.channel === channel && row.audience === audience);
-}
 
 function byName(left: string, right: string): number {
     return left.localeCompare(right);
 }
 
-function shippedModules(directory: string): string[] {
-    return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-        const path = join(directory, entry.name);
-        if (entry.isDirectory()) {
-            return shippedModules(path);
-        }
-        return /\.(?:[cm]?js|sh)$/u.test(entry.name) ? [relative(ROOT, path)] : [];
-    });
-}
-
-// An exit with anything but a literal 0 counts, a variable's value included.
-const REFUSALS: Record<string, { script: RegExp; module: RegExp }> = {
-    exit: { module: /\bexit\((?!0\))/gu, script: /(?<![\w-])exit\s+(?:[1-9]|"?\$)/gu },
-    reject: { module: /\breject\(/gu, script: /$^/gu },
-    throw: { module: /\bthrow\s+(?:new\s+)?[\w$.]+\(/gu, script: /$^/gu },
-};
-
 describe('audience', () => {
-    test('every fragment of the rulebook declares its audience', () => {
-        // Given - every fragment a module of lint/ or src/ holds, whether a profile carries it or not
-        expect(declared.length).toBeGreaterThan(15);
-
-        // Then - each one names an audience of the closed pair
-        for (const { fragment, path } of declared) {
-            expect.soft(AUDIENCES, `${path} declares no audience`).toContain(fragment.audience);
-        }
-    });
-
     test('every profile carries consumer fragments alone', () => {
         // Given - the fragments each shipped profile is compiled from
         // Then - none is the package's own discipline
