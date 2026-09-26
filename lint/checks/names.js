@@ -4,7 +4,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, matchesGlob, resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
-import { judge, LABEL, readBaseline, renamedOf, reRecord } from '../ratchet/baseline.js';
+import { judge, LABEL, readBaseline, reRecord } from '../ratchet/baseline.js';
 import { catalogueFamilies } from '../reading/catalogue-families.js';
 import { emptyDirectories, removeEmptyDirectory } from '../reading/empty-directories.js';
 import { readSection, SETTINGS_FILE } from '../reading/jterrazz-config.js';
@@ -308,13 +308,12 @@ const LINT_FOLDERS = Object.freeze([
     'ratchet',
     'reading',
     'self',
-    'migration',
 ]);
 
 const SELF_ROOT = 'self';
 
 const SELF_FOLDERS = Object.freeze([
-    ...LINT_FOLDERS.filter((folder) => folder !== SELF_ROOT && folder !== 'migration'),
+    ...LINT_FOLDERS.filter((folder) => folder !== SELF_ROOT),
     'corpus',
 ]);
 
@@ -337,7 +336,7 @@ function lintFolderFinding(path) {
     return {
         message: [
             `found: \`${path}\` is not a folder of the lint tree`,
-            `why: lint/ has one tree in every repository, so its folders are the eight that name a nature — ${LINT_FOLDERS.join(', ')}`,
+            `why: lint/ has one tree in every repository, so its folders are the seven that name a nature — ${LINT_FOLDERS.join(', ')}`,
             'fix: move its files where their nature puts them — a decision on an upstream rule under rulebook/, a rule of our own under rules/<family>/, a pass under checks/, a reader they share under reading/',
             LINT_TREE_READ,
         ].join(' · '),
@@ -545,7 +544,7 @@ const NAMESPACE = 'names/';
 
 const codeOf = (rule) => `names(${rule.slice(NAMESPACE.length)})`;
 
-const VALUED_FLAGS = new Set(['--format', '--ignore-pattern', '--renamed', '--report']);
+const VALUED_FLAGS = new Set(['--format', '--ignore-pattern', '--report']);
 
 const flagValue = (flag) => {
     const index = argv.indexOf(flag);
@@ -626,7 +625,7 @@ if (argv.includes('--fix')) {
     recorded = ownedOf(section);
 }
 
-const broken = judge(counts, recorded, renamedOf(argv));
+const broken = judge(counts, recorded);
 for (const reason of broken) {
     stdout.write(`baseline-ratchet  ${LABEL}  ${reason}\n`);
 }

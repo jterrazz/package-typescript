@@ -318,12 +318,6 @@ tmp_dir=$(mktemp -d)
 cleanup() { rm -rf "$tmp_dir"; }
 trap cleanup EXIT
 
-RENAMED_IDS=(--renamed "$PACKAGE_ROOT/lint/migration/renamed-ids.json")
-
-rewrite_renamed_ids_before_any_pass() {
-    node "$PACKAGE_ROOT/lint/migration/rename.js" . "${LINT_ARGS[@]}" --fix > "$tmp_dir/renamed.log" 2>&1
-}
-
 run_checks() {
     local FIX_MODE="$1"
     local LABEL
@@ -335,10 +329,6 @@ run_checks() {
     fi
 
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
-
-    if [ "$FIX_MODE" = true ]; then
-        rewrite_renamed_ids_before_any_pass
-    fi
 
     # Chosen before oxlint starts: whether the report is written depends on this list.
     local checker_members=()
@@ -507,14 +497,14 @@ run_checks() {
     [ "$FIX_MODE" = true ] && names_mode=(--fix)
     if [ "$runs_names" = true ]; then
         node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/lint/checks/names.js" . "${LINT_ARGS[@]}" \
-            "${names_mode[@]}" "${RENAMED_IDS[@]}" > "$tmp_dir/names.log" 2>&1 &
+            "${names_mode[@]}" > "$tmp_dir/names.log" 2>&1 &
         names_pid=$!
     fi
 
     local comments_pid=""
     local comments_status=0
     if [ "$runs_comments" = true ] && [ "$FIX_MODE" = false ]; then
-        node "$PACKAGE_ROOT/lint/checks/comments.js" . "${LINT_ARGS[@]}" "${RENAMED_IDS[@]}" \
+        node "$PACKAGE_ROOT/lint/checks/comments.js" . "${LINT_ARGS[@]}" \
             --report "$tmp_dir/comments.json" > "$tmp_dir/comments.log" 2>&1 &
         comments_pid=$!
     fi
@@ -650,15 +640,8 @@ run_checks() {
             names_report=(--names "$tmp_dir/names.json" --comments "$tmp_dir/comments.json")
         fi
         node "$PACKAGE_ROOT/lint/ratchet/baseline.cli.js" "$tmp_dir/lint.json" . \
-            "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" "${RENAMED_IDS[@]}" > "$tmp_dir/ratchet.log" 2>&1
+            "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" > "$tmp_dir/ratchet.log" 2>&1
         lint_status=$?
-        if [ "$FIX_MODE" = true ]; then
-            cat "$tmp_dir/renamed.log" "$tmp_dir/ratchet.log" > "$tmp_dir/ratchet-renamed.log"
-            mv "$tmp_dir/ratchet-renamed.log" "$tmp_dir/ratchet.log"
-        else
-            node "$PACKAGE_ROOT/lint/migration/rename.js" . "${LINT_ARGS[@]}" \
-                >> "$tmp_dir/ratchet.log" 2>&1 || lint_status=1
-        fi
         if [ "$lint_status" -eq 0 ] && [ ${#names_report[@]} -gt 0 ]; then
             lint_held=true
         else

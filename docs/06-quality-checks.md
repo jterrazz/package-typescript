@@ -82,7 +82,7 @@ The binary is resolved from that same install, not from a name on `PATH` or a `n
 
 The pass's verdict is the checker's exit code, and nothing here forgives it: `@jterrazz/test` records its own debt and judges it, in its own section of the ratchet file ([the ratchet](#the-ratchet)).
 
-A green pass says one thing about that section: the held line of the run over the project root, `jterrazz.baseline.json › test: <n> held across <k> rules` — or `jterrazz.baseline.json › test: nothing held` for a project keeping no `test` section — the shapes the Oxlint pass gives its own. `@jterrazz/test` 17 prints that line bare on every green ratchet run, so the pass passes no flag to ask for it; a line in any other shape — a release that dresses it, or one that still names `test.baseline.json` — is left out rather than echoed as a second shape.
+A green pass says one thing about that section: the held line of the run over the project root, `jterrazz.baseline.json › test: <n> held across <k> rules` — or `jterrazz.baseline.json › test: nothing held` for a project keeping no `test` section — the shapes the Oxlint pass gives its own. `@jterrazz/test` 17 prints that line bare on every green ratchet run, so the pass passes no flag to ask for it; a line in any other shape is left out rather than echoed as a second shape.
 
 The member runs judge the `jterrazz(*)` diagnostics the oxlint pass sets aside, and they read them off that pass's own report: `check` writes oxlint's JSON report once and hands it to every member run with `--oxlint-report <path>`, starting those runs once the report is complete. The checker prints a count of those diagnostics, not the diagnostics: where a run fails on them, the Oxlint pass prints each one ([one run, and the log drawn from it](#one-run-and-the-log-drawn-from-it)). A tree run reads no oxlint diagnostic and is handed nothing. A checker started by hand, with no report, runs oxlint itself — so `check` never lints the project a second time for the checker.
 
@@ -272,10 +272,6 @@ The judge is told oxlint's exit code, so the split never forgives a failure no d
 
 `fix` is judged by the same section as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Before it judges, `fix` re-records what FELL: an entry whose count is below it is lowered to that count, and one at zero is dropped, each named in its pass — `re-recorded jterrazz.baseline.json › typescript › <rule> <was> → <now>`, the linter's entries under the Oxlint pass, the `names/*` ones under the Names pass and `comments/comment-lines-held-by-the-baseline` under the Comments pass. It never raises an entry nor adds a key: debt that grew is written only by `typescript baseline`, by hand. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green. The pair reads the same tree where there is NO section either: both count the diagnostics, both print the same lines, and neither reads severity.
 
-### A renamed id
-
-An id is the name a finding, a baseline entry and a disable directive all share, so a release that renames one leaves every project citing the old name behind. The Oxlint pass refuses that citation under `renamed-id`, naming the new id — an entry of `jterrazz.baseline.json › typescript` keyed by an old id, an `oxlint-disable*` directive naming one, and an oxlint config file setting a rule by one — and `typescript fix` rewrites all three before any pass reads the tree, printing a `renamed` line for each. An entry keyed by an old id is judged by that refusal alone, never by the pass that owns the new id. The map from old to new is `lint/migration/renamed-ids.json` — the CLI hands its path to each judge, so the ratchet imports nothing of the migration — and it holds only what a project can cite: the rule `jterrazz-typescript/comment-longer-than-function`, the `comments/comment-lines` entry and the eleven `names/names-*` entries. It is deleted, with its mover, by the major that follows.
-
 ### Recording it
 
 ```bash
@@ -284,10 +280,7 @@ typescript baseline
 
 A command of its own, because it neither checks nor repairs: it writes down where the project actually stands, debt that grew included. `fix --baseline` would bury that rewrite inside the gesture a developer runs twenty times a day; `fix` records only the falls, which can make the file shrink and never let it grow. The `typescript` section is written from the current counts of this package's rules, then the file is handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape. The `test` section is recorded by `@jterrazz/test`'s own command, never by this one, and a file this command cannot read as sections is refused rather than rewritten. So is a run whose Names (tree) or Comments (density) pass wrote no report: that side of the section is unknown, and writing it would erase that debt rather than record it — `typescript check` prints why the pass died.
 
-Two more refusals keep the file honest, both in the Oxlint pass:
-
-- `baseline-unreadable` — a `jterrazz.baseline.json` that is not JSON, or that holds a top-level key whose value is not a section of counts: a flat `{ "<rule>": <count> }` copied from an older file is the common case.
-- `baseline-legacy` — a `typescript.baseline.json`, `test.baseline.json` or `oxlint.baseline.json` still at the root. None is read; each is named with the section its entries move to, and the pass stays red until it is gone.
+One more refusal keeps the file honest, in the Oxlint pass: `baseline-unreadable` — a `jterrazz.baseline.json` that is not JSON, or that holds a top-level key whose value is not a section of counts.
 
 This repository's `typescript` section holds two entries. `eslint/max-lines`: the size caps turned on in 11.0.0 found nine files past 300 lines in its own source, splitting each is a change of its own, and the entry holds the files still past the cap so no new one arrives. `comments/comment-lines-held-by-the-baseline` is the comment debt the comment guards found on the day they arrived, burned down file by file. Turning type-aware linting on had found seven diagnostics, and those were fixed rather than recorded. The toolchain is consumer #1 of the rulebook it ships, so its own tree carries only the debt a new rule found, and only until it is paid.
 
@@ -466,20 +459,20 @@ The root's own folders are the same in every repository: `src/` the product's co
 
 <!-- GENERATED:findings tree -->
 
-| Rule                                    | Requirement                                                                                               |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `names/no-undeclared-root-folder`       | Every root folder is on the spine, imposed by a tool, or declared with its reason.                        |
-| `names/declared-root-states-its-reason` | A root declared in typescript.roots states why the repository keeps it.                                   |
-| `names/declared-root-holds-files`       | A root declared in typescript.roots holds a file git does not ignore.                                     |
-| `names/jterrazz-config-loads`           | The settings file jterrazz.config.ts loads, and its typescript section has the declared shape.            |
-| `names/skill-holds-only-skill-md`       | A skill is one skills/<skill>/SKILL.md and nothing beside it.                                             |
-| `names/repository-has-makefile`         | Every repository root carries a Makefile.                                                                 |
-| `names/makefile-answers-every-gesture`  | The Makefile writes a rule for each of the six gestures.                                                  |
-| `names/no-empty-directory`              | No directory of the working copy is empty.                                                                |
-| `names/lint-root-holds-only-index`      | The root of lint/ holds its index and nothing else.                                                       |
-| `names/lint-folder-is-known`            | Every folder of lint/ is one of catalogue, rulebook, rules, checks, ratchet, reading, self and migration. |
-| `names/self-folder-is-known`            | Every folder of lint/self/ is one of catalogue, rulebook, rules, checks, ratchet, reading and corpus.     |
-| `names/rule-file-in-its-family-folder`  | A rule file sits under rules/<family>/, the family its catalogue row declares.                            |
+| Rule                                    | Requirement                                                                                           |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `names/no-undeclared-root-folder`       | Every root folder is on the spine, imposed by a tool, or declared with its reason.                    |
+| `names/declared-root-states-its-reason` | A root declared in typescript.roots states why the repository keeps it.                               |
+| `names/declared-root-holds-files`       | A root declared in typescript.roots holds a file git does not ignore.                                 |
+| `names/jterrazz-config-loads`           | The settings file jterrazz.config.ts loads, and its typescript section has the declared shape.        |
+| `names/skill-holds-only-skill-md`       | A skill is one skills/<skill>/SKILL.md and nothing beside it.                                         |
+| `names/repository-has-makefile`         | Every repository root carries a Makefile.                                                             |
+| `names/makefile-answers-every-gesture`  | The Makefile writes a rule for each of the six gestures.                                              |
+| `names/no-empty-directory`              | No directory of the working copy is empty.                                                            |
+| `names/lint-root-holds-only-index`      | The root of lint/ holds its index and nothing else.                                                   |
+| `names/lint-folder-is-known`            | Every folder of lint/ is one of catalogue, rulebook, rules, checks, ratchet, reading and self.        |
+| `names/self-folder-is-known`            | Every folder of lint/self/ is one of catalogue, rulebook, rules, checks, ratchet, reading and corpus. |
+| `names/rule-file-in-its-family-folder`  | A rule file sits under rules/<family>/, the family its catalogue row declares.                        |
 
 <!-- /GENERATED:findings tree -->
 
@@ -544,7 +537,7 @@ The file holds one section per package of the family, each package reading only 
 
 ### The lint tree
 
-`lint/` has one tree in every repository that keeps one, whatever the package: what it ships at `index`, and a folder for each nature of what it judges with — `catalogue/`, `rulebook/`, `rules/`, `checks/`, `ratchet/`, `reading/`, `self/`, `migration/`, each holding what [Architecture](01-architecture.md#the-judging-layer) says it holds. A reader who knows one repository's `lint/` knows every one, so the pass holds each unit that keeps a `lint/` to it, a workspace member included. `names/lint-root-holds-only-index` refuses a file at its root not named `index` — `index.ts`, `index.js`, `index.d.ts` and their tests pass; `names/lint-folder-is-known` a folder outside the eight; `names/self-folder-is-known` a folder of `self/` outside the shipped six and `corpus/`, since `self/` files what only its repository is held to as the shipped tree files it; `names/rule-file-in-its-family-folder` a rule file filed at the root of `rules/`, or under a folder its catalogue row does not name.
+`lint/` has one tree in every repository that keeps one, whatever the package: what it ships at `index`, and a folder for each nature of what it judges with — `catalogue/`, `rulebook/`, `rules/`, `checks/`, `ratchet/`, `reading/`, `self/`, each holding what [Architecture](01-architecture.md#the-judging-layer) says it holds. A reader who knows one repository's `lint/` knows every one, so the pass holds each unit that keeps a `lint/` to it, a workspace member included. `names/lint-root-holds-only-index` refuses a file at its root not named `index` — `index.ts`, `index.js`, `index.d.ts` and their tests pass; `names/lint-folder-is-known` a folder outside the seven; `names/self-folder-is-known` a folder of `self/` outside the shipped six and `corpus/`, since `self/` files what only its repository is held to as the shipped tree files it; `names/rule-file-in-its-family-folder` a rule file filed at the root of `rules/`, or under a folder its catalogue row does not name.
 
 The family is read off the unit's own catalogue: every file directly under `lint/catalogue/`, read as text and never run, where a row is any object literal stating an `id` or a `name` and a `family` — a JSON row and a TypeScript manifest row alike, the plugin prefix of an id left aside. A rule file is matched to its row by its name, its test with it. A unit with no catalogue, or a rule no row names, is held to the first two rules alone: a family is never guessed.
 

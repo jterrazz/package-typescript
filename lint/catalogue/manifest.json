@@ -267,14 +267,6 @@
         "audience": "consumer",
         "by": "exit",
         "channel": "runtime",
-        "id": "baseline-legacy",
-        "message": "baseline-legacy",
-        "module": "lint/ratchet/baseline.cli.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
         "id": "suppressions-findings",
         "message": "the directive now names the checker this project runs",
         "module": "lint/checks/suppressions.js"
@@ -390,13 +382,5 @@
         "id": "command-usage",
         "message": "Usage: typescript <command>",
         "module": "bin/typescript.sh"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "renamed-id",
-        "message": "an id this release renamed",
-        "module": "lint/migration/rename.js"
     }
 ]

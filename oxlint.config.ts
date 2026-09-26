@@ -3,9 +3,8 @@ import { testing } from '@jterrazz/test/oxlint';
 import { compose, defineConfig, layers, node } from '@jterrazz/typescript/oxlint';
 
 const SELF = '**/self/**';
-const MIGRATION = '**/migration/**';
 const SOURCE = '**/src/**';
-const SHIPPED_REACH = [SELF, MIGRATION, SOURCE];
+const SHIPPED_REACH = [SELF, SOURCE];
 
 const LINT_FOLDERS = ['catalogue', 'rulebook', 'rules', 'checks', 'ratchet'] as const;
 
@@ -24,7 +23,7 @@ function lintFolder(
             ...SHIPPED_REACH,
         ],
         files: [`lint/${folder}/**`],
-        message: `${message}, never self/, migration/ nor src/`,
+        message: `${message}, never self/ nor src/`,
         name: `lint/${folder}`,
     };
 }
@@ -57,21 +56,13 @@ const lintDirection = layers({
         {
             deny: SHIPPED_REACH,
             files: ['lint/index.*'],
-            message:
-                'shipped lint/ imports neither self/ (never shipped), migration/ (deleted by the next major) nor src/ (the engine)',
+            message: 'shipped lint/ imports neither self/ (never shipped) nor src/ (the engine)',
             name: 'lint/index',
         },
         {
-            deny: [SELF, SOURCE],
-            files: ['lint/migration/**'],
-            message: 'lint/migration/ imports what it moves, never self/ nor src/',
-            name: 'lint/migration',
-        },
-        {
-            deny: [SELF, MIGRATION],
+            deny: [SELF],
             files: ['src/**'],
-            message:
-                'src/ runs what lint/ judges, never self/ nor the migration — only bin/ reaches migration/',
+            message: 'src/ runs what lint/ judges, never self/',
             name: 'src',
         },
     ],

@@ -11,13 +11,6 @@ export const labelOf = (section) => `${BASELINE} › ${section}`;
 
 export const LABEL = labelOf(SECTION);
 
-// The per-package layout, never read: each file maps to the section its entries move to.
-const LEGACY = Object.freeze({
-    'oxlint.baseline.json': SECTION,
-    'test.baseline.json': TEST_SECTION,
-    'typescript.baseline.json': SECTION,
-});
-
 // `@jterrazz/test` records and judges these: its oxlint plugin's rules and its checker's ids.
 const TEST_NAMESPACES = ['jterrazz/', 'jterrazz-check/'];
 
@@ -100,18 +93,8 @@ export function readBaseline(root, section = SECTION) {
     return sections?.[section] ?? null;
 }
 
-export function legacyOf(root) {
-    return Object.entries(LEGACY)
-        .filter(([file]) => existsSync(join(root, file)))
-        .map(([file, section]) =>
-            section === SECTION
-                ? `${file}  the ratchet is ${LABEL} — run 'typescript baseline' to record it there, and delete this file`
-                : `${file}  @jterrazz/test's entries belong in ${labelOf(section)} — move them there, and delete this file`,
-        );
-}
-
 // The section is exact: a count above OR below its entry fails, and only `typescript baseline` raises one.
-export function judge(counts, baseline, renamed = new Set()) {
+export function judge(counts, baseline) {
     const broken = [];
 
     for (const [rule, count] of Object.entries(counts).toSorted(([left], [right]) =>
@@ -130,9 +113,6 @@ export function judge(counts, baseline, renamed = new Set()) {
     }
 
     for (const rule of Object.keys(baseline).toSorted()) {
-        if (renamed.has(rule)) {
-            continue;
-        }
         if (isTestOwned(rule)) {
             broken.push(
                 `${rule} is @jterrazz/test's rule — its entry belongs in ${labelOf(TEST_SECTION)}, which that package records and judges`,
@@ -177,37 +157,6 @@ export function reRecord(root, counts, owns) {
         .map((rule) => `re-recorded ${LABEL} › ${rule} ${held[rule]} → ${next[rule] ?? 0}`);
 
     return { lines, section: next };
-}
-
-export function reKey(root, renamed) {
-    const held = readBaseline(root);
-    const moved = Object.keys(held ?? {}).filter((rule) => Object.hasOwn(renamed, rule));
-    if (moved.length === 0) {
-        return [];
-    }
-
-    const next = {};
-    for (const [rule, count] of Object.entries(held)) {
-        const key = renamed[rule] ?? rule;
-        next[key] = (next[key] ?? 0) + count;
-    }
-    const path = join(root, BASELINE);
-    const text = readFileSync(path, 'utf8');
-    const section = serialise(next, indentOf(text));
-    writeFileSync(path, withSection(text, section));
-
-    return moved.toSorted().map((rule) => ({ from: rule, to: renamed[rule] }));
-}
-
-export function renamedOf(args) {
-    const index = args.indexOf('--renamed');
-    if (index === -1 || args[index + 1] === undefined) {
-        return new Set();
-    }
-
-    const renamed = JSON.parse(readFileSync(args[index + 1], 'utf8'));
-
-    return new Set(Object.keys(renamed));
 }
 
 export function heldSummary(counts) {

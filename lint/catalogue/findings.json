@@ -302,7 +302,7 @@
     {
         "family": "tree",
         "id": "names/lint-folder-is-known",
-        "sentence": "Every folder of lint/ is one of catalogue, rulebook, rules, checks, ratchet, reading, self and migration."
+        "sentence": "Every folder of lint/ is one of catalogue, rulebook, rules, checks, ratchet, reading and self."
     },
     {
         "family": "tree",

@@ -13,9 +13,7 @@ import {
     isTestOwned,
     judge,
     LABEL,
-    legacyOf,
     readRatchet,
-    renamedOf,
     reRecord,
     SECTION,
     serialise,
@@ -44,11 +42,8 @@ const isFix = argv.includes('--fix');
 const namesPath = flagValue('--names');
 const commentsPath = flagValue('--comments');
 const linterExit = flagValue('--linter-exit');
-const renamed = renamedOf(argv);
 const flagValues = new Set(
-    [namesPath, commentsPath, linterExit, flagValue('--renamed')].filter(
-        (value) => value !== undefined,
-    ),
+    [namesPath, commentsPath, linterExit].filter((value) => value !== undefined),
 );
 const positional = argv
     .slice(2)
@@ -105,11 +100,6 @@ if (linterExit !== undefined && linterExit !== '0' && diagnosticsOf(report).leng
     exit(1);
 }
 
-const legacy = legacyOf(root);
-for (const line of legacy) {
-    stdout.write(`baseline-legacy  ${line}\n`);
-}
-
 const { problem, sections } = readRatchet(root);
 if (problem !== null) {
     stdout.write(`baseline-unreadable  ${BASELINE}  ${problem}\n`);
@@ -130,10 +120,10 @@ if (whole === null) {
             "Fix them, or run 'typescript baseline' to record where the project stands.\n",
         );
     }
-    if (rules.length > 0 || legacy.length > 0) {
+    if (rules.length > 0) {
         exit(1);
     }
-    if (speaksHeld && judge(counts, {}, renamed).length === 0) {
+    if (speaksHeld && judge(counts, {}).length === 0) {
         stdout.write(`${heldSummary({})}\n`);
     }
     exit(0);
@@ -154,7 +144,7 @@ if (isFix) {
 }
 
 const baseline = Object.fromEntries(Object.entries(section).filter(([rule]) => !isPassOwned(rule)));
-const broken = judge(linterCounts, baseline, renamed);
+const broken = judge(linterCounts, baseline);
 
 for (const reason of broken) {
     stdout.write(`baseline-ratchet  ${LABEL}  ${reason}\n`);
@@ -163,11 +153,7 @@ if (broken.length > 0) {
     stdout.write("Run 'typescript baseline' to record where the project actually stands.\n");
     exit(1);
 }
-if (legacy.length > 0) {
-    exit(1);
-}
-
-if (speaksHeld && judge(counts, section, renamed).length === 0) {
+if (speaksHeld && judge(counts, section).length === 0) {
     stdout.write(`${heldSummary(counts)}\n`);
 }
 
