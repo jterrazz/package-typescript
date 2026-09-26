@@ -478,6 +478,7 @@ The root's own folders are the same in every repository: `src/` the product's co
 | `names/no-empty-directory`              | No directory of the working copy is empty.                                                                |
 | `names/lint-root-holds-only-index`      | The root of lint/ holds its index and nothing else.                                                       |
 | `names/lint-folder-is-known`            | Every folder of lint/ is one of catalogue, rulebook, rules, checks, ratchet, reading, self and migration. |
+| `names/self-folder-is-known`            | Every folder of lint/self/ is one of catalogue, rulebook, rules, checks, ratchet, reading and corpus.     |
 | `names/rule-file-in-its-family-folder`  | A rule file sits under rules/<family>/, the family its catalogue row declares.                            |
 
 <!-- /GENERATED:findings tree -->
@@ -543,7 +544,7 @@ The file holds one section per package of the family, each package reading only 
 
 ### The lint tree
 
-`lint/` has one tree in every repository that keeps one, whatever the package: what it ships at `index`, and a folder for each nature of what it judges with — `catalogue/`, `rulebook/`, `rules/`, `checks/`, `ratchet/`, `reading/`, `self/`, `migration/`, each holding what [Architecture](01-architecture.md#the-judging-layer) says it holds. A reader who knows one repository's `lint/` knows every one, so the pass holds each unit that keeps a `lint/` to it, a workspace member included. `names/lint-root-holds-only-index` refuses a file at its root not named `index` — `index.ts`, `index.js`, `index.d.ts` and their tests pass; `names/lint-folder-is-known` a folder outside the eight; `names/rule-file-in-its-family-folder` a rule file filed at the root of `rules/`, or under a folder its catalogue row does not name.
+`lint/` has one tree in every repository that keeps one, whatever the package: what it ships at `index`, and a folder for each nature of what it judges with — `catalogue/`, `rulebook/`, `rules/`, `checks/`, `ratchet/`, `reading/`, `self/`, `migration/`, each holding what [Architecture](01-architecture.md#the-judging-layer) says it holds. A reader who knows one repository's `lint/` knows every one, so the pass holds each unit that keeps a `lint/` to it, a workspace member included. `names/lint-root-holds-only-index` refuses a file at its root not named `index` — `index.ts`, `index.js`, `index.d.ts` and their tests pass; `names/lint-folder-is-known` a folder outside the eight; `names/self-folder-is-known` a folder of `self/` outside the shipped six and `corpus/`, since `self/` files what only its repository is held to as the shipped tree files it; `names/rule-file-in-its-family-folder` a rule file filed at the root of `rules/`, or under a folder its catalogue row does not name.
 
 The family is read off the unit's own catalogue: every file directly under `lint/catalogue/`, read as text and never run, where a row is any object literal stating an `id` or a `name` and a `family` — a JSON row and a TypeScript manifest row alike, the plugin prefix of an id left aside. A rule file is matched to its row by its name, its test with it. A unit with no catalogue, or a rule no row names, is held to the first two rules alone: a family is never guessed.
 

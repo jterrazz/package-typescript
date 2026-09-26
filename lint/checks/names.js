@@ -311,6 +311,13 @@ const LINT_FOLDERS = Object.freeze([
     'migration',
 ]);
 
+const SELF_ROOT = 'self';
+
+const SELF_FOLDERS = Object.freeze([
+    ...LINT_FOLDERS.filter((folder) => folder !== SELF_ROOT && folder !== 'migration'),
+    'corpus',
+]);
+
 const LINT_TREE_READ = 'read: docs/06-quality-checks.md#the-lint-tree';
 
 function lintRootFinding(path) {
@@ -339,6 +346,19 @@ function lintFolderFinding(path) {
     };
 }
 
+function selfFolderFinding(path) {
+    return {
+        message: [
+            `found: \`${path}\` is not a folder of the self tree`,
+            `why: self/ files what only this repository is held to as the shipped tree files it, so its folders are the shipped ones and corpus/ — ${SELF_FOLDERS.join(', ')}`,
+            'fix: move its files where their nature puts them — a self row under catalogue/, a rule under rules/<family>/, a pass or a lock under checks/, a floor under ratchet/, a reader under reading/, a meta-test under corpus/',
+            LINT_TREE_READ,
+        ].join(' · '),
+        path,
+        rule: 'names/self-folder-is-known',
+    };
+}
+
 function ruleFamilyFinding(path, folder, family) {
     const place = folder === undefined ? 'at the root of `rules/`' : `under \`rules/${folder}/\``;
 
@@ -354,11 +374,21 @@ function ruleFamilyFinding(path, folder, family) {
     };
 }
 
+function misfiledRule(file, filed, families, prefix) {
+    const stem = stemOf(file.split('/').at(-1));
+    const family = families.get(stem);
+
+    return family !== undefined && family !== filed && stem !== 'plugin'
+        ? [ruleFamilyFinding(`${prefix}${file}`, filed, family)]
+        : [];
+}
+
 function lintTreeOf(files, unit, prefix) {
     const lintFiles = files.filter((file) => file.startsWith(`${LINT_ROOT}/`));
     const families = catalogueFamilies(unit, lintFiles);
     const findings = [];
     const foreign = new Set();
+    const foreignSelf = new Set();
 
     for (const file of lintFiles) {
         const [, top, folder, ...rest] = file.split('/');
@@ -368,13 +398,14 @@ function lintTreeOf(files, unit, prefix) {
             }
         } else if (!LINT_FOLDERS.includes(top)) {
             foreign.add(top);
-        } else if (top === 'rules') {
-            const stem = stemOf(file.split('/').at(-1));
-            const family = families.get(stem);
-            const filed = rest.length > 0 ? folder : undefined;
-            if (family !== undefined && family !== filed && stem !== 'plugin') {
-                findings.push(ruleFamilyFinding(`${prefix}${file}`, filed, family));
+        } else if (top === SELF_ROOT) {
+            if (rest.length > 0 && !SELF_FOLDERS.includes(folder)) {
+                foreignSelf.add(folder);
             }
+        } else if (top === 'rules') {
+            findings.push(
+                ...misfiledRule(file, rest.length > 0 ? folder : undefined, families, prefix),
+            );
         }
     }
 
@@ -383,6 +414,9 @@ function lintTreeOf(files, unit, prefix) {
         ...[...foreign]
             .toSorted((left, right) => (left < right ? -1 : 1))
             .map((top) => lintFolderFinding(`${prefix}${LINT_ROOT}/${top}/`)),
+        ...[...foreignSelf]
+            .toSorted((left, right) => (left < right ? -1 : 1))
+            .map((folder) => selfFolderFinding(`${prefix}${LINT_ROOT}/${SELF_ROOT}/${folder}/`)),
     ];
 }
 

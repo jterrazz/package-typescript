@@ -306,6 +306,11 @@
     },
     {
         "family": "tree",
+        "id": "names/self-folder-is-known",
+        "sentence": "Every folder of lint/self/ is one of catalogue, rulebook, rules, checks, ratchet, reading and corpus."
+    },
+    {
+        "family": "tree",
         "id": "names/rule-file-in-its-family-folder",
         "sentence": "A rule file sits under rules/<family>/, the family its catalogue row declares."
     }
