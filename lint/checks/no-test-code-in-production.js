@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs';
 import { isAbsolute, join, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { isPacked } from '../reading/built-chunks.js';
+import { isPacked } from '../reading/packed-files.js';
 import { resolveTestPackage } from '../reading/test-package.js';
 
 const NODE_MODULES = `${sep}node_modules${sep}`;

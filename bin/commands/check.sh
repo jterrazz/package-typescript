@@ -570,6 +570,7 @@ run_checks() {
             project_is_publishable "$publish_root" || continue
             node "$PACKAGE_ROOT/lint/checks/publish.js" "$publish_root" \
                 --publint "$PUBLINT" --attw "$ATTW" \
+                --bundle-preset "$PACKAGE_ROOT/src/presets/tsdown/bundle.js" \
                 > "$tmp_dir/publish-$publish_index.log" 2>&1 &
             publish_pids+=($!)
             publish_logs+=("$tmp_dir/publish-$publish_index.log")

@@ -4,10 +4,10 @@ import { dirname, join } from 'node:path';
 import { build } from 'tsdown';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { buildOf, builtChunks } from './built-chunks.js';
+import { buildOf, builtChunks } from './publish.chunks.js';
 
 function packageWith(tree: Record<string, string>): string {
-    const unit = mkdtempSync(join(tmpdir(), 'built-chunks-'));
+    const unit = mkdtempSync(join(tmpdir(), 'publish-chunks-'));
     onTestFinished(() => {
         rmSync(unit, { force: true, recursive: true });
     });
@@ -19,7 +19,7 @@ function packageWith(tree: Record<string, string>): string {
     return unit;
 }
 
-describe('built-chunks', () => {
+describe('publish.chunks', () => {
     test('builds a package by its own config, leaving the disk as it found it', async () => {
         // Given - a package whose own config builds two entries, copies an asset and runs a command
         const unit = packageWith({

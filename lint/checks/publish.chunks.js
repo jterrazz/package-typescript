@@ -1,16 +1,14 @@
 import { existsSync, readdirSync } from 'node:fs';
-import { dirname, join, matchesGlob, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 
-import { entryPoints } from './entry-points.js';
-
-const BUNDLE_PRESET = join(import.meta.dirname, '../../src/presets/tsdown/bundle.js');
+import { entryPoints } from '../reading/entry-points.js';
 
 // tsdown loads a package's own config in the preset's stead.
 const OWN_CONFIG = /^tsdown\.config\.[cm]?[jt]s$/u;
 
 const BUILD_DIRECTORY = /^(?:\.\/)?dist\//u;
 
-export function buildOf(root, targets) {
+export function buildOf(root, targets, bundlePreset) {
     const own = readdirSync(root).find((name) => OWN_CONFIG.test(name));
     if (own !== undefined) {
         return { config: join(root, own), entry: undefined };
@@ -21,11 +19,11 @@ export function buildOf(root, targets) {
 
     const entries = entryPoints(root);
     if (entries.length > 0) {
-        return { config: BUNDLE_PRESET, entry: entries };
+        return { config: bundlePreset, entry: entries };
     }
 
     return existsSync(join(root, 'src/index.ts'))
-        ? { config: BUNDLE_PRESET, entry: undefined }
+        ? { config: bundlePreset, entry: undefined }
         : null;
 }
 
@@ -64,7 +62,7 @@ export async function builtChunks(root, build) {
                         });
                     }
                 },
-                name: 'jterrazz-publish-material',
+                name: 'jterrazz-built-chunks',
             },
         ],
         publint: false,
@@ -73,27 +71,4 @@ export async function builtChunks(root, build) {
     });
 
     return chunks.toSorted((left, right) => (left.file < right.file ? -1 : 1));
-}
-
-// npm ships these whatever `files` says.
-const ALWAYS_PACKED = /^(?:package\.json|readme|license|licence|changelog)/iu;
-
-export const withoutDotSlash = (target) => target.replace(/^\.\//u, '');
-
-export function isPacked(files, target) {
-    const path = withoutDotSlash(target);
-    if (files.length === 0 || ALWAYS_PACKED.test(path)) {
-        return true;
-    }
-
-    return files.some((entry) => {
-        const packed = withoutDotSlash(entry).replace(/\/$/u, '');
-
-        return (
-            path === packed ||
-            path.startsWith(`${packed}/`) ||
-            matchesGlob(path, packed) ||
-            matchesGlob(path, `${packed}/**`)
-        );
-    });
 }

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { testMaterialFindings, testMaterialReader } from './publish.material.js';
+import { testMaterialFindings, testMaterialReader } from './no-test-code-in-production.js';
 
 const reader = { materialAt, testPackageOf };
 
@@ -12,7 +12,7 @@ const reader = { materialAt, testPackageOf };
 const root = '/package';
 
 function packageWith(tree: Record<string, string>): string {
-    const unit = mkdtempSync(join(tmpdir(), 'publish-material-'));
+    const unit = mkdtempSync(join(tmpdir(), 'no-test-code-in-production-'));
     onTestFinished(() => {
         rmSync(unit, { force: true, recursive: true });
     });
@@ -38,7 +38,7 @@ function repositoryInstalling(oxlint: string): string {
         'package.json': '{ "type": "module" }\n',
     });
 }
-describe('publish.material', () => {
+describe('no-test-code-in-production', () => {
     test('names a local module that is test material, and passes one that is not', () => {
         // Given - one shipped file compiled from an entry, a fixtures module and a ground file
         const chunks = [

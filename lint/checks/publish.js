@@ -6,8 +6,9 @@ import { dirname, join, matchesGlob, relative, resolve } from 'node:path';
 import { argv, cwd, exit, stdout } from 'node:process';
 import { stripVTControlCharacters } from 'node:util';
 
-import { buildOf, builtChunks, isPacked, withoutDotSlash } from '../reading/built-chunks.js';
-import { testMaterialFindings, testMaterialReader } from './publish.material.js';
+import { isPacked, withoutDotSlash } from '../reading/packed-files.js';
+import { testMaterialFindings, testMaterialReader } from './no-test-code-in-production.js';
+import { buildOf, builtChunks } from './publish.chunks.js';
 
 function targetsOf(exports) {
     if (typeof exports === 'string') {
@@ -60,7 +61,12 @@ const root = resolve(
     argv.slice(2).find((argument, index) => {
         const previous = argv[index + 1];
 
-        return !argument.startsWith('--') && previous !== '--publint' && previous !== '--attw';
+        return (
+            !argument.startsWith('--') &&
+            previous !== '--publint' &&
+            previous !== '--attw' &&
+            previous !== '--bundle-preset'
+        );
     }) ?? '.',
 );
 
@@ -119,7 +125,7 @@ const NOTHING_TO_JUDGE = {
 
 const member = relative(cwd(), root);
 
-const build = buildOf(root, targets);
+const build = buildOf(root, targets, flagged('--bundle-preset'));
 if (build !== null) {
     const loaded = await testMaterialReader(root);
     const reader = 'reader' in loaded ? loaded.reader : null;
