@@ -87,7 +87,7 @@ const PREFER_CALLED_WITH = unsafeFix(
     'rewrites `toHaveBeenCalled()` into `toHaveBeenCalledWith()`, an assertion of NO arguments',
 );
 
-// A floor under `testing` (C12, ADR-008).
+// A floor under `testing` (`file-suffix-matches-place`, ADR-008).
 const CONSISTENT_TEST_FILENAME = on([{ pattern: String.raw`.*\.(spec|test)\.[tj]sx?$` }]);
 
 const COVERED_BY_TESTING = { by: '@jterrazz/test testing', kind: 'covered' };
