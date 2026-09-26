@@ -165,7 +165,7 @@ case "$COMMAND" in
         trap 'rm -f "$BASELINE_REPORT" "$NAMES_REPORT" "$COMMENTS_REPORT"' EXIT
         node "$PACKAGE_ROOT/lint/checks/comments.js" . --format json "$@" > "$COMMENTS_REPORT" 2>/dev/null || true
 
-        node "$PACKAGE_ROOT/lint/ratchet/baseline.js" "$BASELINE_REPORT" . \
+        node "$PACKAGE_ROOT/lint/ratchet/baseline.cli.js" "$BASELINE_REPORT" . \
             --names "$NAMES_REPORT" --comments "$COMMENTS_REPORT" --write || exit 1
 
         # A tracked file, so the formatter shapes it.

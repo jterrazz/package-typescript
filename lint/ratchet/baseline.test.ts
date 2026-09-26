@@ -6,10 +6,10 @@ import { describe, expect, onTestFinished, test } from 'vitest';
 
 import { heldSummary, judge, reKey, tightened } from './baseline.js';
 
-const JUDGE = resolve(import.meta.dirname, 'baseline.js');
+const JUDGE = resolve(import.meta.dirname, 'baseline.cli.js');
 
 function groundOf(baseline: string): { report: string; root: string } {
-    const root = mkdtempSync(resolve(tmpdir(), 'check-baseline-'));
+    const root = mkdtempSync(resolve(tmpdir(), 'ratchet-baseline-'));
     onTestFinished(() => {
         rmSync(root, { force: true, recursive: true });
     });

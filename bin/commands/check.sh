@@ -649,7 +649,7 @@ run_checks() {
             linter_exit=(--linter-exit "$lint_status")
             names_report=(--names "$tmp_dir/names.json" --comments "$tmp_dir/comments.json")
         fi
-        node "$PACKAGE_ROOT/lint/ratchet/baseline.js" "$tmp_dir/lint.json" . \
+        node "$PACKAGE_ROOT/lint/ratchet/baseline.cli.js" "$tmp_dir/lint.json" . \
             "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" "${RENAMED_IDS[@]}" > "$tmp_dir/ratchet.log" 2>&1
         lint_status=$?
         if [ "$FIX_MODE" = true ]; then

@@ -213,7 +213,7 @@
         "channel": "runtime",
         "id": "baseline-no-report",
         "message": "the baseline cannot be read",
-        "module": "lint/ratchet/baseline.js"
+        "module": "lint/ratchet/baseline.cli.js"
     },
     {
         "audience": "consumer",
@@ -221,7 +221,7 @@
         "channel": "runtime",
         "id": "baseline-no-pass-report",
         "message": "pass wrote no report — the ${SECTION} section is left as it was",
-        "module": "lint/ratchet/baseline.js"
+        "module": "lint/ratchet/baseline.cli.js"
     },
     {
         "audience": "consumer",
@@ -229,7 +229,7 @@
         "channel": "runtime",
         "id": "baseline-unwritable",
         "message": "section cannot be written beside the others",
-        "module": "lint/ratchet/baseline.js"
+        "module": "lint/ratchet/baseline.cli.js"
     },
     {
         "audience": "consumer",
@@ -237,7 +237,7 @@
         "channel": "runtime",
         "id": "baseline-silent-linter",
         "message": "with no diagnostic — its own output says why",
-        "module": "lint/ratchet/baseline.js"
+        "module": "lint/ratchet/baseline.cli.js"
     },
     {
         "audience": "consumer",
@@ -245,7 +245,7 @@
         "channel": "runtime",
         "id": "baseline-unreadable",
         "message": "baseline-unreadable",
-        "module": "lint/ratchet/baseline.js"
+        "module": "lint/ratchet/baseline.cli.js"
     },
     {
         "audience": "consumer",
@@ -253,7 +253,7 @@
         "channel": "runtime",
         "id": "baseline-unrecorded",
         "message": "to record where the project stands.",
-        "module": "lint/ratchet/baseline.js"
+        "module": "lint/ratchet/baseline.cli.js"
     },
     {
         "audience": "consumer",
@@ -261,7 +261,7 @@
         "channel": "runtime",
         "id": "baseline-ratchet",
         "message": "baseline-ratchet",
-        "module": "lint/ratchet/baseline.js"
+        "module": "lint/ratchet/baseline.cli.js"
     },
     {
         "audience": "consumer",
@@ -269,7 +269,7 @@
         "channel": "runtime",
         "id": "baseline-legacy",
         "message": "baseline-legacy",
-        "module": "lint/ratchet/baseline.js"
+        "module": "lint/ratchet/baseline.cli.js"
     },
     {
         "audience": "consumer",
