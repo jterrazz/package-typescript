@@ -14,7 +14,7 @@ const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
 
 function checkBelowDecoy(): string {
     const tree = temporaryDirectory('spec-default-config-');
-    cpSync(resolve(import.meta.dirname, 'fixtures/default-config/decoy-parent'), tree, {
+    cpSync(resolve(import.meta.dirname, '_fixtures/default-config/decoy-parent'), tree, {
         recursive: true,
     });
     const { stdout } = spawnSync('bash', [BIN, 'check'], {
@@ -45,7 +45,7 @@ describe('default-config', () => {
         // Given - a project whose root config arms `eqeqeq` alone, and a nested config turning it off in src/legacy/
         // When - the quality checks run
         const result = await cli
-            .fixture(directory('./fixtures/default-config/own-nested/'))
+            .fixture(directory('./_fixtures/default-config/own-nested/'))
             .exec('check');
 
         // Then - one `==` is counted, the nested one is not, and no rule of the default profile speaks

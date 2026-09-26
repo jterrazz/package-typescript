@@ -1,5 +1,5 @@
 description: refuses a Names rule nobody recorded, and a Names entry the tree has paid down to zero
-fixture: ./fixtures/baseline/names-moved/
+fixture: ./_fixtures/baseline/names-moved/
 runs:
     - command: check
       exit: 1

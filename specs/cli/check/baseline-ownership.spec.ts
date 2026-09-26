@@ -25,7 +25,7 @@ const CONFIG = `export default {
 
 function groundOf(): string {
     const project = temporaryDirectory('spec-baseline-ownership-');
-    cpSync(resolve(import.meta.dirname, 'fixtures/baseline/ownership'), project, {
+    cpSync(resolve(import.meta.dirname, '_fixtures/baseline/ownership'), project, {
         recursive: true,
     });
     writeFileSync(join(project, 'oxlint.config.ts'), CONFIG);

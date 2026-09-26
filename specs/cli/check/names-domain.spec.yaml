@@ -1,5 +1,5 @@
 description: passes a tree named for its domain, a `core/`, a `setup.ts` and a `shared/` among it
-fixture: ./fixtures/names/domain/
+fixture: ./_fixtures/names/domain/
 runs:
     - command: check
       exit: 0

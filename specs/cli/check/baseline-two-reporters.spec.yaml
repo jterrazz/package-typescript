@@ -1,5 +1,5 @@
 description: states the whole ratchet file in one line once both of its reporters stand at it
-fixture: ./fixtures/baseline/two-reporters/
+fixture: ./_fixtures/baseline/two-reporters/
 runs:
     - command: check
       exit: 0

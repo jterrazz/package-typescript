@@ -1,5 +1,5 @@
 description: names the member each nothing-to-judge note is about, in a workspace of two publishable packages
-fixture: ./fixtures/publish/workspace/
+fixture: ./_fixtures/publish/workspace/
 runs:
     - command: check
       exit: 0

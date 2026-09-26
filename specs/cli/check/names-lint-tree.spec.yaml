@@ -1,5 +1,5 @@
 description: holds lint/ to its tree — index, consumer, self and engine, declarations apart, rules by family
-fixture: ./fixtures/names/lint-tree/
+fixture: ./_fixtures/names/lint-tree/
 env: TYPESCRIPT_CHECK_PASSES=names
 runs:
     - command: check

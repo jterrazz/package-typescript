@@ -8,8 +8,8 @@ import { newDirectory } from '../temporary-directory.js';
 // git refuses to track a nested `.git`, so a fixture cannot be the repository this needs.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-const FIXTURE = resolve(import.meta.dirname, 'fixtures/gitignore/on-convention');
-const TURBO_FIXTURE = resolve(import.meta.dirname, 'fixtures/gitignore/turbo');
+const FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/on-convention');
+const TURBO_FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/turbo');
 
 const workDir = newDirectory('spec-committed-artefact-');
 const turboWorkDir = newDirectory('spec-committed-turbo-');

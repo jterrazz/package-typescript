@@ -19,14 +19,14 @@ describe('formatter', () => {
 
     beforeAll(async () => {
         formatted = await oxfmtCli
-            .fixture(file('./fixtures/formatter/wrong-style.ts'))
+            .fixture(file('./_fixtures/formatter/wrong-style.ts'))
             .exec(`--config ${CONFIG_PATH} wrong-style.ts`);
     });
 
     test('detects unformatted code', async () => {
         // Given - a file with wrong formatting staged in the cwd
         const result = await oxfmtCli
-            .fixture(file('./fixtures/formatter/wrong-style.ts'))
+            .fixture(file('./_fixtures/formatter/wrong-style.ts'))
             .exec(`--check --config ${CONFIG_PATH} wrong-style.ts`);
 
         // Then - the check fails
@@ -36,7 +36,7 @@ describe('formatter', () => {
     test('passes for properly formatted code', async () => {
         // Given - a file with correct formatting staged in the cwd
         const result = await oxfmtCli
-            .fixture(file('./fixtures/formatter/correct-style.ts'))
+            .fixture(file('./_fixtures/formatter/correct-style.ts'))
             .exec(`--check --config ${CONFIG_PATH} correct-style.ts`);
 
         // Then - the check passes
@@ -47,7 +47,7 @@ describe('formatter', () => {
     test('formats none of the asset trees, build caches and ground a project holds', () => {
         // Given - the same unformatted file at the root and under every tree the preset ignores, beside a consumer config
         const created = temporaryDirectory('spec-formatter-ignores-');
-        cpSync(resolve(import.meta.dirname, 'fixtures/formatter/asset-trees'), created, {
+        cpSync(resolve(import.meta.dirname, '_fixtures/formatter/asset-trees'), created, {
             recursive: true,
         });
         // A tracked `.next/` is the committed artefact the Gitignore pass refuses.
@@ -82,7 +82,7 @@ describe('formatter', () => {
     test('formats unformatted code correctly', async () => {
         // Given - the wrong-style file formatted in place
         const result = await oxfmtCli
-            .fixture(file('./fixtures/formatter/wrong-style.ts'))
+            .fixture(file('./_fixtures/formatter/wrong-style.ts'))
             .exec(`--config ${CONFIG_PATH} wrong-style.ts`);
 
         // Then - the file is rewritten with the correct style
@@ -97,13 +97,13 @@ describe('formatter', () => {
     test('is idempotent when formatting already-correct code', async () => {
         // Given - an already-correct file formatted in place
         const result = await oxfmtCli
-            .fixture(file('./fixtures/formatter/correct-style.ts'))
+            .fixture(file('./_fixtures/formatter/correct-style.ts'))
             .exec(`--config ${CONFIG_PATH} correct-style.ts`);
 
         // Then - the file is unchanged after formatting
         expect(result.exitCode).toBe(0);
         const original = readFileSync(
-            resolve(import.meta.dirname, 'fixtures/formatter/correct-style.ts'),
+            resolve(import.meta.dirname, '_fixtures/formatter/correct-style.ts'),
             'utf8',
         );
         expect(result.file('correct-style.ts').content).toContain(original.trim());

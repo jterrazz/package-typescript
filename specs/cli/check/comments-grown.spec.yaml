@@ -1,5 +1,5 @@
 description: refuses comment lines grown above the recorded count
-fixture: ./fixtures/comments/grown/
+fixture: ./_fixtures/comments/grown/
 runs:
     - command: check
       exit: 1

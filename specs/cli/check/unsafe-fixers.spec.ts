@@ -10,8 +10,8 @@ import { cli } from '../cli.specification.js';
 const caseOf = (name: string) =>
     cli
         .env(onlyPasses('oxlint'))
-        .fixture(directory('./fixtures/unsafe-fixers/project/'))
-        .fixture(directory(`./fixtures/unsafe-fixers/${name}/`));
+        .fixture(directory('./_fixtures/unsafe-fixers/project/'))
+        .fixture(directory(`./_fixtures/unsafe-fixers/${name}/`));
 
 describe('unsafe-fixers', () => {
     test('leaves a meaning-changing fixer alone and still reports it', async () => {

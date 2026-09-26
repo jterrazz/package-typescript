@@ -34,7 +34,7 @@ That shape is the THIRD DOOR the conventions name: a first-level folder under `s
 
 ```yaml
 description: what the scenario claims # the vitest title
-fixture: ./fixtures/gitignore/old-layout/ # the ground it stands on, by its path
+fixture: ./_fixtures/gitignore/old-layout/ # the ground it stands on, by its path
 runs:
     - command: check # the session, one entry per invocation
       exit: 1
@@ -62,9 +62,9 @@ The presets are the one part of this package a document cannot reach: `check` lo
 | `install-matrix`      | one consumer per profile installs under pnpm-strict and checks green                                                                                            |
 | `module-augmentation` | a `declare module` block keeps the interface that merges, and its `export {}`                                                                                   |
 
-The `install-matrix` suite is the outside view, and it is the one that fails when the corpus is wrong: seven tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so an eighth profile earns a consumer by existing. The two config files are the one thing the ground does NOT carry: the runner writes them, for the same reason as above, and that heredoc is the single place the documented form is stated for all seven.
+The `install-matrix` suite is the outside view, and it is the one that fails when the corpus is wrong: seven tiny projects, each the smallest honest consumer — a manifest, a tsconfig extending that profile's preset, the two config files written as [Developing](02-developing.md) writes them, one source file and one test file. The ground is `specs/cli/preset/_fixtures/install-matrix/<profile>/`, and the profile IS the directory name, so an eighth profile earns a consumer by existing. The two config files are the one thing the ground does NOT carry: the runner writes them, for the same reason as above, and that heredoc is the single place the documented form is stated for all seven.
 
-The `astro` consumer declares `astro`, because the preset it extends stands on Astro's own. What the runner links there is a stand-in, `specs/cli/preset/fixtures/astro-package/` — Astro's strict tsconfig and a CLI whose `check` has no template to refuse — at the consumer's root, and again beside the package in the sandbox's store, which sits outside the consumer where pnpm's would sit inside it.
+The `astro` consumer declares `astro`, because the preset it extends stands on Astro's own. What the runner links there is a stand-in, `specs/cli/preset/_fixtures/astro-package/` — Astro's strict tsconfig and a CLI whose `check` has no template to refuse — at the consumer's root, and again beside the package in the sandbox's store, which sits outside the consumer where pnpm's would sit inside it.
 
 ### Regenerating a golden
 
@@ -74,7 +74,7 @@ Every golden of this repository takes the same gesture:
 TEST_UPDATE=1 npm test
 ```
 
-It rewrites the `expected/` trees, the resolved-config rosters, the catalogue section of [Lint presets](07-lint-presets.md), and the `stdout` of every spec document. Two things about it are worth knowing before reaching for it. A `{{any}}` token SURVIVES, but the real output is appended after it — so a document spanning a block it is not about is hand-edited, never regenerated. And the catalogue table comes out unaligned; `typescript fix` puts the columns back, and the freshness test compares cells, not padding.
+It rewrites the `_expected/` trees, the resolved-config rosters, the catalogue section of [Lint presets](07-lint-presets.md), and the `stdout` of every spec document. Two things about it are worth knowing before reaching for it. A `{{any}}` token SURVIVES, but the real output is appended after it — so a document spanning a block it is not about is hand-edited, never regenerated. And the catalogue table comes out unaligned; `typescript fix` puts the columns back, and the freshness test compares cells, not padding.
 
 ## When a chain of code is the right answer
 
@@ -89,7 +89,7 @@ The first three exceptions reach no `cli` chain at all, which is what `facet-tes
 
 ## Where a fixture lives
 
-What a spec stands on sits in four bare folders `@jterrazz/test` 17 reserves wherever a test stands on a file: `fixtures/`, `expected/`, `seeds/` and `requests/`. The shared pool is `specs/shared/fixtures/`, and it holds only what SEVERAL domains use — `sample-app`, `incremental-app`. A fixture one domain alone reaches for lives beside that domain, in `specs/cli/<domain>/fixtures/`. Either way a spec names it by its path from the spec file, spelled in full, and a string is never a path: a chain hands the disk over as `file()` or `directory()` — `.fixture(file('./fixtures/formatter/wrong-style.ts'))`, `.fixture(directory('../../shared/fixtures/sample-app/'))` — and a golden the same way, `toMatch(file('./expected/resolution.txt'))`. A document's `fixture:` takes the same paths, its trailing `/` saying which of the two it is: `fixture: ./fixtures/sample-lib/` spreads a directory. A stream compared as a value reads `result.stdout.text`.
+What a spec stands on sits in the four ground folders `@jterrazz/test` reserves wherever a test stands on a file: `_fixtures/`, `_expected/`, `_seeds/` and `_requests/`. The shared pool is `specs/_shared/_fixtures/`, and it holds only what SEVERAL domains use — `sample-app`, `incremental-app`. A fixture one domain alone reaches for lives beside that domain, in `specs/cli/<domain>/_fixtures/`. Either way a spec names it by its path from the spec file, spelled in full, and a string is never a path: a chain hands the disk over as `file()` or `directory()` — `.fixture(file('./_fixtures/formatter/wrong-style.ts'))`, `.fixture(directory('../../_shared/_fixtures/sample-app/'))` — and a golden the same way, `toMatch(file('./_expected/resolution.txt'))`. A document's `fixture:` takes the same paths, its trailing `/` saying which of the two it is: `fixture: ./_fixtures/sample-lib/` spreads a directory. A stream compared as a value reads `result.stdout.text`.
 
 The presets this repository ships ignore those four folders wherever they sit, and its own run takes them from the presets like any consumer: no ignore of its own in the lint scripts, `oxfmt.config.ts`, `knip.json` or `tsconfig.json`.
 

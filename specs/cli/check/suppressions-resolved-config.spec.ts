@@ -7,9 +7,9 @@ import { cli } from '../cli.specification.js';
 
 const caseOf = (config: string, name: string) =>
     cli
-        .fixture(directory('./fixtures/suppressions-resolved-config/project/'))
-        .fixture(directory(`./fixtures/suppressions-resolved-config/${config}/`))
-        .fixture(directory(`./fixtures/suppressions-resolved-config/${name}/`));
+        .fixture(directory('./_fixtures/suppressions-resolved-config/project/'))
+        .fixture(directory(`./_fixtures/suppressions-resolved-config/${config}/`))
+        .fixture(directory(`./_fixtures/suppressions-resolved-config/${name}/`));
 
 describe('suppressions-resolved-config', () => {
     test('leaves a directive on a JS plugin rule alone, allow entry or not', async () => {

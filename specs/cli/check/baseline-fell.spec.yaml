@@ -1,5 +1,5 @@
 description: fails a ratchet whose debt fell below what it recorded, until fix re-records it
-fixture: ./fixtures/baseline/fell/
+fixture: ./_fixtures/baseline/fell/
 runs:
     - command: check
       exit: 1

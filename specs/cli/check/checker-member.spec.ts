@@ -9,7 +9,7 @@ import { temporaryDirectory } from '../temporary-directory.js';
 // `node_modules` is gitignored at this repository's root, so every install the walk resolves is built here.
 // The stubs exit 1 unless a case asks otherwise: a passing pass prints nothing, which would leave the claim unmade.
 
-const FIXTURE = resolve(import.meta.dirname, 'fixtures/checker-member');
+const FIXTURE = resolve(import.meta.dirname, '_fixtures/checker-member');
 
 // It runs no oxlint of its own: it reports whether the handed report is there and its `jterrazz(*)` count.
 function stub(name: string, exit: 0 | 1): string {

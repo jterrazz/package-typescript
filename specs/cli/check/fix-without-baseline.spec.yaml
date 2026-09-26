@@ -1,5 +1,5 @@
 description: rewrites the tree before it reports the diagnostic no baseline records
-fixture: ./fixtures/warnings/unformatted/
+fixture: ./_fixtures/warnings/unformatted/
 runs:
     - command: fix
       exit: 1

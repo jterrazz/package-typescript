@@ -1,5 +1,5 @@
 description: refuses to bundle a library whose export has no annotation to emit
-fixture: ./fixtures/inferred-lib/
+fixture: ./_fixtures/inferred-lib/
 runs:
     - command: bundle
       exit: 1

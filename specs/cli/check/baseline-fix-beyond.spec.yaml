@@ -1,5 +1,5 @@
 description: fails a fix run whose surviving diagnostics break the ratchet
-fixture: ./fixtures/baseline/beyond/
+fixture: ./_fixtures/baseline/beyond/
 runs:
     - command: fix
       exit: 1

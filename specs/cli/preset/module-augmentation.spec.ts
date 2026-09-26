@@ -4,7 +4,7 @@ import { diagnosticsOf, oxlint, sandbox } from './rulebook.js';
 
 // `export {}` is what makes a `declare module` file an augmentation rather than an ambient redeclaration.
 
-const FIXTURE = new URL('fixtures/augmentation/', import.meta.url).pathname;
+const FIXTURE = new URL('_fixtures/augmentation/', import.meta.url).pathname;
 
 function rulesOn(file: string): string[] {
     using work = sandbox(FIXTURE, 'node', 'library');

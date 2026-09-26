@@ -1,5 +1,5 @@
 description: fails a build that fails where the package resolves no @jterrazz/test
-fixture: ./fixtures/publish/broken-build-alone/
+fixture: ./_fixtures/publish/broken-build-alone/
 runs:
     - command: check
       exit: 1

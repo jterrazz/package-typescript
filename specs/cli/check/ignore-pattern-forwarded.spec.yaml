@@ -1,5 +1,5 @@
 description: overlooks, in every gate that reads the tree, what --ignore-pattern names
-fixture: ./fixtures/ignore-pattern/notes-overlooked/
+fixture: ./_fixtures/ignore-pattern/notes-overlooked/
 runs:
     - command: check --ignore-pattern 'notes/**'
       exit: 0

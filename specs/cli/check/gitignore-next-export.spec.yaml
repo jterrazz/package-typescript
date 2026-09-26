@@ -1,5 +1,5 @@
 description: passes a Next project that ignores .next when output:'export' pins it there
-fixture: ./fixtures/gitignore/next-export/
+fixture: ./_fixtures/gitignore/next-export/
 runs:
     - command: check
       exit: 0

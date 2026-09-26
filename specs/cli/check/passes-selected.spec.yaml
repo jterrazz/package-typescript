@@ -1,5 +1,5 @@
 description: runs and reports only the passes TYPESCRIPT_CHECK_PASSES names
-fixture: ./fixtures/typechecker/invalid/
+fixture: ./_fixtures/typechecker/invalid/
 env: TYPESCRIPT_CHECK_PASSES=typescript,oxfmt
 runs:
     - command: check

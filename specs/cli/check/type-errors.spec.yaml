@@ -1,5 +1,5 @@
 description: detects type errors
-fixture: ./fixtures/typechecker/invalid/
+fixture: ./_fixtures/typechecker/invalid/
 runs:
     - command: check
       exit: 1

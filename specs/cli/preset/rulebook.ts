@@ -40,7 +40,7 @@ export function installTsconfigPresets(project: string): void {
         },
     );
     cpSync(
-        resolve(import.meta.dirname, 'fixtures/astro-package'),
+        resolve(import.meta.dirname, '_fixtures/astro-package'),
         resolve(project, 'node_modules/astro'),
         {
             recursive: true,

@@ -1,5 +1,5 @@
 description: holds a lint/ with no catalogue to its root and folders, never guessing a family
-fixture: ./fixtures/names/lint-tree-uncatalogued/
+fixture: ./_fixtures/names/lint-tree-uncatalogued/
 env: TYPESCRIPT_CHECK_PASSES=names
 runs:
     - command: check

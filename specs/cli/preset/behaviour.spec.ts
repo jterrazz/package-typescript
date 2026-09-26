@@ -13,11 +13,11 @@ import { describe, expect, test } from 'vitest';
 import { diagnosticsOf, oxlint, PROFILES, sandbox } from './rulebook.js';
 import type { Diagnostic } from './rulebook.js';
 
-// One case per decision this package owns, never per upstream rule. The `expected/` tree holds only the files
+// One case per decision this package owns, never per upstream rule. The `_expected/` tree holds only the files
 // `--fix` rewrote, so a reasoned `off` states itself by absence. Regenerate with `TEST_UPDATE=1 npm test`.
 
-const FIXTURES = resolve(import.meta.dirname, 'fixtures/behaviour');
-const EXPECTED = resolve(import.meta.dirname, 'expected/behaviour');
+const FIXTURES = resolve(import.meta.dirname, '_fixtures/behaviour');
+const EXPECTED = resolve(import.meta.dirname, '_expected/behaviour');
 const UPDATING = process.env.TEST_UPDATE === '1';
 
 function rulesOf(diagnostics: Diagnostic[]): string {
@@ -108,10 +108,10 @@ describe('behaviour', () => {
         // Given - every entry of the behaviour goldens and of the behaviour and fixpoint fixtures
         const owners = new Set<string>([...PROFILES.map(({ name }) => name), 'hexagonal']);
         const entries = [
-            ...readdirSync(EXPECTED).map((entry) => `expected/behaviour/${entry}`),
-            ...readdirSync(FIXTURES).map((entry) => `fixtures/behaviour/${entry}`),
-            ...readdirSync(resolve(import.meta.dirname, 'fixtures/fixpoint')).map(
-                (entry) => `fixtures/fixpoint/${entry}`,
+            ...readdirSync(EXPECTED).map((entry) => `_expected/behaviour/${entry}`),
+            ...readdirSync(FIXTURES).map((entry) => `_fixtures/behaviour/${entry}`),
+            ...readdirSync(resolve(import.meta.dirname, '_fixtures/fixpoint')).map(
+                (entry) => `_fixtures/fixpoint/${entry}`,
             ),
         ];
 

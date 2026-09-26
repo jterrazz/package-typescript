@@ -1,5 +1,5 @@
 description: refuses comment lines fallen below the recorded count, until fix re-records the fall
-fixture: ./fixtures/comments/fell/
+fixture: ./_fixtures/comments/fell/
 runs:
     - command: check
       exit: 1

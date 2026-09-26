@@ -1,5 +1,5 @@
 description: reads a warn-severity diagnostic as debt, and reads it the same way in check and in fix
-fixture: ./fixtures/warnings/unrecorded/
+fixture: ./_fixtures/warnings/unrecorded/
 runs:
     - command: check
       exit: 1

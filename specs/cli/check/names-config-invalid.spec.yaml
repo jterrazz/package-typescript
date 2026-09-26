@@ -1,5 +1,5 @@
 description: refuses a jterrazz.config.ts it cannot read, and holds no root it would have declared
-fixture: ./fixtures/names/config-invalid/
+fixture: ./_fixtures/names/config-invalid/
 runs:
     - command: check
       exit: 1

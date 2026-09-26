@@ -1,5 +1,5 @@
 description: checks a member's specs root when the root owns none
-fixture: ./fixtures/workspace/
+fixture: ./_fixtures/workspace/
 runs:
     - command: check
       exit: 1
@@ -27,7 +27,7 @@ runs:
 
            RUN  Test Conventions (@jterrazz/test)
 
-          http/expected/response.txt:1:1: error jterrazz-check(no-unknown-token): found: the unknown token {{any}} · read: docs/19-linting.md#no-unknown-token
+          http/_expected/response.txt:1:1: error jterrazz-check(no-unknown-token): found: the unknown token {{any}} · read: docs/19-linting.md#no-unknown-token
 
           conventions checker: 1 error(s) found under {{workdir}}/apps/api/specs
           ✗ Failed with exit code 1

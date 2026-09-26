@@ -1,5 +1,5 @@
 description: keeps lint/ on the spine where the build compiles it into what the package exports
-fixture: ./fixtures/names/lint-built/
+fixture: ./_fixtures/names/lint-built/
 runs:
     - command: check
       exit: 0

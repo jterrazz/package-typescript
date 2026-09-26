@@ -1,5 +1,5 @@
 description: reports the quality fixes surface
-fixture: ./fixtures/kitchen-sink/
+fixture: ./_fixtures/kitchen-sink/
 runs:
     - command: fix
       exit: 0

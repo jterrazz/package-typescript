@@ -1,5 +1,5 @@
 description: drops the entry a fix run finds at zero, on a tree that owes nothing
-fixture: ./fixtures/baseline/settled/
+fixture: ./_fixtures/baseline/settled/
 runs:
     - command: fix
       exit: 0

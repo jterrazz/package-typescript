@@ -3,8 +3,8 @@
 set -e
 
 PACKAGE_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-CONSUMERS="$PACKAGE_ROOT/specs/cli/preset/fixtures/install-matrix"
-ASTRO_PACKAGE="$PACKAGE_ROOT/specs/cli/preset/fixtures/astro-package"
+CONSUMERS="$PACKAGE_ROOT/specs/cli/preset/_fixtures/install-matrix"
+ASTRO_PACKAGE="$PACKAGE_ROOT/specs/cli/preset/_fixtures/astro-package"
 
 # perfectionist sorts the specifiers inside one import, and a consumer's config is linted too.
 named_imports() {

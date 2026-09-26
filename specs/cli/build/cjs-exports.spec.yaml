@@ -1,5 +1,5 @@
 description: generates CJS output with exports
-fixture: ./fixtures/sample-lib/
+fixture: ./_fixtures/sample-lib/
 runs:
     - command: bundle
       exit: 0

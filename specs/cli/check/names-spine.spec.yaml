@@ -1,5 +1,5 @@
 description: fails a skill holding more than its SKILL.md, and a root outside the spine nobody declared
-fixture: ./fixtures/names/spine/
+fixture: ./_fixtures/names/spine/
 runs:
     - command: check
       exit: 1

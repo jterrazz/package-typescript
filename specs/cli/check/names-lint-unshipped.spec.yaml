@@ -1,5 +1,5 @@
 description: refuses a lint/ the build compiles into an output the package does not publish
-fixture: ./fixtures/names/lint-unshipped/
+fixture: ./_fixtures/names/lint-unshipped/
 runs:
     - command: check
       exit: 1

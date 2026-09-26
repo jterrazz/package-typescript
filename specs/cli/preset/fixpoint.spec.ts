@@ -6,7 +6,7 @@ import { diagnosticsOf, oxfmt, oxlint, PROFILES, sandbox } from './rulebook.js';
 
 // Two rounds of `oxlint --fix` then `oxfmt` must land on the same bytes over shapes the two tools both rewrite.
 
-const FIXTURES = resolve(import.meta.dirname, 'fixtures/fixpoint');
+const FIXTURES = resolve(import.meta.dirname, '_fixtures/fixpoint');
 
 function snapshot(directory: string): Record<string, string> {
     const files: Record<string, string> = {};

@@ -28,7 +28,7 @@ function projectWith({
     mkdirSync(join(project, 'src'));
     writeFileSync(join(project, 'src/index.ts'), trackedSource);
     mkdirSync(join(project, 'specs/fixtures'), { recursive: true });
-    writeFileSync(join(project, 'specs/fixtures/broken.ts'), MISFORMATTED);
+    writeFileSync(join(project, 'specs/_fixtures/broken.ts'), MISFORMATTED);
     mkdirSync(join(project, 'local'));
     writeFileSync(join(project, 'local/scratch.ts'), MISFORMATTED);
     execFileSync('git', ['init', '--quiet'], { cwd: project });
@@ -85,7 +85,7 @@ describe('format-sweep', () => {
         // Then - both source files are formatted, and neither of the others moved
         expect(readFileSync(join(project, 'src/index.ts'), 'utf8')).toBe(FORMATTED);
         expect(readFileSync(join(project, 'src/added.ts'), 'utf8')).toBe(FORMATTED);
-        expect(readFileSync(join(project, 'specs/fixtures/broken.ts'), 'utf8')).toBe(MISFORMATTED);
+        expect(readFileSync(join(project, 'specs/_fixtures/broken.ts'), 'utf8')).toBe(MISFORMATTED);
         expect(readFileSync(join(project, 'local/scratch.ts'), 'utf8')).toBe(MISFORMATTED);
     });
 });

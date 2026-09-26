@@ -1,5 +1,5 @@
 description: names map drift, a broken numbering, journal chapters and what clutters docs/
-fixture: ./fixtures/journal-and-clutter/
+fixture: ./_fixtures/journal-and-clutter/
 runs:
     - command: docs-layout .
       exit: 1

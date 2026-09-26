@@ -1,5 +1,5 @@
 description: names a project keeping no ratchet file as holding nothing, on a green check
-fixture: ./fixtures/baseline/absent/
+fixture: ./_fixtures/baseline/absent/
 runs:
     - command: check
       exit: 0

@@ -1,5 +1,5 @@
 description: leaves a tree that check passes, after both rewriters have run
-fixture: ./fixtures/rewriters/lint-and-format/
+fixture: ./_fixtures/rewriters/lint-and-format/
 runs:
     - command: fix
       exit: 0

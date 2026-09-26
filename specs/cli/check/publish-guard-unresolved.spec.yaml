@@ -1,5 +1,5 @@
 description: passes a fixtures-module build that resolves no @jterrazz/test, saying nothing is judged
-fixture: ./fixtures/publish/fixtures-module/
+fixture: ./_fixtures/publish/fixtures-module/
 runs:
     - command: bundle
       exit: 0

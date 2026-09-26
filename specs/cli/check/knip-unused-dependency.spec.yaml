@@ -1,5 +1,5 @@
 description: still detects genuinely unused dependencies
-fixture: ./fixtures/knip/unused-dep/
+fixture: ./_fixtures/knip/unused-dep/
 runs:
     - command: check
       exit: 1

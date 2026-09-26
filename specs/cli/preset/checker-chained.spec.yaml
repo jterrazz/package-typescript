@@ -1,5 +1,5 @@
 description: chains the checker on specs when the project depends on @jterrazz/test
-fixture: ./fixtures/enabled/
+fixture: ./_fixtures/enabled/
 runs:
     - command: check
       exit: 1

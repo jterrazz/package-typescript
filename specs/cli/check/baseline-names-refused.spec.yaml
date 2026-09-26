@@ -1,5 +1,5 @@
 description: states no held line when the Names pass wrote no report for the section's other side
-fixture: ./fixtures/baseline/names-refused/
+fixture: ./_fixtures/baseline/names-refused/
 runs:
     - command: check
       exit: 1

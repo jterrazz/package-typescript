@@ -1,5 +1,5 @@
 description: keeps a consumer's own entry beside the preset's config-file entries
-fixture: ./fixtures/knip/toolchain-config-files-with-entry/
+fixture: ./_fixtures/knip/toolchain-config-files-with-entry/
 runs:
     - command: check
       exit: 1

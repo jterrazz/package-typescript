@@ -93,7 +93,7 @@ describe('tsconfig', () => {
     test.each(PRESETS)(
         'the %s preset leaves the ground a test stands on out of the compiled file set, wherever it sits',
         (preset) => {
-            // Given - a consumer whose specs/ holds each of the four ground folders beside a stub, and whose src/ holds a module test's fixtures/
+            // Given - a consumer whose specs/ holds each of the four ground folders beside a stub, and whose src/ holds a module test's _fixtures/
             const dir = consumer('tsconfig-ground', preset);
 
             // When - tsc lists the files the preset compiles

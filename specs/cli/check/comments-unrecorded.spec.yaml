@@ -1,5 +1,5 @@
 description: refuses comment lines no entry records, until baseline records them
-fixture: ./fixtures/comments/unrecorded/
+fixture: ./_fixtures/comments/unrecorded/
 runs:
     - command: check
       exit: 1

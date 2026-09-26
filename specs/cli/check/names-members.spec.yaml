@@ -1,5 +1,5 @@
 description: holds every workspace member to a spine of its own, lint/ only where the member ships it
-fixture: ./fixtures/names/members/
+fixture: ./_fixtures/names/members/
 runs:
     - command: check
       exit: 1

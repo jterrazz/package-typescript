@@ -1,5 +1,5 @@
 description: accepts an imposed root or one jterrazz.config.ts declares, and refuses every other
-fixture: ./fixtures/names/roots-declared/
+fixture: ./_fixtures/names/roots-declared/
 runs:
     - command: check
       exit: 1

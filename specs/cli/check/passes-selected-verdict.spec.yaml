@@ -1,5 +1,5 @@
 description: passes a run whose named passes pass, whatever a pass left out would say
-fixture: ./fixtures/typechecker/invalid/
+fixture: ./_fixtures/typechecker/invalid/
 env: TYPESCRIPT_CHECK_PASSES=oxfmt
 runs:
     - command: check

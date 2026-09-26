@@ -1,5 +1,5 @@
 description: refuses a jterrazz.baseline.json whose counts sit outside a section
-fixture: ./fixtures/baseline/flat/
+fixture: ./_fixtures/baseline/flat/
 runs:
     - command: check
       exit: 1

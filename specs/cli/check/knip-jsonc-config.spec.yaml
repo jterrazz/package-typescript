@@ -1,5 +1,5 @@
 description: merges a knip.json whose ignores carry their reason (JSONC)
-fixture: ./fixtures/knip/jsonc-config/
+fixture: ./_fixtures/knip/jsonc-config/
 runs:
     - command: check
       exit: 1

@@ -1,5 +1,5 @@
 description: rewrites the two spellings a machine can settle, and leaves the reasons to the author
-fixture: ./fixtures/suppressions/looking-away/
+fixture: ./_fixtures/suppressions/looking-away/
 runs:
     - command: fix
       exit: 1

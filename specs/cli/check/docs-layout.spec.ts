@@ -8,7 +8,7 @@ import { newDirectory } from '../temporary-directory.js';
 // git refuses to track a nested `.git`, so a fixture cannot be the repository the pass asks for.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-const FIXTURE = resolve(import.meta.dirname, 'fixtures/gitignore/on-convention');
+const FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/on-convention');
 
 const repository = newDirectory('spec-docs-layout-repo-');
 const looseDirectory = newDirectory('spec-docs-layout-loose-');

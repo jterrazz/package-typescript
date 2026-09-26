@@ -1,5 +1,5 @@
 description: measures a project with no oxlint config of its own against the default it is handed
-fixture: ./fixtures/kitchen-sink/
+fixture: ./_fixtures/kitchen-sink/
 runs:
     - command: check --json
       exit: 0

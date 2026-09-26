@@ -1,5 +1,5 @@
 description: fails a project that ignores .next with no output:'export' to pin it
-fixture: ./fixtures/gitignore/next-default/
+fixture: ./_fixtures/gitignore/next-default/
 runs:
     - command: check
       exit: 1

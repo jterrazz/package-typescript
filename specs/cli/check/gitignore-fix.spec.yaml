@@ -1,5 +1,5 @@
 description: rewrites the gitignore onto the convention, keeping comments and negations
-fixture: ./fixtures/gitignore/old-layout/
+fixture: ./_fixtures/gitignore/old-layout/
 runs:
     - command: fix
       exit: 0

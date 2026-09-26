@@ -12,7 +12,7 @@ import { temporaryDirectory } from '../temporary-directory.js';
 
 const REPOSITORY = resolve(import.meta.dirname, '../../..');
 const OXLINT = resolve(REPOSITORY, 'node_modules/.bin/oxlint');
-const SHAPES = resolve(import.meta.dirname, 'fixtures/oxlint-report');
+const SHAPES = resolve(import.meta.dirname, '_fixtures/oxlint-report');
 
 const FORM_VARIABLES = [
     'AI_AGENT',
@@ -101,7 +101,7 @@ describe('oxlint-report', () => {
             // When - the quality checks run there, in the same environment
             const result = await cli
                 .env({ ...formOnly(form), ...onlyPasses('oxlint') })
-                .fixture(directory('./fixtures/oxlint-report/'))
+                .fixture(directory('./_fixtures/oxlint-report/'))
                 .exec('check');
 
             // Then - the pass prints oxlint's own report, byte for byte but the run's duration, in the form this environment picks
@@ -120,9 +120,9 @@ describe('oxlint-report', () => {
             // Given - a project whose oxlint config loads a plugin that counts the linter runs
             const project = cli
                 .env({ RUNS_LOG: '$WORKDIR/runs.log' })
-                .fixture(directory('./fixtures/oxlint-once/project/'));
+                .fixture(directory('./_fixtures/oxlint-once/project/'));
             const counted = held
-                ? project.fixture(directory('./fixtures/oxlint-once/held/'))
+                ? project.fixture(directory('./_fixtures/oxlint-once/held/'))
                 : project;
 
             // When - the quality checks run there

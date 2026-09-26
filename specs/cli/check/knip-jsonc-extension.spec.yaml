@@ -1,5 +1,5 @@
 description: merges a knip.jsonc, trailing comma and all
-fixture: ./fixtures/knip/jsonc-extension/
+fixture: ./_fixtures/knip/jsonc-extension/
 runs:
     - command: check
       exit: 1

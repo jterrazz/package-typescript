@@ -1,5 +1,5 @@
 description: passes a module graph that keeps to the layer map the project declared
-fixture: ./fixtures/architecture-map/respected/
+fixture: ./_fixtures/architecture-map/respected/
 runs:
     - command: check
       exit: 0

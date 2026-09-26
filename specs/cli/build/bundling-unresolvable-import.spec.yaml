@@ -1,5 +1,5 @@
 description: bundling fails on an unresolvable import
-fixture: ./fixtures/broken-app/
+fixture: ./_fixtures/broken-app/
 runs:
     - command: bundle
       exit: 1

@@ -9,7 +9,7 @@ import { temporaryDirectory } from '../temporary-directory.js';
 
 // `node_modules` is gitignored, so no fixture can carry the @jterrazz/test the package resolves.
 
-const FIXTURES = resolve(import.meta.dirname, 'fixtures/publish');
+const FIXTURES = resolve(import.meta.dirname, '_fixtures/publish');
 const INSTALLED = resolve(import.meta.dirname, '../../../node_modules/@jterrazz/test');
 
 function consumer(...fixtures: string[]): string {

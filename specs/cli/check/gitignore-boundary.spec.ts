@@ -15,7 +15,7 @@ function checkFromClone(boundary: 'directory' | 'file' | 'none'): {
     stdout: string;
 } {
     const workDir = temporaryDirectory('spec-gitignore-boundary-');
-    cpSync(resolve(import.meta.dirname, 'fixtures/gitignore/repository-boundary'), workDir, {
+    cpSync(resolve(import.meta.dirname, '_fixtures/gitignore/repository-boundary'), workDir, {
         recursive: true,
     });
 

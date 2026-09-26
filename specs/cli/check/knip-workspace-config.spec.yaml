@@ -1,5 +1,5 @@
 description: carries a consumer workspaces key through the merge
-fixture: ./fixtures/knip/workspace-config/
+fixture: ./_fixtures/knip/workspace-config/
 runs:
     - command: check
       exit: 1

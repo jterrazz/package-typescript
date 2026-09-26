@@ -16,7 +16,7 @@ import { newDirectory, temporaryDirectory } from '../temporary-directory.js';
 // Which scanner answers depends on the machine's PATH, so the chain names it by handing over a PATH.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-const FIXTURE = resolve(import.meta.dirname, 'fixtures/secrets/leaked');
+const FIXTURE = resolve(import.meta.dirname, '_fixtures/secrets/leaked');
 
 const project = newDirectory('spec-secrets-');
 
@@ -114,7 +114,7 @@ describe('secrets', () => {
             'index.ts': 'export const title = "spec";\n',
             'notes/draft.md': '# Draft\n',
             'package.json': '{ "name": "spec-secrets-scanner", "private": true }\n',
-            'specs/fixtures/leaky/NOTES.md': '# Ground\n',
+            'specs/_fixtures/leaky/NOTES.md': '# Ground\n',
             'tsconfig.json': '{ "compilerOptions": { "strict": true, "noEmit": true } }\n',
         };
         for (const [path, content] of Object.entries(files)) {
