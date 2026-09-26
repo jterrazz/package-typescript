@@ -340,9 +340,11 @@ function lintFolderFinding(path) {
 }
 
 function ruleFamilyFinding(path, folder, family) {
+    const place = folder === undefined ? 'at the root of `rules/`' : `under \`rules/${folder}/\``;
+
     return {
         message: [
-            `found: \`${path}\` sits under \`rules/${folder}/\`, and its catalogue row gives it the family \`${family}\``,
+            `found: \`${path}\` sits ${place}, and its catalogue row gives it the family \`${family}\``,
             'why: a rule file sits under the folder of its family, so the tree and the catalogue say one thing',
             `fix: move it to \`rules/${family}/\`, or correct the family its catalogue row declares`,
             LINT_TREE_READ,
@@ -366,10 +368,12 @@ function lintTreeOf(files, unit, prefix) {
             }
         } else if (!LINT_FOLDERS.includes(top)) {
             foreign.add(top);
-        } else if (top === 'rules' && rest.length > 0) {
-            const family = families.get(stemOf(file.split('/').at(-1)));
-            if (family !== undefined && family !== folder) {
-                findings.push(ruleFamilyFinding(`${prefix}${file}`, folder, family));
+        } else if (top === 'rules') {
+            const stem = stemOf(file.split('/').at(-1));
+            const family = families.get(stem);
+            const filed = rest.length > 0 ? folder : undefined;
+            if (family !== undefined && family !== filed && stem !== 'plugin') {
+                findings.push(ruleFamilyFinding(`${prefix}${file}`, filed, family));
             }
         }
     }
