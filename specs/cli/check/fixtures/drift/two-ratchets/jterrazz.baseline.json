@@ -3,6 +3,6 @@
         "eslint/no-debugger": 7
     },
     "test": {
-        "jterrazz/b9w-product-command": 3
+        "jterrazz/runner-in-specification-file": 3
     }
 }
