@@ -139,7 +139,8 @@ The selector is `TYPESCRIPT_CHECK_PASSES`, a comma-separated list of pass keys, 
 `npm run lint` is `typescript check` run on this repository, so the package is the first consumer of every gate it ships:
 
 - the **Docs (layout)** pass reads this repo's own `docs/`, which is why the chapters you are reading carry the spine the rule demands;
-- `oxlint.config.ts` loads the `@jterrazz/test` ESM plugin through the exports map, and `check` type-checks `specs/` plus `src/index.d.ts` — a broken exports map fails the lint, not a consumer.
+- `oxlint.config.ts` loads the `@jterrazz/test` ESM plugin through the exports map, and `check` type-checks `specs/` plus `src/index.d.ts` — a broken exports map fails the lint, not a consumer;
+- the same config composes `lint-direction`, a `layers()` map over this repository's own tree: `reading/` imports no other folder of `lint/`, `rulebook/` reaches only `reading/`, `catalogue/` only those two, nothing shipped imports `self/`, `migration/` or `src/`, and `src/` imports neither `self/` nor `migration/` — so an import against the direction [Architecture](01-architecture.md) draws fails the Oxlint pass.
 
 A change that passes `npm test` but not `npm run lint` is not finished.
 
