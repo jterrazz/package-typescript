@@ -166,7 +166,7 @@ describe('index', () => {
         'the %s profile never lints the ground a spec stands on',
         (_name, profile) => {
             // Given - a profile a consumer names
-            // Then - the four folders @jterrazz/test reserves are ignored wherever they sit
+            // Then - the four ground folders among the `_` names @jterrazz/test reserves are ignored wherever they sit
             expect(profile.ignorePatterns).toStrictEqual(
                 expect.arrayContaining([
                     '**/_fixtures/**',

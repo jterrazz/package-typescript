@@ -1,10 +1,11 @@
 import { posix } from 'node:path';
 
+import { GROUND_FOLDERS } from './ground.js';
 import { readText } from './project-files.js';
 
 const MODULE = /\.(?:[cm]?[jt]sx?)$/u;
 
-const GROUND = /(?:^|[/])(?:_expected|_fixtures|node_modules)[/]/u;
+const UNREAD = new RegExp(`(?:^|/)(?:${[...GROUND_FOLDERS, 'node_modules'].join('|')})/`, 'u');
 
 export const EVERY_NAME = '*';
 
@@ -67,7 +68,7 @@ function importsOf(text) {
 }
 
 export function importersOf(unit, files) {
-    const modules = new Set(files.filter((file) => MODULE.test(file) && !GROUND.test(file)));
+    const modules = new Set(files.filter((file) => MODULE.test(file) && !UNREAD.test(file)));
     const importers = new Map();
     for (const file of modules) {
         for (const { names, specifier } of importsOf(readText(unit, file) ?? '')) {

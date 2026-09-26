@@ -1,5 +1,7 @@
 import { defineConfig } from 'oxfmt';
 
+import { GROUND_GLOBS } from '../../../lint/engine/project/ground.js';
+
 // Sorting is formatting: oxfmt owns import, package.json and Tailwind order, so no lint rule reorders them.
 // Width, indent, quotes and commas are the estate's: every repository is written to them.
 export default defineConfig({
@@ -36,9 +38,6 @@ export default defineConfig({
         '.next/**',
         '.expo/**',
         // A spec's ground is mis-shaped or held byte for byte on purpose.
-        '**/_fixtures/**',
-        '**/_expected/**',
-        '**/_seeds/**',
-        '**/_requests/**',
+        ...GROUND_GLOBS,
     ],
 });

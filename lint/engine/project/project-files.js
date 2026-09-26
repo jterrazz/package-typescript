@@ -5,6 +5,8 @@ import { lstatSync, readdirSync, readFileSync } from 'node:fs';
 import { join, matchesGlob } from 'node:path';
 import { exit, stderr } from 'node:process';
 
+import { isGroundFolder } from './ground.js';
+
 export const UNSWEPT = new Set([
     '.artifacts',
     '.git',
@@ -103,14 +105,8 @@ function holdsSomething(root) {
     }
 }
 
-// The names `@jterrazz/test` reserves; a `contracts/` a spec imports is TypeScript, not ground.
-const GROUND = new Set(['_expected', '_fixtures', '_requests', '_seeds']);
-
 function isGround(path) {
-    return path
-        .split('/')
-        .slice(0, -1)
-        .some((segment) => GROUND.has(segment));
+    return path.split('/').slice(0, -1).some(isGroundFolder);
 }
 
 export class EmptySweepError extends Error {

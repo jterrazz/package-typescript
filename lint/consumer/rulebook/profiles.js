@@ -1,3 +1,4 @@
+import { GROUND_GLOBS } from '../../engine/project/ground.js';
 import eslint from './eslint.js';
 import astro from './frameworks/astro.js';
 import bundler from './frameworks/bundler.js';
@@ -37,10 +38,7 @@ const IGNORED = Object.freeze([
     'dist/**',
     'node_modules/**',
     // The ground a test stands on is deliberately broken or held byte for byte: none of it is source.
-    '**/_fixtures/**',
-    '**/_expected/**',
-    '**/_seeds/**',
-    '**/_requests/**',
+    ...GROUND_GLOBS,
 ]);
 
 export const PROFILES = Object.freeze({

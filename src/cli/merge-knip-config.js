@@ -2,10 +2,8 @@
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 
+import { isGroundFolder } from '../../lint/engine/project/ground.js';
 import { workspaceMembers } from '../../lint/engine/project/workspace-members.js';
-
-// The folders @jterrazz/test reserves for what a test stands on.
-const GROUND = new Set(['_expected', '_fixtures', '_requests', '_seeds']);
 
 const UNSCANNED = new Set(['dist', 'node_modules']);
 
@@ -191,7 +189,7 @@ function findConventionDirs(dir, depth) {
             continue;
         }
         const path = dir === '.' ? entry.name : `${dir}/${entry.name}`;
-        if (GROUND.has(entry.name)) {
+        if (isGroundFolder(entry.name)) {
             conventionIgnores.push(`${path}/**`);
         } else if (!UNSCANNED.has(entry.name) && !entry.name.startsWith('.')) {
             findConventionDirs(path, depth + 1);

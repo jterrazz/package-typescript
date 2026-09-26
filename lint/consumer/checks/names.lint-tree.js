@@ -1,5 +1,6 @@
 import { catalogueFamilies } from '../../engine/catalogue/families.js';
 import { exportedFunctions, exportedValues } from '../../engine/project/exported-names.js';
+import { GROUND_FOLDERS } from '../../engine/project/ground.js';
 import { EVERY_NAME, importersOf } from '../../engine/project/importers.js';
 import { readText } from '../../engine/project/project-files.js';
 
@@ -28,7 +29,10 @@ const MODULE = /\.(?:[cm]?[jt]sx?)$/u;
 const PROGRAM =
     /\bimport\.meta\.main\b|\bprocess\.(?:argv|exit)\b|\bimport\s*\{[^}]*\b(?:argv|exit)\b[^}]*\}\s*from\s*['"](?:node:)?process['"]/u;
 
-const TEST_MATERIAL = /\.test(?:-d)?\.[cm]?[jt]sx?$|(?:^|\/)(?:_expected|_fixtures)\//u;
+const TEST_MATERIAL = new RegExp(
+    `\\.test(?:-d)?\\.[cm]?[jt]sx?$|(?:^|/)(?:${GROUND_FOLDERS.join('|')})/`,
+    'u',
+);
 
 const stemOf = (name) => name.split('.')[0] ?? '';
 

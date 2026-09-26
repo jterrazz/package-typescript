@@ -21,7 +21,7 @@ describe('oxfmt', () => {
 
     test('leaves the ground a spec stands on unformatted, by its bare names', () => {
         // Given - the shared preset
-        // Then - the four folders @jterrazz/test reserves are skipped wherever they sit
+        // Then - the four ground folders among the `_` names @jterrazz/test reserves are skipped wherever they sit
         expect(base.ignorePatterns).toStrictEqual(
             expect.arrayContaining([
                 '**/_fixtures/**',
