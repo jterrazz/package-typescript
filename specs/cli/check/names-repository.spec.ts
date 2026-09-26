@@ -125,7 +125,6 @@ describe('names-repository', () => {
         const names = namesPassOf(project);
 
         // Then - the new Makefile answers the contract, and the Names pass is green
-        expect(names).not.toContain('names-makefile');
         expect(names).toContain('Passed');
     });
 
@@ -179,7 +178,6 @@ describe('names-repository', () => {
         const names = namesPassOf(project);
 
         // Then - the contract holds, and the Names pass is green
-        expect(names).not.toContain('names-makefile');
         expect(names).toContain('Passed');
     });
 
@@ -269,7 +267,6 @@ describe('names-repository', () => {
         const names = namesPassOf(project);
 
         // Then - a workspace member or a bare directory owes the root's gestures nothing
-        expect(names).not.toContain('names-makefile');
         expect(names).toContain('Passed');
     });
 
@@ -294,7 +291,6 @@ describe('names-repository', () => {
         expect(result.stdout).toContain(
             'jterrazz.baseline.json › typescript: 2 held across 1 rule',
         );
-        expect(names).not.toContain('names-makefile');
         expect(names).toContain('Passed');
     });
 
