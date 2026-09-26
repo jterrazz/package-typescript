@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-09-15
+**Superseded in part by:** [Quality checks](../06-quality-checks.md#the-ratchet) — the file is the `typescript` section of `jterrazz.baseline.json`, and a fallen count is a fourth refusal.
 
 Written at decision time, as part of v10 — the release that turns type-aware
 linting on and takes the rule count from roughly three hundred decided rules
