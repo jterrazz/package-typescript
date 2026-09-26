@@ -164,9 +164,10 @@ function installedPackageOf(id) {
     return below[0]?.startsWith('@') ? `${below[0]}/${below[1]}` : below[0];
 }
 
-const READ = "@jterrazz/test's docs/19-linting.md#f2-no-test-imports-in-prod";
+const READ = "@jterrazz/test's docs/19-linting.md#no-test-code-in-production";
 
-const CUT_THE_EDGE = 'cut the production edge F2 names, or take the module out of the entry';
+const CUT_THE_EDGE =
+    'cut the production edge no-test-code-in-production names, or take the module out of the entry';
 
 function finding(file, found, fix) {
     return {

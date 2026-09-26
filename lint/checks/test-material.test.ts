@@ -98,7 +98,7 @@ describe('test-material', () => {
         expect(findings).toStrictEqual([
             {
                 message:
-                    'found: dist/index.js imports vitest/config, a test package · why: a published build never carries test material · fix: cut the import, or declare vitest in "dependencies" when the product runs it · read: @jterrazz/test\'s docs/19-linting.md#f2-no-test-imports-in-prod',
+                    'found: dist/index.js imports vitest/config, a test package · why: a published build never carries test material · fix: cut the import, or declare vitest in "dependencies" when the product runs it · read: @jterrazz/test\'s docs/19-linting.md#no-test-code-in-production',
                 path: 'dist/index.js',
                 rule: 'publish/no-test-code-in-production',
             },
