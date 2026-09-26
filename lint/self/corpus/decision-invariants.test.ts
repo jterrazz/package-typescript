@@ -1,9 +1,11 @@
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { fragment, off, on, REASON_KINDS, unsafeFix } from '../../rulebook/decision.js';
-import { problemsOf } from './decision-invariants.js';
-import { lintFragments } from './lint-fragments.js';
+import { PROFILES } from '../../consumer/rulebook/profiles.js';
+import { decisions } from '../../engine/catalogue/decisions.js';
+import { fragment, off, on, REASON_KINDS, unsafeFix } from '../../engine/rulebook/decision.js';
+import { lintFragments } from '../../engine/testing/lint-fragments.js';
+import problemsOf from './decision-invariants.js';
 
 describe('problemsOf', () => {
     test('every fragment lint/ declares keeps both invariants', async () => {
@@ -13,6 +15,17 @@ describe('problemsOf', () => {
 
         // Then - none breaks either invariant
         expect(declared.flatMap(({ fragment: one }) => problemsOf(one))).toStrictEqual([]);
+    });
+
+    test('every decision carries the version it was taken in', () => {
+        // Given - the whole catalogue
+        const entries = decisions(PROFILES);
+        expect(entries.length).toBeGreaterThan(500);
+
+        // Then - each one names a semver, which is what replaces a changelog here
+        for (const entry of entries) {
+            expect.soft(entry.since, `${entry.rule} has no since`).toMatch(/^\d+\.\d+\.\d+$/u);
+        }
     });
 
     test('names an off with no reason', () => {

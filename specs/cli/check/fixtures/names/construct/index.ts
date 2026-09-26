@@ -1,4 +1,4 @@
-import { RULES } from './lint/checks/constants.js';
+import { RULES } from './lint/consumer/checks/constants.js';
 import { ORDER_LIMIT } from './specs/orders/constants.js';
 import { half } from './src/helper.js';
 import type { Order } from './src/interfaces/order.js';

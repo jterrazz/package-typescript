@@ -4,65 +4,63 @@ import { compose, defineConfig, layers, node } from '@jterrazz/typescript/oxlint
 
 const SELF = '**/self/**';
 const SOURCE = '**/src/**';
-const SHIPPED_REACH = [SELF, SOURCE];
+const ENGINE = '**/engine/**';
 
-const LINT_FOLDERS = ['catalogue', 'rulebook', 'rules', 'checks', 'ratchet'] as const;
+const DECLARATIONS = ['catalogue', 'rulebook', 'rules', 'checks'] as const;
 
-type LintFolder = (typeof LINT_FOLDERS)[number];
+type Declaration = (typeof DECLARATIONS)[number];
 
-function lintFolder(
-    folder: 'reading' | LintFolder,
-    reaches: readonly LintFolder[],
-    message: string,
-) {
+function consumerFolder(folder: Declaration, message: string) {
     return {
+        allow: [ENGINE],
         deny: [
-            ...LINT_FOLDERS.filter((other) => other !== folder && !reaches.includes(other)).map(
+            ...DECLARATIONS.filter((other) => other !== folder && other !== 'catalogue').map(
                 (other) => `**/${other}/**`,
             ),
-            ...SHIPPED_REACH,
+            SELF,
+            SOURCE,
         ],
-        files: [`lint/${folder}/**`],
+        files: [`lint/consumer/${folder}/**`],
         message: `${message}, never self/ nor src/`,
-        name: `lint/${folder}`,
+        name: `lint/consumer/${folder}`,
     };
 }
 
 const lintDirection = layers({
     id: 'lint-direction',
     map: [
-        lintFolder(
-            'reading',
-            [],
-            'lint/reading/ is the floor — it imports no other folder of lint/',
-        ),
-        lintFolder(
-            'catalogue',
-            [],
-            'lint/catalogue/ reaches reading/ alone — every rule and decision reads its sentence from it',
-        ),
-        lintFolder(
-            'rulebook',
-            ['catalogue'],
-            'lint/rulebook/ reaches catalogue/ and reading/ alone',
-        ),
-        lintFolder('rules', ['catalogue'], 'lint/rules/ reaches catalogue/ and reading/ alone'),
-        lintFolder('ratchet', ['catalogue'], 'lint/ratchet/ reaches catalogue/ and reading/ alone'),
-        lintFolder(
-            'checks',
-            ['catalogue', 'ratchet'],
-            'lint/checks/ reaches catalogue/, ratchet/ and reading/ alone',
-        ),
         {
-            deny: SHIPPED_REACH,
+            deny: ['**/consumer/**', SELF, SOURCE],
+            files: ['lint/engine/**'],
+            message:
+                'lint/engine/ runs declarations and knows none — it receives them from an index, never imports consumer/, self/ nor src/',
+            name: 'lint/engine',
+        },
+        consumerFolder(
+            'catalogue',
+            'lint/consumer/catalogue/ reaches engine/ alone — every rule and decision reads its sentence from it',
+        ),
+        consumerFolder('rulebook', 'lint/consumer/rulebook/ reaches catalogue/ and engine/ alone'),
+        consumerFolder('rules', 'lint/consumer/rules/ reaches catalogue/ and engine/ alone'),
+        consumerFolder('checks', 'lint/consumer/checks/ reaches catalogue/ and engine/ alone'),
+        {
+            deny: [SELF, SOURCE],
             files: ['lint/index.*'],
-            message: 'shipped lint/ imports neither self/ (never shipped) nor src/ (the engine)',
+            message:
+                'the shipped entry imports neither self/ (never shipped) nor src/ (the command)',
             name: 'lint/index',
+        },
+        {
+            deny: [SOURCE],
+            files: ['lint/self/**'],
+            message:
+                'lint/self/ holds this repository to account through lint/, never src/ (the command)',
+            name: 'lint/self',
         },
         {
             deny: [SELF],
             files: ['src/**'],
-            message: 'src/ runs what lint/ judges, never self/',
+            message: 'src/ runs what lint/ declares, never self/',
             name: 'src',
         },
     ],

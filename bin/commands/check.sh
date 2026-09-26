@@ -79,7 +79,7 @@ CHECKER=$(find_project_binary jterrazz-test-check)
 WORKSPACE_MEMBERS=()
 while IFS= read -r workspace_member; do
     [ -n "$workspace_member" ] && WORKSPACE_MEMBERS+=("$workspace_member")
-done < <(node "$PACKAGE_ROOT/lint/reading/workspace-members.js" 2>/dev/null)
+done < <(node "$PACKAGE_ROOT/lint/engine/project/workspace-members.js" 2>/dev/null)
 
 # Stops at the cwd: a gate never asks a question above the project it runs in.
 nearest_package_dir() {
@@ -99,13 +99,13 @@ project_uses_jterrazz_test() {
     local dir="${1:-.}"
     [ -f "$dir/package.json" ] || return 1
     node -e 'const {readFileSync}=require("node:fs");const p=JSON.parse(readFileSync(process.argv[1],"utf8"));const d={...p.dependencies,...p.devDependencies,...p.peerDependencies};process.exit(d["@jterrazz/test"]?0:1)' "$dir/package.json" 2>/dev/null && return 0
-    node "$PACKAGE_ROOT/lint/reading/test-package.js" "$dir" > /dev/null 2>&1
+    node "$PACKAGE_ROOT/lint/engine/project/test-package.js" "$dir" > /dev/null 2>&1
 }
 
 # A member whose @jterrazz/test is nested rather than hoisted owns a different release from the root's.
 member_checker() {
     local dir="${1:-.}" bin
-    bin=$(node "$PACKAGE_ROOT/lint/reading/test-package.js" "$dir" --bin 2>/dev/null) || return 1
+    bin=$(node "$PACKAGE_ROOT/lint/engine/project/test-package.js" "$dir" --bin 2>/dev/null) || return 1
     [ -n "$bin" ] || return 1
     CHECKER_COMMAND=(node "$bin")
 }
@@ -113,7 +113,7 @@ member_checker() {
 # The tree pass needs no floor, and falls back to the toolchain's lookup.
 tree_checker() {
     local bin
-    bin=$(node "$PACKAGE_ROOT/lint/reading/test-package.js" "${1:-.}" --bin 2>/dev/null)
+    bin=$(node "$PACKAGE_ROOT/lint/engine/project/test-package.js" "${1:-.}" --bin 2>/dev/null)
     if [ -n "$bin" ]; then
         CHECKER_COMMAND=(node "$bin")
     else
@@ -432,14 +432,14 @@ run_checks() {
         gitignore_applicable=false
     elif [ -f ".gitignore" ]; then
         gitignore_applicable=true
-    elif [ "$FIX_MODE" = false ] && node "$PACKAGE_ROOT/lint/checks/gitignore.js" --has-ancestor > /dev/null 2>&1; then
+    elif [ "$FIX_MODE" = false ] && node "$PACKAGE_ROOT/lint/consumer/checks/gitignore.js" --has-ancestor > /dev/null 2>&1; then
         gitignore_applicable=true
     fi
     if [ "$gitignore_applicable" = true ]; then
         if [ "$FIX_MODE" = true ]; then
-            node "$PACKAGE_ROOT/lint/checks/gitignore.js" --fix > "$tmp_dir/gitignore.log" 2>&1 &
+            node "$PACKAGE_ROOT/lint/consumer/checks/gitignore.js" --fix > "$tmp_dir/gitignore.log" 2>&1 &
         else
-            node "$PACKAGE_ROOT/lint/checks/gitignore.js" > "$tmp_dir/gitignore.log" 2>&1 &
+            node "$PACKAGE_ROOT/lint/consumer/checks/gitignore.js" > "$tmp_dir/gitignore.log" 2>&1 &
         fi
         gitignore_pid=$!
     fi
@@ -448,7 +448,7 @@ run_checks() {
     local docs_layout_pid=""
     local docs_layout_status=0
     if [ "$FIX_MODE" = false ] && selected docs && [ -e ".git" ]; then
-        node "$PACKAGE_ROOT/lint/checks/docs.cli.js" > "$tmp_dir/docs-layout.log" 2>&1 &
+        node "$PACKAGE_ROOT/lint/consumer/checks/docs.cli.js" > "$tmp_dir/docs-layout.log" 2>&1 &
         docs_layout_pid=$!
     fi
 
@@ -457,7 +457,7 @@ run_checks() {
     local suppressions_fix=()
     [ "$FIX_MODE" = true ] && suppressions_fix=(--fix)
     if selected suppressions; then
-        node "$PACKAGE_ROOT/lint/checks/suppressions.js" . --oxlint "$OXLINT" \
+        node "$PACKAGE_ROOT/lint/consumer/checks/suppressions.js" . --oxlint "$OXLINT" \
             "${OXLINT_CONFIG_ARGS[@]}" "${suppressions_fix[@]}" "${LINT_ARGS[@]}" > "$tmp_dir/suppressions.log" 2>&1 &
         suppressions_pid=$!
     fi
@@ -465,7 +465,7 @@ run_checks() {
     local markdown_pid=""
     local markdown_status=0
     if [ "$FIX_MODE" = false ] && selected markdown; then
-        node "$PACKAGE_ROOT/lint/checks/markdown.js" . "${LINT_ARGS[@]}" \
+        node "$PACKAGE_ROOT/lint/consumer/checks/markdown.js" . "${LINT_ARGS[@]}" \
             > "$tmp_dir/markdown.log" 2>&1 &
         markdown_pid=$!
     fi
@@ -476,7 +476,7 @@ run_checks() {
     local names_mode=(--report "$tmp_dir/names.json")
     [ "$FIX_MODE" = true ] && names_mode=(--fix)
     if [ "$runs_names" = true ]; then
-        node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/lint/checks/names.js" . "${LINT_ARGS[@]}" \
+        node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/lint/consumer/checks/names.js" . "${LINT_ARGS[@]}" \
             "${names_mode[@]}" > "$tmp_dir/names.log" 2>&1 &
         names_pid=$!
     fi
@@ -484,7 +484,7 @@ run_checks() {
     local comments_pid=""
     local comments_status=0
     if [ "$runs_comments" = true ] && [ "$FIX_MODE" = false ]; then
-        node "$PACKAGE_ROOT/lint/checks/comments.js" . "${LINT_ARGS[@]}" \
+        node "$PACKAGE_ROOT/lint/consumer/checks/comments.js" . "${LINT_ARGS[@]}" \
             --report "$tmp_dir/comments.json" > "$tmp_dir/comments.log" 2>&1 &
         comments_pid=$!
     fi
@@ -492,7 +492,7 @@ run_checks() {
     local secrets_pid=""
     local secrets_status=0
     if [ "$FIX_MODE" = false ] && selected secrets; then
-        node "$PACKAGE_ROOT/lint/checks/secrets.js" . "${LINT_ARGS[@]}" \
+        node "$PACKAGE_ROOT/lint/consumer/checks/secrets.js" . "${LINT_ARGS[@]}" \
             > "$tmp_dir/secrets.log" 2>&1 &
         secrets_pid=$!
     fi
@@ -526,7 +526,7 @@ run_checks() {
     if [ "$FIX_MODE" = false ] && selected architecture &&
         { [ -f ".dependency-cruiser.cjs" ] || [ -f ".dependency-cruiser.js" ] ||
             [ -f ".dependency-cruiser.mjs" ]; }; then
-        node "$PACKAGE_ROOT/lint/checks/architecture.js" . --depcruise "$DEPCRUISE" \
+        node "$PACKAGE_ROOT/lint/consumer/checks/architecture.js" . --depcruise "$DEPCRUISE" \
             > "$tmp_dir/architecture.log" 2>&1 &
         architecture_pid=$!
     fi
@@ -538,7 +538,7 @@ run_checks() {
         local publish_index=0
         for publish_root in "." "${WORKSPACE_MEMBERS[@]}"; do
             project_is_publishable "$publish_root" || continue
-            node "$PACKAGE_ROOT/lint/checks/publish.js" "$publish_root" \
+            node "$PACKAGE_ROOT/lint/consumer/checks/publish.js" "$publish_root" \
                 --publint "$PUBLINT" --attw "$ATTW" \
                 --bundle-preset "$PACKAGE_ROOT/src/presets/tsdown/bundle.js" \
                 > "$tmp_dir/publish-$publish_index.log" 2>&1 &
@@ -605,7 +605,7 @@ run_checks() {
     [ -n "$names_pid" ] && { wait $names_pid; names_status=$?; }
     [ -n "$comments_pid" ] && { wait $comments_pid; comments_status=$?; }
     if [ "$FIX_MODE" = true ] && selected comments; then
-        node "$PACKAGE_ROOT/lint/checks/comments.js" . "${LINT_ARGS[@]}" --fix \
+        node "$PACKAGE_ROOT/lint/consumer/checks/comments.js" . "${LINT_ARGS[@]}" --fix \
             > "$tmp_dir/comments.log" 2>&1
         comments_status=$?
     fi
@@ -619,7 +619,7 @@ run_checks() {
             linter_exit=(--linter-exit "$lint_status")
             names_report=(--names "$tmp_dir/names.json" --comments "$tmp_dir/comments.json")
         fi
-        node "$PACKAGE_ROOT/lint/ratchet/baseline.cli.js" "$tmp_dir/lint.json" . \
+        node "$PACKAGE_ROOT/lint/engine/baseline/cli.js" "$tmp_dir/lint.json" . \
             "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" > "$tmp_dir/ratchet.log" 2>&1
         lint_status=$?
         if [ "$lint_status" -eq 0 ] && [ ${#names_report[@]} -gt 0 ]; then
@@ -740,7 +740,7 @@ run_checks() {
     local drift_status=0
     if [ "$FIX_MODE" = false ] && selected drift; then
         printf "\n${CYAN_BG}${BRIGHT_WHITE} DRIFT ${NC} Deviations from the profile\n\n"
-        node "$PACKAGE_ROOT/lint/checks/drift.js" . --oxlint "$OXLINT" "${OXLINT_CONFIG_ARGS[@]}" \
+        node "$PACKAGE_ROOT/lint/consumer/checks/drift.js" . --oxlint "$OXLINT" "${OXLINT_CONFIG_ARGS[@]}" \
             --profiles "$PACKAGE_ROOT/src/presets/oxlint/profiles" \
             "${LINT_ARGS[@]}" "${DRIFT_ARGS[@]}"
         drift_status=$?

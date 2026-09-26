@@ -1,11 +1,23 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
-import { PROJECTIONS, tableCells } from './chapter-projections.js';
+import { PROJECTIONS } from './chapter-projections.js';
+
+function tableCells(table: string): string[] {
+    return table
+        .trim()
+        .split('\n')
+        .map((row) =>
+            row
+                .split('|')
+                .map((cell) => cell.trim().replaceAll(/^-+$/gu, '---'))
+                .join(' | '),
+        );
+}
 
 // The chapter's generated tables are projections of `lint/`; `TEST_UPDATE=1 npm test` regenerates them.
 
-describe('chapter-projections', () => {
+describe('PROJECTIONS', () => {
     test.each(Object.entries(PROJECTIONS))(
         'the %s carries the catalogue the manifest renders',
         (_name, { markers, page, render: project }) => {

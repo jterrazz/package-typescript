@@ -3,11 +3,11 @@
     "entry": [
         "src/presets/**/*.js",
         "src/index.js",
-        "lint/checks/docs.cli.js",
-        "lint/checks/gitignore.js",
+        "lint/consumer/checks/docs.cli.js",
+        "lint/consumer/checks/gitignore.js",
         "src/cli/merge-knip-config.js",
-        "lint/reading/workspace-members.js",
-        "lint/ratchet/baseline.cli.js"
+        "lint/engine/project/workspace-members.js",
+        "lint/engine/baseline/cli.js"
     ],
     "ignoreBinaries": ["make"]
 }

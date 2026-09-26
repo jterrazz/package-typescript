@@ -4,8 +4,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { argv, cwd, exit, stdout } from 'node:process';
 
-import { toolVersions } from '../../lint/reading/tool-versions.js';
-import { workspaceMembers } from '../../lint/reading/workspace-members.js';
+import { toolVersions } from '../../lint/engine/project/tool-versions.js';
+import { workspaceMembers } from '../../lint/engine/project/workspace-members.js';
 
 // `@vitest/browser-playwright` ships from vitest's repository with vitest's version: a patch
 // apart loads a second copy of vitest's internals and fails in the browser.

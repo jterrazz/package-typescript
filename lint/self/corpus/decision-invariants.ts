@@ -1,4 +1,4 @@
-import { REASON_KINDS } from '../../rulebook/decision.js';
+import { REASON_KINDS } from '../../engine/rulebook/decision.js';
 
 // `fragment()` is not exported, so the decision invariants are a `self` rule, audited over every
 // fragment a module of `lint/` or `src/` exports, whether a profile carries it or not.
@@ -50,7 +50,7 @@ function blocksOf(one: Loose): Loose[] {
     ];
 }
 
-export function problemsOf(one: Loose): string[] {
+export default function problemsOf(one: Loose): string[] {
     const owner = typeof one.id === 'string' && one.id !== '' ? one.id : '(no id)';
 
     return [

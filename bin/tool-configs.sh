@@ -2,7 +2,7 @@
 # nothing: `lint-targets.js --ignores-of` applies them to the sweep instead. `PACKAGE_ROOT` is the caller's.
 
 # Captured whole rather than streamed: a `break` closing the pipe early left `node` writing into EPIPE.
-OXLINT_CONFIG_NAMES=$(node -e 'const {readFileSync}=require("node:fs");process.stdout.write(JSON.parse(readFileSync(process.argv[1],"utf8")).join(" "))' "$PACKAGE_ROOT/lint/reading/oxlint-config-names.json")
+OXLINT_CONFIG_NAMES=$(node -e 'const {readFileSync}=require("node:fs");process.stdout.write(JSON.parse(readFileSync(process.argv[1],"utf8")).join(" "))' "$PACKAGE_ROOT/lint/engine/project/oxlint-config-names.json")
 OXLINT_CONFIG=""
 for candidate in $OXLINT_CONFIG_NAMES; do
     [ -f "$candidate" ] && { OXLINT_CONFIG="$candidate"; break; }

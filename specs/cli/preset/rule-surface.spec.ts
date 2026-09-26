@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { REASON_KINDS } from '../../../lint/rulebook/decision.js';
-import { decisions, unsafeFixers } from '../../../lint/rulebook/decisions.js';
-import { PROFILES as PROFILE_TABLE } from '../../../lint/rulebook/profiles.js';
+import { PROFILES as PROFILE_TABLE } from '../../../lint/consumer/rulebook/profiles.js';
+import { decisions, unsafeFixers } from '../../../lint/engine/catalogue/decisions.js';
+import { REASON_KINDS } from '../../../lint/engine/rulebook/decision.js';
 import { printConfig, PROFILES, roster } from './rulebook.js';
 
 // Nursery is upstream's one exception: a nursery rule is declared unstable, so the rulebook does not decide it.
@@ -14,7 +14,7 @@ function idOf(rule: { scope: string; value: string }): string {
 }
 
 const RULES = roster();
-const DECIDED = new Set(decisions().map((entry) => entry.rule));
+const DECIDED = new Set(decisions(PROFILE_TABLE).map((entry) => entry.rule));
 
 describe('rule-surface', () => {
     test.each(PROFILES)(
@@ -54,7 +54,7 @@ describe('rule-surface', () => {
         const undecided = typeAware.filter((rule) => !DECIDED.has(rule));
         expect(
             undecided,
-            `found: ${undecided.join(', ')} — type-aware, and decided nowhere in lint/ · why: every rule tsgolint runs is decided by name, so a tsgolint release never adds a check no profile names · fix: decide each in lint/rulebook/typescript.js — \`typeAware()\`, or \`off()\` with its reason · read: docs/07-lint-presets.md#the-four-laws`,
+            `found: ${undecided.join(', ')} — type-aware, and decided nowhere in lint/ · why: every rule tsgolint runs is decided by name, so a tsgolint release never adds a check no profile names · fix: decide each in lint/consumer/rulebook/typescript.js — \`typeAware()\`, or \`off()\` with its reason · read: docs/07-lint-presets.md#the-four-laws`,
         ).toStrictEqual([]);
     });
 
@@ -73,7 +73,7 @@ describe('rule-surface', () => {
         const upstream = new Map(RULES.map((rule) => [idOf(rule), rule.type_aware]));
 
         // Then - each one matches the pinned oxlint's answer
-        const wrong = decisions()
+        const wrong = decisions(PROFILE_TABLE)
             .filter((entry) => entry.level === 'error' && upstream.has(entry.rule))
             .filter((entry) => Boolean(entry.typeAware) !== upstream.get(entry.rule))
             .map((entry) => entry.rule);
@@ -96,7 +96,7 @@ describe('rule-surface', () => {
         const upstream = new Map(RULES.map((rule) => [idOf(rule), rule.fix]));
 
         // Then - every rule the fix wrapper disarms has a fixer plain --fix runs
-        const idle = unsafeFixers()
+        const idle = unsafeFixers(PROFILE_TABLE)
             .map(({ rule }) => rule)
             .filter((rule) => !APPLIED_BY_FIX.has(upstream.get(rule) ?? ''))
             .map((rule) => `${rule} (${upstream.get(rule) ?? 'unknown'})`);
@@ -109,7 +109,7 @@ describe('rule-surface', () => {
 
     test('gives every off one of the five recorded reasons', () => {
         // Given - every rule the rulebook turns off
-        const offs = decisions().filter((entry) => entry.level === 'off');
+        const offs = decisions(PROFILE_TABLE).filter((entry) => entry.level === 'off');
         expect(offs.length).toBeGreaterThan(0);
 
         // Then - each one names its kind and what carries it
@@ -132,7 +132,7 @@ describe('rule-surface', () => {
         ]);
 
         // Then - no perfectionist rule the rulebook keeps is one of them
-        const kept = decisions()
+        const kept = decisions(PROFILE_TABLE)
             .filter((entry) => entry.rule.startsWith('perfectionist/') && entry.level === 'error')
             .map((entry) => entry.rule);
 

@@ -8,17 +8,21 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { argv, cwd, stdin, stdout } from 'node:process';
 
-import { unsafeFixers } from '../../lint/rulebook/decisions.js';
+import { PROFILES } from '../../lint/consumer/rulebook/profiles.js';
+import { unsafeFixers } from '../../lint/engine/catalogue/decisions.js';
 
 const WRAPPER = 'oxlint.fix.config.mjs';
 
 // The list tool-configs.sh reads, in oxlint's lookup order.
 const CONFIG_NAMES = JSON.parse(
-    readFileSync(new URL('../../lint/reading/oxlint-config-names.json', import.meta.url), 'utf8'),
+    readFileSync(
+        new URL('../../lint/engine/project/oxlint-config-names.json', import.meta.url),
+        'utf8',
+    ),
 );
 
 export function wrapperOf(consumerConfig) {
-    const off = Object.fromEntries(unsafeFixers().map(({ rule }) => [rule, 'off']));
+    const off = Object.fromEntries(unsafeFixers(PROFILES).map(({ rule }) => [rule, 'off']));
     const attributes = consumerConfig.endsWith('.json') ? " with { type: 'json' }" : '';
 
     return [

@@ -65,7 +65,7 @@
     {
         "audience": "self",
         "channel": "meta",
-        "home": "lint/self/corpus/lint-fragments.ts",
+        "home": "lint/engine/testing/lint-fragments.ts",
         "id": "fragment-walk",
         "names": ["lintFragments"],
         "why": "the walk the audits above share"
@@ -73,7 +73,7 @@
     {
         "audience": "self",
         "channel": "meta",
-        "home": "lint/self/corpus/module-walk.ts",
+        "home": "lint/engine/testing/module-walk.ts",
         "id": "module-walk",
         "names": ["walkModules", "built on import"],
         "why": "imports each module this package would publish in a child of its own, for the tarball audit"

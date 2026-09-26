@@ -7,8 +7,8 @@ import { resolve } from 'node:path';
 import { argv, exit, stderr, stdout } from 'node:process';
 import { pathToFileURL } from 'node:url';
 
-import { SOURCE } from '../../lint/reading/comments.js';
-import { ignorePatternsOf, projectFiles } from '../../lint/reading/project-files.js';
+import { SOURCE } from '../../lint/engine/project/comments.js';
+import { ignorePatternsOf, projectFiles } from '../../lint/engine/project/project-files.js';
 
 const root = resolve(argv.slice(2).find((argument) => !argument.startsWith('--')) ?? '.');
 const every = argv.includes('--all');

@@ -7,7 +7,13 @@ import { describe, expect, test } from 'vitest';
 const ROOT = resolve(import.meta.dirname, '../../..');
 const PRESETS = resolve(import.meta.dirname, '../../../src/presets/tsdown');
 
-const ENTRIES = ['lint/checks/docs', 'lint/index', 'src/config', 'src/index', 'src/oxfmt'] as const;
+const ENTRIES = [
+    'lint/consumer/checks/docs',
+    'lint/index',
+    'src/config',
+    'src/index',
+    'src/oxfmt',
+] as const;
 
 const TSDOWN_PRESETS = ['build', 'bundle'] as const;
 

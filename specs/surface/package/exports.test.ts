@@ -44,7 +44,7 @@ describe('exports', () => {
 
         // Then - it is the one file check, fix and the drift report read, not a copy
         expect(exported).toBe(
-            resolve(import.meta.dirname, '../../../lint/reading/oxlint-config-names.json'),
+            resolve(import.meta.dirname, '../../../lint/engine/project/oxlint-config-names.json'),
         );
     });
 

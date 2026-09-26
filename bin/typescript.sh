@@ -67,7 +67,7 @@ run_tsdown() {
     local entries=()
     while IFS= read -r entry; do
         [ -n "$entry" ] && entries+=("$entry")
-    done < <(node "$PACKAGE_ROOT/lint/reading/entry-points.js" "$PROJECT_ROOT")
+    done < <(node "$PACKAGE_ROOT/lint/engine/project/entry-points.js" "$PROJECT_ROOT")
 
     if ! "$TSDOWN" --config "$CONFIG_PATH" --cwd "$PROJECT_ROOT" "${entries[@]}"; then
         printf "${RED}Error: Build failed${NC}\n"
@@ -119,7 +119,7 @@ case "$COMMAND" in
 
     docs-layout)
         # For a repository with no npm project to hang `check` on (a Go, Rust or Ansible tree, through npx).
-        exec node "$PACKAGE_ROOT/lint/checks/docs.cli.js" "${1:-$PROJECT_ROOT}"
+        exec node "$PACKAGE_ROOT/lint/consumer/checks/docs.cli.js" "${1:-$PROJECT_ROOT}"
         ;;
 
     doctor)
@@ -159,13 +159,13 @@ case "$COMMAND" in
 
         NAMES_REPORT=$(mktemp)
         trap 'rm -f "$BASELINE_REPORT" "$NAMES_REPORT"' EXIT
-        node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/lint/checks/names.js" . --format json "$@" > "$NAMES_REPORT" 2>/dev/null || true
+        node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$PACKAGE_ROOT/lint/consumer/checks/names.js" . --format json "$@" > "$NAMES_REPORT" 2>/dev/null || true
 
         COMMENTS_REPORT=$(mktemp)
         trap 'rm -f "$BASELINE_REPORT" "$NAMES_REPORT" "$COMMENTS_REPORT"' EXIT
-        node "$PACKAGE_ROOT/lint/checks/comments.js" . --format json "$@" > "$COMMENTS_REPORT" 2>/dev/null || true
+        node "$PACKAGE_ROOT/lint/consumer/checks/comments.js" . --format json "$@" > "$COMMENTS_REPORT" 2>/dev/null || true
 
-        node "$PACKAGE_ROOT/lint/ratchet/baseline.cli.js" "$BASELINE_REPORT" . \
+        node "$PACKAGE_ROOT/lint/engine/baseline/cli.js" "$BASELINE_REPORT" . \
             --names "$NAMES_REPORT" --comments "$COMMENTS_REPORT" --write || exit 1
 
         # A tracked file, so the formatter shapes it.

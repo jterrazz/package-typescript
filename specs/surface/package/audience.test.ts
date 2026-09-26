@@ -3,10 +3,10 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, join, relative, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { AUDIENCES } from '../../../lint/rulebook/decision.js';
-import { decisions } from '../../../lint/rulebook/decisions.js';
-import { PROFILES } from '../../../lint/rulebook/profiles.js';
-import { lintFragments } from '../../../lint/self/corpus/lint-fragments.js';
+import { PROFILES } from '../../../lint/consumer/rulebook/profiles.js';
+import { decisions } from '../../../lint/engine/catalogue/decisions.js';
+import { AUDIENCES } from '../../../lint/engine/rulebook/decision.js';
+import { lintFragments } from '../../../lint/engine/testing/lint-fragments.js';
 
 // A `self` row names the home that holds it — a path the package leaves out — and the names the tarball audit greps for.
 
@@ -25,7 +25,7 @@ function fieldText(row: Record<string, unknown>, key: string): string {
 
 const declared = await lintFragments(ROOT);
 
-const rows = ['lint/catalogue/manifest.json', 'lint/self/catalogue/manifest.json'].flatMap(
+const rows = ['lint/consumer/catalogue/manifest.json', 'lint/self/catalogue/manifest.json'].flatMap(
     (path) => {
         const parsed: unknown = JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
         return (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
@@ -81,7 +81,7 @@ describe('audience', () => {
     test('every catalogue entry carries the audience its fragment declared', () => {
         // Given - the catalogue, every decision of every profile
         // Then - each entry says who it is for
-        for (const entry of decisions()) {
+        for (const entry of decisions(PROFILES)) {
             expect.soft(AUDIENCES, `${entry.rule} has no audience`).toContain(entry.audience);
         }
     });

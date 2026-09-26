@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'vitest';
 
-import { FAMILIES, printedIds, rows } from './findings.js';
+import { FAMILIES, PRINTED_IDS, rows } from './findings.js';
 
 describe('findings', () => {
     test('the catalogue holds every id a pass or a rule prints, and no other', () => {
         // Given - every finding id written in a pass, and every rule the plugin registers
-        const printed = printedIds();
+        const printed = PRINTED_IDS;
         expect(printed.length).toBeGreaterThan(50);
 
         // Then - each has its row, and each row is still printed somewhere

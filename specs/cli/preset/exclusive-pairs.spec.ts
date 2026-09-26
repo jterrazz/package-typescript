@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
-import { decisions } from '../../../lint/rulebook/decisions.js';
+import { PROFILES as PROFILE_TABLE } from '../../../lint/consumer/rulebook/profiles.js';
+import { decisions } from '../../../lint/engine/catalogue/decisions.js';
 import { printConfig, PROFILES } from './rulebook.js';
 
 // Two rules demanding opposite shapes cannot both be armed: no edit closes both.
@@ -70,7 +71,7 @@ const PAIRS = Object.freeze([
     ],
 ] as const);
 
-const DECISIONS = decisions();
+const DECISIONS = decisions(PROFILE_TABLE);
 
 function levelsOf(rule: string): string[] {
     return DECISIONS.filter((entry) => entry.rule === rule).map((entry) => entry.level);

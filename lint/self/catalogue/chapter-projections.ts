@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { decisions, unsafeFixers } from '../../rulebook/decisions.js';
+import { PROFILES } from '../../consumer/rulebook/profiles.js';
+import { decisions, unsafeFixers } from '../../engine/catalogue/decisions.js';
 import { rows } from '../corpus/findings.js';
 
 type Entry = ReturnType<typeof decisions>[number];
@@ -31,14 +32,14 @@ function renderCatalogue(): string {
     return [
         '| Rule | Profiles | State | Reason | Since |',
         '| --- | --- | --- | --- | --- |',
-        ...decisions()
+        ...decisions(PROFILES)
             .filter((entry) => entry.audience === 'consumer')
             .map((entry) => rowOf(entry)),
     ].join('\n');
 }
 
 function renderFixers(): string {
-    return unsafeFixers()
+    return unsafeFixers(PROFILES)
         .map(({ rule, why }) => `- \`${rule}\` — ${why}`)
         .join('\n');
 }
@@ -116,15 +117,3 @@ export const PROJECTIONS = {
         render: renderFixers,
     },
 };
-
-export function tableCells(table: string): string[] {
-    return table
-        .trim()
-        .split('\n')
-        .map((row) =>
-            row
-                .split('|')
-                .map((cell) => cell.trim().replaceAll(/^-+$/gu, '---'))
-                .join(' | '),
-        );
-}

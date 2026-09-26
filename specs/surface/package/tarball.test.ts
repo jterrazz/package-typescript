@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { fragmentsIn, walkModules } from '../../../lint/self/corpus/module-walk.js';
+import { fragmentsIn, walkModules } from '../../../lint/engine/testing/module-walk.js';
 import { argvFlags, checkOutcome, selectingEnvironments } from './packed-bin.js';
 import {
     isRecord,
@@ -26,7 +26,7 @@ function fieldText(record: Record<string, unknown>, key: string): string {
     return typeof value === 'string' ? value : '';
 }
 
-const rows = ['lint/catalogue/manifest.json', 'lint/self/catalogue/manifest.json'].flatMap(
+const rows = ['lint/consumer/catalogue/manifest.json', 'lint/self/catalogue/manifest.json'].flatMap(
     (path) => {
         const parsed: unknown = JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
         return (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
@@ -38,8 +38,11 @@ function call(module: Record<string, unknown>, name: string, ...args: unknown[])
     return typeof exported === 'function' ? Reflect.apply(exported, undefined, args) : undefined;
 }
 
-function catalogueOf(catalogue: Record<string, unknown>): Record<string, unknown>[] {
-    const entries = call(catalogue, 'decisions');
+function catalogueOf(
+    catalogue: Record<string, unknown>,
+    profiles: Record<string, unknown>,
+): Record<string, unknown>[] {
+    const entries = call(catalogue, 'decisions', profiles.PROFILES);
     return (Array.isArray(entries) ? entries : []).filter((entry) => isRecord(entry));
 }
 
@@ -86,7 +89,7 @@ describe('tarball', () => {
     test('the tarball carries no test file', () => {
         // Given - every path npm would publish
         const { paths } = pack('--dry-run');
-        expect(paths).toContain('lint/rulebook/decision.js');
+        expect(paths).toContain('lint/engine/rulebook/decision.js');
 
         // Then - no meta-test, no module test and no spec ships, whatever its extension
         expect(
@@ -124,9 +127,12 @@ describe('tarball', () => {
         const tree = packedTree();
         const oxlint = await loadPacked(tree, 'lint/index.js');
         const index = await loadPacked(tree, 'src/index.js');
-        const hexagonal = await loadPacked(tree, 'lint/rulebook/architecture/hexagonal.js');
-        const compiler = await loadPacked(tree, 'lint/rulebook/compile.js');
-        const entries = catalogueOf(await loadPacked(tree, 'lint/rulebook/decisions.js'));
+        const hexagonal = await loadPacked(tree, 'lint/consumer/rulebook/hexagonal.js');
+        const compiler = await loadPacked(tree, 'lint/engine/rulebook/compile.js');
+        const entries = catalogueOf(
+            await loadPacked(tree, 'lint/engine/catalogue/decisions.js'),
+            await loadPacked(tree, 'lint/consumer/rulebook/profiles.js'),
+        );
         const bundled = isRecord(index.oxlint) ? index.oxlint : {};
 
         // Then - each rule stated, at the top or in an override, is decided so for that profile
@@ -146,7 +152,8 @@ describe('tarball', () => {
     test('the catalogue and the passes the tarball ships are consumer alone', async () => {
         // Given - the packed catalogue, and the passes the packed check selects by name
         const tree = packedTree();
-        const catalogue = await loadPacked(tree, 'lint/rulebook/decisions.js');
+        const catalogue = await loadPacked(tree, 'lint/engine/catalogue/decisions.js');
+        const profiles = await loadPacked(tree, 'lint/consumer/rulebook/profiles.js');
         const script = readFileSync(join(tree, 'bin/commands/check.sh'), 'utf8');
         const passes = [...script.matchAll(/\bselected (?<pass>[a-z]+)/gu)].map((match) =>
             rows.find((row) => row.channel === 'checker' && row.id === match.groups?.pass),
@@ -182,7 +189,7 @@ describe('tarball', () => {
             Object.keys(catalogue).toSorted((left, right) => left.localeCompare(right)),
         ).toStrictEqual(['decisions', 'unsafeFixers']);
         for (const [what, audiences] of Object.entries({
-            'catalogue entry': catalogueOf(catalogue).map((entry) => entry.audience),
+            'catalogue entry': catalogueOf(catalogue, profiles).map((entry) => entry.audience),
             'check pass': passes.map((row) => row?.audience),
         })) {
             expect(audiences.length, `the tarball ships no ${what}`).toBeGreaterThan(0);
