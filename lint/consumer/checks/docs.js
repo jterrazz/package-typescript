@@ -142,7 +142,7 @@ function auditChapters(report, { chapters, ships }) {
     for (const chapter of chapters) {
         if (!CHAPTER_NAME.test(chapter.name)) {
             report(
-                'docs/chapter-named-nn-kebab',
+                'docs/chapter-named-by-number-and-subject',
                 chapter.path,
                 `${chapter.path} is not NN-kebab.md — two digits, lowercase words, single hyphens`,
             );
@@ -307,7 +307,7 @@ function auditDecisions(report, { files, heads }) {
         const mold = entry.name === '_template.md' || entry.name === 'README.md';
         if (!mold && !DECISION_NAME.test(entry.name)) {
             report(
-                'docs/decision-named-nnn-kebab',
+                'docs/decision-named-by-number-and-subject',
                 entry.path,
                 `${entry.path} is not NNN-kebab.md`,
             );

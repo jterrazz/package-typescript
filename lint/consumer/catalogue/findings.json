@@ -186,7 +186,7 @@
     },
     {
         "family": "docs",
-        "id": "docs/chapter-named-nn-kebab",
+        "id": "docs/chapter-named-by-number-and-subject",
         "sentence": "A chapter is named NN-kebab.md."
     },
     {
@@ -236,7 +236,7 @@
     },
     {
         "family": "docs",
-        "id": "docs/decision-named-nnn-kebab",
+        "id": "docs/decision-named-by-number-and-subject",
         "sentence": "A decision record is named NNN-kebab.md."
     },
     {

@@ -173,7 +173,7 @@ describe('docs', () => {
         });
 
         // Then - the mold is named, and the number it took is still judged
-        expect(messageOf(tree, 'docs/chapter-named-nn-kebab')).toBe(
+        expect(messageOf(tree, 'docs/chapter-named-by-number-and-subject')).toBe(
             'docs/4-Lint_presets.md is not NN-kebab.md — two digits, lowercase words, single hyphens',
         );
     });
@@ -351,7 +351,7 @@ describe('docs', () => {
         });
 
         // Then - the mold of the name is stated
-        expect(messageOf(tree, 'docs/decision-named-nnn-kebab')).toBe(
+        expect(messageOf(tree, 'docs/decision-named-by-number-and-subject')).toBe(
             'docs/decisions/the-second-call.md is not NNN-kebab.md',
         );
     });

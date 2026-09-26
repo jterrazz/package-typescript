@@ -5,7 +5,7 @@ runs:
       exit: 1
       stdout: |
           docs/map-present  docs/README.md  docs/README.md is missing — the map is the one file an outside corpus points at
-          docs/chapter-named-nn-kebab  docs/1-intro.md  docs/1-intro.md is not NN-kebab.md — two digits, lowercase words, single hyphens
+          docs/chapter-named-by-number-and-subject  docs/1-intro.md  docs/1-intro.md is not NN-kebab.md — two digits, lowercase words, single hyphens
           docs/chapters-numbered-contiguously  docs/  chapter numbers run 01, 03: they are contiguous from 01, one file per number, except that 04 may be absent
           docs/spine-number-reserved  docs/03-quality-checks.md  docs/03-quality-checks.md takes number 03, which is reserved for 03-testing.md
           docs/spine-number-reserved  docs/1-intro.md  docs/1-intro.md takes number 01, which is reserved for 01-architecture.md

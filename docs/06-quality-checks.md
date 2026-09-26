@@ -105,7 +105,7 @@ The spine itself is language-agnostic doctrine, and it is the estate's, which [R
 | `docs/map-present`                             | The manual opens on its map, docs/README.md.                                 |
 | `docs/map-matches-chapters`                    | The map links every chapter, and only the chapters there are.                |
 | `docs/map-links-only-chapters`                 | The map links nothing but chapters and decisions/.                           |
-| `docs/chapter-named-nn-kebab`                  | A chapter is named NN-kebab.md.                                              |
+| `docs/chapter-named-by-number-and-subject`                  | A chapter is named NN-kebab.md.                                              |
 | `docs/chapters-numbered-contiguously`          | Chapters are numbered without a gap, one number per file.                    |
 | `docs/spine-number-reserved`                   | A reserved spine number holds its spine chapter alone.                       |
 | `docs/spine-chapters-present`                  | The architecture, developing and testing chapters are present.               |
@@ -115,7 +115,7 @@ The spine itself is language-agnostic doctrine, and it is the estate's, which [R
 | `docs/no-unknown-subfolder`                    | The manual holds no subfolder but decisions/ and _assets/.                   |
 | `docs/no-generated-reference`                  | The manual holds no generated API reference.                                 |
 | `docs/no-cross-repository-link`                | No link of the manual reaches into another repository's tree.                |
-| `docs/decision-named-nnn-kebab`                | A decision record is named NNN-kebab.md.                                     |
+| `docs/decision-named-by-number-and-subject`                | A decision record is named NNN-kebab.md.                                     |
 | `docs/decision-heading-carries-its-number`     | A decision record opens on # ADR-NNN: Title, with its own number.            |
 | `docs/decision-number-unique`                  | One ADR number belongs to one record.                                        |
 | `docs/decisions-numbered-contiguously`         | Decision records are numbered from 001 without a gap.                        |
