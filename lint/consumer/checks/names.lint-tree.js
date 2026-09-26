@@ -1,6 +1,6 @@
 import { catalogueFamilies } from '../../engine/catalogue/families.js';
 import { exportedFunctions } from '../../engine/project/exported-functions.js';
-import { importersOf } from '../../engine/project/importers.js';
+import { EVERY_NAME, importersOf } from '../../engine/project/importers.js';
 import { readText } from '../../engine/project/project-files.js';
 
 export const LINT_ROOT = 'lint';
@@ -89,7 +89,7 @@ function helperFinding(path, names) {
 
     return {
         message: [
-            `found: \`${path}\` exports ${listed}, named for no declaration of its file, and another module imports it`,
+            `found: \`${path}\` hands ${listed} to another module, named for no declaration of its file`,
             'why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and a function a declaration exports carries its file’s name; one named for something else is code other files call, and that code is the engine’s',
             `fix: move ${names.length === 1 ? 'it' : 'them'} under engine/ — ${TREE.engine.map((folder) => `${folder}/`).join(', ')} — or, when it is this declaration’s own, name it for the file`,
             READ,
@@ -154,15 +154,32 @@ const isOwnReader = (file, reader) => {
     );
 };
 
+function handedTo(file, readers, names) {
+    const handed = new Set();
+    for (const [reader, imported] of readers) {
+        if (isOwnReader(file, reader)) {
+            continue;
+        }
+        for (const name of names.filter((one) => imported.has(one) || imported.has(EVERY_NAME))) {
+            handed.add(name);
+        }
+    }
+
+    return names.filter((name) => handed.has(name));
+}
+
 function sharedHelpers(unit, files, candidates) {
     if (candidates.length === 0) {
         return [];
     }
     const importers = importersOf(unit, files);
 
-    return candidates.filter(({ file }) =>
-        [...(importers.get(file) ?? [])].some((reader) => !isOwnReader(file, reader)),
-    );
+    return candidates
+        .map(({ file, names }) => ({
+            file,
+            names: handedTo(file, importers.get(file) ?? new Map(), names),
+        }))
+        .filter(({ names }) => names.length > 0);
 }
 
 function placementOf(top, folder, rest) {
