@@ -1,5 +1,6 @@
 import { catalogueFamilies } from '../../engine/catalogue/families.js';
 import { exportedFunctions } from '../../engine/project/exported-functions.js';
+import { importersOf } from '../../engine/project/importers.js';
 import { readText } from '../../engine/project/project-files.js';
 
 export const LINT_ROOT = 'lint';
@@ -88,7 +89,7 @@ function helperFinding(path, names) {
 
     return {
         message: [
-            `found: \`${path}\` exports ${listed}, named for no declaration of its file`,
+            `found: \`${path}\` exports ${listed}, named for no declaration of its file, and another module imports it`,
             'why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and a function a declaration exports carries its file’s name; one named for something else is code other files call, and that code is the engine’s',
             `fix: move ${names.length === 1 ? 'it' : 'them'} under engine/ — ${TREE.engine.map((folder) => `${folder}/`).join(', ')} — or, when it is this declaration’s own, name it for the file`,
             READ,
@@ -160,45 +161,75 @@ function foreignFunctions(unit, file, fileName, lintFiles) {
     );
 }
 
+const isOwnReader = (file, reader) => {
+    const folder = file.slice(0, file.lastIndexOf('/') + 1);
+
+    return (
+        reader.startsWith(folder) &&
+        !reader.slice(folder.length).includes('/') &&
+        stemOf(reader.slice(folder.length)) === stemOf(file.slice(folder.length))
+    );
+};
+
+function sharedHelpers(unit, files, candidates) {
+    if (candidates.length === 0) {
+        return [];
+    }
+    const importers = importersOf(unit, files);
+
+    return candidates.filter(({ file }) =>
+        [...(importers.get(file) ?? [])].some((reader) => !isOwnReader(file, reader)),
+    );
+}
+
+function placementOf(top, folder, rest) {
+    if (folder === undefined) {
+        return isIndex(top) ? 'placed' : 'lint-root';
+    }
+    if (!LINT_FOLDERS.includes(top)) {
+        return 'foreign-top';
+    }
+    if (rest.length === 0) {
+        return top === 'self' && isIndex(folder) ? 'placed' : 'audience-root';
+    }
+    if (!TREE[top].includes(folder)) {
+        return 'foreign-folder';
+    }
+
+    return AUDIENCES.has(top) ? 'declaration' : 'placed';
+}
+
 export function lintTreeOf(files, unit, prefix) {
     const lintFiles = files.filter((file) => file.startsWith(`${LINT_ROOT}/`));
     const families = catalogueFamilies(unit, lintFiles);
     const findings = [];
     const foreign = new Set();
     const foreignInAudience = new Map();
+    const candidates = [];
 
     for (const file of lintFiles) {
         const [, top, folder, ...rest] = file.split('/');
-        if (folder === undefined) {
-            if (!isIndex(top)) {
-                findings.push(lintRootFinding(`${prefix}${file}`));
-            }
-            continue;
-        }
-        if (!LINT_FOLDERS.includes(top)) {
+        const placement = placementOf(top, folder, rest);
+        if (placement === 'lint-root') {
+            findings.push(lintRootFinding(`${prefix}${file}`));
+        } else if (placement === 'audience-root') {
+            findings.push(audienceFolderFinding(`${prefix}${file}`, top, true));
+        } else if (placement === 'foreign-top') {
             foreign.add(top);
-            continue;
-        }
-        if (rest.length === 0) {
-            if (!(top === 'self' && isIndex(folder))) {
-                findings.push(audienceFolderFinding(`${prefix}${file}`, top, true));
-            }
-            continue;
-        }
-        if (!TREE[top].includes(folder)) {
+        } else if (placement === 'foreign-folder') {
             foreignInAudience.set(`${top}/${folder}`, top);
-            continue;
+        } else if (placement === 'declaration') {
+            if (folder === 'rules') {
+                findings.push(...misfiledRule(file, rest, families, prefix));
+            }
+            const names = foreignFunctions(unit, file, rest.at(-1), lintFiles);
+            if (names.length > 0) {
+                candidates.push({ file, names });
+            }
         }
-        if (!AUDIENCES.has(top)) {
-            continue;
-        }
-        if (folder === 'rules') {
-            findings.push(...misfiledRule(file, rest, families, prefix));
-        }
-        const names = foreignFunctions(unit, file, rest.at(-1), lintFiles);
-        if (names.length > 0) {
-            findings.push(helperFinding(`${prefix}${file}`, names));
-        }
+    }
+    for (const { file, names } of sharedHelpers(unit, files, candidates)) {
+        findings.push(helperFinding(`${prefix}${file}`, names));
     }
 
     return [
