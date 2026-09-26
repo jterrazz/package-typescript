@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { heldSummary, judge, tightened } from './baseline.js';
+import { heldSummary, judge, reKey, tightened } from './baseline.js';
 
 const JUDGE = resolve(import.meta.dirname, 'baseline.js');
 
@@ -134,5 +134,25 @@ describe('baseline', () => {
         );
         expect(result.status).toBe(1);
         expect(readFileSync(join(root, 'jterrazz.baseline.json'), 'utf8')).toBe(baseline);
+    });
+
+    test('merges an old key into the new one it was renamed to, when both are recorded', () => {
+        // Given - a section holding a renamed key beside its new name
+        const { root } = groundOf(
+            '{ "typescript": { "names/names-construct": 2, "names/no-language-construct-name": 3 } }\n',
+        );
+
+        // When - the old key is re-keyed
+        const moved = reKey(root, { 'names/names-construct': 'names/no-language-construct-name' });
+
+        // Then - one entry carries both counts
+        expect(moved).toStrictEqual([
+            { from: 'names/names-construct', to: 'names/no-language-construct-name' },
+        ]);
+        expect(
+            JSON.parse(readFileSync(join(root, 'jterrazz.baseline.json'), 'utf8')),
+        ).toStrictEqual({
+            typescript: { 'names/no-language-construct-name': 5 },
+        });
     });
 });

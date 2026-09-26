@@ -1,5 +1,7 @@
 {
     "typescript": {
-        "comments/comment-lines": 4
+        "comments/comment-lines": 4,
+        "jterrazz-typescript/comment-longer-than-function": 1,
+        "names/names-construct": 1
     }
 }

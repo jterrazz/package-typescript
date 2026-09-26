@@ -18,6 +18,8 @@ runs:
           baseline-ratchet  jterrazz.baseline.json › typescript  oxlint/unused-directive has 1 diagnostic(s) and no entry — it is new debt
           Run 'typescript baseline' to record where the project actually stands.
           renamed-id  jterrazz.baseline.json › typescript  found: the entry `comments/comment-lines` keys an id this release renamed · why: an entry is judged by the id its pass prints, and nothing prints the old one any more · fix: run 'typescript fix' — it re-keys the entry to `comments/no-prose-comment-line` · read: docs/06-quality-checks.md#a-renamed-id
+          renamed-id  jterrazz.baseline.json › typescript  found: the entry `jterrazz-typescript/comment-longer-than-function` keys an id this release renamed · why: an entry is judged by the id its pass prints, and nothing prints the old one any more · fix: run 'typescript fix' — it re-keys the entry to `jterrazz-typescript/comment-no-longer-than-its-function` · read: docs/06-quality-checks.md#a-renamed-id
+          renamed-id  jterrazz.baseline.json › typescript  found: the entry `names/names-construct` keys an id this release renamed · why: an entry is judged by the id its pass prints, and nothing prints the old one any more · fix: run 'typescript fix' — it re-keys the entry to `names/no-language-construct-name` · read: docs/06-quality-checks.md#a-renamed-id
           renamed-id  index.ts  found: line 1 disables `jterrazz-typescript/comment-longer-than-function`, an id this release renamed · why: oxlint knows the rule by its new id alone, so the directive silences nothing · fix: run 'typescript fix' — it rewrites the directive to `jterrazz-typescript/comment-no-longer-than-its-function` · read: docs/06-quality-checks.md#a-renamed-id
           ✗ Failed with exit code 1
 
@@ -55,7 +57,7 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         1
-            jterrazz.baseline.json › typescript  4
+            jterrazz.baseline.json › typescript  6
             tool versions                        in range
 
            END  Finalizing quality checks
@@ -74,6 +76,9 @@ runs:
 
           renamed  index.ts  jterrazz-typescript/comment-longer-than-function → jterrazz-typescript/comment-no-longer-than-its-function
           renamed  jterrazz.baseline.json › typescript  comments/comment-lines → comments/no-prose-comment-line
+          renamed  jterrazz.baseline.json › typescript  jterrazz-typescript/comment-longer-than-function → jterrazz-typescript/comment-no-longer-than-its-function
+          renamed  jterrazz.baseline.json › typescript  names/names-construct → names/no-language-construct-name
+          re-recorded jterrazz.baseline.json › typescript › jterrazz-typescript/comment-no-longer-than-its-function 1 → 0
           ✓ Passed
 
            RUN  Oxfmt Format
@@ -86,6 +91,7 @@ runs:
 
            RUN  Names (tree)
 
+          re-recorded jterrazz.baseline.json › typescript › names/no-language-construct-name 1 → 0
           ✓ Passed
 
            RUN  Comments (density)
