@@ -1,7 +1,7 @@
 export default {
     meta: { name: 'jterrazz' },
     rules: {
-        'x1-every-file': {
+        'flags-every-file': {
             create(context) {
                 return {
                     Program(node) {

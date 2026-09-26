@@ -17,7 +17,9 @@ describe('composition', () => {
             .exec(`-c ${COMPOSED_CONFIG} probe.test.ts`);
 
         // Then - a jterrazz convention rule fires on the probe spec
-        expect(result.stdout.grep('probe.test.ts').text).toContain('b4-given-then');
+        expect(result.stdout.grep('probe.test.ts').text).toContain(
+            'given-and-then-markers-present',
+        );
     });
 
     test('stays silent when the consumer does not compose testing', async () => {

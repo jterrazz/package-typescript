@@ -27,7 +27,7 @@ runs:
 
            RUN  Test Conventions (@jterrazz/test)
 
-          http/expected/response.txt:1:1: error jterrazz-check(d4): found: the unknown token {{any}} · read: docs/19-linting.md#d4-unknown-token
+          http/expected/response.txt:1:1: error jterrazz-check(no-unknown-token): found: the unknown token {{any}} · read: docs/19-linting.md#no-unknown-token
 
           conventions checker: 1 error(s) found under {{workdir}}/apps/api/specs
           ✗ Failed with exit code 1

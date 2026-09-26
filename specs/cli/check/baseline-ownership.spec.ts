@@ -19,7 +19,7 @@ process.exit(${exitCode});
 const CONFIG = `export default {
     ignorePatterns: ['node_modules/**', 'plugin.mjs'],
     jsPlugins: ['./plugin.mjs'],
-    rules: { 'jterrazz/x1-every-file': 'error' },
+    rules: { 'jterrazz/flags-every-file': 'error' },
 };
 `;
 
@@ -83,7 +83,7 @@ describe('baseline-ownership', () => {
     test("leaves @jterrazz/test's section byte for byte", () => {
         // Given - a test section on one line, keys unsorted, beside a stale typescript one and a debugger this package records
         const project = groundOf();
-        const section = '{ "jterrazz/x1-every-file": 2, "jterrazz-check/c9": 1 }';
+        const section = '{ "jterrazz/flags-every-file": 2, "jterrazz-check/no-unused-ground": 1 }';
         writeFileSync(
             join(project, 'jterrazz.baseline.json'),
             `{\n  "test": ${section},\n  "typescript": { "eslint/no-var": 4 }\n}\n`,
@@ -281,7 +281,7 @@ process.exit(0);
         const project = groundOf();
         writeFileSync(
             join(project, 'jterrazz.baseline.json'),
-            '{\n  "typescript": { "jterrazz-check/c9": 1, "jterrazz/x1-every-file": 2 }\n}\n',
+            '{\n  "typescript": { "jterrazz-check/no-unused-ground": 1, "jterrazz/flags-every-file": 2 }\n}\n',
         );
 
         // When - the checks run
@@ -289,10 +289,10 @@ process.exit(0);
 
         // Then - each entry is sent to the section that owns it
         expect(stdout).toContain(
-            "jterrazz-check/c9 is @jterrazz/test's rule — its entry belongs in jterrazz.baseline.json › test",
+            "jterrazz-check/no-unused-ground is @jterrazz/test's rule — its entry belongs in jterrazz.baseline.json › test",
         );
         expect(stdout).toContain(
-            "jterrazz/x1-every-file is @jterrazz/test's rule — its entry belongs in jterrazz.baseline.json › test",
+            "jterrazz/flags-every-file is @jterrazz/test's rule — its entry belongs in jterrazz.baseline.json › test",
         );
         expect(verdict(stdout, 'Oxlint Check')).toBe('✗ Failed');
     });

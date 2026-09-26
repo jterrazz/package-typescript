@@ -138,7 +138,7 @@ describe('behaviour', () => {
         );
         writeFileSync(
             resolve(work.path, 'unshipped.ts'),
-            "export function pause(): string {\n    // oxlint-disable-next-line jterrazz/z9-unshipped-rule -- a rule the plugin never shipped\n    return 'paused';\n}\n",
+            "export function pause(): string {\n    // oxlint-disable-next-line jterrazz/unshipped-rule -- a rule the plugin never shipped\n    return 'paused';\n}\n",
         );
 
         // When - oxlint reads that file under the composed rulebook

@@ -51,7 +51,7 @@ function install(dir: string, version: string, name: string, exit: 0 | 1 = 1): v
 const PLUGIN = `export default {
     meta: { name: 'jterrazz' },
     rules: {
-        'x1-once': {
+        'flags-once': {
             create(context) {
                 return {
                     Program(node) {
@@ -70,7 +70,7 @@ function armPlugin(dir: string): void {
     writeFileSync(join(dir, 'plugin.mjs'), PLUGIN);
     writeFileSync(
         join(dir, 'oxlint.config.ts'),
-        "export default { ignorePatterns: ['plugin.mjs'], jsPlugins: ['./plugin.mjs'], rules: { 'jterrazz/x1-once': 'error' } };\n",
+        "export default { ignorePatterns: ['plugin.mjs'], jsPlugins: ['./plugin.mjs'], rules: { 'jterrazz/flags-once': 'error' } };\n",
     );
 }
 
