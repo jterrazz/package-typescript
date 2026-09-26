@@ -17,9 +17,9 @@ The consumer-facing corpus is `docs/` + `README.md`, mapped by `docs/README.md`.
 | oxlint presets, `compose`, architecture, knip  | `docs/07-lint-presets.md`   |
 | repo doctrine (corpus / injection / compiler)  | `docs/08-repo-structure.md` |
 
-The first four chapters are the spine every repository of the ecosystem carries — architecture, developing, testing, operating — and this repository's own gate refuses a tree that breaks it (`docs/06-quality-checks.md`, the Docs (layout) pass). The doctrine behind the spine is `jterrazz-studio`'s, routed to from `docs/08-repo-structure.md`.
+The first four chapters are the spine every repository of the ecosystem carries — architecture, developing, testing, operating — and this repository's own gate refuses a tree that breaks it (`docs/06-quality-checks.md`, the Docs (layout) pass). The doctrine behind the spine is routed to from `docs/08-repo-structure.md`.
 
-One Claude Code skill routes into this corpus: `skills/jterrazz-typescript/SKILL.md` — what to run, what each failing pass means, the chapter to read next. It is hand-written, it never restates a chapter, and the Markdown (prose) pass fails it when it names a chapter that does not exist. The repo-structure doctrine itself is a separate skill, `jterrazz-repo-structure`, which now ships from `jterrazz-studio`.
+One Claude Code skill routes into this corpus: `skills/jterrazz-typescript/SKILL.md` — what to run, what each failing pass means, the chapter to read next. It is hand-written, it never restates a chapter, and the Markdown (prose) pass fails it when it names a chapter that does not exist.
 
 `CLAUDE.md` at the root is a symlink to this file: one brief, two names, no second copy.
 
@@ -34,42 +34,16 @@ No build step — this package ships JS directly. It dogfoods its own CLI (`make
 ## Repo layout
 
 ```
-bin/
-├── typescript.sh             # CLI entry (build, bundle, start, dev, docs-layout, doctor, baseline, tsc, check, fix, clean)
-├── find-tsc.sh               # The TS7 Go compiler by platform — sourced by the CLI and by the check script
-├── tool-configs.sh           # The config oxlint and oxfmt run with — the project's own, else the default — sourced by the same two
-└── commands/
-    └── check.sh              # Fifteen passes in parallel; each that RAN prints a header and a verdict, in one fixed order
-
-lint/                         # Every judgement — its tree is docs/01-architecture.md's; nothing here imports src/
-
-src/cli/doctor.js             # Installed tool versions against the declared ranges — `typescript doctor`
-src/cli/lint-targets.js       # The project files oxlint and oxfmt are handed — the sweep every tree gate reads, never the directory
-src/cli/merge-knip-config.js  # Merges knip base preset with project-local knip.json (read as JSONC)
-src/cli/oxlint-report.js      # The Oxlint pass's log, drawn from the one JSON run in the form oxlint picks — oxlint-report-*.js draw it
-src/cli/unsafe-fixers.js      # The rules `fix` must not let oxlint rewrite, as one wrapped config per config scope
-src/presets/
-├── tsconfig/ · tsdown/ · oxlint/profiles/ (one line each, from lint/index.js) · oxfmt/ · knip/ · prettier/ (.astro only)
-src/index.js + index.d.ts     # Package entry — exports { oxfmt, oxlint } profiles (JS-shipped, no build)
-src/oxfmt.js                  # The oxfmt entry — base, and oxfmt's defineConfig
-src/config.js + config.d.ts   # defineConfig() and JterrazzConfig — the family's settings file, exported at ./config
-docs/                         # The corpus: numbered chapters and decisions/
-skills/                       # The Claude Code skill — one hand-written SKILL.md
-specs/                        # Product specifications (@jterrazz/test) — the shape is docs/03-testing.md
+bin/      # the CLI, in bash
+lint/     # every judgement
+src/      # the engine the CLI runs, the presets, the importable entries
+docs/     # the corpus: numbered chapters and decisions/
+skills/   # the Claude Code skill — one hand-written SKILL.md
+specs/    # product specifications (@jterrazz/test)
 ```
 
-## Commands
+What each root and folder holds is [Architecture](docs/01-architecture.md)'s; the shape of `specs/` is `docs/03-testing.md`'s.
 
-| Task                                    | Command                   |
-| --------------------------------------- | ------------------------- |
-| Install from the lockfile               | `make install`            |
-| Build (nothing to build — JS ships)     | `make build`              |
-| Lint + format + typecheck + knip + docs | `make lint`               |
-| Auto-fix lint issues                    | `make fix`                |
-| Run all tests                           | `make test`               |
-| The gate before a commit: lint, test    | `make check`              |
-| Regenerate every golden and projection  | `TEST_UPDATE=1 make test` |
+## Commands and the standing rule
 
-## Standing rule
-
-A change to the public API updates `README.md`, the `docs/` chapters, and `skills/jterrazz-typescript/SKILL.md`. A change to a LINT DECISION is a line of a fragment under `lint/` and nothing else — the chapter's catalogue is its projection, regenerated with `TEST_UPDATE=1 npm test`. The repo-structure doctrine itself now lives in `jterrazz-studio` — never author it here or in a skill; route to it from `docs/08-repo-structure.md`.
+The gestures and what each one runs, and the rule that a change to the public surface reaches three places, are [Developing § Working on this package](docs/02-developing.md#working-on-this-package)'s. A change to a lint decision is a line of a fragment under `lint/` and nothing else — the chapter's catalogue is its projection. The repo-structure doctrine is never authored here or in a skill; `docs/08-repo-structure.md` routes to it.

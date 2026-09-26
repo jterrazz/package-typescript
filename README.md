@@ -53,7 +53,7 @@ The full corpus lives in [`docs/`](docs/):
 - [Lint presets](docs/07-lint-presets.md) — the rulebook, the six profiles, `compose`, architecture, knip.
 - [Repo structure](docs/08-repo-structure.md) — pointer to the shared doctrine; what's TypeScript-specific here.
 
-For agents: read the chapters from wherever they resolve — this repo when the toolchain itself is the change, `node_modules/@jterrazz/typescript/docs/` when a consumer is — plus the [`skills/jterrazz-typescript`](https://github.com/jterrazz/package-typescript/blob/main/skills/jterrazz-typescript/SKILL.md) Claude Code skill, which says what to run and which chapter to open. The API is the types. The repo-structure doctrine itself is a Claude Code skill too — `jterrazz-repo-structure`, shipped from [`jterrazz-studio`](https://github.com/jterrazz/jterrazz-studio).
+For agents: read the chapters from wherever they resolve — this repo when the toolchain itself is the change, `node_modules/@jterrazz/typescript/docs/` when a consumer is — plus the [`skills/jterrazz-typescript`](https://github.com/jterrazz/package-typescript/blob/main/skills/jterrazz-typescript/SKILL.md) Claude Code skill, which says what to run and which chapter to open. The API is the types.
 
 ## License
 
