@@ -34,7 +34,7 @@ An import in `lint/` goes one way, the same in every repository that keeps the t
 
 The rulebook is a manifest, not a config: one fragment per plugin, stating a decision per rule, and this package's own suite refusing a fragment that breaks either invariant — a level is `error` or `off`, and an `off` carries one of five recorded reasons ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#who-a-rule-is-for)).
 
-Three steps and nothing between them. `lint/rulebook/profiles.js` says which fragments each profile carries; `lint/rulebook/compile.js` turns a fragment into the plain oxlint config object oxlint itself reads, and merges those objects; `lint/index.js` compiles the table, and `src/presets/oxlint/profiles/<name>.js` hands one profile to a consumer's `extends`. The rule decisions are [Lint presets](07-lint-presets.md)'s, catalogued there from the same manifest.
+Three steps and nothing between them. `lint/rulebook/profiles.js` says which fragments each profile carries; `lint/rulebook/compile.js` turns a fragment into the plain oxlint config object oxlint itself reads, and merges those objects; `lint/index.js` compiles the table, and a consumer imports its profile from there by name. `src/presets/oxlint/profiles/<name>.js` re-exports one profile as a default export, no consumer's to reach — oxlint loads a config handed by path through its default export, and these are the files `check` hands a project with no config of its own and the drift report resolves each profile from. The rule decisions are [Lint presets](07-lint-presets.md)'s, catalogued there from the same manifest.
 
 ## No build step
 

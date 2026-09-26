@@ -1,25 +1,17 @@
-import { nested } from '../lint/index.js';
-import hexagonalFragment from '../lint/rulebook/architecture/hexagonal.js';
-import { compile } from '../lint/rulebook/compile.js';
+import { astro, bun, expo, hexagonal, nested, next, node, react } from '../lint/index.js';
 import oxfmtConfig from './presets/oxfmt/index.js';
-import astroProfile from './presets/oxlint/profiles/astro.js';
-import bunProfile from './presets/oxlint/profiles/bun.js';
-import expoProfile from './presets/oxlint/profiles/expo.js';
-import nextProfile from './presets/oxlint/profiles/next.js';
-import nodeProfile from './presets/oxlint/profiles/node.js';
-import reactProfile from './presets/oxlint/profiles/react.js';
 
 export const oxfmt = oxfmtConfig;
 
 export const oxlint = {
-    astro: astroProfile,
-    bun: bunProfile,
-    expo: expoProfile,
-    hexagonal: compile(hexagonalFragment),
+    astro,
+    bun,
+    expo,
+    hexagonal,
     nested,
-    next: nextProfile,
-    node: nodeProfile,
-    react: reactProfile,
+    next,
+    node,
+    react,
 };
 
 export default { oxfmt, oxlint };
