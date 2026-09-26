@@ -1,5 +1,5 @@
-import hexagonalFragment from '../lint/architecture/hexagonal.js';
-import { compile } from '../lint/compile.js';
+import hexagonalFragment from '../lint/rulebook/architecture/hexagonal.js';
+import { compile } from '../lint/rulebook/compile.js';
 import { nested } from './oxlint.js';
 import oxfmtConfig from './presets/oxfmt/index.js';
 import astroProfile from './presets/oxlint/profiles/astro.js';

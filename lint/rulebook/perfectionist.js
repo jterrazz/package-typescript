@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 
-import { fragment, off, on } from './_contract.js';
+import { fragment, off, on } from './decision.js';
 
 // Only what oxfmt does not sort: measured on oxfmt 0.68, `sortImports` leaves named specifiers, unions,
 // JSX attributes and heritage clauses alone. perfectionist resolves from this package, never the consumer's.
@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 const NATURAL = [{ type: 'natural' }];
 
 export default fragment({
-    id: 'sorted',
+    id: 'perfectionist',
     audience: 'consumer',
     jsPlugins: [require.resolve('eslint-plugin-perfectionist')],
     rules: {

@@ -3,9 +3,9 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, join, relative, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { AUDIENCES } from '../../../lint/_contract.js';
-import { catalog } from '../../../lint/catalog.js';
-import { PROFILES } from '../../../lint/profiles.js';
+import { catalog } from '../../../lint/catalogue/decisions.js';
+import { AUDIENCES } from '../../../lint/rulebook/decision.js';
+import { PROFILES } from '../../../lint/rulebook/profiles.js';
 import { lintFragments } from './lint-fragments.js';
 
 // A `self` row names the home that holds it — a path the package leaves out — and the names the tarball audit greps for.
@@ -25,10 +25,10 @@ function fieldText(row: Record<string, unknown>, key: string): string {
 
 const declared = await lintFragments(ROOT);
 
-const parsed: unknown = JSON.parse(
-    readFileSync(join(ROOT, 'specs/surface/package/rules.json'), 'utf8'),
-);
-const rows = (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
+const rows = ['lint/catalogue/checks.json', 'lint/self/catalogue.json'].flatMap((path) => {
+    const parsed: unknown = JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
+    return (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
+});
 
 function rowsOf(channel: string, audience: string): Record<string, unknown>[] {
     return rows.filter((row) => row.channel === channel && row.audience === audience);

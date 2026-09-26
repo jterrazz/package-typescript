@@ -1,4 +1,4 @@
-import { allOn, fragment, off } from '../_contract.js';
+import { allOn, fragment, off } from './decision.js';
 
 // JSDoc is never required — TypeScript carries the types — but a block that is written must be well formed.
 const BY_TYPESCRIPT = {
@@ -7,7 +7,7 @@ const BY_TYPESCRIPT = {
 };
 
 export default fragment({
-    id: 'language/jsdoc',
+    id: 'jsdoc',
     audience: 'consumer',
     plugins: ['jsdoc'],
     rules: {

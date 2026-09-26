@@ -8,7 +8,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { argv, cwd, stdin, stdout } from 'node:process';
 
-import { unsafeFixers } from '../../lint/catalog.js';
+import { unsafeFixers } from '../../lint/catalogue/decisions.js';
 
 const WRAPPER = 'oxlint.fix.config.mjs';
 

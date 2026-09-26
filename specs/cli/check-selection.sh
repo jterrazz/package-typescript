@@ -11,7 +11,7 @@ case "${1:-}" in
     *) exec bash "$BIN" "$@" ;;
 esac
 
-read -r -a ALL_PASSES <<< "$(node -e 'const {readFileSync}=require("node:fs");process.stdout.write(JSON.parse(readFileSync(process.argv[1],"utf8")).filter((row)=>row.channel==="checker"&&row.audience==="consumer").map((row)=>row.id).join(" "))' "$ROOT/specs/surface/package/rules.json")"
+read -r -a ALL_PASSES <<< "$(node -e 'const {readFileSync}=require("node:fs");process.stdout.write(JSON.parse(readFileSync(process.argv[1],"utf8")).filter((row)=>row.channel==="checker"&&row.audience==="consumer").map((row)=>row.id).join(" "))' "$ROOT/lint/catalogue/checks.json")"
 IFS=',' read -r -a requested_passes <<< "$SELECTED_PASSES"
 for requested_pass in "${requested_passes[@]}"; do
     case " ${ALL_PASSES[*]} " in

@@ -1,7 +1,7 @@
-import { allOn, fragment, off } from '../_contract.js';
+import { allOn, fragment, off } from './decision.js';
 
 export default fragment({
-    id: 'language/node',
+    id: 'node',
     audience: 'consumer',
     plugins: ['node'],
     rules: {

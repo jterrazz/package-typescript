@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { catalog } from '../../../lint/catalog.js';
+import { catalog } from '../../../lint/catalogue/decisions.js';
 import { printConfig, PROFILES } from './rulebook.js';
 
 // Two rules demanding opposite shapes cannot both be armed: no edit closes both.

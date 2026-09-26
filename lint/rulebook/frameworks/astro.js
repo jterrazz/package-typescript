@@ -1,9 +1,9 @@
-import { fragment, off, on, scoped } from './_contract.js';
-import { ASSETS } from './language/import.js';
+import { fragment, off, on, scoped } from '../decision.js';
+import { ASSETS } from '../import.js';
 
 // oxlint parses an `.astro` file's script body but not its frontmatter as a module, so these decisions are scoped to `*.astro`.
 export default fragment({
-    id: 'astro',
+    id: 'frameworks/astro',
     audience: 'consumer',
     ignorePatterns: ['.astro/**', 'assets/**', 'public/**'],
     overrides: [

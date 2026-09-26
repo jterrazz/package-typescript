@@ -26,10 +26,10 @@ function fieldText(record: Record<string, unknown>, key: string): string {
     return typeof value === 'string' ? value : '';
 }
 
-const parsed: unknown = JSON.parse(
-    readFileSync(join(ROOT, 'specs/surface/package/rules.json'), 'utf8'),
-);
-const rows = (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
+const rows = ['lint/catalogue/checks.json', 'lint/self/catalogue.json'].flatMap((path) => {
+    const parsed: unknown = JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
+    return (Array.isArray(parsed) ? parsed : []).filter((row) => isRecord(row));
+});
 
 function call(module: Record<string, unknown>, name: string, ...args: unknown[]): unknown {
     const exported = module[name];
@@ -84,7 +84,7 @@ describe('tarball', () => {
     test('the tarball carries no test file', () => {
         // Given - every path npm would publish
         const { paths } = pack('--dry-run');
-        expect(paths).toContain('lint/_contract.js');
+        expect(paths).toContain('lint/rulebook/decision.js');
 
         // Then - no meta-test, no module test and no spec ships, whatever its extension
         expect(
@@ -122,9 +122,9 @@ describe('tarball', () => {
         const tree = packedTree();
         const oxlint = await loadPacked(tree, 'src/oxlint.js');
         const index = await loadPacked(tree, 'src/index.js');
-        const hexagonal = await loadPacked(tree, 'lint/architecture/hexagonal.js');
-        const compiler = await loadPacked(tree, 'lint/compile.js');
-        const entries = catalogueOf(await loadPacked(tree, 'lint/catalog.js'));
+        const hexagonal = await loadPacked(tree, 'lint/rulebook/architecture/hexagonal.js');
+        const compiler = await loadPacked(tree, 'lint/rulebook/compile.js');
+        const entries = catalogueOf(await loadPacked(tree, 'lint/catalogue/decisions.js'));
         const bundled = isRecord(index.oxlint) ? index.oxlint : {};
 
         // Then - each rule stated, at the top or in an override, is decided so for that profile
@@ -144,7 +144,7 @@ describe('tarball', () => {
     test('the catalogue and the passes the tarball ships are consumer alone', async () => {
         // Given - the packed catalogue, and the passes the packed check selects by name
         const tree = packedTree();
-        const catalogue = await loadPacked(tree, 'lint/catalog.js');
+        const catalogue = await loadPacked(tree, 'lint/catalogue/decisions.js');
         const script = readFileSync(join(tree, 'bin/commands/check.sh'), 'utf8');
         const passes = [...script.matchAll(/\bselected (?<pass>[a-z]+)/gu)].map((match) =>
             rows.find((row) => row.channel === 'checker' && row.id === match.groups?.pass),

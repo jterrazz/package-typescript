@@ -1,19 +1,19 @@
-import a11y from './a11y.js';
-import astro from './astro.js';
-import bundler from './bundler.js';
-import eslint from './language/eslint.js';
-import importPlugin from './language/import.js';
-import jsdoc from './language/jsdoc.js';
-import jterrazzTypescript from './language/jterrazz-typescript.js';
-import node from './language/node.js';
-import oxc from './language/oxc.js';
-import promise from './language/promise.js';
-import typescript from './language/typescript.js';
-import unicorn from './language/unicorn.js';
-import next from './next.js';
-import reactNative from './react-native.js';
-import react from './react.js';
-import sorted from './sorted.js';
+import eslint from './eslint.js';
+import astro from './frameworks/astro.js';
+import bundler from './frameworks/bundler.js';
+import next from './frameworks/next.js';
+import reactNative from './frameworks/react-native.js';
+import react from './frameworks/react.js';
+import importPlugin from './import.js';
+import jsdoc from './jsdoc.js';
+import jsxA11y from './jsx-a11y.js';
+import jterrazzTypescript from './jterrazz-typescript.js';
+import node from './node.js';
+import oxc from './oxc.js';
+import perfectionist from './perfectionist.js';
+import promise from './promise.js';
+import typescript from './typescript.js';
+import unicorn from './unicorn.js';
 import vitest from './vitest.js';
 
 // A profile adds a framework's plugins and ignores to the core rulebook, and never sets a core rule `off`.
@@ -28,7 +28,7 @@ export const CORE = Object.freeze([
     node,
     jsdoc,
     jterrazzTypescript,
-    sorted,
+    perfectionist,
     vitest,
 ]);
 
@@ -46,7 +46,7 @@ const IGNORED = Object.freeze([
 export const PROFILES = Object.freeze({
     astro: {
         env: { astro: true, browser: true, builtin: true, node: true },
-        fragments: [...CORE, react, a11y, astro],
+        fragments: [...CORE, react, jsxA11y, astro],
         ignorePatterns: [...IGNORED],
     },
     bun: {
@@ -57,12 +57,12 @@ export const PROFILES = Object.freeze({
     },
     expo: {
         env: { browser: true, builtin: true, node: true },
-        fragments: [...CORE, react, a11y, reactNative],
+        fragments: [...CORE, react, jsxA11y, reactNative],
         ignorePatterns: [...IGNORED],
     },
     next: {
         env: { browser: true, builtin: true, node: true },
-        fragments: [...CORE, react, a11y, next],
+        fragments: [...CORE, react, jsxA11y, next],
         ignorePatterns: [...IGNORED],
     },
     node: {
@@ -72,7 +72,7 @@ export const PROFILES = Object.freeze({
     },
     react: {
         env: { browser: true, builtin: true, node: true },
-        fragments: [...CORE, react, a11y, bundler],
+        fragments: [...CORE, react, jsxA11y, bundler],
         ignorePatterns: [...IGNORED],
     },
 });

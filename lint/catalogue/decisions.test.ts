@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { catalog, unsafeFixers } from './catalog.js';
+import { catalog, unsafeFixers } from './decisions.js';
 
 // The chapter's generated tables are projections of `lint/`; `TEST_UPDATE=1 npm test` regenerates them.
 
@@ -48,12 +48,12 @@ function renderFixers(): string {
 const PROJECTIONS = {
     chapter: {
         markers: MARKERS,
-        page: resolve(import.meta.dirname, '../docs/07-lint-presets.md'),
+        page: resolve(import.meta.dirname, '../../docs/07-lint-presets.md'),
         render: renderCatalogue,
     },
     'fixer list': {
         markers: FIXER_MARKERS,
-        page: resolve(import.meta.dirname, '../docs/07-lint-presets.md'),
+        page: resolve(import.meta.dirname, '../../docs/07-lint-presets.md'),
         render: renderFixers,
     },
 };
@@ -70,7 +70,7 @@ function tableCells(table: string): string[] {
         );
 }
 
-describe('catalog', () => {
+describe('decisions', () => {
     test('every decision carries the version it was taken in', () => {
         // Given - the whole catalogue
         const entries = catalog();

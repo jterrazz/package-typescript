@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { REASON_KINDS } from '../../../lint/_contract.js';
-import { catalog, unsafeFixers } from '../../../lint/catalog.js';
-import { PROFILES as PROFILE_TABLE } from '../../../lint/profiles.js';
+import { catalog, unsafeFixers } from '../../../lint/catalogue/decisions.js';
+import { REASON_KINDS } from '../../../lint/rulebook/decision.js';
+import { PROFILES as PROFILE_TABLE } from '../../../lint/rulebook/profiles.js';
 import { printConfig, PROFILES, roster } from './rulebook.js';
 
 // Nursery is upstream's one exception: a nursery rule is declared unstable, so the rulebook does not decide it.
@@ -54,7 +54,7 @@ describe('rule-surface', () => {
         const undecided = typeAware.filter((rule) => !DECIDED.has(rule));
         expect(
             undecided,
-            `found: ${undecided.join(', ')} — type-aware, and decided nowhere in lint/ · why: every rule tsgolint runs is decided by name, so a tsgolint release never adds a check no profile names · fix: decide each in lint/language/typescript.js — \`typeAware()\`, or \`off()\` with its reason · read: docs/07-lint-presets.md#the-four-laws`,
+            `found: ${undecided.join(', ')} — type-aware, and decided nowhere in lint/ · why: every rule tsgolint runs is decided by name, so a tsgolint release never adds a check no profile names · fix: decide each in lint/rulebook/typescript.js — \`typeAware()\`, or \`off()\` with its reason · read: docs/07-lint-presets.md#the-four-laws`,
         ).toStrictEqual([]);
     });
 

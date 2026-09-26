@@ -80,20 +80,12 @@
         "id": "drift"
     },
     {
-        "audience": "self",
-        "channel": "checker",
-        "home": "specs/cli/check-selection.sh",
-        "id": "pass-selector",
-        "names": ["TYPESCRIPT_CHECK_PASSES", "names no pass"],
-        "why": "runs only the passes a spec asserts on, from a copy of the check no install holds; no consumer project needs a partial check"
-    },
-    {
         "audience": "consumer",
         "by": "throw",
         "channel": "runtime",
         "id": "layer-map-id",
         "message": "A layer map needs an id.",
-        "module": "lint/architecture/layers.js"
+        "module": "lint/rulebook/architecture/layers.js"
     },
     {
         "audience": "consumer",
@@ -101,7 +93,7 @@
         "channel": "runtime",
         "id": "layer-map-disjoint",
         "message": "an override replaces, so one map entry would erase the other",
-        "module": "lint/architecture/layers.js"
+        "module": "lint/rulebook/architecture/layers.js"
     },
     {
         "audience": "consumer",
@@ -398,76 +390,5 @@
         "id": "command-usage",
         "message": "Usage: typescript <command>",
         "module": "bin/typescript.sh"
-    },
-    {
-        "audience": "self",
-        "channel": "meta",
-        "home": "lint/_contract.test.ts",
-        "id": "contract-audit",
-        "names": [
-            "is off with no reason",
-            "is off for a reason of no known kind",
-            "has a reason that names nothing",
-            "a rule is error or off",
-            "marks an unsafe fixer without saying what it changes",
-            "a fragment needs an id"
-        ],
-        "why": "judges this package's own fragments; fragment() is not exported"
-    },
-    {
-        "audience": "self",
-        "channel": "meta",
-        "home": "lint/catalog.test.ts",
-        "id": "catalogue-projection",
-        "names": ["renderFixers", "FIXER_MARKERS"],
-        "why": "renders and holds fresh this repository's own chapter"
-    },
-    {
-        "audience": "self",
-        "channel": "meta",
-        "home": "specs/surface/package/audience.test.ts",
-        "id": "audience-audit",
-        "names": ["every self row names the home that holds it"],
-        "why": "reads this package's own manifest"
-    },
-    {
-        "audience": "self",
-        "channel": "meta",
-        "home": "specs/surface/package/tarball.test.ts",
-        "id": "tarball-audit",
-        "names": ["no text the tarball holds names a self rule"],
-        "why": "reads what this package would publish"
-    },
-    {
-        "audience": "self",
-        "channel": "meta",
-        "home": "specs/surface/package/builder-calls.test.ts",
-        "id": "builder-call-audit",
-        "names": ["unstatedAudiences"],
-        "why": "reads the text of every module this package would publish, for a fragment() call whose audience is not a literal"
-    },
-    {
-        "audience": "self",
-        "channel": "meta",
-        "home": "specs/surface/package/shipped-links.test.ts",
-        "id": "shipped-links",
-        "names": ["deadLinks"],
-        "why": "reads what this package would publish against this checkout"
-    },
-    {
-        "audience": "self",
-        "channel": "meta",
-        "home": "specs/surface/package/lint-fragments.ts",
-        "id": "fragment-walk",
-        "names": ["lintFragments"],
-        "why": "the walk the audits above share"
-    },
-    {
-        "audience": "self",
-        "channel": "meta",
-        "home": "specs/surface/package/module-walk.ts",
-        "id": "module-walk",
-        "names": ["walkModules", "built on import"],
-        "why": "imports each module this package would publish in a child of its own, for the tarball audit"
     }
 ]

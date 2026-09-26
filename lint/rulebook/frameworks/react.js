@@ -1,7 +1,7 @@
-import { allOn, fragment, off, on } from './_contract.js';
+import { allOn, fragment, off, on } from '../decision.js';
 
 export default fragment({
-    id: 'react',
+    id: 'frameworks/react',
     audience: 'consumer',
     plugins: ['react', 'react-perf'],
     rules: {

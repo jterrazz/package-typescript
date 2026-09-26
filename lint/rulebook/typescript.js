@@ -1,4 +1,4 @@
-import { allOn, fragment, off, on, scoped, typeAware, unsafeFix } from '../_contract.js';
+import { allOn, fragment, off, on, scoped, typeAware, unsafeFix } from './decision.js';
 
 // Every rule tsgolint runs is decided, nursery included, so a tsgolint release never adds an unnamed check.
 
@@ -22,7 +22,7 @@ const UNTYPED_IN_JAVASCRIPT = [
 ].map((rule) => [`typescript/${rule}`, off(UNTYPED_BY_CONSTRUCTION)]);
 
 export default fragment({
-    id: 'language/typescript',
+    id: 'typescript',
     audience: 'consumer',
     plugins: ['typescript'],
     overrides: [

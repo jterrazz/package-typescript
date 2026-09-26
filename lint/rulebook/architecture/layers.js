@@ -1,4 +1,4 @@
-import { fragment, on, scoped } from '../_contract.js';
+import { fragment, on, scoped } from '../decision.js';
 
 // oxlint, verified on 1.83: an override's options replace the base entry (oxc#17527); `regex` is Rust regex
 // with no lookahead, so an exception is a second glob negated with `!`; and the rule matches the specifier
@@ -16,7 +16,7 @@ import { fragment, on, scoped } from '../_contract.js';
 
 /**
  * @param {{ id?: string, map: readonly Layer[] }} definition the map, and the id the fragment answers to
- * @returns {Omit<ReturnType<typeof fragment>, 'overrides'> & { overrides: readonly import('../_contract.js').Scoped[] }} one override per layer
+ * @returns {Omit<ReturnType<typeof fragment>, 'overrides'> & { overrides: readonly import('../decision.js').Scoped[] }} one override per layer
  */
 export function layers({ id = 'layers', map }) {
     if (typeof id !== 'string' || id === '') {

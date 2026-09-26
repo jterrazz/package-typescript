@@ -1,8 +1,8 @@
-import { allOn, fragment, off } from '../_contract.js';
+import { allOn, fragment, off } from './decision.js';
 
 // The three offs restrict syntax for a target older than the one the estate compiles to.
 export default fragment({
-    id: 'language/oxc',
+    id: 'oxc',
     audience: 'consumer',
     plugins: ['oxc'],
     rules: {

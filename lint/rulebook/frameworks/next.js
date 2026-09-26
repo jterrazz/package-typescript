@@ -1,9 +1,9 @@
-import { allOn, fragment, off, scoped } from './_contract.js';
-import { EXTENSIONS_NEVER } from './language/import.js';
+import { allOn, fragment, off, scoped } from '../decision.js';
+import { EXTENSIONS_NEVER } from '../import.js';
 
 // `next-env.d.ts` is a side-effect import Next writes itself.
 export default fragment({
-    id: 'next',
+    id: 'frameworks/next',
     audience: 'consumer',
     plugins: ['nextjs'],
     ignorePatterns: ['.next/**', 'next-env.d.ts', 'assets/**', 'public/**'],

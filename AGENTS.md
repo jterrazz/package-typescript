@@ -65,13 +65,10 @@ src/cli/publish-material.js   # The build guard — which shipped file is compil
 src/cli/unsafe-fixers.js      # The rules `fix` must not let oxlint rewrite, as one wrapped config per config scope
 src/cli/workspace-members.js  # Lists the consumer's workspace members — the unit each per-package gate measures from
 
-lint/                         # The lint manifest — every rule of every loaded plugin decided by name
-├── _contract.js              # fragment() / on() / off() / unsafeFix() — builders; _contract.test.ts audits the invariants
-├── compile.js                # fragment -> the plain oxlint config object; `merge()` is the exported compose()
-├── profiles.js               # Which fragments each of the six profiles carries, and its ignore patterns
-├── catalog.js                # The catalogue, and the unsafe fixers `fix` reads — catalog.test.ts renders the chapter's table
-├── language/ · react.js · next.js · astro.js · a11y.js · bundler.js · vitest.js · sorted.js · react-native.js
-└── architecture/             # hexagonal.js (the map this package ships) and layers.js (the builder)
+lint/                         # Every lint judgement this package makes — the tree is docs/01-architecture.md's
+├── rulebook/                 # One fragment per upstream plugin, frameworks/, architecture/; decision.js, compile.js, profiles.js
+├── catalogue/                # decisions.js (every decision, the unsafe fixers) · checks.json (the consumer rows of the manifest)
+└── self/                     # What only this repository is held to, never shipped — catalogue.json, the self rows
 
 src/oxlint-plugin/            # This package's own lint rules, one oxlint JS plugin — `jterrazz-typescript/*`
 src/presets/

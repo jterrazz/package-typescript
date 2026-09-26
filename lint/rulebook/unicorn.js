@@ -1,8 +1,8 @@
-import { allOn, fragment, off, on, unsafeFix } from '../_contract.js';
+import { allOn, fragment, off, on, unsafeFix } from './decision.js';
 
 // Two offs are the formatter's: unicorn's fixer and oxfmt disagree about the same bytes (specs/cli/preset).
 export default fragment({
-    id: 'language/unicorn',
+    id: 'unicorn',
     audience: 'consumer',
     plugins: ['unicorn'],
     rules: {

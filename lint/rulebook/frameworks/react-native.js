@@ -1,10 +1,10 @@
-import { fragment, on } from './_contract.js';
-import { EXTENSIONS_NEVER } from './language/import.js';
+import { fragment, on } from '../decision.js';
+import { EXTENSIONS_NEVER } from '../import.js';
 
 // oxlint ships no `react-native` plugin. Metro resolves an import but resolves an asset by its extension,
 // and `require()` is how an asset is named in a React Native tree.
 export default fragment({
-    id: 'react-native',
+    id: 'frameworks/react-native',
     audience: 'consumer',
     globals: {
         __DEV__: 'readonly',

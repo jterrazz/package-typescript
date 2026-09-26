@@ -1,4 +1,4 @@
-import { allOn, fragment, off, on } from '../_contract.js';
+import { allOn, fragment, off, on } from './decision.js';
 
 // `import/extensions` is re-decided per platform (next, astro, react-native, bundler), always at `error`.
 // `import/no-cycle` ignores type-only imports, so a value edge one way and a type edge back is invisible (oxc#20551).
@@ -23,7 +23,7 @@ export const EXTENSIONS_ALWAYS = on(['always', { ignorePackages: true, ...ASSETS
 export const EXTENSIONS_NEVER = on(['never', ASSETS]);
 
 export default fragment({
-    id: 'language/import',
+    id: 'import',
     audience: 'consumer',
     plugins: ['import'],
     rules: {

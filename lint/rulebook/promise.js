@@ -1,8 +1,8 @@
-import { allOn, fragment, off } from '../_contract.js';
+import { allOn, fragment, off } from './decision.js';
 
 // The estate writes `await`: two rules describing a well-behaved `.then()` chain cannot hold beside `prefer-await-to-then`.
 export default fragment({
-    id: 'language/promise',
+    id: 'promise',
     audience: 'consumer',
     plugins: ['promise'],
     rules: {

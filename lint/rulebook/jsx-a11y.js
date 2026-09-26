@@ -1,8 +1,8 @@
-import { allOn, fragment } from './_contract.js';
+import { allOn, fragment } from './decision.js';
 
 // No off here: an accessibility rule describes what a person using the product can reach.
 export default fragment({
-    id: 'a11y',
+    id: 'jsx-a11y',
     audience: 'consumer',
     plugins: ['jsx-a11y'],
     rules: allOn(

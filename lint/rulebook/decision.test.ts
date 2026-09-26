@@ -1,9 +1,9 @@
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { lintFragments } from '../specs/surface/package/lint-fragments.js';
-import { fragment, off, on, REASON_KINDS, typeAware, unsafeFix } from './_contract.js';
+import { lintFragments } from '../../specs/surface/package/lint-fragments.js';
 import { compile } from './compile.js';
+import { fragment, off, on, REASON_KINDS, typeAware, unsafeFix } from './decision.js';
 
 // `fragment()` is not exported, so the contract's invariants are a `self` rule: this suite audits every
 // fragment a module of `lint/` or `src/` exports, whether a profile carries it or not.
@@ -70,10 +70,10 @@ function problemsOf(one: Loose): string[] {
     ];
 }
 
-describe('_contract', () => {
+describe('decision', () => {
     test('every fragment lint/ declares keeps both invariants', async () => {
         // Given - every fragment a module of lint/ or src/ exports, profile or not
-        const declared = await lintFragments(resolve(import.meta.dirname, '..'));
+        const declared = await lintFragments(resolve(import.meta.dirname, '../..'));
         expect(declared.length).toBeGreaterThan(15);
 
         // Then - none breaks the contract

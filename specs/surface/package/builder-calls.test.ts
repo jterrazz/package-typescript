@@ -7,7 +7,7 @@ import { packedFiles, packedTree } from './packed-tree.js';
 
 // The module walk sees only what an import builds; a literal audience holds whoever calls the builder, and when.
 
-const CONTRACT = /(?:^|\/)_contract\.js$/u;
+const CONTRACT = /(?:^|\/)rulebook\/decision\.js$/u;
 
 const BUILDER = 'fragment';
 

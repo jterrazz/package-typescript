@@ -1,9 +1,9 @@
-import { allOn, fragment, off, on, scoped } from '../_contract.js';
+import { allOn, fragment, off, on, scoped } from './decision.js';
 
 const SIZE_SINCE = '11.0.0';
 
 export default fragment({
-    id: 'language/eslint',
+    id: 'eslint',
     audience: 'consumer',
     plugins: ['eslint'],
     overrides: [
