@@ -16,7 +16,7 @@ The code the package ships sits under `src/` and `lint/`, both spine folders ([R
 
 ## The judging layer
 
-`lint/` has one tree in every repository of the estate, and the Names pass holds every consumer to it ([Quality checks](06-quality-checks.md#the-lint-tree)): `index.js` is the only file at its root, and each folder below is one of eight.
+`lint/` has one tree in every repository of the estate, and the Names pass holds every consumer to it ([Quality checks](06-quality-checks.md#the-lint-tree)): only `index` files sit at its root — the entry, its declaration and its test — and each folder below is one of eight.
 
 | Folder of `lint/` | Holds                                                                                                                                                                                                                                                                                                                                                                      |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
