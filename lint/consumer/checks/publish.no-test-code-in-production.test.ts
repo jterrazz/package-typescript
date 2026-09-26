@@ -30,8 +30,8 @@ describe('publish.no-test-code-in-production', () => {
         expect(
             found(noTestCodeInProductionFindings({ chunks, manifest: {}, reader, root })),
         ).toStrictEqual([
-            'found: dist/index.js is compiled from src/domain/user.fixtures.ts, a test file',
             'found: dist/index.js is compiled from src/_seeds/users.ts, ground',
+            'found: dist/index.js is compiled from src/domain/user.fixtures.ts, a test file',
         ]);
     });
 
