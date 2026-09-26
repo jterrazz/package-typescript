@@ -28,10 +28,6 @@ describe('exports', () => {
         '@jterrazz/typescript/tsdown/build',
         '@jterrazz/typescript/tsdown/build.js',
         '@jterrazz/typescript/tsdown/bundle.js',
-        '@jterrazz/typescript/presets/tsconfig/node',
-        '@jterrazz/typescript/presets/tsconfig/node.json',
-        '@jterrazz/typescript/presets/tsdown/bundle',
-        '@jterrazz/typescript/presets/tsdown/bundle.js',
     ])('resolves %s', (specifier) => {
         // Given - a consumer-facing package subpath
         // Then - the specifier resolves to a real file

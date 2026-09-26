@@ -55,16 +55,6 @@
         "./tsdown/*.js": {
             "types": "./src/presets/tsdown/*.d.ts",
             "default": "./src/presets/tsdown/*.js"
-        },
-        "./presets/tsconfig/*": "./src/presets/tsconfig/*.json",
-        "./presets/tsconfig/*.json": "./src/presets/tsconfig/*.json",
-        "./presets/tsdown/*": {
-            "types": "./src/presets/tsdown/*.d.ts",
-            "default": "./src/presets/tsdown/*.js"
-        },
-        "./presets/tsdown/*.js": {
-            "types": "./src/presets/tsdown/*.d.ts",
-            "default": "./src/presets/tsdown/*.js"
         }
     },
     "publishConfig": {
