@@ -32,8 +32,8 @@ runs:
 
            RUN  Names (tree)
 
-          names-config-invalid  jterrazz.config.ts  `jterrazz.config.ts` holds a `typescript.roots` that is not an object mapping each folder to its reason
-          names-root-foreign  scripts/  `scripts/` is a root outside the spine — move it under src/, or declare it in jterrazz.config.ts's `typescript.roots` with its reason
+          names/jterrazz-config-loads  jterrazz.config.ts  `jterrazz.config.ts` holds a `typescript.roots` that is not an object mapping each folder to its reason
+          names/no-undeclared-root-folder  scripts/  `scripts/` is a root outside the spine — move it under src/, or declare it in jterrazz.config.ts's `typescript.roots` with its reason
           ✗ Failed with exit code 1
 
            RUN  Comments (density)

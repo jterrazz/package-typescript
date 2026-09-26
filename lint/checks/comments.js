@@ -9,8 +9,8 @@ import { commentSpansOf, isDirective, SOURCE } from '../reading/comments.js';
 import { ignorePatternsOf, orRefused, projectFiles, readText } from '../reading/project-files.js';
 
 const NAMESPACE = 'comments/';
-const RULE = 'comment-lines';
-const ENTRY = `${NAMESPACE}${RULE}`;
+const ENTRY = 'comments/no-prose-comment-line';
+const RULE = ENTRY.slice(NAMESPACE.length);
 const GENERATED = /@generated\b/u;
 const GENERATED_HEAD_LINES = 5;
 const TEST_MARKER = /^\/\/\s*(?:Given|When|Then) - /u;
@@ -111,7 +111,7 @@ if (import.meta.main) {
     const stray = judge(counts, recorded).filter((reason) => !reason.startsWith(`${ENTRY} `));
     if (count !== (recorded[ENTRY] ?? 0)) {
         const density = densityOf(count, sourceLines);
-        stdout.write(`${RULE}  ${LABEL}  ${verdictOf(count, recorded[ENTRY], density)}\n`);
+        stdout.write(`${ENTRY}  ${LABEL}  ${verdictOf(count, recorded[ENTRY], density)}\n`);
     }
     for (const reason of stray) {
         stdout.write(`baseline-ratchet  ${LABEL}  ${reason}\n`);

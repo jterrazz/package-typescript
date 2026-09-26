@@ -61,12 +61,12 @@ describe('baseline', () => {
     test("keeps every entry it does not own, whatever that entry's count", () => {
         // Given - a Names entry the linter half does not count
         const counts = { 'eslint/no-var': 1 };
-        const baseline = { 'eslint/no-var': 3, 'names/names-construct': 2 };
+        const baseline = { 'eslint/no-var': 3, 'names/no-language-construct-name': 2 };
 
         // Then - the Names entry is the Names pass's to re-record
         expect(tightened(counts, baseline, linterOwns)).toStrictEqual({
             'eslint/no-var': 1,
-            'names/names-construct': 2,
+            'names/no-language-construct-name': 2,
         });
     });
 
@@ -117,7 +117,8 @@ describe('baseline', () => {
 
     test('refuses to rewrite the section when the Names pass wrote no report', () => {
         // Given - a section holding a Names entry beside a linter one, and no Names report
-        const baseline = '{ "typescript": { "eslint/no-var": 1, "names/names-construct": 2 } }\n';
+        const baseline =
+            '{ "typescript": { "eslint/no-var": 1, "names/no-language-construct-name": 2 } }\n';
         const { report, root } = groundOf(baseline);
 
         // When - the section is recorded

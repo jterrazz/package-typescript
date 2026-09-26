@@ -61,8 +61,8 @@ describe('docs', () => {
         const tree = manual({ agents: null, files: [] });
 
         // Then - one sentence, not a cascade of every rule the absence breaks
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs-absent']);
-        expect(messageOf(tree, 'docs-absent')).toBe(
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/manual-present']);
+        expect(messageOf(tree, 'docs/manual-present')).toBe(
             'docs/ is missing — every repository carries its own manual, starting at docs/README.md',
         );
     });
@@ -80,8 +80,8 @@ describe('docs', () => {
         });
 
         // Then - the map is the one file an outside corpus points at
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs-map-missing']);
-        expect(messageOf(tree, 'docs-map-missing')).toBe(
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/map-present']);
+        expect(messageOf(tree, 'docs/map-present')).toBe(
             'docs/README.md is missing — the map is the one file an outside corpus points at',
         );
     });
@@ -100,7 +100,7 @@ describe('docs', () => {
         });
 
         // Then - the drift is named from the map's side
-        expect(messageOf(tree, 'docs-map-drift')).toBe(
+        expect(messageOf(tree, 'docs/map-matches-chapters')).toBe(
             'docs/README.md and the chapters disagree: 05-presets.md has no file',
         );
     });
@@ -112,7 +112,7 @@ describe('docs', () => {
         });
 
         // Then - the drift is named from the chapter's side
-        expect(messageOf(tree, 'docs-map-drift')).toBe(
+        expect(messageOf(tree, 'docs/map-matches-chapters')).toBe(
             'docs/README.md and the chapters disagree: 04-operating.md has no row',
         );
     });
@@ -126,7 +126,7 @@ describe('docs', () => {
         });
 
         // Then - the map routes to chapters and decisions/, and nothing else
-        expect(messageOf(tree, 'docs-map-foreign-link')).toBe(
+        expect(messageOf(tree, 'docs/map-links-only-chapters')).toBe(
             'docs/README.md links ../README.md: the map routes to its own chapters and nothing else',
         );
     });
@@ -155,7 +155,7 @@ describe('docs', () => {
         });
 
         // Then - the map routes to its own chapters and nothing else
-        expect(messageOf(tree, 'docs-map-foreign-link')).toBe(
+        expect(messageOf(tree, 'docs/map-links-only-chapters')).toBe(
             'docs/README.md links reference/index.md: the map routes to its own chapters and nothing else',
         );
     });
@@ -173,7 +173,7 @@ describe('docs', () => {
         });
 
         // Then - the mold is named, and the number it took is still judged
-        expect(messageOf(tree, 'docs-chapter-name')).toBe(
+        expect(messageOf(tree, 'docs/chapter-named-nn-kebab')).toBe(
             'docs/4-Lint_presets.md is not NN-kebab.md — two digits, lowercase words, single hyphens',
         );
     });
@@ -192,7 +192,7 @@ describe('docs', () => {
         });
 
         // Then - one sentence about the whole run
-        expect(messageOf(tree, 'docs-chapter-numbering')).toBe(
+        expect(messageOf(tree, 'docs/chapters-numbered-contiguously')).toBe(
             'chapter numbers run 01, 02, 03, 05, 05: they are contiguous from 01, one file per number, except that 04 may be absent',
         );
     });
@@ -205,7 +205,7 @@ describe('docs', () => {
         });
 
         // Then - the position names its owner
-        expect(messageOf(tree, 'docs-spine-name')).toBe(
+        expect(messageOf(tree, 'docs/spine-number-reserved')).toBe(
             'docs/01-getting-started.md takes number 01, which is reserved for 01-architecture.md',
         );
     });
@@ -218,8 +218,11 @@ describe('docs', () => {
         });
 
         // Then - developing and testing are each asked for
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs-spine-missing', 'docs-spine-missing']);
-        expect(messageOf(tree, 'docs-spine-missing')).toBe(
+        expect(rulesBrokenBy(tree)).toStrictEqual([
+            'docs/spine-chapters-present',
+            'docs/spine-chapters-present',
+        ]);
+        expect(messageOf(tree, 'docs/spine-chapters-present')).toBe(
             '02-developing.md is missing — the spine is architecture, developing, testing',
         );
     });
@@ -231,7 +234,7 @@ describe('docs', () => {
         });
 
         // Then - the reason it is asked for is named
-        expect(messageOf(tree, 'docs-operating-missing')).toBe(
+        expect(messageOf(tree, 'docs/operating-chapter-present-when-shipping')).toBe(
             '04-operating.md is missing — this repository ships an image (a Dockerfile)',
         );
     });
@@ -243,7 +246,7 @@ describe('docs', () => {
         });
 
         // Then - the third clause of the presence test speaks
-        expect(messageOf(tree, 'docs-operating-missing')).toBe(
+        expect(messageOf(tree, 'docs/operating-chapter-present-when-shipping')).toBe(
             '04-operating.md is missing — this repository ships a published package (package.json is not private)',
         );
     });
@@ -278,7 +281,7 @@ describe('docs', () => {
         });
 
         // Then - the numbering stays clean; only the presence test speaks
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs-operating-missing']);
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/operating-chapter-present-when-shipping']);
     });
 
     test('refuses a gap at 05 even though 04 may be absent', () => {
@@ -294,7 +297,7 @@ describe('docs', () => {
         });
 
         // Then - only 04 is excused; 05 still has to be there
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs-chapter-numbering']);
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/chapters-numbered-contiguously']);
     });
 
     test('names a chapter that is a journal, not a subject', () => {
@@ -310,7 +313,7 @@ describe('docs', () => {
         });
 
         // Then - the word is named, and so is where that content belongs
-        expect(messageOf(tree, 'docs-journal-chapter')).toBe(
+        expect(messageOf(tree, 'docs/chapter-names-a-subject')).toBe(
             "docs/04-design-exploration.md names a journal, not a subject — exploration; the record is an ADR, the history is git's",
         );
     });
@@ -320,7 +323,7 @@ describe('docs', () => {
         const tree = manual({ files: [...manual().files, 'docs/qa/', 'docs/qa/2026-01.md'] });
 
         // Then - the two are named
-        expect(messageOf(tree, 'docs-foreign-folder')).toBe(
+        expect(messageOf(tree, 'docs/no-unknown-subfolder')).toBe(
             'docs/qa/ is not one of decisions/, _assets/',
         );
     });
@@ -330,7 +333,7 @@ describe('docs', () => {
         const tree = manual({ files: [...manual().files, 'docs/automations.md'] });
 
         // Then - number it, or move it out of the chapter space
-        expect(messageOf(tree, 'docs-loose-file')).toBe(
+        expect(messageOf(tree, 'docs/no-loose-file')).toBe(
             'docs/automations.md is neither the map nor a chapter — number it, or move it under _assets/',
         );
     });
@@ -348,7 +351,7 @@ describe('docs', () => {
         });
 
         // Then - the mold of the name is stated
-        expect(messageOf(tree, 'docs-decision-name')).toBe(
+        expect(messageOf(tree, 'docs/decision-named-nnn-kebab')).toBe(
             'docs/decisions/the-second-call.md is not NNN-kebab.md',
         );
     });
@@ -366,7 +369,7 @@ describe('docs', () => {
         });
 
         // Then - the line it opens on, and the mold it owes
-        expect(messageOf(tree, 'docs-decision-heading')).toBe(
+        expect(messageOf(tree, 'docs/decision-heading-carries-its-number')).toBe(
             'docs/decisions/001-the-first-call.md opens on # The first call: the mold is "# ADR-001: Title"',
         );
     });
@@ -384,7 +387,7 @@ describe('docs', () => {
         });
 
         // Then - the same rule catches the disagreement
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs-decision-heading']);
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-heading-carries-its-number']);
     });
 
     test('names a decision outside the status vocabulary', () => {
@@ -400,7 +403,7 @@ describe('docs', () => {
         });
 
         // Then - the four the vocabulary holds
-        expect(messageOf(tree, 'docs-decision-status')).toBe(
+        expect(messageOf(tree, 'docs/decision-status-known')).toBe(
             'docs/decisions/001-the-first-call.md: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated',
         );
     });
@@ -434,7 +437,7 @@ describe('docs', () => {
         });
 
         // Then - the missing link is the whole complaint
-        expect(messageOf(tree, 'docs-decision-status')).toBe(
+        expect(messageOf(tree, 'docs/decision-status-known')).toBe(
             'docs/decisions/001-the-first-call.md: **Status:** names a successor but no link — write Superseded by [ADR-NNN](file.md)',
         );
     });
@@ -444,7 +447,7 @@ describe('docs', () => {
         const tree = manual({ files: [...manual().files, 'docs/decisions/'] });
 
         // Then - a folder with nothing to number has no sequence to break
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs-template-missing']);
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-template-present']);
     });
 
     test('passes a decisions folder holding only the template', () => {
@@ -482,7 +485,7 @@ describe('docs', () => {
         });
 
         // Then - the gap is named, from 001
-        expect(messageOf(tree, 'docs-decision-sequence')).toBe(
+        expect(messageOf(tree, 'docs/decisions-numbered-contiguously')).toBe(
             'docs/decisions/ numbers run 001, 003: they run from 001 with no gap — a decision that moved folders takes the next number where it lands',
         );
     });
@@ -512,7 +515,7 @@ describe('docs', () => {
         });
 
         // Then - the same rule, from an offset start
-        expect(messageOf(tree, 'docs-decision-sequence')).toBe(
+        expect(messageOf(tree, 'docs/decisions-numbered-contiguously')).toBe(
             'docs/decisions/ numbers run 006, 008: they run from 001 with no gap — a decision that moved folders takes the next number where it lands',
         );
     });
@@ -531,8 +534,8 @@ describe('docs', () => {
             },
         });
 
-        // Then - docs-decision-number still refuses it; the sequence itself is not the gap
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs-decision-number']);
+        // Then - docs/decision-number-unique still refuses it; the sequence itself is not the gap
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-number-unique']);
     });
 
     test('names a number two records claim', () => {
@@ -550,7 +553,7 @@ describe('docs', () => {
         });
 
         // Then - both claimants are named
-        expect(messageOf(tree, 'docs-decision-number')).toBe(
+        expect(messageOf(tree, 'docs/decision-number-unique')).toBe(
             'ADR-001 is claimed by 001-the-first-call.md and 001-the-same-call.md',
         );
     });
@@ -562,7 +565,7 @@ describe('docs', () => {
         });
 
         // Then - an index is a copy, and the queue is derived
-        expect(messageOf(tree, 'docs-decision-index')).toBe(
+        expect(messageOf(tree, 'docs/decision-listed-in-the-map')).toBe(
             'docs/decisions/README.md is an index — an index is a copy; the queue is derived (terra <brand> decisions)',
         );
     });
@@ -574,7 +577,7 @@ describe('docs', () => {
         });
 
         // Then - the mold sits where the record is written
-        expect(messageOf(tree, 'docs-template-missing')).toBe(
+        expect(messageOf(tree, 'docs/decision-template-present')).toBe(
             'docs/decisions/_template.md is missing — the mold sits where the record is written',
         );
     });
@@ -591,8 +594,8 @@ describe('docs', () => {
         });
 
         // Then - the API is the types, and the folder is refused once, by its own rule
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs-reference-generated']);
-        expect(messageOf(tree, 'docs-reference-generated')).toBe(
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/no-generated-reference']);
+        expect(messageOf(tree, 'docs/no-generated-reference')).toBe(
             'docs/reference/ is a generated API reference — the API is the types, and the manual holds no copy of them',
         );
     });
@@ -602,7 +605,7 @@ describe('docs', () => {
         const tree = manual({ agents: null });
 
         // Then - the brief is a map, not a manual
-        expect(messageOf(tree, 'docs-agents-route')).toBe(
+        expect(messageOf(tree, 'docs/agents-route-to-the-map')).toBe(
             'AGENTS.md does not route to docs/README.md — the brief is a map, not a manual',
         );
     });
@@ -612,7 +615,7 @@ describe('docs', () => {
         const tree = manual({ agents: '# Agent brief\n\nEverything you need is right here.\n' });
 
         // Then - the same rule
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs-agents-route']);
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/agents-route-to-the-map']);
     });
 
     test('names a chapter reaching into another repository', () => {
@@ -625,7 +628,7 @@ describe('docs', () => {
         });
 
         // Then - another repository's tree is not a place this manual may reach
-        expect(messageOf(tree, 'docs-cross-repo-link')).toBe(
+        expect(messageOf(tree, 'docs/no-cross-repository-link')).toBe(
             "docs/01-architecture.md links ../../package-test/docs/README.md: another repository's tree is not a place this manual may reach",
         );
     });

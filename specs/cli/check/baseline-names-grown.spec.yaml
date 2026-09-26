@@ -32,9 +32,9 @@ runs:
 
            RUN  Names (tree)
 
-          names-construct  src/constants.ts  `constants.ts` names a construct of the language — name it for the subject it holds
-          names-construct  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds
-          baseline-ratchet  jterrazz.baseline.json › typescript  names/names-construct is at 2, above its baseline of 1
+          names/no-language-construct-name  src/constants.ts  `constants.ts` names a construct of the language — name it for the subject it holds
+          names/no-language-construct-name  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds
+          baseline-ratchet  jterrazz.baseline.json › typescript  names/no-language-construct-name is at 2, above its baseline of 1
           Run 'typescript baseline' to record where the project actually stands.
           ✗ Failed with exit code 1
 

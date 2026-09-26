@@ -142,7 +142,7 @@ function auditBiome(line, number) {
         found: [
             {
                 message: `line ${number} spells a suppression for biome, which this toolchain never runs`,
-                rule: 'suppressions-spelling',
+                rule: 'suppressions/spelled-for-this-toolchain',
             },
         ],
     };
@@ -180,7 +180,7 @@ function eslintSpelling(number, named, settled) {
         message: settled
             ? `line ${number} spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it`
             : `line ${number} spells an eslint directive naming ${named.join(', ') || 'no rule'}, which this project does not run — name an oxlint rule`,
-        rule: 'suppressions-spelling',
+        rule: 'suppressions/spelled-for-this-toolchain',
     };
 }
 
@@ -190,7 +190,7 @@ function auditOxlintDirective(number, tail, named, config) {
     if (!hasReason(tail)) {
         found.push({
             message: `line ${number} disables ${named.join(', ') || 'every rule'} with no '${REASON.trim()} reason' after it`,
-            rule: 'suppressions-reason',
+            rule: 'suppressions/states-its-reason',
         });
     }
 
@@ -198,7 +198,7 @@ function auditOxlintDirective(number, tail, named, config) {
         if (standingOf(name, config) === 'dead') {
             found.push({
                 message: `line ${number} disables ${name}, which the resolved config does not have on`,
-                rule: 'suppressions-dead',
+                rule: 'suppressions/no-dead-suppression',
             });
         }
     }
@@ -217,14 +217,14 @@ function auditTypeScript(line, number) {
             fixed = fixed.replace('@ts-ignore', '@ts-expect-error');
             found.push({
                 message: `line ${number} spells @ts-ignore, which stays silent once the error is gone — @ts-expect-error does not`,
-                rule: 'suppressions-spelling',
+                rule: 'suppressions/spelled-for-this-toolchain',
             });
         }
 
         if (tail.replace(/\*\/\s*$/u, '').trim() === '') {
             found.push({
                 message: `line ${number} carries a TypeScript suppression with no description of what it is for`,
-                rule: 'suppressions-reason',
+                rule: 'suppressions/states-its-reason',
             });
         }
     }
@@ -315,7 +315,11 @@ if (import.meta.main) {
         }
 
         for (const violation of audited.violations) {
-            if (isFix && violation.rewritable && violation.rule === 'suppressions-spelling') {
+            if (
+                isFix &&
+                violation.rewritable &&
+                violation.rule === 'suppressions/spelled-for-this-toolchain'
+            ) {
                 continue;
             }
             stdout.write(`${violation.rule}  ${path}  ${violation.message}\n`);

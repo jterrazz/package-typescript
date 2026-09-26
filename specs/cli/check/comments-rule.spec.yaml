@@ -12,7 +12,7 @@ runs:
 
            RUN  Oxlint Check
           {{any}}
-          baseline-ratchet  jterrazz.baseline.json › typescript  jterrazz-typescript/comment-longer-than-function has 1 diagnostic(s) and no entry — it is new debt
+          baseline-ratchet  jterrazz.baseline.json › typescript  jterrazz-typescript/comment-no-longer-than-its-function has 1 diagnostic(s) and no entry — it is new debt
           Run 'typescript baseline' to record where the project actually stands.
           ✗ Failed with exit code 1
 
@@ -26,7 +26,7 @@ runs:
 
            RUN  Suppressions (directives)
 
-          suppressions-reason  src/ledger.ts  line 18 disables jterrazz-typescript/comment-longer-than-function with no '-- reason' after it
+          suppressions/states-its-reason  src/ledger.ts  line 18 disables jterrazz-typescript/comment-no-longer-than-its-function with no '-- reason' after it
           ✗ Failed with exit code 1
 
            RUN  Markdown (prose)

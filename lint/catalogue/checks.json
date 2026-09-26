@@ -107,7 +107,7 @@
         "audience": "consumer",
         "by": "exit",
         "channel": "runtime",
-        "id": "drift-unreasoned",
+        "id": "drift/off-rule-states-its-reason",
         "message": "carries no '// reason:'",
         "module": "lint/checks/drift.js"
     },
@@ -390,5 +390,13 @@
         "id": "command-usage",
         "message": "Usage: typescript <command>",
         "module": "bin/typescript.sh"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "renamed-id",
+        "message": "an id this release renamed",
+        "module": "lint/migration/rename.js"
     }
 ]

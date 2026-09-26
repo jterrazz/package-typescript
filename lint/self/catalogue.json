@@ -77,5 +77,13 @@
         "id": "module-walk",
         "names": ["walkModules", "built on import"],
         "why": "imports each module this package would publish in a child of its own, for the tarball audit"
+    },
+    {
+        "audience": "self",
+        "channel": "meta",
+        "home": "specs/surface/package/findings.test.ts",
+        "id": "findings-audit",
+        "names": ["the catalogue holds every id a pass or a rule prints"],
+        "why": "reads this package's own passes against its own catalogue"
     }
 ]

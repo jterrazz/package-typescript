@@ -87,8 +87,8 @@ describe('names-empty-directory', () => {
 
         // Then - the two empty trees are named at their top, each as a lesson, and nothing else is
         expect(names).toStrictEqual([
-            'names-directory-empty  src/abandoned/  found: `src/abandoned/` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it — `typescript fix` does — or put the file it was made for in it · read: docs/06-quality-checks.md#an-empty-directory',
-            'names-directory-empty  src/scaffold/  found: `src/scaffold/` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it — `typescript fix` does — or put the file it was made for in it · read: docs/06-quality-checks.md#an-empty-directory',
+            'names/no-empty-directory  src/abandoned/  found: `src/abandoned/` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it — `typescript fix` does — or put the file it was made for in it · read: docs/06-quality-checks.md#an-empty-directory',
+            'names/no-empty-directory  src/scaffold/  found: `src/scaffold/` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it — `typescript fix` does — or put the file it was made for in it · read: docs/06-quality-checks.md#an-empty-directory',
             '✗ Failed with exit code 1',
         ]);
     });

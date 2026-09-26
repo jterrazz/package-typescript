@@ -25,8 +25,8 @@ runs:
 
            RUN  Publish (packaging)
 
-          publish-exports-target  package.json  ./farewell.js resolves to nothing on disk
-          publish-files  package.json  ./greeter.js is outside "files" — it resolves here and 404s in a consumer
+          publish/export-target-exists  package.json  ./farewell.js resolves to nothing on disk
+          publish/export-covered-by-files  package.json  ./greeter.js is outside "files" — it resolves here and 404s in a consumer
           {{any}}
           Packing files with `npm pack`...
           Linting...

@@ -330,6 +330,11 @@ run_checks() {
 
     printf "${CYAN_BG}${BRIGHT_WHITE} START ${NC} ${LABEL}\n"
 
+    # An id a release renamed is rewritten where the project cites it, before any pass reads the tree.
+    if [ "$FIX_MODE" = true ]; then
+        node "$PACKAGE_ROOT/lint/migration/rename.js" . "${LINT_ARGS[@]}" --fix > "$tmp_dir/renamed.log" 2>&1
+    fi
+
     # Chosen before oxlint starts: whether the report is written depends on this list.
     local checker_members=()
     local checker_member_bins=()
@@ -641,6 +646,13 @@ run_checks() {
         node "$PACKAGE_ROOT/lint/ratchet/baseline.js" "$tmp_dir/lint.json" . \
             "${linter_exit[@]}" "${names_report[@]}" "${ratchet_fix[@]}" > "$tmp_dir/ratchet.log" 2>&1
         lint_status=$?
+        if [ "$FIX_MODE" = true ]; then
+            cat "$tmp_dir/renamed.log" "$tmp_dir/ratchet.log" > "$tmp_dir/ratchet-renamed.log"
+            mv "$tmp_dir/ratchet-renamed.log" "$tmp_dir/ratchet.log"
+        else
+            node "$PACKAGE_ROOT/lint/migration/rename.js" . "${LINT_ARGS[@]}" \
+                >> "$tmp_dir/ratchet.log" 2>&1 || lint_status=1
+        fi
         if [ "$lint_status" -eq 0 ] && [ ${#names_report[@]} -gt 0 ]; then
             lint_held=true
         else

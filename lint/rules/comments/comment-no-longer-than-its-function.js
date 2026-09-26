@@ -1,6 +1,6 @@
 import { EVERY_NAME, publishedNamesOf } from '../../reading/published-names.js';
 
-export const RULE_NAME = 'comment-longer-than-function';
+export const RULE_NAME = 'comment-no-longer-than-its-function';
 
 const DIRECTIVE = /^\s*\*?\s*(?:(?:es|ox)lint-(?:disable|enable)|@ts-|biome-ignore)/u;
 const FUNCTIONS = new Set(['ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression']);
@@ -127,7 +127,7 @@ function bodyLinesOf(body, lineOf) {
     return Math.max(closing - opening - 1, 1);
 }
 
-export const commentLongerThanFunction = {
+export const commentNoLongerThanItsFunction = {
     create(context) {
         const { sourceCode } = context;
         const lineOf = lineIndexOf(sourceCode.text);
@@ -161,7 +161,7 @@ export const commentLongerThanFunction = {
             longer: [
                 'found: a comment of {{lines}} lines on a function whose body holds {{body}}',
                 'why: the default is no comment — the code speaks through its names, and a comment longer than the code it sits on restates it, argues it or tells its history',
-                'fix: say it through the names — rename what needed the comment, and keep at most the one line the code cannot say (an invariant, a hazard, why a value is this one); if documenting context that lives outside the codebase is truly necessary (a policy, a ticket, a decision maker, an external system’s constraint), disable it explicitly on that line — `// oxlint-disable-next-line jterrazz-typescript/comment-longer-than-function -- <the external context>` — the reason is required',
+                'fix: say it through the names — rename what needed the comment, and keep at most the one line the code cannot say (an invariant, a hazard, why a value is this one); if documenting context that lives outside the codebase is truly necessary (a policy, a ticket, a decision maker, an external system’s constraint), disable it explicitly on that line — `// oxlint-disable-next-line jterrazz-typescript/comment-no-longer-than-its-function -- <the external context>` — the reason is required',
                 'read: docs/07-lint-presets.md#a-comment-no-longer-than-its-function',
             ].join(' · '),
         },

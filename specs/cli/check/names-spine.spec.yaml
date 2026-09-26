@@ -32,8 +32,8 @@ runs:
 
            RUN  Names (tree)
 
-          names-skill-file  skills/shop/references/rules.md  a skill is one `skills/<skill>/SKILL.md` — `skills/shop/references/rules.md` sits beside it
-          names-root-foreign  scripts/  `scripts/` is a root outside the spine — move it under src/, or declare it in jterrazz.config.ts's `typescript.roots` with its reason
+          names/skill-holds-only-skill-md  skills/shop/references/rules.md  a skill is one `skills/<skill>/SKILL.md` — `skills/shop/references/rules.md` sits beside it
+          names/no-undeclared-root-folder  scripts/  `scripts/` is a root outside the spine — move it under src/, or declare it in jterrazz.config.ts's `typescript.roots` with its reason
           ✗ Failed with exit code 1
 
            RUN  Comments (density)

@@ -40,7 +40,7 @@ Every pass that ran prints a `RUN` header and one verdict; a pass that did not a
 | Suppressions (directives) | a disable directive is misspelled, unreasoned, or names a dead rule                                                                                                                                                                                                                      |
 | Markdown (prose)          | a page cites a path that is gone, or a block runs past its floor                                                                                                                                                                                                                         |
 | Names (tree)              | a name says nothing, names a construct (`types.ts`), is written in half, a skill holds more than its `SKILL.md`, a root sits outside the spine undeclared, `jterrazz.config.ts` does not load, the `Makefile` misses one of the six gestures, or a directory is empty — `typescript fix` |
-| Comments (density)        | the source holds a different number of comment lines than `comments/comment-lines` records — delete or rename, `typescript fix` records a fall                                                                                                                                           |
+| Comments (density)        | the source holds a different number of comment lines than `comments/no-prose-comment-line` records — delete or rename, `typescript fix` records a fall                                                                                                                                   |
 | Secrets (credentials)     | a committed line looks like a live credential                                                                                                                                                                                                                                            |
 
 The drift report closes the run; its one refusal is a profile rule turned off with no `// reason:` beside it.
@@ -49,7 +49,7 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 
 - A file is named for its subject in the domain: never `types.ts`, `utils.ts`, `constants.ts`, nor a `*.types.ts` suffix. `index.ts` is a barrel and stays.
 - A file holds 300 lines and a function 60; a `*.spec.ts` is `@jterrazz/test`'s C33, at 400 — `docs/07-lint-presets.md`.
-- The default is no comment: a name carries the meaning. A comment longer than the function it sits on fails `jterrazz-typescript/comment-longer-than-function`; context that lives outside the codebase is kept with `// oxlint-disable-next-line jterrazz-typescript/comment-longer-than-function -- <the context>`.
+- The default is no comment: a name carries the meaning. A comment longer than the function it sits on fails `jterrazz-typescript/comment-no-longer-than-its-function`; context that lives outside the codebase is kept with `// oxlint-disable-next-line jterrazz-typescript/comment-no-longer-than-its-function -- <the context>`.
 - A suppression carries its reason: `// oxlint-disable-next-line <rule> -- why`, and `@ts-expect-error` with a description.
 - Every artefact lives under `.artifacts/<tool>/`; `dist/` is the product, not an artefact.
 - A `knip.json` ignore carries a `//` reason above it — the file is read as JSONC.

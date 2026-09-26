@@ -32,7 +32,7 @@ runs:
 
            RUN  Names (tree)
 
-          names-root-foreign  lint/  `lint/` holds the lint rules a package ships, and neither package.json nor its build publishes it — ship it, or move it under src/
+          names/no-undeclared-root-folder  lint/  `lint/` holds the lint rules a package ships, and neither package.json nor its build publishes it — ship it, or move it under src/
           ✗ Failed with exit code 1
 
            RUN  Comments (density)

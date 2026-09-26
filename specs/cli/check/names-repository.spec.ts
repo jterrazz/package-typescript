@@ -90,7 +90,7 @@ describe('names-repository', () => {
         expect(passOf(stdout, 'Names (tree)')).toContain('data/');
         expect(passOf(stdout, 'Secrets (credentials)')).toContain('data/NOTES.md');
         expect(JSON.parse(baseline)).toMatchObject({
-            typescript: { 'eslint/no-debugger': 1, 'names/names-root-foreign': 1 },
+            typescript: { 'eslint/no-debugger': 1, 'names/no-undeclared-root-folder': 1 },
         });
     });
 
@@ -193,7 +193,7 @@ describe('names-repository', () => {
         const names = namesPassOf(project);
 
         // Then - the contract only requires, so the extra targets are no finding, and the Names pass is green
-        expect(names).not.toContain('names-');
+        expect(names).not.toContain('names/');
         expect(names).toContain('✓ Passed');
     });
 
@@ -206,10 +206,10 @@ describe('names-repository', () => {
 
         // Then - the two missing gestures are named, one finding each, and the pass fails
         expect(names).toContain(
-            'names-makefile-target  Makefile  `make fix` has no rule — every repository answers `make` install, build, lint, fix, test and check',
+            'names/makefile-answers-every-gesture  Makefile  `make fix` has no rule — every repository answers `make` install, build, lint, fix, test and check',
         );
         expect(names).toContain(
-            'names-makefile-target  Makefile  `make check` has no rule — every repository answers `make` install, build, lint, fix, test and check',
+            'names/makefile-answers-every-gesture  Makefile  `make check` has no rule — every repository answers `make` install, build, lint, fix, test and check',
         );
         expect(names).not.toContain('`make install`');
         expect(names).not.toContain('`make test`');
@@ -225,7 +225,7 @@ describe('names-repository', () => {
 
         // Then - the absence is one finding
         expect(names).toContain(
-            'names-makefile-absent  Makefile  the repository has no Makefile — every repository answers `make` install, build, lint, fix, test and check',
+            'names/repository-has-makefile  Makefile  the repository has no Makefile — every repository answers `make` install, build, lint, fix, test and check',
         );
         expect(names).toContain('Failed with exit code 1');
     });
@@ -257,7 +257,7 @@ describe('names-repository', () => {
         const names = namesPassOf(project);
 
         // Then - the deleted file answers nothing, and the absence is one finding
-        expect(names).toContain('names-makefile-absent');
+        expect(names).toContain('names/repository-has-makefile');
         expect(names).toContain('Failed with exit code 1');
     });
 

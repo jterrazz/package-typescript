@@ -112,20 +112,20 @@ function findingsOf(files) {
             findings.push({
                 message: `\`${name}\` names no subject — it holds whatever nobody placed`,
                 path,
-                rule: 'names-grab-bag',
+                rule: 'names/no-grab-bag-name',
             });
         } else if (isConstruct(name) || (fileName !== undefined && hasConstructSuffix(fileName))) {
             findings.push({
                 message: `\`${fileName ?? name}\` names a construct of the language — name it for the subject it holds`,
                 path,
-                rule: 'names-construct',
+                rule: 'names/no-language-construct-name',
             });
         }
         if (isShortcut(name)) {
             findings.push({
                 message: `\`${name}\` is a word written in half — spell it whole`,
                 path,
-                rule: 'names-shortcut',
+                rule: 'names/no-abbreviated-word',
             });
         }
     }
@@ -271,7 +271,7 @@ function foreignRoot(root, prefix) {
                 ? `\`${prefix}lint/\` holds the lint rules a package ships, and neither ${manifestPath} nor its build publishes it — ship it, or move it under src/`
                 : `\`${prefix}${root}/\` is a root outside the spine — move it under src/, or declare it in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` with its reason`,
         path: `${prefix}${root}/`,
-        rule: 'names-root-foreign',
+        rule: 'names/no-undeclared-root-folder',
     };
 }
 
@@ -285,13 +285,13 @@ function declarationOf(declared, roots, prefix) {
             findings.push({
                 message: `\`${prefix}${root}/\` is declared in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` with no reason — say why the repository keeps it`,
                 path: `${prefix}${root}/`,
-                rule: 'names-root-unreasoned',
+                rule: 'names/declared-root-states-its-reason',
             });
         } else if (!roots.has(root)) {
             findings.push({
                 message: `\`${prefix}${root}/\` is declared in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` and holds no file — delete the entry`,
                 path: `${prefix}${root}/`,
-                rule: 'names-root-stale',
+                rule: 'names/declared-root-holds-files',
             });
         }
     }
@@ -308,7 +308,7 @@ function spineOf(files, unit, settings, prefix = '') {
         findings.push({
             message: `\`${prefix}${SETTINGS_FILE}\` ${settings.problem}`,
             path: `${prefix}${SETTINGS_FILE}`,
-            rule: 'names-config-invalid',
+            rule: 'names/jterrazz-config-loads',
         });
     }
 
@@ -322,7 +322,7 @@ function spineOf(files, unit, settings, prefix = '') {
             findings.push({
                 message: `a skill is one \`skills/<skill>/SKILL.md\` — \`${prefix}${file}\` sits beside it`,
                 path: `${prefix}${file}`,
-                rule: 'names-skill-file',
+                rule: 'names/skill-holds-only-skill-md',
             });
         }
     }
@@ -392,7 +392,7 @@ function makefileOf(root, files) {
             {
                 message: `the repository has no Makefile — every repository answers \`make\` ${gestures}`,
                 path: MAKEFILE,
-                rule: 'names-makefile-absent',
+                rule: 'names/repository-has-makefile',
             },
         ];
     }
@@ -402,7 +402,7 @@ function makefileOf(root, files) {
     return MAKE_TARGETS.filter((target) => !targets.has(target)).map((target) => ({
         message: `\`make ${target}\` has no rule — every repository answers \`make\` ${gestures}`,
         path: MAKEFILE,
-        rule: 'names-makefile-target',
+        rule: 'names/makefile-answers-every-gesture',
     }));
 }
 
@@ -415,13 +415,13 @@ function emptyDirectoryFinding(path) {
             'read: docs/06-quality-checks.md#an-empty-directory',
         ].join(' · '),
         path: `${path}/`,
-        rule: 'names-directory-empty',
+        rule: 'names/no-empty-directory',
     };
 }
 
 const NAMESPACE = 'names/';
 
-const codeOf = (rule) => `names(${rule})`;
+const codeOf = (rule) => `names(${rule.slice(NAMESPACE.length)})`;
 
 const VALUED_FLAGS = new Set(['--format', '--ignore-pattern', '--report']);
 
@@ -493,7 +493,7 @@ if (Object.keys(recorded).length === 0) {
 
 const counts = {};
 for (const { rule } of findings) {
-    counts[`${NAMESPACE}${rule}`] = (counts[`${NAMESPACE}${rule}`] ?? 0) + 1;
+    counts[rule] = (counts[rule] ?? 0) + 1;
 }
 
 if (argv.includes('--fix')) {

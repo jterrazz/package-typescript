@@ -1,5 +1,5 @@
 {
     "typescript": {
-        "comments/comment-lines": 3
+        "comments/no-prose-comment-line": 3
     }
 }

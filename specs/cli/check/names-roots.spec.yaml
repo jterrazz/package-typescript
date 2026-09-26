@@ -32,9 +32,9 @@ runs:
 
            RUN  Names (tree)
 
-          names-root-foreign  deploy/  `deploy/` is a root outside the spine — move it under src/, or declare it in jterrazz.config.ts's `typescript.roots` with its reason
-          names-root-unreasoned  docker/  `docker/` is declared in jterrazz.config.ts's `typescript.roots` with no reason — say why the repository keeps it
-          names-root-stale  migrations/  `migrations/` is declared in jterrazz.config.ts's `typescript.roots` and holds no file — delete the entry
+          names/no-undeclared-root-folder  deploy/  `deploy/` is a root outside the spine — move it under src/, or declare it in jterrazz.config.ts's `typescript.roots` with its reason
+          names/declared-root-states-its-reason  docker/  `docker/` is declared in jterrazz.config.ts's `typescript.roots` with no reason — say why the repository keeps it
+          names/declared-root-holds-files  migrations/  `migrations/` is declared in jterrazz.config.ts's `typescript.roots` and holds no file — delete the entry
           ✗ Failed with exit code 1
 
            RUN  Comments (density)

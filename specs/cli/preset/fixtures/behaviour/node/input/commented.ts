@@ -11,7 +11,7 @@ export function named(): number {
     return 2;
 }
 
-// oxlint-disable-next-line jterrazz-typescript/comment-longer-than-function -- ADR-7 of the payments team fixes this rounding
+// oxlint-disable-next-line jterrazz-typescript/comment-no-longer-than-its-function -- ADR-7 of the payments team fixes this rounding
 /**
  * Rounds half away from zero,
  * as the ledger requires.

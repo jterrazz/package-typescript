@@ -1,0 +1,297 @@
+[
+    {
+        "family": "comments",
+        "id": "jterrazz-typescript/comment-no-longer-than-its-function",
+        "sentence": "A comment run above a function is no longer than the function it documents."
+    },
+    {
+        "family": "comments",
+        "id": "comments/no-prose-comment-line",
+        "sentence": "The count of comment lines a project holds is exactly the count its baseline records."
+    },
+    {
+        "family": "suppressions",
+        "id": "suppressions/spelled-for-this-toolchain",
+        "sentence": "A suppression is spelled for a checker this toolchain runs: oxlint-disable, @ts-expect-error."
+    },
+    {
+        "family": "suppressions",
+        "id": "suppressions/states-its-reason",
+        "sentence": "Every suppression states the reason it exists."
+    },
+    {
+        "family": "suppressions",
+        "id": "suppressions/no-dead-suppression",
+        "sentence": "A directive names only a rule the resolved config has on."
+    },
+    {
+        "family": "names",
+        "id": "names/no-grab-bag-name",
+        "sentence": "A directory or file is named for the subject it holds, never a grab-bag word."
+    },
+    {
+        "family": "names",
+        "id": "names/no-language-construct-name",
+        "sentence": "A directory or file is named for its subject, never for a construct of the language."
+    },
+    {
+        "family": "names",
+        "id": "names/no-abbreviated-word",
+        "sentence": "Every word of a name is spelled whole."
+    },
+    {
+        "family": "tree",
+        "id": "names/no-undeclared-root-folder",
+        "sentence": "Every root folder is on the spine, imposed by a tool, or declared with its reason."
+    },
+    {
+        "family": "tree",
+        "id": "names/declared-root-states-its-reason",
+        "sentence": "A root declared in typescript.roots states why the repository keeps it."
+    },
+    {
+        "family": "tree",
+        "id": "names/declared-root-holds-files",
+        "sentence": "A root declared in typescript.roots holds a file git does not ignore."
+    },
+    {
+        "family": "tree",
+        "id": "names/jterrazz-config-loads",
+        "sentence": "The settings file jterrazz.config.ts loads, and its typescript section has the declared shape."
+    },
+    {
+        "family": "tree",
+        "id": "names/skill-holds-only-skill-md",
+        "sentence": "A skill is one skills/<skill>/SKILL.md and nothing beside it."
+    },
+    {
+        "family": "tree",
+        "id": "names/repository-has-makefile",
+        "sentence": "Every repository root carries a Makefile."
+    },
+    {
+        "family": "tree",
+        "id": "names/makefile-answers-every-gesture",
+        "sentence": "The Makefile writes a rule for each of the six gestures."
+    },
+    {
+        "family": "tree",
+        "id": "names/no-empty-directory",
+        "sentence": "No directory of the working copy is empty."
+    },
+    {
+        "family": "markdown",
+        "id": "markdown/link-resolves",
+        "sentence": "Every relative link of a page resolves on disk."
+    },
+    {
+        "family": "markdown",
+        "id": "markdown/path-resolves",
+        "sentence": "Every backticked repository path of a page names something on disk."
+    },
+    {
+        "family": "markdown",
+        "id": "markdown/chapter-reference-resolves",
+        "sentence": "Every chapter a skill names is one its package ships."
+    },
+    {
+        "family": "markdown",
+        "id": "markdown/prose-block-is-short",
+        "sentence": "A paragraph or a list item runs twelve lines at most."
+    },
+    {
+        "family": "markdown",
+        "id": "markdown/fenced-run-is-short",
+        "sentence": "A fenced block breathes within fifteen lines."
+    },
+    {
+        "family": "markdown",
+        "id": "markdown/long-section-has-subheadings",
+        "sentence": "A section over thirty prose lines is broken by a subheading or a list."
+    },
+    {
+        "family": "secrets",
+        "id": "secrets/no-private-key",
+        "sentence": "No committed file carries a private key block."
+    },
+    {
+        "family": "secrets",
+        "id": "secrets/no-aws-key",
+        "sentence": "No committed file carries an aws access key."
+    },
+    {
+        "family": "secrets",
+        "id": "secrets/no-github-token",
+        "sentence": "No committed file carries a github token."
+    },
+    {
+        "family": "secrets",
+        "id": "secrets/no-slack-token",
+        "sentence": "No committed file carries a slack token."
+    },
+    {
+        "family": "secrets",
+        "id": "secrets/no-tailscale-key",
+        "sentence": "No committed file carries a tailscale key."
+    },
+    {
+        "family": "secrets",
+        "id": "secrets/no-signed-jwt",
+        "sentence": "No committed file carries a signed jwt."
+    },
+    {
+        "family": "secrets",
+        "id": "secrets/no-grafana-token",
+        "sentence": "No committed file carries a grafana token."
+    },
+    {
+        "family": "secrets",
+        "id": "secrets/no-api-key",
+        "sentence": "No committed file carries an api key."
+    },
+    {
+        "family": "secrets",
+        "id": "secrets/no-iban",
+        "sentence": "No committed file carries a bank account number."
+    },
+    {
+        "family": "secrets",
+        "id": "secrets/no-service-token",
+        "sentence": "No committed file carries a service token."
+    },
+    {
+        "family": "docs",
+        "id": "docs/manual-present",
+        "sentence": "Every repository carries a docs/ manual."
+    },
+    {
+        "family": "docs",
+        "id": "docs/agents-route-to-the-map",
+        "sentence": "The root AGENTS.md routes to the manual's map."
+    },
+    {
+        "family": "docs",
+        "id": "docs/map-present",
+        "sentence": "The manual opens on its map, docs/README.md."
+    },
+    {
+        "family": "docs",
+        "id": "docs/map-matches-chapters",
+        "sentence": "The map links every chapter, and only the chapters there are."
+    },
+    {
+        "family": "docs",
+        "id": "docs/map-links-only-chapters",
+        "sentence": "The map links nothing but chapters and decisions/."
+    },
+    {
+        "family": "docs",
+        "id": "docs/chapter-named-nn-kebab",
+        "sentence": "A chapter is named NN-kebab.md."
+    },
+    {
+        "family": "docs",
+        "id": "docs/chapters-numbered-contiguously",
+        "sentence": "Chapters are numbered without a gap, one number per file."
+    },
+    {
+        "family": "docs",
+        "id": "docs/spine-number-reserved",
+        "sentence": "A reserved spine number holds its spine chapter alone."
+    },
+    {
+        "family": "docs",
+        "id": "docs/spine-chapters-present",
+        "sentence": "The architecture, developing and testing chapters are present."
+    },
+    {
+        "family": "docs",
+        "id": "docs/operating-chapter-present-when-shipping",
+        "sentence": "A repository that ships an image or a package carries its operating chapter."
+    },
+    {
+        "family": "docs",
+        "id": "docs/chapter-names-a-subject",
+        "sentence": "A chapter is named for a subject, never for the state of a piece of work."
+    },
+    {
+        "family": "docs",
+        "id": "docs/no-loose-file",
+        "sentence": "Every file directly under docs/ is the map or a chapter."
+    },
+    {
+        "family": "docs",
+        "id": "docs/no-unknown-subfolder",
+        "sentence": "The manual holds no subfolder but decisions/ and _assets/."
+    },
+    {
+        "family": "docs",
+        "id": "docs/no-generated-reference",
+        "sentence": "The manual holds no generated API reference."
+    },
+    {
+        "family": "docs",
+        "id": "docs/no-cross-repository-link",
+        "sentence": "No link of the manual reaches into another repository's tree."
+    },
+    {
+        "family": "docs",
+        "id": "docs/decision-named-nnn-kebab",
+        "sentence": "A decision record is named NNN-kebab.md."
+    },
+    {
+        "family": "docs",
+        "id": "docs/decision-heading-carries-its-number",
+        "sentence": "A decision record opens on # ADR-NNN: Title, with its own number."
+    },
+    {
+        "family": "docs",
+        "id": "docs/decision-number-unique",
+        "sentence": "One ADR number belongs to one record."
+    },
+    {
+        "family": "docs",
+        "id": "docs/decisions-numbered-contiguously",
+        "sentence": "Decision records are numbered from 001 without a gap."
+    },
+    {
+        "family": "docs",
+        "id": "docs/decision-status-known",
+        "sentence": "A decision record states a status from the closed vocabulary."
+    },
+    {
+        "family": "docs",
+        "id": "docs/decision-listed-in-the-map",
+        "sentence": "The decisions folder keeps no hand-written index; the map lists the records."
+    },
+    {
+        "family": "docs",
+        "id": "docs/decision-template-present",
+        "sentence": "The decisions folder carries its _template.md."
+    },
+    {
+        "family": "publishing",
+        "id": "publish/export-target-exists",
+        "sentence": "Every target the exports map names exists on disk."
+    },
+    {
+        "family": "publishing",
+        "id": "publish/export-covered-by-files",
+        "sentence": "Every target the exports map names is published by files."
+    },
+    {
+        "family": "publishing",
+        "id": "publish/build-succeeds",
+        "sentence": "The build the guard reads succeeds."
+    },
+    {
+        "family": "publishing",
+        "id": "publish/no-test-code-in-production",
+        "sentence": "No shipped file is compiled from test material."
+    },
+    {
+        "family": "drift",
+        "id": "drift/off-rule-states-its-reason",
+        "sentence": "A rule the profile has on, turned off by the project, carries its // reason:."
+    }
+]

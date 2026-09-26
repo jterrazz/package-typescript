@@ -29,8 +29,8 @@ runs:
 
            RUN  Markdown (prose)
 
-          markdown-link-missing  README.md  notes/design.md resolves to nothing on disk
-          markdown-path-missing  README.md  `lib/greeter.js` names nothing on disk
+          markdown/link-resolves  README.md  notes/design.md resolves to nothing on disk
+          markdown/path-resolves  README.md  `lib/greeter.js` names nothing on disk
           ✗ Failed with exit code 1
 
            RUN  Names (tree)

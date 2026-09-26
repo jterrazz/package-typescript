@@ -4,9 +4,9 @@ runs:
     - command: docs-layout .
       exit: 1
       stdout: |
-          docs-decision-name  docs/decisions/rejected-ideas.md  docs/decisions/rejected-ideas.md is not NNN-kebab.md
-          docs-decision-status  docs/decisions/001-the-same-call.md  docs/decisions/001-the-same-call.md: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated
-          docs-decision-heading  docs/decisions/002-the-second-call.md  docs/decisions/002-the-second-call.md opens on # The second call: the mold is "# ADR-002: Title"
-          docs-decision-number  docs/decisions/  ADR-001 is claimed by 001-the-first-call.md and 001-the-same-call.md
-          docs-decision-index  docs/decisions/README.md  docs/decisions/README.md is an index — an index is a copy; the queue is derived (terra <brand> decisions)
-          docs-template-missing  docs/decisions/_template.md  docs/decisions/_template.md is missing — the mold sits where the record is written
+          docs/decision-named-nnn-kebab  docs/decisions/rejected-ideas.md  docs/decisions/rejected-ideas.md is not NNN-kebab.md
+          docs/decision-status-known  docs/decisions/001-the-same-call.md  docs/decisions/001-the-same-call.md: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated
+          docs/decision-heading-carries-its-number  docs/decisions/002-the-second-call.md  docs/decisions/002-the-second-call.md opens on # The second call: the mold is "# ADR-002: Title"
+          docs/decision-number-unique  docs/decisions/  ADR-001 is claimed by 001-the-first-call.md and 001-the-same-call.md
+          docs/decision-listed-in-the-map  docs/decisions/README.md  docs/decisions/README.md is an index — an index is a copy; the queue is derived (terra <brand> decisions)
+          docs/decision-template-present  docs/decisions/_template.md  docs/decisions/_template.md is missing — the mold sits where the record is written

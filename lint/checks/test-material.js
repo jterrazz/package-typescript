@@ -177,7 +177,7 @@ function finding(file, found, fix) {
             `read: ${READ}`,
         ].join(' · '),
         path: file,
-        rule: 'publish-test-material',
+        rule: 'publish/no-test-code-in-production',
     };
 }
 

@@ -83,14 +83,14 @@ let failed = false;
 for (const target of [...new Set(targets)].toSorted((left, right) => (left < right ? -1 : 1))) {
     if (!resolvesOnDisk(root, target)) {
         stdout.write(
-            `publish-exports-target  package.json  ${target} resolves to nothing on disk\n`,
+            `publish/export-target-exists  package.json  ${target} resolves to nothing on disk\n`,
         );
         failed = true;
         continue;
     }
     if (!isPacked(files, target)) {
         stdout.write(
-            `publish-files  package.json  ${target} is outside "files" — it resolves here and 404s in a consumer\n`,
+            `publish/export-covered-by-files  package.json  ${target} is outside "files" — it resolves here and 404s in a consumer\n`,
         );
         failed = true;
     }
@@ -109,7 +109,7 @@ async function chunksOrFinding(build) {
 
         return {
             chunks: null,
-            line: `publish-build  package.json  found: the build failed — ${reason} · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else \`typescript bundle\` · read: @jterrazz/typescript's docs/06-quality-checks.md#the-build-guard\n`,
+            line: `publish/build-succeeds  package.json  found: the build failed — ${reason} · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else \`typescript bundle\` · read: @jterrazz/typescript's docs/06-quality-checks.md#the-build-guard\n`,
         };
     }
 }
@@ -131,7 +131,7 @@ if (build !== null) {
     const reader = 'reader' in loaded ? loaded.reader : null;
     if (reader === null) {
         stdout.write(
-            `publish-test-material: nothing to judge${member === '' ? '' : ` in ${member}`} — ${NOTHING_TO_JUDGE[loaded.reason](loaded)}\n`,
+            `publish/no-test-code-in-production: nothing to judge${member === '' ? '' : ` in ${member}`} — ${NOTHING_TO_JUDGE[loaded.reason](loaded)}\n`,
         );
     }
     const built = await chunksOrFinding(build);

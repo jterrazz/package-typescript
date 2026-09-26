@@ -6,7 +6,8 @@
         "lint/checks/docs.cli.js",
         "lint/checks/gitignore.js",
         "src/cli/merge-knip-config.js",
-        "lint/reading/workspace-members.js"
+        "lint/reading/workspace-members.js",
+        "lint/migration/rename.js"
     ],
     "ignoreBinaries": ["make"]
 }

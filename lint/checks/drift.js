@@ -234,7 +234,7 @@ stdout.write(
 
 for (const rule of unreasoned) {
     stdout.write(
-        `\ndrift-unreasoned  ${configName ?? 'oxlint.config'}  ${rule} is off and the line that turns it off carries no '// reason:'\n`,
+        `\ndrift/off-rule-states-its-reason  ${configName ?? 'oxlint.config'}  ${rule} is off and the line that turns it off carries no '// reason:'\n`,
     );
 }
 

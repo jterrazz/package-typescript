@@ -94,34 +94,34 @@ Every repository carries the same manual — a map at `docs/README.md`, a fixed 
 
 Its unit is the **repository**, not the package: a manual answers for a whole tree, and only its root carries the `AGENTS.md` that routes into it. So the pass asks its question exactly where a repository is — a `.git` beside the project, a file in a worktree and a directory in a clone — and nowhere else. A fixture directory is not a repository, and neither is a workspace member linted on its own.
 
-Nothing else gates it. A repository with **no** `docs/` at all is not exempt; it is the case the rule exists for, and it fails on `docs-absent`.
+Nothing else gates it. A repository with **no** `docs/` at all is not exempt; it is the case the rule exists for, and it fails on `docs/manual-present`.
 
 The spine itself is language-agnostic doctrine, and it is [`jterrazz-studio`'s](https://github.com/jterrazz/jterrazz-studio/blob/main/docs/08-repo-structure.md): the four fixed names, the subfolders, the water line between a repository's manual and its brand's wiki. What this chapter owns is the rule ids and what each one refuses. The sentence a rule prints is not here — it lives in the engine, so a page and a gate cannot drift.
 
-| Rule                       | Refuses                                                                    |
-| -------------------------- | -------------------------------------------------------------------------- |
-| `docs-absent`              | no `docs/` at the repository root                                          |
-| `docs-map-missing`         | a `docs/` with no `README.md`                                              |
-| `docs-map-drift`           | a map and a chapter list that are not bijective                            |
-| `docs-map-foreign-link`    | a map link to anything but a chapter or `decisions/`                       |
-| `docs-chapter-name`        | a chapter that is not `NN-kebab.md`                                        |
-| `docs-chapter-numbering`   | numbers that skip (04 aside), or one number on two files                   |
-| `docs-spine-name`          | a chapter sitting on a reserved number under another name                  |
-| `docs-spine-missing`       | an absent `01-architecture.md`, `02-developing.md` or `03-testing.md`      |
-| `docs-operating-missing`   | an absent `04-operating.md` when the presence test below fires             |
-| `docs-journal-chapter`     | a chapter named for the state of a piece of work, not for a subject        |
-| `docs-foreign-folder`      | a subfolder of `docs/` other than `decisions/` and `_assets/`              |
-| `docs-reference-generated` | a `docs/reference/` — a generated API reference is a copy of the types     |
-| `docs-loose-file`          | a file directly under `docs/` that is neither the map nor a chapter        |
-| `docs-decision-name`       | a record in `decisions/` that is not `NNN-kebab.md`                        |
-| `docs-decision-heading`    | a record opening on anything but `# ADR-NNN: Title`, or on another number  |
-| `docs-decision-status`     | a `**Status:**` that is absent or outside the closed vocabulary            |
-| `docs-decision-sequence`   | a `decisions/` folder whose numbers skip, or start above 001               |
-| `docs-decision-number`     | one ADR number claimed by two records                                      |
-| `docs-decision-index`      | a hand-written `decisions/README.md` — an index is a copy                  |
-| `docs-template-missing`    | a `decisions/` with no `_template.md` beside the records                   |
-| `docs-agents-route`        | a repository whose root `AGENTS.md` is absent or does not route to the map |
-| `docs-cross-repo-link`     | a link from `docs/` reaching into another repository's tree                |
+| Rule                                           | Refuses                                                                    |
+| ---------------------------------------------- | -------------------------------------------------------------------------- |
+| `docs/manual-present`                          | no `docs/` at the repository root                                          |
+| `docs/map-present`                             | a `docs/` with no `README.md`                                              |
+| `docs/map-matches-chapters`                    | a map and a chapter list that are not bijective                            |
+| `docs/map-links-only-chapters`                 | a map link to anything but a chapter or `decisions/`                       |
+| `docs/chapter-named-nn-kebab`                  | a chapter that is not `NN-kebab.md`                                        |
+| `docs/chapters-numbered-contiguously`          | numbers that skip (04 aside), or one number on two files                   |
+| `docs/spine-number-reserved`                   | a chapter sitting on a reserved number under another name                  |
+| `docs/spine-chapters-present`                  | an absent `01-architecture.md`, `02-developing.md` or `03-testing.md`      |
+| `docs/operating-chapter-present-when-shipping` | an absent `04-operating.md` when the presence test below fires             |
+| `docs/chapter-names-a-subject`                 | a chapter named for the state of a piece of work, not for a subject        |
+| `docs/no-unknown-subfolder`                    | a subfolder of `docs/` other than `decisions/` and `_assets/`              |
+| `docs/no-generated-reference`                  | a `docs/reference/` — a generated API reference is a copy of the types     |
+| `docs/no-loose-file`                           | a file directly under `docs/` that is neither the map nor a chapter        |
+| `docs/decision-named-nnn-kebab`                | a record in `decisions/` that is not `NNN-kebab.md`                        |
+| `docs/decision-heading-carries-its-number`     | a record opening on anything but `# ADR-NNN: Title`, or on another number  |
+| `docs/decision-status-known`                   | a `**Status:**` that is absent or outside the closed vocabulary            |
+| `docs/decisions-numbered-contiguously`         | a `decisions/` folder whose numbers skip, or start above 001               |
+| `docs/decision-number-unique`                  | one ADR number claimed by two records                                      |
+| `docs/decision-listed-in-the-map`              | a hand-written `decisions/README.md` — an index is a copy                  |
+| `docs/decision-template-present`               | a `decisions/` with no `_template.md` beside the records                   |
+| `docs/agents-route-to-the-map`                 | a repository whose root `AGENTS.md` is absent or does not route to the map |
+| `docs/no-cross-repository-link`                | a link from `docs/` reaching into another repository's tree                |
 
 Three things about the roster are decisions, not details:
 
@@ -260,13 +260,17 @@ The count is every finding the section holds today — the linter's and the Name
 
 ### One owner per entry
 
-The ratchet splits by owner, and each package's command writes its own section of the one file. The `typescript` section holds oxlint's own rules, the Names (tree) pass's `names/*` entries ([its section](#the-names-tree-pass)) and the Comments (density) pass's `comments/comment-lines` ([its section](#the-comments-density-pass)). Every `jterrazz(*)` rule and every conventions-checker finding is the `test` section's, in the same shape, which `@jterrazz/test` writes and judges. `typescript baseline` rewrites its own section and leaves every other byte of the file as it was.
+The ratchet splits by owner, and each package's command writes its own section of the one file. The `typescript` section holds oxlint's own rules, the Names (tree) pass's `names/*` entries ([its section](#the-names-tree-pass)) and the Comments (density) pass's `comments/no-prose-comment-line` ([its section](#the-comments-density-pass)). Every `jterrazz(*)` rule and every conventions-checker finding is the `test` section's, in the same shape, which `@jterrazz/test` writes and judges. `typescript baseline` rewrites its own section and leaves every other byte of the file as it was.
 
 One oxlint run carries both packages' rules, because a consumer composes `@jterrazz/test`'s `testing` fragment into its config. One filter on the plugin name keeps any finding from being counted twice: a diagnostic whose code is `jterrazz(<rule>)` is set aside before this package counts, and the oxlint pass is green when those are all the linter reported. An entry under `jterrazz/` or `jterrazz-check/` in the `typescript` section is refused as misplaced, naming `jterrazz.baseline.json › test` — a finding lives in one section and answers to one judge.
 
 The judge is told oxlint's exit code, so the split never forgives a failure no diagnostic carries: a linter that exits non-zero with an empty report failed on something else (a config it could not load), and the pass stays red. Severity is never read — a finding a release ships at `warn` is exactly the debt a ratchet exists to hold down.
 
-`fix` is judged by the same section as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Before it judges, `fix` re-records what FELL: an entry whose count is below it is lowered to that count, and one at zero is dropped, each named in its pass — `re-recorded jterrazz.baseline.json › typescript › <rule> <was> → <now>`, the linter's entries under the Oxlint pass, the `names/*` ones under the Names pass and `comments/comment-lines` under the Comments pass. It never raises an entry nor adds a key: debt that grew is written only by `typescript baseline`, by hand. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green. The pair reads the same tree where there is NO section either: both count the diagnostics, both print the same lines, and neither reads severity.
+`fix` is judged by the same section as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Before it judges, `fix` re-records what FELL: an entry whose count is below it is lowered to that count, and one at zero is dropped, each named in its pass — `re-recorded jterrazz.baseline.json › typescript › <rule> <was> → <now>`, the linter's entries under the Oxlint pass, the `names/*` ones under the Names pass and `comments/no-prose-comment-line` under the Comments pass. It never raises an entry nor adds a key: debt that grew is written only by `typescript baseline`, by hand. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green. The pair reads the same tree where there is NO section either: both count the diagnostics, both print the same lines, and neither reads severity.
+
+### A renamed id
+
+An id is the name a finding, a baseline entry and a disable directive all share, so a release that renames one leaves every project citing the old name behind. The Oxlint pass refuses that citation under `renamed-id`, naming the new id — an entry of `jterrazz.baseline.json › typescript` keyed by an old id, and an `oxlint-disable*` directive naming one — and `typescript fix` rewrites both before any pass reads the tree, printing a `renamed` line for each. The map from old to new is `lint/migration/renamed-ids.js`, and it holds only what a project can cite: the rule `jterrazz-typescript/comment-longer-than-function`, the `comments/comment-lines` entry and the eleven `names/names-*` entries. It is deleted, with its mover, by the major that follows.
 
 ### Recording it
 
@@ -281,7 +285,7 @@ Two more refusals keep the file honest, both in the Oxlint pass:
 - `baseline-unreadable` — a `jterrazz.baseline.json` that is not JSON, or that holds a top-level key whose value is not a section of counts: a flat `{ "<rule>": <count> }` copied from an older file is the common case.
 - `baseline-legacy` — a `typescript.baseline.json`, `test.baseline.json` or `oxlint.baseline.json` still at the root. None is read; each is named with the section its entries move to, and the pass stays red until it is gone.
 
-This repository's `typescript` section holds three entries. `eslint/max-lines`: the size caps turned on in 11.0.0 found nine files past 300 lines in its own source, splitting each is a change of its own, and the entry is what stops a tenth. `jterrazz-typescript/comment-longer-than-function` and `comments/comment-lines` are the comment debt the two comment guards found on the day they arrived, burned down file by file. Turning type-aware linting on had found seven diagnostics, and those were fixed rather than recorded. The toolchain is consumer #1 of the rulebook it ships, so its own tree carries only the debt a new rule found, and only until it is paid.
+This repository's `typescript` section holds three entries. `eslint/max-lines`: the size caps turned on in 11.0.0 found nine files past 300 lines in its own source, splitting each is a change of its own, and the entry is what stops a tenth. `jterrazz-typescript/comment-no-longer-than-its-function` and `comments/no-prose-comment-line` are the comment debt the two comment guards found on the day they arrived, burned down file by file. Turning type-aware linting on had found seven diagnostics, and those were fixed rather than recorded. The toolchain is consumer #1 of the rulebook it ships, so its own tree carries only the debt a new rule found, and only until it is paid.
 
 ## The Publish (packaging) pass
 
@@ -289,12 +293,12 @@ Every mistake this pass refuses is invisible in the repository and fatal in the 
 
 It runs once per package the registry would accept — one that names an entry (`exports`, `main`) or a `publishConfig` and never says it is `private`. A private package, and a workspace root that only holds members, have no tarball to be judged on.
 
-| Rule                     | Refuses                                                    |
-| ------------------------ | ---------------------------------------------------------- |
-| `publish-exports-target` | an `exports`, `main` or `types` target that is not on disk |
-| `publish-files`          | a target `files` does not reach — it 404s in a consumer    |
-| `publish-test-material`  | a shipped file compiled from test material                 |
-| `publish-build`          | a build the guard below cannot run, because it fails       |
+| Rule                                 | Refuses                                                    |
+| ------------------------------------ | ---------------------------------------------------------- |
+| `publish/export-target-exists`       | an `exports`, `main` or `types` target that is not on disk |
+| `publish/export-covered-by-files`    | a target `files` does not reach — it 404s in a consumer    |
+| `publish/no-test-code-in-production` | a shipped file compiled from test material                 |
+| `publish/build-succeeds`             | a build the guard below cannot run, because it fails       |
 
 Beside them run `publint --strict` on the packed tarball and `attw --pack . --profile esm-only` on the declarations, and each prints its own report verbatim when it refuses.
 
@@ -304,7 +308,7 @@ The first two rule ids overlap publint on purpose. They read the SOURCE TREE and
 
 ### The build guard
 
-A published build never carries test material, and `publish-test-material` refuses one that does. The pass builds the package as it builds — its own `tsdown.config.*`, else the `bundle` preset over the entries its `exports` map earns — and reads each chunk's module ids off a `generateBundle` hook.
+A published build never carries test material, and `publish/no-test-code-in-production` refuses one that does. The pass builds the package as it builds — its own `tsdown.config.*`, else the `bundle` preset over the entries its `exports` map earns — and reads each chunk's module ids off a `generateBundle` hook.
 
 Without a config of its own, that build IS `typescript bundle`'s: the same preset file, and the entries the same [entry-points.js](../lint/reading/entry-points.js) reads off the map. Each chunk is named as the build writes it — `.js` and `.cjs` under the preset, and `.mjs` for an ESM chunk of a config that sets no extension — so `files` is asked about the path the tarball holds.
 
@@ -320,9 +324,9 @@ What test material IS is `@jterrazz/test`'s alone: the two readers are the ones 
 
 The readers come from the install the package resolves, found by the walk [test-package.js](../lint/reading/test-package.js) keeps, and from nowhere else. The toolchain's own `@jterrazz/test` is never asked: it is the toolchain's dependency, not the package's, and it would judge a package by a definition the package never chose.
 
-A package with a build that resolves none, or resolves one before 17.0.0 that publishes no reader, has nothing to judge. The pass says so in one line, `publish-test-material: nothing to judge`, with the reason and, for a workspace member, `in <member>` — and builds all the same, so a build that fails still fails the pass. An install whose `./oxlint` entry throws on import is named for that, with the first line of what it threw, rather than taken for one older than 17.0.0. A package with no build — no config of its own and no target under `dist/`, like this package — hears nothing: there is no build to judge, and none to fail.
+A package with a build that resolves none, or resolves one before 17.0.0 that publishes no reader, has nothing to judge. The pass says so in one line, `publish/no-test-code-in-production: nothing to judge`, with the reason and, for a workspace member, `in <member>` — and builds all the same, so a build that fails still fails the pass. An install whose `./oxlint` entry throws on import is named for that, with the first line of what it threw, rather than taken for one older than 17.0.0. A package with no build — no config of its own and no target under `dist/`, like this package — hears nothing: there is no build to judge, and none to fail.
 
-A build that fails is a finding too. `publish-build` names tsdown's first error in the same four parts, and the pass carries on to publint and attw, so one run still says everything else it knows.
+A build that fails is a finding too. `publish/build-succeeds` names tsdown's first error in the same four parts, and the pass carries on to publint and attw, so one run still says everything else it knows.
 
 ## The Architecture (layer map) pass
 
@@ -369,7 +373,7 @@ The versions line reports only what deviates. The full table is `typescript doct
 
 ### The one thing it refuses
 
-`drift-unreasoned`: a rule the profile has ON, turned off by the consumer's config, with no `// reason:` comment on the line that turns it off.
+`drift/off-rule-states-its-reason`: a rule the profile has ON, turned off by the consumer's config, with no `// reason:` comment on the line that turns it off.
 
 A project may know things the profile does not, so turning a rule off is allowed. Doing it silently is not: the reason is what the next reader — or the next bump — needs, and a config line is where it belongs. Everything else in the report only ever reports.
 
@@ -377,15 +381,15 @@ A project may know things the profile does not, so turning a rule off is allowed
 
 Every place the project told a checker to look away. A suppression is a decision, and a decision the next reader cannot re-derive is a defect waiting to be re-introduced, so three rules hold the whole surface.
 
-| Rule                    | Refuses                                                                           |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| `suppressions-spelling` | an `eslint-disable*`, a `biome-ignore` or a `@ts-ignore` — none of those run here |
-| `suppressions-reason`   | an `oxlint-disable*` with no `-- reason`, or a `@ts-expect-error` with no text    |
-| `suppressions-dead`     | a directive naming a rule the resolved config does not have on                    |
+| Rule                                      | Refuses                                                                           |
+| ----------------------------------------- | --------------------------------------------------------------------------------- |
+| `suppressions/spelled-for-this-toolchain` | an `eslint-disable*`, a `biome-ignore` or a `@ts-ignore` — none of those run here |
+| `suppressions/states-its-reason`          | an `oxlint-disable*` with no `-- reason`, or a `@ts-expect-error` with no text    |
+| `suppressions/no-dead-suppression`        | a directive naming a rule the resolved config does not have on                    |
 
 A directive is read only where a checker reads one: at the OPENING of a comment. Prose about a suppression, and a string carrying its spelling — the gate's own source is made of both — is not a suppression, and neither oxlint nor tsc would treat it as one.
 
-`suppressions-dead` asks `oxlint --print-config` for the project's resolved rules, and that map holds what the config DECIDED rather than oxlint's whole catalogue: a rule missing from it is a rule this project does not run, which is the only question being asked. The map is resolved PER FILE, the way oxlint resolves it: the top-level `rules`, then every `overrides` entry whose globs match that path, in the order they were written, the last one winning. A rule armed only in an override — a test-file rule, a layer's `no-restricted-imports` — is therefore live inside the files that override names and dead outside them, and a rule one override turns off and a later one arms again is live wherever the later one reaches. A JS plugin's rules never appear there at all, so a directive naming one — `jterrazz/b9w-product-command`, say — is left alone rather than called dead on evidence the gate does not have. That holds for the whole namespace, `allow` entries and all: a config that turns three of the plugin's rules off puts those three names in the map and still none of the live ones, so a namespace the printed `plugins` list does not carry answers nothing.
+`suppressions/no-dead-suppression` asks `oxlint --print-config` for the project's resolved rules, and that map holds what the config DECIDED rather than oxlint's whole catalogue: a rule missing from it is a rule this project does not run, which is the only question being asked. The map is resolved PER FILE, the way oxlint resolves it: the top-level `rules`, then every `overrides` entry whose globs match that path, in the order they were written, the last one winning. A rule armed only in an override — a test-file rule, a layer's `no-restricted-imports` — is therefore live inside the files that override names and dead outside them, and a rule one override turns off and a later one arms again is live wherever the later one reaches. A JS plugin's rules never appear there at all, so a directive naming one — `jterrazz/b9w-product-command`, say — is left alone rather than called dead on evidence the gate does not have. That holds for the whole namespace, `allow` entries and all: a config that turns three of the plugin's rules off puts those three names in the map and still none of the live ones, so a namespace the printed `plugins` list does not carry answers nothing.
 
 A directive naming a plugin rule that no longer exists is still refused, one pass earlier: it suppresses nothing, and every profile ships `reportUnusedDisableDirectives` at `error`, so the Oxlint pass reports the directive itself as unused.
 
@@ -399,15 +403,15 @@ It never invents a reason, and it never deletes a directive: both are the author
 
 Every `*.md` git does not ignore, outside the ground a test stands on — a `fixtures/`, `expected/`, `seeds/` or `requests/` folder wherever it sits, another project's tree — is read for two things: whether its coordinates resolve, and whether its blocks breathe.
 
-| Rule                    | Refuses                                                                    |
-| ----------------------- | -------------------------------------------------------------------------- |
-| `markdown-link-missing` | a relative link whose target is not on disk                                |
-| `markdown-path-missing` | a backticked repo-relative path naming nothing on disk                     |
-| `markdown-block-long`   | a paragraph, or one list item, running past twelve lines                   |
-| `markdown-fence-long`   | a fenced block running fifteen lines with no blank one in it               |
-| `markdown-section-flat` | a `##` section over thirty prose lines carrying neither a `###` nor a list |
+| Rule                                    | Refuses                                                                    |
+| --------------------------------------- | -------------------------------------------------------------------------- |
+| `markdown/link-resolves`                | a relative link whose target is not on disk                                |
+| `markdown/path-resolves`                | a backticked repo-relative path naming nothing on disk                     |
+| `markdown/prose-block-is-short`         | a paragraph, or one list item, running past twelve lines                   |
+| `markdown/fenced-run-is-short`          | a fenced block running fifteen lines with no blank one in it               |
+| `markdown/long-section-has-subheadings` | a `##` section over thirty prose lines carrying neither a `###` nor a list |
 
-A skill is read from the install, where nothing can correct it, so one more rule reads a page under `skills/` alone: `markdown-chapter-missing` refuses a `docs/NN-name.md` it names that its package does not ship. The chapter is resolved beside the skill's own `skills/` folder, the package root it is published from.
+A skill is read from the install, where nothing can correct it, so one more rule reads a page under `skills/` alone: `markdown/chapter-reference-resolves` refuses a `docs/NN-name.md` it names that its package does not ship. The chapter is resolved beside the skill's own `skills/` folder, the package root it is published from.
 
 The three numbers are the readability floor of the shared doctrine, not the craft it asks for: the gap between them is a reader's pass, not a red gate. They are named constants at the top of the gate, and no page keeps a second copy of them.
 
@@ -419,11 +423,11 @@ A path of somebody ELSE's tree — a library's chapter showing where the thing i
 
 What a project calls its own parts, swept under the roots where a project keeps what it wrote: `apps/`, `bin/`, `lib/`, `lint/`, `packages/`, `specs/`, `src/`, `tests/`. Each root's OWN name is the toolchain's vocabulary rather than the project's choice, so it is never judged — `lib/` sits on this list and on the grab-bag roster at once, and only what a project put inside it is the project's to name. A directory below an `app/` router root is a Next.js route segment — a URL the product serves, not a name the tree chose — and is not judged either; the files inside it still are.
 
-| Rule              | Refuses                                                                     |
-| ----------------- | --------------------------------------------------------------------------- |
-| `names-grab-bag`  | a directory or file stem that says nothing: it holds whatever nobody placed |
-| `names-construct` | a directory or file named for a construct of the language, not the domain   |
-| `names-shortcut`  | a name, or one hyphen segment of it, written in half                        |
+| Rule                               | Refuses                                                                     |
+| ---------------------------------- | --------------------------------------------------------------------------- |
+| `names/no-grab-bag-name`           | a directory or file stem that says nothing: it holds whatever nobody placed |
+| `names/no-language-construct-name` | a directory or file named for a construct of the language, not the domain   |
+| `names/no-abbreviated-word`        | a name, or one hyphen segment of it, written in half                        |
 
 All three rosters are closed and all live in the gate, in one executable copy. Grab-bag: `base`, `common`, `helpers`, `lib`, `misc`, `stuff`, `tools`, `utils` — a leading `_` exempts one, because it marks a row rather than a subject. Construct: `constants`, `helper`, `interfaces`, `type`, `types`, `util`, and the `.types.ts` suffix — a word the grab-bag already refuses is reported once, under that roster, and the `_` marker does not excuse a construct. Shortcut: `auth`, `cfg`, `impl`, `infra`, `k8s`, `pkg`, `repo`, `repos`, `svc`, `tmp` — and the `_` marker does NOT excuse one, since it states a position, not whether the name is whole.
 
@@ -433,21 +437,21 @@ A construct is judged on the WHOLE name: `type-registry.ts` names a subject and 
 
 The root's own folders are the same in every repository: `src/` the product's code, `lint/` the lint rules a package ships, `specs/` the specifications, `docs/` the manual, `skills/` one short page per skill — and `apps/` or `packages/` where a workspace keeps its members, each a spine of its own. What the tree calls a root is therefore judged too.
 
-| Rule                    | Refuses                                                                                 |
-| ----------------------- | --------------------------------------------------------------------------------------- |
-| `names-skill-file`      | a file under `skills/` that is not `skills/<skill>/SKILL.md`                            |
-| `names-root-foreign`    | a root folder outside the spine that nothing codifies                                   |
-| `names-root-unreasoned` | a root declared in `typescript.roots` with no reason beside it                          |
-| `names-root-stale`      | a root declared in `typescript.roots` that holds no file git does not ignore            |
-| `names-config-invalid`  | a `jterrazz.config.ts` that does not load, or whose settings are not the declared shape |
-| `names-makefile-absent` | a repository root with no `Makefile`, or one git ignores                                |
-| `names-makefile-target` | one of the six gestures a repository's `Makefile` writes no rule for                    |
+| Rule                                    | Refuses                                                                                 |
+| --------------------------------------- | --------------------------------------------------------------------------------------- |
+| `names/skill-holds-only-skill-md`       | a file under `skills/` that is not `skills/<skill>/SKILL.md`                            |
+| `names/no-undeclared-root-folder`       | a root folder outside the spine that nothing codifies                                   |
+| `names/declared-root-states-its-reason` | a root declared in `typescript.roots` with no reason beside it                          |
+| `names/declared-root-holds-files`       | a root declared in `typescript.roots` that holds no file git does not ignore            |
+| `names/jterrazz-config-loads`           | a `jterrazz.config.ts` that does not load, or whose settings are not the declared shape |
+| `names/repository-has-makefile`         | a repository root with no `Makefile`, or one git ignores                                |
+| `names/makefile-answers-every-gesture`  | one of the six gestures a repository's `Makefile` writes no rule for                    |
 
 A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
 
 `lint/` stands on the spine only where the package SHIPS it, and it ships it one of two ways. Directly: an entry of its `package.json`'s `files`, or a target of its `exports`, reaches into `lint/`. Or through its build: an entry of its `tsdown.config.*` compiles a `lint/` source, and the output it compiles to — `dist/<entry>`, or under the config's `outDir` — is published by an `exports`, `bin` or `main` target, or by a `files` entry no later `!` entry takes back. A package that ships its rules as `dist/oxlint.js`, built from a `plugin.ts` under `lint/`, is the case the second way exists for.
 
-A `lint/` nothing publishes holds rules no consumer receives — `src/` under another name — and is refused as `names-root-foreign`. The build config is read as text, never run: an entry is named for its key, `oxlint: 'lint/plugin.ts'`, or for its file where it has none.
+A `lint/` nothing publishes holds rules no consumer receives — `src/` under another name — and is refused as `names/no-undeclared-root-folder`. The build config is read as text, never run: an entry is named for its key, `oxlint: 'lint/plugin.ts'`, or for its file where it has none.
 
 A workspace member is a spine of its own, judged the same way from its own folder: its first-level folders owe the spine, its `lint/` answers to its own `files`, `exports` and build, and it declares the roots it keeps beyond the spine in its own `jterrazz.config.ts`. The `Makefile` stays the repository root's.
 
@@ -500,15 +504,15 @@ export default defineConfig({
 });
 ```
 
-The file holds one section per package of the family, each package reading only its own, so a root declared anywhere else — a `jterrazz` key in `package.json` included — is not read. A file that does not load, or whose `typescript.roots` is not an object mapping each folder to its reason, is refused as `names-config-invalid`, and the roots it meant to declare stand undeclared until it is fixed. The reason is not decoration: an entry without one is refused (`names-root-unreasoned`), and an entry whose folder holds no file git does not ignore is refused too (`names-root-stale`), so the list shrinks as the tree does. A base package that composes others keeps its broader roots through this same declaration, never through an exemption in the gate.
+The file holds one section per package of the family, each package reading only its own, so a root declared anywhere else — a `jterrazz` key in `package.json` included — is not read. A file that does not load, or whose `typescript.roots` is not an object mapping each folder to its reason, is refused as `names/jterrazz-config-loads`, and the roots it meant to declare stand undeclared until it is fixed. The reason is not decoration: an entry without one is refused (`names/declared-root-states-its-reason`), and an entry whose folder holds no file git does not ignore is refused too (`names/declared-root-holds-files`), so the list shrinks as the tree does. A base package that composes others keeps its broader roots through this same declaration, never through an exemption in the gate.
 
 ### An empty directory
 
 The tree is judged on the disk as well as by its names. git tracks no directory, so an empty one exists only on the machine that holds it — a folder a fixer or a move emptied, a scaffold nobody filled — and it tells the next reader of that disk about a part of the tree that is not there.
 
-| Rule                    | Refuses                                                            |
-| ----------------------- | ------------------------------------------------------------------ |
-| `names-directory-empty` | a directory holding no file at any depth, that git does not ignore |
+| Rule                       | Refuses                                                            |
+| -------------------------- | ------------------------------------------------------------------ |
+| `names/no-empty-directory` | a directory holding no file at any depth, that git does not ignore |
 
 A directory holding only empty directories is empty, and is named once, at its top. The walk never enters `.git/`, a directory holding a `.git` of its own, or a folder no gate reads — `node_modules/`, `.artifacts/`, `dist/` and the rest the sweep leaves out — and a directory git ignores, or an `--ignore-pattern` names, is left alone. The finding states itself in four parts, `found: … · why: … · fix: … · read: …`.
 
@@ -516,7 +520,7 @@ A directory holding only empty directories is empty, and is named once, at its t
 
 ### What the ratchet records
 
-Every rule carries the code `names(<rule>)`, and the ratchet records it as `names/<rule>`: `typescript baseline` writes the pass's counts into the `typescript` section of `jterrazz.baseline.json` beside the linter's, and where the section holds a `names/*` entry this pass is judged by it, exactly, with the four refusals of [the ratchet](#the-ratchet) — and `typescript fix` re-records the entries that fell, as it does the linter's. A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
+Every rule is printed and recorded as `names/<rule>`, and carries the code `names(<rule>)`: `typescript baseline` writes the pass's counts into the `typescript` section of `jterrazz.baseline.json` beside the linter's, and where the section holds a `names/*` entry this pass is judged by it, exactly, with the four refusals of [the ratchet](#the-ratchet) — and `typescript fix` re-records the entries that fell, as it does the linter's. A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
 
 ## The Comments (density) pass
 
@@ -526,11 +530,11 @@ The default is no comment: the code speaks through its names, and a name that ne
 
 **What a comment line is.** A physical line that any comment covers — a `//` line, a trailing `//` after code, and every line a `/* … */` block spans, its opening and closing lines included — read by the same reader the Suppressions pass reads directives with, so a `//` inside a string or a template is never one. A line whose only comment is a directive (`oxlint-disable*`, `eslint-disable*`, `@ts-expect-error`, `@ts-ignore`, `biome-ignore`) is not counted: a directive is the Suppressions pass's, and the reason it carries is required there. Nor is a test's `// Given - `, `// When - ` or `// Then - ` marker: `@jterrazz/test` requires it of every test, so it is structure, and adding a test never moves the count.
 
-| Rule            | Refuses                                                                                 |
-| --------------- | --------------------------------------------------------------------------------------- |
-| `comment-lines` | a count of comment lines different from the `comments/comment-lines` entry, or no entry |
+| Rule                             | Refuses                                                                                         |
+| -------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `comments/no-prose-comment-line` | a count of comment lines different from the `comments/no-prose-comment-line` entry, or no entry |
 
-The count is recorded as `comments/comment-lines` in the `typescript` section of `jterrazz.baseline.json`, and judged with the four refusals of [the ratchet](#the-ratchet): a count above the entry, a count and no entry, a count below it, an entry left at zero. `typescript fix` lowers the entry to a count that fell, and drops it at zero; only `typescript baseline` raises it, by hand, for a comment that states what the code cannot. The finding states itself in four parts, `found: … · why: … · fix: … · read: …`, and its `found` gives the density — the lines, and their share of the measured source.
+The count is recorded as `comments/no-prose-comment-line` in the `typescript` section of `jterrazz.baseline.json`, and judged with the four refusals of [the ratchet](#the-ratchet): a count above the entry, a count and no entry, a count below it, an entry left at zero. `typescript fix` lowers the entry to a count that fell, and drops it at zero; only `typescript baseline` raises it, by hand, for a comment that states what the code cannot. The finding states itself in four parts, `found: … · why: … · fix: … · read: …`, and its `found` gives the density — the lines, and their share of the measured source.
 
 ## The Secrets (credentials) pass
 
@@ -538,18 +542,18 @@ No file the project would commit carries a live-looking credential. Two engines 
 
 Which engine runs is decided inside the gate rather than in `check.sh`, because the gate applies either way. Bash decides whether a pass applies; this one always does, and what changes is only who answers.
 
-| Rule                    | Looks like            |
-| ----------------------- | --------------------- |
-| `secrets-private-key`   | a private key block   |
-| `secrets-aws-key`       | an aws access key     |
-| `secrets-github-token`  | a github token        |
-| `secrets-slack-token`   | a slack token         |
-| `secrets-tailscale-key` | a tailscale key       |
-| `secrets-jwt`           | a signed jwt          |
-| `secrets-grafana-token` | a grafana token       |
-| `secrets-api-key`       | an api key            |
-| `secrets-iban`          | a bank account number |
-| `secrets-service-token` | a service token       |
+| Rule                       | Looks like            |
+| -------------------------- | --------------------- |
+| `secrets/no-private-key`   | a private key block   |
+| `secrets/no-aws-key`       | an aws access key     |
+| `secrets/no-github-token`  | a github token        |
+| `secrets/no-slack-token`   | a slack token         |
+| `secrets/no-tailscale-key` | a tailscale key       |
+| `secrets/no-signed-jwt`    | a signed jwt          |
+| `secrets/no-grafana-token` | a grafana token       |
+| `secrets/no-api-key`       | an api key            |
+| `secrets/no-iban`          | a bank account number |
+| `secrets/no-service-token` | a service token       |
 
 **There is no exception list, and there will not be one.** A hit is forgiven by exactly one thing: the same line declaring itself `fake`, `dummy`, `example`, `sample`, `synthetic` or `redacted`. A path allow-list is the first place a real leak hides, so the only way to silence this gate is to make the line say what it is.
 

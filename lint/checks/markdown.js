@@ -202,7 +202,7 @@ function missingLinks(root, path, cited) {
         if (!existsSync(linked) && !isIgnored(root, relative(root, linked))) {
             found.push({
                 message: `${target} resolves to nothing on disk`,
-                rule: 'markdown-link-missing',
+                rule: 'markdown/link-resolves',
             });
         }
     }
@@ -221,7 +221,7 @@ function missingPaths(root, path, cited) {
         ) {
             found.push({
                 message: `\`${target}\` names nothing on disk`,
-                rule: 'markdown-path-missing',
+                rule: 'markdown/path-resolves',
             });
         }
     }
@@ -241,7 +241,7 @@ function missingChapters(root, path, cited) {
         if (!existsSync(join(root, skill.groups.root, 'docs', chapter))) {
             found.push({
                 message: `docs/${chapter} is no chapter this package ships`,
-                rule: 'markdown-chapter-missing',
+                rule: 'markdown/chapter-reference-resolves',
             });
         }
     }
@@ -258,13 +258,13 @@ function auditPage(root, path, markdown) {
     ];
 
     for (const reason of longProseBlocks(markdown)) {
-        found.push({ message: reason, rule: 'markdown-block-long' });
+        found.push({ message: reason, rule: 'markdown/prose-block-is-short' });
     }
     for (const reason of airlessFences(markdown)) {
-        found.push({ message: reason, rule: 'markdown-fence-long' });
+        found.push({ message: reason, rule: 'markdown/fenced-run-is-short' });
     }
     for (const reason of flatSections(markdown)) {
-        found.push({ message: reason, rule: 'markdown-section-flat' });
+        found.push({ message: reason, rule: 'markdown/long-section-has-subheadings' });
     }
 
     return found;

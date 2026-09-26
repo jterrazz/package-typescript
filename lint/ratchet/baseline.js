@@ -178,6 +178,26 @@ export function reRecord(root, counts, owns) {
     return { lines, section: next };
 }
 
+export function reKey(root, renamed) {
+    const held = readBaseline(root);
+    const moved = Object.keys(held ?? {}).filter((rule) => Object.hasOwn(renamed, rule));
+    if (moved.length === 0) {
+        return [];
+    }
+
+    const next = {};
+    for (const [rule, count] of Object.entries(held)) {
+        const key = renamed[rule] ?? rule;
+        next[key] = (next[key] ?? 0) + count;
+    }
+    const path = join(root, BASELINE);
+    const text = readFileSync(path, 'utf8');
+    const section = serialise(next, indentOf(text));
+    writeFileSync(path, withSection(text, section));
+
+    return moved.toSorted().map((rule) => ({ from: rule, to: renamed[rule] }));
+}
+
 export function heldSummary(counts) {
     const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
     const rules = Object.keys(counts).length;

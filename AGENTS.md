@@ -44,13 +44,15 @@ bin/
 lint/                         # Every judgement — the tree is docs/01-architecture.md's; nothing here imports src/
 ├── index.js + index.d.ts     # The ./oxlint entry — the six profiles compiled, compose(), layers(), hexagonal, nested()
 ├── rulebook/                 # One fragment per upstream plugin, frameworks/, architecture/; decision.js, compile.js, profiles.js
-├── catalogue/                # decisions.js (every decision, the unsafe fixers) · checks.json (the consumer rows of the manifest)
+├── catalogue/                # decisions.js (every decision, the unsafe fixers) · checks.json (the manifest's consumer rows)
+│                             #   · findings.json (every printed id, its family and its sentence)
 ├── rules/                    # This package's own lint rules, by family — plugin.js assembles `jterrazz-typescript/*`
 ├── checks/                   # One file per pass: architecture, comments, docs (+ docs.cli.js), drift, gitignore, markdown,
 │                             #   names, publish, secrets, suppressions, test-material (the build guard)
 ├── ratchet/                  # baseline.js — the exact ratchet; `fix` re-records what fell, `typescript baseline` writes it
 ├── reading/                  # The sweep, the comment reader, workspace members, jterrazz.config.ts, entries, tool versions
-└── self/                     # What only this repository is held to, never shipped — catalogue.json, the self rows
+├── self/                     # What only this repository is held to, never shipped — catalogue.json, the self rows
+└── migration/                # The renamed-id mover `fix` runs — deleted by the next major
 
 src/cli/doctor.js             # Installed tool versions against the declared ranges — `typescript doctor`
 src/cli/lint-targets.js       # The project files oxlint and oxfmt are handed — the sweep every tree gate reads, never the directory

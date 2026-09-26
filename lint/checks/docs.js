@@ -95,7 +95,7 @@ function resolveLink(from, link) {
 function auditMap(report, { chapters, files, links }) {
     if (!files.includes('docs/README.md')) {
         report(
-            'docs-map-missing',
+            'docs/map-present',
             'docs/README.md',
             'docs/README.md is missing — the map is the one file an outside corpus points at',
         );
@@ -108,7 +108,7 @@ function auditMap(report, { chapters, files, links }) {
     for (const row of rows) {
         if (!chapters.some((chapter) => chapter.name === row)) {
             report(
-                'docs-map-drift',
+                'docs/map-matches-chapters',
                 'docs/README.md',
                 `docs/README.md and the chapters disagree: ${row} has no file`,
             );
@@ -117,7 +117,7 @@ function auditMap(report, { chapters, files, links }) {
     for (const chapter of chapters) {
         if (!rows.includes(chapter.name)) {
             report(
-                'docs-map-drift',
+                'docs/map-matches-chapters',
                 'docs/README.md',
                 `docs/README.md and the chapters disagree: ${chapter.name} has no row`,
             );
@@ -130,7 +130,7 @@ function auditMap(report, { chapters, files, links }) {
 
         if (!routes) {
             report(
-                'docs-map-foreign-link',
+                'docs/map-links-only-chapters',
                 'docs/README.md',
                 `docs/README.md links ${link}: the map routes to its own chapters and nothing else`,
             );
@@ -142,7 +142,7 @@ function auditChapters(report, { chapters, ships }) {
     for (const chapter of chapters) {
         if (!CHAPTER_NAME.test(chapter.name)) {
             report(
-                'docs-chapter-name',
+                'docs/chapter-named-nn-kebab',
                 chapter.path,
                 `${chapter.path} is not NN-kebab.md — two digits, lowercase words, single hyphens`,
             );
@@ -155,7 +155,7 @@ function auditChapters(report, { chapters, ships }) {
         const reserved = SPINE[chapter.number - 1];
         if (reserved !== undefined && chapter.name !== reserved) {
             report(
-                'docs-spine-name',
+                'docs/spine-number-reserved',
                 chapter.path,
                 `${chapter.path} takes number ${twoDigit(chapter.number)}, which is reserved for ${reserved}`,
             );
@@ -165,7 +165,7 @@ function auditChapters(report, { chapters, ships }) {
     for (const name of REQUIRED_SPINE) {
         if (!chapters.some((chapter) => chapter.name === name)) {
             report(
-                'docs-spine-missing',
+                'docs/spine-chapters-present',
                 `docs/${name}`,
                 `${name} is missing — the spine is architecture, developing, testing`,
             );
@@ -176,7 +176,7 @@ function auditChapters(report, { chapters, ships }) {
     const reason = SHIPPING_REASONS.find(([fact]) => ships?.[fact])?.[1];
     if (reason !== undefined && !chapters.some((chapter) => chapter.name === operating)) {
         report(
-            'docs-operating-missing',
+            'docs/operating-chapter-present-when-shipping',
             `docs/${operating}`,
             `${operating} is missing — this repository ships ${reason}`,
         );
@@ -196,7 +196,7 @@ function auditChapterNumbering(report, chapters) {
     }
 
     report(
-        'docs-chapter-numbering',
+        'docs/chapters-numbered-contiguously',
         'docs/',
         `chapter numbers run ${numbers.map(twoDigit).join(', ')}: they are contiguous from 01, one file per number, except that 04 may be absent`,
     );
@@ -207,7 +207,7 @@ function auditChapterWords(report, chapters) {
         const word = chapter.name.split(/[.-]/u).find((segment) => JOURNAL_WORDS.has(segment));
         if (word !== undefined) {
             report(
-                'docs-journal-chapter',
+                'docs/chapter-names-a-subject',
                 chapter.path,
                 `${chapter.path} names a journal, not a subject — ${word}; the record is an ADR, the history is git's`,
             );
@@ -222,7 +222,7 @@ function auditDecisionNumbers(report, records) {
     const sequential = numbers.every((number, index) => Number.parseInt(number, 10) === index + 1);
     if (numbers.length > 0 && !sequential) {
         report(
-            'docs-decision-sequence',
+            'docs/decisions-numbered-contiguously',
             'docs/decisions/',
             `docs/decisions/ numbers run ${numbers.join(', ')}: they run from 001 with no gap — a decision that moved folders takes the next number where it lands`,
         );
@@ -237,7 +237,7 @@ function auditDecisionNumbers(report, records) {
             claimed.set(number, record.name);
         } else {
             report(
-                'docs-decision-number',
+                'docs/decision-number-unique',
                 'docs/decisions/',
                 `ADR-${number} is claimed by ${first} and ${record.name}`,
             );
@@ -251,17 +251,21 @@ function auditFolder(report, { children }) {
 
         if (name === GENERATED_REFERENCE) {
             report(
-                'docs-reference-generated',
+                'docs/no-generated-reference',
                 path,
                 `${path} is a generated API reference — the API is the types, and the manual holds no copy of them`,
             );
         } else if (name.endsWith('/')) {
             if (!SUBFOLDERS.has(name)) {
-                report('docs-foreign-folder', path, `${path} is not one of decisions/, _assets/`);
+                report(
+                    'docs/no-unknown-subfolder',
+                    path,
+                    `${path} is not one of decisions/, _assets/`,
+                );
             }
         } else if (name !== 'README.md' && !/^\d/u.test(name)) {
             report(
-                'docs-loose-file',
+                'docs/no-loose-file',
                 path,
                 `${path} is neither the map nor a chapter — number it, or move it under _assets/`,
             );
@@ -276,7 +280,7 @@ function auditRecord(report, record, heads) {
 
     if (DECISION_HEADING.exec(opening)?.groups?.number !== number) {
         report(
-            'docs-decision-heading',
+            'docs/decision-heading-carries-its-number',
             record.path,
             `${record.path} opens on ${opening === '' ? 'an empty line' : opening}: the mold is "# ADR-${number}: Title"`,
         );
@@ -288,7 +292,7 @@ function auditRecord(report, record, heads) {
             status !== undefined && BARE_SUPERSEDED.test(status)
                 ? `${record.path}: **Status:** names a successor but no link — write Superseded by [ADR-NNN](file.md)`
                 : `${record.path}: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated`;
-        report('docs-decision-status', record.path, message);
+        report('docs/decision-status-known', record.path, message);
     }
 }
 
@@ -302,7 +306,11 @@ function auditDecisions(report, { files, heads }) {
     for (const entry of entries) {
         const mold = entry.name === '_template.md' || entry.name === 'README.md';
         if (!mold && !DECISION_NAME.test(entry.name)) {
-            report('docs-decision-name', entry.path, `${entry.path} is not NNN-kebab.md`);
+            report(
+                'docs/decision-named-nnn-kebab',
+                entry.path,
+                `${entry.path} is not NNN-kebab.md`,
+            );
         }
     }
 
@@ -315,7 +323,7 @@ function auditDecisions(report, { files, heads }) {
 
     if (files.includes('docs/decisions/README.md')) {
         report(
-            'docs-decision-index',
+            'docs/decision-listed-in-the-map',
             'docs/decisions/README.md',
             'docs/decisions/README.md is an index — an index is a copy; the queue is derived (terra <brand> decisions)',
         );
@@ -323,7 +331,7 @@ function auditDecisions(report, { files, heads }) {
 
     if (!files.includes('docs/decisions/_template.md')) {
         report(
-            'docs-template-missing',
+            'docs/decision-template-present',
             'docs/decisions/_template.md',
             'docs/decisions/_template.md is missing — the mold sits where the record is written',
         );
@@ -338,7 +346,7 @@ function auditLinks(report, { files, links }) {
             }
             if (link.startsWith('/') || resolveLink(path, link).startsWith('..')) {
                 report(
-                    'docs-cross-repo-link',
+                    'docs/no-cross-repository-link',
                     path,
                     `${path} links ${link}: another repository's tree is not a place this manual may reach`,
                 );
@@ -357,7 +365,7 @@ export function auditDocs(tree) {
                 message:
                     'docs/ is missing — every repository carries its own manual, starting at docs/README.md',
                 path: 'docs/',
-                rule: 'docs-absent',
+                rule: 'docs/manual-present',
             },
         ];
     }
@@ -383,7 +391,7 @@ export function auditDocs(tree) {
 
     if (tree.agents === null || !(tree.agents ?? '').includes('docs/README.md')) {
         report(
-            'docs-agents-route',
+            'docs/agents-route-to-the-map',
             'AGENTS.md',
             'AGENTS.md does not route to docs/README.md — the brief is a map, not a manual',
         );

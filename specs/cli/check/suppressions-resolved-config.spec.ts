@@ -18,7 +18,7 @@ describe('suppressions-resolved-config', () => {
         const result = await caseOf('js-plugin-config', 'js-plugin-live').exec('check');
 
         // Then - the gate says nothing about it, and the whole run is green
-        expect(result.stdout.text).not.toContain('suppressions-dead');
+        expect(result.stdout.text).not.toContain('suppressions/no-dead-suppression');
         expect(result.exitCode).toBe(0);
     });
 
@@ -29,7 +29,7 @@ describe('suppressions-resolved-config', () => {
 
         // Then - only the core rule is called dead, and the run fails on it
         expect(result.stdout.text).toContain(
-            'suppressions-dead  index.ts  line 4 disables no-console, which the resolved config does not have on',
+            'suppressions/no-dead-suppression  index.ts  line 4 disables no-console, which the resolved config does not have on',
         );
         expect(result.stdout.text).not.toContain('demo/other');
         expect(result.exitCode).toBe(1);
@@ -41,7 +41,7 @@ describe('suppressions-resolved-config', () => {
         const result = await caseOf('scoped-config', 'scoped-live').exec('check');
 
         // Then - the gate says nothing about it, and the whole run is green
-        expect(result.stdout.text).not.toContain('suppressions-dead');
+        expect(result.stdout.text).not.toContain('suppressions/no-dead-suppression');
         expect(result.exitCode).toBe(0);
     });
 
@@ -52,7 +52,7 @@ describe('suppressions-resolved-config', () => {
 
         // Then - it is named dead, and the run fails on it
         expect(result.stdout.text).toContain(
-            'suppressions-dead  index.ts  line 1 disables no-var, which the resolved config does not have on',
+            'suppressions/no-dead-suppression  index.ts  line 1 disables no-var, which the resolved config does not have on',
         );
         expect(result.exitCode).toBe(1);
     });

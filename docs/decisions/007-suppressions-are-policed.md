@@ -42,7 +42,7 @@ The count of suppressions is one of the four numbers the drift report prints,
 so a repository accumulating them says so on every run.
 
 The same principle governs a rule turned OFF in a consumer's config:
-`drift-unreasoned` refuses a line that disables a rule the profile has on
+`drift/off-rule-states-its-reason` refuses a line that disables a rule the profile has on
 without a `// reason:` comment on that line. Both are the same rule, applied
 to the two scales at which a project overrules its rulebook.
 
@@ -51,7 +51,7 @@ to the two scales at which a project overrules its rulebook.
 - Every override in the estate becomes greppable, reasoned, and countable.
 - A directive naming a JS plugin's rule cannot be judged: those rules never
   appear in `oxlint --print-config`. The gate stays silent there rather than
-  calling a live rule dead, so `suppressions-dead` under-reports by design.
+  calling a live rule dead, so `suppressions/no-dead-suppression` under-reports by design.
 - A file DISCUSSING a suppression is not one. The gate reads a directive only
   at the opening of a comment, which is where a checker reads one — its own
   source, full of the spellings it refuses, passes it.

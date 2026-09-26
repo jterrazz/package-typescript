@@ -32,8 +32,8 @@ runs:
 
            RUN  Names (tree)
 
-          names-root-foreign  apps/api/scripts/  `apps/api/scripts/` is a root outside the spine — move it under src/, or declare it in apps/api/jterrazz.config.ts's `typescript.roots` with its reason
-          names-root-foreign  apps/web/lint/  `apps/web/lint/` holds the lint rules a package ships, and neither apps/web/package.json nor its build publishes it — ship it, or move it under src/
+          names/no-undeclared-root-folder  apps/api/scripts/  `apps/api/scripts/` is a root outside the spine — move it under src/, or declare it in apps/api/jterrazz.config.ts's `typescript.roots` with its reason
+          names/no-undeclared-root-folder  apps/web/lint/  `apps/web/lint/` holds the lint rules a package ships, and neither apps/web/package.json nor its build publishes it — ship it, or move it under src/
           ✗ Failed with exit code 1
 
            RUN  Comments (density)

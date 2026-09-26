@@ -29,7 +29,7 @@ runs:
 
            RUN  Markdown (prose)
 
-          markdown-chapter-missing  skills/shop/SKILL.md  docs/06-quality-checks.md is no chapter this package ships
+          markdown/chapter-reference-resolves  skills/shop/SKILL.md  docs/06-quality-checks.md is no chapter this package ships
           ✗ Failed with exit code 1
 
            RUN  Names (tree)

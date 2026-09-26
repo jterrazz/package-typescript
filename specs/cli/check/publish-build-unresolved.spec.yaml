@@ -25,8 +25,8 @@ runs:
 
            RUN  Publish (packaging)
 
-          publish-test-material: nothing to judge — no @jterrazz/test resolves from this package, and what test material is is its to say
-          publish-build  package.json  found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else `typescript bundle` · read: @jterrazz/typescript's docs/06-quality-checks.md#the-build-guard
+          publish/no-test-code-in-production: nothing to judge — no @jterrazz/test resolves from this package, and what test material is is its to say
+          publish/build-succeeds  package.json  found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else `typescript bundle` · read: @jterrazz/typescript's docs/06-quality-checks.md#the-build-guard
           ✗ Failed with exit code 1
 
            RUN  Suppressions (directives)

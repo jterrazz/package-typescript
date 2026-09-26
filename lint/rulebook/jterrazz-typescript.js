@@ -8,6 +8,6 @@ export default fragment({
     jsPlugins: [fileURLToPath(new URL('../rules/plugin.js', import.meta.url))],
     since: '11.0.0',
     rules: {
-        'jterrazz-typescript/comment-longer-than-function': on(),
+        'jterrazz-typescript/comment-no-longer-than-its-function': on(),
     },
 });
