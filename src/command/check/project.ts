@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { objectOf, parsedObject } from '../../../lint/engine/project/json.js';
 import type { JsonObject } from '../../../lint/engine/project/json.js';
 import { testPackageBin, testPackageVersion } from '../../../lint/engine/project/test-package.js';
-import { isFile } from '../tool-configs.js';
+import { isFile } from '../disk.js';
 
 const PRUNED: ReadonlySet<string> = new Set(['.git', 'dist', 'node_modules']);
 

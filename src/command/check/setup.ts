@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
+import { PACKAGE_ROOT } from '../../../lint/engine/project/package-root.js';
 import { ignorePatternsOf } from '../../../lint/engine/project/project-files.js';
 import { workspaceMembers } from '../../../lint/engine/project/workspace-members.js';
 import { lintTargets } from '../lint-targets.js';
@@ -9,14 +10,11 @@ import {
     binaryIn,
     HOISTED_BESIDE_PACKAGE,
     isExecutable,
-    PACKAGE_ROOT,
     tscIn,
     withTsgolintOnPath,
 } from '../toolchain.js';
 import type { Logs } from './logs.js';
 import type { Selected } from './passes.js';
-
-export { toolConfigs } from '../tool-configs.js';
 
 export type Tools = {
     attw: string;

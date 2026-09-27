@@ -1,6 +1,5 @@
-import { statSync } from 'node:fs';
-
 import CONFIG_NAMES from '../../lint/engine/project/oxlint-config-names.json' with { type: 'json' };
+import { isFile } from './disk.js';
 import { presetAt } from './toolchain.js';
 
 const OXFMT_CONFIG_NAMES = [
@@ -9,10 +8,6 @@ const OXFMT_CONFIG_NAMES = [
     'oxfmt.config.ts',
     'oxfmt.config.mts',
 ];
-
-export function isFile(path: string): boolean {
-    return statSync(path, { throwIfNoEntry: false })?.isFile() === true;
-}
 
 export const FIX_WRAPPER = 'oxlint.fix.config.mjs';
 

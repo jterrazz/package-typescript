@@ -3,8 +3,8 @@ import { dirname } from 'node:path';
 import process from 'node:process';
 
 import { checker } from '../checker.js';
+import { isFile } from '../disk.js';
 import { run } from '../processes.js';
-import { isFile } from '../tool-configs.js';
 import { presetAt } from '../toolchain.js';
 import type { Launched, Member } from './launched.js';
 import {

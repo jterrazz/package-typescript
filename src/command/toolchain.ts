@@ -4,8 +4,6 @@ import process from 'node:process';
 
 import { PACKAGE_ROOT } from '../../lint/engine/project/package-root.js';
 
-export { PACKAGE_ROOT } from '../../lint/engine/project/package-root.js';
-
 export const CHECKER = join(PACKAGE_ROOT, 'dist/checker.js');
 
 export function presetAt(path: string): string {
