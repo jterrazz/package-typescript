@@ -30,12 +30,31 @@ describe('versions', () => {
 
         // Then - the report names each tool the passes spawn, and node itself
         expect(result.exitCode).toBe(0);
-        for (const tool of ['node', 'tsc (Go)', 'typescript', 'oxlint', 'oxfmt', 'knip']) {
+        for (const tool of [
+            'node',
+            'tsc (Go)',
+            'typescript',
+            'oxlint',
+            'oxfmt',
+            'knip',
+            'dependency-cruiser',
+            'ls-lint',
+            'rumdl',
+        ]) {
             expect(result.stdout.text).toContain(tool);
         }
 
         // Then - the range beside each one is the range the manifest declares
-        for (const name of ['knip', 'oxfmt', 'oxlint', 'oxlint-tsgolint', 'typescript'] as const) {
+        for (const name of [
+            '@ls-lint/ls-lint',
+            'dependency-cruiser',
+            'knip',
+            'oxfmt',
+            'oxlint',
+            'oxlint-tsgolint',
+            'rumdl',
+            'typescript',
+        ] as const) {
             expect(result.stdout.text).toContain(manifest.dependencies[name]);
         }
         expect(result.stdout.text).toContain(manifest.engines.node);

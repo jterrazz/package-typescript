@@ -17,7 +17,8 @@
         "docs",
         "!docs/03-testing.md",
         "lint/engine/project/oxlint-config-names.json",
-        "src/presets/**/*.json"
+        "src/presets/**/*.json",
+        "src/presets/**/*.toml"
     ],
     "type": "module",
     "main": "dist/index.js",
@@ -66,15 +67,17 @@
     },
     "dependencies": {
         "@arethetypeswrong/cli": "^0.18.5",
-        "dependency-cruiser": "^18.4.0",
+        "@ls-lint/ls-lint": "2.3.1",
+        "dependency-cruiser": "18.4.0",
         "eslint-plugin-perfectionist": "^5.12.0",
         "knip": "^6.38.0",
         "oxfmt": "^0.70.0",
-        "oxlint": "^1.85.0",
+        "oxlint": "1.85.0",
         "oxlint-tsgolint": "7.0.2002",
         "prettier": "^3.9.9",
         "prettier-plugin-astro": "^1.0.1",
         "publint": "^0.3.24",
+        "rumdl": "0.2.77",
         "tsdown": "^0.23.0",
         "typescript": "^6.0.0"
     },

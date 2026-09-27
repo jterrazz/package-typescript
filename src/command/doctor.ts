@@ -158,9 +158,10 @@ export function doctor(root: string): number {
 
     print('Toolchain versions\n\n');
 
+    const nameWidth = Math.max(...rows.map(({ name }) => name.length)) + 2;
     for (const { installed, name, range, verdict } of rows) {
         print(
-            `  ${name.padEnd(16)}${(installed ?? '—').padEnd(12)}${range.padEnd(12)}${verdict}\n`,
+            `  ${name.padEnd(nameWidth)}${(installed ?? '—').padEnd(12)}${range.padEnd(12)}${verdict}\n`,
         );
     }
 

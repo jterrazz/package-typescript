@@ -60,7 +60,7 @@ function installedVersion(name: string): null | string {
         () => resolve(PACKAGE_ROOT, '../..', name, 'package.json'),
     ]) {
         try {
-            return manifestAt(at()).version;
+            return manifestAt(at()).version?.replace(/^v/u, '') ?? null;
         } catch {
             continue;
         }
@@ -138,6 +138,13 @@ export function toolVersions(): ToolVersion[] {
             declared['oxlint-tsgolint'] ?? '*',
         ],
         ['knip', installedVersion('knip'), declared.knip ?? '*'],
+        [
+            'dependency-cruiser',
+            installedVersion('dependency-cruiser'),
+            declared['dependency-cruiser'] ?? '*',
+        ],
+        ['ls-lint', installedVersion('@ls-lint/ls-lint'), declared['@ls-lint/ls-lint'] ?? '*'],
+        ['rumdl', installedVersion('rumdl'), declared.rumdl ?? '*'],
     ];
 
     return rows.map(([name, installed, range]) => ({
