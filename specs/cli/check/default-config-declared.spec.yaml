@@ -1,0 +1,61 @@
+description: arms, in a project with no oxlint config of its own, the profile and the oxlint rules its declared presets carry
+fixture: ./_fixtures/default-config/declared-presets/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          src/counter.ts:3:5: error eslint(no-plusplus): Unary operator '++' used. help: Use the assignment operator `+=` instead.
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Architecture (layer map)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              react (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            oxlint-suppressions.json             nothing held
+            jterrazz.baseline.json › typescript  nothing held
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

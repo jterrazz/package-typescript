@@ -13,6 +13,8 @@ export type Project = {
 
 const FROM_PRESETS = 'fromPresets';
 
+const DECLARED_DEFAULT = 'declared.js';
+
 // oxlint's config schema is closed, so a profile cannot carry its name to `--print-config`: the
 // config's import is the only evidence — a profile imported by name, or the one `fromPresets` reads off the settings.
 function profileOf(
@@ -52,15 +54,13 @@ export function profileOfProject(
     // The same list the command hands oxlint.
     const configName = CONFIGS.find((name) => context.exists(join(context.root, name)));
     const source = configName === undefined ? null : context.read(join(context.root, configName));
-    const handedName = handed === null ? null : basename(handed, '.js');
-    const defaultProfile =
+    const handsDeclared =
         configName === undefined &&
         handed !== null &&
-        handedName !== null &&
-        dirname(handed) === profilesAt &&
-        profileNames.has(handedName)
-            ? handedName
-            : null;
+        profilesAt !== null &&
+        handed === join(dirname(profilesAt), DECLARED_DEFAULT);
+    const defaultProfile =
+        handsDeclared && typeof settled === 'string' && profileNames.has(settled) ? settled : null;
 
     return {
         configName,

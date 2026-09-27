@@ -1,6 +1,28 @@
 import { describe, expect, test } from 'vitest';
 
-import { astro, bun, compose, defineConfig, expo, nested, next, node, react } from './index.js';
+import { missingParts } from './engine/catalogue/lesson.js';
+import {
+    astro,
+    bun,
+    compose,
+    defineConfig,
+    expo,
+    fromPresets,
+    nested,
+    next,
+    node,
+    react,
+} from './index.js';
+
+function refusalOf(composing: () => unknown): string {
+    try {
+        composing();
+    } catch (error) {
+        return error instanceof Error ? error.message : String(error);
+    }
+
+    return 'nothing refused';
+}
 
 describe('index', () => {
     test('concatenates and dedupes plugin lists', () => {
@@ -113,4 +135,64 @@ describe('index', () => {
             );
         },
     );
+
+    test("composes the profile the base preset names, then each preset's oxlint in the merge order", () => {
+        // Given - the base named with the next profile, and a preset including another, each arming one rule
+        const config = fromPresets({
+            presets: [
+                {
+                    name: 'web',
+                    oxlint: { rules: { curly: 'off', eqeqeq: 'error' } },
+                    package: '@acme/web',
+                    presets: [
+                        {
+                            name: 'core',
+                            oxlint: { rules: { curly: 'error' } },
+                            package: '@acme/core',
+                        },
+                    ],
+                },
+                {
+                    name: 'typescript',
+                    package: '@jterrazz/typescript',
+                    settings: { profile: 'next' },
+                },
+            ],
+        });
+
+        // Then - the next profile is the start, and the including preset's rule wins over the included one
+        expect(config.plugins).toStrictEqual(next.plugins);
+        expect(config.rules?.eqeqeq).toBe('error');
+        expect(config.rules?.curly).toBe('off');
+    });
+
+    test('starts from the node profile where no profile is named', () => {
+        // Given - settings naming no preset
+        // Then - the base preset's default profile is composed
+        expect(fromPresets({}).rules).toStrictEqual(node.rules);
+    });
+
+    test.each([
+        ['settings that cannot be resolved', { presets: 'typescript' }],
+        [
+            'a profile no build ships',
+            {
+                presets: [
+                    {
+                        name: 'typescript',
+                        package: '@jterrazz/typescript',
+                        settings: { profile: 'deno' },
+                    },
+                ],
+            },
+        ],
+    ])('refuses %s in four parts', (_, settings) => {
+        // Given - settings no oxlint config can be composed from
+        // When - the config is composed
+        const message = refusalOf(() => fromPresets(settings));
+
+        // Then - the refusal carries every part of its lesson, reading the merge order
+        expect(missingParts(message)).toStrictEqual([]);
+        expect(message).toContain('read: docs/09-rules-kit.md#the-merge-order');
+    });
 });

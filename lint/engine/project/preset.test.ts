@@ -180,7 +180,11 @@ describe('preset', () => {
             'a law setting extended through a nested listing of the base',
             {
                 presets: [
-                    { name: 'web', package: '@acme/web', presets: [{ ...BASE, settings: { spine: ['scripts'] } }] },
+                    {
+                        name: 'web',
+                        package: '@acme/web',
+                        presets: [{ ...BASE, settings: { spine: ['scripts'] } }],
+                    },
                 ],
             },
             'writes `typescript.spine`, a law the typescript preset sets — keep a root beside the spine under `typescript.roots` with its reason, or set a law aside under `optOuts`',

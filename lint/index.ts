@@ -46,21 +46,30 @@ const BY_PROFILE: Readonly<Record<string, OxlintConfig>> = Object.freeze({
     react,
 });
 
+const presetRefusal = (problem: string): Error =>
+    new Error(
+        refusal({
+            ...presetLesson(problem, SETTINGS_FILE),
+            read: 'docs/09-rules-kit.md#the-merge-order',
+        }),
+    );
+
 /** The oxlint config a settings file's presets compose: the base preset's profile, then each preset's own, in the merge order. */
 export function fromPresets(config: object): OxlintConfig {
     const { problem, resolved } = resolveConfig(config, BASE_PRESETS);
     if (problem !== null) {
-        throw new Error(
-            refusal({
-                ...presetLesson(problem, SETTINGS_FILE),
-                read: 'docs/09-rules-kit.md#the-merge-order',
-            }),
-        );
+        throw presetRefusal(problem);
     }
     const named = resolved.sections.typescript?.profile;
+    const chosen = typeof named === 'string' ? BY_PROFILE[named] : undefined;
+    if (chosen === undefined) {
+        throw presetRefusal(
+            `names the profile \`${String(named)}\`, which is none of ${Object.keys(BY_PROFILE).join(', ')}`,
+        );
+    }
 
     return merge(
-        BY_PROFILE[typeof named === 'string' ? named : 'node'] ?? node,
+        chosen,
         ...resolved.presets.flatMap((preset) =>
             preset.oxlint === undefined ? [] : [preset.oxlint],
         ),

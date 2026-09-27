@@ -9,7 +9,7 @@ const PACKAGE_ROOT = resolve(import.meta.dirname, '../../..');
 const CHECKER = join(PACKAGE_ROOT, 'dist/checker.js');
 const OXLINT = join(PACKAGE_ROOT, 'node_modules/.bin/oxlint');
 const PROFILES = join(PACKAGE_ROOT, 'dist/presets/oxlint/profiles');
-const DEFAULT_PROFILE = join(PROFILES, 'node.js');
+const DEFAULT_CONFIG = join(PACKAGE_ROOT, 'dist/presets/oxlint/declared.js');
 
 function configlessProject(files: Record<string, string> = {}): string {
     const directory = mkdtempSync(resolve(tmpdir(), 'check-drift-'));
@@ -39,7 +39,7 @@ describe('drift', () => {
             '--oxlint',
             OXLINT,
             '-c',
-            DEFAULT_PROFILE,
+            DEFAULT_CONFIG,
             '--profiles',
             PROFILES,
         ];
@@ -72,7 +72,7 @@ describe('drift', () => {
                 '--oxlint',
                 OXLINT,
                 '-c',
-                DEFAULT_PROFILE,
+                DEFAULT_CONFIG,
                 '--profiles',
                 PROFILES,
             ],
@@ -100,7 +100,7 @@ describe('drift', () => {
                 '--oxlint',
                 OXLINT,
                 '-c',
-                DEFAULT_PROFILE,
+                DEFAULT_CONFIG,
                 '--profiles',
                 PROFILES,
                 '--json',
@@ -134,7 +134,7 @@ describe('drift', () => {
                 '--oxlint',
                 counting,
                 '-c',
-                DEFAULT_PROFILE,
+                DEFAULT_CONFIG,
                 '--profiles',
                 PROFILES,
             ],
