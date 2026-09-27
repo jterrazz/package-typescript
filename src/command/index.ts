@@ -70,7 +70,6 @@ const COMMANDS: Readonly<Record<string, Command>> = {
     },
     fix: async (args, selected) => await runChecks(args, { fix: true, selected }),
     start: async (args) => await start(args),
-    // For emit (`tsc --build`): `tsc` on PATH is whatever the tree hoisted, once TypeScript 5.
     tsc: async (args) => {
         const project = projectRoot();
 

@@ -7,15 +7,15 @@ import { objectOf, parsedObject } from '../../lint/engine/project/json.js';
 import { toolVersions } from '../../lint/engine/project/tool-versions.js';
 import { workspaceMembers } from '../../lint/engine/project/workspace-members.js';
 
-// `@vitest/browser-playwright` ships from vitest's repository with vitest's version: a patch
-// apart loads a second copy of vitest's internals and fails in the browser.
 type Read = (text: string, name: string) => ReadonlySet<string>;
 
 type Pair =
     | { provider: string[]; runner: string[]; verdict: 'ok' | 'skewed' }
     | { unread: string; verdict: 'unread' };
 
-export const PINNED_PAIR: { readonly provider: string; readonly runner: string } = Object.freeze({
+// `@vitest/browser-playwright` ships from vitest's repository with vitest's version: a patch
+// apart loads a second copy of vitest's internals and fails in the browser.
+const PINNED_PAIR: { readonly provider: string; readonly runner: string } = Object.freeze({
     provider: '@vitest/browser-playwright',
     runner: 'vitest',
 });
@@ -88,7 +88,7 @@ function declaredAnywhere(root: string, name: string): boolean {
     });
 }
 
-export function pinnedPair(root: string): null | Pair {
+function pinnedPair(root: string): null | Pair {
     const readable = READ_LOCKFILES.map(([name, read]) => [join(root, name), read] as const).find(
         ([path]) => existsSync(path),
     );

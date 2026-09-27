@@ -20,7 +20,6 @@ export type ToolConfigs = {
     oxlint: { args: string[]; ignoresOf: string | undefined; own: string | undefined };
 };
 
-// A config handed by path resolves its `ignorePatterns` against this package's directory, where they reach nothing: the sweep applies them instead.
 export function toolConfigs(): ToolConfigs {
     const oxlint = CONFIG_NAMES.find((name) => isFile(name));
     const oxfmt = OXFMT_CONFIG_NAMES.find((name) => isFile(name));

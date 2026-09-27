@@ -40,7 +40,6 @@ export function layers(definition: { id?: string; map: readonly Layer[] }): Oxli
     return compile(layersFragment(definition));
 }
 
-// oxlint accepts linter `options` in the root config only.
 /** A profile for a nested oxlint.config: without the `options` oxlint accepts at the root only. */
 export function nested(config: OxlintConfig): OxlintConfig {
     const { options: _rootOnly, ...subtree } = config;
