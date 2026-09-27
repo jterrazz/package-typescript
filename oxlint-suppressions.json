@@ -19,15 +19,25 @@
             "count": 1
         }
     },
+    "lint/self/corpus/audience.test.ts": {
+        "jterrazz/no-expect-in-a-loop": {
+            "count": 16
+        }
+    },
     "lint/self/corpus/decision-invariants.test.ts": {
+        "jterrazz/no-expect-in-a-loop": {
+            "count": 2
+        },
         "typescript/no-unsafe-type-assertion": {
             "count": 2
         }
     },
+    "lint/self/corpus/findings.test.ts": {
+        "jterrazz/no-expect-in-a-loop": {
+            "count": 2
+        }
+    },
     "specs/cli/check/astro.spec.ts": {
-        "jterrazz/given-in-the-test": {
-            "count": 1
-        },
         "jterrazz/no-probe-cluster": {
             "count": 1
         }
@@ -37,20 +47,7 @@
             "count": 2
         }
     },
-    "specs/cli/check/committed-artefact.spec.ts": {
-        "jterrazz/given-in-the-test": {
-            "count": 1
-        }
-    },
-    "specs/cli/check/docs-layout.spec.ts": {
-        "jterrazz/given-in-the-test": {
-            "count": 1
-        }
-    },
     "specs/cli/check/drift.spec.ts": {
-        "jterrazz/given-in-the-test": {
-            "count": 1
-        },
         "jterrazz/no-probe-cluster": {
             "count": 1
         }
@@ -58,26 +55,54 @@
     "specs/cli/check/formatter.spec.ts": {
         "jterrazz/given-in-the-test": {
             "count": 1
-        }
-    },
-    "specs/cli/check/markdown-ignored.spec.ts": {
-        "jterrazz/given-in-the-test": {
+        },
+        "jterrazz/no-expect-in-a-loop": {
             "count": 1
         }
     },
-    "specs/cli/check/oxlint-config-unparsed.spec.ts": {
-        "jterrazz/given-in-the-test": {
-            "count": 1
-        }
-    },
-    "specs/cli/check/secrets.spec.ts": {
-        "jterrazz/given-in-the-test": {
-            "count": 1
+    "specs/cli/check/names-repository.spec.ts": {
+        "jterrazz/no-expect-in-a-loop": {
+            "count": 2
         }
     },
     "specs/cli/doctor/browser-pin.spec.ts": {
         "jterrazz/no-probe-cluster": {
             "count": 2
+        }
+    },
+    "specs/cli/doctor/versions.spec.ts": {
+        "jterrazz/no-expect-in-a-loop": {
+            "count": 2
+        }
+    },
+    "specs/cli/preset/behaviour.spec.ts": {
+        "jterrazz/no-expect-in-a-loop": {
+            "count": 1
+        }
+    },
+    "specs/cli/preset/install-matrix.spec.ts": {
+        "jterrazz/no-expect-in-a-loop": {
+            "count": 1
+        }
+    },
+    "specs/cli/preset/resolved-config.spec.ts": {
+        "jterrazz/no-expect-in-a-loop": {
+            "count": 2
+        }
+    },
+    "specs/cli/preset/rule-surface.spec.ts": {
+        "jterrazz/no-expect-in-a-loop": {
+            "count": 2
+        }
+    },
+    "specs/cli/preset/tsconfig.spec.ts": {
+        "jterrazz/no-expect-in-a-loop": {
+            "count": 1
+        }
+    },
+    "specs/surface/package/tarball.test.ts": {
+        "jterrazz/no-expect-in-a-loop": {
+            "count": 9
         }
     }
 }
