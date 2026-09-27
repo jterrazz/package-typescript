@@ -2,6 +2,7 @@ import { existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
 
+import { refusal } from '../../lint/engine/catalogue/lesson.js';
 import { entryPoints } from '../../lint/engine/project/entry-points.js';
 import { handOver, run } from './processes.js';
 import { badge, GREEN, print, RED, RESET } from './terminal.js';
@@ -27,7 +28,14 @@ async function built(config: string, label: string): Promise<number> {
         ...entryPoints(project),
     ]);
     if (status !== 0) {
-        print(`${RED}Error: Build failed${RESET}\n`);
+        print(
+            `${RED}${refusal({
+                fix: 'repair what tsdown names above, then run the build again',
+                found: 'tsdown could not build the project — its own report is above',
+                read: 'docs/05-building.md#a-build-that-fails',
+                why: 'dist/ is what `start` runs and what the package publishes, and a build that stopped part-way leaves it stale',
+            })}${RESET}\n`,
+        );
 
         return 1;
     }

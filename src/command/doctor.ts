@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { stdout } from 'node:process';
 
+import { refusal } from '../../lint/engine/catalogue/lesson.js';
 import { objectOf, parsedObject } from '../../lint/engine/project/json.js';
 import { toolVersions } from '../../lint/engine/project/tool-versions.js';
 import { workspaceMembers } from '../../lint/engine/project/workspace-members.js';
@@ -138,7 +139,12 @@ function reportPinnedPair(root: string): boolean {
 
     if (pair.verdict === 'skewed') {
         stdout.write(
-            `${PINNED_PAIR.provider} is versioned with ${PINNED_PAIR.runner} and must equal it exactly — pin both to the same version.\n`,
+            `${refusal({
+                fix: 'pin both to the same version',
+                found: `${PINNED_PAIR.provider} ${versionColumn(pair.provider)} is not ${PINNED_PAIR.runner} ${versionColumn(pair.runner)}`,
+                read: 'docs/04-operating.md#the-provider-pinned-to-its-runner',
+                why: `${PINNED_PAIR.provider} is versioned with ${PINNED_PAIR.runner} and must equal it exactly: a patch apart loads a second copy of its internals`,
+            })}\n`,
         );
     }
 
@@ -161,7 +167,14 @@ export function doctor(root: string): number {
     stdout.write('\n');
 
     if (failed) {
-        stdout.write('A tool older than its range enforces an older rulebook without saying so.\n');
+        stdout.write(
+            `${refusal({
+                fix: 'install what this release declares, then run `typescript doctor` again',
+                found: 'a tool is older than its range, or not installed — its row reads `old` or `absent`',
+                read: 'docs/04-operating.md#adopting-a-stricter-release',
+                why: 'a gate running an older tool enforces an older rulebook without saying so',
+            })}\n`,
+        );
     } else if (warned) {
         stdout.write(
             'A tool ahead of its range may be fine; the toolchain does not get to decide.\n',

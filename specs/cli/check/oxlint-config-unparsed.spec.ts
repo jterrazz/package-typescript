@@ -57,7 +57,7 @@ describe('oxlint-config-unparsed', () => {
         expect(result.status).toBe(1);
         expect(result.stdout).toContain('Failed to parse oxlint configuration file');
         expect(result.stdout).toContain(
-            'oxlint-config-unparsed  oxlint.config.ts  oxlint refused this config and linted nothing',
+            'oxlint-config-unparsed  oxlint.config.ts  found: oxlint refused this config and linted nothing',
         );
     });
 

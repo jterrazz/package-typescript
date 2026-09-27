@@ -26,6 +26,10 @@ Two subpaths are skipped: a pattern (`./tsconfig/*`), because the map does not e
 - **`build`** — for applications. Emits ESM + declarations + source maps.
 - **`bundle`** — for libraries. Adds a CommonJS artifact so the package resolves under both `import` and `require`.
 
+## A build that fails
+
+When tsdown stops, its own report is printed as it came, and below it the command's four-part refusal — what failed, why a stale `dist/` matters, what to do, and this section — then the command exits 1. Nothing of the partial output is cleaned up for you: the next build starts by clearing `dist/`.
+
 ## tsc
 
 `typescript tsc <args…>` runs the TypeScript 7 Go compiler this package ships, with the arguments handed straight to it. It exists for the one thing `check` cannot do — EMIT — which a repository built on project references does with `tsc --build`. Without it, such a repository reaches for `tsc` on PATH: whatever version the tree hoisted, which is how a package that dropped its own `typescript` dependency compiled against TypeScript 5 without noticing.

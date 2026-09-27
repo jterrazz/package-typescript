@@ -1,5 +1,6 @@
 import { appendFileSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 
+import { refusal } from '../../../lint/engine/catalogue/lesson.js';
 import { oxlintReport } from '../report/report.js';
 import { isModulePackage } from './project.js';
 import type { Check } from './setup.js';
@@ -28,13 +29,23 @@ function configRefusals(check: Check): string {
     return [
         ...(unparsed
             ? [
-                  `oxlint-config-unparsed  ${own ?? ''}  oxlint refused this config and linted nothing — its own report is above\n`,
+                  `oxlint-config-unparsed  ${own ?? ''}  ${refusal({
+                      fix: 'repair what oxlint names above — usually a `jsPlugins` entry naming a module that is not there',
+                      found: 'oxlint refused this config and linted nothing — its own report is above',
+                      read: 'docs/06-quality-checks.md#the-two-refusals-that-are-not-diagnostics',
+                      why: 'a run over a config oxlint could not parse enforces no rule, and would read as green',
+                  })}\n`,
               ]
             : []),
         ...(commonjs === undefined
             ? []
             : [
-                  `oxlint-config-commonjs  ${commonjs}  a CommonJS config cannot load an ESM preset or plugin, and oxlint drops what it cannot load — write oxlint.config.ts or .mjs\n`,
+                  `oxlint-config-commonjs  ${commonjs}  ${refusal({
+                      fix: 'write oxlint.config.ts or .mjs',
+                      found: 'a CommonJS config cannot load an ESM preset or plugin',
+                      read: 'docs/06-quality-checks.md#the-two-refusals-that-are-not-diagnostics',
+                      why: 'oxlint drops a config it cannot load and exits 0, so the run enforces no rule the config names',
+                  })}\n`,
               ]),
     ].join('');
 }

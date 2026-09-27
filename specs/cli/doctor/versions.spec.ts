@@ -19,7 +19,7 @@ function doctorOf(root: string): { rows: string[]; status: null | number; verdic
     return {
         rows: lines.filter((line) => /^ {2}\S/u.test(line)),
         status: result.status,
-        verdict: lines.find((line) => /^(?:A tool|Every tool)/u.test(line)) ?? '',
+        verdict: lines.find((line) => /^(?:A tool|Every tool|found: )/u.test(line)) ?? '',
     };
 }
 
@@ -57,7 +57,7 @@ describe('versions', () => {
         expect(rows).toContainEqual(expect.stringMatching(/^ {2}oxlint +0\.0\.1 +\S+ +old$/u));
         expect(rows).toContainEqual(expect.stringMatching(/^ {2}knip +— +\S+ +absent$/u));
         expect(verdict).toBe(
-            'A tool older than its range enforces an older rulebook without saying so.',
+            'found: a tool is older than its range, or not installed — its row reads `old` or `absent` · why: a gate running an older tool enforces an older rulebook without saying so · fix: install what this release declares, then run `typescript doctor` again · read: docs/04-operating.md#adopting-a-stricter-release',
         );
         expect(status).toBe(1);
     });
