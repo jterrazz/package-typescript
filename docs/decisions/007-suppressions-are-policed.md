@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-09-15
+**Superseded in part by:** [ADR-013](013-adopt-the-tool-before-building-the-check.md) — the TypeScript directives are oxlint's (`typescript/ban-ts-comment` refuses `@ts-ignore` and an undescribed `@ts-expect-error`); the pass keeps the `oxlint-disable` spelling and reason, and the fix rewrite.
 
 Written at decision time, as part of v10. The evidence is the audit of the
 ecosystem's twenty-eight repositories, read on 2026-09-15.

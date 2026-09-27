@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-09-25
+**Superseded in part by:** [ADR-013](013-adopt-the-tool-before-building-the-check.md) — `layers()` is gone; a fragment's id is audited by the self suite alone.
 
 ## Context
 

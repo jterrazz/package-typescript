@@ -1,7 +1,10 @@
 # ADR-012: The toolchain is TypeScript, built into `dist/`, and its command is code
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-27
+
+The owner delegated the decision ("go tout faire") on 2026-09-27; this record
+states the decision taken within that delegation.
 
 ## Context
 
