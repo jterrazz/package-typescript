@@ -1,6 +1,6 @@
 import { appendFileSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 
-import { refusal } from '../../../lint/engine/catalogue/lesson.js';
+import { messageOf, refusal } from '../../../lint/engine/catalogue/lesson.js';
 import { oxlintReport } from '../report/report.js';
 import { isModulePackage } from './project.js';
 import type { Check } from './setup.js';
@@ -51,18 +51,25 @@ function lintRefusals(check: Check): string {
     ].join('');
 }
 
-function drawn(check: Check, ifDiagnostics: boolean): string {
-    return oxlintReport({
-        ifDiagnostics,
-        oxlint: check.tools.oxlint,
-        stderrFile: check.logs.at('lint.err'),
-        stdoutFile: check.logs.at('lint.json'),
-    });
+function drawn(check: Check, ifDiagnostics: boolean): { failed: boolean; shown: string } {
+    try {
+        return {
+            failed: false,
+            shown: oxlintReport({
+                ifDiagnostics,
+                oxlint: check.tools.oxlint,
+                stderrFile: check.logs.at('lint.err'),
+                stdoutFile: check.logs.at('lint.json'),
+            }),
+        };
+    } catch (error) {
+        return { failed: true, shown: `${messageOf(error)}\n` };
+    }
 }
 
 // @jterrazz/test's checker leaves printing its `jterrazz(*)` diagnostics to this pass, even when it is green.
 function withCheckerDiagnostics(check: Check, verdict: LintVerdict): LintVerdict {
-    const shown = drawn(check, true);
+    const { failed, shown } = drawn(check, true);
     if (shown === '') {
         return verdict;
     }
@@ -72,7 +79,7 @@ function withCheckerDiagnostics(check: Check, verdict: LintVerdict): LintVerdict
         appendFileSync(log, readFileSync(verdict.log));
     }
 
-    return { log, status: verdict.status, writes: true };
+    return { log, status: failed ? 1 : verdict.status, writes: true };
 }
 
 export function lintVerdict(
@@ -92,7 +99,7 @@ export function lintVerdict(
     }
     if (!check.fix && status !== 0) {
         const shown = check.logs.at('lint-shown.log');
-        writeFileSync(shown, drawn(check, false));
+        writeFileSync(shown, drawn(check, false).shown);
         appendFileSync(shown, readFileSync(lintLog));
         renameSync(shown, lintLog);
     }
