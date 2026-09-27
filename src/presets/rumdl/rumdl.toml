@@ -1,4 +1,2 @@
-# oxfmt writes the layout of a page (list indents, markers, line width), so the rules that judge layout are its, and off here.
-# Inline HTML is a documented form (`<details>`, `<br>`), not a slip.
 [global]
 disable = ["MD007", "MD013", "MD030", "MD033", "MD076", "MD077"]
