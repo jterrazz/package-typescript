@@ -1,7 +1,6 @@
 import type { Ratchet } from '../baseline/section.js';
 import type { ChapterAnchor } from '../catalogue/lesson.js';
-import type { Resolution } from '../project/preset.js';
-import type { Preset } from '../project/preset.js';
+import type { Preset, Resolution } from '../project/preset.js';
 import type { CommandLine } from './command-line.js';
 
 export type Finding = {

@@ -3,6 +3,9 @@ import type { OxlintConfig } from 'oxlint';
 
 import type { ChapterAnchor, Unread } from '../catalogue/lesson.js';
 import { isJsonObject, objectOf } from './json.js';
+import { lawSettingRefused, writtenLawSetting } from './law-settings.js';
+import { optOutsOf } from './opt-outs.js';
+import type { OptOut } from './opt-outs.js';
 import { mergeSettings } from './settings-merge.js';
 
 export type ArchitectureRule = Pick<IRegularForbiddenRuleType, 'from' | 'to'> & {
@@ -37,7 +40,7 @@ export type Preset = {
     settings?: Readonly<Record<string, unknown>>;
 };
 
-export type OptOut = { law: string; reason: string };
+export type { OptOut } from './opt-outs.js';
 
 export type PresetLaw = `${string}/${string}`;
 
@@ -87,41 +90,6 @@ type Named = { name: string };
 
 const lawOf = (preset: Preset, rule: Named): PresetLaw => `${preset.name}/${rule.name}`;
 
-function optOutsOf(
-    declared: unknown,
-    laws: ReadonlySet<string>,
-): { optOuts: OptOut[]; problem: null | string } {
-    if (declared === undefined) {
-        return { optOuts: [], problem: null };
-    }
-    if (!isJsonObject(declared)) {
-        return {
-            optOuts: [],
-            problem: 'holds an `optOuts` that is not an object mapping each law to its reason',
-        };
-    }
-    const optOuts: OptOut[] = [];
-    for (const [law, reason] of Object.entries(declared).toSorted(([left], [right]) =>
-        left < right ? -1 : 1,
-    )) {
-        if (typeof reason !== 'string' || reason.trim() === '') {
-            return {
-                optOuts: [],
-                problem: `opts out of \`${law}\` with no reason — say why the repository sets the law aside`,
-            };
-        }
-        if (!laws.has(law)) {
-            return {
-                optOuts: [],
-                problem: `opts out of \`${law}\`, which no preset declares — name a law as \`<preset>/<name>\``,
-            };
-        }
-        optOuts.push({ law, reason });
-    }
-
-    return { optOuts, problem: null };
-}
-
 const EMPTY_DECLARATION = Object.freeze({});
 
 const EMPTY: Resolved = {
@@ -143,24 +111,6 @@ function occurrencesOf(listed: readonly unknown[], name: string): Preset[] {
                   ...(preset.name === name ? [preset] : []),
               ]
             : [],
-    );
-}
-
-const lawSettingRefused = (name: string, key: string): string =>
-    `writes \`${name}.${key}\`, a law the ${name} preset sets — keep a root beside the spine under \`${name}.roots\` with its reason, or set a law aside under \`optOuts\``;
-
-function writtenLawSetting(
-    preset: Preset,
-    settings: Readonly<Record<string, unknown>>,
-    written: unknown,
-): string | undefined {
-    const own = objectOf(written);
-
-    return (preset.lawSettings ?? []).find(
-        (key) =>
-            Object.hasOwn(own, key) &&
-            JSON.stringify(mergeSettings(settings[key], own[key]).value) !==
-                JSON.stringify(settings[key]),
     );
 }
 
@@ -283,7 +233,9 @@ export function resolveConfig(declaredSettings: object, base: readonly Preset[])
     const refusedWith = (problem: string): Resolution => ({
         problem,
         resolved:
-            declaredSettings === EMPTY_DECLARATION ? EMPTY : resolveConfig(EMPTY_DECLARATION, base).resolved,
+            declaredSettings === EMPTY_DECLARATION
+                ? EMPTY
+                : resolveConfig(EMPTY_DECLARATION, base).resolved,
     });
     if (!Array.isArray(listed)) {
         return refusedWith('holds a `presets` that is not a list');

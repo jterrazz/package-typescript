@@ -166,12 +166,14 @@ function lexed(text: string): Lexed {
 // A directive inside a string is text a program prints, never one a checker reads.
 export const commentSpansOf = (text: string): Span[][] => lexed(text).comments;
 
-const blanked = (line: string, spans: readonly Span[]): string =>
-    spans.reduce(
-        (kept, [start, end]) =>
-            `${kept.slice(0, start)}${' '.repeat(end - start)}${kept.slice(end)}`,
-        line,
-    );
+function blanked(line: string, spans: readonly Span[]): string {
+    let kept = line;
+    for (const [start, end] of spans) {
+        kept = `${kept.slice(0, start)}${' '.repeat(end - start)}${kept.slice(end)}`;
+    }
+
+    return kept;
+}
 
 /** The text with every comment turned to spaces: every offset, line and column still holds. */
 export function blankComments(text: string): string {

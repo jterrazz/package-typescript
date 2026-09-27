@@ -4,8 +4,7 @@ import { argv, exit, stdout } from 'node:process';
 
 import { removeEmptyDirectory } from '../project/empty-directories.js';
 import { readConfig } from '../project/jterrazz-config.js';
-import type { Resolution } from '../project/preset.js';
-import type { Preset } from '../project/preset.js';
+import type { Preset, Resolution } from '../project/preset.js';
 import { orRefused, projectFiles } from '../project/project-files.js';
 import { readCommandLine } from './command-line.js';
 import type { CommandLine } from './command-line.js';

@@ -2,9 +2,8 @@ import { join } from 'node:path';
 
 import { defineCheck } from '../../engine/catalogue/rule.js';
 import type { Context, Finding } from '../../engine/checker/pass.js';
-import type { Resolution } from '../../engine/project/preset.js';
 import { isChapterAnchor } from '../../engine/project/preset.js';
-import type { NamesRule } from '../../engine/project/preset.js';
+import type { NamesRule, Resolution } from '../../engine/project/preset.js';
 import { ignoredOf, listed, runLsLint } from './names.ls-lint.js';
 import type { Failures } from './names.ls-lint.js';
 

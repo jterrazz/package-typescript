@@ -1,4 +1,4 @@
-description: reads the presets its jterrazz.config.ts declares, and holds the project to their layers and name rules and to its own
+description: holds the project to the layers and name rules of the presets its jterrazz.config.ts declares
 fixture: ./_fixtures/presets/declared/
 env: TYPESCRIPT_CHECK_PASSES=architecture,names
 runs:

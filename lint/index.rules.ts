@@ -65,12 +65,7 @@ export {
     writeSection,
 } from './engine/baseline/baseline-file.js';
 export type { Counts, ReadBaseline, Sections } from './engine/baseline/baseline-file.js';
-export {
-    judgeExact,
-    judgeFloor,
-    raisedFloor,
-    tightened,
-} from './engine/baseline/section.js';
+export { judgeExact, judgeFloor, raisedFloor, tightened } from './engine/baseline/section.js';
 export type { Broken, Ratchet } from './engine/baseline/section.js';
 export { readCommandLine } from './engine/checker/command-line.js';
 export type { CommandLine } from './engine/checker/command-line.js';
@@ -130,12 +125,7 @@ export {
 export type { Manifest } from './engine/project/manifest.js';
 export type { PresetLaw, Resolution, Resolved } from './engine/project/preset.js';
 export type { PresetChecks } from './consumer/checks/preset-checks.js';
-export {
-    filesUnder,
-    ignoredPaths,
-    projectFiles,
-    PRUNED,
-} from './engine/project/project-files.js';
+export { filesUnder, ignoredPaths, projectFiles, PRUNED } from './engine/project/project-files.js';
 export {
     holdsManifest,
     isProjectRoot,

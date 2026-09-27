@@ -1,4 +1,4 @@
-description: arms, in a project with no oxlint config of its own, the profile and the oxlint rules its declared presets carry
+description: lints a project with no oxlint config by the profile and the rules its presets declare
 fixture: ./_fixtures/default-config/declared-presets/
 runs:
     - command: check
