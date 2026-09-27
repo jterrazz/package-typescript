@@ -18,22 +18,20 @@ import { defineRule, readAt, rowNamed } from '@jterrazz/typescript/rules';
 import { ROWS } from '../catalogue/manifest.js';
 
 const row = rowNamed(ROWS, 'no-sleep');
+```
 
+The rule is its row, its messages, its read and its visitor:
+
+```ts
 export const noSleep = defineRule(
     {
         docs: row,
-        messages: {
-            slept: { found: '`sleep({{ms}})` waits on the clock', fix: 'await the event itself' },
-        },
+        messages: { slept: { found: '`sleep()` waits on the clock', fix: 'await the event itself' } },
         read: readAt(row, 'docs/19-linting.md'),
     },
     {
         createOnce: (context) => ({
-            CallExpression(node) {
-                if (node.callee.type === 'Identifier' && node.callee.name === 'sleep') {
-                    context.report({ messageId: 'slept', node });
-                }
-            },
+            'CallExpression[callee.name="sleep"]': (node) => context.report({ messageId: 'slept', node }),
         }),
     },
 );
