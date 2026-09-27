@@ -2,7 +2,7 @@
 // consumer's own overrides arm again; `-c` switches nested-config discovery off, and a nested config
 // replaces the root's rules in its subtree; globs resolve against the config's own directory, so a
 // wrapper sits beside the config it wraps. Unused directives are not reported: this run turned rules off.
-import { existsSync, writeFileSync } from 'node:fs';
+import { existsSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
 import CONFIG_NAMES from '../../lint/engine/project/oxlint-config-names.json' with { type: 'json' };
@@ -88,10 +88,19 @@ export function writeFixScopes({
     rootConfig: string;
     targets: readonly string[];
 }): FixScope[] {
-    return scopesOf(root, rootConfig, targets, nested).map((scope) => {
-        const wrapper = join(scope.directory, FIX_WRAPPER);
-        writeFileSync(join(root, wrapper), wrapperOf(scope.config));
+    const written: FixScope[] = [];
+    try {
+        for (const scope of scopesOf(root, rootConfig, targets, nested)) {
+            const wrapper = join(scope.directory, FIX_WRAPPER);
+            writeFileSync(join(root, wrapper), wrapperOf(scope.config));
+            written.push({ files: scope.files, wrapper });
+        }
+    } catch (error) {
+        for (const { wrapper } of written) {
+            rmSync(join(root, wrapper), { force: true });
+        }
+        throw error;
+    }
 
-        return { files: scope.files, wrapper };
-    });
+    return written;
 }

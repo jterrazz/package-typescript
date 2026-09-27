@@ -1,4 +1,4 @@
-import { appendFileSync, rmSync, writeFileSync } from 'node:fs';
+import { rmSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import process from 'node:process';
 
@@ -66,7 +66,7 @@ export async function lintFix(check: Check): Promise<number> {
     try {
         scopes = await fixScopes(check);
     } catch (error) {
-        appendFileSync(check.logs.at('lint.log'), `${messageOf(error)}\n`);
+        writeFileSync(check.logs.at('fix-wrapper.log'), `${messageOf(error)}\n`);
 
         return 1;
     }

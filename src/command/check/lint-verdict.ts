@@ -19,7 +19,7 @@ function commonjsConfig(own: string | undefined): string | undefined {
 }
 
 // A config oxlint cannot parse lints nothing; a CommonJS one is dropped whole with exit 0. Both fail the pass.
-function configRefusals(check: Check): string {
+function lintRefusals(check: Check): string {
     const { own } = check.configs.oxlint;
     const unparsed = ['lint.log', 'lint.json'].some((name) =>
         check.logs.read(check.logs.at(name)).includes(UNPARSED),
@@ -27,6 +27,7 @@ function configRefusals(check: Check): string {
     const commonjs = commonjsConfig(own);
 
     return [
+        check.logs.read(check.logs.at('fix-wrapper.log')),
         ...(unparsed
             ? [
                   `oxlint-config-unparsed  ${own ?? ''}  ${refusal({
@@ -84,7 +85,7 @@ export function lintVerdict(
 ): LintVerdict {
     const lintLog = check.logs.at('lint.log');
     const baselineLog = check.logs.at('baseline.log');
-    const refusals = configRefusals(check);
+    const refusals = lintRefusals(check);
     const status = refusals === '' ? linted : 1;
     if (refusals !== '') {
         appendFileSync(lintLog, refusals);

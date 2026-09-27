@@ -227,7 +227,7 @@ That wrapper also stops the run reporting UNUSED DIRECTIVES. Every profile ships
 
 ### A wrapper fix mode cannot write
 
-Where the wrapper cannot be written — a directory beside the config the run may not write to — no oxlint fix runs at all. The pass prints a four-part refusal naming the write that failed and fails, rather than reading a fix that never ran as a green one.
+Where the wrapper cannot be written — a directory beside the config the run may not write to — no oxlint fix runs at all. The pass prints a four-part refusal naming the write that failed and fails, rather than reading a fix that never ran as a green one — the baseline judge's verdict never speaks over it — and removes every wrapper it had already written beside another config.
 
 ### A nested config fixes its own subtree
 
