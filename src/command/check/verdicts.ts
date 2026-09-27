@@ -22,10 +22,9 @@ export async function settled(launched: Launched | undefined): Promise<Passed> {
         : { log: launched.log, status: await launched.status };
 }
 
-async function judgedLint(
-    check: Check,
-    linted: number,
-): Promise<{ held: boolean; status: number }> {
+type HeldLint = { held: boolean; status: number };
+
+async function judgedLint(check: Check, linted: number): Promise<HeldLint> {
     const judgement = check.fix
         ? ['--fix']
         : [
@@ -48,11 +47,7 @@ async function judgedLint(
     return { held, status };
 }
 
-export async function heldLint(
-    check: Check,
-    runs: Runs,
-    passes: Started,
-): Promise<{ held: boolean; status: number }> {
+export async function settledLint(check: Check, runs: Runs, passes: Started): Promise<number> {
     const linted = await passes.lint;
     if (check.fix && runs.oxlint) {
         await oxlintJson(check, ['--type-aware', ...check.lintArgs], {
@@ -62,6 +57,10 @@ export async function heldLint(
     }
     await Promise.all([settled(passes.names), settled(passes.comments)]);
 
+    return linted;
+}
+
+export async function heldLint(check: Check, linted: number): Promise<HeldLint> {
     return check.selected('oxlint')
         ? await judgedLint(check, linted)
         : { held: false, status: linted };
@@ -123,7 +122,7 @@ export async function publishVerdict(check: Check, runs: readonly Launched[]): P
 
 export function lintPass(
     check: Check,
-    lint: { held: boolean; status: number },
+    lint: HeldLint,
     conventions: Passed,
 ): LintVerdict | undefined {
     return check.selected('oxlint')

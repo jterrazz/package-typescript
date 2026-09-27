@@ -18,6 +18,7 @@ import {
     lintPass,
     publishVerdict,
     settled,
+    settledLint,
 } from './verdicts.js';
 import type { Verdict } from './verdicts.js';
 
@@ -74,8 +75,9 @@ async function reported(
     conventionRuns: Conventions,
 ): Promise<Reported[]> {
     const typescript = await settled(passes.typescript);
-    const lint = await heldLint(run, runs, passes);
+    const linted = await settledLint(run, runs, passes);
     const comments = await commentsVerdict(run, passes);
+    const lint = await heldLint(run, linted);
     const [
         names,
         format,
