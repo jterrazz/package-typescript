@@ -65,7 +65,12 @@ function lintTreeRules(prefix: string): Record<string, Rules> {
 function skillRules(prefix: string): Record<string, Rules> {
     return {
         [`${prefix}skills`]: { '.*': 'exists:0', '.dir': 'regex:skills' },
-        [`${prefix}skills/*`]: { '.*': 'regex:SKILL', '.dir': `regex:${KEBAB}` },
+        [`${prefix}skills/*`]: {
+            '.*': 'exists:0',
+            '.*.*': 'exists:0',
+            '.dir': `regex:${KEBAB}`,
+            '.md': 'regex:SKILL',
+        },
         [`${prefix}skills/*/*`]: { '.*': 'exists:0', '.dir': 'exists:0' },
     };
 }

@@ -99,6 +99,8 @@ function directoryFinding(path: string): Finding {
     };
 }
 
+const SKILL_PAGE = /^skills\/[^/]+\/SKILL\.md$/u;
+
 export type Failed = { isDirectory: boolean; path: string };
 
 export function placementFindingOf(
@@ -114,7 +116,7 @@ export function placementFindingOf(
         return lintTreeFinding(prefix, own.slice(LINT_ROOT.length + 1), isDirectory);
     }
     if (own.startsWith('skills/')) {
-        return skillFinding(isDirectory ? `${path}/` : path);
+        return SKILL_PAGE.test(own) ? undefined : skillFinding(isDirectory ? `${path}/` : path);
     }
 
     return isDirectory ? directoryFinding(`${path}/`) : undefined;
