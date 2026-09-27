@@ -53,7 +53,6 @@ function configRefusals(check: Check, printed: string): string[] {
 
 const WARNED = /Found [1-9]\d* warnings? and|^\S+:\d+:\d+: warning /mu;
 
-// oxlint's own help names a bare `oxlint --suppress-all`, which would lint with another config and without types.
 function ratchetLessons(printed: string): string[] {
     return [
         ...(printed.includes(NEW_VIOLATIONS)

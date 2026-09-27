@@ -5,7 +5,6 @@ import { objectOf } from '../project/json.js';
 
 export const OXLINT_SUPPRESSIONS = 'oxlint-suppressions.json';
 
-// oxlint rewrites the file on every `--fix` run, dropping what the run's own rules did not report.
 export async function keptAcross<T>(root: string, run: () => Promise<T>): Promise<T> {
     const path = join(root, OXLINT_SUPPRESSIONS);
     let held: null | string = null;
