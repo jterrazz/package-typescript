@@ -37,6 +37,8 @@ What one file cannot show — the tree, the manifest, the manual — is a check.
 
 `runChecker({ passes, held, presets })` is the command line of a set of passes: it reads the arguments (`--fix`, `--format`, a flag's value written apart or as `--flag=value`), hands a pass its context — the project root, its sweep, its settings resolved through the presets it is handed — prints its findings, applies its fixes, and judges a pass the baseline holds. A program that unwinds instead of exiting throws `stop(code)` and reads the code back with `exitCodeOf(program)`.
 
+`presetChecks(root, presets)` runs the two passes a preset feeds — Architecture over its `layers`, Names over its `names` — on a tree, held to the given presets after the base one, as a repository listing them in `jterrazz.config.ts` would be, and returns their findings and any problem that stopped a pass. It is what a package tests its preset's laws with: `@jterrazz/test`'s lint facet runs it beside oxlint.
+
 ## A chapter carries its catalogue
 
 A chapter that lists rules carries them between markers and never by hand. A `Projection` is a page, its `markers` and the `render` that writes the block; `projected(text, page, projections)` splices every block of a page, `writeProjections(projections)` writes only a page whose text changed, and `spliceBetween` refuses a page that lost its markers. `markdownTable` pads a table as the formatter does, so a generated block is format-clean; `cell` escapes a pipe, `anchor(name)` gives a row the anchor its lesson reads, and `anchorsOf(text)` lists every heading and row anchor a page holds.

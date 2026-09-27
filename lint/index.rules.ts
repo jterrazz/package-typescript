@@ -1,5 +1,7 @@
+import type { PresetChecks } from './consumer/checks/preset-checks.js';
 import { readConfig, readConfigSync } from './engine/project/jterrazz-config.js';
 import type { Config } from './engine/project/jterrazz-config.js';
+import type { Preset } from './engine/project/preset.js';
 import { BASE_PRESETS } from './index.config.js';
 
 export {
@@ -133,6 +135,7 @@ export type {
     Resolution,
     Resolved,
 } from './engine/project/preset.js';
+export type { PresetChecks } from './consumer/checks/preset-checks.js';
 export { filesUnder, projectFiles, PRUNED } from './engine/project/project-files.js';
 export { isRepositoryRoot } from './engine/project/repository-root.js';
 export { workspaceMembers } from './engine/project/workspace-members.js';
@@ -143,3 +146,12 @@ export const readSettings = async (unit: string): Promise<Config> =>
 
 /** The same resolution, for a reader that runs synchronously, as an oxlint rule does. */
 export const readSettingsSync = (unit: string): Config => readConfigSync(unit, BASE_PRESETS);
+
+export async function presetChecks(
+    root: string,
+    presets: readonly Preset[],
+): Promise<PresetChecks> {
+    const checks = await import('./consumer/checks/preset-checks.js');
+
+    return await checks.presetChecks(root, { base: BASE_PRESETS, presets });
+}

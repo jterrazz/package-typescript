@@ -32,7 +32,7 @@ function listAt(directory: string): null | string[] {
     }
 }
 
-function contextOf(commandLine: CommandLine, presets: readonly Preset[]): Context {
+export function contextOf(commandLine: CommandLine, presets: readonly Preset[]): Context {
     const root = resolve(commandLine.positionals[0] ?? '.');
     const ignorePatterns = commandLine.values('--ignore-pattern');
     const configs = new Map<string, Promise<Config>>();
