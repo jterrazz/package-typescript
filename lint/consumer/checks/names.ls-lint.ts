@@ -22,7 +22,7 @@ const KEBAB = String.raw`_?[a-z0-9]+(-[a-z0-9]+)*`;
 
 const FRAMEWORK_ROUTE_SEGMENT = String.raw`\[{1,2}(\.{3})?[A-Za-z0-9]+\]{1,2}|\([a-z0-9-]+\)|@[a-z0-9-]+`;
 
-const DIRECTORY = `${KEBAB}|${FRAMEWORK_ROUTE_SEGMENT}`;
+const DIRECTORY = `(?:${KEBAB}|${FRAMEWORK_ROUTE_SEGMENT})`;
 
 const NAMED_ROOTS = ['apps', 'bin', 'lib', 'packages', 'specs', 'src', 'tests'];
 
