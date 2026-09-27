@@ -3,7 +3,33 @@
 
 const RESET = '\u001B[0m';
 
-const ASCII = Object.freeze({
+export type Chars = Readonly<
+    Record<
+        | 'advice'
+        | 'error'
+        | 'hbar'
+        | 'lbot'
+        | 'lcross'
+        | 'ltop'
+        | 'rarrow'
+        | 'rcross'
+        | 'uarrow'
+        | 'underbar'
+        | 'underline'
+        | 'vbar'
+        | 'vbarBreak'
+        | 'warning',
+        string
+    >
+>;
+
+export type Styles = Readonly<
+    Record<'advice' | 'error' | 'help' | 'link' | 'linum' | 'note' | 'warning', string>
+> & { readonly highlights: readonly string[] };
+
+export type Theme = { chars: Chars; styles: Styles };
+
+const ASCII: Chars = Object.freeze({
     advice: '>',
     error: 'x',
     hbar: '-',
@@ -20,7 +46,7 @@ const ASCII = Object.freeze({
     warning: '!',
 });
 
-const UNICODE = Object.freeze({
+const UNICODE: Chars = Object.freeze({
     advice: '☞',
     error: '×',
     hbar: '─',
@@ -37,7 +63,7 @@ const UNICODE = Object.freeze({
     warning: '⚠',
 });
 
-const PLAIN_STYLES = Object.freeze({
+const PLAIN_STYLES: Styles = Object.freeze({
     advice: '',
     error: '',
     help: '',
@@ -48,7 +74,7 @@ const PLAIN_STYLES = Object.freeze({
     warning: '',
 });
 
-const RGB_STYLES = Object.freeze({
+const RGB_STYLES: Styles = Object.freeze({
     advice: '\u001B[38;2;106;159;181m',
     error: '\u001B[38;2;225;80;80;1m',
     help: '\u001B[38;2;106;159;181m',
@@ -59,22 +85,22 @@ const RGB_STYLES = Object.freeze({
     warning: '\u001B[38;2;244;191;117;1m',
 });
 
-export function themeOf(coloured) {
+export function themeOf(coloured: boolean): Theme {
     return coloured
         ? { chars: UNICODE, styles: RGB_STYLES }
         : { chars: ASCII, styles: PLAIN_STYLES };
 }
 
-export function codePointsOf(text) {
+export function codePointsOf(text: string): string[] {
     return text.match(/[\s\S]/gu) ?? [];
 }
 
-export function styled(text, style) {
+export function styled(text: string, style: string): string {
     return style === '' ? text : `${style}${text}${RESET}`;
 }
 
 // East Asian wide and fullwidth blocks, and the emoji blocks drawn two columns wide.
-const WIDE = [
+const WIDE: readonly (readonly [number, number])[] = [
     [0x11_00, 0x11_5f],
     [0x2e_80, 0x30_3e],
     [0x30_41, 0x33_ff],
@@ -94,7 +120,7 @@ const WIDE = [
 
 const ZERO_WIDTH = /^[\p{Mn}\p{Me}\u200B-\u200F\u2060\uFEFF]$/u;
 
-function codePointWidth(character) {
+function codePointWidth(character: string): number {
     const code = character.codePointAt(0) ?? 0;
     if (ZERO_WIDTH.test(character)) {
         return 0;
@@ -108,7 +134,7 @@ const SEGMENTER = new Intl.Segmenter('en', { granularity: 'grapheme' });
 const PICTOGRAPH = /\p{Extended_Pictographic}|\p{Regional_Indicator}/u;
 
 // An emoji sequence is one wide glyph.
-function graphemeWidth(grapheme) {
+function graphemeWidth(grapheme: string): number {
     if (
         grapheme.includes('\uFE0F') ||
         (codePointsOf(grapheme).length > 1 && PICTOGRAPH.test(grapheme))
@@ -119,8 +145,8 @@ function graphemeWidth(grapheme) {
     return codePointsOf(grapheme).reduce((sum, character) => sum + codePointWidth(character), 0);
 }
 
-function graphemesOf(text) {
-    const graphemes = [];
+function graphemesOf(text: string): { start: number; width: number }[] {
+    const graphemes: { start: number; width: number }[] = [];
     let index = 0;
     for (const { segment } of SEGMENTER.segment(text)) {
         graphemes.push({ start: index, width: graphemeWidth(segment) });
@@ -132,7 +158,7 @@ function graphemesOf(text) {
 
 // As oxlint counts: a tab or an escape leaves the grapheme it sits on uncounted, and every code
 // point after it on that line counts zero.
-export function charWidths(text) {
+export function charWidths(text: string): number[] {
     // oxlint-disable-next-line no-control-regex -- the ASCII range is the test
     const graphemes = /^[\u0000-\u007F]*$/u.test(text) ? null : graphemesOf(text);
     let next = 0;
@@ -159,6 +185,6 @@ export function charWidths(text) {
     });
 }
 
-export function textWidth(text) {
+export function textWidth(text: string): number {
     return charWidths(text).reduce((sum, width) => sum + width, 0);
 }

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { formOf, renderReport, splitReport } from './oxlint-report.js';
+import { formOf, renderReport, splitReport } from './report.js';
 
 function reportOf(diagnostics: unknown[]): string {
     return `{ "diagnostics": ${JSON.stringify(diagnostics)},\n  "number_of_files": 2,\n  "number_of_rules": 3,\n  "threads_count": 4,\n  "start_time": 0.0125\n}\n`;
@@ -16,7 +16,7 @@ function debuggerAt(filename: string, offset: number): unknown {
     };
 }
 
-describe('oxlint-report', () => {
+describe('report', () => {
     test('keeps what oxlint printed before its report, and reads the report after it', () => {
         // Given - the text oxlint prints when its ignores leave nothing to lint
         const printed = `No files found to lint. Please check your paths and ignore patterns.\n${reportOf([])}`;
@@ -69,12 +69,12 @@ describe('oxlint-report', () => {
 
     test('draws the diagnostics in the order of the report, never re-sorted', () => {
         // Given - a report naming the later file first, as a parallel run may
-        const report: unknown = splitReport(
-            reportOf([debuggerAt('b.js', 0), debuggerAt('a.js', 0)]),
-        ).report;
+        const { report } = splitReport(reportOf([debuggerAt('b.js', 0), debuggerAt('a.js', 0)]));
 
         // When - it is drawn one line per diagnostic
-        const drawn: unknown = renderReport(report, 'agent', () => Buffer.from('debugger;\n'));
+        const drawn: unknown = renderReport(report ?? {}, 'agent', () =>
+            Buffer.from('debugger;\n'),
+        );
 
         // Then - the lines come in the report's order
         expect(drawn).toBe(
@@ -85,20 +85,20 @@ describe('oxlint-report', () => {
 
     test('draws nothing for the empty report the pass writes where nothing was linted', () => {
         // Given - the report `check` stands in for a run over no file
-        const report: unknown = splitReport('{ "diagnostics": [] }\n').report;
+        const { report } = splitReport('{ "diagnostics": [] }\n');
 
         // Then - no count and no duration: no linter ran to have them
-        expect(renderReport(report, 'framed', () => null)).toBe('');
+        expect(renderReport(report ?? {}, 'framed', () => null)).toBe('');
     });
 
     test('stops a file at its first frame of 1 200 bytes, and names it as minified', () => {
         // Given - a file whose first line is long enough to be minified, with a second finding below it
         const source = `debugger; var x = ${'1+'.repeat(700)}1;\ndebugger;\n`;
         const diagnostics = [debuggerAt('m.js', 0), debuggerAt('m.js', source.indexOf('\n') + 1)];
-        const report: unknown = splitReport(reportOf(diagnostics)).report;
+        const { report } = splitReport(reportOf(diagnostics));
 
         // When - it is framed
-        const drawn: unknown = renderReport(report, 'framed', () => Buffer.from(source));
+        const drawn: unknown = renderReport(report ?? {}, 'framed', () => Buffer.from(source));
 
         // Then - the file is named once as minified, and no frame of it is printed
         expect(drawn).toBe(

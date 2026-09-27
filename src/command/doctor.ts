@@ -1,26 +1,33 @@
-#!/usr/bin/env node
-
 import { existsSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { argv, cwd, exit, stdout } from 'node:process';
+import { join } from 'node:path';
+import { stdout } from 'node:process';
 
+import { objectOf, parsedObject } from '../../lint/engine/project/json.js';
 import { toolVersions } from '../../lint/engine/project/tool-versions.js';
 import { workspaceMembers } from '../../lint/engine/project/workspace-members.js';
 
 // `@vitest/browser-playwright` ships from vitest's repository with vitest's version: a patch
 // apart loads a second copy of vitest's internals and fails in the browser.
-export const PINNED_PAIR = Object.freeze({
+type Read = (text: string, name: string) => ReadonlySet<string>;
+
+type Pair =
+    | { provider: string[]; runner: string[]; verdict: 'ok' | 'skewed' }
+    | { unread: string; verdict: 'unread' };
+
+export const PINNED_PAIR: { readonly provider: string; readonly runner: string } = Object.freeze({
     provider: '@vitest/browser-playwright',
     runner: 'vitest',
 });
 
-function npmVersions(text, name) {
+function npmVersions(text: string, name: string): ReadonlySet<string> {
     const suffix = `node_modules/${name}`;
-    const versions = new Set();
+    const versions = new Set<string>();
+    const packages = objectOf(parsedObject(text).packages);
 
-    for (const [path, entry] of Object.entries(JSON.parse(text).packages ?? {})) {
-        if ((path === suffix || path.endsWith(`/${suffix}`)) && typeof entry.version === 'string') {
-            versions.add(entry.version);
+    for (const [path, entry] of Object.entries(packages ?? {})) {
+        const { version } = objectOf(entry);
+        if ((path === suffix || path.endsWith(`/${suffix}`)) && typeof version === 'string') {
+            versions.add(version);
         }
     }
 
@@ -28,12 +35,14 @@ function npmVersions(text, name) {
 }
 
 // `bun.lock` is JSON with trailing commas.
-function bunVersions(text, name) {
-    const versions = new Set();
-    const { packages } = JSON.parse(text.replaceAll(/,(?<trailing>\s*[\]}])/gu, '$<trailing>'));
+function bunVersions(text: string, name: string): ReadonlySet<string> {
+    const versions = new Set<string>();
+    const packages = objectOf(
+        parsedObject(text.replaceAll(/,(?<trailing>\s*[\]}])/gu, '$<trailing>')).packages,
+    );
 
     for (const [key, entry] of Object.entries(packages ?? {})) {
-        const descriptor = Array.isArray(entry) ? entry[0] : entry;
+        const descriptor: unknown = Array.isArray(entry) ? (entry as unknown[])[0] : entry;
         if ((key === name || key.endsWith(`/${name}`)) && typeof descriptor === 'string') {
             versions.add(descriptor.slice(descriptor.lastIndexOf('@') + 1));
         }
@@ -42,7 +51,7 @@ function bunVersions(text, name) {
     return versions;
 }
 
-const READ_LOCKFILES = [
+const READ_LOCKFILES: readonly (readonly [string, Read])[] = [
     ['package-lock.json', npmVersions],
     ['npm-shrinkwrap.json', npmVersions],
     ['bun.lock', bunVersions],
@@ -50,7 +59,7 @@ const READ_LOCKFILES = [
 
 const UNREAD_LOCKFILES = ['bun.lockb', 'pnpm-lock.yaml', 'yarn.lock'];
 
-function lockedVersions(path, read, name) {
+function lockedVersions(path: string, read: Read, name: string): null | string[] {
     try {
         return [...read(readFileSync(path, 'utf8'), name)].toSorted((left, right) =>
             left < right ? -1 : 1,
@@ -61,13 +70,16 @@ function lockedVersions(path, read, name) {
 }
 
 // In a monorepo the member running browser mode declares the provider, not the root.
-function declaredAnywhere(root, name) {
+function declaredAnywhere(root: string, name: string): boolean {
     return ['.', ...workspaceMembers(root)].some((member) => {
         try {
-            const pkg = JSON.parse(readFileSync(join(root, member, 'package.json'), 'utf8'));
+            const pkg = parsedObject(readFileSync(join(root, member, 'package.json'), 'utf8'));
             return (
-                { ...pkg.dependencies, ...pkg.devDependencies, ...pkg.peerDependencies }[name] !==
-                undefined
+                {
+                    ...objectOf(pkg.dependencies),
+                    ...objectOf(pkg.devDependencies),
+                    ...objectOf(pkg.peerDependencies),
+                }[name] !== undefined
             );
         } catch {
             return false;
@@ -75,9 +87,9 @@ function declaredAnywhere(root, name) {
     });
 }
 
-export function pinnedPair(root) {
-    const readable = READ_LOCKFILES.map(([name, read]) => [join(root, name), read]).find(([path]) =>
-        existsSync(path),
+export function pinnedPair(root: string): null | Pair {
+    const readable = READ_LOCKFILES.map(([name, read]) => [join(root, name), read] as const).find(
+        ([path]) => existsSync(path),
     );
 
     if (readable === undefined) {
@@ -100,11 +112,11 @@ export function pinnedPair(root) {
     return { provider, runner, verdict: matched ? 'ok' : 'skewed' };
 }
 
-function versionColumn(versions) {
+function versionColumn(versions: readonly string[]): string {
     return versions.length === 0 ? '—' : versions.join(', ');
 }
 
-function reportPinnedPair(root) {
+function reportPinnedPair(root: string): boolean {
     const pair = pinnedPair(root);
     if (pair === null) {
         return false;
@@ -133,8 +145,7 @@ function reportPinnedPair(root) {
     return pair.verdict === 'skewed';
 }
 
-if (import.meta.main) {
-    const root = resolve(argv[2] ?? cwd());
+export function doctor(root: string): number {
     const rows = toolVersions();
     const failed = rows.some(({ verdict }) => verdict === 'old' || verdict === 'absent');
     const warned = rows.some(({ verdict }) => verdict === 'newer');
@@ -161,5 +172,5 @@ if (import.meta.main) {
 
     const skewed = reportPinnedPair(root);
 
-    exit(failed || skewed ? 1 : 0);
+    return failed || skewed ? 1 : 0;
 }

@@ -1,10 +1,22 @@
-import { charWidths, codePointsOf, styled } from './oxlint-report-theme.js';
+import type { Line } from './source.js';
+import { charWidths, codePointsOf, styled } from './theme.js';
+import type { Theme } from './theme.js';
 
-export function spanWithinLine(line, span) {
+export type Label = { label?: string | undefined; length: number; offset: number };
+
+export type MarkedSpan = Label & { style: string };
+
+export type Frame = { linumWidth: number; maxGutter: number; noLinum: string; spans: MarkedSpan[] };
+
+type LabelLayout = 'first' | 'rest' | 'single';
+
+type Bar = { middle: number; span: MarkedSpan };
+
+export function spanWithinLine(line: Line, span: Label): boolean {
     return span.offset >= line.offset && span.offset + span.length <= line.offset + line.length;
 }
 
-export function spanTouchesLine(line, span) {
+export function spanTouchesLine(line: Line, span: Label): boolean {
     const end = span.offset + Math.max(span.length, 1);
     const lineEnd = line.offset + line.length;
 
@@ -15,7 +27,7 @@ export function spanTouchesLine(line, span) {
     );
 }
 
-export function spanDrawsInGutter(line, span) {
+export function spanDrawsInGutter(line: Line, span: Label): boolean {
     const end = span.offset + Math.max(span.length, 1);
     const lineEnd = line.offset + line.length;
     const startsHere = span.offset >= line.offset && span.offset < lineEnd;
@@ -24,22 +36,22 @@ export function spanDrawsInGutter(line, span) {
     return spanTouchesLine(line, span) && !(startsHere && endsHere);
 }
 
-function spanCrossesLine(line, span) {
+function spanCrossesLine(line: Line, span: Label): boolean {
     return span.offset < line.offset && span.offset + span.length > line.offset + line.length;
 }
 
-export function starts(line, span) {
+export function starts(line: Line, span: Label): boolean {
     return span.offset >= line.offset;
 }
 
-export function ends(line, span) {
+export function ends(line: Line, span: Label): boolean {
     const end = span.offset + span.length;
 
     return end >= line.offset && end <= line.offset + line.length;
 }
 
 // Rounds inside a multi-byte character toward `start`.
-function visualOffset(line, offset, start) {
+function visualOffset(line: Line, offset: number, start: boolean): number {
     let index = offset - line.offset;
     while (
         index <= line.bytes.length &&
@@ -55,11 +67,11 @@ function visualOffset(line, offset, start) {
     return index > line.bytes.length ? width + 1 : width;
 }
 
-function isContinuation(byte) {
+function isContinuation(byte: number | undefined): boolean {
     return byte !== undefined && byte >= 0x80 && byte < 0xc0;
 }
 
-export function lineGutter({ chars }, { maxGutter, spans }, line) {
+export function lineGutter({ chars }: Theme, { maxGutter, spans }: Frame, line: Line): string {
     if (maxGutter === 0) {
         return '';
     }
@@ -86,7 +98,12 @@ export function lineGutter({ chars }, { maxGutter, spans }, line) {
     return `${gutter}${' '.repeat((arrow ? 1 : 3) + Math.max(maxGutter - codePointsOf(gutter).length, 0))}`;
 }
 
-export function highlightGutter({ chars }, { maxGutter, spans }, line, labelLayout) {
+export function highlightGutter(
+    { chars }: Theme,
+    { maxGutter, spans }: Frame,
+    line: Line,
+    labelLayout: LabelLayout,
+): string {
     if (maxGutter === 0) {
         return '';
     }
@@ -113,7 +130,12 @@ export function highlightGutter({ chars }, { maxGutter, spans }, line, labelLayo
     return `${gutter}${' '.repeat(Math.max(maxGutter + 3 - columns, 0))}`;
 }
 
-function labelLine({ chars }, text, style, labelLayout) {
+function labelLine(
+    { chars }: Theme,
+    text: string,
+    style: string,
+    labelLayout: LabelLayout,
+): string {
     const body = styled(text, style);
     const opening = {
         first: `${chars.lbot}${chars.hbar}${chars.rcross} ${body}`,
@@ -124,21 +146,26 @@ function labelLine({ chars }, text, style, labelLayout) {
     return styled(opening, style);
 }
 
-export function labelLines(label) {
+export function labelLines(label: string): { labelLayout: LabelLayout; text: string }[] {
     const [first = '', ...rest] = label.split('\n');
 
     return [
         { labelLayout: rest.length > 0 ? 'first' : 'single', text: first },
-        ...rest.map((text) => ({ labelLayout: 'rest', text })),
+        ...rest.map((text) => ({ labelLayout: 'rest' as const, text })),
     ];
 }
 
 // Every label hangs from the middle of its underline, crossing the bars of the spans to its left.
-export function singleLineMarks(theme, frame, line, onLine) {
+export function singleLineMarks(
+    theme: Theme,
+    frame: Frame,
+    line: Line,
+    onLine: readonly MarkedSpan[],
+): string {
     const { chars } = theme;
     let highest = 0;
     let underline = '';
-    const bars = [];
+    const bars: Bar[] = [];
     for (const span of onLine) {
         const start = Math.max(visualOffset(line, span.offset, true), highest);
         const end =
@@ -171,7 +198,12 @@ export function singleLineMarks(theme, frame, line, onLine) {
     return text;
 }
 
-function hangingLabel(theme, bars, span, { labelLayout, text }) {
+function hangingLabel(
+    theme: Theme,
+    bars: readonly Bar[],
+    span: MarkedSpan,
+    { labelLayout, text }: { labelLayout: LabelLayout; text: string },
+): string {
     let drawn = '';
     let column = 1;
     for (const bar of bars) {
@@ -188,13 +220,13 @@ function hangingLabel(theme, bars, span, { labelLayout, text }) {
     return drawn;
 }
 
-function sameSpan(left, right) {
+function sameSpan(left: Label, right: Label): boolean {
     return (
         left.offset === right.offset && left.length === right.length && left.label === right.label
     );
 }
 
-export function multiLineEnd(theme, frame, line, span) {
+export function multiLineEnd(theme: Theme, frame: Frame, line: Line, span: MarkedSpan): string {
     const { chars } = theme;
     const corner = { first: chars.rcross, rest: chars.vbar, single: chars.hbar };
 

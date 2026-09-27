@@ -1,34 +1,39 @@
-#!/usr/bin/env node
-
 // oxlint picks its print form from the environment, so the form is never guessed: the same binary
 // lints a one-line probe here, and what it printed names the form.
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { argv, exit, stdout } from 'node:process';
 
-import { drawGraphical } from './oxlint-report-graphical.js';
-import { agentLine, closingLines, githubLine } from './oxlint-report-lines.js';
-import { sourceOf } from './oxlint-report-source.js';
-import { themeOf } from './oxlint-report-theme.js';
+import type { Report } from './diagnostic.js';
+import { drawGraphical } from './graphical.js';
+import { agentLine, closingLines, githubLine } from './lines.js';
+import { sourceOf } from './source.js';
+import type { Source } from './source.js';
+import { themeOf } from './theme.js';
+
+export type Form = 'agent' | 'framed' | 'framed-colour' | 'github';
 
 const REPORT_OPENING = '{ "diagnostics": ';
 
-export function splitReport(text) {
+export function splitReport(text: string): { before: string; report: null | Report } {
     const inside = text.indexOf(`\n${REPORT_OPENING}`);
     const at = text.startsWith(REPORT_OPENING) ? 0 : inside === -1 ? -1 : inside + 1;
     if (at === -1) {
         return { before: text, report: null };
     }
     try {
-        return { before: text.slice(0, at), report: JSON.parse(text.slice(at)) };
+        return {
+            before: text.slice(0, at),
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the report is oxlint's JSON form, whose shape is oxlint's to keep
+            report: JSON.parse(text.slice(at)) as Report,
+        };
     } catch {
         return { before: text, report: null };
     }
 }
 
-export function formOf(printed) {
+export function formOf(printed: string): Form {
     if (printed.startsWith('::')) {
         return 'github';
     }
@@ -40,7 +45,7 @@ export function formOf(printed) {
 }
 
 // The config is named, never discovered: discovery is the slow part of a start.
-function probeForm(oxlint) {
+function probeForm(oxlint: string): Form {
     const directory = mkdtempSync(join(tmpdir(), 'jterrazz-oxlint-form-'));
     try {
         writeFileSync(join(directory, 'probe.js'), 'debugger;\n');
@@ -57,23 +62,28 @@ function probeForm(oxlint) {
     }
 }
 
-function sourcesFrom(read) {
-    const sources = new Map();
+type Read = (path: string) => Buffer | null;
+
+function sourcesFrom(read: Read): (filename: string | undefined) => null | Source {
+    const sources = new Map<string, null | Source>();
 
     return (filename) => {
         if (filename === undefined) {
             return null;
         }
-        if (!sources.has(filename)) {
-            const data = read(filename);
-            sources.set(filename, data === null ? null : sourceOf(data));
+        const known = sources.get(filename);
+        if (known !== undefined) {
+            return known;
         }
+        const data = read(filename);
+        const source = data === null ? null : sourceOf(data);
+        sources.set(filename, source);
 
-        return sources.get(filename) ?? null;
+        return source;
     };
 }
 
-export function renderReport(report, form, read) {
+export function renderReport(report: Report, form: Form, read: Read): string {
     const source = sourcesFrom(read);
     const diagnostics = report.diagnostics ?? [];
     if (form === 'agent') {
@@ -91,11 +101,11 @@ export function renderReport(report, form, read) {
     return typeof report.number_of_files === 'number' ? `${body}${closingLines(report)}` : body;
 }
 
-function holdsDiagnostics(report) {
+function holdsDiagnostics(report: null | Report): boolean {
     return (report?.diagnostics ?? []).length > 0;
 }
 
-function readOrNothing(path) {
+function readOrNothing(path: string): Buffer | null {
     try {
         return readFileSync(path);
     } catch {
@@ -103,24 +113,23 @@ function readOrNothing(path) {
     }
 }
 
-function main() {
-    const [stdoutFile, stderrFile] = argv.slice(2);
-    const oxlint = argv[argv.indexOf('--oxlint') + 1];
-    if (stdoutFile === undefined || stderrFile === undefined || oxlint === undefined) {
-        stdout.write(
-            'Usage: node oxlint-report.js <stdout-file> <stderr-file> --oxlint <binary> [--if-diagnostics]\n',
-        );
-        exit(2);
-    }
+export function oxlintReport({
+    ifDiagnostics,
+    oxlint,
+    stderrFile,
+    stdoutFile,
+}: {
+    ifDiagnostics: boolean;
+    oxlint: string;
+    stderrFile: string;
+    stdoutFile: string;
+}): string {
     const { before, report } = splitReport(readOrNothing(stdoutFile)?.toString('utf8') ?? '');
-    if (argv.includes('--if-diagnostics') && !holdsDiagnostics(report)) {
-        return;
+    if (ifDiagnostics && !holdsDiagnostics(report)) {
+        return '';
     }
     const errors = readOrNothing(stderrFile)?.toString('utf8') ?? '';
     const drawn = report === null ? '' : renderReport(report, probeForm(oxlint), readOrNothing);
-    stdout.write(`${before}${errors}${drawn}`);
-}
 
-if (import.meta.main) {
-    main();
+    return `${before}${errors}${drawn}`;
 }

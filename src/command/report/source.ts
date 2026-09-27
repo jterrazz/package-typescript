@@ -1,11 +1,42 @@
 // oxlint's reading, byte for byte: UTF-8 byte offsets, CR, LF and CRLF each end a line while the
 // cut into lines splits on LF alone, and a span ending on a line break reaches the line after it.
 
+export type Break = { firstByte: number; lastByte: number };
+
+export type Source = { breaks: Break[]; data: Buffer };
+
+export type Contents = { data: Buffer; line: number; lineCount: number; start: number };
+
+export type Line = { bytes: Buffer; length: number; number: number; offset: number; text: string };
+
+export type Position = { column: number; line: number };
+
+type Prefix = {
+    currentLineStart: number;
+    end: number;
+    leadingStart: null | number;
+    lineCount: number;
+    startLine: number;
+};
+
+type Reach = { breakThreshold: number; endThreshold: number; offset: number };
+
+type ScanState = {
+    active: boolean;
+    leadingStart: null | number;
+    lineCount: number;
+    lineStart: number;
+    position: number;
+    sawNewline: boolean;
+    startLine: number;
+    trailing: number;
+};
+
 const CR = 0x0d;
 const LF = 0x0a;
 
-function breaksOf(data) {
-    const breaks = [];
+function breaksOf(data: Buffer): Break[] {
+    const breaks: Break[] = [];
     for (let index = 0; index < data.length; index += 1) {
         const byte = data[index];
         if (byte === LF && index > 0 && data[index - 1] === CR) {
@@ -20,11 +51,11 @@ function breaksOf(data) {
     return breaks;
 }
 
-export function sourceOf(data) {
+export function sourceOf(data: Buffer): Source {
     return { breaks: breaksOf(data), data };
 }
 
-function breaksBefore(breaks, end) {
+function breaksBefore(breaks: readonly Break[], end: number): number {
     let low = 0;
     let high = breaks.length;
     while (low < high) {
@@ -39,7 +70,7 @@ function breaksBefore(breaks, end) {
     return low;
 }
 
-function prefixOf({ breaks, data }, offset) {
+function prefixOf({ breaks, data }: Source, offset: number): Prefix {
     let end = Math.min(Math.max(offset - 1, 0), data.length);
     if (end > 0 && data[end - 1] === CR) {
         end -= 1;
@@ -59,7 +90,7 @@ function prefixOf({ breaks, data }, offset) {
 
 // A break above the span moves the leading context line down; past the span, it counts toward the
 // one trailing line. True once that line is read.
-function meetBreak(state, end, span) {
+function meetBreak(state: ScanState, end: number, span: Reach): boolean {
     state.lineCount += 1;
     if (end < span.offset) {
         if (state.leadingStart !== null) {
@@ -81,7 +112,7 @@ function meetBreak(state, end, span) {
     return false;
 }
 
-function scan(data, state, span) {
+function scan(data: Buffer, state: ScanState, span: Reach): void {
     while (state.position < data.length) {
         const byte = data[state.position];
         if (byte === CR || byte === LF) {
@@ -106,15 +137,15 @@ function scan(data, state, span) {
 }
 
 // From the line above the span to the line below it; null when the span runs past the source.
-export function readSpan(source, offset, length) {
+export function readSpan(source: Source, offset: number, length: number): Contents | null {
     const { data } = source;
     const prefix = prefixOf(source, offset);
-    const span = {
+    const span: Reach = {
         breakThreshold: offset + Math.max(length - 1, 0),
         endThreshold: Math.max(offset + length - 1, 0),
         offset,
     };
-    const state = {
+    const state: ScanState = {
         active: false,
         leadingStart: prefix.leadingStart,
         lineCount: prefix.lineCount,
@@ -144,7 +175,7 @@ export function readSpan(source, offset, length) {
 }
 
 // 1-based, as oxlint places a diagnostic on its one-line forms.
-export function positionAt({ breaks, data }, offset) {
+export function positionAt({ breaks, data }: Source, offset: number): null | Position {
     if (offset > data.length) {
         return null;
     }
@@ -158,7 +189,7 @@ export function positionAt({ breaks, data }, offset) {
     return { column: at - (last === undefined ? 0 : last.lastByte + 1) + 1, line: before + 1 };
 }
 
-export function lineColumnAt(contents, offset) {
+export function lineColumnAt(contents: Contents, offset: number): null | Position {
     const { data } = contents;
     let relative = Math.max(offset - contents.start, 0);
     if (relative > data.length) {
@@ -180,12 +211,12 @@ export function lineColumnAt(contents, offset) {
         : { column: relative - (last.lastByte + 1), line: contents.line + breaks.length };
 }
 
-export function linesOf(contents) {
+export function linesOf(contents: Contents): Line[] {
     const { data, start: base } = contents;
-    const lines = [];
+    const lines: Line[] = [];
     let number = contents.line;
     let start = 0;
-    const push = (end, textEnd) => {
+    const push = (end: number, textEnd: number): void => {
         const bytes = data.subarray(start, textEnd);
         lines.push({
             bytes,

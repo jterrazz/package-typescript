@@ -1,3 +1,4 @@
+import type { Diagnostic } from './diagnostic.js';
 import {
     ends,
     highlightGutter,
@@ -8,12 +9,17 @@ import {
     spanTouchesLine,
     spanWithinLine,
     starts,
-} from './oxlint-report-marks.js';
-import { lineColumnAt, linesOf, readSpan } from './oxlint-report-source.js';
-import { charWidths, codePointsOf, styled } from './oxlint-report-theme.js';
+} from './marks.js';
+import type { Frame, Label, MarkedSpan } from './marks.js';
+import { lineColumnAt, linesOf, readSpan } from './source.js';
+import type { Contents, Line, Source } from './source.js';
+import { charWidths, codePointsOf, styled } from './theme.js';
+import type { Theme } from './theme.js';
+
+type Framed = { context: Label; contents: Contents };
 
 // As oxlint prints it: every tab widened to the next multiple of four.
-function lineText(text) {
+function lineText(text: string): string {
     if (!text.includes('\t')) {
         return text;
     }
@@ -26,7 +32,7 @@ function lineText(text) {
         .join('');
 }
 
-function widestGutter(lines, spans) {
+function widestGutter(lines: readonly Line[], spans: readonly MarkedSpan[]): number {
     return Math.max(
         0,
         ...lines.map(
@@ -37,7 +43,7 @@ function widestGutter(lines, spans) {
     );
 }
 
-function drawLine(theme, frame, line) {
+function drawLine(theme: Theme, frame: Frame, line: Line): string {
     const { styles, chars } = theme;
     const number = styled(String(line.number).padStart(frame.linumWidth), styles.linum);
     let text = ` ${number} ${chars.vbar} ${lineGutter(theme, frame, line)}${lineText(line.text)}\n`;
@@ -56,7 +62,15 @@ function drawLine(theme, frame, line) {
     return text;
 }
 
-function drawFrame(theme, { context, contents, labels, filename }) {
+function drawFrame(
+    theme: Theme,
+    {
+        context,
+        contents,
+        labels,
+        filename,
+    }: Framed & { filename: string; labels: readonly Label[] },
+): null | string {
     const { chars, styles } = theme;
     const lines = linesOf(contents);
     const primary = labels.find(
@@ -64,12 +78,12 @@ function drawFrame(theme, { context, contents, labels, filename }) {
             label.offset >= context.offset &&
             label.offset + label.length <= context.offset + context.length,
     );
-    const spans = labels.map((label, index) => ({
+    const spans: MarkedSpan[] = labels.map((label, index) => ({
         ...label,
         style: styles.highlights[index % 3] ?? '',
     }));
     const linumWidth = String(lines.at(-1)?.number ?? 0).length;
-    const frame = {
+    const frame: Frame = {
         linumWidth,
         maxGutter: widestGutter(lines, spans),
         noLinum: `${' '.repeat(linumWidth + 2)}${chars.vbarBreak} `,
@@ -84,7 +98,7 @@ function drawFrame(theme, { context, contents, labels, filename }) {
     }
 
     let text = `${' '.repeat(linumWidth + 2)}${chars.ltop}${chars.hbar}`;
-    text += `[${styled(filename, styles.link)}:${at.line + 1}:${at.column + 1}]\n`;
+    text += `[${styled(filename, styles.link)}:${String(at.line + 1)}:${String(at.column + 1)}]\n`;
     for (const line of lines) {
         text += drawLine(theme, frame, line);
     }
@@ -93,8 +107,8 @@ function drawFrame(theme, { context, contents, labels, filename }) {
 }
 
 // A label reaching the lines of the last frame joins it.
-function framesOf(source, labels) {
-    const frames = [];
+function framesOf(source: Source, labels: readonly Label[]): Framed[] | null {
+    const frames: Framed[] = [];
     for (const right of labels) {
         const contents = readSpan(source, right.offset, right.length);
         if (contents === null) {
@@ -106,7 +120,7 @@ function framesOf(source, labels) {
                 left.context.offset + left.context.length,
                 right.offset + right.length,
             );
-            const context = {
+            const context: Label = {
                 label: left.context.label,
                 length: end - left.context.offset,
                 offset: left.context.offset,
@@ -124,8 +138,12 @@ function framesOf(source, labels) {
 }
 
 // Null when a label points outside its source.
-export function drawFrames(theme, diagnostic, source) {
-    const labels = (diagnostic.labels ?? []).map(({ label, span }) => ({
+export function drawFrames(
+    theme: Theme,
+    diagnostic: Diagnostic,
+    source: null | Source,
+): null | string {
+    const labels: Label[] = (diagnostic.labels ?? []).map(({ label, span }) => ({
         label,
         length: span.length,
         offset: span.offset,
