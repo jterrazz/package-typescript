@@ -159,35 +159,38 @@ function offOf(
 const sum = (recorded: Counts): number =>
     Object.values(recorded).reduce((total, count) => total + count, 0);
 
-// A file the Oxlint pass refuses as `baseline-unreadable` holds no count any row may claim.
-function baselineReader(root: string): {
+// A file the Oxlint pass refuses as `baseline-unreadable` holds no count any row may claim; a floor is no debt, so its measures are counted and never summed.
+function baselineReader(
+    root: string,
+    floors: ReadonlySet<string>,
+): {
     heldOf: (section: string) => number | string;
     others: string[];
     totalOf: (section: string) => null | number | string;
 } {
     const { problem, sections } = readBaseline(root);
-    const isUnreadable = problem !== null;
+    const totalOf = (section: string): null | number | string => {
+        const recorded = problem === null ? sectionOf(root, section) : {};
+        if (problem !== null || recorded === null) {
+            return problem === null ? null : 'unreadable';
+        }
+
+        return floors.has(section) ? Object.keys(recorded).length : sum(recorded);
+    };
 
     return {
+        heldOf: (section) => {
+            const total = totalOf(section);
+            if (total === null || Object.keys(sectionOf(root, section) ?? {}).length === 0) {
+                return typeof total === 'string' ? total : 'nothing held';
+            }
+
+            return floors.has(section) ? `a floor of ${String(total)} measure(s)` : total;
+        },
         others: Object.keys(sections ?? {})
             .filter((section) => section !== SECTION)
             .toSorted(),
-        heldOf: (section) => {
-            if (isUnreadable) {
-                return 'unreadable';
-            }
-            const recorded = sectionOf(root, section) ?? {};
-
-            return Object.keys(recorded).length === 0 ? 'nothing held' : sum(recorded);
-        },
-        totalOf: (section) => {
-            if (isUnreadable) {
-                return 'unreadable';
-            }
-            const recorded = sectionOf(root, section);
-
-            return recorded === null ? null : sum(recorded);
-        },
+        totalOf,
     };
 }
 
@@ -204,6 +207,7 @@ function rowsOf(
     {
         behind,
         findings,
+        floors,
         off,
         optOuts,
         project,
@@ -211,13 +215,14 @@ function rowsOf(
     }: {
         behind: readonly ToolVersion[];
         findings: readonly Finding[];
+        floors: ReadonlySet<string>;
         off: readonly string[];
         optOuts: readonly OptOut[];
         project: Project;
         suppressions: number;
     },
 ): string[] {
-    const { heldOf, others } = baselineReader(root);
+    const { heldOf, others } = baselineReader(root, floors);
 
     return [
         ...rowsAligned([
@@ -252,11 +257,18 @@ export const drift: Pass = Object.freeze({
         const profilesAt = profilesFlag === undefined ? null : resolve(profilesFlag);
         const project = profileOfProject(context, profilesAt, profileNamesAt(context, profilesAt));
         const { off, unreasoned } = offOf(context, project, profilesAt);
-        const { others, totalOf } = baselineReader(root);
         const suppressions = orRefused(() => countSuppressions(root, context.ignorePatterns));
         const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
         const { resolved } = await context.config();
         const { optOuts } = resolved;
+        const floors = new Set(resolved.floors);
+        const { others, totalOf } = baselineReader(root, floors);
+        const totals = (kept: (section: string) => boolean): Record<string, unknown> =>
+            Object.fromEntries(
+                others
+                    .filter((section) => kept(section))
+                    .map((section) => [section, totalOf(section)]),
+            );
         const findings: Finding[] = unreasoned.map((rule) => ({
             message: `${rule} is off and the line that turns it off carries no '// reason:'`,
             path: project.configName ?? 'oxlint.config',
@@ -268,16 +280,17 @@ export const drift: Pass = Object.freeze({
             json: {
                 baseline: totalOf(SECTION),
                 config: project.configName === undefined ? 'default' : 'own',
+                floors: totals((section) => floors.has(section)),
                 optOuts,
                 oxlintSuppressions: suppressedCount(root),
                 profile: project.profileName,
                 rulesOff: off,
                 suppressions,
-                sections: Object.fromEntries(others.map((section) => [section, totalOf(section)])),
+                sections: totals((section) => !floors.has(section)),
                 tools: behind,
                 unreasoned,
             },
-            lines: rowsOf(root, { behind, findings, off, optOuts, project, suppressions }),
+            lines: rowsOf(root, { behind, findings, floors, off, optOuts, project, suppressions }),
         };
     },
     valued: ['--oxlint', '-c', '--profiles'],

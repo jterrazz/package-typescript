@@ -69,6 +69,7 @@ A package hands its consumers everything it holds them to in ONE preset: an obje
 | `layers`   | its import boundaries, in the vocabulary of [the Architecture pass](06-quality-checks.md#the-architecture-layer-map-pass) |
 | `names`    | its rules of where a name sits, in ls-lint's ([a name rule](06-quality-checks.md#a-name-rule-a-project-declares))         |
 | `baseline` | the sections of `jterrazz.baseline.json` it writes and judges                                                             |
+| `floors`   | which of those sections hold a floor, which only rises, rather than a debt                                                |
 | `presets`  | the presets it includes                                                                                                   |
 
 `definePreset` types one. A repository declares the presets it is held to in `jterrazz.config.ts`, and adds only what is its own:

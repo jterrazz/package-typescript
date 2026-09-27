@@ -22,6 +22,7 @@ export type NamesRule = {
 
 export type Preset = {
     baseline?: readonly string[];
+    floors?: readonly string[];
     layers?: readonly ArchitectureRule[];
     name: string;
     names?: readonly NamesRule[];
@@ -36,6 +37,7 @@ export type OptOut = { law: string; reason: string };
 // Each law of a preset is named `<preset>/<rule>`; a repository's own rules follow the laws, unnamed and read as written.
 export type Resolved = {
     baseline: string[];
+    floors: string[];
     laws: string[];
     layers: unknown[];
     names: unknown[];
@@ -143,6 +145,7 @@ const EMPTY_DECLARATION = Object.freeze({});
 
 const EMPTY: Resolved = {
     baseline: [],
+    floors: [],
     laws: [],
     layers: [],
     names: [],
@@ -239,6 +242,7 @@ export function resolveConfig(written: object, base: readonly Preset[]): Resolut
         problem: null,
         resolved: {
             baseline: presets.flatMap((preset) => preset.baseline ?? []),
+            floors: presets.flatMap((preset) => preset.floors ?? []),
             laws,
             layers: [
                 ...lawsOf(presets, opted.optOuts, (preset) => preset.layers),

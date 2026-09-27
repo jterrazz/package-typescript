@@ -51,6 +51,7 @@ runs:
           {
             "baseline": null,
             "config": "default",
+            "floors": {},
             "optOuts": [],
             "oxlintSuppressions": null,
             "profile": "node",
