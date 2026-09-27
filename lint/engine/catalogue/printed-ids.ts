@@ -5,7 +5,7 @@ export type PrintingPlugin = { meta: { name: string }; rules: Readonly<Record<st
 
 function passIdPattern(passes: readonly string[]): RegExp {
     return new RegExp(
-        `(?:['"\`]|\\\\n)(?<id>(?:${passes.join('|')})\\/[a-z\\d]+(?:-[a-z\\d]+)*)(?![\\w/-])`,
+        `(?:['"\`]|\\\\n)(?<id>(?:${passes.join('|')})\\/[a-z\\d]+(?:-[a-z\\d]+)*)(?![\\w/-]|\\.md)`,
         'gu',
     );
 }

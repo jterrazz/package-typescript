@@ -1,27 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
-import {
-    astro,
-    bun,
-    compose,
-    defineConfig,
-    expo,
-    hexagonal,
-    layers,
-    nested,
-    next,
-    node,
-    react,
-} from './index.js';
+import { astro, bun, compose, defineConfig, expo, nested, next, node, react } from './index.js';
 
-function buildOverlappingMap() {
-    return layers({
-        map: [
-            { deny: ['**/a/**'], files: ['**/same/**'], message: 'a', name: 'first' },
-            { deny: ['**/b/**'], files: ['**/same/**'], message: 'b', name: 'second' },
-        ],
-    });
-}
 describe('index', () => {
     test('concatenates and dedupes plugin lists', () => {
         // Given - two configs sharing one jsPlugin
@@ -97,50 +77,6 @@ describe('index', () => {
 
         // Then - the holes contribute nothing
         expect(merged.rules).toStrictEqual({ curly: 'error' });
-    });
-
-    test('gives a layer map one override per layer, complete', () => {
-        // Given - a two-layer map
-        const fragment = layers({
-            map: [
-                {
-                    deny: ['**/adapters/**'],
-                    files: ['**/core/**'],
-                    message: 'the core is pure',
-                    name: 'core',
-                },
-            ],
-        });
-
-        // Then - the layer's whole pattern list sits inside its own override, because an oxlint override REPLACES the base entry and never merges it
-        expect(fragment.overrides).toStrictEqual([
-            {
-                files: ['**/core/**'],
-                rules: {
-                    'no-restricted-imports': [
-                        'error',
-                        {
-                            patterns: [{ group: ['**/adapters/**'], message: 'the core is pure' }],
-                        },
-                    ],
-                },
-            },
-        ]);
-    });
-
-    test('refuses a layer map where one glob belongs to two layers', () => {
-        // Given - two layers claiming the same files
-        // Then - the map is refused rather than silently losing one of the two
-        expect(buildOverlappingMap).toThrow(/belongs to both/u);
-    });
-
-    test('ships the hexagonal map as six complete overrides', () => {
-        // Given - the default map
-        // Then - one override per layer, and the features carve-out is a negated glob
-        expect(hexagonal.overrides).toHaveLength(6);
-        expect(JSON.stringify(hexagonal.overrides)).toContain(
-            '!**/presentation/features/common/**',
-        );
     });
 
     test("re-exports oxlint's own defineConfig", () => {

@@ -4,6 +4,11 @@ import { runChecker } from './engine/checker/checker.js';
 import type { Passes } from './engine/checker/pass.js';
 
 const PASSES: Passes = Object.freeze({
+    async architecture() {
+        const { architecture } = await import('./consumer/checks/architecture.js');
+
+        return architecture;
+    },
     async comments() {
         const { comments } = await import('./consumer/checks/comments.js');
 

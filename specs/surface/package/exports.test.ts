@@ -44,18 +44,15 @@ describe('exports', () => {
         );
     });
 
-    test('the oxlint entry exports the six profiles, the layer-map builders and the nested form', () => {
+    test('the oxlint entry exports the six profiles, the composer and the nested form', () => {
         // Given - the tool-facing oxlint entry
         // Then - its surface is exactly what a consumer's config names
         expect(Object.keys(oxlintEntry).toSorted()).toStrictEqual([
-            'HEXAGONAL_MAP',
             'astro',
             'bun',
             'compose',
             'defineConfig',
             'expo',
-            'hexagonal',
-            'layers',
             'nested',
             'next',
             'node',
@@ -76,7 +73,6 @@ describe('exports', () => {
             'astro',
             'bun',
             'expo',
-            'hexagonal',
             'nested',
             'next',
             'node',

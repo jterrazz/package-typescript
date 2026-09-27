@@ -86,29 +86,9 @@ describe('behaviour', () => {
         },
     );
 
-    test('the hexagonal layer map refuses an edge and carves out features/common', () => {
-        // Given - a hexagonal tree with one legal import and one edge per layer, linted by the node profile composed with the hexagonal map
-        using work = sandbox(resolve(FIXTURES, 'hexagonal', 'input'), 'node', 'node', [
-            'hexagonal',
-        ]);
-        const report = oxlint(work.path, ['-c', work.config, '--format=json', ...work.files]);
-
-        // Then - each edge is named, and only the file that crosses it
-        const named = diagnosticsOf(report)
-            .filter((diagnostic) => diagnostic.code.includes('no-restricted-imports'))
-            .map((diagnostic) => diagnostic.filename)
-            .toSorted((left, right) => left.localeCompare(right));
-
-        expect(named).toStrictEqual([
-            'application/use-cases/broken.ts',
-            'domain/broken.entity.ts',
-            'presentation/features/alpha/reads-beta.ts',
-        ]);
-    });
-
     test('keeps a behaviour or fixpoint ground only for a profile the rulebook ships', () => {
         // Given - every entry of the behaviour goldens and of the behaviour and fixpoint fixtures
-        const owners = new Set<string>([...PROFILES.map(({ name }) => name), 'hexagonal']);
+        const owners = new Set<string>(PROFILES.map(({ name }) => name));
         const entries = [
             ...readdirSync(EXPECTED).map((entry) => `_expected/behaviour/${entry}`),
             ...readdirSync(FIXTURES).map((entry) => `_fixtures/behaviour/${entry}`),
@@ -117,7 +97,7 @@ describe('behaviour', () => {
             ),
         ];
 
-        // Then - each one is named for a shipped profile or the layer map, and none outlives one
+        // Then - each one is named for a shipped profile, and none outlives one
         const orphans = entries.filter(
             (entry) => !owners.has((entry.split('/').at(-1) ?? '').replace(/\.report\.txt$/u, '')),
         );

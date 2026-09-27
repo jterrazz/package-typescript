@@ -1,5 +1,5 @@
 import type { OxlintConfig } from '../lint/index.js';
-import { astro, bun, expo, hexagonal, nested, next, node, react } from '../lint/index.js';
+import { astro, bun, expo, nested, next, node, react } from '../lint/index.js';
 import type { OxfmtConfig } from './oxfmt.js';
 import oxfmtConfig from './presets/oxfmt/index.js';
 
@@ -9,7 +9,6 @@ export const oxlint: {
     astro: OxlintConfig;
     bun: OxlintConfig;
     expo: OxlintConfig;
-    hexagonal: OxlintConfig;
     nested: (config: OxlintConfig) => OxlintConfig;
     next: OxlintConfig;
     node: OxlintConfig;
@@ -18,7 +17,6 @@ export const oxlint: {
     astro,
     bun,
     expo,
-    hexagonal,
     nested,
     next,
     node,

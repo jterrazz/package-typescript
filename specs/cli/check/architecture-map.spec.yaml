@@ -25,13 +25,7 @@ runs:
 
            RUN  Architecture (layer map)
 
-
-            error domain-stays-pure: src/domain/user.ts → src/infrastructure/store.ts
-              A domain module never reaches for infrastructure.
-
-
-          x 1 dependency violations (1 errors, 0 warnings). 2 modules, 1 dependencies cruised.
-
+          architecture/domain-stays-pure  src/domain/user.ts:1:22  found: `src/domain/user.ts` imports `src/infrastructure/store.ts` · why: A domain module never reaches for infrastructure. · fix: reach it through a layer the map allows, or change the map where the boundary moved · read: docs/06-quality-checks.md#the-architecture-layer-map-pass
           ✗ Failed with exit code 1
 
            RUN  Suppressions (directives)

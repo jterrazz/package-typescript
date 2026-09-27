@@ -2,11 +2,6 @@ import type { EngineCommand } from './pass.js';
 
 export const ENGINE_COMMANDS: Readonly<Record<string, () => Promise<EngineCommand>>> =
     Object.freeze({
-        async architecture() {
-            const { architecture } = await import('./architecture.js');
-
-            return architecture;
-        },
         async baseline() {
             const { baseline } = await import('./baseline.js');
 

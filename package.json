@@ -13,7 +13,6 @@
     "files": [
         "bin",
         "dist",
-        "!dist/self.*",
         "docs",
         "!docs/03-testing.md",
         "lint/engine/project/oxlint-config-names.json",

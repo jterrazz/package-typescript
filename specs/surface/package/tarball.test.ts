@@ -3,10 +3,8 @@ import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import hexagonalFragment from '../../../lint/consumer/rulebook/hexagonal.js';
 import { PROFILES } from '../../../lint/consumer/rulebook/profiles.js';
 import { decisions } from '../../../lint/engine/catalogue/decisions.js';
-import { compile } from '../../../lint/engine/compiler/compile.js';
 import { fragmentsIn, walkModules } from '../../../lint/engine/testing/module-walk.js';
 import {
     argvFlags,
@@ -134,11 +132,6 @@ describe('tarball', () => {
                 expect(undecided(name, config, entries)).toStrictEqual([]);
             }
         }
-
-        // Then - the hexagonal map is its consumer fragment, compiled
-        expect(hexagonalFragment.audience).toBe('consumer');
-        expect(oxlint.hexagonal).toStrictEqual(compile(hexagonalFragment));
-        expect(bundled.hexagonal).toStrictEqual(oxlint.hexagonal);
     });
 
     test('every profile of the table is packed as the preset a config is handed by path', async () => {

@@ -67,33 +67,9 @@ import { compose, defineConfig, node } from '@jterrazz/typescript/oxlint';
 export default defineConfig(compose(node, testing));
 ```
 
-## The layer map
+## Import boundaries
 
-Architecture boundaries are a declared map, not a filename regex. `layers({ map })` compiles it to one `no-restricted-imports` override per layer, and `hexagonal` is the map this package ships:
-
-```ts
-import { compose, defineConfig, hexagonal, node } from '@jterrazz/typescript/oxlint';
-
-export default defineConfig(compose(node, hexagonal));
-```
-
-- `domain/` imports no other layer.
-- `application/use-cases/` and `application/ports/` reach the domain and the ports, never an implementation.
-- `infrastructure/inbound/` reaches an outbound adapter through injection, not by import.
-- `presentation/ui/atoms/` and `molecules/` stay clear of navigation.
-- `presentation/features/` is independent, except for `features/common/`.
-
-Three properties of oxlint shape the generated config, all three permanent:
-
-- An override's rule **options REPLACE** the base entry; they never merge. So each layer's override carries that layer's COMPLETE pattern list, and nothing about layering is left in the base config.
-- The `regex` matcher is **Rust regex, which has no lookahead**. "features may not import features, except common" is two globs: the deny glob, then the same glob negated with `!`.
-- `no-restricted-imports` matches the **specifier string**, never a resolved path. `../beta/thing.js` does not carry the layer name and passes. A map is a textual boundary; a graph boundary is dependency-cruiser's.
-
-A layer that declares `allowTypeImports: true` lets a type-only import cross its boundary: a type is a contract, not a runtime dependency, and a port may name the adapter's shape without loading it.
-
-### A map the compiler refuses
-
-A map whose layers share a `files` glob is refused at build time rather than shipped: with replace semantics, the second override would silently erase the first. A map given an `id` that is not a non-empty string is refused too, since the fragment it compiles to answers to that id. Each refusal is thrown in four parts — `found: … · why: … · fix: … · read: …` — its read this section.
+A layer map is not an oxlint fragment: `no-restricted-imports` reads a specifier's text, and a boundary is about where an import lands. The map is declared in `jterrazz.config.ts` and judged by dependency-cruiser — [Quality checks](06-quality-checks.md#the-architecture-layer-map-pass), the hexagonal map included.
 
 ### `import/no-cycle`
 

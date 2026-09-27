@@ -33,15 +33,4 @@ export default defineConfig([
         platform: 'node',
         sourcemap: false,
     },
-    {
-        clean: false,
-        dts: false,
-        entry: { self: 'lint/self/index.ts' },
-        format: ['esm'],
-        hash: false,
-        outExtensions: () => ({ js: '.js' }),
-        outputOptions: { chunkFileNames: 'self-[name].js' },
-        platform: 'node',
-        sourcemap: false,
-    },
 ]);

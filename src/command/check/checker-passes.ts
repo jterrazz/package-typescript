@@ -1,5 +1,6 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
+import { SETTINGS_FILE } from '../../../lint/engine/project/jterrazz-config.js';
 import { checker } from '../checker.js';
 import { isFile } from '../disk.js';
 import { presetAt } from '../toolchain.js';
@@ -109,11 +110,16 @@ export function commentsPass(check: Check, runs: boolean): Launched | undefined 
     return { log, status: checker('comments', args, { path: log }) };
 }
 
+// Read as text, never run: the pass loads the settings, the command only asks whether there are any.
+function declaresArchitecture(): boolean {
+    return isFile(SETTINGS_FILE) && /\barchitecture\s*:/u.test(readFileSync(SETTINGS_FILE, 'utf8'));
+}
+
 export function architecturePass(check: Check): Launched | undefined {
     if (
         check.fix ||
         !check.selected('architecture') ||
-        !DEPENDENCY_CRUISER_CONFIGS.some((name) => isFile(name))
+        (!DEPENDENCY_CRUISER_CONFIGS.some((name) => isFile(name)) && !declaresArchitecture())
     ) {
         return undefined;
     }
@@ -121,7 +127,12 @@ export function architecturePass(check: Check): Launched | undefined {
 
     return {
         log,
-        status: checker('architecture', ['.', '--depcruise', check.tools.depcruise], { path: log }),
+        status: checker(
+            'architecture',
+            ['.', '--depcruise', check.tools.depcruise],
+            { path: log },
+            { typeless: true },
+        ),
     };
 }
 

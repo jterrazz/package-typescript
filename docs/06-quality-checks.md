@@ -24,7 +24,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Test Conventions (@jterrazz/test) | conventions checker         | per `specs/` root; per member resolving `@jterrazz/test`                 |
 | Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)                |
 | Publish (packaging)               | publint + attw + a build    | per package the registry would accept (not `private`)                    |
-| Architecture (layer map)          | dependency-cruiser          | check: a `.dependency-cruiser.*` at the project root                     |
+| Architecture (layer map)          | dependency-cruiser          | check: a map in `jterrazz.config.ts`, or a `.dependency-cruiser.*`       |
 | Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)                      |
 | Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)                   |
 | Markdown (prose)                  | rumdl + the prose gate      | always (check and fix — `--fix` runs rumdl's own fixes)                  |
@@ -341,11 +341,55 @@ A build that fails is a finding too. `publish/build-succeeds` names tsdown's fir
 
 ## The Architecture (layer map) pass
 
-oxlint's `no-restricted-imports` reads a path and a pattern; dependency-cruiser resolves the module graph, which is the only way to see a cycle running through three files or an edge hiding behind a barrel. Where a project declares a map — `.dependency-cruiser.cjs`, `.js` or `.mjs` at its root — this pass reads it, and where it does not the pass never runs: a project with no declared architecture is not in breach of one.
+[dependency-cruiser](https://github.com/sverweij/dependency-cruiser) holds the module graph to a layer map. It resolves every import the way the build does — the tsconfig's paths, a package's `exports`, an index file, a relative `../` — so an edge is judged by where it lands, never by how its specifier is spelled; oxlint's `no-restricted-imports` could only read the text. The pass runs where a map is declared, and nowhere else: a project with no declared architecture is not in breach of one.
 
-**The rule ids are the config's own `name`s.** This is the one gate of the toolchain whose vocabulary the consumer writes, and that is the point: a layer map is a project's own architecture, so its rules are named for it.
+A map is declared in `jterrazz.config.ts`, under `typescript.architecture`:
 
-A cruise starts from `src/` wherever there is one, and from whichever of `apps/`, `packages/` and `lib/` exist otherwise — a map never has to restate the shape of the tree it is about.
+```ts
+import { defineConfig } from '@jterrazz/typescript/config';
+
+export default defineConfig({
+    typescript: {
+        architecture: {
+            hexagonal: true,
+
+            layers: [
+                {
+                    name: 'handlers-reach-services',
+                    from: { path: '^src/handlers/' },
+                    to: { path: '^src/store/' },
+
+                    why: 'a handler speaks HTTP and hands the work to a service',
+                    fix: 'read the order through the service, which owns the store',
+                    read: 'docs/01-architecture.md#layers',
+                },
+            ],
+        },
+    },
+});
+```
+
+A layer is dependency-cruiser's own vocabulary — `from` and `to`, with `path`, `pathNot`, a `$1` naming a group the `from` path captured — plus the three parts of what a refusal teaches: `why`, `fix`, and the `read` a reader opens next. Each violation prints at its import, in four parts, under the id `architecture/<name>`:
+
+```text
+architecture/handlers-reach-services  src/handlers/orders.ts:2:24  found: `src/handlers/orders.ts` imports `src/store/orders.ts` · why: … · fix: … · read: docs/01-architecture.md#layers
+```
+
+A project that already keeps a `.dependency-cruiser.cjs`, `.js` or `.mjs` at its root has it extended, not replaced: its own rules run beside the declared ones, and a violation of one prints its `comment` as the why. A cruise starts from whichever of `src/`, `lint/`, `apps/`, `packages/` and `lib/` hold a file.
+
+### The hexagonal map
+
+`hexagonal: true` adds the map this package ships, six boundaries whose arrow points inward:
+
+- `domain/` imports no other layer.
+- `application/use-cases/` and `application/ports/` reach the domain and the ports, never an implementation.
+- `infrastructure/inbound/` reaches an outbound adapter through injection, not by import.
+- `presentation/ui/atoms/` and `molecules/` stay clear of navigation.
+- `presentation/features/<feature>/` reaches no other feature, except `features/common/`.
+
+Each folder matches at any depth, so a workspace member's `src/domain/` is held like the root's. The six are `ARCHITECTURE_HEXAGONAL` in `lint/consumer/checks/architecture.hexagonal.ts`, each with its why and its fix.
+
+### What the pass needs from the tree
 
 `dependency-cruiser` declares a `typescript <7` peer, and this tree satisfies it: the ordinary `typescript` dependency here is the ^6 JavaScript compiler API that perfectionist already needs ([Architecture](01-architecture.md)). That is also why the TS7 Go compiler stays out of `node_modules` under the name `typescript`.
 

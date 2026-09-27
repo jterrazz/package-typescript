@@ -83,22 +83,6 @@
         "audience": "consumer",
         "by": "throw",
         "channel": "runtime",
-        "id": "layer-map-id",
-        "message": "A layer map needs an id.",
-        "module": "lint/engine/compiler/layers.ts"
-    },
-    {
-        "audience": "consumer",
-        "by": "throw",
-        "channel": "runtime",
-        "id": "layer-map-disjoint",
-        "message": "an override replaces, so one map entry would erase the other",
-        "module": "lint/engine/compiler/layers.ts"
-    },
-    {
-        "audience": "consumer",
-        "by": "throw",
-        "channel": "runtime",
         "id": "empty-sweep",
         "message": "nothing to read under",
         "module": "lint/engine/project/project-files.ts"
