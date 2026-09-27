@@ -1,0 +1,103 @@
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import process from 'node:process';
+
+import { ignorePatternsOf } from '../../lint/engine/project/project-files.js';
+import { lintTargets } from './lint-targets.js';
+import { run } from './processes.js';
+import { inScratch } from './scratch.js';
+import { badge, print } from './terminal.js';
+import { toolConfigs } from './tool-configs.js';
+import { binaryIn, CHECKER, projectRoot, withTsgolintOnPath } from './toolchain.js';
+
+const TYPELESS_WARNING = '--disable-warning=MODULE_TYPELESS_PACKAGE_JSON';
+
+async function listedTargets(
+    ignoresOf: string | undefined,
+    args: readonly string[],
+): Promise<null | string[]> {
+    try {
+        return await lintTargets('.', { ignorePatterns: ignorePatternsOf(args), ignoresOf });
+    } catch {
+        return null;
+    }
+}
+
+async function recordLinter(
+    report: string,
+    args: readonly string[],
+    hoisted: string,
+): Promise<void> {
+    const { oxlint } = toolConfigs();
+    const targets = await listedTargets(oxlint.ignoresOf, args);
+    if (targets?.length === 0) {
+        writeFileSync(report, '{ "diagnostics": [] }\n');
+
+        return;
+    }
+    await run(
+        binaryIn('oxlint', hoisted),
+        [...oxlint.args, '--type-aware', '--format', 'json', ...args, ...(targets ?? [])],
+        { stderr: 'ignore', stdout: { path: report } },
+    );
+}
+
+async function recordPass(pass: string, report: string, args: readonly string[]): Promise<void> {
+    await run(
+        process.execPath,
+        [
+            ...(pass === 'names' ? [TYPELESS_WARNING] : []),
+            CHECKER,
+            pass,
+            '.',
+            '--format',
+            'json',
+            ...args,
+        ],
+        { stderr: 'ignore', stdout: { path: report } },
+    );
+}
+
+// A command of its own: `fix --baseline` would bury a rewrite of a tracked file in the everyday gesture.
+export async function baseline(args: readonly string[]): Promise<number> {
+    const project = projectRoot();
+    process.chdir(project);
+    const hoisted = join(project, 'node_modules/.bin');
+    withTsgolintOnPath(hoisted);
+
+    return await inScratch(async (scratch) => {
+        const reports = {
+            comments: join(scratch, 'comments.json'),
+            lint: join(scratch, 'lint.json'),
+            names: join(scratch, 'names.json'),
+        };
+        print(`${badge('TYPESCRIPT')} Recording the oxlint baseline...\n\n`);
+        await recordLinter(reports.lint, args, hoisted);
+        await recordPass('names', reports.names, args);
+        await recordPass('comments', reports.comments, args);
+        const written = await run(process.execPath, [
+            CHECKER,
+            'baseline',
+            reports.lint,
+            '.',
+            '--names',
+            reports.names,
+            '--comments',
+            reports.comments,
+            '--write',
+        ]);
+        if (written !== 0) {
+            return 1;
+        }
+        await run(
+            binaryIn('oxfmt', hoisted),
+            [...toolConfigs().oxfmt.args, 'jterrazz.baseline.json'],
+            {
+                stderr: 'ignore',
+                stdout: 'ignore',
+            },
+        );
+
+        return 0;
+    });
+}

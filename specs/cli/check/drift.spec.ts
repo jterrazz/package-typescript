@@ -10,7 +10,7 @@ import { toolchainWith } from '../_setup/toolchain-sandbox.js';
 // A config naming `@jterrazz/typescript/oxlint` must resolve it, and the spec runner copies rather than
 // installs: the project is built with the link npm would have made.
 
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
+const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../../..');
 
 const project = newDirectory('spec-drift-');
@@ -88,7 +88,7 @@ describe('drift', () => {
         );
 
         // When - the quality checks run there
-        const silent = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+        const silent = spawnSync('node', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
 
         // Then - the report names the profile, and refuses the rule turned off in silence
         expect(silent.stdout).toContain('Deviations from the profile');
@@ -115,7 +115,7 @@ describe('drift', () => {
         );
 
         // When - the quality checks run again
-        const reasoned = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+        const reasoned = spawnSync('node', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
 
         // A sandbox linking this checkout into its node_modules lints this repository, so the exit code is not the claim.
 
@@ -137,7 +137,7 @@ describe('drift', () => {
         );
 
         // When - the quality checks run there
-        const result = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+        const result = spawnSync('node', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
 
         // Then - the drift report finds the profile at that name too, not "none of this package's"
         expect(result.stdout).toContain('profile                              node');
@@ -149,7 +149,7 @@ describe('drift', () => {
         const directory = suppressingProject(toolchain);
 
         // When - the quality checks run there
-        const result = spawnSync('bash', [join(toolchain, 'bin/typescript.sh'), 'check'], {
+        const result = spawnSync('node', [join(toolchain, 'bin/typescript.js'), 'check'], {
             cwd: directory,
             encoding: 'utf8',
         });
@@ -167,8 +167,8 @@ describe('drift', () => {
 
         // When - the quality checks run with --json
         const result = spawnSync(
-            'bash',
-            [join(toolchain, 'bin/typescript.sh'), 'check', '--json'],
+            'node',
+            [join(toolchain, 'bin/typescript.js'), 'check', '--json'],
             {
                 cwd: directory,
                 encoding: 'utf8',

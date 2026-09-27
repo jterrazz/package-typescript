@@ -10,14 +10,14 @@ import { cli } from '../cli.specification.js';
 
 // A config in the folder above a project is never read; `fixture:` spreads into its cwd, so that case is built in a temp directory.
 
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
+const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
 
 function checkBelowDecoy(): string {
     const tree = temporaryDirectory('spec-default-config-');
     cpSync(resolve(import.meta.dirname, '_fixtures/default-config/decoy-parent'), tree, {
         recursive: true,
     });
-    const { stdout } = spawnSync('bash', [BIN, 'check'], {
+    const { stdout } = spawnSync('node', [BIN, 'check'], {
         cwd: join(tree, 'project'),
         encoding: 'utf8',
         env: { ...process.env, INIT_CWD: join(tree, 'project') },

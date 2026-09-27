@@ -75,7 +75,7 @@ function armPlugin(dir: string): void {
 }
 
 function check(dir: string): { status: null | number; stdout: string } {
-    const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
+    const result = spawnSync('node', [SELECTING_BIN, 'check'], {
         cwd: dir,
         encoding: 'utf8',
         env: { ...process.env, ...onlyPasses('conventions') },

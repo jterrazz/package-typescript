@@ -1,7 +1,8 @@
 {
     "typescript": {
-        "comments/comment-lines-held-by-the-baseline": 427,
-        "eslint/max-lines": 5
+        "comments/comment-lines-held-by-the-baseline": 398,
+        "eslint/max-lines": 5,
+        "typescript/no-unsafe-type-assertion": 35
     },
     "test": {
         "jterrazz-check/facet-test-uses-its-runner": 22,

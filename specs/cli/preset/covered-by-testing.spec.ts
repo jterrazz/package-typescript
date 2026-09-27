@@ -1,13 +1,15 @@
 import { directory } from '@jterrazz/test';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { cli as oxlintCli } from '../oxlint.specification.js';
 
+const BUILT_FROM = resolve(import.meta.dirname, '../../..');
+
 // `testing` composes after the profile and an override replaces options, so its options win (ADR-008).
 // `_fixtures/vitest-rule-owner.config.ts` stands in for it; one rule proves the precedence all three share.
 
-const NODE_CONFIG = resolve(import.meta.dirname, '../../../src/presets/oxlint/profiles/node.js');
+const NODE_CONFIG = join(BUILT_FROM, 'dist/presets/oxlint/profiles/node.js');
 const OWNER_CONFIG = resolve(import.meta.dirname, '_fixtures/vitest-rule-owner.config.ts');
 
 describe('covered-by-testing', () => {

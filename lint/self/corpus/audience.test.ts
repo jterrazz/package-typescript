@@ -3,10 +3,12 @@ import { existsSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { CHECK_PASSES } from '../../../src/command/check/passes.js';
 import { PROFILES } from '../../consumer/rulebook/profiles.js';
 import { decisions } from '../../engine/catalogue/decisions.js';
 import { AUDIENCES } from '../../engine/compiler/decision.js';
-import { CHANNELS, fieldText, REFUSALS, ROOT, rows, rowsOf, shippedModules } from './audience.js';
+import { shippedModules } from '../../engine/testing/shipped-modules.js';
+import { CHANNELS, fieldText, REFUSALS, ROOT, rows, rowsOf } from './audience.js';
 
 // A `self` row names the home that holds it — a path the package leaves out — and the names the tarball audit greps for.
 
@@ -51,34 +53,27 @@ describe('audience', () => {
     });
 
     test('the consumer passes are exactly the passes the check selects by name', () => {
-        // Given - every pass the check script asks about
-        const script = readFileSync(join(ROOT, 'bin/commands/check.sh'), 'utf8');
-        const selected = new Set(
-            [...script.matchAll(/\bselected (?<pass>[a-z]+)/gu)].map(
-                (match) => match.groups?.pass ?? '',
-            ),
-        );
-
+        // Given - every pass the command's check can select
         // Then - the manifest's consumer checker rows name each one, and nothing else
         expect(
             rowsOf('checker', 'consumer')
                 .map((row) => fieldText(row, 'id'))
                 .toSorted(byName),
-        ).toStrictEqual([...selected].toSorted(byName));
+        ).toStrictEqual([...CHECK_PASSES].toSorted(byName));
     });
 
     test('every refusal a shipped module makes is a consumer row, and every row is still there', () => {
-        // Given - every module of lint/, src/ and bin/, and the runtime rows of the manifest
+        // Given - every shipped module of lint/, src/ and bin/, and the runtime rows of the manifest
         const modules = ['lint', 'src', 'bin'].flatMap((folder) =>
-            shippedModules(join(ROOT, folder)),
+            shippedModules(ROOT, join(ROOT, folder)),
         );
         const runtime = rows.filter((row) => row.channel === 'runtime');
 
         // Then - a module refuses in each way as often as its rows declare, each consumer, each still worded so
         for (const module of modules) {
             const source = readFileSync(join(ROOT, module), 'utf8');
-            for (const [by, { module: inModule, script }] of Object.entries(REFUSALS)) {
-                const made = source.match(module.endsWith('.sh') ? script : inModule)?.length ?? 0;
+            for (const [by, spelling] of Object.entries(REFUSALS)) {
+                const made = source.match(spelling)?.length ?? 0;
                 const declaredRefusals = runtime.filter(
                     (row) => row.module === module && row.by === by,
                 );
@@ -109,46 +104,27 @@ describe('audience', () => {
 
     test('a refusal counts however it is spelled, and a rethrow or a clean exit does not', () => {
         // Given - each spelling of a refusal, and each of what is none
-        const spellings: Record<string, { module?: string[]; none: string[]; script?: string[] }> =
-            {
-                exit: {
-                    module: ['exit(1);', 'process.exit(code);'],
-                    none: [
-                        'exit(0);',
-                        'exit 0',
-                        'printf "exit code %d"',
-                        '(--linter-exit "$status")',
-                    ],
-                    script: ['exit 1', 'exit "$status"', 'exit $?'],
-                },
-                reject: {
-                    module: ['reject(new Error(x));', 'reject(error);', 'reject();'],
-                    none: [],
-                },
-                throw: {
-                    module: [
-                        'throw new TypeError(x);',
-                        'throw Error(x);',
-                        'throw errors.refused(x);',
-                    ],
-                    none: ['throw error;', "'only-throw-error'"],
-                },
-            };
+        const spellings: Record<string, { counted: string[]; none: string[] }> = {
+            exit: {
+                counted: ['exit(1);', 'process.exit(code);'],
+                none: ['exit(0);', "'--linter-exit'"],
+            },
+            reject: { counted: ['reject(new Error(x));', 'reject(error);', 'reject();'], none: [] },
+            throw: {
+                counted: ['throw new TypeError(x);', 'throw Error(x);', 'throw errors.refused(x);'],
+                none: ['throw error;', "'only-throw-error'"],
+            },
+        };
 
         // Then - every spelling counts once, where it is written, and nothing else counts
-        for (const [by, { module: inModule, script }] of Object.entries(REFUSALS)) {
-            const cases = spellings[by] ?? { none: [] };
+        for (const [by, spelling] of Object.entries(REFUSALS)) {
+            const cases = spellings[by] ?? { counted: [], none: [] };
             expect.soft(by in spellings, `${by} has no spelling proved`).toBe(true);
-            for (const line of cases.module ?? []) {
-                expect.soft(line.match(inModule)?.length, `${line} is no ${by}`).toBe(1);
-            }
-            for (const line of cases.script ?? []) {
-                expect.soft(line.match(script)?.length, `${line} is no ${by}`).toBe(1);
+            for (const line of cases.counted) {
+                expect.soft(line.match(spelling)?.length, `${line} is no ${by}`).toBe(1);
             }
             for (const line of cases.none) {
-                expect
-                    .soft(line.match(inModule) ?? line.match(script), `${line} counts`)
-                    .toBeNull();
+                expect.soft(line.match(spelling), `${line} counts`).toBeNull();
             }
         }
     });

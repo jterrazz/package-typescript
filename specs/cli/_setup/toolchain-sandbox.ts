@@ -11,7 +11,7 @@ const REPOSITORY = resolve(import.meta.dirname, '../../..');
 export function toolchainWith(tools: Record<string, null | string>): string {
     const root = temporaryDirectory('spec-toolchain-');
 
-    for (const entry of ['bin', 'lint', 'src', 'package.json']) {
+    for (const entry of ['bin', 'dist', 'lint', 'src', 'package.json']) {
         cpSync(join(REPOSITORY, entry), join(root, entry), { recursive: true });
     }
 

@@ -85,7 +85,7 @@
         "channel": "runtime",
         "id": "layer-map-id",
         "message": "A layer map needs an id.",
-        "module": "lint/engine/compiler/layers.js"
+        "module": "lint/engine/compiler/layers.ts"
     },
     {
         "audience": "consumer",
@@ -93,7 +93,7 @@
         "channel": "runtime",
         "id": "layer-map-disjoint",
         "message": "an override replaces, so one map entry would erase the other",
-        "module": "lint/engine/compiler/layers.js"
+        "module": "lint/engine/compiler/layers.ts"
     },
     {
         "audience": "consumer",
@@ -101,15 +101,15 @@
         "channel": "runtime",
         "id": "empty-sweep",
         "message": "nothing to read under",
-        "module": "lint/engine/project/project-files.js"
+        "module": "lint/engine/project/project-files.ts"
     },
     {
         "audience": "consumer",
         "by": "exit",
         "channel": "runtime",
         "id": "checker-command-failed",
-        "message": "exit(await (await command())",
-        "module": "lint/engine/checker/checker.js"
+        "message": "exit(await run(rest, { held }))",
+        "module": "lint/engine/checker/checker.ts"
     },
     {
         "audience": "consumer",
@@ -117,7 +117,7 @@
         "channel": "runtime",
         "id": "checker-unknown-pass",
         "message": "the checker runs no pass named",
-        "module": "lint/engine/checker/checker.js"
+        "module": "lint/engine/checker/checker.ts"
     },
     {
         "audience": "consumer",
@@ -125,7 +125,7 @@
         "channel": "runtime",
         "id": "checker-pass-failed",
         "message": "exit(await runPass(",
-        "module": "lint/engine/checker/checker.js"
+        "module": "lint/engine/checker/checker.ts"
     },
     {
         "audience": "consumer",
@@ -133,70 +133,6 @@
         "channel": "runtime",
         "id": "empty-sweep-exit",
         "message": "stderr.write(`${error.message}\\n`);",
-        "module": "lint/engine/project/project-files.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "oxlint-report-usage",
-        "message": "Usage: node oxlint-report.js",
-        "module": "src/cli/oxlint-report.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "doctor-out-of-range",
-        "message": "exit(failed || skewed ? 1 : 0);",
-        "module": "src/cli/doctor.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "lint-targets-unread",
-        "message": "error instanceof Error ? error.message : String(error)",
-        "module": "src/cli/lint-targets.js"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "check-failed",
-        "message": "Some checks failed",
-        "module": "bin/commands/check.sh"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "check-usage",
-        "message": "Usage: check.sh <check|fix>",
-        "module": "bin/commands/check.sh"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "build-failed",
-        "message": "Error: Build failed",
-        "module": "bin/typescript.sh"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "baseline-write-failed",
-        "message": "--comments \"$COMMENTS_REPORT\" --write || exit 1",
-        "module": "bin/typescript.sh"
-    },
-    {
-        "audience": "consumer",
-        "by": "exit",
-        "channel": "runtime",
-        "id": "command-usage",
-        "message": "Usage: typescript <command>",
-        "module": "bin/typescript.sh"
+        "module": "lint/engine/project/project-files.ts"
     }
 ]

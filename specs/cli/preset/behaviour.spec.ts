@@ -7,11 +7,13 @@ import {
     symlinkSync,
     writeFileSync,
 } from 'node:fs';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { diagnosticsOf, oxlint, PROFILES, sandbox } from './_setup/rulebook.js';
 import type { Diagnostic } from './_setup/rulebook.js';
+
+const BUILT_FROM = resolve(import.meta.dirname, '../../..');
 
 // One case per decision this package owns, never per upstream rule. The `_expected/` tree holds only the files
 // `--fix` rewrote, so a reasoned `off` states itself by absence. Regenerate with `TEST_UPDATE=1 npm test`.
@@ -131,7 +133,7 @@ describe('behaviour', () => {
             resolve(work.path, 'node_modules/@jterrazz/test'),
             'dir',
         );
-        const entry = resolve(import.meta.dirname, '../../../lint/index.js');
+        const entry = join(BUILT_FROM, 'dist/oxlint.js');
         writeFileSync(
             work.config,
             `import { testing } from '@jterrazz/test/oxlint';\nimport { compose, node } from '${entry}';\n\nexport default compose(node, testing);\n`,

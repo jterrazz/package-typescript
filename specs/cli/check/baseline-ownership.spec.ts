@@ -46,7 +46,7 @@ function run(
     command: string,
     env: NodeJS.ProcessEnv = process.env,
 ): { status: null | number; stdout: string } {
-    const result = spawnSync('bash', [SELECTING_BIN, command], {
+    const result = spawnSync('node', [SELECTING_BIN, command], {
         cwd: project,
         encoding: 'utf8',
         env: { ...env, INIT_CWD: project },

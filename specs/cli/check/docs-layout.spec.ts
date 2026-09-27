@@ -7,7 +7,7 @@ import { newDirectory } from '../_setup/temporary-directory.js';
 
 // git refuses to track a nested `.git`, so a fixture cannot be the repository the pass asks for.
 
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
+const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
 const FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/on-convention');
 
 const repository = newDirectory('spec-docs-layout-repo-');
@@ -26,8 +26,8 @@ describe('docs-layout', () => {
         cpSync(FIXTURE, looseDirectory, { recursive: true });
 
         // When - the quality checks run in each
-        const inside = spawnSync('bash', [BIN, 'check'], { cwd: repository, encoding: 'utf8' });
-        const outside = spawnSync('bash', [BIN, 'check'], {
+        const inside = spawnSync('node', [BIN, 'check'], { cwd: repository, encoding: 'utf8' });
+        const outside = spawnSync('node', [BIN, 'check'], {
             cwd: looseDirectory,
             encoding: 'utf8',
         });

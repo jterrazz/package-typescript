@@ -28,7 +28,7 @@ function checkFromClone(boundary: 'directory' | 'file' | 'none'): {
         writeFileSync(join(clone, '.git'), `gitdir: ${join(workDir, 'bare.git')}\n`);
     }
 
-    const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
+    const result = spawnSync('node', [SELECTING_BIN, 'check'], {
         cwd: clone,
         encoding: 'utf8',
         env: { ...process.env, ...onlyPasses('gitignore') },

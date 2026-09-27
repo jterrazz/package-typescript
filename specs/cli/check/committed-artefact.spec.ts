@@ -7,7 +7,7 @@ import { newDirectory } from '../_setup/temporary-directory.js';
 
 // git refuses to track a nested `.git`, so a fixture cannot be the repository this needs.
 
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
+const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
 const FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/on-convention');
 const TURBO_FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/turbo');
 
@@ -28,7 +28,7 @@ describe('committed-artefact', () => {
         execFileSync('git', ['add', '--force', 'tsconfig.tsbuildinfo'], { cwd: workDir });
 
         // When - the quality checks run
-        const result = spawnSync('bash', [BIN, 'check'], { cwd: workDir, encoding: 'utf8' });
+        const result = spawnSync('node', [BIN, 'check'], { cwd: workDir, encoding: 'utf8' });
 
         // Then - the gate names the committed artefact and how to untrack it
         expect(result.status).toBe(1);
@@ -47,7 +47,7 @@ describe('committed-artefact', () => {
         execFileSync('git', ['add', '--force', '.turbo/turbo-build.log'], { cwd: turboWorkDir });
 
         // When - the quality checks run
-        const result = spawnSync('bash', [BIN, 'check'], { cwd: turboWorkDir, encoding: 'utf8' });
+        const result = spawnSync('node', [BIN, 'check'], { cwd: turboWorkDir, encoding: 'utf8' });
 
         // Then - ignoring the directory is granted, committing its contents is not
         expect(result.status).toBe(1);

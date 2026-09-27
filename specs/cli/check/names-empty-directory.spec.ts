@@ -61,7 +61,7 @@ function namesPassOf(
     command: 'check' | 'fix',
     options: readonly string[] = [],
 ): string[] {
-    const { stdout } = spawnSync('bash', [SELECTING_BIN, command, ...options], {
+    const { stdout } = spawnSync('node', [SELECTING_BIN, command, ...options], {
         cwd: project,
         encoding: 'utf8',
         env: { ...process.env, ...onlyPasses('names'), INIT_CWD: project },

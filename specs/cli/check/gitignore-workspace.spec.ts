@@ -14,7 +14,7 @@ function checkFromMember(fixture: string): { status: null | number; stdout: stri
         recursive: true,
     });
 
-    const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
+    const result = spawnSync('node', [SELECTING_BIN, 'check'], {
         cwd: resolve(workDir, 'packages/foo'),
         encoding: 'utf8',
         env: { ...process.env, ...onlyPasses('gitignore') },

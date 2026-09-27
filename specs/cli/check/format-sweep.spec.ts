@@ -39,7 +39,7 @@ function projectWith({
 }
 
 function formatPassOf(project: string, command: 'check' | 'fix'): string {
-    const { stdout } = spawnSync('bash', [SELECTING_BIN, command], {
+    const { stdout } = spawnSync('node', [SELECTING_BIN, command], {
         cwd: project,
         encoding: 'utf8',
         env: { ...process.env, ...onlyPasses('oxfmt'), INIT_CWD: project },

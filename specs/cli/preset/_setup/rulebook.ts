@@ -22,10 +22,10 @@ export const PROFILES = Object.freeze([
 ] as const);
 
 export function profilePath(name: string): string {
-    return resolve(REPOSITORY, 'src/presets/oxlint/profiles', `${name}.js`);
+    return resolve(REPOSITORY, 'dist/presets/oxlint/profiles', `${name}.js`);
 }
 
-export const OXFMT_CONFIG = resolve(REPOSITORY, 'src/presets/oxfmt/index.js');
+export const OXFMT_CONFIG = resolve(REPOSITORY, 'dist/presets/oxfmt/index.js');
 
 // A real directory, never a link: tsc resolves a preset's own `extends` from its real path.
 export function installTsconfigPresets(project: string): void {
@@ -81,7 +81,7 @@ export function sandbox(
     );
 
     const config = resolve(path, 'oxlint.config.js');
-    const entry = resolve(REPOSITORY, 'lint/index.js');
+    const entry = resolve(REPOSITORY, 'dist/oxlint.js');
     writeFileSync(
         config,
         `import { compose, ${[profile, ...also].join(', ')} } from '${entry}';\n\n` +

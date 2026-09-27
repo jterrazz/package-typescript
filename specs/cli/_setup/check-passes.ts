@@ -1,26 +1,12 @@
 import { resolve } from 'node:path';
 
-export const SELECTING_BIN = resolve(import.meta.dirname, 'check-selection.sh');
+import type { CheckPass } from '../../../src/command/check/passes.js';
 
-type Pass =
-    | 'architecture'
-    | 'astro'
-    | 'comments'
-    | 'conventions'
-    | 'docs'
-    | 'drift'
-    | 'gitignore'
-    | 'knip'
-    | 'markdown'
-    | 'names'
-    | 'oxfmt'
-    | 'oxlint'
-    | 'publish'
-    | 'secrets'
-    | 'suppressions'
-    | 'typescript';
+export const SELECTING_BIN = resolve(import.meta.dirname, 'check-selection.ts');
 
-export function onlyPasses(...passes: [Pass, ...Pass[]]): { TYPESCRIPT_CHECK_PASSES: string } {
+export function onlyPasses(...passes: [CheckPass, ...CheckPass[]]): {
+    TYPESCRIPT_CHECK_PASSES: string;
+} {
     return { TYPESCRIPT_CHECK_PASSES: passes.join(',') };
 }
 

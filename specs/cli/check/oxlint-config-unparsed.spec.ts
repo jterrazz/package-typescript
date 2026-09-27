@@ -5,12 +5,14 @@ import { afterAll, describe, expect, test } from 'vitest';
 
 import { newDirectory, temporaryDirectory } from '../_setup/temporary-directory.js';
 
+const BUILT_FROM = resolve(import.meta.dirname, '../../..');
+
 // oxlint loads every `oxlint.config.*` under the project, even one its `ignorePatterns` excludes, so a
 // config that cannot load is built in a temp directory. No oxlint run today exits 1 with no diagnostic, so
 // the judge is run directly on that report shape.
 
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
-const CHECKER = resolve(import.meta.dirname, '../../../lint/index.checker.js');
+const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
+const CHECKER = join(BUILT_FROM, 'dist/checker.js');
 
 const project = newDirectory('spec-oxlint-config-');
 
@@ -49,7 +51,7 @@ describe('oxlint-config-unparsed', () => {
         );
 
         // When - the quality checks run there
-        const result = spawnSync('bash', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+        const result = spawnSync('node', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
 
         // Then - oxlint's own report is printed, and the pass names the refusal in its own vocabulary
         expect(result.status).toBe(1);
@@ -71,7 +73,7 @@ describe('oxlint-config-unparsed', () => {
         });
 
         // When - the quality checks run there
-        const result = spawnSync('bash', [BIN, 'check'], { cwd: directory, encoding: 'utf8' });
+        const result = spawnSync('node', [BIN, 'check'], { cwd: directory, encoding: 'utf8' });
         const lint = result.stdout.slice(
             result.stdout.indexOf('Oxlint Check'),
             result.stdout.indexOf('Oxfmt Check'),

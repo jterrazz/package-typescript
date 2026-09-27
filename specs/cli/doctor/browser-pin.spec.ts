@@ -4,12 +4,12 @@ import { describe, expect, test } from 'vitest';
 
 // Each run starts one directory above the fixture, as npm does from a workspace root: `INIT_CWD` is the project.
 
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.sh');
+const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
 const FIXTURES = resolve(import.meta.dirname, '_fixtures/browser-pin');
 
 function doctorIn(fixture: string): { status: null | number; stdout: string } {
     const root = resolve(FIXTURES, fixture);
-    const result = spawnSync('bash', [BIN, 'doctor'], {
+    const result = spawnSync('node', [BIN, 'doctor'], {
         cwd: FIXTURES,
         encoding: 'utf8',
         env: { ...process.env, INIT_CWD: root },
