@@ -2,7 +2,7 @@
 
 A package of the family that writes rules for its consumers writes them with the engine this toolchain judges itself with. `@jterrazz/typescript/rules` exports that engine, and `@jterrazz/typescript/config` exports the one mechanism by which a package hands its consumers everything it holds them to — the preset. This chapter is both, in the order a rule is written: its row, its message, its check, its chapter, its debt, what it reads, and the preset that carries it.
 
-The kit is `lint/engine/`, exported through `lint/index.rules.ts` ([Architecture](01-architecture.md#the-judging-layer)): nothing in it knows a declaration, so a sibling package reads the same code this package runs, and keeps in its own engine only what no other package reads — `@jterrazz/test` keeps its spec-document model, its facets and its stub kinds, and nothing else.
+The kit is `lint/engine/`, exported through `lint/index.rules.ts` ([Architecture](01-architecture.md#the-judging-layer)) — and, under the `browser` condition, through `lint/index.rules.browser.ts`, the half that reads no disk: the lesson, the rule, the table and the ground folders, for a runtime a page loads: nothing in it knows a declaration, so a sibling package reads the same code this package runs, and keeps in its own engine only what no other package reads — `@jterrazz/test` keeps its spec-document model, its facets and its stub kinds, and nothing else.
 
 ## A rule is a catalogue row
 

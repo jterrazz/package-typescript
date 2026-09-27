@@ -46,6 +46,7 @@
         "./oxlint-config-names": "./lint/engine/project/oxlint-config-names.json",
         "./rules": {
             "types": "./dist/rules.d.ts",
+            "browser": "./dist/rules.browser.js",
             "default": "./dist/rules.js"
         },
         "./tsconfig/*": "./src/presets/tsconfig/*.json",

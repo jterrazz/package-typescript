@@ -17,6 +17,7 @@ export default defineConfig([
             oxlint: 'lint/index.ts',
             plugin: 'lint/consumer/rules/plugin.ts',
             rules: 'lint/index.rules.ts',
+            'rules.browser': 'lint/index.rules.browser.ts',
             'presets/oxfmt/index': 'src/presets/oxfmt/index.ts',
             'presets/tsdown/build': 'src/presets/tsdown/build.ts',
             'presets/tsdown/bundle': 'src/presets/tsdown/bundle.ts',
