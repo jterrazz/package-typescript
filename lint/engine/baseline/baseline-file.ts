@@ -74,15 +74,17 @@ export function keepsSection(root: string, section: string): boolean {
 const byKey = ([left]: [string, number], [right]: [string, number]): number =>
     left < right ? -1 : 1;
 
-// The formatter owns the indent of a file it formatted, so a rewrite keeps the file's own.
-export function serialise(counts: Counts, indent = '  '): string {
+// The formatter owns the indent of a file it formatted, so a rewrite keeps the file's own, and a new file takes the formatter's.
+const FORMATTED_INDENT = '    ';
+
+export function serialise(counts: Counts, indent = FORMATTED_INDENT): string {
     const sorted = Object.fromEntries(Object.entries(counts).toSorted(byKey));
 
     return JSON.stringify(sorted, null, indent).replaceAll('\n', `\n${indent}`);
 }
 
 function indentOf(text: string): string {
-    return /\n(?<indent>[ \t]+)"/u.exec(text)?.groups?.indent ?? '  ';
+    return /\n(?<indent>[ \t]+)"/u.exec(text)?.groups?.indent ?? FORMATTED_INDENT;
 }
 
 function valueEnd(text: string, start: number): number {
@@ -156,7 +158,7 @@ function membersOf(text: string): { end: number; key: string; start: number }[] 
 }
 
 export function withSection(text: null | string, name: string, counts: Counts): string {
-    const indent = text === null ? '  ' : indentOf(text);
+    const indent = text === null ? FORMATTED_INDENT : indentOf(text);
     const section = serialise(counts, indent);
     const member = `"${name}": ${section}`;
     if (text === null) {
