@@ -36,7 +36,9 @@ no configuration, and keeps its own code only for what the tool cannot express.
 - **rumdl** judges Markdown: a missing file or anchor (MD057, MD051), a fence
   with no language, and the rest of its defaults but layout, which is oxfmt's.
   The prose gate keeps backticked coordinates, a skill's chapters and the
-  readability floors.
+  readability floors. The old gate accepted a link whose target git ignores;
+  rumdl refuses one whose target is absent, and that change is accepted: a
+  clone holds no ignored file, so such a link is broken for its readers.
 - **`publish/no-test-code-in-production` stays ours**, and is not moved to
   dependency-cruiser. It judges the built chunks, not the source graph: an
   installed test package the bundler inlined, or an external specifier the
