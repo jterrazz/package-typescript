@@ -282,7 +282,7 @@ This repository's own debt is small and dated. `oxlint-suppressions.json` holds 
 
 ## The Publish (packaging) pass
 
-Every mistake this pass refuses is invisible in the repository and fatal in the registry: an `exports` entry pointing at a file nobody built, a subpath left out of `files` so it resolves in development and 404s in a consumer, a type declaration a modern resolver cannot see.
+This pass refuses a tarball the repository cannot see is broken. A packaging mistake is fatal in the registry: an `exports` entry pointing at a file nobody built, a subpath left out of `files` so it resolves in development and 404s in a consumer, a type declaration a modern resolver cannot see. [The build guard](#the-build-guard) refuses a build that compiles in test material, which works in the registry and ships what no product runs.
 
 It runs once per package the registry would accept — one that names an entry (`exports`, `main`) or a `publishConfig` and never says it is `private`. A private package, and a workspace root that only holds members, have no tarball to be judged on.
 
@@ -311,7 +311,7 @@ Without a config of its own, that build IS `typescript bundle`'s: the same prese
 
 That build leaves the disk alone as far as tsdown lets it: no chunk is written, and the config's `copy`, `exe` and `onSuccess` are switched off. A config's own `hooks` are the one thing an inline option cannot switch off, so a `build:done` hook that writes still writes.
 
-A file `files` ships is judged on three counts:
+A file `files` ships — read as npm reads it, where a later `!` entry takes back what an earlier one gave — is judged on three counts:
 
 - a module of the package's own compiled into it, when `materialAt` names it — a `*.fixtures.ts`, a test file, ground, the specs tree, a contract;
 - an installed module compiled into it, when `testPackageOf` names its package — bundling `vitest` is never meant;
