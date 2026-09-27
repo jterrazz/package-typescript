@@ -65,10 +65,13 @@ export type RuleMeta<Docs> = RuleOptions & {
     type: RuleType;
 };
 
+export type RuleBody =
+    | { create: (context: never) => object }
+    | { createOnce: (context: never) => object };
+
 export type DefinedRule<Docs, Body> = Body & { meta: RuleMeta<Docs> };
 
-// `body` is the rule's visitor factory as oxlint takes it — `create` or `createOnce`.
-export function defineRule<Docs extends Taught, Body extends object>(
+export function defineRule<Docs extends Taught, Body extends RuleBody>(
     definition: RuleDefinition<Docs>,
     body: Body,
 ): DefinedRule<Docs, Body> {
