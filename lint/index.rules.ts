@@ -59,6 +59,7 @@ export {
 } from './engine/catalogue/chapter.js';
 export type { Markers, Projection } from './engine/catalogue/chapter.js';
 export { countsOf } from './engine/baseline/counts.js';
+export { OXLINT_SUPPRESSIONS } from './engine/baseline/oxlint-suppressions.js';
 export {
     BASELINE,
     keepsSection,
