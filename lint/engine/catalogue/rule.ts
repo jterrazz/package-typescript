@@ -46,17 +46,21 @@ export function lessonsAt(
     return lessonsOf(docs, readAt(docs, chapter), messages);
 }
 
-export type RuleDefinition<Docs extends Taught> = {
-    docs: Docs;
+export type RuleOptions = {
+    defaultOptions?: readonly unknown[];
     fixable?: 'code' | 'whitespace';
+    schema?: readonly unknown[];
+};
+
+export type RuleDefinition<Docs extends Taught> = RuleOptions & {
+    docs: Docs;
     messages: Readonly<Record<string, Teaching>>;
     read: ChapterAnchor;
     type?: RuleType;
 };
 
-export type RuleMeta<Docs> = {
+export type RuleMeta<Docs> = RuleOptions & {
     docs: Docs;
-    fixable?: 'code' | 'whitespace';
     messages: Record<string, string>;
     type: RuleType;
 };
@@ -68,14 +72,16 @@ export function defineRule<Docs extends Taught, Body extends object>(
     definition: RuleDefinition<Docs>,
     body: Body,
 ): DefinedRule<Docs, Body> {
-    const { docs, fixable, messages, read, type = 'problem' } = definition;
+    const { defaultOptions, docs, fixable, messages, read, schema, type = 'problem' } = definition;
 
     return {
         ...body,
         meta: {
+            ...(defaultOptions === undefined ? {} : { defaultOptions }),
             docs,
             ...(fixable === undefined ? {} : { fixable }),
             messages: lessonsOf(docs, read, messages),
+            ...(schema === undefined ? {} : { schema }),
             type,
         },
     };

@@ -46,6 +46,7 @@ export type {
     RuleDefinition,
     RuleDocs,
     RuleMeta,
+    RuleOptions,
     RuleType,
 } from './engine/catalogue/rule.js';
 export { anchor, cell, markdownTable } from './engine/catalogue/table.js';
