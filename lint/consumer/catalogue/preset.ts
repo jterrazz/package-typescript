@@ -42,11 +42,11 @@ export const LINT_LAYERS: readonly ArchitectureRule[] = Object.freeze([
     },
     {
         fix: 'move what the shipped code needs out of self/ and src/ into engine/',
-        from: { path: '^lint/(consumer/|index)' },
+        from: { path: '^lint/(consumer/|index)', pathNot: TEST_MATERIAL },
         name: 'shipped-lint-reads-no-self',
         read: READ,
         to: { path: '^(lint/self|src)/' },
-        why: 'the shipped lint/ never reads self/ (never shipped) nor src/ (the command)',
+        why: 'the shipped lint/ never reads self/ (never shipped) nor src/ (the command); its tests are not shipped, and may run a rule through the package that ships it',
     },
     {
         fix: 'move what src/ needs into engine/, or compose it in a `lint/` index, and import it from there',
