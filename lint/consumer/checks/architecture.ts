@@ -1,5 +1,5 @@
 import type { IRegularForbiddenRuleType } from 'dependency-cruiser';
-import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -186,16 +186,17 @@ function cruised(
     const scratch = mkdtempSync(join(tmpdir(), 'typescript-architecture-'));
     try {
         const config = join(scratch, 'dependency-cruiser.json');
+        const cruise = join(scratch, 'cruise.json');
         writeFileSync(config, JSON.stringify(cruiseConfig(rules, context)));
         const { output, status } = runTool(
             'dependency-cruiser',
             context.value('--depcruise', 'depcruise'),
-            ['--config', config, '--output-type', 'json', ...roots],
+            ['--config', config, '--output-type', 'json', '--output-to', cruise, ...roots],
             context.root,
         );
         let report: unknown;
         try {
-            report = JSON.parse(output);
+            report = JSON.parse(readFileSync(cruise, 'utf8'));
         } catch {
             return { findings: [], problem: status === 0 ? null : output };
         }
