@@ -54,6 +54,11 @@ no configuration, and keeps its own code only for what the tool cannot express.
   goes: it reported the same directive a second time, and it saw less — never
   a live rule that stopped firing, never a JS plugin's rule. The Suppressions
   pass keeps a directive's spelling and its reason, which oxlint does not judge.
+- **oxlint's `typescript/ban-ts-comment`**, armed with `ts-ignore` banned and
+  `ts-expect-error` allowed with a description, refuses a bare `@ts-ignore` and
+  an undescribed `@ts-expect-error`. The Suppressions pass reports neither: it
+  would be the same directive reported a second time. It keeps only the
+  `@ts-ignore` → `@ts-expect-error` rewrite in `fix`.
 - **oxlint's bulk suppressions** hold the lint debt: `oxlint-suppressions.json`,
   exact per file and rule, both ways. `jterrazz.baseline.json` keeps only what
   no linter judges — the Architecture, Names and Comments passes, and `@jterrazz/test`'s

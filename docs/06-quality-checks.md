@@ -432,16 +432,16 @@ Every place the project told a checker to look away. A suppression is a decision
 
 <!-- GENERATED:findings suppressions -->
 
-| Rule                                      | Requirement                                                                                   |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `suppressions/spelled-for-this-toolchain` | A suppression is spelled for a checker this toolchain runs: oxlint-disable, @ts-expect-error. |
-| `suppressions/states-its-reason`          | Every suppression states the reason it exists.                                                |
+| Rule                                      | Requirement                                                                                                        |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `suppressions/spelled-for-this-toolchain` | A suppression is spelled for the linter this toolchain runs: oxlint-disable, never eslint-disable or biome-ignore. |
+| `suppressions/states-its-reason`          | Every oxlint-disable directive states the reason it exists.                                                        |
 
 <!-- /GENERATED:findings suppressions -->
 
 A directive is read only where a checker reads one: at the OPENING of a comment. Prose about a suppression, and a string carrying its spelling — the gate's own source is made of both — is not a suppression, and neither oxlint nor tsc would treat it as one.
 
-A directive that suppresses nothing is oxlint's to refuse, not this pass's: every profile ships `reportUnusedDisableDirectives` at `error`, so the Oxlint pass reports each one as an `Unused oxlint-disable directive`. That covers more than the gate could: a rule the config leaves off, a live rule that no longer fires on the next line, a JS plugin's rule, and a plugin rule that no longer exists. The pass keeps only what oxlint does not judge — the spelling of a directive and the reason it states.
+A directive that suppresses nothing is oxlint's to refuse, not this pass's: every profile ships `reportUnusedDisableDirectives` at `error`, so the Oxlint pass reports each one as an `Unused oxlint-disable directive`. That covers more than the gate could: a rule the config leaves off, a live rule that no longer fires on the next line, a JS plugin's rule, and a plugin rule that no longer exists. The pass keeps only what oxlint does not judge — the spelling of a lint directive and the reason it states. A TypeScript directive is oxlint's too: the rulebook arms `typescript/ban-ts-comment`, which refuses a `@ts-ignore` and a `@ts-expect-error` with no description, so the pass reports neither a second time and only rewrites the first in `fix`.
 
 ### What `typescript fix` rewrites
 

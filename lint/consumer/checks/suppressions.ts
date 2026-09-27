@@ -141,30 +141,15 @@ function auditOxlintDirective(number: number, tail: string, named: readonly stri
           ];
 }
 
-function auditTypeScript(line: string, number: number): Audited {
-    const found: Found[] = [];
+function auditTypeScript(line: string): Audited {
     let fixed = line;
-
     for (const match of line.matchAll(TS_DIRECTIVE)) {
-        const { kind, tail = '' } = match.groups ?? {};
-
-        if (kind === 'ignore') {
+        if (match.groups?.kind === 'ignore') {
             fixed = fixed.replace('@ts-ignore', '@ts-expect-error');
-            found.push({
-                message: `line ${number} spells @ts-ignore, which stays silent once the error is gone — @ts-expect-error does not`,
-                rule: 'suppressions/spelled-for-this-toolchain',
-            });
-        }
-
-        if (tail.replace(/\*\/\s*$/u, '').trim() === '') {
-            found.push({
-                message: `line ${number} carries a TypeScript suppression with no description of what it is for`,
-                rule: 'suppressions/states-its-reason',
-            });
         }
     }
 
-    return { fixed, found };
+    return { fixed, found: [] };
 }
 
 function auditSource(
