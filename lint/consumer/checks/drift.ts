@@ -24,6 +24,8 @@ type Project = {
 
 const REASON = /\/\/\s*reason:/iu;
 
+const FROM_PRESETS = 'fromPresets';
+
 const resolvedRules = (
     root: string,
     oxlint: string,
@@ -31,13 +33,19 @@ const resolvedRules = (
 ): null | PrintedRules => printedOxlintConfig(root, oxlint, configPath)?.rules ?? null;
 
 // oxlint's config schema is closed, so a profile cannot carry its name to `--print-config`: the
-// config's import is the only evidence. A project on no profile of ours never joined one.
-function profileOf(source: null | string, profileNames: ReadonlySet<string>): null | string {
+// config's import is the only evidence — a profile imported by name, or the one `fromPresets` reads off the settings.
+function profileOf(
+    source: null | string,
+    { profileNames, settled }: { profileNames: ReadonlySet<string>; settled: unknown },
+): null | string {
     const imported =
         /import\s*\{(?<names>[^}]*)\}\s*from\s*['"]@jterrazz\/typescript\/oxlint['"]/u.exec(
             source ?? '',
         );
     const named = (imported?.groups?.names ?? '').split(',').map((name) => name.trim());
+    if (named.includes(FROM_PRESETS)) {
+        return typeof settled === 'string' && profileNames.has(settled) ? settled : null;
+    }
 
     return named.find((name) => profileNames.has(name)) ?? null;
 }
@@ -104,7 +112,7 @@ function profileNamesAt(context: Context, profilesAt: null | string): ReadonlySe
 function profileOfProject(
     context: Context,
     profilesAt: null | string,
-    profileNames: ReadonlySet<string>,
+    { profileNames, settled }: { profileNames: ReadonlySet<string>; settled: unknown },
 ): Project {
     const handedAt = context.value('-c');
     const handed = handedAt === undefined ? null : resolve(handedAt);
@@ -125,7 +133,7 @@ function profileOfProject(
         configName,
         consumerConfig: configName === undefined ? handed : null,
         defaultProfile,
-        profileName: defaultProfile ?? profileOf(source, profileNames),
+        profileName: defaultProfile ?? profileOf(source, { profileNames, settled }),
         source,
     };
 }
@@ -255,11 +263,14 @@ export const drift: Pass = Object.freeze({
         const { root } = context;
         const profilesFlag = context.value('--profiles');
         const profilesAt = profilesFlag === undefined ? null : resolve(profilesFlag);
-        const project = profileOfProject(context, profilesAt, profileNamesAt(context, profilesAt));
+        const { resolved } = await context.config();
+        const project = profileOfProject(context, profilesAt, {
+            profileNames: profileNamesAt(context, profilesAt),
+            settled: resolved.sections.typescript?.profile,
+        });
         const { off, unreasoned } = offOf(context, project, profilesAt);
         const suppressions = orRefused(() => countSuppressions(root, context.ignorePatterns));
         const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
-        const { resolved } = await context.config();
         const { optOuts } = resolved;
         const floors = new Set(resolved.floors);
         const { others, totalOf } = baselineReader(root, floors);
