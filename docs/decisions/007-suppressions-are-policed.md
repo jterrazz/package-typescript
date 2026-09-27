@@ -36,7 +36,8 @@ A suppression is allowed, and it is held to three things, as a pass of
 - **Carrying its reason.** An `oxlint-disable*` needs `-- reason` after it;
   a `@ts-expect-error` needs a description. `fix` never invents either.
 - **Naming a live rule.** A directive naming a rule the resolved config does
-  not have on is dead text, and dead text is reported.
+  not have on is dead text, and dead text is reported — by oxlint itself since
+  [ADR-013](013-adopt-the-tool-before-building-the-check.md).
 
 The count of suppressions is one of the four numbers the drift report prints,
 so a repository accumulating them says so on every run.
@@ -49,9 +50,8 @@ to the two scales at which a project overrules its rulebook.
 ## Consequences
 
 - Every override in the estate becomes greppable, reasoned, and countable.
-- A directive naming a JS plugin's rule cannot be judged: those rules never
-  appear in `oxlint --print-config`. The gate stays silent there rather than
-  calling a live rule dead, so `suppressions/no-dead-suppression` under-reports by design.
+- A directive that suppresses nothing is oxlint's own `reportUnusedDisableDirectives`
+  to refuse, not the gate's ([ADR-013](013-adopt-the-tool-before-building-the-check.md)).
 - A file DISCUSSING a suppression is not one. The gate reads a directive only
   at the opening of a comment, which is where a checker reads one — its own
   source, full of the spellings it refuses, passes it.

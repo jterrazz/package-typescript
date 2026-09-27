@@ -111,7 +111,7 @@ function auditDisables(line: string, number: number, config: Applied | null): Au
             continue;
         }
 
-        found.push(...auditOxlintDirective(number, tail, named, config));
+        found.push(...auditOxlintDirective(number, tail, named));
     }
 
     return { fixed, found };
@@ -130,31 +130,15 @@ function eslintSpelling(number: number, named: readonly string[], settled: boole
     };
 }
 
-function auditOxlintDirective(
-    number: number,
-    tail: string,
-    named: readonly string[],
-    config: Applied | null,
-): Found[] {
-    const found: Found[] = [];
-
-    if (!hasReason(tail)) {
-        found.push({
-            message: `line ${number} disables ${named.join(', ') || 'every rule'} with no '${REASON.trim()} reason' after it`,
-            rule: 'suppressions/states-its-reason',
-        });
-    }
-
-    for (const name of named) {
-        if (standingOf(name, config) === 'dead') {
-            found.push({
-                message: `line ${number} disables ${name}, which the resolved config does not have on`,
-                rule: 'suppressions/no-dead-suppression',
-            });
-        }
-    }
-
-    return found;
+function auditOxlintDirective(number: number, tail: string, named: readonly string[]): Found[] {
+    return hasReason(tail)
+        ? []
+        : [
+              {
+                  message: `line ${number} disables ${named.join(', ') || 'every rule'} with no '${REASON.trim()} reason' after it`,
+                  rule: 'suppressions/states-its-reason',
+              },
+          ];
 }
 
 function auditTypeScript(line: string, number: number): Audited {

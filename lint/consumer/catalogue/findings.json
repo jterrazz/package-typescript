@@ -20,11 +20,6 @@
         "sentence": "Every suppression states the reason it exists."
     },
     {
-        "family": "suppressions",
-        "id": "suppressions/no-dead-suppression",
-        "sentence": "A directive names only a rule the resolved config has on."
-    },
-    {
         "family": "names",
         "id": "names/no-grab-bag-name",
         "sentence": "A directory or file is named for the subject it holds, never a grab-bag word."

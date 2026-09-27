@@ -41,6 +41,11 @@ no configuration, and keeps its own code only for what the tool cannot express.
   remote link needs the network `make check` never uses, and lychee ships no
   npm package the toolchain could pin.
 - **oxlint's own output** is what the Oxlint pass prints; the renderer goes.
+- **oxlint's `reportUnusedDisableDirectives`**, which every profile compiles at
+  `error`, refuses a directive that suppresses nothing. `suppressions/no-dead-suppression`
+  goes: it reported the same directive a second time, and it saw less — never
+  a live rule that stopped firing, never a JS plugin's rule. The Suppressions
+  pass keeps a directive's spelling and its reason, which oxlint does not judge.
 - **oxlint's bulk suppressions** hold the lint debt: `oxlint-suppressions.json`,
   exact per file and rule, both ways. `jterrazz.baseline.json` keeps only what
   no linter judges — the Names and Comments passes, and `@jterrazz/test`'s

@@ -428,7 +428,7 @@ A project may know things the profile does not, so turning a rule off is allowed
 
 ## The Suppressions (directives) pass
 
-Every place the project told a checker to look away. A suppression is a decision, and a decision the next reader cannot re-derive is a defect waiting to be re-introduced, so three rules hold the whole surface.
+Every place the project told a checker to look away. A suppression is a decision, and a decision the next reader cannot re-derive is a defect waiting to be re-introduced, so two rules hold what oxlint does not.
 
 <!-- GENERATED:findings suppressions -->
 
@@ -436,19 +436,16 @@ Every place the project told a checker to look away. A suppression is a decision
 | ----------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `suppressions/spelled-for-this-toolchain` | A suppression is spelled for a checker this toolchain runs: oxlint-disable, @ts-expect-error. |
 | `suppressions/states-its-reason`          | Every suppression states the reason it exists.                                                |
-| `suppressions/no-dead-suppression`        | A directive names only a rule the resolved config has on.                                     |
 
 <!-- /GENERATED:findings suppressions -->
 
 A directive is read only where a checker reads one: at the OPENING of a comment. Prose about a suppression, and a string carrying its spelling — the gate's own source is made of both — is not a suppression, and neither oxlint nor tsc would treat it as one.
 
-`suppressions/no-dead-suppression` asks `oxlint --print-config` for the project's resolved rules, and that map holds what the config DECIDED rather than oxlint's whole catalogue: a rule missing from it is a rule this project does not run, which is the only question being asked. The map is resolved PER FILE, the way oxlint resolves it: the top-level `rules`, then every `overrides` entry whose globs match that path, in the order they were written, the last one winning. A rule armed only in an override — a test-file rule, a layer's `no-restricted-imports` — is therefore live inside the files that override names and dead outside them, and a rule one override turns off and a later one arms again is live wherever the later one reaches. A JS plugin's rules never appear there at all, so a directive naming one — `jterrazz/cli-runs-the-product-binary`, say — is left alone rather than called dead on evidence the gate does not have. That holds for the whole namespace, `allow` entries and all: a config that turns three of the plugin's rules off puts those three names in the map and still none of the live ones, so a namespace the printed `plugins` list does not carry answers nothing.
-
-A directive naming a plugin rule that no longer exists is still refused, one pass earlier: it suppresses nothing, and every profile ships `reportUnusedDisableDirectives` at `error`, so the Oxlint pass reports the directive itself as unused.
+A directive that suppresses nothing is oxlint's to refuse, not this pass's: every profile ships `reportUnusedDisableDirectives` at `error`, so the Oxlint pass reports each one as an `Unused oxlint-disable directive`. That covers more than the gate could: a rule the config leaves off, a live rule that no longer fires on the next line, a JS plugin's rule, and a plugin rule that no longer exists. The pass keeps only what oxlint does not judge — the spelling of a directive and the reason it states.
 
 ### What `typescript fix` rewrites
 
-Two spellings, both mechanical. An `eslint-disable*` becomes `oxlint-disable*` when every rule it names is one this project runs — a name that means nothing here is a directive whose intent only its author knows. A `@ts-ignore` becomes `@ts-expect-error`, which is the same suppression plus a failure when the error it was covering is gone.
+Two spellings, both mechanical. An `eslint-disable*` becomes `oxlint-disable*` when every rule it names is one this project runs, read off `oxlint --print-config` per file, overrides included — a name that means nothing here is a directive whose intent only its author knows. A `@ts-ignore` becomes `@ts-expect-error`, which is the same suppression plus a failure when the error it was covering is gone.
 
 It never invents a reason, and it never deletes a directive: both are the author's judgement, and a rewrite that guessed either would be worse than the report.
 

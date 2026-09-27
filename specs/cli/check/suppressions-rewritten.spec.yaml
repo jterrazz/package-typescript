@@ -21,7 +21,6 @@ runs:
            RUN  Suppressions (directives)
 
           suppressions/states-its-reason  index.ts  line 4 disables no-unused-vars with no '-- reason' after it
-          suppressions/no-dead-suppression  index.ts  line 7 disables capitalized-comments, which the resolved config does not have on
           suppressions/states-its-reason  index.ts  line 10 carries a TypeScript suppression with no description of what it is for
           index.ts rewritten — the directive now names the checker this project runs
           ✗ Failed with exit code 1
