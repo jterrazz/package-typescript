@@ -449,20 +449,23 @@ function emptyDirectoryFinding(path: string): Finding {
     };
 }
 
-function laidOut(context: Context): { findings: Finding[]; problem: null | string } {
+function laidOut(
+    context: Context,
+    swept: readonly string[],
+): { findings: Finding[]; problem: null | string } {
     const units = ['', ...workspaceMembers(context.root).map((member) => `${member}/`)];
     const { failures, problem } = runLsLint(context.value('--ls-lint', 'ls-lint'), context.root, {
         ignorePatterns: context.ignorePatterns,
         units,
     });
 
-    return { findings: lsLintFindings(context.root, units, failures), problem };
+    return { findings: lsLintFindings(context.root, { failures, swept, units }), problem };
 }
 
 export const names: Pass = Object.freeze({
     async check(context) {
         const files = context.files();
-        const layout = laidOut(context);
+        const layout = laidOut(context, files);
 
         return {
             ...(layout.problem === null ? {} : { failed: true, lines: [layout.problem] }),

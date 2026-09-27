@@ -189,18 +189,47 @@ function findingOf(units: readonly string[], { isDirectory, path }: Failed): Fin
     return isDirectory ? directoryFinding(`${path}/`) : undefined;
 }
 
-function failedOf(root: string, failures: Failures): Failed[] {
+function failedOf(root: string, failures: Failures, swept: ReadonlySet<string>): Failed[] {
+    const holdsSwept = (directory: string): boolean =>
+        [...swept].some((file) => file.startsWith(`${directory}/`));
+
     return Object.entries(failures).flatMap(([path, rules]): Failed[] => {
         if (Object.hasOwn(rules, '.dir')) {
-            return [{ isDirectory: true, path }];
+            return holdsSwept(path) ? [{ isDirectory: true, path }] : [];
         }
         const entries = listed(join(root, path));
 
-        return entries === null
-            ? [{ isDirectory: false, path }]
-            : entries
-                  .filter((entry) => entry.isFile())
-                  .map((entry) => ({ isDirectory: false, path: `${path}/${entry.name}` }));
+        return (
+            entries === null
+                ? [{ isDirectory: false, path }]
+                : entries
+                      .filter((entry) => entry.isFile())
+                      .map((entry) => ({ isDirectory: false, path: `${path}/${entry.name}` }))
+        ).filter((failed) => swept.has(failed.path));
+    });
+}
+
+const CLOSED_PLACES = [
+    /^lint\/[^/]+$/u,
+    /^lint\/[^/]+\/[^/]+$/u,
+    /^skills\/[^/]+$/u,
+    /^skills\/[^/]+\/[^/]+$/u,
+];
+
+const isUnseenByLsLint = (name: string): boolean => name.startsWith('.') || !name.includes('.');
+
+function unseenOf(units: readonly string[], swept: ReadonlySet<string>): Failed[] {
+    return [...swept].flatMap((path): Failed[] => {
+        const prefix =
+            units
+                .filter((unit) => path.startsWith(unit))
+                .toSorted((left, right) => right.length - left.length)[0] ?? '';
+        const own = path.slice(prefix.length);
+        const closed =
+            CLOSED_PLACES.some((place) => place.test(own)) &&
+            isUnseenByLsLint(own.split('/').at(-1) ?? '');
+
+        return closed ? [{ isDirectory: false, path }] : [];
     });
 }
 
@@ -217,10 +246,14 @@ const isInside = (path: string, directories: readonly string[]): boolean =>
 
 export function lsLintFindings(
     root: string,
-    units: readonly string[],
-    failures: Failures,
+    {
+        failures,
+        swept,
+        units,
+    }: { failures: Failures; swept: readonly string[]; units: readonly string[] },
 ): Finding[] {
-    const failed = failedOf(root, failures);
+    const held = new Set(swept);
+    const failed = [...failedOf(root, failures, held), ...unseenOf(units, held)];
     const directories = failed.filter(({ isDirectory }) => isDirectory).map(({ path }) => path);
     const reported = new Map<string, Finding>();
     for (const one of failed.toSorted((left, right) => (left.path < right.path ? -1 : 1))) {
