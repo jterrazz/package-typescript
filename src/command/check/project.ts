@@ -1,14 +1,12 @@
-import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 import { objectOf, parsedObject } from '../../../lint/engine/project/json.js';
 import type { JsonObject } from '../../../lint/engine/project/json.js';
+import { isGitIgnored, PRUNED } from '../../../lint/engine/project/project-files.js';
 import { testPackageVersion } from '../../../lint/engine/project/test-package.js';
 import { isFile } from '../disk.js';
-
-const PRUNED: ReadonlySet<string> = new Set(['.git', 'dist', 'node_modules']);
 
 const DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies'];
 
@@ -66,10 +64,6 @@ export function nearestPackageDir(from: string): null | string {
     return dir;
 }
 
-function isGitIgnored(path: string): boolean {
-    return spawnSync('git', ['check-ignore', '--quiet', path], { stdio: 'ignore' }).status === 0;
-}
-
 function insideOwningMember(path: string, member: string): boolean {
     for (
         let dir = dirname(path);
@@ -105,10 +99,10 @@ const byBytes = (left: string, right: string): number => (left < right ? -1 : le
 
 export function specsRoots(members: readonly string[]): string[] {
     const roots = [
-        ...(existsSync('specs') && !isGitIgnored('specs') ? ['specs'] : []),
+        ...(existsSync('specs') && !isGitIgnored('.', 'specs') ? ['specs'] : []),
         ...members.flatMap((member) =>
             specsDirectoriesUnder(member).filter(
-                (candidate) => !isGitIgnored(candidate) && insideOwningMember(candidate, member),
+                (candidate) => !isGitIgnored('.', candidate) && insideOwningMember(candidate, member),
             ),
         ),
     ];

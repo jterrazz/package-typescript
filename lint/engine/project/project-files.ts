@@ -43,16 +43,24 @@ function gitSweep(root: string): null | string[] {
     }
 }
 
-// `dist/` in .gitignore matches the directory form only, and `-q` takes one path per probe.
-export function isGitIgnored(root: string, target: string): boolean {
-    return [target, `${target}/`].some(
-        (spelling) =>
-            spawnSync('git', ['check-ignore', '-q', '--no-index', spelling], {
-                cwd: root,
-                stdio: 'ignore',
-            }).status === 0,
-    );
+// `dist/` in .gitignore matches the directory form only, so each path is asked in both spellings; outside a git tree nothing is ignored.
+export function ignoredPaths(root: string, paths: readonly string[]): ReadonlySet<string> {
+    if (paths.length === 0) {
+        return new Set();
+    }
+    const answer = spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {
+        cwd: root,
+        encoding: 'utf8',
+        input: paths.flatMap((path) => [path, `${path}/`]).join('\n'),
+        stdio: ['pipe', 'pipe', 'ignore'],
+    });
+    const ignored = new Set((answer.stdout ?? '').split('\n').filter((line) => line !== ''));
+
+    return new Set(paths.filter((path) => ignored.has(path) || ignored.has(`${path}/`)));
 }
+
+export const isGitIgnored = (root: string, target: string): boolean =>
+    ignoredPaths(root, [target]).has(target);
 
 // Outside a git tree there is nothing committed.
 export function trackedFiles(root: string): string[] {

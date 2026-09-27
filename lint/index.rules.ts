@@ -152,6 +152,7 @@ export type {
 export type { PresetChecks } from './consumer/checks/preset-checks.js';
 export {
     filesUnder,
+    ignoredPaths,
     isGitIgnored,
     projectFiles,
     PRUNED,
