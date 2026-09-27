@@ -51,6 +51,7 @@ export function contextOf(commandLine: CommandLine, presets: readonly Preset[]):
         has: commandLine.has,
         ignorePatterns,
         list: listAt,
+        positionals: commandLine.positionals,
         read: readAt,
         root,
         value: commandLine.value,

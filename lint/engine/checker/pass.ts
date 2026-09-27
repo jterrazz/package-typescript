@@ -21,6 +21,7 @@ export type Context = {
     has: CommandLine['has'];
     ignorePatterns: string[];
     list: (directory: string) => null | string[];
+    positionals: readonly string[];
     read: (path: string) => null | string;
     root: string;
     value: CommandLine['value'];
