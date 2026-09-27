@@ -29,7 +29,7 @@ function repositoryInstalling(oxlint: string): string {
         'package.json': '{ "type": "module" }\n',
     });
 }
-describe('test-material', () => {
+describe('testMaterialReader', () => {
     test('loads the reader from the install the package resolves', async () => {
         // Given - an install whose ./oxlint entry publishes both readers
         const unit = repositoryInstalling(

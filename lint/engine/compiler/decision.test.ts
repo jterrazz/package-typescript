@@ -9,6 +9,7 @@ describe('decision', () => {
     test('gives every decision the fragment version, unless it carries its own', () => {
         // Given - a fragment born in one version with one decision taken later
         const probe = fragment({
+            audience: 'consumer',
             id: 'probe',
             rules: { curly: on(), 'no-var': off(REASON, '10.2.0') },
             since: '10.0.0',
@@ -22,6 +23,7 @@ describe('decision', () => {
     test('compiles a fragment to a plain oxlint config, and never to a category', () => {
         // Given - a fragment with an option, a type-aware rule and an off
         const probe = fragment({
+            audience: 'consumer',
             id: 'probe',
             plugins: ['typescript'],
             rules: {

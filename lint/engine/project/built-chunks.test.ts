@@ -19,7 +19,7 @@ function packageWith(tree: Record<string, string>): string {
     return unit;
 }
 
-describe('built-chunks', () => {
+describe('builtChunks', () => {
     test('builds a package by its own config, leaving the disk as it found it', async () => {
         // Given - a package whose own config builds two entries, copies an asset and runs a command
         const unit = packageWith({
@@ -40,7 +40,9 @@ describe('built-chunks', () => {
         });
 
         // When - the guard builds it
-        const chunks = await builtChunks(unit, buildOf(unit, []));
+        const built = buildOf(unit, [], '');
+        expect(built).not.toBeNull();
+        const chunks = built === null ? [] : await builtChunks(unit, built);
 
         // Then - both entries are listed, and nothing was copied, emitted or run
         expect(chunks?.map(({ file }) => file)).toStrictEqual([
@@ -60,7 +62,9 @@ describe('built-chunks', () => {
         });
 
         // When - the guard builds it, and then the package builds itself
-        const chunks = await builtChunks(unit, buildOf(unit, []));
+        const built = buildOf(unit, [], '');
+        expect(built).not.toBeNull();
+        const chunks = built === null ? [] : await builtChunks(unit, built);
         await build({ config: join(unit, 'tsdown.config.mjs'), cwd: unit, logLevel: 'silent' });
 
         // Then - the guard's names are the files the build wrote

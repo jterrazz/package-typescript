@@ -21,7 +21,7 @@ function repositoryTracking(paths: readonly string[]): string {
     return root;
 }
 
-describe('project-files', () => {
+describe('projectFiles', () => {
     test('drops a tracked file under a build folder, at the root or deeper', () => {
         // Given - a repository whose index tracks a tool's output folder beside its source
         const root = repositoryTracking([
