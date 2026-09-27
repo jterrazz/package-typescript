@@ -1,6 +1,6 @@
 // A member is a directory matching a glob AND holding a package.json, as the package managers rule.
 
-import { existsSync, readdirSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 
@@ -52,10 +52,7 @@ export function workspaceMembers(root = '.'): string[] {
             const child = join(dir, entry.name);
             const path = relative(absolute, child).split(sep).join('/');
 
-            if (
-                patterns.some((pattern) => pattern.test(path)) &&
-                existsSync(join(child, 'package.json'))
-            ) {
+            if (patterns.some((pattern) => pattern.test(path)) && readManifest(child) !== null) {
                 members.add(path);
                 continue;
             }

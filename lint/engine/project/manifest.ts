@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { treeKind } from './git-tree.js';
 import { isJsonObject } from './json.js';
 import type { JsonObject } from './json.js';
 
@@ -16,6 +17,9 @@ export type Manifest = JsonObject & {
 };
 
 export function readManifest(dir: string): Manifest | null {
+    if (treeKind(join(dir, 'package.json')) !== 'file') {
+        return null;
+    }
     try {
         const parsed: unknown = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
 
