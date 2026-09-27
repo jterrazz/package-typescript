@@ -39,6 +39,7 @@ The `typescript` command is TypeScript, built into `dist/`; the work it orchestr
 | Unused code  | [Knip](https://knip.dev)                                                    | Node     |
 | Packaging    | [publint](https://publint.dev) + [attw](https://arethetypeswrong.github.io) | Node     |
 | Layer map    | [dependency-cruiser](https://github.com/sverweij/dependency-cruiser)        | Node     |
+| Markdown     | [rumdl](https://rumdl.dev)                                                  | Rust     |
 
 ## Documentation
 

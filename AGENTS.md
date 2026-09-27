@@ -33,7 +33,7 @@ make install
 
 ## Repo layout
 
-```
+```text
 bin/      # the launcher of the built command
 lint/     # every judgement: consumer/ and self/ declare, engine/ runs
 src/      # the command, the presets, the importable entries

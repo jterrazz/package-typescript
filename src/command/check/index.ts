@@ -120,7 +120,7 @@ async function reported(
         ...labelled('Architecture (layer map)', architecture),
         ...labelled('Astro (check + format)', astro, fix),
         ...labelled('Suppressions (directives)', suppressions, fix),
-        ...labelled('Markdown (prose)', markdown),
+        ...labelled('Markdown (prose)', markdown, fix),
         ...labelled('Names (tree)', selected('names') ? names : undefined, fix),
         ...labelled('Comments (density)', selected('comments') ? comments : undefined, fix),
         ...labelled('Secrets (credentials)', secrets),

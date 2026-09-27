@@ -27,6 +27,7 @@ export type Tools = {
     prettier: string;
     prettierAstroPlugin: string;
     publint: string;
+    rumdl: string;
     tsc: string;
 };
 
@@ -76,6 +77,7 @@ export function toolsOf(): Tools {
         prettier: hoisted('prettier'),
         prettierAstroPlugin: prettierAstroPlugin(),
         publint: hoisted('publint'),
+        rumdl: hoisted('rumdl'),
         tsc: tscIn(HOISTED_BESIDE_PACKAGE),
     };
 }

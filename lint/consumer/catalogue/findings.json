@@ -81,11 +81,6 @@
     },
     {
         "family": "markdown",
-        "id": "markdown/link-resolves",
-        "sentence": "Every relative link of a page resolves on disk."
-    },
-    {
-        "family": "markdown",
         "id": "markdown/path-resolves",
         "sentence": "Every backticked repository path of a page names something on disk."
     },

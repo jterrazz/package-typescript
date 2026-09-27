@@ -81,6 +81,10 @@ runs:
 
           ✓ Passed
 
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
            RUN  Names (tree)
 
           names/no-language-construct-name  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds

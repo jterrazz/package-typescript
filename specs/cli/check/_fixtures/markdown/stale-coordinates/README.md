@@ -2,4 +2,4 @@
 
 The renamer moved both of these and never came back here.
 
-Read the [design note](notes/design.md) before touching `lib/greeter.js`.
+Read the [design note](notes/design.md) before touching `lib/greeter.js`, then [its usage](#usage).

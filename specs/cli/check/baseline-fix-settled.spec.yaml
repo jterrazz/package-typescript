@@ -23,6 +23,10 @@ runs:
 
           ✓ Passed
 
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
            RUN  Names (tree)
 
           ✓ Passed

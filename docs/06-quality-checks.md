@@ -27,12 +27,12 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Architecture (layer map)          | dependency-cruiser          | check: a `.dependency-cruiser.*` at the project root                     |
 | Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)                      |
 | Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)                   |
-| Markdown (prose)                  | the prose gate              | always (check only — a paragraph is not machine-split)                   |
+| Markdown (prose)                  | rumdl + the prose gate      | always (check and fix — `--fix` runs rumdl's own fixes)                  |
 | Names (tree)                      | the naming gate             | always (check and fix — `--fix` deletes an empty directory)              |
 | Comments (density)                | the comment gate            | always (check and fix — `--fix` re-records a fall)                       |
 | Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                 |
 
-`typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate, the naming gate and the comment gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
+`typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate, rumdl (`--fix`) with the prose gate, the naming gate and the comment gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
 
 ### In a workspace
 
@@ -422,13 +422,22 @@ It never invents a reason, and it never deletes a directive: both are the author
 
 ## The Markdown (prose) pass
 
-Every `*.md` git does not ignore, outside the ground a test stands on — a `_fixtures/`, `_expected/`, `_seeds/` or `_requests/` folder wherever it sits, another project's tree — is read for two things: whether its coordinates resolve, and whether its blocks breathe.
+Every `*.md` git does not ignore, outside the ground a test stands on — a `_fixtures/`, `_expected/`, `_seeds/` or `_requests/` folder wherever it sits, another project's tree — is read twice: by [rumdl](https://rumdl.dev), for what Markdown itself defines, and by the prose gate, for what the estate adds.
+
+### What rumdl judges
+
+rumdl is the Markdown linter; the pass hands it the pages and prints its own lines, each at its position — `README.md:5:24: [MD057] Relative link 'notes/design.md' does not exist`. A relative link to a missing file is its MD057, a link to a heading the page does not have its MD051, a fence with no language its MD040. It runs on `src/presets/rumdl/rumdl.toml` unless the project keeps a `.rumdl.toml` of its own, and that preset turns off the rules that judge layout — list indents and markers, line width — because oxfmt writes the layout of a page and two owners of one line would fight. Inline HTML is a form the chapters use (`<details>`), so MD033 is off too. `typescript fix` runs rumdl's own fixes; what it cannot fix stays a finding.
+
+rumdl reads the disk and nothing else, so the check never touches the network. A remote link is not judged here: lychee, the dead-link checker, would need the network, which `make check` never uses, and it ships no npm package to install it with — rumdl's MD057 and MD051 are the offline check of every local link and anchor.
+
+### What the prose gate adds
+
+The prose gate reads what no Markdown linter knows: whether a backticked coordinate resolves, whether a skill names a chapter its package ships, and whether a page's blocks breathe.
 
 <!-- GENERATED:findings markdown -->
 
 | Rule                                    | Requirement                                                            |
 | --------------------------------------- | ---------------------------------------------------------------------- |
-| `markdown/link-resolves`                | Every relative link of a page resolves on disk.                        |
 | `markdown/path-resolves`                | Every backticked repository path of a page names something on disk.    |
 | `markdown/chapter-reference-resolves`   | Every chapter a skill names is one its package ships.                  |
 | `markdown/prose-block-is-short`         | A paragraph or a list item runs twelve lines at most.                  |
@@ -441,7 +450,7 @@ A skill is read from the install, where nothing can correct it, so one more rule
 
 The three numbers are the readability floor of the shared doctrine, not the craft it asks for: the gap between them is a reader's pass, not a red gate. They are named constants at the top of the gate, and no page keeps a second copy of them.
 
-The backtick rule reads a closed roster of opening segments — `apps/`, `bin/`, `lib/`, `lint/`, `packages/`, `presets/`, `specs/`, `tests/` — because without one every `a/b` in a sentence would be read as a coordinate. `docs/` and `src/` are deliberately off it: every repository has both, so a page teaching a convention writes `src/index.ts` about the READER's tree, not about its own. A relative LINK into either is still judged, because that one names a real target.
+The backtick rule reads a closed roster of opening segments — `apps/`, `bin/`, `lib/`, `lint/`, `packages/`, `presets/`, `specs/`, `tests/` — because without one every `a/b` in a sentence would be read as a coordinate. `docs/` and `src/` are deliberately off it: every repository has both, so a page teaching a convention writes `src/index.ts` about the READER's tree, not about its own. A relative LINK into either is still judged — by rumdl — because that one names a real target.
 
 A path of somebody ELSE's tree — a library's chapter showing where the thing it ships lands in a consumer — is shown in a code fence, never in backticked prose. The rule reads a backticked coordinate as this repository's own and is right to: the alternative is an allow-list, and the first path that stops existing is the one nobody notices. A fenced block is exempt, so the example that teaches a consumer stays exactly where a reader wants it.
 

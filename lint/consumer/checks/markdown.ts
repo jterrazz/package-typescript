@@ -1,6 +1,6 @@
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
-import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
+import type { Context, Finding, Pass, Tool } from '../../engine/checker/pass.js';
 import { isGitIgnored, readText } from '../../engine/project/project-files.js';
 
 type Found = { message: string; rule: string };
@@ -16,7 +16,7 @@ const CHAPTER = /(?<![\w/.-])docs\/(?<chapter>\d{2}-[a-z\d-]+\.md)/gu;
 
 const SKILL_PAGE = /^(?<root>(?:.*\/)?)skills\/[^/]+\/.+\.md$/u;
 
-const LINK = /!?\[[^\]]*\]\((?<target>[^)\s]+)\)/gu;
+const OWN_RUMDL_CONFIGS = ['.rumdl.toml', 'rumdl.toml'];
 
 // The opening segments are closed on purpose, or every `a/b` in a sentence would read as a
 // coordinate; `docs/` and `src/` are absent because a page teaching a convention names the reader's tree.
@@ -166,36 +166,6 @@ function flatSections(markdown: string): string[] {
     return found;
 }
 
-function isRelative(target: string): boolean {
-    return (
-        target !== '' &&
-        !target.startsWith('http') &&
-        !target.startsWith('#') &&
-        !target.startsWith('mailto:') &&
-        !target.startsWith('<')
-    );
-}
-
-function missingLinks({ exists, root }: Context, path: string, cited: string): Found[] {
-    const found: Found[] = [];
-    for (const match of cited.matchAll(LINK)) {
-        const target = match.groups?.target ?? '';
-        const clean = target.split('#')[0] ?? '';
-        if (!isRelative(target) || clean === '') {
-            continue;
-        }
-        const linked = resolve(root, dirname(path), clean);
-        if (!exists(linked) && !isGitIgnored(root, relative(root, linked))) {
-            found.push({
-                message: `${target} resolves to nothing on disk`,
-                rule: 'markdown/link-resolves',
-            });
-        }
-    }
-
-    return found;
-}
-
 function missingPaths({ exists, root }: Context, path: string, cited: string): Found[] {
     const found: Found[] = [];
     for (const match of cited.matchAll(BACKTICK_PATH)) {
@@ -237,11 +207,7 @@ function missingChapters({ exists, root }: Context, path: string, cited: string)
 
 function auditPage(context: Context, path: string, markdown: string): Found[] {
     const cited = withoutFences(markdown);
-    const found = [
-        ...missingLinks(context, path, cited),
-        ...missingPaths(context, path, cited),
-        ...missingChapters(context, path, cited),
-    ];
+    const found = [...missingPaths(context, path, cited), ...missingChapters(context, path, cited)];
 
     for (const reason of longProseBlocks(markdown)) {
         found.push({ message: reason, rule: 'markdown/prose-block-is-short' });
@@ -256,10 +222,33 @@ function auditPage(context: Context, path: string, markdown: string): Found[] {
     return found;
 }
 
+function rumdl(context: Context, pages: readonly string[]): Tool[] {
+    if (pages.length === 0) {
+        return [];
+    }
+    const own = OWN_RUMDL_CONFIGS.some((name) => context.exists(join(context.root, name)));
+
+    return [
+        {
+            args: [
+                'check',
+                '--no-cache',
+                '--quiet',
+                ...(own ? [] : ['--config', context.value('--rumdl-config', '')]),
+                ...(context.fix ? ['--fix'] : []),
+                ...pages,
+            ],
+            flag: '--rumdl',
+            name: 'rumdl',
+        },
+    ];
+}
+
 export const markdown: Pass = Object.freeze({
     check(context) {
         const findings: Finding[] = [];
-        for (const path of context.files().filter((file) => file.endsWith('.md'))) {
+        const pages = context.files().filter((file) => file.endsWith('.md'));
+        for (const path of pages) {
             const text = readText(context.root, path);
             if (text !== null) {
                 findings.push(
@@ -272,6 +261,7 @@ export const markdown: Pass = Object.freeze({
             }
         }
 
-        return { findings };
+        return { findings, tools: rumdl(context, pages) };
     },
+    valued: ['--rumdl', '--rumdl-config'],
 });

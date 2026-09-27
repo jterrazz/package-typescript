@@ -41,7 +41,7 @@ When tsdown stops, its own report is printed as it came, and below it the comman
 
 ## Project structure
 
-```
+```text
 your-project/
 ├── src/
 │   ├── index.ts           # Main entry point

@@ -54,21 +54,31 @@ export function suppressionsPass(check: Check): Launched | undefined {
     return { log, status: checker('suppressions', args, { path: log }) };
 }
 
-function checkOnly(check: Check, pass: 'markdown' | 'secrets'): Launched | undefined {
-    if (check.fix || !check.selected(pass)) {
+export function markdownPass(check: Check): Launched | undefined {
+    if (!check.selected('markdown')) {
         return undefined;
     }
-    const log = check.logs.at(`${pass}.log`);
+    const log = check.logs.at('markdown.log');
+    const args = [
+        '.',
+        '--rumdl',
+        check.tools.rumdl,
+        '--rumdl-config',
+        presetAt('src/presets/rumdl/rumdl.toml'),
+        ...(check.fix ? ['--fix'] : []),
+        ...check.lintArgs,
+    ];
 
-    return { log, status: checker(pass, ['.', ...check.lintArgs], { path: log }) };
-}
-
-export function markdownPass(check: Check): Launched | undefined {
-    return checkOnly(check, 'markdown');
+    return { log, status: checker('markdown', args, { path: log }) };
 }
 
 export function secretsPass(check: Check): Launched | undefined {
-    return checkOnly(check, 'secrets');
+    if (check.fix || !check.selected('secrets')) {
+        return undefined;
+    }
+    const log = check.logs.at('secrets.log');
+
+    return { log, status: checker('secrets', ['.', ...check.lintArgs], { path: log }) };
 }
 
 export function namesPass(check: Check, runs: boolean): Launched | undefined {
