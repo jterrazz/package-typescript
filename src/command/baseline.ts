@@ -10,7 +10,7 @@ import { EMPTY_REPORT } from './report/diagnostic.js';
 import { inScratch } from './scratch.js';
 import { badge, print } from './terminal.js';
 import { toolConfigs } from './tool-configs.js';
-import { binaryIn, projectRoot, withTsgolintOnPath } from './toolchain.js';
+import { binaryIn, HOISTED_BESIDE_PACKAGE, projectRoot, withTsgolintOnPath } from './toolchain.js';
 
 async function listedTargets(
     ignoresOf: string | undefined,
@@ -65,7 +65,11 @@ export async function baseline(args: readonly string[]): Promise<number> {
         };
         print(`${badge('TYPESCRIPT')} Recording the oxlint baseline...\n\n`);
         await recordLinter(reports.lint, args, projectBin);
-        await recordPass('names', reports.names, args);
+        await recordPass('names', reports.names, [
+            '--ls-lint',
+            binaryIn('ls-lint', HOISTED_BESIDE_PACKAGE),
+            ...args,
+        ]);
         await recordPass('comments', reports.comments, args);
         const written = await checker(
             'baseline',

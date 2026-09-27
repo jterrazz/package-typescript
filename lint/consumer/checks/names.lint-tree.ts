@@ -11,10 +11,6 @@ type Exported = { functions: string[]; values: string[] };
 
 type Candidate = Exported & { file: string };
 
-type Placement =
-    | { kind: 'audience-root' | 'foreign-folder'; top: Top }
-    | { kind: 'declaration' | 'foreign-top' | 'lint-root' | 'placed' };
-
 export const LINT_ROOT = 'lint';
 
 export const LINT_TREE: {
@@ -28,14 +24,6 @@ export const LINT_TREE: {
 });
 
 const AUDIENCES: ReadonlySet<string> = new Set(['consumer', 'self']);
-
-const FOLDER_RULES: Readonly<Record<Top, string>> = Object.freeze({
-    consumer: 'names/consumer-folder-is-known',
-    engine: 'names/engine-folder-is-known',
-    self: 'names/self-folder-is-known',
-});
-
-const LINT_FOLDERS = Object.keys(LINT_TREE);
 
 const isTop = (name: string): name is Top => Object.hasOwn(LINT_TREE, name);
 
@@ -54,59 +42,6 @@ const TEST_MATERIAL = new RegExp(
 const stemOf = (name: string): string => name.split('.')[0] ?? '';
 
 const isIndex = (name: string): boolean => stemOf(name) === 'index';
-
-const bySorted = (left: string, right: string): number => (left < right ? -1 : 1);
-
-const HOLDS: Readonly<Record<Top, string>> = Object.freeze({
-    consumer:
-        'the declarations every consumer is held to — the catalogue, the rulebook of upstream decisions, our own rules by family, the checks',
-    engine: 'what runs the declarations and knows none of them — how a project is read, the baseline, the checker, the catalogue rendered, the compiler of a rulebook into a config, the test tooling',
-    self: 'the declarations only this repository is held to — its catalogue, its rules by family, its checks, the meta-tests of its corpus',
-});
-
-function lintRootFinding(path: string): Finding {
-    return {
-        message: [
-            `found: \`${path}\` sits at the root of lint/`,
-            'why: lint/ has one tree in every repository — its root holds `index`, the entry that composes consumer/ with engine/, and a folder names the audience of every other file',
-            `fix: move it into the folder its audience names — ${LINT_FOLDERS.join(', ')} — or into docs/ if it explains`,
-            READ,
-        ].join(' · '),
-        path,
-        rule: 'names/lint-root-holds-only-index',
-    };
-}
-
-function lintFolderFinding(path: string): Finding {
-    return {
-        message: [
-            `found: \`${path}\` is not a folder of the lint tree`,
-            `why: lint/ has one tree in every repository, split by audience — ${LINT_FOLDERS.join(', ')}`,
-            'fix: move its files where their audience puts them — a declaration every consumer is held to under consumer/, one only this repository is held to under self/, what runs them under engine/',
-            READ,
-        ].join(' · '),
-        path,
-        rule: 'names/lint-folder-is-known',
-    };
-}
-
-function audienceFolderFinding(path: string, audience: Top, isFile: boolean): Finding {
-    const folders = LINT_TREE[audience];
-    const found = isFile
-        ? `found: \`${path}\` sits at the root of ${audience}/`
-        : `found: \`${path}\` is not a folder of ${audience}/`;
-
-    return {
-        message: [
-            found,
-            `why: ${audience}/ holds ${HOLDS[audience]}, so its folders are ${folders.join(', ')}${audience === 'self' ? ', beside the `index` that composes them with engine/' : ''}`,
-            `fix: move ${isFile ? 'it' : 'its files'} into the folder its nature names — ${folders.map((folder) => `${folder}/`).join(', ')}`,
-            READ,
-        ].join(' · '),
-        path,
-        rule: FOLDER_RULES[audience],
-    };
-}
 
 function helperFinding(path: string, names: readonly string[]): Finding {
     const listed = names.map((name) => `\`${name}\``).join(', ');
@@ -257,23 +192,18 @@ function sharedHelpers(
         .filter(({ names }) => names.length > 0);
 }
 
-function placementOf(top: string, folder: string | undefined, rest: readonly string[]): Placement {
-    if (folder === undefined) {
-        return { kind: isIndex(top) ? 'placed' : 'lint-root' };
-    }
-    if (!isTop(top)) {
-        return { kind: 'foreign-top' };
-    }
-    if (rest.length === 0) {
-        return top === 'self' && isIndex(folder)
-            ? { kind: 'placed' }
-            : { kind: 'audience-root', top };
-    }
-    if (!LINT_TREE[top].includes(folder)) {
-        return { kind: 'foreign-folder', top };
-    }
-
-    return { kind: AUDIENCES.has(top) ? 'declaration' : 'placed' };
+function isDeclaration(
+    top: string,
+    folder: string | undefined,
+    rest: readonly string[],
+): folder is string {
+    return (
+        AUDIENCES.has(top) &&
+        folder !== undefined &&
+        rest.length > 0 &&
+        isTop(top) &&
+        LINT_TREE[top].includes(folder)
+    );
 }
 
 function judgedDeclaration({
@@ -308,22 +238,11 @@ export function lintTreeOf(files: readonly string[], unit: string, prefix: strin
     const lintFiles = files.filter((file) => file.startsWith(`${LINT_ROOT}/`));
     const families = catalogueFamilies(unit, lintFiles);
     const findings: Finding[] = [];
-    const foreign = new Set<string>();
-    const foreignInAudience = new Map<string, Top>();
     const candidates: Candidate[] = [];
 
     for (const file of lintFiles) {
         const [, top = '', folder, ...rest] = file.split('/');
-        const placement = placementOf(top, folder, rest);
-        if (placement.kind === 'lint-root') {
-            findings.push(lintRootFinding(`${prefix}${file}`));
-        } else if (placement.kind === 'audience-root') {
-            findings.push(audienceFolderFinding(`${prefix}${file}`, placement.top, true));
-        } else if (placement.kind === 'foreign-top') {
-            foreign.add(top);
-        } else if (placement.kind === 'foreign-folder') {
-            foreignInAudience.set(`${top}/${folder ?? ''}`, placement.top);
-        } else if (placement.kind === 'declaration' && folder !== undefined) {
+        if (isDeclaration(top, folder, rest)) {
             const judged = judgedDeclaration({ families, file, folder, prefix, rest, unit });
             findings.push(...judged.findings);
             candidates.push(...judged.candidates);
@@ -333,15 +252,5 @@ export function lintTreeOf(files: readonly string[], unit: string, prefix: strin
         findings.push(helperFinding(`${prefix}${file}`, names));
     }
 
-    return [
-        ...findings,
-        ...[...foreign]
-            .toSorted(bySorted)
-            .map((top) => lintFolderFinding(`${prefix}${LINT_ROOT}/${top}/`)),
-        ...[...foreignInAudience]
-            .toSorted(([left], [right]) => bySorted(left, right))
-            .map(([path, audience]) =>
-                audienceFolderFinding(`${prefix}${LINT_ROOT}/${path}/`, audience, false),
-            ),
-    ];
+    return findings;
 }

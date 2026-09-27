@@ -40,6 +40,11 @@
         "sentence": "Every word of a name is spelled whole."
     },
     {
+        "family": "names",
+        "id": "names/directory-in-kebab-case",
+        "sentence": "A directory under a named root is written in kebab-case, a route segment in its framework's grammar."
+    },
+    {
         "family": "tree",
         "id": "names/no-undeclared-root-folder",
         "sentence": "Every root folder is on the spine, imposed by a tool, or declared with its reason."

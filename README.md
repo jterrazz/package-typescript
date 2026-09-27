@@ -40,6 +40,7 @@ The `typescript` command is TypeScript, built into `dist/`; the work it orchestr
 | Packaging    | [publint](https://publint.dev) + [attw](https://arethetypeswrong.github.io) | Node     |
 | Layer map    | [dependency-cruiser](https://github.com/sverweij/dependency-cruiser)        | Node     |
 | Markdown     | [rumdl](https://rumdl.dev)                                                  | Rust     |
+| Names        | [ls-lint](https://ls-lint.org)                                              | Go       |
 
 ## Documentation
 

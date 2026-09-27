@@ -92,7 +92,7 @@ export function namesPass(check: Check, runs: boolean): Launched | undefined {
         log,
         status: checker(
             'names',
-            ['.', ...check.lintArgs, ...mode],
+            ['.', '--ls-lint', check.tools.lsLint, ...check.lintArgs, ...mode],
             { path: log },
             { typeless: true },
         ),

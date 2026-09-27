@@ -28,7 +28,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 | Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)                      |
 | Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)                   |
 | Markdown (prose)                  | rumdl + the prose gate      | always (check and fix — `--fix` runs rumdl's own fixes)                  |
-| Names (tree)                      | the naming gate             | always (check and fix — `--fix` deletes an empty directory)              |
+| Names (tree)                      | ls-lint + the naming gate   | always (check and fix — `--fix` deletes an empty directory)              |
 | Comments (density)                | the comment gate            | always (check and fix — `--fix` re-records a fall)                       |
 | Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                 |
 
@@ -460,17 +460,29 @@ What a project calls its own parts, swept under the roots where a project keeps 
 
 <!-- GENERATED:findings names -->
 
-| Rule                               | Requirement                                                                          |
-| ---------------------------------- | ------------------------------------------------------------------------------------ |
-| `names/no-grab-bag-name`           | A directory or file is named for the subject it holds, never a grab-bag word.        |
-| `names/no-language-construct-name` | A directory or file is named for its subject, never for a construct of the language. |
-| `names/no-abbreviated-word`        | Every word of a name is spelled whole.                                               |
+| Rule                               | Requirement                                                                                          |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `names/no-grab-bag-name`           | A directory or file is named for the subject it holds, never a grab-bag word.                        |
+| `names/no-language-construct-name` | A directory or file is named for its subject, never for a construct of the language.                 |
+| `names/no-abbreviated-word`        | Every word of a name is spelled whole.                                                               |
+| `names/directory-in-kebab-case`    | A directory under a named root is written in kebab-case, a route segment in its framework's grammar. |
 
 <!-- /GENERATED:findings names -->
 
 All three rosters are closed and all live in the gate, in one executable copy. Grab-bag: `base`, `common`, `helpers`, `lib`, `misc`, `stuff`, `tools`, `utils`. Construct: `constants`, `helper`, `interfaces`, `type`, `types`, `util`, and the `.types.ts` suffix — a word the grab-bag already refuses is reported once, under that roster. A leading `_` excuses no word of either roster: it states a position, not a subject, so `_utils/` is refused as `utils/` is. Shortcut: `auth`, `cfg`, `impl`, `infra`, `k8s`, `pkg`, `repo`, `repos`, `svc`, `tmp` — and the `_` marker does NOT excuse one, since it states a position, not whether the name is whole.
 
 A construct is judged on the WHOLE name: `type-registry.ts` names a subject and passes, `types.ts` names a part of the language and fails. Two words stay off the rosters though they sound generic, because each names a role a reader recognises at once: `setup` is what a runner loads before a test (`vitest.setup.ts`, a `setupFiles` entry), and `core` is the part of a layered tree every other layer depends on. `index.ts` is a barrel — a structural role, not a category — and no roster holds it. The ground a spec stands on is never swept at all, so a fixture may be called anything its scenario needs.
+
+### What ls-lint judges, and what stays the gate's
+
+Where a name sits is declarative, so [ls-lint](https://ls-lint.org) judges it: the pass writes an ls-lint config from the tree this chapter describes, runs it over the disk, and prints each failure as the rule below that owns it — every directory under a named root in kebab-case (`names/directory-in-kebab-case`), the closed folder lists and root files of [the lint tree](#the-lint-tree), and a skill holding nothing beside its `SKILL.md`. A leading `_` is a folder the toolchain owns (`_fixtures/`, `_setup/`), and a route segment keeps its framework's grammar — `[id]`, `[[...slug]]`, `(group)`, `@slot` — so a Next.js or Astro tree passes as written. The ground a test stands on, `node_modules/`, `dist/` and every dot-folder are left out, and so is what an `--ignore-pattern` names.
+
+What ls-lint cannot express stays the gate's, in its own code:
+
+- the three rosters above — ls-lint's regular expressions have no negative lookahead, so "any name but these words" is not one it can write;
+- the spine and its declared roots, which read `package.json`, the build config and `jterrazz.config.ts`;
+- `names/audience-holds-only-declarations` and `names/rule-file-in-its-family-folder`, which read what a module exports and which family its catalogue row names;
+- the six gestures of the `Makefile`, which read its text, and an empty directory, which ls-lint never sees.
 
 ### The repository spine
 
@@ -498,7 +510,7 @@ The root's own folders are the same in every repository: `src/` the product's co
 
 <!-- /GENERATED:findings tree -->
 
-A skill is hand-written and read from the install, so anything beside its page is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
+A skill is hand-written and read from the install, so anything beside its page — a file or a folder — is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
 
 `lint/` stands on the spine only where the package SHIPS it, and it ships it one of two ways. Directly: an entry of its `package.json`'s `files`, or a target of its `exports`, reaches into `lint/`. Or through its build: an entry of its `tsdown.config.*` compiles a `lint/` source, and the output it compiles to — `dist/<entry>`, or under the config's `outDir` — is published by an `exports`, `bin` or `main` target, or by a `files` entry no later `!` entry takes back. A package that ships its rules as `dist/oxlint.js`, built from an `index.ts` under `lint/`, is the case the second way exists for.
 

@@ -8,6 +8,7 @@ import { readSection, SETTINGS_FILE } from '../../engine/project/jterrazz-config
 import { isRepositoryRoot } from '../../engine/project/repository-root.js';
 import { workspaceMembers } from '../../engine/project/workspace-members.js';
 import { LINT_ROOT, lintTreeOf } from './names.lint-tree.js';
+import { lsLintFindings, runLsLint } from './names.ls-lint.js';
 
 type Disk = Pick<Context, 'exists' | 'read'>;
 
@@ -90,8 +91,6 @@ const MAKEFILE = 'Makefile';
 
 // A recipe line opens on a tab and never matches; `:=` and `::=` open assignments.
 const RULE_LINE = /^(?<targets>[^\s:#=][^:#=]*?)\s*(?:::|:)(?![:=])/u;
-
-const SKILL_FILE = /^skills\/[^/]+\/SKILL\.md$/u;
 
 // Below `app/`, a Next.js directory is a URL the product serves, not a name the tree chose.
 const ROUTER_ROOT = 'app';
@@ -355,13 +354,6 @@ function spineOf(
             continue;
         }
         roots.add(first);
-        if (first === 'skills' && !SKILL_FILE.test(file)) {
-            findings.push({
-                message: `a skill is one \`skills/<skill>/SKILL.md\` — \`${prefix}${file}\` sits beside it`,
-                path: `${prefix}${file}`,
-                rule: 'names/skill-holds-only-skill-md',
-            });
-        }
     }
 
     const isCodified = (root: string): boolean =>
@@ -457,13 +449,26 @@ function emptyDirectoryFinding(path: string): Finding {
     };
 }
 
+function laidOut(context: Context): { findings: Finding[]; problem: null | string } {
+    const units = ['', ...workspaceMembers(context.root).map((member) => `${member}/`)];
+    const { failures, problem } = runLsLint(context.value('--ls-lint', 'ls-lint'), context.root, {
+        ignorePatterns: context.ignorePatterns,
+        units,
+    });
+
+    return { findings: lsLintFindings(context.root, units, failures), problem };
+}
+
 export const names: Pass = Object.freeze({
     async check(context) {
         const files = context.files();
+        const layout = laidOut(context);
 
         return {
+            ...(layout.problem === null ? {} : { failed: true, lines: [layout.problem] }),
             findings: [
                 ...findingsOf(files),
+                ...layout.findings,
                 ...(await spinesOf(context, files)),
                 ...makefileOf(context, files),
                 ...emptyDirectories(context.root, { ignorePatterns: context.ignorePatterns }).map(
@@ -477,4 +482,5 @@ export const names: Pass = Object.freeze({
             (directory) => ({ directory, line: `removed  ${directory}/  an empty directory` }),
         ),
     }),
+    valued: ['--ls-lint'],
 });

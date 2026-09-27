@@ -22,6 +22,7 @@ export type Tools = {
     checker: string;
     depcruise: string;
     knip: string;
+    lsLint: string;
     oxfmt: string;
     oxlint: string;
     prettier: string;
@@ -72,6 +73,7 @@ export function toolsOf(): Tools {
         checker: projectBinary('jterrazz-test-check'),
         depcruise: hoisted('depcruise'),
         knip: hoisted('knip'),
+        lsLint: hoisted('ls-lint'),
         oxfmt: hoisted('oxfmt'),
         oxlint: hoisted('oxlint'),
         prettier: hoisted('prettier'),

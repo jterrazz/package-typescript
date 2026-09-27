@@ -32,7 +32,7 @@ runs:
 
            RUN  Names (tree)
 
-          names/skill-holds-only-skill-md  skills/shop/references/rules.md  a skill is one `skills/<skill>/SKILL.md` — `skills/shop/references/rules.md` sits beside it
+          names/skill-holds-only-skill-md  skills/shop/references/  found: `skills/shop/references/` sits beside a skill's `SKILL.md` · why: a skill is one `skills/<skill>/SKILL.md`, the one page an agent loads, and a file beside it is one no agent reads · fix: fold what it says into the `SKILL.md` or into the chapter the skill routes to, and delete it · read: docs/06-quality-checks.md#the-names-tree-pass
           names/no-undeclared-root-folder  scripts/  `scripts/` is a root outside the spine — move it under src/, or declare it in jterrazz.config.ts's `typescript.roots` with its reason
           ✗ Failed with exit code 1
 

@@ -1,0 +1,18 @@
+description: fails a directory not written in kebab-case, and keeps a route segment its framework names
+fixture: ./_fixtures/names/directory-case/
+env: TYPESCRIPT_CHECK_PASSES=names
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Names (tree)
+
+          names/directory-in-kebab-case  specs/cli/Smoke_Suite/  found: `specs/cli/Smoke_Suite/` is not written in kebab-case · why: a directory name is part of every path and import that crosses it, and one case for every name reads the same on a disk that folds case and on one that does not · fix: rename it in lowercase words joined by `-` — a leading `_` marks a folder the toolchain owns, and a route segment keeps its framework grammar (`[id]`, `(group)`, `@slot`) · read: docs/06-quality-checks.md#the-names-tree-pass
+          names/directory-in-kebab-case  src/UserProfile/  found: `src/UserProfile/` is not written in kebab-case · why: a directory name is part of every path and import that crosses it, and one case for every name reads the same on a disk that folds case and on one that does not · fix: rename it in lowercase words joined by `-` — a leading `_` marks a folder the toolchain owns, and a route segment keeps its framework grammar (`[id]`, `(group)`, `@slot`) · read: docs/06-quality-checks.md#the-names-tree-pass
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
