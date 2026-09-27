@@ -2,6 +2,8 @@ import type { ArchitectureRule, Preset } from '../../engine/project/preset.js';
 
 const READ = 'docs/01-architecture.md#the-judging-layer';
 
+const TEST_MATERIAL = String.raw`\.(?:test|spec|test-d|spec-d|fixtures)\.[cm]?[jt]sx?$`;
+
 export const LINT_LAYERS: readonly ArchitectureRule[] = Object.freeze([
     {
         fix: 'hand the declaration to engine/ from an index, never import it from engine/',
@@ -32,11 +34,11 @@ export const LINT_LAYERS: readonly ArchitectureRule[] = Object.freeze([
     },
     {
         fix: 'move what the catalogue needs into engine/',
-        from: { path: '^lint/(consumer|self)/catalogue/' },
+        from: { path: '^lint/(consumer|self)/catalogue/', pathNot: TEST_MATERIAL },
         name: 'catalogue-at-the-bottom',
         read: READ,
-        to: { path: '^(lint/consumer|lint/self|src)/', pathNot: '^lint/$1/catalogue/' },
-        why: 'a catalogue is data at the bottom of the arrow — it reads engine/ alone',
+        to: { path: '^(lint/consumer|lint/self|src)/', pathNot: '^lint/($1|consumer)/catalogue/' },
+        why: 'a catalogue is data at the bottom of the arrow — it reads engine/ and, for the self catalogue, the consumer catalogue it extends; its tests audit what it catalogues',
     },
     {
         fix: 'move what the shipped code needs out of self/ and src/ into engine/',
