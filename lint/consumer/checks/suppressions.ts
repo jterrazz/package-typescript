@@ -203,7 +203,13 @@ export const suppressions: Pass = Object.freeze({
                 continue;
             }
             for (const { line, message, rewritable, rule } of audited.violations) {
-                findings.push({ fixed: rewritable && rule === SPELLING, line, message, path, rule });
+                findings.push({
+                    fixed: rewritable && rule === SPELLING,
+                    line,
+                    message,
+                    path,
+                    rule,
+                });
             }
             if (context.fix && audited.rewritten !== null) {
                 rewritten.push({ path, text: audited.rewritten });

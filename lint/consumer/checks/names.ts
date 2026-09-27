@@ -15,9 +15,9 @@ import type { Config } from '../../engine/project/jterrazz-config.js';
 import { isRepositoryRoot } from '../../engine/project/repository-root.js';
 import { workspaceMembers } from '../../engine/project/workspace-members.js';
 import { declaredNamesFindings, declaredNamesRules } from './names.declared.js';
+import { namesFinding } from './names.lessons.js';
 import { LINT_ROOT, lintFoldersOf, lintTreeOf } from './names.lint-tree.js';
 import type { LintTree } from './names.lint-tree.js';
-import { namesFinding } from './names.lessons.js';
 import { lsLintConfig, lsLintFindings, runLsLint } from './names.ls-lint.js';
 
 type Disk = Pick<Context, 'exists' | 'read'>;
@@ -285,7 +285,8 @@ function shipsLint(disk: Disk, manifest: Manifest, unit: string): boolean {
 function foreignRoot(root: string, prefix: string): Finding {
     const manifestPath = `${prefix}package.json`;
 
-    return namesFinding('names/no-undeclared-root-folder',
+    return namesFinding(
+        'names/no-undeclared-root-folder',
         `${prefix}${root}/`,
         root === LINT_ROOT
             ? {
@@ -467,9 +468,7 @@ async function laidOut(
 
     return {
         findings: [
-            ...(declared.problem === null
-                ? []
-                : [configFinding(SETTINGS_FILE, declared.problem)]),
+            ...(declared.problem === null ? [] : [configFinding(SETTINGS_FILE, declared.problem)]),
             ...lsLintFindings(context.root, { failures, swept, tree, units }),
             ...own.findings,
         ],

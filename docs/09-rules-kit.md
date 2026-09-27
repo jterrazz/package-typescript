@@ -26,12 +26,15 @@ The rule is its row, its messages, its read and its visitor:
 export const noSleep = defineRule(
     {
         docs: row,
-        messages: { slept: { found: '`sleep()` waits on the clock', fix: 'await the event itself' } },
+        messages: {
+            slept: { found: '`sleep()` waits on the clock', fix: 'await the event itself' },
+        },
         read: readAt(row, 'docs/19-linting.md'),
     },
     {
         createOnce: (context) => ({
-            'CallExpression[callee.name="sleep"]': (node) => context.report({ messageId: 'slept', node }),
+            'CallExpression[callee.name="sleep"]': (node) =>
+                context.report({ messageId: 'slept', node }),
         }),
     },
 );

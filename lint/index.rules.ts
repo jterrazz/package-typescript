@@ -141,10 +141,11 @@ export {
     workspacePatterns,
 } from './engine/project/manifest.js';
 export type { Manifest } from './engine/project/manifest.js';
-export { definePreset, mergeSettings, resolveConfig } from './engine/project/preset.js';
+export { definePreset, resolveConfig } from './engine/project/preset.js';
+export { mergeSettings } from './engine/project/settings-merge.js';
+export type { Merged } from './engine/project/settings-merge.js';
 export type {
     ArchitectureRule,
-    Merged,
     NamesRule,
     OptOut,
     Preset,

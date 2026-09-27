@@ -128,7 +128,7 @@ describe('names-empty-directory', () => {
         expect(names.map((line) => line.split(':1:1: ')[0] ?? line)).toStrictEqual([
             'src/abandoned/',
             'src/scaffold/',
-            'found: every finding above, and jterrazz.baseline.json records no `names/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run \'typescript baseline\' to record where the project stands · read: docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds',
+            "found: every finding above, and jterrazz.baseline.json records no `names/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds",
             '✗ Failed with exit code 1',
         ]);
     });

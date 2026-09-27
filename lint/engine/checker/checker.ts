@@ -58,7 +58,9 @@ export function contextOf(commandLine: CommandLine, presets: readonly Preset[]):
     };
 }
 
-const print = (lines: readonly string[]): void => {
+type Print = (lines: string[]) => void;
+
+const print: Print = (lines) => {
     stdout.write(lines.map((line) => `${line}\n`).join(''));
 };
 
@@ -105,6 +107,44 @@ function settled(context: Context, { findings, result }: Run): number {
     return findings.length > 0 || result.failed === true || toolsFailed ? 1 : 0;
 }
 
+type Verdict = {
+    checker: Checker;
+    context: Context;
+    formatted: boolean;
+    name: string;
+    pass: Pass;
+    run: Run;
+};
+
+function verdictOf({ checker, context, formatted, name, pass, run }: Verdict): number {
+    const { findings, result } = run;
+    const unsaid: string[] = [];
+    const say: Print = formatted
+        ? (lines) => {
+              unsaid.push(...lines);
+          }
+        : print;
+    say(result.lines ?? []);
+    if (result.deferred === true) {
+        say(findings.map((finding) => reportLine(finding)));
+
+        return result.failed === true ? 1 : 0;
+    }
+    const { held } = checker;
+    if (held === undefined || !held.passes.includes(name)) {
+        return formatted ? Number(findings.length > 0) : settled(context, run);
+    }
+    const judged = judgeHeld({ ...run, context, held, name, pass, print: say });
+    if (result.failed === true) {
+        return 1;
+    }
+    if (judged === 0 && held.summarised === true) {
+        say([heldSummary(context.root, held.section)]);
+    }
+
+    return judged;
+}
+
 async function runPass(
     { checker, name, pass }: { checker: Checker; name: string; pass: Pass },
     args: readonly string[],
@@ -134,28 +174,8 @@ async function runPass(
     if (formatted) {
         stdout.write(`${findingsJson(run.findings)}\n`);
     }
-    const say = formatted ? (): void => undefined : print;
 
-    say(result.lines ?? []);
-    if (result.deferred === true) {
-        say(run.findings.map((finding) => reportLine(finding)));
-
-        return result.failed === true ? 1 : 0;
-    }
-    const { held } = checker;
-    if (held === undefined || !held.passes.includes(name)) {
-        return formatted ? Number(run.findings.length > 0) : settled(context, run);
-    }
-
-    const judged = judgeHeld({ ...run, context, held, name, pass, print: say });
-    if (result.failed === true) {
-        return 1;
-    }
-    if (judged === 0 && held.summarised === true) {
-        say([heldSummary(context.root, held.section)]);
-    }
-
-    return judged;
+    return verdictOf({ checker, context, formatted, name, pass, run });
 }
 
 export async function runChecker(

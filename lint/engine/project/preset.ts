@@ -3,6 +3,7 @@ import type { OxlintConfig } from 'oxlint';
 
 import type { ChapterAnchor, Unread } from '../catalogue/lesson.js';
 import { isJsonObject, objectOf } from './json.js';
+import { mergeSettings } from './settings-merge.js';
 
 export type ArchitectureRule = Pick<IRegularForbiddenRuleType, 'from' | 'to'> & {
     fix: string;
@@ -78,41 +79,6 @@ function flattened(presets: readonly unknown[], into: Map<string, Preset>): null
     }
 
     return null;
-}
-
-export type Merged = { problem: null | string; value: unknown };
-
-const shapeOf = (value: unknown): string =>
-    Array.isArray(value) ? 'a list' : isJsonObject(value) ? 'an object' : 'a single value';
-
-// Lists concatenate with duplicates dropped, records merge key by key, and a single value written wins over a default; a list or a record is never replaced by another shape, so no default law is written away.
-export function mergeSettings(base: unknown, own: unknown, at = 'the section'): Merged {
-    if (own === undefined) {
-        return { problem: null, value: base };
-    }
-    if (base !== undefined && shapeOf(base) !== shapeOf(own) && shapeOf(base) !== 'a single value') {
-        return {
-            problem: `writes ${shapeOf(own)} at \`${at}\`, where its presets set ${shapeOf(base)} — a setting adds to a default, never replaces its shape`,
-            value: base,
-        };
-    }
-    if (Array.isArray(base) && Array.isArray(own)) {
-        return { problem: null, value: [...new Set<unknown>([...base, ...own])] };
-    }
-    if (isJsonObject(base) && isJsonObject(own)) {
-        const merged: Record<string, unknown> = { ...base };
-        for (const [key, value] of Object.entries(own)) {
-            const one = mergeSettings(base[key], value, `${at}.${key}`);
-            if (one.problem !== null) {
-                return one;
-            }
-            merged[key] = one.value;
-        }
-
-        return { problem: null, value: merged };
-    }
-
-    return { problem: null, value: own };
 }
 
 type Named = { name: string };
@@ -219,23 +185,29 @@ function orderedPresets(
     return { presets: [...ordered.values()], problem };
 }
 
+type Sections = {
+    problem: null | string;
+    sections: Record<string, Readonly<Record<string, unknown>>>;
+};
+
+const sectionRefused = (problem: string): Sections => ({ problem, sections: {} });
+
 function sectionsOf(
     presets: readonly Preset[],
     declared: Readonly<Record<string, unknown>>,
-): { problem: null | string; sections: Record<string, Readonly<Record<string, unknown>>> } {
+): Sections {
     const names = new Set([
         ...presets.map(({ name }) => name),
         ...Object.keys(declared).filter((key) => !RESERVED.has(key)),
     ]);
     const sections: Record<string, Readonly<Record<string, unknown>>> = {};
-    const refused = (problem: string): ReturnType<typeof sectionsOf> => ({ problem, sections: {} });
     for (const name of [...names].toSorted()) {
         const own = declared[name];
         if (own !== undefined && !isJsonObject(own)) {
-            return refused(`holds a \`${name}\` section that is not an object`);
+            return sectionRefused(`holds a \`${name}\` section that is not an object`);
         }
         if (own !== undefined && Object.hasOwn(own, 'presets')) {
-            return refused(
+            return sectionRefused(
                 `holds a \`presets\` inside its \`${name}\` section, which no reader reads — list every preset at the top level, \`presets: [...]\` (docs/09-rules-kit.md#presets)`,
             );
         }
@@ -245,7 +217,7 @@ function sectionsOf(
         }
         const merged = mergeSettings(section, own, name);
         if (merged.problem !== null) {
-            return refused(merged.problem);
+            return sectionRefused(merged.problem);
         }
         sections[name] = objectOf(merged.value);
     }

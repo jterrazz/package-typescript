@@ -102,7 +102,8 @@ export function specsRoots(members: readonly string[]): string[] {
         ...(existsSync('specs') && !isGitIgnored('.', 'specs') ? ['specs'] : []),
         ...members.flatMap((member) =>
             specsDirectoriesUnder(member).filter(
-                (candidate) => !isGitIgnored('.', candidate) && insideOwningMember(candidate, member),
+                (candidate) =>
+                    !isGitIgnored('.', candidate) && insideOwningMember(candidate, member),
             ),
         ),
     ];

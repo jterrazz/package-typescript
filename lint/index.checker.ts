@@ -73,5 +73,10 @@ const HELD: Held = Object.freeze({
 });
 
 if (import.meta.main) {
-    await runChecker({ commands: ENGINE_COMMANDS, held: HELD, passes: PASSES, presets: BASE_PRESETS });
+    await runChecker({
+        commands: ENGINE_COMMANDS,
+        held: HELD,
+        passes: PASSES,
+        presets: BASE_PRESETS,
+    });
 }

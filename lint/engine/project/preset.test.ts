@@ -61,7 +61,11 @@ describe('preset', () => {
         const { resolved } = resolveConfig(
             {
                 presets: [
-                    { name: 'typescript', package: '@jterrazz/typescript', settings: { profile: 'next' } },
+                    {
+                        name: 'typescript',
+                        package: '@jterrazz/typescript',
+                        settings: { profile: 'next' },
+                    },
                 ],
                 typescript: { roots: { scripts: 'the release scripts' }, spine: ['tools', 'src'] },
             },
@@ -146,6 +150,7 @@ describe('preset', () => {
             'holds a `presets` inside its `typescript` section, which no reader reads — list every preset at the top level, `presets: [...]` (docs/09-rules-kit.md#presets)',
         ],
     ])('refuses %s, the base laws still standing', (_, written, refused) => {
+        // Given - a settings object that would write a base law away
         // When - the settings are resolved
         const { problem, resolved } = resolveConfig(written, [BASE]);
 

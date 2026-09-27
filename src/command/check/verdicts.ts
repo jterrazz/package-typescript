@@ -27,7 +27,10 @@ async function heldSummaryOf(): Promise<null | RegExp> {
 
     return labels.length === 0
         ? null
-        : new RegExp(`^(?:${labels.join('|')}): (?:\\d+ held across \\d+ rules?|nothing held)$`, 'u');
+        : new RegExp(
+              `^(?:${labels.join('|')}): (?:\\d+ held across \\d+ rules?|nothing held)$`,
+              'u',
+          );
 }
 
 export async function settled(launched: Launched | undefined): Promise<Passed> {

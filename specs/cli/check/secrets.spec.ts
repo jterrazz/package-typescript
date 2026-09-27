@@ -88,7 +88,9 @@ describe('secrets', () => {
             encoding: 'utf8',
             env: { ...process.env, PATH: pathWithoutGitleaks() },
         });
-        const findings = result.stdout.split('\n').filter((line) => line.includes(': error secrets('));
+        const findings = result.stdout
+            .split('\n')
+            .filter((line) => line.includes(': error secrets('));
 
         // Then - one finding per shape, each under its own rule id, on its own line
         expect(findings).toStrictEqual([

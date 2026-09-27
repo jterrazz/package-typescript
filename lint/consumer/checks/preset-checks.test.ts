@@ -23,7 +23,7 @@ const importing = (specifier: string): string => `import '${specifier}';\n`;
 
 const BASE = [typescriptPreset()];
 
-describe('preset-checks', () => {
+describe('presetChecks', () => {
     test('finds one import per base law where it is written, and none where a catalogue law exempts it', async () => {
         // Given - a lint/ tree breaking each law once, a self catalogue extending the consumer one, and a catalogue test reading a rule
         const root = treeOf({

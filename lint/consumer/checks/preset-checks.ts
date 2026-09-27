@@ -56,7 +56,10 @@ export async function presetChecks(
     if (settings.problem !== null) {
         return { findings: [], problems: [settings.problem] };
     }
-    const [layers, names] = await Promise.all([architecture.check(context), declaredNames(context)]);
+    const [layers, names] = await Promise.all([
+        architecture.check(context),
+        declaredNames(context),
+    ]);
 
     return {
         findings: [...(layers.findings ?? []), ...names.findings],

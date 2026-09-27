@@ -22,8 +22,13 @@ const READ_BY_NAME: Readonly<Record<string, ChapterAnchor>> = Object.freeze({
 
 const NAMESPACE = 'names';
 
-const ROWS: readonly { family: string; name: string; sentence: string; why?: string }[] =
-    FINDINGS.map((row) => ({ ...row, name: row.id }));
+const ROWS: readonly { family: string; name: string; sentence: string; why: string | undefined }[] =
+    FINDINGS.map((row) => ({
+        family: row.family,
+        name: row.id,
+        sentence: row.sentence,
+        why: 'why' in row ? row.why : undefined,
+    }));
 
 function checkOf(id: string): ReturnType<typeof defineCheck> {
     const { family, sentence, why } = rowNamed(ROWS, id);
