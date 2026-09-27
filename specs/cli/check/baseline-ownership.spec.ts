@@ -191,10 +191,14 @@ if (args[args.indexOf('--member') + 1] === '.') {
 process.exit(0);
 `;
 
+    const DECLARING_TEST =
+        "export default { presets: [{ baseline: ['test'], name: 'test', package: '@jterrazz/test' }] };\n";
+
     test("states @jterrazz/test's held line under the Test Conventions pass on a green run", () => {
-        // Given - a checker whose root run holds its ratchet
+        // Given - a checker whose root run holds its ratchet, in a project declaring the preset that owns the section
         const project = groundOf();
         writeFileSync(join(project, 'node_modules/@jterrazz/test/dist/checker.js'), HELD_CHECKER);
+        writeFileSync(join(project, 'jterrazz.config.ts'), DECLARING_TEST);
 
         // When - the checks run
         const { stdout } = run(project, 'check', {
@@ -220,12 +224,13 @@ process.exit(0);
 `;
 
     test("states @jterrazz/test's empty section under the Test Conventions pass on a green run", () => {
-        // Given - a checker whose root run holds nothing
+        // Given - a checker whose root run holds nothing, in a project declaring the preset that owns the section
         const project = groundOf();
         writeFileSync(
             join(project, 'node_modules/@jterrazz/test/dist/checker.js'),
             NOTHING_HELD_CHECKER,
         );
+        writeFileSync(join(project, 'jterrazz.config.ts'), DECLARING_TEST);
 
         // When - the checks run
         const { stdout } = run(project, 'check', {
@@ -240,6 +245,22 @@ process.exit(0);
         // Then - the pass is green and names the section as holding nothing
         expect(conventions).toContain('jterrazz.baseline.json › test: nothing held\n');
         expect(conventions).toContain('✓ Passed');
+    });
+
+    test('states no held line for a section no declared preset owns', () => {
+        // Given - the same checker, in a project declaring no preset beside the base one
+        const project = groundOf();
+        writeFileSync(join(project, 'node_modules/@jterrazz/test/dist/checker.js'), HELD_CHECKER);
+
+        // When - the checks run
+        const { stdout } = run(project, 'check', {
+            ...process.env,
+            ...onlyPasses('conventions', 'suppressions'),
+        });
+
+        // Then - the pass is green, and the line is not the toolchain's to repeat
+        expect(stdout).not.toContain('jterrazz.baseline.json › test:');
+        expect(verdict(stdout, 'Test Conventions')).toBe('✓ Passed');
     });
 
     test("refuses an oxlint rule left in this package's section, naming the gesture that moves it", () => {

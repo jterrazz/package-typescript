@@ -90,7 +90,7 @@ The binary is resolved from that same install, not from a name on `PATH` or a `n
 
 The pass's verdict is the checker's exit code, and nothing here forgives it: `@jterrazz/test` records its own debt and judges it, in its own section of the ratchet file ([the ratchet](#the-ratchet)).
 
-A green pass says one thing about that section: the held line of the run over the project root, `jterrazz.baseline.json › test: <n> held across <k> rules` — or `jterrazz.baseline.json › test: nothing held` for a project keeping no `test` section. `@jterrazz/test` 17 prints that line bare on every green ratchet run, so the pass passes no flag to ask for it; a line in any other shape is left out rather than echoed as a second shape.
+A green pass says one thing about each section a listed preset holds: the held line of the run over the project root, `jterrazz.baseline.json › test: <n> held across <k> rules` — or `jterrazz.baseline.json › test: nothing held` for a project keeping no `test` section. The sections are the ones the presets of `jterrazz.config.ts` declare in their `baseline`, the base preset's and every floor aside, so a project that does not list `test()` is shown no `test` line. `@jterrazz/test` 17 prints that line bare on every green ratchet run, through the kit's checker, so the pass passes no flag to ask for it; a line in any other shape is left out rather than echoed as a second shape.
 
 The checker judges its own passes and nothing of oxlint's: the plugin's `jterrazz(*)` diagnostics are oxlint rules, printed by the Oxlint pass and held in `oxlint-suppressions.json` ([the ratchet](#the-ratchet)). So the member runs start beside the linter rather than after it, and no run of the checker lints the project.
 

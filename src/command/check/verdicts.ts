@@ -1,5 +1,8 @@
 import { appendFileSync, readFileSync } from 'node:fs';
 
+import { labelOf } from '../../../lint/engine/baseline/baseline-file.js';
+import { readConfig } from '../../../lint/engine/project/jterrazz-config.js';
+import { BASE_PRESETS } from '../../../lint/index.config.js';
 import { checker } from '../checker.js';
 import type { Conventions } from './conventions.js';
 import type { Launched } from './launched.js';
@@ -13,8 +16,19 @@ export type Verdict = { log: string; status: number; writes?: boolean };
 
 type Passed = undefined | Verdict;
 
-const HELD_SUMMARY =
-    /^jterrazz\.baseline\.json › test: (?:\d+ held across \d+ rules?|nothing held)$/u;
+const escaped = (text: string): string => text.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
+
+async function heldSummaryOf(): Promise<null | RegExp> {
+    const { resolved } = await readConfig('.', BASE_PRESETS);
+    const toolchain = new Set(BASE_PRESETS.flatMap((preset) => preset.baseline ?? []));
+    const labels = resolved.baseline
+        .filter((section) => !toolchain.has(section) && !resolved.floors.includes(section))
+        .map((section) => escaped(labelOf(section)));
+
+    return labels.length === 0
+        ? null
+        : new RegExp(`^(?:${labels.join('|')}): (?:\\d+ held across \\d+ rules?|nothing held)$`, 'u');
+}
 
 export async function settled(launched: Launched | undefined): Promise<Passed> {
     return launched === undefined
@@ -59,12 +73,13 @@ export async function conventionsVerdict(
     );
     const log = check.logs.at('checker.log');
     joined(check.logs, log, failed);
+    const summary = await heldSummaryOf();
     const summaries =
-        failed.length === 0 && rootLog !== undefined
+        failed.length === 0 && rootLog !== undefined && summary !== null
             ? check.logs
                   .read(rootLog)
                   .split('\n')
-                  .filter((line) => HELD_SUMMARY.test(line))
+                  .filter((line) => summary.test(line))
             : [];
     if (summaries.length > 0) {
         appendFileSync(log, summaries.map((line) => `${line}\n`).join(''));
