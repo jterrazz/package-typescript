@@ -2,9 +2,9 @@
 
 `typescript check` runs every quality gate in parallel; `typescript fix` auto-repairs what it can.
 
-Every pass that RAN prints the same block, in one fixed order: a `RUN` header carrying its name, whatever it has to say, and one verdict line. A pass that did not apply — no Astro in the project, no declared layer map — prints nothing at all, because it answered no question.
+Every pass that RAN prints the same block, in one fixed order: a `RUN` header carrying its name, whatever it has to say, and one verdict line. A pass that did not apply — no Astro in the project, no `jterrazz.config.ts` and no dependency-cruiser config — prints nothing at all, because it answered no question.
 
-What sits between the header and the verdict is the one variable. A failing pass prints its whole captured log; a passing one stays silent, unless it WROTE something — `fix` changed a file the operator owns, and silence would hide that — or a ratchet held it, which the Oxlint pass states in one line ([the ratchet](#the-ratchet)). A tool's success chatter never reaches the stream, so a green run is byte-identical on every platform.
+What sits between the header and the verdict is the one variable. A failing pass prints its whole captured log; a passing one stays silent, unless it WROTE something — `fix` changed a file the operator owns, and silence would hide that — or a ratchet held it, which the Test Conventions pass states in its summary line ([the ratchet](#the-ratchet)). A tool's success chatter never reaches the stream, so a green run is byte-identical on every platform.
 
 The order is the table below, top to bottom, and the drift report closes the run.
 

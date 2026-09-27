@@ -167,7 +167,6 @@ function baselineReader(root: string): {
     const isUnreadable = readBaseline(root).problem !== null;
 
     return {
-        // `nothing held` is the Oxlint pass's own words.
         heldOf: (section) => {
             if (isUnreadable) {
                 return 'unreadable';
