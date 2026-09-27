@@ -106,7 +106,7 @@ describe('behaviour', () => {
 
     // A JS plugin's rules never reach `--print-config`, so only `reportUnusedDisableDirectives` refuses this.
     test('refuses a directive naming a @jterrazz/test rule the plugin does not ship', () => {
-        // Given - the node profile composed with @jterrazz/test's testing fragment, and a directive naming a rule it never shipped
+        // Given - the node profile with @jterrazz/test's test() preset, and a directive naming a rule it never shipped
         using work = sandbox(resolve(FIXTURES, 'node', 'input'), 'node', 'node');
         symlinkSync(
             resolve(import.meta.dirname, '../../../node_modules/@jterrazz/test'),
@@ -116,7 +116,7 @@ describe('behaviour', () => {
         const entry = join(BUILT_FROM, 'dist/oxlint.js');
         writeFileSync(
             work.config,
-            `import { testing } from '@jterrazz/test/oxlint';\nimport { compose, node } from '${entry}';\n\nexport default compose(node, testing);\n`,
+            `import { test } from '@jterrazz/test/config';\nimport { fromPresets } from '${entry}';\n\nexport default fromPresets({ presets: [test()] });\n`,
         );
         writeFileSync(
             resolve(work.path, 'unshipped.ts'),

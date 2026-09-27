@@ -1,8 +1,5 @@
-import { testing } from '@jterrazz/test/oxlint';
-import { defineConfig } from 'oxlint';
+import { test } from '@jterrazz/test/config';
+import { typescript } from '@jterrazz/typescript/config';
+import { defineConfig, fromPresets } from '@jterrazz/typescript/oxlint';
 
-import { compose, node } from '@jterrazz/typescript/oxlint';
-
-// The consumer wiring under test: a config that explicitly composes the
-// Testing fragment into the node preset (resolved from this repo's tree).
-export default defineConfig(compose(node, testing));
+export default defineConfig(fromPresets({ presets: [typescript({ profile: 'node' }), test()] }));

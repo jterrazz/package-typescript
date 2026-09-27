@@ -9,7 +9,7 @@ export const TEST_FILES = Object.freeze([
     '**/__tests__/**/*.{ts,tsx,js,jsx}',
 ]);
 
-// ADR-008 gave `@jterrazz/test`'s `testing` three more, with their options.
+// ADR-008 gave `@jterrazz/test`'s `test()` preset three more, with their options.
 const ON_IN_TESTS = [
     'consistent-each-for',
     'consistent-vitest-vi',
@@ -87,7 +87,7 @@ const PREFER_CALLED_WITH = unsafeFix(
     'rewrites `toHaveBeenCalled()` into `toHaveBeenCalledWith()`, an assertion of NO arguments',
 );
 
-// A floor under `testing` (`file-suffix-matches-place`, ADR-008).
+// A floor under the `test()` preset (`file-suffix-matches-place`, ADR-008).
 const CONSISTENT_TEST_FILENAME = on([{ pattern: String.raw`.*\.(spec|test)\.[tj]sx?$` }]);
 
 const COVERED_BY_TESTING = { by: '@jterrazz/test testing', kind: 'covered' };
