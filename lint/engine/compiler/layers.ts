@@ -1,3 +1,4 @@
+import { refusal } from '../catalogue/lesson.js';
 import { fragment, on, scoped } from './decision.js';
 import type { Fragment } from './decision.js';
 
@@ -23,7 +24,14 @@ export type Layer = {
 
 export function layers({ id = 'layers', map }: { id?: string; map: readonly Layer[] }): Fragment {
     if (typeof id !== 'string' || id === '') {
-        throw new TypeError('A layer map needs an id.');
+        throw new TypeError(
+            refusal({
+                fix: "name the map — `layers({ id: '<name>', map })`",
+                found: 'A layer map needs an id.',
+                read: 'docs/07-lint-presets.md#a-map-the-compiler-refuses',
+                why: 'the fragment the map compiles to answers to that id',
+            }),
+        );
     }
     assertDisjoint(id, map);
 
@@ -64,7 +72,12 @@ function assertDisjoint(id: string, map: readonly Layer[]): void {
         for (const glob of layer.files) {
             if (seen.has(glob)) {
                 throw new TypeError(
-                    `${id}: "${glob}" belongs to both "${seen.get(glob) ?? ''}" and "${layer.name}" — an override replaces, so one map entry would erase the other.`,
+                    refusal({
+                        fix: 'give each glob to one layer — split the glob, or merge the two layers',
+                        found: `${id}: "${glob}" belongs to both "${seen.get(glob) ?? ''}" and "${layer.name}"`,
+                        read: 'docs/07-lint-presets.md#a-map-the-compiler-refuses',
+                        why: 'an override replaces, so one map entry would erase the other',
+                    }),
                 );
             }
             seen.set(glob, layer.name);

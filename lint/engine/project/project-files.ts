@@ -1,11 +1,11 @@
-// A sweep that is empty while the tree is not would turn every gate above it vacuously green, so it
-// throws. The ground a test stands on is its scenario's, judged where the scenario runs it, never here.
+// The ground a test stands on is its scenario's, judged where the scenario runs it, never here.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { lstatSync, readdirSync, readFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { join, matchesGlob } from 'node:path';
 import { exit, stderr } from 'node:process';
 
+import { refusal } from '../catalogue/lesson.js';
 import { isGroundFolder } from './ground.js';
 
 export const UNSWEPT = new Set([
@@ -127,9 +127,21 @@ export function projectFiles(
     if (swept.length === 0) {
         if (holdsSomething(root)) {
             throw new EmptySweepError(
-                listed === null
-                    ? `nothing to read under ${root}: it holds folders and no file — add the project's files, then run again`
-                    : `nothing to read under ${root}: git ignores every file it holds — take the project's files out of .gitignore, then run again`,
+                refusal(
+                    listed === null
+                        ? {
+                              fix: "add the project's files, then run again",
+                              found: `nothing to read under ${root}: it holds folders and no file`,
+                              read: 'docs/06-quality-checks.md#an-unreadable-tree',
+                              why: 'a sweep that reads nothing would turn every gate above it green',
+                          }
+                        : {
+                              fix: "take the project's files out of .gitignore, then run again",
+                              found: `nothing to read under ${root}: git ignores every file it holds`,
+                              read: 'docs/06-quality-checks.md#an-unreadable-tree',
+                              why: 'a sweep that reads nothing would turn every gate above it green',
+                          },
+                ),
             );
         }
 

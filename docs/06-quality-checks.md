@@ -44,6 +44,10 @@ The other four passes are root-only, and that is not an omission. tsc, oxlint an
 
 Discovery never leaves the workspace. A candidate is dropped when git ignores it — clones, workbenches and build output live under gitignored paths — and when the walk had to cross a nested `.git` or a `package.json` that no workspace glob claims to reach it: a vendored project's conventions are its own, not yours.
 
+### An unreadable tree
+
+Every tree gate reads the same sweep: the files git does not ignore, or the disk outside a git checkout. A sweep that comes back empty while the tree holds something — folders and no file, or files git ignores whole — is refused rather than read as nothing to judge, since a gate over nothing passes. The pass prints the refusal in four parts, `found: … · why: … · fix: … · read: …`, and fails.
+
 ## The Gitignore (artefacts) pass
 
 Every build, test and lint artefact lives under `.artifacts/<tool>/` at the project root ([Developing](02-developing.md)), and this pass reads that convention off two files: the project's own `.gitignore`, and the nearest ANCESTOR `.gitignore` above it — the workspace root's, found by walking up to the nearest directory holding a lockfile (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`/`bun.lockb`, `npm-shrinkwrap.json`) or a `workspaces` manifest. That walk stops at the nearest repository boundary and never passes it — a `.git` directory in a clone, a `.git` file in a worktree — because a clone checked out inside another repository is not a member of the tree it sits in, and the `.gitignore` above that boundary answers for somebody else's artefacts. A project carrying its own `.git` therefore has no ancestor at all. It runs when either file exists — a project with neither names no artefact path — and each is judged by the same rules.

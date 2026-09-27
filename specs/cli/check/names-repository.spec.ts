@@ -65,7 +65,7 @@ function projectWith({
 }
 
 function namesPassOf(project: string): string {
-    const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
+    const result = spawnSync('node', [SELECTING_BIN, 'check'], {
         cwd: project,
         encoding: 'utf8',
         env: inProject(project, onlyPasses('names')),
@@ -120,12 +120,12 @@ function writeDataFolder(project: string): void {
 }
 
 function checkAndRecord(project: string): { baseline: string; stdout: string } {
-    const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
+    const result = spawnSync('node', [SELECTING_BIN, 'check'], {
         cwd: project,
         encoding: 'utf8',
         env: inProject(project, onlyPasses('oxlint', 'markdown', 'names', 'secrets')),
     });
-    execFileSync('bash', [SELECTING_BIN, 'baseline'], {
+    execFileSync('node', [SELECTING_BIN, 'baseline'], {
         cwd: project,
         encoding: 'utf8',
         env: inProject(project),
@@ -206,12 +206,12 @@ describe('names-repository', () => {
         execFileSync('git', ['init', '--quiet'], { cwd: project });
 
         // When - the tree gates run
-        const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
+        const result = spawnSync('node', [SELECTING_BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project, TREE_PASSES),
         });
-        const refusal = `nothing to read under ${realpathSync(project)}: git ignores every file it holds — take the project's files out of .gitignore, then run again`;
+        const refusal = `found: nothing to read under ${realpathSync(project)}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/06-quality-checks.md#an-unreadable-tree`;
 
         // Then - every tree gate says that one line, and no stack, and the run fails where a silent gate would pass on everything
         for (const label of TREE_GATES) {
@@ -227,12 +227,12 @@ describe('names-repository', () => {
         mkdirSync(join(project, 'src'));
 
         // When - the tree gates run
-        const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
+        const result = spawnSync('node', [SELECTING_BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project, TREE_PASSES),
         });
-        const refusal = `nothing to read under ${project}: it holds folders and no file — add the project's files, then run again`;
+        const refusal = `found: nothing to read under ${project}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/06-quality-checks.md#an-unreadable-tree`;
 
         // Then - every tree gate says that one line, and the run fails
         for (const label of TREE_GATES) {
@@ -304,7 +304,7 @@ describe('names-repository', () => {
         const project = projectWith({});
 
         // When - the linter alone runs
-        const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
+        const result = spawnSync('node', [SELECTING_BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project, onlyPasses('oxlint')),
@@ -344,14 +344,14 @@ describe('names-repository', () => {
     test('records a missing gesture in the ratchet, and the run it records is green', () => {
         // Given - a repository missing two gestures, recorded by the baseline command
         const project = projectWith({ makefile: FOUR_TARGETS });
-        execFileSync('bash', [SELECTING_BIN, 'baseline'], {
+        execFileSync('node', [SELECTING_BIN, 'baseline'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project),
         });
 
         // When - the linter and the Names pass run
-        const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
+        const result = spawnSync('node', [SELECTING_BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project, onlyPasses('oxlint', 'names')),
@@ -368,14 +368,14 @@ describe('names-repository', () => {
     test('counts a missing gesture in the ratchet line of a linter run the Names pass is left out of', () => {
         // Given - a repository missing two gestures, recorded by the baseline command
         const project = projectWith({ makefile: FOUR_TARGETS });
-        execFileSync('bash', [SELECTING_BIN, 'baseline'], {
+        execFileSync('node', [SELECTING_BIN, 'baseline'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project),
         });
 
         // When - the linter alone runs
-        const result = spawnSync('bash', [SELECTING_BIN, 'check'], {
+        const result = spawnSync('node', [SELECTING_BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
             env: inProject(project, onlyPasses('oxlint')),
