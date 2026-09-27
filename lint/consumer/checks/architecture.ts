@@ -1,5 +1,5 @@
 import type { IRegularForbiddenRuleType } from 'dependency-cruiser';
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -7,6 +7,7 @@ import { refusal } from '../../engine/catalogue/lesson.js';
 import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { runTool } from '../../engine/checker/tool-run.js';
 import type { ToolRun } from '../../engine/checker/tool-run.js';
+import { GROUND_FOLDERS } from '../../engine/project/ground.js';
 import { objectOf, stringOf } from '../../engine/project/json.js';
 import { readSection } from '../../engine/project/jterrazz-config.js';
 import { ARCHITECTURE_HEXAGONAL } from './architecture.hexagonal.js';
@@ -25,7 +26,9 @@ const OWN_CONFIGS = [
     '.dependency-cruiser.mjs',
 ];
 
-const CRUISED_ROOTS = ['src', 'lint', 'apps', 'packages', 'lib'];
+const SOURCE = /\.[cm]?[jt]sx?$/u;
+
+const GROUND = `(^|/)(${GROUND_FOLDERS.join('|')})/`;
 
 const TSCONFIG = 'tsconfig.json';
 
@@ -96,6 +99,7 @@ function cruiseConfig(rules: readonly ArchitectureRule[], context: Context): unk
         forbidden: rules.map(({ from, name, to }) => ({ from, name, severity: 'error', to })),
         options: {
             doNotFollow: { path: 'node_modules' },
+            exclude: { path: GROUND },
             enhancedResolveOptions: {
                 conditionNames: ['import', 'require', 'node', 'default', 'types'],
                 exportsFields: ['exports'],
@@ -109,14 +113,21 @@ function cruiseConfig(rules: readonly ArchitectureRule[], context: Context): unk
 }
 
 function cruisedRoots(context: Context): string[] {
-    return CRUISED_ROOTS.filter((name) => {
-        try {
-            return readdirSync(join(context.root, name)).length > 0;
-        } catch {
-            return false;
-        }
-    });
+    const folders = context
+        .files()
+        .filter((path) => SOURCE.test(path) && path.includes('/'))
+        .map((path) => path.slice(0, path.indexOf('/')))
+        .filter((folder) => !folder.startsWith('.'));
+
+    return [...new Set(folders)].toSorted();
 }
+
+const UNCRUISED = refusal({
+    fix: 'move the source into a folder, or remove the map that has nothing to judge',
+    found: 'a layer map is declared, but no folder of the project holds a source file for it to cruise',
+    read: 'docs/06-quality-checks.md#the-architecture-layer-map-pass',
+    why: 'a map with nothing to cruise judges no import, and its silence would read as every boundary kept',
+});
 
 type Cruise = {
     comments: Map<string, string>;
@@ -213,7 +224,7 @@ function cruised(
 ): { findings: Finding[]; problem: null | string } {
     const roots = cruisedRoots(context);
     if (roots.length === 0) {
-        return { findings: [], problem: null };
+        return { findings: [], problem: UNCRUISED };
     }
     const scratch = mkdtempSync(join(tmpdir(), 'typescript-architecture-'));
     try {
