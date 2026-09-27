@@ -10,7 +10,7 @@ import { presetAt } from '../toolchain.js';
 import type { FixScope } from '../unsafe-fixers.js';
 import type { Launched } from './launched.js';
 import { usesAstro } from './project.js';
-import { oxfmt, oxlint } from './runners.js';
+import { oxfmt, oxlintJson } from './runners.js';
 import { projectBinary } from './setup.js';
 import type { Check } from './setup.js';
 
@@ -29,14 +29,10 @@ export function typescriptPass(check: Check): Launched | undefined {
 export async function lintReport(check: Check): Promise<number> {
     writeFileSync(check.logs.at('lint.log'), '');
 
-    return await oxlint(
-        check,
-        ['--type-aware', '--deny-warnings', '--format', 'json', ...check.lintArgs],
-        {
-            stderr: { path: check.logs.at('lint.err') },
-            stdout: { path: check.logs.at('lint.json') },
-        },
-    );
+    return await oxlintJson(check, ['--type-aware', '--deny-warnings', ...check.lintArgs], {
+        report: check.logs.at('lint.json'),
+        stderr: { path: check.logs.at('lint.err') },
+    });
 }
 
 async function fixScopes(check: Check): Promise<FixScope[]> {

@@ -14,6 +14,8 @@ export type Diagnostic = {
     severity: string;
 };
 
+export const EMPTY_REPORT = '{ "diagnostics": [] }\n';
+
 export type Report = {
     diagnostics?: Diagnostic[];
     number_of_files?: number;

@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { dirname } from 'node:path';
 import process from 'node:process';
 
+import { checker } from '../checker.js';
 import { run } from '../processes.js';
 import { isFile } from '../tool-configs.js';
 import { presetAt } from '../toolchain.js';
@@ -13,7 +14,6 @@ import {
     specsRoots,
     usesTestPackage,
 } from './project.js';
-import { checker } from './runners.js';
 import type { Check } from './setup.js';
 
 const DEPENDENCY_CRUISER_CONFIGS = [

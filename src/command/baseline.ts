@@ -3,14 +3,14 @@ import { join } from 'node:path';
 import process from 'node:process';
 
 import { ignorePatternsOf } from '../../lint/engine/project/project-files.js';
+import { checker } from './checker.js';
 import { lintTargets } from './lint-targets.js';
 import { run } from './processes.js';
+import { EMPTY_REPORT } from './report/diagnostic.js';
 import { inScratch } from './scratch.js';
 import { badge, print } from './terminal.js';
 import { toolConfigs } from './tool-configs.js';
-import { binaryIn, CHECKER, projectRoot, withTsgolintOnPath } from './toolchain.js';
-
-const TYPELESS_WARNING = '--disable-warning=MODULE_TYPELESS_PACKAGE_JSON';
+import { binaryIn, projectRoot, withTsgolintOnPath } from './toolchain.js';
 
 async function listedTargets(
     ignoresOf: string | undefined,
@@ -31,7 +31,7 @@ async function recordLinter(
     const { oxlint } = toolConfigs();
     const targets = await listedTargets(oxlint.ignoresOf, args);
     if (targets?.length === 0) {
-        writeFileSync(report, '{ "diagnostics": [] }\n');
+        writeFileSync(report, EMPTY_REPORT);
 
         return;
     }
@@ -43,18 +43,11 @@ async function recordLinter(
 }
 
 async function recordPass(pass: string, report: string, args: readonly string[]): Promise<void> {
-    await run(
-        process.execPath,
-        [
-            ...(pass === 'names' ? [TYPELESS_WARNING] : []),
-            CHECKER,
-            pass,
-            '.',
-            '--format',
-            'json',
-            ...args,
-        ],
-        { stderr: 'ignore', stdout: { path: report } },
+    await checker(
+        pass,
+        ['.', '--format', 'json', ...args],
+        { path: report },
+        { stderr: 'ignore', typeless: pass === 'names' },
     );
 }
 
@@ -75,17 +68,20 @@ export async function baseline(args: readonly string[]): Promise<number> {
         await recordLinter(reports.lint, args, hoisted);
         await recordPass('names', reports.names, args);
         await recordPass('comments', reports.comments, args);
-        const written = await run(process.execPath, [
-            CHECKER,
+        const written = await checker(
             'baseline',
-            reports.lint,
-            '.',
-            '--names',
-            reports.names,
-            '--comments',
-            reports.comments,
-            '--write',
-        ]);
+            [
+                reports.lint,
+                '.',
+                '--names',
+                reports.names,
+                '--comments',
+                reports.comments,
+                '--write',
+            ],
+            'inherit',
+            { stderr: 'inherit' },
+        );
         if (written !== 0) {
             return 1;
         }

@@ -1,10 +1,11 @@
 import { appendFileSync, readFileSync } from 'node:fs';
 
+import { checker } from '../checker.js';
 import type { Launched } from './launched.js';
 import { lintVerdict } from './lint-verdict.js';
 import type { LintVerdict } from './lint-verdict.js';
 import { joined } from './logs.js';
-import { checker, oxlint } from './runners.js';
+import { oxlintJson } from './runners.js';
 import type { Check } from './setup.js';
 import type { Conventions, Runs, Started } from './started.js';
 
@@ -54,9 +55,9 @@ export async function heldLint(
 ): Promise<{ held: boolean; status: number }> {
     const linted = await passes.lint;
     if (check.fix && runs.oxlint) {
-        await oxlint(check, ['--type-aware', '--format', 'json', ...check.lintArgs], {
+        await oxlintJson(check, ['--type-aware', ...check.lintArgs], {
+            report: check.logs.at('lint.json'),
             stderr: 'ignore',
-            stdout: { path: check.logs.at('lint.json') },
         });
     }
     await Promise.all([settled(passes.names), settled(passes.comments)]);

@@ -1,3 +1,4 @@
+import { checker } from '../checker.js';
 import { inScratch } from '../scratch.js';
 import { badge, GREEN, print, RED, RESET } from '../terminal.js';
 import { presetAt } from '../toolchain.js';
@@ -5,7 +6,6 @@ import { checkerMembers } from './checker-runs.js';
 import { logsIn } from './logs.js';
 import type { Selected } from './passes.js';
 import { reportPass } from './report.js';
-import { checker } from './runners.js';
 import { argumentsOf, membersOf, targetsOf, toolConfigs, toolsOf } from './setup.js';
 import type { Check } from './setup.js';
 import { conventions, started } from './started.js';

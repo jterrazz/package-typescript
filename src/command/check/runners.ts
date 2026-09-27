@@ -1,46 +1,25 @@
 import { writeFileSync } from 'node:fs';
-import process from 'node:process';
 
 import { run } from '../processes.js';
 import type { Stream } from '../processes.js';
-import { CHECKER } from '../toolchain.js';
+import { EMPTY_REPORT } from '../report/diagnostic.js';
 import type { Check } from './setup.js';
 
-const TYPELESS_WARNING = '--disable-warning=MODULE_TYPELESS_PACKAGE_JSON';
-
-export async function checker(
-    pass: string,
-    args: readonly string[],
-    log: Stream,
-    { typeless = false }: { typeless?: boolean } = {},
-): Promise<number> {
-    return await run(
-        process.execPath,
-        [...(typeless ? [TYPELESS_WARNING] : []), CHECKER, pass, ...args],
-        {
-            stderr: 'stdout',
-            stdout: log,
-        },
-    );
-}
-
-export async function oxlint(
+export async function oxlintJson(
     check: Check,
     args: readonly string[],
-    streams: { stderr: Stream; stdout: Stream },
+    { report, stderr }: { report: string; stderr: Stream },
 ): Promise<number> {
     if (check.lintTargets.nothing) {
-        if (args.join(' ').includes('--format json') && typeof streams.stdout === 'object') {
-            writeFileSync(streams.stdout.path, '{ "diagnostics": [] }\n');
-        }
+        writeFileSync(report, EMPTY_REPORT);
 
         return 0;
     }
 
     return await run(
         check.tools.oxlint,
-        [...check.configs.oxlint.args, ...args, ...check.lintTargets.paths],
-        streams,
+        [...check.configs.oxlint.args, ...args, '--format', 'json', ...check.lintTargets.paths],
+        { stderr, stdout: { path: report } },
     );
 }
 
