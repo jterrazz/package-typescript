@@ -26,7 +26,7 @@ npx typescript tsc             # The TypeScript 7 compiler, passed through
 
 ## How it works
 
-Fully compiled — no JavaScript in the hot path:
+The `typescript` command is TypeScript, built into `dist/`; the work it orchestrates runs in Rust and Go tools wherever one exists:
 
 | Step         | Tool                                                                        | Language |
 | ------------ | --------------------------------------------------------------------------- | -------- |
@@ -44,7 +44,7 @@ Fully compiled — no JavaScript in the hot path:
 
 The full corpus lives in [`docs/`](docs/):
 
-- [Architecture](docs/01-architecture.md) — the four layers and what each one holds.
+- [Architecture](docs/01-architecture.md) — `lint/` judges, `src/` runs, built into `dist/`.
 - [Developing](docs/02-developing.md) — install and configure a project.
 - [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md) — how this toolchain proves itself.
 - [Operating](docs/04-operating.md) — what publishes it, and which number moves.
