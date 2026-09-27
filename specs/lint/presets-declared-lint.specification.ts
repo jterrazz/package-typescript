@@ -1,4 +1,9 @@
-const testing = {
+import { specification } from '@jterrazz/test';
+import { afterAll } from 'vitest';
+
+import { definePreset } from '../../lint/index.config.js';
+
+const testing = definePreset({
     layers: [
         {
             fix: 'move what both tests read into a module neither of them is',
@@ -20,19 +25,23 @@ const testing = {
         },
     ],
     package: '@acme/testing',
-};
+});
 
-export default {
+export const { cleanup, lint } = await specification.lint({
     presets: [testing],
-    typescript: {
-        names: [
-            {
-                fix: 'rename it in kebab-case',
-                ls: { src: { '.ts': 'kebab-case' } },
-                name: 'module-in-kebab-case',
-                read: 'docs/naming.md#modules',
-                why: 'one case for every module keeps a search to one spelling',
-            },
-        ],
+    settings: {
+        typescript: {
+            names: [
+                {
+                    fix: 'rename it in kebab-case',
+                    ls: { src: { '.ts': 'kebab-case' } },
+                    name: 'module-in-kebab-case',
+                    read: 'docs/naming.md#modules',
+                    why: 'one case for every module keeps a search to one spelling',
+                },
+            ],
+        },
     },
-};
+});
+
+afterAll(cleanup);

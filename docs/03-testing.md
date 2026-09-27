@@ -10,11 +10,12 @@ npm run lint    # this package's own CLI, run on this package
 
 ## Two suites, two speeds
 
-`vitest.config.ts` declares two projects, through `@jterrazz/test/vitest`'s own project helpers — `unit()` and `cli()`:
+`vitest.config.ts` declares three projects, through `@jterrazz/test/vitest`'s own project helpers — `unit()`, `lint()` and `cli()`:
 
 | Project | Runs                                                | Speed                                                                                      |
 | ------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `unit`  | `src/`, `lint/` and `specs/surface/`                | milliseconds for pure functions; seconds where a module's script is run as `check` runs it |
+| `lint`  | everything under `specs/lint/` — a rule over a tree | a second or two, one pass or one oxlint run per case                                       |
 | `cli`   | everything under `specs/cli/` — the product command | seconds, real processes                                                                    |
 
 A `cli` test has a budget of its own: `TOOLCHAIN_BUDGET_MS`, 120 s, in `vitest.config.ts`, where the preset gives every other test 30 s. What that project runs is the whole toolchain — the compiler, the type-aware linter, knip and every tree gate — once or twice per test, beside every other file of the project running at the same time. Its duration is therefore a fact about the machine's load more than about the run, and a budget cut to an idle machine fails a correct test on a busy one; 120 s holds two runs on a loaded machine, and a run that hangs still fails.
@@ -22,6 +23,8 @@ A `cli` test has a budget of its own: `TOOLCHAIN_BUDGET_MS`, 120 s, in `vitest.c
 The same fact bounds what speeds the project up. Its wall time is held by the machine's CPU, not by how its files are cut, so the long serial files stay whole: running only the passes a spec asserts on ([the pass selector](#the-self-rules)) bought CPU time, and splitting would buy nothing more. No install is cached between runs and no `node_modules` template is shared: a sandbox copies `bin/`, `lint/` and `src/`, which the lockfile does not key, so a cache keyed on it would serve a stale toolchain.
 
 The suffix says which project a file belongs to. A `*.test.ts` is a module test and sits beside its module, which here is `src/` and `lint/`, or is a meta-test of this package's own and sits under `lint/self/corpus/`; a `*.spec.ts` is the assembled product and sits under `specs/<facet>/`. `unit()` collects the first, `cli()` the second plus every `<case>.spec.yaml`, and the `cli` project states nothing of its own. `unit()` is the one that states its globs, because one tree it collects lives under `specs/` and the default set excludes that folder whole.
+
+A rule is proven where its behaviour lives, on `@jterrazz/test`'s kit to test rules ([Rules kit](09-rules-kit.md#testing-a-rule)). Its visitor alone is a module test on `ruleTester()`, which refuses an invalid case that states no line and column — `lint/consumer/rules/comments/comment-no-longer-than-its-function.test.ts`. What a rule or a pass says about a TREE is a lint spec, `specs/lint/<subject>/<aspect>.spec.ts`, on `specification.lint()`: the plugin as it ships (`comments-lint.specification.ts`), the Names and Architecture passes run as the checker runs them (`names-lint`, `architecture-lint`), and the base preset's laws alone, or beside a preset and a repository's own additions, through `presetChecks` (`presets-lint`, `presets-declared-lint`). Each compares the whole report — every finding at its `file:line:column`, with its lesson. What stays under `specs/cli/check/` is the command's own behaviour: which passes run, the sections they print, the ratchet, the drift report and the exit.
 
 The `unit` project is where a pure function is proved: `compose()`, the rulebook's builders (`lint/engine/compiler/decision.test.ts`), and the manual's rules over in-memory trees (`lint/consumer/checks/docs.test.ts`). Nothing there spawns anything but `make`, over stubs, where the `fix` recipe is proved; `npm pack` and `tar`, where the tarball is read as a consumer receives it and its bin is run once over an empty folder (`specs/surface/package/tarball.test.ts`), and `npm pack --dry-run`, where a self rule's home is held out of it (`lint/self/corpus/audience.test.ts`); `git`, where the sweep every tree gate starts from reads a repository's index (`lint/engine/project/project-files.test.ts`); and `node`, where the baseline judge and the drift report are run as `check` runs them, over a project written to a temporary root (`lint/engine/checker/baseline.test.ts`, `lint/consumer/checks/drift.test.ts`) — the drift report's linter is the one installed here, asked for a resolved config and nothing else, and one case wraps it in a `bash` script that counts its `--print-config` calls.
 
@@ -96,7 +99,7 @@ What a spec stands on sits in the four ground folders `@jterrazz/test` reserves 
 
 The presets this repository ships ignore those four folders wherever they sit, and its own run takes them from the presets like any consumer: no ignore of its own in the lint scripts, `oxfmt.config.ts`, `knip.json` or `tsconfig.json`.
 
-The domains today: `build`, `check` (the passes, each stating the whole run), `clean`, `dev`, `docs-layout` (the manual's rules, one document per family), `doctor`, `help`, `preset`, `start`.
+The domains today: `build`, `check` (the command's passes and verdicts, each stating the whole run), `clean`, `dev`, `docs-layout` (the manual's rules, one document per family), `doctor`, `help`, `preset`, `start`.
 
 ## Who a rule is for
 

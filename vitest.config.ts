@@ -1,4 +1,4 @@
-import { cli, defineSpecConfig, unit } from '@jterrazz/test/vitest';
+import { cli, defineSpecConfig, lint, unit } from '@jterrazz/test/vitest';
 import { resolve } from 'node:path';
 import { mergeConfig } from 'vitest/config';
 
@@ -19,6 +19,7 @@ export default defineSpecConfig({
                 }),
                 { test: { isolate: false } },
             ),
+            lint(),
             mergeConfig(cli({ timeout: TOOLCHAIN_BUDGET_MS }), {
                 test: {
                     globalSetup: [
