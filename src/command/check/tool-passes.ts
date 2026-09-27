@@ -1,12 +1,12 @@
 import { appendFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import process from 'node:process';
 
 import { invariant, messageOf, refusal } from '../../../lint/engine/catalogue/lesson.js';
 import { isFile } from '../disk.js';
 import { mergedKnipConfig } from '../merge-knip-config.js';
 import { run } from '../processes.js';
-import { DEFAULT_OXLINT_CONFIG, FIX_WRAPPER } from '../tool-configs.js';
+import { DEFAULT_OXLINT_CONFIG } from '../tool-configs.js';
 import { presetAt } from '../toolchain.js';
 import type { FixScope } from '../unsafe-fixers.js';
 import type { Launched } from './launched.js';
@@ -81,7 +81,7 @@ export async function lintFix(check: Check): Promise<number> {
                 '-c',
                 wrapper,
                 '--ignore-pattern',
-                FIX_WRAPPER,
+                basename(wrapper),
                 ...check.lintArgs,
                 ...files,
             ],

@@ -7,9 +7,10 @@ import { dirname, join, resolve } from 'node:path';
 
 import CONFIG_NAMES from '../../lint/engine/project/oxlint-config-names.json' with { type: 'json' };
 import { UNSAFE_FIXERS } from '../../lint/index.unsafe-fixers.js';
-import { FIX_WRAPPER } from './tool-configs.js';
 
 type Scope = { config: string; directory: string; files: string[] };
+
+const FIX_WRAPPER = 'oxlint.fix.config.mjs';
 
 export function wrapperOf(consumerConfig: string): string {
     const off = Object.fromEntries(UNSAFE_FIXERS.map(({ rule }) => [rule, 'off']));

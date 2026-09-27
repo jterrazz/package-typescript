@@ -9,8 +9,6 @@ const OXFMT_CONFIG_NAMES = [
     'oxfmt.config.mts',
 ];
 
-export const FIX_WRAPPER = 'oxlint.fix.config.mjs';
-
 export const DEFAULT_OXLINT_CONFIG = presetAt('dist/presets/oxlint/profiles/node.js');
 
 export const DEFAULT_OXFMT_CONFIG = presetAt('dist/presets/oxfmt/index.js');
