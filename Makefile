@@ -1,4 +1,4 @@
-.PHONY: install build lint fix test check
+.PHONY: install build lint fix test check check-links
 
 node_modules/.install: package-lock.json
 	npm ci
@@ -23,3 +23,7 @@ test: build
 	npm test
 
 check: lint test
+
+check-links:
+	@command -v lychee > /dev/null || { echo "check-links: lychee is not installed on this machine — brew install lychee"; exit 1; }
+	lychee --no-progress README.md docs skills
