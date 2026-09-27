@@ -1,7 +1,9 @@
 import type { PresetChecks } from './consumer/checks/preset-checks.js';
+import { runChecker as runPasses } from './engine/checker/checker.js';
+import type { Checker } from './engine/checker/pass.js';
+import type { Preset } from './engine/project/preset.js';
 import { readConfig, readConfigSync } from './engine/project/jterrazz-config.js';
 import type { Config } from './engine/project/jterrazz-config.js';
-import type { Preset } from './engine/project/preset.js';
 import { BASE_PRESETS } from './index.config.js';
 
 export {
@@ -16,6 +18,7 @@ export {
     missingParts,
     refusal,
     refusalBlock,
+    refusalReading,
     whyOf,
 } from './engine/catalogue/lesson.js';
 export type {
@@ -75,10 +78,21 @@ export {
     tightened,
 } from './engine/baseline/section.js';
 export type { Broken, Ratchet } from './engine/baseline/section.js';
-export { runChecker } from './engine/checker/checker.js';
+export { heldSummary } from './engine/checker/held.js';
 export { readCommandLine } from './engine/checker/command-line.js';
 export type { CommandLine } from './engine/checker/command-line.js';
-export type { Checker, Context, Finding, Pass, Passes, PassResult } from './engine/checker/pass.js';
+export type {
+    Checker,
+    Commands,
+    Context,
+    EngineCommand,
+    Finding,
+    Held,
+    HeldSection,
+    Pass,
+    Passes,
+    PassResult,
+} from './engine/checker/pass.js';
 export { reportLine } from './engine/checker/report-line.js';
 export { exitCodeOf, stop } from './engine/checker/stop.js';
 export { holdsDirectives, suppressionDirectives } from './engine/project/directives.js';
@@ -137,9 +151,20 @@ export type {
     Resolved,
 } from './engine/project/preset.js';
 export type { PresetChecks } from './consumer/checks/preset-checks.js';
-export { filesUnder, projectFiles, PRUNED } from './engine/project/project-files.js';
+export {
+    filesUnder,
+    isGitIgnored,
+    projectFiles,
+    PRUNED,
+} from './engine/project/project-files.js';
 export { isRepositoryRoot } from './engine/project/repository-root.js';
 export { workspaceMembers } from './engine/project/workspace-members.js';
+
+/** The command line of a set of passes, each settings file resolved with the base preset first. */
+export const runChecker = async (
+    checker: Omit<Checker, 'presets'>,
+    args?: readonly string[],
+): Promise<never> => await runPasses({ ...checker, presets: BASE_PRESETS }, args);
 
 /** A unit's `jterrazz.config.ts`, resolved with the base preset first. */
 export const readSettings = async (unit: string): Promise<Config> =>

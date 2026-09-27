@@ -4,4 +4,4 @@ runs:
     - command: docs-layout .
       exit: 1
       stdout: |
-          docs/operating-chapter-present-when-shipping  docs/04-operating.md  04-operating.md is missing — this repository ships an image (a Dockerfile)
+          docs/04-operating.md:1:1: error docs(operating-chapter-present-when-shipping): 04-operating.md is missing — this repository ships an image (a Dockerfile)

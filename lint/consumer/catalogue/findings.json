@@ -77,7 +77,8 @@
     {
         "family": "tree",
         "id": "names/no-empty-directory",
-        "sentence": "No directory of the working copy is empty."
+        "sentence": "No directory of the working copy is empty.",
+        "why": "git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there"
     },
     {
         "family": "markdown",

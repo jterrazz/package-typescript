@@ -4,11 +4,11 @@ runs:
     - command: docs-layout .
       exit: 1
       stdout: |
-          docs/map-present  docs/README.md  docs/README.md is missing — the map is the one file an outside corpus points at
-          docs/chapter-named-by-number-and-subject  docs/1-intro.md  docs/1-intro.md is not NN-kebab.md — two digits, lowercase words, single hyphens
-          docs/chapters-numbered-contiguously  docs/  chapter numbers run 01, 03: they are contiguous from 01, one file per number, except that 04 may be absent
-          docs/spine-number-reserved  docs/03-quality-checks.md  docs/03-quality-checks.md takes number 03, which is reserved for 03-testing.md
-          docs/spine-number-reserved  docs/1-intro.md  docs/1-intro.md takes number 01, which is reserved for 01-architecture.md
-          docs/spine-chapters-present  docs/01-architecture.md  01-architecture.md is missing — the spine is architecture, developing, testing
-          docs/spine-chapters-present  docs/02-developing.md  02-developing.md is missing — the spine is architecture, developing, testing
-          docs/spine-chapters-present  docs/03-testing.md  03-testing.md is missing — the spine is architecture, developing, testing
+          docs/README.md:1:1: error docs(map-present): docs/README.md is missing — the map is the one file an outside corpus points at
+          docs/1-intro.md:1:1: error docs(chapter-named-by-number-and-subject): docs/1-intro.md is not NN-kebab.md — two digits, lowercase words, single hyphens
+          docs/:1:1: error docs(chapters-numbered-contiguously): chapter numbers run 01, 03: they are contiguous from 01, one file per number, except that 04 may be absent
+          docs/03-quality-checks.md:1:1: error docs(spine-number-reserved): docs/03-quality-checks.md takes number 03, which is reserved for 03-testing.md
+          docs/1-intro.md:1:1: error docs(spine-number-reserved): docs/1-intro.md takes number 01, which is reserved for 01-architecture.md
+          docs/01-architecture.md:1:1: error docs(spine-chapters-present): 01-architecture.md is missing — the spine is architecture, developing, testing
+          docs/02-developing.md:1:1: error docs(spine-chapters-present): 02-developing.md is missing — the spine is architecture, developing, testing
+          docs/03-testing.md:1:1: error docs(spine-chapters-present): 03-testing.md is missing — the spine is architecture, developing, testing

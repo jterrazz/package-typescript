@@ -1,3 +1,5 @@
+import type { Ratchet } from '../baseline/section.js';
+import type { ChapterAnchor } from '../catalogue/lesson.js';
 import type { Config } from '../project/jterrazz-config.js';
 import type { Preset } from '../project/preset.js';
 import type { CommandLine } from './command-line.js';
@@ -28,6 +30,7 @@ export type Tool = { args: string[]; flag: string; name: string };
 
 export type PassResult = {
     after?: string[];
+    deferred?: boolean;
     failed?: boolean;
     findings?: Finding[];
     json?: unknown;
@@ -42,6 +45,7 @@ export type Removal = { directory: string; line: string };
 export type Pass = {
     check: (context: Context) => PassResult | Promise<PassResult>;
     entry?: string;
+    namespace?: string;
     prepare?: (context: Context) => { removals?: Removal[] };
     valued?: readonly string[];
     verdict?: (count: number, recorded: number | undefined, result: PassResult) => string;
@@ -49,9 +53,17 @@ export type Pass = {
 
 export type Passes = Readonly<Record<string, () => Promise<Pass>>>;
 
-export type EngineCommand = (
-    args: string[],
-    options: { held: readonly string[] },
-) => number | Promise<number>;
+export type HeldSection = Ratchet & { read: ChapterAnchor; section: string };
 
-export type Checker = { held: readonly string[]; passes: Passes; presets: readonly Preset[] };
+export type Held = HeldSection & { passes: readonly string[]; summarised?: boolean };
+
+export type Commands = Readonly<Record<string, () => Promise<EngineCommand>>>;
+
+export type Checker = {
+    commands?: Commands;
+    held?: Held;
+    passes: Passes;
+    presets: readonly Preset[];
+};
+
+export type EngineCommand = (args: string[], checker: Checker) => number | Promise<number>;

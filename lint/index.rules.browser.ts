@@ -10,6 +10,7 @@ export {
     missingParts,
     refusal,
     refusalBlock,
+    refusalReading,
     whyOf,
 } from './engine/catalogue/lesson.js';
 export {

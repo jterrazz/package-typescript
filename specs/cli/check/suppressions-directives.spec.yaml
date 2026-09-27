@@ -24,8 +24,8 @@ runs:
 
            RUN  Suppressions (directives)
 
-          suppressions/spelled-for-this-toolchain  index.ts  line 1 spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it
-          suppressions/states-its-reason  index.ts  line 4 disables no-unused-vars with no '-- reason' after it
+          index.ts:1:1: error suppressions(spelled-for-this-toolchain): line 1 spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it
+          index.ts:4:1: error suppressions(states-its-reason): line 4 disables no-unused-vars with no '-- reason' after it
           ✗ Failed with exit code 1
 
            RUN  Markdown (prose)

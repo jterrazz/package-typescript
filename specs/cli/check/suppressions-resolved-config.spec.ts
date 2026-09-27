@@ -22,7 +22,7 @@ describe('suppressions-resolved-config', () => {
 
         // Then - the gate names the directive as one fix rewrites
         expect(result.stdout.text).toContain(
-            `suppressions/spelled-for-this-toolchain  index.ts  line 1 ${REWRITTEN}`,
+            `index.ts:1:1: error suppressions(spelled-for-this-toolchain): line 1 ${REWRITTEN}`,
         );
         expect(result.exitCode).toBe(1);
     });
@@ -34,10 +34,10 @@ describe('suppressions-resolved-config', () => {
 
         // Then - only the core rule's directive is left to its author, and the plugin rule's is rewritten
         expect(result.stdout.text).toContain(
-            'suppressions/spelled-for-this-toolchain  index.ts  line 1 spells an eslint directive naming no-console, which this project does not run — name an oxlint rule',
+            'index.ts:1:1: error suppressions(spelled-for-this-toolchain): line 1 spells an eslint directive naming no-console, which this project does not run — name an oxlint rule',
         );
         expect(result.stdout.text).toContain(
-            `suppressions/spelled-for-this-toolchain  index.ts  line 3 ${REWRITTEN}`,
+            `index.ts:3:1: error suppressions(spelled-for-this-toolchain): line 3 ${REWRITTEN}`,
         );
         expect(result.exitCode).toBe(1);
     });
@@ -49,7 +49,7 @@ describe('suppressions-resolved-config', () => {
 
         // Then - the gate names the directive as one fix rewrites
         expect(result.stdout.text).toContain(
-            `suppressions/spelled-for-this-toolchain  index.test.ts  line 1 ${REWRITTEN}`,
+            `index.test.ts:1:1: error suppressions(spelled-for-this-toolchain): line 1 ${REWRITTEN}`,
         );
         expect(result.exitCode).toBe(1);
     });
@@ -61,7 +61,7 @@ describe('suppressions-resolved-config', () => {
 
         // Then - it is left to its author, since no-var is not run there
         expect(result.stdout.text).toContain(
-            'suppressions/spelled-for-this-toolchain  index.ts  line 1 spells an eslint directive naming no-var, which this project does not run — name an oxlint rule',
+            'index.ts:1:1: error suppressions(spelled-for-this-toolchain): line 1 spells an eslint directive naming no-var, which this project does not run — name an oxlint rule',
         );
         expect(result.exitCode).toBe(1);
     });

@@ -19,6 +19,9 @@ export function refusal(lesson: Lesson): string {
     return LESSON_PARTS.map((part) => `${part}: ${lesson[part]}`).join(LESSON_SEPARATOR);
 }
 
+export const refusalReading = (read: ChapterAnchor, lesson: Unread): string =>
+    refusal({ ...lesson, read });
+
 export function refusalBlock(lesson: Lesson): string {
     return LESSON_PARTS.map((part) => `${part}: ${lesson[part]}`).join('\n');
 }

@@ -24,7 +24,8 @@ runs:
 
            RUN  Architecture (layer map)
 
-          architecture/domain-stays-pure  src/domain/user.ts:1:22  found: `src/domain/user.ts` imports `src/infrastructure/store.ts` · why: A domain module never reaches for infrastructure. · fix: reach it through a layer the map allows, or change the map where the boundary moved · read: docs/06-quality-checks.md#the-architecture-layer-map-pass
+          src/domain/user.ts:1:22: error architecture(domain-stays-pure): found: `src/domain/user.ts` imports `src/infrastructure/store.ts` · why: A domain module never reaches for infrastructure. · fix: reach it through a layer the map allows, or change the map where the boundary moved · read: docs/06-quality-checks.md#the-architecture-layer-map-pass
+          found: every finding above, and jterrazz.baseline.json records no `architecture/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds
           ✗ Failed with exit code 1
 
            RUN  Suppressions (directives)

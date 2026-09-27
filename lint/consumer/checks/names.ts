@@ -17,6 +17,7 @@ import { workspaceMembers } from '../../engine/project/workspace-members.js';
 import { declaredNamesFindings, declaredNamesRules } from './names.declared.js';
 import { LINT_ROOT, lintFoldersOf, lintTreeOf } from './names.lint-tree.js';
 import type { LintTree } from './names.lint-tree.js';
+import { namesFinding } from './names.lessons.js';
 import { lsLintConfig, lsLintFindings, runLsLint } from './names.ls-lint.js';
 
 type Disk = Pick<Context, 'exists' | 'read'>;
@@ -109,27 +110,30 @@ function findingsOf(files: readonly string[], universal: Universal): Finding[] {
 
     for (const [path, { fileName, name }] of namesOf(files)) {
         if (universal.grabBag.has(unmarked(name))) {
-            findings.push({
-                message: `\`${name}\` names no subject — it holds whatever nobody placed`,
-                path,
-                rule: 'names/no-grab-bag-name',
-            });
+            findings.push(
+                namesFinding('names/no-grab-bag-name', path, {
+                    fix: 'name it for the subject it holds, or move what it holds beside the code that uses it',
+                    found: `\`${name}\` names no subject — it holds whatever nobody placed`,
+                }),
+            );
         } else if (
             universal.constructs.has(unmarked(name)) ||
             (fileName !== undefined && hasConstructSuffix(fileName))
         ) {
-            findings.push({
-                message: `\`${fileName ?? name}\` names a construct of the language — name it for the subject it holds`,
-                path,
-                rule: 'names/no-language-construct-name',
-            });
+            findings.push(
+                namesFinding('names/no-language-construct-name', path, {
+                    fix: 'name it for the subject it holds',
+                    found: `\`${fileName ?? name}\` names a construct of the language`,
+                }),
+            );
         }
         if (isShortcut(name, universal)) {
-            findings.push({
-                message: `\`${name}\` is a word written in half — spell it whole`,
-                path,
-                rule: 'names/no-abbreviated-word',
-            });
+            findings.push(
+                namesFinding('names/no-abbreviated-word', path, {
+                    fix: 'spell every word of it whole',
+                    found: `\`${name}\` is a word written in half`,
+                }),
+            );
         }
     }
 
@@ -281,14 +285,18 @@ function shipsLint(disk: Disk, manifest: Manifest, unit: string): boolean {
 function foreignRoot(root: string, prefix: string): Finding {
     const manifestPath = `${prefix}package.json`;
 
-    return {
-        message:
-            root === LINT_ROOT
-                ? `\`${prefix}lint/\` holds the lint rules a package ships, and neither ${manifestPath} nor its build publishes it — ship it, or move it under src/`
-                : `\`${prefix}${root}/\` is a root outside the spine — move it under src/, or declare it in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` with its reason`,
-        path: `${prefix}${root}/`,
-        rule: 'names/no-undeclared-root-folder',
-    };
+    return namesFinding('names/no-undeclared-root-folder',
+        `${prefix}${root}/`,
+        root === LINT_ROOT
+            ? {
+                  fix: 'ship it, or move it under src/',
+                  found: `\`${prefix}lint/\` holds the lint rules a package ships, and neither ${manifestPath} nor its build publishes it`,
+              }
+            : {
+                  fix: `move it under src/, or declare it in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` with its reason`,
+                  found: `\`${prefix}${root}/\` is a root outside the spine`,
+              },
+    );
 }
 
 function declarationOf(
@@ -302,17 +310,19 @@ function declarationOf(
         left < right ? -1 : 1,
     )) {
         if (typeof reason !== 'string' || reason.trim() === '') {
-            findings.push({
-                message: `\`${prefix}${root}/\` is declared in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` with no reason — say why the repository keeps it`,
-                path: `${prefix}${root}/`,
-                rule: 'names/declared-root-states-its-reason',
-            });
+            findings.push(
+                namesFinding('names/declared-root-states-its-reason', `${prefix}${root}/`, {
+                    fix: 'say why the repository keeps it',
+                    found: `\`${prefix}${root}/\` is declared in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` with no reason`,
+                }),
+            );
         } else if (!roots.has(root)) {
-            findings.push({
-                message: `\`${prefix}${root}/\` is declared in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` and holds no file — delete the entry`,
-                path: `${prefix}${root}/`,
-                rule: 'names/declared-root-holds-files',
-            });
+            findings.push(
+                namesFinding('names/declared-root-holds-files', `${prefix}${root}/`, {
+                    fix: 'delete the entry',
+                    found: `\`${prefix}${root}/\` is declared in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` and holds no file`,
+                }),
+            );
         }
     }
 
@@ -333,11 +343,7 @@ function spineOf(
     const roots = new Set<string>();
     const declared = settings.roots;
     if (settings.problem !== null) {
-        findings.push({
-            message: `\`${prefix}${SETTINGS_FILE}\` ${settings.problem}`,
-            path: `${prefix}${SETTINGS_FILE}`,
-            rule: 'names/jterrazz-config-loads',
-        });
+        findings.push(configFinding(`${prefix}${SETTINGS_FILE}`, settings.problem));
     }
 
     for (const file of files) {
@@ -415,34 +421,35 @@ function makefileOf({ read, root }: Context, files: readonly string[]): Finding[
     const gestures = `${MAKE_TARGETS.slice(0, -1).join(', ')} and ${MAKE_TARGETS.at(-1) ?? ''}`;
     if (!files.includes(MAKEFILE)) {
         return [
-            {
-                message: `the repository has no Makefile — every repository answers \`make\` ${gestures}`,
-                path: MAKEFILE,
-                rule: 'names/repository-has-makefile',
-            },
+            namesFinding('names/repository-has-makefile', MAKEFILE, {
+                fix: `write a Makefile whose rules answer \`make\` ${gestures}`,
+                found: 'the repository has no Makefile',
+            }),
         ];
     }
 
     const targets = targetsOf(read(join(root, MAKEFILE)) ?? '');
 
-    return MAKE_TARGETS.filter((target) => !targets.has(target)).map((target) => ({
-        message: `\`make ${target}\` has no rule — every repository answers \`make\` ${gestures}`,
-        path: MAKEFILE,
-        rule: 'names/makefile-answers-every-gesture',
-    }));
+    return MAKE_TARGETS.filter((target) => !targets.has(target)).map((target) =>
+        namesFinding('names/makefile-answers-every-gesture', MAKEFILE, {
+            fix: `write its rule — every repository answers \`make\` ${gestures}`,
+            found: `\`make ${target}\` has no rule`,
+        }),
+    );
 }
 
 function emptyDirectoryFinding(path: string): Finding {
-    return {
-        message: [
-            `found: \`${path}/\` holds no file`,
-            'why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there',
-            `fix: delete it — \`typescript fix\` does — or put the file it was made for in it`,
-            'read: docs/06-quality-checks.md#an-empty-directory',
-        ].join(' · '),
-        path: `${path}/`,
-        rule: 'names/no-empty-directory',
-    };
+    return namesFinding('names/no-empty-directory', `${path}/`, {
+        fix: 'delete it — `typescript fix` does — or put the file it was made for in it',
+        found: `\`${path}/\` holds no file`,
+    });
+}
+
+function configFinding(path: string, problem: string): Finding {
+    return namesFinding('names/jterrazz-config-loads', path, {
+        fix: `correct ${SETTINGS_FILE} until it loads and each preset and section has its declared shape, then run again`,
+        found: `\`${path}\` ${problem}`,
+    });
 }
 
 async function laidOut(
@@ -462,13 +469,7 @@ async function laidOut(
         findings: [
             ...(declared.problem === null
                 ? []
-                : [
-                      {
-                          message: `\`${SETTINGS_FILE}\` ${declared.problem}`,
-                          path: SETTINGS_FILE,
-                          rule: 'names/jterrazz-config-loads',
-                      },
-                  ]),
+                : [configFinding(SETTINGS_FILE, declared.problem)]),
             ...lsLintFindings(context.root, { failures, swept, tree, units }),
             ...own.findings,
         ],

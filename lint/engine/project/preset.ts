@@ -1,13 +1,13 @@
 import type { IRegularForbiddenRuleType } from 'dependency-cruiser';
 import type { OxlintConfig } from 'oxlint';
 
-import type { Unread } from '../catalogue/lesson.js';
+import type { ChapterAnchor, Unread } from '../catalogue/lesson.js';
 import { isJsonObject, objectOf } from './json.js';
 
 export type ArchitectureRule = Pick<IRegularForbiddenRuleType, 'from' | 'to'> & {
     fix: string;
     name: string;
-    read: string;
+    read: ChapterAnchor;
     why: string;
 };
 
@@ -16,9 +16,12 @@ export type NamesRule = {
     ignore?: readonly string[];
     ls: Readonly<Record<string, Readonly<Record<string, string>>>>;
     name: string;
-    read: string;
+    read: ChapterAnchor;
     why: string;
 };
+
+export const isChapterAnchor = (value: unknown): value is ChapterAnchor =>
+    typeof value === 'string' && /^docs\/.+\.md#.+$/u.test(value);
 
 export type Preset = {
     baseline?: readonly string[];

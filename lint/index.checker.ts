@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
+import { BASELINE_SECTION } from './consumer/catalogue/preset.js';
 import { runChecker } from './engine/checker/checker.js';
-import type { Passes } from './engine/checker/pass.js';
+import { ENGINE_COMMANDS } from './engine/checker/engine-commands.js';
+import type { Held, Passes } from './engine/checker/pass.js';
 import { BASE_PRESETS } from './index.config.js';
 
 const PASSES: Passes = Object.freeze({
@@ -62,8 +64,14 @@ const PASSES: Passes = Object.freeze({
     },
 });
 
-const HELD = Object.freeze(['architecture', 'comments', 'names']);
+const HELD: Held = Object.freeze({
+    lower: 'typescript fix',
+    passes: Object.freeze(['architecture', 'comments', 'names']),
+    read: 'docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds',
+    record: 'typescript baseline',
+    section: BASELINE_SECTION,
+});
 
 if (import.meta.main) {
-    await runChecker({ held: HELD, passes: PASSES, presets: BASE_PRESETS });
+    await runChecker({ commands: ENGINE_COMMANDS, held: HELD, passes: PASSES, presets: BASE_PRESETS });
 }

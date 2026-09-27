@@ -28,9 +28,9 @@ runs:
 
            RUN  Markdown (prose)
 
-          markdown/prose-block-is-short  README.md  a block of 13 lines at line 5 — the floor is 12
-          markdown/fenced-run-is-short  README.md  a fenced block at line 21 runs 16 lines unbroken — the floor is 15
-          markdown/long-section-has-subheadings  README.md  "## A section with nothing to break it up" at line 40 runs 31 lines of prose with no ### and no list
+          README.md:1:1: error markdown(prose-block-is-short): a block of 13 lines at line 5 — the floor is 12
+          README.md:1:1: error markdown(fenced-run-is-short): a fenced block at line 21 runs 16 lines unbroken — the floor is 15
+          README.md:1:1: error markdown(long-section-has-subheadings): "## A section with nothing to break it up" at line 40 runs 31 lines of prose with no ### and no list
           ✗ Failed with exit code 1
 
            RUN  Names (tree)

@@ -4,8 +4,8 @@ runs:
     - command: docs-layout .
       exit: 1
       stdout: |
-          docs/map-links-only-chapters  docs/README.md  docs/README.md links ../../jterrazz-os/home/_all/doctrine.md: the map routes to its own chapters and nothing else
-          docs/no-generated-reference  docs/reference/  docs/reference/ is a generated API reference — the API is the types, and the manual holds no copy of them
-          docs/agents-route-to-the-map  AGENTS.md  AGENTS.md does not route to docs/README.md — the brief is a map, not a manual
-          docs/no-cross-repository-link  docs/01-architecture.md  docs/01-architecture.md links ../../package-test/docs/README.md: another repository's tree is not a place this manual may reach
-          docs/no-cross-repository-link  docs/README.md  docs/README.md links ../../jterrazz-os/home/_all/doctrine.md: another repository's tree is not a place this manual may reach
+          docs/README.md:1:1: error docs(map-links-only-chapters): docs/README.md links ../../jterrazz-os/home/_all/doctrine.md: the map routes to its own chapters and nothing else
+          docs/reference/:1:1: error docs(no-generated-reference): docs/reference/ is a generated API reference — the API is the types, and the manual holds no copy of them
+          AGENTS.md:1:1: error docs(agents-route-to-the-map): AGENTS.md does not route to docs/README.md — the brief is a map, not a manual
+          docs/01-architecture.md:1:1: error docs(no-cross-repository-link): docs/01-architecture.md links ../../package-test/docs/README.md: another repository's tree is not a place this manual may reach
+          docs/README.md:1:1: error docs(no-cross-repository-link): docs/README.md links ../../jterrazz-os/home/_all/doctrine.md: another repository's tree is not a place this manual may reach

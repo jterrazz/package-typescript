@@ -274,7 +274,7 @@ describe('names-repository', () => {
         const names = namesPassOf(project);
 
         // Then - the contract only requires, so the extra targets are no finding, and the Names pass is green
-        expect(names).not.toContain('names/');
+        expect(names).not.toContain('error names(');
         expect(names).toContain('✓ Passed');
     });
 
@@ -287,10 +287,10 @@ describe('names-repository', () => {
 
         // Then - the two missing gestures are named, one finding each, and the pass fails
         expect(names).toContain(
-            'names/makefile-answers-every-gesture  Makefile  `make fix` has no rule — every repository answers `make` install, build, lint, fix, test and check',
+            'Makefile:1:1: error names(makefile-answers-every-gesture): found: `make fix` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule — every repository answers `make` install, build, lint, fix, test and check · read: docs/06-quality-checks.md#the-six-gestures',
         );
         expect(names).toContain(
-            'names/makefile-answers-every-gesture  Makefile  `make check` has no rule — every repository answers `make` install, build, lint, fix, test and check',
+            'Makefile:1:1: error names(makefile-answers-every-gesture): found: `make check` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule — every repository answers `make` install, build, lint, fix, test and check · read: docs/06-quality-checks.md#the-six-gestures',
         );
         expect(names).not.toContain('`make install`');
         expect(names).not.toContain('`make test`');
@@ -306,7 +306,7 @@ describe('names-repository', () => {
 
         // Then - the absence is one finding
         expect(names).toContain(
-            'names/repository-has-makefile  Makefile  the repository has no Makefile — every repository answers `make` install, build, lint, fix, test and check',
+            'Makefile:1:1: error names(repository-has-makefile): found: the repository has no Makefile · why: Every repository root carries a Makefile. · fix: write a Makefile whose rules answer `make` install, build, lint, fix, test and check · read: docs/06-quality-checks.md#the-six-gestures',
         );
         expect(names).toContain('Failed with exit code 1');
     });
@@ -338,7 +338,7 @@ describe('names-repository', () => {
         const names = namesPassOf(project);
 
         // Then - the deleted file answers nothing, and the absence is one finding
-        expect(names).toContain('names/repository-has-makefile');
+        expect(names).toContain('error names(repository-has-makefile)');
         expect(names).toContain('Failed with exit code 1');
     });
 

@@ -156,7 +156,10 @@ function auditSource(
     root: string,
     path: string,
     configOf: () => null | Resolved,
-): null | { rewritten: null | string; violations: (Found & { rewritable: boolean })[] } {
+): null | {
+    rewritten: null | string;
+    violations: (Found & { line: number; rewritable: boolean })[];
+} {
     const text = readText(root, path);
     if (text === null || !/(?:es|ox)lint-disable|@ts-|biome-ignore/u.test(text)) {
         return null;
@@ -164,14 +167,14 @@ function auditSource(
 
     const config = configAt(path, configOf());
     const kept: string[] = [];
-    const violations: (Found & { rewritable: boolean })[] = [];
+    const violations: (Found & { line: number; rewritable: boolean })[] = [];
     const spans = commentSpansOf(text);
 
     for (const [index, line] of text.split('\n').entries()) {
         const { fixed, found } = auditLine(line, index + 1, config, spans[index] ?? []);
         kept.push(fixed);
         for (const violation of found) {
-            violations.push({ ...violation, rewritable: fixed !== line });
+            violations.push({ ...violation, line: index + 1, rewritable: fixed !== line });
         }
     }
 
@@ -199,8 +202,8 @@ export const suppressions: Pass = Object.freeze({
             if (audited === null) {
                 continue;
             }
-            for (const { message, rewritable, rule } of audited.violations) {
-                findings.push({ fixed: rewritable && rule === SPELLING, message, path, rule });
+            for (const { line, message, rewritable, rule } of audited.violations) {
+                findings.push({ fixed: rewritable && rule === SPELLING, line, message, path, rule });
             }
             if (context.fix && audited.rewritten !== null) {
                 rewritten.push({ path, text: audited.rewritten });

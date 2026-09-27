@@ -1,19 +1,10 @@
-import { labelOf, sectionOf } from '../baseline/baseline-file.js';
+import { BASELINE, labelOf, sectionOf } from '../baseline/baseline-file.js';
 import type { Counts } from '../baseline/baseline-file.js';
 import { countsOf } from '../baseline/counts.js';
 import { judgeExact, reRecord } from '../baseline/section.js';
-import type { Broken, Ratchet } from '../baseline/section.js';
-import { refusal } from '../catalogue/lesson.js';
-import type { Context, Finding, Pass, PassResult } from './pass.js';
-
-export const SECTION = 'typescript';
-
-export const LABEL = labelOf(SECTION);
-
-export const RATCHET: Ratchet = { lower: 'typescript fix', record: 'typescript baseline' };
-
-const ratchetLine = ({ teaching }: Broken): string =>
-    `baseline-ratchet  ${LABEL}  ${refusal({ ...teaching, read: 'docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds' })}`;
+import type { Broken } from '../baseline/section.js';
+import { refusalReading } from '../catalogue/lesson.js';
+import type { Context, Finding, Held, HeldSection, Pass, PassResult } from './pass.js';
 
 export const isHeldBy = (passes: readonly string[], rule: string): boolean =>
     passes.some((pass) => rule.startsWith(`${pass}/`));
@@ -23,21 +14,24 @@ type Print = (lines: string[]) => void;
 export type HeldRun = {
     context: Context;
     findings: Finding[];
+    held: Held;
     name: string;
     pass: Pass;
     print: Print;
     result: PassResult;
 };
 
+const ratchetLine = (held: HeldSection, { teaching }: Broken): string =>
+    `baseline-ratchet  ${labelOf(held.section)}  ${refusalReading(held.read, teaching)}`;
+
 function recordedOf(
-    root: string,
-    namespace: string,
+    { held, namespace, root }: { held: HeldSection; namespace: string; root: string },
     fix: boolean,
 ): { recorded: Counts; reRecorded: (counts: Counts, print: Print) => Counts } {
     const owns = (rule: string): boolean => rule.startsWith(namespace);
     const owned = (section: Counts): Counts =>
         Object.fromEntries(Object.entries(section).filter(([rule]) => owns(rule)));
-    const recorded = owned(sectionOf(root, SECTION) ?? {});
+    const recorded = owned(sectionOf(root, held.section) ?? {});
 
     return {
         recorded,
@@ -45,7 +39,7 @@ function recordedOf(
             if (!fix || Object.keys(recorded).length === 0) {
                 return recorded;
             }
-            const { lines, section } = reRecord(root, { counts, owns, section: SECTION });
+            const { lines, section } = reRecord(root, { counts, owns, section: held.section });
             print(lines);
 
             return owned(section);
@@ -53,39 +47,71 @@ function recordedOf(
     };
 }
 
-function judgeOneEntry(
-    { context, findings, pass, print, result }: HeldRun,
-    namespace: string,
-): number {
+export function heldSummary(root: string, section: string): string {
+    const entries = Object.values(sectionOf(root, section) ?? {}).filter((count) => count > 0);
+    const total = entries.reduce((sum, count) => sum + count, 0);
+
+    return entries.length === 0
+        ? `${labelOf(section)}: nothing held`
+        : `${labelOf(section)}: ${String(total)} held across ${String(entries.length)} rule${entries.length === 1 ? '' : 's'}`;
+}
+
+function judgeOneEntry(run: HeldRun, namespace: string): number {
+    const { context, findings, held, pass, print, result } = run;
     const entry = pass.entry ?? '';
     const count = findings.length;
     const counts = count > 0 ? { [entry]: count } : {};
-    const recorded = recordedOf(context.root, namespace, context.fix).reRecorded(counts, print);
-    const stray = judgeExact(counts, recorded, RATCHET).filter(({ rule }) => rule !== entry);
-    const held = count === (recorded[entry] ?? 0);
-    if (!held) {
-        print([`${entry}  ${LABEL}  ${pass.verdict?.(count, recorded[entry], result) ?? ''}`]);
+    const recorded = recordedOf({ held, namespace, root: context.root }, context.fix).reRecorded(
+        counts,
+        print,
+    );
+    const stray = judgeExact(counts, recorded, held).filter(({ rule }) => rule !== entry);
+    const kept = count === (recorded[entry] ?? 0);
+    if (!kept) {
+        print([
+            `${entry}  ${labelOf(held.section)}  ${pass.verdict?.(count, recorded[entry], result) ?? ''}`,
+        ]);
     }
-    print(stray.map((broken) => ratchetLine(broken)));
+    print(stray.map((broken) => ratchetLine(held, broken)));
 
-    return held && stray.length === 0 ? 0 : 1;
+    return kept && stray.length === 0 ? 0 : 1;
+}
+
+const unrecorded = (held: HeldSection, namespace: string): string =>
+    refusalReading(held.read, {
+        fix: `fix them, or run '${held.record}' to record where the project stands`,
+        found: `every finding above, and ${BASELINE} records no \`${namespace}\` entry in its \`${held.section}\` section to hold one`,
+        why: 'a project that recorded no debt is held at zero, so each finding fails the run as new debt',
+    });
+
+function judgeEntries(run: HeldRun, namespace: string): number {
+    const { context, findings, held, print } = run;
+    const counts = countsOf(findings);
+    const { recorded: before, reRecorded } = recordedOf(
+        { held, namespace, root: context.root },
+        context.fix,
+    );
+    if (Object.keys(before).length === 0) {
+        if (findings.length > 0) {
+            print([unrecorded(held, namespace)]);
+        }
+
+        return findings.length > 0 ? 1 : 0;
+    }
+    const broken = judgeExact(counts, reRecorded(counts, print), held);
+    print(broken.map((one) => ratchetLine(held, one)));
+
+    return broken.length > 0 ? 1 : 0;
 }
 
 // Where the baseline records no entry of the pass, every finding is a failure.
 export function judgeHeld(run: HeldRun): number {
-    const namespace = `${run.name}/`;
-    if (run.pass.entry !== undefined) {
-        return judgeOneEntry(run, namespace);
+    const namespace = `${run.pass.namespace ?? run.name}/`;
+    const status =
+        run.pass.entry === undefined ? judgeEntries(run, namespace) : judgeOneEntry(run, namespace);
+    if (status === 0 && run.held.summarised === true) {
+        run.print([heldSummary(run.context.root, run.held.section)]);
     }
 
-    const { context, findings, print } = run;
-    const counts = countsOf(findings);
-    const { recorded: before, reRecorded } = recordedOf(context.root, namespace, context.fix);
-    if (Object.keys(before).length === 0) {
-        return findings.length > 0 ? 1 : 0;
-    }
-    const broken = judgeExact(counts, reRecorded(counts, print), RATCHET);
-    print(broken.map((one) => ratchetLine(one)));
-
-    return broken.length > 0 ? 1 : 0;
+    return status;
 }

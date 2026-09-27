@@ -24,8 +24,8 @@ runs:
 
            RUN  Publish (packaging)
 
-          publish/export-target-exists  package.json  ./farewell.js resolves to nothing on disk
-          publish/export-covered-by-files  package.json  ./greeter.js is outside "files" — it resolves here and 404s in a consumer
+          package.json:1:1: error publish(export-target-exists): ./farewell.js resolves to nothing on disk
+          package.json:1:1: error publish(export-covered-by-files): ./greeter.js is outside "files" — it resolves here and 404s in a consumer
           Running publint v0.3.24 for fixture-publish-broken-map...
           {{any}}
           Linting...

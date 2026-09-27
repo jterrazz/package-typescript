@@ -33,7 +33,7 @@ runs:
 
            RUN  Names (tree)
 
-          names/no-language-construct-name  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds
+          src/types.ts:1:1: error names(no-language-construct-name): found: `types.ts` names a construct of the language · why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds · read: docs/06-quality-checks.md#the-names-tree-pass
           baseline-ratchet  jterrazz.baseline.json › typescript  found: `names/no-language-construct-name` is at 1, below its baseline of 2 · why: each count is held exactly, so a debt that fell is recorded the day it falls and cannot grow back unseen · fix: run 'typescript fix', which re-records the fall · read: docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds
           ✗ Failed with exit code 1
 
@@ -85,7 +85,7 @@ runs:
 
            RUN  Names (tree)
 
-          names/no-language-construct-name  src/types.ts  `types.ts` names a construct of the language — name it for the subject it holds
+          src/types.ts:1:1: error names(no-language-construct-name): found: `types.ts` names a construct of the language · why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds · read: docs/06-quality-checks.md#the-names-tree-pass
           re-recorded jterrazz.baseline.json › typescript › names/no-language-construct-name 2 → 1
           ✓ Passed
 

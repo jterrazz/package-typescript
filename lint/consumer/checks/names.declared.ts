@@ -1,7 +1,9 @@
 import { join } from 'node:path';
 
+import { defineCheck } from '../../engine/catalogue/rule.js';
 import type { Context, Finding } from '../../engine/checker/pass.js';
 import type { Config } from '../../engine/project/jterrazz-config.js';
+import { isChapterAnchor } from '../../engine/project/preset.js';
 import type { NamesRule } from '../../engine/project/preset.js';
 import { ignoredOf, listed, runLsLint } from './names.ls-lint.js';
 import type { Failures } from './names.ls-lint.js';
@@ -17,7 +19,8 @@ const isStrings = (value: unknown): boolean =>
 function isNamesRule(value: unknown): value is NamesRule {
     return (
         isRecord(value) &&
-        ['fix', 'name', 'read', 'why'].every((key) => typeof value[key] === 'string') &&
+        ['fix', 'name', 'why'].every((key) => typeof value[key] === 'string') &&
+        isChapterAnchor(value.read) &&
         RULE_NAME.test(String(value.name)) &&
         (value.ignore === undefined || isStrings(value.ignore)) &&
         isRecord(value.ls) &&
@@ -39,7 +42,7 @@ export function declaredNamesRules({ problem, resolved }: Config): {
     if (!rules.every((rule) => isNamesRule(rule))) {
         return {
             problem:
-                'holds a `names` — its own or a preset’s — whose every entry is not `{ name, ls, why, fix, read }`, the `name` in kebab-case, `ls` mapping each glob to its ls-lint rules, `ignore` a list of globs',
+                'holds a `names` — its own or a preset’s — whose every entry is not `{ name, ls, why, fix, read }`, the `name` in kebab-case, `ls` mapping each glob to its ls-lint rules, `ignore` a list of globs, `read` a chapter anchor `docs/<chapter>.md#<heading>`',
             rules: [],
         };
     }
@@ -137,17 +140,16 @@ export function declaredNamesFindings(
         if (problem !== null) {
             problems.push(problem);
         }
+        const check = defineCheck({
+            docs: { name: rule.name, sentence: rule.why, why: rule.why },
+            namespace: 'names',
+            read: rule.read,
+        });
         for (const { found, path } of refusedOf(context, rule, { failures, swept: held })) {
-            reported.set(`${rule.name} ${path}`, {
-                message: [
-                    `found: ${found}`,
-                    `why: ${rule.why}`,
-                    `fix: ${rule.fix}`,
-                    `read: ${rule.read}`,
-                ].join(' · '),
-                path,
-                rule: `names/${rule.name}`,
-            });
+            reported.set(
+                `${rule.name} ${path}`,
+                check.finding({ column: 1, line: 1, path }, { fix: rule.fix, found }),
+            );
         }
     }
 

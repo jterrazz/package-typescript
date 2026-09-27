@@ -9,9 +9,9 @@ import type { Preset } from '../project/preset.js';
 import { orRefused, projectFiles } from '../project/project-files.js';
 import { readCommandLine } from './command-line.js';
 import type { CommandLine } from './command-line.js';
-import { ENGINE_COMMANDS } from './engine-commands.js';
 import { judgeHeld } from './held.js';
 import type { Checker, Context, Finding, Pass, PassResult, Removal, Tool } from './pass.js';
+import { reportLine } from './report-line.js';
 import { runTool } from './tool-run.js';
 
 type Run = { findings: Finding[]; result: PassResult };
@@ -61,8 +61,6 @@ const print = (lines: readonly string[]): void => {
     stdout.write(lines.map((line) => `${line}\n`).join(''));
 };
 
-const findingLine = ({ message, path, rule }: Finding): string => `${rule}  ${path}  ${message}`;
-
 function removeAll(context: Context, removals: readonly Removal[]): void {
     for (const { directory, line } of removals) {
         if (removeEmptyDirectory(context.root, directory)) {
@@ -95,7 +93,15 @@ function reported(commandLine: CommandLine, { findings, result }: Run): null | n
             return 1;
         }
         stdout.write(
-            `${JSON.stringify(findings.map(({ message, path, rule }) => ({ message, path, rule })))}\n`,
+            `${JSON.stringify(
+                findings.map(({ column, line, message, path, rule }) => ({
+                    column: column ?? 1,
+                    line: line ?? 1,
+                    message,
+                    path,
+                    rule,
+                })),
+            )}\n`,
         );
 
         return 0;
@@ -105,7 +111,7 @@ function reported(commandLine: CommandLine, { findings, result }: Run): null | n
 }
 
 function settled(context: Context, { findings, result }: Run): number {
-    print(findings.map((finding) => findingLine(finding)));
+    print(findings.map((finding) => reportLine(finding)));
     for (const { path, text } of result.writes ?? []) {
         writeFileSync(path, text);
     }
@@ -116,16 +122,11 @@ function settled(context: Context, { findings, result }: Run): number {
 }
 
 async function runPass(
-    {
-        held,
-        name,
-        pass,
-        presets,
-    }: { held: readonly string[]; name: string; pass: Pass; presets: readonly Preset[] },
+    { checker, name, pass }: { checker: Checker; name: string; pass: Pass },
     args: readonly string[],
 ): Promise<number> {
     const commandLine = readCommandLine(args, pass.valued);
-    const context = contextOf(commandLine, presets);
+    const context = contextOf(commandLine, checker.presets);
     if (context.fix && pass.prepare !== undefined) {
         removeAll(context, pass.prepare(context).removals ?? []);
     }
@@ -143,35 +144,42 @@ async function runPass(
     }
 
     print(result.lines ?? []);
-    if (!held.includes(name)) {
+    if (result.deferred === true) {
+        print(run.findings.map((finding) => reportLine(finding)));
+
+        return result.failed === true ? 1 : 0;
+    }
+    const { held } = checker;
+    if (held === undefined || !held.passes.includes(name)) {
         return settled(context, run);
     }
     if (pass.entry === undefined) {
-        print(run.findings.map((finding) => findingLine(finding)));
+        print(run.findings.map((finding) => reportLine(finding)));
     }
 
-    const judged = judgeHeld({ ...run, context, name, pass, print });
+    const judged = judgeHeld({ ...run, context, held, name, pass, print });
 
     return result.failed === true ? 1 : judged;
 }
 
 export async function runChecker(
-    { held, passes, presets }: Checker,
+    checker: Checker,
     args: readonly string[] = argv.slice(2),
 ): Promise<never> {
     const [name = '', ...rest] = args;
-    const command = ENGINE_COMMANDS[name];
+    const commands = checker.commands ?? {};
+    const command = commands[name];
     if (command !== undefined) {
         const run = await command();
-        exit(await run(rest, { held }));
+        exit(await run(rest, checker));
     }
-    const load = passes[name];
+    const load = checker.passes[name];
     if (load === undefined) {
         stdout.write(
-            `the checker runs no pass named \`${name}\` — it runs ${[...Object.keys(ENGINE_COMMANDS), ...Object.keys(passes)].toSorted().join(', ')}\n`,
+            `the checker runs no pass named \`${name}\` — it runs ${[...Object.keys(commands), ...Object.keys(checker.passes)].toSorted().join(', ')}\n`,
         );
         exit(2);
     }
 
-    exit(await runPass({ held, name, pass: await load(), presets }, rest));
+    exit(await runPass({ checker, name, pass: await load() }, rest));
 }

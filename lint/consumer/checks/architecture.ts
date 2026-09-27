@@ -3,13 +3,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { refusal } from '../../engine/catalogue/lesson.js';
+import type { ChapterAnchor } from '../../engine/catalogue/lesson.js';
+import { defineCheck } from '../../engine/catalogue/rule.js';
 import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { runTool } from '../../engine/checker/tool-run.js';
 import type { ToolRun } from '../../engine/checker/tool-run.js';
 import { GROUND_FOLDERS } from '../../engine/project/ground.js';
 import { isJsonObject, objectOf, stringOf } from '../../engine/project/json.js';
 import { DEPENDENCY_CRUISER_CONFIGS, SETTINGS_FILE } from '../../engine/project/jterrazz-config.js';
-import { presetLesson } from '../../engine/project/preset.js';
+import { isChapterAnchor, presetLesson } from '../../engine/project/preset.js';
 import type { ArchitectureRule } from '../../engine/project/preset.js';
 import { ARCHITECTURE_HEXAGONAL } from './architecture.hexagonal.js';
 
@@ -22,7 +24,7 @@ const TSCONFIG = 'tsconfig.json';
 const OWN_FIX =
     'reach it through a layer the map allows, or change the map where the boundary moved';
 
-const OWN_READ = 'docs/06-quality-checks.md#the-architecture-layer-map-pass';
+const OWN_READ: ChapterAnchor = 'docs/06-quality-checks.md#the-architecture-layer-map-pass';
 
 type Declared = { problem: null | string; rules: ArchitectureRule[] };
 
@@ -36,7 +38,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 function isRule(value: unknown): value is ArchitectureRule {
     return (
         isRecord(value) &&
-        ['fix', 'name', 'read', 'why'].every((key) => typeof value[key] === 'string') &&
+        ['fix', 'name', 'why'].every((key) => typeof value[key] === 'string') &&
+        isChapterAnchor(value.read) &&
         isRecord(value.from) &&
         isRecord(value.to)
     );
@@ -44,7 +47,7 @@ function isRule(value: unknown): value is ArchitectureRule {
 
 const MALFORMED_LAYERS = refusal({
     fix: "give every entry of `typescript.architecture.layers` — and of each preset's `layers` — a `name`, a `from` and a `to` object, and a `why`, a `fix` and a `read`",
-    found: 'jterrazz.config.ts holds a `layers` whose every entry is not `{ name, from, to, why, fix, read }`',
+    found: 'jterrazz.config.ts holds a `layers` whose every entry is not `{ name, from, to, why, fix, read }`, `read` a chapter anchor `docs/<chapter>.md#<heading>`',
     read: 'docs/06-quality-checks.md#the-architecture-layer-map-pass',
     why: 'a layer is a dependency-cruiser rule and the lesson its refusal prints, and a layer missing a part can be neither judged nor taught',
 });
@@ -178,17 +181,17 @@ function violationsOf(report: unknown): Cruise {
     return { comments, specifiers, violations };
 }
 
-function positionOf(text: string, specifier: string): string {
+function positionOf(text: string, specifier: string): { column: number; line: number } {
     const at = ["'", '"', '`']
         .map((quote) => text.indexOf(`${quote}${specifier}${quote}`))
         .filter((index) => index !== -1)
         .toSorted((left, right) => left - right)[0];
     if (at === undefined) {
-        return '1:1';
+        return { column: 1, line: 1 };
     }
     const before = text.slice(0, at + 1).split('\n');
 
-    return `${String(before.length)}:${String((before.at(-1) ?? '').length)}`;
+    return { column: (before.at(-1) ?? '').length, line: before.length };
 }
 
 function findingOf(
@@ -196,18 +199,18 @@ function findingOf(
     { from, rule, to }: Violation,
     { lesson, specifier }: { lesson: Lesson | undefined; specifier: string },
 ): Finding {
+    const why = lesson?.why ?? "the project's dependency-cruiser config forbids it";
+    const check = defineCheck({
+        docs: { name: rule, sentence: why, why },
+        namespace: 'architecture',
+        read: lesson?.read ?? OWN_READ,
+    });
     const text = context.read(join(context.root, from)) ?? '';
 
-    return {
-        message: [
-            `found: \`${from}\` imports \`${to}\``,
-            `why: ${lesson?.why ?? "the project's dependency-cruiser config forbids it"}`,
-            `fix: ${lesson?.fix ?? OWN_FIX}`,
-            `read: ${lesson?.read ?? OWN_READ}`,
-        ].join(' · '),
-        path: `${from}:${positionOf(text, specifier)}`,
-        rule: `architecture/${rule}`,
-    };
+    return check.finding(
+        { ...positionOf(text, specifier), path: from },
+        { fix: lesson?.fix ?? OWN_FIX, found: `\`${from}\` imports \`${to}\`` },
+    );
 }
 
 function unreportedOf({ output, ran, status }: ToolRun): null | string {

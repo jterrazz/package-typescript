@@ -9,7 +9,8 @@ runs:
 
            RUN  Architecture (layer map)
 
-          architecture/src-reads-no-declaration  src/app.ts:1:25  found: `src/app.ts` imports `lint/self/audit.ts` · why: src/ runs what lint/ declares through its index files and engine/, never a declaration of consumer/ or self/ · fix: move what src/ needs into engine/, or compose it in a `lint/` index, and import it from there · read: docs/01-architecture.md#the-judging-layer
+          src/app.ts:1:25: error architecture(src-reads-no-declaration): found: `src/app.ts` imports `lint/self/audit.ts` · why: src/ runs what lint/ declares through its index files and engine/, never a declaration of consumer/ or self/ · fix: move what src/ needs into engine/, or compose it in a `lint/` index, and import it from there · read: docs/01-architecture.md#the-judging-layer
+          found: every finding above, and jterrazz.baseline.json records no `architecture/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds
           ✗ Failed with exit code 1
 
            END  Finalizing quality checks

@@ -70,7 +70,7 @@ describe('secrets', () => {
         expect(result.status).toBe(1);
         expect(result.stdout).toContain('Secrets (credentials)');
         expect(result.stdout).toContain(
-            'secrets/no-aws-key  NOTES.md  line 3 looks like an aws access key',
+            'NOTES.md:3:1: error secrets(no-aws-key): line 3 looks like an aws access key',
         );
 
         // Then - and says nothing about the line that declares itself a sample
@@ -88,20 +88,20 @@ describe('secrets', () => {
             encoding: 'utf8',
             env: { ...process.env, PATH: pathWithoutGitleaks() },
         });
-        const findings = result.stdout.split('\n').filter((line) => line.startsWith('secrets/'));
+        const findings = result.stdout.split('\n').filter((line) => line.includes(': error secrets('));
 
         // Then - one finding per shape, each under its own rule id, on its own line
         expect(findings).toStrictEqual([
-            'secrets/no-aws-key  NOTES.md  line 3 looks like an aws access key',
-            'secrets/no-private-key  NOTES.md  line 9 looks like a private key block',
-            'secrets/no-github-token  NOTES.md  line 10 looks like a github token',
-            'secrets/no-slack-token  NOTES.md  line 11 looks like a slack token',
-            'secrets/no-tailscale-key  NOTES.md  line 12 looks like a tailscale key',
-            'secrets/no-signed-jwt  NOTES.md  line 13 looks like a signed jwt',
-            'secrets/no-grafana-token  NOTES.md  line 14 looks like a grafana token',
-            'secrets/no-api-key  NOTES.md  line 15 looks like an api key',
-            'secrets/no-iban  NOTES.md  line 16 looks like an iban',
-            'secrets/no-service-token  NOTES.md  line 17 looks like a service token',
+            'NOTES.md:3:1: error secrets(no-aws-key): line 3 looks like an aws access key',
+            'NOTES.md:9:1: error secrets(no-private-key): line 9 looks like a private key block',
+            'NOTES.md:10:1: error secrets(no-github-token): line 10 looks like a github token',
+            'NOTES.md:11:1: error secrets(no-slack-token): line 11 looks like a slack token',
+            'NOTES.md:12:1: error secrets(no-tailscale-key): line 12 looks like a tailscale key',
+            'NOTES.md:13:1: error secrets(no-signed-jwt): line 13 looks like a signed jwt',
+            'NOTES.md:14:1: error secrets(no-grafana-token): line 14 looks like a grafana token',
+            'NOTES.md:15:1: error secrets(no-api-key): line 15 looks like an api key',
+            'NOTES.md:16:1: error secrets(no-iban): line 16 looks like an iban',
+            'NOTES.md:17:1: error secrets(no-service-token): line 17 looks like a service token',
         ]);
     });
 

@@ -32,8 +32,9 @@ runs:
 
            RUN  Names (tree)
 
-          names/no-undeclared-root-folder  apps/api/scripts/  `apps/api/scripts/` is a root outside the spine — move it under src/, or declare it in apps/api/jterrazz.config.ts's `typescript.roots` with its reason
-          names/no-undeclared-root-folder  apps/web/lint/  `apps/web/lint/` holds the lint rules a package ships, and neither apps/web/package.json nor its build publishes it — ship it, or move it under src/
+          apps/api/scripts/:1:1: error names(no-undeclared-root-folder): found: `apps/api/scripts/` is a root outside the spine · why: Every root folder is on the spine, imposed by a tool, or declared with its reason. · fix: move it under src/, or declare it in apps/api/jterrazz.config.ts's `typescript.roots` with its reason · read: docs/06-quality-checks.md#a-root-beside-the-spine
+          apps/web/lint/:1:1: error names(no-undeclared-root-folder): found: `apps/web/lint/` holds the lint rules a package ships, and neither apps/web/package.json nor its build publishes it · why: Every root folder is on the spine, imposed by a tool, or declared with its reason. · fix: ship it, or move it under src/ · read: docs/06-quality-checks.md#a-root-beside-the-spine
+          found: every finding above, and jterrazz.baseline.json records no `names/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds
           ✗ Failed with exit code 1
 
            RUN  Comments (density)

@@ -124,7 +124,7 @@
         "by": "exit",
         "channel": "runtime",
         "id": "checker-command-failed",
-        "message": "exit(await run(rest, { held }))",
+        "message": "exit(await run(rest, checker))",
         "module": "lint/engine/checker/checker.ts"
     },
     {

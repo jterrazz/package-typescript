@@ -94,7 +94,7 @@ describe('drift', () => {
         expect(silent.stdout).toContain('Deviations from the profile');
         expect(silent.stdout).toContain('profile                              node');
         expect(silent.stdout).toContain(
-            "drift/off-rule-states-its-reason  oxlint.config.ts  no-debugger is off and the line that turns it off carries no '// reason:'",
+            "oxlint.config.ts:1:1: error drift(off-rule-states-its-reason): no-debugger is off and the line that turns it off carries no '// reason:'",
         );
         expect(silent.status).toBe(1);
     });

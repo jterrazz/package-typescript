@@ -96,6 +96,8 @@ export const WORDS = Object.freeze({
     ]),
 });
 
+export const BASELINE_SECTION = 'typescript';
+
 export const PROFILES = ['astro', 'bun', 'expo', 'next', 'node', 'react'] as const;
 
 export type ProfileName = (typeof PROFILES)[number];
@@ -113,6 +115,6 @@ export function typescriptPreset({ profile = 'node' }: { profile?: ProfileName }
             toolRoots: TOOL_ROOTS,
             words: WORDS,
         },
-        baseline: ['typescript'],
+        baseline: [BASELINE_SECTION],
     };
 }

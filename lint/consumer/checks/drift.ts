@@ -3,7 +3,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { labelOf, readBaseline, sectionOf } from '../../engine/baseline/baseline-file.js';
 import type { Counts } from '../../engine/baseline/baseline-file.js';
 import { OXLINT_SUPPRESSIONS, suppressedCount } from '../../engine/baseline/oxlint-suppressions.js';
-import { SECTION } from '../../engine/checker/held.js';
+import { BASELINE_SECTION as SECTION } from '../catalogue/preset.js';
 import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { countSuppressions } from '../../engine/project/comments.js';
 import CONFIGS from '../../engine/project/oxlint-config-names.json' with { type: 'json' };

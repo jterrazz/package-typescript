@@ -20,7 +20,7 @@ runs:
 
            RUN  Suppressions (directives)
 
-          suppressions/states-its-reason  index.ts  line 4 disables no-unused-vars with no '-- reason' after it
+          index.ts:4:1: error suppressions(states-its-reason): line 4 disables no-unused-vars with no '-- reason' after it
           index.ts rewritten — the directive now names the checker this project runs
           ✗ Failed with exit code 1
 

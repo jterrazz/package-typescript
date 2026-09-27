@@ -36,7 +36,7 @@ describe('docs-layout', () => {
         expect(inside.status).toBe(1);
         expect(inside.stdout).toContain('Docs (layout)');
         expect(inside.stdout).toContain(
-            'docs/manual-present  docs/  docs/ is missing — every repository carries its own manual',
+            'docs/:1:1: error docs(manual-present): docs/ is missing — every repository carries its own manual',
         );
 
         // Then - and never runs where there is no repository to carry one

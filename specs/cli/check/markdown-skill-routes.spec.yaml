@@ -28,7 +28,7 @@ runs:
 
            RUN  Markdown (prose)
 
-          markdown/chapter-reference-resolves  skills/shop/SKILL.md  docs/06-quality-checks.md is no chapter this package ships
+          skills/shop/SKILL.md:1:1: error markdown(chapter-reference-resolves): docs/06-quality-checks.md is no chapter this package ships
           ✗ Failed with exit code 1
 
            RUN  Names (tree)

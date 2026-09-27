@@ -1,11 +1,7 @@
 import type { Finding } from './pass.js';
 
-export function reportLine(
-    namespace: string,
-    finding: Omit<Finding, 'message'>,
-    message: string,
-): string {
-    const { column, line, path, rule } = finding;
+export function reportLine({ column, line, message, path, rule }: Finding): string {
+    const [namespace = '', ...name] = rule.split('/');
 
-    return `${path}:${String(line ?? 1)}:${String(column ?? 1)}: error ${namespace}(${rule}): ${message}`;
+    return `${path}:${String(line ?? 1)}:${String(column ?? 1)}: error ${namespace}(${name.join('/')}): ${message}`;
 }

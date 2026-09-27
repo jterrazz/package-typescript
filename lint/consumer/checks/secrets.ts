@@ -57,7 +57,12 @@ function patternFindings(root: string, files: readonly string[]): Finding[] {
             }
             for (const { pattern, rule, what } of PATTERNS) {
                 if (pattern.test(line)) {
-                    findings.push({ message: `line ${index + 1} looks like ${what}`, path, rule });
+                    findings.push({
+                        line: index + 1,
+                        message: `line ${index + 1} looks like ${what}`,
+                        path,
+                        rule,
+                    });
                 }
             }
         }
