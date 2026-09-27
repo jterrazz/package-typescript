@@ -83,33 +83,16 @@ function runTools(context: Context, tools: readonly Tool[]): boolean {
     return failed;
 }
 
-function reported(commandLine: CommandLine, { findings, result }: Run): null | number {
-    if (commandLine.has('--json')) {
-        stdout.write(`${JSON.stringify(result.json, null, 2)}\n`);
-
-        return findings.length > 0 || result.failed === true ? 1 : 0;
-    }
-    if (commandLine.has('--format')) {
-        if (result.failed === true) {
-            return 1;
-        }
-        stdout.write(
-            `${JSON.stringify(
-                findings.map(({ column, line, message, path, rule }) => ({
-                    column: column ?? 1,
-                    line: line ?? 1,
-                    message,
-                    path,
-                    rule,
-                })),
-            )}\n`,
-        );
-
-        return 0;
-    }
-
-    return null;
-}
+const findingsJson = (findings: readonly Finding[]): string =>
+    JSON.stringify(
+        findings.map(({ column, line, message, path, rule }) => ({
+            column: column ?? 1,
+            line: line ?? 1,
+            message,
+            path,
+            rule,
+        })),
+    );
 
 function settled(context: Context, { findings, result }: Run): number {
     print(findings.map((finding) => reportLine(finding)));
@@ -139,23 +122,32 @@ async function runPass(
         ),
         result,
     };
-    const verdict = reported(commandLine, run);
-    if (verdict !== null) {
-        return verdict;
-    }
+    if (commandLine.has('--json')) {
+        stdout.write(`${JSON.stringify(result.json, null, 2)}\n`);
 
-    print(result.lines ?? []);
+        return run.findings.length > 0 || result.failed === true ? 1 : 0;
+    }
+    const formatted = commandLine.has('--format');
+    if (formatted && result.failed === true) {
+        return 1;
+    }
+    if (formatted) {
+        stdout.write(`${findingsJson(run.findings)}\n`);
+    }
+    const say = formatted ? (): void => undefined : print;
+
+    say(result.lines ?? []);
     if (result.deferred === true) {
-        print(run.findings.map((finding) => reportLine(finding)));
+        say(run.findings.map((finding) => reportLine(finding)));
 
         return result.failed === true ? 1 : 0;
     }
     const { held } = checker;
     if (held === undefined || !held.passes.includes(name)) {
-        return settled(context, run);
+        return formatted ? Number(run.findings.length > 0) : settled(context, run);
     }
 
-    const judged = judgeHeld({ ...run, context, held, name, pass, print });
+    const judged = judgeHeld({ ...run, context, held, name, pass, print: say });
 
     return result.failed === true ? 1 : judged;
 }
