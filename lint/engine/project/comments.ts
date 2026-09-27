@@ -20,9 +20,15 @@ export const BIOME = new RegExp(`${COMMENT}biome-ignore\\b`, 'u');
 
 const QUOTES: ReadonlySet<string> = new Set(['"', "'"]);
 
-type Span = [number, number];
+export type Span = [number, number];
 
-type Reading = { blockStart: number; state: string; templates: number[] };
+type Reading = {
+    blockStart: number;
+    state: string;
+    stringStart: number;
+    strings: Span[];
+    templates: number[];
+};
 
 type Reader = (reading: Reading, line: string, column: number, spans: Span[]) => number;
 
@@ -43,8 +49,10 @@ function readTemplate(reading: Reading, line: string, column: number): number {
         return column + 2;
     }
     if (char === '`') {
+        reading.strings.push([reading.stringStart, column + 1]);
         reading.state = 'code';
     } else if (char === '$' && line[column + 1] === '{') {
+        reading.strings.push([reading.stringStart, column]);
         reading.templates.push(0);
         reading.state = 'code';
 
@@ -60,13 +68,14 @@ function readQuoted(reading: Reading, line: string, column: number): number {
         return column + 2;
     }
     if (char === reading.state) {
+        reading.strings.push([reading.stringStart, column + 1]);
         reading.state = 'code';
     }
 
     return column + 1;
 }
 
-function readBrace(reading: Reading, char: string): void {
+function readBrace(reading: Reading, char: string, column: number): void {
     const { templates } = reading;
     if (templates.length === 0) {
         return;
@@ -76,6 +85,7 @@ function readBrace(reading: Reading, char: string): void {
     } else if (templates.at(-1) === 0) {
         templates.pop();
         reading.state = 'template';
+        reading.stringStart = column;
     } else {
         templates.push((templates.pop() ?? 0) - 1);
     }
@@ -97,10 +107,12 @@ function readCode(reading: Reading, line: string, column: number, spans: Span[])
     }
     if (char === '`') {
         reading.state = 'template';
+        reading.stringStart = column;
     } else if (char !== undefined && QUOTES.has(char)) {
         reading.state = char;
+        reading.stringStart = column;
     } else if (char === '{' || char === '}') {
-        readBrace(reading, char);
+        readBrace(reading, char, column);
     }
 
     return column + 1;
@@ -112,17 +124,27 @@ const READERS: Readonly<Record<string, Reader>> = {
     template: readTemplate,
 };
 
-// A directive inside a string is text a program prints, never one a checker reads.
-// A regular-expression literal is read as code.
-export function commentSpansOf(text: string): Span[][] {
-    const reading: Reading = { blockStart: 0, state: 'code', templates: [] };
+type Lexed = { comments: Span[][]; strings: Span[][] };
 
-    return text.split('\n').map((line) => {
+// A regular-expression literal is read as code, and a template's `${…}` as code again.
+function lexed(text: string): Lexed {
+    const reading: Reading = {
+        blockStart: 0,
+        state: 'code',
+        stringStart: 0,
+        strings: [],
+        templates: [],
+    };
+    const comments: Span[][] = [];
+    const strings: Span[][] = [];
+    for (const line of text.split('\n')) {
         const spans: Span[] = [];
         if (QUOTES.has(reading.state)) {
             reading.state = 'code';
         }
         reading.blockStart = 0;
+        reading.stringStart = 0;
+        reading.strings = [];
 
         let column = 0;
         while (column < line.length) {
@@ -131,9 +153,54 @@ export function commentSpansOf(text: string): Span[][] {
         if (reading.state === 'block') {
             spans.push([reading.blockStart, line.length]);
         }
+        if (reading.state === 'template' || QUOTES.has(reading.state)) {
+            reading.strings.push([reading.stringStart, line.length]);
+        }
+        comments.push(spans);
+        strings.push(reading.strings);
+    }
 
-        return spans;
-    });
+    return { comments, strings };
+}
+
+// A directive inside a string is text a program prints, never one a checker reads.
+export const commentSpansOf = (text: string): Span[][] => lexed(text).comments;
+
+const blanked = (line: string, spans: readonly Span[]): string =>
+    spans.reduce(
+        (kept, [start, end]) =>
+            `${kept.slice(0, start)}${' '.repeat(end - start)}${kept.slice(end)}`,
+        line,
+    );
+
+/** The text with every comment turned to spaces: every offset, line and column still holds. */
+export function blankComments(text: string): string {
+    const spans = commentSpansOf(text);
+
+    return text
+        .split('\n')
+        .map((line, index) => blanked(line, spans[index] ?? []))
+        .join('\n');
+}
+
+/** For each offset of the text, whether it sits inside a string or a template's text. */
+export function quotedMask(text: string): boolean[] {
+    const mask: boolean[] = [];
+    let offset = 0;
+    const { strings } = lexed(text);
+    for (const [index, line] of text.split('\n').entries()) {
+        for (let column = 0; column <= line.length; column += 1) {
+            mask[offset + column] = false;
+        }
+        for (const [start, end] of strings[index] ?? []) {
+            for (let column = start; column < end; column += 1) {
+                mask[offset + column] = true;
+            }
+        }
+        offset += line.length + 1;
+    }
+
+    return mask;
 }
 
 export const isDirective = (comment: string): boolean =>
