@@ -4,6 +4,7 @@ import { once } from 'node:events';
 import { closeSync, openSync, writeSync } from 'node:fs';
 import { constants } from 'node:os';
 import process from 'node:process';
+import { promisify } from 'node:util';
 
 export type Stream = 'ignore' | 'inherit' | { append?: boolean; path: string };
 
@@ -20,6 +21,16 @@ const NOT_FOUND = 127;
 const SIGNALLED = 128;
 
 const FORWARDED: readonly NodeJS.Signals[] = ['SIGHUP', 'SIGINT', 'SIGTERM'];
+
+const drained = promisify(
+    (stream: NodeJS.WriteStream, done: (error?: Error | null) => void): void => {
+        stream.write('', done);
+    },
+);
+
+async function flushed(): Promise<void> {
+    await Promise.all([drained(process.stdout), drained(process.stderr)]);
+}
 
 function isSignal(name: string): name is keyof typeof constants.signals {
     return Object.hasOwn(constants.signals, name);
@@ -75,6 +86,10 @@ export async function run(
     const stdio: StdioOptions = ['ignore', out, err];
 
     try {
+        if (out === 'inherit' || err === 'inherit') {
+            await flushed();
+        }
+
         return await exited(spawn(command, args, { cwd: options.cwd, stdio }), command, err);
     } finally {
         for (const descriptor of opened) {
@@ -88,6 +103,7 @@ export async function handOver(
     args: readonly string[],
     cwd?: string,
 ): Promise<number> {
+    await flushed();
     const child = spawn(command, args, { cwd, stdio: 'inherit' });
     const forward = (signal: NodeJS.Signals): void => {
         child.kill(signal);
