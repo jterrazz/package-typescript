@@ -6,7 +6,7 @@ import { checker } from '../checker.js';
 import { isFile } from '../disk.js';
 import { run } from '../processes.js';
 import { presetAt } from '../toolchain.js';
-import type { Launched, Member } from './launched.js';
+import type { Launched } from './launched.js';
 import {
     checkerBinOf,
     isPublishable,
@@ -15,6 +15,8 @@ import {
     usesTestPackage,
 } from './project.js';
 import type { Check } from './setup.js';
+
+export type Member = { bin: string; member: string };
 
 const DEPENDENCY_CRUISER_CONFIGS = [
     '.dependency-cruiser.cjs',
