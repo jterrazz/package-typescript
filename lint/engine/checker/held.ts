@@ -46,12 +46,12 @@ function judgeOneEntry(
     const count = findings.length;
     const counts = count > 0 ? { [entry]: count } : {};
     const recorded = recordedOf(context.root, namespace, context.fix).reRecorded(counts, print);
-    const stray = judge(counts, recorded).filter((reason) => !reason.startsWith(`${entry} `));
+    const stray = judge(counts, recorded).filter(({ rule }) => rule !== entry);
     const held = count === (recorded[entry] ?? 0);
     if (!held) {
         print([`${entry}  ${LABEL}  ${pass.verdict?.(count, recorded[entry], result) ?? ''}`]);
     }
-    print(stray.map((reason) => `baseline-ratchet  ${LABEL}  ${reason}`));
+    print(stray.map(({ refusal }) => `baseline-ratchet  ${LABEL}  ${refusal}`));
 
     return held && stray.length === 0 ? 0 : 1;
 }
@@ -70,10 +70,7 @@ export function judgeHeld(run: HeldRun): number {
         return findings.length > 0 ? 1 : 0;
     }
     const broken = judge(counts, reRecorded(counts, print));
-    print(broken.map((reason) => `baseline-ratchet  ${LABEL}  ${reason}`));
-    if (broken.length > 0) {
-        print(["Run 'typescript baseline' to record where the project actually stands."]);
-    }
+    print(broken.map(({ refusal }) => `baseline-ratchet  ${LABEL}  ${refusal}`));
 
     return broken.length > 0 ? 1 : 0;
 }

@@ -12,7 +12,11 @@ describe('section', () => {
 
         // Then - the fall is the one finding
         expect(judge(counts, baseline)).toStrictEqual([
-            'eslint/no-debugger is at 1, below its baseline of 2 — the debt fell, `typescript fix` re-records it',
+            {
+                refusal:
+                    "found: `eslint/no-debugger` is at 1, below its baseline of 2 · why: each count is held exactly, so a debt that fell is recorded the day it falls and cannot grow back unseen · fix: run 'typescript fix', which re-records the fall · read: docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds",
+                rule: 'eslint/no-debugger',
+            },
         ]);
     });
 

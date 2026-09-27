@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { refusal } from '../catalogue/lesson.js';
 import { isJsonObject, objectOf } from '../project/json.js';
 
 export const BASELINE = 'jterrazz.baseline.json';
@@ -72,28 +73,62 @@ export function sectionOf(root: string, section = SECTION): Counts | null {
     return sections?.[section] ?? null;
 }
 
+export type Broken = { refusal: string; rule: string };
+
+const RECORD = "fix the findings, or run 'typescript baseline' to record where the project stands";
+
 // The section is exact: a count above OR below its entry fails, and only `typescript baseline` raises one.
-export function judge(counts: Counts, baseline: Counts): string[] {
-    const broken: string[] = [];
+export function judge(counts: Counts, baseline: Counts): Broken[] {
+    const broken: Broken[] = [];
 
     for (const [rule, count] of Object.entries(counts).toSorted(([left], [right]) =>
         left < right ? -1 : 1,
     )) {
         const allowed = baseline[rule];
         if (allowed === undefined) {
-            broken.push(`${rule} has ${count} diagnostic(s) and no entry — it is new debt`);
+            broken.push({
+                refusal: refusal({
+                    fix: RECORD,
+                    found: `\`${rule}\` has ${String(count)} finding(s) and no entry records them`,
+                    read: 'docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds',
+                    why: 'the section holds the debt the project recorded, and a finding no entry holds is new debt',
+                }),
+                rule,
+            });
         } else if (count > allowed) {
-            broken.push(`${rule} is at ${count}, above its baseline of ${allowed}`);
+            broken.push({
+                refusal: refusal({
+                    fix: RECORD,
+                    found: `\`${rule}\` is at ${String(count)}, above its baseline of ${String(allowed)}`,
+                    read: 'docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds',
+                    why: 'each count is held exactly, and a count above its entry is a regression',
+                }),
+                rule,
+            });
         } else if (count < allowed) {
-            broken.push(
-                `${rule} is at ${count}, below its baseline of ${allowed} — the debt fell, \`typescript fix\` re-records it`,
-            );
+            broken.push({
+                refusal: refusal({
+                    fix: "run 'typescript fix', which re-records the fall",
+                    found: `\`${rule}\` is at ${String(count)}, below its baseline of ${String(allowed)}`,
+                    read: 'docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds',
+                    why: 'each count is held exactly, so a debt that fell is recorded the day it falls and cannot grow back unseen',
+                }),
+                rule,
+            });
         }
     }
 
     for (const rule of Object.keys(baseline).toSorted()) {
         if ((counts[rule] ?? 0) === 0) {
-            broken.push(`${rule} is at zero — the ratchet moved, delete its entry`);
+            broken.push({
+                refusal: refusal({
+                    fix: "run 'typescript fix', which deletes the entry",
+                    found: `\`${rule}\` is at zero, and its entry is still recorded`,
+                    read: 'docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds',
+                    why: 'an entry with nothing left to hold would let the debt grow back to its old count unseen',
+                }),
+                rule,
+            });
         }
     }
 
