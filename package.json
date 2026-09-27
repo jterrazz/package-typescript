@@ -87,6 +87,7 @@
     },
     "devDependencies": {
         "@jterrazz/test": "file:../package-test",
+        "@jterrazz/typescript": "file:.",
         "@types/node": "^26.6.2",
         "vitest": "^5.0.1"
     },
