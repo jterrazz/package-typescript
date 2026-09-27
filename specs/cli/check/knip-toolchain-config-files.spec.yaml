@@ -24,6 +24,10 @@ runs:
 
           ✓ Passed
 
+           RUN  Architecture (layer map)
+
+          ✓ Passed
+
            RUN  Suppressions (directives)
 
           ✓ Passed

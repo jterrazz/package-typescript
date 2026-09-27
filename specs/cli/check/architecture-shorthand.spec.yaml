@@ -1,0 +1,17 @@
+description: judges a map declared by shorthand
+fixture: ./_fixtures/architecture-map/shorthand/
+env: TYPESCRIPT_CHECK_PASSES=architecture
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Architecture (layer map)
+
+          architecture/hexagonal-domain-is-pure  src/domain/user.ts:1:22  found: `src/domain/user.ts` imports `src/infrastructure/db.ts` · why: the domain layer is pure — it imports no other layer · fix: move what it needs into the domain, or declare a port the domain owns and let an outer layer implement it · read: docs/06-quality-checks.md#the-hexagonal-map
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

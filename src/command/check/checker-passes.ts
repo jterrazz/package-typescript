@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 
 import { SETTINGS_FILE } from '../../../lint/engine/project/jterrazz-config.js';
 import { checker } from '../checker.js';
@@ -110,15 +110,10 @@ export function commentsPass(check: Check): Launched | undefined {
     return { log, status: checker('comments', args, { path: log }) };
 }
 
-// Read as text, never run: the pass loads the settings, the command only asks whether there are any.
-function declaresArchitecture(): boolean {
-    return isFile(SETTINGS_FILE) && /\barchitecture\s*:/u.test(readFileSync(SETTINGS_FILE, 'utf8'));
-}
-
 export function architecturePass(check: Check): Launched | undefined {
     if (
         !check.selected('architecture') ||
-        (!DEPENDENCY_CRUISER_CONFIGS.some((name) => isFile(name)) && !declaresArchitecture())
+        ![SETTINGS_FILE, ...DEPENDENCY_CRUISER_CONFIGS].some((name) => isFile(name))
     ) {
         return undefined;
     }
