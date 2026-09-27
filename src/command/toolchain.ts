@@ -1,8 +1,8 @@
-import { accessSync, constants, existsSync, realpathSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
 import { delimiter, dirname, join } from 'node:path';
 import process from 'node:process';
 
-import { PACKAGE_ROOT } from '../../lint/engine/project/package-root.js';
+import { binaryIn, isExecutable, PACKAGE_ROOT } from '../../lint/engine/project/package-root.js';
 
 export const CHECKER = join(PACKAGE_ROOT, 'dist/checker.js');
 
@@ -15,26 +15,6 @@ export function projectRoot(): string {
 
     return initial === undefined || initial === '' ? process.cwd() : initial;
 }
-
-export function isExecutable(path: string): boolean {
-    try {
-        accessSync(path, constants.X_OK);
-
-        return true;
-    } catch {
-        return false;
-    }
-}
-
-export function binaryIn(name: string, fallbackBin: string): string {
-    return (
-        [join(PACKAGE_ROOT, 'node_modules/.bin', name), join(fallbackBin, name)].find((path) =>
-            isExecutable(path),
-        ) ?? name
-    );
-}
-
-export const HOISTED_BESIDE_PACKAGE = join(PACKAGE_ROOT, '../../.bin');
 
 const PLATFORMS: Readonly<Record<string, string>> = {
     darwin: 'darwin',

@@ -5,6 +5,7 @@ import {
     OXLINT_SUPPRESSIONS,
     removeWhenEmpty,
 } from '../../lint/engine/baseline/oxlint-suppressions.js';
+import { binaryIn, HOISTED_BESIDE_PACKAGE } from '../../lint/engine/project/package-root.js';
 import { ignorePatternsOf } from '../../lint/engine/project/project-files.js';
 import { checker } from './checker.js';
 import { lintTargets } from './lint-targets.js';
@@ -12,7 +13,7 @@ import { run } from './processes.js';
 import { inScratch } from './scratch.js';
 import { badge, print } from './terminal.js';
 import { toolConfigs } from './tool-configs.js';
-import { binaryIn, HOISTED_BESIDE_PACKAGE, projectRoot, withTsgolintOnPath } from './toolchain.js';
+import { projectRoot, withTsgolintOnPath } from './toolchain.js';
 
 async function listedTargets(
     ignoresOf: string | undefined,

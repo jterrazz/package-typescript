@@ -4,9 +4,10 @@ import process from 'node:process';
 
 import { refusal } from '../../lint/engine/catalogue/lesson.js';
 import { entryPoints } from '../../lint/engine/project/entry-points.js';
+import { binaryIn } from '../../lint/engine/project/package-root.js';
 import { handOver, run } from './processes.js';
 import { badge, GREEN, print, RED, RESET } from './terminal.js';
-import { binaryIn, presetAt, projectRoot } from './toolchain.js';
+import { presetAt, projectRoot } from './toolchain.js';
 
 const BUILD_PRESET = presetAt('dist/presets/tsdown/build.js');
 
