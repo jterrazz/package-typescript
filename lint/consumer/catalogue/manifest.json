@@ -187,6 +187,14 @@
         "audience": "consumer",
         "by": "throw",
         "channel": "runtime",
+        "id": "profile-unknown",
+        "message": "which is none of",
+        "module": "lint/index.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
         "id": "baseline-unwritable",
         "message": "then record again",
         "module": "lint/engine/baseline/baseline-file.ts"
