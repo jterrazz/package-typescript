@@ -9,7 +9,7 @@ import type { Preset } from '../project/preset.js';
 import { orRefused, projectFiles } from '../project/project-files.js';
 import { readCommandLine } from './command-line.js';
 import type { CommandLine } from './command-line.js';
-import { judgeHeld } from './held.js';
+import { heldSummary, judgeHeld } from './held.js';
 import type { Checker, Context, Finding, Pass, PassResult, Removal, Tool } from './pass.js';
 import { reportLine } from './report-line.js';
 import { runTool } from './tool-run.js';
@@ -148,8 +148,14 @@ async function runPass(
     }
 
     const judged = judgeHeld({ ...run, context, held, name, pass, print: say });
+    if (result.failed === true) {
+        return 1;
+    }
+    if (judged === 0 && held.summarised === true) {
+        say([heldSummary(context.root, held.section)]);
+    }
 
-    return result.failed === true ? 1 : judged;
+    return judged;
 }
 
 export async function runChecker(

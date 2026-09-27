@@ -110,11 +110,8 @@ function judgeEntries(run: HeldRun, namespace: string): number {
 // Where the baseline records no entry of the pass, every finding is a failure.
 export function judgeHeld(run: HeldRun): number {
     const namespace = `${run.pass.namespace ?? run.name}/`;
-    const status =
-        run.pass.entry === undefined ? judgeEntries(run, namespace) : judgeOneEntry(run, namespace);
-    if (status === 0 && run.held.summarised === true) {
-        run.print([heldSummary(run.context.root, run.held.section)]);
-    }
 
-    return status;
+    return run.pass.entry === undefined
+        ? judgeEntries(run, namespace)
+        : judgeOneEntry(run, namespace);
 }
