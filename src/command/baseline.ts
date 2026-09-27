@@ -51,7 +51,6 @@ async function recordPass(pass: string, report: string, args: readonly string[])
     );
 }
 
-// A command of its own: `fix --baseline` would bury a rewrite of a tracked file in the everyday gesture.
 export async function baseline(args: readonly string[]): Promise<number> {
     const project = projectRoot();
     process.chdir(project);

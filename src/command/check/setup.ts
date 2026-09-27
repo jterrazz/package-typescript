@@ -45,14 +45,12 @@ export type Check = {
     tools: Tools;
 };
 
-// `astro` and the checker are the consumer's: the lookup starts at the project.
 export function projectBinary(name: string): string {
     const local = join(process.cwd(), 'node_modules/.bin', name);
 
     return isExecutable(local) ? local : binaryIn(name, HOISTED_BESIDE_PACKAGE);
 }
 
-// The plugin goes by resolved path: prettier resolves a plugin name from the consumer's cwd, which no longer declares it.
 function prettierAstroPlugin(): string {
     try {
         return createRequire(join(PACKAGE_ROOT, 'package.json')).resolve('prettier-plugin-astro');
@@ -82,7 +80,6 @@ export function toolsOf(): Tools {
     };
 }
 
-// `--json` is the drift report's: the fleet reads that block as one JSON object.
 export function argumentsOf(args: readonly string[]): { driftArgs: string[]; lintArgs: string[] } {
     const lintArgs: string[] = [];
     const driftArgs: string[] = [];
@@ -100,7 +97,6 @@ export function argumentsOf(args: readonly string[]): { driftArgs: string[]; lin
     return { driftArgs, lintArgs };
 }
 
-// A sweep that could not answer hands the tool the directory: a gate never goes silent on a read it did not make.
 export async function targetsOf(
     lintArgs: readonly string[],
     { every, ignoresOf }: { every: boolean; ignoresOf: string | undefined },

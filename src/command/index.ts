@@ -70,7 +70,6 @@ const COMMANDS: Readonly<Record<string, Command>> = {
     check: async (args, selected) => await runChecks(args, { fix: false, selected }),
     clean: () => clean(),
     dev: async () => await dev(),
-    // For a repository with no npm project to hang `check` on (a Go, Rust or Ansible tree, through npx).
     'docs-layout': async ([root]) =>
         await handOver(process.execPath, [
             CHECKER,

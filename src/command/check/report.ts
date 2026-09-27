@@ -3,8 +3,6 @@ import { readFileSync } from 'node:fs';
 import { badge, GREEN, print, RED, RESET } from '../terminal.js';
 import type { Logs } from './logs.js';
 
-// A pass that did not apply prints nothing. A green pass prints its log only when it wrote something, so a
-// green run is byte-identical everywhere: oxlint's own summary differs by environment.
 export function reportPass(
     logs: Logs,
     {

@@ -44,7 +44,6 @@ const PLATFORMS: Readonly<Record<string, string>> = {
 
 const ARCHITECTURES: Readonly<Record<string, string>> = { arm: 'arm', arm64: 'arm64', x64: 'x64' };
 
-// `tsc` on PATH is whatever the tree hoisted, under pnpm another package's TypeScript 5.
 export function tscIn(fallbackBin: string): string {
     const compiler = `@typescript/typescript-${PLATFORMS[process.platform] ?? 'linux'}-${ARCHITECTURES[process.arch] ?? 'x64'}/lib/tsc`;
 
@@ -55,7 +54,6 @@ export function tscIn(fallbackBin: string): string {
     );
 }
 
-// oxlint looks `tsgolint` up on PATH, which a consumer's PATH has no reason to carry.
 export function withTsgolintOnPath(fallbackBin: string): void {
     const tsgolint = binaryIn('tsgolint', fallbackBin);
     if (tsgolint.includes('/') && existsSync(tsgolint)) {

@@ -23,7 +23,6 @@ export async function oxlintJson(
     );
 }
 
-// A list holding only shapes oxfmt does not parse is nothing to format, not an error.
 export async function oxfmt(check: Check, args: readonly string[], log: string): Promise<number> {
     if (check.formatTargets.nothing) {
         writeFileSync(log, '');

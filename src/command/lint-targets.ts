@@ -1,6 +1,3 @@
-// A tool handed a config by path resolves its `ignorePatterns` against the config's directory, where
-// they reach nothing: `ignoresOf` leaves them out here. A throw tells the caller to hand the directory.
-
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 

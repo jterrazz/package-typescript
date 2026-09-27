@@ -79,7 +79,6 @@ export async function dev(): Promise<number> {
     );
 }
 
-// dist/ is the build's product, published from beside src/, not an artefact.
 export function clean(): number {
     const artefacts = join(projectRoot(), '.artifacts');
     print(`${badge('TYPESCRIPT')} Removing artefacts...\n\n`);

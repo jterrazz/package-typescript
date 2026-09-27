@@ -4,8 +4,6 @@ import process from 'node:process';
 import { CHECK_PASSES, main } from '../../../dist/command.js';
 import type { CheckPass } from '../../../dist/command.js';
 
-// The published package holds no copy of this selector: the command runs every pass unless its caller hands it a selection.
-
 const requested = process.env.TYPESCRIPT_CHECK_PASSES ?? '';
 
 function isPass(name: string): name is CheckPass {

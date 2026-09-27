@@ -9,7 +9,6 @@ export type LintVerdict = { log: string; status: number; writes: boolean };
 
 const UNPARSED = 'Failed to parse oxlint configuration file';
 
-// oxlint drops a config it cannot load and still exits 0; a CommonJS config cannot load an ESM preset or plugin.
 function commonjsConfig(own: string | undefined): string | undefined {
     if (own?.endsWith('.cjs') === true || (own?.endsWith('.js') === true && !isModulePackage())) {
         return own;
@@ -18,7 +17,6 @@ function commonjsConfig(own: string | undefined): string | undefined {
     return undefined;
 }
 
-// A config oxlint cannot parse lints nothing; a CommonJS one is dropped whole with exit 0. Both fail the pass.
 function lintRefusals(check: Check): string {
     const { own } = check.configs.oxlint;
     const unparsed = ['lint.log', 'lint.json'].some((name) =>
@@ -67,7 +65,6 @@ function drawn(check: Check, ifDiagnostics: boolean): { failed: boolean; shown: 
     }
 }
 
-// @jterrazz/test's checker leaves printing its `jterrazz(*)` diagnostics to this pass, even when it is green.
 function withCheckerDiagnostics(check: Check, verdict: LintVerdict): LintVerdict {
     const { failed, shown } = drawn(check, true);
     if (shown === '') {
