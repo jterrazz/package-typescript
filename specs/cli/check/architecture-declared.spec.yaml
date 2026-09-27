@@ -1,4 +1,4 @@
-description: fails the hexagonal map and a layer of its own, each at its import
+description: fails the hexagonal map and a layer of its own, each at its import — a type-only import and a feature reaching another included, a feature reading its own files and common not
 fixture: ./_fixtures/architecture-map/declared/
 env: TYPESCRIPT_CHECK_PASSES=architecture
 runs:
@@ -10,7 +10,9 @@ runs:
            RUN  Architecture (layer map)
 
           architecture/handlers-reach-services  src/handlers/orders.ts:2:24  found: `src/handlers/orders.ts` imports `src/store/orders.ts` · why: a handler speaks HTTP and hands the work to a service · fix: read the order through the service, which owns the store · read: docs/01-architecture.md#layers
+          architecture/hexagonal-domain-is-pure  src/domain/customer.ts:1:26  found: `src/domain/customer.ts` imports `src/infrastructure/outbound/row.ts` · why: the domain layer is pure — it imports no other layer · fix: move what it needs into the domain, or declare a port the domain owns and let an outer layer implement it · read: docs/06-quality-checks.md#the-hexagonal-map
           architecture/hexagonal-domain-is-pure  src/domain/order.ts:1:27  found: `src/domain/order.ts` imports `src/infrastructure/outbound/orders.ts` · why: the domain layer is pure — it imports no other layer · fix: move what it needs into the domain, or declare a port the domain owns and let an outer layer implement it · read: docs/06-quality-checks.md#the-hexagonal-map
+          architecture/hexagonal-feature-is-independent  src/presentation/features/articles/card.ts:3:24  found: `src/presentation/features/articles/card.ts` imports `src/presentation/features/quiz/sheet.ts` · why: a feature is independent — shared code lives in features/common · fix: move what two features share into `presentation/features/common/` · read: docs/06-quality-checks.md#the-hexagonal-map
           ✗ Failed with exit code 1
 
            END  Finalizing quality checks
