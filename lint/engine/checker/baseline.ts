@@ -31,6 +31,7 @@ const print = (line: string): boolean => stdout.write(`${line}\n`);
 
 function passReportsOf(commandLine: CommandLine): PassReport[] {
     return [
+        { flag: '--architecture', label: 'Architecture (layer map)' },
         { flag: '--names', label: 'Names (tree)' },
         { flag: '--comments', label: 'Comments (density)' },
     ].flatMap(({ flag, label }) => {
@@ -94,7 +95,7 @@ function oxlintRulesLeftInTheSection(root: string, held: readonly string[]): num
 }
 
 export function baseline(args: readonly string[], { held }: { held: readonly string[] }): number {
-    const commandLine = readCommandLine(args, ['--names', '--comments']);
+    const commandLine = readCommandLine(args, ['--architecture', '--names', '--comments']);
     const root = resolve(commandLine.positionals[0] ?? '.');
 
     return commandLine.has('--write')

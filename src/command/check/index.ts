@@ -114,7 +114,7 @@ async function reported(
         ...labelled('Test Conventions (@jterrazz/test)', conventionsPass),
         ...labelled('Docs (layout)', docs),
         ...labelled('Publish (packaging)', publish),
-        ...labelled('Architecture (layer map)', architecture),
+        ...labelled('Architecture (layer map)', architecture, fix),
         ...labelled('Astro (check + format)', astro, fix),
         ...labelled('Suppressions (directives)', suppressions, fix),
         ...labelled('Markdown (prose)', markdown, fix),

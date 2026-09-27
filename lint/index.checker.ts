@@ -61,7 +61,7 @@ const PASSES: Passes = Object.freeze({
     },
 });
 
-const HELD = Object.freeze(['comments', 'names']);
+const HELD = Object.freeze(['architecture', 'comments', 'names']);
 
 if (import.meta.main) {
     await runChecker({ held: HELD, passes: PASSES });

@@ -47,7 +47,7 @@ async function recordPass(pass: string, report: string, args: readonly string[])
         pass,
         ['.', '--format', 'json', ...args],
         { path: report },
-        { stderr: 'ignore', typeless: pass === 'names' },
+        { stderr: 'ignore', typeless: pass !== 'comments' },
     );
 }
 
@@ -59,11 +59,17 @@ export async function baseline(args: readonly string[]): Promise<number> {
 
     return await inScratch(async (scratch) => {
         const reports = {
+            architecture: join(scratch, 'architecture.json'),
             comments: join(scratch, 'comments.json'),
             names: join(scratch, 'names.json'),
         };
         print(`${badge('TYPESCRIPT')} Recording the baseline...\n\n`);
         await recordLinter(args, projectBin);
+        await recordPass('architecture', reports.architecture, [
+            '--depcruise',
+            binaryIn('depcruise', HOISTED_BESIDE_PACKAGE),
+            ...args,
+        ]);
         await recordPass('names', reports.names, [
             '--ls-lint',
             binaryIn('ls-lint', HOISTED_BESIDE_PACKAGE),
@@ -72,7 +78,16 @@ export async function baseline(args: readonly string[]): Promise<number> {
         await recordPass('comments', reports.comments, args);
         const written = await checker(
             'baseline',
-            ['.', '--names', reports.names, '--comments', reports.comments, '--write'],
+            [
+                '.',
+                '--architecture',
+                reports.architecture,
+                '--names',
+                reports.names,
+                '--comments',
+                reports.comments,
+                '--write',
+            ],
             'inherit',
             { stderr: 'inherit' },
         );

@@ -117,7 +117,6 @@ function declaresArchitecture(): boolean {
 
 export function architecturePass(check: Check): Launched | undefined {
     if (
-        check.fix ||
         !check.selected('architecture') ||
         (!DEPENDENCY_CRUISER_CONFIGS.some((name) => isFile(name)) && !declaresArchitecture())
     ) {
@@ -129,7 +128,7 @@ export function architecturePass(check: Check): Launched | undefined {
         log,
         status: checker(
             'architecture',
-            ['.', '--depcruise', check.tools.depcruise],
+            ['.', '--depcruise', check.tools.depcruise, ...(check.fix ? ['--fix'] : [])],
             { path: log },
             { typeless: true },
         ),

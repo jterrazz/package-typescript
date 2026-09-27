@@ -99,6 +99,9 @@ function reported(
         return findings.length > 0 || result.failed === true ? 1 : 0;
     }
     if (commandLine.has('--format')) {
+        if (result.failed === true) {
+            return 1;
+        }
         stdout.write(reportOf(name, findings));
 
         return 0;
@@ -154,7 +157,9 @@ async function runPass(
         print(run.findings.map((finding) => findingLine(finding)));
     }
 
-    return judgeHeld({ ...run, context, name, pass, print });
+    const judged = judgeHeld({ ...run, context, name, pass, print });
+
+    return result.failed === true ? 1 : judged;
 }
 
 export async function runChecker(

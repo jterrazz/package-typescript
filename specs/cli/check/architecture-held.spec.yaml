@@ -1,0 +1,30 @@
+description: records a crossed boundary in the ratchet, and the run it records is green
+fixture: ./_fixtures/architecture-map/held/
+env: TYPESCRIPT_CHECK_PASSES=architecture
+runs:
+    - command: baseline
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Recording the baseline...
+
+          jterrazz.baseline.json › typescript written — 1 finding(s) across 1 rule(s)
+      files:
+          jterrazz.baseline.json:
+              equals: |
+                  {
+                      "typescript": {
+                          "architecture/domain-stays-pure": 1
+                      }
+                  }
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Architecture (layer map)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed
