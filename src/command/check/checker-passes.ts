@@ -1,18 +1,15 @@
 import { existsSync } from 'node:fs';
 
-import { SETTINGS_FILE } from '../../../lint/engine/project/jterrazz-config.js';
+import {
+    DEPENDENCY_CRUISER_CONFIGS,
+    SETTINGS_FILE,
+} from '../../../lint/engine/project/jterrazz-config.js';
 import { checker } from '../checker.js';
 import { isFile } from '../disk.js';
 import { presetAt } from '../toolchain.js';
 import type { Launched } from './launched.js';
 import { isPublishable } from './project.js';
 import type { Check } from './setup.js';
-
-const DEPENDENCY_CRUISER_CONFIGS = [
-    '.dependency-cruiser.cjs',
-    '.dependency-cruiser.js',
-    '.dependency-cruiser.mjs',
-];
 
 export async function gitignorePass(check: Check): Promise<Launched | undefined> {
     if (!check.selected('gitignore')) {

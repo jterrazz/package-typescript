@@ -9,6 +9,12 @@ import { objectOf } from './json.js';
 
 export const SETTINGS_FILE = 'jterrazz.config.ts';
 
+export const DEPENDENCY_CRUISER_CONFIGS = [
+    '.dependency-cruiser.cjs',
+    '.dependency-cruiser.js',
+    '.dependency-cruiser.mjs',
+];
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     value !== null && typeof value === 'object' && !Array.isArray(value);
 

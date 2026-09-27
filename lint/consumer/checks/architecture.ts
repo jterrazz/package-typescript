@@ -9,7 +9,11 @@ import { runTool } from '../../engine/checker/tool-run.js';
 import type { ToolRun } from '../../engine/checker/tool-run.js';
 import { GROUND_FOLDERS } from '../../engine/project/ground.js';
 import { objectOf, stringOf } from '../../engine/project/json.js';
-import { declaredUnder, readSection } from '../../engine/project/jterrazz-config.js';
+import {
+    declaredUnder,
+    DEPENDENCY_CRUISER_CONFIGS,
+    readSection,
+} from '../../engine/project/jterrazz-config.js';
 import { ARCHITECTURE_HEXAGONAL } from './architecture.hexagonal.js';
 
 /** One boundary of a layer map: dependency-cruiser's `from` and `to`, and what a refusal teaches. */
@@ -19,12 +23,6 @@ export type ArchitectureRule = Pick<IRegularForbiddenRuleType, 'from' | 'to'> & 
     read: string;
     why: string;
 };
-
-const OWN_CONFIGS = [
-    '.dependency-cruiser.cjs',
-    '.dependency-cruiser.js',
-    '.dependency-cruiser.mjs',
-];
 
 const SOURCE = /\.[cm]?[jt]sx?$/u;
 
@@ -98,7 +96,7 @@ async function declaredRules(root: string): Promise<Declared> {
 }
 
 function cruiseConfig(rules: readonly ArchitectureRule[], context: Context): unknown {
-    const own = OWN_CONFIGS.find((name) => context.exists(join(context.root, name)));
+    const own = DEPENDENCY_CRUISER_CONFIGS.find((name) => context.exists(join(context.root, name)));
 
     return {
         ...(own === undefined ? {} : { extends: join(context.root, own) }),
@@ -277,7 +275,9 @@ export const architecture: Pass = Object.freeze({
         if (problem !== null) {
             return { failed: true, lines: [problem] };
         }
-        const own = OWN_CONFIGS.some((name) => context.exists(join(context.root, name)));
+        const own = DEPENDENCY_CRUISER_CONFIGS.some((name) =>
+            context.exists(join(context.root, name)),
+        );
         if (rules.length === 0 && !own) {
             return {};
         }
