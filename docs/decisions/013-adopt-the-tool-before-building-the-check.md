@@ -37,6 +37,14 @@ no configuration, and keeps its own code only for what the tool cannot express.
   with no language, and the rest of its defaults but layout, which is oxfmt's.
   The prose gate keeps backticked coordinates, a skill's chapters and the
   readability floors.
+- **`publish/no-test-code-in-production` stays ours**, and is not moved to
+  dependency-cruiser. It judges the built chunks, not the source graph: an
+  installed test package the bundler inlined, or an external specifier the
+  manifest does not declare, exists only in tsdown's output, and a cruise of
+  the source never sees either. There is one owner for each part. What test
+  material IS belongs to `@jterrazz/test`: the pass loads the readers from its
+  `./oxlint` entry and keeps no copy. The source edge belongs to that
+  package's `no-test-code-in-production` rule. The tarball belongs to this pass.
 - **lychee** is not adopted: local links are rumdl's offline MD057/MD051, a
   remote link needs the network `make check` never uses, and lychee ships no
   npm package the toolchain could pin.
