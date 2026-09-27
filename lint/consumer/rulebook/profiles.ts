@@ -1,3 +1,4 @@
+import type { Profile } from '../../engine/compiler/compile.js';
 import { GROUND_GLOBS } from '../../engine/project/ground.js';
 import eslint from './eslint.js';
 import astro from './frameworks/astro.js';
@@ -73,4 +74,4 @@ export const PROFILES = Object.freeze({
         fragments: [...CORE, react, jsxA11y, bundler],
         ignorePatterns: [...IGNORED],
     },
-});
+} satisfies Readonly<Record<string, Profile>>);

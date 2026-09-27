@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 
 import { isGroundFolder } from '../../lint/engine/project/ground.js';
-import { objectOf, parsedObject } from '../../lint/engine/project/json.js';
+import { isList, objectOf, parsedObject } from '../../lint/engine/project/json.js';
 import type { JsonObject } from '../../lint/engine/project/json.js';
 import { workspaceMembers } from '../../lint/engine/project/workspace-members.js';
 import { readJsonc } from './jsonc.js';
@@ -49,8 +49,8 @@ function mergedValue(key: string, base: unknown, project: unknown): unknown {
     if (base === undefined) {
         return project;
     }
-    if (ARRAY_KEYS.has(key) && Array.isArray(base) && Array.isArray(project)) {
-        return [...new Set([...(base as unknown[]), ...(project as unknown[])])];
+    if (ARRAY_KEYS.has(key) && isList(base) && isList(project)) {
+        return [...new Set([...base, ...project])];
     }
     if (typeof base === 'object' && typeof project === 'object' && !Array.isArray(base)) {
         return { ...base, ...project };
@@ -70,8 +70,8 @@ function mergedConfigs(base: KnipConfig, project: KnipConfig): KnipConfig {
     return merged;
 }
 
-function listOf(value: unknown): unknown[] {
-    return Array.isArray(value) ? (value as unknown[]) : [];
+function listOf(value: unknown): readonly unknown[] {
+    return isList(value) ? value : [];
 }
 
 function withEntries(merged: KnipConfig, key: string, added: readonly unknown[]): void {

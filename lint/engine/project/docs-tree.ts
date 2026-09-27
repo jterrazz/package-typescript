@@ -4,6 +4,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { parsedObject } from './json.js';
 import { workspaceMembers } from './workspace-members.js';
 
 /** The `docs/` tree of one repository, as a rule engine needs to see it. */
@@ -103,7 +104,7 @@ function isPublishable(dir: string): boolean {
     }
 
     try {
-        return (JSON.parse(manifest) as { private?: unknown }).private !== true;
+        return parsedObject(manifest).private !== true;
     } catch {
         return false;
     }

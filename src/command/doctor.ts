@@ -42,7 +42,7 @@ function bunVersions(text: string, name: string): ReadonlySet<string> {
     );
 
     for (const [key, entry] of Object.entries(packages ?? {})) {
-        const descriptor: unknown = Array.isArray(entry) ? (entry as unknown[])[0] : entry;
+        const descriptor: unknown = Array.isArray(entry) ? entry[0] : entry;
         if ((key === name || key.endsWith(`/${name}`)) && typeof descriptor === 'string') {
             versions.add(descriptor.slice(descriptor.lastIndexOf('@') + 1));
         }

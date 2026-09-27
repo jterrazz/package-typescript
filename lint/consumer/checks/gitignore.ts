@@ -1,6 +1,7 @@
 import { dirname, join, relative, resolve } from 'node:path';
 
 import type { Context, Pass } from '../../engine/checker/pass.js';
+import { parsedObject } from '../../engine/project/json.js';
 import { trackedFiles } from '../../engine/project/project-files.js';
 import { isRepositoryRoot } from '../../engine/project/repository-root.js';
 
@@ -101,7 +102,7 @@ function isWorkspaceRoot(disk: Disk, dir: string): boolean {
     }
 
     try {
-        return (JSON.parse(manifest) as { workspaces?: unknown }).workspaces !== undefined;
+        return parsedObject(manifest).workspaces !== undefined;
     } catch {
         return false;
     }

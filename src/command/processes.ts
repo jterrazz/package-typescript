@@ -21,6 +21,10 @@ const SIGNALLED = 128;
 
 const FORWARDED: readonly NodeJS.Signals[] = ['SIGHUP', 'SIGINT', 'SIGTERM'];
 
+function isSignal(name: string): name is keyof typeof constants.signals {
+    return Object.hasOwn(constants.signals, name);
+}
+
 function descriptorOf(stream: Stream, opened: number[]): Descriptor {
     if (typeof stream === 'string') {
         return stream;
@@ -50,9 +54,7 @@ async function exited(child: ChildProcess, command: string, err: Descriptor): Pr
 
         return (
             SIGNALLED +
-            (typeof signal === 'string'
-                ? ((constants.signals as Record<string, number>)[signal] ?? 0)
-                : 0)
+            (typeof signal === 'string' && isSignal(signal) ? constants.signals[signal] : 0)
         );
     } catch {
         notFound(command, err);

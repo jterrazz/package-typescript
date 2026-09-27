@@ -5,6 +5,7 @@ import { stripVTControlCharacters } from 'node:util';
 import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { buildOf, builtChunks } from '../../engine/project/built-chunks.js';
 import type { Build, BuiltChunk } from '../../engine/project/built-chunks.js';
+import { parsedObject, stringRecordOf, stringsOf } from '../../engine/project/json.js';
 import { isPacked, withoutDotSlash } from '../../engine/project/packed-files.js';
 import { testMaterialReader } from '../../engine/project/test-material.js';
 import { noTestCodeInProductionFindings } from './publish.no-test-code-in-production.js';
@@ -15,7 +16,7 @@ function targetsOf(exports: unknown): string[] {
         return [exports];
     }
     if (Array.isArray(exports)) {
-        return (exports as unknown[]).flatMap((entry) => targetsOf(entry));
+        return exports.flatMap((entry) => targetsOf(entry));
     }
     if (exports !== null && typeof exports === 'object') {
         return Object.values(exports).flatMap((entry) => targetsOf(entry));
@@ -128,11 +129,22 @@ async function buildFindings(
     return { findings, lines };
 }
 
+function manifestOf(text: string): Manifest {
+    const parsed = parsedObject(text);
+
+    return {
+        dependencies: stringRecordOf(parsed.dependencies),
+        exports: parsed.exports,
+        files: stringsOf(parsed.files),
+        main: parsed.main,
+        peerDependencies: stringRecordOf(parsed.peerDependencies),
+        types: parsed.types,
+    };
+}
+
 export const publish: Pass = Object.freeze({
     async check(context) {
-        const manifest = JSON.parse(
-            context.read(join(context.root, 'package.json')) ?? '{}',
-        ) as Manifest;
+        const manifest = manifestOf(context.read(join(context.root, 'package.json')) ?? '{}');
         const targets = [
             ...targetsOf(manifest.exports ?? {}),
             ...(typeof manifest.main === 'string' ? [manifest.main] : []),

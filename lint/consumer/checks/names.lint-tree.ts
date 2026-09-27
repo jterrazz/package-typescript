@@ -12,12 +12,8 @@ type Exported = { functions: string[]; values: string[] };
 type Candidate = Exported & { file: string };
 
 type Placement =
-    | 'audience-root'
-    | 'declaration'
-    | 'foreign-folder'
-    | 'foreign-top'
-    | 'lint-root'
-    | 'placed';
+    | { kind: 'audience-root' | 'foreign-folder'; top: Top }
+    | { kind: 'declaration' | 'foreign-top' | 'lint-root' | 'placed' };
 
 export const LINT_ROOT = 'lint';
 
@@ -39,9 +35,9 @@ const FOLDER_RULES: Readonly<Record<Top, string>> = Object.freeze({
     self: 'names/self-folder-is-known',
 });
 
-const LINT_FOLDERS = Object.keys(LINT_TREE) as Top[];
+const LINT_FOLDERS = Object.keys(LINT_TREE);
 
-const isTop = (name: string): name is Top => (LINT_FOLDERS as string[]).includes(name);
+const isTop = (name: string): name is Top => Object.hasOwn(LINT_TREE, name);
 
 const READ = 'read: docs/06-quality-checks.md#the-lint-tree';
 
@@ -263,19 +259,21 @@ function sharedHelpers(
 
 function placementOf(top: string, folder: string | undefined, rest: readonly string[]): Placement {
     if (folder === undefined) {
-        return isIndex(top) ? 'placed' : 'lint-root';
+        return { kind: isIndex(top) ? 'placed' : 'lint-root' };
     }
     if (!isTop(top)) {
-        return 'foreign-top';
+        return { kind: 'foreign-top' };
     }
     if (rest.length === 0) {
-        return top === 'self' && isIndex(folder) ? 'placed' : 'audience-root';
+        return top === 'self' && isIndex(folder)
+            ? { kind: 'placed' }
+            : { kind: 'audience-root', top };
     }
     if (!LINT_TREE[top].includes(folder)) {
-        return 'foreign-folder';
+        return { kind: 'foreign-folder', top };
     }
 
-    return AUDIENCES.has(top) ? 'declaration' : 'placed';
+    return { kind: AUDIENCES.has(top) ? 'declaration' : 'placed' };
 }
 
 function judgedDeclaration({
@@ -317,15 +315,15 @@ export function lintTreeOf(files: readonly string[], unit: string, prefix: strin
     for (const file of lintFiles) {
         const [, top = '', folder, ...rest] = file.split('/');
         const placement = placementOf(top, folder, rest);
-        if (placement === 'lint-root') {
+        if (placement.kind === 'lint-root') {
             findings.push(lintRootFinding(`${prefix}${file}`));
-        } else if (placement === 'audience-root') {
-            findings.push(audienceFolderFinding(`${prefix}${file}`, top as Top, true));
-        } else if (placement === 'foreign-top') {
+        } else if (placement.kind === 'audience-root') {
+            findings.push(audienceFolderFinding(`${prefix}${file}`, placement.top, true));
+        } else if (placement.kind === 'foreign-top') {
             foreign.add(top);
-        } else if (placement === 'foreign-folder') {
-            foreignInAudience.set(`${top}/${folder ?? ''}`, top as Top);
-        } else if (placement === 'declaration' && folder !== undefined) {
+        } else if (placement.kind === 'foreign-folder') {
+            foreignInAudience.set(`${top}/${folder ?? ''}`, placement.top);
+        } else if (placement.kind === 'declaration' && folder !== undefined) {
             const judged = judgedDeclaration({ families, file, folder, prefix, rest, unit });
             findings.push(...judged.findings);
             candidates.push(...judged.candidates);

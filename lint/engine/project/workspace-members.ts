@@ -4,6 +4,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 
+import { isJsonObject, parsedObject } from './json.js';
+
 const SKIPPED = new Set(['dist', 'node_modules']);
 
 function toPattern(glob: string): RegExp {
@@ -24,15 +26,13 @@ function declaredGlobs(root: string): unknown[] {
 
     let declared: unknown;
     try {
-        const pkg = JSON.parse(readFileSync(manifest, 'utf8')) as {
-            workspaces?: unknown[] | { packages?: unknown[] };
-        };
-        declared = Array.isArray(pkg.workspaces) ? pkg.workspaces : pkg.workspaces?.packages;
+        const { workspaces } = parsedObject(readFileSync(manifest, 'utf8'));
+        declared = isJsonObject(workspaces) ? workspaces.packages : workspaces;
     } catch {
         return [];
     }
 
-    return Array.isArray(declared) ? (declared as unknown[]) : [];
+    return Array.isArray(declared) ? declared : [];
 }
 
 // Empty for a single-package project, which every caller reads as "the root is the unit".

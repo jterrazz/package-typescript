@@ -2,6 +2,8 @@ import { basename, join, matchesGlob } from 'node:path';
 
 import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { emptyDirectories } from '../../engine/project/empty-directories.js';
+import { isJsonObject, parsedObject } from '../../engine/project/json.js';
+import type { JsonObject } from '../../engine/project/json.js';
 import { readSection, SETTINGS_FILE } from '../../engine/project/jterrazz-config.js';
 import { isRepositoryRoot } from '../../engine/project/repository-root.js';
 import { workspaceMembers } from '../../engine/project/workspace-members.js';
@@ -9,7 +11,7 @@ import { LINT_ROOT, lintTreeOf } from './names.lint-tree.js';
 
 type Disk = Pick<Context, 'exists' | 'read'>;
 
-type Manifest = Record<string, unknown>;
+type Manifest = JsonObject;
 
 type Settings = { problem: null | string; roots: Readonly<Record<string, unknown>> };
 
@@ -168,9 +170,7 @@ function manifestOf(disk: Disk, unit: string): Manifest {
     }
 
     try {
-        const parsed: unknown = JSON.parse(manifest);
-
-        return parsed !== null && typeof parsed === 'object' ? (parsed as Manifest) : {};
+        return parsedObject(manifest);
     } catch {
         return {};
     }
@@ -186,14 +186,14 @@ async function settingsOf(unit: string): Promise<Settings> {
     if (roots === undefined) {
         return { problem: null, roots: {} };
     }
-    if (roots === null || typeof roots !== 'object' || Array.isArray(roots)) {
+    if (!isJsonObject(roots)) {
         return {
             problem: `holds a \`${DECLARATION}\` that is not an object mapping each folder to its reason`,
             roots: {},
         };
     }
 
-    return { problem: null, roots: roots as Record<string, unknown> };
+    return { problem: null, roots };
 }
 
 function targetsOfExports(exports: unknown): string[] {
@@ -267,7 +267,7 @@ function filesPublish(files: readonly unknown[], path: string): boolean {
 
 // A `lint/` nothing publishes holds rules no consumer receives: `src/` under another name.
 function shipsLint(disk: Disk, manifest: Manifest, unit: string): boolean {
-    const files: unknown[] = Array.isArray(manifest.files) ? (manifest.files as unknown[]) : [];
+    const files: unknown[] = Array.isArray(manifest.files) ? manifest.files : [];
     const byFiles = files.some(
         (entry) =>
             typeof entry === 'string' && /^(?:\.\/)?lint(?:\/|$)/u.test(entry.replace(/^!.*/u, '')),

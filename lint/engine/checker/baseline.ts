@@ -2,13 +2,11 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { stdout } from 'node:process';
 
+import { countsOf, diagnosticsOf, isTestOwned } from '../baseline/counts.js';
 import {
     BASELINE,
-    countsOf,
-    diagnosticsOf,
     heldSummary,
     isHeldBy,
-    isTestOwned,
     judge,
     LABEL,
     readBaseline,

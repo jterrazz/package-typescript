@@ -5,6 +5,8 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { objectOf } from './json.js';
+
 export const SETTINGS_FILE = 'jterrazz.config.ts';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -18,16 +20,16 @@ export async function readSection(unit: string, name: string): Promise<Section> 
         return { problem: null, section: {} };
     }
 
-    let loaded: { default?: unknown };
+    let loaded: unknown;
     try {
-        loaded = (await import(pathToFileURL(path).href)) as { default?: unknown };
+        loaded = await import(pathToFileURL(path).href);
     } catch (error) {
         const reason = String(error instanceof Error ? error.message : error).split('\n')[0];
 
         return { problem: `does not load — ${reason}`, section: {} };
     }
 
-    const settings = loaded.default;
+    const settings = objectOf(loaded).default;
     if (!isRecord(settings)) {
         return {
             problem:

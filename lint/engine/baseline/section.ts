@@ -1,6 +1,9 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { isJsonObject, objectOf } from '../project/json.js';
+import { isTestOwned } from './counts.js';
+
 export const BASELINE = 'jterrazz.baseline.json';
 
 export const SECTION = 'typescript';
@@ -8,8 +11,6 @@ export const SECTION = 'typescript';
 export const TEST_SECTION = 'test';
 
 export type Counts = Record<string, number>;
-
-export type Diagnostic = { code?: string; message?: string };
 
 export type Sections = Record<string, Counts>;
 
@@ -19,55 +20,18 @@ export const labelOf = (section: string): string => `${BASELINE} › ${section}`
 
 export const LABEL = labelOf(SECTION);
 
-// `@jterrazz/test` records and judges these: its oxlint plugin's rules and its checker's ids.
-const TEST_NAMESPACES = ['jterrazz/', 'jterrazz-check/'];
-
 export const isHeldBy = (passes: readonly string[], rule: string): boolean =>
     passes.some((pass) => rule.startsWith(`${pass}/`));
 
-// oxlint's "Unused eslint/oxlint-disable directive" findings carry no `code` at all.
-const UNUSED_DIRECTIVE = /^Unused (?:eslint|oxlint)-disable directive/u;
+function countsIn(section: unknown): Counts | null {
+    const entries = Object.entries(objectOf(section));
+    const counted = entries.filter(
+        (entry): entry is [string, number] => typeof entry[1] === 'number',
+    );
 
-function ruleOf(diagnostic: Diagnostic): string {
-    const { code } = diagnostic;
-    if (code === undefined && UNUSED_DIRECTIVE.test(diagnostic.message ?? '')) {
-        return 'oxlint/unused-directive';
-    }
-    const match = /^(?<plugin>[\w-]+)\((?<rule>[^)]+)\)$/u.exec(code ?? '');
-
-    return match === null
-        ? (code ?? 'unknown')
-        : `${match.groups?.plugin ?? ''}/${match.groups?.rule ?? ''}`;
-}
-
-export function isTestOwned(rule: string): boolean {
-    return TEST_NAMESPACES.some((namespace) => rule.startsWith(namespace));
-}
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-    value !== null && typeof value === 'object' && !Array.isArray(value);
-
-export function diagnosticsOf(report: unknown): Diagnostic[] {
-    if (Array.isArray(report)) {
-        return report as Diagnostic[];
-    }
-    const diagnostics = isRecord(report) ? report.diagnostics : undefined;
-
-    return Array.isArray(diagnostics) ? (diagnostics as Diagnostic[]) : [];
-}
-
-export function countsOf(...reports: unknown[]): Counts {
-    const counts: Counts = {};
-    for (const report of reports) {
-        for (const diagnostic of diagnosticsOf(report)) {
-            const rule = ruleOf(diagnostic);
-            if (!isTestOwned(rule)) {
-                counts[rule] = (counts[rule] ?? 0) + 1;
-            }
-        }
-    }
-
-    return counts;
+    return isJsonObject(section) && counted.length === entries.length
+        ? Object.fromEntries(counted)
+        : null;
 }
 
 export function readBaseline(root: string): ReadBaseline {
@@ -85,19 +49,22 @@ export function readBaseline(root: string): ReadBaseline {
             sections: null,
         };
     }
-    if (!isRecord(parsed)) {
+    if (!isJsonObject(parsed)) {
         return { problem: 'holds no object of sections', sections: null };
     }
+    const sections: Sections = {};
     for (const [name, section] of Object.entries(parsed)) {
-        if (!isRecord(section)) {
+        const counts = countsIn(section);
+        if (counts === null) {
             return {
                 problem: `keys \`${name}\` to something that is not a section of counts`,
                 sections: null,
             };
         }
+        sections[name] = counts;
     }
 
-    return { problem: null, sections: parsed as Sections };
+    return { problem: null, sections };
 }
 
 export function sectionOf(root: string, section = SECTION): Counts | null {
@@ -262,7 +229,8 @@ function membersOf(text: string): { end: number; key: string; start: number }[] 
             break;
         }
         const keyEnd = stringEnd(text, opening);
-        const key = JSON.parse(text.slice(opening, keyEnd)) as string;
+        const quoted: unknown = JSON.parse(text.slice(opening, keyEnd));
+        const key = typeof quoted === 'string' ? quoted : '';
         let start = text.indexOf(':', keyEnd) + 1;
         while (/\s/u.test(text[start] ?? '')) {
             start += 1;

@@ -3,15 +3,16 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import process from 'node:process';
 
+import { objectOf, parsedObject, stringOf, stringRecordOf } from './json.js';
 import { PACKAGE_ROOT } from './package-root.js';
 
 const require = createRequire(import.meta.url);
 
 type Manifest = {
-    dependencies?: Record<string, string>;
-    engines?: { node?: string };
-    optionalDependencies?: Record<string, string>;
-    version?: string;
+    dependencies: Readonly<Record<string, string>>;
+    node: null | string;
+    optionalDependencies: Readonly<Record<string, string>>;
+    version: null | string;
 };
 
 export type ToolVersion = {
@@ -23,7 +24,14 @@ export type ToolVersion = {
 
 // Versions are read off installed manifests: two of these tools answer `--version` in a shape of their own.
 function manifestAt(path: string): Manifest {
-    return JSON.parse(readFileSync(path, 'utf8')) as Manifest;
+    const parsed = parsedObject(readFileSync(path, 'utf8'));
+
+    return {
+        dependencies: stringRecordOf(parsed.dependencies),
+        node: stringOf(objectOf(parsed.engines).node),
+        optionalDependencies: stringRecordOf(parsed.optionalDependencies),
+        version: stringOf(parsed.version),
+    };
 }
 
 const manifest = manifestAt(resolve(PACKAGE_ROOT, 'package.json'));
@@ -52,7 +60,7 @@ function installedVersion(name: string): null | string {
         () => resolve(PACKAGE_ROOT, '../..', name, 'package.json'),
     ]) {
         try {
-            return manifestAt(at()).version ?? null;
+            return manifestAt(at()).version;
         } catch {
             continue;
         }
@@ -119,7 +127,7 @@ const declared: Record<string, string> = {
 
 export function toolVersions(): ToolVersion[] {
     const rows: [string, null | string, string][] = [
-        ['node', process.version.replace(/^v/u, ''), manifest.engines?.node ?? '*'],
+        ['node', process.version.replace(/^v/u, ''), manifest.node ?? '*'],
         ['tsc (Go)', installedVersion(goCompilerPackage()), declared[goCompilerPackage()] ?? '*'],
         ['typescript', installedVersion('typescript'), declared.typescript ?? '*'],
         ['oxlint', installedVersion('oxlint'), declared.oxlint ?? '*'],

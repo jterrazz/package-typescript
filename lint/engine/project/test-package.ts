@@ -3,13 +3,15 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
+import { isJsonObject, parsedObject } from './json.js';
+import type { JsonObject } from './json.js';
 import { isRepositoryRoot } from './repository-root.js';
 
 const PACKAGE = '@jterrazz/test';
 
 const CHECKER_BIN = 'jterrazz-test-check';
 
-export type TestPackage = { dir: string; manifest: Record<string, unknown> };
+export type TestPackage = { dir: string; manifest: JsonObject };
 
 export function resolveTestPackage(dir: string): null | TestPackage {
     let current = resolve(dir);
@@ -21,7 +23,7 @@ export function resolveTestPackage(dir: string): null | TestPackage {
             try {
                 return {
                     dir: installed,
-                    manifest: JSON.parse(readFileSync(manifest, 'utf8')) as Record<string, unknown>,
+                    manifest: parsedObject(readFileSync(manifest, 'utf8')),
                 };
             } catch {
                 return null;
@@ -50,12 +52,7 @@ export function testPackageBin(dir: string): null | string {
     }
 
     const { bin } = resolved.manifest;
-    const entry =
-        typeof bin === 'string'
-            ? bin
-            : typeof bin === 'object' && bin !== null
-              ? (bin as Record<string, unknown>)[CHECKER_BIN]
-              : undefined;
+    const entry = typeof bin === 'string' ? bin : isJsonObject(bin) ? bin[CHECKER_BIN] : undefined;
     if (typeof entry !== 'string') {
         return null;
     }

@@ -1,8 +1,9 @@
 // Never emits `categories`: a category arms rules of plugins the config never names, which fire unannounced
 // once a framework config activates the plugin.
 
-import type { OxlintConfig } from 'oxlint';
+import type { OxlintConfig, OxlintGlobals } from 'oxlint';
 
+import { isJsonObject, isList } from '../project/json.js';
 import type { Decision, Fragment } from './decision.js';
 
 type Rules = NonNullable<OxlintConfig['rules']>;
@@ -10,11 +11,11 @@ type Rules = NonNullable<OxlintConfig['rules']>;
 export type Profile = {
     readonly env?: Readonly<Record<string, boolean>>;
     readonly fragments: readonly Fragment[];
-    readonly globals?: Readonly<Record<string, string>>;
+    readonly globals?: Readonly<OxlintGlobals>;
     readonly ignorePatterns?: readonly string[];
 };
 
-export const OPTIONS: Readonly<Record<string, unknown>> = Object.freeze({
+export const OPTIONS: Readonly<NonNullable<OxlintConfig['options']>> = Object.freeze({
     reportUnusedDisableDirectives: 'error',
     typeAware: true,
 });
@@ -32,7 +33,7 @@ export function compile(
     const config: OxlintConfig = { rules: rulesOf(fragment.decisions) };
 
     if (fragment.plugins.length > 0) {
-        config.plugins = [...fragment.plugins] as NonNullable<OxlintConfig['plugins']>;
+        config.plugins = [...fragment.plugins];
     }
     if (fragment.jsPlugins.length > 0) {
         config.jsPlugins = fragment.jsPlugins.map((plugin) => pluginPaths[plugin] ?? plugin);
@@ -56,7 +57,7 @@ export function compile(
         config.env = fragment.env;
     }
     if (fragment.globals !== undefined) {
-        config.globals = fragment.globals as NonNullable<OxlintConfig['globals']>;
+        config.globals = { ...fragment.globals };
     }
 
     return config;
@@ -64,8 +65,8 @@ export function compile(
 
 export function merge(...configs: readonly OxlintConfig[]): OxlintConfig {
     const merged: Record<string, unknown> = {};
-    for (const config of configs as readonly unknown[]) {
-        if (typeof config !== 'object' || config === null) {
+    for (const config of configs) {
+        if (!isJsonObject(config)) {
             continue;
         }
         for (const [key, value] of Object.entries(config)) {
@@ -86,7 +87,7 @@ function mergeKey(key: string, previous: unknown, value: unknown): unknown {
         return [...asArray(previous), ...asArray(value)];
     }
     if (SHALLOW_MERGE.has(key)) {
-        return { ...(previous as object | undefined), ...(value as object) };
+        return { ...objectOf(previous), ...objectOf(value) };
     }
     return value;
 }
@@ -95,33 +96,39 @@ function asArray(value: unknown): unknown[] {
     if (value === undefined) {
         return [];
     }
-    return Array.isArray(value) ? (value as unknown[]) : [value];
+    return isList(value) ? [...value] : [value];
+}
+
+function objectOf(value: unknown): object {
+    return typeof value === 'object' && value !== null ? value : {};
 }
 
 export function profile(
     { fragments, env, globals, ignorePatterns = [] }: Profile,
     pluginPaths: Readonly<Record<string, string>> = {},
 ): OxlintConfig {
-    return merge(...fragments.map((one) => compile(one, pluginPaths)), {
-        env,
-        globals,
+    const closing: OxlintConfig = {
+        ...(env === undefined ? {} : { env: { ...env } }),
+        ...(globals === undefined ? {} : { globals: { ...globals } }),
         ignorePatterns: [...ignorePatterns],
         options: { ...OPTIONS },
-    } as unknown as OxlintConfig);
+    };
+
+    return merge(...fragments.map((one) => compile(one, pluginPaths)), closing);
 }
 
 function rulesOf(decisions: Readonly<Record<string, Decision>>): Rules {
-    const rules: Record<string, unknown> = {};
+    const rules: Rules = {};
     for (const [rule, decision] of Object.entries(decisions)) {
         if (decision.level === 'off') {
             rules[rule] = 'off';
         } else if (decision.options === undefined) {
             rules[rule] = 'error';
-        } else if (Array.isArray(decision.options)) {
-            rules[rule] = ['error', ...(decision.options as unknown[])];
+        } else if (isList(decision.options)) {
+            rules[rule] = ['error', ...decision.options];
         } else {
             rules[rule] = ['error', decision.options];
         }
     }
-    return rules as Rules;
+    return rules;
 }

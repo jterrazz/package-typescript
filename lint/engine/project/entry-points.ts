@@ -1,16 +1,18 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { isJsonObject, parsedObject } from './json.js';
+
 // In Node's resolution order; the empty string is "no target".
 function targetOf(entry: unknown): string {
     if (typeof entry === 'string') {
         return entry;
     }
-    if (typeof entry !== 'object' || entry === null) {
+    if (!isJsonObject(entry)) {
         return '';
     }
     for (const condition of ['import', 'default', 'require']) {
-        const nested = targetOf((entry as Record<string, unknown>)[condition]);
+        const nested = targetOf(entry[condition]);
         if (nested !== '') {
             return nested;
         }
@@ -31,7 +33,7 @@ export function entryPoints(root: string): string[] {
 
     let exported: unknown;
     try {
-        exported = (JSON.parse(readFileSync(manifest, 'utf8')) as { exports?: unknown }).exports;
+        exported = parsedObject(readFileSync(manifest, 'utf8')).exports;
     } catch {
         return [];
     }

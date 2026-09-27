@@ -4,6 +4,10 @@ export function isJsonObject(value: unknown): value is JsonObject {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+export function isList(value: unknown): value is readonly unknown[] {
+    return Array.isArray(value);
+}
+
 export function objectOf(value: unknown): JsonObject {
     return isJsonObject(value) ? value : {};
 }
@@ -12,6 +16,18 @@ export function parsedObject(text: string): JsonObject {
     const parsed: unknown = JSON.parse(text);
 
     return objectOf(parsed);
+}
+
+export function stringRecordOf(value: unknown): Record<string, string> {
+    return Object.fromEntries(
+        Object.entries(objectOf(value)).filter(
+            (entry): entry is [string, string] => typeof entry[1] === 'string',
+        ),
+    );
+}
+
+export function stringOf(value: unknown): null | string {
+    return typeof value === 'string' ? value : null;
 }
 
 export function stringsOf(value: unknown): string[] {

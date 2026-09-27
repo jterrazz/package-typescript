@@ -192,8 +192,10 @@ export const commentNoLongerThanItsFunction = {
 
         const judge = (fn: Node): void => {
             const { body } = fn;
-            const declaration =
-                body === undefined || Array.isArray(body) ? null : declarationOf(fn);
+            if (body === undefined || Array.isArray(body)) {
+                return;
+            }
+            const declaration = declarationOf(fn);
             if (declaration === null || isPublished(declaration, exportedLocals, published)) {
                 return;
             }
@@ -203,7 +205,7 @@ export const commentNoLongerThanItsFunction = {
                     ? declaration.anchor.parent
                     : declaration.anchor;
             const { first, lines } = documentingLinesOf(anchor, sourceCode, lineOf);
-            const bodyLines = bodyLinesOf(body as Node, lineOf);
+            const bodyLines = bodyLinesOf(body, lineOf);
             if (first !== null && lines > Math.max(bodyLines, 1)) {
                 context.report({
                     data: { body: bodyLines, lines },

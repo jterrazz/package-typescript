@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
 import { EVERY_NAME } from './importers.js';
+import { parsedObject } from './json.js';
+import type { JsonObject } from './json.js';
 
 const REEXPORT_EVERY = /export\s+\*\s+(?:as\s+[\w$]+\s+)?from\s+['"](?<from>[^'"]+)['"]/gu;
 const REEXPORT_NAMED =
@@ -56,9 +58,9 @@ function existingSource(path: string): string | undefined {
 }
 
 function entryFilesOf(root: string): string[] {
-    let manifest: { exports?: unknown; main?: unknown };
+    let manifest: JsonObject;
     try {
-        manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as typeof manifest;
+        manifest = parsedObject(readFileSync(join(root, 'package.json'), 'utf8'));
     } catch {
         return [];
     }

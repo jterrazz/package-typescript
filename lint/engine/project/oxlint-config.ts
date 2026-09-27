@@ -1,6 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { matchesGlob } from 'node:path';
 
+import { isJsonObject, objectOf, parsedObject, stringsOf } from './json.js';
+
 export type PrintedRules = Record<string, unknown>;
 
 export type PrintedOxlintConfig = {
@@ -9,6 +11,31 @@ export type PrintedOxlintConfig = {
     plugins?: string[];
     rules?: PrintedRules;
 };
+
+type PrintedOverride = NonNullable<PrintedOxlintConfig['overrides']>[number];
+
+function printedOverride(entry: unknown): PrintedOverride {
+    const { files, rules } = objectOf(entry);
+
+    return {
+        ...(typeof files === 'string' ? { files } : {}),
+        ...(Array.isArray(files) ? { files: stringsOf(files) } : {}),
+        ...(isJsonObject(rules) ? { rules: { ...rules } } : {}),
+    };
+}
+
+function printedConfig(printed: string): PrintedOxlintConfig {
+    const { jsPlugins, overrides, plugins, rules } = parsedObject(printed);
+
+    return {
+        ...(Array.isArray(jsPlugins) ? { jsPlugins } : {}),
+        ...(Array.isArray(overrides)
+            ? { overrides: overrides.map((entry) => printedOverride(entry)) }
+            : {}),
+        ...(Array.isArray(plugins) ? { plugins: stringsOf(plugins) } : {}),
+        ...(isJsonObject(rules) ? { rules: { ...rules } } : {}),
+    };
+}
 
 export function printedOxlintConfig(
     root: string,
@@ -24,7 +51,7 @@ export function printedOxlintConfig(
             { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
         );
 
-        return JSON.parse(printed) as PrintedOxlintConfig;
+        return printedConfig(printed);
     } catch {
         return null;
     }

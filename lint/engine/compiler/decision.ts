@@ -1,6 +1,8 @@
 // Two invariants the package rests on: a decision is `error` or `off`, never `warn`, and an `off`
 // carries exactly one reason. The builders enforce nothing; the package's own suite audits every fragment.
 
+import type { OxlintConfig, OxlintGlobals } from 'oxlint';
+
 /** Why a rule is off. */
 export type Reason = {
     /** One of `REASON_KINDS`. */
@@ -38,16 +40,18 @@ export type Scoped = {
 
 export type Audience = 'consumer' | 'self';
 
+export type Plugin = NonNullable<OxlintConfig['plugins']>[number];
+
 export type FragmentDefinition = {
     audience: Audience;
     env?: Readonly<Record<string, boolean>>;
-    globals?: Readonly<Record<string, string>>;
+    globals?: Readonly<OxlintGlobals>;
     id: string;
     ignorePatterns?: readonly string[];
     jsPlugins?: readonly string[];
     options?: Readonly<Record<string, unknown>>;
     overrides?: readonly Scoped[];
-    plugins?: readonly string[];
+    plugins?: readonly Plugin[];
     rules?: Readonly<Record<string, Stated>>;
     settings?: Readonly<Record<string, unknown>>;
     since?: string;
@@ -57,13 +61,13 @@ export type Fragment = {
     readonly audience: Audience;
     readonly decisions: Readonly<Record<string, Decision>>;
     readonly env: Readonly<Record<string, boolean>> | undefined;
-    readonly globals: Readonly<Record<string, string>> | undefined;
+    readonly globals: Readonly<OxlintGlobals> | undefined;
     readonly id: string;
     readonly ignorePatterns: readonly string[];
     readonly jsPlugins: readonly string[];
     readonly options: Readonly<Record<string, unknown>> | undefined;
     readonly overrides: readonly Scoped[];
-    readonly plugins: readonly string[];
+    readonly plugins: readonly Plugin[];
     readonly settings: Readonly<Record<string, unknown>> | undefined;
     readonly since: string;
 };

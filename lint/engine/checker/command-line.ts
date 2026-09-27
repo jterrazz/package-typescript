@@ -35,11 +35,16 @@ export function readCommandLine(
         }
     }
 
+    function value(flag: string): string | undefined;
+    function value(flag: string, fallback: string): string;
+    function value(flag: string, fallback?: string): string | undefined {
+        return flags.get(flag)?.[0] ?? fallback;
+    }
+
     return {
         has: (flag) => flags.has(flag),
         positionals,
-        value: ((flag: string, fallback?: string) =>
-            flags.get(flag)?.[0] ?? fallback) as CommandLine['value'],
+        value,
         values: (flag) => flags.get(flag) ?? [],
     };
 }

@@ -49,7 +49,7 @@ function standingOf(name: string, config: Applied | null): 'dead' | 'live' | 'un
         config.rules[name] ??
         Object.entries(config.rules).find(([key]) => key.split('/').at(-1) === bare)?.[1];
     // A rule carrying options is printed as `[severity, [options]]`.
-    const severity: unknown = Array.isArray(level) ? (level as unknown[])[0] : level;
+    const severity: unknown = Array.isArray(level) ? level[0] : level;
 
     return severity === undefined || severity === 'allow' ? 'dead' : 'live';
 }
