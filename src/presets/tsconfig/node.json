@@ -30,6 +30,7 @@
         "skipLibCheck": true,
         "allowJs": true,
         "checkJs": false,
-        "noEmit": true
+        "noEmit": true,
+        "allowImportingTsExtensions": true
     }
 }

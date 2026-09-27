@@ -28,7 +28,7 @@ A published package has no lint profile of its own because it would hold no rule
 { "extends": "@jterrazz/typescript/tsconfig/node" }
 ```
 
-That line is the whole file. Every preset scopes its `include` and `exclude` to `${configDir}` — the directory of the `tsconfig.json` that extends it — so a project inherits the right file set without restating one.
+That line is the whole file. Every preset scopes its `include` and `exclude` to `${configDir}` — the directory of the `tsconfig.json` that extends it — so a project inherits the right file set without restating one. Every preset checks and never emits, so each allows an import that names a `.ts` file: Node runs a config that way — `oxlint.config.ts` importing `./jterrazz.config.ts` — and the check reads it as Node does.
 
 **The `astro` preset stands on Astro's own.** It extends `astro/tsconfigs/strict` first — the file set Astro's tooling needs, `.astro/types.d.ts` included — and then states ours on top, so the strict flags, the React JSX runtime and the ground `exclude` are the ones that hold. The consumer still writes one line:
 

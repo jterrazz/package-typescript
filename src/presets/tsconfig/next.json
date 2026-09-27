@@ -6,6 +6,7 @@
         "skipLibCheck": true,
         "strict": true,
         "noEmit": true,
+        "allowImportingTsExtensions": true,
         "incremental": true,
         "tsBuildInfoFile": "${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo",
         "module": "esnext",

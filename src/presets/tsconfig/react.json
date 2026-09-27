@@ -21,6 +21,7 @@
         "module": "ESNext",
         "moduleResolution": "bundler",
         "noEmit": true,
+        "allowImportingTsExtensions": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitOverride": true,
         "noUncheckedIndexedAccess": true,
