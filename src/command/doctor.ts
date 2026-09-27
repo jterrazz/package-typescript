@@ -1,11 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { stdout } from 'node:process';
 
 import { refusal } from '../../lint/engine/catalogue/lesson.js';
 import { objectOf, parsedObject } from '../../lint/engine/project/json.js';
 import { toolVersions } from '../../lint/engine/project/tool-versions.js';
 import { workspaceMembers } from '../../lint/engine/project/workspace-members.js';
+import { print } from './terminal.js';
 
 type Read = (text: string, name: string) => ReadonlySet<string>;
 
@@ -123,22 +123,22 @@ function reportPinnedPair(root: string): boolean {
         return false;
     }
 
-    stdout.write('\nPinned together\n\n');
+    print('\nPinned together\n\n');
 
     if (pair.verdict === 'unread') {
-        stdout.write(
+        print(
             `  ${PINNED_PAIR.provider.padEnd(28)}${pair.unread} is not parsed here — the pin is unchecked\n\n`,
         );
         return false;
     }
 
-    stdout.write(`  ${PINNED_PAIR.runner.padEnd(28)}${versionColumn(pair.runner)}\n`);
-    stdout.write(
+    print(`  ${PINNED_PAIR.runner.padEnd(28)}${versionColumn(pair.runner)}\n`);
+    print(
         `  ${PINNED_PAIR.provider.padEnd(28)}${versionColumn(pair.provider).padEnd(12)}${pair.verdict}\n\n`,
     );
 
     if (pair.verdict === 'skewed') {
-        stdout.write(
+        print(
             `${refusal({
                 fix: 'pin both to the same version',
                 found: `${PINNED_PAIR.provider} ${versionColumn(pair.provider)} is not ${PINNED_PAIR.runner} ${versionColumn(pair.runner)}`,
@@ -156,18 +156,18 @@ export function doctor(root: string): number {
     const failed = rows.some(({ verdict }) => verdict === 'old' || verdict === 'absent');
     const warned = rows.some(({ verdict }) => verdict === 'newer');
 
-    stdout.write('Toolchain versions\n\n');
+    print('Toolchain versions\n\n');
 
     for (const { installed, name, range, verdict } of rows) {
-        stdout.write(
+        print(
             `  ${name.padEnd(16)}${(installed ?? '—').padEnd(12)}${range.padEnd(12)}${verdict}\n`,
         );
     }
 
-    stdout.write('\n');
+    print('\n');
 
     if (failed) {
-        stdout.write(
+        print(
             `${refusal({
                 fix: 'install what this release declares, then run `typescript doctor` again',
                 found: 'a tool is older than its range, or not installed — its row reads `old` or `absent`',
@@ -176,11 +176,9 @@ export function doctor(root: string): number {
             })}\n`,
         );
     } else if (warned) {
-        stdout.write(
-            'A tool ahead of its range may be fine; the toolchain does not get to decide.\n',
-        );
+        print('A tool ahead of its range may be fine; the toolchain does not get to decide.\n');
     } else {
-        stdout.write('Every tool is in range.\n');
+        print('Every tool is in range.\n');
     }
 
     const skewed = reportPinnedPair(root);
