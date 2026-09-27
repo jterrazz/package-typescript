@@ -200,11 +200,11 @@ export default fragment({
             kind: 'covered',
         }),
         'typescript/explicit-function-return-type': off({
-            by: 'src/presets/tsdown/bundle.js — isolatedDeclarations requires the annotation exactly where it is load-bearing, on a published export',
+            by: 'src/presets/tsdown/bundle.ts — isolatedDeclarations requires the annotation exactly where it is load-bearing, on a published export',
             kind: 'covered',
         }),
         'typescript/explicit-module-boundary-types': off({
-            by: 'src/presets/tsdown/bundle.js — isolatedDeclarations requires the annotation exactly where it is load-bearing, on a published export',
+            by: 'src/presets/tsdown/bundle.ts — isolatedDeclarations requires the annotation exactly where it is load-bearing, on a published export',
             kind: 'covered',
         }),
         'typescript/no-empty-interface': off({
