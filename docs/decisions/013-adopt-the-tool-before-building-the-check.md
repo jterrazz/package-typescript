@@ -56,7 +56,7 @@ no configuration, and keeps its own code only for what the tool cannot express.
   pass keeps a directive's spelling and its reason, which oxlint does not judge.
 - **oxlint's bulk suppressions** hold the lint debt: `oxlint-suppressions.json`,
   exact per file and rule, both ways. `jterrazz.baseline.json` keeps only what
-  no linter judges — the Names and Comments passes, and `@jterrazz/test`'s
+  no linter judges — the Architecture, Names and Comments passes, and `@jterrazz/test`'s
   checker passes. It requires every rule to error: oxlint holds errors alone, so
   the warn tier goes, here and in `@jterrazz/test`. Supersedes, in part,
   [ADR-006](006-a-ratchet-not-a-big-bang.md): the ratchet stays, oxlint holds it.
