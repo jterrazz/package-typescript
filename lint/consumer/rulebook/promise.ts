@@ -8,7 +8,6 @@ export default fragment({
     rules: {
         ...allOn(
             [
-                'avoid-new',
                 'no-callback-in-promise',
                 'no-multiple-resolved',
                 'no-nesting',
@@ -24,6 +23,13 @@ export default fragment({
             ].map((rule) => `promise/${rule}`),
         ),
 
+        'promise/avoid-new': off(
+            {
+                by: 'rule review, 2026-09-27 — 17 reports on package-test and signews-api, every one wrapping a callback API, which only `new Promise` can do',
+                kind: 'evidence',
+            },
+            '11.0.0',
+        ),
         'promise/always-return': off({
             by: 'promise/prefer-await-to-then — it describes a .then() chain the estate does not write',
             kind: 'exclusive',

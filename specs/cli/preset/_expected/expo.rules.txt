@@ -195,7 +195,7 @@ no-nonoctal-decimal-escape
 no-obj-calls
 no-object-constructor
 no-param-reassign
-no-plusplus
+- no-plusplus
 no-promise-executor-return
 no-proto
 no-prototype-builtins
@@ -301,7 +301,7 @@ prefer-spread
 prefer-template
 preserve-caught-error
 - promise/always-return
-promise/avoid-new
+- promise/avoid-new
 - promise/catch-or-return
 promise/no-callback-in-promise
 promise/no-multiple-resolved

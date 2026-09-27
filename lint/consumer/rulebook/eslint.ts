@@ -1,6 +1,7 @@
 import { allOn, fragment, off, on, scoped } from '../../engine/compiler/decision.js';
 
 const SIZE_SINCE = '11.0.0';
+const RULE_REVIEW_SINCE = '11.0.0';
 
 export default fragment({
     id: 'eslint',
@@ -30,6 +31,13 @@ export default fragment({
                     by: '@jterrazz/test test-body-within-line-limit — a test body holds at most 60 lines, and oxfmt puts one statement per line',
                     kind: 'covered',
                 }),
+                'no-await-in-loop': off(
+                    {
+                        by: '@jterrazz/test sequence-expressed-by-seeding — a test acts in the order it states, so an awaited loop is its sequence, not a lost parallelism',
+                        kind: 'convention',
+                    },
+                    RULE_REVIEW_SINCE,
+                ),
             },
             since: SIZE_SINCE,
         }),
@@ -39,7 +47,6 @@ export default fragment({
             'accessor-pairs',
             'array-callback-return',
             'block-scoped-var',
-            'class-methods-use-this',
             'constructor-super',
             'curly',
             'default-case',
@@ -121,7 +128,6 @@ export default fragment({
             'no-obj-calls',
             'no-object-constructor',
             'no-param-reassign',
-            'no-plusplus',
             'no-promise-executor-return',
             'no-proto',
             'no-prototype-builtins',
@@ -190,6 +196,10 @@ export default fragment({
         ]),
 
         'arrow-body-style': on(['as-needed']),
+        'class-methods-use-this': {
+            ...on([{ ignoreClassesWithImplements: 'all' }]),
+            since: RULE_REVIEW_SINCE,
+        },
         // `modified`: a dispatch over a closed union is one decision, not N paths to test.
         complexity: { ...on([{ max: 12, variant: 'modified' }]), since: SIZE_SINCE },
         'func-style': on(['declaration', { allowArrowFunctions: true }]),
@@ -238,6 +248,13 @@ export default fragment({
         'no-negated-condition': off({ by: 'unicorn/no-negated-condition', kind: 'covered' }),
         'no-nested-ternary': off({ by: 'unicorn/prefer-ternary', kind: 'exclusive' }),
         'no-ternary': off({ by: 'unicorn/prefer-ternary', kind: 'exclusive' }),
+        'no-plusplus': off(
+            {
+                by: 'rule review, 2026-09-27 — 34 reports on package-test and signews-api, every one a counter, not one a defect; oxfmt writes the semicolons whose absence it guards',
+                kind: 'evidence',
+            },
+            RULE_REVIEW_SINCE,
+        ),
         'no-throw-literal': off({ by: 'typescript/only-throw-error', kind: 'covered' }),
         'no-undefined': off({
             by: 'no-shadow-restricted-names, no-global-assign — `undefined` cannot be rebound, which is the hazard this ES3-era rule was written for',
