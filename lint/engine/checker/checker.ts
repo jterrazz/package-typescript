@@ -53,20 +53,6 @@ const print = (lines: readonly string[]): void => {
 
 const findingLine = ({ message, path, rule }: Finding): string => `${rule}  ${path}  ${message}`;
 
-function reportOf(name: string, findings: readonly Finding[]): string {
-    const namespace = `${name}/`;
-
-    return `${JSON.stringify({
-        diagnostics: findings.map(({ line, message, path, rule }) => ({
-            code: `${name}(${rule.slice(namespace.length)})`,
-            filename: path,
-            ...(line === undefined ? {} : { line }),
-            message,
-            severity: 'error',
-        })),
-    })}\n`;
-}
-
 function removeAll(context: Context, removals: readonly Removal[]): void {
     for (const { directory, line } of removals) {
         if (removeEmptyDirectory(context.root, directory)) {
@@ -88,11 +74,7 @@ function runTools(context: Context, tools: readonly Tool[]): boolean {
     return failed;
 }
 
-function reported(
-    name: string,
-    commandLine: CommandLine,
-    { findings, result }: Run,
-): null | number {
+function reported(commandLine: CommandLine, { findings, result }: Run): null | number {
     if (commandLine.has('--json')) {
         stdout.write(`${JSON.stringify(result.json, null, 2)}\n`);
 
@@ -102,13 +84,11 @@ function reported(
         if (result.failed === true) {
             return 1;
         }
-        stdout.write(reportOf(name, findings));
+        stdout.write(
+            `${JSON.stringify(findings.map(({ message, path, rule }) => ({ message, path, rule })))}\n`,
+        );
 
         return 0;
-    }
-    const reportPath = commandLine.value('--report');
-    if (reportPath !== undefined) {
-        writeFileSync(reportPath, reportOf(name, findings));
     }
 
     return null;
@@ -144,7 +124,7 @@ async function runPass(
         ),
         result,
     };
-    const verdict = reported(name, commandLine, run);
+    const verdict = reported(commandLine, run);
     if (verdict !== null) {
         return verdict;
     }

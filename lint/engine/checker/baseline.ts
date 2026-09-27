@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { stdout } from 'node:process';
 
-import { countsOf } from '../baseline/counts.js';
+import { reportedCounts } from '../baseline/counts.js';
 import {
     BASELINE,
     isHeldBy,
@@ -58,7 +58,7 @@ function write(root: string, reports: readonly PassReport[]): number {
 
         return 1;
     }
-    const counts: Counts = countsOf(...reports.map(({ report }) => report));
+    const counts: Counts = reportedCounts(...reports.map(({ report }) => report));
     const path = join(root, BASELINE);
     const text = existsSync(path) ? readFileSync(path, 'utf8') : null;
     const total = Object.values(counts).reduce((sum, count) => sum + count, 0);

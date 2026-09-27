@@ -1,3 +1,4 @@
+import { countsOf } from '../baseline/counts.js';
 import { judge, LABEL, reRecord, sectionOf } from '../baseline/section.js';
 import type { Counts } from '../baseline/section.js';
 import type { Context, Finding, Pass, PassResult } from './pass.js';
@@ -12,15 +13,6 @@ export type HeldRun = {
     print: Print;
     result: PassResult;
 };
-
-function countsOf(findings: readonly Finding[]): Counts {
-    const counts: Counts = {};
-    for (const { rule } of findings) {
-        counts[rule] = (counts[rule] ?? 0) + 1;
-    }
-
-    return counts;
-}
 
 function recordedOf(
     root: string,

@@ -35,7 +35,7 @@ async function recordLinter(args: readonly string[], projectBin: string): Promis
         // oxlint-disable-next-line no-await-in-loop -- the prune reads the file the record wrote
         await run(
             binaryIn('oxlint', projectBin),
-            [...oxlint.args, '--type-aware', recording, ...args, ...(targets ?? [])],
+            [...oxlint.args, '--type-aware', recording, ...args, ...targets],
             { stderr: 'ignore', stdout: 'ignore' },
         );
     }
