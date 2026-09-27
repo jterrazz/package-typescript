@@ -45,7 +45,12 @@ function write(root: string, reports: readonly PassReport[]): number {
     const silent = reports.find(({ report }) => report === null);
     if (silent !== undefined) {
         print(
-            `the ${silent.label} pass wrote no report — the ${SECTION} section is left as it was; 'typescript check' prints why`,
+            refusal({
+                fix: "run 'typescript check', which prints why the pass could not judge the tree, correct that, then run 'typescript baseline' again",
+                found: `the ${silent.label} pass wrote no report, so the ${SECTION} section is left as it was`,
+                read: 'docs/06-quality-checks.md#recording-it',
+                why: "a section written without that pass's counts would erase its debt rather than record it",
+            }),
         );
 
         return 1;
@@ -53,7 +58,12 @@ function write(root: string, reports: readonly PassReport[]): number {
     const { problem } = readBaseline(root);
     if (problem !== null) {
         print(
-            `${BASELINE} ${problem} — the ${SECTION} section cannot be written beside the others`,
+            refusal({
+                fix: `correct ${BASELINE} until it is one JSON object of sections, or delete it, then run again`,
+                found: `${BASELINE} ${problem}`,
+                read: 'docs/06-quality-checks.md#recording-it',
+                why: `the ${SECTION} section is written beside the others, and a file that cannot be read as sections would lose them`,
+            }),
         );
 
         return 1;
@@ -73,7 +83,14 @@ function write(root: string, reports: readonly PassReport[]): number {
 function oxlintRulesLeftInTheSection(root: string, held: readonly string[]): number {
     const { problem, sections } = readBaseline(root);
     if (problem !== null) {
-        print(`baseline-unreadable  ${BASELINE}  ${problem}`);
+        print(
+            `baseline-unreadable  ${BASELINE}  ${refusal({
+                fix: `correct ${BASELINE} until it is one JSON object of sections, or delete it and run 'typescript baseline'`,
+                found: `${BASELINE} ${problem}`,
+                read: 'docs/06-quality-checks.md#the-ratchet',
+                why: 'the ratchet reads its counts from that file, and a file it cannot read holds no debt it can judge',
+            })}`,
+        );
 
         return 1;
     }

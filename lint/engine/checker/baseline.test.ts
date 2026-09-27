@@ -49,7 +49,7 @@ describe('baseline', () => {
 
         // Then - it is refused, and every byte of the file is as it was
         expect(result.stdout).toBe(
-            "the Names (tree) pass wrote no report — the typescript section is left as it was; 'typescript check' prints why\n",
+            "found: the Names (tree) pass wrote no report, so the typescript section is left as it was · why: a section written without that pass's counts would erase its debt rather than record it · fix: run 'typescript check', which prints why the pass could not judge the tree, correct that, then run 'typescript baseline' again · read: docs/06-quality-checks.md#recording-it\n",
         );
         expect(result.status).toBe(1);
         expect(readFileSync(join(root, 'jterrazz.baseline.json'), 'utf8')).toBe(baseline);
