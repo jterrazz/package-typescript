@@ -20,7 +20,7 @@ export type WalkedFragment = { audience: unknown; id: unknown; path: string };
 
 const BUILT = '@jterrazz/typescript/module-walk';
 
-const BUILDER = /^export function fragment\(/mu;
+const BUILDER = /^(?:export )?function fragment\(/mu;
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
@@ -121,7 +121,7 @@ async function walkHere(tree: string, module: string, report: string): Promise<v
             }
             return {
                 ...loaded,
-                source: `${source}\nfragment = ((build) => function recorded(definition) { const made = build(definition); globalThis[Symbol.for(${JSON.stringify(BUILT)})].push(made); return made; })(fragment);\n`,
+                source: `fragment = ((build) => function recorded(definition) { const made = build(definition); globalThis[Symbol.for(${JSON.stringify(BUILT)})].push(made); return made; })(fragment);\n${source}`,
             };
         },
     });

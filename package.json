@@ -8,62 +8,60 @@
         "url": "git+https://github.com/jterrazz/package-typescript.git"
     },
     "bin": {
-        "typescript": "bin/typescript.sh"
+        "typescript": "bin/typescript.js"
     },
     "files": [
         "bin",
+        "dist",
+        "!dist/self.*",
         "docs",
-        "lint",
-        "!lint/self",
-        "!lint/engine/testing",
-        "src",
-        "!**/*.test.*",
-        "!**/*.spec.*",
-        "!docs/03-testing.md"
+        "!docs/03-testing.md",
+        "lint/engine/project/oxlint-config-names.json",
+        "src/presets/**/*.json"
     ],
     "type": "module",
-    "main": "src/index.js",
-    "types": "src/index.d.ts",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "exports": {
         ".": {
-            "types": "./src/index.d.ts",
-            "default": "./src/index.js"
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
         },
         "./config": {
-            "types": "./src/config.d.ts",
-            "default": "./src/config.js"
+            "types": "./dist/config.d.ts",
+            "default": "./dist/config.js"
         },
         "./docs": {
-            "types": "./lint/index.docs.d.ts",
-            "default": "./lint/index.docs.js"
+            "types": "./dist/docs.d.ts",
+            "default": "./dist/docs.js"
         },
         "./oxfmt": {
-            "types": "./src/oxfmt.d.ts",
-            "default": "./src/oxfmt.js"
+            "types": "./dist/oxfmt.d.ts",
+            "default": "./dist/oxfmt.js"
         },
         "./oxlint": {
-            "types": "./lint/index.d.ts",
-            "default": "./lint/index.js"
+            "types": "./dist/oxlint.d.ts",
+            "default": "./dist/oxlint.js"
         },
         "./oxlint-config-names": "./lint/engine/project/oxlint-config-names.json",
         "./tsconfig/*": "./src/presets/tsconfig/*.json",
         "./tsconfig/*.json": "./src/presets/tsconfig/*.json",
         "./tsdown/*": {
-            "types": "./src/presets/tsdown/*.d.ts",
-            "default": "./src/presets/tsdown/*.js"
+            "types": "./dist/presets/tsdown/*.d.ts",
+            "default": "./dist/presets/tsdown/*.js"
         },
         "./tsdown/*.js": {
-            "types": "./src/presets/tsdown/*.d.ts",
-            "default": "./src/presets/tsdown/*.js"
+            "types": "./dist/presets/tsdown/*.d.ts",
+            "default": "./dist/presets/tsdown/*.js"
         }
     },
     "publishConfig": {
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
-        "build": "# no build script",
-        "lint": "./bin/typescript.sh check",
-        "lint:fix": "./bin/typescript.sh fix",
+        "build": "tsdown --config tsdown.config.ts",
+        "lint": "./bin/typescript.js check",
+        "lint:fix": "./bin/typescript.js fix",
         "test": "vitest --run"
     },
     "dependencies": {

@@ -1,10 +1,18 @@
 {
     "$schema": "https://unpkg.com/knip@6/schema.json",
     "entry": [
-        "src/presets/**/*.js",
-        "src/index.js",
-        "lint/index.checker.js",
-        "src/cli/merge-knip-config.js"
+        "bin/typescript.js",
+        "lint/consumer/rules/plugin.ts",
+        "lint/index.checker.ts",
+        "lint/index.docs.ts",
+        "lint/index.ts",
+        "lint/self/index.ts",
+        "specs/cli/_setup/check-selection.ts",
+        "src/command/index.ts",
+        "src/config.ts",
+        "src/index.ts",
+        "src/oxfmt.ts",
+        "src/presets/**/*.ts"
     ],
     "ignoreBinaries": ["gitleaks", "make"]
 }

@@ -2,12 +2,12 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import defaultExport, { oxfmt, oxlint } from '../../../src/index.js';
+import defaultExport, { oxfmt, oxlint } from '../../../dist/index.js';
 
 const require = createRequire(import.meta.url);
 
-const oxlintEntry = await import('../../../lint/index.js');
-const oxfmtEntry = await import('../../../src/oxfmt.js');
+const oxlintEntry = await import('../../../dist/oxlint.js');
+const oxfmtEntry = await import('../../../dist/oxfmt.js');
 
 // Self-reference resolution — the exports map must cover every consumer-facing subpath.
 describe('exports', () => {

@@ -3,9 +3,14 @@ import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
+import hexagonalFragment from '../../../lint/consumer/rulebook/hexagonal.js';
+import { PROFILES } from '../../../lint/consumer/rulebook/profiles.js';
+import { decisions } from '../../../lint/engine/catalogue/decisions.js';
+import { compile } from '../../../lint/engine/compiler/compile.js';
 import { fragmentsIn, walkModules } from '../../../lint/engine/testing/module-walk.js';
-import { argvFlags, checkOutcome, selectingEnvironments } from './_setup/packed-bin.js';
 import {
+    argvFlags,
+    checkOutcome,
     isRecord,
     loadPacked,
     pack,
@@ -13,6 +18,7 @@ import {
     packedTree,
     publishedBins,
     publishedTargets,
+    selectingEnvironments,
 } from './_setup/packed-tree.js';
 
 // Judged on content, never on names: no text the tarball holds names a `self` rule, whatever file carries it.
@@ -33,19 +39,6 @@ const rows = ['lint/consumer/catalogue/manifest.json', 'lint/self/catalogue/mani
     },
 );
 
-function call(module: Record<string, unknown>, name: string, ...args: unknown[]): unknown {
-    const exported = module[name];
-    return typeof exported === 'function' ? Reflect.apply(exported, undefined, args) : undefined;
-}
-
-function catalogueOf(
-    catalogue: Record<string, unknown>,
-    profiles: Record<string, unknown>,
-): Record<string, unknown>[] {
-    const entries = call(catalogue, 'decisions', profiles.PROFILES);
-    return (Array.isArray(entries) ? entries : []).filter((entry) => isRecord(entry));
-}
-
 function statedRules(config: unknown): { rule: string; scope: string; value: unknown }[] {
     const top = isRecord(config) && isRecord(config.rules) ? config.rules : {};
     const overrides: unknown[] =
@@ -65,7 +58,11 @@ function statedRules(config: unknown): { rule: string; scope: string; value: unk
     );
 }
 
-function undecided(name: string, config: unknown, entries: Record<string, unknown>[]): string[] {
+function undecided(
+    name: string,
+    config: unknown,
+    entries: readonly Record<string, unknown>[],
+): string[] {
     return statedRules(config).flatMap(({ rule, scope, value }) => {
         const decided = entries.filter(
             (entry) =>
@@ -89,7 +86,7 @@ describe('tarball', () => {
     test('the tarball carries no test file', () => {
         // Given - every path npm would publish
         const { paths } = pack('--dry-run');
-        expect(paths).toContain('lint/engine/compiler/decision.js');
+        expect(paths).toContain('dist/oxlint.js');
 
         // Then - no meta-test, no module test and no spec ships, whatever its extension
         expect(
@@ -123,16 +120,11 @@ describe('tarball', () => {
     });
 
     test('every rule a packed profile states is a consumer decision the catalogue holds for it', async () => {
-        // Given - the six profiles, as both packed entries hand them out, and the packed catalogue
+        // Given - the six profiles, as both packed entries hand them out, and the catalogue they are compiled from
         const tree = packedTree();
-        const oxlint = await loadPacked(tree, 'lint/index.js');
-        const index = await loadPacked(tree, 'src/index.js');
-        const hexagonal = await loadPacked(tree, 'lint/consumer/rulebook/hexagonal.js');
-        const compiler = await loadPacked(tree, 'lint/engine/compiler/compile.js');
-        const entries = catalogueOf(
-            await loadPacked(tree, 'lint/engine/catalogue/decisions.js'),
-            await loadPacked(tree, 'lint/consumer/rulebook/profiles.js'),
-        );
+        const oxlint = await loadPacked(tree, 'dist/oxlint.js');
+        const index = await loadPacked(tree, 'dist/index.js');
+        const entries: readonly Record<string, unknown>[] = decisions(PROFILES);
         const bundled = isRecord(index.oxlint) ? index.oxlint : {};
 
         // Then - each rule stated, at the top or in an override, is decided so for that profile
@@ -144,69 +136,34 @@ describe('tarball', () => {
         }
 
         // Then - the hexagonal map is its consumer fragment, compiled
-        expect(isRecord(hexagonal.default) && hexagonal.default.audience).toBe('consumer');
-        expect(oxlint.hexagonal).toStrictEqual(call(compiler, 'compile', hexagonal.default));
+        expect(hexagonalFragment.audience).toBe('consumer');
+        expect(oxlint.hexagonal).toStrictEqual(compile(hexagonalFragment));
         expect(bundled.hexagonal).toStrictEqual(oxlint.hexagonal);
     });
 
-    test('the catalogue and the passes the tarball ships are consumer alone', async () => {
-        // Given - the packed catalogue, and the passes the packed check selects by name
+    test('the passes the packed command runs are consumer alone', async () => {
+        // Given - the passes the packed command selects by name
         const tree = packedTree();
-        const catalogue = await loadPacked(tree, 'lint/engine/catalogue/decisions.js');
-        const profiles = await loadPacked(tree, 'lint/consumer/rulebook/profiles.js');
-        const script = readFileSync(join(tree, 'bin/commands/check.sh'), 'utf8');
-        const passes = [...script.matchAll(/\bselected (?<pass>[a-z]+)/gu)].map((match) =>
-            rows.find((row) => row.channel === 'checker' && row.id === match.groups?.pass),
-        );
+        const command = await loadPacked(tree, 'dist/command.js');
+        const passes: unknown[] = Array.isArray(command.CHECK_PASSES) ? command.CHECK_PASSES : [];
+        expect(passes.length).toBeGreaterThan(10);
 
-        // Then - every `selected` the shell scripts write, outside a comment, is its one definition, as every pass, or asks about a consumer pass by name
-        const consumerPasses = new Set(
-            rows
-                .filter((row) => row.channel === 'checker' && row.audience === 'consumer')
-                .map((row) => fieldText(row, 'id')),
-        );
-        const uses = packedFiles(tree)
-            .filter((path) => path.endsWith('.sh'))
-            .flatMap((path) =>
-                readFileSync(join(tree, path), 'utf8')
-                    .split('\n')
-                    .filter((line) => !line.trimStart().startsWith('#'))
-                    .flatMap((line) =>
-                        [...line.matchAll(/\bselected\b(?<after>\S*(?: [a-z]+\b)?)/gu)].map(
-                            (match) => ({ after: match.groups?.after ?? '', line, path }),
-                        ),
-                    ),
+        // Then - each is a consumer row of the manifest
+        for (const pass of passes) {
+            const row = rows.find(
+                (candidate) => candidate.channel === 'checker' && candidate.id === pass,
             );
-        expect(
-            uses
-                .filter(({ after }) => !consumerPasses.has(after.trim()))
-                .map(({ line, path }) => `${path}: ${line.trim()}`),
-        ).toStrictEqual(['bin/commands/check.sh: selected() {']);
-        expect(script).toContain('\nselected() {\n    return 0\n}\n');
-
-        // Then - the catalogue exposes its consumer half alone, and each pass is a consumer row
-        expect(
-            Object.keys(catalogue).toSorted((left, right) => left.localeCompare(right)),
-        ).toStrictEqual(['decisions', 'unsafeFixers']);
-        for (const [what, audiences] of Object.entries({
-            'catalogue entry': catalogueOf(catalogue, profiles).map((entry) => entry.audience),
-            'check pass': passes.map((row) => row?.audience),
-        })) {
-            expect(audiences.length, `the tarball ships no ${what}`).toBeGreaterThan(0);
-            expect(new Set(audiences), `a ${what} ships that is not consumer`).toStrictEqual(
-                new Set(['consumer']),
-            );
+            expect.soft(row?.audience, `${String(pass)} is not a consumer pass`).toBe('consumer');
         }
     });
 
     test('every module the packed tree holds reaches consumer fragments alone, whatever it does when imported', async () => {
         // Given - every module the tarball holds, and every command its bin installs that the next test does not run, each imported in a child of its own
         const tree = packedTree();
-        const shellBins = new Set(publishedBins(tree).filter((path) => path.endsWith('.sh')));
         const modules = [
             ...new Set([
                 ...packedFiles(tree).filter((path) => /\.[cm]?js$/u.test(path)),
-                ...publishedBins(tree).filter((path) => !shellBins.has(path)),
+                ...publishedBins(tree),
             ]),
         ];
         const { fragments, walked } = await walkModules(tree, modules);
@@ -214,9 +171,13 @@ describe('tarball', () => {
         // Then - every module was walked, some built fragments, and none of them is the package's own discipline
         expect(walked.toSorted()).toStrictEqual(modules.toSorted());
         expect(modules.length).toBeGreaterThan(50);
-        expect(
-            fragments.filter(({ path }) => path.endsWith('(built on import)')).length,
-        ).toBeGreaterThan(15);
+        const built = new Set(
+            fragments.filter(({ path }) => path.endsWith('(built on import)')).map(({ id }) => id),
+        );
+        const rulebook = Object.values(PROFILES).flatMap(({ fragments: carried }) =>
+            carried.map(({ id }) => id),
+        );
+        expect(rulebook.filter((id) => !built.has(id))).toStrictEqual([]);
         for (const { audience, id, path } of fragments) {
             expect
                 .soft(audience, `${path} reaches ${String(id)}, which is not consumer`)
@@ -224,15 +185,15 @@ describe('tarball', () => {
         }
     });
 
-    test('every shell command the tarball installs runs every pass, whatever its environment holds', async () => {
-        // Given - each shell bin, run where no pass applies: bare, then under every way an environment could choose its passes, then handed each flag its scripts match, naming a pass
+    test('every command the tarball installs runs every pass, whatever its environment holds', async () => {
+        // Given - each bin, run where no pass applies: bare, then under every way an environment could choose its passes, then handed each flag the command spells, naming a pass
         const tree = packedTree();
         const project = mkdtempSync(join(tmpdir(), 'tarball-bin-'));
         onTestFinished(() => {
             rmSync(project, { force: true, recursive: true });
         });
         const variants = [
-            ...Object.entries(selectingEnvironments(tree, project)).map(([name, env]) => ({
+            ...Object.entries(selectingEnvironments(tree)).map(([name, env]) => ({
                 args: [],
                 env,
                 name,
@@ -240,7 +201,7 @@ describe('tarball', () => {
             ...argvFlags(tree).map((flag) => ({ args: [flag, 'secrets'], env: {}, name: flag })),
         ];
         expect(variants.map(({ name }) => name)).toContain('--json');
-        const bins = publishedBins(tree).filter((path) => path.endsWith('.sh'));
+        const bins = publishedBins(tree);
         expect(bins.length).toBeGreaterThan(0);
         const outcomes = await Promise.all(
             bins.map(async (bin) => ({

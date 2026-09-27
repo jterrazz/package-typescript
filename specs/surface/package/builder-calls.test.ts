@@ -1,13 +1,14 @@
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
 
-import { packedFiles, packedTree } from './_setup/packed-tree.js';
+import { shippedModules } from '../../../lint/engine/testing/shipped-modules.js';
 
 // The module walk sees only what an import builds; a literal audience holds whoever calls the builder, and when.
+// The tarball holds the bundle, so the builder's calls are read where they are written.
 
-const CONTRACT = /(?:^|\/)rulebook\/decision\.js$/u;
+const CONTRACT = /(?:^|\/)compiler\/decision\.js$/u;
 
 const BUILDER = 'fragment';
 
@@ -75,7 +76,7 @@ function unstatedAudiences(tree: string, path: string): string[] {
         readFileSync(join(tree, path), 'utf8'),
         ts.ScriptTarget.Latest,
         true,
-        ts.ScriptKind.JS,
+        ts.ScriptKind.TS,
     );
     const { locals, opaque } = bindings(source);
     const found = opaque.map((what) => `${path} ${what}`);
@@ -97,14 +98,17 @@ function unstatedAudiences(tree: string, path: string): string[] {
     return found;
 }
 
+const ROOT = resolve(import.meta.dirname, '../../..');
+
 describe('builder-calls', () => {
-    test('every fragment the tarball can build states its audience where it is built', () => {
-        // Given - every module the tarball holds
-        const tree = packedTree();
-        const modules = packedFiles(tree).filter((path) => /\.[cm]?js$/u.test(path));
+    test('every fragment a shipped module can build states its audience where it is built', () => {
+        // Given - every module the tarball's bundle is compiled from
+        const modules = ['lint', 'src'].flatMap((folder) =>
+            shippedModules(ROOT, join(ROOT, folder)),
+        );
         expect(modules.length).toBeGreaterThan(50);
 
         // Then - each call to the fragment builder names its audience as a literal, so no caller and no later turn can compute it
-        expect(modules.flatMap((path) => unstatedAudiences(tree, path))).toStrictEqual([]);
+        expect(modules.flatMap((path) => unstatedAudiences(ROOT, path))).toStrictEqual([]);
     });
 });

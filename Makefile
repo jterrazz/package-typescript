@@ -9,17 +9,17 @@ install: node_modules/.install
 build: node_modules/.install
 	npm run build
 
-lint: node_modules/.install
+lint: build
 	npm run lint
 
 # Every fixer runs and the verdict comes at the end, the checker first (docs/06-quality-checks.md, "The six gestures").
-fix: node_modules/.install
+fix: build
 	@status=0; \
 	npx jterrazz-test-check --fix || status=1; \
 	npm run lint:fix || status=1; \
 	exit $$status
 
-test: node_modules/.install
+test: build
 	npm test
 
 check: lint test

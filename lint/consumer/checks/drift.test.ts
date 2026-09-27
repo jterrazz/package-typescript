@@ -6,9 +6,9 @@ import { describe, expect, onTestFinished, test } from 'vitest';
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../../..');
 
-const CHECKER = resolve(import.meta.dirname, '../../index.checker.js');
+const CHECKER = join(PACKAGE_ROOT, 'dist/checker.js');
 const OXLINT = join(PACKAGE_ROOT, 'node_modules/.bin/oxlint');
-const PROFILES = join(PACKAGE_ROOT, 'src/presets/oxlint/profiles');
+const PROFILES = join(PACKAGE_ROOT, 'dist/presets/oxlint/profiles');
 const DEFAULT_PROFILE = join(PROFILES, 'node.js');
 
 function configlessProject(files: Record<string, string> = {}): string {

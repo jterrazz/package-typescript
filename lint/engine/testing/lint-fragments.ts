@@ -5,7 +5,9 @@ import { pathToFileURL } from 'node:url';
 import { fragmentsIn, isRecord } from './module-walk.js';
 import type { DeclaredFragment } from './module-walk.js';
 
-const MODULE = /\.[cm]?js$/u;
+const MODULE = /\.[cm]?[jt]s$/u;
+
+const NOT_A_MODULE = /\.(?:test|spec)\.[cm]?[jt]s$|\.d\.[cm]?ts$/u;
 
 type Walk = { executables: readonly string[]; walked: readonly string[] };
 
@@ -20,7 +22,9 @@ function modulesUnder(root: string, directory: string, executables: Set<string>)
                 ? []
                 : modulesUnder(root, path, executables);
         }
-        return MODULE.test(entry.name) ? [relative(root, path)] : [];
+        return MODULE.test(entry.name) && !NOT_A_MODULE.test(entry.name)
+            ? [relative(root, path)]
+            : [];
     });
 }
 

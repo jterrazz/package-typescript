@@ -4,7 +4,9 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-const CHECKER = resolve(import.meta.dirname, '../../index.checker.js');
+const BUILT_FROM = resolve(import.meta.dirname, '../../..');
+
+const CHECKER = join(BUILT_FROM, 'dist/checker.js');
 
 function groundOf(baseline: string): { report: string; root: string } {
     const root = mkdtempSync(resolve(tmpdir(), 'ratchet-baseline-'));

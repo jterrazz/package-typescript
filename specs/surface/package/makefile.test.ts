@@ -75,7 +75,7 @@ describe('makefile', () => {
         const run = runFix(makefile, { npm: 'exit 0', npx: 'exit 1' });
 
         // Then - the toolchain's fixer ran after it, and the run still fails
-        expect(run.calls).toBe('npx jterrazz-test-check --fix\nnpm run lint:fix\n');
+        expect(run.calls).toBe('npm run build\nnpx jterrazz-test-check --fix\nnpm run lint:fix\n');
         expect(run.status).not.toBe(0);
     });
 });

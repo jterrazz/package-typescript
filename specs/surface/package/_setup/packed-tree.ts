@@ -1,8 +1,11 @@
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { once } from 'node:events';
 import { mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
+import { text as streamText } from 'node:stream/consumers';
 import { pathToFileURL } from 'node:url';
+import { stripVTControlCharacters } from 'node:util';
 
 // Packed beside this checkout's install so its imports resolve, and removed when the process ends.
 
@@ -125,4 +128,68 @@ export function publishedBins(tree: string): string[] {
     const commands = typeof bin === 'string' ? { [String(name)]: bin } : isRecord(bin) ? bin : {};
 
     return Object.values(commands).map((path) => String(path).replace(/^\.\//u, ''));
+}
+
+const HEADER = /^ RUN (?<label>.+)$/gmu;
+
+export type Outcome = { passes: string[]; status: number };
+
+export async function checkOutcome(
+    bin: string,
+    project: string,
+    env: Record<string, string>,
+    args: string[] = [],
+): Promise<Outcome> {
+    const base = { ...process.env };
+    delete base.TYPESCRIPT_CHECK_PASSES;
+    const child = spawn(process.execPath, [bin, 'check', ...args], {
+        cwd: project,
+        env: { ...base, ...env },
+        stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    const closed: Promise<unknown[]> = once(child, 'close');
+    const [printed, [code]] = await Promise.all([streamText(child.stdout), closed]);
+    const shown = stripVTControlCharacters(printed);
+
+    return {
+        passes: [...shown.matchAll(HEADER)].map((match) => match.groups?.label?.trim() ?? ''),
+        status: typeof code === 'number' ? code : -1,
+    };
+}
+
+const LOCATION = new Set(['HOME', 'INIT_CWD', 'PATH', 'PWD', 'TMPDIR']);
+
+function packedModuleText(tree: string): string {
+    return packedFiles(tree)
+        .filter((path) => /\.[cm]?js$/u.test(path))
+        .map((path) => readFileSync(join(tree, path), 'utf8'))
+        .join('\n');
+}
+
+function environmentInputs(tree: string): string[] {
+    const read = [...packedModuleText(tree).matchAll(/\benv\.(?<name>[A-Za-z_]\w*)/gu)].map(
+        (match) => match.groups?.name ?? '',
+    );
+
+    return [...new Set(read)].filter((name) => !LOCATION.has(name));
+}
+
+export function argvFlags(tree: string): string[] {
+    const flags = [
+        ...readFileSync(join(tree, 'dist/command.js'), 'utf8').matchAll(
+            /["'](?<flag>--[a-z][\w-]*)["']/gu,
+        ),
+    ];
+
+    return [...new Set(flags.map((match) => match.groups?.flag ?? ''))];
+}
+
+// The specs' own selection, and every variable the modules read, naming a pass.
+export function selectingEnvironments(tree: string): Record<string, Record<string, string>> {
+    return {
+        'every variable the modules read, naming a pass': Object.fromEntries(
+            environmentInputs(tree).map((name) => [name, 'secrets']),
+        ),
+        "the specs' selection": { TYPESCRIPT_CHECK_PASSES: 'secrets' },
+    };
 }
