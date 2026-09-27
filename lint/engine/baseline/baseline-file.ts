@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { refusal } from '../catalogue/lesson.js';
 import { isJsonObject, objectOf } from '../project/json.js';
 
 export const BASELINE = 'jterrazz.baseline.json';
@@ -176,6 +177,17 @@ export function withSection(text: null | string, name: string, counts: Counts): 
 }
 
 export function writeSection(root: string, name: string, counts: Counts): void {
+    const { problem } = readBaseline(root);
+    if (problem !== null) {
+        throw new Error(
+            refusal({
+                fix: `correct ${BASELINE} until it is one JSON object of sections, or delete it, then record again`,
+                found: `${BASELINE} ${problem}`,
+                read: 'docs/09-rules-kit.md#the-ratchet-engine',
+                why: 'a section is written beside the others, and a file that cannot be read as sections would lose them',
+            }),
+        );
+    }
     const path = join(root, BASELINE);
     const text = existsSync(path) ? readFileSync(path, 'utf8') : null;
     writeFileSync(path, withSection(text, name, counts));
