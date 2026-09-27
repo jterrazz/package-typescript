@@ -40,6 +40,16 @@ describe('report', () => {
         expect(splitReport(printed)).toStrictEqual({ before: printed, report: null });
     });
 
+    test("names the toolchain as at fault for a report that is not oxlint's shape", () => {
+        // Given - a report whose diagnostic has lost its message
+        const printed = reportOf([{ code: 'eslint(no-debugger)', severity: 'error' }]);
+
+        // Then - the reader refuses to draw it, and says whose bug it is
+        expect(() => splitReport(printed)).toThrow(
+            "@jterrazz/typescript broke one of its own invariants — a bug of the toolchain, not of the project: oxlint's JSON report is not the shape this reader draws: `message` is not a string",
+        );
+    });
+
     test.each([
         {
             form: 'agent',

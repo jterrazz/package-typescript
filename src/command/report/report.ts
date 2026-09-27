@@ -5,6 +5,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { reportOf } from './diagnostic.js';
 import type { Report } from './diagnostic.js';
 import { drawGraphical } from './graphical.js';
 import { agentLine, closingLines, githubLine } from './lines.js';
@@ -22,15 +23,14 @@ export function splitReport(text: string): { before: string; report: null | Repo
     if (at === -1) {
         return { before: text, report: null };
     }
+    let parsed: unknown;
     try {
-        return {
-            before: text.slice(0, at),
-            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the report is oxlint's JSON form, whose shape is oxlint's to keep
-            report: JSON.parse(text.slice(at)) as Report,
-        };
+        parsed = JSON.parse(text.slice(at));
     } catch {
         return { before: text, report: null };
     }
+
+    return { before: text.slice(0, at), report: reportOf(parsed) };
 }
 
 export function formOf(printed: string): Form {
