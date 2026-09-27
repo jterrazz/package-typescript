@@ -159,7 +159,6 @@ export {
 export { isRepositoryRoot } from './engine/project/repository-root.js';
 export { workspaceMembers } from './engine/project/workspace-members.js';
 
-/** The command line of a set of passes, each settings file resolved with the base preset first. */
 export const runChecker = async (
     checker: Omit<Checker, 'presets'>,
     args?: readonly string[],
@@ -172,7 +171,6 @@ export const readSettings = async (unit: string): Promise<Config> =>
 /** The same resolution, for a reader that runs synchronously, as an oxlint rule does. */
 export const readSettingsSync = (unit: string): Config => readConfigSync(unit, BASE_PRESETS);
 
-/** The laws the resolved settings hold a tree to — the Architecture pass over every `layers`, each declared `names` rule — with `config` written as a `jterrazz.config.ts` would be, the base preset first. */
 export async function presetChecks(root: string, config: object): Promise<PresetChecks> {
     const checks = await import('./consumer/checks/preset-checks.js');
 

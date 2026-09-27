@@ -167,7 +167,6 @@ const EMPTY: Resolved = {
     sections: {},
 };
 
-// A listed preset named as a base one chooses only its settings: the base preset's laws, baseline and floors stay whole.
 function withBase(
     listed: readonly unknown[],
     base: readonly Preset[],
