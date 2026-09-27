@@ -1,36 +1,22 @@
-import { spawnSync } from 'node:child_process';
-import { chmodSync, cpSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
-import process from 'node:process';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { directory } from '@jterrazz/test';
+import { describe, expect, test } from 'vitest';
 
-import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
-import { temporaryDirectory } from '../_setup/temporary-directory.js';
-
-const FIXTURE = resolve(import.meta.dirname, '_fixtures/fix-wrapper-unwritable');
+import { onlyPasses } from '../_setup/check-passes.js';
+import { cli } from '../cli.specification.js';
 
 describe('fix-wrapper-unwritable', () => {
-    test('refuses in four parts, fails, and leaves no wrapper where one directory is read-only', () => {
-        // Given - a clean tree, a root config over a nested one whose directory the run may not write to
-        const project = temporaryDirectory('spec-fix-wrapper-');
-        cpSync(FIXTURE, project, { recursive: true });
-        chmodSync(resolve(project, 'sub'), 0o555);
-        onTestFinished(() => {
-            chmodSync(resolve(project, 'sub'), 0o755);
-        });
-
+    test('refuses in four parts, fails, and removes the wrapper it wrote before the failed write', async () => {
+        // Given - a clean tree, a root config over a nested one, where a directory holds the nested wrapper's path
         // When - the fix runs
-        const fixed = spawnSync(process.execPath, [SELECTING_BIN, 'fix'], {
-            cwd: project,
-            encoding: 'utf8',
-            env: { ...process.env, ...onlyPasses('oxlint') },
-        });
+        const fixed = await cli
+            .env(onlyPasses('oxlint'))
+            .fixture(directory('./_fixtures/fix-wrapper-unwritable/'))
+            .exec('fix');
 
-        // Then - the pass fails on the refusal, and the root's wrapper written before it is gone
-        expect(fixed.status).toBe(1);
-        expect(fixed.stdout).toContain('found: the fix wrapper could not be written');
-        expect(fixed.stdout).toContain('✗ Some checks failed');
-        expect(existsSync(resolve(project, 'oxlint.fix.config.mjs'))).toBe(false);
-        expect(existsSync(resolve(project, 'sub/oxlint.fix.config.mjs'))).toBe(false);
+        // Then - the pass fails on the refusal, and the root's wrapper written first is gone
+        expect(fixed.exitCode).toBe(1);
+        expect(fixed.stdout.text).toContain('found: the fix wrapper could not be written');
+        expect(fixed.stdout.text).toContain('✗ Some checks failed');
+        expect(fixed.file('oxlint.fix.config.mjs').exists).toBe(false);
     });
 });
