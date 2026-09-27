@@ -624,7 +624,7 @@ A directory holding only empty directories is empty, and is named once, at its t
 
 ### What the ratchet records
 
-Every rule is printed and recorded as `names/<rule>`, and carries the code `names(<rule>)`: `typescript baseline` writes the pass's counts into the `typescript` section of `jterrazz.baseline.json` beside the linter's, and where the section holds a `names/*` entry this pass is judged by it, exactly, with the four refusals of [the ratchet](#the-ratchet) — and `typescript fix` re-records the entries that fell, as it does the linter's. A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
+Every rule is printed and recorded as `names/<rule>`, and carries the code `names(<rule>)`: `typescript baseline` writes the pass's counts into the `typescript` section of `jterrazz.baseline.json`, which holds only the `architecture/`, `names/` and `comments/` counts, while the linter's debt lives in `oxlint-suppressions.json`. Where the section holds a `names/*` entry, this pass is judged by it exactly, with the four refusals of [the ratchet](#the-ratchet), and `typescript fix` re-records the entries that fell. A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
 
 ## The Comments (density) pass
 

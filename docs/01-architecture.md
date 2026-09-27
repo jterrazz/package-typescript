@@ -57,7 +57,7 @@ Three steps and nothing between them. `lint/consumer/rulebook/profiles.ts` says 
 
 ## Building this package
 
-The package is TypeScript, and what ships is its build: `npm run build` runs tsdown over `tsdown.config.ts` into `dist/`, which git ignores and `files` publishes, with the JSON presets and the config-name list beside it as data, served where they are written. Every entry of the exports map, the checker program, the oxlint plugin and each preset a tool is handed by path are entries of the build; each carries the declaration tsdown generates from its source, so a type has one owner. The self rules build to `dist/self.js`, which this repository's own `oxlint.config.ts` composes and `files` leaves out.
+The package is TypeScript, and what ships is its build: `npm run build` runs tsdown over `tsdown.config.ts` into `dist/`, which git ignores and `files` publishes, with the JSON presets and the config-name list beside it as data, served where they are written. Every entry of the exports map, the checker program, the oxlint plugin and each preset a tool is handed by path are entries of the build; each carries the declaration tsdown generates from its source, so a type has one owner.
 
 A build step is a precondition like an install: `make build` precedes `make lint` and `make test`, and the specs drive the built command. The toolchain builds itself with the tsdown it ships to everyone else, so there is no second toolchain, only the order of two gestures.
 
