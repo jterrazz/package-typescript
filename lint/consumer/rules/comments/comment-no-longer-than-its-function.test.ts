@@ -1,25 +1,9 @@
-/* oxlint-disable vitest/expect-expect, vitest/valid-describe-callback, vitest/valid-title -- oxlint's RuleTester declares a suite per rule and a test per case, asserting inside each: this file hands it the runner's primitives, so the titles and the assertions are the tester's */
+import { ruleTester } from '@jterrazz/test';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { RuleTester } from 'oxlint/plugins-dev';
-import { test as declareCase, describe as declareSuite } from 'vitest';
 
 import { commentNoLongerThanItsFunction } from './comment-no-longer-than-its-function.js';
-
-RuleTester.describe = (name, body) => {
-    declareSuite(name, body);
-};
-RuleTester.it = (name, body) => {
-    declareCase(name, body);
-};
-
-type OxlintRule = Parameters<RuleTester['run']>[1];
-
-// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the rule declares the few AST fields it reads, and oxlint's own node types are not exported to state it against
-const rule = commentNoLongerThanItsFunction as unknown as OxlintRule;
-
-const ruleTester = new RuleTester();
 
 const PRIVATE_MODULE = '/nowhere/src/ledger.ts';
 
@@ -33,7 +17,7 @@ writeFileSync(join(library, 'src/index.ts'), "export { rounded } from './ledger.
 const PUBLISHED_MODULE = join(library, 'src/ledger.ts');
 writeFileSync(PUBLISHED_MODULE, '');
 
-ruleTester.run('comment-no-longer-than-its-function', rule, {
+ruleTester().run('comment-no-longer-than-its-function', commentNoLongerThanItsFunction, {
     invalid: [
         {
             code: [
@@ -87,7 +71,7 @@ ruleTester.run('comment-no-longer-than-its-function', rule, {
                 '}',
                 'export { rounded as round };',
             ].join('\n'),
-            errors: [{ data: { body: 1, lines: 2 }, line: 1, messageId: 'longer' }],
+            errors: [{ column: 0, data: { body: 1, lines: 2 }, line: 1, messageId: 'longer' }],
             filename: PUBLISHED_MODULE,
         },
     ],
