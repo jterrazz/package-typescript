@@ -6,7 +6,7 @@ There is no service, no image and no infrastructure — what "operating" means h
 
 ## What a merge to `main` does
 
-Nothing that reaches a consumer. `.github/workflows/validate.yaml` runs on every push and pull request to `main` and calls the shared `jterrazz-actions` validation workflow — install, lint, test. A green `main` is a publishable tree, not a published one.
+Nothing that reaches a consumer. `.github/workflows/validate.yaml` runs on every push and pull request to `main` and calls the shared `jterrazz-actions` validation workflow — install, build, lint, test. A green `main` is a publishable tree, not a published one.
 
 ## What publishes
 
@@ -17,7 +17,7 @@ The sequence, in order:
 1. the change merges to `main` and validates green;
 2. a `chore(release): X.Y.Z` commit lands on `main`, bumping `version` in `package.json` and the lockfile — nothing else;
 3. the owner tags `vX.Y.Z` and creates the GitHub Release;
-4. the workflow publishes to npm.
+4. the workflow runs `make build` and publishes the `dist/` it wrote to npm.
 
 Steps 2 to 4 are the owner's. A contributor never bumps the version inside a feature branch: two branches in flight would both claim the same number, and the tag is what the registry answers to.
 

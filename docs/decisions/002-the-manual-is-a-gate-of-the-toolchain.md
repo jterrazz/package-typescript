@@ -30,7 +30,7 @@ shape it:
 
 1. **The rules are pure and exported.** `auditDocs(tree)` at
    `@jterrazz/typescript/docs` takes a plain description of a `docs/` tree
-   and returns violations; `node:fs` appears only in `lint/engine/project/docs-tree.js`.
+   and returns violations; `node:fs` appears only in `lint/engine/project/docs-tree.ts`.
    The gate has two readers — a project it is installed in, and an estate
    sweep over clones nothing is installed into — and one function keeps the
    rule ids, the sentences and the journal-word roster in a single

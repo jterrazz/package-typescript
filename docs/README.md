@@ -10,7 +10,7 @@ The first four chapters are the spine every repository carries; the rest are thi
 
 | Chapter                                     | Covers                                                                                                |
 | ------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| [01 — Architecture](01-architecture.md)     | The four layers, why the CLI is bash, the importable surface, the two TypeScript compilers            |
+| [01 — Architecture](01-architecture.md)     | The four layers, the build, the command, the importable surface, the two TypeScript compilers         |
 | [02 — Developing](02-developing.md)         | Wiring a project onto the presets, the `.artifacts/` convention, working on this package              |
 | [03 — Testing](03-testing.md)               | The two suites, the literate documents, the self rules — in this repository alone, not in the package |
 | [04 — Operating](04-operating.md)           | What publishes this package, which number moves, how a consumer takes a bump                          |
