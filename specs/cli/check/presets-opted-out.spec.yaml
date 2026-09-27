@@ -15,7 +15,7 @@ runs:
 
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
-            laws set aside                       1 (typescript/src-reads-no-self)
+            laws set aside                       1 (typescript/src-reads-no-declaration)
             suppressions                         0
             oxlint-suppressions.json             nothing held
             jterrazz.baseline.json › typescript  nothing held

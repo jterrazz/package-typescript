@@ -9,7 +9,7 @@ runs:
 
            RUN  Architecture (layer map)
 
-          architecture/src-reads-no-self  src/app.ts:1:25  found: `src/app.ts` imports `lint/self/audit.ts` · why: src/ runs what lint/ declares, never self/ · fix: move what src/ needs from self/ into engine/, or out of self/ into consumer/ · read: docs/01-architecture.md#the-judging-layer
+          architecture/src-reads-no-declaration  src/app.ts:1:25  found: `src/app.ts` imports `lint/self/audit.ts` · why: src/ runs what lint/ declares through its index files and engine/, never a declaration of consumer/ or self/ · fix: move what src/ needs into engine/, or compose it in a `lint/` index, and import it from there · read: docs/01-architecture.md#the-judging-layer
           ✗ Failed with exit code 1
 
            END  Finalizing quality checks

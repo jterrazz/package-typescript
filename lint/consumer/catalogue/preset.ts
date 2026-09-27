@@ -8,8 +8,8 @@ export const LINT_LAYERS: readonly ArchitectureRule[] = Object.freeze([
         from: { path: '^lint/engine/' },
         name: 'engine-knows-no-declaration',
         read: READ,
-        to: { path: '^(lint/consumer|lint/self|src)/' },
-        why: 'lint/engine/ runs declarations and knows none — it receives them from an index',
+        to: { path: '^(lint/consumer/|lint/self/|lint/index|src/)' },
+        why: 'lint/engine/ runs declarations and knows none — it receives them from an index, which it never imports',
     },
     {
         fix: 'move what both folders need into the catalogue or into engine/',
@@ -47,12 +47,12 @@ export const LINT_LAYERS: readonly ArchitectureRule[] = Object.freeze([
         why: 'the shipped lint/ never reads self/ (never shipped) nor src/ (the command)',
     },
     {
-        fix: 'move what src/ needs from self/ into engine/, or out of self/ into consumer/',
+        fix: 'move what src/ needs into engine/, or compose it in a `lint/` index, and import it from there',
         from: { path: '^src/' },
-        name: 'src-reads-no-self',
+        name: 'src-reads-no-declaration',
         read: READ,
-        to: { path: '^lint/self/' },
-        why: 'src/ runs what lint/ declares, never self/',
+        to: { path: '^lint/(consumer|self)/' },
+        why: 'src/ runs what lint/ declares through its index files and engine/, never a declaration of consumer/ or self/',
     },
 ]);
 
