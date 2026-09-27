@@ -11,7 +11,7 @@ import {
 } from '../../engine/project/json.js';
 import type { JsonObject } from '../../engine/project/json.js';
 import { SETTINGS_FILE } from '../../engine/project/jterrazz-config.js';
-import type { Config } from '../../engine/project/jterrazz-config.js';
+import type { Resolution } from '../../engine/project/preset.js';
 import { isRepositoryRoot } from '../../engine/project/repository-root.js';
 import { workspaceMembers } from '../../engine/project/workspace-members.js';
 import { declaredNamesFindings, declaredNamesRules } from './names.declared.js';
@@ -169,7 +169,7 @@ function universalOf(section: Readonly<Record<string, unknown>>): Universal {
     };
 }
 
-function settingsOf({ problem, resolved }: Config): Settings {
+function settingsOf({ problem, resolved }: Resolution): Settings {
     const section = resolved.sections.typescript ?? {};
     const universal = universalOf(section);
     if (problem !== null) {

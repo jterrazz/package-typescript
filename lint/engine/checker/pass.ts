@@ -1,6 +1,6 @@
 import type { Ratchet } from '../baseline/section.js';
 import type { ChapterAnchor } from '../catalogue/lesson.js';
-import type { Config } from '../project/jterrazz-config.js';
+import type { Resolution } from '../project/preset.js';
 import type { Preset } from '../project/preset.js';
 import type { CommandLine } from './command-line.js';
 
@@ -14,7 +14,7 @@ export type Finding = {
 };
 
 export type Context = {
-    config: (unit?: string) => Promise<Config>;
+    config: (unit?: string) => Promise<Resolution>;
     exists: (path: string) => boolean;
     files: () => string[];
     fix: boolean;

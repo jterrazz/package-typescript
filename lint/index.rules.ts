@@ -2,22 +2,18 @@ import type { PresetChecks } from './consumer/checks/preset-checks.js';
 import { runChecker as runPasses } from './engine/checker/checker.js';
 import type { Checker } from './engine/checker/pass.js';
 import { readConfig, readConfigSync } from './engine/project/jterrazz-config.js';
-import type { Config } from './engine/project/jterrazz-config.js';
+import type { Resolution } from './engine/project/preset.js';
 import { BASE_PRESETS } from './index.config.js';
 
 export {
     defineInvariant,
     firstSentence,
     LESSON_PARTS,
-    LESSON_SEPARATOR,
     lessonOf,
     lessonParts,
-    lessonsOf,
-    messageOf,
     missingParts,
     refusal,
     refusalBlock,
-    refusalReading,
     whyOf,
 } from './engine/catalogue/lesson.js';
 export type {
@@ -43,6 +39,7 @@ export type {
     DefinedCheck,
     DefinedRule,
     Located,
+    RuleBody,
     RuleDefinition,
     RuleDocs,
     RuleMeta,
@@ -52,9 +49,7 @@ export type {
 export { anchor, cell, markdownTable } from './engine/catalogue/table.js';
 export {
     anchorsOf,
-    generatedMarkers,
     projected,
-    slugOf,
     spliceBetween,
     writeProjections,
 } from './engine/catalogue/chapter.js';
@@ -67,7 +62,6 @@ export {
     labelOf,
     readBaseline,
     sectionOf,
-    withSection,
     writeSection,
 } from './engine/baseline/baseline-file.js';
 export type { Counts, ReadBaseline, Sections } from './engine/baseline/baseline-file.js';
@@ -75,11 +69,9 @@ export {
     judgeExact,
     judgeFloor,
     raisedFloor,
-    reRecord,
     tightened,
 } from './engine/baseline/section.js';
 export type { Broken, Ratchet } from './engine/baseline/section.js';
-export { heldSummary } from './engine/checker/held.js';
 export { readCommandLine } from './engine/checker/command-line.js';
 export type { CommandLine } from './engine/checker/command-line.js';
 export type {
@@ -106,7 +98,6 @@ export {
     isOnDisk,
     listDirectory,
     readFileCached,
-    resetFsCache,
 } from './engine/project/fs-cache.js';
 export {
     forgetTree,
@@ -114,7 +105,6 @@ export {
     treeEntries,
     treeKind,
     treeNames,
-    treeStamp,
 } from './engine/project/git-tree.js';
 export type { TreeEntry } from './engine/project/git-tree.js';
 export {
@@ -122,7 +112,6 @@ export {
     GROUND_FIXTURES,
     GROUND_FOLDERS,
     GROUND_GLOB,
-    GROUND_GLOBS,
     GROUND_REQUESTS,
     GROUND_SEEDS,
     isGroundFolder,
@@ -132,8 +121,6 @@ export {
     SHARED_FOLDER,
     UNMARKED_RESERVED,
 } from './engine/project/ground.js';
-export { SETTINGS_FILE } from './engine/project/jterrazz-config.js';
-export type { Config } from './engine/project/jterrazz-config.js';
 export {
     declaredSubpaths,
     MEMBER_DEPTH,
@@ -141,26 +128,22 @@ export {
     workspacePatterns,
 } from './engine/project/manifest.js';
 export type { Manifest } from './engine/project/manifest.js';
-export { definePreset, resolveConfig } from './engine/project/preset.js';
-export { mergeSettings } from './engine/project/settings-merge.js';
-export type { Merged } from './engine/project/settings-merge.js';
-export type {
-    ArchitectureRule,
-    NamesRule,
-    OptOut,
-    Preset,
-    Resolution,
-    Resolved,
-} from './engine/project/preset.js';
+export type { PresetLaw, Resolution, Resolved } from './engine/project/preset.js';
 export type { PresetChecks } from './consumer/checks/preset-checks.js';
 export {
     filesUnder,
     ignoredPaths,
-    isGitIgnored,
     projectFiles,
     PRUNED,
 } from './engine/project/project-files.js';
-export { isRepositoryRoot } from './engine/project/repository-root.js';
+export {
+    holdsManifest,
+    isProjectRoot,
+    isRepositoryRoot,
+    nearestRoot,
+} from './engine/project/repository-root.js';
+export { blankComments, quotedMask } from './engine/project/comments.js';
+export type { Span } from './engine/project/comments.js';
 export { workspaceMembers } from './engine/project/workspace-members.js';
 
 export const runChecker = async (
@@ -169,11 +152,11 @@ export const runChecker = async (
 ): Promise<never> => await runPasses({ ...checker, presets: BASE_PRESETS }, args);
 
 /** A unit's `jterrazz.config.ts`, resolved with the base preset first. */
-export const readSettings = async (unit: string): Promise<Config> =>
+export const readSettings = async (unit: string): Promise<Resolution> =>
     await readConfig(unit, BASE_PRESETS);
 
 /** The same resolution, for a reader that runs synchronously, as an oxlint rule does. */
-export const readSettingsSync = (unit: string): Config => readConfigSync(unit, BASE_PRESETS);
+export const readSettingsSync = (unit: string): Resolution => readConfigSync(unit, BASE_PRESETS);
 
 export async function presetChecks(root: string, config: object): Promise<PresetChecks> {
     const checks = await import('./consumer/checks/preset-checks.js');

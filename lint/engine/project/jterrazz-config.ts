@@ -18,8 +18,6 @@ export const DEPENDENCY_CRUISER_CONFIGS = [
     '.dependency-cruiser.mjs',
 ];
 
-export type Config = Resolution;
-
 const NOTHING_DECLARED = {};
 
 function declaredOf(loaded: unknown): { declared: object; problem: null | string } {
@@ -40,13 +38,13 @@ const failed = (error: unknown): string =>
 function resolvedFrom(
     read: { declared: object; problem: null | string },
     base: readonly Preset[],
-): Config {
+): Resolution {
     const resolution = resolveConfig(read.declared, base);
 
     return read.problem === null ? resolution : { ...resolution, problem: read.problem };
 }
 
-export async function readConfig(unit: string, base: readonly Preset[]): Promise<Config> {
+export async function readConfig(unit: string, base: readonly Preset[]): Promise<Resolution> {
     const path = join(unit, SETTINGS_FILE);
     if (!existsSync(path)) {
         return resolveConfig(NOTHING_DECLARED, base);
@@ -60,10 +58,10 @@ export async function readConfig(unit: string, base: readonly Preset[]): Promise
 
 const loadModule = createRequire(import.meta.url);
 
-const loaded = new Map<string, Config>();
+const loaded = new Map<string, Resolution>();
 
 // For a reader that runs synchronously, as an oxlint rule does; Node loads a module once per process, and a file that appears later is still read.
-export function readConfigSync(unit: string, base: readonly Preset[]): Config {
+export function readConfigSync(unit: string, base: readonly Preset[]): Resolution {
     const path = join(unit, SETTINGS_FILE);
     if (!existsSync(path)) {
         return resolveConfig(NOTHING_DECLARED, base);
@@ -72,7 +70,7 @@ export function readConfigSync(unit: string, base: readonly Preset[]): Config {
     if (known !== undefined) {
         return known;
     }
-    let config: Config;
+    let config: Resolution;
     try {
         config = resolvedFrom(declaredOf(loadModule(path)), base);
     } catch (error) {

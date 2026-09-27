@@ -4,7 +4,7 @@ import { argv, exit, stdout } from 'node:process';
 
 import { removeEmptyDirectory } from '../project/empty-directories.js';
 import { readConfig } from '../project/jterrazz-config.js';
-import type { Config } from '../project/jterrazz-config.js';
+import type { Resolution } from '../project/preset.js';
 import type { Preset } from '../project/preset.js';
 import { orRefused, projectFiles } from '../project/project-files.js';
 import { readCommandLine } from './command-line.js';
@@ -35,7 +35,7 @@ function listAt(directory: string): null | string[] {
 export function contextOf(commandLine: CommandLine, presets: readonly Preset[]): Context {
     const root = resolve(commandLine.positionals[0] ?? '.');
     const ignorePatterns = commandLine.values('--ignore-pattern');
-    const configs = new Map<string, Promise<Config>>();
+    const configs = new Map<string, Promise<Resolution>>();
     let files: string[] | undefined;
 
     return {
