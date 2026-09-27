@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 
+import { invariant, messageOf, refusal } from '../../lint/engine/catalogue/lesson.js';
 import { isGroundFolder } from '../../lint/engine/project/ground.js';
 import { isList, objectOf, parsedObject } from '../../lint/engine/project/json.js';
 import type { JsonObject } from '../../lint/engine/project/json.js';
@@ -123,8 +124,34 @@ function conventionIgnores(): string[] {
     return ignores;
 }
 
+function projectFile(path: string, read: (path: string) => JsonObject): JsonObject {
+    try {
+        return read(path);
+    } catch (error) {
+        throw new SyntaxError(
+            refusal({
+                fix: `repair ${path}, then run again`,
+                found: `${path} does not parse: ${messageOf(error)}`,
+                read: 'docs/06-quality-checks.md#a-file-knip-is-configured-from-does-not-parse',
+                why: 'knip is handed the preset merged with what the project declares, and would judge the project against a config it never wrote',
+            }),
+            { cause: error },
+        );
+    }
+}
+
+function presetFile(path: string): JsonObject {
+    try {
+        return readJsonc(path);
+    } catch (error) {
+        throw invariant(`the knip preset ${path} does not parse: ${messageOf(error)}`);
+    }
+}
+
 function manifestHere(): JsonObject {
-    return existsSync('package.json') ? parsedObject(readFileSync('package.json', 'utf8')) : {};
+    return existsSync('package.json')
+        ? projectFile('package.json', (path) => parsedObject(readFileSync(path, 'utf8')))
+        : {};
 }
 
 function dependencyNames(manifest: JsonObject, field: string): string[] {
@@ -234,8 +261,8 @@ function isPublished(manifest: JsonObject): boolean {
 
 export function mergedKnipConfig(basePath: string, projectPath: string | undefined): KnipConfig {
     const merged = mergedConfigs(
-        readJsonc(basePath),
-        projectPath === undefined ? {} : readJsonc(projectPath),
+        presetFile(basePath),
+        projectPath === undefined ? {} : projectFile(projectPath, readJsonc),
     );
     const manifest = manifestHere();
     if (isPublished(manifest)) {

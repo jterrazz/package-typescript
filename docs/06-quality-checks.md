@@ -48,6 +48,10 @@ Discovery never leaves the workspace. A candidate is dropped when git ignores it
 
 Every tree gate reads the same sweep: the files git does not ignore, or the disk outside a git checkout. A sweep that comes back empty while the tree holds something — folders and no file, or files git ignores whole — is refused rather than read as nothing to judge, since a gate over nothing passes. The pass prints the refusal in four parts, `found: … · why: … · fix: … · read: …`, and fails.
 
+### A file knip is configured from does not parse
+
+knip runs on one config: the preset this package ships, merged with the project's own `knip.json` or `knip.jsonc` and with what its `package.json` declares. A project file that does not parse would leave knip judging the project against a config it never wrote, so the Knip pass prints a four-part refusal naming the file and the parser's message, and fails without running knip. A preset of this package's that does not parse is the toolchain's own fault and says so.
+
 ## The Gitignore (artefacts) pass
 
 Every build, test and lint artefact lives under `.artifacts/<tool>/` at the project root ([Developing](02-developing.md)), and this pass reads that convention off two files: the project's own `.gitignore`, and the nearest ANCESTOR `.gitignore` above it — the workspace root's, found by walking up to the nearest directory holding a lockfile (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`/`bun.lockb`, `npm-shrinkwrap.json`) or a `workspaces` manifest. That walk stops at the nearest repository boundary and never passes it — a `.git` directory in a clone, a `.git` file in a worktree — because a clone checked out inside another repository is not a member of the tree it sits in, and the `.gitignore` above that boundary answers for somebody else's artefacts. A project carrying its own `.git` therefore has no ancestor at all. It runs when either file exists — a project with neither names no artefact path — and each is judged by the same rules.
@@ -220,6 +224,10 @@ So the toolchain keeps its own switch. A mark on a rule with no fixer, or on one
 The switch is a wrapper config around the one the linter runs with — the project's own, or the default where it keeps none — that the pass writes beside that config and deletes after the run. It goes there and nowhere else, because oxlint resolves `ignorePatterns` and override globs against the directory its config sits in — and every run IGNORES the wrapper's name, so no diagnostic ever names a path the operator cannot open and no tree can ever clear.
 
 That wrapper also stops the run reporting UNUSED DIRECTIVES. Every profile ships `reportUnusedDisableDirectives`, and a run that has just turned twelve rules off cannot judge a directive naming one of them — the rule is off for that run alone, and the directive would be called dead on evidence the wrapper itself created. An unused directive is reported by the check-shaped run made after the fixer, where the consumer's own rules are armed again, and by `check`.
+
+### A wrapper fix mode cannot write
+
+Where the wrapper cannot be written — a directory beside the config the run may not write to — no oxlint fix runs at all. The pass prints a four-part refusal naming the write that failed and fails, rather than reading a fix that never ran as a green one.
 
 ### A nested config fixes its own subtree
 
