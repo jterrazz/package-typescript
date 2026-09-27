@@ -5,7 +5,7 @@ import { lint } from '../names-lint.specification.js';
 
 describe('roots-declared', () => {
     test('accepts an imposed root or one jterrazz.config.ts declares, and refuses every other', async () => {
-        // Given - the tree
+        // Given - a root a tool imposes, one the settings declare with its reason, and one nobody declares
         const result = await lint.fixture(directory('./_fixtures/roots-declared/')).run();
 
         // Then - each finding at its position, with its lesson

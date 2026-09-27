@@ -5,7 +5,7 @@ import { lint } from '../names-lint.specification.js';
 
 describe('directory-case', () => {
     test('fails a directory not written in kebab-case, and keeps a route segment its framework names', async () => {
-        // Given - the tree
+        // Given - directories not written in kebab-case, beside a route segment its framework names
         const result = await lint.fixture(directory('./_fixtures/directory-case/')).run();
 
         // Then - each finding at its position, with its lesson

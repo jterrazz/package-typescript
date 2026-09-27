@@ -5,7 +5,7 @@ import { lint } from '../names-lint.specification.js';
 
 describe('vague', () => {
     test('fails a tree whose folder names no subject and whose file names one in half', async () => {
-        // Given - the tree
+        // Given - grab-bag folders, and names with a word written in half
         const result = await lint.fixture(directory('./_fixtures/vague/')).run();
 
         // Then - each finding at its position, with its lesson

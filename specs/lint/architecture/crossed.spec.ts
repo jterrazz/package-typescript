@@ -5,7 +5,7 @@ import { lint } from '../architecture-lint.specification.js';
 
 describe('crossed', () => {
     test('fails a module graph that crosses the layer map the project declared', async () => {
-        // Given - the tree
+        // Given - a module graph importing across the declared layers
         const result = await lint.fixture(directory('./_fixtures/crossed/')).run();
 
         // Then - each finding at its position, with its lesson

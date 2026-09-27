@@ -5,7 +5,7 @@ import { lint } from '../names-lint.specification.js';
 
 describe('lint-tree-uncatalogued', () => {
     test('holds a lint/ with no catalogue to its root and folders, never guessing a family', async () => {
-        // Given - the tree
+        // Given - a lint/ tree with no catalogue, and a file at its root
         const result = await lint.fixture(directory('./_fixtures/lint-tree-uncatalogued/')).run();
 
         // Then - each finding at its position, with its lesson

@@ -1,11 +1,11 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { lint } from '../presets-declared-lint.specification.js';
+import { lint } from '../declared-preset-lint.specification.js';
 
 describe('declared', () => {
     test('holds the project to the layers and the name rules its presets and its own settings declare', async () => {
-        // Given - the tree
+        // Given - a tree crossing the layer and the name rule a preset declares, and a name rule of the settings
         const result = await lint.fixture(directory('./_fixtures/declared/')).run();
 
         // Then - each finding at its position, with its lesson

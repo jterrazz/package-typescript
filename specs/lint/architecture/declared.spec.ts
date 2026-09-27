@@ -5,7 +5,7 @@ import { lint } from '../architecture-lint.specification.js';
 
 describe('declared', () => {
     test('fails the hexagonal map and a layer of its own at each import, type-only ones included', async () => {
-        // Given - the tree
+        // Given - the hexagonal map and a layer of its own, crossed by value and type-only imports
         const result = await lint.fixture(directory('./_fixtures/declared/')).run();
 
         // Then - each finding at its position, with its lesson

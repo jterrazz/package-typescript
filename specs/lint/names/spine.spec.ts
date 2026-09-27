@@ -5,7 +5,7 @@ import { lint } from '../names-lint.specification.js';
 
 describe('spine', () => {
     test('fails a skill holding more than its SKILL.md, and a root outside the spine nobody declared', async () => {
-        // Given - the tree
+        // Given - a skill folder holding a file beside its SKILL.md, and a `scripts/` root no setting declares
         const result = await lint.fixture(directory('./_fixtures/spine/')).run();
 
         // Then - each finding at its position, with its lesson

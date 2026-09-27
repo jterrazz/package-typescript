@@ -5,7 +5,7 @@ import { lint } from '../names-lint.specification.js';
 
 describe('lint-tree', () => {
     test('holds lint/ to its tree — index, consumer, self and engine, declarations apart, rules by family', async () => {
-        // Given - the tree
+        // Given - a lint/ tree with files at its roots, a program, a helper, and a rule filed under another family
         const result = await lint.fixture(directory('./_fixtures/lint-tree/')).run();
 
         // Then - each finding at its position, with its lesson

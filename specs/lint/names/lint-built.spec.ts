@@ -5,10 +5,10 @@ import { lint } from '../names-lint.specification.js';
 
 describe('lint-built', () => {
     test('keeps lint/ on the spine where the build compiles it into what the package exports', async () => {
-        // Given - the tree
+        // Given - a lint/ the build compiles into an entry the package exports
         const result = await lint.fixture(directory('./_fixtures/lint-built/')).run();
 
-        // Then - each finding at its position, with its lesson
+        // Then - nothing is reported
         expect(result.report).toMatch('');
     });
 });

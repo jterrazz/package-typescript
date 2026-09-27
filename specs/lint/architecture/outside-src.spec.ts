@@ -5,7 +5,7 @@ import { lint } from '../architecture-lint.specification.js';
 
 describe('outside-src', () => {
     test('judges a map in a top-level folder other than src', async () => {
-        // Given - the tree
+        // Given - a layer map over a top-level folder other than src/, and an import crossing it
         const result = await lint.fixture(directory('./_fixtures/outside-src/')).run();
 
         // Then - each finding at its position, with its lesson
