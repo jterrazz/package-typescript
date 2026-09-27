@@ -1,7 +1,6 @@
 import type { PresetChecks } from './consumer/checks/preset-checks.js';
 import { runChecker as runPasses } from './engine/checker/checker.js';
 import type { Checker } from './engine/checker/pass.js';
-import type { Preset } from './engine/project/preset.js';
 import { readConfig, readConfigSync } from './engine/project/jterrazz-config.js';
 import type { Config } from './engine/project/jterrazz-config.js';
 import { BASE_PRESETS } from './index.config.js';
@@ -173,11 +172,9 @@ export const readSettings = async (unit: string): Promise<Config> =>
 /** The same resolution, for a reader that runs synchronously, as an oxlint rule does. */
 export const readSettingsSync = (unit: string): Config => readConfigSync(unit, BASE_PRESETS);
 
-export async function presetChecks(
-    root: string,
-    presets: readonly Preset[],
-): Promise<PresetChecks> {
+/** The laws the resolved settings hold a tree to — the Architecture pass over every `layers`, each declared `names` rule — with `config` written as a `jterrazz.config.ts` would be, the base preset first. */
+export async function presetChecks(root: string, config: object): Promise<PresetChecks> {
     const checks = await import('./consumer/checks/preset-checks.js');
 
-    return await checks.presetChecks(root, { base: BASE_PRESETS, presets });
+    return await checks.presetChecks(root, { base: BASE_PRESETS, config });
 }
