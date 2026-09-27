@@ -1,6 +1,7 @@
+import { readdirSync } from 'node:fs';
 import { defineConfig } from 'tsdown';
 
-const PROFILES = ['astro', 'bun', 'expo', 'next', 'node', 'react'];
+const PROFILE_SOURCES = 'src/presets/oxlint/profiles';
 
 export default defineConfig([
     {
@@ -19,9 +20,9 @@ export default defineConfig([
             'presets/tsdown/build': 'src/presets/tsdown/build.ts',
             'presets/tsdown/bundle': 'src/presets/tsdown/bundle.ts',
             ...Object.fromEntries(
-                PROFILES.map((name) => [
-                    `presets/oxlint/profiles/${name}`,
-                    `src/presets/oxlint/profiles/${name}.ts`,
+                readdirSync(PROFILE_SOURCES).map((file) => [
+                    `presets/oxlint/profiles/${file.replace(/\.ts$/u, '')}`,
+                    `${PROFILE_SOURCES}/${file}`,
                 ]),
             ),
         },

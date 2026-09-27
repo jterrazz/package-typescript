@@ -25,7 +25,7 @@ import {
 
 const ROOT = resolve(import.meta.dirname, '../../..');
 
-const PROFILE_NAMES = ['astro', 'bun', 'expo', 'next', 'node', 'react'];
+const PROFILE_NAMES = Object.keys(PROFILES);
 
 function fieldText(record: Record<string, unknown>, key: string): string {
     const value = record[key];
@@ -139,6 +139,24 @@ describe('tarball', () => {
         expect(hexagonalFragment.audience).toBe('consumer');
         expect(oxlint.hexagonal).toStrictEqual(compile(hexagonalFragment));
         expect(bundled.hexagonal).toStrictEqual(oxlint.hexagonal);
+    });
+
+    test('every profile of the table is packed as the preset a config is handed by path', async () => {
+        // Given - the profiles the table declares, and the oxlint entry that compiles them
+        const tree = packedTree();
+        const oxlint = await loadPacked(tree, 'dist/oxlint.js');
+
+        const presets = await Promise.all(
+            PROFILE_NAMES.map(async (name) => ({
+                name,
+                preset: await loadPacked(tree, `dist/presets/oxlint/profiles/${name}.js`),
+            })),
+        );
+
+        // Then - each has its preset beside the entry, and the preset is that profile
+        for (const { name, preset } of presets) {
+            expect.soft(preset.default, `${name} has no packed preset`).toStrictEqual(oxlint[name]);
+        }
     });
 
     test('the passes the packed command runs are consumer alone', async () => {
