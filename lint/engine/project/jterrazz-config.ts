@@ -62,22 +62,21 @@ const loadModule = createRequire(import.meta.url);
 
 const loaded = new Map<string, Config>();
 
-// For a reader that runs synchronously, as an oxlint rule does; Node loads a module once per process.
+// For a reader that runs synchronously, as an oxlint rule does; Node loads a module once per process, and a file that appears later is still read.
 export function readConfigSync(unit: string, base: readonly Preset[]): Config {
     const path = join(unit, SETTINGS_FILE);
+    if (!existsSync(path)) {
+        return resolveConfig(NOTHING_DECLARED, base);
+    }
     const known = loaded.get(path);
     if (known !== undefined) {
         return known;
     }
     let config: Config;
-    if (existsSync(path)) {
-        try {
-            config = resolvedFrom(declaredOf(loadModule(path)), base);
-        } catch (error) {
-            config = { ...resolveConfig(NOTHING_DECLARED, base), problem: failed(error) };
-        }
-    } else {
-        config = resolveConfig(NOTHING_DECLARED, base);
+    try {
+        config = resolvedFrom(declaredOf(loadModule(path)), base);
+    } catch (error) {
+        config = { ...resolveConfig(NOTHING_DECLARED, base), problem: failed(error) };
     }
     loaded.set(path, config);
 
