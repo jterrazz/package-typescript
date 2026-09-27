@@ -42,6 +42,8 @@ The `typescript` command is TypeScript, built into `dist/`; the work it orchestr
 | Markdown     | [rumdl](https://rumdl.dev)                                                  | Rust     |
 | Names        | [ls-lint](https://ls-lint.org)                                              | Go       |
 
+A sibling package holds its consumers to its own layers and name rules by shipping a preset, which a project declares in `jterrazz.config.ts` under `typescript.presets` ([Quality checks](docs/06-quality-checks.md#what-a-package-declares-for-its-consumers)).
+
 ## Documentation
 
 The full corpus lives in [`docs/`](docs/):

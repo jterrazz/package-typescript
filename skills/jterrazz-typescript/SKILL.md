@@ -57,6 +57,7 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 - A repository root holds `src/`, `lint/`, `specs/`, `docs/`, `skills/` — any other root folder fails Names (tree) unless the ecosystem imposes it (`bin/`, `public/`, `app/`…) or `jterrazz.config.ts` declares it under `typescript.roots` with a reason.
 - A `lint/` holds its `index` and three folders: `consumer/` and `self/` hold declarations alone, and `engine/` holds the code that runs them — `docs/06-quality-checks.md`, The lint tree.
 - A repository's root `Makefile` answers `make install`, `build`, `lint`, `fix`, `test` and `check`; a workspace member owes none of them.
+- A package's layers and name rules reach a project through the preset it declares under `typescript.presets` in `jterrazz.config.ts`; its own name rules go under `typescript.names` — `docs/06-quality-checks.md`, What a package declares for its consumers.
 - A local `compilerOption` is a smell — the preset is where the fix belongs.
 
 ## The chapter to read next

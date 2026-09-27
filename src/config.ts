@@ -1,4 +1,5 @@
 import type { ArchitectureRule } from '../lint/consumer/checks/architecture.js';
+import type { NamesRule } from '../lint/consumer/checks/names.declared.js';
 
 /** A repository's settings for the @jterrazz toolchain family; a sibling package adds its section by interface merging. */
 // oxlint-disable-next-line typescript/consistent-type-definitions -- a sibling package adds its section by merging into this declaration, which a `type` alias cannot take
@@ -8,6 +9,7 @@ export interface JterrazzConfig {
 }
 
 export type { ArchitectureRule } from '../lint/consumer/checks/architecture.js';
+export type { NamesRule } from '../lint/consumer/checks/names.declared.js';
 
 /** The layer map the Architecture pass holds the import graph to. */
 export type ArchitectureSettings = {
@@ -17,9 +19,17 @@ export type ArchitectureSettings = {
     layers?: readonly ArchitectureRule[];
 };
 
+export type TypescriptPreset = {
+    architecture?: Pick<ArchitectureSettings, 'layers'>;
+    name: string;
+    names?: readonly NamesRule[];
+};
+
 /** The `typescript` section of `jterrazz.config.ts`. */
 export type TypescriptSettings = {
     architecture?: ArchitectureSettings;
+    names?: readonly NamesRule[];
+    presets?: readonly TypescriptPreset[];
     /** The root folders kept beside the spine, each mapped to the reason it is kept. */
     roots?: Readonly<Record<string, string>>;
 };

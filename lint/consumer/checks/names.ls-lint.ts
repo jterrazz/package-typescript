@@ -16,7 +16,7 @@ type Top = keyof typeof LINT_TREE;
 
 type Rules = Record<string, string>;
 
-type Failures = Readonly<Record<string, Readonly<Record<string, readonly string[]>>>>;
+export type Failures = Readonly<Record<string, Readonly<Record<string, readonly string[]>>>>;
 
 const KEBAB = String.raw`_?[a-z0-9]+(-[a-z0-9]+)*`;
 
@@ -75,6 +75,10 @@ function skillRules(prefix: string): Record<string, Rules> {
     };
 }
 
+export function ignoredOf(ignorePatterns: readonly string[]): string[] {
+    return [...IGNORED, ...ignorePatterns.map((pattern) => pattern.replace(/\/\*\*$/u, ''))];
+}
+
 export function lsLintConfig(units: readonly string[], ignorePatterns: readonly string[]): string {
     const ls: Record<string, Rules> = {};
     for (const prefix of units) {
@@ -83,12 +87,8 @@ export function lsLintConfig(units: readonly string[], ignorePatterns: readonly 
         ls[`${named}/**/app`] = { '.dir': ROUTE_SEGMENT };
         Object.assign(ls, lintTreeRules(prefix), skillRules(prefix));
     }
-    const ignore = [
-        ...IGNORED,
-        ...ignorePatterns.map((pattern) => pattern.replace(/\/\*\*$/u, '')),
-    ];
 
-    return `${JSON.stringify({ ignore, ls }, null, 2)}\n`;
+    return `${JSON.stringify({ ignore: ignoredOf(ignorePatterns), ls }, null, 2)}\n`;
 }
 
 function failedOf(root: string, failures: Failures, swept: ReadonlySet<string>): Failed[] {
@@ -135,7 +135,7 @@ function unseenOf(units: readonly string[], swept: ReadonlySet<string>): Failed[
     });
 }
 
-function listed(directory: string): Dirent[] | null {
+export function listed(directory: string): Dirent[] | null {
     try {
         return readdirSync(directory, { withFileTypes: true });
     } catch {
@@ -187,16 +187,16 @@ function failuresOf(parsed: unknown): Failures {
 export function runLsLint(
     binary: string,
     root: string,
-    { ignorePatterns, units }: { ignorePatterns: readonly string[]; units: readonly string[] },
+    config: string,
 ): { failures: Failures; problem: null | string } {
     const scratch = mkdtempSync(join(tmpdir(), 'typescript-ls-lint-'));
     try {
-        const config = join(scratch, 'ls-lint.yml');
-        writeFileSync(config, lsLintConfig(units, ignorePatterns));
+        const path = join(scratch, 'ls-lint.yml');
+        writeFileSync(path, config);
         const { output, ran, status } = runTool(
             'ls-lint',
             binary,
-            ['-config', config, '-error-output-format', 'json'],
+            ['-config', path, '-error-output-format', 'json'],
             root,
         );
         if (status === 0) {
@@ -209,7 +209,7 @@ export function runLsLint(
                 failures: {},
                 problem: ran
                     ? refusal({
-                          fix: 'correct what ls-lint printed — an `--ignore-pattern` it cannot read as a glob, a directory it cannot enter — then run again',
+                          fix: 'correct what ls-lint printed — an `--ignore-pattern` or a declared glob it cannot read, a directory it cannot enter — then run again',
                           found: `ls-lint stopped with no report — ${output.trim()}`,
                           read: 'docs/06-quality-checks.md#the-names-tree-pass',
                           why: 'where a name sits is judged from the failures ls-lint reports, and with no report no name is judged',

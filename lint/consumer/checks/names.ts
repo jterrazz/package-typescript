@@ -7,8 +7,9 @@ import type { JsonObject } from '../../engine/project/json.js';
 import { readSection, SETTINGS_FILE } from '../../engine/project/jterrazz-config.js';
 import { isRepositoryRoot } from '../../engine/project/repository-root.js';
 import { workspaceMembers } from '../../engine/project/workspace-members.js';
+import { declaredNamesFindings, declaredNamesRules } from './names.declared.js';
 import { LINT_ROOT, lintTreeOf } from './names.lint-tree.js';
-import { lsLintFindings, runLsLint } from './names.ls-lint.js';
+import { lsLintConfig, lsLintFindings, runLsLint } from './names.ls-lint.js';
 
 type Disk = Pick<Context, 'exists' | 'read'>;
 
@@ -449,26 +450,44 @@ function emptyDirectoryFinding(path: string): Finding {
     };
 }
 
-function laidOut(
+async function laidOut(
     context: Context,
     swept: readonly string[],
-): { findings: Finding[]; problem: null | string } {
+): Promise<{ findings: Finding[]; problems: string[] }> {
     const units = ['', ...workspaceMembers(context.root).map((member) => `${member}/`)];
-    const { failures, problem } = runLsLint(context.value('--ls-lint', 'ls-lint'), context.root, {
-        ignorePatterns: context.ignorePatterns,
-        units,
-    });
+    const { failures, problem } = runLsLint(
+        context.value('--ls-lint', 'ls-lint'),
+        context.root,
+        lsLintConfig(units, context.ignorePatterns),
+    );
+    const declared = declaredNamesRules(await readSection(context.root, 'typescript'));
+    const own = declaredNamesFindings(context, { rules: declared.rules, swept, units });
 
-    return { findings: lsLintFindings(context.root, { failures, swept, units }), problem };
+    return {
+        findings: [
+            ...(declared.problem === null
+                ? []
+                : [
+                      {
+                          message: `\`${SETTINGS_FILE}\` ${declared.problem}`,
+                          path: SETTINGS_FILE,
+                          rule: 'names/jterrazz-config-loads',
+                      },
+                  ]),
+            ...lsLintFindings(context.root, { failures, swept, units }),
+            ...own.findings,
+        ],
+        problems: [...(problem === null ? [] : [problem]), ...own.problems],
+    };
 }
 
 export const names: Pass = Object.freeze({
     async check(context) {
         const files = context.files();
-        const layout = laidOut(context, files);
+        const layout = await laidOut(context, files);
 
         return {
-            ...(layout.problem === null ? {} : { failed: true, lines: [layout.problem] }),
+            ...(layout.problems.length === 0 ? {} : { failed: true, lines: layout.problems }),
             findings: [
                 ...findingsOf(files),
                 ...layout.findings,

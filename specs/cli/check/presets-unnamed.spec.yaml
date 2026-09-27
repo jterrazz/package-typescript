@@ -1,0 +1,22 @@
+description: refuses a preset that carries no name, in each pass that reads presets
+fixture: ./_fixtures/presets/unnamed/
+env: TYPESCRIPT_CHECK_PASSES=architecture,names
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Architecture (layer map)
+
+          found: jterrazz.config.ts holds a `presets` that is not a list of presets, each an object carrying the `name` of the package that ships it · why: the layer map is read from that file, and a map that cannot be read judges no import · fix: correct jterrazz.config.ts until it loads and its `typescript` section has the declared shape, then run again · read: docs/06-quality-checks.md#the-architecture-layer-map-pass
+          ✗ Failed with exit code 1
+
+           RUN  Names (tree)
+
+          names/jterrazz-config-loads  jterrazz.config.ts  `jterrazz.config.ts` holds a `presets` that is not a list of presets, each an object carrying the `name` of the package that ships it
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

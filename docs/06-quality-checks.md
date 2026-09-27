@@ -365,6 +365,8 @@ A project that already keeps a `.dependency-cruiser.cjs`, `.js` or `.mjs` at its
 
 A project that adopts a map its tree already crosses records the crossings with `typescript baseline`: each `architecture/<name>` count goes into `jterrazz.baseline.json › typescript` and is held exactly, like every count of [the ratchet](#what-jterrazzbaselinejson-still-holds), so a new crossing fails the run and a paid one is re-recorded by `typescript fix`.
 
+A package that ships layers for its consumers hands them in a preset, and a project declaring the preset is held to them beside its own: [What a package declares for its consumers](#what-a-package-declares-for-its-consumers).
+
 ### The hexagonal map
 
 `hexagonal: true` adds the map this package ships, six boundaries whose arrow points inward:
@@ -512,6 +514,37 @@ What ls-lint cannot express stays the gate's, in its own code:
 - the spine and its declared roots, which read `package.json`, the build config and `jterrazz.config.ts`;
 - `names/audience-holds-only-declarations` and `names/rule-file-in-its-family-folder`, which read what a module exports and which family its catalogue row names;
 - the six gestures of the `Makefile`, which read its text, and an empty directory, which ls-lint never sees.
+
+### A name rule a project declares
+
+A project names its own rules of where a name sits under `typescript.names`, in ls-lint's own vocabulary — `ls` maps a glob to the rules of what it matches, `ignore` lists the globs the rule never enters — plus the three parts of what a refusal teaches:
+
+```ts
+import { defineConfig } from '@jterrazz/typescript/config';
+
+export default defineConfig({
+    typescript: {
+        names: [
+            {
+                name: 'module-in-kebab-case',
+                ls: { src: { '.ts': 'kebab-case' } },
+
+                why: 'one case for every module keeps a search to one spelling',
+                fix: 'rename it in kebab-case',
+                read: 'docs/naming.md#modules',
+            },
+        ],
+    },
+});
+```
+
+Each rule is one ls-lint run of its own, its globs read from the root of every unit — the project and each workspace member — so two rules never share a glob, and a failure is known to be its rule's without a pattern matched back. ls-lint reports a count at a directory for an `exists` rule, and the pass names each file the failed key covers instead: an exact extension (`.spec.ts`) where the rule writes one, a wildcard key (`.*`, `.*.spec.ts`) for the files no exact key covers. A failure prints at the file, or at the directory ending in `/`, as `names/<name>`, in four parts:
+
+```text
+names/module-in-kebab-case  src/orderLine.ts  found: `src/orderLine.ts` breaks ls-lint's `.ts: kebabcase` · why: … · fix: … · read: docs/naming.md#modules
+```
+
+Two limits are ls-lint's, and a rule is written around them. Its extension is everything after a name's first dot, so `a.b.spec.ts` carries `.b.spec.ts`: a rule about every spec writes `.spec.ts` and `.*.spec.ts`. And it never judges a file at the root it runs from, so a rule about a unit's root files is not one ls-lint can hold. Within one rule, two globs matching the same directory are judged in no stable order, so a rule's globs never overlap. A rule the pass cannot read — a `name` not in kebab-case, an `ls` that does not map each glob to its rules, a missing lesson part — is refused as `names/jterrazz-config-loads`, and a glob ls-lint cannot read fails the pass in four parts. A package's name rules arrive the same way through its preset ([below](#what-a-package-declares-for-its-consumers)).
 
 ### The repository spine
 
@@ -669,6 +702,21 @@ Which scanner runs is decided inside the gate rather than by the command, becaus
 <!-- /GENERATED:findings secrets -->
 
 **There is no exception list, and there will not be one.** A hit is forgiven by exactly one thing: the same line declaring itself `fake`, `dummy`, `example`, `sample`, `synthetic` or `redacted`. A path allow-list is the first place a real leak hides, so the only way to silence this gate is to make the line say what it is.
+
+## What a package declares for its consumers
+
+A package of the family that holds its consumers to layers and to rules of where a name sits ships them as a preset: an object carrying the `name` of the package, the `architecture.layers` and the `names` it adds, each entry in the vocabulary of [the Architecture pass](#the-architecture-layer-map-pass) and of [a name rule](#a-name-rule-a-project-declares). A project declares the presets it takes in its `jterrazz.config.ts`, as it composes a package's oxlint fragment in its `oxlint.config.ts`:
+
+```ts
+import { testingPreset } from '@jterrazz/test/oxlint';
+import { defineConfig } from '@jterrazz/typescript/config';
+
+export default defineConfig({
+    typescript: { presets: [testingPreset] },
+});
+```
+
+Each pass reads the project's own declaration and each preset's under the same key, and holds the project to all of them: a preset's layer prints as `architecture/<name>` and its name rule as `names/<name>`, with the lesson the package wrote. The `TypescriptPreset` type, exported by `@jterrazz/typescript/config`, is the shape. A preset is declared, never discovered: an installed package judges nothing until the project names its preset, so what the project is held to is read in one file. A `presets` that is not a list of objects each carrying a `name` fails the Architecture pass in four parts and is refused as `names/jterrazz-config-loads`.
 
 ## Pitfalls
 

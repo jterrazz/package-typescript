@@ -47,3 +47,26 @@ export async function readSection(unit: string, name: string): Promise<Section> 
 
     return { problem: null, section };
 }
+
+export type Declared = { declared: unknown[]; problem: null | string };
+
+const isPreset = (value: unknown): value is Record<string, unknown> =>
+    isRecord(value) && typeof value.name === 'string' && value.name !== '';
+
+export function declaredUnder(section: Readonly<Record<string, unknown>>, key: string): Declared {
+    const { presets = [] } = section;
+    if (!Array.isArray(presets) || !presets.every((preset) => isPreset(preset))) {
+        return {
+            declared: [],
+            problem:
+                'holds a `presets` that is not a list of presets, each an object carrying the `name` of the package that ships it',
+        };
+    }
+
+    return {
+        declared: [section, ...presets]
+            .map((holder) => holder[key])
+            .filter((value) => value !== undefined),
+        problem: null,
+    };
+}

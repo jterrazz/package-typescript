@@ -9,7 +9,7 @@ import { runTool } from '../../engine/checker/tool-run.js';
 import type { ToolRun } from '../../engine/checker/tool-run.js';
 import { GROUND_FOLDERS } from '../../engine/project/ground.js';
 import { objectOf, stringOf } from '../../engine/project/json.js';
-import { readSection } from '../../engine/project/jterrazz-config.js';
+import { declaredUnder, readSection } from '../../engine/project/jterrazz-config.js';
 import { ARCHITECTURE_HEXAGONAL } from './architecture.hexagonal.js';
 
 /** One boundary of a layer map: dependency-cruiser's `from` and `to`, and what a refusal teaches. */
@@ -55,40 +55,46 @@ function isRule(value: unknown): value is ArchitectureRule {
     );
 }
 
+const MALFORMED_LAYERS = refusal({
+    fix: "give every entry of `typescript.architecture.layers` — and of each preset's `architecture.layers` — a `name`, a `from` and a `to` object, and a `why`, a `fix` and a `read`",
+    found: 'jterrazz.config.ts holds a `layers` whose every entry is not `{ name, from, to, why, fix, read }`',
+    read: 'docs/06-quality-checks.md#the-architecture-layer-map-pass',
+    why: 'a layer is a dependency-cruiser rule and the lesson its refusal prints, and a layer missing a part can be neither judged nor taught',
+});
+
+function unreadable(problem: string): Declared {
+    return {
+        problem: refusal({
+            fix: 'correct jterrazz.config.ts until it loads and its `typescript` section has the declared shape, then run again',
+            found: `jterrazz.config.ts ${problem}`,
+            read: 'docs/06-quality-checks.md#the-architecture-layer-map-pass',
+            why: 'the layer map is read from that file, and a map that cannot be read judges no import',
+        }),
+        rules: [],
+    };
+}
+
 async function declaredRules(root: string): Promise<Declared> {
     const { problem, section } = await readSection(root, 'typescript');
-    const { architecture } = section;
     if (problem !== null) {
-        return {
-            problem: refusal({
-                fix: 'correct jterrazz.config.ts until it loads and exports an object, then run again',
-                found: `jterrazz.config.ts ${problem}`,
-                read: 'docs/06-quality-checks.md#the-architecture-layer-map-pass',
-                why: 'the layer map is read from that file, and a map that cannot be read judges no import',
-            }),
-            rules: [],
-        };
+        return unreadable(problem);
     }
-    if (architecture === undefined) {
-        return { problem: null, rules: [] };
+    const { declared, problem: presets } = declaredUnder(section, 'architecture');
+    if (presets !== null) {
+        return unreadable(presets);
     }
-    const { hexagonal, layers = [] } = objectOf(architecture);
-    if (!Array.isArray(layers) || !layers.every((layer) => isRule(layer))) {
-        return {
-            problem: refusal({
-                fix: 'give every entry of `typescript.architecture.layers` a `name`, a `from` and a `to` object, and a `why`, a `fix` and a `read`',
-                found: 'jterrazz.config.ts holds a `typescript.architecture.layers` whose every entry is not `{ name, from, to, why, fix, read }`',
-                read: 'docs/06-quality-checks.md#the-architecture-layer-map-pass',
-                why: 'a layer is a dependency-cruiser rule and the lesson its refusal prints, and a layer missing a part can be neither judged nor taught',
-            }),
-            rules: [],
-        };
+    const rules: ArchitectureRule[] = [];
+    let hexagonal = false;
+    for (const architecture of declared) {
+        const { hexagonal: shipped, layers = [] } = objectOf(architecture);
+        if (!Array.isArray(layers) || !layers.every((layer) => isRule(layer))) {
+            return { problem: MALFORMED_LAYERS, rules: [] };
+        }
+        hexagonal ||= shipped === true;
+        rules.push(...layers);
     }
 
-    return {
-        problem: null,
-        rules: [...(hexagonal === true ? ARCHITECTURE_HEXAGONAL : []), ...layers],
-    };
+    return { problem: null, rules: [...(hexagonal ? ARCHITECTURE_HEXAGONAL : []), ...rules] };
 }
 
 function cruiseConfig(rules: readonly ArchitectureRule[], context: Context): unknown {
