@@ -317,6 +317,8 @@ A file `files` ships — read as npm reads it, where a later `!` entry takes bac
 - an installed module compiled into it, when `testPackageOf` names its package — bundling `vitest` is never meant;
 - a specifier it leaves external, when `testPackageOf` names it and the package declares it neither in `dependencies` nor in `peerDependencies` — a test tool ships its runtime on purpose.
 
+That exemption differs from the one `no-test-code-in-production` grants, and on purpose: a package declaring a test tool in `dependencies` or `peerDependencies` states that its tarball carries that runtime, while `test.production.allow` in `@jterrazz/test`'s section of `jterrazz.config.ts` excuses a source import a product makes at run time, with its reason.
+
 What test material IS is `@jterrazz/test`'s alone: the two readers are the ones its `no-test-code-in-production` rule judges by, published on its `./oxlint` entry, and the pass loads them rather than keeping a copy. The finding states itself in four parts and sends its reader to the `no-test-code-in-production` row, where the definition lives.
 
 The readers come from the install the package resolves, found by the walk [test-package.ts](https://github.com/jterrazz/package-typescript/blob/main/lint/engine/project/test-package.ts) keeps, and from nowhere else. The toolchain's own `@jterrazz/test` is never asked: it is the toolchain's dependency, not the package's, and it would judge a package by a definition the package never chose.
