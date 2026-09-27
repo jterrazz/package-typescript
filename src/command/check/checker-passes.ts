@@ -82,8 +82,8 @@ export function secretsPass(check: Check): Launched | undefined {
     return { log, status: checker('secrets', ['.', ...check.lintArgs], { path: log }) };
 }
 
-export function namesPass(check: Check, runs: boolean): Launched | undefined {
-    if (!runs) {
+export function namesPass(check: Check): Launched | undefined {
+    if (!check.selected('names')) {
         return undefined;
     }
     const log = check.logs.at('names.log');
@@ -100,8 +100,8 @@ export function namesPass(check: Check, runs: boolean): Launched | undefined {
     };
 }
 
-export function commentsPass(check: Check, runs: boolean): Launched | undefined {
-    if (!runs || check.fix) {
+export function commentsPass(check: Check): Launched | undefined {
+    if (!check.selected('comments') || check.fix) {
         return undefined;
     }
     const log = check.logs.at('comments.log');

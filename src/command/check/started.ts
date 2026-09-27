@@ -21,8 +21,6 @@ import {
     typescriptPass,
 } from './tool-passes.js';
 
-export type Runs = { comments: boolean; names: boolean; oxlint: boolean };
-
 export type Started = {
     architecture: Launched | undefined;
     astro: Launched | undefined;
@@ -42,15 +40,14 @@ export type Started = {
 
 async function lintStarted(
     check: Check,
-    runs: Runs,
 ): Promise<{ format: Launched | undefined; lint: Promise<number> }> {
     if (!check.fix) {
         return {
             format: formatCheck(check),
-            lint: runs.oxlint ? lintCheck(check) : Promise.resolve(0),
+            lint: check.selected('oxlint') ? lintCheck(check) : Promise.resolve(0),
         };
     }
-    const fixed = runs.oxlint && !check.lintTargets.nothing ? await lintFix(check) : 0;
+    const fixed = check.selected('oxlint') && !check.lintTargets.nothing ? await lintFix(check) : 0;
     if (!check.selected('oxfmt')) {
         return { format: undefined, lint: Promise.resolve(fixed) };
     }
@@ -60,16 +57,16 @@ async function lintStarted(
     return { format: { log, status: Promise.resolve(formatted) }, lint: Promise.resolve(fixed) };
 }
 
-export async function started(check: Check, runs: Runs): Promise<Started> {
+export async function started(check: Check): Promise<Started> {
     const typescript = typescriptPass(check);
-    const { format, lint } = await lintStarted(check, runs);
+    const { format, lint } = await lintStarted(check);
     const knip = knipPass(check);
     const gitignore = await gitignorePass(check);
     const docs = docsPass(check);
     const suppressions = suppressionsPass(check);
     const markdown = markdownPass(check);
-    const names = namesPass(check, runs.names);
-    const comments = commentsPass(check, runs.comments);
+    const names = namesPass(check);
+    const comments = commentsPass(check);
     const secrets = secretsPass(check);
     const astro = astroPass(check);
     const architecture = architecturePass(check);

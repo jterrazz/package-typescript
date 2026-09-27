@@ -11,7 +11,7 @@ import { reportPass } from './report.js';
 import { argumentsOf, membersOf, targetsOf, toolsOf } from './setup.js';
 import type { Check } from './setup.js';
 import { started } from './started.js';
-import type { Runs, Started } from './started.js';
+import type { Started } from './started.js';
 import {
     commentsVerdict,
     conventionsVerdict,
@@ -48,7 +48,7 @@ function preparedCheck(
     };
 }
 
-async function withTargets(prepared: Check, runsOxlint: boolean): Promise<Check> {
+async function withTargets(prepared: Check): Promise<Check> {
     const { configs, lintArgs } = prepared;
 
     return {
@@ -56,7 +56,7 @@ async function withTargets(prepared: Check, runsOxlint: boolean): Promise<Check>
         formatTargets: prepared.selected('oxfmt')
             ? await targetsOf(lintArgs, { every: true, ignoresOf: configs.oxfmt.ignoresOf })
             : prepared.formatTargets,
-        lintTargets: runsOxlint
+        lintTargets: prepared.selected('oxlint')
             ? await targetsOf(lintArgs, { every: false, ignoresOf: configs.oxlint.ignoresOf })
             : prepared.lintTargets,
     };
@@ -165,13 +165,8 @@ export async function runChecks(
         print(`${badge('START')} ${fix ? 'Running quality fixes' : 'Running quality checks'}\n`);
         const prepared = preparedCheck(args, fix, selected, scratch);
         const members = checkerMembers(prepared);
-        const runs: Runs = {
-            comments: selected('comments'),
-            names: selected('names'),
-            oxlint: selected('oxlint'),
-        };
-        const run = await withTargets(prepared, runs.oxlint);
-        const passes = await started(run, runs);
+        const run = await withTargets(prepared);
+        const passes = await started(run);
         const conventionRuns = conventions(run, members);
         const verdicts = await reported(run, passes, conventionRuns);
         for (const verdict of verdicts) {
