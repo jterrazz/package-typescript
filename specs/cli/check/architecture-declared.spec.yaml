@@ -1,4 +1,4 @@
-description: fails the hexagonal map and a layer of its own, each at its import — a type-only import and a feature reaching another included, a feature reading its own files and common not
+description: fails the hexagonal map and a layer of its own at each import, type-only ones included
 fixture: ./_fixtures/architecture-map/declared/
 env: TYPESCRIPT_CHECK_PASSES=architecture
 runs:

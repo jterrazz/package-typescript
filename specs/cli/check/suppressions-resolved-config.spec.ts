@@ -11,7 +11,8 @@ const caseOf = (config: string, name: string) =>
         .fixture(directory(`./_fixtures/suppressions-resolved-config/${config}/`))
         .fixture(directory(`./_fixtures/suppressions-resolved-config/${name}/`));
 
-const REWRITTEN = "spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it";
+const REWRITTEN =
+    "spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it";
 
 describe('suppressions-resolved-config', () => {
     test('rewrites an eslint directive on a JS plugin rule, allow entry or not', async () => {
