@@ -104,6 +104,7 @@ export type ProfileName = (typeof PROFILES)[number];
 
 export function typescriptPreset({ profile = 'node' }: { profile?: ProfileName } = {}): Preset {
     return {
+        lawSettings: ['lint', 'memberRoots', 'spine', 'toolRoots', 'words'],
         layers: LINT_LAYERS,
         name: 'typescript',
         package: '@jterrazz/typescript',

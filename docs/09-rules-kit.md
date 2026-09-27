@@ -81,15 +81,16 @@ The readers every check needs are the kit's, so two packages never read one proj
 
 A package hands its consumers everything it holds them to in ONE preset: an object carrying its `name` — the section of `jterrazz.config.ts` it reads and the prefix of its laws — its `package`, and what it adds:
 
-| Key        | Holds                                                                                                                     |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `settings` | the defaults of its section, which the repository's own section merges over                                               |
-| `oxlint`   | its oxlint config — a JS plugin and its rules, overrides                                                                  |
-| `layers`   | its import boundaries, in the vocabulary of [the Architecture pass](06-quality-checks.md#the-architecture-layer-map-pass) |
-| `names`    | its rules of where a name sits, in ls-lint's ([a name rule](06-quality-checks.md#a-name-rule-a-project-declares))         |
-| `baseline` | the sections of `jterrazz.baseline.json` it writes and judges                                                             |
-| `floors`   | which of those sections hold a floor, which only rises, rather than a debt                                                |
-| `presets`  | the presets it includes                                                                                                   |
+| Key           | Holds                                                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `settings`    | the defaults of its section, which the repository's own section merges over                                               |
+| `lawSettings` | the keys of its `settings` that are laws, which nothing merges over                                                       |
+| `oxlint`      | its oxlint config — a JS plugin and its rules, overrides                                                                  |
+| `layers`      | its import boundaries, in the vocabulary of [the Architecture pass](06-quality-checks.md#the-architecture-layer-map-pass) |
+| `names`       | its rules of where a name sits, in ls-lint's ([a name rule](06-quality-checks.md#a-name-rule-a-project-declares))         |
+| `baseline`    | the sections of `jterrazz.baseline.json` it writes and judges                                                             |
+| `floors`      | which of those sections hold a floor, which only rises, rather than a debt                                                |
+| `presets`     | the presets it includes                                                                                                   |
 
 `definePreset` types one. A repository declares the presets it is held to in `jterrazz.config.ts`, and adds only what is its own:
 
@@ -128,12 +129,12 @@ A law whose `from` names no file of the project costs it nothing: the Architectu
 
 Resolution is deterministic, and the same in every reader:
 
-1. The base preset first, then each listed preset in the order written; a preset's own presets come before it, depth first, and a preset named twice keeps its first place. Listing the base preset — `typescript({ profile: 'next' })` — chooses only its settings, merged over the base's own: its laws, its baseline and its floors stay the base preset's, whatever the listed object carries. Two presets of one name from two packages are refused.
-2. Each section is its presets' `settings` merged in that order, then the repository's own section over them: a list concatenates with duplicates dropped, a record merges key by key, and a single value the repository writes wins. A list or a record is never replaced by another shape — a `null` or a string written over the spine is refused — so a default is added to, never written away.
+1. The base preset first, then each listed preset in the order written; a preset's own presets come before it, depth first, and a preset named twice keeps its first place. Listing the base preset — `typescript({ profile: 'next' })`, at the top level or inside another preset — chooses only its settings, merged over the base's own in the order met: its laws, its baseline and its floors stay the base preset's, whatever the listed object carries. Two presets of one name from two packages are refused.
+2. Each section is its presets' `settings` merged in that order, then the repository's own section over them: a list concatenates with duplicates dropped, a record merges key by key, and a single value the repository writes wins. A list or a record is never replaced by another shape — a `null` or a string written over the spine is refused — so a default is added to, never written away. A setting a preset names in its `lawSettings` is a law, not a default: no listing and no section adds to it — the base preset's are the lint tree, the spine, the member roots, the tool roots and the rosters of words — and a root the repository keeps beside the spine is declared under `typescript.roots` with its reason.
 3. The laws — `layers` and `names` — are every preset's in that order, then the repository's own (`typescript.architecture.layers`, `typescript.names`).
 4. `oxlint` is every preset's config, composed by `compose` in that order after the base profile.
 
-A file that does not load, a `presets` that is not a list of presets, a section that is not an object, a setting that replaces a default's shape, or a `presets` written inside a section rather than at the top level is refused in four parts by the pass that reads it, reading this heading.
+A file that does not load, a `presets` that is not a list of presets, a section that is not an object, a setting that replaces a default's shape, a write to a law setting, or a `presets` written inside a section rather than at the top level is refused in four parts by the pass that reads it, reading this heading.
 
 ### Setting a law aside
 

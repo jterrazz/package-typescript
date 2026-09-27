@@ -27,6 +27,7 @@ export const isChapterAnchor = (value: unknown): value is ChapterAnchor =>
 export type Preset = {
     baseline?: readonly string[];
     floors?: readonly string[];
+    lawSettings?: readonly string[];
     layers?: readonly ArchitectureRule[];
     name: string;
     names?: readonly NamesRule[];
@@ -38,11 +39,12 @@ export type Preset = {
 
 export type OptOut = { law: string; reason: string };
 
-// Each law of a preset is named `<preset>/<rule>`; a repository's own rules follow the laws, unnamed and read as written.
+export type PresetLaw = `${string}/${string}`;
+
 export type Resolved = {
     baseline: string[];
     floors: string[];
-    laws: string[];
+    laws: PresetLaw[];
     layers: unknown[];
     names: unknown[];
     optOuts: OptOut[];
@@ -83,7 +85,7 @@ function flattened(presets: readonly unknown[], into: Map<string, Preset>): null
 
 type Named = { name: string };
 
-const lawOf = (preset: Preset, rule: Named): string => `${preset.name}/${rule.name}`;
+const lawOf = (preset: Preset, rule: Named): PresetLaw => `${preset.name}/${rule.name}`;
 
 function optOutsOf(
     declared: unknown,
@@ -133,15 +135,42 @@ const EMPTY: Resolved = {
     sections: {},
 };
 
+function occurrencesOf(listed: readonly unknown[], name: string): Preset[] {
+    return listed.flatMap((preset) =>
+        isPreset(preset)
+            ? [
+                  ...occurrencesOf(preset.presets ?? [], name),
+                  ...(preset.name === name ? [preset] : []),
+              ]
+            : [],
+    );
+}
+
+const lawSettingRefused = (name: string, key: string): string =>
+    `writes \`${name}.${key}\`, a law the ${name} preset sets — keep a root beside the spine under \`${name}.roots\` with its reason, or set a law aside under \`optOuts\``;
+
+function writtenLawSetting(
+    preset: Preset,
+    settings: Readonly<Record<string, unknown>>,
+    written: unknown,
+): string | undefined {
+    const own = objectOf(written);
+
+    return (preset.lawSettings ?? []).find(
+        (key) =>
+            Object.hasOwn(own, key) &&
+            JSON.stringify(mergeSettings(settings[key], own[key]).value) !==
+                JSON.stringify(settings[key]),
+    );
+}
+
 function withBase(
     listed: readonly unknown[],
     base: readonly Preset[],
 ): { presets: unknown[]; problem: null | string } {
     const presets: unknown[] = [];
     for (const own of base) {
-        const named = listed.filter(
-            (preset): preset is Preset => isPreset(preset) && preset.name === own.name,
-        );
+        const named = occurrencesOf(listed, own.name);
         const foreign = named.find((preset) => preset.package !== own.package);
         if (foreign !== undefined) {
             return {
@@ -151,6 +180,10 @@ function withBase(
         }
         let settings: unknown = own.settings;
         for (const preset of named) {
+            const law = writtenLawSetting(own, objectOf(own.settings), preset.settings);
+            if (law !== undefined) {
+                return { presets: [], problem: lawSettingRefused(own.name, law) };
+            }
             const merged = mergeSettings(settings, preset.settings, own.name);
             if (merged.problem !== null) {
                 return { presets: [], problem: merged.problem };
@@ -208,12 +241,16 @@ function sectionsOf(
         }
         if (own !== undefined && Object.hasOwn(own, 'presets')) {
             return sectionRefused(
-                `holds a \`presets\` inside its \`${name}\` section, which no reader reads — list every preset at the top level, \`presets: [...]\` (docs/09-rules-kit.md#presets)`,
+                `holds a \`presets\` inside its \`${name}\` section, which no reader reads — list every preset at the top level, \`presets: [...]\``,
             );
         }
         let section: unknown = {};
         for (const preset of presets.filter((one) => one.name === name)) {
             section = mergeSettings(section, preset.settings, name).value;
+            const law = writtenLawSetting(preset, objectOf(section), own);
+            if (law !== undefined) {
+                return sectionRefused(lawSettingRefused(name, law));
+            }
         }
         const merged = mergeSettings(section, own, name);
         if (merged.problem !== null) {
@@ -239,15 +276,14 @@ function lawsOf(
     );
 }
 
-// `written` is the default export of a settings file, typed by each package's own interface.
-export function resolveConfig(written: object, base: readonly Preset[]): Resolution {
-    const declared = objectOf(written);
+export function resolveConfig(declaredSettings: object, base: readonly Preset[]): Resolution {
+    const declared = objectOf(declaredSettings);
     const listed: unknown = declared.presets ?? [];
     // A file that cannot be resolved still leaves the base laws standing.
     const refusedWith = (problem: string): Resolution => ({
         problem,
         resolved:
-            written === EMPTY_DECLARATION ? EMPTY : resolveConfig(EMPTY_DECLARATION, base).resolved,
+            declaredSettings === EMPTY_DECLARATION ? EMPTY : resolveConfig(EMPTY_DECLARATION, base).resolved,
     });
     if (!Array.isArray(listed)) {
         return refusedWith('holds a `presets` that is not a list');

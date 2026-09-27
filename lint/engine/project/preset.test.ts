@@ -14,6 +14,7 @@ const layer = (name: string): ArchitectureRule => ({
 });
 
 const BASE: Preset = {
+    lawSettings: ['spine'],
     layers: [layer('base-law')],
     name: 'typescript',
     package: '@jterrazz/typescript',
@@ -56,8 +57,8 @@ describe('preset', () => {
         ]);
     });
 
-    test('merges a section over its defaults: lists concatenate, records merge, a written value wins', () => {
-        // Given - the base named with another profile, and the repository adding to the spine
+    test('merges a section over its defaults: records merge, a written value wins', () => {
+        // Given - the base named with another profile, and the repository keeping a root and restating the spine
         const { resolved } = resolveConfig(
             {
                 presets: [
@@ -67,17 +68,38 @@ describe('preset', () => {
                         settings: { profile: 'next' },
                     },
                 ],
-                typescript: { roots: { scripts: 'the release scripts' }, spine: ['tools', 'src'] },
+                typescript: { roots: { scripts: 'the release scripts' }, spine: ['src'] },
             },
             [BASE],
         );
 
-        // Then - the written profile replaced the default, and the spine grew without a duplicate
+        // Then - the written profile replaced the default, and the spine is the preset's
         expect(resolved.sections.typescript).toStrictEqual({
             profile: 'next',
             roots: { scripts: 'the release scripts' },
-            spine: ['src', 'tools'],
+            spine: ['src'],
         });
+    });
+
+    test('merges the settings of the base preset listed inside another preset', () => {
+        // Given - the base named with another profile by a preset the repository lists
+        const { problem, resolved } = resolveConfig(
+            {
+                presets: [
+                    {
+                        name: 'web',
+                        package: '@acme/web',
+                        presets: [{ ...BASE, settings: { profile: 'next' } }],
+                    },
+                ],
+            },
+            [BASE],
+        );
+
+        // Then - the nested profile is chosen, and the base comes first
+        expect(problem).toBeNull();
+        expect(resolved.sections.typescript?.profile).toBe('next');
+        expect(resolved.presets.map(({ name }) => name)).toStrictEqual(['typescript', 'web']);
     });
 
     test('sets a law aside only with its reason, and names the law it set aside', () => {
@@ -147,7 +169,21 @@ describe('preset', () => {
         [
             'presets listed inside a section',
             { typescript: { presets: [] } },
-            'holds a `presets` inside its `typescript` section, which no reader reads — list every preset at the top level, `presets: [...]` (docs/09-rules-kit.md#presets)',
+            'holds a `presets` inside its `typescript` section, which no reader reads — list every preset at the top level, `presets: [...]`',
+        ],
+        [
+            'a law setting extended by the repository',
+            { typescript: { spine: ['scripts'] } },
+            'writes `typescript.spine`, a law the typescript preset sets — keep a root beside the spine under `typescript.roots` with its reason, or set a law aside under `optOuts`',
+        ],
+        [
+            'a law setting extended through a nested listing of the base',
+            {
+                presets: [
+                    { name: 'web', package: '@acme/web', presets: [{ ...BASE, settings: { spine: ['scripts'] } }] },
+                ],
+            },
+            'writes `typescript.spine`, a law the typescript preset sets — keep a root beside the spine under `typescript.roots` with its reason, or set a law aside under `optOuts`',
         ],
     ])('refuses %s, the base laws still standing', (_, written, refused) => {
         // Given - a settings object that would write a base law away
