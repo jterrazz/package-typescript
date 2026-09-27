@@ -1,20 +1,11 @@
 import { accessSync, constants, existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 
-function nearestManifestDirectory(from: string): string {
-    let directory = from;
-    while (!existsSync(join(directory, 'package.json'))) {
-        const parent = dirname(directory);
-        if (parent === directory) {
-            return from;
-        }
-        directory = parent;
-    }
+import { nearestRoot } from './repository-root.js';
 
-    return directory;
-}
-
-export const PACKAGE_ROOT = nearestManifestDirectory(import.meta.dirname);
+export const PACKAGE_ROOT =
+    nearestRoot(import.meta.dirname, (directory) => existsSync(join(directory, 'package.json'))) ??
+    import.meta.dirname;
 
 export function isExecutable(path: string): boolean {
     try {
