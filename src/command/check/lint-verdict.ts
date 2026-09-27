@@ -51,6 +51,8 @@ function configRefusals(check: Check, printed: string): string[] {
     ];
 }
 
+const WARNED = /Found [1-9]\d* warnings? and|^\S+:\d+:\d+: warning /mu;
+
 // oxlint's own help names a bare `oxlint --suppress-all`, which would lint with another config and without types.
 function ratchetLessons(printed: string): string[] {
     return [
@@ -61,6 +63,16 @@ function ratchetLessons(printed: string): string[] {
                       found: 'a diagnostic oxlint-suppressions.json does not hold — each one is listed above',
                       read: 'docs/06-quality-checks.md#the-ratchet',
                       why: 'the file holds the debt the project recorded, file by file, and a diagnostic beyond it is a regression',
+                  })}\n`,
+              ]
+            : []),
+        ...(WARNED.test(printed)
+            ? [
+                  `${refusal({
+                      fix: "set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it",
+                      found: 'a warn-severity diagnostic — oxlint lists it above',
+                      read: 'docs/06-quality-checks.md#a-warning-is-a-diagnostic',
+                      why: 'oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run',
                   })}\n`,
               ]
             : []),

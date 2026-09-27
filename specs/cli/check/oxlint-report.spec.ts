@@ -14,6 +14,9 @@ const REPOSITORY = resolve(import.meta.dirname, '../../..');
 const OXLINT = resolve(REPOSITORY, 'node_modules/.bin/oxlint');
 const SHAPES = resolve(import.meta.dirname, '_fixtures/oxlint-report');
 
+const WARNING_LESSON =
+    "found: a warn-severity diagnostic — oxlint lists it above · why: oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/06-quality-checks.md#a-warning-is-a-diagnostic\n";
+
 const FORM_VARIABLES = [
     'AI_AGENT',
     'CI',
@@ -99,9 +102,11 @@ describe('oxlint-report', () => {
             .fixture(directory('./_fixtures/oxlint-report/'))
             .exec('check');
 
-        // Then - the pass prints oxlint's own report, byte for byte but the run's duration, in the form this environment picks
+        // Then - the pass prints oxlint's own report, byte for byte but the run's duration, in the form this environment picks, and the lesson its warning owes
         expect(expected).toContain(marker);
-        expect(timeless(oxlintPassOf(result.stdout.raw))).toBe(timeless(expected));
+        expect(timeless(oxlintPassOf(result.stdout.raw))).toBe(
+            `${timeless(expected)}${WARNING_LESSON}`,
+        );
     });
 
     // A JS plugin records every oxlint process loading it in the file `RUNS_LOG` names, and nowhere without one.

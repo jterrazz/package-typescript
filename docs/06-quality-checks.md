@@ -239,7 +239,7 @@ A project with no config of its own is one scope. `check` hands the default with
 
 oxlint leaves its exit code at 0 for a warn-severity diagnostic, and a pass that passed prints no log — so `check` would be silent on a tree `fix` failed. The run passes `--deny-warnings`: every diagnostic the linter reports is printed and judged, whatever severity armed it.
 
-There is no warn tier, in this rulebook or in `@jterrazz/test`'s: a rule is on at `error`, its debt held by the ratchet, or off with a recorded reason. oxlint's suppressions hold errors alone, so a warning is a diagnostic nothing can hold down — a JS plugin composed beside the rulebook that still ships one fails the pass on it, and its fix is to promote the rule.
+There is no warn tier, in this rulebook or in `@jterrazz/test`'s: a rule is on at `error`, its debt held by the ratchet, or off with a recorded reason. oxlint's suppressions hold errors alone, so a warning is a diagnostic nothing can hold down — a JS plugin composed beside the rulebook that still ships one fails the pass on it, and the pass says so in four parts beneath oxlint's report: its fix is to promote the rule to `error`, which the ratchet can then hold.
 
 ### The two rewriters run in order
 

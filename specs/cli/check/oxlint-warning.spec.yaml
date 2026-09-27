@@ -1,5 +1,5 @@
-description: reads a warn-severity diagnostic as debt, and reads it the same way in check and in fix
-fixture: ./_fixtures/warnings/unrecorded/
+description: fails a warn-severity diagnostic, naming the promotion no baseline can replace, in check and in fix
+fixture: ./_fixtures/warnings/warned/
 runs:
     - command: check
       exit: 1
@@ -12,6 +12,7 @@ runs:
 
            RUN  Oxlint Check
           {{any}}
+          found: a warn-severity diagnostic — oxlint lists it above · why: oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/06-quality-checks.md#a-warning-is-a-diagnostic
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
@@ -44,8 +45,8 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            profile                              node (the default — no config of its own)
-            rules off vs profile                 none
+            profile                              none of this package's
+            rules off vs profile                 not measured
             suppressions                         0
             oxlint-suppressions.json             nothing held
             jterrazz.baseline.json › typescript  nothing held
@@ -65,6 +66,7 @@ runs:
 
            RUN  Oxlint Fix
           {{any}}
+          found: a warn-severity diagnostic — oxlint lists it above · why: oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/06-quality-checks.md#a-warning-is-a-diagnostic
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Format

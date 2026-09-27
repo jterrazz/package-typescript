@@ -1,6 +1,7 @@
 {
-    "name": "fixture-warnings-unrecorded",
+    "name": "fixture-warnings-warned",
     "version": "1.0.0",
     "private": true,
+    "type": "module",
     "main": "index.ts"
 }
