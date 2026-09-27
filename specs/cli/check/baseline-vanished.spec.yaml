@@ -1,0 +1,156 @@
+description: fails a suppressions file holding an entry for a file that is gone, until fix prunes it
+fixture: ./_fixtures/baseline/vanished/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          found: oxlint-suppressions.json holds entries for files that are gone: src/moved.ts · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/06-quality-checks.md#the-ratchet
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            oxlint-suppressions.json             2
+            jterrazz.baseline.json › typescript  nothing held
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
+    - command: fix
+      exit: 0
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+
+          ✓ Passed
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
+
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✓ All checks passed
+      files:
+          oxlint-suppressions.json:
+              equals: |
+                  {
+                      "index.ts": {
+                          "no-debugger": {
+                              "count": 1
+                          }
+                      }
+                  }
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Comments (density)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            oxlint-suppressions.json             1
+            jterrazz.baseline.json › typescript  nothing held
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

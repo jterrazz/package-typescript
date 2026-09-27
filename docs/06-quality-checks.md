@@ -251,13 +251,14 @@ The formatter is handed the same sweep, whole rather than cut to the shapes a li
 
 ## The ratchet
 
-A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. The toolchain takes the second, and the lint debt is oxlint's own to hold: `oxlint-suppressions.json`, one tracked file at the project root, counts every recorded diagnostic file by file and rule by rule, and oxlint reads it on every run. A file's count held exactly is suppressed; one past it fails the run, with each of that rule's diagnostics in the file listed; an entry the tree has paid down fails it too — the count is exact both ways, so the file shrinks the day the debt falls, and no slack is left for new debt to grow back into.
+A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. The toolchain takes the second, and the lint debt is oxlint's own to hold: `oxlint-suppressions.json`, one tracked file at the project root, counts every recorded diagnostic file by file and rule by rule, and oxlint reads it on every run. A file's count held exactly is suppressed; one past it fails the run, with each of that rule's diagnostics in the file listed; an entry the tree has paid down fails it too — the count is exact both ways, so the file shrinks the day the debt falls, and no slack is left for new debt to grow back into. oxlint judges only the files it lints, so an entry for a file that is gone — deleted or moved — is the pass's own to find, and it fails the run the same way.
 
 oxlint's help names `oxlint --suppress-all` and `oxlint --prune-suppressions`, which would lint with another config, without types, and a bare tree. The pass adds the toolchain's word after oxlint's:
 
 ```text
 found: a diagnostic oxlint-suppressions.json does not hold — each one is listed above · why: … · fix: fix it, or run 'typescript baseline' to record where the project stands — never a bare `oxlint --suppress-all`, which lints with another config · read: docs/06-quality-checks.md#the-ratchet
 found: oxlint-suppressions.json holds more than the project has left · why: … · fix: run 'typescript fix', which prunes the file · read: docs/06-quality-checks.md#the-ratchet
+found: oxlint-suppressions.json holds entries for files that are gone: src/moved.ts · why: … · fix: run 'typescript fix', which prunes the file · read: docs/06-quality-checks.md#the-ratchet
 ```
 
 The flags that write the file are not in oxlint's `--help` yet; the toolchain pins oxlint to one exact version, and its specs run each one.

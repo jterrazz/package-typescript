@@ -1,4 +1,4 @@
-import { readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { objectOf } from '../project/json.js';
@@ -28,6 +28,17 @@ export function removeWhenEmpty(root: string): void {
     if (suppressedCount(root) === 0) {
         rmSync(join(root, OXLINT_SUPPRESSIONS), { force: true });
     }
+}
+
+export function vanishedEntries(root: string): string[] {
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(readFileSync(join(root, OXLINT_SUPPRESSIONS), 'utf8'));
+    } catch {
+        return [];
+    }
+
+    return Object.keys(objectOf(parsed)).filter((path) => !existsSync(join(root, path)));
 }
 
 export function suppressedCount(root: string): null | number {

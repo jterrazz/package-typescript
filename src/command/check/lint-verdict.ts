@@ -1,5 +1,6 @@
 import { appendFileSync } from 'node:fs';
 
+import { vanishedEntries } from '../../../lint/engine/baseline/oxlint-suppressions.js';
 import { refusal } from '../../../lint/engine/catalogue/lesson.js';
 import { isModulePackage } from './project.js';
 import type { Check } from './setup.js';
@@ -53,7 +54,7 @@ function configRefusals(check: Check, printed: string): string[] {
 
 const WARNED = /Found [1-9]\d* warnings? and|^\S+:\d+:\d+: warning /mu;
 
-function ratchetLessons(printed: string): string[] {
+function ratchetLessons(printed: string, vanished: readonly string[]): string[] {
     return [
         ...(printed.includes(NEW_VIOLATIONS)
             ? [
@@ -75,11 +76,14 @@ function ratchetLessons(printed: string): string[] {
                   })}\n`,
               ]
             : []),
-        ...(printed.includes(FALLEN)
+        ...(printed.includes(FALLEN) || vanished.length > 0
             ? [
                   `${refusal({
                       fix: "run 'typescript fix', which prunes the file",
-                      found: 'oxlint-suppressions.json holds more than the project has left',
+                      found:
+                          vanished.length === 0
+                              ? 'oxlint-suppressions.json holds more than the project has left'
+                              : `oxlint-suppressions.json holds entries for files that are gone: ${vanished.join(', ')}`,
                       read: 'docs/06-quality-checks.md#the-ratchet',
                       why: 'the count is exact, so a debt that fell is recorded the day it falls',
                   })}\n`,
@@ -92,10 +96,15 @@ export function lintVerdict(check: Check, linted: number): LintVerdict {
     const log = check.logs.at('lint.log');
     const printed = check.logs.read(log);
     const refusals = configRefusals(check, printed);
-    const lessons = ratchetLessons(printed);
+    const vanished = vanishedEntries('.');
+    const lessons = ratchetLessons(printed, vanished);
     for (const line of [...refusals, ...lessons]) {
         appendFileSync(log, line);
     }
 
-    return { log, status: refusals.length > 0 ? 1 : linted, writes: false };
+    return {
+        log,
+        status: refusals.length > 0 || vanished.length > 0 ? 1 : linted,
+        writes: false,
+    };
 }

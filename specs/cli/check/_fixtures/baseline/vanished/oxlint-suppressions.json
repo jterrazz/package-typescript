@@ -1,0 +1,12 @@
+{
+    "index.ts": {
+        "no-debugger": {
+            "count": 1
+        }
+    },
+    "src/moved.ts": {
+        "no-debugger": {
+            "count": 1
+        }
+    }
+}
