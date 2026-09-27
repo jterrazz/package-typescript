@@ -49,7 +49,7 @@ typescript doctor     # what is installed, against what this release asks for
 typescript baseline   # record the debt, so each count may only fall
 ```
 
-`doctor` is the first read after a bump. It prints one row per tool — node, the Go `tsc`, the TypeScript JS API, oxlint, oxfmt, `oxlint-tsgolint`, knip — with what is installed, what this package declares, and a verdict. A tool OLDER than its range fails, because a gate running an older linter enforces an older rulebook without saying so; a tool NEWER only warns, since a version ahead of its range may be perfectly fine and the toolchain does not get to decide that. Every number is read off an installed package's own manifest rather than a lockfile or a `--version` flag: that is the one place that cannot disagree with what node will load.
+`doctor` is the first read after a bump. It prints one row per tool — node, the Go `tsc`, the TypeScript JS API, oxlint, oxfmt, `oxlint-tsgolint`, knip, dependency-cruiser, ls-lint, rumdl — with what is installed, what this package declares, and a verdict. A tool OLDER than its range fails, because a gate running an older linter enforces an older rulebook without saying so; a tool NEWER only warns, since a version ahead of its range may be perfectly fine and the toolchain does not get to decide that. Every number is read off an installed package's own manifest rather than a lockfile or a `--version` flag: that is the one place that cannot disagree with what node will load.
 
 ### The provider pinned to its runner
 

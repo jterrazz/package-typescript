@@ -73,14 +73,14 @@ A refusal the command's own code can meet from a project — a map it cannot com
 
 The barrel and five subpaths, all declared in the exports map — each a built `.js` beside the `.d.ts` the build generates, but for the one JSON list, whose type the file itself is:
 
-| Subpath                                    | Exports                                                                                       |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| `@jterrazz/typescript`                     | the barrel — `{ oxfmt, oxlint }` presets                                                      |
-| `@jterrazz/typescript/oxlint`              | the six profiles, `compose()`, `nested()`, `defineConfig`                                     |
-| `@jterrazz/typescript/oxfmt`               | `base`, and oxfmt's own `defineConfig`                                                        |
-| `@jterrazz/typescript/docs`                | `auditDocs()` — the manual's rules, pure                                                      |
-| `@jterrazz/typescript/config`              | `defineConfig()`, `JterrazzConfig` and `ArchitectureRule` — the family's settings file, typed |
-| `@jterrazz/typescript/oxlint-config-names` | the names oxlint looks for a config under, in its order — a JSON array                        |
+| Subpath                                    | Exports                                                                                                                                                                      |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@jterrazz/typescript`                     | the barrel — `{ oxfmt, oxlint }` presets                                                                                                                                     |
+| `@jterrazz/typescript/oxlint`              | the six profiles, `compose()`, `nested()`, `defineConfig`                                                                                                                    |
+| `@jterrazz/typescript/oxfmt`               | `base`, and oxfmt's own `defineConfig`                                                                                                                                       |
+| `@jterrazz/typescript/docs`                | `auditDocs()` — the manual's rules, pure                                                                                                                                     |
+| `@jterrazz/typescript/config`              | `defineConfig()`, `JterrazzConfig`, `TypescriptSettings`, `ArchitectureSettings`, `ArchitectureRule`, `NamesRule` and `TypescriptPreset` — the family's settings file, typed |
+| `@jterrazz/typescript/oxlint-config-names` | the names oxlint looks for a config under, in its order — a JSON array                                                                                                       |
 
 The oxlint entry carries the six profiles by name — `node`, `next`, `astro`, `expo`, `bun`, `react` — plus two things about composing them: `compose()` merges configs left to right, and `nested()` strips the root-only options from a profile a subtree's own config ships ([Developing](02-developing.md#a-subtree-on-another-profile)). A layer map is not a lint fragment: it is declared in `jterrazz.config.ts` and judged by dependency-cruiser ([Quality checks](06-quality-checks.md#the-architecture-layer-map-pass)). Each config TYPE — `OxlintConfig`, `OxfmtConfig` — is re-exported from the tool that owns it, never restated here: a hand copy drifts, and a drifted copy stops a consumer's own config from type-checking.
 

@@ -14,25 +14,25 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 
 `typescript check` runs up to fifteen passes. Three spawn a tool on every invocation, knip and five tree gates run on every `check`, and the other six are opt-in — they appear only when the project qualifies.
 
-| Pass                              | Tool                        | When it runs                                                             |
-| --------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
-| TypeScript Check                  | tsc (TypeScript 7, Go)      | always                                                                   |
-| Oxlint Check                      | oxlint (`--type-aware`)     | always (judged by the ratchet's `typescript` section where there is one) |
-| Oxfmt Check                       | oxfmt (Rust)                | always                                                                   |
-| Gitignore (artefacts)             | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own              |
-| Knip (unused code)                | knip (Node)                 | always (check only — it is not run in fix)                               |
-| Test Conventions (@jterrazz/test) | conventions checker         | per `specs/` root; per member resolving `@jterrazz/test`                 |
-| Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)                |
-| Publish (packaging)               | publint + attw + a build    | per package the registry would accept (not `private`)                    |
-| Architecture (layer map)          | dependency-cruiser          | check: a `jterrazz.config.ts`, or a `.dependency-cruiser.*`              |
-| Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)                      |
-| Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)                   |
-| Markdown (prose)                  | rumdl + the prose gate      | always (check and fix — `--fix` runs rumdl's own fixes)                  |
-| Names (tree)                      | ls-lint + the naming gate   | always (check and fix — `--fix` deletes an empty directory)              |
-| Comments (density)                | the comment gate            | always (check and fix — `--fix` re-records a fall)                       |
-| Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                 |
+| Pass                              | Tool                        | When it runs                                                                                     |
+| --------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------ |
+| TypeScript Check                  | tsc (TypeScript 7, Go)      | always                                                                                           |
+| Oxlint Check                      | oxlint (`--type-aware`)     | always (judged by the ratchet's `typescript` section where there is one)                         |
+| Oxfmt Check                       | oxfmt (Rust)                | always                                                                                           |
+| Gitignore (artefacts)             | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own                                      |
+| Knip (unused code)                | knip (Node)                 | always (check only — it is not run in fix)                                                       |
+| Test Conventions (@jterrazz/test) | conventions checker         | per `specs/` root; per member resolving `@jterrazz/test`                                         |
+| Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)                                        |
+| Publish (packaging)               | publint + attw + a build    | per package the registry would accept (not `private`)                                            |
+| Architecture (layer map)          | dependency-cruiser          | a `jterrazz.config.ts`, or a `.dependency-cruiser.*` (check and fix — `--fix` re-records a fall) |
+| Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)                                              |
+| Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)                                           |
+| Markdown (prose)                  | rumdl + the prose gate      | always (check and fix — `--fix` runs rumdl's own fixes)                                          |
+| Names (tree)                      | ls-lint + the naming gate   | always (check and fix — `--fix` deletes an empty directory)                                      |
+| Comments (density)                | the comment gate            | always (check and fix — `--fix` re-records a fall)                                               |
+| Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                                         |
 
-`typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate, rumdl (`--fix`) with the prose gate, the naming gate and the comment gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
+`typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate, dependency-cruiser (`--fix` re-records a fall), rumdl (`--fix`) with the prose gate, the naming gate and the comment gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
 
 ### In a workspace
 
@@ -278,7 +278,7 @@ typescript baseline
 
 A command of its own, because it neither checks nor repairs: it writes down where the project actually stands, debt that grew included. `fix --baseline` would bury that rewrite inside the gesture a developer runs twenty times a day; `fix` records only the falls, which can make the files shrink and never let them grow. It records the lint debt with oxlint — `--suppress-all`, then `--prune-suppressions`, with the config and the sweep `check` lints by, types included — and writes the `typescript` section from the Architecture, Names and Comments passes, then hands both files to the project's own oxfmt: they are tracked like any other file, so the formatter owns their shape. The `test` section is recorded by `@jterrazz/test`'s own command, never by this one. A file this command cannot read as sections is refused rather than rewritten; so is a run whose Architecture (layer map), Names (tree) or Comments (density) pass wrote no report — a pass that could not judge the tree, dependency-cruiser refusing to run included, writes none: that side of the section is unknown, and writing it would erase that debt rather than record it — `typescript check` prints why the pass died. A sweep that refused an answer records no lint debt either, rather than recording the directory.
 
-This repository's own debt is small and dated. `oxlint-suppressions.json` holds `max-lines` on the files the size caps of 11.0.0 found past 300 lines — splitting each is a change of its own — and the `@jterrazz/test` rules its specs still owe; the `typescript` section holds `comments/comment-lines-held-by-the-baseline`, the comment debt the comment guards found on the day they arrived, burned down file by file. The toolchain is consumer #1 of the rulebook it ships, so its own tree carries only the debt a new rule found, and only until it is paid.
+This repository's own debt is small and dated. `oxlint-suppressions.json` holds `max-lines` on the files the size caps of 11.0.0 found past 300 lines — splitting each is a change of its own — the `@jterrazz/test` rules its specs still owe, and two `typescript/no-unsafe-type-assertion` casts in one of its own suites, kept as debt to pay; the `typescript` section holds `comments/comment-lines-held-by-the-baseline`, the comment debt the comment guards found on the day they arrived, burned down file by file. The toolchain is consumer #1 of the rulebook it ships, so its own tree carries only the debt a new rule found, and only until it is paid.
 
 ## The Publish (packaging) pass
 
