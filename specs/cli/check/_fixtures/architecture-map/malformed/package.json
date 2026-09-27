@@ -1,0 +1,7 @@
+{
+    "name": "fixture-architecture-map-malformed",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "src/domain/order.ts"
+}

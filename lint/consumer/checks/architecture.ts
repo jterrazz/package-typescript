@@ -3,8 +3,10 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'n
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { refusal } from '../../engine/catalogue/lesson.js';
 import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { runTool } from '../../engine/checker/tool-run.js';
+import type { ToolRun } from '../../engine/checker/tool-run.js';
 import { objectOf, stringOf } from '../../engine/project/json.js';
 import { readSection } from '../../engine/project/jterrazz-config.js';
 import { ARCHITECTURE_HEXAGONAL } from './architecture.hexagonal.js';
@@ -53,14 +55,29 @@ function isRule(value: unknown): value is ArchitectureRule {
 async function declaredRules(root: string): Promise<Declared> {
     const { problem, section } = await readSection(root, 'typescript');
     const { architecture } = section;
-    if (problem !== null || architecture === undefined) {
-        return { problem, rules: [] };
+    if (problem !== null) {
+        return {
+            problem: refusal({
+                fix: 'correct jterrazz.config.ts until it loads and exports an object, then run again',
+                found: `jterrazz.config.ts ${problem}`,
+                read: 'docs/06-quality-checks.md#the-architecture-layer-map-pass',
+                why: 'the layer map is read from that file, and a map that cannot be read judges no import',
+            }),
+            rules: [],
+        };
+    }
+    if (architecture === undefined) {
+        return { problem: null, rules: [] };
     }
     const { hexagonal, layers = [] } = objectOf(architecture);
     if (!Array.isArray(layers) || !layers.every((layer) => isRule(layer))) {
         return {
-            problem:
-                'holds a `typescript.architecture.layers` whose every entry is not `{ name, from, to, why, fix, read }`',
+            problem: refusal({
+                fix: 'give every entry of `typescript.architecture.layers` a `name`, a `from` and a `to` object, and a `why`, a `fix` and a `read`',
+                found: 'jterrazz.config.ts holds a `typescript.architecture.layers` whose every entry is not `{ name, from, to, why, fix, read }`',
+                read: 'docs/06-quality-checks.md#the-architecture-layer-map-pass',
+                why: 'a layer is a dependency-cruiser rule and the lesson its refusal prints, and a layer missing a part can be neither judged nor taught',
+            }),
             rules: [],
         };
     }
@@ -175,6 +192,21 @@ function findingOf(
     };
 }
 
+function unreportedOf({ output, ran, status }: ToolRun): null | string {
+    if (!ran) {
+        return output.trim();
+    }
+
+    return status === 0
+        ? null
+        : refusal({
+              fix: 'correct what dependency-cruiser printed — a layer whose `from` or `to` it cannot read, a tsconfig it cannot load — then run again',
+              found: `dependency-cruiser stopped with no report — ${output.trim()}`,
+              read: 'docs/06-quality-checks.md#the-architecture-layer-map-pass',
+              why: 'the layer map is judged on the graph dependency-cruiser writes, and with no graph no import is judged',
+          });
+}
+
 function cruised(
     context: Context,
     rules: readonly ArchitectureRule[],
@@ -188,7 +220,7 @@ function cruised(
         const config = join(scratch, 'dependency-cruiser.json');
         const cruise = join(scratch, 'cruise.json');
         writeFileSync(config, JSON.stringify(cruiseConfig(rules, context)));
-        const { output, status } = runTool(
+        const run = runTool(
             'dependency-cruiser',
             context.value('--depcruise', 'depcruise'),
             ['--config', config, '--output-type', 'json', '--output-to', cruise, ...roots],
@@ -198,7 +230,7 @@ function cruised(
         try {
             report = JSON.parse(readFileSync(cruise, 'utf8'));
         } catch {
-            return { findings: [], problem: status === 0 ? null : output };
+            return { findings: [], problem: unreportedOf(run) };
         }
         const { comments, specifiers, violations } = violationsOf(report);
         const lessons = new Map<string, Lesson>(rules.map((rule) => [rule.name, rule]));
@@ -226,7 +258,7 @@ export const architecture: Pass = Object.freeze({
     async check(context) {
         const { problem, rules } = await declaredRules(context.root);
         if (problem !== null) {
-            return { failed: true, lines: [`jterrazz.config.ts ${problem}`] };
+            return { failed: true, lines: [problem] };
         }
         const own = OWN_CONFIGS.some((name) => context.exists(join(context.root, name)));
         if (rules.length === 0 && !own) {

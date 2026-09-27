@@ -3,7 +3,9 @@ import { copyFileSync, lstatSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
-export type ToolRun = { output: string; status: number };
+import { refusal } from '../catalogue/lesson.js';
+
+export type ToolRun = { output: string; ran: boolean; status: number };
 
 export function runTool(
     name: string,
@@ -13,10 +15,21 @@ export function runTool(
 ): ToolRun {
     const run = spawnSync(binary, args, { cwd: root, encoding: 'utf8' });
     if (run.error !== undefined) {
-        return { output: `${name} could not be run: ${run.error.message}\n`, status: 1 };
+        const line = refusal({
+            fix: `run 'npm install' so the ${name} @jterrazz/typescript pins is installed beside it, then run again`,
+            found: `${name} could not be run — ${run.error.message}`,
+            read: 'docs/06-quality-checks.md#the-passes',
+            why: `the pass hands the tree to ${name}, and a tool that never ran judged nothing`,
+        });
+
+        return { output: `${line}\n`, ran: false, status: 1 };
     }
 
-    return { output: `${run.stdout ?? ''}${run.stderr ?? ''}`, status: run.status ?? 1 };
+    return {
+        output: `${run.stdout ?? ''}${run.stderr ?? ''}`,
+        ran: true,
+        status: run.status ?? 1,
+    };
 }
 
 // gitleaks reads a directory, so the judged files are copied into one, each at the project's own path.

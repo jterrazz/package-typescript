@@ -3,6 +3,7 @@ import type { Dirent } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { refusal } from '../../engine/catalogue/lesson.js';
 import type { Finding } from '../../engine/checker/pass.js';
 import { runTool } from '../../engine/checker/tool-run.js';
 import { GROUND_FOLDERS } from '../../engine/project/ground.js';
@@ -293,7 +294,7 @@ export function runLsLint(
     try {
         const config = join(scratch, 'ls-lint.yml');
         writeFileSync(config, lsLintConfig(units, ignorePatterns));
-        const { output, status } = runTool(
+        const { output, ran, status } = runTool(
             'ls-lint',
             binary,
             ['-config', config, '-error-output-format', 'json'],
@@ -305,7 +306,17 @@ export function runLsLint(
         try {
             return { failures: failuresOf(JSON.parse(output)), problem: null };
         } catch {
-            return { failures: {}, problem: output };
+            return {
+                failures: {},
+                problem: ran
+                    ? refusal({
+                          fix: 'correct what ls-lint printed — an `--ignore-pattern` it cannot read as a glob, a directory it cannot enter — then run again',
+                          found: `ls-lint stopped with no report — ${output.trim()}`,
+                          read: 'docs/06-quality-checks.md#the-names-tree-pass',
+                          why: 'where a name sits is judged from the failures ls-lint reports, and with no report no name is judged',
+                      })
+                    : output.trim(),
+            };
         }
     } finally {
         rmSync(scratch, { force: true, recursive: true });
