@@ -40,6 +40,21 @@ describe('comments', () => {
         expect(linesOfComments(text)).toStrictEqual([5]);
     });
 
+    test('leaves an instruction to a formatter, a coverage tool or a bundler uncounted', () => {
+        // Given - the instructions a tool reads, and a prose line
+        const text = [
+            '// oxfmt-ignore',
+            'const matrix = [1,0,0,1];',
+            '/* v8 ignore next */',
+            'if (matrix.length === 0) throw new Error();',
+            'await import(/* @vite-ignore */ path);',
+            '// the identity matrix',
+        ].join('\n');
+
+        // Then - only the prose line counts
+        expect(linesOfComments(text)).toStrictEqual([6]);
+    });
+
     test('leaves a test marker to the test conventions', () => {
         // Given - the markers a test carries, and a prose line inside it
         const text = [
