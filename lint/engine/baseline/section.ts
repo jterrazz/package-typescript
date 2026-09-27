@@ -2,7 +2,6 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { isJsonObject, objectOf } from '../project/json.js';
-import { isTestOwned } from './counts.js';
 
 export const BASELINE = 'jterrazz.baseline.json';
 
@@ -93,11 +92,7 @@ export function judge(counts: Counts, baseline: Counts): string[] {
     }
 
     for (const rule of Object.keys(baseline).toSorted()) {
-        if (isTestOwned(rule)) {
-            broken.push(
-                `${rule} is @jterrazz/test's rule — its entry belongs in ${labelOf(TEST_SECTION)}, which that package records and judges`,
-            );
-        } else if ((counts[rule] ?? 0) === 0) {
+        if ((counts[rule] ?? 0) === 0) {
             broken.push(`${rule} is at zero — the ratchet moved, delete its entry`);
         }
     }
