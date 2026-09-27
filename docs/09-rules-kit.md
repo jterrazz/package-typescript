@@ -111,12 +111,12 @@ A law whose `from` names no file of the project costs it nothing: the Architectu
 
 Resolution is deterministic, and the same in every reader:
 
-1. The base preset first, then each listed preset in the order written; a preset's own presets come before it, depth first, and a preset named twice keeps its first place. Two presets of one name from two packages are refused.
-2. Each section is its presets' `settings` merged in that order, then the repository's own section over them: a list concatenates with duplicates dropped, a record merges key by key, and any other value the repository writes wins.
+1. The base preset first, then each listed preset in the order written; a preset's own presets come before it, depth first, and a preset named twice keeps its first place. Listing the base preset — `typescript({ profile: 'next' })` — chooses only its settings, merged over the base's own: its laws, its baseline and its floors stay the base preset's, whatever the listed object carries. Two presets of one name from two packages are refused.
+2. Each section is its presets' `settings` merged in that order, then the repository's own section over them: a list concatenates with duplicates dropped, a record merges key by key, and a single value the repository writes wins. A list or a record is never replaced by another shape — a `null` or a string written over the spine is refused — so a default is added to, never written away.
 3. The laws — `layers` and `names` — are every preset's in that order, then the repository's own (`typescript.architecture.layers`, `typescript.names`).
 4. `oxlint` is every preset's config, composed by `compose` in that order after the base profile.
 
-A file that does not load, a `presets` that is not a list of presets, or a section that is not an object is refused in four parts by the pass that reads it, reading this heading.
+A file that does not load, a `presets` that is not a list of presets, a section that is not an object, a setting that replaces a default's shape, or a `presets` written inside a section rather than at the top level is refused in four parts by the pass that reads it, reading this heading.
 
 ### Setting a law aside
 

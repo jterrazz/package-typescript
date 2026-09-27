@@ -60,7 +60,9 @@ describe('preset', () => {
         // Given - the base named with another profile, and the repository adding to the spine
         const { resolved } = resolveConfig(
             {
-                presets: [{ ...BASE, settings: { ...BASE.settings, profile: 'next' } }],
+                presets: [
+                    { name: 'typescript', package: '@jterrazz/typescript', settings: { profile: 'next' } },
+                ],
                 typescript: { roots: { scripts: 'the release scripts' }, spine: ['tools', 'src'] },
             },
             [BASE],
@@ -106,5 +108,49 @@ describe('preset', () => {
 
         // Then - the collision is named
         expect(problem).toBe('holds two presets named `core`, from @a/core and @b/core');
+    });
+
+    test.each([
+        ['the base named with no law', { name: 'typescript', package: '@jterrazz/typescript' }],
+        ['the base named with its laws emptied', { ...BASE, layers: [], names: [] }],
+    ])('keeps the base laws where a listing names %s', (_, listed) => {
+        // Given - a listing of the base preset that carries none of its laws
+        const { problem, resolved } = resolveConfig({ presets: [listed] }, [BASE]);
+
+        // Then - the base law still stands, and nothing is set aside
+        expect(problem).toBeNull();
+        expect(resolved.laws).toStrictEqual(['typescript/base-law']);
+        expect(resolved.layers.map((rule) => objectOf(rule).name)).toStrictEqual(['base-law']);
+        expect(resolved.optOuts).toStrictEqual([]);
+    });
+
+    test.each([
+        [
+            'the base named by another package',
+            { presets: [{ name: 'typescript', package: 'other' }] },
+            'holds two presets named `typescript`, from @jterrazz/typescript and other',
+        ],
+        [
+            'a list written away as null',
+            { typescript: { spine: null } },
+            'writes a single value at `typescript.spine`, where its presets set a list — a setting adds to a default, never replaces its shape',
+        ],
+        [
+            'a list written away through the listed base',
+            { presets: [{ ...BASE, settings: { spine: 'src' } }] },
+            'writes a single value at `typescript.spine`, where its presets set a list — a setting adds to a default, never replaces its shape',
+        ],
+        [
+            'presets listed inside a section',
+            { typescript: { presets: [] } },
+            'holds a `presets` inside its `typescript` section, which no reader reads — list every preset at the top level, `presets: [...]` (docs/09-rules-kit.md#presets)',
+        ],
+    ])('refuses %s, the base laws still standing', (_, written, refused) => {
+        // When - the settings are resolved
+        const { problem, resolved } = resolveConfig(written, [BASE]);
+
+        // Then - the problem is named, and the base law is still held
+        expect(problem).toBe(refused);
+        expect(resolved.laws).toStrictEqual(['typescript/base-law']);
     });
 });

@@ -129,6 +129,7 @@ export type { Manifest } from './engine/project/manifest.js';
 export { definePreset, mergeSettings, resolveConfig } from './engine/project/preset.js';
 export type {
     ArchitectureRule,
+    Merged,
     NamesRule,
     OptOut,
     Preset,

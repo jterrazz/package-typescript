@@ -3,7 +3,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { readSection } from './jterrazz-config.js';
+import { readConfig } from './jterrazz-config.js';
+
+async function sectionAt(unit: string): Promise<{ problem: null | string; section: unknown }> {
+    const { problem, resolved } = await readConfig(unit, []);
+
+    return { problem, section: resolved.sections.typescript ?? {} };
+}
 
 function unitWith(source?: string): string {
     const unit = mkdtempSync(join(tmpdir(), 'jterrazz-config-'));
@@ -24,7 +30,7 @@ describe('jterrazz-config', () => {
         const unit = unitWith();
 
         // Then - nothing is declared, and nothing is wrong
-        await expect(readSection(unit, 'typescript')).resolves.toStrictEqual({
+        await expect(sectionAt(unit)).resolves.toStrictEqual({
             problem: null,
             section: {},
         });
@@ -37,7 +43,7 @@ describe('jterrazz-config', () => {
         );
 
         // Then - the section asked for is the one returned
-        await expect(readSection(unit, 'typescript')).resolves.toStrictEqual({
+        await expect(sectionAt(unit)).resolves.toStrictEqual({
             problem: null,
             section: { roots: { scripts: 'the release scripts' } },
         });
@@ -48,7 +54,7 @@ describe('jterrazz-config', () => {
         const unit = unitWith('export default { test: {} };\n');
 
         // Then - this package declared nothing
-        await expect(readSection(unit, 'typescript')).resolves.toStrictEqual({
+        await expect(sectionAt(unit)).resolves.toStrictEqual({
             problem: null,
             section: {},
         });
@@ -73,7 +79,7 @@ describe('jterrazz-config', () => {
         const unit = unitWith(source);
 
         // When - this package's section is read
-        const read = await readSection(unit, 'typescript');
+        const read = await sectionAt(unit);
 
         // Then - nothing is declared, and the problem says why
         expect(read.section).toStrictEqual({});

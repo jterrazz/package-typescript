@@ -82,15 +82,3 @@ export function readConfigSync(unit: string, base: readonly Preset[]): Config {
 
     return config;
 }
-
-export type Section = { problem: null | string; section: Readonly<Record<string, unknown>> };
-
-export async function readSection(
-    unit: string,
-    name: string,
-    base: readonly Preset[] = [],
-): Promise<Section> {
-    const { problem, resolved } = await readConfig(unit, base);
-
-    return { problem, section: problem === null ? (resolved.sections[name] ?? {}) : {} };
-}
