@@ -16,7 +16,7 @@ function written(text: string): string {
     return path;
 }
 
-describe('jsonc', () => {
+describe('readJsonc', () => {
     test('drops a trailing comma before the end of an array and of an object', () => {
         // Given - a document closing both collections after a comma
         const path = written('{\n    "ignore": ["a", "b",],\n    "nested": { "on": true, },\n}\n');
