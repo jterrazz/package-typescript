@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import process from 'node:process';
 
+import { refusal } from '../../lint/engine/catalogue/lesson.js';
 import { baseline } from './baseline.js';
 import { build, bundle, clean, dev, start } from './build.js';
 import { EVERY_PASS, runChecks } from './check/index.js';
@@ -45,8 +46,17 @@ const USAGE = [
     ].map((example) => `  typescript ${example}`),
 ];
 
-function usage(): number {
-    print(`${badge('TYPESCRIPT')} TypeScript toolchain\n\n${USAGE.join('\n')}\n`);
+function usage(name: string): number {
+    const unknown =
+        name === ''
+            ? ''
+            : `${refusal({
+                  fix: 'run one of the commands below',
+                  found: `no command named ${name}`,
+                  read: 'docs/02-developing.md#3-wire-the-cli-into-packagejson',
+                  why: 'the toolchain answers only the commands it declares',
+              })}\n\n`;
+    print(`${badge('TYPESCRIPT')} TypeScript toolchain\n\n${unknown}${USAGE.join('\n')}\n`);
 
     return 1;
 }
@@ -86,7 +96,7 @@ export async function main(
     { selected = EVERY_PASS }: { selected?: Selected } = {},
 ): Promise<number> {
     const [name = '', ...rest] = args;
-    const command = COMMANDS[name];
+    const command = Object.hasOwn(COMMANDS, name) ? COMMANDS[name] : undefined;
 
-    return command === undefined ? usage() : await command(rest, selected);
+    return command === undefined ? usage(name) : await command(rest, selected);
 }

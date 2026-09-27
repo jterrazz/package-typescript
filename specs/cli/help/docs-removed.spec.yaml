@@ -1,9 +1,11 @@
-description: answers `docs` with the help banner — the API reference compiler it ran is gone
+description: refuses `docs` above the help banner — the API reference compiler it ran is gone
 runs:
     - command: docs
       exit: 1
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
+
+          found: no command named docs · why: the toolchain answers only the commands it declares · fix: run one of the commands below · read: docs/02-developing.md#3-wire-the-cli-into-packagejson
 
           Usage: typescript <command>
 
