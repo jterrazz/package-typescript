@@ -1,17 +1,61 @@
 import { EVERY_NAME } from '../../../engine/project/importers.js';
 import { publishedNamesOf } from '../../../engine/project/published-names.js';
 
+type Node = {
+    body?: Node | Node[];
+    declaration?: Node | null;
+    declarations?: Node[];
+    end?: number;
+    exported?: Node;
+    id?: Node | null;
+    local?: Node;
+    name?: string;
+    parent?: Node;
+    range?: [number, number];
+    source?: Node | null;
+    specifiers?: Node[];
+    start?: number;
+    type: string;
+    value?: unknown;
+};
+
+type Comment = { end?: number; range?: [number, number]; start?: number; value: string };
+
+type SourceCode = { getCommentsBefore: (node: Node) => Comment[]; text: string };
+
+type RuleContext = {
+    filename: string;
+    physicalFilename?: string;
+    report: (report: { data: Record<string, number>; messageId: string; node: Comment }) => void;
+    sourceCode: SourceCode;
+};
+
+type Declaration = { anchor: Node; name: string | undefined; owner?: Node | null | undefined };
+
+type LineOf = (offset: number) => number;
+
 export const COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME = 'comment-no-longer-than-its-function';
 
 const DIRECTIVE = /^\s*\*?\s*(?:(?:es|ox)lint-(?:disable|enable)|@ts-|biome-ignore)/u;
-const FUNCTIONS = new Set(['ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression']);
-const EXPORTS = new Set(['ExportDefaultDeclaration', 'ExportNamedDeclaration']);
-const MEMBERS = new Set(['MethodDefinition', 'Property', 'PropertyDefinition']);
+const FUNCTIONS: ReadonlySet<string> = new Set([
+    'ArrowFunctionExpression',
+    'FunctionDeclaration',
+    'FunctionExpression',
+]);
+const EXPORTS: ReadonlySet<string | undefined> = new Set([
+    'ExportDefaultDeclaration',
+    'ExportNamedDeclaration',
+]);
+const MEMBERS: ReadonlySet<string | undefined> = new Set([
+    'MethodDefinition',
+    'Property',
+    'PropertyDefinition',
+]);
 
-const startOf = (node) => node.range?.[0] ?? node.start;
-const endOf = (node) => node.range?.[1] ?? node.end;
+const startOf = (node: Comment | Node): number => node.range?.[0] ?? node.start ?? 0;
+const endOf = (node: Comment | Node): number => node.range?.[1] ?? node.end ?? 0;
 
-function lineIndexOf(text) {
+function lineIndexOf(text: string): LineOf {
     const starts = [0];
     for (let index = text.indexOf('\n'); index !== -1; index = text.indexOf('\n', index + 1)) {
         starts.push(index + 1);
@@ -22,7 +66,7 @@ function lineIndexOf(text) {
         let high = starts.length - 1;
         while (low < high) {
             const middle = Math.ceil((low + high) / 2);
-            if (starts[middle] <= offset) {
+            if ((starts[middle] ?? 0) <= offset) {
                 low = middle;
             } else {
                 high = middle - 1;
@@ -33,45 +77,48 @@ function lineIndexOf(text) {
     };
 }
 
-function exportedLocalsOf(program) {
-    const exported = new Map();
-    for (const statement of program.body) {
-        if (
-            statement.type !== 'ExportNamedDeclaration' ||
-            statement.source ||
-            statement.declaration
-        ) {
-            continue;
-        }
-        for (const specifier of statement.specifiers) {
-            const local = specifier.local.name ?? specifier.local.value;
-            const name = specifier.exported.name ?? specifier.exported.value;
-            exported.set(local, [...(exported.get(local) ?? []), name]);
+const nameOf = (node: Node | undefined): string => String(node?.name ?? node?.value);
+
+const isLocalList = (statement: Node): boolean =>
+    statement.type === 'ExportNamedDeclaration' &&
+    (statement.source ?? null) === null &&
+    (statement.declaration ?? null) === null;
+
+function exportedLocalsOf(program: Node): Map<string, string[]> {
+    const exported = new Map<string, string[]>();
+    const body = Array.isArray(program.body) ? program.body : [];
+    for (const statement of body.filter((candidate) => isLocalList(candidate))) {
+        for (const specifier of statement.specifiers ?? []) {
+            const local = nameOf(specifier.local);
+            exported.set(local, [...(exported.get(local) ?? []), nameOf(specifier.exported)]);
         }
     }
 
     return exported;
 }
 
-function memberOf(fn) {
+function memberOf(fn: Node): Declaration | null {
     const { parent } = fn;
-    if (!MEMBERS.has(parent.type) || parent.value !== fn) {
+    if (parent === undefined || !MEMBERS.has(parent.type) || parent.value !== fn) {
         return null;
     }
-    const owner = parent.parent.type === 'ClassBody' ? parent.parent.parent : null;
+    const owner = parent.parent?.type === 'ClassBody' ? parent.parent.parent : null;
 
     return { anchor: parent, name: owner?.id?.name, owner };
 }
 
-function declarationOf(fn) {
+function declarationOf(fn: Node): Declaration | null {
     const { parent } = fn;
+    if (parent === undefined) {
+        return null;
+    }
     if (fn.type === 'FunctionDeclaration') {
         return { anchor: fn, name: fn.id?.name ?? 'default' };
     }
-    if (parent.type === 'VariableDeclarator' && parent.id.type === 'Identifier') {
+    if (parent.type === 'VariableDeclarator' && parent.id?.type === 'Identifier') {
         const statement = parent.parent;
         return {
-            anchor: statement.declarations.length === 1 ? statement : parent,
+            anchor: statement?.declarations?.length === 1 ? statement : parent,
             name: parent.id.name,
         };
     }
@@ -82,23 +129,31 @@ function declarationOf(fn) {
     return memberOf(fn);
 }
 
-function isPublished(declaration, exportedLocals, published) {
+function isPublished(
+    declaration: Declaration,
+    exportedLocals: ReadonlyMap<string, readonly string[]>,
+    published: ReturnType<typeof publishedNamesOf>,
+): boolean {
     if (published === null || declaration.name === undefined) {
         return false;
     }
     const outer = declaration.owner ?? declaration.anchor;
     const direct = EXPORTS.has(outer.parent?.type) || EXPORTS.has(outer.parent?.parent?.type);
     const names = direct
-        ? [outer.parent.type === 'ExportDefaultDeclaration' ? 'default' : declaration.name]
+        ? [outer.parent?.type === 'ExportDefaultDeclaration' ? 'default' : declaration.name]
         : (exportedLocals.get(declaration.name) ?? []);
 
     return names.some((name) => published === EVERY_NAME || published.has(name));
 }
 
-function documentingLinesOf(anchor, sourceCode, lineOf) {
+function documentingLinesOf(
+    anchor: Node,
+    sourceCode: SourceCode,
+    lineOf: LineOf,
+): { first: Comment | null; lines: number } {
     const { text } = sourceCode;
-    const lines = new Set();
-    let first = null;
+    const lines = new Set<number>();
+    let first: Comment | null = null;
     let top = lineOf(startOf(anchor));
     for (const comment of sourceCode.getCommentsBefore(anchor).toReversed()) {
         const start = startOf(comment);
@@ -118,7 +173,7 @@ function documentingLinesOf(anchor, sourceCode, lineOf) {
     return { first, lines: lines.size };
 }
 
-function bodyLinesOf(body, lineOf) {
+function bodyLinesOf(body: Node, lineOf: LineOf): number {
     const opening = lineOf(startOf(body));
     const closing = lineOf(endOf(body) - 1);
     if (body.type !== 'BlockStatement') {
@@ -129,29 +184,37 @@ function bodyLinesOf(body, lineOf) {
 }
 
 export const commentNoLongerThanItsFunction = {
-    create(context) {
+    create(context: RuleContext): Record<string, (node: Node) => void> {
         const { sourceCode } = context;
         const lineOf = lineIndexOf(sourceCode.text);
         const published = publishedNamesOf(context.physicalFilename ?? context.filename);
-        let exportedLocals = new Map();
+        let exportedLocals = new Map<string, string[]>();
 
-        const judge = (fn) => {
-            const declaration = fn.body ? declarationOf(fn) : null;
+        const judge = (fn: Node): void => {
+            const { body } = fn;
+            const declaration =
+                body === undefined || Array.isArray(body) ? null : declarationOf(fn);
             if (declaration === null || isPublished(declaration, exportedLocals, published)) {
                 return;
             }
-            const anchor = EXPORTS.has(declaration.anchor.parent?.type)
-                ? declaration.anchor.parent
-                : declaration.anchor;
+            const anchor =
+                declaration.anchor.parent !== undefined &&
+                EXPORTS.has(declaration.anchor.parent.type)
+                    ? declaration.anchor.parent
+                    : declaration.anchor;
             const { first, lines } = documentingLinesOf(anchor, sourceCode, lineOf);
-            const body = bodyLinesOf(fn.body, lineOf);
-            if (first !== null && lines > Math.max(body, 1)) {
-                context.report({ data: { body, lines }, messageId: 'longer', node: first });
+            const bodyLines = bodyLinesOf(body as Node, lineOf);
+            if (first !== null && lines > Math.max(bodyLines, 1)) {
+                context.report({
+                    data: { body: bodyLines, lines },
+                    messageId: 'longer',
+                    node: first,
+                });
             }
         };
 
         return {
-            Program(program) {
+            Program(program: Node): void {
                 exportedLocals = exportedLocalsOf(program);
             },
             ...Object.fromEntries([...FUNCTIONS].map((type) => [type, judge])),
@@ -166,6 +229,6 @@ export const commentNoLongerThanItsFunction = {
                 'read: docs/07-lint-presets.md#a-comment-no-longer-than-its-function',
             ].join(' · '),
         },
-        type: 'suggestion',
+        type: 'suggestion' as const,
     },
 };

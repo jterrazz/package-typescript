@@ -7,6 +7,7 @@ import {
     typeAware,
     unsafeFix,
 } from '../../engine/compiler/decision.js';
+import type { Stated } from '../../engine/compiler/decision.js';
 
 // Every rule tsgolint runs is decided, nursery included, so a tsgolint release never adds an unnamed check.
 
@@ -27,7 +28,7 @@ const UNTYPED_IN_JAVASCRIPT = [
     'no-unsafe-type-assertion',
     'no-unsafe-unary-minus',
     'strict-boolean-expressions',
-].map((rule) => [`typescript/${rule}`, off(UNTYPED_BY_CONSTRUCTION)]);
+].map((rule): [string, Stated] => [`typescript/${rule}`, off(UNTYPED_BY_CONSTRUCTION)]);
 
 export default fragment({
     id: 'typescript',

@@ -11,7 +11,7 @@ const root = '/package';
 const found = (findings: { message: string }[]): string[] =>
     findings.map(({ message }) => message.split(' · ')[0] ?? '');
 
-describe('publish.no-test-code-in-production', () => {
+describe('noTestCodeInProductionFindings', () => {
     test('names a local module that is test material, and passes one that is not', () => {
         // Given - one shipped file compiled from an entry, a fixtures module and a ground file
         const chunks = [

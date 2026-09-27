@@ -4,7 +4,7 @@ import { REASON_KINDS } from '../../engine/compiler/decision.js';
 // fragment a module of `lint/` or `src/` exports, whether a profile carries it or not.
 
 export const FRAGMENT_WALK = Object.freeze({
-    executables: Object.freeze(['src/cli']),
+    executables: Object.freeze(['lint/engine/testing']),
     walked: Object.freeze(['lint', 'src']),
 });
 

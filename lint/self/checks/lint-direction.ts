@@ -1,11 +1,14 @@
 import { LINT_TREE } from '../../consumer/checks/names.lint-tree.js';
+import type { Layer } from '../../engine/compiler/layers.js';
+
+type Audience = 'consumer' | 'self';
 
 const SELF = '**/self/**';
 const SOURCE = '**/src/**';
 const ENGINE = '**/engine/**';
 const CONSUMER = '**/consumer/**';
 
-const READS = {
+const READS: Readonly<Record<Audience, { allow: string[]; deny: string[]; reaches: string }>> = {
     consumer: {
         allow: [ENGINE],
         deny: [SELF, SOURCE],
@@ -18,7 +21,7 @@ const READS = {
     },
 };
 
-function audienceFolder(audience, folder) {
+function audienceFolder(audience: Audience, folder: string): Layer {
     const isCatalogue = folder === 'catalogue';
     const siblings = LINT_TREE[audience].filter(
         (other) => other !== folder && (isCatalogue || other !== 'catalogue'),
@@ -37,7 +40,7 @@ function audienceFolder(audience, folder) {
     };
 }
 
-export const LINT_DIRECTION = {
+export const LINT_DIRECTION: { id: string; map: Layer[] } = {
     id: 'lint-direction',
     map: [
         {

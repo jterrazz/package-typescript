@@ -16,8 +16,8 @@ RuleTester.it = (name, body) => {
 
 type OxlintRule = Parameters<RuleTester['run']>[1];
 
-// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a JavaScript rule's inferred `meta.type` widens to string, the one field the two shapes disagree on
-const rule = commentNoLongerThanItsFunction as OxlintRule;
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the rule declares the few AST fields it reads, and oxlint's own node types are not exported to state it against
+const rule = commentNoLongerThanItsFunction as unknown as OxlintRule;
 
 const ruleTester = new RuleTester();
 

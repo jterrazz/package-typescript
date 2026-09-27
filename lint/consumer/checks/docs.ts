@@ -1,5 +1,23 @@
 // The single executable copy of the rule ids and of each sentence they print; pages name ids, never
 // messages. Nothing here reads the filesystem, so a clone nobody installed into is judged the same.
+import type { DocsTree } from '../../engine/project/docs-tree.js';
+
+export type { DocsTree } from '../../engine/project/docs-tree.js';
+
+/** One broken rule, naming the path it is about and the sentence the gate prints. */
+export type DocsViolation = {
+    readonly message: string;
+    readonly path: string;
+    readonly rule: string;
+};
+
+type Report = (rule: string, path: string, message: string) => void;
+
+type Chapter = { name: string; number: number; path: string };
+
+type Entry = { name: string; path: string };
+
+/** How many opening lines of a file a rule may read. */
 export const HEAD_LINES = 20;
 
 const SPINE = ['01-architecture.md', '02-developing.md', '03-testing.md', '04-operating.md'];
@@ -7,13 +25,13 @@ const SPINE = ['01-architecture.md', '02-developing.md', '03-testing.md', '04-op
 // 04 is required only by the presence test.
 const REQUIRED_SPINE = SPINE.slice(0, 3);
 
-const SUBFOLDERS = new Set(['_assets/', 'decisions/']);
+const SUBFOLDERS: ReadonlySet<string> = new Set(['_assets/', 'decisions/']);
 
 // A generated API reference is a second copy of the types an editor resolves: refused by name.
 const GENERATED_REFERENCE = 'reference/';
 
 // A chapter names a subject, never the state of a piece of work.
-const JOURNAL_WORDS = new Set([
+const JOURNAL_WORDS: ReadonlySet<string> = new Set([
     'draft',
     'exploration',
     'legacy',
@@ -26,7 +44,7 @@ const JOURNAL_WORDS = new Set([
     'wip',
 ]);
 
-const STATUSES = new Set(['Proposed', 'Accepted', 'Deprecated']);
+const STATUSES: ReadonlySet<string> = new Set(['Proposed', 'Accepted', 'Deprecated']);
 
 const SUPERSEDED = /^Superseded by \[ADR-\d{3}\]\([^)]+\)$/u;
 
@@ -42,17 +60,17 @@ const DECISION_STATUS = /^\*\*Status:\*\*\s*(?<status>.+?)\s*$/u;
 
 const SCHEME = /^[a-z][\d+.a-z-]*:/iu;
 
-const SHIPPING_REASONS = [
+const SHIPPING_REASONS: readonly (readonly [keyof DocsTree['ships'], string])[] = [
     ['dockerfile', 'an image (a Dockerfile)'],
     ['infrastructure', 'a deployment (.infrastructure/)'],
     ['publishable', 'a published package (package.json is not private)'],
 ];
 
-function directChildren(files) {
+function directChildren(files: readonly string[]): string[] {
     return files.filter((path) => /^docs\/[^/]+\/?$/u.test(path));
 }
 
-function filesUnder(files, folder) {
+function filesUnder(files: readonly string[], folder: string): Entry[] {
     const prefix = `docs/${folder}`;
 
     return files
@@ -60,21 +78,21 @@ function filesUnder(files, folder) {
         .map((path) => ({ name: path.slice(prefix.length), path }));
 }
 
-function twoDigit(value) {
+function twoDigit(value: number): string {
     return String(value).padStart(2, '0');
 }
 
-function targetPath(link) {
-    return link.split('#')[0].replace(/^\.\//u, '');
+function targetPath(link: string): string {
+    return (link.split('#')[0] ?? '').replace(/^\.\//u, '');
 }
 
-function isChapterLink(target) {
+function isChapterLink(target: string): boolean {
     return /^\d/u.test(target) && !target.includes('/');
 }
 
 // A result still opening on `..` climbed above the repository root.
-function resolveLink(from, link) {
-    const stack = [];
+function resolveLink(from: string, link: string): string {
+    const stack: string[] = [];
 
     for (const segment of [...from.split('/').slice(0, -1), ...link.split('/')]) {
         if (segment === '' || segment === '.') {
@@ -92,7 +110,14 @@ function resolveLink(from, link) {
     return stack.join('/');
 }
 
-function auditMap(report, { chapters, files, links }) {
+function auditMap(
+    report: Report,
+    {
+        chapters,
+        files,
+        links,
+    }: { chapters: readonly Chapter[]; files: readonly string[]; links: readonly string[] },
+): void {
     if (!files.includes('docs/README.md')) {
         report(
             'docs/map-present',
@@ -138,7 +163,25 @@ function auditMap(report, { chapters, files, links }) {
     }
 }
 
-function auditChapters(report, { chapters, ships }) {
+function auditOperating(
+    report: Report,
+    { chapters, ships }: { chapters: readonly Chapter[]; ships: DocsTree['ships'] | undefined },
+): void {
+    const operating = SPINE[3];
+    const reason = SHIPPING_REASONS.find(([fact]) => ships?.[fact] === true)?.[1];
+    if (reason !== undefined && !chapters.some((chapter) => chapter.name === operating)) {
+        report(
+            'docs/operating-chapter-present-when-shipping',
+            `docs/${operating ?? ''}`,
+            `${operating ?? ''} is missing — this repository ships ${reason}`,
+        );
+    }
+}
+
+function auditChapters(
+    report: Report,
+    { chapters, ships }: { chapters: readonly Chapter[]; ships: DocsTree['ships'] | undefined },
+): void {
     for (const chapter of chapters) {
         if (!CHAPTER_NAME.test(chapter.name)) {
             report(
@@ -172,24 +215,16 @@ function auditChapters(report, { chapters, ships }) {
         }
     }
 
-    const operating = SPINE[3];
-    const reason = SHIPPING_REASONS.find(([fact]) => ships?.[fact])?.[1];
-    if (reason !== undefined && !chapters.some((chapter) => chapter.name === operating)) {
-        report(
-            'docs/operating-chapter-present-when-shipping',
-            `docs/${operating}`,
-            `${operating} is missing — this repository ships ${reason}`,
-        );
-    }
-
+    auditOperating(report, { chapters, ships });
     auditChapterWords(report, chapters);
 }
 
-function auditChapterNumbering(report, chapters) {
+function auditChapterNumbering(report: Report, chapters: readonly Chapter[]): void {
     const numbers = chapters.map((chapter) => chapter.number).toSorted((a, b) => a - b);
     const hasOperating = numbers.includes(4);
     // 04 is never required by the spine, so a run missing it is contiguous with every later number shifted down.
-    const expected = (index) => (!hasOperating && index + 1 >= 4 ? index + 2 : index + 1);
+    const expected = (index: number): number =>
+        !hasOperating && index + 1 >= 4 ? index + 2 : index + 1;
     const contiguous = numbers.every((number, index) => number === expected(index));
     if (numbers.length === 0 || contiguous) {
         return;
@@ -198,11 +233,11 @@ function auditChapterNumbering(report, chapters) {
     report(
         'docs/chapters-numbered-contiguously',
         'docs/',
-        `chapter numbers run ${numbers.map(twoDigit).join(', ')}: they are contiguous from 01, one file per number, except that 04 may be absent`,
+        `chapter numbers run ${numbers.map((number) => twoDigit(number)).join(', ')}: they are contiguous from 01, one file per number, except that 04 may be absent`,
     );
 }
 
-function auditChapterWords(report, chapters) {
+function auditChapterWords(report: Report, chapters: readonly Chapter[]): void {
     for (const chapter of chapters) {
         const word = chapter.name.split(/[.-]/u).find((segment) => JOURNAL_WORDS.has(segment));
         if (word !== undefined) {
@@ -215,7 +250,7 @@ function auditChapterWords(report, chapters) {
     }
 }
 
-function auditDecisionNumbers(report, records) {
+function auditDecisionNumbers(report: Report, records: readonly Entry[]): void {
     const numbers = [...new Set(records.map((record) => record.name.slice(0, 3)))].toSorted(
         (left, right) => left.localeCompare(right),
     );
@@ -228,7 +263,7 @@ function auditDecisionNumbers(report, records) {
         );
     }
 
-    const claimed = new Map();
+    const claimed = new Map<string, string>();
     for (const record of records) {
         const number = record.name.slice(0, 3);
         const first = claimed.get(number);
@@ -245,7 +280,7 @@ function auditDecisionNumbers(report, records) {
     }
 }
 
-function auditFolder(report, { children }) {
+function auditFolder(report: Report, { children }: { children: readonly string[] }): void {
     for (const path of children) {
         const name = path.slice('docs/'.length);
 
@@ -273,7 +308,7 @@ function auditFolder(report, { children }) {
     }
 }
 
-function auditRecord(report, record, heads) {
+function auditRecord(report: Report, record: Entry, heads: DocsTree['heads']): void {
     const number = record.name.slice(0, 3);
     const head = heads[record.path] ?? [];
     const opening = head[0] ?? '';
@@ -286,7 +321,9 @@ function auditRecord(report, record, heads) {
         );
     }
 
-    const status = head.map((line) => DECISION_STATUS.exec(line)?.groups?.status).find(Boolean);
+    const status = head
+        .map((line) => DECISION_STATUS.exec(line)?.groups?.status)
+        .find((found) => found !== undefined && found !== '');
     if (status === undefined || !(STATUSES.has(status) || SUPERSEDED.test(status))) {
         const message =
             status !== undefined && BARE_SUPERSEDED.test(status)
@@ -296,7 +333,10 @@ function auditRecord(report, record, heads) {
     }
 }
 
-function auditDecisions(report, { files, heads }) {
+function auditDecisions(
+    report: Report,
+    { files, heads }: { files: readonly string[]; heads: DocsTree['heads'] },
+): void {
     if (!files.includes('docs/decisions/')) {
         return;
     }
@@ -338,7 +378,10 @@ function auditDecisions(report, { files, heads }) {
     }
 }
 
-function auditLinks(report, { files, links }) {
+function auditLinks(
+    report: Report,
+    { files, links }: { files: readonly string[]; links: DocsTree['links'] },
+): void {
     for (const path of files) {
         for (const link of links[path] ?? []) {
             if (link.startsWith('#') || SCHEME.test(link)) {
@@ -356,7 +399,8 @@ function auditLinks(report, { files, links }) {
 }
 
 // A repository with no `docs/` gets exactly one violation: every other rule would restate the absence.
-export function auditDocs(tree) {
+/** What breaks the shape of `docs/`, in rule order. An empty array is a compliant manual. */
+export function auditDocs(tree: DocsTree): readonly DocsViolation[] {
     const files = tree.files ?? [];
 
     if (!files.includes('docs/')) {
@@ -370,8 +414,10 @@ export function auditDocs(tree) {
         ];
     }
 
-    const violations = [];
-    const report = (rule, path, message) => violations.push({ message, path, rule });
+    const violations: DocsViolation[] = [];
+    const report: Report = (rule, path, message) => {
+        violations.push({ message, path, rule });
+    };
 
     const children = directChildren(files);
     const chapters = children

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 import { runChecker } from './engine/checker/checker.js';
+import type { Passes } from './engine/checker/pass.js';
 
-const PASSES = Object.freeze({
+const PASSES: Passes = Object.freeze({
     async comments() {
         const { comments } = await import('./consumer/checks/comments.js');
 
@@ -15,7 +16,7 @@ const PASSES = Object.freeze({
         ]);
 
         return {
-            check: ({ root }) => ({ findings: auditDocs(readDocsTree(root, HEAD_LINES)) }),
+            check: ({ root }) => ({ findings: [...auditDocs(readDocsTree(root, HEAD_LINES))] }),
         };
     },
     async drift() {

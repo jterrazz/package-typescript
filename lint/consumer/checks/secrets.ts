@@ -1,5 +1,6 @@
 // Only the line declaring itself fake is forgiven: an allow-list of paths is where a real leak hides.
 
+import type { Finding, Pass } from '../../engine/checker/pass.js';
 import { runGitleaks } from '../../engine/checker/tool-run.js';
 import { readText } from '../../engine/project/project-files.js';
 
@@ -40,10 +41,11 @@ const PATTERNS = [
     { pattern: /\bst\.[\da-f]{24,}\b/u, rule: 'secrets/no-service-token', what: 'a service token' },
 ];
 
-const isSynthetic = (line) => /dummy|example|fake|redacted|sample|synthetic/iu.test(line);
+const isSynthetic = (line: string): boolean =>
+    /dummy|example|fake|redacted|sample|synthetic/iu.test(line);
 
-function patternFindings(root, files) {
-    const findings = [];
+function patternFindings(root: string, files: readonly string[]): Finding[] {
+    const findings: Finding[] = [];
     for (const path of files) {
         const text = readText(root, path);
         if (text === null) {
@@ -64,7 +66,7 @@ function patternFindings(root, files) {
     return findings;
 }
 
-export const secrets = Object.freeze({
+export const secrets: Pass = Object.freeze({
     check(context) {
         const files = context.files();
         const gitleaks = runGitleaks(context.root, files);

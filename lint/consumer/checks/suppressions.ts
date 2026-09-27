@@ -1,5 +1,6 @@
-import { join, matchesGlob } from 'node:path';
+import { join } from 'node:path';
 
+import type { Finding, Pass } from '../../engine/checker/pass.js';
 import {
     BIOME,
     commentSpansOf,
@@ -7,12 +8,19 @@ import {
     SOURCE,
     TS_DIRECTIVE,
 } from '../../engine/project/comments.js';
-import { printedOxlintConfig } from '../../engine/project/oxlint-config.js';
+import { configAt, resolveConfig } from '../../engine/project/oxlint-config.js';
+import type { Applied, Resolved } from '../../engine/project/oxlint-config.js';
 import { readText } from '../../engine/project/project-files.js';
+
+type Found = { message: string; rule: string };
+
+type Audited = { fixed: string; found: Found[] };
+
+type Span = readonly [number, number];
 
 const REASON = ' -- ';
 
-function rulesOf(tail) {
+function rulesOf(tail: string): string[] {
     const named = tail.split(REASON)[0] ?? '';
 
     return named
@@ -22,70 +30,16 @@ function rulesOf(tail) {
         .filter((name) => /^[\w-]+(?:\/[\w-]+)*$/u.test(name) && name !== '');
 }
 
-const hasReason = (tail) => (tail.split(REASON)[1] ?? '').replace(/\*\/\s*$/u, '').trim() !== '';
+const hasReason = (tail: string): boolean =>
+    (tail.split(REASON)[1] ?? '').replace(/\*\/\s*$/u, '').trim() !== '';
 
 // oxlint reads a glob with no `/` as a basename, matching at any depth.
-const asOxlintGlob = (glob) => (glob.includes('/') ? glob : `**/${glob}`);
-
-// A JS plugin's rules never appear in `--print-config`: its directives are unverifiable, never dead.
-function resolveConfig(root, oxlint, config) {
-    const resolved = printedOxlintConfig(root, oxlint, config);
-    if (resolved === null) {
-        return null;
-    }
-
-    const overrides = (resolved.overrides ?? []).map((override) => ({
-        files: [override.files ?? []].flat().map(asOxlintGlob),
-        rules: { ...override.rules },
-    }));
-    const decided = { ...resolved.rules };
-    for (const override of overrides) {
-        Object.assign(decided, override.rules);
-    }
-
-    return { namespaces: namespacesOf(resolved, decided), overrides, rules: { ...resolved.rules } };
-}
-
-// A directive is judged by the rules of the file it was written in: overrides match by path, the later wins.
-function configAt(path, config) {
-    if (config === null) {
-        return null;
-    }
-
-    const rules = { ...config.rules };
-    for (const override of config.overrides) {
-        if (override.files.some((glob) => matchesGlob(path, glob))) {
-            Object.assign(rules, override.rules);
-        }
-    }
-
-    return { namespaces: config.namespaces, rules };
-}
-
-// With a JS plugin loaded, a namespace oxlint did not print is that plugin's and answers nothing.
-function namespacesOf(resolved, rules) {
-    const namespaces = new Set();
-    for (const name of Object.keys(rules)) {
-        if (name.includes('/')) {
-            namespaces.add(name.split('/')[0]);
-        }
-    }
-
-    if ((resolved.jsPlugins?.length ?? 0) === 0) {
-        return namespaces;
-    }
-
-    const loaded = new Set(resolved.plugins);
-
-    return new Set([...namespaces].filter((namespace) => loaded.has(namespace)));
-}
-
-function standingOf(name, config) {
+function standingOf(name: string, config: Applied | null): 'dead' | 'live' | 'unverifiable' {
     if (config === null) {
         return 'unverifiable';
     }
 
-    const namespace = name.includes('/') ? name.split('/')[0] : null;
+    const namespace = name.includes('/') ? (name.split('/')[0] ?? '') : null;
     if (namespace !== null && !config.namespaces.has(namespace)) {
         return 'unverifiable';
     }
@@ -95,13 +49,18 @@ function standingOf(name, config) {
         config.rules[name] ??
         Object.entries(config.rules).find(([key]) => key.split('/').at(-1) === bare)?.[1];
     // A rule carrying options is printed as `[severity, [options]]`.
-    const severity = Array.isArray(level) ? level[0] : level;
+    const severity: unknown = Array.isArray(level) ? (level as unknown[])[0] : level;
 
     return severity === undefined || severity === 'allow' ? 'dead' : 'live';
 }
 
-function auditLine(line, number, config, spans) {
-    const found = [];
+function auditLine(
+    line: string,
+    number: number,
+    config: Applied | null,
+    spans: readonly Span[],
+): Audited {
+    const found: Found[] = [];
     let fixed = '';
     let from = 0;
 
@@ -119,7 +78,7 @@ function auditLine(line, number, config, spans) {
     return { fixed: `${fixed}${line.slice(from)}`, found };
 }
 
-function auditBiome(line, number) {
+function auditBiome(line: string, number: number): Audited {
     if (!BIOME.test(line)) {
         return { fixed: line, found: [] };
     }
@@ -135,12 +94,12 @@ function auditBiome(line, number) {
     };
 }
 
-function auditDisables(line, number, config) {
-    const found = [];
+function auditDisables(line: string, number: number, config: Applied | null): Audited {
+    const found: Found[] = [];
     let fixed = line;
 
     for (const match of line.matchAll(DISABLE)) {
-        const { scope = '', tail = '', tool } = match.groups;
+        const { scope = '', tail = '', tool } = match.groups ?? {};
         const named = rulesOf(tail);
 
         if (tool === 'es') {
@@ -158,11 +117,11 @@ function auditDisables(line, number, config) {
     return { fixed, found };
 }
 
-function isRewritable(named, config) {
+function isRewritable(named: readonly string[], config: Applied | null): boolean {
     return named.length > 0 && named.every((name) => standingOf(name, config) !== 'dead');
 }
 
-function eslintSpelling(number, named, settled) {
+function eslintSpelling(number: number, named: readonly string[], settled: boolean): Found {
     return {
         message: settled
             ? `line ${number} spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it`
@@ -171,8 +130,13 @@ function eslintSpelling(number, named, settled) {
     };
 }
 
-function auditOxlintDirective(number, tail, named, config) {
-    const found = [];
+function auditOxlintDirective(
+    number: number,
+    tail: string,
+    named: readonly string[],
+    config: Applied | null,
+): Found[] {
+    const found: Found[] = [];
 
     if (!hasReason(tail)) {
         found.push({
@@ -193,12 +157,12 @@ function auditOxlintDirective(number, tail, named, config) {
     return found;
 }
 
-function auditTypeScript(line, number) {
-    const found = [];
+function auditTypeScript(line: string, number: number): Audited {
+    const found: Found[] = [];
     let fixed = line;
 
     for (const match of line.matchAll(TS_DIRECTIVE)) {
-        const { kind, tail = '' } = match.groups;
+        const { kind, tail = '' } = match.groups ?? {};
 
         if (kind === 'ignore') {
             fixed = fixed.replace('@ts-ignore', '@ts-expect-error');
@@ -219,15 +183,19 @@ function auditTypeScript(line, number) {
     return { fixed, found };
 }
 
-function auditSource(root, path, configOf) {
+function auditSource(
+    root: string,
+    path: string,
+    configOf: () => null | Resolved,
+): null | { rewritten: null | string; violations: (Found & { rewritable: boolean })[] } {
     const text = readText(root, path);
     if (text === null || !/(?:es|ox)lint-disable|@ts-|biome-ignore/u.test(text)) {
         return null;
     }
 
     const config = configAt(path, configOf());
-    const kept = [];
-    const violations = [];
+    const kept: string[] = [];
+    const violations: (Found & { rewritable: boolean })[] = [];
     const spans = commentSpansOf(text);
 
     for (const [index, line] of text.split('\n').entries()) {
@@ -245,18 +213,18 @@ function auditSource(root, path, configOf) {
 
 const SPELLING = 'suppressions/spelled-for-this-toolchain';
 
-export const suppressions = Object.freeze({
+export const suppressions: Pass = Object.freeze({
     check(context) {
         const oxlint = context.value('--oxlint', 'oxlint');
         const handed = context.value('-c');
         const sources = context.files().filter((path) => SOURCE.test(path));
 
-        let config;
-        const configOf = () =>
+        let config: null | Resolved | undefined;
+        const configOf = (): null | Resolved =>
             config === undefined ? (config = resolveConfig(context.root, oxlint, handed)) : config;
 
-        const findings = [];
-        const rewritten = [];
+        const findings: Finding[] = [];
+        const rewritten: { path: string; text: string }[] = [];
         for (const path of sources) {
             const audited = auditSource(context.root, path, configOf);
             if (audited === null) {

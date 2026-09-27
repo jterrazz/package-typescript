@@ -1,20 +1,45 @@
 import { basename, join, matchesGlob } from 'node:path';
 
+import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { emptyDirectories } from '../../engine/project/empty-directories.js';
 import { readSection, SETTINGS_FILE } from '../../engine/project/jterrazz-config.js';
 import { isRepositoryRoot } from '../../engine/project/repository-root.js';
 import { workspaceMembers } from '../../engine/project/workspace-members.js';
 import { LINT_ROOT, lintTreeOf } from './names.lint-tree.js';
 
-const GRAB_BAG = new Set(['base', 'common', 'helpers', 'lib', 'misc', 'stuff', 'tools', 'utils']);
+type Disk = Pick<Context, 'exists' | 'read'>;
+
+type Manifest = Record<string, unknown>;
+
+type Settings = { problem: null | string; roots: Readonly<Record<string, unknown>> };
+
+type Named = { fileName?: string; name: string };
+
+const GRAB_BAG: ReadonlySet<string> = new Set([
+    'base',
+    'common',
+    'helpers',
+    'lib',
+    'misc',
+    'stuff',
+    'tools',
+    'utils',
+]);
 
 // A word the grab-bag roster already refuses is left to it, so a name is reported once.
-const CONSTRUCTS = new Set(['constants', 'helper', 'interfaces', 'type', 'types', 'util']);
+const CONSTRUCTS: ReadonlySet<string> = new Set([
+    'constants',
+    'helper',
+    'interfaces',
+    'type',
+    'types',
+    'util',
+]);
 
 const CONSTRUCT_SUFFIX = 'types';
 
 // A name is read segment by segment, split on the hyphen; the `_` marker excuses none.
-const SHORTCUTS = new Set([
+const SHORTCUTS: ReadonlySet<string> = new Set([
     'auth',
     'cfg',
     'impl',
@@ -28,11 +53,20 @@ const SHORTCUTS = new Set([
 ]);
 
 // A swept root's own name is the toolchain's, never judged: `lib/` is also a grab-bag word.
-const SWEPT = new Set(['apps', 'bin', 'lib', 'lint', 'packages', 'specs', 'src', 'tests']);
+const SWEPT: ReadonlySet<string> = new Set([
+    'apps',
+    'bin',
+    'lib',
+    'lint',
+    'packages',
+    'specs',
+    'src',
+    'tests',
+]);
 
-const SPINE = new Set(['docs', 'lint', 'skills', 'specs', 'src']);
+const SPINE: ReadonlySet<string> = new Set(['docs', 'lint', 'skills', 'specs', 'src']);
 
-const MEMBER_ROOTS = new Set(['apps', 'packages']);
+const MEMBER_ROOTS: ReadonlySet<string> = new Set(['apps', 'packages']);
 
 const ECOSYSTEM_ROOTS = Object.freeze({
     android: 'React Native and Expo — the native Android project',
@@ -60,28 +94,28 @@ const SKILL_FILE = /^skills\/[^/]+\/SKILL\.md$/u;
 // Below `app/`, a Next.js directory is a URL the product serves, not a name the tree chose.
 const ROUTER_ROOT = 'app';
 
-const unmarked = (name) => name.replace(/^_/u, '').toLowerCase();
+const unmarked = (name: string): string => name.replace(/^_/u, '').toLowerCase();
 
-const isGrabBag = (name) => GRAB_BAG.has(unmarked(name));
+const isGrabBag = (name: string): boolean => GRAB_BAG.has(unmarked(name));
 
-const isConstruct = (name) => CONSTRUCTS.has(unmarked(name));
+const isConstruct = (name: string): boolean => CONSTRUCTS.has(unmarked(name));
 
-const hasConstructSuffix = (fileName) =>
+const hasConstructSuffix = (fileName: string): boolean =>
     fileName.split('.').slice(1, -1).includes(CONSTRUCT_SUFFIX);
 
-const isShortcut = (name) =>
+const isShortcut = (name: string): boolean =>
     unmarked(name)
         .split('-')
         .some((segment) => SHORTCUTS.has(segment));
 
-const stemOf = (name) => name.split('.')[0] ?? '';
+const stemOf = (name: string): string => name.split('.')[0] ?? '';
 
-function namesOf(files) {
-    const named = new Map();
+function namesOf(files: readonly string[]): [string, Named][] {
+    const named = new Map<string, Named>();
 
     for (const file of files) {
         const segments = file.split('/');
-        if (!SWEPT.has(segments[0]) || segments.length < 2) {
+        if (!SWEPT.has(segments[0] ?? '') || segments.length < 2) {
             continue;
         }
 
@@ -89,16 +123,17 @@ function namesOf(files) {
         const lastJudged = routerRoot === -1 ? segments.length - 1 : routerRoot + 1;
         for (let index = 1; index < Math.min(lastJudged, segments.length - 1); index += 1) {
             const path = segments.slice(0, index + 1).join('/');
-            named.set(path, { name: segments[index] });
+            named.set(path, { name: segments[index] ?? '' });
         }
-        named.set(file, { fileName: segments.at(-1), name: stemOf(segments.at(-1)) });
+        const fileName = segments.at(-1) ?? '';
+        named.set(file, { fileName, name: stemOf(fileName) });
     }
 
     return [...named].toSorted(([left], [right]) => (left < right ? -1 : 1));
 }
 
-function findingsOf(files) {
-    const findings = [];
+function findingsOf(files: readonly string[]): Finding[] {
+    const findings: Finding[] = [];
 
     for (const [path, { fileName, name }] of namesOf(files)) {
         if (isGrabBag(name)) {
@@ -126,22 +161,22 @@ function findingsOf(files) {
     return findings;
 }
 
-function manifestOf(disk, unit) {
+function manifestOf(disk: Disk, unit: string): Manifest {
     const manifest = disk.read(join(unit, 'package.json'));
     if (manifest === null) {
         return {};
     }
 
     try {
-        const parsed = JSON.parse(manifest);
+        const parsed: unknown = JSON.parse(manifest);
 
-        return parsed !== null && typeof parsed === 'object' ? parsed : {};
+        return parsed !== null && typeof parsed === 'object' ? (parsed as Manifest) : {};
     } catch {
         return {};
     }
 }
 
-async function settingsOf(unit) {
+async function settingsOf(unit: string): Promise<Settings> {
     const { problem, section } = await readSection(unit, 'typescript');
     if (problem !== null) {
         return { problem, roots: {} };
@@ -158,10 +193,10 @@ async function settingsOf(unit) {
         };
     }
 
-    return { problem: null, roots };
+    return { problem: null, roots: roots as Record<string, unknown> };
 }
 
-function targetsOfExports(exports) {
+function targetsOfExports(exports: unknown): string[] {
     if (typeof exports === 'string') {
         return [exports];
     }
@@ -189,10 +224,10 @@ const LINT_ENTRY =
 
 const ENTRY_KEYS = new Set(['entry', 'input']);
 
-const withoutDotSlash = (path) => path.replace(/^\.\//u, '');
+const withoutDotSlash = (path: string): string => path.replace(/^\.\//u, '');
 
 // The config is a module a bundler loads, so it is read, never run.
-function lintOutputsOf(disk, unit) {
+function lintOutputsOf(disk: Disk, unit: string): string[] {
     const config = BUILD_CONFIGS.find((name) => disk.exists(join(unit, name)));
     if (config === undefined) {
         return [];
@@ -200,21 +235,21 @@ function lintOutputsOf(disk, unit) {
 
     const text = disk.read(join(unit, config)) ?? '';
     const outDir = withoutDotSlash(
-        /outDir\s*:\s*['"](?<dir>[^'"]+)['"]/u.exec(text)?.groups.dir ?? DEFAULT_OUT_DIR,
+        /outDir\s*:\s*['"](?<dir>[^'"]+)['"]/u.exec(text)?.groups?.dir ?? DEFAULT_OUT_DIR,
     );
 
     return [...text.matchAll(LINT_ENTRY)].map(({ groups }) => {
-        const key = groups.quotedKey ?? groups.key;
+        const key = groups?.quotedKey ?? groups?.key;
         const name =
             key === undefined || ENTRY_KEYS.has(key)
-                ? basename(groups.source).replace(/\.[^.]+$/u, '')
+                ? basename(groups?.source ?? '').replace(/\.[^.]+$/u, '')
                 : key;
 
         return `${outDir.replace(/\/$/u, '')}/${name}`;
     });
 }
 
-function filesPublish(files, path) {
+function filesPublish(files: readonly unknown[], path: string): boolean {
     let published = false;
     for (const entry of files) {
         if (typeof entry !== 'string') {
@@ -231,8 +266,8 @@ function filesPublish(files, path) {
 }
 
 // A `lint/` nothing publishes holds rules no consumer receives: `src/` under another name.
-function shipsLint(disk, manifest, unit) {
-    const files = Array.isArray(manifest.files) ? manifest.files : [];
+function shipsLint(disk: Disk, manifest: Manifest, unit: string): boolean {
+    const files: unknown[] = Array.isArray(manifest.files) ? (manifest.files as unknown[]) : [];
     const byFiles = files.some(
         (entry) =>
             typeof entry === 'string' && /^(?:\.\/)?lint(?:\/|$)/u.test(entry.replace(/^!.*/u, '')),
@@ -252,7 +287,7 @@ function shipsLint(disk, manifest, unit) {
     return byFiles || byExports || byBuild;
 }
 
-function foreignRoot(root, prefix) {
+function foreignRoot(root: string, prefix: string): Finding {
     const manifestPath = `${prefix}package.json`;
 
     return {
@@ -265,8 +300,12 @@ function foreignRoot(root, prefix) {
     };
 }
 
-function declarationOf(declared, roots, prefix) {
-    const findings = [];
+function declarationOf(
+    declared: Settings['roots'],
+    roots: ReadonlySet<string>,
+    prefix: string,
+): Finding[] {
+    const findings: Finding[] = [];
 
     for (const [root, reason] of Object.entries(declared).toSorted(([left], [right]) =>
         left < right ? -1 : 1,
@@ -289,10 +328,18 @@ function declarationOf(declared, roots, prefix) {
     return findings;
 }
 
-function spineOf(disk, unit, { files, prefix = '', settings }) {
+function spineOf(
+    disk: Disk,
+    unit: string,
+    {
+        files,
+        prefix = '',
+        settings,
+    }: { files: readonly string[]; prefix?: string; settings: Settings },
+): Finding[] {
     const manifest = manifestOf(disk, unit);
-    const findings = [];
-    const roots = new Set();
+    const findings: Finding[] = [];
+    const roots = new Set<string>();
     const declared = settings.roots;
     if (settings.problem !== null) {
         findings.push({
@@ -303,7 +350,7 @@ function spineOf(disk, unit, { files, prefix = '', settings }) {
     }
 
     for (const file of files) {
-        const [first, ...rest] = file.split('/');
+        const [first = '', ...rest] = file.split('/');
         if (rest.length === 0 || first.startsWith('.')) {
             continue;
         }
@@ -317,7 +364,7 @@ function spineOf(disk, unit, { files, prefix = '', settings }) {
         }
     }
 
-    const isCodified = (root) =>
+    const isCodified = (root: string): boolean =>
         (SPINE.has(root) && (root !== LINT_ROOT || shipsLint(disk, manifest, unit))) ||
         MEMBER_ROOTS.has(root) ||
         Object.hasOwn(ECOSYSTEM_ROOTS, root) ||
@@ -334,10 +381,11 @@ function spineOf(disk, unit, { files, prefix = '', settings }) {
     ];
 }
 
-async function spinesOf(context, files) {
+async function spinesOf(context: Context, files: readonly string[]): Promise<Finding[]> {
     const { root } = context;
     const members = workspaceMembers(root);
-    const memberOf = (file) => members.find((member) => file.startsWith(`${member}/`));
+    const memberOf = (file: string): string | undefined =>
+        members.find((member) => file.startsWith(`${member}/`));
     const memberSettings = await Promise.all(
         members.map(async (member) => await settingsOf(join(root, member))),
     );
@@ -353,17 +401,17 @@ async function spinesOf(context, files) {
                     .filter((file) => file.startsWith(`${member}/`))
                     .map((file) => file.slice(member.length + 1)),
                 prefix: `${member}/`,
-                settings: memberSettings[index],
+                settings: memberSettings[index] ?? { problem: null, roots: {} },
             }),
         ),
     ];
 }
 
-function targetsOf(text) {
-    const targets = new Set();
+function targetsOf(text: string): ReadonlySet<string> {
+    const targets = new Set<string>();
     for (const line of text.split('\n')) {
         const match = RULE_LINE.exec(line);
-        for (const target of match?.groups.targets.split(/\s+/u) ?? []) {
+        for (const target of match?.groups?.targets?.split(/\s+/u) ?? []) {
             targets.add(target);
         }
     }
@@ -372,11 +420,11 @@ function targetsOf(text) {
 }
 
 // Asked only where a `.git` stands beside the root, so a member, a fixture or a bare directory is never asked.
-function makefileOf({ read, root }, files) {
+function makefileOf({ read, root }: Context, files: readonly string[]): Finding[] {
     if (!isRepositoryRoot(root)) {
         return [];
     }
-    const gestures = `${MAKE_TARGETS.slice(0, -1).join(', ')} and ${MAKE_TARGETS.at(-1)}`;
+    const gestures = `${MAKE_TARGETS.slice(0, -1).join(', ')} and ${MAKE_TARGETS.at(-1) ?? ''}`;
     if (!files.includes(MAKEFILE)) {
         return [
             {
@@ -396,7 +444,7 @@ function makefileOf({ read, root }, files) {
     }));
 }
 
-function emptyDirectoryFinding(path) {
+function emptyDirectoryFinding(path: string): Finding {
     return {
         message: [
             `found: \`${path}/\` holds no file`,
@@ -409,7 +457,7 @@ function emptyDirectoryFinding(path) {
     };
 }
 
-export const names = Object.freeze({
+export const names: Pass = Object.freeze({
     async check(context) {
         const files = context.files();
 

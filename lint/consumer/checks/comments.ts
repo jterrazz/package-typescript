@@ -1,3 +1,4 @@
+import type { Finding, Pass } from '../../engine/checker/pass.js';
 import { commentSpansOf, isDirective, SOURCE } from '../../engine/project/comments.js';
 import { readText } from '../../engine/project/project-files.js';
 
@@ -7,9 +8,9 @@ const GENERATED_HEAD_LINES = 5;
 const TEST_MARKER = /^\/\/\s*(?:Given|When|Then) - /u;
 const READ = 'read: docs/06-quality-checks.md#the-comments-density-pass';
 
-const isProse = (comment) => !isDirective(comment) && !TEST_MARKER.test(comment);
+const isProse = (comment: string): boolean => !isDirective(comment) && !TEST_MARKER.test(comment);
 
-export function linesOfComments(text) {
+export function linesOfComments(text: string): number[] {
     const lines = text.split('\n');
     if (GENERATED.test(lines.slice(0, GENERATED_HEAD_LINES).join('\n'))) {
         return [];
@@ -23,13 +24,13 @@ export function linesOfComments(text) {
     );
 }
 
-function densityOf(count, sourceLines) {
+function densityOf(count: number, sourceLines: number): string {
     const percent = sourceLines === 0 ? 0 : Math.round((count / sourceLines) * 100);
 
     return `${count} comment lines — ${percent}% of ${sourceLines} source lines`;
 }
 
-function verdictOf(count, recorded, density) {
+function verdictOf(count: number, recorded: number | undefined, density: string): string {
     const why =
         'why: the default is no comment — a name carries the meaning, and the count is held exactly so no comment arrives unseen';
     if (recorded === undefined) {
@@ -42,10 +43,10 @@ function verdictOf(count, recorded, density) {
     return `found: ${density}, below the ${recorded} recorded · ${why}, and slack left in the entry would let one arrive · fix: run 'typescript fix', which re-records the fall · ${READ}`;
 }
 
-export const comments = Object.freeze({
+export const comments: Pass = Object.freeze({
     check(context) {
         let sourceLines = 0;
-        const findings = [];
+        const findings: Finding[] = [];
         for (const path of context.files().filter((file) => SOURCE.test(file))) {
             const text = readText(context.root, path);
             if (text !== null) {
@@ -65,5 +66,5 @@ export const comments = Object.freeze({
     },
     entry: ENTRY,
     verdict: (count, recorded, { sourceLines }) =>
-        verdictOf(count, recorded, densityOf(count, sourceLines)),
+        verdictOf(count, recorded, densityOf(count, sourceLines ?? 0)),
 });

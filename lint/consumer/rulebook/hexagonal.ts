@@ -1,7 +1,8 @@
 import { layers } from '../../engine/compiler/layers.js';
+import type { Layer } from '../../engine/compiler/layers.js';
 
 // The dependency arrow points inward: the domain knows nothing, the application knows the domain.
-export const HEXAGONAL_MAP = Object.freeze([
+export const HEXAGONAL_MAP: readonly Layer[] = Object.freeze([
     {
         deny: [
             '**/application/**',

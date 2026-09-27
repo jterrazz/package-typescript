@@ -11,6 +11,7 @@ import {
     REASON_KINDS,
     unsafeFix,
 } from '../../engine/compiler/decision.js';
+import type { Reason, Stated } from '../../engine/compiler/decision.js';
 import { lintFragments } from '../../engine/testing/lint-fragments.js';
 import problemsOf, { FRAGMENT_WALK } from './decision-invariants.js';
 
@@ -48,7 +49,11 @@ describe('problemsOf', () => {
 
     test('names an off with no reason', () => {
         // Given - a decision turned off on nobody's authority
-        const probe = fragment({ id: 'probe', rules: { curly: off() } });
+        const probe = fragment({
+            audience: 'consumer',
+            id: 'probe',
+            rules: { curly: off(undefined as unknown as Reason) },
+        });
 
         // Then - the audit refuses it
         expect(problemsOf(probe)).toStrictEqual(['probe: "curly" is off with no reason']);
@@ -57,6 +62,7 @@ describe('problemsOf', () => {
     test('names a reason whose kind is not one of the five', () => {
         // Given - a reason invented on the spot
         const probe = fragment({
+            audience: 'consumer',
             id: 'probe',
             rules: { curly: off({ by: 'taste', kind: 'too-strict' }) },
         });
@@ -70,7 +76,11 @@ describe('problemsOf', () => {
 
     test('names a reason that names nothing', () => {
         // Given - a kind with no rule, page or measurement behind it
-        const probe = fragment({ id: 'probe', rules: { curly: off({ by: '', kind: 'covered' }) } });
+        const probe = fragment({
+            audience: 'consumer',
+            id: 'probe',
+            rules: { curly: off({ by: '', kind: 'covered' }) },
+        });
 
         // Then - "covered" has to say by what
         expect(problemsOf(probe)).toStrictEqual(['probe: "curly" has a reason that names nothing']);
@@ -78,7 +88,11 @@ describe('problemsOf', () => {
 
     test('names a level that is neither error nor off', () => {
         // Given - a fragment reaching for a warning tier
-        const probe = fragment({ id: 'probe', rules: { curly: { level: 'warn' } } });
+        const probe = fragment({
+            audience: 'consumer',
+            id: 'probe',
+            rules: { curly: { level: 'warn' } as unknown as Stated },
+        });
 
         // Then - there is no warn in this rulebook
         expect(problemsOf(probe)).toStrictEqual([
@@ -88,7 +102,11 @@ describe('problemsOf', () => {
 
     test('names an unsafe fixer that does not say what it changes', () => {
         // Given - a fixer marked unsafe on no measurement
-        const probe = fragment({ id: 'probe', rules: { curly: unsafeFix(on(), '') } });
+        const probe = fragment({
+            audience: 'consumer',
+            id: 'probe',
+            rules: { curly: unsafeFix(on(), '') },
+        });
 
         // Then - the mark has to carry what the rewrite does
         expect(problemsOf(probe)).toStrictEqual([

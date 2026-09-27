@@ -1,14 +1,31 @@
 import { dirname, join, relative, resolve } from 'node:path';
 
+import type { Context, Pass } from '../../engine/checker/pass.js';
 import { trackedFiles } from '../../engine/project/project-files.js';
 import { isRepositoryRoot } from '../../engine/project/repository-root.js';
+
+type Disk = Pick<Context, 'exists' | 'read'>;
+
+type Line = { home: null | string; isNegation: boolean; pattern: string; text: string };
+
+type Source = {
+    isIgnored: boolean;
+    label: string;
+    lines: Line[];
+    misplaced: Line[];
+    negations: Line[];
+    own: boolean;
+    path: string;
+};
+
+type Judged = { lines: string[]; writes: { path: string; text: string }[] };
 
 const ARTIFACTS = '.artifacts';
 
 // A build's product stays beside `src/` and is published from there.
 const PRODUCT = 'dist';
 
-const ARTEFACT_DIRECTORIES = new Map([
+const ARTEFACT_DIRECTORIES: ReadonlyMap<string, string> = new Map([
     ['.cache', '.artifacts/<tool>/'],
     ['.next', '.artifacts/next/'],
     ['.vite', '.artifacts/vite/'],
@@ -21,13 +38,13 @@ const ARTEFACT_DIRECTORIES = new Map([
     ['test-results', '.artifacts/playwright/'],
 ]);
 
-const ARTEFACT_EXTENSIONS = [
+const ARTEFACT_EXTENSIONS: readonly (readonly [string, string])[] = [
     ['.tsbuildinfo', '.artifacts/tsc/'],
     ['.log', '.artifacts/logs/'],
 ];
 
 // Paths a toolchain owns and cannot be told to move, or a framework expects at a fixed path.
-const EXCEPTIONS = new Set([
+const EXCEPTIONS: ReadonlySet<string> = new Set([
     '.build',
     '.expo',
     '.gradle',
@@ -58,7 +75,7 @@ const NEXT_CONFIG_FILES = [
 // With `output: 'export'`, Next keeps its working directory at `.next` whatever `distDir` says
 // (`next/dist/export/utils.js`, `hasCustomExportOutput`). Read as text: a config may not load here.
 // An unreadable config answers as a missing one does.
-function nextConfigDeclaresExport(disk, dir) {
+function nextConfigDeclaresExport(disk: Disk, dir: string): boolean {
     return NEXT_CONFIG_FILES.some((name) =>
         /output\s*:\s*['"]export['"]/u.test(disk.read(join(dir, name)) ?? ''),
     );
@@ -73,7 +90,7 @@ const WORKSPACE_LOCKFILES = [
     'yarn.lock',
 ];
 
-function isWorkspaceRoot(disk, dir) {
+function isWorkspaceRoot(disk: Disk, dir: string): boolean {
     if (WORKSPACE_LOCKFILES.some((name) => disk.exists(join(dir, name)))) {
         return true;
     }
@@ -84,14 +101,14 @@ function isWorkspaceRoot(disk, dir) {
     }
 
     try {
-        return JSON.parse(manifest).workspaces !== undefined;
+        return (JSON.parse(manifest) as { workspaces?: unknown }).workspaces !== undefined;
     } catch {
         return false;
     }
 }
 
 // Never passes the nearest repository boundary, so a `root` with its own `.git` has no ancestor.
-function findWorkspaceRoot(disk, root) {
+function findWorkspaceRoot(disk: Disk, root: string): null | string {
     const start = resolve(root);
     if (isRepositoryRoot(start)) {
         return null;
@@ -115,12 +132,12 @@ function findWorkspaceRoot(disk, root) {
 }
 
 // git's own reading: an anchored pattern in an ancestor's file never reaches a nested package.
-function isAnchored(pattern) {
+function isAnchored(pattern: string): boolean {
     return pattern.replace(/\/+$/u, '').includes('/');
 }
 
 // `/out/`, `out/` and `**/out` all name `out`; `npm-debug.log*` reads as a log.
-function lastNamedSegment(pattern) {
+function lastNamedSegment(pattern: string): string {
     const segments = pattern
         .replace(/\/+$/u, '')
         .split('/')
@@ -129,7 +146,10 @@ function lastNamedSegment(pattern) {
     return (segments.at(-1) ?? '').replace(/\*$/u, '');
 }
 
-function artefactHome(pattern, { nextIsExportDestination }) {
+function artefactHome(
+    pattern: string,
+    { nextIsExportDestination }: { nextIsExportDestination: boolean },
+): null | string {
     const name = lastNamedSegment(pattern);
 
     if (name === '' || name === PRODUCT || EXCEPTIONS.has(name)) {
@@ -141,8 +161,9 @@ function artefactHome(pattern, { nextIsExportDestination }) {
     if (EXCEPTION_PREFIXES.some((prefix) => name.startsWith(prefix))) {
         return null;
     }
-    if (ARTEFACT_DIRECTORIES.has(name)) {
-        return ARTEFACT_DIRECTORIES.get(name);
+    const directory = ARTEFACT_DIRECTORIES.get(name);
+    if (directory !== undefined) {
+        return directory;
     }
     for (const [extension, home] of ARTEFACT_EXTENSIONS) {
         if (name.endsWith(extension)) {
@@ -153,7 +174,7 @@ function artefactHome(pattern, { nextIsExportDestination }) {
     return null;
 }
 
-function readLines(disk, gitignorePath) {
+function readLines(disk: Disk, gitignorePath: string): Line[] {
     const nextIsExportDestination = nextConfigDeclaresExport(disk, dirname(gitignorePath));
     const text = (disk.read(gitignorePath) ?? '').split('\n');
 
@@ -177,7 +198,15 @@ function readLines(disk, gitignorePath) {
     });
 }
 
-function readSource(disk, path, { own, reach = () => true, root }) {
+function readSource(
+    disk: Disk,
+    path: string,
+    {
+        own,
+        reach = (): boolean => true,
+        root,
+    }: { own: boolean; reach?: (pattern: string) => boolean; root: string },
+): Source {
     const lines = readLines(disk, path);
 
     return {
@@ -198,7 +227,7 @@ function readSource(disk, path, { own, reach = () => true, root }) {
 }
 
 // Narrower than ARTEFACT_DIRECTORIES: a tracked file under `bin/` or `build/` may be source.
-const TRACKED_ARTEFACT_DIRECTORIES = new Set([
+const TRACKED_ARTEFACT_DIRECTORIES: ReadonlySet<string> = new Set([
     '.artifacts',
     '.cache',
     '.next',
@@ -211,7 +240,7 @@ const TRACKED_ARTEFACT_DIRECTORIES = new Set([
 
 const TRACKED_ARTEFACT_EXTENSION = '.tsbuildinfo';
 
-function trackedArtefacts(root) {
+function trackedArtefacts(root: string): string[] {
     return trackedFiles(root).filter((path) => {
         const segments = path.split('/');
 
@@ -222,7 +251,7 @@ function trackedArtefacts(root) {
     });
 }
 
-function rewrite(lines) {
+function rewrite(lines: readonly Line[]): string {
     const kept = lines.filter((line) => line.home === null);
     const isIgnored = kept.some(
         (line) => !line.isNegation && lastNamedSegment(line.pattern) === ARTIFACTS,
@@ -230,7 +259,7 @@ function rewrite(lines) {
     const body = kept.map((line) => line.text);
 
     if (!isIgnored) {
-        while (body.length > 0 && body.at(-1).trim() === '') {
+        while (body.length > 0 && body.at(-1)?.trim() === '') {
             body.pop();
         }
         body.push('', '# Build, test and lint artefacts (@jterrazz/typescript)', `${ARTIFACTS}/`);
@@ -239,10 +268,10 @@ function rewrite(lines) {
     return `${body.join('\n')}\n`;
 }
 
-function sourcesOf(context, ancestorPath) {
+function sourcesOf(context: Context, ancestorPath: null | string): Source[] {
     const { root } = context;
     const ownPath = join(root, '.gitignore');
-    const sources = [];
+    const sources: Source[] = [];
     if (context.exists(ownPath)) {
         sources.push(readSource(context, ownPath, { own: true, root }));
     }
@@ -260,7 +289,7 @@ function sourcesOf(context, ancestorPath) {
 }
 
 // Only the package's own file: never created, and an ancestor is a different project's.
-function fixed(sources) {
+function fixed(sources: readonly Source[]): Judged {
     const own = sources.find((source) => source.own);
     if (own === undefined || (own.misplaced.length === 0 && own.isIgnored)) {
         return { lines: [], writes: [] };
@@ -279,7 +308,7 @@ function fixed(sources) {
     };
 }
 
-function misplacedLines(sources) {
+function misplacedLines(sources: readonly Source[]): string[] {
     const isIgnored = sources.some((source) => source.isIgnored);
     const misplaced = sources.flatMap((source) =>
         source.misplaced.map((line) => ({ ...line, source })),
@@ -293,9 +322,10 @@ function misplacedLines(sources) {
     return [
         'Artefacts belong under .artifacts/<tool>/ at the project root:',
         ...misplaced.map(
-            (line) => `  ✗ ${line.source.label} names ${line.pattern} — its home is ${line.home}`,
+            (line) =>
+                `  ✗ ${line.source.label} names ${line.pattern} — its home is ${line.home ?? ''}`,
         ),
-        ...(isIgnored ? [] : [`  ✗ ${target.label} does not ignore ${ARTIFACTS}/ — add it`]),
+        ...(isIgnored ? [] : [`  ✗ ${target?.label ?? ''} does not ignore ${ARTIFACTS}/ — add it`]),
         ...sources
             .flatMap((source) => source.negations)
             .map((line) => `  · ${line.pattern} — a negation rescues a tracked file, left for you`),
@@ -303,10 +333,10 @@ function misplacedLines(sources) {
     ];
 }
 
-export const gitignore = Object.freeze({
+export const gitignore: Pass = Object.freeze({
     check(context) {
         const workspaceRoot = findWorkspaceRoot(context, context.root);
-        const ancestorPath = workspaceRoot ? join(workspaceRoot, '.gitignore') : null;
+        const ancestorPath = workspaceRoot === null ? null : join(workspaceRoot, '.gitignore');
         if (context.has('--has-ancestor')) {
             return { failed: ancestorPath === null || !context.exists(ancestorPath) };
         }
@@ -315,7 +345,7 @@ export const gitignore = Object.freeze({
         if (sources.length === 0) {
             return {};
         }
-        const judged = context.fix
+        const judged: Judged = context.fix
             ? fixed(sources)
             : { lines: misplacedLines(sources), writes: [] };
         const tracked = trackedArtefacts(context.root);

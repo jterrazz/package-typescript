@@ -1,6 +1,9 @@
 import { dirname, join, relative, resolve } from 'node:path';
 
+import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { isGitIgnored, readText } from '../../engine/project/project-files.js';
+
+type Found = { message: string; rule: string };
 
 const PROSE_BLOCK_LIMIT = 12;
 
@@ -20,7 +23,7 @@ const LINK = /!?\[[^\]]*\]\((?<target>[^)\s]+)\)/gu;
 const BACKTICK_PATH =
     /`(?<path>(?:apps|bin|lib|lint|packages|presets|specs|tests)\/[a-zA-Z\d._/-]+)`/gu;
 
-const withoutFences = (markdown) => markdown.replaceAll(/^```.*?^```/gmsu, '');
+const withoutFences = (markdown: string): string => markdown.replaceAll(/^```.*?^```/gmsu, '');
 
 const FRONTMATTER = /^---\n.*?\n---\n/su;
 const FENCE = /^\s*(?:```|~~~)/u;
@@ -28,16 +31,16 @@ const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s/u;
 const TABLE_ROW = /^\s*\|/u;
 const HEADING = /^(?<hashes>#{1,6})\s/u;
 
-function linesWithFrontmatterBlanked(markdown) {
+function linesWithFrontmatterBlanked(markdown: string): string[] {
     return markdown.replace(FRONTMATTER, (block) => block.replaceAll(/[^\n]/gu, '')).split('\n');
 }
 
-function longProseBlocks(markdown) {
+function longProseBlocks(markdown: string): string[] {
     let inFence = false;
     let length = 0;
     let start = 0;
-    const found = [];
-    const close = () => {
+    const found: string[] = [];
+    const close = (): void => {
         if (length > PROSE_BLOCK_LIMIT) {
             found.push(
                 `a block of ${length} lines at line ${start} — the floor is ${PROSE_BLOCK_LIMIT}`,
@@ -72,12 +75,12 @@ function longProseBlocks(markdown) {
     return found;
 }
 
-function airlessFences(markdown) {
+function airlessFences(markdown: string): string[] {
     let inFence = false;
     let fenceStart = 0;
     let run = 0;
-    const found = [];
-    const close = () => {
+    const found: string[] = [];
+    const close = (): void => {
         if (run > FENCE_RUN_LIMIT) {
             found.push(
                 `a fenced block at line ${fenceStart} runs ${run} lines unbroken — the floor is ${FENCE_RUN_LIMIT}`,
@@ -111,14 +114,14 @@ function airlessFences(markdown) {
     return found;
 }
 
-function flatSections(markdown) {
+function flatSections(markdown: string): string[] {
     let inFence = false;
     let title = '';
     let start = 0;
     let prose = 0;
     let broken = false;
-    const found = [];
-    const close = () => {
+    const found: string[] = [];
+    const close = (): void => {
         if (title !== '' && !broken && prose > SECTION_PROSE_LIMIT) {
             found.push(
                 `"${title}" at line ${start} runs ${prose} lines of prose with no ### and no list`,
@@ -163,7 +166,7 @@ function flatSections(markdown) {
     return found;
 }
 
-function isRelative(target) {
+function isRelative(target: string): boolean {
     return (
         target !== '' &&
         !target.startsWith('http') &&
@@ -173,10 +176,10 @@ function isRelative(target) {
     );
 }
 
-function missingLinks({ exists, root }, path, cited) {
-    const found = [];
+function missingLinks({ exists, root }: Context, path: string, cited: string): Found[] {
+    const found: Found[] = [];
     for (const match of cited.matchAll(LINK)) {
-        const { target } = match.groups;
+        const target = match.groups?.target ?? '';
         const clean = target.split('#')[0] ?? '';
         if (!isRelative(target) || clean === '') {
             continue;
@@ -193,10 +196,10 @@ function missingLinks({ exists, root }, path, cited) {
     return found;
 }
 
-function missingPaths({ exists, root }, path, cited) {
-    const found = [];
+function missingPaths({ exists, root }: Context, path: string, cited: string): Found[] {
+    const found: Found[] = [];
     for (const match of cited.matchAll(BACKTICK_PATH)) {
-        const target = match.groups.path.replace(/\/$/u, '');
+        const target = (match.groups?.path ?? '').replace(/\/$/u, '');
         if (
             !exists(join(root, target)) &&
             !exists(resolve(root, dirname(path), target)) &&
@@ -212,16 +215,16 @@ function missingPaths({ exists, root }, path, cited) {
     return found;
 }
 
-function missingChapters({ exists, root }, path, cited) {
+function missingChapters({ exists, root }: Context, path: string, cited: string): Found[] {
     const skill = SKILL_PAGE.exec(path);
     if (skill === null) {
         return [];
     }
 
-    const found = [];
+    const found: Found[] = [];
     for (const match of cited.matchAll(CHAPTER)) {
-        const { chapter } = match.groups;
-        if (!exists(join(root, skill.groups.root, 'docs', chapter))) {
+        const chapter = match.groups?.chapter ?? '';
+        if (!exists(join(root, skill.groups?.root ?? '', 'docs', chapter))) {
             found.push({
                 message: `docs/${chapter} is no chapter this package ships`,
                 rule: 'markdown/chapter-reference-resolves',
@@ -232,7 +235,7 @@ function missingChapters({ exists, root }, path, cited) {
     return found;
 }
 
-function auditPage(context, path, markdown) {
+function auditPage(context: Context, path: string, markdown: string): Found[] {
     const cited = withoutFences(markdown);
     const found = [
         ...missingLinks(context, path, cited),
@@ -253,9 +256,9 @@ function auditPage(context, path, markdown) {
     return found;
 }
 
-export const markdown = Object.freeze({
+export const markdown: Pass = Object.freeze({
     check(context) {
-        const findings = [];
+        const findings: Finding[] = [];
         for (const path of context.files().filter((file) => file.endsWith('.md'))) {
             const text = readText(context.root, path);
             if (text !== null) {

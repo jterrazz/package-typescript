@@ -2,17 +2,20 @@ import { dirname, join, matchesGlob, relative } from 'node:path';
 import { cwd } from 'node:process';
 import { stripVTControlCharacters } from 'node:util';
 
+import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { buildOf, builtChunks } from '../../engine/project/built-chunks.js';
+import type { Build, BuiltChunk } from '../../engine/project/built-chunks.js';
 import { isPacked, withoutDotSlash } from '../../engine/project/packed-files.js';
 import { testMaterialReader } from '../../engine/project/test-material.js';
 import { noTestCodeInProductionFindings } from './publish.no-test-code-in-production.js';
+import type { Manifest } from './publish.no-test-code-in-production.js';
 
-function targetsOf(exports) {
+function targetsOf(exports: unknown): string[] {
     if (typeof exports === 'string') {
         return [exports];
     }
     if (Array.isArray(exports)) {
-        return exports.flatMap((entry) => targetsOf(entry));
+        return (exports as unknown[]).flatMap((entry) => targetsOf(entry));
     }
     if (exports !== null && typeof exports === 'object') {
         return Object.values(exports).flatMap((entry) => targetsOf(entry));
@@ -22,7 +25,7 @@ function targetsOf(exports) {
 }
 
 // A wildcard names a family: its directory must exist and hold something the pattern matches.
-function resolvesOnDisk({ exists, list, root }, target) {
+function resolvesOnDisk({ exists, list, root }: Context, target: string): boolean {
     const path = withoutDotSlash(target);
     if (!path.includes('*')) {
         return exists(join(root, path));
@@ -36,7 +39,10 @@ function resolvesOnDisk({ exists, list, root }, target) {
     );
 }
 
-async function chunksOrFinding(root, build) {
+async function chunksOrFinding(
+    root: string,
+    build: Build,
+): Promise<{ chunks: BuiltChunk[] | null; finding: Finding | null }> {
     try {
         return { chunks: await builtChunks(root, build), finding: null };
     } catch (error) {
@@ -59,14 +65,18 @@ async function chunksOrFinding(root, build) {
 }
 
 const NOTHING_TO_JUDGE = {
-    absent: () =>
+    absent: (): string =>
         'no @jterrazz/test resolves from this package, and what test material is is its to say',
-    unloadable: ({ error }) =>
+    unloadable: ({ error }: { error: string }): string =>
         `the @jterrazz/test this package resolves gives no reader of test material — ${error}`,
 };
 
-function exportFindings(context, manifest, targets) {
-    const findings = [];
+function exportFindings(
+    context: Context,
+    manifest: Manifest,
+    targets: readonly string[],
+): Finding[] {
+    const findings: Finding[] = [];
     for (const target of [...new Set(targets)].toSorted((left, right) => (left < right ? -1 : 1))) {
         if (!resolvesOnDisk(context, target)) {
             findings.push({
@@ -86,15 +96,25 @@ function exportFindings(context, manifest, targets) {
     return findings;
 }
 
-async function buildFindings(context, manifest, build) {
+async function buildFindings(
+    context: Context,
+    manifest: Manifest,
+    build: Build,
+): Promise<{ findings: Finding[]; lines: string[] }> {
     const { root } = context;
     const loaded = await testMaterialReader(root);
     const reader = 'reader' in loaded ? loaded.reader : null;
     const member = relative(cwd(), root);
+    const why =
+        'error' in loaded
+            ? NOTHING_TO_JUDGE.unloadable(loaded)
+            : 'reason' in loaded
+              ? NOTHING_TO_JUDGE.absent()
+              : '';
     const lines =
         reader === null
             ? [
-                  `publish/no-test-code-in-production: nothing to judge${member === '' ? '' : ` in ${member}`} — ${NOTHING_TO_JUDGE[loaded.reason](loaded)}`,
+                  `publish/no-test-code-in-production: nothing to judge${member === '' ? '' : ` in ${member}`} — ${why}`,
               ]
             : [];
     const built = await chunksOrFinding(root, build);
@@ -108,15 +128,17 @@ async function buildFindings(context, manifest, build) {
     return { findings, lines };
 }
 
-export const publish = Object.freeze({
+export const publish: Pass = Object.freeze({
     async check(context) {
-        const manifest = JSON.parse(context.read(join(context.root, 'package.json')) ?? '{}');
+        const manifest = JSON.parse(
+            context.read(join(context.root, 'package.json')) ?? '{}',
+        ) as Manifest;
         const targets = [
             ...targetsOf(manifest.exports ?? {}),
-            ...(manifest.main === undefined ? [] : [manifest.main]),
-            ...(manifest.types === undefined ? [] : [manifest.types]),
+            ...(typeof manifest.main === 'string' ? [manifest.main] : []),
+            ...(typeof manifest.types === 'string' ? [manifest.types] : []),
         ];
-        const build = buildOf(context.root, targets, context.value('--bundle-preset'));
+        const build = buildOf(context.root, targets, context.value('--bundle-preset', ''));
         const built =
             build === null
                 ? { findings: [], lines: [] }

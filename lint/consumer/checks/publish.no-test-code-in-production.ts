@@ -1,13 +1,27 @@
 import { isAbsolute, relative, sep } from 'node:path';
 
+import type { Finding } from '../../engine/checker/pass.js';
+import type { BuiltChunk } from '../../engine/project/built-chunks.js';
 import { isPacked } from '../../engine/project/packed-files.js';
+import type { TestMaterialReader } from '../../engine/project/test-material.js';
+
+export type Manifest = {
+    dependencies?: Record<string, string>;
+    exports?: unknown;
+    files?: string[];
+    main?: unknown;
+    peerDependencies?: Record<string, string>;
+    types?: unknown;
+};
 
 const NODE_MODULES = `${sep}node_modules${sep}`;
 
-function installedPackageOf(id) {
+function installedPackageOf(id: string): string {
     const below = id.slice(id.lastIndexOf(NODE_MODULES) + NODE_MODULES.length).split(sep);
 
-    return below[0]?.startsWith('@') ? `${below[0]}/${below[1]}` : below[0];
+    const [scope = '', name = ''] = below;
+
+    return scope.startsWith('@') ? `${scope}/${name}` : scope;
 }
 
 const READ = "@jterrazz/test's docs/19-linting.md#no-test-code-in-production";
@@ -15,7 +29,7 @@ const READ = "@jterrazz/test's docs/19-linting.md#no-test-code-in-production";
 const CUT_THE_EDGE =
     'cut the production edge no-test-code-in-production names, or take the module out of the entry';
 
-function finding(file, found, fix) {
+function finding(file: string, found: string, fix: string): Finding {
     return {
         message: [
             `found: ${found}`,
@@ -29,12 +43,22 @@ function finding(file, found, fix) {
 }
 
 // An external specifier is judged by `testPackageOf` unless the package declares it to run in production.
-export function noTestCodeInProductionFindings({ chunks, manifest, reader, root }) {
+export function noTestCodeInProductionFindings({
+    chunks,
+    manifest,
+    reader,
+    root,
+}: {
+    chunks: readonly BuiltChunk[];
+    manifest: Manifest;
+    reader: TestMaterialReader;
+    root: string;
+}): Finding[] {
     const declared = new Set([
         ...Object.keys(manifest.dependencies ?? {}),
         ...Object.keys(manifest.peerDependencies ?? {}),
     ]);
-    const findings = [];
+    const findings: Finding[] = [];
 
     const shipped = chunks.filter(({ file }) => isPacked(manifest.files ?? [], file));
     for (const { externals, file, moduleIds } of shipped) {

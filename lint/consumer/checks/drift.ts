@@ -8,31 +8,46 @@ import {
     sectionOf,
     TEST_SECTION,
 } from '../../engine/baseline/section.js';
+import type { Counts } from '../../engine/baseline/section.js';
+import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { countSuppressions } from '../../engine/project/comments.js';
 import CONFIGS from '../../engine/project/oxlint-config-names.json' with { type: 'json' };
 import { printedOxlintConfig } from '../../engine/project/oxlint-config.js';
+import type { PrintedRules } from '../../engine/project/oxlint-config.js';
 import { orRefused } from '../../engine/project/project-files.js';
 import { toolVersions } from '../../engine/project/tool-versions.js';
+import type { ToolVersion } from '../../engine/project/tool-versions.js';
+
+type Project = {
+    configName: string | undefined;
+    consumerConfig: null | string;
+    defaultProfile: null | string;
+    profileName: null | string;
+    source: null | string;
+};
 
 const REASON = /\/\/\s*reason:/iu;
 
-const resolvedRules = (root, oxlint, configPath) =>
-    printedOxlintConfig(root, oxlint, configPath)?.rules ?? null;
+const resolvedRules = (
+    root: string,
+    oxlint: string,
+    configPath: null | string,
+): null | PrintedRules => printedOxlintConfig(root, oxlint, configPath)?.rules ?? null;
 
 // oxlint's config schema is closed, so a profile cannot carry its name to `--print-config`: the
 // config's import is the only evidence. A project on no profile of ours never joined one.
-function profileOf(source, profileNames) {
+function profileOf(source: null | string, profileNames: ReadonlySet<string>): null | string {
     const imported =
         /import\s*\{(?<names>[^}]*)\}\s*from\s*['"]@jterrazz\/typescript\/oxlint['"]/u.exec(
             source ?? '',
         );
-    const named = (imported?.groups.names ?? '').split(',').map((name) => name.trim());
+    const named = (imported?.groups?.names ?? '').split(',').map((name) => name.trim());
 
     return named.find((name) => profileNames.has(name)) ?? null;
 }
 
-function turnedOff(profile, consumer) {
-    const off = [];
+function turnedOff(profile: PrintedRules, consumer: PrintedRules): string[] {
+    const off: string[] = [];
     for (const [rule, level] of Object.entries(profile).toSorted(([left], [right]) =>
         left < right ? -1 : 1,
     )) {
@@ -48,8 +63,8 @@ function turnedOff(profile, consumer) {
     return off;
 }
 
-function lineNaming(source, rule) {
-    const bare = rule.split('/').at(-1);
+function lineNaming(source: null | string, rule: string): string | undefined {
+    const bare = rule.split('/').at(-1) ?? rule;
 
     return (source ?? '')
         .split('\n')
@@ -61,9 +76,10 @@ function lineNaming(source, rule) {
 
 const LABEL_WIDTH = Math.max(LABEL.length, labelOf(TEST_SECTION).length) + 2;
 
-const row = (label, value) => `  ${label.padEnd(LABEL_WIDTH)}${value}`;
+const row = (label: string, value: number | string): string =>
+    `  ${label.padEnd(LABEL_WIDTH)}${value}`;
 
-function toolsLine(behind) {
+function toolsLine(behind: readonly ToolVersion[]): string {
     return behind.length === 0
         ? 'in range'
         : behind
@@ -74,7 +90,7 @@ function toolsLine(behind) {
 }
 
 // Read off the compiled files: loading the manifest loads every plugin the rulebook decides.
-function profileNamesAt(context, profilesAt) {
+function profileNamesAt(context: Context, profilesAt: null | string): ReadonlySet<string> {
     return new Set(
         profilesAt === null
             ? []
@@ -84,16 +100,21 @@ function profileNamesAt(context, profilesAt) {
     );
 }
 
-function profileOfProject(context, profilesAt, profileNames) {
+function profileOfProject(
+    context: Context,
+    profilesAt: null | string,
+    profileNames: ReadonlySet<string>,
+): Project {
     const handedAt = context.value('-c');
     const handed = handedAt === undefined ? null : resolve(handedAt);
-    // The same list `tool-configs.sh` hands oxlint.
+    // The same list the command hands oxlint.
     const configName = CONFIGS.find((name) => context.exists(join(context.root, name)));
     const source = configName === undefined ? null : context.read(join(context.root, configName));
     const handedName = handed === null ? null : basename(handed, '.js');
     const defaultProfile =
         configName === undefined &&
         handed !== null &&
+        handedName !== null &&
         dirname(handed) === profilesAt &&
         profileNames.has(handedName)
             ? handedName
@@ -108,7 +129,11 @@ function profileOfProject(context, profilesAt, profileNames) {
     };
 }
 
-function offOf(context, project, profilesAt) {
+function offOf(
+    context: Context,
+    project: Project,
+    profilesAt: null | string,
+): { off: string[]; unreasoned: string[] } {
     const { root } = context;
     const oxlint = context.value('--oxlint', 'oxlint');
     const consumerRules = resolvedRules(root, oxlint, project.consumerConfig) ?? {};
@@ -117,7 +142,8 @@ function offOf(context, project, profilesAt) {
         project.profileName === null
             ? {}
             : project.defaultProfile === null
-              ? (resolvedRules(root, oxlint, join(profilesAt, `${project.profileName}.js`)) ?? {})
+              ? (resolvedRules(root, oxlint, join(profilesAt ?? '', `${project.profileName}.js`)) ??
+                {})
               : consumerRules;
     const off = turnedOff(profileRules, consumerRules);
     const unreasoned = off.filter((rule) => {
@@ -129,10 +155,14 @@ function offOf(context, project, profilesAt) {
     return { off, unreasoned };
 }
 
-const sum = (recorded) => Object.values(recorded).reduce((total, count) => total + count, 0);
+const sum = (recorded: Counts): number =>
+    Object.values(recorded).reduce((total, count) => total + count, 0);
 
 // A file the Oxlint pass refuses as `baseline-unreadable` holds no count either row may claim.
-function baselineReader(root) {
+function baselineReader(root: string): {
+    heldOf: (section: string) => number | string;
+    totalOf: (section?: string) => null | number | string;
+} {
     const isUnreadable = readBaseline(root).problem !== null;
 
     return {
@@ -156,7 +186,7 @@ function baselineReader(root) {
     };
 }
 
-function rulesOffOf(profileName, off) {
+function rulesOffOf(profileName: null | string, off: readonly string[]): string {
     if (profileName === null) {
         return 'not measured';
     }
@@ -164,7 +194,22 @@ function rulesOffOf(profileName, off) {
     return off.length === 0 ? 'none' : `${off.length} (${off.join(', ')})`;
 }
 
-function rowsOf(root, { behind, findings, off, project, suppressions }) {
+function rowsOf(
+    root: string,
+    {
+        behind,
+        findings,
+        off,
+        project,
+        suppressions,
+    }: {
+        behind: readonly ToolVersion[];
+        findings: readonly Finding[];
+        off: readonly string[];
+        project: Project;
+        suppressions: number;
+    },
+): string[] {
     const { heldOf } = baselineReader(root);
 
     return [
@@ -185,7 +230,7 @@ function rowsOf(root, { behind, findings, off, project, suppressions }) {
     ];
 }
 
-export const drift = Object.freeze({
+export const drift: Pass = Object.freeze({
     check(context) {
         const { root } = context;
         const profilesFlag = context.value('--profiles');
@@ -195,7 +240,7 @@ export const drift = Object.freeze({
         const { totalOf } = baselineReader(root);
         const suppressions = orRefused(() => countSuppressions(root, context.ignorePatterns));
         const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
-        const findings = unreasoned.map((rule) => ({
+        const findings: Finding[] = unreasoned.map((rule) => ({
             message: `${rule} is off and the line that turns it off carries no '// reason:'`,
             path: project.configName ?? 'oxlint.config',
             rule: 'drift/off-rule-states-its-reason',
