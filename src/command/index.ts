@@ -61,8 +61,12 @@ const COMMANDS: Readonly<Record<string, Command>> = {
     clean: () => clean(),
     dev: async () => await dev(),
     // For a repository with no npm project to hang `check` on (a Go, Rust or Ansible tree, through npx).
-    'docs-layout': async (args) =>
-        await handOver(process.execPath, [CHECKER, 'docs', args[0] ?? projectRoot()]),
+    'docs-layout': async ([root]) =>
+        await handOver(process.execPath, [
+            CHECKER,
+            'docs',
+            root === undefined || root === '' ? projectRoot() : root,
+        ]),
     doctor: () => {
         print(`${badge('TYPESCRIPT')} Checking the toolchain...\n\n`);
 
