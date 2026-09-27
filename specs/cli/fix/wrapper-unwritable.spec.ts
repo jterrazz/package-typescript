@@ -4,13 +4,13 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses } from '../_setup/check-passes.js';
 import { cli } from '../cli.specification.js';
 
-describe('fix-wrapper-unwritable', () => {
+describe('wrapper-unwritable', () => {
     test('refuses in four parts, fails, and removes the wrapper it wrote before the failed write', async () => {
         // Given - a clean tree, a root config over a nested one, where a directory holds the nested wrapper's path
         // When - the fix runs
         const fixed = await cli
             .env(onlyPasses('oxlint'))
-            .fixture(directory('./_fixtures/fix-wrapper-unwritable/'))
+            .fixture(directory('./_fixtures/wrapper-unwritable/'))
             .exec('fix');
 
         // Then - the pass fails on the refusal, and the root's wrapper written first is gone

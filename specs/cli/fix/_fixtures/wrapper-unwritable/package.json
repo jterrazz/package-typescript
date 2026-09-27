@@ -1,5 +1,5 @@
 {
-    "name": "fixture-fix-wrapper-unwritable",
+    "name": "fixture-wrapper-unwritable",
     "version": "1.0.0",
     "private": true,
     "type": "module"
