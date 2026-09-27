@@ -20,12 +20,9 @@ const ARRAY_KEYS: ReadonlySet<string> = new Set([
     'project',
 ]);
 
-const VITEST_CONFIGS = [
-    'vitest.config.ts',
-    'vitest.config.js',
-    'vitest.workspace.ts',
-    'vitest.workspace.js',
-];
+const VITEST_CONFIGS = ['vitest.config.ts', 'vitest.config.js'];
+
+const VITEST_WORKSPACES = ['vitest.workspace.ts', 'vitest.workspace.js'];
 
 const PLAYWRIGHT_CONFIGS = [
     'web/playwright.config.ts',
@@ -169,12 +166,12 @@ function declaredOf(manifest: JsonObject): JsonObject {
 // knip crashes on vitest.workspace.ts, so a vitest dependency gets an explicit config.
 function withVitest(merged: KnipConfig, declared: JsonObject): void {
     if (declared.vitest !== undefined && merged.vitest === undefined) {
-        const config = VITEST_CONFIGS.find((name) => existsSync(name));
+        const config = [...VITEST_CONFIGS, ...VITEST_WORKSPACES].find((name) => existsSync(name));
         if (config !== undefined) {
             merged.vitest = { config: [config] };
         }
     }
-    const workspace = VITEST_CONFIGS.slice(2).find((name) => existsSync(name));
+    const workspace = VITEST_WORKSPACES.find((name) => existsSync(name));
     if (workspace !== undefined) {
         withEntries(merged, 'ignore', [workspace]);
     }
