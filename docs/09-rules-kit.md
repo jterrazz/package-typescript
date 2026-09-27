@@ -1,0 +1,137 @@
+# Rules kit
+
+A package of the family that writes rules for its consumers writes them with the engine this toolchain judges itself with. `@jterrazz/typescript/rules` exports that engine, and `@jterrazz/typescript/config` exports the one mechanism by which a package hands its consumers everything it holds them to — the preset. This chapter is both, in the order a rule is written: its row, its message, its check, its chapter, its debt, what it reads, and the preset that carries it.
+
+The kit is `lint/engine/`, exported through `lint/index.rules.ts` ([Architecture](01-architecture.md#the-judging-layer)): nothing in it knows a declaration, so a sibling package reads the same code this package runs, and keeps in its own engine only what no other package reads — `@jterrazz/test` keeps its spec-document model, its facets and its stub kinds, and nothing else.
+
+## A rule is a catalogue row
+
+A rule starts as a row: its `name`, its `family`, its `audience` (`consumer` ships, `self` is the package's own discipline), the `sentence` it holds a project to, and the `fix` a reader applies. `rowNamed(rows, name)` finds one and refuses a name no row holds; `byName(rows)` orders a catalogue so a generated chapter is the same from one run to the next.
+
+Every message a rule prints teaches in four parts — `found: … · why: … · fix: … · read: …` — and the kit writes it: the finding states what was found and the fix for this case, the row gives the why (its `why`, or the first sentence of its `sentence`), and the read is the chapter anchor. `refusal(lesson)` writes one line, `refusalBlock(lesson)` one part per line; `lessonParts` and `missingParts` read a message back, which is how a meta-test refuses a message missing a part.
+
+`defineRule(definition, body)` writes an oxlint JS rule from its row, `body` being the visitor factory oxlint takes, `create` or `createOnce`:
+
+```ts
+import { defineRule } from '@jterrazz/typescript/rules';
+
+export const noSleep = defineRule(
+    {
+        docs: rowNamed(ROWS, 'no-sleep'),
+        read: 'docs/19-linting.md#no-sleep',
+        messages: {
+            slept: { found: '`sleep({{ms}})` waits on the clock', fix: 'await the event itself' },
+        },
+    },
+    { createOnce: (context) => ({ CallExpression: (node) => judge(context, node) }) },
+);
+```
+
+The rule's `meta.docs` is the row, and each message is its lesson, a `{{data}}` placeholder left for oxlint to fill. `lessonsAt(row, messages, chapter)` is the same composition for a rule that states its `meta` itself, its read the row's anchor in the chapter.
+
+A refusal a package's own code throws is the same four parts. `defineInvariant({ package, bugOf, notOf })` gives a package its `invariant()`, the error only the package itself can cause, whose message says so.
+
+## A cross-file check
+
+What one file cannot show — the tree, the manifest, the manual — is a check. `defineCheck({ docs, namespace, read })` binds a row to its printed id, `<namespace>/<name>`, and `.finding(at, teaching)` returns the finding at its position — a `path`, a `line`, a `column` — with its four-part message. `reportLine(namespace, finding, message)` prints it in the compiler's convention, `path:line:column: error <namespace>(<rule>): message`, the one every editor's problem matcher reads.
+
+`runChecker({ passes, held, presets })` is the command line of a set of passes: it reads the arguments (`--fix`, `--format`, a flag's value written apart or as `--flag=value`), hands a pass its context — the project root, its sweep, its settings resolved through the presets it is handed — prints its findings, applies its fixes, and judges a pass the baseline holds. A program that unwinds instead of exiting throws `stop(code)` and reads the code back with `exitCodeOf(program)`.
+
+## A chapter carries its catalogue
+
+A chapter that lists rules carries them between markers and never by hand. A `Projection` is a page, its `markers` and the `render` that writes the block; `projected(text, page, projections)` splices every block of a page, `writeProjections(projections)` writes only a page whose text changed, and `spliceBetween` refuses a page that lost its markers. `markdownTable` pads a table as the formatter does, so a generated block is format-clean; `cell` escapes a pipe, `anchor(name)` gives a row the anchor its lesson reads, and `anchorsOf(text)` lists every heading and row anchor a page holds.
+
+## The ratchet engine
+
+Debt no linter holds lives in `jterrazz.baseline.json`, one section per preset ([Quality checks](06-quality-checks.md#what-jterrazzbaselinejson-still-holds)). The kit reads it and writes it: `readBaseline` refuses a file that is not an object of sections of counts, `sectionOf` reads one, and `writeSection` writes one and keeps every other byte of the file, in the indent the file already uses.
+
+Two judges share it. `judgeExact(counts, recorded, { record, lower })` holds debt exactly: a count above its entry, a rule with findings and no entry, a count below its entry and an entry at zero each break it. `tightened` is what `fix` writes — it lowers what fell and drops what reached zero, and never raises an entry nor adds one, so debt that grew is recorded only by the recording gesture. `judgeFloor(now, floor)` holds a measure that only rises, such as coverage: a value below its floor breaks it, and `raisedFloor` records the higher of the two. A judge returns what broke as a lesson with no read; the caller writes the chapter it reads in place.
+
+## Reading a project
+
+The readers every check needs are the kit's, so two packages never read one project two ways:
+
+- the sweep: `projectFiles`, the files git does not ignore, and `treeEntries`, `treeKind` and `treeNames`, a directory listed as git sees it, cached until the index or the directory changes;
+- the workspace: `workspaceMembers`, `readManifest`, `workspacePatterns`, and `isRepositoryRoot`;
+- what a package publishes: `entryPoints`, the sources its `exports` build from, and `declaredSubpaths`, the subpaths it declares;
+- the ground a spec stands on: `GROUND_FOLDERS`, `RESERVED_FOLDERS`, `SETUP_FOLDER`, `SHARED_FOLDER` — one list, which the oxlint and oxfmt presets ignore and every check skips;
+- a suppression: `suppressionDirectives(stem)` reads `<stem>-disable-next-line <id> -- reason` and `<stem>-disable-line`, and `holdsDirectives(path)` says which files may carry one;
+- the settings: `readSettings(unit)` and `readSettingsSync(unit)`, a unit's `jterrazz.config.ts` resolved through its presets.
+
+## Presets
+
+A package hands its consumers everything it holds them to in ONE preset: an object carrying its `name` — the section of `jterrazz.config.ts` it reads and the prefix of its laws — its `package`, and what it adds:
+
+| Key        | Holds                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `settings` | the defaults of its section, which the repository's own section merges over                                               |
+| `oxlint`   | its oxlint config — a JS plugin and its rules, overrides                                                                  |
+| `layers`   | its import boundaries, in the vocabulary of [the Architecture pass](06-quality-checks.md#the-architecture-layer-map-pass) |
+| `names`    | its rules of where a name sits, in ls-lint's ([a name rule](06-quality-checks.md#a-name-rule-a-project-declares))         |
+| `baseline` | the sections of `jterrazz.baseline.json` it writes and judges                                                             |
+| `presets`  | the presets it includes                                                                                                   |
+
+`definePreset` types one. A repository declares the presets it is held to in `jterrazz.config.ts`, and adds only what is its own:
+
+```ts
+import { test } from '@jterrazz/test/config';
+import { defineConfig, typescript } from '@jterrazz/typescript/config';
+
+export default defineConfig({
+    presets: [typescript({ profile: 'node' }), test()],
+    typescript: { roots: { scripts: 'the release scripts the CI workflow runs' } },
+});
+```
+
+Its `oxlint.config.ts` then composes what the presets carry, and names nothing else:
+
+```ts
+import { defineConfig, fromPresets } from '@jterrazz/typescript/oxlint';
+
+import settings from './jterrazz.config.ts';
+
+export default defineConfig(fromPresets(settings));
+```
+
+A preset is declared, never discovered from `node_modules`: what a repository is held to is read in one file.
+
+### The base preset
+
+`typescript()` is always on, whether the repository names it or not; naming it chooses its `profile`, the oxlint profile `fromPresets` starts from (`node` where none is named). It carries the laws every repository of the family keeps:
+
+- the direction of `lint/` — `engine-knows-no-declaration`, `consumer-folders-apart`, `self-folders-apart`, `catalogue-at-the-bottom`, `shipped-lint-reads-no-self`, `src-reads-no-self` — layers the Architecture pass holds a `lint/` tree to wherever one stands ([Architecture](01-architecture.md#the-judging-layer));
+- the folders of the lint tree, the spine and the roots a tool imposes, and the three rosters of the Names pass ([Quality checks](06-quality-checks.md#the-names-tree-pass)).
+
+A law whose `from` names no file of the project costs it nothing: the Architecture pass drops it before it cruises, so a repository without a `lint/` tree runs no cruise for the base preset's laws.
+
+### The merge order
+
+Resolution is deterministic, and the same in every reader:
+
+1. The base preset first, then each listed preset in the order written; a preset's own presets come before it, depth first, and a preset named twice keeps its first place. Two presets of one name from two packages are refused.
+2. Each section is its presets' `settings` merged in that order, then the repository's own section over them: a list concatenates with duplicates dropped, a record merges key by key, and any other value the repository writes wins.
+3. The laws — `layers` and `names` — are every preset's in that order, then the repository's own (`typescript.architecture.layers`, `typescript.names`).
+4. `oxlint` is every preset's config, composed by `compose` in that order after the base profile.
+
+A file that does not load, a `presets` that is not a list of presets, or a section that is not an object is refused in four parts by the pass that reads it, reading this heading.
+
+### Setting a law aside
+
+A repository cannot drop a preset's law by writing over it: a law is a preset's, not a setting. It sets one aside in the open, under `optOuts`, naming the law as `<preset>/<rule>` and saying why:
+
+```ts
+export default defineConfig({
+    optOuts: {
+        'typescript/self-folders-apart': 'the corpus reads a check it audits, until it moves',
+    },
+    presets: [typescript()],
+});
+```
+
+An opt-out with no reason, or one naming a law no preset declares, is refused like a file that does not load. Each one is counted: the drift report prints how many laws the repository set aside, and which ([Quality checks](06-quality-checks.md#the-drift-report)).
+
+## Related
+
+- [Architecture](01-architecture.md) — where the kit sits in `lint/`.
+- [Quality checks](06-quality-checks.md) — the passes that read what a preset declares.
+- [Developing](02-developing.md) — the settings file a repository keeps.

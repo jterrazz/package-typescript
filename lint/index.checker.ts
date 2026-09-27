@@ -2,6 +2,7 @@
 
 import { runChecker } from './engine/checker/checker.js';
 import type { Passes } from './engine/checker/pass.js';
+import { BASE_PRESETS } from './index.config.js';
 
 const PASSES: Passes = Object.freeze({
     async architecture() {
@@ -64,5 +65,5 @@ const PASSES: Passes = Object.freeze({
 const HELD = Object.freeze(['architecture', 'comments', 'names']);
 
 if (import.meta.main) {
-    await runChecker({ held: HELD, passes: PASSES });
+    await runChecker({ held: HELD, passes: PASSES, presets: BASE_PRESETS });
 }

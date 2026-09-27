@@ -1,7 +1,22 @@
+import { labelOf, sectionOf } from '../baseline/baseline-file.js';
+import type { Counts } from '../baseline/baseline-file.js';
 import { countsOf } from '../baseline/counts.js';
-import { judge, LABEL, reRecord, sectionOf } from '../baseline/section.js';
-import type { Counts } from '../baseline/section.js';
+import { judgeExact, reRecord } from '../baseline/section.js';
+import type { Broken, Ratchet } from '../baseline/section.js';
+import { refusal } from '../catalogue/lesson.js';
 import type { Context, Finding, Pass, PassResult } from './pass.js';
+
+export const SECTION = 'typescript';
+
+export const LABEL = labelOf(SECTION);
+
+export const RATCHET: Ratchet = { lower: 'typescript fix', record: 'typescript baseline' };
+
+const ratchetLine = ({ teaching }: Broken): string =>
+    `baseline-ratchet  ${LABEL}  ${refusal({ ...teaching, read: 'docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds' })}`;
+
+export const isHeldBy = (passes: readonly string[], rule: string): boolean =>
+    passes.some((pass) => rule.startsWith(`${pass}/`));
 
 type Print = (lines: string[]) => void;
 
@@ -22,7 +37,7 @@ function recordedOf(
     const owns = (rule: string): boolean => rule.startsWith(namespace);
     const owned = (section: Counts): Counts =>
         Object.fromEntries(Object.entries(section).filter(([rule]) => owns(rule)));
-    const recorded = owned(sectionOf(root) ?? {});
+    const recorded = owned(sectionOf(root, SECTION) ?? {});
 
     return {
         recorded,
@@ -30,7 +45,7 @@ function recordedOf(
             if (!fix || Object.keys(recorded).length === 0) {
                 return recorded;
             }
-            const { lines, section } = reRecord(root, counts, owns);
+            const { lines, section } = reRecord(root, { counts, owns, section: SECTION });
             print(lines);
 
             return owned(section);
@@ -46,12 +61,12 @@ function judgeOneEntry(
     const count = findings.length;
     const counts = count > 0 ? { [entry]: count } : {};
     const recorded = recordedOf(context.root, namespace, context.fix).reRecorded(counts, print);
-    const stray = judge(counts, recorded).filter(({ rule }) => rule !== entry);
+    const stray = judgeExact(counts, recorded, RATCHET).filter(({ rule }) => rule !== entry);
     const held = count === (recorded[entry] ?? 0);
     if (!held) {
         print([`${entry}  ${LABEL}  ${pass.verdict?.(count, recorded[entry], result) ?? ''}`]);
     }
-    print(stray.map(({ refusal }) => `baseline-ratchet  ${LABEL}  ${refusal}`));
+    print(stray.map((broken) => ratchetLine(broken)));
 
     return held && stray.length === 0 ? 0 : 1;
 }
@@ -69,8 +84,8 @@ export function judgeHeld(run: HeldRun): number {
     if (Object.keys(before).length === 0) {
         return findings.length > 0 ? 1 : 0;
     }
-    const broken = judge(counts, reRecorded(counts, print));
-    print(broken.map(({ refusal }) => `baseline-ratchet  ${LABEL}  ${refusal}`));
+    const broken = judgeExact(counts, reRecorded(counts, print), RATCHET);
+    print(broken.map((one) => ratchetLine(one)));
 
     return broken.length > 0 ? 1 : 0;
 }

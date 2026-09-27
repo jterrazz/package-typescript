@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { LINT_TREE } from '../catalogue/preset.js';
 import { lsLintFindings } from './names.ls-lint.js';
 
 function onDisk(paths: readonly string[]): string {
@@ -34,6 +35,7 @@ describe('names.ls-lint', () => {
         const findings = lsLintFindings(root, {
             failures,
             swept: ['lint/consumer/listing.ts'],
+            tree: LINT_TREE,
             units: [''],
         });
         rmSync(root, { force: true, recursive: true });
@@ -56,7 +58,12 @@ describe('names.ls-lint', () => {
         ];
 
         // When - ls-lint reported nothing
-        const findings = lsLintFindings(tmpdir(), { failures: {}, swept, units: [''] });
+        const findings = lsLintFindings(tmpdir(), {
+            failures: {},
+            swept,
+            tree: LINT_TREE,
+            units: [''],
+        });
 
         // Then - each file in a closed folder is refused under the rule of its place
         expect(findings.map(({ path, rule }) => `${rule}  ${path}`)).toStrictEqual([

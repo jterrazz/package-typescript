@@ -2,59 +2,46 @@ import { basename, join, matchesGlob } from 'node:path';
 
 import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { emptyDirectories } from '../../engine/project/empty-directories.js';
-import { isJsonObject, parsedObject } from '../../engine/project/json.js';
+import {
+    isJsonObject,
+    objectOf,
+    parsedObject,
+    stringRecordOf,
+    stringsOf,
+} from '../../engine/project/json.js';
 import type { JsonObject } from '../../engine/project/json.js';
-import { readSection, SETTINGS_FILE } from '../../engine/project/jterrazz-config.js';
+import { SETTINGS_FILE } from '../../engine/project/jterrazz-config.js';
+import type { Config } from '../../engine/project/jterrazz-config.js';
 import { isRepositoryRoot } from '../../engine/project/repository-root.js';
 import { workspaceMembers } from '../../engine/project/workspace-members.js';
 import { declaredNamesFindings, declaredNamesRules } from './names.declared.js';
-import { LINT_ROOT, lintTreeOf } from './names.lint-tree.js';
+import { LINT_ROOT, lintFoldersOf, lintTreeOf } from './names.lint-tree.js';
+import type { LintTree } from './names.lint-tree.js';
 import { lsLintConfig, lsLintFindings, runLsLint } from './names.ls-lint.js';
 
 type Disk = Pick<Context, 'exists' | 'read'>;
 
 type Manifest = JsonObject;
 
-type Settings = { problem: null | string; roots: Readonly<Record<string, unknown>> };
+type Universal = {
+    constructs: ReadonlySet<string>;
+    grabBag: ReadonlySet<string>;
+    lint: LintTree;
+    memberRoots: ReadonlySet<string>;
+    shortcuts: ReadonlySet<string>;
+    spine: ReadonlySet<string>;
+    toolRoots: Readonly<Record<string, string>>;
+};
+
+type Settings = {
+    problem: null | string;
+    roots: Readonly<Record<string, unknown>>;
+    universal: Universal;
+};
 
 type Named = { fileName?: string; name: string };
 
-const GRAB_BAG: ReadonlySet<string> = new Set([
-    'base',
-    'common',
-    'helpers',
-    'lib',
-    'misc',
-    'stuff',
-    'tools',
-    'utils',
-]);
-
-// A word the grab-bag roster already refuses is left to it, so a name is reported once.
-const CONSTRUCTS: ReadonlySet<string> = new Set([
-    'constants',
-    'helper',
-    'interfaces',
-    'type',
-    'types',
-    'util',
-]);
-
 const CONSTRUCT_SUFFIX = 'types';
-
-// A name is read segment by segment, split on the hyphen; the `_` marker excuses none.
-const SHORTCUTS: ReadonlySet<string> = new Set([
-    'auth',
-    'cfg',
-    'impl',
-    'infra',
-    'k8s',
-    'pkg',
-    'repo',
-    'repos',
-    'svc',
-    'tmp',
-]);
 
 // A swept root's own name is the toolchain's, never judged: `lib/` is also a grab-bag word.
 const SWEPT: ReadonlySet<string> = new Set([
@@ -67,21 +54,6 @@ const SWEPT: ReadonlySet<string> = new Set([
     'src',
     'tests',
 ]);
-
-const SPINE: ReadonlySet<string> = new Set(['docs', 'lint', 'skills', 'specs', 'src']);
-
-const MEMBER_ROOTS: ReadonlySet<string> = new Set(['apps', 'packages']);
-
-const ECOSYSTEM_ROOTS = Object.freeze({
-    android: 'React Native and Expo — the native Android project',
-    app: 'Next.js App Router and Expo Router — routes are read off this folder',
-    bin: "npm — the files a package's `bin` entry links as commands",
-    config: "node-config — the default folder its `require('config')` reads",
-    ios: 'React Native and Expo — the native iOS project',
-    pages: 'Next.js Pages Router — routes are read off this folder',
-    prisma: 'Prisma — the schema and migrations its CLI reads by default',
-    public: 'Next.js, Astro and Vite — static files served verbatim at the site root',
-});
 
 const DECLARATION = 'typescript.roots';
 
@@ -98,17 +70,14 @@ const ROUTER_ROOT = 'app';
 
 const unmarked = (name: string): string => name.replace(/^_/u, '').toLowerCase();
 
-const isGrabBag = (name: string): boolean => GRAB_BAG.has(unmarked(name));
-
-const isConstruct = (name: string): boolean => CONSTRUCTS.has(unmarked(name));
+// A name is read segment by segment, split on the hyphen; the `_` marker excuses none.
+const isShortcut = (name: string, { shortcuts }: Universal): boolean =>
+    unmarked(name)
+        .split('-')
+        .some((segment) => shortcuts.has(segment));
 
 const hasConstructSuffix = (fileName: string): boolean =>
     fileName.split('.').slice(1, -1).includes(CONSTRUCT_SUFFIX);
-
-const isShortcut = (name: string): boolean =>
-    unmarked(name)
-        .split('-')
-        .some((segment) => SHORTCUTS.has(segment));
 
 const stemOf = (name: string): string => name.split('.')[0] ?? '';
 
@@ -134,24 +103,28 @@ function namesOf(files: readonly string[]): [string, Named][] {
     return [...named].toSorted(([left], [right]) => (left < right ? -1 : 1));
 }
 
-function findingsOf(files: readonly string[]): Finding[] {
+// A word the grab-bag roster already refuses is left to it, so a name is reported once.
+function findingsOf(files: readonly string[], universal: Universal): Finding[] {
     const findings: Finding[] = [];
 
     for (const [path, { fileName, name }] of namesOf(files)) {
-        if (isGrabBag(name)) {
+        if (universal.grabBag.has(unmarked(name))) {
             findings.push({
                 message: `\`${name}\` names no subject — it holds whatever nobody placed`,
                 path,
                 rule: 'names/no-grab-bag-name',
             });
-        } else if (isConstruct(name) || (fileName !== undefined && hasConstructSuffix(fileName))) {
+        } else if (
+            universal.constructs.has(unmarked(name)) ||
+            (fileName !== undefined && hasConstructSuffix(fileName))
+        ) {
             findings.push({
                 message: `\`${fileName ?? name}\` names a construct of the language — name it for the subject it holds`,
                 path,
                 rule: 'names/no-language-construct-name',
             });
         }
-        if (isShortcut(name)) {
+        if (isShortcut(name, universal)) {
             findings.push({
                 message: `\`${name}\` is a word written in half — spell it whole`,
                 path,
@@ -176,24 +149,42 @@ function manifestOf(disk: Disk, unit: string): Manifest {
     }
 }
 
-async function settingsOf(unit: string): Promise<Settings> {
-    const { problem, section } = await readSection(unit, 'typescript');
+const set = (value: unknown): ReadonlySet<string> => new Set(stringsOf(value));
+
+function universalOf(section: Readonly<Record<string, unknown>>): Universal {
+    const words = objectOf(section.words);
+
+    return {
+        constructs: set(words.constructs),
+        grabBag: set(words.grabBag),
+        lint: lintFoldersOf(section.lint),
+        memberRoots: set(section.memberRoots),
+        shortcuts: set(words.shortcuts),
+        spine: set(section.spine),
+        toolRoots: stringRecordOf(section.toolRoots),
+    };
+}
+
+function settingsOf({ problem, resolved }: Config): Settings {
+    const section = resolved.sections.typescript ?? {};
+    const universal = universalOf(section);
     if (problem !== null) {
-        return { problem, roots: {} };
+        return { problem, roots: {}, universal };
     }
 
     const { roots } = section;
     if (roots === undefined) {
-        return { problem: null, roots: {} };
+        return { problem: null, roots: {}, universal };
     }
     if (!isJsonObject(roots)) {
         return {
             problem: `holds a \`${DECLARATION}\` that is not an object mapping each folder to its reason`,
             roots: {},
+            universal,
         };
     }
 
-    return { problem: null, roots };
+    return { problem: null, roots, universal };
 }
 
 function targetsOfExports(exports: unknown): string[] {
@@ -357,15 +348,16 @@ function spineOf(
         roots.add(first);
     }
 
+    const { lint, memberRoots, spine, toolRoots } = settings.universal;
     const isCodified = (root: string): boolean =>
-        (SPINE.has(root) && (root !== LINT_ROOT || shipsLint(disk, manifest, unit))) ||
-        MEMBER_ROOTS.has(root) ||
-        Object.hasOwn(ECOSYSTEM_ROOTS, root) ||
+        (spine.has(root) && (root !== LINT_ROOT || shipsLint(disk, manifest, unit))) ||
+        memberRoots.has(root) ||
+        Object.hasOwn(toolRoots, root) ||
         Object.hasOwn(declared, root);
 
     return [
         ...findings,
-        ...lintTreeOf(files, unit, prefix),
+        ...lintTreeOf(files, { prefix, tree: lint, unit }),
         ...[...roots]
             .toSorted((left, right) => (left < right ? -1 : 1))
             .filter((root) => !isCodified(root))
@@ -374,19 +366,22 @@ function spineOf(
     ];
 }
 
-async function spinesOf(context: Context, files: readonly string[]): Promise<Finding[]> {
+async function spinesOf(
+    context: Context,
+    { files, settings }: { files: readonly string[]; settings: Settings },
+): Promise<Finding[]> {
     const { root } = context;
     const members = workspaceMembers(root);
     const memberOf = (file: string): string | undefined =>
         members.find((member) => file.startsWith(`${member}/`));
     const memberSettings = await Promise.all(
-        members.map(async (member) => await settingsOf(join(root, member))),
+        members.map(async (member) => settingsOf(await context.config(join(root, member)))),
     );
 
     return [
         ...spineOf(context, root, {
             files: files.filter((file) => memberOf(file) === undefined),
-            settings: await settingsOf(root),
+            settings,
         }),
         ...members.flatMap((member, index) =>
             spineOf(context, join(root, member), {
@@ -394,7 +389,7 @@ async function spinesOf(context: Context, files: readonly string[]): Promise<Fin
                     .filter((file) => file.startsWith(`${member}/`))
                     .map((file) => file.slice(member.length + 1)),
                 prefix: `${member}/`,
-                settings: memberSettings[index] ?? { problem: null, roots: {} },
+                settings: memberSettings[index] ?? settings,
             }),
         ),
     ];
@@ -452,15 +447,15 @@ function emptyDirectoryFinding(path: string): Finding {
 
 async function laidOut(
     context: Context,
-    swept: readonly string[],
+    { swept, tree }: { swept: readonly string[]; tree: LintTree },
 ): Promise<{ findings: Finding[]; problems: string[] }> {
     const units = ['', ...workspaceMembers(context.root).map((member) => `${member}/`)];
     const { failures, problem } = runLsLint(
         context.value('--ls-lint', 'ls-lint'),
         context.root,
-        lsLintConfig(units, context.ignorePatterns),
+        lsLintConfig({ ignorePatterns: context.ignorePatterns, tree, units }),
     );
-    const declared = declaredNamesRules(await readSection(context.root, 'typescript'));
+    const declared = declaredNamesRules(await context.config());
     const own = declaredNamesFindings(context, { rules: declared.rules, swept, units });
 
     return {
@@ -474,7 +469,7 @@ async function laidOut(
                           rule: 'names/jterrazz-config-loads',
                       },
                   ]),
-            ...lsLintFindings(context.root, { failures, swept, units }),
+            ...lsLintFindings(context.root, { failures, swept, tree, units }),
             ...own.findings,
         ],
         problems: [...(problem === null ? [] : [problem]), ...own.problems],
@@ -484,14 +479,15 @@ async function laidOut(
 export const names: Pass = Object.freeze({
     async check(context) {
         const files = context.files();
-        const layout = await laidOut(context, files);
+        const settings = settingsOf(await context.config());
+        const layout = await laidOut(context, { swept: files, tree: settings.universal.lint });
 
         return {
             ...(layout.problems.length === 0 ? {} : { failed: true, lines: layout.problems }),
             findings: [
-                ...findingsOf(files),
+                ...findingsOf(files, settings.universal),
                 ...layout.findings,
-                ...(await spinesOf(context, files)),
+                ...(await spinesOf(context, { files, settings })),
                 ...makefileOf(context, files),
                 ...emptyDirectories(context.root, { ignorePatterns: context.ignorePatterns }).map(
                     (path) => emptyDirectoryFinding(path),

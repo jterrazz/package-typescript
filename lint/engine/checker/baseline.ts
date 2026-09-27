@@ -1,21 +1,14 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { stdout } from 'node:process';
 
+import { BASELINE, readBaseline, writeSection } from '../baseline/baseline-file.js';
+import type { Counts } from '../baseline/baseline-file.js';
 import { reportedCounts } from '../baseline/counts.js';
-import {
-    BASELINE,
-    isHeldBy,
-    LABEL,
-    readBaseline,
-    SECTION,
-    serialise,
-    withSection,
-} from '../baseline/section.js';
-import type { Counts } from '../baseline/section.js';
 import { refusal } from '../catalogue/lesson.js';
 import { readCommandLine } from './command-line.js';
 import type { CommandLine } from './command-line.js';
+import { isHeldBy, LABEL, SECTION } from './held.js';
 
 type PassReport = { label: string; report: unknown };
 
@@ -69,10 +62,8 @@ function write(root: string, reports: readonly PassReport[]): number {
         return 1;
     }
     const counts: Counts = reportedCounts(...reports.map(({ report }) => report));
-    const path = join(root, BASELINE);
-    const text = existsSync(path) ? readFileSync(path, 'utf8') : null;
     const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
-    writeFileSync(path, withSection(text, serialise(counts)));
+    writeSection(root, SECTION, counts);
     print(
         `${LABEL} written — ${String(total)} finding(s) across ${String(Object.keys(counts).length)} rule(s)`,
     );

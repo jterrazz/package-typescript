@@ -10,6 +10,19 @@ export type CommandLine = {
     values: (flag: string) => string[];
 };
 
+function readInline(
+    argument: string,
+    { flags, takesValue }: { flags: Map<string, string[]>; takesValue: ReadonlySet<string> },
+): boolean {
+    const inline = /^(?<flag>--[^=]+)=(?<value>.*)$/u.exec(argument)?.groups;
+    if (inline?.flag === undefined || !takesValue.has(inline.flag)) {
+        return false;
+    }
+    flags.set(inline.flag, [...(flags.get(inline.flag) ?? []), inline.value ?? '']);
+
+    return true;
+}
+
 export function readCommandLine(
     args: readonly string[],
     valued: readonly string[] = [],
@@ -22,6 +35,9 @@ export function readCommandLine(
         const argument = args[index] ?? '';
         if (!argument.startsWith('-')) {
             positionals.push(argument);
+            continue;
+        }
+        if (readInline(argument, { flags, takesValue })) {
             continue;
         }
         const values = flags.get(argument) ?? [];

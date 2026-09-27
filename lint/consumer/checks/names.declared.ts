@@ -1,19 +1,10 @@
 import { join } from 'node:path';
 
 import type { Context, Finding } from '../../engine/checker/pass.js';
-import { declaredUnder } from '../../engine/project/jterrazz-config.js';
-import type { Section } from '../../engine/project/jterrazz-config.js';
+import type { Config } from '../../engine/project/jterrazz-config.js';
+import type { NamesRule } from '../../engine/project/preset.js';
 import { ignoredOf, listed, runLsLint } from './names.ls-lint.js';
 import type { Failures } from './names.ls-lint.js';
-
-export type NamesRule = {
-    fix: string;
-    ignore?: readonly string[];
-    ls: Readonly<Record<string, Readonly<Record<string, string>>>>;
-    name: string;
-    read: string;
-    why: string;
-};
 
 const RULE_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 
@@ -37,18 +28,14 @@ function isNamesRule(value: unknown): value is NamesRule {
     );
 }
 
-export function declaredNamesRules({ problem, section }: Section): {
+export function declaredNamesRules({ problem, resolved }: Config): {
     problem: null | string;
     rules: NamesRule[];
 } {
     if (problem !== null) {
         return { problem: null, rules: [] };
     }
-    const { declared, problem: presets } = declaredUnder(section, 'names');
-    if (presets !== null) {
-        return { problem: presets, rules: [] };
-    }
-    const rules = declared.flatMap((names): unknown[] => (Array.isArray(names) ? names : [names]));
+    const rules: unknown[] = resolved.names;
     if (!rules.every((rule) => isNamesRule(rule))) {
         return {
             problem:

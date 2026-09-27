@@ -150,5 +150,37 @@
         "id": "empty-sweep-exit",
         "message": "stderr.write(`${error.message}\\n`);",
         "module": "lint/engine/project/project-files.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
+        "id": "chapter-markers-lost",
+        "message": "has lost its markers",
+        "module": "lint/engine/catalogue/chapter.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
+        "id": "catalogue-row-unnamed",
+        "message": "no catalogue row is named",
+        "module": "lint/engine/catalogue/rule.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
+        "id": "checker-stopped",
+        "message": "stopped with ${String(code)} outside exitCodeOf",
+        "module": "lint/engine/checker/stop.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
+        "id": "presets-unresolved",
+        "message": "presetLesson(problem, SETTINGS_FILE)",
+        "module": "lint/index.ts"
     }
 ]

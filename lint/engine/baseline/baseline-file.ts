@@ -1,0 +1,182 @@
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { isJsonObject, objectOf } from '../project/json.js';
+
+export const BASELINE = 'jterrazz.baseline.json';
+
+export type Counts = Record<string, number>;
+
+export type Sections = Record<string, Counts>;
+
+export type ReadBaseline = { problem: null | string; sections: null | Sections };
+
+export const labelOf = (section: string): string => `${BASELINE} › ${section}`;
+
+function countsIn(section: unknown): Counts | null {
+    const entries = Object.entries(objectOf(section));
+    const counted = entries.filter(
+        (entry): entry is [string, number] => typeof entry[1] === 'number',
+    );
+
+    return isJsonObject(section) && counted.length === entries.length
+        ? Object.fromEntries(counted)
+        : null;
+}
+
+export function readBaseline(root: string): ReadBaseline {
+    const path = join(root, BASELINE);
+    if (!existsSync(path)) {
+        return { problem: null, sections: null };
+    }
+
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(readFileSync(path, 'utf8'));
+    } catch (error) {
+        return {
+            problem: `is not JSON — ${error instanceof Error ? error.message : String(error)}`,
+            sections: null,
+        };
+    }
+    if (!isJsonObject(parsed)) {
+        return { problem: 'holds no object of sections', sections: null };
+    }
+    const sections: Sections = {};
+    for (const [name, section] of Object.entries(parsed)) {
+        const counts = countsIn(section);
+        if (counts === null) {
+            return {
+                problem: `keys \`${name}\` to something that is not a section of counts`,
+                sections: null,
+            };
+        }
+        sections[name] = counts;
+    }
+
+    return { problem: null, sections };
+}
+
+export function sectionOf(root: string, section: string): Counts | null {
+    const { sections } = readBaseline(root);
+
+    return sections?.[section] ?? null;
+}
+
+// A file that is no object of sections keeps its section too: every finding then reads as new debt rather than passing.
+export function keepsSection(root: string, section: string): boolean {
+    const { problem, sections } = readBaseline(root);
+
+    return problem !== null || (sections !== null && Object.hasOwn(sections, section));
+}
+
+const byKey = ([left]: [string, number], [right]: [string, number]): number =>
+    left < right ? -1 : 1;
+
+// The formatter owns the indent of a file it formatted, so a rewrite keeps the file's own.
+export function serialise(counts: Counts, indent = '  '): string {
+    const sorted = Object.fromEntries(Object.entries(counts).toSorted(byKey));
+
+    return JSON.stringify(sorted, null, indent).replaceAll('\n', `\n${indent}`);
+}
+
+function indentOf(text: string): string {
+    return /\n(?<indent>[ \t]+)"/u.exec(text)?.groups?.indent ?? '  ';
+}
+
+function valueEnd(text: string, start: number): number {
+    const first = text[start];
+    if (first === '"') {
+        return stringEnd(text, start);
+    }
+    if (first === '{' || first === '[') {
+        return containerEnd(text, start);
+    }
+    const match = /[\s,\]}]/u.exec(text.slice(start));
+
+    return match === null ? text.length : start + match.index;
+}
+
+function containerEnd(text: string, start: number): number {
+    let depth = 0;
+    let index = start;
+    while (index < text.length) {
+        const char = text[index];
+        if (char === '"') {
+            index = stringEnd(text, index);
+            continue;
+        }
+        if (char === '{' || char === '[') {
+            depth += 1;
+        } else if (char === '}' || char === ']') {
+            depth -= 1;
+            if (depth === 0) {
+                return index + 1;
+            }
+        }
+        index += 1;
+    }
+
+    return index;
+}
+
+function stringEnd(text: string, start: number): number {
+    let index = start + 1;
+    while (index < text.length && text[index] !== '"') {
+        index += text[index] === '\\' ? 2 : 1;
+    }
+
+    return index + 1;
+}
+
+// The text has already parsed, so the scan never meets malformed input.
+function membersOf(text: string): { end: number; key: string; start: number }[] {
+    const members: { end: number; key: string; start: number }[] = [];
+    let index = text.indexOf('{') + 1;
+    while (index < text.length) {
+        const opening = text.indexOf('"', index);
+        const closing = text.indexOf('}', index);
+        if (opening === -1 || (closing !== -1 && closing < opening)) {
+            break;
+        }
+        const keyEnd = stringEnd(text, opening);
+        const quoted: unknown = JSON.parse(text.slice(opening, keyEnd));
+        const key = typeof quoted === 'string' ? quoted : '';
+        let start = text.indexOf(':', keyEnd) + 1;
+        while (/\s/u.test(text[start] ?? '')) {
+            start += 1;
+        }
+        const end = valueEnd(text, start);
+        members.push({ end, key, start });
+        index = end;
+    }
+
+    return members;
+}
+
+export function withSection(text: null | string, name: string, counts: Counts): string {
+    const indent = text === null ? '  ' : indentOf(text);
+    const section = serialise(counts, indent);
+    const member = `"${name}": ${section}`;
+    if (text === null) {
+        return `{\n${indent}${member}\n}\n`;
+    }
+
+    const own = membersOf(text).find(({ key }) => key === name);
+    if (own !== undefined) {
+        return `${text.slice(0, own.start)}${section}${text.slice(own.end)}`;
+    }
+
+    const open = text.indexOf('{') + 1;
+    const rest = text.slice(open);
+
+    return /^\s*\}/u.test(rest)
+        ? `${text.slice(0, open)}\n${indent}${member}\n${rest.trimStart()}`
+        : `${text.slice(0, open)}\n${indent}${member},\n${indent}${rest.trimStart()}`;
+}
+
+export function writeSection(root: string, name: string, counts: Counts): void {
+    const path = join(root, BASELINE);
+    const text = existsSync(path) ? readFileSync(path, 'utf8') : null;
+    writeFileSync(path, withSection(text, name, counts));
+}

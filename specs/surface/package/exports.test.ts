@@ -44,7 +44,7 @@ describe('exports', () => {
         );
     });
 
-    test('the oxlint entry exports the six profiles, the composer and the nested form', () => {
+    test('the oxlint entry exports the six profiles, the composer, the nested form and the preset composition', () => {
         // Given - the tool-facing oxlint entry
         // Then - its surface is exactly what a consumer's config names
         expect(Object.keys(oxlintEntry).toSorted()).toStrictEqual([
@@ -53,6 +53,7 @@ describe('exports', () => {
             'compose',
             'defineConfig',
             'expo',
+            'fromPresets',
             'nested',
             'next',
             'node',

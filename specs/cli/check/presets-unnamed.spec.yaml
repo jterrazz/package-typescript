@@ -9,12 +9,12 @@ runs:
 
            RUN  Architecture (layer map)
 
-          found: jterrazz.config.ts holds a `presets` that is not a list of presets, each an object carrying the `name` of the package that ships it · why: the layer map is read from that file, and a map that cannot be read judges no import · fix: correct jterrazz.config.ts until it loads and its `typescript` section has the declared shape, then run again · read: docs/06-quality-checks.md#the-architecture-layer-map-pass
+          found: jterrazz.config.ts holds a `presets` entry that is not a preset — an object carrying its `name` and its `package` · why: every law a project is held to is resolved from that file, and a file that cannot be resolved judges nothing · fix: correct jterrazz.config.ts until it loads and each preset and section has its declared shape, then run again · read: docs/09-rules-kit.md#the-merge-order
           ✗ Failed with exit code 1
 
            RUN  Names (tree)
 
-          names/jterrazz-config-loads  jterrazz.config.ts  `jterrazz.config.ts` holds a `presets` that is not a list of presets, each an object carrying the `name` of the package that ships it
+          names/jterrazz-config-loads  jterrazz.config.ts  `jterrazz.config.ts` holds a `presets` entry that is not a preset — an object carrying its `name` and its `package`
           ✗ Failed with exit code 1
 
            END  Finalizing quality checks

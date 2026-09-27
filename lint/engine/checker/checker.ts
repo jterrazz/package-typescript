@@ -3,12 +3,15 @@ import { resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
 import { removeEmptyDirectory } from '../project/empty-directories.js';
+import { readConfig } from '../project/jterrazz-config.js';
+import type { Config } from '../project/jterrazz-config.js';
+import type { Preset } from '../project/preset.js';
 import { orRefused, projectFiles } from '../project/project-files.js';
 import { readCommandLine } from './command-line.js';
 import type { CommandLine } from './command-line.js';
 import { ENGINE_COMMANDS } from './engine-commands.js';
 import { judgeHeld } from './held.js';
-import type { Context, Finding, Pass, Passes, PassResult, Removal, Tool } from './pass.js';
+import type { Checker, Context, Finding, Pass, PassResult, Removal, Tool } from './pass.js';
 import { runTool } from './tool-run.js';
 
 type Run = { findings: Finding[]; result: PassResult };
@@ -29,12 +32,19 @@ function listAt(directory: string): null | string[] {
     }
 }
 
-function contextOf(commandLine: CommandLine): Context {
+function contextOf(commandLine: CommandLine, presets: readonly Preset[]): Context {
     const root = resolve(commandLine.positionals[0] ?? '.');
     const ignorePatterns = commandLine.values('--ignore-pattern');
+    const configs = new Map<string, Promise<Config>>();
     let files: string[] | undefined;
 
     return {
+        config: async (unit = root) => {
+            const known = configs.get(unit) ?? readConfig(unit, presets);
+            configs.set(unit, known);
+
+            return await known;
+        },
         exists: existsSync,
         files: () => (files ??= orRefused(() => projectFiles(root, { ignorePatterns }))),
         fix: commandLine.has('--fix'),
@@ -106,13 +116,16 @@ function settled(context: Context, { findings, result }: Run): number {
 }
 
 async function runPass(
-    name: string,
-    pass: Pass,
+    {
+        held,
+        name,
+        pass,
+        presets,
+    }: { held: readonly string[]; name: string; pass: Pass; presets: readonly Preset[] },
     args: readonly string[],
-    held: readonly string[],
 ): Promise<number> {
     const commandLine = readCommandLine(args, pass.valued);
-    const context = contextOf(commandLine);
+    const context = contextOf(commandLine, presets);
     if (context.fix && pass.prepare !== undefined) {
         removeAll(context, pass.prepare(context).removals ?? []);
     }
@@ -143,7 +156,7 @@ async function runPass(
 }
 
 export async function runChecker(
-    { held, passes }: { held: readonly string[]; passes: Passes },
+    { held, passes, presets }: Checker,
     args: readonly string[] = argv.slice(2),
 ): Promise<never> {
     const [name = '', ...rest] = args;
@@ -160,5 +173,5 @@ export async function runChecker(
         exit(2);
     }
 
-    exit(await runPass(name, await load(), rest, held));
+    exit(await runPass({ held, name, pass: await load(), presets }, rest));
 }

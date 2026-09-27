@@ -1,4 +1,3 @@
-import type { IRegularForbiddenRuleType } from 'dependency-cruiser';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -8,21 +7,11 @@ import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { runTool } from '../../engine/checker/tool-run.js';
 import type { ToolRun } from '../../engine/checker/tool-run.js';
 import { GROUND_FOLDERS } from '../../engine/project/ground.js';
-import { objectOf, stringOf } from '../../engine/project/json.js';
-import {
-    declaredUnder,
-    DEPENDENCY_CRUISER_CONFIGS,
-    readSection,
-} from '../../engine/project/jterrazz-config.js';
+import { isJsonObject, objectOf, stringOf } from '../../engine/project/json.js';
+import { DEPENDENCY_CRUISER_CONFIGS, SETTINGS_FILE } from '../../engine/project/jterrazz-config.js';
+import { presetLesson } from '../../engine/project/preset.js';
+import type { ArchitectureRule } from '../../engine/project/preset.js';
 import { ARCHITECTURE_HEXAGONAL } from './architecture.hexagonal.js';
-
-/** One boundary of a layer map: dependency-cruiser's `from` and `to`, and what a refusal teaches. */
-export type ArchitectureRule = Pick<IRegularForbiddenRuleType, 'from' | 'to'> & {
-    fix: string;
-    name: string;
-    read: string;
-    why: string;
-};
 
 const SOURCE = /\.[cm]?[jt]sx?$/u;
 
@@ -54,45 +43,59 @@ function isRule(value: unknown): value is ArchitectureRule {
 }
 
 const MALFORMED_LAYERS = refusal({
-    fix: "give every entry of `typescript.architecture.layers` — and of each preset's `architecture.layers` — a `name`, a `from` and a `to` object, and a `why`, a `fix` and a `read`",
+    fix: "give every entry of `typescript.architecture.layers` — and of each preset's `layers` — a `name`, a `from` and a `to` object, and a `why`, a `fix` and a `read`",
     found: 'jterrazz.config.ts holds a `layers` whose every entry is not `{ name, from, to, why, fix, read }`',
     read: 'docs/06-quality-checks.md#the-architecture-layer-map-pass',
     why: 'a layer is a dependency-cruiser rule and the lesson its refusal prints, and a layer missing a part can be neither judged nor taught',
 });
 
-function unreadable(problem: string): Declared {
-    return {
-        problem: refusal({
-            fix: 'correct jterrazz.config.ts until it loads and its `typescript` section has the declared shape, then run again',
-            found: `jterrazz.config.ts ${problem}`,
-            read: 'docs/06-quality-checks.md#the-architecture-layer-map-pass',
-            why: 'the layer map is read from that file, and a map that cannot be read judges no import',
-        }),
-        rules: [],
+const pathsOf = (path: unknown): string[] =>
+    typeof path === 'string'
+        ? [path]
+        : Array.isArray(path)
+          ? path.filter((one) => typeof one === 'string')
+          : [];
+
+const LEADING_FOLDER = /^\^(?<folder>[\w.-]+)\//u;
+
+// A side whose every path opens on a folder the project does not hold can match no module, so the rule refuses no import: an always-on law costs a project without its tree no cruise.
+function isInert(rule: ArchitectureRule, holds: (folder: string) => boolean): boolean {
+    const absent = (side: unknown): boolean => {
+        const folders = pathsOf(side).map((path) => LEADING_FOLDER.exec(path)?.groups?.folder);
+
+        return (
+            folders.length > 0 && folders.every((folder) => folder !== undefined && !holds(folder))
+        );
     };
+
+    return absent(rule.from.path) || absent(rule.to.path);
 }
 
-async function declaredRules(root: string): Promise<Declared> {
-    const { problem, section } = await readSection(root, 'typescript');
+async function declaredRules(context: Context): Promise<Declared> {
+    const { problem, resolved } = await context.config();
     if (problem !== null) {
-        return unreadable(problem);
+        return {
+            problem: refusal({
+                ...presetLesson(problem, SETTINGS_FILE),
+                read: 'docs/09-rules-kit.md#the-merge-order',
+            }),
+            rules: [],
+        };
     }
-    const { declared, problem: presets } = declaredUnder(section, 'architecture');
-    if (presets !== null) {
-        return unreadable(presets);
+    if (!resolved.layers.every((layer) => isRule(layer))) {
+        return { problem: MALFORMED_LAYERS, rules: [] };
     }
-    const rules: ArchitectureRule[] = [];
-    let hexagonal = false;
-    for (const architecture of declared) {
-        const { hexagonal: shipped, layers = [] } = objectOf(architecture);
-        if (!Array.isArray(layers) || !layers.every((layer) => isRule(layer))) {
-            return { problem: MALFORMED_LAYERS, rules: [] };
-        }
-        hexagonal ||= shipped === true;
-        rules.push(...layers);
-    }
+    const typescript = resolved.sections.typescript ?? {};
+    const architecture = isJsonObject(typescript.architecture) ? typescript.architecture : {};
+    const holds = (folder: string): boolean => context.exists(join(context.root, folder));
 
-    return { problem: null, rules: [...(hexagonal ? ARCHITECTURE_HEXAGONAL : []), ...rules] };
+    return {
+        problem: null,
+        rules: [
+            ...(architecture.hexagonal === true ? ARCHITECTURE_HEXAGONAL : []),
+            ...resolved.layers,
+        ].filter((rule) => !isInert(rule, holds)),
+    };
 }
 
 function cruiseConfig(rules: readonly ArchitectureRule[], context: Context): unknown {
@@ -271,7 +274,7 @@ function cruised(
 
 export const architecture: Pass = Object.freeze({
     async check(context) {
-        const { problem, rules } = await declaredRules(context.root);
+        const { problem, rules } = await declaredRules(context);
         if (problem !== null) {
             return { failed: true, lines: [problem] };
         }

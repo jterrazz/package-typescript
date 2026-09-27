@@ -18,6 +18,7 @@ The first four chapters are the spine every repository carries; the rest are thi
 | [06 — Quality checks](06-quality-checks.md) | `check` and `fix`: the passes they run, in parallel, and what makes each one fail                     |
 | [07 — Lint presets](07-lint-presets.md)     | The oxlint presets, `compose`, the architecture rules, and the knip configuration                     |
 | [08 — Repo structure](08-repo-structure.md) | The TypeScript-specific half of the shared repo doctrine; the rest lives in the skill                 |
+| [09 — Rules kit](09-rules-kit.md)           | `@jterrazz/typescript/rules` — writing a rule, a check, its chapter and its debt; the preset model    |
 
 ## Decisions
 

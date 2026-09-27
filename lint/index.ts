@@ -3,7 +3,11 @@ import { defineConfig } from 'oxlint';
 import type { OxlintConfig } from 'oxlint';
 
 import { PROFILES } from './consumer/rulebook/profiles.js';
-import { profile } from './engine/compiler/compile.js';
+import { refusal } from './engine/catalogue/lesson.js';
+import { merge, profile } from './engine/compiler/compile.js';
+import { SETTINGS_FILE } from './engine/project/jterrazz-config.js';
+import { presetLesson, resolveConfig } from './engine/project/preset.js';
+import { BASE_PRESETS } from './index.config.js';
 
 /** Merges oxlint configs left to right: lists concatenated and deduped, maps shallow-merged with the last winning. */
 export { merge as compose } from './engine/compiler/compile.js';
@@ -31,4 +35,34 @@ export function nested(config: OxlintConfig): OxlintConfig {
     const { options: _rootOnly, ...subtree } = config;
 
     return subtree;
+}
+
+const BY_PROFILE: Readonly<Record<string, OxlintConfig>> = Object.freeze({
+    astro,
+    bun,
+    expo,
+    next,
+    node,
+    react,
+});
+
+/** The oxlint config a settings file's presets compose: the base preset's profile, then each preset's own, in the merge order. */
+export function fromPresets(config: object): OxlintConfig {
+    const { problem, resolved } = resolveConfig(config, BASE_PRESETS);
+    if (problem !== null) {
+        throw new Error(
+            refusal({
+                ...presetLesson(problem, SETTINGS_FILE),
+                read: 'docs/09-rules-kit.md#the-merge-order',
+            }),
+        );
+    }
+    const named = resolved.sections.typescript?.profile;
+
+    return merge(
+        BY_PROFILE[typeof named === 'string' ? named : 'node'] ?? node,
+        ...resolved.presets.flatMap((preset) =>
+            preset.oxlint === undefined ? [] : [preset.oxlint],
+        ),
+    );
 }

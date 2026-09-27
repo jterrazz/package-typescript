@@ -1,6 +1,6 @@
 // The ground a test stands on is its scenario's, judged where the scenario runs it, never here.
 import { execFileSync, spawnSync } from 'node:child_process';
-import { lstatSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { join, matchesGlob } from 'node:path';
 import { exit, stderr } from 'node:process';
@@ -197,4 +197,17 @@ export function ignorePatternsOf(argv: readonly string[]): string[] {
     }
 
     return patterns;
+}
+
+export const PRUNED: ReadonlySet<string> = new Set(['.git', 'dist', 'node_modules']);
+
+export function filesUnder(dir: string): string[] {
+    if (!existsSync(dir)) {
+        return [];
+    }
+
+    return readdirSync(dir, { recursive: true })
+        .map(String)
+        .filter((path) => statSync(join(dir, path)).isFile())
+        .toSorted();
 }

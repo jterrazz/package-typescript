@@ -16,6 +16,7 @@ The consumer-facing corpus is `docs/` + `README.md`, mapped by `docs/README.md`.
 | check / fix and their passes                   | `docs/06-quality-checks.md` |
 | oxlint presets, `compose`, architecture, knip  | `docs/07-lint-presets.md`   |
 | repo doctrine (corpus / injection / compiler)  | `docs/08-repo-structure.md` |
+| the rules kit, presets and their merge order   | `docs/09-rules-kit.md`      |
 
 The first four chapters are the spine every repository of the ecosystem carries — architecture, developing, testing, operating — and this repository's own gate refuses a tree that breaks it (`docs/06-quality-checks.md`, the Docs (layout) pass). The doctrine behind the spine is routed to from `docs/08-repo-structure.md`.
 

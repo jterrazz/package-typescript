@@ -1,5 +1,3 @@
 export default {
-    typescript: {
-        presets: [{ names: [] }],
-    },
+    presets: [{ names: [] }],
 };

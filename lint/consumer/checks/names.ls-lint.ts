@@ -8,11 +8,10 @@ import type { Finding } from '../../engine/checker/pass.js';
 import { runTool } from '../../engine/checker/tool-run.js';
 import { GROUND_FOLDERS } from '../../engine/project/ground.js';
 import { objectOf } from '../../engine/project/json.js';
-import { LINT_ROOT, LINT_TREE } from './names.lint-tree.js';
+import { LINT_ROOT, TOPS } from './names.lint-tree.js';
+import type { LintTree, Top } from './names.lint-tree.js';
 import { placementFindingOf } from './names.placement.js';
 import type { Failed } from './names.placement.js';
-
-type Top = keyof typeof LINT_TREE;
 
 type Rules = Record<string, string>;
 
@@ -42,18 +41,14 @@ const ROOT_FILE: Readonly<Record<Top, string>> = Object.freeze({
     self: 'regex:index',
 });
 
-const LINT_FOLDERS = Object.keys(LINT_TREE);
-
-const isTop = (name: string): name is Top => Object.hasOwn(LINT_TREE, name);
-
-function lintTreeRules(prefix: string): Record<string, Rules> {
+function lintTreeRules(prefix: string, tree: LintTree): Record<string, Rules> {
     const lint = `${prefix}${LINT_ROOT}`;
     const rules: Record<string, Rules> = {
         [lint]: { '.*': 'regex:index', '.dir': `regex:${LINT_ROOT}` },
     };
-    for (const top of LINT_FOLDERS.filter((name) => isTop(name))) {
+    for (const top of TOPS) {
         rules[`${lint}/${top}`] = { '.*': ROOT_FILE[top], '.dir': `regex:${top}` };
-        rules[`${lint}/${top}/{${LINT_TREE[top].join(',')}}`] = {
+        rules[`${lint}/${top}/{${tree[top].join(',')}}`] = {
             '.*': 'regex:.+',
             '.dir': `regex:${KEBAB}`,
         };
@@ -79,13 +74,21 @@ export function ignoredOf(ignorePatterns: readonly string[]): string[] {
     return [...IGNORED, ...ignorePatterns.map((pattern) => pattern.replace(/\/\*\*$/u, ''))];
 }
 
-export function lsLintConfig(units: readonly string[], ignorePatterns: readonly string[]): string {
+export function lsLintConfig({
+    ignorePatterns,
+    tree,
+    units,
+}: {
+    ignorePatterns: readonly string[];
+    tree: LintTree;
+    units: readonly string[];
+}): string {
     const ls: Record<string, Rules> = {};
     for (const prefix of units) {
         const named = `${prefix}{${NAMED_ROOTS.join(',')}}`;
         ls[named] = { '.dir': `regex:${DIRECTORY}` };
         ls[`${named}/**/app`] = { '.dir': ROUTE_SEGMENT };
-        Object.assign(ls, lintTreeRules(prefix), skillRules(prefix));
+        Object.assign(ls, lintTreeRules(prefix, tree), skillRules(prefix));
     }
 
     return `${JSON.stringify({ ignore: ignoredOf(ignorePatterns), ls }, null, 2)}\n`;
@@ -151,8 +154,9 @@ export function lsLintFindings(
     {
         failures,
         swept,
+        tree,
         units,
-    }: { failures: Failures; swept: readonly string[]; units: readonly string[] },
+    }: { failures: Failures; swept: readonly string[]; tree: LintTree; units: readonly string[] },
 ): Finding[] {
     const held = new Set(swept);
     const failed = [...failedOf(root, failures, held), ...unseenOf(units, held)];
@@ -161,7 +165,7 @@ export function lsLintFindings(
     for (const one of failed.toSorted((left, right) => (left.path < right.path ? -1 : 1))) {
         const finding = isInside(one.path, directories)
             ? undefined
-            : placementFindingOf(units, one);
+            : placementFindingOf({ tree, units }, one);
         if (finding !== undefined && !reported.has(finding.path)) {
             reported.set(finding.path, finding);
         }

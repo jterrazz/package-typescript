@@ -5,7 +5,7 @@ import {
     SETTINGS_FILE,
 } from '../../../lint/engine/project/jterrazz-config.js';
 import { checker } from '../checker.js';
-import { isFile } from '../disk.js';
+import { isDirectory, isFile } from '../disk.js';
 import { presetAt } from '../toolchain.js';
 import type { Launched } from './launched.js';
 import { isPublishable } from './project.js';
@@ -108,9 +108,13 @@ export function commentsPass(check: Check): Launched | undefined {
 }
 
 export function architecturePass(check: Check): Launched | undefined {
+    // The base preset's laws hold a `lint/` tree wherever one stands, with or without a settings file.
     if (
         !check.selected('architecture') ||
-        ![SETTINGS_FILE, ...DEPENDENCY_CRUISER_CONFIGS].some((name) => isFile(name))
+        !(
+            [SETTINGS_FILE, ...DEPENDENCY_CRUISER_CONFIGS].some((name) => isFile(name)) ||
+            isDirectory('lint')
+        )
     ) {
         return undefined;
     }

@@ -1,10 +1,10 @@
 // A member is a directory matching a glob AND holding a package.json, as the package managers rule.
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 
-import { isJsonObject, parsedObject } from './json.js';
+import { MEMBER_DEPTH, readManifest, workspacePatterns } from './manifest.js';
 
 const SKIPPED = new Set(['dist', 'node_modules']);
 
@@ -18,28 +18,12 @@ function toPattern(glob: string): RegExp {
     return new RegExp(`^${escaped}$`, 'u');
 }
 
-function declaredGlobs(root: string): unknown[] {
-    const manifest = join(root, 'package.json');
-    if (!existsSync(manifest)) {
-        return [];
-    }
-
-    let declared: unknown;
-    try {
-        const { workspaces } = parsedObject(readFileSync(manifest, 'utf8'));
-        declared = isJsonObject(workspaces) ? workspaces.packages : workspaces;
-    } catch {
-        return [];
-    }
-
-    return Array.isArray(declared) ? declared : [];
-}
-
 // Empty for a single-package project, which every caller reads as "the root is the unit".
 export function workspaceMembers(root = '.'): string[] {
     const absolute = resolve(root);
-    const patterns = declaredGlobs(absolute)
-        .filter((glob): glob is string => typeof glob === 'string' && !glob.startsWith('!'))
+    const manifest = readManifest(absolute);
+    const patterns = (manifest === null ? [] : workspacePatterns(manifest))
+        .filter((glob) => !glob.startsWith('!'))
         .map((glob) => toPattern(glob.replace(/\/+$/u, '')));
 
     if (patterns.length === 0) {
@@ -49,7 +33,7 @@ export function workspaceMembers(root = '.'): string[] {
     const members = new Set<string>();
 
     function walk(dir: string, depth: number): void {
-        if (depth > 6) {
+        if (depth > MEMBER_DEPTH) {
             return;
         }
 

@@ -1,17 +1,15 @@
 const testing = {
-    architecture: {
-        layers: [
-            {
-                fix: 'move what both tests read into a module neither of them is',
-                from: { path: String.raw`\.test\.ts$` },
-                name: 'no-test-to-test-import',
-                read: 'docs/testing.md#sharing',
-                to: { path: String.raw`\.test\.ts$` },
-                why: 'a test importing a test couples two files that each prove one thing',
-            },
-        ],
-    },
-    name: '@acme/testing',
+    layers: [
+        {
+            fix: 'move what both tests read into a module neither of them is',
+            from: { path: String.raw`\.test\.ts$` },
+            name: 'no-test-to-test-import',
+            read: 'docs/testing.md#sharing',
+            to: { path: String.raw`\.test\.ts$` },
+            why: 'a test importing a test couples two files that each prove one thing',
+        },
+    ],
+    name: 'testing',
     names: [
         {
             fix: 'move it into the facet that reads it',
@@ -21,9 +19,11 @@ const testing = {
             why: 'the specs root holds its facets and their runners alone',
         },
     ],
+    package: '@acme/testing',
 };
 
 export default {
+    presets: [testing],
     typescript: {
         names: [
             {
@@ -34,6 +34,5 @@ export default {
                 why: 'one case for every module keeps a search to one spelling',
             },
         ],
-        presets: [testing],
     },
 };

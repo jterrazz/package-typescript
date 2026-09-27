@@ -1,0 +1,26 @@
+description: sets a law of the base preset aside with its reason, and counts it in the drift report
+fixture: ./_fixtures/presets/opted-out/
+env: TYPESCRIPT_CHECK_PASSES=architecture,drift
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Architecture (layer map)
+
+          ✓ Passed
+
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            laws set aside                       1 (typescript/src-reads-no-self)
+            suppressions                         0
+            oxlint-suppressions.json             nothing held
+            jterrazz.baseline.json › typescript  nothing held
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

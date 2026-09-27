@@ -264,7 +264,7 @@ The flags that write the file are not in oxlint's `--help` yet; the toolchain pi
 
 ### What `jterrazz.baseline.json` still holds
 
-`jterrazz.baseline.json` holds what no linter judges — one section per package, `{ "typescript": { … }, "test": { … } }`. The `typescript` section holds the Architecture (layer map) pass's `architecture/<name>` entries ([its section](#the-architecture-layer-map-pass)), the Names (tree) pass's `names/*` entries ([its section](#the-names-tree-pass)) and the Comments (density) pass's `comments/comment-lines-held-by-the-baseline` ([its section](#the-comments-density-pass)), each judged by its own pass, exactly, with the same four refusals, each printed in four parts under `baseline-ratchet`: a count above its entry, a rule with findings and no entry, a count below its entry, an entry at zero. The `test` section is `@jterrazz/test`'s checker passes, which that package writes and judges.
+`jterrazz.baseline.json` holds what no linter judges — one section per preset, each named by the preset that owns it, `{ "typescript": { … }, "test": { … }, "test.coverage": { … } }` — read, written and judged by one engine, the kit's ([Rules kit](09-rules-kit.md#the-ratchet-engine)), which keeps every section but the one it writes byte for byte. The `typescript` section holds the Architecture (layer map) pass's `architecture/<name>` entries ([its section](#the-architecture-layer-map-pass)), the Names (tree) pass's `names/*` entries ([its section](#the-names-tree-pass)) and the Comments (density) pass's `comments/comment-lines-held-by-the-baseline` ([its section](#the-comments-density-pass)), each judged by its own pass, exactly, with the same four refusals, each printed in four parts under `baseline-ratchet`: a count above its entry, a rule with findings and no entry, a count below its entry, an entry at zero. The `test` sections are `@jterrazz/test`'s — its checker passes' counts, and the coverage floor — which that package writes and judges.
 
 An oxlint rule left in the `typescript` section — one recorded before oxlint held its own — is refused in the Oxlint pass under `baseline-moved-to-oxlint`, in four parts, naming `typescript baseline`, which records it in `oxlint-suppressions.json` and drops the entry. `baseline-unreadable` refuses a `jterrazz.baseline.json` that is not JSON, or that holds a top-level key whose value is not a section of counts.
 
@@ -329,7 +329,7 @@ A build that fails is a finding too. `publish/build-succeeds` names tsdown's fir
 
 ## The Architecture (layer map) pass
 
-[dependency-cruiser](https://github.com/sverweij/dependency-cruiser) holds the module graph to a layer map. It resolves every import the way the build does — the tsconfig's paths, a package's `exports`, an index file, a relative `../` — so an edge is judged by where it lands, never by how its specifier is spelled; oxlint's `no-restricted-imports` could only read the text. The pass runs where a map is declared, and nowhere else: a project with no declared architecture is not in breach of one.
+[dependency-cruiser](https://github.com/sverweij/dependency-cruiser) holds the module graph to a layer map. It resolves every import the way the build does — the tsconfig's paths, a package's `exports`, an index file, a relative `../` — so an edge is judged by where it lands, never by how its specifier is spelled; oxlint's `no-restricted-imports` could only read the text. The pass runs where a map is declared — by a preset, the base preset's `lint/` direction included, or by the project — and nowhere else: a project with no declared architecture is not in breach of one.
 
 A map is declared in `jterrazz.config.ts`, under `typescript.architecture`:
 
@@ -363,11 +363,11 @@ A layer is dependency-cruiser's own vocabulary — `from` and `to`, with `path`,
 architecture/handlers-reach-services  src/handlers/orders.ts:2:24  found: `src/handlers/orders.ts` imports `src/store/orders.ts` · why: … · fix: … · read: docs/01-architecture.md#layers
 ```
 
-A project that already keeps a `.dependency-cruiser.cjs`, `.js` or `.mjs` at its root has it extended, not replaced: its own rules run beside the declared ones, and a violation of one prints its `comment` as the why. A cruise starts from every top-level folder the sweep holds a source file in — never a dot-folder, never the ground a spec stands on, which the cruise skips at any depth — so a map judges `app/domain/` as it judges `src/domain/`. A declared map with no such folder to cruise fails the pass in four parts: its silence would read as every boundary kept. The pass is launched wherever a `jterrazz.config.ts` exists and loads the section itself, so a map written by shorthand, a spread or an imported object is judged like one written in place. A map the pass cannot read, such as a `jterrazz.config.ts` that does not load or a layer missing one of its six parts, fails the pass in four parts, and so does a dependency-cruiser that cannot run or that stops with no report.
+A project that already keeps a `.dependency-cruiser.cjs`, `.js` or `.mjs` at its root has it extended, not replaced: its own rules run beside the declared ones, and a violation of one prints its `comment` as the why. A cruise starts from every top-level folder the sweep holds a source file in — never a dot-folder, never the ground a spec stands on, which the cruise skips at any depth — so a map judges `app/domain/` as it judges `src/domain/`. A declared map with no such folder to cruise fails the pass in four parts: its silence would read as every boundary kept. The pass is launched wherever a `jterrazz.config.ts` or a `lint/` folder exists and resolves the settings itself, so a map written by shorthand, a spread or an imported object is judged like one written in place. A layer whose `from` names no file of the project is dropped before the cruise: the base preset's laws cost a project without a `lint/` tree nothing. A map the pass cannot read, such as a `jterrazz.config.ts` that does not load or a layer missing one of its six parts, fails the pass in four parts, and so does a dependency-cruiser that cannot run or that stops with no report.
 
 A project that adopts a map its tree already crosses records the crossings with `typescript baseline`: each `architecture/<name>` count goes into `jterrazz.baseline.json › typescript` and is held exactly, like every count of [the ratchet](#what-jterrazzbaselinejson-still-holds), so a new crossing fails the run and a paid one is re-recorded by `typescript fix`.
 
-A package that ships layers for its consumers hands them in a preset, and a project declaring the preset is held to them beside its own: [What a package declares for its consumers](#what-a-package-declares-for-its-consumers).
+A package that ships layers for its consumers hands them in its preset, and a project declaring the preset is held to them beside its own: [What a package declares for its consumers](#what-a-package-declares-for-its-consumers).
 
 ### The hexagonal map
 
@@ -410,7 +410,7 @@ Not a pass: a report, printed at the end of every `check`. Four numbers, because
   tool versions                        in range
 ```
 
-A rule turned off, a suppression written, a baseline entry recorded and a tool left behind are the four ways a project drifts. Three of them are one line; the baseline is named by BOTH sections this toolchain family writes — `typescript` always, `test` only where the project keeps one — because a count with no section beside it says nothing about which debt it is. A section absent, or holding no entry, reads `nothing held` — the Oxlint pass's words for the same state, so one state has one word. A file the Oxlint pass refuses as `baseline-unreadable` reads `unreadable`: it was never read, so it holds no count the row may claim, not even none. `typescript check --json` prints the same reading for a machine — the block under the `DRIFT` header becomes one JSON object, every pass above it still prints for a human — which is how a fleet-wide sweep collects the table. Its `baseline` and `testBaseline` are the section's total, `null` for a section the file does not keep, or `"unreadable"`: where a person reads `nothing held` for both, the machine keeps an absent section (`null`) apart from an emptied one (`0`), because a sweep counting who adopted the ratchet needs the difference.
+A rule turned off, a suppression written, a baseline entry recorded and a tool left behind are the four ways a project drifts — and a preset's law set aside, the fifth, printed as `laws set aside` with each law's name wherever the project keeps one under `optOuts` ([Rules kit](09-rules-kit.md#setting-a-law-aside)). The baseline is named by every section the file keeps — `typescript` always, each other only where the project keeps it — because a count with no section beside it says nothing about which debt it is. A section absent, or holding no entry, reads `nothing held` — the Oxlint pass's words for the same state, so one state has one word. A file the Oxlint pass refuses as `baseline-unreadable` reads `unreadable`: it was never read, so it holds no count the row may claim, not even none. `typescript check --json` prints the same reading for a machine — the block under the `DRIFT` header becomes one JSON object, every pass above it still prints for a human — which is how a fleet-wide sweep collects the table. Its `baseline` is the `typescript` section's total, `null` where the file does not keep it, or `"unreadable"`; `sections` maps every other section the file keeps to its total; `optOuts` lists each law set aside with its reason. Where a person reads `nothing held`, the machine keeps an absent section (`null`, or no key in `sections`) apart from an emptied one (`0`), because a sweep counting who adopted the ratchet needs the difference.
 
 **The profile is read off the consumer's config, and a config that names none is NOT measured.** A project extending no profile of this package is not drifting from one, it never joined it, and reporting two hundred rules as "off" would say nothing about anything. The name comes from the config's own `import`, which is the only evidence there is: oxlint's config schema is closed, so a compiled profile cannot carry its own name through to `--print-config`.
 
@@ -502,7 +502,7 @@ What a project calls its own parts, swept under the roots where a project keeps 
 
 <!-- /GENERATED:findings names -->
 
-All three rosters are closed and all live in the gate, in one executable copy. Grab-bag: `base`, `common`, `helpers`, `lib`, `misc`, `stuff`, `tools`, `utils`. Construct: `constants`, `helper`, `interfaces`, `type`, `types`, `util`, and the `.types.ts` suffix — a word the grab-bag already refuses is reported once, under that roster. A leading `_` excuses no word of either roster: it states a position, not a subject, so `_utils/` is refused as `utils/` is. Shortcut: `auth`, `cfg`, `impl`, `infra`, `k8s`, `pkg`, `repo`, `repos`, `svc`, `tmp` — and the `_` marker does NOT excuse one, since it states a position, not whether the name is whole.
+All three rosters are closed, and the base preset carries them ([Rules kit](09-rules-kit.md#the-base-preset)): one executable copy, read by the gate from the resolved settings. Grab-bag: `base`, `common`, `helpers`, `lib`, `misc`, `stuff`, `tools`, `utils`. Construct: `constants`, `helper`, `interfaces`, `type`, `types`, `util`, and the `.types.ts` suffix — a word the grab-bag already refuses is reported once, under that roster. A leading `_` excuses no word of either roster: it states a position, not a subject, so `_utils/` is refused as `utils/` is. Shortcut: `auth`, `cfg`, `impl`, `infra`, `k8s`, `pkg`, `repo`, `repos`, `svc`, `tmp` — and the `_` marker does NOT excuse one, since it states a position, not whether the name is whole.
 
 A construct is judged on the WHOLE name: `type-registry.ts` names a subject and passes, `types.ts` names a part of the language and fails. Two words stay off the rosters though they sound generic, because each names a role a reader recognises at once: `setup` is what a runner loads before a test (`vitest.setup.ts`, a `setupFiles` entry), and `core` is the part of a layered tree every other layer depends on. `index.ts` is a barrel — a structural role, not a category — and no roster holds it. The ground a spec stands on is never swept at all, so a fixture may be called anything its scenario needs.
 
@@ -619,7 +619,7 @@ A root beside the spine stands on one of two codified grounds, and every other r
 | `prisma/`  | Prisma — the schema and migrations its CLI reads by default             |
 | `public/`  | Next.js, Astro and Vite — static files served verbatim at the site root |
 
-The list is closed and short on purpose. `scripts/`, `docker/` or `migrations/` are conventions, not impositions: every tool that reads one takes its path as an argument, so the repository chose the folder and says why.
+The list is the base preset's, and closed and short on purpose. `scripts/`, `docker/` or `migrations/` are conventions, not impositions: every tool that reads one takes its path as an argument, so the repository chose the folder and says why.
 
 The second ground is that saying: the repository declares the root in its settings file, `jterrazz.config.ts`, under `typescript.roots`, each with its reason ([Developing](02-developing.md#5-state-a-setting-where-there-is-one)).
 
@@ -707,18 +707,16 @@ Which scanner runs is decided inside the gate rather than by the command, becaus
 
 ## What a package declares for its consumers
 
-A package of the family that holds its consumers to layers and to rules of where a name sits ships them as a preset: an object carrying the `name` of the package, the `architecture.layers` and the `names` it adds, each entry in the vocabulary of [the Architecture pass](#the-architecture-layer-map-pass) and of [a name rule](#a-name-rule-a-project-declares). A project declares the presets it takes in its `jterrazz.config.ts`, as it composes a package's oxlint fragment in its `oxlint.config.ts`:
+A package of the family that holds its consumers to layers, to rules of where a name sits, to oxlint rules or to a debt of its own ships all of it as ONE preset, and a project lists the presets it takes under `presets` in its `jterrazz.config.ts`:
 
 ```ts
-import { testingPreset } from '@jterrazz/test/oxlint';
-import { defineConfig } from '@jterrazz/typescript/config';
+import { test } from '@jterrazz/test/config';
+import { defineConfig, typescript } from '@jterrazz/typescript/config';
 
-export default defineConfig({
-    typescript: { presets: [testingPreset] },
-});
+export default defineConfig({ presets: [typescript({ profile: 'node' }), test()] });
 ```
 
-Each pass reads the project's own declaration and each preset's under the same key, and holds the project to all of them: a preset's layer prints as `architecture/<name>` and its name rule as `names/<name>`, with the lesson the package wrote. The `TypescriptPreset` type, exported by `@jterrazz/typescript/config`, is the shape. A preset is declared, never discovered: an installed package judges nothing until the project names its preset, so what the project is held to is read in one file. A `presets` that is not a list of objects each carrying a `name` fails the Architecture pass in four parts and is refused as `names/jterrazz-config-loads`.
+Each pass reads the resolved settings — the base preset's laws, each listed preset's, then the project's own — and holds the project to all of them: a preset's layer prints as `architecture/<name>` and its name rule as `names/<name>`, with the lesson the package wrote. A preset is declared, never discovered: an installed package judges nothing until the project names its preset, so what the project is held to is read in one file. What a preset holds, the order the presets and the project's own sections merge in, and how a law is set aside, are [Rules kit](09-rules-kit.md#presets)'s. A settings file that cannot be resolved — a `presets` that is not a list of presets, an opt-out with no reason — fails the Architecture pass in four parts and is refused as `names/jterrazz-config-loads`.
 
 ## Pitfalls
 

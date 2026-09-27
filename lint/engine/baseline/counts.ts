@@ -1,5 +1,5 @@
 import { objectOf, stringOf } from '../project/json.js';
-import type { Counts } from './section.js';
+import type { Counts } from './baseline-file.js';
 
 export function countsOf(findings: readonly { rule: string }[]): Counts {
     const counts: Counts = {};

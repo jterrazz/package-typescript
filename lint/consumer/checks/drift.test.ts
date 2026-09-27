@@ -51,10 +51,7 @@ describe('drift', () => {
         // Then - neither reading claims a count the file was never read for
         expect(human.stdout).toContain('jterrazz.baseline.json › typescript  unreadable\n');
         expect(human.stdout).not.toContain('jterrazz.baseline.json › typescript  nothing held');
-        expect(JSON.parse(machine.stdout)).toMatchObject({
-            baseline: 'unreadable',
-            testBaseline: 'unreadable',
-        });
+        expect(JSON.parse(machine.stdout)).toMatchObject({ baseline: 'unreadable', sections: {} });
     });
 
     test('prints no test row for a person when the baseline file is unreadable', () => {
@@ -107,8 +104,8 @@ describe('drift', () => {
             { encoding: 'utf8' },
         );
 
-        // Then - the emptied section totals 0, the absent one is null
-        expect(JSON.parse(machine.stdout)).toMatchObject({ baseline: 0, testBaseline: null });
+        // Then - the emptied section totals 0, and no other section is claimed
+        expect(JSON.parse(machine.stdout)).toMatchObject({ baseline: 0, sections: {} });
         expect(machine.status).toBe(0);
     });
 

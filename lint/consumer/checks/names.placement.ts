@@ -1,11 +1,6 @@
 import type { Finding } from '../../engine/checker/pass.js';
-import { LINT_ROOT, LINT_TREE } from './names.lint-tree.js';
-
-type Top = keyof typeof LINT_TREE;
-
-const LINT_FOLDERS = Object.keys(LINT_TREE);
-
-const isTop = (name: string): name is Top => Object.hasOwn(LINT_TREE, name);
+import { isTop, LINT_ROOT, TOPS } from './names.lint-tree.js';
+import type { LintTree, Top } from './names.lint-tree.js';
 
 const HOLDS: Readonly<Record<Top, string>> = Object.freeze({
     consumer:
@@ -26,8 +21,11 @@ function lintFinding(path: string, rule: string, parts: readonly string[]): Find
     return { message: [...parts, LINT_READ].join(' · '), path, rule };
 }
 
-function audienceFinding(prefix: string, top: Top, found: string, rest: string): Finding {
-    const folders = LINT_TREE[top];
+function audienceFinding(
+    { found, prefix, rest, top }: { found: string; prefix: string; rest: string; top: Top },
+    tree: LintTree,
+): Finding {
+    const folders = tree[top];
 
     return lintFinding(`${prefix}${LINT_ROOT}/${top}/${rest}`, FOLDER_RULES[top], [
         `found: ${found}`,
@@ -36,19 +34,22 @@ function audienceFinding(prefix: string, top: Top, found: string, rest: string):
     ]);
 }
 
-function lintTreeFinding(prefix: string, path: string, isDirectory: boolean): Finding | undefined {
+function lintTreeFinding(
+    { isDirectory, path, prefix }: { isDirectory: boolean; path: string; prefix: string },
+    tree: LintTree,
+): Finding | undefined {
     const [top = '', folder, ...deeper] = path.split('/');
     if (!isDirectory && folder === undefined) {
         return lintFinding(`${prefix}${LINT_ROOT}/${top}`, 'names/lint-root-holds-only-index', [
             `found: \`${prefix}${LINT_ROOT}/${top}\` sits at the root of lint/`,
             'why: lint/ has one tree in every repository — its root holds `index`, the entry that composes consumer/ with engine/, and a folder names the audience of every other file',
-            `fix: move it into the folder its audience names — ${LINT_FOLDERS.join(', ')} — or into docs/ if it explains`,
+            `fix: move it into the folder its audience names — ${TOPS.join(', ')} — or into docs/ if it explains`,
         ]);
     }
     if (!isTop(top)) {
         return lintFinding(`${prefix}${LINT_ROOT}/${top}/`, 'names/lint-folder-is-known', [
             `found: \`${prefix}${LINT_ROOT}/${top}/\` is not a folder of the lint tree`,
-            `why: lint/ has one tree in every repository, split by audience — ${LINT_FOLDERS.join(', ')}`,
+            `why: lint/ has one tree in every repository, split by audience — ${TOPS.join(', ')}`,
             'fix: move its files where their audience puts them — a declaration every consumer is held to under consumer/, one only this repository is held to under self/, what runs them under engine/',
         ]);
     }
@@ -56,19 +57,25 @@ function lintTreeFinding(prefix: string, path: string, isDirectory: boolean): Fi
         const file = folder ?? '';
 
         return audienceFinding(
-            prefix,
-            top,
-            `\`${prefix}${LINT_ROOT}/${top}/${file}\` holds a file at the root of ${top}/`,
-            file,
+            {
+                found: `\`${prefix}${LINT_ROOT}/${top}/${file}\` holds a file at the root of ${top}/`,
+                prefix,
+                rest: file,
+                top,
+            },
+            tree,
         );
     }
 
     return deeper.length === 0
         ? audienceFinding(
-              prefix,
-              top,
-              `\`${prefix}${LINT_ROOT}/${top}/${folder}/\` is not a folder of ${top}/`,
-              `${folder}/`,
+              {
+                  found: `\`${prefix}${LINT_ROOT}/${top}/${folder}/\` is not a folder of ${top}/`,
+                  prefix,
+                  rest: `${folder}/`,
+                  top,
+              },
+              tree,
           )
         : undefined;
 }
@@ -104,7 +111,7 @@ const SKILL_PAGE = /^skills\/[^/]+\/SKILL\.md$/u;
 export type Failed = { isDirectory: boolean; path: string };
 
 export function placementFindingOf(
-    units: readonly string[],
+    { tree, units }: { tree: LintTree; units: readonly string[] },
     { isDirectory, path }: Failed,
 ): Finding | undefined {
     const prefix =
@@ -113,7 +120,10 @@ export function placementFindingOf(
             .toSorted((left, right) => right.length - left.length)[0] ?? '';
     const own = path.slice(prefix.length);
     if (own.startsWith(`${LINT_ROOT}/`)) {
-        return lintTreeFinding(prefix, own.slice(LINT_ROOT.length + 1), isDirectory);
+        return lintTreeFinding(
+            { isDirectory, path: own.slice(LINT_ROOT.length + 1), prefix },
+            tree,
+        );
     }
     if (own.startsWith('skills/')) {
         return SKILL_PAGE.test(own) ? undefined : skillFinding(isDirectory ? `${path}/` : path);

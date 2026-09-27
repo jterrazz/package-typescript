@@ -1,6 +1,9 @@
+import type { Config } from '../project/jterrazz-config.js';
+import type { Preset } from '../project/preset.js';
 import type { CommandLine } from './command-line.js';
 
 export type Finding = {
+    column?: number;
     fixed?: boolean;
     line?: number;
     message: string;
@@ -9,6 +12,7 @@ export type Finding = {
 };
 
 export type Context = {
+    config: (unit?: string) => Promise<Config>;
     exists: (path: string) => boolean;
     files: () => string[];
     fix: boolean;
@@ -49,3 +53,5 @@ export type EngineCommand = (
     args: string[],
     options: { held: readonly string[] },
 ) => number | Promise<number>;
+
+export type Checker = { held: readonly string[]; passes: Passes; presets: readonly Preset[] };

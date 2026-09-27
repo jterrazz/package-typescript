@@ -1,5 +1,7 @@
+import { defineRule } from '../../../engine/catalogue/rule.js';
 import { EVERY_NAME } from '../../../engine/project/importers.js';
 import { publishedNamesOf } from '../../../engine/project/published-names.js';
+import FINDINGS from '../../catalogue/findings.json' with { type: 'json' };
 
 type Node = {
     body?: Node | Node[];
@@ -35,6 +37,11 @@ type Declaration = { anchor: Node; name: string | undefined; owner?: Node | null
 type LineOf = (offset: number) => number;
 
 export const COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME = 'comment-no-longer-than-its-function';
+
+const WHY_FIX = {
+    fix: 'say it through the names — rename what needed the comment, and keep at most the one line the code cannot say (an invariant, a hazard, why a value is this one); if documenting context that lives outside the codebase is truly necessary (a policy, a ticket, a decision maker, an external system’s constraint), disable it explicitly on that line — `// oxlint-disable-next-line jterrazz-typescript/comment-no-longer-than-its-function -- <the external context>` — the reason is required',
+    why: 'the default is no comment — the code speaks through its names, and a comment longer than the code it sits on restates it, argues it or tells its history',
+};
 
 const DIRECTIVE = /^\s*\*?\s*(?:(?:es|ox)lint-(?:disable|enable)|@ts-|biome-ignore)/u;
 const FUNCTIONS: ReadonlySet<string> = new Set([
@@ -183,54 +190,66 @@ function bodyLinesOf(body: Node, lineOf: LineOf): number {
     return Math.max(closing - opening - 1, 1);
 }
 
-export const commentNoLongerThanItsFunction = {
-    create(context: RuleContext): Record<string, (node: Node) => void> {
-        const { sourceCode } = context;
-        const lineOf = lineIndexOf(sourceCode.text);
-        const published = publishedNamesOf(context.physicalFilename ?? context.filename);
-        let exportedLocals = new Map<string, string[]>();
-
-        const judge = (fn: Node): void => {
-            const { body } = fn;
-            if (body === undefined || Array.isArray(body)) {
-                return;
-            }
-            const declaration = declarationOf(fn);
-            if (declaration === null || isPublished(declaration, exportedLocals, published)) {
-                return;
-            }
-            const anchor =
-                declaration.anchor.parent !== undefined &&
-                EXPORTS.has(declaration.anchor.parent.type)
-                    ? declaration.anchor.parent
-                    : declaration.anchor;
-            const { first, lines } = documentingLinesOf(anchor, sourceCode, lineOf);
-            const bodyLines = bodyLinesOf(body, lineOf);
-            if (first !== null && lines > Math.max(bodyLines, 1)) {
-                context.report({
-                    data: { body: bodyLines, lines },
-                    messageId: 'longer',
-                    node: first,
-                });
-            }
-        };
-
-        return {
-            Program(program: Node): void {
-                exportedLocals = exportedLocalsOf(program);
-            },
-            ...Object.fromEntries([...FUNCTIONS].map((type) => [type, judge])),
-        };
-    },
-    meta: {
-        messages: {
-            longer: [
-                'found: a comment of {{lines}} lines on a function whose body holds {{body}}',
-                'why: the default is no comment — the code speaks through its names, and a comment longer than the code it sits on restates it, argues it or tells its history',
-                'fix: say it through the names — rename what needed the comment, and keep at most the one line the code cannot say (an invariant, a hazard, why a value is this one); if documenting context that lives outside the codebase is truly necessary (a policy, a ticket, a decision maker, an external system’s constraint), disable it explicitly on that line — `// oxlint-disable-next-line jterrazz-typescript/comment-no-longer-than-its-function -- <the external context>` — the reason is required',
-                'read: docs/07-lint-presets.md#a-comment-no-longer-than-its-function',
-            ].join(' · '),
+export const commentNoLongerThanItsFunction = defineRule(
+    {
+        docs: {
+            audience: 'consumer',
+            family: 'comments',
+            fix: WHY_FIX.fix,
+            name: COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME,
+            sentence:
+                FINDINGS.find(({ id }) =>
+                    id.endsWith(`/${COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME}`),
+                )?.sentence ?? '',
+            why: WHY_FIX.why,
         },
-        type: 'suggestion' as const,
+        messages: {
+            longer: {
+                fix: WHY_FIX.fix,
+                found: 'a comment of {{lines}} lines on a function whose body holds {{body}}',
+            },
+        },
+        read: 'docs/07-lint-presets.md#a-comment-no-longer-than-its-function',
+        type: 'suggestion',
     },
-};
+    {
+        create(context: RuleContext): Record<string, (node: Node) => void> {
+            const { sourceCode } = context;
+            const lineOf = lineIndexOf(sourceCode.text);
+            const published = publishedNamesOf(context.physicalFilename ?? context.filename);
+            let exportedLocals = new Map<string, string[]>();
+
+            const judge = (fn: Node): void => {
+                const { body } = fn;
+                if (body === undefined || Array.isArray(body)) {
+                    return;
+                }
+                const declaration = declarationOf(fn);
+                if (declaration === null || isPublished(declaration, exportedLocals, published)) {
+                    return;
+                }
+                const anchor =
+                    declaration.anchor.parent !== undefined &&
+                    EXPORTS.has(declaration.anchor.parent.type)
+                        ? declaration.anchor.parent
+                        : declaration.anchor;
+                const { first, lines } = documentingLinesOf(anchor, sourceCode, lineOf);
+                const bodyLines = bodyLinesOf(body, lineOf);
+                if (first !== null && lines > Math.max(bodyLines, 1)) {
+                    context.report({
+                        data: { body: bodyLines, lines },
+                        messageId: 'longer',
+                        node: first,
+                    });
+                }
+            };
+
+            return {
+                Program(program: Node): void {
+                    exportedLocals = exportedLocalsOf(program);
+                },
+                ...Object.fromEntries([...FUNCTIONS].map((type) => [type, judge])),
+            };
+        },
+    },
+);

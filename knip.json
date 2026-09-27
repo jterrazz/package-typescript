@@ -5,6 +5,7 @@
         "lint/consumer/rules/plugin.ts",
         "lint/index.checker.ts",
         "lint/index.docs.ts",
+        "lint/index.rules.ts",
         "lint/index.ts",
         "specs/cli/_setup/check-selection.ts",
         "src/command/index.ts",

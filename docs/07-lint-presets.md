@@ -58,14 +58,17 @@ Node ESM resolves a specifier literally and needs the `.js`; a bundler resolves 
 | `env`, `globals`, `options`, `rules`, `settings`    | shallow-merged, last wins per key       |
 | anything else                                       | taken from the last config that sets it |
 
-A project using `@jterrazz/test` composes its testing fragment explicitly — nothing is auto-detected:
+A project using `@jterrazz/test` composes its testing fragment explicitly — nothing is auto-detected. The fragment is part of that package's preset, so a project that declares its presets in `jterrazz.config.ts` composes them all in one call, `fromPresets`, the profile of the base preset first and each preset's own after it, in [the merge order](09-rules-kit.md#the-merge-order):
 
 ```ts
-import { testing } from '@jterrazz/test/oxlint';
-import { compose, defineConfig, node } from '@jterrazz/typescript/oxlint';
+import { defineConfig, fromPresets } from '@jterrazz/typescript/oxlint';
 
-export default defineConfig(compose(node, testing));
+import settings from './jterrazz.config.ts';
+
+export default defineConfig(fromPresets(settings));
 ```
+
+`compose` stays for a fragment no preset carries, and `compose(node, testing)` is the same config written by hand.
 
 ## Import boundaries
 

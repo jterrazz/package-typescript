@@ -42,7 +42,7 @@ The `typescript` command is TypeScript, built into `dist/`; the work it orchestr
 | Markdown     | [rumdl](https://rumdl.dev)                                                  | Rust     |
 | Names        | [ls-lint](https://ls-lint.org)                                              | Go       |
 
-A sibling package holds its consumers to its own layers and name rules by shipping a preset, which a project declares in `jterrazz.config.ts` under `typescript.presets` ([Quality checks](docs/06-quality-checks.md#what-a-package-declares-for-its-consumers)).
+A sibling package writes its rules with the engine this toolchain judges itself with, `@jterrazz/typescript/rules`, and hands its consumers everything it holds them to — its settings, its oxlint rules, its layers, its name rules, its debt — in one preset, which a project declares in `jterrazz.config.ts` under `presets`, after the base `typescript()` preset that is always on ([Rules kit](docs/09-rules-kit.md)).
 
 ## Documentation
 
@@ -56,6 +56,7 @@ The full corpus lives in [`docs/`](docs/):
 - [Quality checks](docs/06-quality-checks.md) — `check` / `fix` and their fifteen passes.
 - [Lint presets](docs/07-lint-presets.md) — the rulebook, the six profiles, `compose`, architecture, knip.
 - [Repo structure](docs/08-repo-structure.md) — pointer to the shared doctrine; what's TypeScript-specific here.
+- [Rules kit](docs/09-rules-kit.md) — writing a rule with `@jterrazz/typescript/rules`, and the preset model.
 
 For agents: read the chapters from wherever they resolve — this repo when the toolchain itself is the change, `node_modules/@jterrazz/typescript/docs/` when a consumer is — plus the [`skills/jterrazz-typescript`](https://github.com/jterrazz/package-typescript/blob/main/skills/jterrazz-typescript/SKILL.md) Claude Code skill, which says what to run and which chapter to open. The API is the types.
 

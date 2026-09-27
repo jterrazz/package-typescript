@@ -3,9 +3,12 @@ import type { Finding } from '../../engine/checker/pass.js';
 import { exportedFunctions, exportedValues } from '../../engine/project/exported-names.js';
 import { GROUND_FOLDERS } from '../../engine/project/ground.js';
 import { EVERY_NAME, importersOf } from '../../engine/project/importers.js';
+import { isJsonObject, stringsOf } from '../../engine/project/json.js';
 import { readText } from '../../engine/project/project-files.js';
 
-type Top = keyof typeof LINT_TREE;
+export type Top = 'consumer' | 'engine' | 'self';
+
+export type LintTree = Readonly<Record<Top, readonly string[]>>;
 
 type Exported = { functions: string[]; values: string[] };
 
@@ -13,19 +16,21 @@ type Candidate = Exported & { file: string };
 
 export const LINT_ROOT = 'lint';
 
-export const LINT_TREE: {
-    readonly consumer: readonly string[];
-    readonly engine: readonly string[];
-    readonly self: readonly string[];
-} = Object.freeze({
-    consumer: Object.freeze(['catalogue', 'rulebook', 'rules', 'checks']),
-    engine: Object.freeze(['project', 'baseline', 'checker', 'catalogue', 'compiler', 'testing']),
-    self: Object.freeze(['catalogue', 'rules', 'checks', 'corpus']),
-});
+export const TOPS: readonly Top[] = Object.freeze(['consumer', 'engine', 'self']);
+
+export function lintFoldersOf(declared: unknown): LintTree {
+    const tree = isJsonObject(declared) ? declared : {};
+
+    return {
+        consumer: stringsOf(tree.consumer),
+        engine: stringsOf(tree.engine),
+        self: stringsOf(tree.self),
+    };
+}
 
 const AUDIENCES: ReadonlySet<string> = new Set(['consumer', 'self']);
 
-const isTop = (name: string): name is Top => Object.hasOwn(LINT_TREE, name);
+export const isTop = (name: string): name is Top => (TOPS as readonly string[]).includes(name);
 
 const READ = 'read: docs/06-quality-checks.md#the-lint-tree';
 
@@ -43,14 +48,14 @@ const stemOf = (name: string): string => name.split('.')[0] ?? '';
 
 const isIndex = (name: string): boolean => stemOf(name) === 'index';
 
-function helperFinding(path: string, names: readonly string[]): Finding {
+function helperFinding(path: string, names: readonly string[], tree: LintTree): Finding {
     const listed = names.map((name) => `\`${name}\``).join(', ');
 
     return {
         message: [
             `found: \`${path}\` hands ${listed} to another module, named for no declaration of its file`,
             'why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what an `index` composes; one named for something else is code or data other files share, and that is the engine’s',
-            `fix: move ${names.length === 1 ? 'it' : 'them'} under engine/ — ${LINT_TREE.engine.map((folder) => `${folder}/`).join(', ')} — or, when it is this declaration’s own, name it for the file`,
+            `fix: move ${names.length === 1 ? 'it' : 'them'} under engine/ — ${tree.engine.map((folder) => `${folder}/`).join(', ')} — or, when it is this declaration’s own, name it for the file`,
             READ,
         ].join(' · '),
         path,
@@ -193,6 +198,7 @@ function sharedHelpers(
 }
 
 function isDeclaration(
+    tree: LintTree,
     top: string,
     folder: string | undefined,
     rest: readonly string[],
@@ -202,7 +208,7 @@ function isDeclaration(
         folder !== undefined &&
         rest.length > 0 &&
         isTop(top) &&
-        LINT_TREE[top].includes(folder)
+        tree[top].includes(folder)
     );
 }
 
@@ -234,7 +240,10 @@ function judgedDeclaration({
     };
 }
 
-export function lintTreeOf(files: readonly string[], unit: string, prefix: string): Finding[] {
+export function lintTreeOf(
+    files: readonly string[],
+    { prefix, tree, unit }: { prefix: string; tree: LintTree; unit: string },
+): Finding[] {
     const lintFiles = files.filter((file) => file.startsWith(`${LINT_ROOT}/`));
     const families = catalogueFamilies(unit, lintFiles);
     const findings: Finding[] = [];
@@ -242,14 +251,14 @@ export function lintTreeOf(files: readonly string[], unit: string, prefix: strin
 
     for (const file of lintFiles) {
         const [, top = '', folder, ...rest] = file.split('/');
-        if (isDeclaration(top, folder, rest)) {
+        if (isDeclaration(tree, top, folder, rest)) {
             const judged = judgedDeclaration({ families, file, folder, prefix, rest, unit });
             findings.push(...judged.findings);
             candidates.push(...judged.candidates);
         }
     }
     for (const { file, names } of sharedHelpers(unit, files, candidates)) {
-        findings.push(helperFinding(`${prefix}${file}`, names));
+        findings.push(helperFinding(`${prefix}${file}`, names, tree));
     }
 
     return findings;

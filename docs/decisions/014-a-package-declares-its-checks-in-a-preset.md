@@ -1,6 +1,6 @@
 # ADR-014: A package declares its checks in a preset
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-017](017-a-package-contributes-through-one-preset.md)
 **Date:** 2026-09-27
 
 The owner delegated the mechanism ("go tout faire"); this record states the

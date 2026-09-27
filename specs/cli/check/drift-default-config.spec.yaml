@@ -51,11 +51,12 @@ runs:
           {
             "baseline": null,
             "config": "default",
+            "optOuts": [],
             "oxlintSuppressions": null,
             "profile": "node",
             "rulesOff": [],
             "suppressions": 0,
-            "testBaseline": null,
+            "sections": {},
             "tools": [],
             "unreasoned": []
           }

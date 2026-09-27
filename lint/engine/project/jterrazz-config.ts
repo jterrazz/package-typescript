@@ -2,10 +2,13 @@
 // `"type": "module"` Node warns while reparsing it as ESM, so the gates run with that warning off.
 
 import { existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { objectOf } from './json.js';
+import { isJsonObject, objectOf } from './json.js';
+import { resolveConfig } from './preset.js';
+import type { Preset, Resolution } from './preset.js';
 
 export const SETTINGS_FILE = 'jterrazz.config.ts';
 
@@ -15,64 +18,80 @@ export const DEPENDENCY_CRUISER_CONFIGS = [
     '.dependency-cruiser.mjs',
 ];
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-    value !== null && typeof value === 'object' && !Array.isArray(value);
+export type Config = Resolution;
 
-export type Section = { problem: null | string; section: Record<string, unknown> };
+const NOTHING_DECLARED = {};
 
-export async function readSection(unit: string, name: string): Promise<Section> {
-    const path = join(unit, SETTINGS_FILE);
-    if (!existsSync(path)) {
-        return { problem: null, section: {} };
-    }
-
-    let loaded: unknown;
-    try {
-        loaded = await import(pathToFileURL(path).href);
-    } catch (error) {
-        const reason = String(error instanceof Error ? error.message : error).split('\n')[0];
-
-        return { problem: `does not load — ${reason}`, section: {} };
-    }
-
+function declaredOf(loaded: unknown): { declared: object; problem: null | string } {
     const settings = objectOf(loaded).default;
-    if (!isRecord(settings)) {
-        return {
-            problem:
-                'exports no settings object as its default — write `export default defineConfig({ … })`',
-            section: {},
-        };
-    }
-    const section = settings[name];
-    if (section === undefined) {
-        return { problem: null, section: {} };
-    }
-    if (!isRecord(section)) {
-        return { problem: `holds a \`${name}\` section that is not an object`, section: {} };
-    }
 
-    return { problem: null, section };
+    return isJsonObject(settings)
+        ? { declared: settings, problem: null }
+        : {
+              declared: NOTHING_DECLARED,
+              problem:
+                  'exports no settings object as its default — write `export default defineConfig({ … })`',
+          };
 }
 
-export type Declared = { declared: unknown[]; problem: null | string };
+const failed = (error: unknown): string =>
+    `does not load — ${String(error instanceof Error ? error.message : error).split('\n')[0] ?? ''}`;
 
-const isPreset = (value: unknown): value is Record<string, unknown> =>
-    isRecord(value) && typeof value.name === 'string' && value.name !== '';
+function resolvedFrom(
+    read: { declared: object; problem: null | string },
+    base: readonly Preset[],
+): Config {
+    const resolution = resolveConfig(read.declared, base);
 
-export function declaredUnder(section: Readonly<Record<string, unknown>>, key: string): Declared {
-    const { presets = [] } = section;
-    if (!Array.isArray(presets) || !presets.every((preset) => isPreset(preset))) {
-        return {
-            declared: [],
-            problem:
-                'holds a `presets` that is not a list of presets, each an object carrying the `name` of the package that ships it',
-        };
+    return read.problem === null ? resolution : { ...resolution, problem: read.problem };
+}
+
+export async function readConfig(unit: string, base: readonly Preset[]): Promise<Config> {
+    const path = join(unit, SETTINGS_FILE);
+    if (!existsSync(path)) {
+        return resolveConfig(NOTHING_DECLARED, base);
     }
+    try {
+        return resolvedFrom(declaredOf(await import(pathToFileURL(path).href)), base);
+    } catch (error) {
+        return { ...resolveConfig(NOTHING_DECLARED, base), problem: failed(error) };
+    }
+}
 
-    return {
-        declared: [section, ...presets]
-            .map((holder) => holder[key])
-            .filter((value) => value !== undefined),
-        problem: null,
-    };
+const loadModule = createRequire(import.meta.url);
+
+const loaded = new Map<string, Config>();
+
+// For a reader that runs synchronously, as an oxlint rule does; Node loads a module once per process.
+export function readConfigSync(unit: string, base: readonly Preset[]): Config {
+    const path = join(unit, SETTINGS_FILE);
+    const known = loaded.get(path);
+    if (known !== undefined) {
+        return known;
+    }
+    let config: Config;
+    if (existsSync(path)) {
+        try {
+            config = resolvedFrom(declaredOf(loadModule(path)), base);
+        } catch (error) {
+            config = { ...resolveConfig(NOTHING_DECLARED, base), problem: failed(error) };
+        }
+    } else {
+        config = resolveConfig(NOTHING_DECLARED, base);
+    }
+    loaded.set(path, config);
+
+    return config;
+}
+
+export type Section = { problem: null | string; section: Readonly<Record<string, unknown>> };
+
+export async function readSection(
+    unit: string,
+    name: string,
+    base: readonly Preset[] = [],
+): Promise<Section> {
+    const { problem, resolved } = await readConfig(unit, base);
+
+    return { problem, section: problem === null ? (resolved.sections[name] ?? {}) : {} };
 }

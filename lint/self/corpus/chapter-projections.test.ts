@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
+import { spliceBetween } from '../../engine/catalogue/chapter.js';
 import { PROJECTIONS } from './chapter-projections.js';
 
 function tableCells(table: string): string[] {
@@ -31,8 +32,7 @@ describe('PROJECTIONS', () => {
             // Then - it is exactly what the manifest renders today
             const table = project();
             if (process.env.TEST_UPDATE === '1') {
-                const head = before.slice(0, start + markers.start.length);
-                writeFileSync(page, `${head}\n\n${table}\n\n${before.slice(end)}`);
+                writeFileSync(page, spliceBetween(before, markers, table, page));
             }
 
             // Column-insensitive: oxfmt aligns a table's pipes, and a projection owes only the decisions.
