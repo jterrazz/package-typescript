@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
+import process from 'node:process';
 
 import { PACKAGE_ROOT } from '../../../lint/engine/project/package-root.js';
 import { ignorePatternsOf } from '../../../lint/engine/project/project-files.js';
