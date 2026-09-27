@@ -26,9 +26,9 @@ export function isExecutable(path: string): boolean {
     }
 }
 
-export function binaryIn(name: string, hoisted: string): string {
+export function binaryIn(name: string, fallbackBin: string): string {
     return (
-        [join(PACKAGE_ROOT, 'node_modules/.bin', name), join(hoisted, name)].find((path) =>
+        [join(PACKAGE_ROOT, 'node_modules/.bin', name), join(fallbackBin, name)].find((path) =>
             isExecutable(path),
         ) ?? name
     );
@@ -45,19 +45,19 @@ const PLATFORMS: Readonly<Record<string, string>> = {
 const ARCHITECTURES: Readonly<Record<string, string>> = { arm: 'arm', arm64: 'arm64', x64: 'x64' };
 
 // `tsc` on PATH is whatever the tree hoisted, under pnpm another package's TypeScript 5.
-export function tscIn(hoisted: string): string {
+export function tscIn(fallbackBin: string): string {
     const compiler = `@typescript/typescript-${PLATFORMS[process.platform] ?? 'linux'}-${ARCHITECTURES[process.arch] ?? 'x64'}/lib/tsc`;
 
     return (
         [join(PACKAGE_ROOT, 'node_modules', compiler), join(PACKAGE_ROOT, '../..', compiler)].find(
             (path) => isExecutable(path),
-        ) ?? binaryIn('tsc', hoisted)
+        ) ?? binaryIn('tsc', fallbackBin)
     );
 }
 
 // oxlint looks `tsgolint` up on PATH, which a consumer's PATH has no reason to carry.
-export function withTsgolintOnPath(hoisted: string): void {
-    const tsgolint = binaryIn('tsgolint', hoisted);
+export function withTsgolintOnPath(fallbackBin: string): void {
+    const tsgolint = binaryIn('tsgolint', fallbackBin);
     if (tsgolint.includes('/') && existsSync(tsgolint)) {
         process.env.PATH = `${realpathSync(dirname(tsgolint))}${delimiter}${process.env.PATH ?? ''}`;
     }

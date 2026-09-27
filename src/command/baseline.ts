@@ -26,7 +26,7 @@ async function listedTargets(
 async function recordLinter(
     report: string,
     args: readonly string[],
-    hoisted: string,
+    projectBin: string,
 ): Promise<void> {
     const { oxlint } = toolConfigs();
     const targets = await listedTargets(oxlint.ignoresOf, args);
@@ -36,7 +36,7 @@ async function recordLinter(
         return;
     }
     await run(
-        binaryIn('oxlint', hoisted),
+        binaryIn('oxlint', projectBin),
         [...oxlint.args, '--type-aware', '--format', 'json', ...args, ...(targets ?? [])],
         { stderr: 'ignore', stdout: { path: report } },
     );
@@ -55,8 +55,8 @@ async function recordPass(pass: string, report: string, args: readonly string[])
 export async function baseline(args: readonly string[]): Promise<number> {
     const project = projectRoot();
     process.chdir(project);
-    const hoisted = join(project, 'node_modules/.bin');
-    withTsgolintOnPath(hoisted);
+    const projectBin = join(project, 'node_modules/.bin');
+    withTsgolintOnPath(projectBin);
 
     return await inScratch(async (scratch) => {
         const reports = {
@@ -65,7 +65,7 @@ export async function baseline(args: readonly string[]): Promise<number> {
             names: join(scratch, 'names.json'),
         };
         print(`${badge('TYPESCRIPT')} Recording the oxlint baseline...\n\n`);
-        await recordLinter(reports.lint, args, hoisted);
+        await recordLinter(reports.lint, args, projectBin);
         await recordPass('names', reports.names, args);
         await recordPass('comments', reports.comments, args);
         const written = await checker(
@@ -86,7 +86,7 @@ export async function baseline(args: readonly string[]): Promise<number> {
             return 1;
         }
         await run(
-            binaryIn('oxfmt', hoisted),
+            binaryIn('oxfmt', projectBin),
             [...toolConfigs().oxfmt.args, 'jterrazz.baseline.json'],
             {
                 stderr: 'ignore',
