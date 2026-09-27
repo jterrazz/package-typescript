@@ -6,7 +6,7 @@ import { objectOf, parsedObject } from '../../../lint/engine/project/json.js';
 import type { JsonObject } from '../../../lint/engine/project/json.js';
 import { isGitIgnored, PRUNED } from '../../../lint/engine/project/project-files.js';
 import { testPackageVersion } from '../../../lint/engine/project/test-package.js';
-import { isFile } from '../disk.js';
+import { isFileOnDisk } from '../disk.js';
 
 const DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies'];
 
@@ -29,7 +29,7 @@ function declares(dir: string, name: string): boolean {
 
 export function usesTestPackage(dir: string): boolean {
     return (
-        isFile(join(dir, 'package.json')) &&
+        isFileOnDisk(join(dir, 'package.json')) &&
         (declares(dir, '@jterrazz/test') || testPackageVersion(dir) !== null)
     );
 }
@@ -54,7 +54,7 @@ export function isModulePackage(): boolean {
 
 export function nearestPackageDir(from: string): null | string {
     let dir = from;
-    while (!isFile(join(dir, 'package.json'))) {
+    while (!isFileOnDisk(join(dir, 'package.json'))) {
         if (dir === '.') {
             return null;
         }
@@ -70,7 +70,7 @@ function insideOwningMember(path: string, member: string): boolean {
         dir !== member && dir !== '.' && dir !== '/';
         dir = dirname(dir)
     ) {
-        if (existsSync(join(dir, '.git')) || isFile(join(dir, 'package.json'))) {
+        if (existsSync(join(dir, '.git')) || isFileOnDisk(join(dir, 'package.json'))) {
             return false;
         }
     }

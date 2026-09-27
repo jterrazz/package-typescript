@@ -5,7 +5,7 @@ import {
     SETTINGS_FILE,
 } from '../../../lint/engine/project/jterrazz-config.js';
 import { checker } from '../checker.js';
-import { isDirectory, isFile } from '../disk.js';
+import { isDirectoryOnDisk, isFileOnDisk } from '../disk.js';
 import { presetAt } from '../toolchain.js';
 import type { Launched } from './launched.js';
 import { isPublishable } from './project.js';
@@ -16,7 +16,7 @@ export async function gitignorePass(check: Check): Promise<Launched | undefined>
         return undefined;
     }
     const applies =
-        isFile('.gitignore') ||
+        isFileOnDisk('.gitignore') ||
         (!check.fix && (await checker('gitignore', ['--has-ancestor'], 'ignore')) === 0);
     if (!applies) {
         return undefined;
@@ -112,8 +112,8 @@ export function architecturePass(check: Check): Launched | undefined {
     if (
         !check.selected('architecture') ||
         !(
-            [SETTINGS_FILE, ...DEPENDENCY_CRUISER_CONFIGS].some((name) => isFile(name)) ||
-            isDirectory('lint')
+            [SETTINGS_FILE, ...DEPENDENCY_CRUISER_CONFIGS].some((name) => isFileOnDisk(name)) ||
+            isDirectoryOnDisk('lint')
         )
     ) {
         return undefined;

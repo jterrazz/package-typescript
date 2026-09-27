@@ -8,7 +8,7 @@ import {
     removeWhenEmpty,
 } from '../../../lint/engine/baseline/oxlint-suppressions.js';
 import { invariant, messageOf, refusal } from '../../../lint/engine/catalogue/lesson.js';
-import { isFile } from '../disk.js';
+import { isFileOnDisk } from '../disk.js';
 import { mergedKnipConfig } from '../merge-knip-config.js';
 import { run } from '../processes.js';
 import { DEFAULT_OXLINT_CONFIG } from '../tool-configs.js';
@@ -40,7 +40,7 @@ export async function lintCheck(check: Check): Promise<number> {
 }
 
 async function pruned(check: Check): Promise<number> {
-    if (!isFile(OXLINT_SUPPRESSIONS)) {
+    if (!isFileOnDisk(OXLINT_SUPPRESSIONS)) {
         return 0;
     }
 
@@ -141,7 +141,7 @@ export function knipPass(check: Check): Launched | undefined {
     }
     const merged = check.logs.at('knip-merged.json');
     const log = check.logs.at('knip.log');
-    const project = ['knip.jsonc', 'knip.json'].find((name) => isFile(name));
+    const project = ['knip.jsonc', 'knip.json'].find((name) => isFileOnDisk(name));
     try {
         const config = mergedKnipConfig(presetAt('src/presets/knip/config.json'), project);
         writeFileSync(merged, JSON.stringify(config));
