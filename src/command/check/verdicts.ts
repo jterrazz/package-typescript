@@ -1,13 +1,14 @@
 import { appendFileSync, readFileSync } from 'node:fs';
 
 import { checker } from '../checker.js';
+import type { Conventions } from './conventions.js';
 import type { Launched } from './launched.js';
 import { lintVerdict } from './lint-verdict.js';
 import type { LintVerdict } from './lint-verdict.js';
 import { joined } from './logs.js';
 import { oxlintJson } from './runners.js';
 import type { Check } from './setup.js';
-import type { Conventions, Runs, Started } from './started.js';
+import type { Runs, Started } from './started.js';
 
 export type Verdict = { log: string; status: number; writes?: boolean };
 
@@ -120,7 +121,7 @@ export async function publishVerdict(check: Check, runs: readonly Launched[]): P
     return { log, status: statuses.some((status) => status !== 0) ? 1 : 0, writes: true };
 }
 
-export function lintPass(
+export function lintVerdictOf(
     check: Check,
     lint: HeldLint,
     conventions: Passed,

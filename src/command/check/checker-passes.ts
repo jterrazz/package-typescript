@@ -1,22 +1,11 @@
 import { existsSync } from 'node:fs';
-import { dirname } from 'node:path';
-import process from 'node:process';
 
 import { checker } from '../checker.js';
 import { isFile } from '../disk.js';
-import { run } from '../processes.js';
 import { presetAt } from '../toolchain.js';
 import type { Launched } from './launched.js';
-import {
-    checkerBinOf,
-    isPublishable,
-    nearestPackageDir,
-    specsRoots,
-    usesTestPackage,
-} from './project.js';
+import { isPublishable } from './project.js';
 import type { Check } from './setup.js';
-
-export type Member = { bin: string; member: string };
 
 const DEPENDENCY_CRUISER_CONFIGS = [
     '.dependency-cruiser.cjs',
@@ -147,35 +136,4 @@ export function publishPasses(check: Check): Launched[] {
 
             return { log, status: checker('publish', args, { path: log }) };
         });
-}
-
-export function checkerMembers(check: Check): Member[] {
-    if (check.fix || !check.selected('conventions')) {
-        return [];
-    }
-
-    return ['.', ...check.members].flatMap((member) => {
-        const bin = checkerBinOf(member);
-
-        return bin === null ? [] : [{ bin, member }];
-    });
-}
-
-export function specsRuns(check: Check): Launched[] {
-    if (check.fix || !check.selected('conventions')) {
-        return [];
-    }
-
-    return specsRoots(check.members).flatMap((root, index) => {
-        const owner = nearestPackageDir(dirname(root));
-        if (owner === null || !usesTestPackage(owner)) {
-            return [];
-        }
-        const bin = checkerBinOf(owner);
-        const [command, args] =
-            bin === null ? [check.tools.checker, [root]] : [process.execPath, [bin, root]];
-        const log = check.logs.at(`checker-${String(index)}.log`);
-
-        return [{ log, status: run(command, args, { stderr: 'stdout', stdout: { path: log } }) }];
-    });
 }

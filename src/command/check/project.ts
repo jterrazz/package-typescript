@@ -5,7 +5,7 @@ import { dirname, join } from 'node:path';
 
 import { objectOf, parsedObject } from '../../../lint/engine/project/json.js';
 import type { JsonObject } from '../../../lint/engine/project/json.js';
-import { testPackageBin, testPackageVersion } from '../../../lint/engine/project/test-package.js';
+import { testPackageVersion } from '../../../lint/engine/project/test-package.js';
 import { isFile } from '../disk.js';
 
 const PRUNED: ReadonlySet<string> = new Set(['.git', 'dist', 'node_modules']);
@@ -52,12 +52,6 @@ export function isPublishable(dir: string): boolean {
 
 export function isModulePackage(): boolean {
     return manifestIn('.')?.type === 'module';
-}
-
-export function checkerBinOf(dir: string): null | string {
-    const bin = testPackageBin(dir);
-
-    return bin === '' ? null : bin;
 }
 
 export function nearestPackageDir(from: string): null | string {

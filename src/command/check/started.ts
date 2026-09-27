@@ -1,6 +1,3 @@
-import process from 'node:process';
-
-import { run } from '../processes.js';
 import {
     architecturePass,
     commentsPass,
@@ -10,10 +7,8 @@ import {
     namesPass,
     publishPasses,
     secretsPass,
-    specsRuns,
     suppressionsPass,
-} from './checker-runs.js';
-import type { Member } from './checker-runs.js';
+} from './checker-passes.js';
 import type { Launched } from './launched.js';
 import { oxfmt } from './runners.js';
 import type { Check } from './setup.js';
@@ -96,39 +91,4 @@ export async function started(check: Check, runs: Runs): Promise<Started> {
         suppressions,
         typescript,
     };
-}
-
-function memberRuns(
-    check: Check,
-    members: readonly Member[],
-): { launched: Launched[]; rootLog: string | undefined } {
-    let rootLog: string | undefined;
-    const launched = members.map(({ bin, member }, index) => {
-        const log = check.logs.at(`checker-member-${String(index)}.log`);
-        rootLog = member === '.' ? log : rootLog;
-        const args = [bin, '--member', member, '--oxlint-report', check.logs.at('lint.json')];
-
-        return {
-            log,
-            status: run(process.execPath, args, { stderr: 'stdout', stdout: { path: log } }),
-        };
-    });
-
-    return { launched, rootLog };
-}
-
-export type Conventions = { rootLog: string | undefined; runs: Launched[] };
-
-export async function conventions(
-    check: Check,
-    members: readonly Member[],
-    lint: Promise<number>,
-): Promise<Conventions> {
-    const specs = specsRuns(check);
-    if (members.length > 0) {
-        await lint;
-    }
-    const { launched, rootLog } = memberRuns(check, members);
-
-    return { rootLog, runs: [...specs, ...launched] };
 }

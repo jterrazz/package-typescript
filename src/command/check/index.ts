@@ -3,19 +3,20 @@ import { inScratch } from '../scratch.js';
 import { badge, GREEN, print, RED, RESET } from '../terminal.js';
 import { toolConfigs } from '../tool-configs.js';
 import { presetAt } from '../toolchain.js';
-import { checkerMembers } from './checker-runs.js';
+import { checkerMembers, conventions } from './conventions.js';
+import type { Conventions } from './conventions.js';
 import { logsIn } from './logs.js';
 import type { Selected } from './passes.js';
 import { reportPass } from './report.js';
 import { argumentsOf, membersOf, targetsOf, toolsOf } from './setup.js';
 import type { Check } from './setup.js';
-import { conventions, started } from './started.js';
-import type { Conventions, Runs, Started } from './started.js';
+import { started } from './started.js';
+import type { Runs, Started } from './started.js';
 import {
     commentsVerdict,
     conventionsVerdict,
     heldLint,
-    lintPass,
+    lintVerdictOf,
     publishVerdict,
     settled,
     settledLint,
@@ -109,7 +110,7 @@ async function reported(
 
     return [
         ...labelled('TypeScript Check', typescript),
-        ...labelled(fix ? 'Oxlint Fix' : 'Oxlint Check', lintPass(run, lint, conventionsPass)),
+        ...labelled(fix ? 'Oxlint Fix' : 'Oxlint Check', lintVerdictOf(run, lint, conventionsPass)),
         ...labelled(fix ? 'Oxfmt Format' : 'Oxfmt Check', selected('oxfmt') ? format : undefined),
         ...labelled('Gitignore (artefacts)', gitignore, true),
         ...labelled('Knip (unused code)', knip),
