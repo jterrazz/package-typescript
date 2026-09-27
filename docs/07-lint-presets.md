@@ -1,12 +1,12 @@
 # Lint presets
 
-Every rule of every plugin this package loads is decided by name, at `error` or at `off` with a recorded reason — that manifest is `lint/`, and a profile is a pre-composed, tested slice of it that a consumer names in one line.
+Every rule of every plugin this package loads is decided by name, at `error` or at `off` with a recorded reason — that manifest is `lint/`, and a profile is a pre-composed, tested slice of it that a consumer names in one place, the base preset of its settings file:
 
 ```ts
-// oxlint.config.ts
-import { defineConfig, node } from '@jterrazz/typescript/oxlint';
+// jterrazz.config.ts
+import { defineConfig, typescript } from '@jterrazz/typescript/config';
 
-export default defineConfig(node);
+export default defineConfig({ presets: [typescript({ profile: 'node' })] });
 ```
 
 ## The four laws
@@ -58,7 +58,7 @@ Node ESM resolves a specifier literally and needs the `.js`; a bundler resolves 
 | `env`, `globals`, `options`, `rules`, `settings`    | shallow-merged, last wins per key       |
 | anything else                                       | taken from the last config that sets it |
 
-A project using `@jterrazz/test` composes its testing fragment explicitly — nothing is auto-detected. The fragment is part of that package's preset, so a project that declares its presets in `jterrazz.config.ts` composes them all in one call, `fromPresets`, the profile of the base preset first and each preset's own after it, in [the merge order](09-rules-kit.md#the-merge-order):
+A project's oxlint config is what its presets declare — nothing is auto-detected. It composes them all in one call, `fromPresets`, the profile of the base preset first and each preset's own after it, in [the merge order](09-rules-kit.md#the-merge-order); `@jterrazz/test`'s oxlint rules arrive with its `test()` preset:
 
 ```ts
 import { defineConfig, fromPresets } from '@jterrazz/typescript/oxlint';
@@ -68,7 +68,7 @@ import settings from './jterrazz.config.ts';
 export default defineConfig(fromPresets(settings));
 ```
 
-`compose` stays for a fragment no preset carries, and `compose(node, testing)` is the same config written by hand.
+`compose` stays for what is the project's own, composed after `fromPresets`: an override, a rule a subtree turns off with its reason.
 
 ## Import boundaries
 

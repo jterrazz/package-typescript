@@ -19,7 +19,7 @@ One devDependency that builds, checks, lints and formats a project. The manual i
 | `typescript baseline`    | a bump lands red: record today's counts, exact — `fix` lowers one that fell              |
 | `typescript docs-layout` | a repository with no npm project: the manual's shape, alone                              |
 
-A project names ONE profile — `node`, `next`, `astro`, `expo`, `bun`, `react` — in `oxlint.config.ts` and the matching preset in `tsconfig.json` (a published package: `node`, with the `library` tsconfig), and its three config files import `@jterrazz/typescript` and nothing else. The wiring is `docs/02-developing.md`.
+A project names ONE profile — `node`, `next`, `astro`, `expo`, `bun`, `react` — in `jterrazz.config.ts`, as `presets: [typescript({ profile })]`, and the matching preset in `tsconfig.json` (a published package: `node`, with the `library` tsconfig); its `oxlint.config.ts` is `defineConfig(fromPresets(settings))`, and its config files import the toolchain's packages and nothing else. The wiring is `docs/02-developing.md`.
 
 ## What a failing pass means
 

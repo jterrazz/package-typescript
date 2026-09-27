@@ -42,13 +42,26 @@ That line is the whole file. Every preset scopes its `include` and `exclude` to 
 
 What each profile adds to the rulebook, and why a profile never relaxes it, is [Lint presets](07-lint-presets.md).
 
-## 2. Create the lint and format configs
+## 2. Name the profile, and create the lint and format configs
+
+The profile is named once, in the settings file, by the base preset:
+
+```ts
+// jterrazz.config.ts
+import { defineConfig, typescript } from '@jterrazz/typescript/config';
+
+export default defineConfig({ presets: [typescript({ profile: 'node' })] });
+```
+
+The lint config composes what the presets declare, and names nothing else:
 
 ```ts
 // oxlint.config.ts
-import { defineConfig, node } from '@jterrazz/typescript/oxlint';
+import { defineConfig, fromPresets } from '@jterrazz/typescript/oxlint';
 
-export default defineConfig(node);
+import settings from './jterrazz.config.ts';
+
+export default defineConfig(fromPresets(settings));
 ```
 
 ```ts
@@ -58,9 +71,9 @@ import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
 export default defineConfig(base);
 ```
 
-Swap `node` for the profile you picked — the import name and the profile name are the same word. A project that also uses `@jterrazz/test` composes that package's testing fragment beside the profile, in the same one line ([Lint presets](07-lint-presets.md)).
+Write the profile you picked in `typescript({ profile })`; `node` is the one a file naming none gets. A project that also uses `@jterrazz/test` lists its preset, `test()`, beside the base preset, and the same `fromPresets` line arms its oxlint rules ([Rules kit](09-rules-kit.md#presets)). A project that keeps no `oxlint.config.ts` is handed that same composition by `check` ([Quality checks](06-quality-checks.md)); it keeps one to add what is its own.
 
-Each config names `@jterrazz/typescript` and nothing else — the preset and the tool's own `defineConfig` both arrive from it. Importing `defineConfig` from `oxlint` or `oxfmt` directly asks the project to declare those packages as well, which is the shape below refusing to hold.
+Each config imports the toolchain's packages and the settings file, and nothing else — the presets and the tool's own `defineConfig` all arrive from `@jterrazz/typescript`. Importing `defineConfig` from `oxlint` or `oxfmt` directly asks the project to declare those packages as well, which is the shape below refusing to hold.
 
 That form is every profile's, a published package's included: a published package's declarations are guaranteed by `isolatedDeclarations` in the build presets below.
 
@@ -79,13 +92,16 @@ export default bundle;
 
 ### A subtree on another profile
 
-A workspace whose members share one profile needs one root config. A subtree that IS another shape — a React client inside a Node service — takes a nested `oxlint.config.ts` of its own, which oxlint applies to that subtree. Linter options belong to the root config only, and the root's already turn type information on for the whole tree, so the nested file ships the profile through `nested()`:
+A workspace whose members share one profile needs one root config. A subtree that IS another shape — a React client inside a Node service — takes a nested `oxlint.config.ts` of its own, which oxlint applies to that subtree, declaring the presets that subtree is held to, its own profile first. Linter options belong to the root config only, and the root's already turn type information on for the whole tree, so the nested file ships the composition through `nested()`:
 
 ```ts
-import { compose, defineConfig, nested, react } from '@jterrazz/typescript/oxlint';
-import { testing } from '@jterrazz/test/oxlint';
+import { test } from '@jterrazz/test/config';
+import { typescript } from '@jterrazz/typescript/config';
+import { defineConfig, fromPresets, nested } from '@jterrazz/typescript/oxlint';
 
-export default defineConfig(nested(compose(react, testing)));
+export default defineConfig(
+    nested(fromPresets({ presets: [typescript({ profile: 'react' }), test()] })),
+);
 ```
 
 ## 3. Wire the CLI into package.json
@@ -137,7 +153,7 @@ A workspace keeps one, at its root; a member owes none. A repository with more t
 
 ## 5. State a setting, where there is one
 
-A repository with nothing to say about the toolchain keeps no settings file. One that has something states it in `jterrazz.config.ts` at its root: the presets it is held to, then what is its own, one section per package of the family:
+The settings file step 2 created holds, beside the presets the repository is held to, what is its own, one section per package of the family — and a repository on the `node` profile with nothing else to say may keep none:
 
 ```ts
 // jterrazz.config.ts
@@ -152,7 +168,7 @@ export default defineConfig({
 
 The file belongs to the whole family, and this package owns it: `defineConfig` types every section a package of the family declares, and `@jterrazz/test` adds its own, `test`. A package hands a repository everything it holds it to in one preset — the defaults of its section, its oxlint rules, its layers, its name rules, its debt — and the base preset, `typescript()`, is always on, whether the file names it or not; how the presets and the repository's own sections merge, and how a repository sets a law aside under `optOuts`, is [Rules kit](09-rules-kit.md#presets)'s. The `typescript` section holds three settings of the repository's own: `roots`, the folders it keeps beside its spine ([Quality checks](06-quality-checks.md#a-root-beside-the-spine)); `architecture`, the layer map its imports are held to — the shipped `hexagonal` map, its own `layers`, or both ([Quality checks](06-quality-checks.md#the-architecture-layer-map-pass)); and `names`, the name rules it declares ([Quality checks](06-quality-checks.md#a-name-rule-a-project-declares)).
 
-`oxlint.config.ts` composes the same presets with `fromPresets`, so the file that names a package's preset is the one place its oxlint rules are armed ([Lint presets](07-lint-presets.md#compose-semantics)).
+`oxlint.config.ts` composes the same presets with `fromPresets`, so the file that names a package's preset is the one place its profile is chosen and its oxlint rules are armed ([Lint presets](07-lint-presets.md#compose-semantics)).
 
 Node loads the file itself, with its types stripped, so it needs no build and no tool beside the toolchain. A missing file is no settings at all; a file that does not load, or holds no settings object, is a finding of the pass that reads it. A workspace member keeps its own beside its `package.json`, for what that member alone declares.
 
