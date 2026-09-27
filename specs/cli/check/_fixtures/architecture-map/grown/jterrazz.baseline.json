@@ -1,0 +1,5 @@
+{
+    "typescript": {
+        "architecture/domain-stays-pure": 1
+    }
+}
