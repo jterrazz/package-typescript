@@ -4,7 +4,7 @@ runs:
     - command: baseline
       exit: 1
       stdout: |4
-           TYPESCRIPT  Recording the oxlint baseline...
+           TYPESCRIPT  Recording the baseline...
 
           the Names (tree) pass wrote no report — the typescript section is left as it was; 'typescript check' prints why
       files:

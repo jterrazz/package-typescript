@@ -16,8 +16,8 @@ import {
     astroPass,
     formatCheck,
     knipPass,
+    lintCheck,
     lintFix,
-    lintReport,
     typescriptPass,
 } from './tool-passes.js';
 
@@ -47,7 +47,7 @@ async function lintStarted(
     if (!check.fix) {
         return {
             format: formatCheck(check),
-            lint: runs.oxlint ? lintReport(check) : Promise.resolve(0),
+            lint: runs.oxlint ? lintCheck(check) : Promise.resolve(0),
         };
     }
     const fixed = runs.oxlint && !check.lintTargets.nothing ? await lintFix(check) : 0;

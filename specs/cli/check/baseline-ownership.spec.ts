@@ -64,29 +64,35 @@ function verdict(stdout: string, label: string): string {
 }
 
 describe('baseline-ownership', () => {
-    test("records none of @jterrazz/test's diagnostics", () => {
-        // Given - a tree whose only oxlint diagnostic is a `jterrazz(*)` one, beside one `debugger`
+    test("records every oxlint diagnostic in oxlint's own file, @jterrazz/test's plugin included", () => {
+        // Given - a tree whose oxlint diagnostic is the plugin's rule, on every file
         const project = groundOf();
-        writeFileSync(
-            join(project, 'index.ts'),
-            'export function stop(): void {\n    debugger;\n}\n',
-        );
 
         // When - the baseline is recorded
         run(project, 'baseline');
 
-        // Then - the section carries this package's rule and nothing of the plugin's
-        const written = readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8');
-        expect(JSON.parse(written)).toStrictEqual({ typescript: { 'eslint/no-debugger': 1 } });
+        // Then - oxlint's file holds both rules, file by file, and the section holds none of them
+        const suppressed = JSON.parse(
+            readFileSync(join(project, 'oxlint-suppressions.json'), 'utf8'),
+        ) as unknown;
+        expect(suppressed).toStrictEqual({
+            'index.ts': { 'jterrazz/flags-every-file': { count: 1 } },
+            'oxlint.config.ts': { 'jterrazz/flags-every-file': { count: 1 } },
+        });
+        const recorded: unknown = JSON.parse(
+            readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8'),
+        );
+        expect(recorded).toStrictEqual({ typescript: {} });
     });
 
     test("leaves @jterrazz/test's section byte for byte", () => {
-        // Given - a test section on one line, keys unsorted, beside a stale typescript one and a debugger this package records
+        // Given - a test section on one line, keys unsorted, beside a stale typescript one
         const project = groundOf();
-        const section = '{ "jterrazz/flags-every-file": 2, "jterrazz-check/no-unused-ground": 1 }';
+        const section =
+            '{ "jterrazz-check/unused-ground": 2, "jterrazz-check/no-unused-ground": 1 }';
         writeFileSync(
             join(project, 'jterrazz.baseline.json'),
-            `{\n  "test": ${section},\n  "typescript": { "eslint/no-var": 4 }\n}\n`,
+            `{\n  "test": ${section},\n  "typescript": { "names/no-grab-bag-name": 4 }\n}\n`,
         );
         writeFileSync(
             join(project, 'index.ts'),
@@ -98,7 +104,7 @@ describe('baseline-ownership', () => {
 
         // Then - only this package's section moved, and the other one's bytes are the ones it wrote
         expect(readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8')).toBe(
-            `{\n    "test": ${section},\n    "typescript": {\n        "eslint/no-debugger": 1\n    }\n}\n`,
+            `{\n    "test": ${section},\n    "typescript": {}\n}\n`,
         );
     });
 
@@ -114,20 +120,25 @@ describe('baseline-ownership', () => {
         // When - the baseline is recorded
         run(project, 'baseline');
 
-        // Then - the file is in the project's shape, not the writer's two spaces nor the default's four
+        // Then - both files are in the project's shape, not the writers' two spaces nor the default's four
         expect(readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8')).toBe(
-            '{\n\t"typescript": {\n\t\t"eslint/no-debugger": 1\n\t}\n}\n',
+            '{\n\t"typescript": {}\n}\n',
+        );
+        expect(readFileSync(join(project, 'oxlint-suppressions.json'), 'utf8')).toContain(
+            '\t"index.ts": {\n\t\t"jterrazz/flags-every-file": {\n\t\t\t"count": 1\n\t\t}\n\t},',
         );
     });
 
-    test('keeps the oxlint pass green when every diagnostic is a `jterrazz(*)` one', () => {
-        // Given - no baseline, and a plugin that fails oxlint on every file
+    test("holds @jterrazz/test's plugin in the oxlint pass, as oxlint's own rule", () => {
+        // Given - no recorded debt, and a plugin that fails oxlint on every file
         const project = groundOf();
+
         // When - the checks run
         const { stdout } = run(project, 'check', { ...process.env, ...onlyPasses('oxlint') });
 
-        // Then - oxlint's exit code is not the verdict: nothing this package owns was reported
-        expect(verdict(stdout, 'Oxlint Check')).toBe('✓ Passed');
+        // Then - the plugin's diagnostic is oxlint's, printed and judged in its pass
+        expect(stdout).toContain('reported by the stub plugin');
+        expect(verdict(stdout, 'Oxlint Check')).toBe('✗ Failed');
     });
 
     test("takes the checker's exit code as the Test Conventions verdict", () => {
@@ -144,35 +155,10 @@ describe('baseline-ownership', () => {
         expect(stdout).toContain('a finding the stub always reports');
     });
 
-    const COUNTING_CHECKER = `#!/usr/bin/env node
-process.stdout.write("conventions checker: 1 plugin diagnostic judged, printed by oxlint's own pass\\n");
+    const FAILING_CHECKER = `#!/usr/bin/env node
+process.stdout.write('conventions checker: 1 error(s) found\\n');
 process.exit(1);
 `;
-
-    test("prints a `jterrazz(*)` diagnostic's location once when only @jterrazz/test's section breaks", () => {
-        // Given - a checker failing on the plugin's rule alone, and nothing this package owns reported
-        const project = groundOf();
-        writeFileSync(
-            join(project, 'node_modules/@jterrazz/test/dist/checker.js'),
-            COUNTING_CHECKER,
-        );
-
-        // When - the checks run
-        const { stdout } = run(project, 'check', {
-            ...process.env,
-            ...onlyPasses('oxlint', 'oxfmt', 'conventions'),
-        });
-        const oxlint = stdout.slice(stdout.indexOf('Oxlint Check'), stdout.indexOf('Oxfmt Check'));
-
-        // Then - the oxlint pass keeps its own verdict and prints the diagnostic, where it stands
-        expect(verdict(stdout, 'Oxlint Check')).toBe('✓ Passed');
-        expect(oxlint).toContain('index.ts');
-
-        // Then - each of its two diagnostics, the config's and index.ts's, once across the whole run
-        expect(oxlint.split('reported by the stub plugin')).toHaveLength(3);
-        expect(stdout.split('reported by the stub plugin')).toHaveLength(3);
-        expect(verdict(stdout, 'Test Conventions')).toBe('✗ Failed');
-    });
 
     // With nothing but PATH and HOME, oxlint picks the framed form, which closes on `Finished in …` even over nothing.
     test('draws nothing under a green oxlint pass when no diagnostic stands behind the broken section', () => {
@@ -181,7 +167,7 @@ process.exit(1);
         writeFileSync(join(project, 'oxlint.config.ts'), 'export default { rules: {} };\n');
         writeFileSync(
             join(project, 'node_modules/@jterrazz/test/dist/checker.js'),
-            COUNTING_CHECKER,
+            FAILING_CHECKER,
         );
 
         // When - the checks run
@@ -256,23 +242,23 @@ process.exit(0);
         expect(conventions).toContain('✓ Passed');
     });
 
-    test("refuses an entry of @jterrazz/test's in this package's section", () => {
-        // Given - a typescript section that still carries both packages' keys
+    test("refuses an oxlint rule left in this package's section, naming the gesture that moves it", () => {
+        // Given - a typescript section recorded before oxlint held its own rules
         const project = groundOf();
         writeFileSync(
             join(project, 'jterrazz.baseline.json'),
-            '{\n  "typescript": { "jterrazz-check/no-unused-ground": 1, "jterrazz/flags-every-file": 2 }\n}\n',
+            '{\n  "typescript": { "eslint/no-debugger": 1, "jterrazz/flags-every-file": 2 }\n}\n',
         );
 
         // When - the checks run
         const { stdout } = run(project, 'check', { ...process.env, ...onlyPasses('oxlint') });
 
-        // Then - each entry is sent to the section that owns it
+        // Then - each entry is refused in four parts, sent to oxlint-suppressions.json by `typescript baseline`
         expect(stdout).toContain(
-            "jterrazz-check/no-unused-ground is @jterrazz/test's rule — its entry belongs in jterrazz.baseline.json › test",
+            'baseline-moved-to-oxlint  jterrazz.baseline.json › typescript  found: `eslint/no-debugger` is an oxlint rule',
         );
         expect(stdout).toContain(
-            "jterrazz/flags-every-file is @jterrazz/test's rule — its entry belongs in jterrazz.baseline.json › test",
+            'baseline-moved-to-oxlint  jterrazz.baseline.json › typescript  found: `jterrazz/flags-every-file` is an oxlint rule',
         );
         expect(verdict(stdout, 'Oxlint Check')).toBe('✗ Failed');
     });

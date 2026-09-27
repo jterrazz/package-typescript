@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
@@ -119,7 +119,11 @@ function writeDataFolder(project: string): void {
     );
 }
 
-function checkAndRecord(project: string): { baseline: string; stdout: string } {
+function checkAndRecord(project: string): {
+    baseline: string;
+    stdout: string;
+    suppressed: string;
+} {
     const result = spawnSync('node', [SELECTING_BIN, 'check'], {
         cwd: project,
         encoding: 'utf8',
@@ -131,9 +135,12 @@ function checkAndRecord(project: string): { baseline: string; stdout: string } {
         env: inProject(project),
     });
 
+    const suppressions = join(project, 'oxlint-suppressions.json');
+
     return {
         baseline: readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8'),
         stdout: result.stdout,
+        suppressed: existsSync(suppressions) ? readFileSync(suppressions, 'utf8') : '',
     };
 }
 
@@ -153,16 +160,19 @@ describe('names-repository', () => {
         writeDataFolder(project);
 
         // When - the quality checks run, and the baseline is recorded
-        const { baseline, stdout } = checkAndRecord(project);
+        const { baseline, stdout, suppressed } = checkAndRecord(project);
 
-        // Then - every gate reads the folder: each fails, naming what it holds, and the baseline records the linter's finding and the root
+        // Then - every gate reads the folder: each fails, naming what it holds; oxlint records the linter's finding, the section the root
         expect(treeVerdictsOf(stdout)).toStrictEqual(['Failed', 'Failed', 'Failed', 'Failed']);
-        expect(passOf(stdout, 'Markdown (prose)')).toContain('data/NOTES.md');
-        expect(passOf(stdout, 'Names (tree)')).toContain('data/');
-        expect(passOf(stdout, 'Secrets (credentials)')).toContain('data/NOTES.md');
+        expect({
+            markdown: passOf(stdout, 'Markdown (prose)').includes('data/NOTES.md'),
+            names: passOf(stdout, 'Names (tree)').includes('data/'),
+            secrets: passOf(stdout, 'Secrets (credentials)').includes('data/NOTES.md'),
+        }).toStrictEqual({ markdown: true, names: true, secrets: true });
         expect(JSON.parse(baseline)).toMatchObject({
-            typescript: { 'eslint/no-debugger': 1, 'names/no-undeclared-root-folder': 1 },
+            typescript: { 'names/no-undeclared-root-folder': 1 },
         });
+        expect(suppressed).toContain('"no-debugger"');
     });
 
     test('judges no folder git ignores, in any tree gate, the linter included', () => {
@@ -358,34 +368,13 @@ describe('names-repository', () => {
         });
         const names = passOf(result.stdout, 'Names (tree)');
 
-        // Then - the entry holds both, the section states it in its one line, and the Names pass is green
-        expect(result.stdout).toContain(
-            'jterrazz.baseline.json › typescript: 2 held across 1 rule',
+        // Then - the entry holds both, and the Names pass is green
+        const recorded: unknown = JSON.parse(
+            readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8'),
         );
+        expect(recorded).toStrictEqual({
+            typescript: { 'names/makefile-answers-every-gesture': 2 },
+        });
         expect(names).toContain('Passed');
-    });
-
-    test('counts a missing gesture in the ratchet line of a linter run the Names pass is left out of', () => {
-        // Given - a repository missing two gestures, recorded by the baseline command
-        const project = projectWith({ makefile: FOUR_TARGETS });
-        execFileSync('node', [SELECTING_BIN, 'baseline'], {
-            cwd: project,
-            encoding: 'utf8',
-            env: inProject(project),
-        });
-
-        // When - the linter alone runs
-        const result = spawnSync('node', [SELECTING_BIN, 'check'], {
-            cwd: project,
-            encoding: 'utf8',
-            env: inProject(project, onlyPasses('oxlint')),
-        });
-
-        // Then - the held line counts the Names pass's report, and the Names pass prints nothing
-        expect(result.stdout).toContain(
-            'jterrazz.baseline.json › typescript: 2 held across 1 rule',
-        );
-        expect(result.stdout).not.toContain('Names (tree)');
-        expect(result.status).toBe(0);
     });
 });

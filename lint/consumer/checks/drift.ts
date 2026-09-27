@@ -1,5 +1,6 @@
 import { basename, dirname, join, resolve } from 'node:path';
 
+import { OXLINT_SUPPRESSIONS, suppressedCount } from '../../engine/baseline/oxlint-suppressions.js';
 import {
     LABEL,
     labelOf,
@@ -221,6 +222,7 @@ function rowsOf(
         ),
         row('rules off vs profile', rulesOffOf(project.profileName, off)),
         row('suppressions', suppressions),
+        row(OXLINT_SUPPRESSIONS, suppressedCount(root) ?? 'nothing held'),
         row(LABEL, heldOf(SECTION)),
         ...(sectionOf(root, TEST_SECTION) === null
             ? []
@@ -251,6 +253,7 @@ export const drift: Pass = Object.freeze({
             json: {
                 baseline: totalOf(),
                 config: project.configName === undefined ? 'default' : 'own',
+                oxlintSuppressions: suppressedCount(root),
                 profile: project.profileName,
                 rulesOff: off,
                 suppressions,

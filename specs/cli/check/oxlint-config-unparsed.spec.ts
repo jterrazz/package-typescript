@@ -5,14 +5,10 @@ import { afterAll, describe, expect, test } from 'vitest';
 
 import { newDirectory, temporaryDirectory } from '../_setup/temporary-directory.js';
 
-const BUILT_FROM = resolve(import.meta.dirname, '../../..');
-
 // oxlint loads every `oxlint.config.*` under the project, even one its `ignorePatterns` excludes, so a
-// config that cannot load is built in a temp directory. No oxlint run today exits 1 with no diagnostic, so
-// the judge is run directly on that report shape.
+// config that cannot load is built in a temp directory.
 
 const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
-const CHECKER = join(BUILT_FROM, 'dist/checker.js');
 
 const project = newDirectory('spec-oxlint-config-');
 
@@ -61,7 +57,7 @@ describe('oxlint-config-unparsed', () => {
         );
     });
 
-    test('fails the oxlint pass when the linter hands back no JSON report to judge', () => {
+    test("fails the oxlint pass when oxlint lints nothing, in oxlint's own words", () => {
         // Given - a project whose oxlint config ignores the one source file it has, so oxlint lints nothing
         const directory = projectOf({
             '.oxlintrc.json': '{ "ignorePatterns": ["index.ts"] }\n',
@@ -79,29 +75,8 @@ describe('oxlint-config-unparsed', () => {
             result.stdout.indexOf('Oxfmt Check'),
         );
 
-        // Then - the judge says it had no report to read, and the pass fails
-        expect(lint).toMatch(/oxlint wrote no JSON report at \S+ — the baseline cannot be read/u);
+        // Then - oxlint says it found nothing to lint, and its exit fails the pass
+        expect(lint).toContain('No files found to lint');
         expect(lint).toContain('Failed with exit code 1');
-    });
-
-    test('refuses a failing linter exit that no diagnostic explains', () => {
-        // Given - an empty report beside a linter that exited 2
-        const directory = projectOf({ 'lint.json': '{ "diagnostics": [] }\n' });
-
-        // When - the ratchet judges that run
-        const result = spawnSync(
-            'node',
-            [CHECKER, 'baseline', 'lint.json', '.', '--linter-exit', '2'],
-            {
-                cwd: directory,
-                encoding: 'utf8',
-            },
-        );
-
-        // Then - nothing is forgiven: the judge names the exit and fails
-        expect(result.stdout).toBe(
-            'oxlint exited 2 with no diagnostic — its own output says why\n',
-        );
-        expect(result.status).toBe(1);
     });
 });

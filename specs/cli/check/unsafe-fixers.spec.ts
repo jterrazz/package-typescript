@@ -25,6 +25,19 @@ describe('unsafe-fixers', () => {
         expect(fixed.file('index.ts').content).toContain('take(undefined)');
     });
 
+    test('keeps a recorded diagnostic of an unsafe fixer held across fix, though the wrapper disarms its rule', async () => {
+        // Given - the same project, its one diagnostic recorded in oxlint-suppressions.json
+        // When - the fix runs
+        const fixed = await caseOf('armed-held').exec('fix');
+
+        // Then - oxlint's rewrite of the file under the wrapper is undone, so the debt stays held and fix is green
+        expect(fixed.exitCode).toBe(0);
+        const held: unknown = JSON.parse(fixed.file('oxlint-suppressions.json').content);
+        expect(held).toStrictEqual({
+            'index.ts': { 'unicorn/no-useless-undefined': { count: 1 } },
+        });
+    });
+
     test('still names the rule the fix left, in check, because the answer is a human', async () => {
         // Given - the same project
         // When - the checks run

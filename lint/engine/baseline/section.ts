@@ -150,16 +150,6 @@ export function reRecord(
     return { lines, section: next };
 }
 
-export function heldSummary(counts: Counts): string {
-    const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
-    const rules = Object.keys(counts).length;
-    if (rules === 0) {
-        return `${LABEL}: nothing held`;
-    }
-
-    return `${LABEL}: ${String(total)} held across ${String(rules)} rule${rules === 1 ? '' : 's'}`;
-}
-
 // The formatter owns the indent of a file it formatted, so a rewrite keeps the file's own.
 export function serialise(counts: Counts, indent = '  '): string {
     const sorted = Object.fromEntries(

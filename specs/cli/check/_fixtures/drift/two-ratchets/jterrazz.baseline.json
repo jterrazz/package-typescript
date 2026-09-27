@@ -1,8 +1,3 @@
 {
-    "typescript": {
-        "eslint/no-debugger": 7
-    },
-    "test": {
-        "jterrazz/runner-in-specification-file": 3
-    }
+    "test": {}
 }

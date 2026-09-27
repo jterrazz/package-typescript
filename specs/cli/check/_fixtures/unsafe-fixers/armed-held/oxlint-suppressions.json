@@ -1,0 +1,7 @@
+{
+    "index.ts": {
+        "unicorn/no-useless-undefined": {
+            "count": 1
+        }
+    }
+}

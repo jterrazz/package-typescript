@@ -48,6 +48,7 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         0
+            oxlint-suppressions.json             nothing held
             jterrazz.baseline.json › typescript  1
             tool versions                        in range
 

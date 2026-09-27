@@ -48,6 +48,7 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         0
+            oxlint-suppressions.json             nothing held
             jterrazz.baseline.json › typescript  nothing held
             tool versions                        in range
 
@@ -57,9 +58,9 @@ runs:
     - command: baseline
       exit: 0
       stdout: |4
-           TYPESCRIPT  Recording the oxlint baseline...
+           TYPESCRIPT  Recording the baseline...
 
-          jterrazz.baseline.json › typescript written — 2 diagnostic(s) across 1 rule(s)
+          jterrazz.baseline.json › typescript written — 2 finding(s) across 1 rule(s)
       files:
           jterrazz.baseline.json:
               equals: |
@@ -79,7 +80,6 @@ runs:
 
            RUN  Oxlint Check
 
-          jterrazz.baseline.json › typescript: 2 held across 1 rule
           ✓ Passed
 
            RUN  Oxfmt Check
@@ -115,6 +115,7 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         0
+            oxlint-suppressions.json             nothing held
             jterrazz.baseline.json › typescript  2
             tool versions                        in range
 

@@ -20,7 +20,6 @@ describe('resolution', () => {
 
              RUN  Oxlint Check
 
-            jterrazz.baseline.json › typescript: nothing held
             ✓ Passed
 
              RUN  Oxfmt Check
@@ -56,6 +55,7 @@ describe('resolution', () => {
               profile                              node (the default — no config of its own)
               rules off vs profile                 none
               suppressions                         0
+              oxlint-suppressions.json             nothing held
               jterrazz.baseline.json › typescript  nothing held
               tool versions                        tsc (Go) absent, typescript absent, oxlint absent, oxfmt absent, oxlint-tsgolint absent, knip absent, dependency-cruiser absent, ls-lint absent, rumdl absent
 

@@ -90,9 +90,9 @@ The binary is resolved from that same install, not from a name on `PATH` or a `n
 
 The pass's verdict is the checker's exit code, and nothing here forgives it: `@jterrazz/test` records its own debt and judges it, in its own section of the ratchet file ([the ratchet](#the-ratchet)).
 
-A green pass says one thing about that section: the held line of the run over the project root, `jterrazz.baseline.json › test: <n> held across <k> rules` — or `jterrazz.baseline.json › test: nothing held` for a project keeping no `test` section — the shapes the Oxlint pass gives its own. `@jterrazz/test` 17 prints that line bare on every green ratchet run, so the pass passes no flag to ask for it; a line in any other shape is left out rather than echoed as a second shape.
+A green pass says one thing about that section: the held line of the run over the project root, `jterrazz.baseline.json › test: <n> held across <k> rules` — or `jterrazz.baseline.json › test: nothing held` for a project keeping no `test` section. `@jterrazz/test` 17 prints that line bare on every green ratchet run, so the pass passes no flag to ask for it; a line in any other shape is left out rather than echoed as a second shape.
 
-The member runs judge the `jterrazz(*)` diagnostics the oxlint pass sets aside, and they read them off that pass's own report: `check` writes oxlint's JSON report once and hands it to every member run with `--oxlint-report <path>`, starting those runs once the report is complete. The checker prints a count of those diagnostics, not the diagnostics: where a run fails on them, the Oxlint pass prints each one ([one run, and the log drawn from it](#one-run-and-the-log-drawn-from-it)). A tree run reads no oxlint diagnostic and is handed nothing. A checker started by hand, with no report, runs oxlint itself — so `check` never lints the project a second time for the checker.
+The checker judges its own passes and nothing of oxlint's: the plugin's `jterrazz(*)` diagnostics are oxlint rules, printed by the Oxlint pass and held in `oxlint-suppressions.json` ([the ratchet](#the-ratchet)). So the member runs start beside the linter rather than after it, and no run of the checker lints the project.
 
 ## The Docs (layout) pass
 
@@ -173,17 +173,13 @@ A project that keeps an oxlint config at its root — `oxlint.config.ts`, `.mts`
 
 A config handed by path resolves its `ignorePatterns` against its own directory, which is this package's. So the sweep leaves out what the default's patterns name instead, and a project with no config is spared the same folders as one whose config composes the profile.
 
-### One run, and the log drawn from it
+### One run, printed as oxlint prints it
 
-`check` runs the type-aware linter once, for its JSON report, and every reader of the pass reads that one report: the ratchet judges it rule by rule, the conventions checker's member runs take it instead of linting the project again, and a failing pass prints it. The type-aware run is the costliest process of a check — a JS plugin's rules run on one thread, and tsgolint builds the whole program — so a second run for a second format would double the pass for nothing it can say.
+`check` runs the type-aware linter once, and what a failing pass prints is oxlint's own output, in the form oxlint picks for the environment: one line per diagnostic under an AI agent, GitHub workflow commands on a GitHub runner, the framed report anywhere else, in colour where `CI` or `FORCE_COLOR` asks for it. The toolchain draws nothing of its own: the type-aware run is the costliest process of a check, and a second run, or a renderer re-drawing a JSON report, would only repeat what oxlint already says. The run's verdict is oxlint's exit code, the suppressions file included ([the ratchet](#the-ratchet)); the pass adds a line only where oxlint's own words would send a reader astray — a config it could not load, or a help naming a bare `oxlint --suppress-all`.
 
-The report is printed on one more condition: the pass PASSED and the Test Conventions pass failed. The checker judges the `jterrazz(*)` diagnostics off this same report and prints only a count of them, so this pass is their one printer — each diagnostic once across the run, above the pass's own verdict, which stays its own. A report holding no diagnostic prints nothing there.
+`@jterrazz/test`'s conventions checker judges its own passes and reads no oxlint report: the plugin's `jterrazz(*)` rules are oxlint rules like any other, printed and held here.
 
-What a failing pass prints is still oxlint's own report, drawn from the JSON in the form oxlint picks for the environment: one line per diagnostic under an AI agent, GitHub workflow commands on a GitHub runner, and the framed report anywhere else, in colour where `CI` or `FORCE_COLOR` asks for it. The form is never guessed: the same binary, in the same environment, lints a one-line file, and its answer names the form. Whatever oxlint printed before its report — `No files found to lint`, or a config it could not parse and the report that never came — is printed as it came, then its standard error.
-
-One thing the JSON report does not carry: which label a rule marks as its primary one. A framed diagnostic with several labels therefore names its first label's line and column in the frame's header, where oxlint would name the primary label's.
-
-`fix` keeps its own two runs: the fixer, whose log is what it rewrote, then the JSON run the ratchet judges, made after it because the bytes have changed.
+`fix` runs the fixers — one wrapped run per config scope, [below](#a-nested-config-fixes-its-own-subtree) — then prunes the suppressions file, then makes the same run `check` makes, whose output and exit are the pass's: so `fix` and `check` read the same verdict on the tree the fixers left. The fixers' own output is printed only when one of them could not run.
 
 ### The two refusals that are not diagnostics
 
@@ -225,9 +221,11 @@ The switch is a wrapper config around the one the linter runs with — the proje
 
 That wrapper also stops the run reporting UNUSED DIRECTIVES. Every profile ships `reportUnusedDisableDirectives`, and a run that has just turned twelve rules off cannot judge a directive naming one of them — the rule is off for that run alone, and the directive would be called dead on evidence the wrapper itself created. An unused directive is reported by the check-shaped run made after the fixer, where the consumer's own rules are armed again, and by `check`.
 
+For the same reason the wrapped runs never keep what they write to `oxlint-suppressions.json`. oxlint rewrites that file on every `--fix` run, dropping each entry whose rule the run did not report — and a wrapped run has twelve rules off. The pass puts the file back as it was after the fixers, and the prune that follows reads it with every rule armed. `@jterrazz/test`'s own fixes, whose wrapper arms the plugin alone, do the same.
+
 ### A wrapper fix mode cannot write
 
-Where the wrapper cannot be written — a directory beside the config the run may not write to — no oxlint fix runs at all. The pass prints a four-part refusal naming the write that failed and fails, rather than reading a fix that never ran as a green one — the baseline judge's verdict never speaks over it — and removes every wrapper it had already written beside another config.
+Where the wrapper cannot be written — a directory beside the config the run may not write to — no oxlint fix runs at all. The pass prints a four-part refusal naming the write that failed and fails, rather than reading a fix that never ran as a green one, and removes every wrapper it had already written beside another config.
 
 ### A nested config fixes its own subtree
 
@@ -239,9 +237,9 @@ A project with no config of its own is one scope. `check` hands the default with
 
 ### A warning is a diagnostic
 
-oxlint leaves its exit code at 0 for a warn-severity diagnostic, and a pass that passed prints no log — so `check` was silent on a tree `fix` failed, and the ratchet an adoption reaches for could not be reached through `check` at all. The check run passes `--deny-warnings`: every diagnostic the linter reports is printed and judged, whatever severity armed it.
+oxlint leaves its exit code at 0 for a warn-severity diagnostic, and a pass that passed prints no log — so `check` would be silent on a tree `fix` failed. The run passes `--deny-warnings`: every diagnostic the linter reports is printed and judged, whatever severity armed it.
 
-The rulebook this package ships has no warn tier — a rule is on at `error` or off with a recorded reason — but a JS plugin composed beside it may have one, and `@jterrazz/test` does: a rule its catalogue marks `severity: 'warn'` — `no-redundant-root`, for one — ships at `warn` on purpose. A heuristic nobody is shown is a heuristic nobody answers.
+There is no warn tier, in this rulebook or in `@jterrazz/test`'s: a rule is on at `error`, its debt held by the ratchet, or off with a recorded reason. oxlint's suppressions hold errors alone, so a warning is a diagnostic nothing can hold down — a JS plugin composed beside the rulebook that still ships one fails the pass on it, and its fix is to promote the rule.
 
 ### The two rewriters run in order
 
@@ -253,34 +251,24 @@ The formatter is handed the same sweep, whole rather than cut to the shapes a li
 
 ## The ratchet
 
-A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. `jterrazz.baseline.json` is the second — one tracked file at the project root for the whole family, one section per package, `{ "typescript": { "<rule>": <count> }, "test": { … } }` — and the oxlint pass is judged by its `typescript` section rather than by oxlint's exit code. Without that section every diagnostic this package owns fails the pass — and the pass still names the rule it belongs to and the gesture that records it, so a project meets the ratchet on its first red run rather than after reading this page.
+A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. The toolchain takes the second, and the lint debt is oxlint's own to hold: `oxlint-suppressions.json`, one tracked file at the project root, counts every recorded diagnostic file by file and rule by rule, and oxlint reads it on every run. A file's count held exactly is suppressed; one past it fails the run, with each of that rule's diagnostics in the file listed; an entry the tree has paid down fails it too — the count is exact both ways, so the file shrinks the day the debt falls, and no slack is left for new debt to grow back into.
 
-The section is EXACT: an entry states where the project stands, never a ceiling. Four things fail a run that has one, all under `baseline-ratchet`:
-
-- a rule whose count **exceeds** its entry — the debt grew;
-- a rule with diagnostics and **no entry** — a rule nobody recorded owing;
-- a rule whose count is **below** its entry — the debt fell, so the entry is re-recorded;
-- an entry whose count is now **zero** — the ratchet moved, so the entry goes.
-
-The two falls are what make the section shrink. Without them a baseline records a debt that was paid a year ago and nothing ever says so, and the slack a fallen entry leaves lets new debt grow back into it unseen.
-
-A run the section holds says so once, whole, and never finding by finding. The Oxlint pass prints one line for it, the shape `@jterrazz/test`'s checker gives its own section:
+oxlint's help names `oxlint --suppress-all` and `oxlint --prune-suppressions`, which would lint with another config, without types, and a bare tree. The pass adds the toolchain's word after oxlint's:
 
 ```text
-jterrazz.baseline.json › typescript: 2 held across 2 rules
+found: a diagnostic oxlint-suppressions.json does not hold — each one is listed above · why: … · fix: fix it, or run 'typescript baseline' to record where the project stands — never a bare `oxlint --suppress-all`, which lints with another config · read: docs/06-quality-checks.md#the-ratchet
+found: oxlint-suppressions.json holds more than the project has left · why: … · fix: run 'typescript fix', which prunes the file · read: docs/06-quality-checks.md#the-ratchet
 ```
 
-The count is every finding the section holds today — the linter's and the Names pass's alike — and the rules are the entries still carrying one; the section being exact, both are what the file records, and what the drift report prints. A section holding no entry reads `jterrazz.baseline.json › typescript: nothing held`, and so does a project keeping no `typescript` section, or no file at all — the one phrase `@jterrazz/test` prints for a project keeping no `test` section. The line prints only on `check`, and only when both of the section's judges hold; a broken side prints its evidence in its own pass instead, and the line stays away. So it does when the Names pass dies before it reports: a side nobody could read holds nothing the line may claim, and that pass prints why.
+The flags that write the file are not in oxlint's `--help` yet; the toolchain pins oxlint to one exact version, and its specs run each one.
 
-### One owner per entry
+### What `jterrazz.baseline.json` still holds
 
-The ratchet splits by owner, and each package's command writes its own section of the one file. The `typescript` section holds oxlint's own rules, the Names (tree) pass's `names/*` entries ([its section](#the-names-tree-pass)) and the Comments (density) pass's `comments/comment-lines-held-by-the-baseline` ([its section](#the-comments-density-pass)). Every `jterrazz(*)` rule and every conventions-checker finding is the `test` section's, in the same shape, which `@jterrazz/test` writes and judges. `typescript baseline` rewrites its own section and leaves every other byte of the file as it was.
+`jterrazz.baseline.json` holds what no linter judges — one section per package, `{ "typescript": { … }, "test": { … } }`. The `typescript` section holds the Names (tree) pass's `names/*` entries ([its section](#the-names-tree-pass)) and the Comments (density) pass's `comments/comment-lines-held-by-the-baseline` ([its section](#the-comments-density-pass)), each judged by its own pass, exactly, with the same four refusals: a count above its entry, a rule with findings and no entry, a count below its entry, an entry at zero. The `test` section is `@jterrazz/test`'s checker passes, which that package writes and judges.
 
-One oxlint run carries both packages' rules, because a consumer composes `@jterrazz/test`'s `testing` fragment into its config. One filter on the plugin name keeps any finding from being counted twice: a diagnostic whose code is `jterrazz(<rule>)` is set aside before this package counts, and the oxlint pass is green when those are all the linter reported. An entry under `jterrazz/` or `jterrazz-check/` in the `typescript` section is refused as misplaced, naming `jterrazz.baseline.json › test` — a finding lives in one section and answers to one judge.
+An oxlint rule left in the `typescript` section — one recorded before oxlint held its own — is refused in the Oxlint pass under `baseline-moved-to-oxlint`, in four parts, naming `typescript baseline`, which records it in `oxlint-suppressions.json` and drops the entry. `baseline-unreadable` refuses a `jterrazz.baseline.json` that is not JSON, or that holds a top-level key whose value is not a section of counts.
 
-The judge is told oxlint's exit code, so the split never forgives a failure no diagnostic carries: a linter that exits non-zero with an empty report failed on something else (a config it could not load), and the pass stays red. Severity is never read — a finding a release ships at `warn` is exactly the debt a ratchet exists to hold down.
-
-`fix` is judged by the same section as `check`, on the diagnostics that SURVIVED its rewrite — so the pair reads the same verdict on the same tree. Before it judges, `fix` re-records what FELL: an entry whose count is below it is lowered to that count, and one at zero is dropped, each named in its pass — `re-recorded jterrazz.baseline.json › typescript › <rule> <was> → <now>`, the linter's entries under the Oxlint pass, the `names/*` ones under the Names pass and `comments/comment-lines-held-by-the-baseline` under the Comments pass. It never raises an entry nor adds a key: debt that grew is written only by `typescript baseline`, by hand. Judging only `check` made `fix` print a raw failure on every project carrying a baseline, and `make fix && make check` read red then green. The pair reads the same tree where there is NO section either: both count the diagnostics, both print the same lines, and neither reads severity.
+`fix` lowers what FELL and never records what grew: it prunes `oxlint-suppressions.json` — the file goes when nothing is left in it — and the Names and Comments passes re-record their own falls, each named in its pass (`re-recorded jterrazz.baseline.json › typescript › <rule> <was> → <now>`). Debt that grew is written only by `typescript baseline`, by hand.
 
 ### Recording it
 
@@ -288,11 +276,9 @@ The judge is told oxlint's exit code, so the split never forgives a failure no d
 typescript baseline
 ```
 
-A command of its own, because it neither checks nor repairs: it writes down where the project actually stands, debt that grew included. `fix --baseline` would bury that rewrite inside the gesture a developer runs twenty times a day; `fix` records only the falls, which can make the file shrink and never let it grow. The `typescript` section is written from the current counts of this package's rules, then the file is handed to the project's own oxfmt — it is tracked like any other file, so the formatter owns its shape. The `test` section is recorded by `@jterrazz/test`'s own command, never by this one, and a file this command cannot read as sections is refused rather than rewritten. So is a run whose Names (tree) or Comments (density) pass wrote no report: that side of the section is unknown, and writing it would erase that debt rather than record it — `typescript check` prints why the pass died.
+A command of its own, because it neither checks nor repairs: it writes down where the project actually stands, debt that grew included. `fix --baseline` would bury that rewrite inside the gesture a developer runs twenty times a day; `fix` records only the falls, which can make the files shrink and never let them grow. It records the lint debt with oxlint — `--suppress-all`, then `--prune-suppressions`, with the config and the sweep `check` lints by, types included — and writes the `typescript` section from the Names and Comments passes, then hands both files to the project's own oxfmt: they are tracked like any other file, so the formatter owns their shape. The `test` section is recorded by `@jterrazz/test`'s own command, never by this one. A file this command cannot read as sections is refused rather than rewritten; so is a run whose Names (tree) or Comments (density) pass wrote no report: that side of the section is unknown, and writing it would erase that debt rather than record it — `typescript check` prints why the pass died. A sweep that refused an answer records no lint debt either, rather than recording the directory.
 
-One more refusal keeps the file honest, in the Oxlint pass: `baseline-unreadable` — a `jterrazz.baseline.json` that is not JSON, or that holds a top-level key whose value is not a section of counts.
-
-This repository's `typescript` section holds two entries. `eslint/max-lines`: the size caps turned on in 11.0.0 found nine files past 300 lines in its own source, splitting each is a change of its own, and the entry holds the files still past the cap so no new one arrives. `comments/comment-lines-held-by-the-baseline` is the comment debt the comment guards found on the day they arrived, burned down file by file. Turning type-aware linting on had found seven diagnostics, and those were fixed rather than recorded. The toolchain is consumer #1 of the rulebook it ships, so its own tree carries only the debt a new rule found, and only until it is paid.
+This repository's own debt is small and dated. `oxlint-suppressions.json` holds `max-lines` on the files the size caps of 11.0.0 found past 300 lines — splitting each is a change of its own — and the `@jterrazz/test` rules its specs still owe; the `typescript` section holds `comments/comment-lines-held-by-the-baseline`, the comment debt the comment guards found on the day they arrived, burned down file by file. The toolchain is consumer #1 of the rulebook it ships, so its own tree carries only the debt a new rule found, and only until it is paid.
 
 ## The Publish (packaging) pass
 

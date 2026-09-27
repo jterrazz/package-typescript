@@ -1,6 +1,5 @@
 {
     "typescript": {
-        "eslint/no-debugger": 1,
         "names/no-language-construct-name": 1
     }
 }

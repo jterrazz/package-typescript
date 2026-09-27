@@ -1,13 +1,16 @@
-import { appendFileSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { appendFileSync } from 'node:fs';
 
-import { messageOf, refusal } from '../../../lint/engine/catalogue/lesson.js';
-import { oxlintReport } from '../report/report.js';
+import { refusal } from '../../../lint/engine/catalogue/lesson.js';
 import { isModulePackage } from './project.js';
 import type { Check } from './setup.js';
 
 export type LintVerdict = { log: string; status: number; writes: boolean };
 
 const UNPARSED = 'Failed to parse oxlint configuration file';
+
+const NEW_VIOLATIONS = 'There are new violations not covered by the suppressions file';
+
+const FALLEN = 'There are suppressions that do not occur anymore';
 
 function commonjsConfig(own: string | undefined): string | undefined {
     if (own?.endsWith('.cjs') === true || (own?.endsWith('.js') === true && !isModulePackage())) {
@@ -17,16 +20,15 @@ function commonjsConfig(own: string | undefined): string | undefined {
     return undefined;
 }
 
-function lintRefusals(check: Check): string {
+function configRefusals(check: Check, printed: string): string[] {
     const { own } = check.configs.oxlint;
-    const unparsed = ['lint.log', 'lint.json'].some((name) =>
-        check.logs.read(check.logs.at(name)).includes(UNPARSED),
-    );
     const commonjs = commonjsConfig(own);
 
+    const wrapper = check.logs.read(check.logs.at('fix-wrapper.log'));
+
     return [
-        check.logs.read(check.logs.at('fix-wrapper.log')),
-        ...(unparsed
+        ...(wrapper === '' ? [] : [wrapper]),
+        ...(printed.includes(UNPARSED)
             ? [
                   `oxlint-config-unparsed  ${own ?? ''}  ${refusal({
                       fix: 'repair what oxlint names above — usually a `jsPlugins` entry naming a module that is not there',
@@ -46,66 +48,43 @@ function lintRefusals(check: Check): string {
                       why: 'oxlint drops a config it cannot load and exits 0, so the run enforces no rule the config names',
                   })}\n`,
               ]),
-    ].join('');
+    ];
 }
 
-function drawn(check: Check, ifDiagnostics: boolean): { failed: boolean; shown: string } {
-    try {
-        return {
-            failed: false,
-            shown: oxlintReport({
-                ifDiagnostics,
-                oxlint: check.tools.oxlint,
-                stderrFile: check.logs.at('lint.err'),
-                stdoutFile: check.logs.at('lint.json'),
-            }),
-        };
-    } catch (error) {
-        return { failed: true, shown: `${messageOf(error)}\n` };
-    }
+// oxlint's own help names a bare `oxlint --suppress-all`, which would lint with another config and without types.
+function ratchetLessons(printed: string): string[] {
+    return [
+        ...(printed.includes(NEW_VIOLATIONS)
+            ? [
+                  `${refusal({
+                      fix: "fix it, or run 'typescript baseline' to record where the project stands — never a bare `oxlint --suppress-all`, which lints with another config",
+                      found: 'a diagnostic oxlint-suppressions.json does not hold — each one is listed above',
+                      read: 'docs/06-quality-checks.md#the-ratchet',
+                      why: 'the file holds the debt the project recorded, file by file, and a diagnostic beyond it is a regression',
+                  })}\n`,
+              ]
+            : []),
+        ...(printed.includes(FALLEN)
+            ? [
+                  `${refusal({
+                      fix: "run 'typescript fix', which prunes the file",
+                      found: 'oxlint-suppressions.json holds more than the project has left',
+                      read: 'docs/06-quality-checks.md#the-ratchet',
+                      why: 'the count is exact, so a debt that fell is recorded the day it falls',
+                  })}\n`,
+              ]
+            : []),
+    ];
 }
 
-function withCheckerDiagnostics(check: Check, verdict: LintVerdict): LintVerdict {
-    const { failed, shown } = drawn(check, true);
-    if (shown === '') {
-        return verdict;
-    }
-    const log = check.logs.at('lint-drawn.log');
-    writeFileSync(log, shown);
-    if (verdict.writes) {
-        appendFileSync(log, readFileSync(verdict.log));
+export function lintVerdict(check: Check, linted: number): LintVerdict {
+    const log = check.logs.at('lint.log');
+    const printed = check.logs.read(log);
+    const refusals = configRefusals(check, printed);
+    const lessons = ratchetLessons(printed);
+    for (const line of [...refusals, ...lessons]) {
+        appendFileSync(log, line);
     }
 
-    return { log, status: failed ? 1 : verdict.status, writes: true };
-}
-
-export function lintVerdict(
-    check: Check,
-    {
-        checkerStatus,
-        held,
-        status: linted,
-    }: { checkerStatus: number; held: boolean; status: number },
-): LintVerdict {
-    const lintLog = check.logs.at('lint.log');
-    const baselineLog = check.logs.at('baseline.log');
-    const refusals = lintRefusals(check);
-    const status = refusals === '' ? linted : 1;
-    if (refusals !== '') {
-        appendFileSync(lintLog, refusals);
-    }
-    if (!check.fix && status !== 0) {
-        const shown = check.logs.at('lint-shown.log');
-        writeFileSync(shown, drawn(check, false).shown);
-        appendFileSync(shown, readFileSync(lintLog));
-        renameSync(shown, lintLog);
-    }
-    const speaksBaseline = status === 0 && (held || (check.fix && check.logs.holds(baselineLog)));
-    const verdict = speaksBaseline
-        ? { log: baselineLog, status, writes: true }
-        : { log: lintLog, status, writes: false };
-
-    return !check.fix && status === 0 && checkerStatus !== 0
-        ? withCheckerDiagnostics(check, verdict)
-        : verdict;
+    return { log, status: refusals.length > 0 ? 1 : linted, writes: false };
 }

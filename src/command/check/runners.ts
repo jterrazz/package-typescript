@@ -1,25 +1,17 @@
 import { writeFileSync } from 'node:fs';
 
 import { run } from '../processes.js';
-import type { Stream } from '../processes.js';
-import { EMPTY_REPORT } from '../report/diagnostic.js';
 import type { Check } from './setup.js';
 
-export async function oxlintJson(
-    check: Check,
-    args: readonly string[],
-    { report, stderr }: { report: string; stderr: Stream },
-): Promise<number> {
+export async function oxlint(check: Check, args: readonly string[], log: string): Promise<number> {
     if (check.lintTargets.nothing) {
-        writeFileSync(report, EMPTY_REPORT);
-
         return 0;
     }
 
     return await run(
         check.tools.oxlint,
-        [...check.configs.oxlint.args, ...args, '--format', 'json', ...check.lintTargets.paths],
-        { stderr, stdout: { path: report } },
+        [...check.configs.oxlint.args, ...args, ...check.lintTargets.paths],
+        { stderr: 'stdout', stdout: { append: true, path: log } },
     );
 }
 

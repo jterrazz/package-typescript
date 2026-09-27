@@ -12,10 +12,8 @@ runs:
 
            RUN  Oxlint Check
           {{any}}
-          baseline-ratchet  jterrazz.baseline.json › typescript  eslint/no-debugger is at 2, above its baseline of 1
-          baseline-ratchet  jterrazz.baseline.json › typescript  eslint/no-unused-vars has 1 diagnostic(s) and no entry — it is new debt
-          baseline-ratchet  jterrazz.baseline.json › typescript  eslint/no-var is at zero — the ratchet moved, delete its entry
-          Run 'typescript baseline' to record where the project actually stands.
+          found: a diagnostic oxlint-suppressions.json does not hold — each one is listed above · why: the file holds the debt the project recorded, file by file, and a diagnostic beyond it is a regression · fix: fix it, or run 'typescript baseline' to record where the project stands — never a bare `oxlint --suppress-all`, which lints with another config · read: docs/06-quality-checks.md#the-ratchet
+          found: oxlint-suppressions.json holds more than the project has left · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/06-quality-checks.md#the-ratchet
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
@@ -51,7 +49,8 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         0
-            jterrazz.baseline.json › typescript  4
+            oxlint-suppressions.json             4
+            jterrazz.baseline.json › typescript  nothing held
             tool versions                        in range
 
            END  Finalizing quality checks

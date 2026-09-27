@@ -12,7 +12,6 @@ runs:
 
            RUN  Oxlint Check
 
-          jterrazz.baseline.json › typescript: 2 held across 2 rules
           ✓ Passed
 
            RUN  Oxfmt Check
@@ -48,7 +47,8 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         0
-            jterrazz.baseline.json › typescript  2
+            oxlint-suppressions.json             1
+            jterrazz.baseline.json › typescript  1
             tool versions                        in range
 
            END  Finalizing quality checks

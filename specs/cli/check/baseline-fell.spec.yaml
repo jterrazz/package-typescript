@@ -12,8 +12,7 @@ runs:
 
            RUN  Oxlint Check
           {{any}}
-          baseline-ratchet  jterrazz.baseline.json › typescript  eslint/no-debugger is at 1, below its baseline of 2 — the debt fell, `typescript fix` re-records it
-          Run 'typescript baseline' to record where the project actually stands.
+          found: oxlint-suppressions.json holds more than the project has left · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/06-quality-checks.md#the-ratchet
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
@@ -52,8 +51,9 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         0
-            jterrazz.baseline.json › typescript  4
-            jterrazz.baseline.json › test        3
+            oxlint-suppressions.json             2
+            jterrazz.baseline.json › typescript  2
+            jterrazz.baseline.json › test        nothing held
             tool versions                        in range
 
            END  Finalizing quality checks
@@ -70,7 +70,6 @@ runs:
 
            RUN  Oxlint Fix
 
-          re-recorded jterrazz.baseline.json › typescript › eslint/no-debugger 2 → 1
           ✓ Passed
 
            RUN  Oxfmt Format
@@ -103,11 +102,17 @@ runs:
               equals: |
                   {
                       "typescript": {
-                          "eslint/no-debugger": 1,
                           "names/no-language-construct-name": 1
                       },
-                      "test": {
-                          "jterrazz/some-rule": 3
+                      "test": {}
+                  }
+          oxlint-suppressions.json:
+              equals: |
+                  {
+                      "index.ts": {
+                          "no-debugger": {
+                              "count": 1
+                          }
                       }
                   }
     - command: check
@@ -121,7 +126,6 @@ runs:
 
            RUN  Oxlint Check
 
-          jterrazz.baseline.json › typescript: 2 held across 2 rules
           ✓ Passed
 
            RUN  Oxfmt Check
@@ -157,8 +161,9 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         0
-            jterrazz.baseline.json › typescript  2
-            jterrazz.baseline.json › test        3
+            oxlint-suppressions.json             1
+            jterrazz.baseline.json › typescript  1
+            jterrazz.baseline.json › test        nothing held
             tool versions                        in range
 
            END  Finalizing quality checks

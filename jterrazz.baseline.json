@@ -1,12 +1,8 @@
 {
     "typescript": {
-        "comments/comment-lines-held-by-the-baseline": 365,
-        "eslint/max-lines": 4,
-        "typescript/no-unsafe-type-assertion": 2
+        "comments/comment-lines-held-by-the-baseline": 338
     },
     "test": {
-        "jterrazz-check/facet-test-uses-its-runner": 22,
-        "jterrazz/given-in-the-test": 8,
-        "jterrazz/no-probe-cluster": 6
+        "jterrazz-check/facet-test-uses-its-runner": 22
     }
 }

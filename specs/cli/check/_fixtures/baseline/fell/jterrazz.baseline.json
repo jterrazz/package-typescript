@@ -1,9 +1,6 @@
 {
     "typescript": {
-        "eslint/no-debugger": 2,
         "names/no-language-construct-name": 2
     },
-    "test": {
-        "jterrazz/some-rule": 3
-    }
+    "test": {}
 }

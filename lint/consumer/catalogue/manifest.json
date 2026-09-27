@@ -91,14 +91,6 @@
         "audience": "consumer",
         "by": "throw",
         "channel": "runtime",
-        "id": "oxlint-report-misshapen",
-        "message": "oxlint's JSON report is not the shape this reader draws",
-        "module": "src/command/report/diagnostic.ts"
-    },
-    {
-        "audience": "consumer",
-        "by": "throw",
-        "channel": "runtime",
         "id": "fix-wrapper-unwritten",
         "message": "the fix wrapper could not be written",
         "module": "src/command/check/tool-passes.ts"

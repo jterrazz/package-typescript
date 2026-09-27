@@ -64,10 +64,7 @@ function timeless(text: string): string {
 function oxlintPassOf(stdout: string): string {
     const opened = stdout.slice(stdout.indexOf('Oxlint Check\n\n') + 'Oxlint Check\n\n'.length);
 
-    return opened.slice(
-        0,
-        opened.search(/^\S+\/\S+ {2}\d+ diagnostic\(s\), and the project keeps no baseline$/mu),
-    );
+    return opened.slice(0, opened.lastIndexOf('\n', opened.indexOf('✗ Failed with exit code')) + 1);
 }
 
 describe('oxlint-report', () => {
@@ -92,47 +89,41 @@ describe('oxlint-report', () => {
             marker: '::error file=shapes.ts,',
             name: 'workflow commands, on a GitHub runner',
         },
-    ])(
-        'prints what oxlint prints, drawn from its JSON report — $name',
-        async ({ form, marker }) => {
-            // Given - a project whose one file breaks a rule of every frame shape, and oxlint's own report on it
-            const expected = oxlintAlone(form);
+    ])('prints what oxlint prints, in the form it picks — $name', async ({ form, marker }) => {
+        // Given - a project whose one file breaks a rule of every frame shape, and oxlint's own report on it
+        const expected = oxlintAlone(form);
 
-            // When - the quality checks run there, in the same environment
-            const result = await cli
-                .env({ ...formOnly(form), ...onlyPasses('oxlint') })
-                .fixture(directory('./_fixtures/oxlint-report/'))
-                .exec('check');
+        // When - the quality checks run there, in the same environment
+        const result = await cli
+            .env({ ...formOnly(form), ...onlyPasses('oxlint') })
+            .fixture(directory('./_fixtures/oxlint-report/'))
+            .exec('check');
 
-            // Then - the pass prints oxlint's own report, byte for byte but the run's duration, in the form this environment picks
-            expect(expected).toContain(marker);
-            expect(timeless(oxlintPassOf(result.stdout.raw))).toBe(timeless(expected));
-        },
-    );
+        // Then - the pass prints oxlint's own report, byte for byte but the run's duration, in the form this environment picks
+        expect(expected).toContain(marker);
+        expect(timeless(oxlintPassOf(result.stdout.raw))).toBe(timeless(expected));
+    });
 
     // A JS plugin records every oxlint process loading it in the file `RUNS_LOG` names, and nowhere without one.
     test.each([
         { held: false, name: 'a failing pass with no baseline to judge it' },
         { held: true, name: 'a pass the baseline holds' },
-    ])(
-        'lints the project once, for the report every reader of the pass reads — $name',
-        async ({ held }) => {
-            // Given - a project whose oxlint config loads a plugin that counts the linter runs
-            const project = cli
-                .env({ RUNS_LOG: '$WORKDIR/runs.log' })
-                .fixture(directory('./_fixtures/oxlint-once/project/'));
-            const counted = held
-                ? project.fixture(directory('./_fixtures/oxlint-once/held/'))
-                : project;
+    ])('lints the project once, oxlint judging its own suppressions — $name', async ({ held }) => {
+        // Given - a project whose oxlint config loads a plugin that counts the linter runs
+        const project = cli
+            .env({ RUNS_LOG: '$WORKDIR/runs.log' })
+            .fixture(directory('./_fixtures/oxlint-once/project/'));
+        const counted = held
+            ? project.fixture(directory('./_fixtures/oxlint-once/held/'))
+            : project;
 
-            // When - the quality checks run there
-            const result = await counted.exec('check');
+        // When - the quality checks run there
+        const result = await counted.exec('check');
 
-            // Then - one oxlint process linted the project; the other loads of the config only printed it
-            const runs = result.file('runs.log').content.split('\n');
-            expect(runs.filter((run) => run.includes('--type-aware'))).toStrictEqual([
-                expect.stringContaining('--type-aware --deny-warnings --format json'),
-            ]);
-        },
-    );
+        // Then - one oxlint process linted the project; the other loads of the config only printed it
+        const runs = result.file('runs.log').content.split('\n');
+        expect(runs.filter((run) => run.includes('--type-aware'))).toStrictEqual([
+            expect.stringContaining('--type-aware --deny-warnings'),
+        ]);
+    });
 });

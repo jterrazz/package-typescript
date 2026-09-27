@@ -1,0 +1,83 @@
+{
+    "lint/consumer/checks/docs.test.ts": {
+        "max-lines": {
+            "count": 1
+        }
+    },
+    "lint/consumer/checks/docs.ts": {
+        "max-lines": {
+            "count": 1
+        }
+    },
+    "lint/consumer/checks/gitignore.ts": {
+        "max-lines": {
+            "count": 1
+        }
+    },
+    "lint/consumer/checks/names.ts": {
+        "max-lines": {
+            "count": 1
+        }
+    },
+    "lint/self/corpus/decision-invariants.test.ts": {
+        "typescript/no-unsafe-type-assertion": {
+            "count": 2
+        }
+    },
+    "specs/cli/check/astro.spec.ts": {
+        "jterrazz/given-in-the-test": {
+            "count": 1
+        },
+        "jterrazz/no-probe-cluster": {
+            "count": 1
+        }
+    },
+    "specs/cli/check/checker-member.spec.ts": {
+        "jterrazz/no-probe-cluster": {
+            "count": 2
+        }
+    },
+    "specs/cli/check/committed-artefact.spec.ts": {
+        "jterrazz/given-in-the-test": {
+            "count": 1
+        }
+    },
+    "specs/cli/check/docs-layout.spec.ts": {
+        "jterrazz/given-in-the-test": {
+            "count": 1
+        }
+    },
+    "specs/cli/check/drift.spec.ts": {
+        "jterrazz/given-in-the-test": {
+            "count": 1
+        },
+        "jterrazz/no-probe-cluster": {
+            "count": 1
+        }
+    },
+    "specs/cli/check/formatter.spec.ts": {
+        "jterrazz/given-in-the-test": {
+            "count": 1
+        }
+    },
+    "specs/cli/check/markdown-ignored.spec.ts": {
+        "jterrazz/given-in-the-test": {
+            "count": 1
+        }
+    },
+    "specs/cli/check/oxlint-config-unparsed.spec.ts": {
+        "jterrazz/given-in-the-test": {
+            "count": 1
+        }
+    },
+    "specs/cli/check/secrets.spec.ts": {
+        "jterrazz/given-in-the-test": {
+            "count": 1
+        }
+    },
+    "specs/cli/doctor/browser-pin.spec.ts": {
+        "jterrazz/no-probe-cluster": {
+            "count": 2
+        }
+    }
+}

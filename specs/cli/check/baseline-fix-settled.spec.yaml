@@ -1,4 +1,4 @@
-description: drops the entry a fix run finds at zero, on a tree that owes nothing
+description: removes the suppressions file a fix run prunes to nothing, on a tree that owes nothing
 fixture: ./_fixtures/baseline/settled/
 runs:
     - command: fix
@@ -12,7 +12,6 @@ runs:
 
            RUN  Oxlint Fix
 
-          re-recorded jterrazz.baseline.json › typescript › eslint/no-debugger 2 → 0
           ✓ Passed
 
            RUN  Oxfmt Format
@@ -39,11 +38,7 @@ runs:
 
           ✓ All checks passed
       files:
-          jterrazz.baseline.json:
-              equals: |
-                  {
-                      "typescript": {}
-                  }
+          oxlint-suppressions.json: absent
     - command: check
       exit: 0
       stdout: |4
@@ -55,7 +50,6 @@ runs:
 
            RUN  Oxlint Check
 
-          jterrazz.baseline.json › typescript: nothing held
           ✓ Passed
 
            RUN  Oxfmt Check
@@ -91,6 +85,7 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         0
+            oxlint-suppressions.json             nothing held
             jterrazz.baseline.json › typescript  nothing held
             tool versions                        in range
 

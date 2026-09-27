@@ -48,6 +48,7 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         0
+            oxlint-suppressions.json             nothing held
             jterrazz.baseline.json › typescript  unreadable
             tool versions                        in range
 
@@ -57,6 +58,6 @@ runs:
     - command: baseline
       exit: 1
       stdout: |4
-           TYPESCRIPT  Recording the oxlint baseline...
+           TYPESCRIPT  Recording the baseline...
 
           jterrazz.baseline.json keys `eslint/no-debugger` to something that is not a section of counts — the typescript section cannot be written beside the others

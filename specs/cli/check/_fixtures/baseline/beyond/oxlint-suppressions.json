@@ -1,0 +1,10 @@
+{
+    "index.ts": {
+        "no-debugger": {
+            "count": 1
+        },
+        "no-var": {
+            "count": 3
+        }
+    }
+}

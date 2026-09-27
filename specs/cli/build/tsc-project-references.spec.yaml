@@ -3,4 +3,3 @@ fixture: ./_fixtures/references/
 runs:
     - command: tsc --build
       exit: 0
-      stdout: ''

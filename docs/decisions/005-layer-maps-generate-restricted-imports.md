@@ -1,6 +1,6 @@
 # ADR-005: A layer map generates the restricted-import overrides
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-013](013-adopt-the-tool-before-building-the-check.md)
 **Date:** 2026-09-15
 
 ## Context

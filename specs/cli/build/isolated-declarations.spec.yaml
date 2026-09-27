@@ -11,8 +11,33 @@ runs:
           ℹ entry: src/index.ts
           ℹ tsconfig: tsconfig.json
           ℹ Build start
-          {{any}}
-      stderr: |-
-          {{any}}
+          found: tsdown could not build the project — its own report is above · why: dist/ is what `start` runs and what the package publishes, and a build that stopped part-way leaves it stale · fix: repair what tsdown names above, then run the build again · read: docs/05-building.md#a-build-that-fails
+      stderr: |4+
+          
+           ERROR  Error: Build failed with 1 error:
+
+          [plugin rolldown-plugin-dts:generate]
           RolldownError: TS9010: Variable must have an explicit type annotation with --isolatedDeclarations.
-          {{any}}
+            {{any}}
+            | --isolatedDeclarations.
+             {{any}}
+           6 | // which is what `isolatedDeclarations` refuses.
+           7 | export const answer = compute();
+             :              ^^^^^^
+             `----
+              at error (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/rolldown/dist/shared/logs-DmYCAKcW.mjs:159:24)
+              at LoadPluginContextImpl.error (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/rolldown/dist/shared/bindingify-input-options-XQ0947n1.mjs:111:10)
+              at LoadPluginContextImpl.handler (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/rolldown-plugin-dts/dist/index.mjs:454:35)
+              at async plugin (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/rolldown/dist/shared/bindingify-input-options-XQ0947n1.mjs:1571:16)
+              at async plugin.<computed> (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/rolldown/dist/shared/bindingify-input-options-XQ0947n1.mjs:2127:12)
+              at aggregateBindingErrorsIntoJsError (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/rolldown/dist/shared/error-CRNyaqoL.mjs:48:18)
+              at unwrapBindingResult (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/rolldown/dist/shared/error-CRNyaqoL.mjs:18:128)
+              at #build (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/rolldown/dist/shared/rolldown-B-jRyK4b.mjs:133:34)
+              at async build (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/rolldown/dist/index.mjs:48:22)
+              at async Promise.all (index 0)
+              at async buildSingle (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/tsdown/dist/build-JVmLFaZt.mjs:820:19)
+              at async Promise.all (index 0)
+              at async buildWithConfigs (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/tsdown/dist/build-JVmLFaZt.mjs:767:18)
+              at async build$1 (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/tsdown/dist/build-JVmLFaZt.mjs:722:9)
+              at async CAC.<anonymous> (file:///Users/jterrazz/Developer/jterrazz/jterrazz-os/home/jterrazz/work/repositories/package-typescript/node_modules/tsdown/dist/run.mjs:21:2)
+

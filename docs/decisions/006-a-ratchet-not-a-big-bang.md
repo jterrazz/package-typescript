@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-09-15
-**Superseded in part by:** [Quality checks](../06-quality-checks.md#the-ratchet) — the file is the `typescript` section of `jterrazz.baseline.json`, and a fallen count is a fourth refusal.
+**Superseded in part by:** [Quality checks](../06-quality-checks.md#the-ratchet) — a fallen count is a fourth refusal — and [ADR-013](013-adopt-the-tool-before-building-the-check.md): oxlint's `oxlint-suppressions.json` holds the lint debt.
 
 Written at decision time, as part of v10 — the release that turns type-aware
 linting on and takes the rule count from roughly three hundred decided rules

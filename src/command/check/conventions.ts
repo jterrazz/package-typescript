@@ -48,7 +48,7 @@ function memberRuns(
     const launched = members.map(({ bin, member }, index) => {
         const log = check.logs.at(`checker-member-${String(index)}.log`);
         rootLog = member === '.' ? log : rootLog;
-        const args = [bin, '--member', member, '--oxlint-report', check.logs.at('lint.json')];
+        const args = [bin, '--member', member];
 
         return {
             log,
@@ -61,15 +61,8 @@ function memberRuns(
 
 export type Conventions = { rootLog: string | undefined; runs: Launched[] };
 
-export async function conventions(
-    check: Check,
-    members: readonly Member[],
-    lint: Promise<number>,
-): Promise<Conventions> {
+export function conventions(check: Check, members: readonly Member[]): Conventions {
     const specs = specsRuns(check);
-    if (members.length > 0) {
-        await lint;
-    }
     const { launched, rootLog } = memberRuns(check, members);
 
     return { rootLog, runs: [...specs, ...launched] };

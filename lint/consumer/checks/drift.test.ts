@@ -50,7 +50,7 @@ describe('drift', () => {
 
         // Then - neither reading claims a count the file was never read for
         expect(human.stdout).toContain('jterrazz.baseline.json › typescript  unreadable\n');
-        expect(human.stdout).not.toContain('nothing held');
+        expect(human.stdout).not.toContain('jterrazz.baseline.json › typescript  nothing held');
         expect(JSON.parse(machine.stdout)).toMatchObject({
             baseline: 'unreadable',
             testBaseline: 'unreadable',

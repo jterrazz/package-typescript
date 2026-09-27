@@ -15,7 +15,6 @@ import type { Runs, Started } from './started.js';
 import {
     commentsVerdict,
     conventionsVerdict,
-    heldLint,
     lintVerdictOf,
     publishVerdict,
     settled,
@@ -71,14 +70,12 @@ function labelled(label: string, verdict: undefined | Verdict, writes?: boolean)
 
 async function reported(
     run: Check,
-    runs: Runs,
     passes: Started,
     conventionRuns: Conventions,
 ): Promise<Reported[]> {
     const typescript = await settled(passes.typescript);
-    const linted = await settledLint(run, runs, passes);
+    const linted = await settledLint(run, passes);
     const comments = await commentsVerdict(run, passes);
-    const lint = await heldLint(run, linted);
     const [
         names,
         format,
@@ -110,7 +107,7 @@ async function reported(
 
     return [
         ...labelled('TypeScript Check', typescript),
-        ...labelled(fix ? 'Oxlint Fix' : 'Oxlint Check', lintVerdictOf(run, lint, conventionsPass)),
+        ...labelled(fix ? 'Oxlint Fix' : 'Oxlint Check', lintVerdictOf(run, linted)),
         ...labelled(fix ? 'Oxfmt Format' : 'Oxfmt Check', selected('oxfmt') ? format : undefined),
         ...labelled('Gitignore (artefacts)', gitignore, true),
         ...labelled('Knip (unused code)', knip),
@@ -169,14 +166,14 @@ export async function runChecks(
         const prepared = preparedCheck(args, fix, selected, scratch);
         const members = checkerMembers(prepared);
         const runs: Runs = {
-            comments: selected('comments') || (selected('oxlint') && !fix),
-            names: selected('names') || (selected('oxlint') && !fix),
-            oxlint: selected('oxlint') || members.length > 0,
+            comments: selected('comments'),
+            names: selected('names'),
+            oxlint: selected('oxlint'),
         };
         const run = await withTargets(prepared, runs.oxlint);
         const passes = await started(run, runs);
-        const conventionRuns = await conventions(run, members, passes.lint);
-        const verdicts = await reported(run, runs, passes, conventionRuns);
+        const conventionRuns = conventions(run, members);
+        const verdicts = await reported(run, passes, conventionRuns);
         for (const verdict of verdicts) {
             reportPass(run.logs, verdict);
         }

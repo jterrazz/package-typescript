@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { heldSummary, judge, tightened } from './section.js';
+import { judge, tightened } from './section.js';
 
 const linterOwns = (rule: string): boolean => !rule.startsWith('names/');
 
@@ -59,23 +59,5 @@ describe('section', () => {
 
         // Then - there is nothing for a fix to write
         expect(tightened(counts, baseline, linterOwns)).toBeUndefined();
-    });
-
-    test('reads an empty section as nothing held', () => {
-        // Given - a section holding no entry
-        const counts = {};
-
-        // Then - no count, no rule, one phrase
-        expect(heldSummary(counts)).toBe('jterrazz.baseline.json › typescript: nothing held');
-    });
-
-    test('counts one rule held once in the singular', () => {
-        // Given - one rule holding one finding
-        const counts = { 'eslint/no-debugger': 1 };
-
-        // Then - the count and the rule, both singular
-        expect(heldSummary(counts)).toBe(
-            'jterrazz.baseline.json › typescript: 1 held across 1 rule',
-        );
     });
 });

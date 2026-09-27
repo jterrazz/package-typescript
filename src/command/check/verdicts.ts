@@ -6,9 +6,8 @@ import type { Launched } from './launched.js';
 import { lintVerdict } from './lint-verdict.js';
 import type { LintVerdict } from './lint-verdict.js';
 import { joined } from './logs.js';
-import { oxlintJson } from './runners.js';
 import type { Check } from './setup.js';
-import type { Runs, Started } from './started.js';
+import type { Started } from './started.js';
 
 export type Verdict = { log: string; status: number; writes?: boolean };
 
@@ -23,48 +22,16 @@ export async function settled(launched: Launched | undefined): Promise<Passed> {
         : { log: launched.log, status: await launched.status };
 }
 
-type HeldLint = { held: boolean; status: number };
-
-async function judgedLint(check: Check, linted: number): Promise<HeldLint> {
-    const judgement = check.fix
-        ? ['--fix']
-        : [
-              '--linter-exit',
-              String(linted),
-              '--names',
-              check.logs.at('names.json'),
-              '--comments',
-              check.logs.at('comments.json'),
-          ];
-    const baselineLog = check.logs.at('baseline.log');
-    const status = await checker('baseline', [check.logs.at('lint.json'), '.', ...judgement], {
-        path: baselineLog,
-    });
-    const held = status === 0 && !check.fix;
-    if (!held) {
-        appendFileSync(check.logs.at('lint.log'), readFileSync(baselineLog));
-    }
-
-    return { held, status };
-}
-
-export async function settledLint(check: Check, runs: Runs, passes: Started): Promise<number> {
+export async function settledLint(check: Check, passes: Started): Promise<number> {
     const linted = await passes.lint;
-    if (check.fix && runs.oxlint) {
-        await oxlintJson(check, ['--type-aware', ...check.lintArgs], {
-            report: check.logs.at('lint.json'),
-            stderr: 'ignore',
-        });
+    if (!check.selected('oxlint')) {
+        return linted;
     }
-    await Promise.all([settled(passes.names), settled(passes.comments)]);
+    const log = check.logs.at('baseline.log');
+    const held = await checker('baseline', ['.'], { path: log });
+    appendFileSync(check.logs.at('lint.log'), readFileSync(log));
 
-    return linted;
-}
-
-export async function heldLint(check: Check, linted: number): Promise<HeldLint> {
-    return check.selected('oxlint')
-        ? await judgedLint(check, linted)
-        : { held: false, status: linted };
+    return linted === 0 ? held : linted;
 }
 
 export async function commentsVerdict(check: Check, passes: Started): Promise<Passed> {
@@ -121,16 +88,6 @@ export async function publishVerdict(check: Check, runs: readonly Launched[]): P
     return { log, status: statuses.some((status) => status !== 0) ? 1 : 0, writes: true };
 }
 
-export function lintVerdictOf(
-    check: Check,
-    lint: HeldLint,
-    conventions: Passed,
-): LintVerdict | undefined {
-    return check.selected('oxlint')
-        ? lintVerdict(check, {
-              checkerStatus: conventions?.status ?? 0,
-              held: lint.held,
-              status: lint.status,
-          })
-        : undefined;
+export function lintVerdictOf(check: Check, linted: number): LintVerdict | undefined {
+    return check.selected('oxlint') ? lintVerdict(check, linted) : undefined;
 }

@@ -8,47 +8,42 @@ const BUILT_FROM = resolve(import.meta.dirname, '../../..');
 
 const CHECKER = join(BUILT_FROM, 'dist/checker.js');
 
-function groundOf(baseline: string): { report: string; root: string } {
+function rootHolding(baseline: string): string {
     const root = mkdtempSync(resolve(tmpdir(), 'ratchet-baseline-'));
     onTestFinished(() => {
         rmSync(root, { force: true, recursive: true });
     });
     writeFileSync(join(root, 'jterrazz.baseline.json'), baseline);
-    const report = join(root, 'lint.json');
-    writeFileSync(report, '{ "diagnostics": [] }\n');
 
-    return { report, root };
+    return root;
 }
 
 describe('baseline', () => {
-    test('prints no held line for a kept section when the Names pass wrote no report', () => {
-        // Given - a root keeping an empty typescript section, and a Names report that was never written
-        const { report, root } = groundOf('{ "typescript": {} }\n');
-
-        // When - the judge reads a clean linter report
-        const result = spawnSync(
-            'node',
-            [CHECKER, 'baseline', report, root, '--names', join(root, 'names.json')],
-            {
-                encoding: 'utf8',
-            },
+    test('refuses an oxlint rule the section still holds, and passes the passes it holds', () => {
+        // Given - a section holding a Names entry beside an oxlint rule recorded before oxlint held its own
+        const root = rootHolding(
+            '{ "typescript": { "eslint/no-var": 1, "names/no-language-construct-name": 2 } }\n',
         );
 
-        // Then - the linter's side holds, and nothing is claimed for the side nobody read
-        expect(result.stdout).toBe('');
-        expect(result.status).toBe(0);
+        // When - the section is read
+        const result = spawnSync('node', [CHECKER, 'baseline', root], { encoding: 'utf8' });
+
+        // Then - the oxlint rule is refused in four parts, the Names entry is not
+        expect(result.stdout).toBe(
+            "baseline-moved-to-oxlint  jterrazz.baseline.json › typescript  found: `eslint/no-var` is an oxlint rule, and the section holds its count · why: oxlint holds its own rules in oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain · fix: run 'typescript baseline', which records the lint debt in oxlint-suppressions.json and drops the entry · read: docs/06-quality-checks.md#the-ratchet\n",
+        );
+        expect(result.status).toBe(1);
     });
 
     test('refuses to rewrite the section when the Names pass wrote no report', () => {
-        // Given - a section holding a Names entry beside a linter one, and no Names report
-        const baseline =
-            '{ "typescript": { "eslint/no-var": 1, "names/no-language-construct-name": 2 } }\n';
-        const { report, root } = groundOf(baseline);
+        // Given - a section holding a Names entry, and no Names report
+        const baseline = '{ "typescript": { "names/no-language-construct-name": 2 } }\n';
+        const root = rootHolding(baseline);
 
         // When - the section is recorded
         const result = spawnSync(
             'node',
-            [CHECKER, 'baseline', report, root, '--names', join(root, 'names.json'), '--write'],
+            [CHECKER, 'baseline', root, '--names', join(root, 'names.json'), '--write'],
             { encoding: 'utf8' },
         );
 

@@ -12,8 +12,6 @@ runs:
 
            RUN  Oxlint Check
           {{any}}
-          eslint/no-debugger  1 diagnostic(s), and the project keeps no baseline
-          Fix them, or run 'typescript baseline' to record where the project stands.
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
@@ -49,6 +47,7 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         0
+            oxlint-suppressions.json             nothing held
             jterrazz.baseline.json › typescript  nothing held
             tool versions                        in range
 
@@ -66,8 +65,6 @@ runs:
 
            RUN  Oxlint Fix
           {{any}}
-          eslint/no-debugger  1 diagnostic(s), and the project keeps no baseline
-          Fix them, or run 'typescript baseline' to record where the project stands.
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Format

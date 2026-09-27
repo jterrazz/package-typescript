@@ -87,7 +87,7 @@ export function namesPass(check: Check, runs: boolean): Launched | undefined {
         return undefined;
     }
     const log = check.logs.at('names.log');
-    const mode = check.fix ? ['--fix'] : ['--report', check.logs.at('names.json')];
+    const mode = check.fix ? ['--fix'] : [];
 
     return {
         log,
@@ -105,7 +105,7 @@ export function commentsPass(check: Check, runs: boolean): Launched | undefined 
         return undefined;
     }
     const log = check.logs.at('comments.log');
-    const args = ['.', ...check.lintArgs, '--report', check.logs.at('comments.json')];
+    const args = ['.', ...check.lintArgs];
 
     return { log, status: checker('comments', args, { path: log }) };
 }

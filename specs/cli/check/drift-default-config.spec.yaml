@@ -12,7 +12,6 @@ runs:
 
            RUN  Oxlint Check
 
-          jterrazz.baseline.json › typescript: nothing held
           ✓ Passed
 
            RUN  Oxfmt Check
@@ -52,6 +51,7 @@ runs:
           {
             "baseline": null,
             "config": "default",
+            "oxlintSuppressions": null,
             "profile": "node",
             "rulesOff": [],
             "suppressions": 0,

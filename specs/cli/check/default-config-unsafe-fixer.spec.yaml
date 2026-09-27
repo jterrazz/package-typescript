@@ -12,8 +12,6 @@ runs:
 
            RUN  Oxlint Fix
           {{any}}
-          unicorn/no-useless-undefined  1 diagnostic(s), and the project keeps no baseline
-          Fix them, or run 'typescript baseline' to record where the project stands.
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Format

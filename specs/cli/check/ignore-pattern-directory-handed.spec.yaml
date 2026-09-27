@@ -15,7 +15,6 @@ runs:
            RUN  Oxlint Check
 
           No files found to lint. Please check your paths and ignore patterns.
-          oxlint wrote no JSON report at {{path}} — the baseline cannot be read
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
@@ -76,7 +75,6 @@ runs:
            RUN  Oxlint Fix
 
           No files found to lint. Please check your paths and ignore patterns.
-          oxlint wrote no JSON report at {{path}} — the baseline cannot be read
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Format

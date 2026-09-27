@@ -13,7 +13,11 @@ runs:
           ✗ Failed with exit code 1
 
            RUN  Oxlint Check
-          {{any}}
+
+          probe.test.ts:3:1: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+          probe.test.ts:4:5: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+          probe.test.ts:4:15: error typescript(no-unsafe-member-access): Unsafe member access .toBe on an `error` typed value.
+          probe.test.ts:4:5: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
@@ -51,6 +55,7 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         0
+            oxlint-suppressions.json             nothing held
             jterrazz.baseline.json › typescript  nothing held
             tool versions                        in range
 

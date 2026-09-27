@@ -12,8 +12,8 @@ runs:
 
            RUN  Oxlint Check
 
-          baseline-ratchet  jterrazz.baseline.json › typescript  eslint/no-debugger is at zero — the ratchet moved, delete its entry
-          Run 'typescript baseline' to record where the project actually stands.
+          : error: There are suppressions that do not occur anymore. help: Run `oxlint --prune-suppressions` to remove unused suppressions.
+          found: oxlint-suppressions.json holds more than the project has left · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/06-quality-checks.md#the-ratchet
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
@@ -49,8 +49,9 @@ runs:
             profile                              none of this package's
             rules off vs profile                 not measured
             suppressions                         0
-            jterrazz.baseline.json › typescript  7
-            jterrazz.baseline.json › test        3
+            oxlint-suppressions.json             7
+            jterrazz.baseline.json › typescript  nothing held
+            jterrazz.baseline.json › test        nothing held
             tool versions                        in range
 
            END  Finalizing quality checks

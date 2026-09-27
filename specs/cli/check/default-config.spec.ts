@@ -37,7 +37,8 @@ describe('default-config', () => {
         const stdout = checkBelowDecoy();
 
         // Then - the default profile reports the debugger, and the default formatter passes the four-space source and ignores public/
-        expect(stdout).toContain('eslint/no-debugger  1 diagnostic(s)');
+        expect(stdout).toContain('eslint(no-debugger)');
+        expect(verdictOf(stdout, 'Oxlint Check')).toBe('✗ Failed');
         expect(verdictOf(stdout, 'Oxfmt Check')).toBe('✓ Passed');
     });
 
@@ -48,9 +49,10 @@ describe('default-config', () => {
             .fixture(directory('./_fixtures/default-config/own-nested/'))
             .exec('check');
 
-        // Then - one `==` is counted, the nested one is not, and no rule of the default profile speaks
+        // Then - the root `==` is reported, the nested one is not, and no rule of the default profile speaks
         const stdout = result.stdout.text;
-        expect(stdout).toContain('eslint/eqeqeq  1 diagnostic(s)');
+        expect(stdout).toContain('eslint(eqeqeq)');
+        expect(stdout).not.toContain('src/legacy/');
         expect(stdout).not.toContain('no-debugger');
     });
 });

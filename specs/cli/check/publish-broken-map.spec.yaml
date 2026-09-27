@@ -12,7 +12,6 @@ runs:
 
            RUN  Oxlint Check
 
-          jterrazz.baseline.json › typescript: nothing held
           ✓ Passed
 
            RUN  Oxfmt Check
@@ -27,8 +26,8 @@ runs:
 
           publish/export-target-exists  package.json  ./farewell.js resolves to nothing on disk
           publish/export-covered-by-files  package.json  ./greeter.js is outside "files" — it resolves here and 404s in a consumer
+          Running publint v0.3.24 for fixture-publish-broken-map...
           {{any}}
-          Packing files with `npm pack`...
           Linting...
           Errors:
           1. pkg.exports["./farewell"] is ./farewell.js but the file does not exist.
@@ -60,6 +59,7 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         0
+            oxlint-suppressions.json             nothing held
             jterrazz.baseline.json › typescript  nothing held
             tool versions                        in range
 

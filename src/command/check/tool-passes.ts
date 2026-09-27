@@ -1,7 +1,12 @@
-import { rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import process from 'node:process';
 
+import {
+    keptAcross,
+    OXLINT_SUPPRESSIONS,
+    removeWhenEmpty,
+} from '../../../lint/engine/baseline/oxlint-suppressions.js';
 import { invariant, messageOf, refusal } from '../../../lint/engine/catalogue/lesson.js';
 import { isFile } from '../disk.js';
 import { mergedKnipConfig } from '../merge-knip-config.js';
@@ -11,7 +16,7 @@ import { presetAt } from '../toolchain.js';
 import type { FixScope } from '../unsafe-fixers.js';
 import type { Launched } from './launched.js';
 import { usesAstro } from './project.js';
-import { oxfmt, oxlintJson } from './runners.js';
+import { oxfmt, oxlint } from './runners.js';
 import { projectBinary } from './setup.js';
 import type { Check } from './setup.js';
 
@@ -27,13 +32,26 @@ export function typescriptPass(check: Check): Launched | undefined {
     };
 }
 
-export async function lintReport(check: Check): Promise<number> {
-    writeFileSync(check.logs.at('lint.log'), '');
+export async function lintCheck(check: Check): Promise<number> {
+    const log = check.logs.at('lint.log');
+    writeFileSync(log, '');
 
-    return await oxlintJson(check, ['--type-aware', '--deny-warnings', ...check.lintArgs], {
-        report: check.logs.at('lint.json'),
-        stderr: { path: check.logs.at('lint.err') },
-    });
+    return await oxlint(check, ['--type-aware', '--deny-warnings', ...check.lintArgs], log);
+}
+
+async function pruned(check: Check): Promise<number> {
+    if (!isFile(OXLINT_SUPPRESSIONS)) {
+        return 0;
+    }
+
+    const status = await oxlint(
+        check,
+        ['--type-aware', '--prune-suppressions', ...check.lintArgs],
+        check.logs.at('prune.log'),
+    );
+    removeWhenEmpty('.');
+
+    return status;
 }
 
 async function fixScopes(check: Check): Promise<FixScope[]> {
@@ -61,15 +79,10 @@ async function fixScopes(check: Check): Promise<FixScope[]> {
     }
 }
 
-export async function lintFix(check: Check): Promise<number> {
-    let scopes: FixScope[];
-    try {
-        scopes = await fixScopes(check);
-    } catch (error) {
-        writeFileSync(check.logs.at('fix-wrapper.log'), `${messageOf(error)}\n`);
+const COULD_NOT_RUN = 1;
 
-        return 1;
-    }
+async function fixedScopes(check: Check, scopes: readonly FixScope[]): Promise<number> {
+    const log = check.logs.at('fix-scopes.log');
     let status = 0;
     for (const { files, wrapper } of scopes) {
         // oxlint-disable-next-line no-await-in-loop -- each scope rewrites files the next one may lint
@@ -85,13 +98,32 @@ export async function lintFix(check: Check): Promise<number> {
                 ...check.lintArgs,
                 ...files,
             ],
-            { stderr: 'stdout', stdout: { append: true, path: check.logs.at('lint.log') } },
+            { stderr: 'stdout', stdout: { append: true, path: log } },
         );
-        status = fixed === 0 ? status : fixed;
+        status = fixed > COULD_NOT_RUN ? fixed : status;
         rmSync(wrapper, { force: true });
     }
 
     return status;
+}
+
+export async function lintFix(check: Check): Promise<number> {
+    let scopes: FixScope[];
+    try {
+        scopes = await fixScopes(check);
+    } catch (error) {
+        writeFileSync(check.logs.at('fix-wrapper.log'), `${messageOf(error)}\n`);
+
+        return 1;
+    }
+    const fixed = await keptAcross('.', async () => await fixedScopes(check, scopes));
+    await pruned(check);
+    const judged = await lintCheck(check);
+    if (fixed !== 0) {
+        appendFileSync(check.logs.at('lint.log'), readFileSync(check.logs.at('fix-scopes.log')));
+    }
+
+    return fixed === 0 ? judged : fixed;
 }
 
 export function formatCheck(check: Check): Launched | undefined {

@@ -1,12 +1,14 @@
-import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
 
+import {
+    OXLINT_SUPPRESSIONS,
+    removeWhenEmpty,
+} from '../../lint/engine/baseline/oxlint-suppressions.js';
 import { ignorePatternsOf } from '../../lint/engine/project/project-files.js';
 import { checker } from './checker.js';
 import { lintTargets } from './lint-targets.js';
 import { run } from './processes.js';
-import { EMPTY_REPORT } from './report/diagnostic.js';
 import { inScratch } from './scratch.js';
 import { badge, print } from './terminal.js';
 import { toolConfigs } from './tool-configs.js';
@@ -23,23 +25,21 @@ async function listedTargets(
     }
 }
 
-async function recordLinter(
-    report: string,
-    args: readonly string[],
-    projectBin: string,
-): Promise<void> {
+async function recordLinter(args: readonly string[], projectBin: string): Promise<void> {
     const { oxlint } = toolConfigs();
     const targets = await listedTargets(oxlint.ignoresOf, args);
-    if (targets?.length === 0) {
-        writeFileSync(report, EMPTY_REPORT);
-
+    if (targets === null || targets.length === 0) {
         return;
     }
-    await run(
-        binaryIn('oxlint', projectBin),
-        [...oxlint.args, '--type-aware', '--format', 'json', ...args, ...(targets ?? [])],
-        { stderr: 'ignore', stdout: { path: report } },
-    );
+    for (const recording of ['--suppress-all', '--prune-suppressions']) {
+        // oxlint-disable-next-line no-await-in-loop -- the prune reads the file the record wrote
+        await run(
+            binaryIn('oxlint', projectBin),
+            [...oxlint.args, '--type-aware', recording, ...args, ...(targets ?? [])],
+            { stderr: 'ignore', stdout: 'ignore' },
+        );
+    }
+    removeWhenEmpty('.');
 }
 
 async function recordPass(pass: string, report: string, args: readonly string[]): Promise<void> {
@@ -60,11 +60,10 @@ export async function baseline(args: readonly string[]): Promise<number> {
     return await inScratch(async (scratch) => {
         const reports = {
             comments: join(scratch, 'comments.json'),
-            lint: join(scratch, 'lint.json'),
             names: join(scratch, 'names.json'),
         };
-        print(`${badge('TYPESCRIPT')} Recording the oxlint baseline...\n\n`);
-        await recordLinter(reports.lint, args, projectBin);
+        print(`${badge('TYPESCRIPT')} Recording the baseline...\n\n`);
+        await recordLinter(args, projectBin);
         await recordPass('names', reports.names, [
             '--ls-lint',
             binaryIn('ls-lint', HOISTED_BESIDE_PACKAGE),
@@ -73,15 +72,7 @@ export async function baseline(args: readonly string[]): Promise<number> {
         await recordPass('comments', reports.comments, args);
         const written = await checker(
             'baseline',
-            [
-                reports.lint,
-                '.',
-                '--names',
-                reports.names,
-                '--comments',
-                reports.comments,
-                '--write',
-            ],
+            ['.', '--names', reports.names, '--comments', reports.comments, '--write'],
             'inherit',
             { stderr: 'inherit' },
         );
@@ -90,7 +81,12 @@ export async function baseline(args: readonly string[]): Promise<number> {
         }
         await run(
             binaryIn('oxfmt', projectBin),
-            [...toolConfigs().oxfmt.args, 'jterrazz.baseline.json'],
+            [
+                ...toolConfigs().oxfmt.args,
+                '--no-error-on-unmatched-pattern',
+                'jterrazz.baseline.json',
+                OXLINT_SUPPRESSIONS,
+            ],
             {
                 stderr: 'ignore',
                 stdout: 'ignore',

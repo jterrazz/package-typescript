@@ -108,7 +108,7 @@ describe('checker-member', () => {
         expect(status).toBe(1);
     });
 
-    test('hands every member run the oxlint report the check wrote, and the tree runs none', () => {
+    test("hands no member run an oxlint report: the plugin's diagnostics are oxlint's to judge", () => {
         // Given - a workspace whose root resolves a checker that answers the member flag, and arms a plugin rule reporting once
         const root = workspace('17.0.0');
         armPlugin(root);
@@ -116,24 +116,22 @@ describe('checker-member', () => {
         // When - the quality checks run at the root
         const { stdout } = check(root);
 
-        // Then - each member run reads the one report the oxlint pass wrote, complete, the plugin's diagnostic in it
-        expect(stdout).toContain('root member pass: . (oxlint report: read, 1 jterrazz)');
-        expect(stdout).toContain('root member pass: apps/api (oxlint report: read, 1 jterrazz)');
-        expect(stdout).toContain('root member pass: apps/web (oxlint report: read, 1 jterrazz)');
-
-        // Then - and the tree run, which reads no oxlint diagnostic, is handed nothing
+        // Then - every member run and the tree run count their own findings, and read no report
+        expect(stdout).toContain('root member pass: . (oxlint report: none)');
+        expect(stdout).toContain('root member pass: apps/api (oxlint report: none)');
+        expect(stdout).toContain('root member pass: apps/web (oxlint report: none)');
         expect(stdout).toContain('root tree pass: apps/api/specs (oxlint report: none)');
     });
 
-    test('passes a conventions run whose checker passes, whatever the linter it ran for the members says', () => {
-        // Given - a workspace whose checker passes, and whose armed plugin fails the linter the member runs read
+    test('passes a conventions run whose checker passes, and runs no linter for it', () => {
+        // Given - a workspace whose checker passes, and whose armed plugin would fail the linter
         const root = workspace('17.0.0', 0);
         armPlugin(root);
 
         // When - the conventions pass alone runs at the root
         const { status, stdout } = check(root);
 
-        // Then - the linter ran for the members' sake only: it prints nothing and weighs nothing in the verdict
+        // Then - the conventions pass is its own verdict: the linter neither runs nor weighs
         expect(stdout).toContain('Test Conventions (@jterrazz/test)');
         expect(stdout).not.toContain('Oxlint Check');
         expect(stdout).toContain('All checks passed');

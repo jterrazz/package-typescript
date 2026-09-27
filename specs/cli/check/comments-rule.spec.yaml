@@ -12,8 +12,6 @@ runs:
 
            RUN  Oxlint Check
           {{any}}
-          baseline-ratchet  jterrazz.baseline.json › typescript  jterrazz-typescript/comment-no-longer-than-its-function has 1 diagnostic(s) and no entry — it is new debt
-          Run 'typescript baseline' to record where the project actually stands.
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
@@ -50,6 +48,7 @@ runs:
             profile                              node (the default — no config of its own)
             rules off vs profile                 none
             suppressions                         2
+            oxlint-suppressions.json             nothing held
             jterrazz.baseline.json › typescript  16
             tool versions                        in range
 
