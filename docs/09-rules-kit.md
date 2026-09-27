@@ -13,17 +13,29 @@ Every message a rule prints teaches in four parts — `found: … · why: … ·
 `defineRule(definition, body)` writes an oxlint JS rule from its row, `body` being the visitor factory oxlint takes, `create` or `createOnce`:
 
 ```ts
-import { defineRule } from '@jterrazz/typescript/rules';
+import { defineRule, readAt, rowNamed } from '@jterrazz/typescript/rules';
+
+import { ROWS } from '../catalogue/manifest.js';
+
+const row = rowNamed(ROWS, 'no-sleep');
 
 export const noSleep = defineRule(
     {
-        docs: rowNamed(ROWS, 'no-sleep'),
-        read: 'docs/19-linting.md#no-sleep',
+        docs: row,
         messages: {
             slept: { found: '`sleep({{ms}})` waits on the clock', fix: 'await the event itself' },
         },
+        read: readAt(row, 'docs/19-linting.md'),
     },
-    { createOnce: (context) => ({ CallExpression: (node) => judge(context, node) }) },
+    {
+        createOnce: (context) => ({
+            CallExpression(node) {
+                if (node.callee.type === 'Identifier' && node.callee.name === 'sleep') {
+                    context.report({ messageId: 'slept', node });
+                }
+            },
+        }),
+    },
 );
 ```
 
@@ -38,6 +50,10 @@ What one file cannot show — the tree, the manifest, the manual — is a check.
 `runChecker({ passes, held, commands })` is the command line of a set of passes, `checker <pass> [root]`: it reads the arguments (`--fix`, `--format`, a flag's value written apart or as `--flag=value`), hands a pass its context — the project root, its sweep, its settings resolved with the base preset first — prints each finding through `reportLine`, applies its fixes, and judges a pass `held` names against its section of the baseline, printing the section it stands on when it holds (`jterrazz.baseline.json › test: 3 held across 2 rules`). `--format json` prints the findings as JSON instead, each with its `rule`, `path`, `line`, `column` and `message`. A pass counts its findings under its own name, or under the `namespace` it states; a result it marks `deferred` is reported and judged by another run, so it fails only on what stopped it. `commands` are the verbs beside the passes — a recording gesture, a query. A program that unwinds instead of exiting throws `stop(code)` and reads the code back with `exitCodeOf(program)`.
 
 `presetChecks(root, config)` runs the laws resolved settings hold a tree to — the Architecture pass over every preset's `layers` and the repository's own, and each declared `names` rule — with `config` written as a `jterrazz.config.ts` would be, `{ presets, optOuts, typescript: { … } }`, the base preset first: `{}` holds a tree to the base preset alone. It returns their findings, each at its position, and any problem that stopped a pass — a settings object that cannot be resolved included.
+
+### Testing a rule
+
+`@jterrazz/test` is the kit to test what this one writes ([21 — Lint specs](https://github.com/jterrazz/package-test/blob/main/docs/21-lint.md)): `ruleTester()` runs a rule's visitor on snippets, and refuses an invalid case that states no `line` and `column`; `specification.lint()` lints a fixture tree with the real oxlint, a checker's command or the laws of presets, and compares the whole report. A rule is proven where its behaviour lives — its visitor on a snippet, what it says about a tree on a tree.
 
 ## A chapter carries its catalogue
 
