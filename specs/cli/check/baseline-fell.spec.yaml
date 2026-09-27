@@ -85,7 +85,6 @@ runs:
 
            RUN  Names (tree)
 
-          src/types.ts:1:1: error names(no-language-construct-name): found: `types.ts` names a construct of the language · why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds · read: docs/06-quality-checks.md#the-names-tree-pass
           re-recorded jterrazz.baseline.json › typescript › names/no-language-construct-name 2 → 1
           ✓ Passed
 

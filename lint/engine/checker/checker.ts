@@ -154,9 +154,6 @@ async function runPass(
     if (held === undefined || !held.passes.includes(name)) {
         return settled(context, run);
     }
-    if (pass.entry === undefined) {
-        print(run.findings.map((finding) => reportLine(finding)));
-    }
 
     const judged = judgeHeld({ ...run, context, held, name, pass, print });
 

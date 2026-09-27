@@ -5,6 +5,7 @@ import { judgeExact, reRecord } from '../baseline/section.js';
 import type { Broken } from '../baseline/section.js';
 import { refusalReading } from '../catalogue/lesson.js';
 import type { Context, Finding, Held, HeldSection, Pass, PassResult } from './pass.js';
+import { reportLine } from './report-line.js';
 
 export const isHeldBy = (passes: readonly string[], rule: string): boolean =>
     passes.some((pass) => rule.startsWith(`${pass}/`));
@@ -91,15 +92,17 @@ function judgeEntries(run: HeldRun, namespace: string): number {
         { held, namespace, root: context.root },
         context.fix,
     );
-    if (Object.keys(before).length === 0) {
-        if (findings.length > 0) {
-            print([unrecorded(held, namespace)]);
-        }
-
-        return findings.length > 0 ? 1 : 0;
+    const broken =
+        Object.keys(before).length === 0
+            ? findings.length > 0
+                ? [unrecorded(held, namespace)]
+                : []
+            : judgeExact(counts, reRecorded(counts, print), held).map((one) =>
+                  ratchetLine(held, one),
+              );
+    if (broken.length > 0) {
+        print([...findings.map((finding) => reportLine(finding)), ...broken]);
     }
-    const broken = judgeExact(counts, reRecorded(counts, print), held);
-    print(broken.map((one) => ratchetLine(held, one)));
 
     return broken.length > 0 ? 1 : 0;
 }
