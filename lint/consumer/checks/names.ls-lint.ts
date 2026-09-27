@@ -21,7 +21,9 @@ const FRAMEWORK_ROUTE_SEGMENT = String.raw`\[{1,2}(\.{3})?[A-Za-z0-9]+\]{1,2}|\(
 
 const DIRECTORY = `${KEBAB}|${FRAMEWORK_ROUTE_SEGMENT}`;
 
-const NAMED_ROOTS = ['apps', 'bin', 'packages', 'specs', 'src', 'tests'];
+const NAMED_ROOTS = ['apps', 'bin', 'lib', 'packages', 'specs', 'src', 'tests'];
+
+const ROUTE_SEGMENT = 'regex:.+';
 
 const IGNORED = [
     'node_modules',
@@ -83,7 +85,9 @@ function skillRules(prefix: string): Record<string, Rules> {
 export function lsLintConfig(units: readonly string[], ignorePatterns: readonly string[]): string {
     const ls: Record<string, Rules> = {};
     for (const prefix of units) {
-        ls[`${prefix}{${NAMED_ROOTS.join(',')}}`] = { '.dir': `regex:${DIRECTORY}` };
+        const named = `${prefix}{${NAMED_ROOTS.join(',')}}`;
+        ls[named] = { '.dir': `regex:${DIRECTORY}` };
+        ls[`${named}/**/app`] = { '.dir': ROUTE_SEGMENT };
         Object.assign(ls, lintTreeRules(prefix), skillRules(prefix));
     }
     const ignore = [
