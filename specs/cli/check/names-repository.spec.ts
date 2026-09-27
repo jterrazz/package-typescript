@@ -176,10 +176,12 @@ describe('names-repository', () => {
     });
 
     test('judges no folder git ignores, in any tree gate, the linter included', () => {
-        // Given - the same repository and data/ folder, the folder named in .gitignore
+        // Given - the same repository and data/ folder, the folder and a generated src/Api_Client/ named in .gitignore
         const project = projectWith({ makefile: SIX_TARGETS });
         writeDataFolder(project);
-        writeFileSync(join(project, '.gitignore'), 'data/\n');
+        mkdirSync(join(project, 'src/Api_Client'), { recursive: true });
+        writeFileSync(join(project, 'src/Api_Client/client.ts'), 'export const client = 1;\n');
+        writeFileSync(join(project, '.gitignore'), 'data/\nsrc/Api_Client/\n');
 
         // When - the quality checks run, and the baseline is recorded
         const { baseline, stdout } = checkAndRecord(project);
@@ -309,7 +311,7 @@ describe('names-repository', () => {
         expect(names).toContain('Failed with exit code 1');
     });
 
-    test('passes a linter run whatever the Names pass it ran for the ratchet says', () => {
+    test('passes a linter run whatever the Names pass would say', () => {
         // Given - a repository with no Makefile, which the Names pass refuses and the linter does not
         const project = projectWith({});
 
@@ -320,7 +322,7 @@ describe('names-repository', () => {
             env: inProject(project, onlyPasses('oxlint')),
         });
 
-        // Then - the Names pass ran for the ratchet's sake only: it prints nothing and weighs nothing in the verdict
+        // Then - the Names pass does not run: it prints nothing and weighs nothing in the verdict
         expect(result.stdout).toContain('Oxlint Check');
         expect(result.stdout).not.toContain('Names (tree)');
         expect(result.stdout).toContain('All checks passed');
