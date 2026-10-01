@@ -123,6 +123,7 @@ export {
     workspacePatterns,
 } from './engine/project/manifest.js';
 export type { Manifest } from './engine/project/manifest.js';
+export { OXLINT_CONFIG_NAMES } from './engine/project/oxlint-config-names.js';
 export type { PresetLaw, Resolution, Resolved } from './engine/project/preset.js';
 export type { PresetChecks } from './consumer/checks/preset-checks.js';
 export { filesUnder, ignoredPaths, projectFiles, PRUNED } from './engine/project/project-files.js';

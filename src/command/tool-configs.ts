@@ -1,4 +1,4 @@
-import CONFIG_NAMES from '../../lint/engine/project/oxlint-config-names.json' with { type: 'json' };
+import { OXLINT_CONFIG_NAMES } from '../../lint/engine/project/oxlint-config-names.js';
 import { isFileOnDisk } from './disk.js';
 import { presetAt } from './toolchain.js';
 
@@ -19,7 +19,7 @@ export type ToolConfigs = {
 };
 
 export function toolConfigs(): ToolConfigs {
-    const oxlint = CONFIG_NAMES.find((name) => isFileOnDisk(name));
+    const oxlint = OXLINT_CONFIG_NAMES.find((name) => isFileOnDisk(name));
     const oxfmt = OXFMT_CONFIG_NAMES.find((name) => isFileOnDisk(name));
 
     return {

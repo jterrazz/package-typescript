@@ -15,7 +15,6 @@
         "dist",
         "docs",
         "!docs/03-testing.md",
-        "lint/engine/project/oxlint-config-names.json",
         "src/presets/**/*.json",
         "src/presets/**/*.toml"
     ],
@@ -43,7 +42,6 @@
             "types": "./dist/oxlint.d.ts",
             "default": "./dist/oxlint.js"
         },
-        "./oxlint-config-names": "./lint/engine/project/oxlint-config-names.json",
         "./rules": {
             "types": "./dist/rules.d.ts",
             "browser": "./dist/rules.browser.js",

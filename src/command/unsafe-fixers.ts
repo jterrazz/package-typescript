@@ -5,7 +5,7 @@
 import { existsSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
-import CONFIG_NAMES from '../../lint/engine/project/oxlint-config-names.json' with { type: 'json' };
+import { OXLINT_CONFIG_NAMES } from '../../lint/engine/project/oxlint-config-names.js';
 import { UNSAFE_FIXERS } from '../../lint/index.unsafe-fixers.js';
 
 type Scope = { config: string; directory: string; files: string[] };
@@ -31,7 +31,9 @@ export function wrapperOf(consumerConfig: string): string {
 }
 
 function configIn(root: string, directory: string): null | string {
-    const name = CONFIG_NAMES.find((candidate) => existsSync(join(root, directory, candidate)));
+    const name = OXLINT_CONFIG_NAMES.find((candidate) =>
+        existsSync(join(root, directory, candidate)),
+    );
     return name === undefined ? null : join(directory, name);
 }
 

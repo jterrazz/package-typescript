@@ -1,7 +1,7 @@
 import { basename, dirname, join, resolve } from 'node:path';
 
 import type { Context } from '../../engine/checker/pass.js';
-import CONFIGS from '../../engine/project/oxlint-config-names.json' with { type: 'json' };
+import { OXLINT_CONFIG_NAMES } from '../../engine/project/oxlint-config-names.js';
 
 export type Project = {
     configName: string | undefined;
@@ -52,7 +52,7 @@ export function profileOfProject(
     const handedAt = context.value('-c');
     const handed = handedAt === undefined ? null : resolve(handedAt);
     // The same list the command hands oxlint.
-    const configName = CONFIGS.find((name) => context.exists(join(context.root, name)));
+    const configName = OXLINT_CONFIG_NAMES.find((name) => context.exists(join(context.root, name)));
     const source = configName === undefined ? null : context.read(join(context.root, configName));
     const handsDeclared =
         configName === undefined &&

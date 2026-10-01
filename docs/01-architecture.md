@@ -59,7 +59,7 @@ Three steps and nothing between them. `lint/consumer/rulebook/profiles.ts` says 
 
 ## Building this package
 
-The package is TypeScript, and what ships is its build: `npm run build` runs tsdown over `tsdown.config.ts` into `dist/`, which git ignores and `files` publishes, with the JSON presets and the config-name list beside it as data, served where they are written. Every entry of the exports map, the checker program, the oxlint plugin and each preset a tool is handed by path are entries of the build; each carries the declaration tsdown generates from its source, so a type has one owner.
+The package is TypeScript, and what ships is its build: `npm run build` runs tsdown over `tsdown.config.ts` into `dist/`, which git ignores and `files` publishes, with the JSON presets beside it as data, served where they are written. Every entry of the exports map, the checker program, the oxlint plugin and each preset a tool is handed by path are entries of the build; each carries the declaration tsdown generates from its source, so a type has one owner.
 
 A build step is a precondition like an install: `make build` precedes `make lint` and `make test`, and the specs drive the built command. The toolchain builds itself with the tsdown it ships to everyone else, so there is no second toolchain, only the order of two gestures.
 
@@ -73,17 +73,16 @@ A refusal the command's own code can meet from a project — a map it cannot com
 
 ## The importable surface
 
-The barrel and six subpaths, all declared in the exports map — each a built `.js` beside the `.d.ts` the build generates, but for the one JSON list, whose type the file itself is:
+The barrel and five subpaths, all declared in the exports map — each a built `.js` beside the `.d.ts` the build generates:
 
-| Subpath                                    | Exports                                                                                                                                                                                                                                       |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@jterrazz/typescript`                     | the barrel — `{ oxfmt, oxlint }` presets                                                                                                                                                                                                      |
-| `@jterrazz/typescript/oxlint`              | the six profiles, `compose()`, `nested()`, `fromPresets()`, `defineConfig`                                                                                                                                                                    |
-| `@jterrazz/typescript/oxfmt`               | `base`, and oxfmt's own `defineConfig`                                                                                                                                                                                                        |
-| `@jterrazz/typescript/docs`                | `auditDocs()` — the manual's rules, pure                                                                                                                                                                                                      |
-| `@jterrazz/typescript/config`              | `defineConfig()`, `typescript()`, `definePreset()`, `JterrazzConfig`, `TypescriptSettings`, `ArchitectureSettings`, `ArchitectureRule`, `NamesRule`, `Preset`, `OptOut` and `ProfileName` — the family's settings file and its presets, typed |
-| `@jterrazz/typescript/rules`               | the kit a package writes its rules with: the lesson, the rule and the check, the chapter projection, the baseline and its judges, the readers of a project ([Rules kit](09-rules-kit.md))                                                     |
-| `@jterrazz/typescript/oxlint-config-names` | the names oxlint looks for a config under, in its order — a JSON array                                                                                                                                                                        |
+| Subpath                       | Exports                                                                                                                                                                                                                                       |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@jterrazz/typescript`        | the barrel — `{ oxfmt, oxlint }` presets                                                                                                                                                                                                      |
+| `@jterrazz/typescript/oxlint` | the six profiles, `compose()`, `nested()`, `fromPresets()`, `defineConfig`                                                                                                                                                                    |
+| `@jterrazz/typescript/oxfmt`  | `base`, and oxfmt's own `defineConfig`                                                                                                                                                                                                        |
+| `@jterrazz/typescript/docs`   | `auditDocs()` — the manual's rules, pure                                                                                                                                                                                                      |
+| `@jterrazz/typescript/config` | `defineConfig()`, `typescript()`, `definePreset()`, `JterrazzConfig`, `TypescriptSettings`, `ArchitectureSettings`, `ArchitectureRule`, `NamesRule`, `Preset`, `OptOut` and `ProfileName` — the family's settings file and its presets, typed |
+| `@jterrazz/typescript/rules`  | the kit a package writes its rules with: the lesson, the rule and the check, the chapter projection, the baseline and its judges, the readers of a project ([Rules kit](09-rules-kit.md))                                                     |
 
 The oxlint entry carries the six profiles by name — `node`, `next`, `astro`, `expo`, `bun`, `react` — plus two things about composing them: `compose()` merges configs left to right, and `nested()` strips the root-only options from a profile a subtree's own config ships ([Developing](02-developing.md#a-subtree-on-another-profile)). A layer map is not a lint fragment: it is declared in `jterrazz.config.ts` and judged by dependency-cruiser ([Quality checks](06-quality-checks.md#the-architecture-layer-map-pass)). Each config TYPE — `OxlintConfig`, `OxfmtConfig` — is re-exported from the tool that owns it, never restated here: a hand copy drifts, and a drifted copy stops a consumer's own config from type-checking.
 
@@ -93,9 +92,9 @@ Each one re-exports the underlying tool's `defineConfig` on purpose: a consumer'
 
 `./rules` is the engine of `lint/`, exported: what a sibling package needs to write a rule, a check, its chapter and its debt the way this package does, so the family keeps one copy of each ([ADR-016](decisions/016-one-engine-writes-every-rule.md)).
 
-`./oxlint-config-names` is the one list of the names a project's own oxlint config may take. `check` and `fix` read it to decide whether a project has a config or is handed the default, the drift report reads it to say which, and it is exported so that `@jterrazz/test`'s checker reads the same list rather than a copy of it, and counts a config exactly where this toolchain does: one owner, and a sibling that imports rather than restates.
+`OXLINT_CONFIG_NAMES`, on `./rules`, is the one list of the names a project's own oxlint config may take. `check` and `fix` read it to decide whether a project has a config or is handed the default, the drift report reads it to say which, and `@jterrazz/test`'s checker reads it from the kit rather than from a copy, so it counts a config exactly where this toolchain does. It has no subpath of its own: a subpath only a sibling package reads is a line of the kit that sibling already imports.
 
-`./docs` is the odd one out: it is not a config, it is a gate's rules, exported because that gate has two readers. `typescript check` reads a project it is installed in; an estate sweep reads clones it has installed nothing into. One pure function over a plain tree, and the rule ids, sentences and rosters stay in one executable copy.
+`./docs` is the odd one out: it is not a config, it is a gate's rules, exported because that gate has two readers. `typescript check` reads a project it is installed in; an estate sweep reads clones it has installed nothing into. One pure function over a plain tree, and the rule ids, sentences and rosters stay in one executable copy. Its second reader is the estate's own CLI, not a sibling package, which is why it keeps a subpath of its own rather than a line of `./rules`.
 
 ## Two TypeScript compilers, on purpose
 
