@@ -3,7 +3,6 @@ import { join } from 'node:path';
 import process from 'node:process';
 
 import { refusal } from '../../lint/engine/catalogue/lesson.js';
-import { entryPoints } from '../../lint/engine/project/entry-points.js';
 import { binaryIn } from '../../lint/engine/project/package-root.js';
 import { handOver, run } from './processes.js';
 import { badge, GREEN, print, RED, RESET } from './terminal.js';
@@ -21,13 +20,7 @@ async function built(config: string, label: string): Promise<number> {
     print(`${badge('TYPESCRIPT')} ${label}...\n\n`);
     const project = projectRoot();
     process.chdir(project);
-    const status = await run(tsdown(project), [
-        '--config',
-        config,
-        '--cwd',
-        project,
-        ...entryPoints(project),
-    ]);
+    const status = await run(tsdown(project), ['--config', config, '--cwd', project]);
     if (status !== 0) {
         print(
             `${RED}${refusal({

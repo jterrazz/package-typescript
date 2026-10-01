@@ -494,31 +494,33 @@ What a project calls its own parts, swept under the roots where a project keeps 
 
 <!-- GENERATED:findings names -->
 
-| Rule                               | Requirement                                                                                                      |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `names/no-grab-bag-name`           | A directory or file is named for the subject it holds, never a grab-bag word.                                    |
-| `names/no-language-construct-name` | A directory or file is named for its subject, never for a construct of the language.                             |
-| `names/no-abbreviated-word`        | Every word of a name is spelled whole.                                                                           |
-| `names/directory-in-kebab-case`    | A directory under a named root is written in kebab-case, a route segment in its framework's grammar.             |
-| `names/entry-follows-its-grammar`  | The source a published subpath is built from is named index[.<subpath>][.browser].ts, and a bin's <name>.bin.ts. |
-| `names/index-is-an-entry`          | A module named index is the entry of a subpath the package publishes, or that entry's test.                      |
-| `names/export-has-an-entry`        | Every subpath and bin the package publishes from its build is compiled from a source the build names.            |
+| Rule                               | Requirement                                                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `names/no-grab-bag-name`           | A directory or file is named for the subject it holds, never a grab-bag word.                                       |
+| `names/no-language-construct-name` | A directory or file is named for its subject, never for a construct of the language.                                |
+| `names/no-abbreviated-word`        | Every word of a name is spelled whole.                                                                              |
+| `names/directory-in-kebab-case`    | A directory under a named root is written in kebab-case, a route segment in its framework's grammar.                |
+| `names/entry-follows-its-grammar`  | The source a published subpath is built from is named index[.<subpath>][.browser].ts, and a bin's <command>.bin.ts. |
+| `names/bin-is-published`           | A module named <command>.bin is the entry of a bin the package publishes under that command, or that entry's test.  |
+| `names/index-is-an-entry`          | A module named index is the entry of a subpath the package publishes, or that entry's test.                         |
+| `names/export-has-an-entry`        | Every subpath and bin the package publishes from its build is compiled from a source the build names.               |
 
 <!-- /GENERATED:findings names -->
 
 All three rosters are closed, and the base preset carries them ([Rules kit](09-rules-kit.md#the-base-preset)): one executable copy, read by the gate from the resolved settings. Grab-bag: `base`, `common`, `helpers`, `lib`, `misc`, `stuff`, `tools`, `utils`. Construct: `constants`, `helper`, `interfaces`, `type`, `types`, `util`, and the `.types.ts` suffix — a word the grab-bag already refuses is reported once, under that roster. A leading `_` excuses no word of either roster: it states a position, not a subject, so `_utils/` is refused as `utils/` is. Shortcut: `auth`, `cfg`, `impl`, `infra`, `k8s`, `pkg`, `repo`, `repos`, `svc`, `tmp` — and the `_` marker does NOT excuse one, since it states a position, not whether the name is whole.
 
-A construct is judged on the WHOLE name: `type-registry.ts` names a subject and passes, `types.ts` names a part of the language and fails. Two words stay off the rosters though they sound generic, because each names a role a reader recognises at once: `setup` is what a runner loads before a test (`vitest.setup.ts`, a `setupFiles` entry), and `core` is the part of a layered tree every other layer depends on. `index.ts` is a barrel — a structural role, not a category — and no roster holds it. The ground a spec stands on is never swept at all, so a fixture may be called anything its scenario needs.
+A construct is judged on the WHOLE name: `type-registry.ts` names a subject and passes, `types.ts` names a part of the language and fails. Two words stay off the rosters though they sound generic, because each names a role a reader recognises at once: `setup` is what a runner loads before a test (`vitest.setup.ts`, a `setupFiles` entry), and `core` is the part of a layered tree every other layer depends on. An `index[.<subpath>][.browser].ts` is the entry of a subpath the package publishes ([the entry grammar](#the-entry-grammar)), and no roster holds it. The ground a spec stands on is never swept at all, so a fixture may be called anything its scenario needs.
 
 ### The entry grammar
 
-A package that publishes a build names each entry for what it publishes, so the tree says which file a consumer's `import` lands on without the manifest open. The source a subpath is built from is `index[.<subpath>][.browser].ts`: `.` from `index.ts`, `./config` from `index.config.ts`, `./rules` under its `browser` condition from `index.rules.browser.ts`, a nested subpath with a dot for each slash. `node` is the default runtime, never a variant, so no entry is named `.node`. A bin the build compiles is `<name>.bin.ts`.
+A package that publishes a build names each entry for what it publishes, so the tree says which file a consumer's `import` lands on without the manifest open. The source a subpath is built from is `index[.<subpath>][.browser].ts`: `.` from `index.ts`, `./config` from `index.config.ts`, `./rules` under its `browser` condition from `index.rules.browser.ts`, a nested subpath with a dot for each slash. `node` is the default runtime, never a variant, so no entry is named `.node`. A bin the build compiles is `<command>.bin.ts`, named for the command a consumer types: `jterrazz-test-check` from `jterrazz-test-check.bin.ts`. A program the build compiles that the package does not publish as a bin is no entry, and is named for what it runs, never `.bin`.
 
-The pass reads the `exports`, `main` and `bin` targets under the build's output folder, and maps each to its source through the unit's own `tsdown.config.*` — read as text, an entry named for its key, or for its file where it has none — or, with no config of its own, through the `bundle` preset's own mapping, `dist/<path>.js` from `src/<path>.ts`. A pattern subpath (`./tsdown/*`) publishes a folder, not an entry, and a target outside the build (a launcher under `bin/`, a JSON preset) is no compiled entry: neither is judged.
+The pass reads the `exports`, `main` and `bin` targets under the build's output folder, and maps each to its source through the unit's own `tsdown.config.*` — read as text, an entry named for its key, or for its file where it has none — or, with no config of its own, through the mapping the `build` and `bundle` presets compile by: each published target from its entry under `src/`, named by this grammar ([Building](05-building.md#the-entries)). A pattern subpath (`./tsdown/*`) publishes a folder, not an entry, and a target outside the build (a JSON preset) is no compiled entry: neither is judged.
 
 - `names/entry-follows-its-grammar` refuses an entry named otherwise, at the source.
 - `names/index-is-an-entry` refuses a module under `src/` or `lint/` named `index` that builds nothing the package publishes — its test passes beside the entry it tests. A module that composes others for the package's own code is named for what it composes.
 - `names/export-has-an-entry` refuses a published target the build compiles from no source it names.
+- `names/bin-is-published` refuses a module under `src/` or `lint/` named `<command>.bin` that builds no bin the package publishes.
 
 A package of the family states one more convention, which the gate does not read: a subpath that configures a tool is named for that tool's config file — `./config` is read by `jterrazz.config.ts`, `./oxlint` by `oxlint.config.ts`, `./vitest` by `vitest.config.ts` — so a consumer finds the import in the file named for it.
 
@@ -592,7 +594,7 @@ The root's own folders are the same in every repository: `src/` the product's co
 
 A skill is hand-written and read from the install, so anything beside its page — a file or a folder — is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
 
-`lint/` stands on the spine only where the package SHIPS it, and it ships it one of two ways. Directly: an entry of its `package.json`'s `files`, or a target of its `exports`, reaches into `lint/`. Or through its build: an entry of its `tsdown.config.*` compiles a `lint/` source, and the output it compiles to — `dist/<entry>`, or under the config's `outDir` — is published by an `exports`, `bin` or `main` target, or by a `files` entry no later `!` entry takes back. A package that ships its rules as `dist/oxlint.js`, built from an `index.ts` under `lint/`, is the case the second way exists for.
+`lint/` stands on the spine only where the package SHIPS it, and it ships it one of two ways. Directly: an entry of its `package.json`'s `files`, or a target of its `exports`, reaches into `lint/`. Or through its build: an entry of its `tsdown.config.*` compiles a `lint/` source, and the output it compiles to — `dist/<entry>`, or under the config's `outDir` — is published by an `exports`, `bin` or `main` target, or by a `files` entry no later `!` entry takes back. A package that ships its rules as `dist/oxlint.js`, built from its `./oxlint` entry under `lint/` ([the entry grammar](#the-entry-grammar)), is the case the second way exists for.
 
 A `lint/` nothing publishes holds rules no consumer receives — `src/` under another name — and is refused as `names/no-undeclared-root-folder`. The build config is read as text, never run: an entry is named for its key, `oxlint: 'lint/index.oxlint.ts'`, or for its file where it has none.
 

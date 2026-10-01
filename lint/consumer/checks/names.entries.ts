@@ -1,16 +1,16 @@
 import { basename, dirname, join } from 'node:path';
 
 import type { Context, Finding } from '../../engine/checker/pass.js';
+import { defaultSourceOf, outputOf, publishedOf } from '../../engine/project/entry-points.js';
+import type { Published } from '../../engine/project/entry-points.js';
 import { GROUND_FOLDERS } from '../../engine/project/ground.js';
-import { isJsonObject, parsedObject } from '../../engine/project/json.js';
+import { parsedObject } from '../../engine/project/json.js';
 import { withoutDotSlash } from '../../engine/project/packed-files.js';
 import { namesFinding } from './names.lessons.js';
 
 type Disk = Pick<Context, 'exists' | 'read'>;
 
-type Published = { browser: boolean; target: string; what: string };
-
-type Entry = Published & { expected: string; source: string };
+type Entry = Published & { source: string };
 
 // tsdown's own lookup order.
 const BUILD_CONFIGS = [
@@ -31,17 +31,11 @@ const ENTRY_KEYS = new Set(['entry', 'input']);
 
 const SOURCE = /\.(?:[cm]?ts|tsx)$/u;
 
-const BUILT = /\.(?:d\.[cm]?ts|[cm]?js)$/u;
-
-const DECLARATION = /\.d\.[cm]?ts$/u;
-
 const TEST = /\.(?:test|spec|test-d|spec-d)(?=\.[cm]?tsx?$)/u;
 
 const ENTRY_ROOTS = new Set(['lint', 'src']);
 
 const GROUND = new RegExp(`(?:^|/)(?:${GROUND_FOLDERS.join('|')})/`, 'u');
-
-const BIN = /^[a-z0-9]+(?:-[a-z0-9]+)*\.bin$/u;
 
 const stemOf = (fileName: string): string => fileName.replace(SOURCE, '');
 
@@ -74,66 +68,15 @@ export function buildMapOf(disk: Disk, unit: string): BuildMap | null {
     return { outDir: withoutDotSlash(outDir).replace(/\/$/u, ''), sources: sourcesOf(text) };
 }
 
-function publishedOf(value: unknown, what: string, browser: boolean): Published[] {
-    if (typeof value === 'string') {
-        return [{ browser, target: value, what }];
-    }
-    if (Array.isArray(value)) {
-        return value.flatMap((one) => publishedOf(one, what, browser));
-    }
-    if (!isJsonObject(value)) {
-        return [];
-    }
+const isNamedAsExpected = (source: string, expected: string): boolean =>
+    stemOf(basename(source)) === expected;
 
-    return Object.entries(value).flatMap(([key, nested]) =>
-        key.startsWith('.')
-            ? publishedOf(nested, `\`${key}\``, false)
-            : publishedOf(nested, what, browser || key === 'browser'),
-    );
-}
-
-function binsOf(bin: unknown, name: string): Published[] {
-    if (typeof bin === 'string') {
-        return [
-            { browser: false, target: bin, what: `the bin \`${name.replace(/^@[^/]+\//u, '')}\`` },
-        ];
-    }
-
-    return isJsonObject(bin)
-        ? Object.entries(bin).flatMap(([command, target]) =>
-              typeof target === 'string'
-                  ? [{ browser: false, target, what: `the bin \`${command}\`` }]
-                  : [],
-          )
-        : [];
-}
-
-function expectedOf({ browser, what }: Published): string {
-    if (what.startsWith('the bin')) {
-        return '<name>.bin';
-    }
-    const subpath = what.slice(1, -1);
-    const parts = subpath === '.' ? [] : withoutDotSlash(subpath).split('/');
-
-    return ['index', ...parts, ...(browser ? ['browser'] : [])].join('.');
-}
-
-const isNamedAsExpected = (source: string, expected: string): boolean => {
-    const stem = stemOf(basename(source));
-
-    return expected === '<name>.bin' ? BIN.test(stem) : stem === expected;
-};
-
-function grammarFinding(path: string, { expected, target, what }: Entry): Finding {
-    const stem = stemOf(basename(path));
-    const variant = stem.split('.').includes('node');
+function grammarFinding(path: string, { stem, target, what }: Published): Finding {
+    const variant = stemOf(basename(path)).split('.').includes('node');
 
     return namesFinding('names/entry-follows-its-grammar', path, {
-        fix:
-            expected === '<name>.bin'
-                ? `rename it \`${join(dirname(path), stem.split('.').at(-1) ?? stem)}.bin.ts\`, its build entry with it`
-                : `rename it \`${join(dirname(path), expected)}.ts\`, its build entry with it${variant ? ' — `node` is the default runtime and never a variant' : ''}`,
-        found: `\`${path}\` builds ${what} (${target}), and is not named \`${expected}.ts\``,
+        fix: `rename it \`${join(dirname(path), stem)}.ts\`, its build entry with it${variant ? ' — `node` is the default runtime and never a variant' : ''}`,
+        found: `\`${path}\` builds ${what} (${target}), and is not named \`${stem}.ts\``,
     });
 }
 
@@ -141,6 +84,13 @@ function unbuiltFinding(path: string, { target, what }: Published): Finding {
     return namesFinding('names/export-has-an-entry', path, {
         fix: 'name the source it is built from in the build config, or take the subpath out of the manifest',
         found: `${what} is published as ${target}, and no source the build compiles builds it`,
+    });
+}
+
+function strayBinFinding(path: string): Finding {
+    return namesFinding('names/bin-is-published', path, {
+        fix: 'name it for what it runs, or publish it: a bin in the manifest named for its command, built from it',
+        found: `\`${path}\` is named \`.bin\`, and builds no bin the package publishes`,
     });
 }
 
@@ -163,33 +113,17 @@ function entriesOf(
         return { entries: [], findings: [] };
     }
     const outDir = build?.outDir ?? DEFAULT_OUT_DIR;
-    const published = [
-        ...publishedOf(manifest.exports, '`.`', false),
-        ...publishedOf(manifest.main, '`.`', false),
-        ...binsOf(manifest.bin, typeof manifest.name === 'string' ? manifest.name : ''),
-    ]
-        .filter(
-            ({ target }) =>
-                withoutDotSlash(target).startsWith(`${outDir}/`) &&
-                BUILT.test(target) &&
-                !target.includes('*'),
-        )
-        .toSorted(
-            (left, right) =>
-                Number(DECLARATION.test(left.target)) - Number(DECLARATION.test(right.target)),
-        );
+    const published = publishedOf(manifest, outDir);
     const entries = new Map<string, Entry>();
     const findings: Finding[] = [];
     for (const one of published) {
-        const out = withoutDotSlash(one.target)
-            .slice(outDir.length + 1)
-            .replace(BUILT, '');
-        const source = build === null ? `src/${out}.ts` : build.sources.get(out);
+        const source =
+            build === null ? defaultSourceOf(one) : build.sources.get(outputOf(one.target, outDir));
         if (source === undefined || !disk.exists(join(unit, source))) {
             findings.push(unbuiltFinding(`${prefix}package.json`, one));
             continue;
         }
-        const entry = { ...one, expected: expectedOf(one), source };
+        const entry = { ...one, source };
         const key = `${entry.what}|${String(entry.browser)}|${source}`;
         if (!entries.has(key)) {
             entries.set(key, entry);
@@ -199,15 +133,18 @@ function entriesOf(
     return { entries: [...entries.values()], findings };
 }
 
-const isIndexModule = (file: string): boolean => {
-    const fileName = basename(file);
+const isEntryRootModule = (file: string): boolean =>
+    SOURCE.test(file) && ENTRY_ROOTS.has(file.split('/')[0] ?? '') && !GROUND.test(file);
 
-    return (
-        SOURCE.test(fileName) &&
-        fileName.split('.')[0] === 'index' &&
-        ENTRY_ROOTS.has(file.split('/')[0] ?? '') &&
-        !GROUND.test(file)
-    );
+const isIndexModule = (file: string): boolean => basename(file).split('.')[0] === 'index';
+
+const isBinModule = (file: string): boolean =>
+    stemOf(basename(file.replace(TEST, ''))).endsWith('.bin');
+
+const builds = (file: string, sources: ReadonlySet<string>): boolean => {
+    const module = file.replace(TEST, '');
+
+    return [module, module.replace(/\.tsx$/u, '.ts')].some((one) => sources.has(one));
 };
 
 export function entryGrammarOf(
@@ -221,16 +158,21 @@ export function entryGrammarOf(
         return [];
     }
     const sources = new Set(entries.map(({ source }) => withoutDotSlash(source)));
+    const binSources = new Set(
+        entries
+            .filter(({ stem }) => stem.endsWith('.bin'))
+            .map(({ source }) => withoutDotSlash(source)),
+    );
     const misnamed = entries
-        .filter(({ expected, source }) => !isNamedAsExpected(source, expected))
+        .filter(({ source, stem }) => !isNamedAsExpected(source, stem))
         .map((entry) => grammarFinding(`${prefix}${withoutDotSlash(entry.source)}`, entry));
-    const strays = files
-        .filter((file) => isIndexModule(file))
-        .filter((file) => {
-            const module = file.replace(TEST, '');
-            return ![module, module.replace(/\.tsx$/u, '.ts')].some((one) => sources.has(one));
-        })
+    const modules = files.filter((file) => isEntryRootModule(file));
+    const strays = modules
+        .filter((file) => isIndexModule(file) && !builds(file, sources))
         .map((file) => strayFinding(`${prefix}${file}`));
+    const strayBins = modules
+        .filter((file) => isBinModule(file) && !builds(file, binSources))
+        .map((file) => strayBinFinding(`${prefix}${file}`));
 
-    return [...findings, ...misnamed, ...strays];
+    return [...findings, ...misnamed, ...strays, ...strayBins];
 }

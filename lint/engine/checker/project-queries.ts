@@ -8,8 +8,8 @@ import { readCommandLine } from './command-line.js';
 
 // Prints nothing when no subpath resolves, and the caller keeps the preset's single `src/index.ts`.
 export function entryPointsQuery(args: readonly string[]): number {
-    for (const entry of entryPoints(resolve(args[0] ?? '.'))) {
-        stdout.write(`${entry}\n`);
+    for (const [output, source] of Object.entries(entryPoints(resolve(args[0] ?? '.')))) {
+        stdout.write(`${output} ${source}\n`);
     }
 
     return 0;

@@ -1,14 +1,14 @@
 import { existsSync, readdirSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 
-import { entryPoints } from './entry-points.js';
+import { DEFAULT_ENTRY, DEFAULT_SOURCE, entryPoints } from './entry-points.js';
 
 // tsdown loads a package's own config in the preset's stead.
 const OWN_CONFIG = /^tsdown\.config\.[cm]?[jt]s$/u;
 
 const BUILD_DIRECTORY = /^(?:\.\/)?dist\//u;
 
-export type Build = { config: string; entry: string[] | undefined };
+export type Build = { config: string; entry: Readonly<Record<string, string>> | undefined };
 
 export type BuiltChunk = { externals: string[]; file: string; moduleIds: string[] };
 
@@ -26,12 +26,12 @@ export function buildOf(
     }
 
     const entries = entryPoints(root);
-    if (entries.length > 0) {
+    if (Object.keys(entries).length > 0) {
         return { config: bundlePreset, entry: entries };
     }
 
-    return existsSync(join(root, 'src/index.ts'))
-        ? { config: bundlePreset, entry: undefined }
+    return existsSync(join(root, DEFAULT_SOURCE))
+        ? { config: bundlePreset, entry: DEFAULT_ENTRY }
         : null;
 }
 

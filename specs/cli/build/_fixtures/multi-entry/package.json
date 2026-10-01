@@ -2,6 +2,9 @@
     "name": "multi-entry-lib",
     "version": "1.0.0",
     "type": "module",
+    "bin": {
+        "greet": "./dist/greet.js"
+    },
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",

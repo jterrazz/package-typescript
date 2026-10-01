@@ -1,0 +1,12 @@
+{
+    "name": "fixture-names-entries-unconfigured",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "files": ["dist"],
+    "bin": { "fixture-tool": "./dist/tool.js" },
+    "exports": {
+        ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+        "./config": { "types": "./dist/config.d.ts", "default": "./dist/config.js" }
+    }
+}

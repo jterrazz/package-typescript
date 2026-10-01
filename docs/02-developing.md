@@ -204,7 +204,7 @@ The exceptions the gate never touches — a closed list, plus `.next` under one 
 
 ## Conventions
 
-- Entry point is `src/index.ts` — the single public barrel.
+- Each subpath the package publishes is built from its entry, `index[.<subpath>][.browser].ts` — `src/index.ts` for `.` — and each bin from `<command>.bin.ts` ([the entry grammar](06-quality-checks.md#the-entry-grammar)).
 - Use `.js` extensions in relative imports: `import { foo } from './bar.js'`.
 - The API is the types: a public export's signature is its documentation, and no generated reference sits beside it.
 

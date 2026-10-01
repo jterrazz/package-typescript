@@ -1,4 +1,4 @@
-description: compiles every entry the package's exports map publishes
+description: compiles each published subpath and bin from the entry its grammar names, with no config
 fixture: ./_fixtures/multi-entry/
 runs:
     - command: build
@@ -8,8 +8,14 @@ runs:
 
           ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
           ℹ config file: {{path}} 
-          ℹ entry: src/index.ts, src/register.ts
+          ℹ entry: src/greet.bin.ts, src/index.ts, src/index.register.ts
           ℹ tsconfig: tsconfig.json
           ℹ Build start
           {{any}}
           Build completed
+      files:
+          dist/index.js: { contains: 'Hello, ' }
+          dist/register.js: { contains: 'registered' }
+          dist/greet.js: { contains: '#!/usr/bin/env node' }
+          dist/index.register.js: absent
+          dist/greet.bin.js: absent

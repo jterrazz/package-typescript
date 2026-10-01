@@ -17,9 +17,16 @@ The pipeline is fully compiled and Rust-fast: [tsdown](https://tsdown.dev) / [Ro
 
 ## The entries
 
-A build compiles what the package PUBLISHES, and the package already says what that is: its `exports` map. Every subpath whose target is a file under `dist/` is compiled from the same path under `src/`, with a `.ts` extension — `"./register": "./dist/register.js"` is `src/register.ts`. A package with no map, or whose map names nothing under `dist/`, compiles `src/index.ts` alone.
+A build compiles what the package PUBLISHES, and the package already says what that is: its `exports`, `main` and `bin`. Each target under `dist/` is compiled from its entry under `src/`, named by [the entry grammar](06-quality-checks.md#the-entry-grammar), and written where the manifest says:
 
-Two subpaths are skipped: a pattern (`./tsconfig/*`), because the map does not enumerate what it stands for, and a target the source tree has no file for. So a multi-entry package needs no `tsdown.config.ts` — which is the whole point, since owning one means declaring tsdown, and the contract is one devDependency ([Developing](02-developing.md)).
+| Manifest                                                 | Entry                        | Output                  |
+| -------------------------------------------------------- | ---------------------------- | ----------------------- |
+| `".": "./dist/index.js"`                                 | `src/index.ts`               | `dist/index.js`         |
+| `"./register": "./dist/register.js"`                     | `src/index.register.ts`      | `dist/register.js`      |
+| `"./rules": { "browser": "./dist/rules.browser.js", … }` | `src/index.rules.browser.ts` | `dist/rules.browser.js` |
+| `"bin": { "greet": "./dist/greet.js" }`                  | `src/greet.bin.ts`           | `dist/greet.js`         |
+
+A package with no manifest target under `dist/` compiles `src/index.ts` alone. A pattern (`./tsconfig/*`) is skipped, because the map does not enumerate what it stands for, and so is a target whose entry is not on disk. So a multi-entry package needs no `tsdown.config.ts` — which is the whole point, since owning one means declaring tsdown, and the contract is one devDependency ([Developing](02-developing.md)). The `build` and `bundle` presets read the entries themselves, so a config of your own that extends one inherits them.
 
 ## build vs bundle
 
@@ -44,8 +51,8 @@ When tsdown stops, its own report is printed as it came, and below it the comman
 ```text
 your-project/
 ├── src/
-│   ├── index.ts           # Main entry point
-│   └── instrumentation.ts # Optional instrumentation entry point
+│   ├── index.ts                 # The `.` entry
+│   └── index.instrumentation.ts # The `./instrumentation` entry, when the package publishes one
 ├── dist/                  # The build's product — published from here
 ├── .artifacts/            # Every tool's output, gitignored (Developing)
 └── tsconfig.json          # Extends this package

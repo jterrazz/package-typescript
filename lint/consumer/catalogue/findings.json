@@ -83,7 +83,12 @@
     {
         "family": "names",
         "id": "names/entry-follows-its-grammar",
-        "sentence": "The source a published subpath is built from is named index[.<subpath>][.browser].ts, and a bin's <name>.bin.ts."
+        "sentence": "The source a published subpath is built from is named index[.<subpath>][.browser].ts, and a bin's <command>.bin.ts."
+    },
+    {
+        "family": "names",
+        "id": "names/bin-is-published",
+        "sentence": "A module named <command>.bin is the entry of a bin the package publishes under that command, or that entry's test."
     },
     {
         "family": "names",

@@ -13,6 +13,7 @@ const READ_BY_FAMILY: Readonly<Record<string, ChapterAnchor>> = Object.freeze({
 const READ_BY_NAME: Readonly<Record<string, ChapterAnchor>> = Object.freeze({
     'declared-root-holds-files': `${CHAPTER}#a-root-beside-the-spine`,
     'declared-root-states-its-reason': `${CHAPTER}#a-root-beside-the-spine`,
+    'bin-is-published': `${CHAPTER}#the-entry-grammar`,
     'entry-follows-its-grammar': `${CHAPTER}#the-entry-grammar`,
     'export-has-an-entry': `${CHAPTER}#the-entry-grammar`,
     'index-is-an-entry': `${CHAPTER}#the-entry-grammar`,
