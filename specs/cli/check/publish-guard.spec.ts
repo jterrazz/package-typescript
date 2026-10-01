@@ -20,8 +20,8 @@ const BUILD_FINDING =
     "package.json:1:1: error publish(build-succeeds): found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else `typescript bundle` · read: @jterrazz/typescript's docs/06-quality-checks.md#the-build-guard";
 
 describe('publish-guard', () => {
-    test('fails a build whose second export is compiled from a fixtures module, naming each chunk as `bundle` writes it', async () => {
-        // Given - a library whose second export imports a fixtures module, its dist laid as the build writes it, resolving the installed @jterrazz/test
+    test('fails a package whose second export is compiled from a fixtures module, one finding per ESM and CJS chunk', async () => {
+        // Given - a library whose second export imports a fixtures module, its dist laid by hand, resolving the installed @jterrazz/test
         const result = await publish
             .fixture(directory('./_fixtures/publish/fixtures-module/'))
             .link('@jterrazz/test')
