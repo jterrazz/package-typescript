@@ -20,7 +20,7 @@ const root = mkdtempSync(join(tmpdir(), 'strict-install-'));
 const store = join(root, 'node_modules/.pnpm/@jterrazz+typescript/node_modules');
 const installed = join(store, '@jterrazz/typescript');
 
-for (const entry of ['bin', 'dist', 'lint', 'src', 'package.json']) {
+for (const entry of ['dist', 'lint', 'src', 'package.json']) {
     cpSync(join(REPOSITORY, entry), join(installed, entry), { recursive: true });
 }
 mkdirSync(join(store, '.bin'), { recursive: true });

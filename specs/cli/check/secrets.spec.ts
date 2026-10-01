@@ -11,11 +11,11 @@ import {
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
+import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { newDirectory, temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // Which scanner answers depends on the machine's PATH, so the chain names it by handing over a PATH.
 
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
 const FIXTURE = resolve(import.meta.dirname, '_fixtures/secrets/leaked');
 
 const project = newDirectory('spec-secrets-');
@@ -60,7 +60,7 @@ describe('secrets', () => {
         cpSync(FIXTURE, project, { recursive: true });
 
         // When - the quality checks run with no gitleaks on PATH, so the built-in patterns answer
-        const result = spawnSync('node', [BIN, 'check'], {
+        const result = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
             cwd: project,
             encoding: 'utf8',
             env: { ...process.env, PATH: pathWithoutGitleaks() },
@@ -83,7 +83,7 @@ describe('secrets', () => {
         cpSync(FIXTURE, created, { recursive: true });
 
         // When - the quality checks run with the built-in patterns answering
-        const result = spawnSync('node', [BIN, 'check'], {
+        const result = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
             cwd: created,
             encoding: 'utf8',
             env: { ...process.env, PATH: pathWithoutGitleaks() },
@@ -132,7 +132,7 @@ describe('secrets', () => {
         const { directory, record } = gitleaksStub();
 
         // When - the quality checks run with a recording gitleaks first on PATH, told to overlook notes/
-        spawnSync('node', [BIN, 'check', '--ignore-pattern', 'notes/**'], {
+        spawnSync('node', [TYPESCRIPT_BIN, 'check', '--ignore-pattern', 'notes/**'], {
             cwd: repository,
             encoding: 'utf8',
             env: { ...process.env, PATH: `${directory}${delimiter}${process.env.PATH ?? ''}` },

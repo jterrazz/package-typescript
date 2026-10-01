@@ -1,6 +1,6 @@
 # Testing
 
-A toolchain is proved by running it, so almost every test here drives the real `bin/typescript.js`, over the built `dist/`, against a real project on disk.
+A toolchain is proved by running it, so almost every test here drives the real `typescript` bin, `dist/typescript.js`, over the built `dist/`, against a real project on disk.
 
 ```bash
 npm run build   # tsdown into dist/, which every suite below reads
@@ -137,7 +137,7 @@ A fragment with no id is a self rule the audit names: no consumer reaches `fragm
 
 The catalogue itself ships, since `fix` reads its unsafe fixers; the table and the fixer list [Lint presets](07-lint-presets.md) carries between its `GENERATED` markers are rendered from the consumer entries alone.
 
-The selector is `TYPESCRIPT_CHECK_PASSES`, a comma-separated list of pass keys, and the shipped command holds no copy of it: `main()` runs every pass unless its caller hands it a selection, and the one launcher that ships, `bin/typescript.js`, hands none. The specs run the product command through `specs/cli/_setup/check-selection.ts`, exported as `SELECTING_BIN` by `specs/cli/_setup/check-passes.ts`: the `cli` runner for every document, and each chain that spawns the check with `onlyPasses()`. It hands every run to the built command, and when the variable names passes, a selection answering for those alone. A pass the selector leaves out prints nothing and weighs nothing in the verdict, and a key that names no pass fails the run with the list of keys, the passes the command declares in its report order. A pass left out does not run at all: no pass reads another's output. The specs prove what a run reports and its verdict, not which passes it launches: leaving a pass unlaunched is what saves the time, and no spec goes red if it starts again. The spec documents, apart from the three `passes-*.spec.yaml` that prove the selector, and a chain that names no pass, run every pass.
+The selector is `TYPESCRIPT_CHECK_PASSES`, a comma-separated list of pass keys, and the shipped command holds no copy of it: `main()` runs every pass unless its caller hands it a selection, and the bin that ships, `src/typescript.bin.ts`, hands none. The specs run the product command through `specs/cli/_setup/check-selection.ts`, exported as `SELECTING_BIN` by `specs/cli/_setup/check-passes.ts`: the `cli` runner for every document, and each chain that spawns the check with `onlyPasses()`. It hands every run to the built command, and when the variable names passes, a selection answering for those alone. A pass the selector leaves out prints nothing and weighs nothing in the verdict, and a key that names no pass fails the run with the list of keys, the passes the command declares in its report order. A pass left out does not run at all: no pass reads another's output. The specs prove what a run reports and its verdict, not which passes it launches: leaving a pass unlaunched is what saves the time, and no spec goes red if it starts again. The spec documents, apart from the three `passes-*.spec.yaml` that prove the selector, and a chain that names no pass, run every pass.
 
 ### What holds the split
 

@@ -63,8 +63,8 @@ describe('audience', () => {
     });
 
     test('every refusal a shipped module makes is a consumer row, and every row is still there', () => {
-        // Given - every shipped module of lint/, src/ and bin/, and the runtime rows of the manifest
-        const modules = ['lint', 'src', 'bin'].flatMap((folder) =>
+        // Given - every shipped module of lint/ and src/, and the runtime rows of the manifest
+        const modules = ['lint', 'src'].flatMap((folder) =>
             shippedModules(ROOT, join(ROOT, folder)),
         );
         const runtime = rows.filter((row) => row.channel === 'runtime');

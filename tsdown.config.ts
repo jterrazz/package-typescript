@@ -8,7 +8,7 @@ export default defineConfig([
         clean: true,
         dts: true,
         entry: {
-            checker: 'lint/checker.bin.ts',
+            checker: 'lint/checker.ts',
             command: 'src/command/main.ts',
             config: 'lint/index.config.ts',
             docs: 'lint/index.docs.ts',
@@ -18,6 +18,7 @@ export default defineConfig([
             plugin: 'lint/consumer/rules/plugin.ts',
             rules: 'lint/index.rules.ts',
             'rules.browser': 'lint/index.rules.browser.ts',
+            typescript: 'src/typescript.bin.ts',
             'presets/oxfmt/style': 'src/presets/oxfmt/style.ts',
             'presets/oxlint/declared': 'src/presets/oxlint/declared.ts',
             'presets/tsdown/build': 'src/presets/tsdown/build.ts',

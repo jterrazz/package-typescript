@@ -1,8 +1,7 @@
 {
     "$schema": "https://unpkg.com/knip@6/schema.json",
     "entry": [
-        "bin/typescript.js",
-        "lint/checker.bin.ts",
+        "lint/checker.ts",
         "lint/consumer/rules/plugin.ts",
         "lint/index.config.ts",
         "lint/index.docs.ts",
@@ -13,7 +12,8 @@
         "src/command/main.ts",
         "src/index.oxfmt.ts",
         "src/index.ts",
-        "src/presets/**/*.ts"
+        "src/presets/**/*.ts",
+        "src/typescript.bin.ts"
     ],
     "ignoreBinaries": ["gitleaks", "make"]
 }

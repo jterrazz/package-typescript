@@ -64,7 +64,7 @@ function namedImports(names: readonly string[]): string {
 function storeWith(directory: string, withAstro: boolean): string {
     const store = join(directory, '.pnpm/@jterrazz+typescript/node_modules');
     const installed = join(store, '@jterrazz/typescript');
-    for (const entry of ['bin', 'dist', 'lint', 'src', 'package.json']) {
+    for (const entry of ['dist', 'lint', 'src', 'package.json']) {
         cpSync(join(REPOSITORY, entry), join(installed, entry), { recursive: true });
     }
     for (const name of readdirSync(join(REPOSITORY, 'node_modules'))) {
@@ -120,7 +120,7 @@ function consumerOf(
         "import { base, defineConfig } from '@jterrazz/typescript/oxfmt';\n\nexport default defineConfig(base);\n",
     );
 
-    return { name, project, runner: join(installed, 'bin/typescript.js') };
+    return { name, project, runner: join(installed, 'dist/typescript.js') };
 }
 
 async function matrix(): Promise<number> {

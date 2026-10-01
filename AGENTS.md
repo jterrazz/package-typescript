@@ -30,12 +30,11 @@ One Claude Code skill routes into this corpus: `skills/jterrazz-typescript/SKILL
 make install
 ```
 
-`make build` compiles the TypeScript into `dist/` with tsdown; `make lint`, `make test` and `make fix` build first. It dogfoods its own CLI (`make lint` → `npm run lint` → `./bin/typescript.js check`).
+`make build` compiles the TypeScript into `dist/` with tsdown; `make lint`, `make test` and `make fix` build first. It dogfoods its own CLI (`make lint` → `npm run lint` → `node dist/typescript.js check`).
 
 ## Repo layout
 
 ```text
-bin/      # the launcher of the built command
 lint/     # every judgement: consumer/ and self/ declare, engine/ runs
 src/      # the command, the presets, the importable entries
 docs/     # the corpus: numbered chapters and decisions/

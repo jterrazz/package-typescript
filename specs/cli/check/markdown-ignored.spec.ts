@@ -1,13 +1,12 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
+import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { newDirectory } from '../_setup/temporary-directory.js';
 
 // A coordinate git ignores needs a real repository, and a fixture cannot be one.
-
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
 
 const project = newDirectory('spec-markdown-ignored-');
 
@@ -38,7 +37,10 @@ describe('markdown-ignored', () => {
         execFileSync('git', ['add', '.'], { cwd: project });
 
         // When - the check runs
-        const checked = spawnSync('node', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+        const checked = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
+            cwd: project,
+            encoding: 'utf8',
+        });
 
         // Then - the ignored bundle is no finding, the absent notes are
         expect(checked.stdout).not.toContain('`apps/web/dist/index.js` names nothing');

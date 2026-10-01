@@ -3,11 +3,11 @@ import { cpSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
+import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { newDirectory } from '../_setup/temporary-directory.js';
 
 // git refuses to track a nested `.git`, so a fixture cannot be the repository this needs.
 
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
 const FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/on-convention');
 const TURBO_FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/turbo');
 
@@ -28,7 +28,10 @@ describe('committed-artefact', () => {
         execFileSync('git', ['add', '--force', 'tsconfig.tsbuildinfo'], { cwd: workDir });
 
         // When - the quality checks run
-        const result = spawnSync('node', [BIN, 'check'], { cwd: workDir, encoding: 'utf8' });
+        const result = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
+            cwd: workDir,
+            encoding: 'utf8',
+        });
 
         // Then - the gate names the committed artefact and how to untrack it
         expect(result.status).toBe(1);
@@ -47,7 +50,10 @@ describe('committed-artefact', () => {
         execFileSync('git', ['add', '--force', '.turbo/turbo-build.log'], { cwd: turboWorkDir });
 
         // When - the quality checks run
-        const result = spawnSync('node', [BIN, 'check'], { cwd: turboWorkDir, encoding: 'utf8' });
+        const result = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
+            cwd: turboWorkDir,
+            encoding: 'utf8',
+        });
 
         // Then - ignoring the directory is granted, committing its contents is not
         expect(result.status).toBe(1);

@@ -174,12 +174,22 @@ function environmentInputs(tree: string): string[] {
     return [...new Set(read)].filter((name) => !LOCATION.has(name));
 }
 
+const COMMAND = 'dist/command.js';
+
+function commandModules(tree: string): string[] {
+    const text = readFileSync(join(tree, COMMAND), 'utf8');
+    const reexported = [...text.matchAll(/from\s+["']\.\/(?<module>[^"']+)["']/gu)].map(
+        (match) => `dist/${match.groups?.module ?? ''}`,
+    );
+
+    return [COMMAND, ...reexported];
+}
+
 export function argvFlags(tree: string): string[] {
-    const flags = [
-        ...readFileSync(join(tree, 'dist/command.js'), 'utf8').matchAll(
-            /["'](?<flag>--[a-z][\w-]*)["']/gu,
-        ),
-    ];
+    const text = commandModules(tree)
+        .map((module) => readFileSync(join(tree, module), 'utf8'))
+        .join('\n');
+    const flags = [...text.matchAll(/["'](?<flag>--[a-z][\w-]*)["']/gu)];
 
     return [...new Set(flags.map((match) => match.groups?.flag ?? ''))];
 }

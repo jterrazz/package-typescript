@@ -1,13 +1,12 @@
 import { spawnSync } from 'node:child_process';
 import { chmodSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
+import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { newDirectory } from '../_setup/temporary-directory.js';
 
 // The Astro pass runs the consumer's `astro check`, so the project carries a binary where npm would put one.
-
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
 
 const project = newDirectory('spec-astro-');
 
@@ -50,7 +49,10 @@ describe('astro', () => {
         installAstroStub();
 
         // When - the quality checks run there
-        const result = spawnSync('node', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+        const result = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
+            cwd: project,
+            encoding: 'utf8',
+        });
 
         // Then - the pass ran the project's own checker and refused the template's shape
         expect(result.status).toBe(1);
@@ -63,13 +65,19 @@ describe('astro', () => {
         // Given - the project the case above left with a badly shaped template
 
         // When - the fixes run there
-        const fixed = spawnSync('node', [BIN, 'fix'], { cwd: project, encoding: 'utf8' });
+        const fixed = spawnSync('node', [TYPESCRIPT_BIN, 'fix'], {
+            cwd: project,
+            encoding: 'utf8',
+        });
 
         // Then - the formatter named the file it rewrote
         expect(fixed.stdout).toContain('src/page.astro');
 
         // Then - and a second check no longer reports the pass at all
-        const rechecked = spawnSync('node', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+        const rechecked = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
+            cwd: project,
+            encoding: 'utf8',
+        });
         expect(rechecked.stdout).not.toContain('astro-check-ran');
     });
 });

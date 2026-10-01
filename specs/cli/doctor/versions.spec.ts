@@ -9,7 +9,7 @@ import { cli } from '../cli.specification.js';
 // Every number here is a version, which a golden would pin to a dependency bump.
 
 function doctorOf(root: string): { rows: string[]; status: null | number; verdict: string } {
-    const result = spawnSync('node', [join(root, 'bin/typescript.js'), 'doctor'], {
+    const result = spawnSync('node', [join(root, 'dist/typescript.js'), 'doctor'], {
         cwd: root,
         encoding: 'utf8',
         env: { ...process.env, INIT_CWD: root },

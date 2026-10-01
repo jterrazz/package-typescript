@@ -5,19 +5,18 @@ import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
+import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 import { cli } from '../cli.specification.js';
 
 // A config in the folder above a project is never read; `fixture:` spreads into its cwd, so that case is built in a temp directory.
-
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
 
 function checkBelowDecoy(): string {
     const tree = temporaryDirectory('spec-default-config-');
     cpSync(resolve(import.meta.dirname, '_fixtures/default-config/decoy-parent'), tree, {
         recursive: true,
     });
-    const { stdout } = spawnSync('node', [BIN, 'check'], {
+    const { stdout } = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
         cwd: join(tree, 'project'),
         encoding: 'utf8',
         env: { ...process.env, INIT_CWD: join(tree, 'project') },

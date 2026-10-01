@@ -88,7 +88,7 @@ describe('drift', () => {
         const project = suppressingProject(toolchain);
 
         // When - the quality checks run there
-        const result = spawnSync('node', [join(toolchain, 'bin/typescript.js'), 'check'], {
+        const result = spawnSync('node', [join(toolchain, 'dist/typescript.js'), 'check'], {
             cwd: project,
             encoding: 'utf8',
         });
@@ -107,7 +107,7 @@ describe('drift', () => {
         // When - the quality checks run with --json
         const result = spawnSync(
             'node',
-            [join(toolchain, 'bin/typescript.js'), 'check', '--json'],
+            [join(toolchain, 'dist/typescript.js'), 'check', '--json'],
             {
                 cwd: project,
                 encoding: 'utf8',

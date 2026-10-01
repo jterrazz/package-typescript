@@ -14,7 +14,7 @@ function stub(path: string, body: string): void {
     chmodSync(path, 0o755);
 }
 
-for (const entry of ['bin', 'dist', 'lint', 'src', 'package.json']) {
+for (const entry of ['dist', 'lint', 'src', 'package.json']) {
     cpSync(join(packageRoot, entry), join(installed, entry), { recursive: true });
 }
 mkdirSync(join(installed, 'node_modules/.bin'), { recursive: true });
@@ -24,7 +24,7 @@ for (const tool of ['tsc', 'oxfmt', 'knip']) {
 }
 stub(join(installed, 'node_modules/.bin/oxlint'), `echo '{ "diagnostics": [] }'`);
 
-const run = spawnSync(process.execPath, [join(installed, 'bin/typescript.js'), 'check'], {
+const run = spawnSync(process.execPath, [join(installed, 'dist/typescript.js'), 'check'], {
     cwd: root,
     stdio: 'inherit',
 });

@@ -16,7 +16,7 @@ Three costs grew with it. The sources were never type-checked, since the presets
 
 The package is TypeScript under the preset's strict flags, built by `tsdown.config.ts` into `dist/`, and `dist/` is what ships: every entry of the exports map, the checker program, the oxlint plugin, and each preset a tool loads by path. The declarations are the build's, one owner per type. The JSON presets stay data, served where they are written.
 
-The command is `src/command/`, one module per gesture and a function per step of the check, run by `bin/typescript.js`, a launcher of a few lines. Its output and exit codes are the bash command's, which the `specs/cli` goldens hold. The specs select passes by handing the command a selection; nothing that ships reads one.
+The command is `src/command/`, one module per gesture and a function per step of the check, run by the `typescript` bin, `src/typescript.bin.ts`, a few lines. Its output and exit codes are the bash command's, which the `specs/cli` goldens hold. The specs select passes by handing the command a selection; nothing that ships reads one.
 
 An error the shipped code throws at a project is a four-part refusal reading a heading of the manual; one only the toolchain can cause is `invariant()`. A self audit holds every shipped module to the two forms.
 

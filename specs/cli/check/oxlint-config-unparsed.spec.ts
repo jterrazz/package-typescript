@@ -1,14 +1,13 @@
 import { spawnSync } from 'node:child_process';
 import { rmSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
+import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { newDirectory, temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // oxlint loads every `oxlint.config.*` under the project, even one its `ignorePatterns` excludes, so a
 // config that cannot load is built in a temp directory.
-
-const BIN = resolve(import.meta.dirname, '../../../bin/typescript.js');
 
 const project = newDirectory('spec-oxlint-config-');
 
@@ -47,7 +46,10 @@ describe('oxlint-config-unparsed', () => {
         );
 
         // When - the quality checks run there
-        const result = spawnSync('node', [BIN, 'check'], { cwd: project, encoding: 'utf8' });
+        const result = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
+            cwd: project,
+            encoding: 'utf8',
+        });
 
         // Then - oxlint's own report is printed, and the pass names the refusal in its own vocabulary
         expect(result.status).toBe(1);
@@ -69,7 +71,10 @@ describe('oxlint-config-unparsed', () => {
         });
 
         // When - the quality checks run there
-        const result = spawnSync('node', [BIN, 'check'], { cwd: directory, encoding: 'utf8' });
+        const result = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
+            cwd: directory,
+            encoding: 'utf8',
+        });
         const lint = result.stdout.slice(
             result.stdout.indexOf('Oxlint Check'),
             result.stdout.indexOf('Oxfmt Check'),

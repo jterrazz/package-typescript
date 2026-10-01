@@ -8,10 +8,9 @@
         "url": "git+https://github.com/jterrazz/package-typescript.git"
     },
     "bin": {
-        "typescript": "bin/typescript.js"
+        "typescript": "dist/typescript.js"
     },
     "files": [
-        "bin",
         "dist",
         "docs",
         "!docs/03-testing.md",
@@ -63,8 +62,8 @@
     },
     "scripts": {
         "build": "tsdown --config tsdown.config.ts",
-        "lint": "./bin/typescript.js check",
-        "lint:fix": "./bin/typescript.js fix",
+        "lint": "node dist/typescript.js check",
+        "lint:fix": "node dist/typescript.js fix",
         "test": "vitest --run"
     },
     "dependencies": {
