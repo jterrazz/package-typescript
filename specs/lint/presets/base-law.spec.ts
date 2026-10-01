@@ -22,8 +22,8 @@ describe('base-law', () => {
                 read: docs/01-architecture.md#the-judging-layer
             lint/engine/project/reader.ts:1:22  architecture(engine-knows-no-declaration)
                 found: \`lint/engine/project/reader.ts\` imports \`lint/consumer/rules/rule.ts\`
-                why: lint/engine/ runs declarations and knows none — it receives them from an index, which it never imports
-                fix: hand the declaration to engine/ from an index, never import it from engine/
+                why: lint/engine/ runs declarations and knows none — it receives them from a module at the root of lint/, which it never imports
+                fix: hand the declaration to engine/ from a module at the root of lint/, never import it from engine/
                 read: docs/01-architecture.md#the-judging-layer
             lint/index.ts:1:25  architecture(shipped-lint-reads-no-self)
                 found: \`lint/index.ts\` imports \`src/command.ts\`
@@ -37,8 +37,8 @@ describe('base-law', () => {
                 read: docs/01-architecture.md#the-judging-layer
             src/app.ts:1:23  architecture(src-reads-no-declaration)
                 found: \`src/app.ts\` imports \`lint/consumer/checks/check.ts\`
-                why: src/ runs what lint/ declares through its index files and engine/, never a declaration of consumer/ or self/
-                fix: move what src/ needs into engine/, or compose it in a \`lint/\` index, and import it from there
+                why: src/ runs what lint/ declares through the modules at the root of lint/ and engine/, never a declaration of consumer/ or self/
+                fix: move what src/ needs into engine/, or compose it in a module at the root of \`lint/\`, and import it from there
                 read: docs/01-architecture.md#the-judging-layer
         `);
     });
