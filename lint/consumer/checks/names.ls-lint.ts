@@ -35,19 +35,28 @@ const IGNORED = [
     ...GROUND_FOLDERS.map((folder) => `**/${folder}`),
 ];
 
-const ROOT_FILE: Readonly<Record<Top, string>> = Object.freeze({
-    consumer: 'exists:0',
-    engine: 'exists:0',
-    self: 'regex:index',
+const MODULE_EXTENSIONS = ['.cjs', '.cts', '.js', '.jsx', '.mjs', '.mts', '.ts', '.tsx'];
+
+const REFUSED_FILE_BY_FILE = 'regex:/';
+
+const COMPOSERS: Rules = Object.freeze({
+    '.*': REFUSED_FILE_BY_FILE,
+    ...Object.fromEntries(MODULE_EXTENSIONS.map((extension) => [extension, `regex:${KEBAB}`])),
+});
+
+const ROOT_FILES: Readonly<Record<Top, Rules>> = Object.freeze({
+    consumer: { '.*': 'exists:0' },
+    engine: { '.*': 'exists:0' },
+    self: COMPOSERS,
 });
 
 function lintTreeRules(prefix: string, tree: LintTree): Record<string, Rules> {
     const lint = `${prefix}${LINT_ROOT}`;
     const rules: Record<string, Rules> = {
-        [lint]: { '.*': 'regex:index', '.dir': `regex:${LINT_ROOT}` },
+        [lint]: { ...COMPOSERS, '.dir': `regex:${LINT_ROOT}` },
     };
     for (const top of TOPS) {
-        rules[`${lint}/${top}`] = { '.*': ROOT_FILE[top], '.dir': `regex:${top}` };
+        rules[`${lint}/${top}`] = { ...ROOT_FILES[top], '.dir': `regex:${top}` };
         rules[`${lint}/${top}/{${tree[top].join(',')}}`] = {
             '.*': 'regex:.+',
             '.dir': `regex:${KEBAB}`,

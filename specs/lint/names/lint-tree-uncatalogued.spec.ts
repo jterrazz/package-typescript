@@ -10,9 +10,9 @@ describe('lint-tree-uncatalogued', () => {
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`
-            lint/README.md:1:1  names(lint-root-holds-only-index)
+            lint/README.md:1:1  names(lint-root-holds-only-composers)
                 found: \`lint/README.md\` sits at the root of lint/
-                why: lint/ has one tree in every repository — its root holds \`index\`, the entry that composes consumer/ with engine/, and a folder names the audience of every other file
+                why: lint/ has one tree in every repository — its root holds the modules that compose consumer/ with engine/: the entries, the bins and what src/ reads, and a folder names the audience of every other file
                 fix: move it into the folder its audience names — consumer, engine, self — or into docs/ if it explains
                 read: docs/06-quality-checks.md#the-lint-tree
         `);

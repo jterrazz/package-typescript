@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
+import { BASE_PRESETS } from './base-presets.js';
 import { BASELINE_SECTION } from './consumer/catalogue/preset.js';
 import { runChecker } from './engine/checker/checker.js';
 import { ENGINE_COMMANDS } from './engine/checker/engine-commands.js';
 import type { Held, Passes } from './engine/checker/pass.js';
-import { BASE_PRESETS } from './index.config.js';
 
 const PASSES: Passes = Object.freeze({
     async architecture() {

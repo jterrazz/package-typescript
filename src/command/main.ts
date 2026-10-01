@@ -4,15 +4,15 @@ import process from 'node:process';
 import { refusal } from '../../lint/engine/catalogue/lesson.js';
 import { baseline } from './baseline.js';
 import { build, bundle, clean, dev, start } from './build.js';
-import { EVERY_PASS, runChecks } from './check/index.js';
-import type { Selected } from './check/index.js';
+import { EVERY_PASS, runChecks } from './check/check.js';
+import type { Selected } from './check/check.js';
 import { doctor } from './doctor.js';
 import { handOver } from './processes.js';
 import { badge, print } from './terminal.js';
 import { CHECKER, projectRoot, tscIn } from './toolchain.js';
 
-export { CHECK_PASSES } from './check/index.js';
-export type { CheckPass, Selected } from './check/index.js';
+export { CHECK_PASSES } from './check/check.js';
+export type { CheckPass, Selected } from './check/check.js';
 
 const USAGE = [
     'Usage: typescript <command>',

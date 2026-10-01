@@ -6,12 +6,12 @@ const TEST_MATERIAL = String.raw`\.(?:test|spec|test-d|spec-d|fixtures)\.[cm]?[j
 
 export const LINT_LAYERS: readonly ArchitectureRule[] = Object.freeze([
     {
-        fix: 'hand the declaration to engine/ from an index, never import it from engine/',
+        fix: 'hand the declaration to engine/ from a module at the root of lint/, never import it from engine/',
         from: { path: '^lint/engine/' },
         name: 'engine-knows-no-declaration',
         read: READ,
-        to: { path: '^(lint/consumer/|lint/self/|lint/index|src/)' },
-        why: 'lint/engine/ runs declarations and knows none — it receives them from an index, which it never imports',
+        to: { path: '^(lint/consumer/|lint/self/|lint/[^/]+$|src/)' },
+        why: 'lint/engine/ runs declarations and knows none — it receives them from a module at the root of lint/, which it never imports',
     },
     {
         fix: 'move what both folders need into the catalogue or into engine/',
@@ -42,19 +42,19 @@ export const LINT_LAYERS: readonly ArchitectureRule[] = Object.freeze([
     },
     {
         fix: 'move what the shipped code needs out of self/ and src/ into engine/',
-        from: { path: '^lint/(consumer/|index)', pathNot: TEST_MATERIAL },
+        from: { path: '^lint/(consumer/|[^/]+$)', pathNot: TEST_MATERIAL },
         name: 'shipped-lint-reads-no-self',
         read: READ,
         to: { path: '^(lint/self|src)/' },
         why: 'the shipped lint/ never reads self/ (never shipped) nor src/ (the command); its tests are not shipped, and may run a rule through the package that ships it',
     },
     {
-        fix: 'move what src/ needs into engine/, or compose it in a `lint/` index, and import it from there',
+        fix: 'move what src/ needs into engine/, or compose it in a module at the root of `lint/`, and import it from there',
         from: { path: '^src/' },
         name: 'src-reads-no-declaration',
         read: READ,
         to: { path: '^lint/(consumer|self)/' },
-        why: 'src/ runs what lint/ declares through its index files and engine/, never a declaration of consumer/ or self/',
+        why: 'src/ runs what lint/ declares through the modules at the root of lint/ and engine/, never a declaration of consumer/ or self/',
     },
 ]);
 

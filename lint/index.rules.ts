@@ -1,9 +1,9 @@
+import { BASE_PRESETS } from './base-presets.js';
 import type { PresetChecks } from './consumer/checks/preset-checks.js';
 import { runChecker as runPasses } from './engine/checker/checker.js';
 import type { Checker } from './engine/checker/pass.js';
 import { readConfig, readConfigSync } from './engine/project/jterrazz-config.js';
 import type { Resolution } from './engine/project/preset.js';
-import { BASE_PRESETS } from './index.config.js';
 
 export {
     defineInvariant,

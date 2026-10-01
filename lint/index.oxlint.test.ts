@@ -12,7 +12,7 @@ import {
     next,
     node,
     react,
-} from './index.js';
+} from './index.oxlint.js';
 
 function refusalOf(composing: () => unknown): string {
     try {
@@ -24,7 +24,7 @@ function refusalOf(composing: () => unknown): string {
     return 'nothing refused';
 }
 
-describe('index', () => {
+describe('index.oxlint', () => {
     test('concatenates and dedupes plugin lists', () => {
         // Given - two configs sharing one jsPlugin
         const merged = compose(

@@ -11,8 +11,8 @@
             "default": "./dist/index.js"
         },
         "./extra": {
-            "types": "./dist/extra.d.ts",
-            "default": "./dist/extra.js"
+            "types": "./dist/index.extra.d.ts",
+            "default": "./dist/index.extra.js"
         }
     }
 }

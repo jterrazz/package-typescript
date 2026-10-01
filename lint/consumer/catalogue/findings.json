@@ -81,6 +81,21 @@
         "why": "git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there"
     },
     {
+        "family": "names",
+        "id": "names/entry-follows-its-grammar",
+        "sentence": "The source a published subpath is built from is named index[.<subpath>][.browser].ts, and a bin's <name>.bin.ts."
+    },
+    {
+        "family": "names",
+        "id": "names/index-is-an-entry",
+        "sentence": "A module named index is the entry of a subpath the package publishes, or that entry's test."
+    },
+    {
+        "family": "names",
+        "id": "names/export-has-an-entry",
+        "sentence": "Every subpath and bin the package publishes from its build is compiled from a source the build names."
+    },
+    {
         "family": "markdown",
         "id": "markdown/path-resolves",
         "sentence": "Every backticked repository path of a page names something on disk."
@@ -292,8 +307,8 @@
     },
     {
         "family": "tree",
-        "id": "names/lint-root-holds-only-index",
-        "sentence": "The root of lint/ holds its index and nothing else."
+        "id": "names/lint-root-holds-only-composers",
+        "sentence": "The root of lint/ holds modules alone: its entries, its bins and the compositions src/ reads."
     },
     {
         "family": "tree",
@@ -308,7 +323,7 @@
     {
         "family": "tree",
         "id": "names/self-folder-is-known",
-        "sentence": "Every folder of lint/self/ is one of catalogue, rules, checks and corpus, and only its index sits at its root."
+        "sentence": "Every folder of lint/self/ is one of catalogue, rules, checks and corpus, and only the modules composing them sit at its root."
     },
     {
         "family": "tree",

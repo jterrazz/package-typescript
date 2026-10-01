@@ -3,10 +3,10 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
+import { BASE_PRESETS } from '../../../lint/base-presets.js';
 import { objectOf } from '../../../lint/engine/project/json.js';
 import { readConfig, SETTINGS_FILE } from '../../../lint/engine/project/jterrazz-config.js';
-import { BASE_PRESETS } from '../../../lint/index.config.js';
-import { fromPresets } from '../../../lint/index.js';
+import { fromPresets } from '../../../lint/index.oxlint.js';
 
 const settingsAt = join(process.cwd(), SETTINGS_FILE);
 

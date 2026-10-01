@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { base, defineConfig } from './oxfmt.js';
+import { base, defineConfig } from './index.oxfmt.js';
 
-describe('oxfmt', () => {
+describe('index.oxfmt', () => {
     test('exports the shared formatting preset', () => {
         // Given - the tool-facing entry
         // Then - the preset carries the ecosystem's format: four spaces, single quotes, 100 columns

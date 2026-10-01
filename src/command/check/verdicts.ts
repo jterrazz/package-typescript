@@ -1,8 +1,8 @@
 import { appendFileSync, readFileSync } from 'node:fs';
 
+import { BASE_PRESETS } from '../../../lint/base-presets.js';
 import { labelOf } from '../../../lint/engine/baseline/baseline-file.js';
 import { readConfig } from '../../../lint/engine/project/jterrazz-config.js';
-import { BASE_PRESETS } from '../../../lint/index.config.js';
 import { checker } from '../checker.js';
 import type { Conventions } from './conventions.js';
 import type { Launched } from './launched.js';

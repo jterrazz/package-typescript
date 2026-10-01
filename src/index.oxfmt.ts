@@ -5,4 +5,4 @@ export type {
     SortTailwindcssUserConfig as SortTailwindcss,
 } from 'oxfmt';
 
-export { default as base } from './presets/oxfmt/index.js';
+export { default as base } from './presets/oxfmt/style.js';

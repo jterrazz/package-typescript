@@ -1,7 +1,7 @@
-import type { OxlintConfig } from '../lint/index.js';
-import { astro, bun, expo, nested, next, node, react } from '../lint/index.js';
-import type { OxfmtConfig } from './oxfmt.js';
-import oxfmtConfig from './presets/oxfmt/index.js';
+import type { OxlintConfig } from '../lint/index.oxlint.js';
+import { astro, bun, expo, nested, next, node, react } from '../lint/index.oxlint.js';
+import type { OxfmtConfig } from './index.oxfmt.js';
+import oxfmtConfig from './presets/oxfmt/style.js';
 
 export const oxfmt: OxfmtConfig = oxfmtConfig;
 

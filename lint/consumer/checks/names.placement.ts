@@ -29,7 +29,7 @@ function audienceFinding(
 
     return lintFinding(`${prefix}${LINT_ROOT}/${top}/${rest}`, FOLDER_RULES[top], [
         `found: ${found}`,
-        `why: ${top}/ holds ${HOLDS[top]}, so its folders are ${folders.join(', ')}${top === 'self' ? ', beside the `index` that composes them with engine/' : ''}`,
+        `why: ${top}/ holds ${HOLDS[top]}, so its folders are ${folders.join(', ')}${top === 'self' ? ', beside the modules that compose them with engine/' : ''}`,
         `fix: move ${rest === '' ? 'the file' : 'its files'} into the folder its nature names — ${folders.map((folder) => `${folder}/`).join(', ')}`,
     ]);
 }
@@ -40,9 +40,9 @@ function lintTreeFinding(
 ): Finding | undefined {
     const [top = '', folder, ...deeper] = path.split('/');
     if (!isDirectory && folder === undefined) {
-        return lintFinding(`${prefix}${LINT_ROOT}/${top}`, 'names/lint-root-holds-only-index', [
+        return lintFinding(`${prefix}${LINT_ROOT}/${top}`, 'names/lint-root-holds-only-composers', [
             `found: \`${prefix}${LINT_ROOT}/${top}\` sits at the root of lint/`,
-            'why: lint/ has one tree in every repository — its root holds `index`, the entry that composes consumer/ with engine/, and a folder names the audience of every other file',
+            'why: lint/ has one tree in every repository — its root holds the modules that compose consumer/ with engine/: the entries, the bins and what src/ reads, and a folder names the audience of every other file',
             `fix: move it into the folder its audience names — ${TOPS.join(', ')} — or into docs/ if it explains`,
         ]);
     }

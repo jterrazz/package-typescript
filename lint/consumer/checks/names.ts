@@ -1,4 +1,4 @@
-import { basename, join, matchesGlob } from 'node:path';
+import { join, matchesGlob } from 'node:path';
 
 import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
 import { emptyDirectories } from '../../engine/project/empty-directories.js';
@@ -11,10 +11,12 @@ import {
 } from '../../engine/project/json.js';
 import type { JsonObject } from '../../engine/project/json.js';
 import { SETTINGS_FILE } from '../../engine/project/jterrazz-config.js';
+import { withoutDotSlash } from '../../engine/project/packed-files.js';
 import type { Resolution } from '../../engine/project/preset.js';
 import { isRepositoryRoot } from '../../engine/project/repository-root.js';
 import { workspaceMembers } from '../../engine/project/workspace-members.js';
 import { declaredNamesFindings, declaredNamesRules } from './names.declared.js';
+import { buildMapOf, entryGrammarOf } from './names.entries.js';
 import { namesFinding } from './names.lessons.js';
 import { LINT_ROOT, lintFoldersOf, lintTreeOf } from './names.lint-tree.js';
 import type { LintTree } from './names.lint-tree.js';
@@ -202,46 +204,15 @@ function targetsOfExports(exports: unknown): string[] {
     return Object.values(exports).flatMap((value) => targetsOfExports(value));
 }
 
-// tsdown's own lookup order.
-const BUILD_CONFIGS = [
-    'tsdown.config.ts',
-    'tsdown.config.mts',
-    'tsdown.config.cts',
-    'tsdown.config.js',
-    'tsdown.config.mjs',
-    'tsdown.config.cjs',
-];
-
-const DEFAULT_OUT_DIR = 'dist';
-
-const LINT_ENTRY =
-    /(?:(?:(?<quoted>['"])(?<quotedKey>[^'"]+)\k<quoted>|(?<key>[\w$-]+))\s*:\s*)?['"](?:\.\/)?(?<source>lint\/[^'"]+)['"]/gu;
-
-const ENTRY_KEYS = new Set(['entry', 'input']);
-
-const withoutDotSlash = (path: string): string => path.replace(/^\.\//u, '');
-
-// The config is a module a bundler loads, so it is read, never run.
 function lintOutputsOf(disk: Disk, unit: string): string[] {
-    const config = BUILD_CONFIGS.find((name) => disk.exists(join(unit, name)));
-    if (config === undefined) {
+    const build = buildMapOf(disk, unit);
+    if (build === null) {
         return [];
     }
 
-    const text = disk.read(join(unit, config)) ?? '';
-    const outDir = withoutDotSlash(
-        /outDir\s*:\s*['"](?<dir>[^'"]+)['"]/u.exec(text)?.groups?.dir ?? DEFAULT_OUT_DIR,
-    );
-
-    return [...text.matchAll(LINT_ENTRY)].map(({ groups }) => {
-        const key = groups?.quotedKey ?? groups?.key;
-        const name =
-            key === undefined || ENTRY_KEYS.has(key)
-                ? basename(groups?.source ?? '').replace(/\.[^.]+$/u, '')
-                : key;
-
-        return `${outDir.replace(/\/$/u, '')}/${name}`;
-    });
+    return [...build.sources]
+        .filter(([, source]) => source.startsWith('lint/'))
+        .map(([name]) => `${build.outDir}/${name}`);
 }
 
 function filesPublish(files: readonly unknown[], path: string): boolean {
@@ -364,6 +335,7 @@ function spineOf(
 
     return [
         ...findings,
+        ...entryGrammarOf(disk, unit, { files, prefix }),
         ...lintTreeOf(files, { prefix, tree: lint, unit }),
         ...[...roots]
             .toSorted((left, right) => (left < right ? -1 : 1))

@@ -2,17 +2,17 @@
     "$schema": "https://unpkg.com/knip@6/schema.json",
     "entry": [
         "bin/typescript.js",
+        "lint/checker.bin.ts",
         "lint/consumer/rules/plugin.ts",
-        "lint/index.checker.ts",
+        "lint/index.config.ts",
         "lint/index.docs.ts",
+        "lint/index.oxlint.ts",
         "lint/index.rules.browser.ts",
         "lint/index.rules.ts",
-        "lint/index.ts",
         "specs/cli/_setup/check-selection.ts",
-        "src/command/index.ts",
-        "src/config.ts",
+        "src/command/main.ts",
+        "src/index.oxfmt.ts",
         "src/index.ts",
-        "src/oxfmt.ts",
         "src/presets/**/*.ts"
     ],
     "ignoreBinaries": ["gitleaks", "make"]

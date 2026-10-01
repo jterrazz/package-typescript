@@ -1,0 +1,15 @@
+{
+    "name": "fixture-names-entries",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "files": ["dist"],
+    "bin": { "tool": "./dist/tool.js" },
+    "exports": {
+        ".": "./dist/index.js",
+        "./config": { "types": "./dist/config.d.ts", "import": "./dist/config.js" },
+        "./rules": { "browser": "./dist/rules.browser.js", "default": "./dist/rules.js" },
+        "./gone": "./dist/gone.js",
+        "./presets/*": "./dist/presets/*.js"
+    }
+}

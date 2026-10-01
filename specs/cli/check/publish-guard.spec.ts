@@ -29,8 +29,8 @@ describe('publish-guard', () => {
 
         // Then - the pass fails on one finding per chunk of the second export, its ESM and its CJS build
         expect(publishPass(result.stdout.text)).toStrictEqual([
-            fixturesFinding('dist/extra.cjs'),
-            fixturesFinding('dist/extra.js'),
+            fixturesFinding('dist/index.extra.cjs'),
+            fixturesFinding('dist/index.extra.js'),
             '✗ Failed with exit code 1',
         ]);
     });

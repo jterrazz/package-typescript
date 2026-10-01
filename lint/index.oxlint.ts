@@ -2,12 +2,12 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'oxlint';
 import type { OxlintConfig } from 'oxlint';
 
+import { BASE_PRESETS } from './base-presets.js';
 import { PROFILES } from './consumer/rulebook/profiles.js';
 import { refusal } from './engine/catalogue/lesson.js';
 import { merge, profile } from './engine/compiler/compile.js';
 import { SETTINGS_FILE } from './engine/project/jterrazz-config.js';
 import { presetLesson, resolveConfig } from './engine/project/preset.js';
-import { BASE_PRESETS } from './index.config.js';
 
 /** Merges oxlint configs left to right: lists concatenated and deduped, maps shallow-merged with the last winning. */
 export { merge as compose } from './engine/compiler/compile.js';

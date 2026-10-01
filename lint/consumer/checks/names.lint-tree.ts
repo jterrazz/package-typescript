@@ -46,15 +46,13 @@ const TEST_MATERIAL = new RegExp(
 
 const stemOf = (name: string): string => name.split('.')[0] ?? '';
 
-const isIndex = (name: string): boolean => stemOf(name) === 'index';
-
 function helperFinding(path: string, names: readonly string[], tree: LintTree): Finding {
     const listed = names.map((name) => `\`${name}\``).join(', ');
 
     return {
         message: [
             `found: \`${path}\` hands ${listed} to another module, named for no declaration of its file`,
-            'why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what an `index` composes; one named for something else is code or data other files share, and that is the engine’s',
+            'why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what a module at the root of lint/ composes; one named for something else is code or data other files share, and that is the engine’s',
             `fix: move ${names.length === 1 ? 'it' : 'them'} under engine/ — ${tree.engine.map((folder) => `${folder}/`).join(', ')} — or, when it is this declaration’s own, name it for the file`,
             READ,
         ].join(' · '),
@@ -68,7 +66,7 @@ function programFinding(path: string): Finding {
         message: [
             `found: \`${path}\` is a program — it reads the command line, ends the process or runs when executed`,
             'why: consumer/ and self/ hold declarations alone, and the checker is what reads a command line, runs the declarations and says how the run ended; a program filed as a declaration is engine code no lock sees',
-            'fix: move the program under engine/checker/ and hand it this declaration from an `index`, leaving here only what it judges',
+            'fix: move the program under engine/checker/ and hand it this declaration from a module at the root of lint/, leaving here only what it judges',
             READ,
         ].join(' · '),
         path,
@@ -157,8 +155,11 @@ const isOwnReader = (file: string, reader: string): boolean => {
     );
 };
 
-const isComposer = (reader: string): boolean =>
-    reader.startsWith(`${LINT_ROOT}/`) && isIndex(reader.slice(reader.lastIndexOf('/') + 1));
+const isComposer = (reader: string): boolean => {
+    const [root, ...rest] = reader.split('/');
+
+    return root === LINT_ROOT && (rest.length === 1 || (rest.length === 2 && isTop(rest[0] ?? '')));
+};
 
 function handedTo(
     file: string,

@@ -25,7 +25,7 @@ export function profilePath(name: string): string {
     return resolve(REPOSITORY, 'dist/presets/oxlint/profiles', `${name}.js`);
 }
 
-export const OXFMT_CONFIG = resolve(REPOSITORY, 'dist/presets/oxfmt/index.js');
+export const OXFMT_CONFIG = resolve(REPOSITORY, 'dist/presets/oxfmt/style.js');
 
 // A real directory, never a link: tsc resolves a preset's own `extends` from its real path.
 export function installTsconfigPresets(project: string): void {

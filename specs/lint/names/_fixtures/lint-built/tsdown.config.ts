@@ -1,1 +1,1 @@
-export default [{ entry: { oxlint: 'lint/index.ts' } }];
+export default [{ entry: { oxlint: 'lint/index.oxlint.ts' } }];

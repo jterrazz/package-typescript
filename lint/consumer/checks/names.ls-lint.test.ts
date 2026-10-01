@@ -67,7 +67,7 @@ describe('names.ls-lint', () => {
 
         // Then - each file in a closed folder is refused under the rule of its place
         expect(findings.map(({ path, rule }) => `${rule}  ${path}`)).toStrictEqual([
-            'names/lint-root-holds-only-index  lint/NOTES',
+            'names/lint-root-holds-only-composers  lint/NOTES',
             'names/consumer-folder-is-known  lint/consumer/.notes',
             'names/consumer-folder-is-known  lint/consumer/README',
             'names/skill-holds-only-skill-md  skills/a/LICENSE',

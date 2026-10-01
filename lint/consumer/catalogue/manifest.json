@@ -181,7 +181,7 @@
         "channel": "runtime",
         "id": "presets-unresolved",
         "message": "presetLesson(problem, SETTINGS_FILE)",
-        "module": "lint/index.ts"
+        "module": "lint/index.oxlint.ts"
     },
     {
         "audience": "consumer",
@@ -189,7 +189,7 @@
         "channel": "runtime",
         "id": "profile-unknown",
         "message": "which is none of",
-        "module": "lint/index.ts"
+        "module": "lint/index.oxlint.ts"
     },
     {
         "audience": "consumer",

@@ -10,24 +10,24 @@ describe('lint-tree', () => {
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`
-            lint/README:1:1  names(lint-root-holds-only-index)
+            lint/README:1:1  names(lint-root-holds-only-composers)
                 found: \`lint/README\` sits at the root of lint/
-                why: lint/ has one tree in every repository — its root holds \`index\`, the entry that composes consumer/ with engine/, and a folder names the audience of every other file
+                why: lint/ has one tree in every repository — its root holds the modules that compose consumer/ with engine/: the entries, the bins and what src/ reads, and a folder names the audience of every other file
                 fix: move it into the folder its audience names — consumer, engine, self — or into docs/ if it explains
                 read: docs/06-quality-checks.md#the-lint-tree
-            lint/catalog.js:1:1  names(lint-root-holds-only-index)
-                found: \`lint/catalog.js\` sits at the root of lint/
-                why: lint/ has one tree in every repository — its root holds \`index\`, the entry that composes consumer/ with engine/, and a folder names the audience of every other file
+            lint/catalog.json:1:1  names(lint-root-holds-only-composers)
+                found: \`lint/catalog.json\` sits at the root of lint/
+                why: lint/ has one tree in every repository — its root holds the modules that compose consumer/ with engine/: the entries, the bins and what src/ reads, and a folder names the audience of every other file
                 fix: move it into the folder its audience names — consumer, engine, self — or into docs/ if it explains
                 read: docs/06-quality-checks.md#the-lint-tree
             lint/consumer/checks/sweep.js:1:1  names(audience-holds-only-declarations)
                 found: \`lint/consumer/checks/sweep.js\` is a program — it reads the command line, ends the process or runs when executed
                 why: consumer/ and self/ hold declarations alone, and the checker is what reads a command line, runs the declarations and says how the run ended; a program filed as a declaration is engine code no lock sees
-                fix: move the program under engine/checker/ and hand it this declaration from an \`index\`, leaving here only what it judges
+                fix: move the program under engine/checker/ and hand it this declaration from a module at the root of lint/, leaving here only what it judges
                 read: docs/06-quality-checks.md#the-lint-tree
             lint/consumer/checks/tree.js:1:1  names(audience-holds-only-declarations)
                 found: \`lint/consumer/checks/tree.js\` hands \`listFiles\` to another module, named for no declaration of its file
-                why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what an \`index\` composes; one named for something else is code or data other files share, and that is the engine’s
+                why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what a module at the root of lint/ composes; one named for something else is code or data other files share, and that is the engine’s
                 fix: move it under engine/ — project/, baseline/, checker/, catalogue/, compiler/, testing/ — or, when it is this declaration’s own, name it for the file
                 read: docs/06-quality-checks.md#the-lint-tree
             lint/consumer/listing.js:1:1  names(consumer-folder-is-known)
@@ -67,17 +67,17 @@ describe('lint-tree', () => {
                 read: docs/06-quality-checks.md#the-lint-tree
             lint/self/checks/layers.js:1:1  names(audience-holds-only-declarations)
                 found: \`lint/self/checks/layers.js\` hands \`folderOf\` to another module, named for no declaration of its file
-                why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what an \`index\` composes; one named for something else is code or data other files share, and that is the engine’s
+                why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what a module at the root of lint/ composes; one named for something else is code or data other files share, and that is the engine’s
                 fix: move it under engine/ — project/, baseline/, checker/, catalogue/, compiler/, testing/ — or, when it is this declaration’s own, name it for the file
                 read: docs/06-quality-checks.md#the-lint-tree
             lint/self/corpus/walks.js:1:1  names(audience-holds-only-declarations)
                 found: \`lint/self/corpus/walks.js\` hands \`FRAGMENT_WALK\` to another module, named for no declaration of its file
-                why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what an \`index\` composes; one named for something else is code or data other files share, and that is the engine’s
+                why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what a module at the root of lint/ composes; one named for something else is code or data other files share, and that is the engine’s
                 fix: move it under engine/ — project/, baseline/, checker/, catalogue/, compiler/, testing/ — or, when it is this declaration’s own, name it for the file
                 read: docs/06-quality-checks.md#the-lint-tree
             lint/self/reading/:1:1  names(self-folder-is-known)
                 found: \`lint/self/reading/\` is not a folder of self/
-                why: self/ holds the declarations only this repository is held to — its catalogue, its rules by family, its checks, the meta-tests of its corpus, so its folders are catalogue, rules, checks, corpus, beside the \`index\` that composes them with engine/
+                why: self/ holds the declarations only this repository is held to — its catalogue, its rules by family, its checks, the meta-tests of its corpus, so its folders are catalogue, rules, checks, corpus, beside the modules that compose them with engine/
                 fix: move its files into the folder its nature names — catalogue/, rules/, checks/, corpus/
                 read: docs/06-quality-checks.md#the-lint-tree
             lint/self/rules/imports/facet-is-a-composition.js:1:1  names(rule-file-in-its-family-folder)
@@ -87,7 +87,7 @@ describe('lint-tree', () => {
                 read: docs/06-quality-checks.md#the-lint-tree
             lint/self/test-coverage/:1:1  names(self-folder-is-known)
                 found: \`lint/self/test-coverage/\` is not a folder of self/
-                why: self/ holds the declarations only this repository is held to — its catalogue, its rules by family, its checks, the meta-tests of its corpus, so its folders are catalogue, rules, checks, corpus, beside the \`index\` that composes them with engine/
+                why: self/ holds the declarations only this repository is held to — its catalogue, its rules by family, its checks, the meta-tests of its corpus, so its folders are catalogue, rules, checks, corpus, beside the modules that compose them with engine/
                 fix: move its files into the folder its nature names — catalogue/, rules/, checks/, corpus/
                 read: docs/06-quality-checks.md#the-lint-tree
             packages/tool/lint/scripts/:1:1  names(lint-folder-is-known)
