@@ -19,7 +19,7 @@ One devDependency that builds, checks, lints and formats a project. The manual i
 | `typescript baseline`    | a bump lands red: record today's counts, exact — `fix` lowers one that fell              |
 | `typescript docs-layout` | a repository with no npm project: the manual's shape, alone                              |
 
-A project names ONE profile — `node`, `next`, `astro`, `expo`, `bun`, `react` — in `jterrazz.config.ts`, as `presets: [typescript({ profile })]`, and the matching preset in `tsconfig.json` (a published package: `node`, with the `library` tsconfig); its `oxlint.config.ts` is `defineConfig(fromPresets(settings))`, and its config files import the toolchain's packages and nothing else. The wiring is `docs/05-getting-started.md`.
+A project names ONE profile — `node`, `next`, `astro`, `expo`, `bun`, `react` — in `jterrazz.config.ts`, as `presets: [typescript({ profile })]`, and the matching preset in `tsconfig.json` (a published package: `node`, with the `library` tsconfig); its `oxlint.config.ts` is `defineConfig(fromPresets(settings))`, and its config files import the toolchain's packages and nothing else. A repository root also owes a `Makefile` of six gestures and a `docs/` manual its `AGENTS.md` routes to. The whole wiring, from an empty folder to a green run, is `docs/05-getting-started.md`.
 
 ## What a failing pass means
 
@@ -63,15 +63,15 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 
 ## The chapter to read next
 
-| Question                                                                                                                         | Chapter                            |
-| -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| what the toolchain is, the four ideas to hold (profile, settings file, two commands, baseline), and which chapter to read first  | `README.md`, then `docs/README.md` |
-| the layers, the exports map, the two compilers                                                                                   | `docs/01-architecture.md`          |
-| wiring a project, `.artifacts/`                                                                                                  | `docs/05-getting-started.md`       |
-| how this toolchain proves itself, and the rules it keeps for its own suite — this repository alone, the install ships without it | `docs/03-testing.md`               |
-| which number moves on a release                                                                                                  | `docs/04-operating.md`             |
-| `build`, `bundle`, `start`, `dev`                                                                                                | `docs/09-building.md`              |
-| a failing pass, a rule id, the baseline                                                                                          | `docs/07-quality-checks.md`        |
-| a lint rule, a profile, `compose()`, knip                                                                                        | `docs/08-lint-presets.md`          |
-| a preset, the merge order, an opt-out                                                                                            | `docs/06-configuration.md`         |
-| writing a rule, a check or its chapter with the kit                                                                              | `docs/10-rules-kit.md`             |
+| Question                                                                                                                         | Chapter                                            |
+| -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| what the toolchain is, the four ideas to hold (profile, settings file, two commands, baseline), and the order to read the manual | `README.md`, then `docs/README.md`                 |
+| wiring a project from an empty folder to a green `check`, `.artifacts/`                                                          | `docs/05-getting-started.md`                       |
+| `jterrazz.config.ts`, a preset, the merge order, an opt-out, a tsconfig preset, a nested lint config                             | `docs/06-configuration.md`                         |
+| a failing pass, a rule id, the baseline                                                                                          | `docs/07-quality-checks.md`                        |
+| a lint rule, a profile, `compose()`, knip                                                                                        | `docs/08-lint-presets.md`                          |
+| `build`, `bundle`, `start`, `dev`, `tsc`, a `tsdown.config.ts`                                                                   | `docs/09-building.md`                              |
+| a bump landed red, which number moves on a release                                                                               | `docs/04-operating.md`                             |
+| writing a rule, a check or its chapter with the kit                                                                              | `docs/10-rules-kit.md`                             |
+| changing the toolchain itself: its layers, its loop                                                                              | `docs/01-architecture.md`, `docs/02-developing.md` |
+| how this toolchain proves itself, and the rules it keeps for its own suite — this repository alone, the install ships without it | `docs/03-testing.md`                               |
