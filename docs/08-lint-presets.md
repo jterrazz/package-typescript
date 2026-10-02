@@ -1,13 +1,6 @@
 # Lint presets
 
-Every rule of every plugin this package loads is decided by name, at `error` or at `off` with a recorded reason — that manifest is `lint/`, and a profile is a pre-composed, tested slice of it that a consumer names in one place, the base preset of its settings file:
-
-```ts
-// jterrazz.config.ts
-import { defineConfig, typescript } from '@jterrazz/typescript/config';
-
-export default defineConfig({ presets: [typescript({ profile: 'node' })] });
-```
+The rulebook: what the Oxlint pass holds a project to. Every rule of every plugin this package loads is decided by name, either on at `error` or `off` with a recorded reason. A profile is a tested slice of that rulebook for one kind of project, named once in `jterrazz.config.ts` ([Getting started](05-getting-started.md#1-pick-a-profile)). The chapter opens on the laws every decision follows, then the profiles, then the decisions worth explaining, and ends on the full catalogue, generated from the rulebook itself.
 
 ## The four laws
 
@@ -58,17 +51,7 @@ Node ESM resolves a specifier literally and needs the `.js`; a bundler resolves 
 | `env`, `globals`, `options`, `rules`, `settings`    | shallow-merged, last wins per key       |
 | anything else                                       | taken from the last config that sets it |
 
-A project's oxlint config is what its presets declare — nothing is auto-detected. It composes them all in one call, `fromPresets`, the profile of the base preset first and each preset's own after it, in [the merge order](06-configuration.md#the-merge-order); `@jterrazz/test`'s oxlint rules arrive with its `test()` preset:
-
-```ts
-import { defineConfig, fromPresets } from '@jterrazz/typescript/oxlint';
-
-import settings from './jterrazz.config.ts';
-
-export default defineConfig(fromPresets(settings));
-```
-
-`compose` stays for what is the project's own, composed after `fromPresets`: an override, a rule a subtree turns off with its reason.
+`fromPresets(settings)` is one `compose` call over the profile of the base preset and each preset's own rules, in [the merge order](06-configuration.md#the-merge-order); a project's own additions are composed after it ([Configuration § The lint config](06-configuration.md#the-lint-config)).
 
 ## Import boundaries
 
