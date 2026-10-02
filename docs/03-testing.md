@@ -92,6 +92,19 @@ The consumer's own view is run by `packed-cli.specification.ts`: its runner lays
 
 The repository installs itself too (`file:.`, a copy under `install-links`), and `@jterrazz/test`'s facets load `@jterrazz/typescript/rules` from that copy: before `make lint` and `make test`, `install-self` lays it again from the tarball of the build they stand on, so neither a spec nor the lint facet judges an install older than the checkout.
 
+## The mutants no test kills
+
+`make mutation` measures the module tests alone ([Developing](02-developing.md#working-on-this-package)). Before the module tests that restated a spec were deleted, in October 2026, the specs were measured once on the instrumented build, with the active mutant handed to every process they spawn and to the repository's own install. Stryker's vitest runner reported no test run for the `lint` project, or for a config mixing `cli` and `lint`, so that reading drove each mutant through its own `vitest run`. No committed tool reproduces it: it is a one-off reading, kept here as the baseline the next measure is compared with.
+
+The deletions left 476 mutants that only the deleted tests had killed, and 17 that had become static. The specs killed 471 of the first and all 17 of the second; where a spec was missing, one was written first, such as the `publish-guard` cases and the `presets-config-*` documents. Over those mutants the suite killed 2,927 of 10,251, against 2,932 before. The five left alive are equivalent:
+
+| Survivor                                                        | Why no test kills it                                                                                         |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `lint/consumer/checks/publish.no-test-code-in-production.ts:63` | its only caller builds the manifest with `files` always an array, so the `?? []` fallback is never reached   |
+| `lint/consumer/checks/preset-checks.ts:66`                      | every failed result the Architecture check returns carries `lines`, so the `?? []` fallback is never reached |
+| `lint/engine/project/test-material.ts:56, 76` (2)               | the caller branches on which keys the result holds, never on the `reason` string's value                     |
+| `lint/engine/project/built-chunks.ts:44`                        | the judged build runs with `write: false`, and tsdown cleans only what it writes, so `clean` changes nothing |
+
 ## When a chain of code is the right answer
 
 Under `specs/cli/` every spec is a `.spec.ts` whatever door it takes — the suffix says the assembled product, not which runner reaches it. A document is still the default, and a chain of code is the exception; each one says which exception it is:
