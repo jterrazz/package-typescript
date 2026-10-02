@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
-import { CHECKOUT } from './closure.ts';
+const CHECKOUT = resolve(import.meta.dirname, '../../../..');
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
@@ -32,7 +32,6 @@ export function pack(...flags: string[]): { filename: string; paths: string[] } 
     };
 }
 
-/** The tarball a consumer installs, packed and unpacked into `destination`: its `package/` folder. */
 export function unpackedInto(destination: string): string {
     const { filename } = pack('--pack-destination', destination);
     const run = spawnSync('tar', ['-xzf', filename], { cwd: destination, encoding: 'utf8' });

@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { unpackedInto } from './pack.ts';
+import { unpackedInto } from '../../../_shared/_setup/packed/pack.ts';
 
 export default function setup(): () => void {
     const into = mkdtempSync(join(tmpdir(), 'typescript-packed-'));

@@ -6,6 +6,7 @@ import { describe, expect, onTestFinished, test } from 'vitest';
 import { PROFILES } from '../../../lint/consumer/rulebook/profiles.js';
 import { decisions } from '../../../lint/engine/catalogue/decisions.js';
 import { fragmentsIn, walkModules } from '../../../lint/engine/testing/module-walk.js';
+import { isRecord, pack } from '../../_shared/_setup/packed/pack.js';
 import {
     argvFlags,
     checkOutcome,
@@ -16,7 +17,6 @@ import {
     publishedTargets,
     selectingEnvironments,
 } from './_setup/packed-tree.js';
-import { isRecord, pack } from '../../cli/_setup/packed/pack.js';
 
 // Judged on content, never on names: no text the tarball holds names a `self` rule, whatever file carries it.
 

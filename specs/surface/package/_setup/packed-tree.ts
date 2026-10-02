@@ -7,7 +7,7 @@ import { text as streamText } from 'node:stream/consumers';
 import { pathToFileURL } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
 
-import { isRecord, unpackedInto } from '../../../cli/_setup/packed/pack.js';
+import { isRecord, unpackedInto } from '../../../_shared/_setup/packed/pack.js';
 
 // Packed beside this checkout's install so its imports resolve, and removed when the process ends.
 
