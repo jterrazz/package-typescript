@@ -1,6 +1,6 @@
 # Testing
 
-A toolchain is proved by running it, so almost every test here drives the real `typescript` bin, `dist/typescript.js`, over the built `dist/`, against a real project on disk.
+A toolchain is proved by running it, against a real project on disk. Almost every test runs the built command in one of two ways. Most `cli` documents run `dist/command.js` through the pass selector, `specs/cli/_setup/check-selection.ts`, so that a spec runs only the passes it asserts on ([The self rules](#the-self-rules)). The `node`, `tsc`, `typescript` and `oxfmt` specs run the packed tarball, installed into a consumer's project as `npm install` would lay it ([The artefact a consumer installs](#the-artefact-a-consumer-installs)).
 
 ```bash
 npm run build   # tsdown into dist/, which every suite below reads
@@ -8,7 +8,7 @@ npm test        # vitest — the unit tests and the specs
 npm run lint    # this package's own CLI, run on this package
 ```
 
-## Two suites, two speeds
+## Three projects, three speeds
 
 `vitest.config.ts` declares three projects, through `@jterrazz/test/vitest`'s own project helpers — `unit()`, `lint()` and `cli()`:
 

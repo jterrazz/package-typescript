@@ -221,14 +221,14 @@ typescript baseline   # record today's debt, so each count may only fall
 
 ## Working on this package
 
-| Gesture        | Runs                                                                                                           |
-| -------------- | -------------------------------------------------------------------------------------------------------------- |
-| `make install` | `npm ci`, once per change of the lockfile                                                                      |
-| `make build`   | `npm run build` — tsdown over `tsdown.config.ts` into `dist/`, which `lint`, `test` and `fix` each run first   |
-| `make lint`    | this package's own CLI, `typescript check`, run on this package                                                |
-| `make fix`     | `@jterrazz/test`'s checker, then `typescript fix`, each whatever the other said                                |
-| `make test`    | the two vitest suites ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md)) |
-| `make check`   | `make lint`, then `make test` — the gate before a commit                                                       |
+| Gesture        | Runs                                                                                                               |
+| -------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `make install` | `npm ci`, once per change of the lockfile                                                                          |
+| `make build`   | `npm run build` — tsdown over `tsdown.config.ts` into `dist/`, which `lint`, `test` and `fix` each run first       |
+| `make lint`    | this package's own CLI, `typescript check`, run on this package                                                    |
+| `make fix`     | `@jterrazz/test`'s checker, then `typescript fix`, each whatever the other said                                    |
+| `make test`    | the three vitest projects ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md)) |
+| `make check`   | `make lint`, then `make test` — the gate before a commit                                                           |
 
 `make check-links` is opt-in and never part of `check`: it runs [lychee](https://lychee.cli.rs) over `README.md`, `docs/` and `skills/`, remote links included, so it needs the network and a lychee installed on the machine, and it says so and fails where there is none. Why the gate leaves remote links out is [Quality checks](06-quality-checks.md#what-rumdl-judges)'s.
 
