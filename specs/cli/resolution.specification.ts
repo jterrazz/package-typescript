@@ -5,8 +5,6 @@ import { afterAll } from 'vitest';
 // Not a third-party binary, so `cli-runs-the-product-binary` does not apply: an install tree no fixture can reproduce.
 const BIN = resolve(import.meta.dirname, '_setup/run-split-install.ts');
 
-export const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
-
 export const { cli, cleanup } = await specification.cli(BIN);
 
 afterAll(cleanup);

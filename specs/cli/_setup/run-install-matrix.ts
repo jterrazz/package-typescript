@@ -17,6 +17,8 @@ import process from 'node:process';
 
 const REPOSITORY = resolve(import.meta.dirname, '../../..');
 
+const PACKED = process.env.PACKED_PACKAGE ?? '';
+
 const CONSUMERS = join(REPOSITORY, 'specs/cli/preset/_fixtures/install-matrix');
 const ASTRO_PACKAGE = join(REPOSITORY, 'specs/cli/preset/_fixtures/astro-package');
 
@@ -64,9 +66,10 @@ function namedImports(names: readonly string[]): string {
 function storeWith(directory: string, withAstro: boolean): string {
     const store = join(directory, '.pnpm/@jterrazz+typescript/node_modules');
     const installed = join(store, '@jterrazz/typescript');
-    for (const entry of ['dist', 'lint', 'src', 'package.json']) {
-        cpSync(join(REPOSITORY, entry), join(installed, entry), { recursive: true });
-    }
+    cpSync(PACKED, installed, {
+        filter: (source) => source !== join(PACKED, 'node_modules'),
+        recursive: true,
+    });
     for (const name of readdirSync(join(REPOSITORY, 'node_modules'))) {
         const source = join(REPOSITORY, 'node_modules', name);
         if (name.startsWith('.') || name === '@jterrazz') {

@@ -1,13 +1,11 @@
 import { describe, expect, test } from 'vitest';
 
-import { PACKAGE_ROOT, cli as resolutionCli } from '../resolution.specification.js';
-
-// A document's `command:` is fixed text and cannot name this checkout's absolute path.
+import { cli as resolutionCli } from '../resolution.specification.js';
 
 describe('resolution', () => {
     test('resolves each tool independently when npm splits them between bin dirs', async () => {
         // Given - oxlint nested under the package, the other tools hoisted to the consumer root
-        const result = await resolutionCli.exec(PACKAGE_ROOT);
+        const result = await resolutionCli.exec();
 
         // Then - the whole check output matches: every tool is found and runs, wherever npm placed it
         expect(result.exitCode).toBe(0);

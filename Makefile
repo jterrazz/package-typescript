@@ -1,4 +1,4 @@
-.PHONY: install build lint fix test check check-links mutation
+.PHONY: install build install-self lint fix test check check-links mutation
 
 node_modules/.install: package-lock.json
 	npm ci
@@ -9,7 +9,14 @@ install: node_modules/.install
 build: node_modules/.install
 	npm run build
 
-lint: build
+# The repository installs itself (`file:.`) as a copy of its tarball: laid again from this build's, so what the specs and @jterrazz/test load from node_modules is what a consumer installs.
+install-self: build
+	@rm -rf .artifacts/self node_modules/@jterrazz/typescript
+	@mkdir -p .artifacts/self node_modules/@jterrazz/typescript
+	@npm pack --ignore-scripts --silent --pack-destination .artifacts/self > /dev/null
+	@tar -xzf .artifacts/self/*.tgz --strip-components=1 -C node_modules/@jterrazz/typescript
+
+lint: install-self
 	npm run lint
 
 # Every fixer runs and the verdict comes at the end, the checker first (docs/06-quality-checks.md, "The six gestures").
@@ -19,7 +26,7 @@ fix: build
 	npm run lint:fix || status=1; \
 	exit $$status
 
-test: build
+test: install-self
 	npm test
 
 check: lint test

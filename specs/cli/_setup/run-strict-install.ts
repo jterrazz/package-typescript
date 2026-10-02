@@ -16,13 +16,16 @@ import process from 'node:process';
 
 const REPOSITORY = resolve(import.meta.dirname, '../../..');
 
+const PACKED = process.env.PACKED_PACKAGE ?? '';
+
 const root = mkdtempSync(join(tmpdir(), 'strict-install-'));
 const store = join(root, 'node_modules/.pnpm/@jterrazz+typescript/node_modules');
 const installed = join(store, '@jterrazz/typescript');
 
-for (const entry of ['dist', 'lint', 'src', 'package.json']) {
-    cpSync(join(REPOSITORY, entry), join(installed, entry), { recursive: true });
-}
+cpSync(PACKED, installed, {
+    filter: (source) => source !== join(PACKED, 'node_modules'),
+    recursive: true,
+});
 mkdirSync(join(store, '.bin'), { recursive: true });
 mkdirSync(join(root, 'node_modules/@jterrazz'), { recursive: true });
 mkdirSync(join(root, 'src'));

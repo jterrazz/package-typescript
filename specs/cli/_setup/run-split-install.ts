@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
 
-const [packageRoot = ''] = process.argv.slice(2);
+const PACKED = process.env.PACKED_PACKAGE ?? '';
 const root = mkdtempSync(join(tmpdir(), 'split-install-'));
 const installed = join(root, 'node_modules/@jterrazz/typescript');
 
@@ -14,9 +14,10 @@ function stub(path: string, body: string): void {
     chmodSync(path, 0o755);
 }
 
-for (const entry of ['dist', 'lint', 'src', 'package.json']) {
-    cpSync(join(packageRoot, entry), join(installed, entry), { recursive: true });
-}
+cpSync(PACKED, installed, {
+    filter: (source) => source !== join(PACKED, 'node_modules'),
+    recursive: true,
+});
 mkdirSync(join(installed, 'node_modules/.bin'), { recursive: true });
 mkdirSync(join(root, 'node_modules/.bin'), { recursive: true });
 for (const tool of ['tsc', 'oxfmt', 'knip']) {

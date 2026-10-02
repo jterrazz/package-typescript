@@ -24,6 +24,7 @@ export default defineSpecConfig({
                 test: {
                     globalSetup: [
                         resolve(import.meta.dirname, 'specs/cli/_setup/run-temp-root.ts'),
+                        resolve(import.meta.dirname, 'specs/cli/_setup/packed/per-run.ts'),
                     ],
                 },
             }),

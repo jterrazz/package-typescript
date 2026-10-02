@@ -1,7 +1,6 @@
 import { specification } from '@jterrazz/test';
+import { definePreset } from '@jterrazz/typescript/config';
 import { afterAll } from 'vitest';
-
-import { definePreset } from '../../lint/index.config.js';
 
 const testing = definePreset({
     layers: [

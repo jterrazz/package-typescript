@@ -11,9 +11,11 @@ const REPOSITORY = resolve(import.meta.dirname, '../../..');
 export function toolchainWith(tools: Record<string, null | string>): string {
     const root = temporaryDirectory('spec-toolchain-');
 
-    for (const entry of ['dist', 'lint', 'src', 'package.json']) {
-        cpSync(join(REPOSITORY, entry), join(root, entry), { recursive: true });
-    }
+    const packed = process.env.PACKED_PACKAGE ?? '';
+    cpSync(packed, root, {
+        filter: (source) => source !== join(packed, 'node_modules'),
+        recursive: true,
+    });
 
     const installed = join(root, 'node_modules');
     mkdirSync(installed);
