@@ -63,14 +63,15 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 
 ## The chapter to read next
 
-| Question                                                                                                                         | Chapter                     |
-| -------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| the layers, the exports map, the two compilers                                                                                   | `docs/01-architecture.md`   |
-| wiring a project, `.artifacts/`, a bump                                                                                          | `docs/02-developing.md`     |
-| how this toolchain proves itself, and the rules it keeps for its own suite — this repository alone, the install ships without it | `docs/03-testing.md`        |
-| which number moves on a release                                                                                                  | `docs/04-operating.md`      |
-| `build`, `bundle`, `start`, `dev`                                                                                                | `docs/05-building.md`       |
-| a failing pass, a rule id, the baseline                                                                                          | `docs/06-quality-checks.md` |
-| a lint rule, a profile, `compose()`, knip                                                                                        | `docs/07-lint-presets.md`   |
-| what a repository root holds                                                                                                     | `docs/08-repo-structure.md` |
-| a preset, the merge order, an opt-out; writing a rule, a check or its chapter with the kit                                       | `docs/09-rules-kit.md`      |
+| Question                                                                                                                         | Chapter                            |
+| -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| what the toolchain is, the four ideas to hold (profile, settings file, two commands, baseline), and which chapter to read first  | `README.md`, then `docs/README.md` |
+| the layers, the exports map, the two compilers                                                                                   | `docs/01-architecture.md`          |
+| wiring a project, `.artifacts/`, a bump                                                                                          | `docs/02-developing.md`            |
+| how this toolchain proves itself, and the rules it keeps for its own suite — this repository alone, the install ships without it | `docs/03-testing.md`               |
+| which number moves on a release                                                                                                  | `docs/04-operating.md`             |
+| `build`, `bundle`, `start`, `dev`                                                                                                | `docs/05-building.md`              |
+| a failing pass, a rule id, the baseline                                                                                          | `docs/06-quality-checks.md`        |
+| a lint rule, a profile, `compose()`, knip                                                                                        | `docs/07-lint-presets.md`          |
+| what a repository root holds                                                                                                     | `docs/08-repo-structure.md`        |
+| a preset, the merge order, an opt-out; writing a rule, a check or its chapter with the kit                                       | `docs/09-rules-kit.md`             |
