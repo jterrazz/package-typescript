@@ -1,10 +1,15 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, symlinkSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
 
-const CHECKOUT = resolve(import.meta.dirname, '../../../..');
+import {
+    CHECKOUT,
+    linkBins,
+    linkFromCheckout,
+    readManifest,
+    runtimeDependencies,
+} from './closure.ts';
 
-/** Packs the checkout once per run and unpacks the tarball as an install lays it, its dependencies resolved from the checkout's own install beside it; every spec and every child it spawns finds it at `PACKED_PACKAGE`. */
 export default function setup(): () => void {
     const into = mkdtempSync('/tmp/typescript-packed-');
     const report = execFileSync(
@@ -17,9 +22,16 @@ export default function setup(): () => void {
     for (const { filename } of Object.values(packed)) {
         execFileSync('tar', ['-xzf', join(into, filename), '-C', into]);
     }
-    symlinkSync(join(CHECKOUT, 'node_modules'), join(into, 'package', 'node_modules'), 'dir');
+    const unpacked = join(into, 'package');
+    const modules = join(unpacked, 'node_modules');
+    for (const name of runtimeDependencies(readManifest(unpacked))) {
+        if (existsSync(join(CHECKOUT, 'node_modules', name))) {
+            linkFromCheckout(name, modules);
+            linkBins(join(modules, name), modules);
+        }
+    }
     const previous = process.env.PACKED_PACKAGE;
-    process.env.PACKED_PACKAGE = join(into, 'package');
+    process.env.PACKED_PACKAGE = unpacked;
 
     return () => {
         if (previous === undefined) {

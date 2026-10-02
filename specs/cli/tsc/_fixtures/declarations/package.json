@@ -4,6 +4,7 @@
     "private": true,
     "type": "module",
     "devDependencies": {
-        "@jterrazz/typescript": "11.0.0"
+        "@jterrazz/typescript": "11.0.0",
+        "@types/node": "^26.6.2"
     }
 }

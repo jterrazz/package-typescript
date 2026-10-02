@@ -35,10 +35,6 @@ describe('typescript', () => {
 
             ✓ Passed
 
-             RUN  Test Conventions (@jterrazz/test)
-
-            ✓ Passed
-
              RUN  Suppressions (directives)
 
             ✓ Passed
