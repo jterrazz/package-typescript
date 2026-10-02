@@ -96,13 +96,12 @@ The repository installs itself too (`file:.`, a copy under `install-links`), and
 
 `make mutation` measures the module tests alone ([Developing](02-developing.md#the-loop)). Before the module tests that restated a spec were deleted, in October 2026, the specs were measured once on the instrumented build, with the active mutant handed to every process they spawn and to the repository's own install. Stryker's vitest runner reported no test run for the `lint` project, or for a config mixing `cli` and `lint`, so that reading drove each mutant through its own `vitest run`. No committed tool reproduces it: it is a one-off reading, kept here as the baseline the next measure is compared with.
 
-The deletions left 476 mutants that only the deleted tests had killed, and 17 that had become static. The specs killed 472 of the first and all 17 of the second; where a spec was missing, one was written first, such as the `publish-guard` cases and the `presets-config-*` documents. Over those mutants the suite killed 2,928 of 10,251, against 2,932 before. The four left alive are equivalent:
+The deletions left 476 mutants that only the deleted tests had killed, and 17 that had become static. The specs killed 473 of the first and all 17 of the second; where a spec was missing, one was written first, such as the `publish-guard` cases and the `presets-config-*` documents. Over those mutants the suite killed 2,929 of 10,251, against 2,932 before. The three left alive are equivalent:
 
-| Survivor                                                        | Why no test kills it                                                                                         |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `lint/consumer/checks/publish.no-test-code-in-production.ts:63` | its only caller builds the manifest with `files` always an array, so the `?? []` fallback is never reached   |
-| `lint/consumer/checks/preset-checks.ts:66`                      | every failed result the Architecture check returns carries `lines`, so the `?? []` fallback is never reached |
-| `lint/engine/project/test-material.ts:56, 76` (2)               | the caller branches on which keys the result holds, never on the `reason` string's value                     |
+| Survivor                                                        | Why no test kills it                                                                                       |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `lint/consumer/checks/publish.no-test-code-in-production.ts:63` | its only caller builds the manifest with `files` always an array, so the `?? []` fallback is never reached |
+| `lint/engine/project/test-material.ts:56, 76` (2)               | the caller branches on which keys the result holds, never on the `reason` string's value                   |
 
 ## When a chain of code is the right answer
 
