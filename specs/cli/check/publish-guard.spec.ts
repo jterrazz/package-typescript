@@ -115,6 +115,18 @@ describe('publish-guard', () => {
         ]);
     });
 
+    test('judges what the build runs, never its declarations: a type taken from a test package is no finding', async () => {
+        // Given - a library whose shipped module takes a type from vitest, a dev dependency, and runs nothing of it
+        const result = await publish
+            .fixture(directory('./_fixtures/publish/type-from-test-package/'))
+            .link('@jterrazz/test')
+            .link('vitest')
+            .exec('check');
+
+        // Then - the pass is green: the import is erased from the chunk the package runs
+        expect(publishPass(result.stdout.text)).toStrictEqual(['✓ Passed']);
+    });
+
     test('fails the pass on a build that fails, and nothing else', async () => {
         // Given - a package publint and attw accept, whose own config names an entry nobody wrote
         const result = await publish
