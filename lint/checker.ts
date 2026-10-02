@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { BASE_PRESETS } from './base-presets.js';
 import { BASELINE_SECTION } from './consumer/catalogue/preset.js';
 import { runChecker } from './engine/checker/checker.js';

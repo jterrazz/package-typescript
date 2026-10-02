@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
