@@ -1,14 +1,16 @@
 # Quality checks
 
-`typescript check` runs every quality gate in parallel; `typescript fix` auto-repairs what it can.
+`typescript check` runs every quality pass in parallel and fails on any finding; `typescript fix` repairs what can be repaired without a human. This chapter is the reference of both: one section per pass, in the order a run prints them, then the ratchet that holds a project's debt and the drift report that closes every run.
 
-Every pass that RAN prints the same block, in one fixed order: a `RUN` header carrying its name, whatever it has to say, and one verdict line. A pass that did not apply — no Astro in the project, no `jterrazz.config.ts` and no dependency-cruiser config — prints nothing at all, because it answered no question.
+## Reading a run
 
-What sits between the header and the verdict is the one variable. A failing pass prints its whole captured log; a passing one stays silent, unless it WROTE something — `fix` changed a file the operator owns, and silence would hide that — or a ratchet held it, which the Test Conventions pass states in its summary line ([the ratchet](#the-ratchet)). A tool's success chatter never reaches the stream, so a green run is byte-identical on every platform.
+Every pass that ran prints the same block: a `RUN` header carrying its name, whatever it has to say, and one verdict line. A pass that did not apply, such as Astro in a project without Astro, prints nothing at all, because it answered no question.
 
-The order is the table below, top to bottom, and the drift report closes the run.
+A failing pass prints its whole log. A passing one stays silent, unless it wrote something (`fix` changed a file the operator owns) or a ratchet held it. A tool's success chatter never reaches the stream, so a green run is the same on every platform.
 
-The toolchain measures from the nearest `package.json`: a workspace root runs each per-package gate once per member, and a single-package project is the same run it always was.
+A finding the toolchain writes is one line in the compiler's convention, `path:line:column: error <pass>(<rule>): …`, followed by its lesson in four parts: `found: … · why: … · fix: … · read: …`. The `read` is a heading of this manual, so a reader lands on the section that explains the rule.
+
+The toolchain measures from the nearest `package.json`: a workspace root runs each per-package pass once per member, and a single-package project is the same run it always was.
 
 ## The passes
 
@@ -155,11 +157,20 @@ The rules are a pure function, exported at `@jterrazz/typescript/docs`:
 
 ```ts
 import { auditDocs } from '@jterrazz/typescript/docs';
+import type { DocsTree } from '@jterrazz/typescript/docs';
 
-const violations = auditDocs(tree); // -> [{ rule, path, message }, …]
+const tree: DocsTree = {
+    agents: null,
+    files: ['docs/'],
+    heads: {},
+    links: {},
+    ships: { dockerfile: false, infrastructure: false, publishable: false },
+};
+
+export const violations = auditDocs(tree);
 ```
 
-`tree` is a plain description of one repository — the paths under `docs/`, the opening lines of each page, each page's link targets, the root `AGENTS.md`, and the three presence facts. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
+A `DocsTree` is a plain description of one repository: the paths under `docs/`, the opening lines of each page, each page's link targets, the root `AGENTS.md`, and the three presence facts. Each violation is a `{ rule, path, message }`. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
 
 ## The Oxlint pass
 
@@ -279,8 +290,6 @@ typescript baseline
 
 A command of its own, because it neither checks nor repairs: it writes down where the project actually stands, debt that grew included. `fix --baseline` would bury that rewrite inside the gesture a developer runs twenty times a day; `fix` records only the falls, which can make the files shrink and never let them grow. It records the lint debt with oxlint — `--suppress-all`, then `--prune-suppressions`, with the config and the sweep `check` lints by, types included — and writes the `typescript` section from the Architecture, Names and Comments passes, then hands both files to the project's own oxfmt: they are tracked like any other file, so the formatter owns their shape. The `test` section is recorded by `@jterrazz/test`'s own command, never by this one. A file this command cannot read as sections is refused rather than rewritten; so is a run whose Architecture (layer map), Names (tree) or Comments (density) pass wrote no report — a pass that could not judge the tree, dependency-cruiser refusing to run included, writes none: that side of the section is unknown, and writing it would erase that debt rather than record it — `typescript check` prints why the pass died. A sweep that refused an answer records no lint debt either, rather than recording the directory.
 
-This repository's own debt is small and dated. `oxlint-suppressions.json` holds `max-lines` on the files the size caps of 11.0.0 found past 300 lines — splitting each is a change of its own — the `@jterrazz/test` rules its specs still owe, and two `typescript/no-unsafe-type-assertion` casts in one of its own suites, kept as debt to pay; the `typescript` section holds `comments/comment-lines-held-by-the-baseline`, the comment debt the comment guards found on the day they arrived, burned down file by file. The toolchain is consumer #1 of the rulebook it ships, so its own tree carries only the debt a new rule found, and only until it is paid.
-
 ## The Publish (packaging) pass
 
 This pass refuses a tarball the repository cannot see is broken. A packaging mistake is fatal in the registry: an `exports` entry pointing at a file nobody built, a subpath left out of `files` so it resolves in development and 404s in a consumer, a type declaration a modern resolver cannot see. [The build guard](#the-build-guard) refuses a build that compiles in test material, which works in the registry and ships what no product runs.
@@ -390,7 +399,7 @@ Each folder matches at any depth, so a workspace member's `src/domain/` is held 
 
 `.astro` is the one file shape oxfmt does not parse, and `astro check` is the only checker that reads a template's frontmatter. So where a project depends on `astro`, the pass runs both: the project's own `astro check`, and `prettier` over every `.astro` file.
 
-**`prettier` and `prettier-plugin-astro` are dependencies of THIS package**, with a config derived from the oxfmt values — 100 columns, 4 spaces, single quotes, trailing commas everywhere. Five Astro consumers declare prettier today, each with its own copy of those numbers; after this, none of them declares a formatter at all.
+**`prettier` and `prettier-plugin-astro` are dependencies of THIS package**, with a config derived from the oxfmt values — 100 columns, 4 spaces, single quotes, trailing commas everywhere.
 
 The plugin is handed to prettier as a resolved path rather than as a name in the config, because prettier resolves a plugin name from the working directory — and the working directory is the consumer's, which is precisely the project that no longer declares it.
 
