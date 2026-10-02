@@ -9,7 +9,7 @@ import { describe, expect, onTestFinished, test } from 'vitest';
 const ROOT = resolve(import.meta.dirname, '../../..');
 
 function chapterRecipe(): string {
-    const chapter = readFileSync(resolve(ROOT, 'docs/06-quality-checks.md'), 'utf8');
+    const chapter = readFileSync(resolve(ROOT, 'docs/07-quality-checks.md'), 'utf8');
     const section = chapter.slice(chapter.indexOf('#### The six gestures'));
     const block = /```make\n(?<recipe>[\s\S]*?)```/u.exec(section)?.groups?.recipe;
     if (block === undefined) {

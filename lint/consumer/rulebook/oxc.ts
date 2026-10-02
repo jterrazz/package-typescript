@@ -40,11 +40,11 @@ export default fragment({
             kind: 'exclusive',
         }),
         'oxc/no-optional-chaining': off({
-            by: 'docs/07-lint-presets.md — the estate compiles to ESNext on Node 24, where optional chaining is native syntax',
+            by: 'docs/08-lint-presets.md — the estate compiles to ESNext on Node 24, where optional chaining is native syntax',
             kind: 'convention',
         }),
         'oxc/no-rest-spread-properties': off({
-            by: 'docs/07-lint-presets.md — the estate compiles to ESNext on Node 24, where object rest and spread are native syntax',
+            by: 'docs/08-lint-presets.md — the estate compiles to ESNext on Node 24, where object rest and spread are native syntax',
             kind: 'convention',
         }),
     },

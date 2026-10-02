@@ -5,7 +5,7 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          found: no command named docs · why: the toolchain answers only the commands it declares · fix: run one of the commands below · read: docs/02-developing.md#3-wire-the-cli-into-packagejson
+          found: no command named docs · why: the toolchain answers only the commands it declares · fix: run one of the commands below · read: docs/05-getting-started.md#3-wire-the-cli-into-packagejson
 
           Usage: typescript <command>
 

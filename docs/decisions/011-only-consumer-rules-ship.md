@@ -6,7 +6,7 @@
 
 ## Context
 
-This package holds two kinds of rule. Most judge a consumer's project: every decision of the six profiles, every pass of `typescript check`. Some judge only this package: the contract every fragment answers to, the catalogue's projection into [Lint presets](../07-lint-presets.md), and the suites that prove the rulebook.
+This package holds two kinds of rule. Most judge a consumer's project: every decision of the six profiles, every pass of `typescript check`. Some judge only this package: the contract every fragment answers to, the catalogue's projection into [Lint presets](../08-lint-presets.md), and the suites that prove the rulebook.
 
 Both kinds shipped together. `lint/engine/compiler/decision.ts` refused a broken fragment at load time, so every consumer that imported a profile ran checks that, since `fragment()` is not exported, only this repository could trip, bar the missing id a consumer's `layers()` call could reach. The catalogue module shipped the chapter's renderer, and `files` published every module test beside its module.
 
@@ -23,6 +23,6 @@ A rule mixing the two is split. The contract's builders ship and enforce nothing
 ## Consequences
 
 - A broken fragment fails this repository's suite, the gate a release passes, instead of every import of a profile.
-- The catalogue in [Lint presets](../07-lint-presets.md) lists consumer rules alone; the self rules are described in [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#who-a-rule-is-for).
+- The catalogue in [Lint presets](../08-lint-presets.md) lists consumer rules alone; the self rules are described in [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#who-a-rule-is-for).
 - The internal pass selector is a `self` rule split out of the shipped check, which holds no copy of it and runs every pass whatever its environment holds. The selector lives under `specs/`: the specs run the product command through it, with the selection in place of the every-pass answer.
 - ADR-003 stays `Accepted`; the line under its status marks its "at load time" clause superseded by this record.

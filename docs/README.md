@@ -1,28 +1,40 @@
 # @jterrazz/typescript — documentation
 
-The manual of the toolchain that builds, checks, lints and formats a `@jterrazz` project from one devDependency. What it is and why it exists is the repository's README; this page says which chapter answers which question, and in what order to read them.
+The manual of the toolchain that builds, checks, lints and formats a project from one devDependency. What it is and why it exists is the repository's README; this page says which chapter answers which question, and in what order to read them.
 
-## Using the toolchain in a project
+## Start here
 
-Read these in order the first time: wiring first, then what the gate judges, then the rest by topic.
+Read these two in order: they take a project from an empty folder to a green `typescript check`, and say everything it can configure.
 
-| Chapter                                     | Answers                                                                                             |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| [02 — Developing](02-developing.md)         | Wiring a project, steps 1 to 5: the profile, the three config files, the scripts, the `Makefile`    |
-| [06 — Quality checks](06-quality-checks.md) | What `check` and `fix` run, what makes each pass fail, and the baseline that holds a project's debt |
-| [07 — Lint presets](07-lint-presets.md)     | The six profiles and every rule decision they carry, `compose()`, and the knip configuration        |
-| [05 — Building](05-building.md)             | `build`, `bundle`, `start` and `dev`: what each produces, and for which kind of project             |
-| [09 — Rules kit](09-rules-kit.md)           | The presets `jterrazz.config.ts` lists, their merge order and opt-outs; writing a rule with the kit |
-| [08 — Repo structure](08-repo-structure.md) | The TypeScript half of the shared repository doctrine                                               |
+| Chapter                                       | Answers                                                                                                        |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| [05 — Getting started](05-getting-started.md) | The first working project: the profile, the three config files, the scripts, the `Makefile`, the first run     |
+| [06 — Configuration](06-configuration.md)     | `jterrazz.config.ts`, the presets a project lists and their merge order, the tsconfig presets, the lint config |
+
+## Reference
+
+Open these by topic, usually from the `read:` of a finding.
+
+| Chapter                                     | Answers                                                                                                          |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| [07 — Quality checks](07-quality-checks.md) | Every pass of `check` and `fix`, what makes each fail, the ratchet that holds a project's debt, the drift report |
+| [08 — Lint presets](08-lint-presets.md)     | The rulebook: its laws, the six profiles, the decisions worth explaining, knip, the full catalogue               |
+| [09 — Building](09-building.md)             | `build`, `bundle`, `start`, `dev` and `tsc`: what each produces, and from which entries                          |
+| [04 — Operating](04-operating.md)           | How a release is cut, which version number moves, and how a project adopts a stricter release                    |
+
+## Writing rules for the family
+
+| Chapter                           | Answers                                                                                                   |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| [10 — Rules kit](10-rules-kit.md) | The engine a sibling package writes its rules with: the row, the lesson, the check, the chapter, the debt |
 
 ## Changing the toolchain itself
 
-| Chapter                                 | Answers                                                                                                 |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| [01 — Architecture](01-architecture.md) | The two sides, `lint/` that judges and `src/` that runs, the build, the command, the published subpaths |
-| [02 — Developing](02-developing.md)     | Its last section: the `make` targets of this repository, and where a new pass, rule or entry goes       |
-| [03 — Testing](03-testing.md)           | The three test projects, the documents that drive the command, the packed tarball, the self rules       |
-| [04 — Operating](04-operating.md)       | What publishes the package, which version number moves, how a consumer takes a bump                     |
+| Chapter                                 | Answers                                                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [01 — Architecture](01-architecture.md) | The two sides, `lint/` that judges and `src/` that runs, the command, the published subpaths      |
+| [02 — Developing](02-developing.md)     | The loop, where each kind of change lands, and what a change owes                                 |
+| [03 — Testing](03-testing.md)           | The three test projects, the documents that drive the command, the packed tarball, the self rules |
 
 ## Decisions
 

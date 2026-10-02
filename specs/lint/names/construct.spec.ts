@@ -14,42 +14,42 @@ describe('construct', () => {
                 found: \`constants.ts\` names a construct of the language
                 why: A directory or file is named for its subject, never for a construct of the language.
                 fix: name it for the subject it holds
-                read: docs/06-quality-checks.md#the-names-tree-pass
+                read: docs/07-quality-checks.md#the-names-tree-pass
             specs/orders/constants.ts:1:1  names(no-language-construct-name)
                 found: \`constants.ts\` names a construct of the language
                 why: A directory or file is named for its subject, never for a construct of the language.
                 fix: name it for the subject it holds
-                read: docs/06-quality-checks.md#the-names-tree-pass
+                read: docs/07-quality-checks.md#the-names-tree-pass
             src/helper.ts:1:1  names(no-language-construct-name)
                 found: \`helper.ts\` names a construct of the language
                 why: A directory or file is named for its subject, never for a construct of the language.
                 fix: name it for the subject it holds
-                read: docs/06-quality-checks.md#the-names-tree-pass
+                read: docs/07-quality-checks.md#the-names-tree-pass
             src/interfaces:1:1  names(no-language-construct-name)
                 found: \`interfaces\` names a construct of the language
                 why: A directory or file is named for its subject, never for a construct of the language.
                 fix: name it for the subject it holds
-                read: docs/06-quality-checks.md#the-names-tree-pass
+                read: docs/07-quality-checks.md#the-names-tree-pass
             src/order.types.ts:1:1  names(no-language-construct-name)
                 found: \`order.types.ts\` names a construct of the language
                 why: A directory or file is named for its subject, never for a construct of the language.
                 fix: name it for the subject it holds
-                read: docs/06-quality-checks.md#the-names-tree-pass
+                read: docs/07-quality-checks.md#the-names-tree-pass
             src/type.ts:1:1  names(no-language-construct-name)
                 found: \`type.ts\` names a construct of the language
                 why: A directory or file is named for its subject, never for a construct of the language.
                 fix: name it for the subject it holds
-                read: docs/06-quality-checks.md#the-names-tree-pass
+                read: docs/07-quality-checks.md#the-names-tree-pass
             src/types.ts:1:1  names(no-language-construct-name)
                 found: \`types.ts\` names a construct of the language
                 why: A directory or file is named for its subject, never for a construct of the language.
                 fix: name it for the subject it holds
-                read: docs/06-quality-checks.md#the-names-tree-pass
+                read: docs/07-quality-checks.md#the-names-tree-pass
             src/util.ts:1:1  names(no-language-construct-name)
                 found: \`util.ts\` names a construct of the language
                 why: A directory or file is named for its subject, never for a construct of the language.
                 fix: name it for the subject it holds
-                read: docs/06-quality-checks.md#the-names-tree-pass
+                read: docs/07-quality-checks.md#the-names-tree-pass
         `);
     });
 });

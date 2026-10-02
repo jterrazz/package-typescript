@@ -36,7 +36,7 @@ runs:
 
            RUN  Comments (density)
 
-          comments/comment-lines-held-by-the-baseline  jterrazz.baseline.json › typescript  found: 2 comment lines — 50% of 4 source lines, and no `comments/comment-lines-held-by-the-baseline` entry records them · why: the default is no comment — a name carries the meaning, and the count is held exactly so no comment arrives unseen · fix: delete the comments a name can carry, then run 'typescript baseline' to record the count that is left · read: docs/06-quality-checks.md#the-comments-density-pass
+          comments/comment-lines-held-by-the-baseline  jterrazz.baseline.json › typescript  found: 2 comment lines — 50% of 4 source lines, and no `comments/comment-lines-held-by-the-baseline` entry records them · why: the default is no comment — a name carries the meaning, and the count is held exactly so no comment arrives unseen · fix: delete the comments a name can carry, then run 'typescript baseline' to record the count that is left · read: docs/07-quality-checks.md#the-comments-density-pass
           ✗ Failed with exit code 1
 
            RUN  Secrets (credentials)

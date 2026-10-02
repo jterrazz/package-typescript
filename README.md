@@ -10,10 +10,10 @@ The work itself runs in fast native tools wherever one exists: [Oxc](https://oxc
 
 ## The ideas to hold
 
-- **A profile.** A project names one of six profiles, `node`, `next`, `astro`, `expo`, `bun` or `react`, and the tsconfig preset that goes with it. The profile decides which rules apply ([Lint presets](docs/07-lint-presets.md)).
-- **The settings file.** `jterrazz.config.ts` is the one settings file of the `@jterrazz` family. It lists the presets the project is held to: the base `typescript()` preset always, and the preset of any sibling package it uses, such as `@jterrazz/test`'s ([Rules kit](docs/09-rules-kit.md#presets)).
-- **Two commands.** `typescript check` runs every quality pass in parallel and fails on any finding. `typescript fix` repairs whatever can be repaired automatically ([Quality checks](docs/06-quality-checks.md)).
-- **A baseline.** When a stricter release lands on an existing project, `typescript baseline` records today's debt. From then on each count may only fall ([Developing § Taking a bump](docs/02-developing.md#taking-a-bump)).
+- **A profile.** A project names one of six profiles, `node`, `next`, `astro`, `expo`, `bun` or `react`, and the tsconfig preset that goes with it. The profile decides which lint rules apply ([Lint presets](docs/08-lint-presets.md#the-profiles)).
+- **The settings file.** `jterrazz.config.ts` is the one settings file of the `@jterrazz` family. It lists the presets the project is held to: the base `typescript()` preset always, and the preset of any sibling package it uses, such as `@jterrazz/test`'s ([Configuration](docs/06-configuration.md)).
+- **Two commands.** `typescript check` runs every quality pass in parallel and fails on any finding, each printed with what was found, why it matters, how to fix it and the chapter to read. `typescript fix` repairs whatever can be repaired automatically ([Quality checks](docs/07-quality-checks.md)).
+- **A baseline.** When a stricter release lands on an existing project, `typescript baseline` records today's debt. From then on each count may only fall ([Operating § Adopting a stricter release](docs/04-operating.md#adopting-a-stricter-release)).
 
 ## Start here
 
@@ -21,7 +21,7 @@ The work itself runs in fast native tools wherever one exists: [Oxc](https://oxc
 npm install @jterrazz/typescript --save-dev
 ```
 
-Then follow [Developing](docs/02-developing.md), steps 1 to 4: pick a profile, write the three config files, wire the scripts and answer the six `make` gestures. That is the whole setup, and the first `npx typescript check` judges the project.
+Then follow [Getting started](docs/05-getting-started.md): pick a profile, write three short config files, wire the scripts and the `Makefile`, and run `npx typescript check`. Every file it shows is complete as written.
 
 ## The commands
 

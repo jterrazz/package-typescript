@@ -15,7 +15,7 @@ const OXLINT = resolve(REPOSITORY, 'node_modules/.bin/oxlint');
 const SHAPES = resolve(import.meta.dirname, '_fixtures/oxlint-report');
 
 const WARNING_LESSON =
-    "found: a warn-severity diagnostic — oxlint lists it above · why: oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/06-quality-checks.md#a-warning-is-a-diagnostic\n";
+    "found: a warn-severity diagnostic — oxlint lists it above · why: oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/07-quality-checks.md#a-warning-is-a-diagnostic\n";
 
 const FORM_VARIABLES = [
     'AI_AGENT',

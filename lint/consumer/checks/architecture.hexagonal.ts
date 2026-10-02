@@ -1,6 +1,6 @@
 import type { ArchitectureRule } from '../../engine/project/preset.js';
 
-const READ = 'docs/06-quality-checks.md#the-hexagonal-map';
+const READ = 'docs/07-quality-checks.md#the-hexagonal-map';
 
 const ANY_DEPTH = '(^|/)';
 

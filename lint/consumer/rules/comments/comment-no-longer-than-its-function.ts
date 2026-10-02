@@ -209,7 +209,7 @@ export const commentNoLongerThanItsFunction = defineRule(
                 found: 'a comment of {{lines}} lines on a function whose body holds {{body}}',
             },
         },
-        read: 'docs/07-lint-presets.md#a-comment-no-longer-than-its-function',
+        read: 'docs/08-lint-presets.md#a-comment-no-longer-than-its-function',
         type: 'suggestion',
     },
     {

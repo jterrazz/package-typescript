@@ -18,7 +18,7 @@ export function runTool(
         const line = refusal({
             fix: `run 'npm install' so the ${name} @jterrazz/typescript pins is installed beside it, then run again`,
             found: `${name} could not be run — ${run.error.message}`,
-            read: 'docs/06-quality-checks.md#the-passes',
+            read: 'docs/07-quality-checks.md#the-passes',
             why: `the pass hands the tree to ${name}, and a tool that never ran judged nothing`,
         });
 

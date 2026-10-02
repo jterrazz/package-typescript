@@ -19,7 +19,7 @@ install-self: build
 lint: install-self
 	npm run lint
 
-# Every fixer runs and the verdict comes at the end, the checker first (docs/06-quality-checks.md, "The six gestures").
+# Every fixer runs and the verdict comes at the end, the checker first (docs/07-quality-checks.md, "The six gestures").
 fix: build
 	@status=0; \
 	npx jterrazz-test-check --fix || status=1; \

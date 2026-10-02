@@ -9,8 +9,8 @@ runs:
 
            RUN  Architecture (layer map)
 
-          src/domain/user.ts:1:22: error architecture(domain-stays-pure): found: `src/domain/user.ts` imports `src/infrastructure/store.ts` · why: A domain module never reaches for infrastructure. · fix: reach it through a layer the map allows, or change the map where the boundary moved · read: docs/06-quality-checks.md#the-architecture-layer-map-pass
-          baseline-ratchet  jterrazz.baseline.json › typescript  found: `architecture/domain-stays-pure` is at 1, below its baseline of 2 · why: each count is held exactly, so a debt that fell is recorded the day it falls and cannot grow back unseen · fix: run 'typescript fix', which re-records the fall · read: docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds
+          src/domain/user.ts:1:22: error architecture(domain-stays-pure): found: `src/domain/user.ts` imports `src/infrastructure/store.ts` · why: A domain module never reaches for infrastructure. · fix: reach it through a layer the map allows, or change the map where the boundary moved · read: docs/07-quality-checks.md#the-architecture-layer-map-pass
+          baseline-ratchet  jterrazz.baseline.json › typescript  found: `architecture/domain-stays-pure` is at 1, below its baseline of 2 · why: each count is held exactly, so a debt that fell is recorded the day it falls and cannot grow back unseen · fix: run 'typescript fix', which re-records the fall · read: docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds
           ✗ Failed with exit code 1
 
            END  Finalizing quality checks

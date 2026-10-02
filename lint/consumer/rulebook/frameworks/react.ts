@@ -106,7 +106,7 @@ export default fragment({
             kind: 'covered',
         }),
         'react/forbid-component-props': off({
-            by: 'docs/07-lint-presets.md — className is how a component takes its styling, and the rule forbids it by default',
+            by: 'docs/08-lint-presets.md — className is how a component takes its styling, and the rule forbids it by default',
             kind: 'convention',
         }),
         'react/jsx-max-depth': off({
@@ -114,15 +114,15 @@ export default fragment({
             kind: 'covered',
         }),
         'react/jsx-no-literals': off({
-            by: 'docs/07-lint-presets.md — the estate has no translation-extraction convention that would need every string hoisted',
+            by: 'docs/08-lint-presets.md — the estate has no translation-extraction convention that would need every string hoisted',
             kind: 'convention',
         }),
         'react/jsx-props-no-spreading': off({
-            by: 'docs/07-lint-presets.md — a wrapper component forwards its props by spread',
+            by: 'docs/08-lint-presets.md — a wrapper component forwards its props by spread',
             kind: 'convention',
         }),
         'react/no-multi-comp': off({
-            by: 'docs/07-lint-presets.md — a file holds a component and the small private pieces only it uses',
+            by: 'docs/08-lint-presets.md — a file holds a component and the small private pieces only it uses',
             kind: 'convention',
         }),
         'react/no-unknown-property': off({
@@ -130,7 +130,7 @@ export default fragment({
             kind: 'covered',
         }),
         'react/only-export-components': off({
-            by: 'docs/07-lint-presets.md — a Next route file exports its metadata beside its component',
+            by: 'docs/08-lint-presets.md — a Next route file exports its metadata beside its component',
             kind: 'convention',
         }),
         'react/react-in-jsx-scope': off({

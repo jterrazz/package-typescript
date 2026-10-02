@@ -6,19 +6,20 @@ The complete TypeScript toolchain for the @jterrazz ecosystem: builds and qualit
 
 The consumer-facing corpus is `docs/` + `README.md`, mapped by `docs/README.md`. Decisions this package alone took are in `docs/decisions/`. Do not duplicate it — link to it.
 
-| Working on…                                    | Read                        |
-| ---------------------------------------------- | --------------------------- |
-| the layers, the exports map, the two compilers | `docs/01-architecture.md`   |
-| setup, tsconfig/oxlint/oxfmt wiring, this repo | `docs/02-developing.md`     |
-| the specs, the fixtures, the self-lint         | `docs/03-testing.md`        |
-| the release, and which number moves            | `docs/04-operating.md`      |
-| build / bundle / start / dev                   | `docs/05-building.md`       |
-| check / fix and their passes                   | `docs/06-quality-checks.md` |
-| oxlint presets, `compose`, architecture, knip  | `docs/07-lint-presets.md`   |
-| repo doctrine (corpus / injection / compiler)  | `docs/08-repo-structure.md` |
-| the rules kit, presets and their merge order   | `docs/09-rules-kit.md`      |
+| Working on…                                       | Read                         |
+| ------------------------------------------------- | ---------------------------- |
+| the layers, the exports map, the two compilers    | `docs/01-architecture.md`    |
+| the loop, where a change lands, what it owes      | `docs/02-developing.md`      |
+| the specs, the fixtures, the self rules           | `docs/03-testing.md`         |
+| the release, which number moves, adopting a bump  | `docs/04-operating.md`       |
+| wiring a project onto the toolchain               | `docs/05-getting-started.md` |
+| `jterrazz.config.ts`, presets, their merge order  | `docs/06-configuration.md`   |
+| check / fix and their passes, the ratchet         | `docs/07-quality-checks.md`  |
+| the rulebook, profiles, `compose`, knip           | `docs/08-lint-presets.md`    |
+| build / bundle / start / dev / tsc                | `docs/09-building.md`        |
+| the rules kit a sibling package writes rules with | `docs/10-rules-kit.md`       |
 
-The first four chapters are the spine every repository of the ecosystem carries — architecture, developing, testing, operating — and this repository's own gate refuses a tree that breaks it (`docs/06-quality-checks.md`, the Docs (layout) pass). The doctrine behind the spine is routed to from `docs/08-repo-structure.md`.
+The first four chapters are the spine every repository of the ecosystem carries — architecture, developing, testing, operating — and this repository's own gate refuses a tree that breaks it (`docs/07-quality-checks.md`, the Docs (layout) pass).
 
 One Claude Code skill routes into this corpus: `skills/jterrazz-typescript/SKILL.md` — what to run, what each failing pass means, the chapter to read next. It is hand-written, it never restates a chapter, and the Markdown (prose) pass fails it when it names a chapter that does not exist.
 
@@ -46,4 +47,4 @@ What each root and folder holds is [Architecture](docs/01-architecture.md)'s; th
 
 ## Commands and the standing rule
 
-The gestures and what each one runs, and the rule that a change to the public surface reaches three places, are [Developing § Working on this package](docs/02-developing.md#working-on-this-package)'s. A change to a lint decision is a line of a fragment under `lint/` and nothing else — the chapter's catalogue is its projection. The repo-structure doctrine is never authored here or in a skill; `docs/08-repo-structure.md` routes to it.
+The gestures and what each one runs are [Developing § The loop](docs/02-developing.md#the-loop)'s, and the rule that a change to the public surface reaches three places is [Developing § What a change owes](docs/02-developing.md#what-a-change-owes)'s. A change to a lint decision is a line of a fragment under `lint/` and nothing else — the chapter's catalogue is its projection. The repo-structure doctrine is the estate's, carried by the `jterrazz-repo-structure` skill, and never authored here.

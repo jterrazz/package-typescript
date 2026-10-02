@@ -193,6 +193,6 @@ describe('index.oxlint', () => {
 
         // Then - the refusal carries every part of its lesson, reading the merge order
         expect(missingParts(message)).toStrictEqual([]);
-        expect(message).toContain('read: docs/09-rules-kit.md#the-merge-order');
+        expect(message).toContain('read: docs/06-configuration.md#the-merge-order');
     });
 });

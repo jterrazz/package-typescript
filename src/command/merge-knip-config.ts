@@ -129,7 +129,7 @@ function projectFile(path: string, read: (path: string) => JsonObject): JsonObje
             refusal({
                 fix: `repair ${path}, then run again`,
                 found: `${path} does not parse: ${messageOf(error)}`,
-                read: 'docs/06-quality-checks.md#a-file-knip-is-configured-from-does-not-parse',
+                read: 'docs/07-quality-checks.md#a-file-knip-is-configured-from-does-not-parse',
                 why: 'knip is handed the preset merged with what the project declares, and would judge the project against a config it never wrote',
             }),
             { cause: error },

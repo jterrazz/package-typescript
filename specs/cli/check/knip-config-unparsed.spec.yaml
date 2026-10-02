@@ -38,7 +38,7 @@ runs:
 
            RUN  Knip (unused code)
 
-          found: knip.json does not parse: Expected ',' or ']' after array element in JSON at position 55 (line 5 column 1) · why: knip is handed the preset merged with what the project declares, and would judge the project against a config it never wrote · fix: repair knip.json, then run again · read: docs/06-quality-checks.md#a-file-knip-is-configured-from-does-not-parse
+          found: knip.json does not parse: Expected ',' or ']' after array element in JSON at position 55 (line 5 column 1) · why: knip is handed the preset merged with what the project declares, and would judge the project against a config it never wrote · fix: repair knip.json, then run again · read: docs/07-quality-checks.md#a-file-knip-is-configured-from-does-not-parse
           ✗ Failed with exit code 1
 
            RUN  Suppressions (directives)

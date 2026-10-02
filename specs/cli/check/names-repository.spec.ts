@@ -223,7 +223,7 @@ describe('names-repository', () => {
             encoding: 'utf8',
             env: inProject(project, TREE_PASSES),
         });
-        const refusal = `found: nothing to read under ${realpathSync(project)}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/06-quality-checks.md#an-unreadable-tree`;
+        const refusal = `found: nothing to read under ${realpathSync(project)}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/07-quality-checks.md#an-unreadable-tree`;
 
         // Then - every tree gate says that one line, and no stack, and the run fails where a silent gate would pass on everything
         for (const label of TREE_GATES) {
@@ -244,7 +244,7 @@ describe('names-repository', () => {
             encoding: 'utf8',
             env: inProject(project, TREE_PASSES),
         });
-        const refusal = `found: nothing to read under ${project}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/06-quality-checks.md#an-unreadable-tree`;
+        const refusal = `found: nothing to read under ${project}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree`;
 
         // Then - every tree gate says that one line, and the run fails
         for (const label of TREE_GATES) {
@@ -287,10 +287,10 @@ describe('names-repository', () => {
 
         // Then - the two missing gestures are named, one finding each, and the pass fails
         expect(names).toContain(
-            'Makefile:1:1: error names(makefile-answers-every-gesture): found: `make fix` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule — every repository answers `make` install, build, lint, fix, test and check · read: docs/06-quality-checks.md#the-six-gestures',
+            'Makefile:1:1: error names(makefile-answers-every-gesture): found: `make fix` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule — every repository answers `make` install, build, lint, fix, test and check · read: docs/07-quality-checks.md#the-six-gestures',
         );
         expect(names).toContain(
-            'Makefile:1:1: error names(makefile-answers-every-gesture): found: `make check` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule — every repository answers `make` install, build, lint, fix, test and check · read: docs/06-quality-checks.md#the-six-gestures',
+            'Makefile:1:1: error names(makefile-answers-every-gesture): found: `make check` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule — every repository answers `make` install, build, lint, fix, test and check · read: docs/07-quality-checks.md#the-six-gestures',
         );
         expect(names).not.toContain('`make install`');
         expect(names).not.toContain('`make test`');
@@ -306,7 +306,7 @@ describe('names-repository', () => {
 
         // Then - the absence is one finding
         expect(names).toContain(
-            'Makefile:1:1: error names(repository-has-makefile): found: the repository has no Makefile · why: Every repository root carries a Makefile. · fix: write a Makefile whose rules answer `make` install, build, lint, fix, test and check · read: docs/06-quality-checks.md#the-six-gestures',
+            'Makefile:1:1: error names(repository-has-makefile): found: the repository has no Makefile · why: Every repository root carries a Makefile. · fix: write a Makefile whose rules answer `make` install, build, lint, fix, test and check · read: docs/07-quality-checks.md#the-six-gestures',
         );
         expect(names).toContain('Failed with exit code 1');
     });

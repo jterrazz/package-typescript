@@ -21,7 +21,7 @@ export function rowNamed<Row extends { name: string }>(rows: readonly Row[], nam
             refusal({
                 fix: `add a row named \`${name}\` to the catalogue, or name a row it holds`,
                 found: `no catalogue row is named \`${name}\``,
-                read: 'docs/09-rules-kit.md#a-rule-is-a-catalogue-row',
+                read: 'docs/10-rules-kit.md#a-rule-is-a-catalogue-row',
                 why: 'a rule reads its sentence, family and audience from its row, and a rule with no row teaches nothing',
             }),
         );

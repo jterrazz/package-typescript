@@ -30,27 +30,27 @@ runs:
 
            RUN  Suppressions (directives)
 
-          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/06-quality-checks.md#an-unreadable-tree
+          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree
           ✗ Failed with exit code 1
 
            RUN  Markdown (prose)
 
-          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/06-quality-checks.md#an-unreadable-tree
+          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree
           ✗ Failed with exit code 1
 
            RUN  Names (tree)
 
-          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/06-quality-checks.md#an-unreadable-tree
+          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree
           ✗ Failed with exit code 1
 
            RUN  Comments (density)
 
-          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/06-quality-checks.md#an-unreadable-tree
+          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree
           ✗ Failed with exit code 1
 
            RUN  Secrets (credentials)
 
-          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/06-quality-checks.md#an-unreadable-tree
+          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree
           ✗ Failed with exit code 1
 
            DRIFT  Deviations from the profile
@@ -60,7 +60,7 @@ runs:
 
           ✗ Some checks failed
       stderr: |
-          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/06-quality-checks.md#an-unreadable-tree
+          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree
     - command: fix --ignore-pattern 'app/**'
       exit: 1
       stdout: |4
@@ -83,22 +83,22 @@ runs:
 
            RUN  Suppressions (directives)
 
-          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/06-quality-checks.md#an-unreadable-tree
+          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree
           ✗ Failed with exit code 1
 
            RUN  Markdown (prose)
 
-          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/06-quality-checks.md#an-unreadable-tree
+          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree
           ✗ Failed with exit code 1
 
            RUN  Names (tree)
 
-          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/06-quality-checks.md#an-unreadable-tree
+          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree
           ✗ Failed with exit code 1
 
            RUN  Comments (density)
 
-          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/06-quality-checks.md#an-unreadable-tree
+          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree
           ✗ Failed with exit code 1
 
            END  Finalizing quality fixes

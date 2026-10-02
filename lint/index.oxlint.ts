@@ -50,7 +50,7 @@ const presetRefusal = (problem: string): Error =>
     new Error(
         refusal({
             ...presetLesson(problem, SETTINGS_FILE),
-            read: 'docs/09-rules-kit.md#the-merge-order',
+            read: 'docs/06-configuration.md#the-merge-order',
         }),
     );
 

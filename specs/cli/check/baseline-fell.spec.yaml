@@ -12,7 +12,7 @@ runs:
 
            RUN  Oxlint Check
           {{any}}
-          found: oxlint-suppressions.json holds more than the project has left · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/06-quality-checks.md#the-ratchet
+          found: oxlint-suppressions.json holds more than the project has left · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/07-quality-checks.md#the-ratchet
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
@@ -33,8 +33,8 @@ runs:
 
            RUN  Names (tree)
 
-          src/types.ts:1:1: error names(no-language-construct-name): found: `types.ts` names a construct of the language · why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds · read: docs/06-quality-checks.md#the-names-tree-pass
-          baseline-ratchet  jterrazz.baseline.json › typescript  found: `names/no-language-construct-name` is at 1, below its baseline of 2 · why: each count is held exactly, so a debt that fell is recorded the day it falls and cannot grow back unseen · fix: run 'typescript fix', which re-records the fall · read: docs/06-quality-checks.md#what-jterrazzbaselinejson-still-holds
+          src/types.ts:1:1: error names(no-language-construct-name): found: `types.ts` names a construct of the language · why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds · read: docs/07-quality-checks.md#the-names-tree-pass
+          baseline-ratchet  jterrazz.baseline.json › typescript  found: `names/no-language-construct-name` is at 1, below its baseline of 2 · why: each count is held exactly, so a debt that fell is recorded the day it falls and cannot grow back unseen · fix: run 'typescript fix', which re-records the fall · read: docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds
           ✗ Failed with exit code 1
 
            RUN  Comments (density)

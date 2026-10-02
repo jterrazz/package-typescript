@@ -42,7 +42,7 @@ function write(root: string, section: string, reports: readonly PassReport[]): n
             refusal({
                 fix: "run 'typescript check', which prints why the pass could not judge the tree, correct that, then run 'typescript baseline' again",
                 found: `the ${silent.label} pass wrote no report, so the ${section} section is left as it was`,
-                read: 'docs/06-quality-checks.md#recording-it',
+                read: 'docs/07-quality-checks.md#recording-it',
                 why: "a section written without that pass's counts would erase its debt rather than record it",
             }),
         );
@@ -55,7 +55,7 @@ function write(root: string, section: string, reports: readonly PassReport[]): n
             refusal({
                 fix: `correct ${BASELINE} until it is one JSON object of sections, or delete it, then run again`,
                 found: `${BASELINE} ${problem}`,
-                read: 'docs/06-quality-checks.md#recording-it',
+                read: 'docs/07-quality-checks.md#recording-it',
                 why: `the ${section} section is written beside the others, and a file that cannot be read as sections would lose them`,
             }),
         );
@@ -82,7 +82,7 @@ function oxlintRulesLeftInTheSection(
             `baseline-unreadable  ${BASELINE}  ${refusal({
                 fix: `correct ${BASELINE} until it is one JSON object of sections, or delete it and run 'typescript baseline'`,
                 found: `${BASELINE} ${problem}`,
-                read: 'docs/06-quality-checks.md#the-ratchet',
+                read: 'docs/07-quality-checks.md#the-ratchet',
                 why: 'the ratchet reads its counts from that file, and a file it cannot read holds no debt it can judge',
             })}`,
         );
@@ -97,7 +97,7 @@ function oxlintRulesLeftInTheSection(
             `baseline-moved-to-oxlint  ${labelOf(section)}  ${refusal({
                 fix: "run 'typescript baseline', which records the lint debt in oxlint-suppressions.json and drops the entry",
                 found: `\`${rule}\` is an oxlint rule, and the section holds its count`,
-                read: 'docs/06-quality-checks.md#the-ratchet',
+                read: 'docs/07-quality-checks.md#the-ratchet',
                 why: 'oxlint holds its own rules in oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain',
             })}`,
         );

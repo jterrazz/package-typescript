@@ -53,7 +53,7 @@ function usage(name: string): number {
             : `${refusal({
                   fix: 'run one of the commands below',
                   found: `no command named ${name}`,
-                  read: 'docs/02-developing.md#3-wire-the-cli-into-packagejson',
+                  read: 'docs/05-getting-started.md#3-wire-the-cli-into-packagejson',
                   why: 'the toolchain answers only the commands it declares',
               })}\n\n`;
     print(`${badge('TYPESCRIPT')} TypeScript toolchain\n\n${unknown}${USAGE.join('\n')}\n`);

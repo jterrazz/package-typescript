@@ -8,7 +8,7 @@ const GENERATED_HEAD_LINES = 5;
 const TEST_MARKER = /^\/\/\s*(?:Given|When|Then) - /u;
 const TOOL_INSTRUCTION =
     /^\/(?:\/|\*)\s*(?:(?:oxfmt|prettier|dprint)-ignore\b|(?:v8|c8|istanbul|node:coverage) ignore\b|@vite-ignore\b|webpackIgnore:|type-coverage:)/u;
-const READ = 'read: docs/06-quality-checks.md#the-comments-density-pass';
+const READ = 'read: docs/07-quality-checks.md#the-comments-density-pass';
 
 const isProse = (comment: string): boolean =>
     !isDirective(comment) && !TEST_MARKER.test(comment) && !TOOL_INSTRUCTION.test(comment);

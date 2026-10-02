@@ -1,250 +1,59 @@
 # Developing
 
-Install `@jterrazz/typescript` and point three config files at its presets — the toolchain is zero-config beyond that.
+How a change to the toolchain itself is made: the loop, where each kind of change lands, and what it owes. Wiring a project onto the toolchain is [Getting started](05-getting-started.md).
 
-```bash
-npm install @jterrazz/typescript --save-dev
-```
+## The loop
 
-Two audiences read this chapter: a project being wired onto the toolchain, first, and then anyone changing the toolchain itself — the last section is theirs.
-
-## 1. Pick a profile
-
-A project names ONE lint profile, and the tsconfig preset beside it follows from the same choice. There are six profiles and six tsconfig presets, and they differ in one place each way: `bun` sits on the node compiler settings, and a package published to a registry lints as `node` but compiles under `library`.
-
-| Profile | For                                | `extends` in `tsconfig.json`            |
-| ------- | ---------------------------------- | --------------------------------------- |
-| `node`  | services and command-line tools    | `@jterrazz/typescript/tsconfig/node`    |
-| `node`  | a package published to a registry  | `@jterrazz/typescript/tsconfig/library` |
-| `next`  | a Next.js application              | `@jterrazz/typescript/tsconfig/next`    |
-| `astro` | an Astro site                      | `@jterrazz/typescript/tsconfig/astro`   |
-| `expo`  | an Expo / React Native application | `@jterrazz/typescript/tsconfig/expo`    |
-| `bun`   | a project on the Bun runtime       | `@jterrazz/typescript/tsconfig/node`    |
-| `react` | React with no framework under it   | `@jterrazz/typescript/tsconfig/react`   |
-
-A published package has no lint profile of its own because it would hold no rule of its own: what it adds is its tsconfig preset and its build preset, and the rulebook is `node`'s.
-
-```json
-{ "extends": "@jterrazz/typescript/tsconfig/node" }
-```
-
-That line is the whole file. Every preset scopes its `include` and `exclude` to `${configDir}` — the directory of the `tsconfig.json` that extends it — so a project inherits the right file set without restating one. Every preset checks and never emits, so each allows an import that names a `.ts` file: Node runs a config that way — `oxlint.config.ts` importing `./jterrazz.config.ts` — and the check reads it as Node does.
-
-**The `astro` preset stands on Astro's own.** It extends `astro/tsconfigs/strict` first — the file set Astro's tooling needs, `.astro/types.d.ts` included — and then states ours on top, so the strict flags, the React JSX runtime and the ground `exclude` are the ones that hold. The consumer still writes one line:
-
-```json
-{ "extends": "@jterrazz/typescript/tsconfig/astro" }
-```
-
-`astro` is the consumer's dependency, never this package's: an Astro site already installs it, and the preset's `extends` resolves it from the consumer's `node_modules`.
-
-`node` keeps `allowJs` on and `library` turns it off, and the split is deliberate: a service may still carry a `.js` file — the rulebook scopes decisions to `**/*.js` on the strength of it ([Lint presets](07-lint-presets.md)) — while a published package emits its declarations without a type-checker, which cannot be done from JavaScript.
-
-What each profile adds to the rulebook, and why a profile never relaxes it, is [Lint presets](07-lint-presets.md).
-
-## 2. Name the profile, and create the lint and format configs
-
-The profile is named once, in the settings file, by the base preset:
-
-```ts
-// jterrazz.config.ts
-import { defineConfig, typescript } from '@jterrazz/typescript/config';
-
-export default defineConfig({ presets: [typescript({ profile: 'node' })] });
-```
-
-The lint config composes what the presets declare, and names nothing else:
-
-```ts
-// oxlint.config.ts
-import { defineConfig, fromPresets } from '@jterrazz/typescript/oxlint';
-
-import settings from './jterrazz.config.ts';
-
-export default defineConfig(fromPresets(settings));
-```
-
-```ts
-// oxfmt.config.ts
-import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
-
-export default defineConfig(base);
-```
-
-Write the profile you picked in `typescript({ profile })`; `node` is the one a file naming none gets. A project that also uses `@jterrazz/test` lists its preset, `test()`, beside the base preset, and the same `fromPresets` line arms its oxlint rules ([Rules kit](09-rules-kit.md#presets)). A project that keeps no `oxlint.config.ts` is handed that same composition by `check` ([Quality checks](06-quality-checks.md)); it keeps one to add what is its own.
-
-Each config imports the toolchain's packages and the settings file, and nothing else — the presets and the tool's own `defineConfig` all arrive from `@jterrazz/typescript`. Importing `defineConfig` from `oxlint` or `oxfmt` directly asks the project to declare those packages as well, which is the shape below refusing to hold.
-
-That form is every profile's, a published package's included: a published package's declarations are guaranteed by `isolatedDeclarations` in the build presets below.
-
-A project with several public subpaths needs no build config at all: `build` and `bundle` read their entries off the `exports` map ([Building](05-building.md)). A project that owns a `tsdown.config.ts` anyway imports the build preset from the same place, and it ships a declaration so the import is typed rather than `any`:
-
-```ts
-// tsdown.config.ts
-import bundle from '@jterrazz/typescript/tsdown/bundle';
-
-export default bundle;
-```
-
-`build` is the application preset, `bundle` the library one — the same two the CLI runs, and `UserConfig` is exported beside each for a project that annotates its own.
-
-**`isolatedDeclarations` is the `bundle` preset's, not the `library` tsconfig's.** What it buys is a declaration emitted without a type-checker, which is a property of the PUBLISHED artefact: `typescript bundle` refuses an export whose type it would have to infer, and `tsc --noEmit` over the repository does not. In the tsconfig it also reached every spec file, where it refused the destructured export a specification hands back (TS9019).
-
-### A subtree on another profile
-
-A workspace whose members share one profile needs one root config. A subtree that IS another shape — a React client inside a Node service — takes a nested `oxlint.config.ts` of its own, which oxlint applies to that subtree, declaring the presets that subtree is held to, its own profile first. Linter options belong to the root config only, and the root's already turn type information on for the whole tree, so the nested file ships the composition through `nested()`:
-
-```ts
-import { test } from '@jterrazz/test/config';
-import { typescript } from '@jterrazz/typescript/config';
-import { defineConfig, fromPresets, nested } from '@jterrazz/typescript/oxlint';
-
-export default defineConfig(
-    nested(fromPresets({ presets: [typescript({ profile: 'react' }), test()] })),
-);
-```
-
-## 3. Wire the CLI into package.json
-
-Applications:
-
-```json
-{
-    "build": "typescript build",
-    "start": "typescript start",
-    "dev": "typescript dev",
-    "lint": "typescript check",
-    "lint:fix": "typescript fix"
-}
-```
-
-Libraries (bundle instead of build):
-
-```json
-{
-    "build": "typescript bundle",
-    "lint": "typescript check",
-    "lint:fix": "typescript fix"
-}
-```
-
-A repository that EMITS with project references runs the compiler directly, and names it through the CLI so the version is the toolchain's: `"build": "typescript tsc --build"` ([Building](05-building.md)).
-
-## 4. Answer the six gestures in a Makefile
-
-The repository's root keeps a `Makefile` with a rule for each of the six gestures every repository answers — the flows speak only these, and the Names (tree) pass refuses a repository that misses one ([Quality checks](06-quality-checks.md#the-six-gestures)):
-
-```make
-.PHONY: install build lint fix test check
-
-install:
-	npm ci
-
-build lint test:
-	npm run $@
-
-fix:
-	npm run lint:fix
-
-check: lint test
-```
-
-A workspace keeps one, at its root; a member owes none. A repository with more than one fixer — `@jterrazz/test`'s beside this one — runs every one of them whatever the one before it said, by the recipe [Quality checks](06-quality-checks.md#the-six-gestures) gives.
-
-## 5. State a setting, where there is one
-
-The settings file step 2 created holds, beside the presets the repository is held to, what is its own, one section per package of the family — and a repository on the `node` profile with nothing else to say may keep none:
-
-```ts
-// jterrazz.config.ts
-import { test } from '@jterrazz/test/config';
-import { defineConfig, typescript } from '@jterrazz/typescript/config';
-
-export default defineConfig({
-    presets: [typescript({ profile: 'node' }), test()],
-    typescript: { roots: { scripts: 'the release scripts the CI workflow runs' } },
-});
-```
-
-The file belongs to the whole family, and this package owns it: `defineConfig` types every section a package of the family declares, and `@jterrazz/test` adds its own, `test`. A package hands a repository everything it holds it to in one preset — the defaults of its section, its oxlint rules, its layers, its name rules, its debt — and the base preset, `typescript()`, is always on, whether the file names it or not; how the presets and the repository's own sections merge, and how a repository sets a law aside under `optOuts`, is [Rules kit](09-rules-kit.md#presets)'s. The `typescript` section holds three settings of the repository's own: `roots`, the folders it keeps beside its spine ([Quality checks](06-quality-checks.md#a-root-beside-the-spine)); `architecture`, the layer map its imports are held to — the shipped `hexagonal` map, its own `layers`, or both ([Quality checks](06-quality-checks.md#the-architecture-layer-map-pass)); and `names`, the name rules it declares ([Quality checks](06-quality-checks.md#a-name-rule-a-project-declares)).
-
-`oxlint.config.ts` composes the same presets with `fromPresets`, so the file that names a package's preset is the one place its profile is chosen and its oxlint rules are armed ([Lint presets](07-lint-presets.md#compose-semantics)).
-
-Node loads the file itself, with its types stripped, so it needs no build and no tool beside the toolchain. A missing file is no settings at all; a file that does not load, or holds no settings object, is a finding of the pass that reads it. A workspace member keeps its own beside its `package.json`, for what that member alone declares.
-
-## The shape a consumer keeps
-
-That is the whole contract, and it is meant to stay that size:
-
-- **One devDependency** — `@jterrazz/typescript`. tsc, oxlint, oxfmt, knip and tsdown are its own dependencies and arrive with it; installing one of them directly gives a project two opinions about its own toolchain, and the versions drift apart from there. It holds under npm, pnpm and bun alike, and pnpm is the one that proves it: its `node_modules` resolves only what the project itself declares, so a config naming any other package would fail there with `ERR_MODULE_NOT_FOUND`.
-- **Two commands** — `typescript check` and `typescript fix`. Every gate is behind them, so a script that calls a tool underneath skips the passes the CLI orchestrates.
-- **Six gestures** — the `Makefile` rules above, the one door a reader who has never opened the repository knows.
-- **One line of tsconfig** — the `extends` above, and nothing beside it. In a workspace that is one line per member: the unit the toolchain measures from is the package, not the repository ([Quality checks](06-quality-checks.md)).
-
-A local `compilerOption` is a **smell, not a shortcut**. It says the preset lacks something, and it settles that lack for one project in a place nobody else reads — so the next project rediscovers the same gap and answers it differently. Name what is missing and change the preset instead: the fix belongs upstream, where every project gets the same answer.
-
-## Where a tool's output goes
-
-Every build, test and lint artefact lives under `.artifacts/<tool>/` at the project root — one folder per tool that writes, `.artifacts/tsc/` for the incremental buildinfo, `.artifacts/vitest/coverage/` for coverage, and so on. Coverage is the runner's output, so it takes the runner's folder and no other: `@jterrazz/test`'s vitest preset sets `coverage.reportsDirectory` there, and the artefact gate names the same path, so a project has one coverage directory rather than two. One directory to ignore, one to delete, and no tool's droppings beside the source.
-
-`dist` is the one exception: a build's **product** stays beside `src/` and is published from there ([Building](05-building.md)). It is not an artefact — it is what the package ships.
-
-Two lines carry the convention into a project:
-
-```bash
-echo '.artifacts/' >> .gitignore   # or let `typescript fix` write it
-typescript clean                   # rm -rf .artifacts — dist/ is left alone
-```
-
-The presets do the rest. Every tsconfig preset compiles incrementally and put the buildinfo at `${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo`, so a warm type-check is several times faster and nothing lands at the project root. In a workspace each member writes under its own root, because `${configDir}` means "the project extending me".
-
-`typescript check` guards it: the [Gitignore (artefacts)](06-quality-checks.md) pass fails a `.gitignore` that still names an artefact somewhere else, and `typescript fix` rewrites it. In a workspace it reads the package's own `.gitignore` AND the nearest ancestor one above it — a workspace root that ignores `.artifacts/` covers every member, even one with no `.gitignore` of its own.
-
-The exceptions the gate never touches — a closed list, plus `.next` under one condition — are [the pass's own chapter](06-quality-checks.md#the-closed-exception-list)'s.
-
-## Conventions
-
-- Each subpath the package publishes is built from its entry, `index[.<subpath>][.browser].ts` — `src/index.ts` for `.` — and each bin from `<command>.bin.ts` ([the entry grammar](06-quality-checks.md#the-entry-grammar)).
-- Use `.js` extensions in relative imports: `import { foo } from './bar.js'`.
-- The API is the types: a public export's signature is its documentation, and no generated reference sits beside it.
-
-## Taking a bump
-
-Two commands exist for the day a stricter release lands, and both are read-only until you ask for a file:
-
-```bash
-typescript doctor     # every tool, what is installed, and the range this release asks for
-typescript baseline   # record today's debt, so each count may only fall
-```
-
-`doctor` is the first read after a bump: one row per tool, with a verdict. `baseline` is only needed where the bump lands red — it records the linter's diagnostics, every oxlint rule's `jterrazz(*)` ones included, in oxlint's own `oxlint-suppressions.json`, and the Architecture (layer map), Names (tree) and Comments (density) passes' findings in the `typescript` section of `jterrazz.baseline.json` ([what it holds](06-quality-checks.md#what-jterrazzbaselinejson-still-holds)); from then on the owner of each count — oxlint, or the pass that found it — refuses any count going up, a rule nobody recorded, and an entry that fell or reached zero. The conventions checker's findings are `@jterrazz/test`'s debt, recorded in the same file's `test` section by its own command. When to reach for each is [Operating](04-operating.md)'s; what the ratchet refuses is [Quality checks](06-quality-checks.md)'s.
-
-## Working on this package
+The package builds itself with the tsdown it ships, so a build comes before every other gesture, and the specs drive the built command.
 
 | Gesture        | Runs                                                                                                               |
 | -------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `make install` | `npm ci`, once per change of the lockfile                                                                          |
-| `make build`   | `npm run build` — tsdown over `tsdown.config.ts` into `dist/`, which `lint`, `test` and `fix` each run first       |
-| `make lint`    | this package's own CLI, `typescript check`, run on this package                                                    |
+| `make build`   | `npm run build`: tsdown over `tsdown.config.ts` into `dist/`                                                       |
+| `make lint`    | this package's own `typescript check`, run on this package from `dist/`                                            |
 | `make fix`     | `@jterrazz/test`'s checker, then `typescript fix`, each whatever the other said                                    |
 | `make test`    | the three vitest projects ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md)) |
-| `make check`   | `make lint`, then `make test` — the gate before a commit                                                           |
+| `make check`   | `make lint`, then `make test`: the gate before a commit                                                            |
 
-`make check-links` is opt-in and never part of `check`: it runs [lychee](https://lychee.cli.rs) over `README.md`, `docs/` and `skills/`, remote links included, so it needs the network and a lychee installed on the machine, and it says so and fails where there is none. Why the gate leaves remote links out is [Quality checks](06-quality-checks.md#what-rumdl-judges)'s.
+`make lint` and `make test` first lay the repository's own install of itself again from this build's tarball (`install-self`), so neither judges an install older than the checkout.
 
-`make mutation` is opt-in too, and never a gate: it runs [Stryker](https://stryker-mutator.io) over `src/` and `lint/` against the module tests of the `unit` project alone. It rewrites the sources in place for the whole run, so nothing else runs beside it, and leaves its report in `.artifacts/stryker/`, which git ignores: no score is committed. The cli and lint specs spawn the built command, which no mutant of that run reaches, so its score is the module tests' and never the measure of the suite's value: a mutant it reports alive may well be killed by a spec. The specs were measured once, by hand, with each mutant handed to every process they spawn; no committed tool reproduces that reading, and what it left alive is [Testing § The mutants no test kills](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#the-mutants-no-test-kills).
+Two gestures are opt-in and never part of `check`:
 
-A spec that asserts on some passes of `check` or `fix` runs those alone, through an internal selector this checkout holds and the package does not; what it reads and how the specs reach it is [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#who-a-rule-is-for)'s. A chain runs the command as `SELECTING_BIN` and names its passes through `onlyPasses()`, both in `specs/cli/_setup/check-passes.ts`.
+- `make check-links` runs [lychee](https://lychee.cli.rs) over `README.md`, `docs/` and `skills/`, remote links included. It needs the network and a lychee on the machine, and says so where there is none. Why the gate leaves remote links out is [Quality checks](07-quality-checks.md#what-rumdl-judges)'s.
+- `make mutation` runs [Stryker](https://stryker-mutator.io) over `src/` and `lint/` against the module tests of the `unit` project. It rewrites the sources in place for the whole run, so nothing else runs beside it, and leaves its report in `.artifacts/stryker/`. The specs spawn the built command, which no mutant of that run reaches, so its score measures the module tests alone; what the specs leave alive is [Testing § The mutants no test kills](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#the-mutants-no-test-kills).
 
-Every directory a `cli` spec creates sits under one temp root per run: `specs/cli/_setup/run-temp-root.ts` creates it under `/tmp`, points `TMPDIR` at it before the first worker starts, and removes it when the run ends. It stays out of a per-user temp folder, whose size slows every tool that walks up from its working directory for a config. A chain takes its scratch directories from `specs/cli/_setup/temporary-directory.ts`: `temporaryDirectory()` removes one when the test finishes, and `newDirectory()` leaves one a whole file shares to that file's `afterAll`; a stray one goes with the root. The module tests of the `unit` project create theirs under the system's temp folder and remove them themselves: that project has no root. An install script takes its sandbox from `tmpdir()`, so it lands under that root too. The command's own scratch directories stay in the system temp folder, and the command removes them when it ends.
+## Where a change lands
 
-Where a new thing goes follows the layers ([Architecture](01-architecture.md)): a new gate is a pass in `lint/consumer/checks/`, listed by `lint/checker.ts` — the code it shares with another declaration goes under `lint/engine/` — a key in `src/command/check/passes.ts` with the function under `src/command/check/` that decides whether it applies, and its `checker` row in `lint/consumer/catalogue/manifest.json`, the manifest [Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#who-a-rule-is-for) describes; a lint decision is a line of a fragment under `lint/consumer/rulebook/`, never a config; a refusal a shipped module makes — a throw, a rejection, an exit with anything but 0 — is a `runtime` row of that manifest, and a thrown one a four-part `refusal()`; a new configuration is a file under `src/presets/`, and an entry of `tsdown.config.ts` when a tool loads it by path; a new importable entry is a `.ts` in `src/` — or at the root of `lint/` when what it exports is the engine, as `./rules` is — named by [the entry grammar](06-quality-checks.md#the-entry-grammar), an entry of `tsdown.config.ts`, an `exports` subpath naming what it builds to, and a row in the resolution test; a law every repository keeps is a line of the base preset, `lint/consumer/catalogue/preset.ts`, never of a repository's `jterrazz.config.ts`.
+The layers decide it ([Architecture](01-architecture.md)):
 
-One standing rule binds every change here: **a change to the public surface reaches three places.** `README.md`, the chapter that owns the subject, and `skills/jterrazz-typescript/SKILL.md`, which routes into the chapter and never restates it — and the Markdown (prose) pass fails a skill naming a chapter that does not exist.
+| Change                           | Lands in                                                                                                                                                                                                                                                   |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| a lint decision                  | one line of a fragment under `lint/consumer/rulebook/`; the catalogue in [Lint presets](08-lint-presets.md) is its projection                                                                                                                              |
+| a lint rule of this package's    | a file under `lint/consumer/rules/<family>/`, assembled by `plugin.ts`, with its row in the catalogue                                                                                                                                                      |
+| a new pass of `check`            | its declaration in `lint/consumer/checks/`, listed by `lint/checker.ts`; a key in `src/command/check/passes.ts` with the function under `src/command/check/` that decides whether it applies; its `checker` row in `lint/consumer/catalogue/manifest.json` |
+| code two declarations share      | `lint/engine/`                                                                                                                                                                                                                                             |
+| a refusal a shipped module makes | a `runtime` row of the manifest, and, when thrown, a four-part `refusal()` reading a heading of this manual                                                                                                                                                |
+| a law every repository keeps     | a line of the base preset, `lint/consumer/catalogue/preset.ts`, never of a repository's `jterrazz.config.ts`                                                                                                                                               |
+| a new configuration              | a file under `src/presets/`, and an entry of `tsdown.config.ts` when a tool loads it by path                                                                                                                                                               |
+| a new importable entry           | a `.ts` named by [the entry grammar](07-quality-checks.md#the-entry-grammar), in `src/`, or at the root of `lint/` when it exports the engine as `./rules` does; an entry of `tsdown.config.ts`; an `exports` subpath; the specs that load every subpath   |
 
-## Related
+How the manifest and its audiences work is [Testing § Who a rule is for](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#who-a-rule-is-for).
 
-- [Architecture](01-architecture.md) — the layers a change lands in.
-- [Building](05-building.md) — build, bundle, start, dev.
-- [Quality checks](06-quality-checks.md) — `check` / `fix`.
-- [Repo structure](08-repo-structure.md) — how a repo is organized.
+## What a change owes
+
+A change to the public surface reaches three places: `README.md`, the chapter that owns the subject, and `skills/jterrazz-typescript/SKILL.md`, which routes into the chapter and never restates it. The Markdown (prose) pass fails a skill naming a chapter that does not exist.
+
+A generated table is regenerated, never edited: `TEST_UPDATE=1 npm test` rewrites the catalogue of [Lint presets](08-lint-presets.md), the id tables of [Quality checks](07-quality-checks.md) and every golden ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#regenerating-a-golden)).
+
+## Conventions
+
+- Relative imports carry their `.js` extension: `import { foo } from './bar.js'`.
+- The API is the types: a public export's signature is its documentation, and no generated reference sits beside it.
+- An error a project can cause is a four-part `refusal()`; one only the toolchain can cause is `invariant()` ([Architecture § The command](01-architecture.md#the-command)).
+- Comments default to none; a name carries the meaning ([Lint presets](08-lint-presets.md#a-comment-no-longer-than-its-function)).
+
+## The specs' scratch space
+
+A spec that asserts on some passes of `check` or `fix` runs those alone, through a selector this checkout holds and the package does not: a chain runs the command as `SELECTING_BIN` and names its passes through `onlyPasses()`, both in `specs/cli/_setup/check-passes.ts`.
+
+Every directory a `cli` spec creates sits under one temp root per run: `specs/cli/_setup/run-temp-root.ts` creates it under `/tmp`, points `TMPDIR` at it before the first worker starts, and removes it when the run ends. It stays out of a per-user temp folder, whose size slows every tool that walks up from its working directory looking for a config. A chain takes its scratch directories from `specs/cli/_setup/temporary-directory.ts`: `temporaryDirectory()` removes one when the test finishes, and `newDirectory()` leaves one a whole file shares to that file's `afterAll`. The module tests of the `unit` project create theirs under the system's temp folder and remove them themselves.

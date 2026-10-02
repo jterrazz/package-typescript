@@ -54,7 +54,7 @@ describe('rule-surface', () => {
         const undecided = typeAware.filter((rule) => !DECIDED.has(rule));
         expect(
             undecided,
-            `found: ${undecided.join(', ')} — type-aware, and decided nowhere in lint/ · why: every rule tsgolint runs is decided by name, so a tsgolint release never adds a check no profile names · fix: decide each in lint/consumer/rulebook/typescript.js — \`typeAware()\`, or \`off()\` with its reason · read: docs/07-lint-presets.md#the-four-laws`,
+            `found: ${undecided.join(', ')} — type-aware, and decided nowhere in lint/ · why: every rule tsgolint runs is decided by name, so a tsgolint release never adds a check no profile names · fix: decide each in lint/consumer/rulebook/typescript.js — \`typeAware()\`, or \`off()\` with its reason · read: docs/08-lint-presets.md#the-four-laws`,
         ).toStrictEqual([]);
     });
 
@@ -103,7 +103,7 @@ describe('rule-surface', () => {
 
         expect(
             idle,
-            `found: ${idle.join(', ')} — marked unsafe, and plain --fix never applies its fixer · fix: find the rule whose fixer makes the rewrite its reason names, and mark that one · read: docs/07-lint-presets.md#fixers-that-lie`,
+            `found: ${idle.join(', ')} — marked unsafe, and plain --fix never applies its fixer · fix: find the rule whose fixer makes the rewrite its reason names, and mark that one · read: docs/08-lint-presets.md#fixers-that-lie`,
         ).toStrictEqual([]);
     });
 

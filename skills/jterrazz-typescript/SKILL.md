@@ -19,11 +19,11 @@ One devDependency that builds, checks, lints and formats a project. The manual i
 | `typescript baseline`    | a bump lands red: record today's counts, exact — `fix` lowers one that fell              |
 | `typescript docs-layout` | a repository with no npm project: the manual's shape, alone                              |
 
-A project names ONE profile — `node`, `next`, `astro`, `expo`, `bun`, `react` — in `jterrazz.config.ts`, as `presets: [typescript({ profile })]`, and the matching preset in `tsconfig.json` (a published package: `node`, with the `library` tsconfig); its `oxlint.config.ts` is `defineConfig(fromPresets(settings))`, and its config files import the toolchain's packages and nothing else. The wiring is `docs/02-developing.md`.
+A project names ONE profile — `node`, `next`, `astro`, `expo`, `bun`, `react` — in `jterrazz.config.ts`, as `presets: [typescript({ profile })]`, and the matching preset in `tsconfig.json` (a published package: `node`, with the `library` tsconfig); its `oxlint.config.ts` is `defineConfig(fromPresets(settings))`, and its config files import the toolchain's packages and nothing else. The wiring is `docs/05-getting-started.md`.
 
 ## What a failing pass means
 
-Every pass that ran prints a `RUN` header and one verdict; a pass that did not apply prints nothing. Each rule id below is explained in `docs/06-quality-checks.md`, under the pass's own section.
+Every pass that ran prints a `RUN` header and one verdict; a pass that did not apply prints nothing. Each rule id below is explained in `docs/07-quality-checks.md`, under the pass's own section.
 
 | Pass                      | It failed because                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -47,18 +47,18 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 
 ## Before writing
 
-- A file is named for its subject in the domain: never `types.ts`, `utils.ts`, `constants.ts`, nor a `*.types.ts` suffix. An `index` is an entry the package publishes, named `index[.<subpath>][.browser].ts` for its subpath, and a bin `<command>.bin.ts`, named for the command it publishes — `.bin` marks only a published bin, and a program the package does not publish is named for what it runs — `docs/06-quality-checks.md`, The entry grammar.
-- A file holds 300 lines and a function 60; a `*.spec.ts` is `@jterrazz/test`'s `spec-file-within-line-limit`, at 400 — `docs/07-lint-presets.md`.
+- A file is named for its subject in the domain: never `types.ts`, `utils.ts`, `constants.ts`, nor a `*.types.ts` suffix. An `index` is an entry the package publishes, named `index[.<subpath>][.browser].ts` for its subpath, and a bin `<command>.bin.ts`, named for the command it publishes — `.bin` marks only a published bin, and a program the package does not publish is named for what it runs — `docs/07-quality-checks.md`, The entry grammar.
+- A file holds 300 lines and a function 60; a `*.spec.ts` is `@jterrazz/test`'s `spec-file-within-line-limit`, at 400 — `docs/08-lint-presets.md`.
 - The default is no comment: a name carries the meaning. A comment longer than the function it sits on fails `jterrazz-typescript/comment-no-longer-than-its-function`; context that lives outside the codebase is kept with `// oxlint-disable-next-line jterrazz-typescript/comment-no-longer-than-its-function -- <the context>`.
 - A suppression carries its reason: `// oxlint-disable-next-line <rule> -- why`, and `@ts-expect-error` with a description.
 - Every artefact lives under `.artifacts/<tool>/`; `dist/` is the product, not an artefact.
 - A `knip.json` ignore carries a `//` reason above it — the file is read as JSONC.
 - The API is the types: there is no generated reference, and `docs/` never holds one.
 - A repository root holds `src/`, `lint/`, `specs/`, `docs/`, `skills/` — any other root folder fails Names (tree) unless the ecosystem imposes it (`bin/`, `public/`, `app/`…) or `jterrazz.config.ts` declares it under `typescript.roots` with a reason.
-- A `lint/` holds at its root the modules that compose it — its entries, its bins, what `src/` reads — and three folders: `consumer/` and `self/` hold declarations alone, and `engine/` holds the code that runs them — `docs/06-quality-checks.md`, The lint tree.
+- A `lint/` holds at its root the modules that compose it — its entries, its bins, what `src/` reads — and three folders: `consumer/` and `self/` hold declarations alone, and `engine/` holds the code that runs them — `docs/07-quality-checks.md`, The lint tree.
 - A repository's root `Makefile` answers `make install`, `build`, `lint`, `fix`, `test` and `check`; a workspace member owes none of them.
-- What a package holds a project to reaches it through the preset the project lists under `presets` in `jterrazz.config.ts`, after the base `typescript()` that is always on; the project's own layers, roots and name rules go in its `typescript` section, and a preset's law is set aside only under `optOuts`, with its reason — `docs/09-rules-kit.md`, Presets.
-- A rule a package writes for its consumers is written with `@jterrazz/typescript/rules` — `docs/09-rules-kit.md`.
+- What a package holds a project to reaches it through the preset the project lists under `presets` in `jterrazz.config.ts`, after the base `typescript()` that is always on; the project's own layers, roots and name rules go in its `typescript` section, and a preset's law is set aside only under `optOuts`, with its reason — `docs/06-configuration.md`, Presets.
+- A rule a package writes for its consumers is written with `@jterrazz/typescript/rules` — `docs/10-rules-kit.md`.
 - A local `compilerOption` is a smell — the preset is where the fix belongs.
 
 ## The chapter to read next
@@ -67,11 +67,11 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | what the toolchain is, the four ideas to hold (profile, settings file, two commands, baseline), and which chapter to read first  | `README.md`, then `docs/README.md` |
 | the layers, the exports map, the two compilers                                                                                   | `docs/01-architecture.md`          |
-| wiring a project, `.artifacts/`, a bump                                                                                          | `docs/02-developing.md`            |
+| wiring a project, `.artifacts/`                                                                                                  | `docs/05-getting-started.md`       |
 | how this toolchain proves itself, and the rules it keeps for its own suite — this repository alone, the install ships without it | `docs/03-testing.md`               |
 | which number moves on a release                                                                                                  | `docs/04-operating.md`             |
-| `build`, `bundle`, `start`, `dev`                                                                                                | `docs/05-building.md`              |
-| a failing pass, a rule id, the baseline                                                                                          | `docs/06-quality-checks.md`        |
-| a lint rule, a profile, `compose()`, knip                                                                                        | `docs/07-lint-presets.md`          |
-| what a repository root holds                                                                                                     | `docs/08-repo-structure.md`        |
-| a preset, the merge order, an opt-out; writing a rule, a check or its chapter with the kit                                       | `docs/09-rules-kit.md`             |
+| `build`, `bundle`, `start`, `dev`                                                                                                | `docs/09-building.md`              |
+| a failing pass, a rule id, the baseline                                                                                          | `docs/07-quality-checks.md`        |
+| a lint rule, a profile, `compose()`, knip                                                                                        | `docs/08-lint-presets.md`          |
+| a preset, the merge order, an opt-out                                                                                            | `docs/06-configuration.md`         |
+| writing a rule, a check or its chapter with the kit                                                                              | `docs/10-rules-kit.md`             |

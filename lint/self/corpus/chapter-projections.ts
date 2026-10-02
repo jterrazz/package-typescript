@@ -15,9 +15,9 @@ import SELF_ROWS from '../catalogue/manifest.json' with { type: 'json' };
 
 const DOCS = resolve(import.meta.dirname, '../../../docs');
 
-const QUALITY_CHECKS = resolve(DOCS, '06-quality-checks.md');
+const QUALITY_CHECKS = resolve(DOCS, '07-quality-checks.md');
 
-const LINT_PRESETS = resolve(DOCS, '07-lint-presets.md');
+const LINT_PRESETS = resolve(DOCS, '08-lint-presets.md');
 
 const FIXER_MARKERS = generatedMarkers('fixers');
 

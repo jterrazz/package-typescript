@@ -12,7 +12,7 @@ runs:
 
            RUN  Oxlint Check
 
-          found: oxlint-suppressions.json holds entries for files that are gone: src/moved.ts · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/06-quality-checks.md#the-ratchet
+          found: oxlint-suppressions.json holds entries for files that are gone: src/moved.ts · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/07-quality-checks.md#the-ratchet
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Check

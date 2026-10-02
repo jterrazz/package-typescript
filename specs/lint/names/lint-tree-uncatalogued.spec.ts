@@ -14,7 +14,7 @@ describe('lint-tree-uncatalogued', () => {
                 found: \`lint/README.md\` sits at the root of lint/
                 why: lint/ has one tree in every repository — its root holds the modules that compose consumer/ with engine/: the entries, the bins and what src/ reads, and a folder names the audience of every other file
                 fix: move it into the folder its audience names — consumer, engine, self — or into docs/ if it explains
-                read: docs/06-quality-checks.md#the-lint-tree
+                read: docs/07-quality-checks.md#the-lint-tree
         `);
     });
 });

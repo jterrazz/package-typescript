@@ -176,7 +176,7 @@ export default fragment({
             kind: 'formatter',
         }),
         'unicorn/no-null': off({
-            by: 'docs/07-lint-presets.md — null is what the platform and JSON APIs return, and a codebase that refuses it grows a translation layer at every boundary',
+            by: 'docs/08-lint-presets.md — null is what the platform and JSON APIs return, and a codebase that refuses it grows a translation layer at every boundary',
             kind: 'convention',
         }),
         'unicorn/prefer-number-coercion': off({

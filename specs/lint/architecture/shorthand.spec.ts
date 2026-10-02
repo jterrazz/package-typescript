@@ -14,7 +14,7 @@ describe('shorthand', () => {
                 found: \`src/domain/user.ts\` imports \`src/infrastructure/db.ts\`
                 why: the domain layer is pure — it imports no other layer
                 fix: move what it needs into the domain, or declare a port the domain owns and let an outer layer implement it
-                read: docs/06-quality-checks.md#the-hexagonal-map
+                read: docs/07-quality-checks.md#the-hexagonal-map
         `);
     });
 });
