@@ -48,13 +48,13 @@
         },
         "./tsconfig/*": "./src/presets/tsconfig/*.json",
         "./tsconfig/*.json": "./src/presets/tsconfig/*.json",
-        "./tsdown/*": {
-            "types": "./dist/presets/tsdown/*.d.ts",
-            "default": "./dist/presets/tsdown/*.js"
+        "./tsdown/build": {
+            "types": "./dist/tsdown/build.d.ts",
+            "default": "./dist/tsdown/build.js"
         },
-        "./tsdown/*.js": {
-            "types": "./dist/presets/tsdown/*.d.ts",
-            "default": "./dist/presets/tsdown/*.js"
+        "./tsdown/bundle": {
+            "types": "./dist/tsdown/bundle.d.ts",
+            "default": "./dist/tsdown/bundle.js"
         }
     },
     "publishConfig": {

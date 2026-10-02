@@ -81,7 +81,7 @@ A project with several public subpaths needs no build config at all: `build` and
 
 ```ts
 // tsdown.config.ts
-import bundle from '@jterrazz/typescript/tsdown/bundle.js';
+import bundle from '@jterrazz/typescript/tsdown/bundle';
 
 export default bundle;
 ```

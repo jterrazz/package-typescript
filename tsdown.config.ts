@@ -19,6 +19,8 @@ export default defineConfig([
             rules: 'lint/index.rules.ts',
             'rules.browser': 'lint/index.rules.browser.ts',
             typescript: 'src/typescript.bin.ts',
+            'tsdown/build': 'src/index.tsdown.build.ts',
+            'tsdown/bundle': 'src/index.tsdown.bundle.ts',
             'presets/oxfmt/style': 'src/presets/oxfmt/style.ts',
             'presets/oxlint/declared': 'src/presets/oxlint/declared.ts',
             'presets/tsdown/build': 'src/presets/tsdown/build.ts',

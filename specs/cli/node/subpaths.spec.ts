@@ -38,14 +38,10 @@ describe('subpaths', () => {
             @jterrazz/typescript/tsconfig/next.json (default) → ./src/presets/tsconfig/next.json: parses, 22 compiler options
             @jterrazz/typescript/tsconfig/node.json (default) → ./src/presets/tsconfig/node.json: parses, 21 compiler options
             @jterrazz/typescript/tsconfig/react.json (default) → ./src/presets/tsconfig/react.json: parses, 21 compiler options
-            @jterrazz/typescript/tsdown/build (types) → ./dist/presets/tsdown/build.d.ts: held
-            @jterrazz/typescript/tsdown/bundle (types) → ./dist/presets/tsdown/bundle.d.ts: held
-            @jterrazz/typescript/tsdown/build (default) → ./dist/presets/tsdown/build.js: loads, 1 names
-            @jterrazz/typescript/tsdown/bundle (default) → ./dist/presets/tsdown/bundle.js: loads, 1 names
-            @jterrazz/typescript/tsdown/build.js (types) → ./dist/presets/tsdown/build.d.ts: held
-            @jterrazz/typescript/tsdown/bundle.js (types) → ./dist/presets/tsdown/bundle.d.ts: held
-            @jterrazz/typescript/tsdown/build.js (default) → ./dist/presets/tsdown/build.js: loads, 1 names
-            @jterrazz/typescript/tsdown/bundle.js (default) → ./dist/presets/tsdown/bundle.js: loads, 1 names
+            @jterrazz/typescript/tsdown/build (types) → ./dist/tsdown/build.d.ts: held
+            @jterrazz/typescript/tsdown/build (default) → ./dist/tsdown/build.js: loads, 1 names
+            @jterrazz/typescript/tsdown/bundle (types) → ./dist/tsdown/bundle.d.ts: held
+            @jterrazz/typescript/tsdown/bundle (default) → ./dist/tsdown/bundle.js: loads, 1 names
         `);
     });
 

@@ -1,5 +1,5 @@
-import type { UserConfig } from '@jterrazz/typescript/tsdown/bundle.js';
-import bundle from '@jterrazz/typescript/tsdown/bundle.js';
+import type { UserConfig } from '@jterrazz/typescript/tsdown/bundle';
+import bundle from '@jterrazz/typescript/tsdown/bundle';
 
 const config: UserConfig = bundle;
 
