@@ -75,6 +75,46 @@ describe('publish-guard', () => {
         ]);
     });
 
+    test('names a test package compiled into a shipped chunk and one it imports undeclared, and judges no chunk `files` leaves out', async () => {
+        // Given - a library bundling @vitest/spy though it declares it and ms, importing vitest/config undeclared, @vitest/mocker declared, playwright as a peer and node:path, its second chunk compiled from a fixtures module and left out of `files`
+        const result = await publish
+            .fixture(directory('./_fixtures/publish/test-packages/'))
+            .link('@jterrazz/test')
+            .link('@vitest/spy')
+            .link('ms')
+            .exec('check');
+
+        // Then - the shipped chunk fails on the test package compiled in and the undeclared one it imports, on nothing it declares, on no runtime package and never on the unshipped chunk; the build it judged left the dist as it was
+        expect(publishPass(result.stdout.text)).toStrictEqual([
+            "dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js is compiled from @vitest/spy, a test package · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/19-linting.md#no-test-code-in-production",
+            'dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js imports vitest/config, a test package · why: a published build never carries test material · fix: cut the import, or declare vitest in "dependencies" when the product runs it · read: @jterrazz/test\'s docs/19-linting.md#no-test-code-in-production',
+            '✗ Failed with exit code 1',
+        ]);
+        expect(result.file('dist/index.js').content).toBe('export const tools = [];\n');
+    });
+
+    test('judges every chunk of a package that names no `files`, since npm then ships them all', async () => {
+        // Given - the same library, its manifest naming no `files`
+        const result = await publish
+            .fixture(directory('./_fixtures/publish/test-packages/'))
+            .fixture(directory('./_fixtures/publish/test-packages-unfiled/'))
+            .link('@jterrazz/test')
+            .link('@vitest/spy')
+            .link('ms')
+            .exec('check');
+
+        // Then - the guard judges the second chunk too, on the fixtures module it is compiled from
+        expect(
+            publishPass(result.stdout.text).filter((line) =>
+                line.includes('(no-test-code-in-production)'),
+            ),
+        ).toStrictEqual([
+            "dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js is compiled from @vitest/spy, a test package · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/19-linting.md#no-test-code-in-production",
+            'dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js imports vitest/config, a test package · why: a published build never carries test material · fix: cut the import, or declare vitest in "dependencies" when the product runs it · read: @jterrazz/test\'s docs/19-linting.md#no-test-code-in-production',
+            "dist/testing.js:1:1: error publish(no-test-code-in-production): found: dist/testing.js is compiled from src/orders.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/19-linting.md#no-test-code-in-production",
+        ]);
+    });
+
     test('fails the pass on a build that fails, and nothing else', async () => {
         // Given - a package publint and attw accept, whose own config names an entry nobody wrote
         const result = await publish

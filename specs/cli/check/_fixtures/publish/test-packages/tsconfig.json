@@ -1,0 +1,4 @@
+{
+    "compilerOptions": { "module": "nodenext", "noEmit": true, "skipLibCheck": true, "strict": true },
+    "include": ["src/**/*.ts"]
+}

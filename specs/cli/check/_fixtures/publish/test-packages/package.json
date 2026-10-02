@@ -1,0 +1,18 @@
+{
+    "name": "fixture-publish-test-packages",
+    "version": "1.0.0",
+    "files": [
+        "dist/index.js"
+    ],
+    "type": "module",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "dependencies": {
+        "@vitest/mocker": "*",
+        "@vitest/spy": "*"
+    },
+    "peerDependencies": {
+        "playwright": "*"
+    }
+}
