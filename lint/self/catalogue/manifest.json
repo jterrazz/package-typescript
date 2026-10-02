@@ -65,6 +65,14 @@
     {
         "audience": "self",
         "channel": "meta",
+        "home": "specs/surface/package/documented-examples.test.ts",
+        "id": "documented-examples",
+        "names": ["EXAMPLE_FENCE", "NAMED_FILE"],
+        "why": "compiles this repository's own README, chapters and skill against the package it installs"
+    },
+    {
+        "audience": "self",
+        "channel": "meta",
         "home": "lint/self/corpus/findings.ts",
         "id": "findings-audit",
         "names": ["printedFindingIds"],

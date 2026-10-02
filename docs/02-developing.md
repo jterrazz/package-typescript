@@ -41,7 +41,7 @@ How the manifest and its audiences work is [Testing § Who a rule is for](https:
 
 ## What a change owes
 
-A change to the public surface reaches three places: `README.md`, the chapter that owns the subject, and `skills/jterrazz-typescript/SKILL.md`, which routes into the chapter and never restates it. The Markdown (prose) pass fails a skill naming a chapter that does not exist.
+A change to the public surface reaches three places: `README.md`, the chapter that owns the subject, and `skills/jterrazz-typescript/SKILL.md`, which routes into the chapter and never restates it. The Markdown (prose) pass fails a skill naming a chapter that does not exist, and the specs compile every TypeScript example of the README and the manual against the packed package.
 
 A generated table is regenerated, never edited: `TEST_UPDATE=1 npm test` rewrites the catalogue of [Lint presets](08-lint-presets.md), the id tables of [Quality checks](07-quality-checks.md) and every golden ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#regenerating-a-golden)).
 
