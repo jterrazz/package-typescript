@@ -14,15 +14,22 @@ Every message a rule prints teaches in four parts — `found: … · why: … ·
 
 ```ts
 import { defineRule, readAt, rowNamed } from '@jterrazz/typescript/rules';
+import type { RuleDocs } from '@jterrazz/typescript/rules';
 
-import { ROWS } from '../catalogue/manifest.js';
+type Visitor = { report: (problem: { messageId: string; node: unknown }) => void };
+
+const ROWS: RuleDocs[] = [
+    {
+        audience: 'consumer',
+        family: 'timing',
+        fix: 'await the event the test waits for',
+        name: 'no-sleep',
+        sentence: 'A test waits on an event, never on the clock.',
+    },
+];
 
 const row = rowNamed(ROWS, 'no-sleep');
-```
 
-The rule is its row, its messages, its read and its visitor:
-
-```ts
 export const noSleep = defineRule(
     {
         docs: row,
@@ -32,8 +39,8 @@ export const noSleep = defineRule(
         read: readAt(row, 'docs/19-linting.md'),
     },
     {
-        createOnce: (context) => ({
-            'CallExpression[callee.name="sleep"]': (node) =>
+        createOnce: (context: Visitor) => ({
+            'CallExpression[callee.name="sleep"]': (node: unknown) =>
                 context.report({ messageId: 'slept', node }),
         }),
     },
