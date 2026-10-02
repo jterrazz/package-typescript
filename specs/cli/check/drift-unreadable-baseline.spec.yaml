@@ -1,0 +1,47 @@
+description: reads a baseline that is not JSON as unreadable, and claims no section it never read
+fixture:
+    - ./_fixtures/drift/project/
+    - ./_fixtures/drift/unreadable-baseline/
+env: TYPESCRIPT_CHECK_PASSES=drift
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           DRIFT  Deviations from the profile
+
+            profile                              node (the default — no config of its own)
+            rules off vs profile                 none
+            suppressions                         0
+            oxlint-suppressions.json             nothing held
+            jterrazz.baseline.json › typescript  unreadable
+            tool versions                        in range
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed
+    - command: check --json
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           DRIFT  Deviations from the profile
+
+          {
+            "baseline": "unreadable",
+            "config": "default",
+            "floors": {},
+            "optOuts": [],
+            "oxlintSuppressions": null,
+            "profile": "node",
+            "rulesOff": [],
+            "suppressions": 0,
+            "sections": {},
+            "tools": [],
+            "unreasoned": []
+          }
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

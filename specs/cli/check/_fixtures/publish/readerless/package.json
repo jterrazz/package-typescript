@@ -1,0 +1,9 @@
+{
+    "exports": {
+        "./oxlint": {
+            "import": "./oxlint.mjs"
+        }
+    },
+    "name": "@jterrazz/test",
+    "version": "17.0.0"
+}

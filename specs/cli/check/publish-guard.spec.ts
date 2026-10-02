@@ -61,6 +61,20 @@ describe('publish-guard', () => {
         ]);
     });
 
+    test('passes a build whose @jterrazz/test publishes no reader of test material, saying so', async () => {
+        // Given - a package that builds, beside an install whose ./oxlint entry loads and exports no reader
+        const result = await publish
+            .fixture(directory('./_fixtures/publish/own-build/'))
+            .link('@jterrazz/test', directory('./_fixtures/publish/readerless/'))
+            .exec('check');
+
+        // Then - the pass names what the entry lacks, and judges nothing
+        expect(publishPass(result.stdout.text)).toStrictEqual([
+            'publish/no-test-code-in-production: nothing to judge — the @jterrazz/test this package resolves gives no reader of test material — its `./oxlint` entry exports no reader of test material',
+            '✓ Passed',
+        ]);
+    });
+
     test('fails the pass on a build that fails, and nothing else', async () => {
         // Given - a package publint and attw accept, whose own config names an entry nobody wrote
         const result = await publish

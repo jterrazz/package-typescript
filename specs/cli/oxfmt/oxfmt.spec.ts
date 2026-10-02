@@ -43,11 +43,10 @@ describe('oxfmt', () => {
                 '',
             ].join('\n'),
         );
-        expect(result.file('src/_fixtures/held.ts').content).toBe(
-            'export const held = "byte for byte"\n',
-        );
-        expect(result.file('src/_expected/held.ts').content).toBe(
-            'export const held = "byte for byte"\n',
-        );
+        expect(
+            ['_expected', '_fixtures', '_requests', '_seeds'].map(
+                (ground) => result.file(`src/${ground}/held.ts`).content,
+            ),
+        ).toStrictEqual(Array.from({ length: 4 }, () => 'export const held = "byte for byte"\n'));
     });
 });
