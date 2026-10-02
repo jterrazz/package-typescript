@@ -4,6 +4,8 @@ This repository ships one thing: the npm package `@jterrazz/typescript`, publish
 
 There is no service, no image and no infrastructure — what "operating" means here is the release, and who is allowed to cut one.
 
+The chapter has two readers. A project taking a new release reads [Adopting a stricter release](#adopting-a-stricter-release) and [How a consumer takes it](#how-a-consumer-takes-it); the rest is how this package cuts a release and which number it moves.
+
 ## What a merge to `main` does
 
 Nothing that reaches a consumer. `.github/workflows/validate.yaml` runs on every push and pull request to `main` and calls the shared `jterrazz-actions` validation workflow — install, build, lint, test. A green `main` is a publishable tree, not a published one.

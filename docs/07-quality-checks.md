@@ -12,6 +12,17 @@ A finding the toolchain writes is one line in the compiler's convention, `path:l
 
 The toolchain measures from the nearest `package.json`: a workspace root runs each per-package pass once per member, and a single-package project is the same run it always was.
 
+### Flags and exit codes
+
+`check` and `fix` run whole, every pass that applies over the whole project: no flag runs one pass or one file. They take two flags:
+
+- `--ignore-pattern <glob>`, as many times as needed, leaves a path out ([below](#leaving-a-path-out)).
+- `--json`, on `check`, prints [the drift report](#the-drift-report) as one JSON object for a machine; every pass above it still prints for a person.
+
+Every command exits `0` when it succeeded and non-zero otherwise; `check` and `fix` exit `1` when any pass failed or the drift report refused. CI runs `make check` and reads that code, and on a GitHub runner oxlint prints its diagnostics as workflow annotations ([One run, printed as oxlint prints it](#one-run-printed-as-oxlint-prints-it)).
+
+`fix` rewrites the project's files in place — the formatting, the linter's safe fixes, the order of `package.json`, the `.gitignore`, two directive spellings, empty directories, the baseline's fallen counts. Run it on a committed tree, and read its diff before committing it.
+
 ## The passes
 
 `typescript check` runs up to fifteen passes. Three spawn a tool on every invocation, knip and five tree gates run on every `check`, and the other six are opt-in — they appear only when the project qualifies.
@@ -45,6 +56,16 @@ The Docs (layout) pass measures from neither: its unit is the repository, and th
 The other four passes are root-only, and that is not an omission. tsc, oxlint and oxfmt measure from their **config file**, not from a package, and each already reaches the whole tree from the cwd — oxlint and oxfmt through the project's files they are handed. Knip reads the workspace globs itself and reports per member from a single run, so a second invocation per member would only double-report.
 
 Discovery never leaves the workspace. A candidate is dropped when git ignores it — clones, workbenches and build output live under gitignored paths — and when the walk had to cross a nested `.git` or a `package.json` that no workspace glob claims to reach it: a vendored project's conventions are its own, not yours.
+
+### Leaving a path out
+
+Three doors, each narrower than the one before it:
+
+- **`.gitignore`.** The linter, the formatter and every tree gate read the same sweep, the files git does not ignore, so a path git ignores is out of all of them: generated output, a local data folder.
+- **`--ignore-pattern <glob>`** on `check` and `fix`, written into the `package.json` scripts so every run passes it: a tracked path left out of the linter, the formatter and the tree gates — Suppressions, Markdown, Names, Comments and Secrets.
+- **`ignorePatterns`** in the project's `oxlint.config.ts`, added through `compose()`: the linter alone ([Configuration § The lint config](06-configuration.md#the-lint-config)).
+
+tsc reads the files its tsconfig preset includes, and knip what its preset and the project's `knip.json` name ([Lint presets](08-lint-presets.md#unused-code-knip)): neither reads the sweep.
 
 ### An unreadable tree
 
@@ -98,40 +119,42 @@ The checker judges its own passes and nothing of oxlint's: the plugin's `jterraz
 
 ## The Docs (layout) pass
 
-Every repository carries the same manual — a map at `docs/README.md`, a fixed spine, and its own chapters numbered contiguously after it — and this pass refuses a tree that breaks it.
+Every repository carries the same manual — a map at `docs/README.md`, the docs spine, and its own chapters numbered contiguously after it — and this pass refuses a tree that breaks it.
+
+The **docs spine** is four chapters at fixed numbers: `01-architecture.md`, `02-developing.md` and `03-testing.md` in every repository, and `04-operating.md` in one that ships an image or a package. It is not [the root spine](#the-root-spine), the folders a repository root may hold, which the Names pass judges. `decisions/` is optional: a manual with none owes neither a record nor a template.
 
 Its unit is the **repository**, not the package: a manual answers for a whole tree, and only its root carries the `AGENTS.md` that routes into it. So the pass asks its question exactly where a repository is — a `.git` beside the project, a file in a worktree and a directory in a clone — and nowhere else. A fixture directory is not a repository, and neither is a workspace member linted on its own.
 
 Nothing else gates it. A repository with **no** `docs/` at all is not exempt; it is the case the rule exists for, and it fails on `docs/manual-present`.
 
-The spine itself is language-agnostic doctrine, and it is the estate's, written in [jterrazz-studio's repository structure chapter](https://github.com/jterrazz/jterrazz-studio/blob/main/docs/11-repo-structure.md): the four fixed names, the subfolders, the water line between a repository's manual and its brand's wiki. What this chapter owns is the rule ids and what each one refuses. The sentence a rule prints is not here — it lives in the pass, `lint/consumer/checks/docs.ts`, so a page and a gate cannot drift.
+Why a manual has this shape is language-agnostic doctrine, and it is the estate's, written in [jterrazz-studio's repository structure chapter](https://github.com/jterrazz/jterrazz-studio/blob/main/docs/11-repo-structure.md): the subfolders, the water line between a repository's manual and its brand's wiki. What this chapter owns is the rule ids and what each one refuses. The sentence a rule prints is not here — it lives in the pass, `lint/consumer/checks/docs.ts`, so a page and a gate cannot drift.
 
 <!-- GENERATED:findings docs -->
 
-| Rule                                           | Requirement                                                                  |
-| ---------------------------------------------- | ---------------------------------------------------------------------------- |
-| `docs/manual-present`                          | Every repository carries a docs/ manual.                                     |
-| `docs/agents-route-to-the-map`                 | The root AGENTS.md routes to the manual's map.                               |
-| `docs/map-present`                             | The manual opens on its map, docs/README.md.                                 |
-| `docs/map-matches-chapters`                    | The map links every chapter, and only the chapters there are.                |
-| `docs/map-links-only-chapters`                 | The map links nothing but chapters and decisions/.                           |
-| `docs/chapter-named-by-number-and-subject`     | A chapter is named NN-kebab.md.                                              |
-| `docs/chapters-numbered-contiguously`          | Chapters are numbered without a gap, one number per file.                    |
-| `docs/spine-number-reserved`                   | A reserved spine number holds its spine chapter alone.                       |
-| `docs/spine-chapters-present`                  | The architecture, developing and testing chapters are present.               |
-| `docs/operating-chapter-present-when-shipping` | A repository that ships an image or a package carries its operating chapter. |
-| `docs/chapter-names-a-subject`                 | A chapter is named for a subject, never for the state of a piece of work.    |
-| `docs/no-loose-file`                           | Every file directly under docs/ is the map or a chapter.                     |
-| `docs/no-unknown-subfolder`                    | The manual holds no subfolder but decisions/ and _assets/.                   |
-| `docs/no-generated-reference`                  | The manual holds no generated API reference.                                 |
-| `docs/no-cross-repository-link`                | No link of the manual reaches into another repository's tree.                |
-| `docs/decision-named-by-number-and-subject`    | A decision record is named NNN-kebab.md.                                     |
-| `docs/decision-heading-carries-its-number`     | A decision record opens on # ADR-NNN: Title, with its own number.            |
-| `docs/decision-number-unique`                  | One ADR number belongs to one record.                                        |
-| `docs/decisions-numbered-contiguously`         | Decision records are numbered from 001 without a gap.                        |
-| `docs/decision-status-known`                   | A decision record states a status from the closed vocabulary.                |
-| `docs/decision-listed-in-the-map`              | The decisions folder keeps no hand-written index; the map lists the records. |
-| `docs/decision-template-present`               | The decisions folder carries its _template.md.                               |
+| Rule                                           | Requirement                                                                                                                          |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `docs/manual-present`                          | Every repository carries a docs/ manual.                                                                                             |
+| `docs/agents-route-to-the-map`                 | The root AGENTS.md routes to the manual's map.                                                                                       |
+| `docs/map-present`                             | The manual opens on its map, docs/README.md.                                                                                         |
+| `docs/map-matches-chapters`                    | The map links every chapter, and only the chapters there are.                                                                        |
+| `docs/map-links-only-chapters`                 | The map links nothing but chapters and decisions/.                                                                                   |
+| `docs/chapter-named-by-number-and-subject`     | A chapter is named NN-kebab.md.                                                                                                      |
+| `docs/chapters-numbered-contiguously`          | Chapters are numbered without a gap, one number per file.                                                                            |
+| `docs/spine-number-reserved`                   | A reserved spine number holds its spine chapter alone.                                                                               |
+| `docs/spine-chapters-present`                  | The architecture, developing and testing chapters are present.                                                                       |
+| `docs/operating-chapter-present-when-shipping` | A repository that ships an image or a package carries its operating chapter.                                                         |
+| `docs/chapter-names-a-subject`                 | A chapter is named for a subject, never for the state of a piece of work.                                                            |
+| `docs/no-loose-file`                           | Every file directly under docs/ is the map or a chapter.                                                                             |
+| `docs/no-unknown-subfolder`                    | The manual holds no subfolder but decisions/ and _assets/.                                                                           |
+| `docs/no-generated-reference`                  | The manual holds no generated API reference.                                                                                         |
+| `docs/no-cross-repository-link`                | No link of the manual reaches into another repository's tree.                                                                        |
+| `docs/decision-named-by-number-and-subject`    | A decision record is named NNN-kebab.md.                                                                                             |
+| `docs/decision-heading-carries-its-number`     | A decision record opens on # ADR-NNN: Title, with its own number.                                                                    |
+| `docs/decision-number-unique`                  | One ADR number belongs to one record.                                                                                                |
+| `docs/decisions-numbered-contiguously`         | Decision records are numbered from 001 without a gap.                                                                                |
+| `docs/decision-status-known`                   | A decision record states a status from the closed vocabulary.                                                                        |
+| `docs/decision-listed-in-the-map`              | The decisions folder keeps no hand-written index, no decisions/README.md: the map links the folder, and the records list themselves. |
+| `docs/decision-template-present`               | A manual that keeps a decisions folder carries its _template.md in it.                                                               |
 
 <!-- /GENERATED:findings docs -->
 
@@ -453,6 +476,17 @@ Every place the project told a checker to look away. A suppression is a decision
 
 <!-- /GENERATED:findings suppressions -->
 
+A directive names the rule it silences, then `--` and the reason, on the line above the code it covers — `oxlint-disable-line` puts it at the end of that line instead:
+
+```ts
+export function announce(message: string): void {
+    // oxlint-disable-next-line eslint/no-console -- the command's one line of output
+    console.log(message);
+}
+```
+
+Turning a rule off for the whole project is the lint config's, with a `// reason:` ([Configuration § The lint config](06-configuration.md#the-lint-config)).
+
 A directive is read only where a checker reads one: at the OPENING of a comment. Prose about a suppression, and a string carrying its spelling — the gate's own source is made of both — is not a suppression, and neither oxlint nor tsc would treat it as one.
 
 A directive that suppresses nothing is oxlint's to refuse, not this pass's: every profile ships `reportUnusedDisableDirectives` at `error`, so the Oxlint pass reports each one as an `Unused oxlint-disable directive`. That covers more than the gate could: a rule the config leaves off, a live rule that no longer fires on the next line, a JS plugin's rule, and a plugin rule that no longer exists. The pass keeps only what oxlint does not judge — the spelling of a lint directive and the reason it states. A TypeScript directive is oxlint's too: the rulebook arms `typescript/ban-ts-comment`, which refuses a `@ts-ignore` and a `@ts-expect-error` with no description, so the pass reports neither a second time and only rewrites the first in `fix`.
@@ -540,7 +574,7 @@ Where a name sits is declarative, so [ls-lint](https://ls-lint.org) judges it: t
 What ls-lint cannot express stays the gate's, in its own code:
 
 - the three rosters above — ls-lint's regular expressions have no negative lookahead, so "any name but these words" is not one it can write;
-- the spine and its declared roots, which read `package.json`, the build config and `jterrazz.config.ts`, and the entry grammar, which reads the first two;
+- the root spine and its declared roots, which read `package.json`, the build config and `jterrazz.config.ts`, and the entry grammar, which reads the first two;
 - `names/audience-holds-only-declarations` and `names/rule-file-in-its-family-folder`, which read what a module exports and which family its catalogue row names;
 - the six gestures of the `Makefile`, which read its text, and an empty directory, which ls-lint never sees.
 
@@ -575,15 +609,15 @@ src/orderLine.ts:1:1: error names(module-in-kebab-case): found: `src/orderLine.t
 
 Three limits are ls-lint's, and a rule is written around them. Its extension is everything after a name's first dot, so `a.b.spec.ts` carries `.b.spec.ts`: a rule about every spec writes `.spec.ts` and `.*.spec.ts`. It never judges a file at the root it runs from, so a rule about a unit's root files is not one ls-lint can hold. And it anchors a `regex:` as written, `^` before it and `$` after, so an alternation is wrapped in a group — `regex:(?:index|main)` — or its first branch is held only at the start and its last only at the end. Within one rule, two globs matching the same directory are judged in no stable order, so a rule's globs never overlap. A rule the pass cannot read — a `name` not in kebab-case, an `ls` that does not map each glob to its rules, a missing lesson part — is refused as `names/jterrazz-config-loads`, and a glob ls-lint cannot read fails the pass in four parts. A package's name rules arrive the same way through its preset ([Configuration § Presets](06-configuration.md#presets)).
 
-### The repository spine
+### The root spine
 
-The root's own folders are the same in every repository: `src/` the product's code, `lint/` the lint rules a package ships, `specs/` the specifications, `docs/` the manual, `skills/` one short page per skill — and `apps/` or `packages/` where a workspace keeps its members, each a spine of its own. What the tree calls a root is therefore judged too. The table holds the whole `tree` family: the spine's rules, and those of [the lint tree](#the-lint-tree) and [an empty directory](#an-empty-directory) below. The family names what a rule judges; the prefix names the pass that prints it, and the Names pass prints both families, so a `tree` rule reads `names/…` like a `names` one.
+The **root spine** is the folders a repository root holds, the same in every repository: `src/` the product's code, `lint/` the lint rules a package ships, `specs/` the specifications, `docs/` the manual, `skills/` one short page per skill — and `apps/` or `packages/` where a workspace keeps its members, each a spine of its own. What the tree calls a root is therefore judged too. The table holds the whole `tree` family: the spine's rules, and those of [the lint tree](#the-lint-tree) and [an empty directory](#an-empty-directory) below. The family names what a rule judges; the prefix names the pass that prints it, and the Names pass prints both families, so a `tree` rule reads `names/…` like a `names` one.
 
 <!-- GENERATED:findings tree -->
 
 | Rule                                     | Requirement                                                                                                                                           |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `names/no-undeclared-root-folder`        | Every root folder is on the spine, imposed by a tool, or declared with its reason.                                                                    |
+| `names/no-undeclared-root-folder`        | Every root folder is on the root spine, imposed by a tool, or declared with its reason.                                                               |
 | `names/declared-root-states-its-reason`  | A root declared in typescript.roots states why the repository keeps it.                                                                               |
 | `names/declared-root-holds-files`        | A root declared in typescript.roots holds a file git does not ignore.                                                                                 |
 | `names/jterrazz-config-loads`            | The settings file jterrazz.config.ts loads, and its typescript section has the declared shape.                                                        |

@@ -42,7 +42,7 @@
     {
         "family": "tree",
         "id": "names/no-undeclared-root-folder",
-        "sentence": "Every root folder is on the spine, imposed by a tool, or declared with its reason."
+        "sentence": "Every root folder is on the root spine, imposed by a tool, or declared with its reason."
     },
     {
         "family": "tree",
@@ -278,12 +278,12 @@
     {
         "family": "docs",
         "id": "docs/decision-listed-in-the-map",
-        "sentence": "The decisions folder keeps no hand-written index; the map lists the records."
+        "sentence": "The decisions folder keeps no hand-written index, no decisions/README.md: the map links the folder, and the records list themselves."
     },
     {
         "family": "docs",
         "id": "docs/decision-template-present",
-        "sentence": "The decisions folder carries its _template.md."
+        "sentence": "A manual that keeps a decisions folder carries its _template.md in it."
     },
     {
         "family": "publish",

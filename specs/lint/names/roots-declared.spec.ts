@@ -12,7 +12,7 @@ describe('roots-declared', () => {
         expect(result.report).toMatch(`
             deploy/:1:1  names(no-undeclared-root-folder)
                 found: \`deploy/\` is a root outside the spine
-                why: Every root folder is on the spine, imposed by a tool, or declared with its reason.
+                why: Every root folder is on the root spine, imposed by a tool, or declared with its reason.
                 fix: move it under src/, or declare it in jterrazz.config.ts's \`typescript.roots\` with its reason
                 read: docs/07-quality-checks.md#a-root-beside-the-spine
             docker/:1:1  names(declared-root-states-its-reason)

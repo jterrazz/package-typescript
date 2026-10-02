@@ -12,7 +12,7 @@ describe('spine', () => {
         expect(result.report).toMatch(`
             scripts/:1:1  names(no-undeclared-root-folder)
                 found: \`scripts/\` is a root outside the spine
-                why: Every root folder is on the spine, imposed by a tool, or declared with its reason.
+                why: Every root folder is on the root spine, imposed by a tool, or declared with its reason.
                 fix: move it under src/, or declare it in jterrazz.config.ts's \`typescript.roots\` with its reason
                 read: docs/07-quality-checks.md#a-root-beside-the-spine
             skills/shop/references/:1:1  names(skill-holds-only-skill-md)

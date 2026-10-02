@@ -31,7 +31,17 @@ Node loads the file itself, its types stripped, so it needs no build. A missing 
 
 A package hands a project everything it holds it to in one preset: its lint rules, its import boundaries, its rules of where a name sits, its debt, and the defaults of its settings section. A project lists the presets it takes under `presets`, and nothing is discovered from `node_modules`: an installed package judges nothing until the project names its preset, so what a project is held to is read in one file.
 
-Each pass then reads the resolved settings and holds the project to all of them. A preset's layer prints as `architecture/<name>` and its name rule as `names/<name>`, with the lesson the package wrote. A settings file that cannot be resolved, such as a `presets` that is not a list of presets, fails the Architecture pass in four parts and is refused as `names/jterrazz-config-loads`.
+Each pass then reads the resolved settings and holds the project to all of them. A preset's layer prints as `architecture/<name>` and its name rule as `names/<name>`, with the lesson the package wrote.
+
+A settings file that cannot be resolved, such as a `presets` that is not a list of presets, fails the two passes that read it, each in its own words. The Architecture pass prints a bare four-part refusal, with no rule id, because it judged no layer; the Names pass, which reads `typescript.roots`, prints it as the finding `names/jterrazz-config-loads`:
+
+```text
+ RUN  Architecture (layer map)
+found: jterrazz.config.ts does not load — … · why: … · fix: correct jterrazz.config.ts until it loads … · read: docs/06-configuration.md#the-merge-order
+
+ RUN  Names (tree)
+jterrazz.config.ts:1:1: error names(jterrazz-config-loads): found: `jterrazz.config.ts` does not load — … · why: … · fix: … · read: docs/06-configuration.md#the-merge-order
+```
 
 A preset is an object carrying its `name` (the section of `jterrazz.config.ts` it reads, and the prefix of its laws), its `package`, and what it adds:
 
@@ -53,7 +63,7 @@ A preset is an object carrying its `name` (the section of `jterrazz.config.ts` i
 `typescript()` is always on, whether the file names it or not. Naming it chooses its `profile`, the oxlint profile `fromPresets` starts from, `node` where none is named. It carries the laws every repository of the family keeps:
 
 - the direction of `lint/`: `engine-knows-no-declaration`, `consumer-folders-apart`, `self-folders-apart`, `catalogue-at-the-bottom`, `shipped-lint-reads-no-self` and `src-reads-no-declaration`, layers the Architecture pass holds a `lint/` tree to wherever one stands ([Architecture](01-architecture.md#the-judging-layer));
-- the folders of the lint tree, the spine, the roots a tool imposes, and the three word rosters of the Names pass ([Quality checks](07-quality-checks.md#the-names-tree-pass)).
+- the folders of the lint tree, the root spine, the roots a tool imposes, and the three word rosters of the Names pass ([Quality checks](07-quality-checks.md#the-names-tree-pass)).
 
 A law whose `from` names no file of the project costs nothing: the Architecture pass drops it before it runs, so a repository without a `lint/` tree runs no cruise for the base preset's laws.
 
@@ -61,8 +71,11 @@ A law whose `from` names no file of the project costs nothing: the Architecture 
 
 Resolution is deterministic, and the same in every reader:
 
-1. The base preset first, then each listed preset in the order written. A preset's own presets come before it, depth first, and a preset named twice keeps its first place. Listing the base preset, as `typescript({ profile: 'next' })` at the top level or inside another preset, chooses only its settings, merged over the base's own in the order met: its laws, its baseline and its floors stay the base preset's. Two presets of one name from two packages are refused.
-2. Each section is its presets' `settings` merged in that order, then the project's own section over them. A list concatenates with duplicates dropped, a record merges key by key, and a single value the project writes wins. A list or a record is never replaced by another shape, so a `null` or a string written over the spine is refused: a default is added to, never written away. A setting a preset names in its `lawSettings` is a law, and nothing adds to it. The base preset's are the lint tree, the spine, the member roots, the tool roots and the word rosters; a root the project keeps beside the spine is declared under `typescript.roots` with its reason.
+1. The base preset first, then each listed preset in the order written. A preset's own presets come before it, depth first, and a preset named twice keeps its first place. Two presets of one name from two packages are refused.
+
+    Writing `typescript({ profile: 'next' })` adds no second base preset. It only sets the base preset's settings — the profile here — merged over its defaults wherever it is met, at the top level or inside another preset; the laws, the baseline and the floors stay the base preset's own.
+
+2. Each section is its presets' `settings` merged in that order, then the project's own section over them. A list concatenates with duplicates dropped, a record merges key by key, and a single value the project writes wins. A list or a record is never replaced by another shape, so a `null` or a string written over the root spine is refused: a default is added to, never written away. A setting a preset names in its `lawSettings` is a law, and nothing adds to it. The base preset's are the lint tree, the root spine, the member roots, the tool roots and the word rosters; a root the project keeps beside the root spine is declared under `typescript.roots` with its reason.
 3. The laws, `layers` and `names`, are every preset's in that order, then the project's own (`typescript.architecture.layers`, `typescript.names`).
 4. `oxlint` is every preset's config, composed by `compose` in that order after the base profile.
 
@@ -92,7 +105,7 @@ The section this package reads holds three settings of the project's own:
 
 | Setting        | Declares                                                                                      | Judged by                                                                     |
 | -------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `roots`        | each folder the repository keeps beside the spine, mapped to its reason                       | [the Names pass](07-quality-checks.md#a-root-beside-the-spine)                |
+| `roots`        | each folder the repository keeps beside the root spine, mapped to its reason                  | [the Names pass](07-quality-checks.md#a-root-beside-the-spine)                |
 | `architecture` | the layer map its imports are held to: the shipped `hexagonal` map, its own `layers`, or both | [the Architecture pass](07-quality-checks.md#the-architecture-layer-map-pass) |
 | `names`        | its own rules of where a name sits                                                            | [the Names pass](07-quality-checks.md#a-name-rule-a-project-declares)         |
 
@@ -118,6 +131,7 @@ import settings from './jterrazz.config.ts';
 
 export default defineConfig(
     compose(fromPresets(settings), {
+        ignorePatterns: ['generated/**'],
         rules: {
             'unicorn/filename-case': 'off', // reason: the generated client keeps the API's names
         },
@@ -125,7 +139,7 @@ export default defineConfig(
 );
 ```
 
-A rule the profile has on and the project turns off carries a `// reason:` on the line that turns it off, or the drift report refuses it ([Quality checks](07-quality-checks.md#the-drift-report)).
+A rule the profile has on and the project turns off carries a `// reason:` on the line that turns it off, or the drift report refuses it ([Quality checks](07-quality-checks.md#the-drift-report)). `ignorePatterns` leaves a path out of the linter alone; the other ways to leave one out are [Quality checks § Leaving a path out](07-quality-checks.md#leaving-a-path-out)'s.
 
 ### A subtree on another profile
 

@@ -12,7 +12,7 @@ describe('lint-unshipped', () => {
         expect(result.report).toMatch(`
             lint/:1:1  names(no-undeclared-root-folder)
                 found: \`lint/\` holds the lint rules a package ships, and neither package.json nor its build publishes it
-                why: Every root folder is on the spine, imposed by a tool, or declared with its reason.
+                why: Every root folder is on the root spine, imposed by a tool, or declared with its reason.
                 fix: ship it, or move it under src/
                 read: docs/07-quality-checks.md#a-root-beside-the-spine
         `);

@@ -22,7 +22,7 @@ const USAGE = [
     '  bundle       Bundle library (ESM + CJS + types)',
     '  start        Run the built application',
     '  dev          Build, run, and rebuild on changes',
-    "  docs-layout  Check a repository's docs/ against the manual spine",
+    "  docs-layout  Check a repository's docs/ against the docs spine",
     '  doctor       Report the installed tool versions against the declared ranges',
     '  baseline     Record the lint debt in oxlint-suppressions.json, Architecture, Names and Comments in jterrazz.baseline.json',
     '  tsc          Run the TypeScript 7 compiler this package ships (emit, --build)',

@@ -7,7 +7,7 @@ const CHAPTER = 'docs/07-quality-checks.md';
 
 const READ_BY_FAMILY: Readonly<Record<string, ChapterAnchor>> = Object.freeze({
     names: `${CHAPTER}#the-names-tree-pass`,
-    tree: `${CHAPTER}#the-repository-spine`,
+    tree: `${CHAPTER}#the-root-spine`,
 });
 
 const READ_BY_NAME: Readonly<Record<string, ChapterAnchor>> = Object.freeze({
