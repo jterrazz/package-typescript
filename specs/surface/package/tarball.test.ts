@@ -9,15 +9,14 @@ import { fragmentsIn, walkModules } from '../../../lint/engine/testing/module-wa
 import {
     argvFlags,
     checkOutcome,
-    isRecord,
     loadPacked,
-    pack,
     packedFiles,
     packedTree,
     publishedBins,
     publishedTargets,
     selectingEnvironments,
 } from './_setup/packed-tree.js';
+import { isRecord, pack } from '../../cli/_setup/packed/pack.js';
 
 // Judged on content, never on names: no text the tarball holds names a `self` rule, whatever file carries it.
 
