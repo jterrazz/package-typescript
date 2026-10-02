@@ -1,8 +1,8 @@
 # Architecture
 
-One devDependency holds a project's whole toolchain, and this chapter says what is inside it.
+What is inside the one devDependency, for whoever changes it. A project using the toolchain needs none of this chapter: [Getting started](05-getting-started.md) is its door.
 
-The package is two sides that never mix: `lint/` JUDGES — every rule, every pass, every verdict a project can receive — and `src/` RUNS — the command that orchestrates processes, the config presets a consumer's own files extend, and the importable surface for what code has to reach directly. Both are TypeScript, built into `dist/`, which is what ships.
+The package is two sides that never mix. `lint/` JUDGES: every rule, every pass, every verdict a project can receive. `src/` RUNS: the command that orchestrates the tools, the config presets a project's own files extend, and the entries a project imports. Both are TypeScript, built into `dist/`, which is what ships.
 
 | Layer          | Holds                                                                                                                                          | Reached by                                                                                                                                                 |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
