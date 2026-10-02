@@ -24,7 +24,7 @@ function installedPackageOf(id: string): string {
     return scope.startsWith('@') ? `${scope}/${name}` : scope;
 }
 
-const READ = "@jterrazz/test's docs/19-linting.md#no-test-code-in-production";
+const READ = "@jterrazz/test's docs/24-linting.md#no-test-code-in-production";
 
 const CUT_THE_EDGE =
     'cut the production edge no-test-code-in-production names, or take the module out of the entry';

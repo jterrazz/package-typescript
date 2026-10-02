@@ -26,8 +26,8 @@ runs:
 
            RUN  Test Conventions (@jterrazz/test)
 
-          http/_expected/response.txt:1:1: error jterrazz-check(no-unknown-token): found: the unknown token {{any}} · read: docs/19-linting.md#no-unknown-token
-          found: every finding above, and jterrazz.baseline.json records no `jterrazz-check/` entry in its `test` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'jterrazz-test-check baseline' to record where the project stands · read: docs/19-linting.md#the-ratchet-the-test-section-of-jterrazzbaselinejson
+          http/_expected/response.txt:1:1: error jterrazz-check(no-unknown-token): found: the unknown token {{any}} · read: docs/24-linting.md#no-unknown-token
+          found: every finding above, and jterrazz.baseline.json records no `jterrazz-check/` entry in its `test` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'jterrazz-test-check baseline' to record where the project stands · read: docs/24-linting.md#the-ratchet-the-test-section-of-jterrazzbaselinejson
           ✗ Failed with exit code 1
 
            RUN  Suppressions (directives)

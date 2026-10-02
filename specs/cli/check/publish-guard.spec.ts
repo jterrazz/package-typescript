@@ -14,7 +14,7 @@ function publishPass(stdout: string): string[] {
 }
 
 const fixturesFinding = (file: string): string =>
-    `${file}:1:1: error publish(no-test-code-in-production): found: ${file} is compiled from src/domain/user.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/19-linting.md#no-test-code-in-production`;
+    `${file}:1:1: error publish(no-test-code-in-production): found: ${file} is compiled from src/domain/user.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/24-linting.md#no-test-code-in-production`;
 
 const BUILD_FINDING =
     "package.json:1:1: error publish(build-succeeds): found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else `typescript bundle` · read: @jterrazz/typescript's docs/07-quality-checks.md#the-build-guard";
@@ -86,8 +86,8 @@ describe('publish-guard', () => {
 
         // Then - the shipped chunk fails on the test package compiled in and the undeclared one it imports, on nothing it declares, on no runtime package and never on the unshipped chunk; the build it judged left the dist as it was
         expect(publishPass(result.stdout.text)).toStrictEqual([
-            "dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js is compiled from @vitest/spy, a test package · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/19-linting.md#no-test-code-in-production",
-            'dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js imports vitest/config, a test package · why: a published build never carries test material · fix: cut the import, or declare vitest in "dependencies" when the product runs it · read: @jterrazz/test\'s docs/19-linting.md#no-test-code-in-production',
+            "dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js is compiled from @vitest/spy, a test package · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/24-linting.md#no-test-code-in-production",
+            'dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js imports vitest/config, a test package · why: a published build never carries test material · fix: cut the import, or declare vitest in "dependencies" when the product runs it · read: @jterrazz/test\'s docs/24-linting.md#no-test-code-in-production',
             '✗ Failed with exit code 1',
         ]);
         expect(result.file('dist/index.js').content).toBe('export const tools = [];\n');
@@ -109,9 +109,9 @@ describe('publish-guard', () => {
                 line.includes('(no-test-code-in-production)'),
             ),
         ).toStrictEqual([
-            "dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js is compiled from @vitest/spy, a test package · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/19-linting.md#no-test-code-in-production",
-            'dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js imports vitest/config, a test package · why: a published build never carries test material · fix: cut the import, or declare vitest in "dependencies" when the product runs it · read: @jterrazz/test\'s docs/19-linting.md#no-test-code-in-production',
-            "dist/testing.js:1:1: error publish(no-test-code-in-production): found: dist/testing.js is compiled from src/orders.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/19-linting.md#no-test-code-in-production",
+            "dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js is compiled from @vitest/spy, a test package · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/24-linting.md#no-test-code-in-production",
+            'dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js imports vitest/config, a test package · why: a published build never carries test material · fix: cut the import, or declare vitest in "dependencies" when the product runs it · read: @jterrazz/test\'s docs/24-linting.md#no-test-code-in-production',
+            "dist/testing.js:1:1: error publish(no-test-code-in-production): found: dist/testing.js is compiled from src/orders.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/24-linting.md#no-test-code-in-production",
         ]);
     });
 

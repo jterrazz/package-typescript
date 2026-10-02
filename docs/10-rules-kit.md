@@ -36,7 +36,7 @@ export const noSleep = defineRule(
         messages: {
             slept: { found: '`sleep()` waits on the clock', fix: 'await the event itself' },
         },
-        read: readAt(row, 'docs/19-linting.md'),
+        read: readAt(row, 'docs/24-linting.md'),
     },
     {
         createOnce: (context: Visitor) => ({
@@ -61,7 +61,7 @@ What one file cannot show — the tree, the manifest, the manual — is a check.
 
 ### Testing a rule
 
-`@jterrazz/test` is the kit to test what this one writes ([21 — Lint specs](https://github.com/jterrazz/package-test/blob/main/docs/21-lint.md)): `ruleTester()` runs a rule's visitor on snippets, and refuses an invalid case that states no `line` and `column`; `specification.lint()` lints a fixture tree with the real oxlint, a checker's command or the laws of presets, and compares the whole report. A rule is proven where its behaviour lives — its visitor on a snippet, what it says about a tree on a tree.
+`@jterrazz/test` is the kit to test what this one writes ([16 — Lint specs](https://github.com/jterrazz/package-test/blob/main/docs/16-lint.md)): `ruleTester()` runs a rule's visitor on snippets, and refuses an invalid case that states no `line` and `column`; `specification.lint()` lints a fixture tree with the real oxlint, a checker's command or the laws of presets, and compares the whole report. A rule is proven where its behaviour lives — its visitor on a snippet, what it says about a tree on a tree.
 
 ## A chapter carries its catalogue
 
