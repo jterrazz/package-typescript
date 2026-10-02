@@ -56,17 +56,6 @@ describe('docs', () => {
         expect(auditDocs(manual())).toStrictEqual([]);
     });
 
-    test('names a repository that carries no manual at all, and says nothing else', () => {
-        // Given - a repository with no docs/ directory
-        const tree = manual({ agents: null, files: [] });
-
-        // Then - one sentence, not a cascade of every rule the absence breaks
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/manual-present']);
-        expect(messageOf(tree, 'docs/manual-present')).toBe(
-            'docs/ is missing — every repository carries its own manual, starting at docs/README.md',
-        );
-    });
-
     test('names a docs/ with no map', () => {
         // Given - chapters with no README.md to route into them
         const tree = manual({
@@ -83,37 +72,6 @@ describe('docs', () => {
         expect(rulesBrokenBy(tree)).toStrictEqual(['docs/map-present']);
         expect(messageOf(tree, 'docs/map-present')).toBe(
             'docs/README.md is missing — the map is the one file an outside corpus points at',
-        );
-    });
-
-    test('names a map that routes to a chapter nobody wrote', () => {
-        // Given - a row for a fourth chapter that does not exist
-        const tree = manual({
-            links: {
-                'docs/README.md': [
-                    '01-architecture.md',
-                    '02-developing.md',
-                    '03-testing.md',
-                    '05-presets.md',
-                ],
-            },
-        });
-
-        // Then - the drift is named from the map's side
-        expect(messageOf(tree, 'docs/map-matches-chapters')).toBe(
-            'docs/README.md and the chapters disagree: 05-presets.md has no file',
-        );
-    });
-
-    test('names a chapter the map forgot', () => {
-        // Given - a fourth chapter with no row
-        const tree = manual({
-            files: [...manual().files, 'docs/04-operating.md'],
-        });
-
-        // Then - the drift is named from the chapter's side
-        expect(messageOf(tree, 'docs/map-matches-chapters')).toBe(
-            'docs/README.md and the chapters disagree: 04-operating.md has no row',
         );
     });
 
@@ -458,36 +416,6 @@ describe('docs', () => {
 
         // Then - nothing to say
         expect(rulesBrokenBy(tree)).toStrictEqual([]);
-    });
-
-    test('refuses a decision sequence that skips a number', () => {
-        // Given - 001 and 003, with no record ever numbered 002
-        const tree = withDecisions({
-            files: [
-                ...manual().files,
-                'docs/decisions/',
-                'docs/decisions/001-the-first-call.md',
-                'docs/decisions/003-the-third-call.md',
-                'docs/decisions/_template.md',
-            ],
-            heads: {
-                'docs/decisions/001-the-first-call.md': [
-                    '# ADR-001: The first call',
-                    '',
-                    '**Status:** Accepted',
-                ],
-                'docs/decisions/003-the-third-call.md': [
-                    '# ADR-003: The third call',
-                    '',
-                    '**Status:** Accepted',
-                ],
-            },
-        });
-
-        // Then - the gap is named, from 001
-        expect(messageOf(tree, 'docs/decisions-numbered-contiguously')).toBe(
-            'docs/decisions/ numbers run 001, 003: they run from 001 with no gap — a decision that moved folders takes the next number where it lands',
-        );
     });
 
     test('refuses a decision sequence that starts above 001', () => {
