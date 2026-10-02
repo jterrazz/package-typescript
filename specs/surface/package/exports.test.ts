@@ -56,8 +56,8 @@ describe('exports', () => {
         expect(Object.keys(oxfmtEntry).toSorted()).toStrictEqual(['base', 'defineConfig']);
     });
 
-    test('the barrel carries the same profiles the oxlint entry does', () => {
-        // Given - the package barrel
+    test('the `.` entry carries the same profiles the oxlint entry does', () => {
+        // Given - the `.` entry, src/index.ts
         // Then - the two surfaces agree, and the default export repeats them
         expect(Object.keys(oxlint).toSorted()).toStrictEqual([
             'astro',
