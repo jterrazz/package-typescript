@@ -1,14 +1,8 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
-import {
-    CHECKOUT,
-    linkBins,
-    linkFromCheckout,
-    readManifest,
-    runtimeDependencies,
-} from './closure.ts';
+import { CHECKOUT } from './closure.ts';
 
 export default function setup(): () => void {
     const into = mkdtempSync('/tmp/typescript-packed-');
@@ -22,16 +16,8 @@ export default function setup(): () => void {
     for (const { filename } of Object.values(packed)) {
         execFileSync('tar', ['-xzf', join(into, filename), '-C', into]);
     }
-    const unpacked = join(into, 'package');
-    const modules = join(unpacked, 'node_modules');
-    for (const name of runtimeDependencies(readManifest(unpacked))) {
-        if (existsSync(join(CHECKOUT, 'node_modules', name))) {
-            linkFromCheckout(name, modules);
-            linkBins(join(modules, name), modules);
-        }
-    }
     const previous = process.env.PACKED_PACKAGE;
-    process.env.PACKED_PACKAGE = unpacked;
+    process.env.PACKED_PACKAGE = join(into, 'package');
 
     return () => {
         if (previous === undefined) {

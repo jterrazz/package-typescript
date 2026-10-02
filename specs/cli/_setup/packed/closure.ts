@@ -12,6 +12,7 @@ type Manifest = {
     name?: string;
     optionalDependencies?: Record<string, string>;
     peerDependencies?: Record<string, string>;
+    peerDependenciesMeta?: Record<string, { optional?: boolean }>;
 };
 
 export function readManifest(directory: string): Manifest {
@@ -23,7 +24,9 @@ export function runtimeDependencies(manifest: Manifest): string[] {
     return [
         ...Object.keys(manifest.dependencies ?? {}),
         ...Object.keys(manifest.optionalDependencies ?? {}),
-        ...Object.keys(manifest.peerDependencies ?? {}),
+        ...Object.keys(manifest.peerDependencies ?? {}).filter(
+            (name) => manifest.peerDependenciesMeta?.[name]?.optional !== true,
+        ),
     ];
 }
 

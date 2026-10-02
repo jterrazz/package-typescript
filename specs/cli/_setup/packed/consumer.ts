@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, symlinkSync } from 'node:fs';
+import { cpSync, existsSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import process from 'node:process';
 
@@ -16,8 +16,7 @@ const installed = join(process.cwd(), 'node_modules');
 const packed = process.env.PACKED_PACKAGE ?? '';
 
 function install(): void {
-    mkdirSync(join(installed, '@jterrazz'), { recursive: true });
-    symlinkSync(packed, join(installed, '@jterrazz', 'typescript'));
+    cpSync(packed, join(installed, '@jterrazz', 'typescript'), { recursive: true });
     const project = readManifest(process.cwd());
     const own = [
         ...runtimeDependencies(project),
