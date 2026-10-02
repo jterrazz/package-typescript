@@ -4,8 +4,8 @@ import { describe, expect, test } from 'vitest';
 import { lint } from '../names-lint.specification.js';
 
 describe('entries', () => {
-    test('holds a published build to its entry grammar — an entry per subpath named for it, a bin named as one, no other index', async () => {
-        // Given - a package whose build names its entries otherwise, keeps a facet index and a bin nothing publishes, and publishes a subpath it never builds
+    test('holds a published build to its entry grammar — an entry per subpath named for it, a bin named as one, no other index, no code published from outside the build', async () => {
+        // Given - a package whose build names its entries otherwise, keeps a facet index and a bin nothing publishes, publishes a subpath it never builds, and a bin and a module from outside its build
         const result = await lint.fixture(directory('./_fixtures/entries/')).run();
 
         // Then - each finding at its position, with its lesson
@@ -22,8 +22,18 @@ describe('entries', () => {
                 read: docs/06-quality-checks.md#the-entry-grammar
             package.json:1:1  names(export-has-an-entry)
                 found: \`./gone\` is published as ./dist/gone.js, and no source the build compiles builds it
-                why: Every subpath and bin the package publishes from its build is compiled from a source the build names.
+                why: Every subpath and bin the package publishes as code is compiled by its build, from a source the build names.
                 fix: name the source it is built from in the build config, or take the subpath out of the manifest
+                read: docs/06-quality-checks.md#the-entry-grammar
+            package.json:1:1  names(export-has-an-entry)
+                found: \`./runner\` is published as ./scripts/runner.mjs, outside the build output \`dist/\`, so no source compiles it
+                why: Every subpath and bin the package publishes as code is compiled by its build, from a source the build names.
+                fix: build it from its entry, \`index.runner.ts\`, and publish what the build writes under \`dist/\`
+                read: docs/06-quality-checks.md#the-entry-grammar
+            package.json:1:1  names(export-has-an-entry)
+                found: the bin \`legacy\` is published as ./bin/legacy.js, outside the build output \`dist/\`, so no source compiles it
+                why: Every subpath and bin the package publishes as code is compiled by its build, from a source the build names.
+                fix: build it from its entry, \`legacy.bin.ts\`, and publish what the build writes under \`dist/\`
                 read: docs/06-quality-checks.md#the-entry-grammar
             src/config.ts:1:1  names(entry-follows-its-grammar)
                 found: \`src/config.ts\` builds \`./config\` (./dist/config.js), and is not named \`index.config.ts\`

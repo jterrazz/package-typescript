@@ -503,7 +503,7 @@ What a project calls its own parts, swept under the roots where a project keeps 
 | `names/entry-follows-its-grammar`  | The source a published subpath is built from is named index[.<subpath>][.browser].ts, and a bin's <command>.bin.ts. |
 | `names/bin-is-published`           | A module named <command>.bin is the entry of a bin the package publishes under that command, or that entry's test.  |
 | `names/index-is-an-entry`          | A module named index is the entry of a subpath the package publishes, or that entry's test.                         |
-| `names/export-has-an-entry`        | Every subpath and bin the package publishes from its build is compiled from a source the build names.               |
+| `names/export-has-an-entry`        | Every subpath and bin the package publishes as code is compiled by its build, from a source the build names.        |
 
 <!-- /GENERATED:findings names -->
 
@@ -515,11 +515,11 @@ A construct is judged on the WHOLE name: `type-registry.ts` names a subject and 
 
 A package that publishes a build names each entry for what it publishes, so the tree says which file a consumer's `import` lands on without the manifest open. The source a subpath is built from is `index[.<subpath>][.browser].ts`: `.` from `index.ts`, `./config` from `index.config.ts`, `./rules` under its `browser` condition from `index.rules.browser.ts`, a nested subpath with a dot for each slash. `node` is the default runtime, never a variant, so no entry is named `.node`. A bin the build compiles is `<command>.bin.ts`, named for the command a consumer types: `jterrazz-test-check` from `jterrazz-test-check.bin.ts`. A program the build compiles that the package does not publish as a bin is no entry, and is named for what it runs, never `.bin`.
 
-The pass reads the `exports`, `main` and `bin` targets under the build's output folder, and maps each to its source through the unit's own `tsdown.config.*` — read as text, an entry named for its key, or for its file where it has none — or, with no config of its own, through the mapping the `build` and `bundle` presets compile by: each published target from its entry under `src/`, named by this grammar ([Building](05-building.md#the-entries)). A pattern subpath (`./tsdown/*`) publishes a folder, not an entry, and a target outside the build (a JSON preset) is no compiled entry: neither is judged.
+The pass reads the `exports`, `main` and `bin` targets under the build's output folder, and maps each to its source through the unit's own `tsdown.config.*` — read as text, an entry named for its key, or for its file where it has none — or, with no config of its own, through the mapping the `build` and `bundle` presets compile by: each published target from its entry under `src/`, named by this grammar ([Building](05-building.md#the-entries)). A pattern subpath (`./tsdown/*`) publishes a folder, not an entry, and a target outside the build that is not code (a JSON preset) is no compiled entry: neither is judged. In a package that publishes a build, a bin, or a `.js`, `.cjs` or `.mjs` module, published from outside it is code no source compiles, and is refused; a package that builds nothing publishes its JavaScript as written.
 
 - `names/entry-follows-its-grammar` refuses an entry named otherwise, at the source.
 - `names/index-is-an-entry` refuses a module under `src/` or `lint/` named `index` that builds nothing the package publishes — its test passes beside the entry it tests. A module that composes others for the package's own code is named for what it composes.
-- `names/export-has-an-entry` refuses a published target the build compiles from no source it names.
+- `names/export-has-an-entry` refuses a published target the build compiles from no source it names, and, in a package that publishes a build, a bin or a module published from outside it.
 - `names/bin-is-published` refuses a module under `src/` or `lint/` named `<command>.bin` that builds no bin the package publishes.
 
 A package of the family states one more convention, which the gate does not read: a subpath that configures a tool is named for that tool's config file — `./config` is read by `jterrazz.config.ts`, `./oxlint` by `oxlint.config.ts`, `./vitest` by `vitest.config.ts` — so a consumer finds the import in the file named for it.

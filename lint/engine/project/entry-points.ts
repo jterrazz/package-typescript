@@ -13,6 +13,8 @@ const BUILT = /\.(?:d\.[cm]?ts|[cm]?js)$/u;
 
 const DECLARATION = /\.d\.[cm]?ts$/u;
 
+const CODE = /\.[cm]?js$/u;
+
 export function subpathStemOf(subpath: string, browser: boolean): string {
     const parts = subpath === '.' ? [] : withoutDotSlash(subpath).split('/');
 
@@ -59,23 +61,34 @@ function binsOf(bin: unknown, name: unknown): Published[] {
     );
 }
 
+const declaredOf = (manifest: JsonObject): Published[] => [
+    ...exportedOf(manifest.exports, '.', false),
+    ...exportedOf(manifest.main, '.', false),
+    ...binsOf(manifest.bin, manifest.name),
+];
+
+const isUnderBuild = (target: string, outDir: string): boolean =>
+    withoutDotSlash(target).startsWith(`${outDir}/`);
+
 export function publishedOf(manifest: JsonObject, outDir: string): Published[] {
-    return [
-        ...exportedOf(manifest.exports, '.', false),
-        ...exportedOf(manifest.main, '.', false),
-        ...binsOf(manifest.bin, manifest.name),
-    ]
+    return declaredOf(manifest)
         .filter(
             ({ target }) =>
-                withoutDotSlash(target).startsWith(`${outDir}/`) &&
-                BUILT.test(target) &&
-                !target.includes('*'),
+                isUnderBuild(target, outDir) && BUILT.test(target) && !target.includes('*'),
         )
         .toSorted(
             (left, right) =>
                 Number(DECLARATION.test(left.target)) - Number(DECLARATION.test(right.target)),
         );
 }
+
+export const unbuiltCodeOf = (manifest: JsonObject, outDir: string): Published[] =>
+    declaredOf(manifest).filter(
+        ({ stem, target }) =>
+            !isUnderBuild(target, outDir) &&
+            !target.includes('*') &&
+            (stem.endsWith('.bin') || CODE.test(target)),
+    );
 
 export const outputOf = (target: string, outDir: string): string =>
     withoutDotSlash(target)

@@ -98,7 +98,7 @@
     {
         "family": "names",
         "id": "names/export-has-an-entry",
-        "sentence": "Every subpath and bin the package publishes from its build is compiled from a source the build names."
+        "sentence": "Every subpath and bin the package publishes as code is compiled by its build, from a source the build names."
     },
     {
         "family": "markdown",

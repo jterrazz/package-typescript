@@ -4,12 +4,13 @@
     "private": true,
     "type": "module",
     "files": ["dist"],
-    "bin": { "tool": "./dist/tool.js" },
+    "bin": { "legacy": "./bin/legacy.js", "tool": "./dist/tool.js" },
     "exports": {
         ".": "./dist/index.js",
         "./config": { "types": "./dist/config.d.ts", "import": "./dist/config.js" },
         "./rules": { "browser": "./dist/rules.browser.js", "default": "./dist/rules.js" },
         "./gone": "./dist/gone.js",
+        "./runner": "./scripts/runner.mjs",
         "./presets/*": "./dist/presets/*.js"
     }
 }

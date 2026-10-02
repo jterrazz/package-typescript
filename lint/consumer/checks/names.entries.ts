@@ -1,7 +1,12 @@
 import { basename, dirname, join } from 'node:path';
 
 import type { Context, Finding } from '../../engine/checker/pass.js';
-import { defaultSourceOf, outputOf, publishedOf } from '../../engine/project/entry-points.js';
+import {
+    defaultSourceOf,
+    outputOf,
+    publishedOf,
+    unbuiltCodeOf,
+} from '../../engine/project/entry-points.js';
 import type { Published } from '../../engine/project/entry-points.js';
 import { GROUND_FOLDERS } from '../../engine/project/ground.js';
 import { parsedObject } from '../../engine/project/json.js';
@@ -87,6 +92,17 @@ function unbuiltFinding(path: string, { target, what }: Published): Finding {
     });
 }
 
+function outsideBuildFinding(
+    path: string,
+    { stem, target, what }: Published,
+    outDir: string,
+): Finding {
+    return namesFinding('names/export-has-an-entry', path, {
+        fix: `build it from its entry, \`${stem}.ts\`, and publish what the build writes under \`${outDir}/\``,
+        found: `${what} is published as ${target}, outside the build output \`${outDir}/\`, so no source compiles it`,
+    });
+}
+
 function strayBinFinding(path: string): Finding {
     return namesFinding('names/bin-is-published', path, {
         fix: 'name it for what it runs, or publish it: a bin in the manifest named for its command, built from it',
@@ -115,7 +131,12 @@ function entriesOf(
     const outDir = build?.outDir ?? DEFAULT_OUT_DIR;
     const published = publishedOf(manifest, outDir);
     const entries = new Map<string, Entry>();
-    const findings: Finding[] = [];
+    const findings: Finding[] =
+        published.length === 0
+            ? []
+            : unbuiltCodeOf(manifest, outDir).map((one) =>
+                  outsideBuildFinding(`${prefix}package.json`, one, outDir),
+              );
     for (const one of published) {
         const source =
             build === null ? defaultSourceOf(one) : build.sources.get(outputOf(one.target, outDir));
