@@ -16,6 +16,7 @@ describe('exports', () => {
         '@jterrazz/typescript/docs',
         '@jterrazz/typescript/oxfmt',
         '@jterrazz/typescript/oxlint',
+        '@jterrazz/typescript/rules',
         '@jterrazz/typescript/tsconfig/node',
         '@jterrazz/typescript/tsconfig/node.json',
         '@jterrazz/typescript/tsconfig/library',
