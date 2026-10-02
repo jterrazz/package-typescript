@@ -26,6 +26,8 @@ The suffix says which project a file belongs to. A `*.test.ts` is a module test 
 
 A rule is proven where its behaviour lives, on `@jterrazz/test`'s kit to test rules ([Rules kit](09-rules-kit.md#testing-a-rule)). Its visitor alone is a module test on `ruleTester()`, which refuses an invalid case that states no line and column — `lint/consumer/rules/comments/comment-no-longer-than-its-function.test.ts`. What a rule or a pass says about a TREE is a lint spec, `specs/lint/<subject>/<aspect>.spec.ts`, on `specification.lint()`: the plugin as it ships (`comments-lint.specification.ts`), the Names and Architecture passes run as the checker runs them (`names-lint`, `architecture-lint`), and the base preset's laws alone, or beside a preset and a repository's own additions, through `presetChecks` (`preset-lint`, `declared-preset-lint`). Each compares the whole report — every finding at its `file:line:column`, with its lesson. What stays under `specs/cli/check/` is the command's own behaviour: which passes run, the sections they print, the ratchet, the drift report and the exit — and the command's own reading of `jterrazz.config.ts`, a preset declared there reaching the Architecture and Names passes (`presets-declared.spec.yaml`).
 
+Whether a test exists at all — a module test kept, or a spec in its stead — is the constitution's: `@jterrazz/test`'s `docs/18-conventions.md`, "Which test earns its place".
+
 The `unit` project is where a pure function is proved: `compose()`, the rulebook's builders (`lint/engine/compiler/decision.test.ts`), and the manual's rules over in-memory trees (`lint/consumer/checks/docs.test.ts`). Nothing there spawns anything but `make`, over stubs, where the `fix` recipe is proved; `npm pack` and `tar`, where the tarball is read as a consumer receives it and its bin is run once over an empty folder (`specs/surface/package/tarball.test.ts`), and `npm pack --dry-run`, where a self rule's home is held out of it (`lint/self/corpus/audience.test.ts`); and `git`, where the tree every gate sweeps is read across index moves and live edits, and a build folder the index tracks is dropped from it (`lint/engine/project/git-tree.test.ts`, `lint/engine/project/project-files.test.ts`).
 
 ### `specs/surface/` — the repository suite
@@ -107,7 +109,7 @@ What a spec stands on sits in the four ground folders `@jterrazz/test` reserves 
 
 The presets this repository ships ignore those four folders wherever they sit, and its own run takes them from the presets like any consumer: no ignore of its own in the lint scripts, `oxfmt.config.ts`, `knip.json` or `tsconfig.json`.
 
-The domains today: `build`, `check` (the command's passes and verdicts, each stating the whole run), `clean`, `dev`, `docs-layout` (the manual's rules, one document per family), `doctor`, `help`, `node`, `oxfmt`, `preset`, `start`, `tsc`, `typescript` — the last four the packed tarball in a consumer's project.
+The domains today: `build`, `check` (the command's passes and verdicts, each stating the whole run), `clean`, `dev`, `docs-layout` (the manual's rules, one document per family), `doctor`, `fix`, `help`, `node`, `oxfmt`, `preset`, `start`, `tsc`, `typescript`. Four of them run the packed tarball in a consumer's project, through `packed-cli.specification.ts`: `node`, `oxfmt`, `tsc` and `typescript`.
 
 ## Who a rule is for
 
