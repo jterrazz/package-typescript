@@ -10,7 +10,7 @@ describe('subpaths', () => {
             .fixture(directory('./_fixtures/consumer/'))
             .exec('node subpaths.mjs');
 
-        // Then - each subpath answers every condition it declares: node loads its builds and parses its presets, the page build reaches no package
+        // Then - each subpath answers every condition it declares: node loads its builds and parses its presets, the browser build reaches no package
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toMatch(`
             @jterrazz/typescript (types) → ./dist/index.d.ts: held

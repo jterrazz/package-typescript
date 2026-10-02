@@ -1,4 +1,4 @@
-description: keeps a baseline section emptied of every entry apart from an absent one, for a machine
+description: reports no section, and passes, when the baseline's typescript section is emptied (--json)
 fixture:
     - ./_fixtures/drift/project/
     - ./_fixtures/drift/emptied-section/
