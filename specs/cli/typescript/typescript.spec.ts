@@ -77,9 +77,47 @@ describe('typescript', () => {
             .fixture(directory('./_fixtures/misformatted/'))
             .exec('typescript fix');
 
-        // Then - the fix run passes, and the module is rewritten as the profile and the preset write it
+        // Then - every fixing pass runs from the install and passes, and the module is rewritten as the profile and the preset write it
         expect(result.exitCode).toBe(0);
-        expect(result.stdout.text).toContain('✓ All checks passed');
+        expect(result.stdout).toMatch(`
+             START  Running quality fixes
+
+             RUN  TypeScript Check
+
+            ✓ Passed
+
+             RUN  Oxlint Fix
+
+            ✓ Passed
+
+             RUN  Oxfmt Format
+
+            ✓ Passed
+
+             RUN  Gitignore (artefacts)
+
+            ✓ Passed
+
+             RUN  Suppressions (directives)
+
+            ✓ Passed
+
+             RUN  Markdown (prose)
+
+            ✓ Passed
+
+             RUN  Names (tree)
+
+            ✓ Passed
+
+             RUN  Comments (density)
+
+            ✓ Passed
+
+             END  Finalizing quality fixes
+
+            ✓ All checks passed
+        `);
         expect(result.file('src/index.ts').content).toBe(
             [
                 'export function shout(text: string): string {',
