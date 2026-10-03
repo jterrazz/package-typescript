@@ -7,6 +7,7 @@ import { describe, expect, test } from 'vitest';
 import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { onlyPasses } from '../_setup/check-passes.js';
 import { cli } from '../cli.specification.js';
+import { FORM_VARIABLES, formOnly } from './_setup/oxlint-forms.js';
 
 // invariant: the oracle is oxlint's own report over a copy of the same ground in the same environment.
 
@@ -16,29 +17,6 @@ const SHAPES = resolve(import.meta.dirname, '_fixtures/oxlint-report');
 
 const WARNING_LESSON =
     "found: a warn-severity diagnostic — oxlint lists it above · why: .jterrazz/oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/07-quality-checks.md#a-warning-is-a-diagnostic\n";
-
-const FORM_VARIABLES = [
-    'AI_AGENT',
-    'CI',
-    'CLAUDECODE',
-    'CLAUDE_CODE',
-    'CODEX_SANDBOX',
-    'CODEX_THREAD_ID',
-    'COPILOT_CLI',
-    'CURSOR_AGENT',
-    'FORCE_COLOR',
-    'GEMINI_CLI',
-    'GITHUB_ACTIONS',
-    'JUNIE_DATA',
-    'JUNIE_SHIM_PATH',
-    'NO_COLOR',
-    'OPENCODE',
-    'REPL_ID',
-];
-
-function formOnly(form: Record<string, string>): Record<string, null | string> {
-    return { ...Object.fromEntries(FORM_VARIABLES.map((variable) => [variable, null])), ...form };
-}
 
 function oxlintAlone(form: Record<string, string>): string {
     const project = temporaryDirectory('spec-oxlint-report-');

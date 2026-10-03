@@ -1,72 +1,69 @@
-import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { directory, file } from '@jterrazz/test';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
-import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
+import { onlyPasses } from '../_setup/check-passes.js';
+import { git } from '../_setup/repository.js';
+import { cli } from '../cli.specification.js';
 
-// outside: `.git` is the one path a fixture cannot carry: git does not track it.
-
-const ANCESTOR_COMPLAINT = '.gitignore names coverage/';
-
-function checkFromClone(boundary: 'directory' | 'file' | 'none'): {
-    status: null | number;
-    stdout: string;
-} {
-    const workDir = temporaryDirectory('spec-gitignore-boundary-');
-    cpSync(resolve(import.meta.dirname, '_fixtures/gitignore/repository-boundary'), workDir, {
-        recursive: true,
-    });
-
-    const clone = join(workDir, 'clone');
-    if (boundary === 'directory') {
-        spawnSync('git', ['init', '--quiet'], { cwd: clone });
-    }
-    if (boundary === 'file') {
-        mkdirSync(join(workDir, 'bare.git'));
-        writeFileSync(join(clone, '.git'), `gitdir: ${join(workDir, 'bare.git')}\n`);
-    }
-
-    const result = spawnSync('node', [SELECTING_BIN, 'check'], {
-        cwd: clone,
-        encoding: 'utf8',
-        env: { ...process.env, ...onlyPasses('gitignore') },
-    });
-
-    return { status: result.status, stdout: result.stdout };
-}
+const bounded = cli
+    .with({ env: onlyPasses('gitignore') })
+    .fixture(directory('./_fixtures/gitignore/repository-boundary/'));
 
 describe('gitignore-boundary', () => {
-    test("reads the parent's .gitignore when nothing marks a boundary", () => {
-        // Given - a project nested in a workspace root whose .gitignore names an artefact
-        // When - the nested project runs its own quality checks
-        const { status, stdout } = checkFromClone('none');
+    test("reads the parent's .gitignore when nothing marks a boundary", async () => {
+        // Given - a clone whose parent folder's .gitignore names coverage/, with no .git between them
+        // When - the gate runs from the clone
+        const result = await bounded.exec('check', { cwd: 'clone' });
 
-        // Then - the ancestor is the second file the gate reads, and it fails on it
-        expect(status).toBe(1);
-        expect(stdout).toContain(ANCESTOR_COMPLAINT);
+        // Then - the parent's line is judged as the clone's own
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+             START  Running quality checks
+
+             RUN  Gitignore (artefacts)
+
+            Artefacts belong under .artifacts/<tool>/ at the project root:
+              ✗ ../.gitignore names coverage/ — its home is .artifacts/vitest/coverage/
+            Run 'typescript fix' to rewrite .gitignore.
+            ✗ Failed with exit code 1
+
+             END  Finalizing quality checks
+
+            ✗ Some checks failed
+        `);
     });
 
-    test('stops at a .git DIRECTORY — a clone inside another repository', () => {
-        // Given - the same tree, with the nested project made a clone of its own
-        // When - the clone runs its own quality checks
-        const { stdout } = checkFromClone('directory');
+    test('stops at a .git DIRECTORY — a clone inside another repository', async () => {
+        // Given - the same clone, made a repository of its own
+        // When - the gate runs from the clone
+        const result = await bounded
+            .prepare((workdir) => {
+                git(join(workdir, 'clone'), 'init', '--quiet');
+            })
+            .exec('check', { cwd: 'clone' });
 
-        // Then - the walk never reaches the tree above, so neither complaint is the clone's
-        expect(stdout).toContain('Gitignore (artefacts)');
-        expect(stdout).not.toContain(ANCESTOR_COMPLAINT);
-        expect(stdout).not.toContain('does not ignore .artifacts/');
+        // Then - the walk stops at the clone: only its own .gitignore is read, and it holds the convention
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(file('./_expected/gitignore-boundary/bounded.txt'));
     });
 
-    test('stops at a .git FILE — a worktree inside another repository', () => {
-        // Given - the same tree, with the nested project made a worktree
-        // When - the worktree runs its own quality checks
-        const { stdout } = checkFromClone('file');
+    test('stops at a .git FILE — a worktree inside another repository', async () => {
+        // Given - the same clone, a worktree whose .git file points at a repository beside it
+        // When - the gate runs from the clone
+        const result = await bounded
+            .prepare((workdir) => {
+                mkdirSync(join(workdir, 'bare.git'));
+                writeFileSync(
+                    join(workdir, 'clone/.git'),
+                    `gitdir: ${join(workdir, 'bare.git')}\n`,
+                );
+            })
+            .exec('check', { cwd: 'clone' });
 
-        // Then - a `.git` file marks the boundary exactly as a directory does
-        expect(stdout).toContain('Gitignore (artefacts)');
-        expect(stdout).not.toContain(ANCESTOR_COMPLAINT);
-        expect(stdout).not.toContain('does not ignore .artifacts/');
+        // Then - a .git file is a boundary as a .git folder is
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(file('./_expected/gitignore-boundary/bounded.txt'));
     });
 });

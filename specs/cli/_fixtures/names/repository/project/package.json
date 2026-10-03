@@ -1,0 +1,6 @@
+{
+  "main": "index.ts",
+  "name": "spec-names-repository",
+  "private": true,
+  "version": "1.0.0"
+}

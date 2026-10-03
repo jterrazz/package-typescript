@@ -1,7 +1,0 @@
-{
-    "specs/cli/check/astro.spec.ts": {
-        "jterrazz/no-probe-cluster": {
-            "count": 1
-        }
-    }
-}

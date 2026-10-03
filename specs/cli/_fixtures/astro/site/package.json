@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "astro": "^7.0.0"
+  },
+  "name": "spec-astro",
+  "private": true,
+  "version": "1.0.0"
+}

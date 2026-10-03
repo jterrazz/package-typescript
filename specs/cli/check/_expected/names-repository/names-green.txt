@@ -1,0 +1,9 @@
+ START  Running quality checks
+
+ RUN  Names (tree)
+
+✓ Passed
+
+ END  Finalizing quality checks
+
+✓ All checks passed

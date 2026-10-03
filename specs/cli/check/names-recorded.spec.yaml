@@ -1,5 +1,5 @@
 description: records a construct name in the ratchet, and the run it records is green
-fixture: ./_fixtures/names/recorded/
+fixture: ../_fixtures/names/recorded/
 runs:
     - command: baseline
       exit: 0

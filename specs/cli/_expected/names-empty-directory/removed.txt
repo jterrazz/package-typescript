@@ -1,0 +1,11 @@
+ START  Running quality fixes
+
+ RUN  Names (tree)
+
+removed  src/abandoned/  an empty directory
+removed  src/scaffold/  an empty directory
+✓ Passed
+
+ END  Finalizing quality fixes
+
+✓ All checks passed

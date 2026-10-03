@@ -1,49 +1,34 @@
-import { execFileSync, spawnSync } from 'node:child_process';
-import { cpSync, rmSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { afterAll, describe, expect, test } from 'vitest';
+import { directory } from '@jterrazz/test';
+import { describe, expect, test } from 'vitest';
 
-import { newDirectory } from '../../_shared/_setup/temporary-directory.js';
-import { SELECTING_BIN } from '../_setup/check-passes.js';
-
-// outside: git refuses to track a nested `.git`, so a fixture cannot be the repository the pass asks for.
-
-const FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/on-convention');
-
-const repository = newDirectory('spec-docs-layout-repo-');
-const looseDirectory = newDirectory('spec-docs-layout-loose-');
-
-afterAll(() => {
-    rmSync(repository, { force: true, recursive: true });
-    rmSync(looseDirectory, { force: true, recursive: true });
-});
+import { onlyPasses } from '../_setup/check-passes.js';
+import { git } from '../_setup/repository.js';
+import { cli } from '../cli.specification.js';
 
 describe('docs-layout', () => {
-    test('asks a repository for its manual, and a bare directory for nothing', () => {
-        // Given - the same project with no docs/, once as a git repository and once not
-        cpSync(FIXTURE, repository, { recursive: true });
-        execFileSync('git', ['init', '--quiet'], { cwd: repository });
-        cpSync(FIXTURE, looseDirectory, { recursive: true });
+    test('asks a repository for its manual', async () => {
+        // Given - a project on the convention, made a repository, with no docs/
+        const result = await cli
+            .with({ env: onlyPasses('docs') })
+            .fixture(directory('./_fixtures/gitignore/on-convention/'))
+            .prepare((workdir) => {
+                git(workdir, 'init', '--quiet');
+            })
+            .exec('check');
 
-        // When - the quality checks run in each
-        const inside = spawnSync('node', [SELECTING_BIN, 'check'], {
-            cwd: repository,
-            encoding: 'utf8',
-        });
-        const outside = spawnSync('node', [SELECTING_BIN, 'check'], {
-            cwd: looseDirectory,
-            encoding: 'utf8',
-        });
+        // Then - the layout pass asks for the manual every repository carries; a bare directory is asked nothing (gitignore-on-convention.spec.yaml)
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+             START  Running quality checks
 
-        // Then - the pass names the missing manual where a repository carries one
-        expect(inside.status).toBe(1);
-        expect(inside.stdout).toContain('Docs (layout)');
-        expect(inside.stdout).toContain(
-            'docs/:1:1: error docs(manual-present): docs/ is missing — every repository carries its own manual',
-        );
+             RUN  Docs (layout)
 
-        // Then - and never runs where there is no repository to carry one
-        expect(outside.status).toBe(0);
-        expect(outside.stdout).not.toContain('Docs (layout)');
+            docs/:1:1: error docs(manual-present): docs/ is missing — every repository carries its own manual, starting at docs/README.md
+            ✗ Failed with exit code 1
+
+             END  Finalizing quality checks
+
+            ✗ Some checks failed
+        `);
     });
 });

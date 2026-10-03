@@ -1,44 +1,43 @@
 import { directory } from '@jterrazz/test';
-import { spawnSync } from 'node:child_process';
-import { cpSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
-import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
-import { onlyPasses, TYPESCRIPT_BIN } from '../_setup/check-passes.js';
+import { onlyPasses } from '../_setup/check-passes.js';
 import { cli } from '../cli.specification.js';
-
-// outside: a config in the folder above a project is never read; `fixture:` spreads into its cwd, so that case is built in a temp directory.
-
-function checkBelowDecoy(): string {
-    const tree = temporaryDirectory('spec-default-config-');
-    cpSync(resolve(import.meta.dirname, '_fixtures/default-config/decoy-parent'), tree, {
-        recursive: true,
-    });
-    const { stdout } = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
-        cwd: join(tree, 'project'),
-        encoding: 'utf8',
-        env: { ...process.env, INIT_CWD: join(tree, 'project') },
-    });
-
-    return stripVTControlCharacters(stdout);
-}
-
-function verdictOf(stdout: string, label: string): string {
-    return /✓ Passed|✗ Failed/u.exec(stdout.slice(stdout.indexOf(label)))?.[0] ?? 'absent';
-}
+import { formOnly } from './_setup/oxlint-forms.js';
 
 describe('default-config', () => {
-    test('hands a project with no config of its own the default, never the config above it', () => {
+    test('hands a project with no config of its own the default, never the config above it', async () => {
         // Given - a project with no oxlint or oxfmt config, under a folder whose configs turn `no-debugger` off and indent with tabs
-        // When - the quality checks run from the project
-        const stdout = checkBelowDecoy();
+        // When - the quality checks run from the project, oxlint answering in its compact form
+        const result = await cli
+            .with({
+                env: {
+                    ...formOnly({ AI_AGENT: 'spec' }),
+                    ...onlyPasses('oxlint', 'oxfmt'),
+                    INIT_CWD: '$WORKDIR/project',
+                },
+            })
+            .fixture(directory('./_fixtures/default-config/decoy-parent/'))
+            .exec('check', { cwd: 'project' });
 
         // Then - the default profile reports the debugger, and the default formatter passes the four-space source and ignores public/
-        expect(stdout).toContain('eslint(no-debugger)');
-        expect(verdictOf(stdout, 'Oxlint Check')).toBe('✗ Failed');
-        expect(verdictOf(stdout, 'Oxfmt Check')).toBe('✓ Passed');
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+             START  Running quality checks
+
+             RUN  Oxlint Check
+
+            src/index.ts:2:5: error eslint(no-debugger): \`debugger\` statement is not allowed help: Remove the debugger statement
+            ✗ Failed with exit code 1
+
+             RUN  Oxfmt Check
+
+            ✓ Passed
+
+             END  Finalizing quality checks
+
+            ✗ Some checks failed
+        `);
     });
 
     test('leaves a project with a config of its own to it, and to the nested config beneath it', async () => {

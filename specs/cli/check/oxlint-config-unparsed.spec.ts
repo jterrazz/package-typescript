@@ -1,87 +1,66 @@
-import { spawnSync } from 'node:child_process';
-import { rmSync, writeFileSync } from 'node:fs';
+import { directory } from '@jterrazz/test';
+import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterAll, describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
-import { newDirectory, temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
-import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
+import { onlyPasses } from '../_setup/check-passes.js';
+import { cli } from '../cli.specification.js';
+import { formOnly } from './_setup/oxlint-forms.js';
 
-// outside: oxlint loads every `oxlint.config.*` under the project, even one its `ignorePatterns` excludes, so a
-// config that cannot load is built in a temp directory.
-
-const project = newDirectory('spec-oxlint-config-');
-
-afterAll(() => {
-    rmSync(project, { force: true, recursive: true });
-});
-
-function projectOf(files: Record<string, string>): string {
-    const directory = temporaryDirectory('spec-oxlint-refusal-');
-    for (const [path, content] of Object.entries(files)) {
-        writeFileSync(join(directory, path), content);
-    }
-
-    return directory;
-}
+/** oxlint answers in its compact form whatever the machine's environment picks. */
+const oxlint = cli.with({ env: { ...formOnly({ AI_AGENT: 'spec' }), ...onlyPasses('oxlint') } });
 
 describe('oxlint-config-unparsed', () => {
-    test('fails the oxlint pass when the config names a JS plugin that is not there', () => {
-        // Given - a project whose oxlint config loads a plugin module nobody wrote
-        writeFileSync(
-            join(project, 'package.json'),
-            `${JSON.stringify(
-                { name: 'spec-oxlint-config', private: true, type: 'module', version: '1.0.0' },
-                null,
-                2,
-            )}\n`,
-        );
-        writeFileSync(
-            join(project, 'tsconfig.json'),
-            '{ "compilerOptions": { "strict": true, "noEmit": true }, "include": ["index.ts"] }\n',
-        );
-        writeFileSync(join(project, 'index.ts'), 'export const title = "spec";\n');
-        writeFileSync(
-            join(project, 'oxlint.config.ts'),
-            'export default { jsPlugins: ["./nowhere.js"], rules: { "no-debugger": "error" } };\n',
-        );
-
+    test('fails the oxlint pass when the config names a JS plugin that is not there', async () => {
+        // Given - a project whose oxlint config loads a plugin module nobody wrote — a config this repository cannot hold, since oxlint loads every config under it
         // When - the quality checks run there
-        const result = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
-            cwd: project,
-            encoding: 'utf8',
-        });
+        const result = await oxlint
+            .fixture(directory('./_fixtures/oxlint-config/plugin-missing/'))
+            .prepare((workdir) => {
+                writeFileSync(
+                    join(workdir, 'oxlint.config.ts'),
+                    'export default { jsPlugins: ["./nowhere.js"], rules: { "no-debugger": "error" } };\n',
+                );
+            })
+            .exec('check');
 
         // Then - oxlint's own report is printed, and the pass names the refusal in its own vocabulary
-        expect(result.status).toBe(1);
-        expect(result.stdout).toContain('Failed to parse oxlint configuration file');
-        expect(result.stdout).toContain(
-            'oxlint-config-unparsed  oxlint.config.ts  found: oxlint refused this config and linted nothing',
-        );
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+             START  Running quality checks
+
+             RUN  Oxlint Check
+
+            Failed to parse oxlint configuration file.{{any}}
+            oxlint-config-unparsed  oxlint.config.ts  found: oxlint refused this config and linted nothing — its own report is above · why: a run over a config oxlint could not parse enforces no rule, and would read as green · fix: repair what oxlint names above — usually a \`jsPlugins\` entry naming a module that is not there · read: docs/07-quality-checks.md#the-two-refusals-that-are-not-diagnostics
+            ✗ Failed with exit code 1
+
+             END  Finalizing quality checks
+
+            ✗ Some checks failed
+        `);
     });
 
-    test("fails the oxlint pass when oxlint lints nothing, in oxlint's own words", () => {
+    test("fails the oxlint pass when oxlint lints nothing, in oxlint's own words", async () => {
         // Given - a project whose oxlint config ignores the one source file it has, so oxlint lints nothing
-        const directory = projectOf({
-            '.oxlintrc.json': '{ "ignorePatterns": ["index.ts"] }\n',
-            'index.ts': 'export const title = "spec";\n',
-            'package.json':
-                '{ "name": "spec-oxlint-refusal", "private": true, "type": "module" }\n',
-            'tsconfig.json':
-                '{ "compilerOptions": { "strict": true, "noEmit": true }, "include": ["index.ts"] }\n',
-        });
-
         // When - the quality checks run there
-        const result = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
-            cwd: directory,
-            encoding: 'utf8',
-        });
-        const lint = result.stdout.slice(
-            result.stdout.indexOf('Oxlint Check'),
-            result.stdout.indexOf('Oxfmt Check'),
-        );
+        const result = await oxlint
+            .fixture(directory('./_fixtures/oxlint-config/lints-nothing/'))
+            .exec('check');
 
         // Then - oxlint says it found nothing to lint, and its exit fails the pass
-        expect(lint).toContain('No files found to lint');
-        expect(lint).toContain('Failed with exit code 1');
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+             START  Running quality checks
+
+             RUN  Oxlint Check
+
+            No files found to lint. Please check your paths and ignore patterns.
+            ✗ Failed with exit code 1
+
+             END  Finalizing quality checks
+
+            ✗ Some checks failed
+        `);
     });
 });
