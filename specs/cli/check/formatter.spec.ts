@@ -2,7 +2,7 @@ import { file } from '@jterrazz/test';
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { beforeAll, describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { newDirectory, temporaryDirectory } from '../_setup/temporary-directory.js';
 import { cli as oxfmtCli } from '../oxfmt.specification.js';
@@ -18,17 +18,7 @@ writeFileSync(
 );
 const OXFMT = resolve(import.meta.dirname, '../../../node_modules/.bin/oxfmt');
 
-type FormatResult = Awaited<ReturnType<typeof oxfmtCli.exec>>;
-
 describe('formatter', () => {
-    let formatted: FormatResult;
-
-    beforeAll(async () => {
-        formatted = await oxfmtCli
-            .fixture(file('./_fixtures/formatter/wrong-style.ts'))
-            .exec(`--config ${CONFIG_PATH} wrong-style.ts`);
-    });
-
     test('detects unformatted code', async () => {
         // Given - a file with wrong formatting staged in the cwd
         const result = await oxfmtCli
@@ -69,35 +59,27 @@ describe('formatter', () => {
 
         // Then - the root file alone is reported
         expect(result.status).toBe(1);
-        expect(result.stdout).toMatch(/^index\.ts /mu);
-        for (const tree of [
-            'public',
-            'assets',
-            '.next',
-            '.expo',
-            'dist',
-            '_fixtures',
-            '_expected',
-            '_seeds',
-            '_requests',
-        ]) {
-            expect(result.stdout).not.toContain(`${tree}/app.ts`);
-        }
+        expect(
+            result.stdout
+                .split('\n')
+                .flatMap((line) => /^(?<path>\S+) \(\d+ms\)$/u.exec(line)?.groups?.path ?? []),
+        ).toStrictEqual(['index.ts']);
     });
 
-    test('formats unformatted code correctly', async () => {
+    test('formats unformatted code to the preset style', async () => {
         // Given - the wrong-style file formatted in place
         const result = await oxfmtCli
             .fixture(file('./_fixtures/formatter/wrong-style.ts'))
             .exec(`--config ${CONFIG_PATH} wrong-style.ts`);
 
-        // Then - the file is rewritten with the correct style
+        // Then - the file is rewritten whole to the preset's quotes, semicolons and indentation
         expect(result.exitCode).toBe(0);
-        expect(result.file('wrong-style.ts').content).toContain("import fs from 'fs';");
-        expect(result.file('wrong-style.ts').content).toContain(
-            'function greet(name: string): string',
+        expect(result.file('wrong-style.ts').content).toBe(
+            readFileSync(
+                resolve(import.meta.dirname, '_fixtures/formatter/correct-style.ts'),
+                'utf8',
+            ),
         );
-        expect(result.file('wrong-style.ts').content).toMatch(/^\s{4}const/mu);
     });
 
     test('is idempotent when formatting already-correct code', async () => {
@@ -108,28 +90,11 @@ describe('formatter', () => {
 
         // Then - the file is unchanged after formatting
         expect(result.exitCode).toBe(0);
-        const original = readFileSync(
-            resolve(import.meta.dirname, '_fixtures/formatter/correct-style.ts'),
-            'utf8',
+        expect(result.file('correct-style.ts').content).toBe(
+            readFileSync(
+                resolve(import.meta.dirname, '_fixtures/formatter/correct-style.ts'),
+                'utf8',
+            ),
         );
-        expect(result.file('correct-style.ts').content).toContain(original.trim());
-    });
-
-    test('uses single quotes', () => {
-        // Given - the formatted wrong-style file
-        // Then - imports use single quotes
-        expect(formatted.file('wrong-style.ts').content).toContain("'fs'");
-    });
-
-    test('uses semicolons', () => {
-        // Given - the formatted wrong-style file
-        // Then - statements end with semicolons
-        expect(formatted.file('wrong-style.ts').content).toMatch(/;\s*$/mu);
-    });
-
-    test('uses four-space indentation', () => {
-        // Given - the formatted wrong-style file
-        // Then - indented lines use four spaces
-        expect(formatted.file('wrong-style.ts').content).toMatch(/^\s{4}const/mu);
     });
 });

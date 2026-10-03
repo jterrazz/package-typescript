@@ -1,4 +1,3 @@
-// Unformatted file: inconsistent spacing, wrong quotes, missing semicolons
 import fs from "fs";
 import path from "path";
 

@@ -28,41 +28,40 @@ describe('versions', () => {
         // Given - the toolchain installed as this repository's own devDependencies
         const result = await cli.exec('doctor');
 
-        // Then - the report names each tool the passes spawn, and node itself
+        // Then - the report names each tool the passes spawn, node itself, and beside each the range the manifest declares
         expect(result.exitCode).toBe(0);
-        for (const tool of [
-            'node',
-            'tsc (Go)',
-            'typescript',
-            'oxlint',
-            'oxfmt',
-            'knip',
-            'dependency-cruiser',
-            'ls-lint',
-            'rumdl',
-        ]) {
-            expect(result.stdout.text).toContain(tool);
-        }
-
-        // Then - the range beside each one is the range the manifest declares
-        for (const name of [
-            '@ls-lint/ls-lint',
-            'dependency-cruiser',
-            'knip',
-            'oxfmt',
-            'oxlint',
-            'oxlint-tsgolint',
-            'rumdl',
-            'typescript',
-        ] as const) {
-            expect(result.stdout.text).toContain(manifest.dependencies[name]);
-        }
-        expect(result.stdout.text).toContain(manifest.engines.node);
+        expect(
+            [
+                'node',
+                'tsc (Go)',
+                'typescript',
+                'oxlint',
+                'oxfmt',
+                'knip',
+                'dependency-cruiser',
+                'ls-lint',
+                'rumdl',
+                manifest.engines.node,
+                ...(
+                    [
+                        '@ls-lint/ls-lint',
+                        'dependency-cruiser',
+                        'knip',
+                        'oxfmt',
+                        'oxlint',
+                        'oxlint-tsgolint',
+                        'rumdl',
+                        'typescript',
+                    ] as const
+                ).map((name) => manifest.dependencies[name]),
+                'Every tool is in range.',
+            ].filter((expected) => !result.stdout.text.includes(expected)),
+        ).toStrictEqual([]);
 
         // Then - nothing installed here is older than what the toolchain asks for
-        expect(result.stdout.text).not.toContain('old');
-        expect(result.stdout.text).not.toContain('absent');
-        expect(result.stdout.text).toContain('Every tool is in range.');
+        expect(
+            ['old', 'absent'].filter((verdict) => result.stdout.text.includes(verdict)),
+        ).toStrictEqual([]);
     });
 
     test('fails on a tool older than its range, and on one that is not installed', () => {
