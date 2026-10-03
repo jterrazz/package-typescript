@@ -26,8 +26,8 @@ const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
     typeof value === 'object' && value !== null && !Array.isArray(value);
 
 export type TsconfigAdditions =
-    | { additions: Readonly<Record<string, unknown>>; problem: null }
-    | { additions: null; problem: string };
+    | { additions: null; problem: string }
+    | { additions: Readonly<Record<string, unknown>>; problem: null };
 
 export function tsconfigAdditionsOf(section: unknown): TsconfigAdditions {
     const written = isRecord(section) ? section.tsconfig : undefined;
@@ -53,7 +53,7 @@ export function tsconfigAdditionsOf(section: unknown): TsconfigAdditions {
 
 export function derivedEditorFiles(
     declared: readonly Readonly<Record<string, EditorFile>>[],
-    additions: Readonly<Record<string, unknown>> | null,
+    additions: null | Readonly<Record<string, unknown>>,
 ): Readonly<Record<string, EditorFile>> {
     const files: Record<string, EditorFile> = {};
     for (const one of declared) {

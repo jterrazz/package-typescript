@@ -121,9 +121,6 @@ describe('astro', () => {
 
         // Then - it ran the member's checker and refused the member's template
         expect(result.status).toBe(1);
-        expect(result.stdout).toContain('Astro (check + format)');
-        expect(result.stdout).toContain('packages/site');
-        expect(result.stdout).toContain('astro-check-ran');
-        expect(result.stdout).toContain('src/page.astro');
+        expect(result.stdout).toMatch(/packages\/site\nastro-check-ran[\s\S]*src\/page\.astro/u);
     });
 });

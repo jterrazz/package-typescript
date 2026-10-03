@@ -33,7 +33,7 @@ type Reported = Verdict & { label: string };
 
 async function declarationsOf(
     units: readonly string[],
-): Promise<Map<string, ProjectIdentity | null>> {
+): Promise<Map<string, null | ProjectIdentity>> {
     const read = await Promise.all(
         units.map(async (unit) => {
             const { resolved } = await readSettings(unit);

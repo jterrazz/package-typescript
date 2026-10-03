@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { DEFAULT_ENTRY, entrySourcesOf, outputOf, publishedOf } from './entry-points.js';
 import { isJsonObject, parsedObject } from './json.js';
-import type { ProjectIdentity, Platform } from './project-kind.js';
+import type { Platform, ProjectIdentity } from './project-kind.js';
 
 export type BuildEntry = { reason: string; source: string };
 
@@ -147,7 +147,7 @@ function publishedSteps(
 
 export function buildPlanOf(
     root: string,
-    { declaration, settings }: { declaration: ProjectIdentity | null; settings: BuildSettings },
+    { declaration, settings }: { declaration: null | ProjectIdentity; settings: BuildSettings },
 ): BuildStep[] {
     const planned = [...plannedOf(root)];
     const main = planned.filter(([, one]) => !one.browser && !one.formats.has('cjs'));

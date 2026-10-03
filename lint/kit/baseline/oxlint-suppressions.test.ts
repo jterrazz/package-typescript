@@ -30,7 +30,7 @@ function projectHolding(ledger: null | string): string {
     return root;
 }
 
-describe('withStagedSuppressions', () => {
+describe('oxlint-suppressions', () => {
     test.each([
         ['a ledger', '{"a.ts":{"no-debugger":{"count":1}}}'],
         ['no ledger', null],
@@ -39,14 +39,14 @@ describe('withStagedSuppressions', () => {
         async (_, ledger) => {
             // Given - a project, and a signal raised while oxlint's file is staged at its root
             const root = projectHolding(ledger);
-            const raised = vi.spyOn(process, 'kill').mockImplementation(() => true);
+            const raised = vi.spyOn(process, 'kill').mockReturnValue(true);
 
             // When - Ctrl-C reaches the run, and oxlint has written its file at the root
             const leftAtTheSignal = await withStagedSuppressions(root, async () => {
                 writeFileSync(join(root, OXLINT_SUPPRESSIONS), ledger ?? '{"b.ts":{}}');
                 process.emit('SIGINT', 'SIGINT');
 
-                return existsSync(join(root, OXLINT_SUPPRESSIONS));
+                return await Promise.resolve(existsSync(join(root, OXLINT_SUPPRESSIONS)));
             });
 
             // Then - the signal took the file back before the process ends, the ledger is what the run left, and the signal is raised again

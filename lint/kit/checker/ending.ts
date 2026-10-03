@@ -2,7 +2,6 @@ import process from 'node:process';
 
 const ENDING: readonly NodeJS.Signals[] = ['SIGHUP', 'SIGINT', 'SIGTERM'];
 
-// A signal skips `finally`: the clean-up runs on it too, then the signal is raised again so the process still ends by it.
 export async function cleanedUpOnEnding<T>(
     cleanUp: () => void,
     work: () => Promise<T>,

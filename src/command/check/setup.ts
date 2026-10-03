@@ -35,7 +35,7 @@ export type Targets = { nothing: boolean; paths: string[] };
 
 export type Check = {
     configs: ToolConfigs;
-    declarations: ReadonlyMap<string, ProjectIdentity | null>;
+    declarations: ReadonlyMap<string, null | ProjectIdentity>;
     driftArgs: string[];
     fix: boolean;
     formatTargets: Targets;

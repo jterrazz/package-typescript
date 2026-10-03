@@ -2,8 +2,8 @@ import { describe, expect, test } from 'vitest';
 
 import { readProjectKind } from './project-kind.js';
 
-describe('readProjectKind', () => {
-    test('reads a kind on a platform it runs on, and a workspace on none', () => {
+describe('project-kind', () => {
+    test('readProjectKind — reads a kind on a platform it runs on, and a workspace on none', () => {
         // Given - the declarations a project writes
         const declared = [
             { kind: 'library', platform: 'react' },
@@ -21,7 +21,7 @@ describe('readProjectKind', () => {
         ]);
     });
 
-    test('refuses a kind outside the union, a platform its kind does not run on, and a workspace with one', () => {
+    test('readProjectKind — refuses a kind outside the union, a platform its kind does not run on, and a workspace with one', () => {
         // Given - the declarations the closed unions refuse
         const refused = [
             { kind: 'service', platform: 'node' },

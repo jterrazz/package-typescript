@@ -44,7 +44,7 @@ export const PUBLICATION: Readonly<Record<ProjectKind, Publication>> = Object.fr
     workspace: 'members',
 });
 
-export const publishes = (identity: ProjectIdentity | null | undefined): boolean =>
+export const publishes = (identity: null | ProjectIdentity | undefined): boolean =>
     identity !== null && identity !== undefined && PUBLICATION[identity.kind] === 'published';
 
 const isKind = (value: unknown): value is ProjectKind =>
@@ -56,7 +56,7 @@ const isPlatform = (value: unknown): value is Platform =>
 export const listed = (values: readonly string[]): string =>
     values.map((one) => `\`${one}\``).join(', ');
 
-export type ProjectKindRead = { declaration: ProjectIdentity | null; problem: null | string };
+export type ProjectKindRead = { declaration: null | ProjectIdentity; problem: null | string };
 
 export function readProjectKind(declared: object): ProjectKindRead {
     const { kind, platform } = isJsonObject(declared) ? declared : {};

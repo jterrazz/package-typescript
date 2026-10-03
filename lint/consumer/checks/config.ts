@@ -71,7 +71,7 @@ function finding(id: `config/${string}`, path: string, teaching: Teaching, fixed
 }
 
 type Unit = {
-    declaration: ProjectIdentity | null;
+    declaration: null | ProjectIdentity;
     files: Readonly<Record<string, EditorFile>>;
     path: string;
     problem: null | string;

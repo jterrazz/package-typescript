@@ -1,7 +1,7 @@
 import { OXFMT_CONFIG, OXLINT_CONFIG } from '../../kit/project/editor-config-names.js';
 import type { EditorFile } from '../../kit/project/editor-files.js';
-import type { ArchitectureRule, BasePresets, Preset, Sources } from '../../kit/project/preset.js';
-import type { ProjectIdentity, Platform } from '../../kit/project/project-kind.js';
+import type { ArchitectureRule, BasePresets, Preset } from '../../kit/project/preset.js';
+import type { Platform, ProjectIdentity } from '../../kit/project/project-kind.js';
 
 const READ = 'docs/01-architecture.md#the-judging-layer';
 
@@ -109,7 +109,7 @@ export const PLATFORM_ROOTS: Readonly<Record<Platform, Readonly<Record<string, P
 
 const JSX_PLATFORMS: ReadonlySet<Platform> = new Set(['expo', 'next', 'react']);
 
-function sourcesOf(platform: Platform): Sources {
+function sourcesOf(platform: Platform): NonNullable<Preset['sources']> {
     return {
         extensions: JSX_PLATFORMS.has(platform) ? ['ts', 'tsx'] : ['ts'],
         roots: [
@@ -155,7 +155,7 @@ const fromTheToolchain = (tool: 'oxfmt' | 'oxlint'): EditorFile => ({
 });
 
 const editorFilesOf = (
-    declaration: ProjectIdentity | null,
+    declaration: null | ProjectIdentity,
 ): Readonly<Record<string, EditorFile>> => ({
     [OXFMT_CONFIG]: fromTheToolchain('oxfmt'),
     [OXLINT_CONFIG]: fromTheToolchain('oxlint'),
@@ -167,7 +167,7 @@ const editorFilesOf = (
     },
 });
 
-export function typescriptPreset(declaration: ProjectIdentity | null): Preset {
+export function typescriptPreset(declaration: null | ProjectIdentity): Preset {
     const platformRoots =
         declaration?.platform === undefined || declaration.platform === null
             ? {}

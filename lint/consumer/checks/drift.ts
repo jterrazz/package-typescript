@@ -87,7 +87,7 @@ function baselineReader(
 const rulesOffOf = (off: readonly string[]): string =>
     off.length === 0 ? 'none' : `${off.length} (${off.join(', ')})`;
 
-function declaredOf(declaration: ProjectIdentity | null): Row[] {
+function declaredOf(declaration: null | ProjectIdentity): Row[] {
     return declaration === null
         ? [['declared', 'nothing — node, the default']]
         : [
@@ -109,7 +109,7 @@ function rowsOf(
         suppressions,
     }: {
         behind: readonly ToolVersion[];
-        declaration: ProjectIdentity | null;
+        declaration: null | ProjectIdentity;
         floors: ReadonlySet<string>;
         off: readonly string[];
         optOuts: readonly OptOut[];

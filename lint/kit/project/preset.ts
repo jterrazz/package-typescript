@@ -35,8 +35,6 @@ export type PresetChecker = {
     module: string;
 };
 
-export type Sources = { extensions: readonly string[]; roots: readonly string[] };
-
 export type Preset = {
     baseline?: readonly string[];
     checker?: PresetChecker;
@@ -50,18 +48,18 @@ export type Preset = {
     package: string;
     presets?: readonly Preset[];
     settings?: Readonly<Record<string, unknown>>;
-    sources?: Sources;
+    sources?: { extensions: readonly string[]; roots: readonly string[] };
 };
 
 export type { OptOut } from './opt-outs.js';
 
 export type PresetLaw = `${string}/${string}`;
 
-export type BasePresets = (declaration: ProjectIdentity | null) => readonly Preset[];
+export type BasePresets = (declaration: null | ProjectIdentity) => readonly Preset[];
 
 export type Resolved = {
     baseline: string[];
-    declaration: ProjectIdentity | null;
+    declaration: null | ProjectIdentity;
     floors: string[];
     laws: PresetLaw[];
     layers: unknown[];

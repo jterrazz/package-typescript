@@ -31,7 +31,8 @@ const PASSES: Passes = Object.freeze({
 
         return {
             async check({ config, root }) {
-                const publishable = publishes((await config()).resolved.declaration);
+                const { resolved } = await config();
+                const publishable = publishes(resolved.declaration);
                 const tree = readDocsTree(root, { headLines: HEAD_LINES, publishable });
 
                 return { findings: [...auditDocs(tree)] };
