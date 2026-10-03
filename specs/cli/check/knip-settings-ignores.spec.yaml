@@ -1,4 +1,4 @@
-description: merges project ignoreDependencies with the base config
+description: ignores the dependencies jterrazz.config.ts names, each with its reason
 fixture: ./_fixtures/knip/with-overrides/
 runs:
     - command: check
@@ -24,6 +24,10 @@ runs:
 
           ✓ Passed
 
+           RUN  Architecture (layer map)
+
+          ✓ Passed
+
            RUN  Suppressions (directives)
 
           ✓ Passed
@@ -46,12 +50,12 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            profile                              node (the default — no config of its own)
-            rules off vs profile                 none
-            suppressions                         0
-            oxlint-suppressions.json             nothing held
-            jterrazz.baseline.json › typescript  nothing held
-            tool versions                        in range
+            declared                              nothing — node, the default
+            rules off vs profile                  none
+            suppressions                          0
+            .jterrazz/oxlint-suppressions.json    nothing held
+            .jterrazz/baseline.json › typescript  nothing held
+            tool versions                         in range
 
            END  Finalizing quality checks
 

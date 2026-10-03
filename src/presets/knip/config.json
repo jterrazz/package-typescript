@@ -1,34 +1,19 @@
 {
     "$schema": "https://unpkg.com/knip@6/schema.json",
     "ignoreDependencies": ["@jterrazz/test", "@jterrazz/typescript"],
-    "ignoreBinaries": ["oxlint", "oxfmt"],
-    // An export used in its own file is not dead: the `cleanup-passed-to-after-all` idiom exports `cleanup`
-    // for the same file's `afterAll`, and a CLI capsule exports its flags for the
-    // sibling test that reads them back. Without this, every consumer of
-    // `@jterrazz/test` would have to restate the line in its own `knip.json`.
+    // The toolchain's own tools, and the six gestures of every repository's Makefile.
+    "ignoreBinaries": ["gitleaks", "make", "oxfmt", "oxlint"],
+    // An export used in its own file is not dead: a test exports what the same file's `afterAll` reads.
     "ignoreExportsUsedInFile": true,
-    // Knip's own oxlint/oxfmt/vitest/tsdown plugins auto-enable only when
-    // that PACKAGE is a direct dependency of the project (`hasDependency`
-    // reads package.json). A consumer of this preset declares only
-    // `@jterrazz/typescript`, so those tools are never direct dependencies
-    // of its own — the plugins stay off and their config files read as
-    // unused. Naming the toolchain's own config files here, by hand, is
-    // the fix: an explicit `entry` always wins, regardless of the plugin.
-    // `jterrazz.config.ts` is the family's own settings file, which no
-    // tool imports: the toolchain loads it, so knip never sees it reached.
-    //
-    // Setting `entry` at all REPLACES knip's own default (it does not add
-    // to it) — so the first two patterns below are knip's own defaults,
-    // repeated here on purpose, or a consumer with a bare `index.ts` and no
-    // `entry` of its own would lose it the moment this preset's `entry`
-    // took over.
+    // The toolchain derives the oxlint config and hands it over; knip's plugin cannot judge it.
+    "oxlint": false,
+    // Setting `entry` replaces knip's default, so its two defaults lead; the command adds the build's entries.
     "entry": [
         "{index,cli,main}.{js,mjs,cjs,jsx,ts,tsx,mts,cts}!",
         "src/{index,cli,main}.{js,mjs,cjs,jsx,ts,tsx,mts,cts}!",
         "oxlint.config.ts",
         "oxfmt.config.ts",
         "jterrazz.config.ts",
-        "vitest.config.{js,mjs,ts,cjs,mts,cts}",
-        "tsdown.config.{ts,mts,cts,js,mjs,cjs}"
+        "vitest.config.ts"
     ]
 }

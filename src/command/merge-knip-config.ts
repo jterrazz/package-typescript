@@ -7,6 +7,7 @@ import { isList, objectOf, parsedObject } from '../../lint/kit/project/json.js';
 import type { JsonObject } from '../../lint/kit/project/json.js';
 import { workspaceMembers } from '../../lint/kit/project/workspace-members.js';
 import { readJsonc } from './jsonc.js';
+import type { KnipSettings } from './knip-settings.js';
 
 type KnipConfig = Record<string, unknown>;
 
@@ -121,22 +122,6 @@ function conventionIgnores(): string[] {
     return ignores;
 }
 
-function projectFile(path: string, read: (path: string) => JsonObject): JsonObject {
-    try {
-        return read(path);
-    } catch (error) {
-        throw new SyntaxError(
-            refusal({
-                fix: `repair ${path}, then run again`,
-                found: `${path} does not parse: ${messageOf(error)}`,
-                read: 'docs/07-quality-checks.md#a-file-knip-is-configured-from-does-not-parse',
-                why: 'knip is handed the preset merged with what the project declares, and would judge the project against a config it never wrote',
-            }),
-            { cause: error },
-        );
-    }
-}
-
 function presetFile(path: string): JsonObject {
     try {
         return readJsonc(path);
@@ -146,9 +131,22 @@ function presetFile(path: string): JsonObject {
 }
 
 function manifestHere(): JsonObject {
-    return existsSync('package.json')
-        ? projectFile('package.json', (path) => parsedObject(readFileSync(path, 'utf8')))
-        : {};
+    if (!existsSync('package.json')) {
+        return {};
+    }
+    try {
+        return parsedObject(readFileSync('package.json', 'utf8'));
+    } catch (error) {
+        throw new SyntaxError(
+            refusal({
+                fix: 'repair package.json, then run again',
+                found: `package.json does not parse: ${messageOf(error)}`,
+                read: 'docs/08-lint-presets.md#unused-code-knip',
+                why: 'knip is handed the preset merged with what the project declares, and would judge the project against a config it never wrote',
+            }),
+            { cause: error },
+        );
+    }
 }
 
 function dependencyNames(manifest: JsonObject, field: string): string[] {
@@ -256,13 +254,20 @@ function isPublished(manifest: JsonObject): boolean {
     return [manifest.main, manifest.exports, manifest.publishConfig].some(Boolean);
 }
 
-export function mergedKnipConfig(basePath: string, projectPath: string | undefined): KnipConfig {
-    const merged = mergedConfigs(
-        presetFile(basePath),
-        projectPath === undefined ? {} : projectFile(projectPath, readJsonc),
-    );
+export function mergedKnipConfig(
+    basePath: string,
+    {
+        entries,
+        library,
+        settings,
+    }: { entries: readonly string[]; library: boolean | null; settings: KnipSettings },
+): KnipConfig {
+    const merged = mergedConfigs(presetFile(basePath), {
+        ...settings,
+        entry: [...entries, ...settings.entry],
+    });
     const manifest = manifestHere();
-    if (isPublished(manifest)) {
+    if (library ?? isPublished(manifest)) {
         merged.rules = {
             exports: 'off',
             files: 'off',

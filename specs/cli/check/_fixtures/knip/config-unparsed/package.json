@@ -1,8 +1,0 @@
-{
-    "name": "fixture-config-unparsed",
-    "version": "1.0.0",
-    "dependencies": {
-        "@jterrazz/test": "^5.0.0",
-        "@jterrazz/typescript": "^6.0.0"
-    }
-}

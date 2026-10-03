@@ -1,7 +1,0 @@
-{
-    "name": "fixture-knip-workspace-config-api",
-    "version": "1.0.0",
-    "dependencies": {
-        "some-local-dep": "^1.0.0"
-    }
-}
