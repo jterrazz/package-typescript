@@ -156,7 +156,7 @@ export default fragment({
                     kind: 'convention',
                 }),
                 'vitest/require-test-timeout': off({
-                    by: 'docs/08-lint-presets.md — vitest.config.ts owns the timeout, once, for every suite',
+                    by: 'docs/08-lint-presets.md — the vitest config owns the timeout, once, for every suite',
                     kind: 'convention',
                 }),
 

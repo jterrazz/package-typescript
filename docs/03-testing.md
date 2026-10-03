@@ -10,7 +10,7 @@ npm run lint    # this package's own CLI, run on this package
 
 ## Three projects, three speeds
 
-`vitest.config.ts` declares three projects, through `@jterrazz/test/vitest`'s own project helpers — `unit()`, `lint()` and `cli()`:
+`jterrazz.config.ts` declares three projects under `test.projects`, each built by `@jterrazz/test`'s helper of its facet — `unit`, `lint` and `cli` — and `vitest.config.ts` is the line `@jterrazz/test` derives from them:
 
 | Project | Runs                                                | Speed                                                                                      |
 | ------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -18,7 +18,7 @@ npm run lint    # this package's own CLI, run on this package
 | `lint`  | everything under `specs/lint/` — a rule over a tree | a second or two, one pass or one oxlint run per case                                       |
 | `cli`   | everything under `specs/cli/` — the product command | seconds, real processes                                                                    |
 
-A `cli` test has a budget of its own: `TOOLCHAIN_BUDGET_MS`, 120 s, in `vitest.config.ts`, where the preset gives every other test 30 s. What that project runs is the whole toolchain — the compiler, the type-aware linter, knip and every tree gate — once or twice per test, beside every other file of the project running at the same time. Its duration is therefore a fact about the machine's load more than about the run, and a budget cut to an idle machine fails a correct test on a busy one; 120 s holds two runs on a loaded machine, and a run that hangs still fails.
+A `cli` test has a budget of its own: the `cli` project's `timeout`, 120 s, in `jterrazz.config.ts`, where the preset gives every other test 30 s. What that project runs is the whole toolchain — the compiler, the type-aware linter, knip and every tree gate — once or twice per test, beside every other file of the project running at the same time. Its duration is therefore a fact about the machine's load more than about the run, and a budget cut to an idle machine fails a correct test on a busy one; 120 s holds two runs on a loaded machine, and a run that hangs still fails.
 
 The same fact bounds what speeds the project up. Its wall time is held by the machine's CPU, not by how its files are cut, so the long serial files stay whole: running only the passes a spec asserts on ([the pass selector](#the-self-rules)) bought CPU time, and splitting would buy nothing more. No install is cached between runs and no `node_modules` template is shared: a sandbox copies the tarball the run packed, which the lockfile does not key, so a cache keyed on it would serve a stale toolchain.
 

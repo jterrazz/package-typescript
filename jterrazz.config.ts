@@ -5,6 +5,22 @@ export default defineConfig({
     kind: 'library',
     platform: 'node',
     presets: [test()],
+    test: {
+        projects: [
+            {
+                exclude: ['**/*.test.tsx'],
+                facet: 'unit',
+                include: ['lint/**/*.test.ts', 'specs/surface/**/*.test.ts', 'src/**/*.test.ts'],
+                isolate: false,
+            },
+            { facet: 'lint' },
+            {
+                facet: 'cli',
+                setup: ['specs/cli/_setup/run-temp-root.ts', 'specs/cli/_setup/packed/per-run.ts'],
+                timeout: 120_000,
+            },
+        ],
+    },
     typescript: {
         mutation: {
             exclude: {
