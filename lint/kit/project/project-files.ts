@@ -22,25 +22,25 @@ export const UNSWEPT: ReadonlySet<string> = new Set([
 const BINARY = /\.(?:avif|bin|gif|ico|jpeg|jpg|lock|mp4|pdf|png|svg|ttf|webp|woff2?|zip)$/iu;
 
 function gitSweep(root: string): null | string[] {
-    const listed = (flags: string[]): string[] =>
-        execFileSync('git', ['ls-files', ...flags, '-z'], {
+    const listed = spawnSync(
+        'git',
+        ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+        {
             cwd: root,
             encoding: 'utf8',
+            // Stryker disable next-line ArithmeticOperator: the cap only binds past a listing of a million bytes, which no test tree reaches
             maxBuffer: 256 * 1024 * 1024,
-            stdio: ['ignore', 'pipe', 'ignore'],
-        })
-            .split('\0')
-            .filter((path) => path !== '');
+        },
+    );
 
-    try {
-        const deleted = new Set(listed(['--deleted']));
-
-        return [...new Set(listed(['--cached', '--others', '--exclude-standard']))].filter(
-            (path) => !deleted.has(path),
-        );
-    } catch {
+    if (listed.status !== 0) {
         return null;
     }
+
+    return [...new Set(listed.stdout.split('\0'))].filter(
+        (path) =>
+            path !== '' && lstatSync(join(root, path), { throwIfNoEntry: false }) !== undefined,
+    );
 }
 
 // outside: `dist/` in .gitignore matches the directory form only, so each path is asked in both spellings; outside a git tree nothing is ignored.
@@ -88,7 +88,8 @@ function walkSweep(root: string): string[] {
             return;
         }
 
-        for (const entry of entries.toSorted((a, b) => (a.name < b.name ? -1 : 1))) {
+        for (const entry of entries) {
+            // Stryker disable next-line ConditionalExpression,BlockStatement: a build folder walked is filtered out after; skipping it spares the walk alone
             if (UNSWEPT.has(entry.name)) {
                 continue;
             }
@@ -114,6 +115,9 @@ function holdsSomething(root: string): boolean {
     }
 }
 
+// Stryker disable next-line EqualityOperator: a sweep lists each path once, so no two compare equal
+const byPath = (left: string, right: string): number => (left < right ? -1 : 1);
+
 function isGround(path: string): boolean {
     return path.split('/').slice(0, -1).some(isGroundFolder);
 }
@@ -127,6 +131,7 @@ export class EmptySweepError extends Error {
 
 export function projectFiles(
     root = '.',
+    // Stryker disable next-line ArrayDeclaration: a pattern no path matches ignores what no pattern does
     { ignorePatterns = [] }: { ignorePatterns?: readonly string[] } = {},
 ): string[] {
     const listed = gitSweep(root);
@@ -160,7 +165,7 @@ export function projectFiles(
         .filter((path) => !path.split('/').some((segment) => UNSWEPT.has(segment)))
         .filter((path) => !isGround(path))
         .filter((path) => !ignorePatterns.some((pattern) => matchesGlob(path, pattern)))
-        .toSorted((left, right) => (left < right ? -1 : 1));
+        .toSorted(byPath);
 }
 
 export function orRefused<T>(read: () => T): T {
