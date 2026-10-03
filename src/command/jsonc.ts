@@ -11,6 +11,7 @@ function withoutComments(text: string): string {
     let index = 0;
     let inString = false;
 
+    // Stryker disable next-line EqualityOperator: a pass past the end reads `''`, which adds nothing
     while (index < text.length) {
         const char = text[index] ?? '';
 
@@ -65,6 +66,7 @@ function closesCollection(text: string, index: number): boolean {
     }
 
     let next = index + 1;
+    // Stryker disable next-line EqualityOperator: a step past the end reads `''`, and the next one leaves the loop
     while (next < text.length && (text[next] ?? '').trim() === '') {
         next += 1;
     }
@@ -77,6 +79,7 @@ function withoutTrailingCommas(text: string): string {
     let index = 0;
     let inString = false;
 
+    // Stryker disable next-line EqualityOperator: a pass past the end reads `''`, which adds nothing
     while (index < text.length) {
         const char = text[index] ?? '';
         const closes = closesCollection(text, index);

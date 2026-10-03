@@ -41,4 +41,18 @@ describe('packed-files', () => {
             ['LICENSE', true, true],
         ]);
     });
+
+    test('reads an entry and a target written from the package root alike, `./` and a closing `/` or not', () => {
+        // Given - the same folder named four ways, and an exports target spelled from the root
+        const entries = [['dist'], ['./dist'], ['dist/'], ['./dist/']];
+
+        // Then - each ships the target, spelled either way, and nothing outside it
+        expect(
+            entries.map((files) => [
+                isPacked(files, './dist/index.js'),
+                isPacked(files, 'dist/index.js'),
+                isPacked(files, 'distant/index.js'),
+            ]),
+        ).toStrictEqual(entries.map(() => [true, true, false]));
+    });
 });

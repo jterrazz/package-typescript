@@ -18,4 +18,10 @@ describe('stop', () => {
             }),
         ).toThrow(TypeError);
     });
+
+    test('a stop that escapes the run is a bug of the run, naming the code it carried', () => {
+        // Given - a stop no exitCodeOf reads
+        // Then - it says it is wired wrong, and with which code
+        expect(() => stop(3)).toThrow('a checker run stopped with 3 outside exitCodeOf');
+    });
 });

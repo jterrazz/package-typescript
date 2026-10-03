@@ -62,9 +62,8 @@ export function writeProjections(projections: readonly Projection[]): string[] {
     return written;
 }
 
-export function slugOf(heading: string): string {
+function slugOf(heading: string): string {
     return heading
-        .trim()
         .toLowerCase()
         .replaceAll(/[^\s\w-]/gu, '')
         .replaceAll(/\s/gu, '-');
@@ -73,12 +72,12 @@ export function slugOf(heading: string): string {
 export function anchorsOf(text: string): Set<string> {
     const found = new Set<string>();
     for (const line of text.split('\n')) {
-        const heading = /^#{1,6}\s+(?<title>.+?)\s*$/u.exec(line)?.groups?.title;
-        if (heading !== undefined) {
-            found.add(slugOf(heading));
+        if (/^#{1,6}\s+\S/u.test(line)) {
+            // Stryker disable next-line Regex: the test above found the marker at the start, where an unanchored pattern meets it first
+            found.add(slugOf(line.replace(/^#{1,6}\s+/u, '').trimEnd()));
         }
-        for (const rowAnchor of line.matchAll(/<a id="(?<id>[^"]+)"><\/a>/gu)) {
-            found.add(rowAnchor.groups?.id ?? '');
+        for (const [anchor] of line.matchAll(/<a id="[^"]+"><\/a>/gu)) {
+            found.add(anchor.slice('<a id="'.length, -'"></a>'.length));
         }
     }
 

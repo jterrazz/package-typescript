@@ -3,17 +3,14 @@ import { matchesGlob } from 'node:path';
 // outside: npm ships these whatever `files` says.
 const ALWAYS_PACKED = /^(?:package\.json|readme|license|licence|changelog)/iu;
 
-export const withoutDotSlash = (target: string): string => target.replace(/^\.\//u, '');
+export const withoutDotSlash = (target: string): string =>
+    target.startsWith('./') ? target.slice(2) : target;
 
+/** npm reads an entry as a glob, and a folder it names ships whole. */
 function names(entry: string, path: string): boolean {
     const packed = withoutDotSlash(entry).replace(/\/$/u, '');
 
-    return (
-        path === packed ||
-        path.startsWith(`${packed}/`) ||
-        matchesGlob(path, packed) ||
-        matchesGlob(path, `${packed}/**`)
-    );
+    return matchesGlob(path, packed) || matchesGlob(path, `${packed}/**`);
 }
 
 export function isPacked(files: readonly string[], target: string): boolean {

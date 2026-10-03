@@ -58,4 +58,35 @@ describe('oxlint-suppressions', () => {
             expect(raised).toHaveBeenCalledWith(process.pid, 'SIGINT');
         },
     );
+
+    test('lays the ledger at the root for the run, under the name oxlint reads', async () => {
+        // Given - a project whose ledger holds one rule
+        const root = projectHolding('{"a.ts":{"no-debugger":{"count":1}}}');
+
+        // When - a run reads the root
+        const seen = await withStagedSuppressions(root, async () => {
+            await Promise.resolve();
+            return readFileSync(join(root, OXLINT_SUPPRESSIONS), 'utf8');
+        });
+
+        // Then - the run found the ledger there, and it is back in place after
+        expect([seen, readFileSync(join(root, SUPPRESSIONS_LEDGER), 'utf8')]).toStrictEqual([
+            '{"a.ts":{"no-debugger":{"count":1}}}',
+            '{"a.ts":{"no-debugger":{"count":1}}}',
+        ]);
+    });
+
+    test('a run that leaves no file at the root leaves no ledger', async () => {
+        // Given - a project with a ledger, and a run after which oxlint held nothing
+        const root = projectHolding('{"a.ts":{"no-debugger":{"count":1}}}');
+
+        // When - the run removes the staged file
+        await withStagedSuppressions(root, async () => {
+            await Promise.resolve();
+            rmSync(join(root, OXLINT_SUPPRESSIONS));
+        });
+
+        // Then - the ledger at zero is no file
+        expect(existsSync(join(root, SUPPRESSIONS_LEDGER))).toBe(false);
+    });
 });

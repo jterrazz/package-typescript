@@ -48,10 +48,10 @@ export const publishes = (identity: null | ProjectIdentity | undefined): boolean
     identity !== null && identity !== undefined && PUBLICATION[identity.kind] === 'published';
 
 const isKind = (value: unknown): value is ProjectKind =>
-    typeof value === 'string' && (KINDS as readonly string[]).includes(value);
+    (KINDS as readonly unknown[]).includes(value);
 
-const isPlatform = (value: unknown): value is Platform =>
-    typeof value === 'string' && (PLATFORMS as readonly string[]).includes(value);
+const runsOn = (allowed: readonly Platform[], value: unknown): value is Platform =>
+    (allowed as readonly unknown[]).includes(value);
 
 export const listed = (values: readonly string[]): string =>
     values.map((one) => `\`${one}\``).join(', ');
@@ -79,7 +79,7 @@ export function readProjectKind(declared: object): ProjectKindRead {
               };
     }
     const allowed: readonly Platform[] = PLATFORMS_OF[kind];
-    if (!isPlatform(platform) || !allowed.includes(platform)) {
+    if (!runsOn(allowed, platform)) {
         return {
             declaration: null,
             problem: `declares a \`${kind}\` on the platform \`${String(platform)}\`, where a ${kind} runs on ${listed(allowed)}`,

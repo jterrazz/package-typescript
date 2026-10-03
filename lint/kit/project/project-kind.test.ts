@@ -21,11 +21,13 @@ describe('project-kind', () => {
         ]);
     });
 
-    test('readProjectKind — refuses a kind outside the union, a platform its kind does not run on, and a workspace with one', () => {
+    test('readProjectKind — refuses a kind outside the union or none beside a platform, a platform its kind does not run on or no platform at all, and a workspace with one', () => {
         // Given - the declarations the closed unions refuse
         const refused = [
             { kind: 'service', platform: 'node' },
+            { platform: 'node' },
             { kind: 'website', platform: 'node' },
+            { kind: 'website', platform: 'vue' },
             { kind: 'mobile' },
             { kind: 'workspace', platform: 'node' },
         ].map((written) => readProjectKind(written).problem);
@@ -33,7 +35,9 @@ describe('project-kind', () => {
         // Then - each names what it declared and what the union allows
         expect(refused).toStrictEqual([
             'declares the kind `service`, which is none of `library`, `api`, `cli`, `website`, `mobile`, `workspace`',
+            'declares the kind `undefined`, which is none of `library`, `api`, `cli`, `website`, `mobile`, `workspace`',
             'declares a `website` on the platform `node`, where a website runs on `react`, `next`, `astro`',
+            'declares a `website` on the platform `vue`, where a website runs on `react`, `next`, `astro`',
             'declares a `mobile` on the platform `undefined`, where a mobile runs on `expo`',
             'declares a `platform` for a workspace, whose members each declare their own',
         ]);

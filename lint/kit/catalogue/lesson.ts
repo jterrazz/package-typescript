@@ -35,6 +35,7 @@ const isPart = (name: string): name is Part => (LESSON_PARTS as readonly string[
 // invariant: a part out of order, or stated twice, makes it no lesson.
 export function lessonParts(message: string): Partial<Record<Part, string>> | undefined {
     const starts = [...message.matchAll(PART_START)];
+    // Stryker disable next-line OptionalChaining,StringLiteral: every match carries its part, so the fallback only satisfies the type
     const order = starts.map((start) => start.groups?.part ?? '');
     const expected = LESSON_PARTS.filter((part) => order.includes(part));
     if (order.join(',') !== expected.join(',') || (starts[0]?.index ?? 0) !== 0) {
@@ -42,9 +43,11 @@ export function lessonParts(message: string): Partial<Record<Part, string>> | un
     }
     const parts: Partial<Record<Part, string>> = {};
     for (const [index, start] of starts.entries()) {
+        // Stryker disable next-line OptionalChaining,StringLiteral: every match carries its part, so the fallback only satisfies the type
         const part = start.groups?.part ?? '';
         const from = start.index + start[0].length;
         const to = starts[index + 1]?.index ?? message.length;
+        // Stryker disable next-line ConditionalExpression: the pattern captures nothing but a part's name, so the guard only narrows its type
         if (isPart(part)) {
             parts[part] = message.slice(from, to).trim();
         }
@@ -71,6 +74,7 @@ const ABBREVIATIONS = ['e.g', 'i.e', 'vs', 'etc'];
 // invariant: never a period inside a code span (`*.spec.ts`), nor an abbreviation's.
 export function firstSentence(text: string): string {
     let inCode = false;
+    // Stryker disable next-line EqualityOperator: a step past the end reads `undefined`, which no branch below acts on
     for (let index = 0; index < text.length; index += 1) {
         const character = text[index];
         if (character === '`') {
@@ -84,8 +88,7 @@ export function firstSentence(text: string): string {
         if (ABBREVIATIONS.some((abbreviation) => before.endsWith(abbreviation))) {
             continue;
         }
-        const after = text.slice(index + 1);
-        if (after === '' || /^\s+[\p{Lu}`*("'\d]/u.test(after)) {
+        if (/^\s+[\p{Lu}`*("'\d]/u.test(text.slice(index + 1))) {
             return text.slice(0, index + 1);
         }
     }

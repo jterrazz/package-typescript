@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { compile } from './compile.js';
-import { fragment, off, on, typeAware } from './decision.js';
+import { fragment, off, on, scoped, typeAware, unsafeFix } from './decision.js';
 
 const REASON = { by: 'oxfmt sortImports', kind: 'covered' } as const;
 
@@ -43,6 +43,58 @@ describe('decision', () => {
                 'no-var': 'off',
                 'typescript/await-thenable': 'error',
             },
+        });
+    });
+
+    test('keeps what a fragment declares, each list its own copy, and a mark on each decision that carries one', () => {
+        // Given - a fragment declaring its lists, an unsafe fixer and a type-aware rule with an option, and the lists it was handed
+        const ignorePatterns = ['dist/**'];
+        const jsPlugins = ['./plugin.mjs'];
+        const overrides = [scoped({ files: ['*.js'], rules: {} })];
+        const probe = fragment({
+            audience: 'consumer',
+            id: 'probe',
+            ignorePatterns,
+            jsPlugins,
+            overrides,
+            rules: {
+                curly: unsafeFix(on(), 'the rewrite moves comments'),
+                'typescript/await-thenable': typeAware(['strict']),
+            },
+            since: '10.0.0',
+        });
+        ignorePatterns.push('later/**');
+
+        // Then - the fragment holds its declaration, unchanged by a later edit of what it was handed
+        expect(probe).toStrictEqual({
+            audience: 'consumer',
+            decisions: {
+                curly: {
+                    fixer: 'unsafe',
+                    fixerReason: 'the rewrite moves comments',
+                    level: 'error',
+                    options: undefined,
+                    rule: 'curly',
+                    since: '10.0.0',
+                },
+                'typescript/await-thenable': {
+                    level: 'error',
+                    options: ['strict'],
+                    rule: 'typescript/await-thenable',
+                    since: '10.0.0',
+                    typeAware: true,
+                },
+            },
+            env: undefined,
+            globals: undefined,
+            id: 'probe',
+            ignorePatterns: ['dist/**'],
+            jsPlugins: ['./plugin.mjs'],
+            options: undefined,
+            overrides: [{ decisions: {}, files: ['*.js'] }],
+            plugins: [],
+            settings: undefined,
+            since: '10.0.0',
         });
     });
 });

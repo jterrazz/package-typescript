@@ -1,6 +1,13 @@
 import { describe, expect, test } from 'vitest';
 
-import { firstSentence, lessonParts, missingParts, refusal, refusalBlock } from './lesson.js';
+import {
+    defineInvariant,
+    firstSentence,
+    lessonParts,
+    missingParts,
+    refusal,
+    refusalBlock,
+} from './lesson.js';
 import type { Lesson } from './lesson.js';
 
 const LESSON: Lesson = {
@@ -87,9 +94,46 @@ describe('lesson', () => {
             'A token (e.g. `{{uuid}}`) is matched.',
         ],
         ['a lowercase continuation', 'It reads `x.ts`. then stops', 'It reads `x.ts`. then stops'],
+        [
+            'a sentence inside a code span',
+            'A `TODO. Fix it` marker is refused. Nothing else is.',
+            'A `TODO. Fix it` marker is refused.',
+        ],
+        ['an exclamation', 'Never sleep! A test waits.', 'Never sleep!'],
+        ['a question', 'Why wait? A test polls.', 'Why wait?'],
+        [
+            'two spaces after the stop',
+            'A seed is SQL.  Anything else is a fixture.',
+            'A seed is SQL.',
+        ],
     ])('the why is the first sentence of the row — %s', (_, convention, why) => {
         // Given - a catalogue sentence
         // Then - the why stops where the first sentence does
         expect(firstSentence(convention)).toBe(why);
+    });
+
+    test('a part reads without the spaces around it', () => {
+        // Given - a lesson written with loose spacing
+        // Then - each part is its words alone
+        expect(lessonParts('found: x  · why:  y · fix: z\t · read: r ')).toStrictEqual({
+            found: 'x',
+            fix: 'z',
+            read: 'r',
+            why: 'y',
+        });
+    });
+
+    test('an invariant names the package, whose bug it is, and what broke', () => {
+        // Given - a package that owns its invariants
+        const broken = defineInvariant({
+            bugOf: 'the runner',
+            notOf: 'the spec',
+            package: '@acme/run',
+        });
+
+        // Then - the error says the bug is the package's
+        expect(broken('a chain ran twice').message).toBe(
+            '@acme/run broke one of its own invariants — a bug of the runner, not of the spec: a chain ran twice',
+        );
     });
 });

@@ -12,6 +12,15 @@ function manifestAt(dir: string, manifest: unknown): void {
 }
 
 describe('manifest', () => {
+    test('lists no subpath of an exports map that holds conditions alone', () => {
+        // Given - an install whose exports map is the root's conditions
+        const root = mkdtempSync(resolve(tmpdir(), 'pkg-exports-'));
+        manifestAt(root, { exports: { default: './b.js', import: './a.js' }, name: 'conditional' });
+
+        // Then - a condition is no subpath
+        expect(declaredSubpaths('conditional', root)).toStrictEqual([]);
+    });
+
     test('lists every subpath of the exports map, never the root', () => {
         // Given - an install whose manifest publishes two subpaths
         const root = mkdtempSync(resolve(tmpdir(), 'pkg-exports-'));

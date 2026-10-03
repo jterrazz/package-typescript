@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { suppressionDirectives } from './directives.js';
 
-const { suppressedLines } = suppressionDirectives('checker');
+const { directivesIn, suppressedLines } = suppressionDirectives('checker');
 
 describe('directives', () => {
     test('disable-next-line suppresses the next NON-BLANK line, skipping blanks/comments', () => {
@@ -19,16 +19,50 @@ describe('directives', () => {
         );
     });
 
-    test("checker-disable comments — disable-next-line steps over another tool's directive to the line of code", () => {
-        // Given - a checker directive above an oxlint one, both claiming the next line
+    test("checker-disable comments — disable-next-line steps over another tool's directive and a line of spaces to the line of code", () => {
+        // Given - a checker directive above an indented oxlint one and a line of spaces, all claiming the next line
         const text = [
-            '// checker-disable-next-line named-path-exists -- reason',
-            '// oxlint-disable-next-line jterrazz/golden-path-has-extension -- reason',
-            "expect(out).toMatch(file('./_expected/help'));",
+            '    // checker-disable-next-line named-path-exists -- reason',
+            '    // oxlint-disable-next-line jterrazz/golden-path-has-extension -- reason',
+            '    ',
+            "    expect(out).toMatch(file('./_expected/help'));",
         ].join('\n');
 
-        // Then - the statement is the suppressed line, not the second directive
-        expect(suppressedLines(text, 'named-path-exists')).toStrictEqual(new Set([3]));
+        // Then - the statement is the suppressed line, not the second directive nor the spaces
+        expect(suppressedLines(text, 'named-path-exists')).toStrictEqual(new Set([4]));
+    });
+
+    test('disable-next-line written after code claims the next line, never its own', () => {
+        // Given - a next-line directive trailing a statement
+        const text = [
+            'first(); // checker-disable-next-line named-path-exists -- reason',
+            'second();',
+        ].join('\n');
+
+        // Then - the line after it is suppressed
+        expect(suppressedLines(text, 'named-path-exists')).toStrictEqual(new Set([2]));
+    });
+
+    test('directivesIn — reads each directive in a comment, its ids without the reason, and none a string names', () => {
+        // Given - two directives in comments, one listing two ids, and one spelled inside a string
+        const text = [
+            '// checker-disable-next-line named-path-exists, no-unused-ground -- reason',
+            'code();',
+            "const said = 'checker-disable-line named-path-exists';",
+            'more(); /* checker-disable-line   seeds-are-sql */',
+            '// checker-disable-next-line -- a reason, and no pass named',
+        ].join('\n');
+
+        // Then - the two comments, each with its ids and what follows the marker
+        expect(directivesIn(text)).toStrictEqual([
+            {
+                ids: ['named-path-exists', 'no-unused-ground'],
+                line: 1,
+                rest: 'named-path-exists, no-unused-ground -- reason',
+            },
+            { ids: ['seeds-are-sql'], line: 4, rest: 'seeds-are-sql */' },
+            { ids: [], line: 5, rest: '-- a reason, and no pass named' },
+        ]);
     });
 
     test('disable-line suppresses its OWN line', () => {
