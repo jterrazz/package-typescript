@@ -10,7 +10,7 @@ npm run lint    # this package's own CLI, run on this package
 
 ## Three projects, three speeds
 
-`jterrazz.config.ts` declares three projects under `test.projects`, each built by `@jterrazz/test`'s helper of its facet — `unit`, `lint` and `cli` — and `vitest.config.ts` is the line `@jterrazz/test` derives from them:
+`jterrazz.config.ts` declares three projects under `test.projects`, each built by `@jterrazz/test`'s helper of its facet — `unit`, `lint` and `cli` — and `vitest.config.ts` is the file `@jterrazz/test` derives from them:
 
 | Project | Runs                                                | Speed                                                                                      |
 | ------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------ |
