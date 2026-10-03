@@ -81,7 +81,9 @@ function vitestConfig(settings: Settings, specs: boolean): string {
 
     return `import { mergeConfig } from 'vitest/config';
 
-import project from '../../vitest.config.ts';
+import declared from '../../vitest.config.ts';
+
+const project = typeof declared === 'function' ? await declared({ command: 'serve', mode: 'test' }) : await declared;
 
 ${TEST_NAMES}
 
