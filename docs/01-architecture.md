@@ -68,7 +68,7 @@ A refusal of the run rather than of the project — `baseline-ratchet`, `baselin
 
 ### The laws that keep it apart
 
-Two laws keep the audiences apart. **Declarations only:** `consumer/` and `self/` hold a rule, a check, a decision on an upstream rule, a catalogue entry, or their tests — a module there runs as no program, hands another module no function but one named for its file, and code the declarations share is the engine's; the Names pass refuses the rest ([Quality checks](07-quality-checks.md#the-lint-tree)). **The engine knows no declaration:** it is handed the profile table, the rows, the fragments, the passes and the plugin paths, and a module at the root of `lint/` composes them.
+Two laws keep the audiences apart. **Declarations only:** `consumer/` and `self/` hold a rule, a check, a decision on an upstream rule, a catalogue entry, or their tests — a module there runs as no program, hands another module no function but one named for its file, and code the declarations share is `kit/`'s; the Names pass refuses the rest ([Quality checks](07-quality-checks.md#the-lint-tree)). **The kit knows no declaration:** it is handed the profile table, the rows, the fragments, the passes and the plugin paths, and a module at the root of `lint/` composes them.
 
 An import in `lint/` goes one way, the same in every repository that keeps the tree:
 
