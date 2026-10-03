@@ -20,10 +20,24 @@ cpSync(PACKED, installed, {
 });
 mkdirSync(join(installed, 'node_modules/.bin'), { recursive: true });
 mkdirSync(join(root, 'node_modules/.bin'), { recursive: true });
-for (const tool of ['tsc', 'oxfmt', 'knip']) {
+for (const tool of ['tsc', 'oxfmt', 'knip', 'ls-lint']) {
     stub(join(root, 'node_modules/.bin', tool), `echo "${tool}-stub-ran"`);
 }
 stub(join(installed, 'node_modules/.bin/oxlint'), `echo '{ "diagnostics": [] }'`);
+
+writeFileSync(
+    join(root, 'jterrazz.config.ts'),
+    "export default { kind: 'api', platform: 'node' };\n",
+);
+writeFileSync(
+    join(root, 'oxlint.config.ts'),
+    "export { default } from '@jterrazz/typescript/oxlint';\n",
+);
+writeFileSync(
+    join(root, 'oxfmt.config.ts'),
+    "export { default } from '@jterrazz/typescript/oxfmt';\n",
+);
+writeFileSync(join(root, 'tsconfig.json'), '{ "extends": "@jterrazz/typescript/tsconfig/node" }\n');
 
 const run = spawnSync(process.execPath, [join(installed, 'dist/typescript.js'), 'check'], {
     cwd: root,

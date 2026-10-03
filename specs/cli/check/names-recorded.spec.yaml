@@ -6,7 +6,7 @@ runs:
       stdout: |4
            TYPESCRIPT  Recording the baseline...
 
-          jterrazz.baseline.json › typescript written — 1 finding(s) across 1 rule(s)
+          .jterrazz/baseline.json › typescript written — 1 finding(s) across 1 rule(s)
     - command: check
       exit: 0
       stdout: |4
@@ -50,12 +50,12 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            profile                              node (the default — no config of its own)
-            rules off vs profile                 none
-            suppressions                         0
-            oxlint-suppressions.json             nothing held
-            jterrazz.baseline.json › typescript  1
-            tool versions                        in range
+            declared                              nothing — node, the default
+            rules off vs profile                  none
+            suppressions                          0
+            .jterrazz/oxlint-suppressions.json    nothing held
+            .jterrazz/baseline.json › typescript  1
+            tool versions                         in range
 
            END  Finalizing quality checks
 

@@ -3,7 +3,7 @@ import { cpSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
-import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
+import { SELECTING_BIN } from '../_setup/check-passes.js';
 import { newDirectory } from '../_setup/temporary-directory.js';
 
 // git refuses to track a nested `.git`, so a fixture cannot be the repository the pass asks for.
@@ -26,11 +26,11 @@ describe('docs-layout', () => {
         cpSync(FIXTURE, looseDirectory, { recursive: true });
 
         // When - the quality checks run in each
-        const inside = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
+        const inside = spawnSync('node', [SELECTING_BIN, 'check'], {
             cwd: repository,
             encoding: 'utf8',
         });
-        const outside = spawnSync('node', [TYPESCRIPT_BIN, 'check'], {
+        const outside = spawnSync('node', [SELECTING_BIN, 'check'], {
             cwd: looseDirectory,
             encoding: 'utf8',
         });

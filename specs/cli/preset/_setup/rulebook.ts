@@ -1,5 +1,13 @@
 import { execFileSync } from 'node:child_process';
-import { cpSync, mkdirSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import {
+    cpSync,
+    mkdirSync,
+    readdirSync,
+    readFileSync,
+    rmSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs';
 import { resolve } from 'node:path';
 
 import { newDirectory } from '../../_setup/temporary-directory.js';
@@ -21,11 +29,22 @@ export const PROFILES = Object.freeze([
     { name: 'react', tsconfig: 'react' },
 ] as const);
 
+// The profiles ship as values of the `#rulebook` entry; oxlint reads a config by path, so each is laid as a module.
+const PROFILE_MODULES = newDirectory('jterrazz-profiles-');
+
+export const DERIVED_CONFIG = `import { oxlintConfigAt } from ${JSON.stringify(resolve(REPOSITORY, 'dist/rulebook.js'))};\n\nexport default await oxlintConfigAt(process.cwd());\n`;
+
 export function profilePath(name: string): string {
-    return resolve(REPOSITORY, 'dist/presets/oxlint/profiles', `${name}.js`);
+    const path = resolve(PROFILE_MODULES, `${name}.mjs`);
+    writeFileSync(
+        path,
+        `import { PROFILE_CONFIGS } from ${JSON.stringify(resolve(REPOSITORY, 'dist/rulebook.js'))};\n\nexport default PROFILE_CONFIGS.${name};\n`,
+    );
+
+    return path;
 }
 
-export const OXFMT_CONFIG = resolve(REPOSITORY, 'dist/presets/oxfmt/style.js');
+export const OXFMT_CONFIG = resolve(REPOSITORY, 'dist/oxfmt.js');
 
 // A real directory, never a link: tsc resolves a preset's own `extends` from its real path.
 export function installTsconfigPresets(project: string): void {
@@ -52,7 +71,6 @@ export function sandbox(
     fixture: string,
     profile: string,
     tsconfigPreset: string,
-    also: string[] = [],
 ): Disposable & { config: string; files: string[]; path: string } {
     const path = newDirectory('jterrazz-rulebook-');
 
@@ -80,13 +98,8 @@ export function sandbox(
         `${JSON.stringify({ extends: `@jterrazz/typescript/tsconfig/${tsconfigPreset}` }, null, 4)}\n`,
     );
 
-    const config = resolve(path, 'oxlint.config.js');
-    const entry = resolve(REPOSITORY, 'dist/oxlint.js');
-    writeFileSync(
-        config,
-        `import { compose, ${[profile, ...also].join(', ')} } from '${entry}';\n\n` +
-            `export default compose(${[profile, ...also].join(', ')});\n`,
-    );
+    const config = resolve(path, 'oxlint.config.mjs');
+    writeFileSync(config, readFileSync(profilePath(profile), 'utf8'));
 
     const files = readdirSync(fixture).toSorted();
 

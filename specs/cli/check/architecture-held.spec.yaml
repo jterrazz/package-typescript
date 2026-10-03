@@ -7,9 +7,9 @@ runs:
       stdout: |4
            TYPESCRIPT  Recording the baseline...
 
-          jterrazz.baseline.json › typescript written — 1 finding(s) across 1 rule(s)
+          .jterrazz/baseline.json › typescript written — 1 finding(s) across 1 rule(s)
       files:
-          jterrazz.baseline.json:
+          .jterrazz/baseline.json:
               equals: |
                   {
                       "typescript": {

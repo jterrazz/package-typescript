@@ -9,7 +9,7 @@ import { pathToFileURL } from 'node:url';
 
 import { isJsonObject, objectOf } from './json.js';
 import { resolveConfig } from './preset.js';
-import type { Preset, Resolution } from './preset.js';
+import type { BasePresets, Resolution } from './preset.js';
 
 export const SETTINGS_FILE = 'jterrazz.config.ts';
 
@@ -38,7 +38,7 @@ const failed = (error: unknown): string =>
 
 function resolvedFrom(
     read: { declared: object; problem: null | string },
-    base: readonly Preset[],
+    base: BasePresets,
 ): Resolution {
     const resolution = resolveConfig(read.declared, base);
 
@@ -73,7 +73,7 @@ async function importedQuietly(path: string): Promise<unknown> {
     }
 }
 
-export async function readConfig(unit: string, base: readonly Preset[]): Promise<Resolution> {
+export async function readConfig(unit: string, base: BasePresets): Promise<Resolution> {
     const path = join(unit, SETTINGS_FILE);
     if (!existsSync(path)) {
         return resolveConfig(NOTHING_DECLARED, base);
@@ -90,7 +90,7 @@ const loadModule = createRequire(import.meta.url);
 const loaded = new Map<string, Resolution>();
 
 // For a reader that runs synchronously, as an oxlint rule does; Node loads a module once per process, and a file that appears later is still read.
-export function readConfigSync(unit: string, base: readonly Preset[]): Resolution {
+export function readConfigSync(unit: string, base: BasePresets): Resolution {
     const path = join(unit, SETTINGS_FILE);
     if (!existsSync(path)) {
         return resolveConfig(NOTHING_DECLARED, base);

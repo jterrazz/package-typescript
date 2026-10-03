@@ -135,10 +135,11 @@ function checkAndRecord(project: string): {
         env: inProject(project),
     });
 
-    const suppressions = join(project, 'oxlint-suppressions.json');
+    const suppressions = join(project, '.jterrazz/oxlint-suppressions.json');
+    const baseline = join(project, '.jterrazz/baseline.json');
 
     return {
-        baseline: readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8'),
+        baseline: existsSync(baseline) ? readFileSync(baseline, 'utf8') : '',
         stdout: result.stdout,
         suppressed: existsSync(suppressions) ? readFileSync(suppressions, 'utf8') : '',
     };
@@ -186,9 +187,9 @@ describe('names-repository', () => {
         // When - the quality checks run, and the baseline is recorded
         const { baseline, stdout } = checkAndRecord(project);
 
-        // Then - no gate reads the ignored folder: each pass is green, and the baseline records nothing
+        // Then - no gate reads the ignored folder: each pass is green, and the baseline records nothing, so it is no file
         expect(treeVerdictsOf(stdout)).toStrictEqual(['Passed', 'Passed', 'Passed', 'Passed']);
-        expect(JSON.parse(baseline)).toStrictEqual({ typescript: {} });
+        expect(baseline).toBe('');
     });
 
     const TREE_GATES = [
@@ -372,7 +373,7 @@ describe('names-repository', () => {
 
         // Then - the entry holds both, and the Names pass is green
         const recorded: unknown = JSON.parse(
-            readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8'),
+            readFileSync(join(project, '.jterrazz/baseline.json'), 'utf8'),
         );
         expect(recorded).toStrictEqual({
             typescript: { 'names/makefile-answers-every-gesture': 2 },

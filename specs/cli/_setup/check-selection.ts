@@ -1,8 +1,9 @@
 #!/usr/bin/env node
+import { existsSync, readFileSync } from 'node:fs';
 import process from 'node:process';
 
-import { CHECK_PASSES, main } from '../../../dist/command.js';
-import type { CheckPass } from '../../../dist/command.js';
+import { CHECK_PASSES, main } from '#command';
+import type { CheckPass } from '#command';
 
 const requested = process.env.TYPESCRIPT_CHECK_PASSES ?? '';
 
@@ -24,4 +25,14 @@ async function selectedRun(): Promise<number> {
     return await main(process.argv.slice(2), { selected: (pass) => passes.includes(pass) });
 }
 
-process.exitCode = requested === '' ? await main(process.argv.slice(2)) : await selectedRun();
+// A fixture that declares no kind is judged by every pass but the Config pass, whose own specs refuse it: each spec reads the one behaviour it is about.
+const undeclared =
+    !existsSync('jterrazz.config.ts') ||
+    !/\bkind\s*:/u.test(readFileSync('jterrazz.config.ts', 'utf8'));
+
+process.exitCode =
+    requested === ''
+        ? await main(process.argv.slice(2), {
+              selected: (pass) => !undeclared || pass !== 'config',
+          })
+        : await selectedRun();

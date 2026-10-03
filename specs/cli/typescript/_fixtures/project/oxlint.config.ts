@@ -1,3 +1,1 @@
-import { defineConfig, node } from '@jterrazz/typescript/oxlint';
-
-export default defineConfig(node);
+export { default } from '@jterrazz/typescript/oxlint';

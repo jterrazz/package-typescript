@@ -55,7 +55,7 @@ function resolvedConfig(dir: string): ResolvedConfig {
     };
 }
 
-const PRESETS = ['node', 'library', 'next', 'astro', 'expo', 'react'] as const;
+const PRESETS = ['node', 'next', 'astro', 'expo', 'react'] as const;
 
 const FIXTURES = PRESETS.map((preset) => [preset, `tsconfig-${preset}`] as const);
 

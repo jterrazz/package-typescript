@@ -1,6 +1,6 @@
 import { join, resolve } from 'node:path';
 
-import type { CheckPass } from '../../../dist/command.js';
+import type { CheckPass } from '#command';
 
 export const SELECTING_BIN = resolve(import.meta.dirname, 'check-selection.ts');
 

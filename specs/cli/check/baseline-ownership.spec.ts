@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
@@ -86,18 +86,15 @@ describe('baseline-ownership', () => {
         // When - the baseline is recorded
         run(project, 'baseline');
 
-        // Then - oxlint's file holds both rules, file by file, and the section holds none of them
+        // Then - oxlint's file holds both rules, file by file, and no section holds any: a ledger at zero is no file
         const suppressed = JSON.parse(
-            readFileSync(join(project, 'oxlint-suppressions.json'), 'utf8'),
+            readFileSync(join(project, '.jterrazz/oxlint-suppressions.json'), 'utf8'),
         ) as unknown;
         expect(suppressed).toStrictEqual({
             'index.ts': { 'jterrazz/flags-every-file': { count: 1 } },
             'oxlint.config.ts': { 'jterrazz/flags-every-file': { count: 1 } },
         });
-        const recorded: unknown = JSON.parse(
-            readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8'),
-        );
-        expect(recorded).toStrictEqual({ typescript: {} });
+        expect(existsSync(join(project, '.jterrazz/baseline.json'))).toBe(false);
     });
 
     test("leaves @jterrazz/test's section byte for byte", () => {
@@ -105,8 +102,9 @@ describe('baseline-ownership', () => {
         const project = groundOf();
         const section =
             '{ "jterrazz-check/unused-ground": 2, "jterrazz-check/no-unused-ground": 1 }';
+        mkdirSync(join(project, '.jterrazz'), { recursive: true });
         writeFileSync(
-            join(project, 'jterrazz.baseline.json'),
+            join(project, '.jterrazz/baseline.json'),
             `{\n  "test": ${section},\n  "typescript": { "names/no-grab-bag-name": 4 }\n}\n`,
         );
         writeFileSync(
@@ -117,9 +115,9 @@ describe('baseline-ownership', () => {
         // When - the baseline is recorded
         run(project, 'baseline');
 
-        // Then - only this package's section moved, and the other one's bytes are the ones it wrote
-        expect(readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8')).toBe(
-            `{\n    "test": ${section},\n    "typescript": {}\n}\n`,
+        // Then - only this package's section moved, gone at zero, and the other one's bytes are the ones it wrote
+        expect(readFileSync(join(project, '.jterrazz/baseline.json'), 'utf8')).toBe(
+            `{\n    "test": ${section}\n}\n`,
         );
     });
 
@@ -135,11 +133,8 @@ describe('baseline-ownership', () => {
         // When - the baseline is recorded
         run(project, 'baseline');
 
-        // Then - both files are in the project's shape, not the writers' two spaces nor the default's four
-        expect(readFileSync(join(project, 'jterrazz.baseline.json'), 'utf8')).toBe(
-            '{\n\t"typescript": {}\n}\n',
-        );
-        expect(readFileSync(join(project, 'oxlint-suppressions.json'), 'utf8')).toContain(
+        // Then - the file is in the project's shape, not the writer's two spaces nor the default's four
+        expect(readFileSync(join(project, '.jterrazz/oxlint-suppressions.json'), 'utf8')).toContain(
             '\t"index.ts": {\n\t\t"jterrazz/flags-every-file": {\n\t\t\t"count": 1\n\t\t}\n\t},',
         );
     });
@@ -193,7 +188,7 @@ describe('baseline-ownership', () => {
     });
 
     const HELD_CHECKER = contribution(
-        "'jterrazz.baseline.json › test: 3 held across 2 rules'",
+        "'.jterrazz/baseline.json › test: 3 held across 2 rules'",
         false,
     );
 
@@ -213,12 +208,12 @@ describe('baseline-ownership', () => {
         );
 
         // Then - the pass is green and says what the other ratchet section holds, in the one short line
-        expect(conventions).toContain('jterrazz.baseline.json › test: 3 held across 2 rules\n');
+        expect(conventions).toContain('.jterrazz/baseline.json › test: 3 held across 2 rules\n');
         expect(conventions).toContain('✓ Passed');
     });
 
     const NOTHING_HELD_CHECKER = contribution(
-        "'jterrazz.baseline.json › test: nothing held'",
+        "'.jterrazz/baseline.json › test: nothing held'",
         false,
     );
 
@@ -238,7 +233,7 @@ describe('baseline-ownership', () => {
         );
 
         // Then - the pass is green and names the section as holding nothing
-        expect(conventions).toContain('jterrazz.baseline.json › test: nothing held\n');
+        expect(conventions).toContain('.jterrazz/baseline.json › test: nothing held\n');
         expect(conventions).toContain('✓ Passed');
     });
 
@@ -254,15 +249,16 @@ describe('baseline-ownership', () => {
         });
 
         // Then - the pass is green, and the line is not the toolchain's to repeat
-        expect(stdout).not.toContain('jterrazz.baseline.json › test:');
+        expect(stdout).not.toContain('.jterrazz/baseline.json › test:');
         expect(verdict(stdout, 'Test Conventions')).toBe('✓ Passed');
     });
 
     test("refuses an oxlint rule left in this package's section, naming the gesture that moves it", () => {
         // Given - a typescript section recorded before oxlint held its own rules
         const project = groundOf();
+        mkdirSync(join(project, '.jterrazz'), { recursive: true });
         writeFileSync(
-            join(project, 'jterrazz.baseline.json'),
+            join(project, '.jterrazz/baseline.json'),
             '{\n  "typescript": { "eslint/no-debugger": 1, "jterrazz/flags-every-file": 2 }\n}\n',
         );
 
@@ -271,10 +267,10 @@ describe('baseline-ownership', () => {
 
         // Then - each entry is refused in four parts, sent to oxlint-suppressions.json by `typescript baseline`
         expect(stdout).toContain(
-            'baseline-moved-to-oxlint  jterrazz.baseline.json › typescript  found: `eslint/no-debugger` is an oxlint rule',
+            'baseline-moved-to-oxlint  .jterrazz/baseline.json › typescript  found: `eslint/no-debugger` is an oxlint rule',
         );
         expect(stdout).toContain(
-            'baseline-moved-to-oxlint  jterrazz.baseline.json › typescript  found: `jterrazz/flags-every-file` is an oxlint rule',
+            'baseline-moved-to-oxlint  .jterrazz/baseline.json › typescript  found: `jterrazz/flags-every-file` is an oxlint rule',
         );
         expect(verdict(stdout, 'Oxlint Check')).toBe('✗ Failed');
     });

@@ -5,7 +5,7 @@ import { readCommandLine } from '../../kit/checker/command-line.js';
 import type { Context, Finding } from '../../kit/checker/pass.js';
 import { binaryIn, HOISTED_BESIDE_PACKAGE } from '../../kit/project/package-root.js';
 import { resolveConfig } from '../../kit/project/preset.js';
-import type { Preset } from '../../kit/project/preset.js';
+import type { BasePresets } from '../../kit/project/preset.js';
 import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import { architecture } from './architecture.js';
 import { declaredNamesFindings, declaredNamesRules } from './names.declared.js';
@@ -31,7 +31,7 @@ async function declaredNames(context: Context): Promise<PresetChecks> {
 
 export async function presetChecks(
     root: string,
-    { base, config }: { base: readonly Preset[]; config: object },
+    { base, config }: { base: BasePresets; config: object },
 ): Promise<PresetChecks> {
     const tree = resolve(root);
     const settings = resolveConfig(config, base);

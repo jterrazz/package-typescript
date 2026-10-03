@@ -1,4 +1,4 @@
-import { BASE_PRESETS } from './consumer/catalogue/preset.js';
+import { basePresetsOf } from './consumer/catalogue/preset.js';
 import type { PresetChecks } from './consumer/checks/preset-checks.js';
 import { runChecker as runPasses } from './kit/checker/checker.js';
 import type { Checker } from './kit/checker/pass.js';
@@ -50,7 +50,7 @@ export { anchor, cell, markdownTable } from './kit/catalogue/table.js';
 export { anchorsOf, projected, spliceBetween, writeProjections } from './kit/catalogue/chapter.js';
 export type { Markers, Projection } from './kit/catalogue/chapter.js';
 export { countsOf } from './kit/baseline/counts.js';
-export { OXLINT_SUPPRESSIONS } from './kit/baseline/oxlint-suppressions.js';
+export { OXLINT_SUPPRESSIONS, SUPPRESSIONS_LEDGER } from './kit/baseline/oxlint-suppressions.js';
 export {
     BASELINE,
     keepsSection,
@@ -134,19 +134,19 @@ export type { Span } from './kit/project/comments.js';
 export { workspaceMembers } from './kit/project/workspace-members.js';
 
 export const runChecker = async (
-    checker: Omit<Checker, 'presets'>,
+    checker: Omit<Checker, 'base'>,
     args?: readonly string[],
-): Promise<never> => await runPasses({ ...checker, presets: BASE_PRESETS }, args);
+): Promise<never> => await runPasses({ ...checker, base: basePresetsOf }, args);
 
 /** A unit's `jterrazz.config.ts`, resolved with the base preset first. */
 export const readSettings = async (unit: string): Promise<Resolution> =>
-    await readConfig(unit, BASE_PRESETS);
+    await readConfig(unit, basePresetsOf);
 
 /** The same resolution, for a reader that runs synchronously, as an oxlint rule does. */
-export const readSettingsSync = (unit: string): Resolution => readConfigSync(unit, BASE_PRESETS);
+export const readSettingsSync = (unit: string): Resolution => readConfigSync(unit, basePresetsOf);
 
 export async function presetChecks(root: string, config: object): Promise<PresetChecks> {
     const checks = await import('./consumer/checks/preset-checks.js');
 
-    return await checks.presetChecks(root, { base: BASE_PRESETS, config });
+    return await checks.presetChecks(root, { base: basePresetsOf, config });
 }

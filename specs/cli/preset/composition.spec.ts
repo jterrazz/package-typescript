@@ -1,22 +1,21 @@
 import { directory } from '@jterrazz/test';
-import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { cli as oxlintCli } from '../oxlint.specification.js';
-
-const BUILT_FROM = resolve(import.meta.dirname, '../../..');
+import { profilePath } from './_setup/rulebook.js';
 
 // A profile never auto-detects another @jterrazz package: the `test()` preset's rules exist only where it is listed.
 
-const NODE_CONFIG = join(BUILT_FROM, 'dist/presets/oxlint/profiles/node.js');
-const COMPOSED_CONFIG = resolve(import.meta.dirname, '_fixtures/composed.config.ts');
+const NODE_CONFIG = profilePath('node');
 
 describe('composition', () => {
     test('enables the jterrazz rules when the consumer lists the test() preset', async () => {
-        // Given - a probe spec linted with the config `fromPresets` builds from node and test()
+        // Given - a probe spec in a project whose settings list test(), its oxlint config derived from them
         const result = await oxlintCli
             .fixture(directory('./_fixtures/enabled/'))
-            .exec(`-c ${COMPOSED_CONFIG} probe.test.ts`);
+            .fixture(directory('./_fixtures/declaring-test/'))
+            .link('@jterrazz/test')
+            .exec('probe.test.ts');
 
         // Then - a jterrazz convention rule fires on the probe spec
         expect(result.stdout.grep('probe.test.ts').text).toContain(

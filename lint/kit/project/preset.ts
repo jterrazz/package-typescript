@@ -2,6 +2,9 @@ import type { IRegularForbiddenRuleType } from 'dependency-cruiser';
 import type { OxlintConfig } from 'oxlint';
 
 import type { ChapterAnchor, Unread } from '../catalogue/lesson.js';
+import { declarationOf } from './declaration.js';
+import type { Declaration } from './declaration.js';
+import type { EditorFile } from './editor-files.js';
 import { isJsonObject, objectOf } from './json.js';
 import { lawSettingRefused, writtenLawSetting } from './law-settings.js';
 import { optOutsOf } from './opt-outs.js';
@@ -35,6 +38,7 @@ export type PresetChecker = {
 export type Preset = {
     baseline?: readonly string[];
     checker?: PresetChecker;
+    files?: Readonly<Record<string, EditorFile>>;
     floors?: readonly string[];
     lawSettings?: readonly string[];
     layers?: readonly ArchitectureRule[];
@@ -50,8 +54,11 @@ export type { OptOut } from './opt-outs.js';
 
 export type PresetLaw = `${string}/${string}`;
 
+export type BasePresets = (declaration: Declaration | null) => readonly Preset[];
+
 export type Resolved = {
     baseline: string[];
+    declaration: Declaration | null;
     floors: string[];
     laws: PresetLaw[];
     layers: unknown[];
@@ -63,7 +70,7 @@ export type Resolved = {
 
 export type Resolution = { problem: null | string; resolved: Resolved };
 
-const RESERVED = new Set(['optOuts', 'presets']);
+const RESERVED = new Set(['kind', 'optOuts', 'platform', 'presets']);
 
 const isPreset = (value: unknown): value is Preset =>
     isJsonObject(value) &&
@@ -100,6 +107,7 @@ const EMPTY_DECLARATION = Object.freeze({});
 
 const EMPTY: Resolved = {
     baseline: [],
+    declaration: null,
     floors: [],
     laws: [],
     layers: [],
@@ -232,7 +240,7 @@ function lawsOf(
     );
 }
 
-export function resolveConfig(declaredSettings: object, base: readonly Preset[]): Resolution {
+export function resolveConfig(declaredSettings: object, baseOf: BasePresets): Resolution {
     const declared = objectOf(declaredSettings);
     const listed: unknown = declared.presets ?? [];
     // A file that cannot be resolved still leaves the base laws standing.
@@ -241,12 +249,16 @@ export function resolveConfig(declaredSettings: object, base: readonly Preset[])
         resolved:
             declaredSettings === EMPTY_DECLARATION
                 ? EMPTY
-                : resolveConfig(EMPTY_DECLARATION, base).resolved,
+                : resolveConfig(EMPTY_DECLARATION, baseOf).resolved,
     });
+    const { declaration, problem: undeclared } = declarationOf(declared);
+    if (undeclared !== null) {
+        return refusedWith(undeclared);
+    }
     if (!Array.isArray(listed)) {
         return refusedWith('holds a `presets` that is not a list');
     }
-    const { presets, problem } = orderedPresets(listed, base);
+    const { presets, problem } = orderedPresets(listed, baseOf(declaration));
     const { problem: unmerged, sections } = sectionsOf(presets, declared);
     const laws = presets.flatMap((preset) =>
         [...(preset.layers ?? []), ...(preset.names ?? [])].map((rule) => lawOf(preset, rule)),
@@ -262,6 +274,7 @@ export function resolveConfig(declaredSettings: object, base: readonly Preset[])
         problem: null,
         resolved: {
             baseline: presets.flatMap((preset) => preset.baseline ?? []),
+            declaration,
             floors: presets.flatMap((preset) => preset.floors ?? []),
             laws,
             layers: [
@@ -277,10 +290,6 @@ export function resolveConfig(declaredSettings: object, base: readonly Preset[])
             sections,
         },
     };
-}
-
-export function definePreset(preset: Preset): Preset {
-    return preset;
 }
 
 export const presetLesson = (problem: string, file: string): Unread => ({

@@ -51,13 +51,22 @@ writeFileSync(
     `${JSON.stringify({ devDependencies: { '@jterrazz/typescript': '*' }, name: 'strict-consumer', type: 'module', version: '1.0.0' }, null, 4)}\n`,
 );
 writeFileSync(
+    join(root, 'jterrazz.config.ts'),
+    "export default { kind: 'api', platform: 'node' };\n",
+);
+writeFileSync(
     join(root, 'oxlint.config.ts'),
-    "import { defineConfig, node } from '@jterrazz/typescript/oxlint';\n\nexport default defineConfig(node);\n",
+    "export { default } from '@jterrazz/typescript/oxlint';\n",
 );
 writeFileSync(
     join(root, 'oxfmt.config.ts'),
-    "import { base, defineConfig } from '@jterrazz/typescript/oxfmt';\n\nexport default defineConfig(base);\n",
+    "export { default } from '@jterrazz/typescript/oxfmt';\n",
 );
+writeFileSync(
+    join(root, 'tsconfig.json'),
+    `${JSON.stringify({ extends: '@jterrazz/typescript/tsconfig/node' }, null, 4)}\n`,
+);
+symlinkSync(join(REPOSITORY, 'node_modules/@types'), join(root, 'node_modules/@types'));
 writeFileSync(join(root, 'src/index.ts'), 'export const answer = 42;\n');
 
 function resolvesFrom(directory: string, tool: string): boolean {

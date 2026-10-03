@@ -5,7 +5,7 @@ import { argv, exit, stdout } from 'node:process';
 import { invariant } from '../catalogue/lesson.js';
 import { removeEmptyDirectory } from '../project/empty-directories.js';
 import { readConfig } from '../project/jterrazz-config.js';
-import type { Preset, Resolution } from '../project/preset.js';
+import type { BasePresets, Resolution } from '../project/preset.js';
 import { orRefused, projectFiles } from '../project/project-files.js';
 import { readCommandLine } from './command-line.js';
 import type { CommandLine } from './command-line.js';
@@ -41,7 +41,7 @@ function listAt(directory: string): null | string[] {
     }
 }
 
-export function contextOf(commandLine: CommandLine, presets: readonly Preset[]): Context {
+export function contextOf(commandLine: CommandLine, base: BasePresets): Context {
     const root = resolve(commandLine.positionals[0] ?? '.');
     const ignorePatterns = commandLine.values('--ignore-pattern');
     const configs = new Map<string, Promise<Resolution>>();
@@ -49,7 +49,7 @@ export function contextOf(commandLine: CommandLine, presets: readonly Preset[]):
 
     return {
         config: async (unit = root) => {
-            const known = configs.get(unit) ?? readConfig(unit, presets);
+            const known = configs.get(unit) ?? readConfig(unit, base);
             configs.set(unit, known);
 
             return await known;
@@ -159,7 +159,7 @@ async function runPass(
     args: readonly string[],
 ): Promise<number> {
     const commandLine = readCommandLine(args, pass.valued);
-    const context = contextOf(commandLine, checker.presets);
+    const context = contextOf(commandLine, checker.base);
     if (context.fix && pass.prepare !== undefined) {
         removeAll(context, pass.prepare(context).removals ?? []);
     }
@@ -207,7 +207,7 @@ const isContribution = (value: unknown): value is Contribution =>
 
 export async function runContribution(
     loaded: unknown,
-    presets: readonly Preset[],
+    base: BasePresets,
     args: readonly string[],
 ): Promise<never> {
     const contribution =
@@ -217,7 +217,7 @@ export async function runContribution(
     if (!isContribution(contribution)) {
         throw invariant('a preset names a checker module whose default export holds no `passes`');
     }
-    const checker = { ...contribution, presets };
+    const checker = { ...contribution, base };
     const [name = '', ...rest] = args;
     const command = checker.commands?.[name];
     exit(

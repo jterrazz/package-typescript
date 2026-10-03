@@ -1,5 +1,25 @@
 [
     {
+        "family": "config",
+        "id": "config/project-declared",
+        "sentence": "A repository, and each member of a workspace, declares what it is once — its kind and its platform — in jterrazz.config.ts."
+    },
+    {
+        "family": "config",
+        "id": "config/editor-file-derived",
+        "sentence": "Each config file an editor discovers is the one line jterrazz.config.ts derives, so the editor and the check judge alike."
+    },
+    {
+        "family": "config",
+        "id": "config/no-tool-config",
+        "sentence": "A tool only the toolchain runs keeps no config file of its own: the command hands it the config jterrazz.config.ts derives."
+    },
+    {
+        "family": "config",
+        "id": "config/kind-matches-manifest",
+        "sentence": "A library publishes its exports, and a cli names its bin."
+    },
+    {
         "family": "comments",
         "id": "jterrazz-typescript/comment-no-longer-than-its-function",
         "sentence": "A comment run above a function is no longer than the function it documents."
@@ -304,11 +324,6 @@
         "family": "publish",
         "id": "publish/no-test-code-in-production",
         "sentence": "No shipped file is compiled from test material."
-    },
-    {
-        "family": "drift",
-        "id": "drift/off-rule-states-its-reason",
-        "sentence": "A rule the profile has on, turned off by the project, carries its // reason:."
     },
     {
         "family": "tree",

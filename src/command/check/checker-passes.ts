@@ -26,6 +26,18 @@ export async function gitignorePass(check: Check): Promise<Launched | undefined>
     return { log, status: checker('gitignore', check.fix ? ['--fix'] : [], { path: log }) };
 }
 
+export function configPass(check: Check): Launched | undefined {
+    if (!check.selected('config')) {
+        return undefined;
+    }
+    const log = check.logs.at('config.log');
+
+    return {
+        log,
+        status: checker('config', ['.', ...(check.fix ? ['--fix'] : [])], { path: log }),
+    };
+}
+
 export function docsPass(check: Check): Launched | undefined {
     if (check.fix || !check.selected('docs') || !existsSync('.git')) {
         return undefined;
@@ -131,24 +143,26 @@ export function architecturePass(check: Check): Launched | undefined {
     };
 }
 
+const PUBLISHED_KINDS: ReadonlySet<string> = new Set(['cli', 'library']);
+
+function publishes(check: Check, root: string): boolean {
+    const declared = check.declarations.get(root);
+
+    return declared === undefined || declared === null
+        ? isPublishable(root)
+        : PUBLISHED_KINDS.has(declared.kind);
+}
+
 export function publishPasses(check: Check): Launched[] {
     if (check.fix || !check.selected('publish')) {
         return [];
     }
 
     return ['.', ...check.members]
-        .filter((root) => isPublishable(root))
+        .filter((root) => publishes(check, root))
         .map((root, index) => {
             const log = check.logs.at(`publish-${String(index)}.log`);
-            const args = [
-                root,
-                '--publint',
-                check.tools.publint,
-                '--attw',
-                check.tools.attw,
-                '--bundle-preset',
-                presetAt('dist/presets/tsdown/bundle.js'),
-            ];
+            const args = [root, '--publint', check.tools.publint, '--attw', check.tools.attw];
 
             return { log, status: checker('publish', args, { path: log }) };
         });

@@ -1,6 +1,7 @@
 export default {
+    kind: 'website',
+    platform: 'react',
     presets: [
-        { name: 'typescript', package: '@jterrazz/typescript', settings: { profile: 'react' } },
         {
             name: 'counting',
             oxlint: { rules: { 'no-plusplus': 'error' } },

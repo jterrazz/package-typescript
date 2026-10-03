@@ -8,7 +8,7 @@ import { exit, stderr } from 'node:process';
 import { refusal } from '../catalogue/lesson.js';
 import { isGroundFolder } from './ground.js';
 
-export const UNSWEPT = new Set([
+export const UNSWEPT: ReadonlySet<string> = new Set([
     '.artifacts',
     '.git',
     '.next',

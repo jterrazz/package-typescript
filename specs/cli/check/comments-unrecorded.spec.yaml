@@ -36,7 +36,7 @@ runs:
 
            RUN  Comments (density)
 
-          comments/comment-lines-held-by-the-baseline  jterrazz.baseline.json › typescript  found: 2 comment lines — 50% of 4 source lines, and no `comments/comment-lines-held-by-the-baseline` entry records them · why: the default is no comment — a name carries the meaning, and the count is held exactly so no comment arrives unseen · fix: delete the comments a name can carry, then run 'typescript baseline' to record the count that is left · read: docs/07-quality-checks.md#the-comments-density-pass
+          comments/comment-lines-held-by-the-baseline  .jterrazz/baseline.json › typescript  found: 2 comment lines — 50% of 4 source lines, and no `comments/comment-lines-held-by-the-baseline` entry records them · why: the default is no comment — a name carries the meaning, and the count is held exactly so no comment arrives unseen · fix: delete the comments a name can carry, then run 'typescript baseline' to record the count that is left · read: docs/07-quality-checks.md#the-comments-density-pass
           ✗ Failed with exit code 1
 
            RUN  Secrets (credentials)
@@ -45,12 +45,12 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            profile                              node (the default — no config of its own)
-            rules off vs profile                 none
-            suppressions                         0
-            oxlint-suppressions.json             nothing held
-            jterrazz.baseline.json › typescript  nothing held
-            tool versions                        in range
+            declared                              nothing — node, the default
+            rules off vs profile                  none
+            suppressions                          0
+            .jterrazz/oxlint-suppressions.json    nothing held
+            .jterrazz/baseline.json › typescript  nothing held
+            tool versions                         in range
 
            END  Finalizing quality checks
 
@@ -60,9 +60,9 @@ runs:
       stdout: |4
            TYPESCRIPT  Recording the baseline...
 
-          jterrazz.baseline.json › typescript written — 2 finding(s) across 1 rule(s)
+          .jterrazz/baseline.json › typescript written — 2 finding(s) across 1 rule(s)
       files:
-          jterrazz.baseline.json:
+          .jterrazz/baseline.json:
               equals: |
                   {
                       "typescript": {
@@ -112,12 +112,12 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            profile                              node (the default — no config of its own)
-            rules off vs profile                 none
-            suppressions                         0
-            oxlint-suppressions.json             nothing held
-            jterrazz.baseline.json › typescript  2
-            tool versions                        in range
+            declared                              nothing — node, the default
+            rules off vs profile                  none
+            suppressions                          0
+            .jterrazz/oxlint-suppressions.json    nothing held
+            .jterrazz/baseline.json › typescript  2
+            tool versions                         in range
 
            END  Finalizing quality checks
 

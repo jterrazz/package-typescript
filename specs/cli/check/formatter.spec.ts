@@ -10,8 +10,7 @@ import { cli as oxfmtCli } from '../oxfmt.specification.js';
 const BUILT_FROM = resolve(import.meta.dirname, '../../..');
 
 // Each probe targets one style decision the preset makes, never oxfmt's overall output.
-const CONFIG_PATH = join(BUILT_FROM, 'dist/presets/oxfmt/style.js');
-const ENTRY = join(BUILT_FROM, 'dist/oxfmt.js');
+const CONFIG_PATH = join(BUILT_FROM, 'dist/oxfmt.js');
 const OXFMT = resolve(import.meta.dirname, '../../../node_modules/.bin/oxfmt');
 
 type FormatResult = Awaited<ReturnType<typeof oxfmtCli.exec>>;
@@ -57,7 +56,7 @@ describe('formatter', () => {
         cpSync(join(created, 'index.ts'), join(created, '.next/app.ts'));
         writeFileSync(
             join(created, 'oxfmt.config.ts'),
-            `import { base, defineConfig } from '${ENTRY}';\n\nexport default defineConfig(base);\n`,
+            `export { default } from '${CONFIG_PATH}';\n`,
         );
 
         // When - oxfmt checks the whole tree

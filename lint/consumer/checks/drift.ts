@@ -1,54 +1,29 @@
-import { join, resolve } from 'node:path';
-
 import { labelOf, readBaseline, sectionOf } from '../../kit/baseline/baseline-file.js';
 import type { Counts } from '../../kit/baseline/baseline-file.js';
-import { OXLINT_SUPPRESSIONS, suppressedCount } from '../../kit/baseline/oxlint-suppressions.js';
-import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
+import { suppressedCount, SUPPRESSIONS_LEDGER } from '../../kit/baseline/oxlint-suppressions.js';
+import type { Pass } from '../../kit/checker/pass.js';
 import { countSuppressions } from '../../kit/project/comments.js';
-import { printedOxlintConfig } from '../../kit/project/oxlint-config.js';
-import type { PrintedRules } from '../../kit/project/oxlint-config.js';
+import type { Declaration } from '../../kit/project/declaration.js';
+import { objectOf } from '../../kit/project/json.js';
 import type { OptOut } from '../../kit/project/preset.js';
 import { orRefused } from '../../kit/project/project-files.js';
+import { levelOf, projectOxlintOf } from '../../kit/project/project-oxlint.js';
 import { toolVersions } from '../../kit/project/tool-versions.js';
 import type { ToolVersion } from '../../kit/project/tool-versions.js';
 import { BASELINE_SECTION as SECTION } from '../catalogue/preset.js';
-import { profileNamesAt, profileOfProject } from './drift.profile.js';
-import type { Project } from './drift.profile.js';
 
-const REASON = /\/\/\s*reason:/iu;
+const OFF: ReadonlySet<unknown> = new Set(['allow', 'off', 0]);
 
-const resolvedRules = (
-    root: string,
-    oxlint: string,
-    configPath: null | string,
-): null | PrintedRules => printedOxlintConfig(root, oxlint, configPath)?.rules ?? null;
+function offOf(section: unknown): string[] {
+    const { overrides, rules } = projectOxlintOf(section);
+    const off = [
+        ...Object.entries(rules),
+        ...overrides.flatMap((override) => Object.entries(override.rules)),
+    ]
+        .filter(([, setting]) => OFF.has(levelOf(setting)))
+        .map(([rule]) => rule);
 
-function turnedOff(profile: PrintedRules, consumer: PrintedRules): string[] {
-    const off: string[] = [];
-    for (const [rule, level] of Object.entries(profile).toSorted(([left], [right]) =>
-        left < right ? -1 : 1,
-    )) {
-        if (level === 'allow') {
-            continue;
-        }
-        const here = consumer[rule];
-        if (here === undefined || here === 'allow') {
-            off.push(rule);
-        }
-    }
-
-    return off;
-}
-
-function lineNaming(source: null | string, rule: string): string | undefined {
-    const bare = rule.split('/').at(-1) ?? rule;
-
-    return (source ?? '')
-        .split('\n')
-        .find(
-            (line) =>
-                line.includes(rule) || line.includes(`'${bare}'`) || line.includes(`"${bare}"`),
-        );
+    return [...new Set(off)].toSorted();
 }
 
 const LABEL_WIDTH = labelOf(SECTION).length + 2;
@@ -69,32 +44,6 @@ function toolsLine(behind: readonly ToolVersion[]): string {
                   installed === null ? `${name} ${verdict}` : `${name} ${installed} ${verdict}`,
               )
               .join(', ');
-}
-
-function offOf(
-    context: Context,
-    project: Project,
-    profilesAt: null | string,
-): { off: string[]; unreasoned: string[] } {
-    const { root } = context;
-    const oxlint = context.value('--oxlint', 'oxlint');
-    const consumerRules = resolvedRules(root, oxlint, project.consumerConfig) ?? {};
-    // A project on the handed default already resolved its profile.
-    const profileRules =
-        project.profileName === null
-            ? {}
-            : project.defaultProfile === null
-              ? (resolvedRules(root, oxlint, join(profilesAt ?? '', `${project.profileName}.js`)) ??
-                {})
-              : consumerRules;
-    const off = turnedOff(profileRules, consumerRules);
-    const unreasoned = off.filter((rule) => {
-        const line = lineNaming(project.source, rule);
-
-        return line === undefined || !REASON.test(line);
-    });
-
-    return { off, unreasoned };
 }
 
 const sum = (recorded: Counts): number =>
@@ -135,31 +84,35 @@ function baselineReader(
     };
 }
 
-function rulesOffOf(profileName: null | string, off: readonly string[]): string {
-    if (profileName === null) {
-        return 'not measured';
-    }
+const rulesOffOf = (off: readonly string[]): string =>
+    off.length === 0 ? 'none' : `${off.length} (${off.join(', ')})`;
 
-    return off.length === 0 ? 'none' : `${off.length} (${off.join(', ')})`;
+function declaredOf(declaration: Declaration | null): Row[] {
+    return declaration === null
+        ? [['declared', 'nothing — node, the default']]
+        : [
+              [
+                  'declared',
+                  `${declaration.kind} on ${declaration.platform ?? "its members' platforms"}`,
+              ],
+          ];
 }
 
 function rowsOf(
     root: string,
     {
         behind,
-        findings,
+        declaration,
         floors,
         off,
         optOuts,
-        project,
         suppressions,
     }: {
         behind: readonly ToolVersion[];
-        findings: readonly Finding[];
+        declaration: Declaration | null;
         floors: ReadonlySet<string>;
         off: readonly string[];
         optOuts: readonly OptOut[];
-        project: Project;
         suppressions: number;
     },
 ): string[] {
@@ -167,13 +120,8 @@ function rowsOf(
 
     return [
         ...rowsAligned([
-            [
-                'profile',
-                project.defaultProfile === null
-                    ? (project.profileName ?? "none of this package's")
-                    : `${project.defaultProfile} (the default — no config of its own)`,
-            ],
-            ['rules off vs profile', rulesOffOf(project.profileName, off)],
+            ...declaredOf(declaration),
+            ['rules off vs profile', rulesOffOf(off)],
             ...(optOuts.length === 0
                 ? []
                 : [
@@ -183,28 +131,21 @@ function rowsOf(
                       ] satisfies Row,
                   ]),
             ['suppressions', suppressions],
-            [OXLINT_SUPPRESSIONS, suppressedCount(root) ?? 'nothing held'],
+            [SUPPRESSIONS_LEDGER, suppressedCount(root) ?? 'nothing held'],
             ...[SECTION, ...others].map((section): Row => [labelOf(section), heldOf(section)]),
             ['tool versions', toolsLine(behind)],
         ]),
-        ...(findings.length > 0 ? [''] : []),
     ];
 }
 
 export const drift: Pass = Object.freeze({
     async check(context) {
         const { root } = context;
-        const profilesFlag = context.value('--profiles');
-        const profilesAt = profilesFlag === undefined ? null : resolve(profilesFlag);
         const { resolved } = await context.config();
-        const project = profileOfProject(context, profilesAt, {
-            profileNames: profileNamesAt(context, profilesAt),
-            settled: resolved.sections.typescript?.profile,
-        });
-        const { off, unreasoned } = offOf(context, project, profilesAt);
+        const { declaration, optOuts } = resolved;
+        const off = offOf(objectOf(resolved.sections.typescript).oxlint);
         const suppressions = orRefused(() => countSuppressions(root, context.ignorePatterns));
         const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
-        const { optOuts } = resolved;
         const floors = new Set(resolved.floors);
         const { others, totalOf } = baselineReader(root, floors);
         const totals = (kept: (section: string) => boolean): Record<string, unknown> =>
@@ -213,29 +154,20 @@ export const drift: Pass = Object.freeze({
                     .filter((section) => kept(section))
                     .map((section) => [section, totalOf(section)]),
             );
-        const findings: Finding[] = unreasoned.map((rule) => ({
-            message: `${rule} is off and the line that turns it off carries no '// reason:'`,
-            path: project.configName ?? 'oxlint.config',
-            rule: 'drift/off-rule-states-its-reason',
-        }));
 
         return {
-            findings,
             json: {
                 baseline: totalOf(SECTION),
-                config: project.configName === undefined ? 'default' : 'own',
+                declaration,
                 floors: totals((section) => floors.has(section)),
                 optOuts,
                 oxlintSuppressions: suppressedCount(root),
-                profile: project.profileName,
                 rulesOff: off,
                 suppressions,
                 sections: totals((section) => !floors.has(section)),
                 tools: behind,
-                unreasoned,
             },
-            lines: rowsOf(root, { behind, findings, floors, off, optOuts, project, suppressions }),
+            lines: rowsOf(root, { behind, declaration, floors, off, optOuts, suppressions }),
         };
     },
-    valued: ['--oxlint', '-c', '--profiles'],
 });

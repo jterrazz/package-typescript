@@ -1,6 +1,7 @@
 import {
     architecturePass,
     commentsPass,
+    configPass,
     docsPass,
     gitignorePass,
     markdownPass,
@@ -25,6 +26,7 @@ export type Started = {
     architecture: Launched | undefined;
     astro: Launched | undefined;
     comments: Launched | undefined;
+    config: Launched | undefined;
     docs: Launched | undefined;
     format: Launched | undefined;
     gitignore: Launched | undefined;
@@ -58,6 +60,7 @@ async function lintStarted(
 }
 
 export async function started(check: Check): Promise<Started> {
+    const config = configPass(check);
     const typescript = typescriptPass(check);
     const { format, lint } = await lintStarted(check);
     const knip = knipPass(check);
@@ -76,6 +79,7 @@ export async function started(check: Check): Promise<Started> {
         architecture,
         astro,
         comments,
+        config,
         docs,
         format,
         gitignore,

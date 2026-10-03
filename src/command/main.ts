@@ -3,10 +3,11 @@ import process from 'node:process';
 
 import { refusal } from '../../lint/kit/catalogue/lesson.js';
 import { baseline } from './baseline.js';
-import { build, bundle, clean, dev, start } from './build.js';
+import { build, clean, dev, start } from './build.js';
 import { EVERY_PASS, runChecks } from './check/check.js';
 import type { Selected } from './check/check.js';
 import { doctor } from './doctor.js';
+import { mutation } from './mutation.js';
 import { handOver } from './processes.js';
 import { badge, print } from './terminal.js';
 import { checkerProgram, projectRoot, tscIn } from './toolchain.js';
@@ -18,13 +19,13 @@ const USAGE = [
     'Usage: typescript <command>',
     '',
     'Commands:',
-    '  build        Build application (ESM + types)',
-    '  bundle       Bundle library (ESM + CJS + types)',
+    '  build        Build the entries the manifest publishes, as its conditions ask',
     '  start        Run the built application',
     '  dev          Build, run, and rebuild on changes',
     "  docs-layout  Check a repository's docs/ against the docs spine",
     '  doctor       Report the installed tool versions against the declared ranges',
-    '  baseline     Record the lint debt in oxlint-suppressions.json, Architecture, Names and Comments in jterrazz.baseline.json',
+    '  mutation     Measure the suite against mutants of the sources (--specs --mutate <ranges> for the whole suite)',
+    "  baseline     Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json",
     '  tsc          Run the TypeScript 7 compiler this package ships (emit, --build)',
     '  check        Check types, lint, formatting, and unused code',
     '  fix          Auto-fix lint and formatting issues',
@@ -33,11 +34,11 @@ const USAGE = [
     'Examples:',
     ...[
         'build',
-        'bundle',
         'start',
         'dev',
         'docs-layout .',
         'doctor',
+        'mutation',
         'baseline',
         'tsc --build',
         'check',
@@ -66,7 +67,6 @@ type Command = (args: readonly string[], selected: Selected) => number | Promise
 const COMMANDS: Readonly<Record<string, Command>> = {
     baseline: async (args) => await baseline(args),
     build: async () => await build(),
-    bundle: async () => await bundle(),
     check: async (args, selected) => await runChecks(args, { fix: false, selected }),
     clean: () => clean(),
     dev: async () => await dev(),
@@ -82,6 +82,7 @@ const COMMANDS: Readonly<Record<string, Command>> = {
         return doctor(projectRoot());
     },
     fix: async (args, selected) => await runChecks(args, { fix: true, selected }),
+    mutation: async (args) => await mutation(args),
     start: async (args) => await start(args),
     tsc: async (args) => {
         const project = projectRoot();

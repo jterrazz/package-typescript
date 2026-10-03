@@ -5,7 +5,7 @@
 import { existsSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
-import { UNSAFE_FIXERS } from '../../lint/index.oxlint.js';
+import { UNSAFE_FIXERS } from '../../lint/index.rulebook.js';
 import { OXLINT_CONFIG_NAMES } from '../../lint/kit/project/oxlint-config-names.js';
 
 type Scope = { config: string; directory: string; files: string[] };

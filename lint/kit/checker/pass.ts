@@ -1,6 +1,6 @@
 import type { Ratchet } from '../baseline/section.js';
 import type { ChapterAnchor } from '../catalogue/lesson.js';
-import type { Preset, Resolution } from '../project/preset.js';
+import type { BasePresets, Resolution } from '../project/preset.js';
 import type { CommandLine } from './command-line.js';
 
 export type Finding = {
@@ -63,9 +63,9 @@ export type Checker = {
     commands?: Commands;
     held?: Held;
     passes: Passes;
-    presets: readonly Preset[];
+    base: BasePresets;
 };
 
-export type Contribution = Omit<Checker, 'presets'>;
+export type Contribution = Omit<Checker, 'base'>;
 
 export type KitCommand = (args: string[], checker: Checker) => number | Promise<number>;

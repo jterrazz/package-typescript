@@ -32,6 +32,11 @@
     {
         "audience": "consumer",
         "channel": "checker",
+        "id": "config"
+    },
+    {
+        "audience": "consumer",
+        "channel": "checker",
         "id": "docs"
     },
     {
@@ -196,16 +201,16 @@
         "by": "throw",
         "channel": "runtime",
         "id": "presets-unresolved",
-        "message": "presetLesson(problem, SETTINGS_FILE)",
-        "module": "lint/index.oxlint.ts"
+        "message": "throw settingsRefusal(problem)",
+        "module": "lint/index.rulebook.ts"
     },
     {
         "audience": "consumer",
         "by": "throw",
         "channel": "runtime",
-        "id": "profile-unknown",
-        "message": "which is none of",
-        "module": "lint/index.oxlint.ts"
+        "id": "project-oxlint-unresolved",
+        "message": "throw settingsRefusal(own.problem)",
+        "module": "lint/index.rulebook.ts"
     },
     {
         "audience": "consumer",

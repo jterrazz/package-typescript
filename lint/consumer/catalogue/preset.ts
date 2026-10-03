@@ -1,4 +1,6 @@
-import type { ArchitectureRule, Preset } from '../../kit/project/preset.js';
+import type { Declaration, Platform } from '../../kit/project/declaration.js';
+import type { EditorFile } from '../../kit/project/editor-files.js';
+import type { ArchitectureRule, BasePresets, Preset } from '../../kit/project/preset.js';
 
 const READ = 'docs/01-architecture.md#the-judging-layer';
 
@@ -68,16 +70,33 @@ export const SPINE: readonly string[] = Object.freeze(['docs', 'lint', 'skills',
 
 export const MEMBER_ROOTS: readonly string[] = Object.freeze(['apps', 'packages']);
 
+const PUBLIC = 'Next.js, Astro and Vite — static files served verbatim at the site root';
+
+const APP = 'Next.js App Router and Expo Router — routes are read off this folder';
+
 export const TOOL_ROOTS: Readonly<Record<string, string>> = Object.freeze({
-    android: 'React Native and Expo — the native Android project',
-    app: 'Next.js App Router and Expo Router — routes are read off this folder',
     bin: "npm — the files a package's `bin` entry links as commands",
     config: "node-config — the default folder its `require('config')` reads",
-    ios: 'React Native and Expo — the native iOS project',
-    pages: 'Next.js Pages Router — routes are read off this folder',
     prisma: 'Prisma — the schema and migrations its CLI reads by default',
-    public: 'Next.js, Astro and Vite — static files served verbatim at the site root',
 });
+
+export const PLATFORM_ROOTS: Readonly<Record<Platform, Readonly<Record<string, string>>>> =
+    Object.freeze({
+        astro: { public: PUBLIC },
+        bun: {},
+        expo: {
+            android: 'React Native and Expo — the native Android project',
+            app: APP,
+            ios: 'React Native and Expo — the native iOS project',
+        },
+        next: {
+            app: APP,
+            pages: 'Next.js Pages Router — routes are read off this folder',
+            public: PUBLIC,
+        },
+        node: {},
+        react: { public: PUBLIC },
+    });
 
 export const WORDS = Object.freeze({
     constructs: Object.freeze(['constants', 'helper', 'interfaces', 'type', 'types', 'util']),
@@ -98,12 +117,45 @@ export const WORDS = Object.freeze({
 
 export const BASELINE_SECTION = 'typescript';
 
-export const PROFILES = ['astro', 'bun', 'expo', 'next', 'node', 'react'] as const;
+const TSCONFIG_OF: Readonly<Record<Platform, string>> = Object.freeze({
+    astro: 'astro',
+    bun: 'node',
+    expo: 'expo',
+    next: 'next',
+    node: 'node',
+    react: 'react',
+});
 
-export type ProfileName = (typeof PROFILES)[number];
+const fromTheToolchain = (subpath: string): EditorFile => ({
+    scope: 'repository',
+    text: `export { default } from '@jterrazz/typescript/${subpath}';\n`,
+});
 
-export function typescriptPreset({ profile = 'node' }: { profile?: ProfileName } = {}): Preset {
+function editorFilesOf(declaration: Declaration | null): Readonly<Record<string, EditorFile>> {
+    const files: Record<string, EditorFile> = {
+        'oxfmt.config.ts': fromTheToolchain('oxfmt'),
+        'oxlint.config.ts': fromTheToolchain('oxlint'),
+    };
+    if (declaration?.kind !== 'workspace') {
+        files['tsconfig.json'] = {
+            json: {
+                extends: `@jterrazz/typescript/tsconfig/${TSCONFIG_OF[declaration?.platform ?? 'node']}`,
+            },
+            scope: 'unit',
+        };
+    }
+
+    return files;
+}
+
+export function typescriptPreset(declaration: Declaration | null): Preset {
+    const platformRoots =
+        declaration?.platform === undefined || declaration.platform === null
+            ? {}
+            : PLATFORM_ROOTS[declaration.platform];
+
     return {
+        files: editorFilesOf(declaration),
         lawSettings: ['lint', 'memberRoots', 'spine', 'toolRoots', 'words'],
         layers: LINT_LAYERS,
         name: 'typescript',
@@ -111,13 +163,12 @@ export function typescriptPreset({ profile = 'node' }: { profile?: ProfileName }
         settings: {
             lint: LINT_TREE,
             memberRoots: MEMBER_ROOTS,
-            profile,
             spine: SPINE,
-            toolRoots: TOOL_ROOTS,
+            toolRoots: { ...TOOL_ROOTS, ...platformRoots },
             words: WORDS,
         },
         baseline: [BASELINE_SECTION],
     };
 }
 
-export const BASE_PRESETS: readonly Preset[] = Object.freeze([typescriptPreset()]);
+export const basePresetsOf: BasePresets = (declaration) => [typescriptPreset(declaration)];

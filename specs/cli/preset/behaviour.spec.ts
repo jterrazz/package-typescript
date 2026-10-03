@@ -7,13 +7,11 @@ import {
     symlinkSync,
     writeFileSync,
 } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { diagnosticsOf, oxlint, PROFILES, sandbox } from './_setup/rulebook.js';
+import { DERIVED_CONFIG, diagnosticsOf, oxlint, PROFILES, sandbox } from './_setup/rulebook.js';
 import type { Diagnostic } from './_setup/rulebook.js';
-
-const BUILT_FROM = resolve(import.meta.dirname, '../../..');
 
 // One case per decision this package owns, never per upstream rule. The `_expected/` tree holds only the files
 // `--fix` rewrote, so a reasoned `off` states itself by absence. Regenerate with `TEST_UPDATE=1 npm test`.
@@ -113,18 +111,19 @@ describe('behaviour', () => {
             resolve(work.path, 'node_modules/@jterrazz/test'),
             'dir',
         );
-        const entry = join(BUILT_FROM, 'dist/oxlint.js');
         writeFileSync(
-            work.config,
-            `import { test } from '@jterrazz/test/config';\nimport { fromPresets } from '${entry}';\n\nexport default fromPresets({ presets: [test()] });\n`,
+            resolve(work.path, 'jterrazz.config.ts'),
+            "import { test } from '@jterrazz/test/config';\n\nexport default { kind: 'library', platform: 'node', presets: [test()] };\n",
         );
+        const config = resolve(work.path, 'oxlint.config.mjs');
+        writeFileSync(config, DERIVED_CONFIG);
         writeFileSync(
             resolve(work.path, 'unshipped.ts'),
             "export function pause(): string {\n    // oxlint-disable-next-line jterrazz/unshipped-rule -- a rule the plugin never shipped\n    return 'paused';\n}\n",
         );
 
         // When - oxlint reads that file under the composed rulebook
-        const report = oxlint(work.path, ['-c', work.config, '--format=json', 'unshipped.ts']);
+        const report = oxlint(work.path, ['-c', config, '--format=json', 'unshipped.ts']);
 
         // Then - the directive itself is the one finding, on its own line, at error
         expect(

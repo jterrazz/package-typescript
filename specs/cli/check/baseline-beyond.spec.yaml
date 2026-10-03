@@ -12,8 +12,8 @@ runs:
 
            RUN  Oxlint Check
           {{any}}
-          found: a diagnostic oxlint-suppressions.json does not hold — each one is listed above · why: the file holds the debt the project recorded, file by file, and a diagnostic beyond it is a regression · fix: fix it, or run 'typescript baseline' to record where the project stands — never a bare `oxlint --suppress-all`, which lints with another config · read: docs/07-quality-checks.md#the-ratchet
-          found: oxlint-suppressions.json holds more than the project has left · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/07-quality-checks.md#the-ratchet
+          found: a diagnostic .jterrazz/oxlint-suppressions.json does not hold — each one is listed above · why: the file holds the debt the project recorded, file by file, and a diagnostic beyond it is a regression · fix: fix it, or run 'typescript baseline' to record where the project stands — never a bare `oxlint --suppress-all`, which lints with another config · read: docs/07-quality-checks.md#the-ratchet
+          found: .jterrazz/oxlint-suppressions.json holds more than the project has left · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/07-quality-checks.md#the-ratchet
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
@@ -46,12 +46,12 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            profile                              node (the default — no config of its own)
-            rules off vs profile                 none
-            suppressions                         0
-            oxlint-suppressions.json             4
-            jterrazz.baseline.json › typescript  nothing held
-            tool versions                        in range
+            declared                              nothing — node, the default
+            rules off vs profile                  none
+            suppressions                          0
+            .jterrazz/oxlint-suppressions.json    4
+            .jterrazz/baseline.json › typescript  nothing held
+            tool versions                         in range
 
            END  Finalizing quality checks
 

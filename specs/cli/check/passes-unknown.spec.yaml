@@ -5,4 +5,4 @@ runs:
     - command: check
       exit: 2
       stderr: |
-          TYPESCRIPT_CHECK_PASSES names no pass: lint — the passes are typescript,oxlint,oxfmt,gitignore,knip,presets,docs,publish,architecture,astro,suppressions,markdown,names,comments,secrets,drift
+          TYPESCRIPT_CHECK_PASSES names no pass: lint — the passes are config,typescript,oxlint,oxfmt,gitignore,knip,presets,docs,publish,architecture,astro,suppressions,markdown,names,comments,secrets,drift

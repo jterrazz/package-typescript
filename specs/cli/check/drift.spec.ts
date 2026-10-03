@@ -28,7 +28,7 @@ function suppressingProject(toolchain: string): string {
     );
     writeFileSync(
         join(project, 'oxlint.config.ts'),
-        "import { node } from '@jterrazz/typescript/oxlint';\n\nexport default node;\n",
+        "export { default } from '@jterrazz/typescript/oxlint';\n",
     );
     mkdirSync(join(project, 'node_modules/@jterrazz'), { recursive: true });
     symlinkSync(toolchain, join(project, 'node_modules/@jterrazz/typescript'), 'dir');
@@ -37,49 +37,35 @@ function suppressingProject(toolchain: string): string {
 }
 
 describe('drift', () => {
-    test('refuses a rule the profile has on, turned off with no reason beside it', async () => {
-        // Given - a project on the node profile that silently turns a rule off, resolving the toolchain this repository installs
-        const silent = await driftPass
-            .fixture(directory('./_fixtures/drift/project/'))
-            .fixture(directory('./_fixtures/drift/off-in-silence/'))
-            .link('@jterrazz/typescript')
-            .exec('check');
-
-        // Then - the report names the profile, and refuses the rule turned off in silence
-        expect(silent.stdout.text).toContain('Deviations from the profile');
-        expect(silent.stdout.text).toContain('profile                              node');
-        expect(silent.stdout.text).toContain(
-            "oxlint.config.ts:1:1: error drift(off-rule-states-its-reason): no-debugger is off and the line that turns it off carries no '// reason:'",
-        );
-        expect(silent.exitCode).toBe(1);
-    });
-
-    test('accepts the same rule turned off, once the line that turns it off says why', async () => {
-        // Given - the same rule turned off, with the reason on the line that turns it off
+    test('reports a rule the settings set apart from the profile, which the settings say why of', async () => {
+        // Given - a project whose jterrazz.config.ts turns a rule of its profile off, with its reason
         const reasoned = await driftPass
             .fixture(directory('./_fixtures/drift/project/'))
             .fixture(directory('./_fixtures/drift/off-with-reason/'))
             .link('@jterrazz/typescript')
             .exec('check');
 
-        // Then - the rule is still REPORTED as off, and no longer refused: it is a decision now
+        // Then - the report names the declaration and the rule turned off
         expect(reasoned.stdout.text).toContain(
-            'rules off vs profile                 1 (no-debugger)',
+            'declared                              api on node\n  rules off vs profile                  1 (no-debugger)\n',
         );
-        expect(reasoned.stdout.text).not.toContain('drift(off-rule-states-its-reason)');
         expect(reasoned.exitCode).toBe(0);
     });
 
-    test('reads the profile off oxlint.config.mts, one of the names oxlint itself looks for', async () => {
-        // Given - the project's config sits at .mts rather than .ts, oxlint's own second candidate
-        const result = await driftPass
+    test('refuses a rule set apart with no reason, before any tool reads it', async () => {
+        // Given - the same rule turned off, with no reason
+        const silent = await cli
+            .with({ env: onlyPasses('oxlint') })
             .fixture(directory('./_fixtures/drift/project/'))
-            .fixture(directory('./_fixtures/drift/config-mts/'))
+            .fixture(directory('./_fixtures/drift/off-without-reason/'))
             .link('@jterrazz/typescript')
             .exec('check');
 
-        // Then - the drift report finds the profile at that name too, not "none of this package's"
-        expect(result.stdout.text).toContain('profile                              node');
+        // Then - the linter refuses the settings, naming the rule and what it owes
+        expect(silent.stdout.text).toContain(
+            'sets `no-debugger` with no `{ level, reason }` — a rule the project sets apart from its profile says why',
+        );
+        expect(silent.exitCode).toBe(1);
     });
 
     test('counts the suppressions, and names a tool left behind its range', () => {
@@ -95,8 +81,8 @@ describe('drift', () => {
         const drift = result.stdout.slice(result.stdout.indexOf('Deviations from the profile'));
 
         // Then - the report counts the directive, and names the one tool that deviates
-        expect(drift).toContain('suppressions                         1\n');
-        expect(drift).toContain('tool versions                        knip 0.0.1 old\n');
+        expect(drift).toContain('suppressions                          1\n');
+        expect(drift).toContain('tool versions                         knip 0.0.1 old\n');
     });
 
     test('prints the same reading for a machine under check --json', () => {
@@ -120,11 +106,10 @@ describe('drift', () => {
         // Then - the drift block is one JSON object carrying every row the human block prints
         expect(JSON.parse(reading)).toStrictEqual({
             baseline: null,
-            config: 'own',
+            declaration: null,
             floors: {},
             optOuts: [],
             oxlintSuppressions: null,
-            profile: 'node',
             rulesOff: [],
             sections: {},
             suppressions: 1,
@@ -136,7 +121,6 @@ describe('drift', () => {
                     verdict: 'old',
                 },
             ],
-            unreasoned: [],
         });
     });
 });

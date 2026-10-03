@@ -2,6 +2,7 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import process from 'node:process';
 
+import type { Declaration } from '../../../lint/kit/project/declaration.js';
 import {
     binaryIn,
     HOISTED_BESIDE_PACKAGE,
@@ -34,6 +35,7 @@ export type Targets = { nothing: boolean; paths: string[] };
 
 export type Check = {
     configs: ToolConfigs;
+    declarations: ReadonlyMap<string, Declaration | null>;
     driftArgs: string[];
     fix: boolean;
     formatTargets: Targets;

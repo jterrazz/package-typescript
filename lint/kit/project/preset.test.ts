@@ -21,6 +21,8 @@ const BASE: Preset = {
     settings: { profile: 'node', spine: ['src'] },
 };
 
+const BASE_OF = (): readonly Preset[] => [BASE];
+
 describe('preset', () => {
     test('orders the base first, then each preset after the presets it includes, then the repository', () => {
         // Given - a preset including another, and the repository's own layer
@@ -39,7 +41,7 @@ describe('preset', () => {
         // When - the settings are resolved
         const { problem, resolved } = resolveConfig(
             { presets: [listed], typescript: { architecture: { layers: [layer('own-law')] } } },
-            [BASE],
+            BASE_OF,
         );
 
         // Then - the laws follow the merge order, the repository's last
@@ -70,7 +72,7 @@ describe('preset', () => {
                 ],
                 typescript: { roots: { scripts: 'the release scripts' }, spine: ['src'] },
             },
-            [BASE],
+            BASE_OF,
         );
 
         // Then - the written profile replaced the default, and the spine is the preset's
@@ -93,7 +95,7 @@ describe('preset', () => {
                     },
                 ],
             },
-            [BASE],
+            BASE_OF,
         );
 
         // Then - the nested profile is chosen, and the base comes first
@@ -104,11 +106,12 @@ describe('preset', () => {
 
     test('sets a law aside only with its reason, and names the law it set aside', () => {
         // Given - one opt-out with its reason, one with none, one naming nothing
-        const reasoned = resolveConfig({ optOuts: { 'typescript/base-law': 'until it moves' } }, [
-            BASE,
-        ]);
-        const unreasoned = resolveConfig({ optOuts: { 'typescript/base-law': ' ' } }, [BASE]);
-        const unknown = resolveConfig({ optOuts: { 'typescript/no-such-law': 'why' } }, [BASE]);
+        const reasoned = resolveConfig(
+            { optOuts: { 'typescript/base-law': 'until it moves' } },
+            BASE_OF,
+        );
+        const unreasoned = resolveConfig({ optOuts: { 'typescript/base-law': ' ' } }, BASE_OF);
+        const unknown = resolveConfig({ optOuts: { 'typescript/no-such-law': 'why' } }, BASE_OF);
 
         // Then - the reasoned one drops the law and is counted; the others are refused, the base laws still standing
         expect(reasoned.resolved.layers).toStrictEqual([]);
@@ -129,7 +132,7 @@ describe('preset', () => {
                     { name: 'core', package: '@b/core' },
                 ],
             },
-            [BASE],
+            BASE_OF,
         );
 
         // Then - the collision is named
@@ -141,7 +144,7 @@ describe('preset', () => {
         ['the base named with its laws emptied', { ...BASE, layers: [], names: [] }],
     ])('keeps the base laws where a listing names %s', (_, listed) => {
         // Given - a listing of the base preset that carries none of its laws
-        const { problem, resolved } = resolveConfig({ presets: [listed] }, [BASE]);
+        const { problem, resolved } = resolveConfig({ presets: [listed] }, BASE_OF);
 
         // Then - the base law still stands, and nothing is set aside
         expect(problem).toBeNull();
@@ -192,7 +195,7 @@ describe('preset', () => {
     ])('refuses %s, the base laws still standing', (_, written, refused) => {
         // Given - a settings object that would write a base law away
         // When - the settings are resolved
-        const { problem, resolved } = resolveConfig(written, [BASE]);
+        const { problem, resolved } = resolveConfig(written, BASE_OF);
 
         // Then - the problem is named, and the base law is still held
         expect(problem).toBe(refused);

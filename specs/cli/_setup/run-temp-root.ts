@@ -1,14 +1,20 @@
-import { mkdtempSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 // Under `/tmp`, never the system's `TMPDIR`: a tool walking up for a config reads every parent, and a per-user
 // temp folder can hold hundreds of thousands of entries. macOS `mktemp` ignores `TMPDIR`.
 const BASE = '/tmp';
 
+// A fixture resolves the toolchain the way an install does, from a `node_modules/` above it: its editor files and its settings import it, and the node preset reads `@types/node`.
+const REPOSITORY = resolve(import.meta.dirname, '../../..');
+
 export default function setup(): () => void {
     const previous = process.env.TMPDIR;
     const root = mkdtempSync(join(BASE, 'typescript-specs-'));
     process.env.TMPDIR = root;
+    mkdirSync(join(root, 'node_modules/@jterrazz'), { recursive: true });
+    symlinkSync(REPOSITORY, join(root, 'node_modules/@jterrazz/typescript'));
+    symlinkSync(join(REPOSITORY, 'node_modules/@types'), join(root, 'node_modules/@types'));
 
     return () => {
         if (previous === undefined) {

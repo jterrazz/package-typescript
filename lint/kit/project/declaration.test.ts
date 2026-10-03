@@ -1,0 +1,41 @@
+import { describe, expect, test } from 'vitest';
+
+import { declarationOf } from './declaration.js';
+
+describe('declaration', () => {
+    test('reads a kind on a platform it runs on, and a workspace on none', () => {
+        // Given - the declarations a project writes
+        const declared = [
+            { kind: 'library', platform: 'react' },
+            { kind: 'api', platform: 'bun' },
+            { kind: 'workspace' },
+            {},
+        ].map((written) => declarationOf(written));
+
+        // Then - each is read whole, and a file that declares nothing declares no kind
+        expect(declared).toStrictEqual([
+            { declaration: { kind: 'library', platform: 'react' }, problem: null },
+            { declaration: { kind: 'api', platform: 'bun' }, problem: null },
+            { declaration: { kind: 'workspace', platform: null }, problem: null },
+            { declaration: null, problem: null },
+        ]);
+    });
+
+    test('refuses a kind outside the union, a platform its kind does not run on, and a workspace with one', () => {
+        // Given - the declarations the closed unions refuse
+        const refused = [
+            { kind: 'service', platform: 'node' },
+            { kind: 'website', platform: 'node' },
+            { kind: 'mobile' },
+            { kind: 'workspace', platform: 'node' },
+        ].map((written) => declarationOf(written).problem);
+
+        // Then - each names what it declared and what the union allows
+        expect(refused).toStrictEqual([
+            'declares the kind `service`, which is none of `library`, `api`, `cli`, `website`, `mobile`, `workspace`',
+            'declares a `website` on the platform `node`, where a website runs on `react`, `next`, `astro`',
+            'declares a `mobile` on the platform `undefined`, where a mobile runs on `expo`',
+            'declares a `platform` for a workspace, whose members each declare their own',
+        ]);
+    });
+});

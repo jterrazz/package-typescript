@@ -38,7 +38,7 @@ runs:
 
           ✗ Some checks failed
       files:
-          oxlint-suppressions.json:
+          .jterrazz/oxlint-suppressions.json:
               equals: |
                   {
                       "index.ts": {

@@ -1,13 +1,10 @@
-import presets from '@jterrazz/typescript';
-import { defineConfig, definePreset, typescript } from '@jterrazz/typescript/config';
+import { defineConfig, definePreset } from '@jterrazz/typescript/config';
 import type { JterrazzConfig } from '@jterrazz/typescript/config';
 import { auditDocs } from '@jterrazz/typescript/docs';
-import { base, defineConfig as defineFormat } from '@jterrazz/typescript/oxfmt';
-import type { OxfmtConfig } from '@jterrazz/typescript/oxfmt';
-import { compose, defineConfig as defineLint, nested, node } from '@jterrazz/typescript/oxlint';
+import format from '@jterrazz/typescript/oxfmt';
+import lint from '@jterrazz/typescript/oxlint';
 import type { OxlintConfig } from '@jterrazz/typescript/oxlint';
 import { refusal } from '@jterrazz/typescript/rules';
-import build from '@jterrazz/typescript/tsdown/build';
 
 declare module '@jterrazz/typescript/config' {
     // oxlint-disable-next-line typescript/consistent-type-definitions -- an augmentation merges into an interface only; a type alias would redeclare the name
@@ -17,26 +14,35 @@ declare module '@jterrazz/typescript/config' {
 }
 
 export const settings: JterrazzConfig = defineConfig({
-    presets: [typescript({ profile: 'node' })],
+    kind: 'cli',
+    platform: 'node',
     sibling: { strict: true },
     typescript: { roots: { scripts: 'the release scripts the CI workflow runs' } },
 });
 
+export const workspace = defineConfig({ kind: 'workspace' });
+
+// @ts-expect-error — a project declares what it is
+export const undeclared = defineConfig({});
+
+// @ts-expect-error — an api runs on node or bun, never in a browser
+export const apiInABrowser = defineConfig({ kind: 'api', platform: 'react' });
+
+// @ts-expect-error — a workspace's members each declare their own platform
+export const platformedWorkspace = defineConfig({ kind: 'workspace', platform: 'node' });
+
 // @ts-expect-error — a root maps to the reason the repository keeps it
-export const rootWithNoReason = defineConfig({ typescript: { roots: { scripts: true } } });
+export const rootWithNoReason = defineConfig({ kind: 'library', platform: 'node', typescript: { roots: { scripts: true } } });
 
 // @ts-expect-error — no package of the family declares an `unknown` section
-export const undeclaredSection = defineConfig({ unknown: {} });
+export const undeclaredSection = defineConfig({ kind: 'library', platform: 'node', unknown: {} });
 
 // @ts-expect-error — a preset is named for the package that ships it
 export const namelessPreset = definePreset({ layers: [] });
 
-export const lint: OxlintConfig = defineLint(compose(node, nested(presets.oxlint.node)));
+export const derivedLint: OxlintConfig = lint;
 
-export const format: OxfmtConfig = defineFormat({ ...base, ...presets.oxfmt });
-
-// @ts-expect-error — oxfmt's own options are typed: a width is a number
-export const wrongWidth = defineFormat({ printWidth: 'wide' });
+export const derivedFormat: typeof format = format;
 
 export const message: string = refusal({
     fix: 'name the reason',
@@ -49,5 +55,3 @@ export const message: string = refusal({
 export const readOutsideManual = refusal({ fix: 'f', found: 'x', read: 'https://example.com', why: 'y' });
 
 export const audit: typeof auditDocs = auditDocs;
-
-export const bundled = build;

@@ -11,7 +11,7 @@ runs:
 
           src/domain/account.ts:1:22: error architecture(domain-stays-pure): found: `src/domain/account.ts` imports `src/infrastructure/store.ts` · why: A domain module never reaches for infrastructure. · fix: reach it through a layer the map allows, or change the map where the boundary moved · read: docs/07-quality-checks.md#the-architecture-layer-map-pass
           src/domain/user.ts:1:22: error architecture(domain-stays-pure): found: `src/domain/user.ts` imports `src/infrastructure/store.ts` · why: A domain module never reaches for infrastructure. · fix: reach it through a layer the map allows, or change the map where the boundary moved · read: docs/07-quality-checks.md#the-architecture-layer-map-pass
-          baseline-ratchet  jterrazz.baseline.json › typescript  found: `architecture/domain-stays-pure` is at 2, above its baseline of 1 · why: each count is held exactly, and a count above its entry is a regression · fix: fix the findings, or run 'typescript baseline' to record where the project stands · read: docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds
+          baseline-ratchet  .jterrazz/baseline.json › typescript  found: `architecture/domain-stays-pure` is at 2, above its baseline of 1 · why: each count is held exactly, and a count above its entry is a regression · fix: fix the findings, or run 'typescript baseline' to record where the project stands · read: docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds
           ✗ Failed with exit code 1
 
            END  Finalizing quality checks

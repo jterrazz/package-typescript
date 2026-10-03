@@ -50,16 +50,14 @@ runs:
 
           {
             "baseline": null,
-            "config": "default",
+            "declaration": null,
             "floors": {},
             "optOuts": [],
             "oxlintSuppressions": null,
-            "profile": "node",
             "rulesOff": [],
             "suppressions": 0,
             "sections": {},
-            "tools": [],
-            "unreasoned": []
+            "tools": []
           }
 
            END  Finalizing quality checks

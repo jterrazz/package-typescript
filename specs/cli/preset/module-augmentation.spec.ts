@@ -7,7 +7,7 @@ import { diagnosticsOf, oxlint, sandbox } from './_setup/rulebook.js';
 const FIXTURE = new URL('_fixtures/augmentation/', import.meta.url).pathname;
 
 function rulesOn(file: string): string[] {
-    using work = sandbox(FIXTURE, 'node', 'library');
+    using work = sandbox(FIXTURE, 'node', 'node');
     const report = oxlint(work.path, ['-c', work.config, '--format=json', file]);
 
     return diagnosticsOf(report).map((diagnostic) => diagnostic.code);

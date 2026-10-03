@@ -1,7 +1,6 @@
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { text as streamText } from 'node:stream/consumers';
 import { pathToFileURL } from 'node:url';
@@ -9,7 +8,7 @@ import { stripVTControlCharacters } from 'node:util';
 
 import { isRecord, unpackedInto } from '../../../_shared/_setup/packed/pack.js';
 
-// Packed beside this checkout's install so its imports resolve, and removed when the process ends.
+// Unpacked under this checkout's .artifacts/, beside its install and apart from the run directory other spec files clean up, and removed when the process ends.
 
 const ROOT = resolve(import.meta.dirname, '../../../..');
 
@@ -19,7 +18,8 @@ export function packedTree(): string {
     if (extracted !== undefined) {
         return extracted;
     }
-    const destination = mkdtempSync(join(tmpdir(), 'tarball-audience-'));
+    mkdirSync(join(ROOT, '.artifacts'), { recursive: true });
+    const destination = mkdtempSync(join(ROOT, '.artifacts', 'tarball-audience-'));
     process.once('exit', () => {
         rmSync(destination, { force: true, recursive: true });
     });

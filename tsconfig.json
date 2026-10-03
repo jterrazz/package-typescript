@@ -1,4 +1,3 @@
 {
-    "extends": "./src/presets/tsconfig/node.json",
-    "include": ["specs/**/*.ts", "src/**/*", "lint/**/*"]
+    "extends": "@jterrazz/typescript/tsconfig/node"
 }

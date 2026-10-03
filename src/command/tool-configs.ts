@@ -9,9 +9,9 @@ const OXFMT_CONFIG_NAMES = [
     'oxfmt.config.mts',
 ];
 
-export const DEFAULT_OXLINT_CONFIG = presetAt('dist/presets/oxlint/declared.js');
+export const DEFAULT_OXLINT_CONFIG = presetAt('dist/oxlint.js');
 
-export const DEFAULT_OXFMT_CONFIG = presetAt('dist/presets/oxfmt/style.js');
+export const DEFAULT_OXFMT_CONFIG = presetAt('dist/oxfmt.js');
 
 export type ToolConfigs = {
     oxfmt: { args: string[]; ignoresOf: string | undefined; own: string | undefined };

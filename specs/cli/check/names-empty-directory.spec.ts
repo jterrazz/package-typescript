@@ -89,7 +89,7 @@ describe('names-empty-directory', () => {
         expect(names).toStrictEqual([
             'src/abandoned/:1:1: error names(no-empty-directory): found: `src/abandoned/` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it — `typescript fix` does — or put the file it was made for in it · read: docs/07-quality-checks.md#an-empty-directory',
             'src/scaffold/:1:1: error names(no-empty-directory): found: `src/scaffold/` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it — `typescript fix` does — or put the file it was made for in it · read: docs/07-quality-checks.md#an-empty-directory',
-            "found: every finding above, and jterrazz.baseline.json records no `names/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds",
+            "found: every finding above, and .jterrazz/baseline.json records no `names/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds",
             '✗ Failed with exit code 1',
         ]);
     });
@@ -128,7 +128,7 @@ describe('names-empty-directory', () => {
         expect(names.map((line) => line.split(':1:1: ')[0] ?? line)).toStrictEqual([
             'src/abandoned/',
             'src/scaffold/',
-            "found: every finding above, and jterrazz.baseline.json records no `names/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds",
+            "found: every finding above, and .jterrazz/baseline.json records no `names/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds",
             '✗ Failed with exit code 1',
         ]);
     });

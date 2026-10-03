@@ -5,15 +5,19 @@ import { cli } from '../packed-cli.specification.js';
 
 describe('typescript', () => {
     test('the bin npm links from the install checks a consumer project that keeps every rule', async () => {
-        // Given - a consumer's project on the node profile, its two configs written as the manual writes them
+        // Given - a consumer api declared on node, its editor files the one-liners its declaration derives
         const result = await cli
             .fixture(directory('./_fixtures/project/'))
             .exec('typescript check');
 
-        // Then - every pass runs from the install and passes, and the drift report reads the profile the config names
+        // Then - every pass runs from the install and passes, and the drift report reads the declaration
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toMatch(`
              START  Running quality checks
+
+             RUN  Config (one file)
+
+            ✓ Passed
 
              RUN  TypeScript Check
 
@@ -32,6 +36,10 @@ describe('typescript', () => {
             ✓ Passed
 
              RUN  Knip (unused code)
+
+            ✓ Passed
+
+             RUN  Architecture (layer map)
 
             ✓ Passed
 
@@ -57,12 +65,12 @@ describe('typescript', () => {
 
              DRIFT  Deviations from the profile
 
-              profile                              node
-              rules off vs profile                 none
-              suppressions                         0
-              oxlint-suppressions.json             nothing held
-              jterrazz.baseline.json › typescript  nothing held
-              tool versions                        in range
+              declared                              api on node
+              rules off vs profile                  none
+              suppressions                          0
+              .jterrazz/oxlint-suppressions.json    nothing held
+              .jterrazz/baseline.json › typescript  nothing held
+              tool versions                         in range
 
              END  Finalizing quality checks
 
@@ -82,6 +90,10 @@ describe('typescript', () => {
         expect(result.stdout).toMatch(`
              START  Running quality fixes
 
+             RUN  Config (one file)
+
+            ✓ Passed
+
              RUN  TypeScript Check
 
             ✓ Passed
@@ -95,6 +107,10 @@ describe('typescript', () => {
             ✓ Passed
 
              RUN  Gitignore (artefacts)
+
+            ✓ Passed
+
+             RUN  Architecture (layer map)
 
             ✓ Passed
 

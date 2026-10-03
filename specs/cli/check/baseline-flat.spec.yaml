@@ -1,4 +1,4 @@
-description: refuses a jterrazz.baseline.json whose counts sit outside a section
+description: refuses a .jterrazz/baseline.json whose counts sit outside a section
 fixture: ./_fixtures/baseline/flat/
 runs:
     - command: check
@@ -12,7 +12,7 @@ runs:
 
            RUN  Oxlint Check
 
-          baseline-unreadable  jterrazz.baseline.json  found: jterrazz.baseline.json keys `eslint/no-debugger` to something that is not a section of counts · why: the ratchet reads its counts from that file, and a file it cannot read holds no debt it can judge · fix: correct jterrazz.baseline.json until it is one JSON object of sections, or delete it and run 'typescript baseline' · read: docs/07-quality-checks.md#the-ratchet
+          baseline-unreadable  .jterrazz/baseline.json  found: .jterrazz/baseline.json keys `eslint/no-debugger` to something that is not a section of counts · why: the ratchet reads its counts from that file, and a file it cannot read holds no debt it can judge · fix: correct .jterrazz/baseline.json until it is one JSON object of sections, or delete it and run 'typescript baseline' · read: docs/07-quality-checks.md#the-ratchet
           ✗ Failed with exit code 1
 
            RUN  Oxfmt Check
@@ -45,12 +45,12 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            profile                              node (the default — no config of its own)
-            rules off vs profile                 none
-            suppressions                         0
-            oxlint-suppressions.json             nothing held
-            jterrazz.baseline.json › typescript  unreadable
-            tool versions                        in range
+            declared                              nothing — node, the default
+            rules off vs profile                  none
+            suppressions                          0
+            .jterrazz/oxlint-suppressions.json    nothing held
+            .jterrazz/baseline.json › typescript  unreadable
+            tool versions                         in range
 
            END  Finalizing quality checks
 
@@ -60,4 +60,4 @@ runs:
       stdout: |4
            TYPESCRIPT  Recording the baseline...
 
-          found: jterrazz.baseline.json keys `eslint/no-debugger` to something that is not a section of counts · why: the typescript section is written beside the others, and a file that cannot be read as sections would lose them · fix: correct jterrazz.baseline.json until it is one JSON object of sections, or delete it, then run again · read: docs/07-quality-checks.md#recording-it
+          found: .jterrazz/baseline.json keys `eslint/no-debugger` to something that is not a section of counts · why: the typescript section is written beside the others, and a file that cannot be read as sections would lose them · fix: correct .jterrazz/baseline.json until it is one JSON object of sections, or delete it, then run again · read: docs/07-quality-checks.md#recording-it

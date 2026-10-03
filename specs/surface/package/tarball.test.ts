@@ -116,37 +116,18 @@ describe('tarball', () => {
     });
 
     test('every rule a packed profile states is a consumer decision the catalogue holds for it', async () => {
-        // Given - the six profiles, as both packed entries hand them out, and the catalogue they are compiled from
+        // Given - the six profiles as the packed rulebook compiles them, and the catalogue they are compiled from
         const tree = packedTree();
-        const oxlint = await loadPacked(tree, 'dist/oxlint.js');
-        const index = await loadPacked(tree, 'dist/index.js');
+        const rulebook = await loadPacked(tree, 'dist/rulebook.js');
+        const profiles = isRecord(rulebook.PROFILE_CONFIGS) ? rulebook.PROFILE_CONFIGS : {};
         const entries: readonly Record<string, unknown>[] = decisions(PROFILES);
-        const bundled = isRecord(index.oxlint) ? index.oxlint : {};
 
         // Then - each rule stated, at the top or in an override, is decided so for that profile
         for (const name of PROFILE_NAMES) {
-            for (const config of [oxlint[name], bundled[name]]) {
-                expect(statedRules(config).length, `${name} states no rule`).toBeGreaterThan(100);
-                expect(undecided(name, config, entries)).toStrictEqual([]);
-            }
-        }
-    });
-
-    test('every profile of the table is packed as the preset a config is handed by path', async () => {
-        // Given - the profiles the table declares, and the oxlint entry that compiles them
-        const tree = packedTree();
-        const oxlint = await loadPacked(tree, 'dist/oxlint.js');
-
-        const presets = await Promise.all(
-            PROFILE_NAMES.map(async (name) => ({
-                name,
-                preset: await loadPacked(tree, `dist/presets/oxlint/profiles/${name}.js`),
-            })),
-        );
-
-        // Then - each has its preset beside the entry, and the preset is that profile
-        for (const { name, preset } of presets) {
-            expect.soft(preset.default, `${name} has no packed preset`).toStrictEqual(oxlint[name]);
+            expect(statedRules(profiles[name]).length, `${name} states no rule`).toBeGreaterThan(
+                100,
+            );
+            expect(undecided(name, profiles[name], entries)).toStrictEqual([]);
         }
     });
 

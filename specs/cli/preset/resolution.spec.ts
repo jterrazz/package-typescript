@@ -12,6 +12,10 @@ describe('resolution', () => {
         expect(result.stdout).toMatch(`
              START  Running quality checks
 
+             RUN  Config (one file)
+
+            ✓ Passed
+
              RUN  TypeScript Check
 
             ✓ Passed
@@ -25,6 +29,10 @@ describe('resolution', () => {
             ✓ Passed
 
              RUN  Knip (unused code)
+
+            ✓ Passed
+
+             RUN  Architecture (layer map)
 
             ✓ Passed
 
@@ -50,12 +58,12 @@ describe('resolution', () => {
 
              DRIFT  Deviations from the profile
 
-              profile                              node (the default — no config of its own)
-              rules off vs profile                 none
-              suppressions                         0
-              oxlint-suppressions.json             nothing held
-              jterrazz.baseline.json › typescript  nothing held
-              tool versions                        tsc (Go) absent, typescript absent, oxlint absent, oxfmt absent, oxlint-tsgolint absent, knip absent, dependency-cruiser absent, ls-lint absent, rumdl absent
+              declared                              api on node
+              rules off vs profile                  none
+              suppressions                          0
+              .jterrazz/oxlint-suppressions.json    nothing held
+              .jterrazz/baseline.json › typescript  nothing held
+              tool versions                         tsc (Go) absent, typescript absent, oxlint absent, oxfmt absent, oxlint-tsgolint absent, knip absent, dependency-cruiser absent, ls-lint absent, rumdl absent
 
              END  Finalizing quality checks
 

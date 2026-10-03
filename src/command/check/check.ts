@@ -1,8 +1,12 @@
+import process from 'node:process';
+
+import { readSettings } from '../../../lint/index.rules.js';
+import { withStagedSuppressions } from '../../../lint/kit/baseline/oxlint-suppressions.js';
+import type { Declaration } from '../../../lint/kit/project/declaration.js';
 import { checker } from '../checker.js';
 import { inScratch } from '../scratch.js';
 import { badge, GREEN, print, RED, RESET } from '../terminal.js';
 import { toolConfigs } from '../tool-configs.js';
-import { presetAt } from '../toolchain.js';
 import { logsIn } from './logs.js';
 import type { Selected } from './passes.js';
 import { presetRuns } from './presets.js';
@@ -27,22 +31,36 @@ export type { CheckPass, Selected } from './passes.js';
 
 type Reported = Verdict & { label: string };
 
-function preparedCheck(
+async function declarationsOf(units: readonly string[]): Promise<Map<string, Declaration | null>> {
+    const read = await Promise.all(
+        units.map(async (unit) => {
+            const { resolved } = await readSettings(unit);
+
+            return [unit, resolved.declaration] as const;
+        }),
+    );
+
+    return new Map(read);
+}
+
+async function preparedCheck(
     args: readonly string[],
     fix: boolean,
     selected: Selected,
     scratch: string,
-): Check {
+): Promise<Check> {
     const empty = { nothing: false, paths: [] };
+    const members = membersOf();
 
     return {
         configs: toolConfigs(),
+        declarations: await declarationsOf(['.', ...members]),
         ...argumentsOf(args),
         fix,
         formatTargets: empty,
         lintTargets: empty,
         logs: logsIn(scratch),
-        members: membersOf(),
+        members,
         selected,
         tools: toolsOf(),
     };
@@ -73,6 +91,7 @@ async function reported(
     passes: Started,
     presets: readonly PresetRun[],
 ): Promise<Reported[]> {
+    const config = await settled(passes.config);
     const typescript = await settled(passes.typescript);
     const linted = await settledLint(run, passes);
     const comments = await commentsVerdict(run, passes);
@@ -106,6 +125,7 @@ async function reported(
     const { fix, selected } = run;
 
     return [
+        ...labelled('Config (one file)', config, fix),
         ...labelled('TypeScript Check', typescript),
         ...labelled(fix ? 'Oxlint Fix' : 'Oxlint Check', lintVerdictOf(run, linted)),
         ...labelled(fix ? 'Oxfmt Format' : 'Oxfmt Check', selected('oxfmt') ? format : undefined),
@@ -130,20 +150,7 @@ async function drift(run: Check): Promise<number> {
     }
     print(`\n${badge('DRIFT')} Deviations from the profile\n\n`);
 
-    return await checker(
-        'drift',
-        [
-            '.',
-            '--oxlint',
-            run.tools.oxlint,
-            ...run.configs.oxlint.args,
-            '--profiles',
-            presetAt('dist/presets/oxlint/profiles'),
-            ...run.lintArgs,
-            ...run.driftArgs,
-        ],
-        'inherit',
-    );
+    return await checker('drift', ['.', ...run.lintArgs, ...run.driftArgs], 'inherit');
 }
 
 function concluded(fix: boolean, passed: boolean): number {
@@ -161,18 +168,27 @@ export async function runChecks(
     args: readonly string[],
     { fix, selected }: { fix: boolean; selected: Selected },
 ): Promise<number> {
-    return await inScratch(async (scratch) => {
-        print(`${badge('START')} ${fix ? 'Running quality fixes' : 'Running quality checks'}\n`);
-        const prepared = preparedCheck(args, fix, selected, scratch);
-        const presets = await presetRuns(prepared);
-        const run = await withTargets(prepared);
-        const passes = await started(run);
-        const verdicts = await reported(run, passes, presets);
-        for (const verdict of verdicts) {
-            reportPass(run.logs, verdict);
-        }
-        const drifted = await drift(run);
+    return await withStagedSuppressions(
+        process.cwd(),
+        async () =>
+            await inScratch(async (scratch) => {
+                print(
+                    `${badge('START')} ${fix ? 'Running quality fixes' : 'Running quality checks'}\n`,
+                );
+                const prepared = await preparedCheck(args, fix, selected, scratch);
+                const presets = await presetRuns(prepared);
+                const run = await withTargets(prepared);
+                const passes = await started(run);
+                const verdicts = await reported(run, passes, presets);
+                for (const verdict of verdicts) {
+                    reportPass(run.logs, verdict);
+                }
+                const drifted = await drift(run);
 
-        return concluded(fix, drifted === 0 && verdicts.every(({ status }) => status === 0));
-    });
+                return concluded(
+                    fix,
+                    drifted === 0 && verdicts.every(({ status }) => status === 0),
+                );
+            }),
+    );
 }

@@ -9,7 +9,6 @@ import {
     readFileSync,
     rmSync,
     symlinkSync,
-    writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -57,12 +56,6 @@ async function checked(runner: string, cwd: string): Promise<{ output: string; s
     };
 }
 
-function namedImports(names: readonly string[]): string {
-    return names
-        .toSorted((left, right) => (left.toLowerCase() < right.toLowerCase() ? -1 : 1))
-        .join(', ');
-}
-
 function storeWith(directory: string, withAstro: boolean): string {
     const store = join(directory, '.pnpm/@jterrazz+typescript/node_modules');
     const installed = join(store, '@jterrazz/typescript');
@@ -96,7 +89,6 @@ function consumerOf(
     name: string,
     stores: { astro: string; plain: string },
 ): { name: string; project: string; runner: string } {
-    const profile = name.split('-')[0] ?? name;
     const project = join(root, name);
     mkdirSync(join(project, 'node_modules/@jterrazz'), { recursive: true });
     cpSync(join(CONSUMERS, name), project, { recursive: true });
@@ -114,14 +106,6 @@ function consumerOf(
         join(project, 'node_modules/@types/node'),
     );
     symlinkSync(join(REPOSITORY, 'node_modules/vitest'), join(project, 'node_modules/vitest'));
-    writeFileSync(
-        join(project, 'oxlint.config.ts'),
-        `import { ${namedImports(['defineConfig', profile])} } from '@jterrazz/typescript/oxlint';\n\nexport default defineConfig(${profile});\n`,
-    );
-    writeFileSync(
-        join(project, 'oxfmt.config.ts'),
-        "import { base, defineConfig } from '@jterrazz/typescript/oxfmt';\n\nexport default defineConfig(base);\n",
-    );
 
     return { name, project, runner: join(installed, 'dist/typescript.js') };
 }

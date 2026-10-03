@@ -1,4 +1,5 @@
 export const CHECK_PASSES = [
+    'config',
     'typescript',
     'oxlint',
     'oxfmt',

@@ -2,13 +2,16 @@ import { appendFileSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import process from 'node:process';
 
+import { readSettings } from '../../../lint/index.rules.js';
 import {
     keptAcross,
     OXLINT_SUPPRESSIONS,
     removeWhenEmpty,
 } from '../../../lint/kit/baseline/oxlint-suppressions.js';
 import { invariant, messageOf, refusal } from '../../../lint/kit/catalogue/lesson.js';
+import { buildPlanOf, buildSettingsOf } from '../../../lint/kit/project/build-plan.js';
 import { isFileOnDisk } from '../disk.js';
+import { knipSettingsOf } from '../knip-settings.js';
 import { mergedKnipConfig } from '../merge-knip-config.js';
 import { run } from '../processes.js';
 import { DEFAULT_OXLINT_CONFIG } from '../tool-configs.js';
@@ -135,29 +138,40 @@ export function formatCheck(check: Check): Launched | undefined {
     return { log, status: oxfmt(check, ['--check'], log) };
 }
 
-export function knipPass(check: Check): Launched | undefined {
-    if (check.fix || !check.selected('knip')) {
-        return undefined;
-    }
+async function knipRun(check: Check, log: string): Promise<number> {
     const merged = check.logs.at('knip-merged.json');
-    const log = check.logs.at('knip.log');
-    const project = ['knip.jsonc', 'knip.json'].find((name) => isFileOnDisk(name));
     try {
-        const config = mergedKnipConfig(presetAt('src/presets/knip/config.json'), project);
+        const { resolved } = await readSettings('.');
+        const declared = resolved.declaration;
+        const steps = buildPlanOf('.', {
+            declaration: declared,
+            settings: buildSettingsOf(resolved.sections.typescript).settings,
+        });
+        const config = mergedKnipConfig(presetAt('src/presets/knip/config.json'), {
+            entries: steps.flatMap(({ entry }) => Object.values(entry)),
+            library: declared === null ? null : declared.kind === 'library',
+            settings: knipSettingsOf(resolved.sections.typescript),
+        });
         writeFileSync(merged, JSON.stringify(config));
     } catch (error) {
         writeFileSync(log, `${messageOf(error)}\n`);
 
-        return { log, status: Promise.resolve(1) };
+        return 1;
     }
 
-    return {
-        log,
-        status: run(check.tools.knip, ['--no-progress', '--no-config-hints', '--config', merged], {
-            stderr: 'stdout',
-            stdout: { path: log },
-        }),
-    };
+    return await run(check.tools.knip, ['--no-progress', '--no-config-hints', '--config', merged], {
+        stderr: 'stdout',
+        stdout: { path: log },
+    });
+}
+
+export function knipPass(check: Check): Launched | undefined {
+    if (check.fix || !check.selected('knip')) {
+        return undefined;
+    }
+    const log = check.logs.at('knip.log');
+
+    return { log, status: knipRun(check, log) };
 }
 
 async function astroRun(check: Check, log: string): Promise<number> {
@@ -183,7 +197,9 @@ async function astroRun(check: Check, log: string): Promise<number> {
 }
 
 export function astroPass(check: Check): Launched | undefined {
-    if (!check.selected('astro') || !usesAstro('.')) {
+    const declared = check.declarations.get('.') ?? null;
+    const astro = declared === null ? usesAstro('.') : declared.platform === 'astro';
+    if (!check.selected('astro') || !astro) {
         return undefined;
     }
     const log = check.logs.at('astro.log');
