@@ -26,7 +26,7 @@ const PASSES: Passes = Object.freeze({
         const [{ auditDocs, HEAD_LINES }, { readDocsTree }, { publishes }] = await Promise.all([
             import('./consumer/checks/docs.js'),
             import('./kit/project/docs-tree.js'),
-            import('./kit/project/declaration.js'),
+            import('./kit/project/project-kind.js'),
         ]);
 
         return {

@@ -3,10 +3,10 @@ import type { Counts } from '../../kit/baseline/baseline-file.js';
 import { suppressedCount, SUPPRESSIONS_LEDGER } from '../../kit/baseline/oxlint-suppressions.js';
 import type { Pass } from '../../kit/checker/pass.js';
 import { countSuppressions } from '../../kit/project/comments.js';
-import type { Declaration } from '../../kit/project/declaration.js';
 import { objectOf } from '../../kit/project/json.js';
 import type { OptOut } from '../../kit/project/preset.js';
 import { orRefused } from '../../kit/project/project-files.js';
+import type { ProjectIdentity } from '../../kit/project/project-kind.js';
 import { levelOf, projectOxlintOf } from '../../kit/project/project-oxlint.js';
 import { toolVersions } from '../../kit/project/tool-versions.js';
 import type { ToolVersion } from '../../kit/project/tool-versions.js';
@@ -87,7 +87,7 @@ function baselineReader(
 const rulesOffOf = (off: readonly string[]): string =>
     off.length === 0 ? 'none' : `${off.length} (${off.join(', ')})`;
 
-function declaredOf(declaration: Declaration | null): Row[] {
+function declaredOf(declaration: ProjectIdentity | null): Row[] {
     return declaration === null
         ? [['declared', 'nothing — node, the default']]
         : [
@@ -109,7 +109,7 @@ function rowsOf(
         suppressions,
     }: {
         behind: readonly ToolVersion[];
-        declaration: Declaration | null;
+        declaration: ProjectIdentity | null;
         floors: ReadonlySet<string>;
         off: readonly string[];
         optOuts: readonly OptOut[];

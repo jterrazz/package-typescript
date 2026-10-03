@@ -4,7 +4,7 @@ import {
     DEPENDENCY_CRUISER_CONFIGS,
     SETTINGS_FILE,
 } from '../../../lint/kit/project/jterrazz-config.js';
-import { publishes } from '../../../lint/kit/project/declaration.js';
+import { publishes } from '../../../lint/kit/project/project-kind.js';
 import { checker } from '../checker.js';
 import { isDirectoryOnDisk, isFileOnDisk } from '../disk.js';
 import { presetAt } from '../toolchain.js';

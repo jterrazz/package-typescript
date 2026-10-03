@@ -8,11 +8,11 @@ import { PROFILES } from './consumer/rulebook/profiles.js';
 import { unsafeFixers } from './kit/catalogue/decisions.js';
 import { refusal } from './kit/catalogue/lesson.js';
 import { merge, profile } from './kit/compiler/compile.js';
-import type { Platform } from './kit/project/declaration.js';
 import { objectOf } from './kit/project/json.js';
 import { readConfig, SETTINGS_FILE } from './kit/project/jterrazz-config.js';
 import { presetLesson } from './kit/project/preset.js';
 import type { Resolution } from './kit/project/preset.js';
+import type { Platform } from './kit/project/project-kind.js';
 import { projectOxlintOf } from './kit/project/project-oxlint.js';
 import { workspaceMembers } from './kit/project/workspace-members.js';
 

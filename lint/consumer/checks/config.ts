@@ -3,8 +3,6 @@ import { join } from 'node:path';
 import type { Teaching } from '../../kit/catalogue/lesson.js';
 import { defineCheck, rowNamed } from '../../kit/catalogue/rule.js';
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
-import { KINDS, listed, PLATFORMS } from '../../kit/project/declaration.js';
-import type { Declaration } from '../../kit/project/declaration.js';
 import {
     namesBeside,
     OXFMT_CONFIG,
@@ -21,6 +19,8 @@ import {
 } from '../../kit/project/editor-files.js';
 import { parsedObject } from '../../kit/project/json.js';
 import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
+import { KINDS, listed, PLATFORMS } from '../../kit/project/project-kind.js';
+import type { ProjectIdentity } from '../../kit/project/project-kind.js';
 import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import FINDINGS from '../catalogue/findings.json' with { type: 'json' };
 import { manifestGap, NAMED } from './config.manifest.js';
@@ -71,7 +71,7 @@ function finding(id: `config/${string}`, path: string, teaching: Teaching, fixed
 }
 
 type Unit = {
-    declaration: Declaration | null;
+    declaration: ProjectIdentity | null;
     files: Readonly<Record<string, EditorFile>>;
     path: string;
     problem: null | string;

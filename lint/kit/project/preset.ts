@@ -2,13 +2,13 @@ import type { IRegularForbiddenRuleType } from 'dependency-cruiser';
 import type { OxlintConfig } from 'oxlint';
 
 import type { ChapterAnchor, Unread } from '../catalogue/lesson.js';
-import { declarationOf } from './declaration.js';
-import type { Declaration } from './declaration.js';
 import type { EditorFile } from './editor-files.js';
 import { isJsonObject, objectOf } from './json.js';
 import { lawSettingRefused, writtenLawSetting } from './law-settings.js';
 import { optOutsOf } from './opt-outs.js';
 import type { OptOut } from './opt-outs.js';
+import { readProjectKind } from './project-kind.js';
+import type { ProjectIdentity } from './project-kind.js';
 import { mergeSettings } from './settings-merge.js';
 
 export type ArchitectureRule = Pick<IRegularForbiddenRuleType, 'from' | 'to'> & {
@@ -57,11 +57,11 @@ export type { OptOut } from './opt-outs.js';
 
 export type PresetLaw = `${string}/${string}`;
 
-export type BasePresets = (declaration: Declaration | null) => readonly Preset[];
+export type BasePresets = (declaration: ProjectIdentity | null) => readonly Preset[];
 
 export type Resolved = {
     baseline: string[];
-    declaration: Declaration | null;
+    declaration: ProjectIdentity | null;
     floors: string[];
     laws: PresetLaw[];
     layers: unknown[];
@@ -254,7 +254,7 @@ export function resolveConfig(declaredSettings: object, baseOf: BasePresets): Re
                 ? EMPTY
                 : resolveConfig(EMPTY_DECLARATION, baseOf).resolved,
     });
-    const { declaration, problem: undeclared } = declarationOf(declared);
+    const { declaration, problem: undeclared } = readProjectKind(declared);
     if (undeclared !== null) {
         return refusedWith(undeclared);
     }

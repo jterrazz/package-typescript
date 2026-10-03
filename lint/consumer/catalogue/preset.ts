@@ -1,7 +1,7 @@
-import type { Declaration, Platform } from '../../kit/project/declaration.js';
 import { OXFMT_CONFIG, OXLINT_CONFIG } from '../../kit/project/editor-config-names.js';
 import type { EditorFile } from '../../kit/project/editor-files.js';
 import type { ArchitectureRule, BasePresets, Preset, Sources } from '../../kit/project/preset.js';
+import type { ProjectIdentity, Platform } from '../../kit/project/project-kind.js';
 
 const READ = 'docs/01-architecture.md#the-judging-layer';
 
@@ -154,7 +154,9 @@ const fromTheToolchain = (tool: 'oxfmt' | 'oxlint'): EditorFile => ({
     text: `import { ${tool}Config } from '@jterrazz/typescript/${tool}';\n\nexport default await ${tool}Config(import.meta.url);\n`,
 });
 
-const editorFilesOf = (declaration: Declaration | null): Readonly<Record<string, EditorFile>> => ({
+const editorFilesOf = (
+    declaration: ProjectIdentity | null,
+): Readonly<Record<string, EditorFile>> => ({
     [OXFMT_CONFIG]: fromTheToolchain('oxfmt'),
     [OXLINT_CONFIG]: fromTheToolchain('oxlint'),
     'tsconfig.json': {
@@ -165,7 +167,7 @@ const editorFilesOf = (declaration: Declaration | null): Readonly<Record<string,
     },
 });
 
-export function typescriptPreset(declaration: Declaration | null): Preset {
+export function typescriptPreset(declaration: ProjectIdentity | null): Preset {
     const platformRoots =
         declaration?.platform === undefined || declaration.platform === null
             ? {}

@@ -266,7 +266,7 @@ function foreignRoot(root: string, prefix: string): Finding {
     );
 }
 
-function declarationOf(
+function declaredRootFindings(
     declared: Settings['roots'],
     roots: ReadonlySet<string>,
     prefix: string,
@@ -336,7 +336,7 @@ function spineOf(
             .toSorted((left, right) => (left < right ? -1 : 1))
             .filter((root) => !isCodified(root))
             .map((root) => foreignRoot(root, prefix)),
-        ...declarationOf(declared, roots, prefix),
+        ...declaredRootFindings(declared, roots, prefix),
     ];
 }
 

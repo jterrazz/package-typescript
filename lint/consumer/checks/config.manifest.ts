@@ -1,6 +1,6 @@
-import { PUBLICATION } from '../../kit/project/declaration.js';
-import type { ProjectKind } from '../../kit/project/declaration.js';
 import { isJsonObject } from '../../kit/project/json.js';
+import { PUBLICATION } from '../../kit/project/project-kind.js';
+import type { ProjectKind } from '../../kit/project/project-kind.js';
 
 export const NAMED: Readonly<Record<ProjectKind, string>> = {
     api: 'an api',

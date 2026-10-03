@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { declarationOf } from './declaration.js';
+import { readProjectKind } from './project-kind.js';
 
-describe('declaration', () => {
+describe('readProjectKind', () => {
     test('reads a kind on a platform it runs on, and a workspace on none', () => {
         // Given - the declarations a project writes
         const declared = [
@@ -10,7 +10,7 @@ describe('declaration', () => {
             { kind: 'api', platform: 'bun' },
             { kind: 'workspace' },
             {},
-        ].map((written) => declarationOf(written));
+        ].map((written) => readProjectKind(written));
 
         // Then - each is read whole, and a file that declares nothing declares no kind
         expect(declared).toStrictEqual([
@@ -28,7 +28,7 @@ describe('declaration', () => {
             { kind: 'website', platform: 'node' },
             { kind: 'mobile' },
             { kind: 'workspace', platform: 'node' },
-        ].map((written) => declarationOf(written).problem);
+        ].map((written) => readProjectKind(written).problem);
 
         // Then - each names what it declared and what the union allows
         expect(refused).toStrictEqual([

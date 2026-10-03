@@ -125,7 +125,7 @@ function isNamedFor(name: string, fileName: string): boolean {
         .some((part) => bare(name).includes(bare(part)));
 }
 
-function declarationOf(
+function exportedSurfaceOf(
     unit: string,
     file: string,
     fileName: string,
@@ -233,7 +233,7 @@ function judgedDeclaration({
         findings: made,
         functions,
         values,
-    } = declarationOf(unit, file, rest.at(-1) ?? '', folder);
+    } = exportedSurfaceOf(unit, file, rest.at(-1) ?? '', folder);
 
     return {
         candidates: functions.length + values.length > 0 ? [{ file, functions, values }] : [],

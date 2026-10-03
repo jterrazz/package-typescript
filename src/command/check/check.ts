@@ -2,7 +2,7 @@ import process from 'node:process';
 
 import { readSettings } from '../../../lint/index.rules.js';
 import { withStagedSuppressions } from '../../../lint/kit/baseline/oxlint-suppressions.js';
-import type { Declaration } from '../../../lint/kit/project/declaration.js';
+import type { ProjectIdentity } from '../../../lint/kit/project/project-kind.js';
 import { checker } from '../checker.js';
 import { inScratch } from '../scratch.js';
 import { badge, GREEN, print, RED, RESET } from '../terminal.js';
@@ -31,7 +31,9 @@ export type { CheckPass, Selected } from './passes.js';
 
 type Reported = Verdict & { label: string };
 
-async function declarationsOf(units: readonly string[]): Promise<Map<string, Declaration | null>> {
+async function declarationsOf(
+    units: readonly string[],
+): Promise<Map<string, ProjectIdentity | null>> {
     const read = await Promise.all(
         units.map(async (unit) => {
             const { resolved } = await readSettings(unit);

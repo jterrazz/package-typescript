@@ -31,7 +31,7 @@ const PLATFORMS_OF: PlatformsOf = {
     website: ['react', 'next', 'astro'],
 };
 
-export type Declaration = { kind: ProjectKind; platform: null | Platform };
+export type ProjectIdentity = { kind: ProjectKind; platform: null | Platform };
 
 export type Publication = 'members' | 'private' | 'published';
 
@@ -44,10 +44,8 @@ export const PUBLICATION: Readonly<Record<ProjectKind, Publication>> = Object.fr
     workspace: 'members',
 });
 
-export const publishes = (declaration: Declaration | null | undefined): boolean =>
-    declaration !== null &&
-    declaration !== undefined &&
-    PUBLICATION[declaration.kind] === 'published';
+export const publishes = (identity: ProjectIdentity | null | undefined): boolean =>
+    identity !== null && identity !== undefined && PUBLICATION[identity.kind] === 'published';
 
 const isKind = (value: unknown): value is ProjectKind =>
     typeof value === 'string' && (KINDS as readonly string[]).includes(value);
@@ -58,9 +56,9 @@ const isPlatform = (value: unknown): value is Platform =>
 export const listed = (values: readonly string[]): string =>
     values.map((one) => `\`${one}\``).join(', ');
 
-export type DeclarationRead = { declaration: Declaration | null; problem: null | string };
+export type ProjectKindRead = { declaration: ProjectIdentity | null; problem: null | string };
 
-export function declarationOf(declared: object): DeclarationRead {
+export function readProjectKind(declared: object): ProjectKindRead {
     const { kind, platform } = isJsonObject(declared) ? declared : {};
     if (kind === undefined && platform === undefined) {
         return { declaration: null, problem: null };

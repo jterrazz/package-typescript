@@ -32,7 +32,7 @@ type RuleContext = {
     sourceCode: SourceCode;
 };
 
-type Declaration = { anchor: Node; name: string | undefined; owner?: Node | null | undefined };
+type Binding = { anchor: Node; name: string | undefined; owner?: Node | null | undefined };
 
 type LineOf = (offset: number) => number;
 
@@ -104,7 +104,7 @@ function exportedLocalsOf(program: Node): Map<string, string[]> {
     return exported;
 }
 
-function memberOf(fn: Node): Declaration | null {
+function memberOf(fn: Node): Binding | null {
     const { parent } = fn;
     if (parent === undefined || !MEMBERS.has(parent.type) || parent.value !== fn) {
         return null;
@@ -114,7 +114,7 @@ function memberOf(fn: Node): Declaration | null {
     return { anchor: parent, name: owner?.id?.name, owner };
 }
 
-function declarationOf(fn: Node): Declaration | null {
+function bindingOf(fn: Node): Binding | null {
     const { parent } = fn;
     if (parent === undefined) {
         return null;
@@ -137,18 +137,18 @@ function declarationOf(fn: Node): Declaration | null {
 }
 
 function isPublished(
-    declaration: Declaration,
+    binding: Binding,
     exportedLocals: ReadonlyMap<string, readonly string[]>,
     published: ReturnType<typeof publishedNamesOf>,
 ): boolean {
-    if (published === null || declaration.name === undefined) {
+    if (published === null || binding.name === undefined) {
         return false;
     }
-    const outer = declaration.owner ?? declaration.anchor;
+    const outer = binding.owner ?? binding.anchor;
     const direct = EXPORTS.has(outer.parent?.type) || EXPORTS.has(outer.parent?.parent?.type);
     const names = direct
-        ? [outer.parent?.type === 'ExportDefaultDeclaration' ? 'default' : declaration.name]
-        : (exportedLocals.get(declaration.name) ?? []);
+        ? [outer.parent?.type === 'ExportDefaultDeclaration' ? 'default' : binding.name]
+        : (exportedLocals.get(binding.name) ?? []);
 
     return names.some((name) => published === EVERY_NAME || published.has(name));
 }
@@ -224,15 +224,14 @@ export const commentNoLongerThanItsFunction = defineRule(
                 if (body === undefined || Array.isArray(body)) {
                     return;
                 }
-                const declaration = declarationOf(fn);
-                if (declaration === null || isPublished(declaration, exportedLocals, published)) {
+                const binding = bindingOf(fn);
+                if (binding === null || isPublished(binding, exportedLocals, published)) {
                     return;
                 }
                 const anchor =
-                    declaration.anchor.parent !== undefined &&
-                    EXPORTS.has(declaration.anchor.parent.type)
-                        ? declaration.anchor.parent
-                        : declaration.anchor;
+                    binding.anchor.parent !== undefined && EXPORTS.has(binding.anchor.parent.type)
+                        ? binding.anchor.parent
+                        : binding.anchor;
                 const { first, lines } = documentingLinesOf(anchor, sourceCode, lineOf);
                 const bodyLines = bodyLinesOf(body, lineOf);
                 if (first !== null && lines > Math.max(bodyLines, 1)) {

@@ -2,7 +2,6 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import process from 'node:process';
 
-import type { Declaration } from '../../../lint/kit/project/declaration.js';
 import {
     binaryIn,
     HOISTED_BESIDE_PACKAGE,
@@ -10,6 +9,7 @@ import {
     PACKAGE_ROOT,
 } from '../../../lint/kit/project/package-root.js';
 import { ignorePatternsOf } from '../../../lint/kit/project/project-files.js';
+import type { ProjectIdentity } from '../../../lint/kit/project/project-kind.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { lintTargets } from '../lint-targets.js';
 import type { ToolConfigs } from '../tool-configs.js';
@@ -35,7 +35,7 @@ export type Targets = { nothing: boolean; paths: string[] };
 
 export type Check = {
     configs: ToolConfigs;
-    declarations: ReadonlyMap<string, Declaration | null>;
+    declarations: ReadonlyMap<string, ProjectIdentity | null>;
     driftArgs: string[];
     fix: boolean;
     formatTargets: Targets;

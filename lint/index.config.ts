@@ -1,6 +1,6 @@
 import type { BuildEntry } from './kit/project/build-plan.js';
-import type { ProjectDeclaration } from './kit/project/declaration.js';
 import type { ArchitectureRule, NamesRule, Preset } from './kit/project/preset.js';
+import type { ProjectDeclaration } from './kit/project/project-kind.js';
 import type { ProjectOverride, ProjectRule } from './kit/project/project-oxlint.js';
 
 export type {
@@ -10,7 +10,7 @@ export type {
     Preset,
     PresetChecker,
 } from './kit/project/preset.js';
-export type { Platform, ProjectDeclaration, ProjectKind } from './kit/project/declaration.js';
+export type { Platform, ProjectDeclaration, ProjectKind } from './kit/project/project-kind.js';
 
 /** A repository's settings for the @jterrazz toolchain family; a sibling package adds its section by interface merging. */
 // oxlint-disable-next-line typescript/consistent-type-definitions -- a sibling package adds its section by merging into this declaration, which a `type` alias cannot take
