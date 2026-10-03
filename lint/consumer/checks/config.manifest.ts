@@ -1,7 +1,6 @@
+import { PUBLICATION } from '../../kit/project/declaration.js';
 import type { ProjectKind } from '../../kit/project/declaration.js';
 import { isJsonObject } from '../../kit/project/json.js';
-
-const APPLICATIONS: ReadonlySet<string> = new Set(['api', 'mobile', 'website']);
 
 export const NAMED: Readonly<Record<ProjectKind, string>> = {
     api: 'an api',
@@ -31,7 +30,7 @@ export function manifestGap(
             owes: 'names no `bin`',
         };
     }
-    if (kind !== undefined && APPLICATIONS.has(kind) && manifest.private !== true) {
+    if (kind !== undefined && PUBLICATION[kind] === 'private' && manifest.private !== true) {
         return {
             fix: 'set `"private": true`, or declare the kind the project is',
             owes: 'is not `private`, so npm would publish the application',

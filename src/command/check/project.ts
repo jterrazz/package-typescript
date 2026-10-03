@@ -30,16 +30,6 @@ export function usesAstro(dir: string): boolean {
     return declares(dir, 'astro');
 }
 
-export function isPublishable(dir: string): boolean {
-    const manifest = manifestIn(dir);
-
-    return (
-        manifest !== null &&
-        manifest.private !== true &&
-        [manifest.exports, manifest.main, manifest.publishConfig].some(Boolean)
-    );
-}
-
 export function isModulePackage(): boolean {
     return manifestIn('.')?.type === 'module';
 }

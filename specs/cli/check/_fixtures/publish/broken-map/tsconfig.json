@@ -1,4 +1,3 @@
 {
-    "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true, "allowJs": true },
-    "include": ["**/*.js"]
+    "extends": "@jterrazz/typescript/tsconfig/node"
 }

@@ -1,0 +1,6 @@
+{
+    "name": "declared-library",
+    "version": "1.0.0",
+    "type": "module",
+    "exports": "./dist/index.js"
+}

@@ -148,7 +148,7 @@ async function knipRun(check: Check, log: string): Promise<number> {
         });
         const config = mergedKnipConfig(presetAt('src/presets/knip/config.json'), {
             entries: steps.flatMap(({ entry }) => Object.values(entry)),
-            library: declared === null ? null : declared.kind === 'library',
+            library: declared?.kind === 'library',
             settings: knipSettingsOf(resolved.sections.typescript),
         });
         writeFileSync(merged, JSON.stringify(config));

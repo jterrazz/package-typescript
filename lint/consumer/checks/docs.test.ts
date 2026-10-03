@@ -198,19 +198,19 @@ describe('docs', () => {
     });
 
     test('asks for 04-operating.md from a published package', () => {
-        // Given - a manifest that never says it is private
+        // Given - a root that declares a kind npm publishes
         const tree = manual({
             ships: { dockerfile: false, infrastructure: false, publishable: true },
         });
 
         // Then - the third clause of the presence test speaks
         expect(messageOf(tree, 'docs/operating-chapter-present-when-shipping')).toBe(
-            '04-operating.md is missing — this repository ships a published package (package.json is not private)',
+            '04-operating.md is missing — this repository ships a published package (it declares a library or a cli)',
         );
     });
 
     test('never asks for 04-operating.md from a repository that ships nothing', () => {
-        // Given - no image, no infrastructure, a private manifest
+        // Given - no image, no infrastructure, no kind npm publishes
         // Then - the lint only ever requires; it never forbids a 04 either
         expect(rulesBrokenBy(manual())).toStrictEqual([]);
     });

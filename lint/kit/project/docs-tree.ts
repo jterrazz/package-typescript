@@ -1,13 +1,12 @@
 // The Dockerfile and `.infrastructure/` clauses are read at every member's root too; the publishable
-// clause stays on the root manifest.
+// clause stays on the root's declared kind.
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { parsedObject } from './json.js';
 import { workspaceMembers } from './workspace-members.js';
 
-/** The `docs/` tree of one repository, as a rule engine needs to see it. */
+/** The `docs/` tree of one repository, as a rule of the kit needs to see it. */
 export type DocsTree = {
     /** The root `AGENTS.md`, its whole text, or `null` when the repository has none. */
     readonly agents: null | string;
@@ -23,7 +22,7 @@ export type DocsTree = {
         readonly dockerfile: boolean;
         /** An `.infrastructure/` directory at either. */
         readonly infrastructure: boolean;
-        /** A `package.json` at either that is not `"private": true`. */
+        /** A root that declares a kind npm publishes — a library or a cli. */
         readonly publishable: boolean;
     };
 };
@@ -97,36 +96,26 @@ function hasDockerfile(dir: string): boolean {
     }
 }
 
-function isPublishable(dir: string): boolean {
-    const manifest = read(join(dir, 'package.json'));
-    if (manifest === null) {
-        return false;
-    }
-
-    try {
-        return parsedObject(manifest).private !== true;
-    } catch {
-        return false;
-    }
-}
-
-function readShips(root: string): DocsTree['ships'] {
+function readShips(root: string, publishable: boolean): DocsTree['ships'] {
     const roots = [root, ...workspaceMembers(root).map((member) => join(root, member))];
 
     return {
         dockerfile: roots.some((dir) => hasDockerfile(dir)),
         infrastructure: roots.some((dir) => existsSync(join(dir, INFRASTRUCTURE))),
-        publishable: isPublishable(root),
+        publishable,
     };
 }
 
-export function readDocsTree(root: string, headLines: number): DocsTree {
+export function readDocsTree(
+    root: string,
+    { headLines, publishable }: { headLines: number; publishable: boolean },
+): DocsTree {
     const files = listDocs(root);
 
     return {
         agents: read(join(root, 'AGENTS.md')),
         files,
         ...readPages(root, files, headLines),
-        ships: readShips(root),
+        ships: readShips(root, publishable),
     };
 }

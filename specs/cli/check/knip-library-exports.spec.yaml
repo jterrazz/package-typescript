@@ -2,15 +2,17 @@ description: disables export rules for published libraries
 fixture: ./_fixtures/knip/library-exports/
 runs:
     - command: check
-      exit: 1
+      exit: 0
       stdout: |4
            START  Running quality checks
 
-           RUN  TypeScript Check
+           RUN  Config (one file)
 
           {{any}}
 
-          ✗ Failed with exit code 1
+           RUN  TypeScript Check
+
+          ✓ Passed
 
            RUN  Oxlint Check
 
@@ -25,6 +27,10 @@ runs:
           ✓ Passed
 
            RUN  Publish (packaging)
+
+          ✓ Passed
+
+           RUN  Architecture (layer map)
 
           ✓ Passed
 
@@ -50,7 +56,7 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing — node, the default
+            declared                              library on node
             rules off vs profile                  none
             suppressions                          0
             .jterrazz/oxlint-suppressions.json    nothing held
@@ -59,4 +65,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✓ All checks passed

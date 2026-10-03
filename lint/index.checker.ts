@@ -23,13 +23,19 @@ const PASSES: Passes = Object.freeze({
         return comments;
     },
     async docs() {
-        const [{ auditDocs, HEAD_LINES }, { readDocsTree }] = await Promise.all([
+        const [{ auditDocs, HEAD_LINES }, { readDocsTree }, { publishes }] = await Promise.all([
             import('./consumer/checks/docs.js'),
             import('./kit/project/docs-tree.js'),
+            import('./kit/project/declaration.js'),
         ]);
 
         return {
-            check: ({ root }) => ({ findings: [...auditDocs(readDocsTree(root, HEAD_LINES))] }),
+            async check({ config, root }) {
+                const publishable = publishes((await config()).resolved.declaration);
+                const tree = readDocsTree(root, { headLines: HEAD_LINES, publishable });
+
+                return { findings: [...auditDocs(tree)] };
+            },
         };
     },
     async drift() {

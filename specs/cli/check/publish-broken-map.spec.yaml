@@ -1,26 +1,11 @@
 description: fails an exports map naming a file that is absent and one the tarball leaves out
 fixture: ./_fixtures/publish/broken-map/
+env: TYPESCRIPT_CHECK_PASSES=publish
 runs:
     - command: check
       exit: 1
       stdout: |4
            START  Running quality checks
-
-           RUN  TypeScript Check
-
-          ✓ Passed
-
-           RUN  Oxlint Check
-
-          ✓ Passed
-
-           RUN  Oxfmt Check
-
-          ✓ Passed
-
-           RUN  Knip (unused code)
-
-          ✓ Passed
 
            RUN  Publish (packaging)
 
@@ -33,35 +18,6 @@ runs:
           1. pkg.exports["./farewell"] is ./farewell.js but the file does not exist.
           2. pkg.exports["./greeter"] is ./greeter.js but the file is not published. Is it specified in pkg.files?
           ✗ Failed with exit code 1
-
-           RUN  Suppressions (directives)
-
-          ✓ Passed
-
-           RUN  Markdown (prose)
-
-          ✓ Passed
-
-           RUN  Names (tree)
-
-          ✓ Passed
-
-           RUN  Comments (density)
-
-          ✓ Passed
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed
-
-           DRIFT  Deviations from the profile
-
-            declared                              nothing — node, the default
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
 
            END  Finalizing quality checks
 

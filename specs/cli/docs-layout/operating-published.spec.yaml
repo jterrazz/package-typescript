@@ -1,0 +1,7 @@
+description: asks a repository that declares a library for its operating chapter
+fixture: ./_fixtures/declared-library/
+runs:
+    - command: docs-layout .
+      exit: 1
+      stdout: |
+          docs/04-operating.md:1:1: error docs(operating-chapter-present-when-shipping): 04-operating.md is missing — this repository ships a published package (it declares a library or a cli)

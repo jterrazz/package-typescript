@@ -250,24 +250,20 @@ function ignoredDependencies(manifest: JsonObject): string[] {
     ];
 }
 
-function isPublished(manifest: JsonObject): boolean {
-    return [manifest.main, manifest.exports, manifest.publishConfig].some(Boolean);
-}
-
 export function mergedKnipConfig(
     basePath: string,
     {
         entries,
         library,
         settings,
-    }: { entries: readonly string[]; library: boolean | null; settings: KnipSettings },
+    }: { entries: readonly string[]; library: boolean; settings: KnipSettings },
 ): KnipConfig {
     const merged = mergedConfigs(presetFile(basePath), {
         ...settings,
         entry: [...entries, ...settings.entry],
     });
     const manifest = manifestHere();
-    if (library ?? isPublished(manifest)) {
+    if (library) {
         merged.rules = {
             exports: 'off',
             files: 'off',

@@ -33,6 +33,22 @@ const PLATFORMS_OF: PlatformsOf = {
 
 export type Declaration = { kind: ProjectKind; platform: null | Platform };
 
+export type Publication = 'members' | 'private' | 'published';
+
+export const PUBLICATION: Readonly<Record<ProjectKind, Publication>> = Object.freeze({
+    api: 'private',
+    cli: 'published',
+    library: 'published',
+    mobile: 'private',
+    website: 'private',
+    workspace: 'members',
+});
+
+export const publishes = (declaration: Declaration | null | undefined): boolean =>
+    declaration !== null &&
+    declaration !== undefined &&
+    PUBLICATION[declaration.kind] === 'published';
+
 const isKind = (value: unknown): value is ProjectKind =>
     typeof value === 'string' && (KINDS as readonly string[]).includes(value);
 

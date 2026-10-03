@@ -1,4 +1,3 @@
 {
-    "compilerOptions": { "module": "nodenext", "noEmit": true, "skipLibCheck": true, "strict": true },
-    "include": ["src/**/*.ts"]
+    "extends": "@jterrazz/typescript/tsconfig/node"
 }

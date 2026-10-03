@@ -1,63 +1,16 @@
 description: names the member each nothing-to-judge note is about, in a workspace of two publishable packages
 fixture: ./_fixtures/publish/workspace/
+env: TYPESCRIPT_CHECK_PASSES=publish
 runs:
     - command: check
-      exit: 1
+      exit: 0
       stdout: |4
            START  Running quality checks
-
-           RUN  TypeScript Check
-
-          ✓ Passed
-
-           RUN  Oxlint Check
-
-          ✓ Passed
-
-           RUN  Oxfmt Check
-
-          ✓ Passed
-
-           RUN  Knip (unused code)
-
-          Unused files (2)
-          packages/alpha/tsdown.config.mjs
-          packages/beta/tsdown.config.mjs 
-          ✗ Failed with exit code 1
 
            RUN  Publish (packaging)
 
           ✓ Passed
 
-           RUN  Suppressions (directives)
-
-          ✓ Passed
-
-           RUN  Markdown (prose)
-
-          ✓ Passed
-
-           RUN  Names (tree)
-
-          ✓ Passed
-
-           RUN  Comments (density)
-
-          ✓ Passed
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed
-
-           DRIFT  Deviations from the profile
-
-            declared                              nothing — node, the default
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
-
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✓ All checks passed

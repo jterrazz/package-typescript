@@ -4,11 +4,11 @@ import {
     DEPENDENCY_CRUISER_CONFIGS,
     SETTINGS_FILE,
 } from '../../../lint/kit/project/jterrazz-config.js';
+import { publishes } from '../../../lint/kit/project/declaration.js';
 import { checker } from '../checker.js';
 import { isDirectoryOnDisk, isFileOnDisk } from '../disk.js';
 import { presetAt } from '../toolchain.js';
 import type { Launched } from './launched.js';
-import { isPublishable } from './project.js';
 import type { Check } from './setup.js';
 
 export async function gitignorePass(check: Check): Promise<Launched | undefined> {
@@ -143,23 +143,13 @@ export function architecturePass(check: Check): Launched | undefined {
     };
 }
 
-const PUBLISHED_KINDS: ReadonlySet<string> = new Set(['cli', 'library']);
-
-function publishes(check: Check, root: string): boolean {
-    const declared = check.declarations.get(root);
-
-    return declared === undefined || declared === null
-        ? isPublishable(root)
-        : PUBLISHED_KINDS.has(declared.kind);
-}
-
 export function publishPasses(check: Check): Launched[] {
     if (check.fix || !check.selected('publish')) {
         return [];
     }
 
     return ['.', ...check.members]
-        .filter((root) => publishes(check, root))
+        .filter((root) => publishes(check.declarations.get(root)))
         .map((root, index) => {
             const log = check.logs.at(`publish-${String(index)}.log`);
             const args = [root, '--publint', check.tools.publint, '--attw', check.tools.attw];

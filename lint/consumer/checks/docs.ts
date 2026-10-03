@@ -63,7 +63,7 @@ const SCHEME = /^[a-z][\d+.a-z-]*:/iu;
 const SHIPPING_REASONS: readonly (readonly [keyof DocsTree['ships'], string])[] = [
     ['dockerfile', 'an image (a Dockerfile)'],
     ['infrastructure', 'a deployment (.infrastructure/)'],
-    ['publishable', 'a published package (package.json is not private)'],
+    ['publishable', 'a published package (it declares a library or a cli)'],
 ];
 
 function directChildren(files: readonly string[]): string[] {
