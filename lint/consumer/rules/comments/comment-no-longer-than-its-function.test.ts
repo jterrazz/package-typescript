@@ -7,13 +7,18 @@ import { commentNoLongerThanItsFunction } from './comment-no-longer-than-its-fun
 
 const PRIVATE_MODULE = '/nowhere/src/ledger.ts';
 
+const lines = (...text: string[]): string => text.join('\n');
+
+const TWO_LINES = ['// Says it twice,', '// in two lines.'];
+
 const library = mkdtempSync(join(tmpdir(), 'comment-rule-'));
 mkdirSync(join(library, 'src'));
 writeFileSync(
     join(library, 'package.json'),
     JSON.stringify({ exports: { '.': './src/index.ts' }, name: 'library' }),
 );
-writeFileSync(join(library, 'src/index.ts'), "export { rounded } from './ledger.js';\n");
+const ENTRY = join(library, 'src/index.ts');
+writeFileSync(ENTRY, "export { default, rounded } from './ledger.js';\n");
 const PUBLISHED_MODULE = join(library, 'src/ledger.ts');
 writeFileSync(PUBLISHED_MODULE, '');
 
@@ -74,8 +79,166 @@ ruleTester().run('comment-no-longer-than-its-function', commentNoLongerThanItsFu
             errors: [{ column: 0, data: { body: 1, lines: 2 }, line: 1, messageId: 'longer' }],
             filename: PUBLISHED_MODULE,
         },
+        {
+            code: lines(
+                ...TWO_LINES,
+                'export function doubled(value) {',
+                '    return value + value;',
+                '}',
+            ),
+            errors: [{ column: 0, data: { body: 1, lines: 2 }, line: 1, messageId: 'longer' }],
+            filename: PRIVATE_MODULE,
+        },
+        {
+            code: lines(...TWO_LINES, 'function one() { return 1; }'),
+            errors: [{ column: 0, data: { body: 1, lines: 2 }, line: 1, messageId: 'longer' }],
+            filename: PRIVATE_MODULE,
+        },
+        {
+            code: lines(...TWO_LINES, 'export default () => {', '    return 1;', '};'),
+            errors: [{ column: 0, data: { body: 1, lines: 2 }, line: 1, messageId: 'longer' }],
+            filename: PRIVATE_MODULE,
+        },
+        {
+            code: lines(...TWO_LINES, 'export default function () {', '    return 1;', '}'),
+            errors: [{ column: 0, data: { body: 1, lines: 2 }, line: 1, messageId: 'longer' }],
+            filename: PRIVATE_MODULE,
+        },
+        {
+            code: lines(
+                'const one = 1,',
+                ...TWO_LINES.map((line) => `    ${line}`),
+                '    halved = (value) => value / 2;',
+            ),
+            errors: [{ column: 4, data: { body: 1, lines: 2 }, line: 2, messageId: 'longer' }],
+            filename: PRIVATE_MODULE,
+        },
+        {
+            code: lines(
+                ...TWO_LINES,
+                'function rounded(value) {',
+                '    return value;',
+                '}',
+                "export { rounded } from './elsewhere.js';",
+            ),
+            errors: [{ column: 0, data: { body: 1, lines: 2 }, line: 1, messageId: 'longer' }],
+            filename: PUBLISHED_MODULE,
+        },
+        {
+            code: lines(
+                'export const api = {',
+                ...TWO_LINES.map((line) => `    ${line}`),
+                '    run() {',
+                '        return 1;',
+                '    },',
+                '};',
+            ),
+            errors: [{ column: 4, data: { body: 1, lines: 2 }, line: 2, messageId: 'longer' }],
+            filename: ENTRY,
+        },
+        {
+            code: lines(
+                'export default {',
+                ...TWO_LINES.map((line) => `    ${line}`),
+                '    run() {',
+                '        return 1;',
+                '    },',
+                '};',
+            ),
+            errors: [{ column: 4, data: { body: 1, lines: 2 }, line: 2, messageId: 'longer' }],
+            filename: ENTRY,
+        },
+        {
+            code: lines(...TWO_LINES, 'export function hidden() {', '    return 1;', '}'),
+            errors: [{ column: 0, data: { body: 1, lines: 2 }, line: 1, messageId: 'longer' }],
+            filename: PUBLISHED_MODULE,
+        },
+        {
+            code: lines(
+                'const base = 1;',
+                ...TWO_LINES,
+                'function helper() {',
+                '    return base;',
+                '}',
+                'function rounded() {',
+                '    return helper();',
+                '}',
+                'export { rounded };',
+            ),
+            errors: [{ column: 0, data: { body: 1, lines: 2 }, line: 2, messageId: 'longer' }],
+            filename: PUBLISHED_MODULE,
+        },
     ],
     valid: [
+        {
+            code: lines(
+                ...TWO_LINES,
+                '// and a third.',
+                'items.forEach((item) => {',
+                '    use(item);',
+                '});',
+            ),
+            filename: PRIVATE_MODULE,
+        },
+        {
+            code: lines(
+                'const base = 1; // a note on the line above',
+                '// One line.',
+                'function based() {',
+                '    return base;',
+                '}',
+            ),
+            filename: PRIVATE_MODULE,
+        },
+        {
+            code: lines(...TWO_LINES, 'const sum = (a, b) =>', '    a +', '    b;'),
+            filename: PRIVATE_MODULE,
+        },
+        {
+            code: lines(
+                'export default class {',
+                ...TWO_LINES.map((line) => `    ${line}`),
+                '    run() {',
+                '        return 1;',
+                '    }',
+                '}',
+            ),
+            filename: ENTRY,
+        },
+        {
+            code: lines(
+                'export class Ledger {',
+                ...TWO_LINES.map((line) => `    ${line}`),
+                '    close() {',
+                '        return 1;',
+                '    }',
+                '}',
+            ),
+            filename: ENTRY,
+        },
+        {
+            code: lines(
+                "import { round } from './math.js';",
+                ...TWO_LINES,
+                'function rounded(value) {',
+                '    return round(value);',
+                '}',
+                'export { rounded, rounded as round };',
+            ),
+            filename: PUBLISHED_MODULE,
+        },
+        {
+            code: lines(...TWO_LINES, 'export default function rounding() {', '    return 1;', '}'),
+            filename: PUBLISHED_MODULE,
+        },
+        {
+            code: lines(
+                'export const one = 1,',
+                ...TWO_LINES.map((line) => `    ${line}`),
+                '    rounded = (value) => Math.round(value);',
+            ),
+            filename: PUBLISHED_MODULE,
+        },
         {
             code: [
                 '// Rounds half away from zero.',

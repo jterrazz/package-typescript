@@ -4,35 +4,37 @@ import { publishedNamesOf } from '../../../kit/project/published-names.js';
 import FINDINGS from '../../catalogue/findings.json' with { type: 'json' };
 
 type Node = {
-    body?: Node | Node[];
-    declaration?: Node | null;
     declarations?: Node[];
-    end?: number;
-    exported?: Node;
+    end: number;
     id?: Node | null;
-    local?: Node;
     name?: string;
     parent?: Node;
-    range?: [number, number];
     source?: Node | null;
-    specifiers?: Node[];
-    start?: number;
+    specifiers?: Specifier[];
+    start: number;
     type: string;
     value?: unknown;
 };
 
-type Comment = { end?: number; range?: [number, number]; start?: number; value: string };
+type Specifier = { exported: Node; local: Node };
+
+type Program = { body: Node[] };
+
+type FunctionNode = Node & { body: Node; parent: Node };
+
+type Comment = { end: number; start: number; value: string };
 
 type SourceCode = { getCommentsBefore: (node: Node) => Comment[]; text: string };
 
 type RuleContext = {
     filename: string;
-    physicalFilename?: string;
     report: (report: { data: Record<string, number>; messageId: string; node: Comment }) => void;
     sourceCode: SourceCode;
 };
 
-type Binding = { anchor: Node; name: string | undefined; owner?: Node | null | undefined };
+type Binding = { anchor: Node; name: string | undefined; owner?: Node };
+
+type LocalExport = { exported: string; local: string };
 
 type LineOf = (offset: number) => number;
 
@@ -53,15 +55,6 @@ const EXPORTS: ReadonlySet<string | undefined> = new Set([
     'ExportDefaultDeclaration',
     'ExportNamedDeclaration',
 ]);
-const MEMBERS: ReadonlySet<string | undefined> = new Set([
-    'MethodDefinition',
-    'Property',
-    'PropertyDefinition',
-]);
-
-const startOf = (node: Comment | Node): number => node.range?.[0] ?? node.start ?? 0;
-const endOf = (node: Comment | Node): number => node.range?.[1] ?? node.end ?? 0;
-
 function lineIndexOf(text: string): LineOf {
     const starts = [0];
     for (let index = text.indexOf('\n'); index !== -1; index = text.indexOf('\n', index + 1)) {
@@ -80,57 +73,57 @@ function lineIndexOf(text: string): LineOf {
             }
         }
 
-        return low + 1;
+        return low;
     };
 }
 
-const nameOf = (node: Node | undefined): string => String(node?.name ?? node?.value);
+const nameOf = (node: Node): string => String(node.name ?? node.value);
 
 const isLocalList = (statement: Node): boolean =>
-    statement.type === 'ExportNamedDeclaration' &&
-    (statement.source ?? null) === null &&
-    (statement.declaration ?? null) === null;
+    // Stryker disable next-line ConditionalExpression: of the statements carrying specifiers, an import always names its source
+    statement.type === 'ExportNamedDeclaration' && statement.source === null;
 
-function exportedLocalsOf(program: Node): Map<string, string[]> {
-    const exported = new Map<string, string[]>();
-    const body = Array.isArray(program.body) ? program.body : [];
-    for (const statement of body.filter((candidate) => isLocalList(candidate))) {
-        for (const specifier of statement.specifiers ?? []) {
-            const local = nameOf(specifier.local);
-            exported.set(local, [...(exported.get(local) ?? []), nameOf(specifier.exported)]);
-        }
-    }
-
-    return exported;
+function localExportsOf(program: Program): LocalExport[] {
+    return program.body
+        .filter((statement) => isLocalList(statement))
+        .flatMap((statement) =>
+            (statement.specifiers ?? []).map((specifier) => ({
+                exported: nameOf(specifier.exported),
+                local: nameOf(specifier.local),
+            })),
+        );
 }
 
-function memberOf(fn: Node): Binding | null {
+// Stryker disable next-line StringLiteral: an anonymous binding is published only by a default export, which its position names
+const ANONYMOUS = 'default';
+
+// Stryker disable OptionalChaining: a function, a member and a declarator always carry the parents and ids walked below
+function memberOf(fn: FunctionNode): Binding | null {
     const { parent } = fn;
-    if (parent === undefined || !MEMBERS.has(parent.type) || parent.value !== fn) {
+    if (parent.value !== fn) {
         return null;
     }
-    const owner = parent.parent?.type === 'ClassBody' ? parent.parent.parent : null;
+    const owner = parent.parent?.type === 'ClassBody' ? parent.parent.parent : undefined;
 
-    return { anchor: parent, name: owner?.id?.name, owner };
+    return owner === undefined
+        ? { anchor: parent, name: undefined }
+        : { anchor: parent, name: owner.id?.name ?? ANONYMOUS, owner };
 }
 
-function bindingOf(fn: Node): Binding | null {
+function bindingOf(fn: FunctionNode): Binding | null {
     const { parent } = fn;
-    if (parent === undefined) {
-        return null;
-    }
     if (fn.type === 'FunctionDeclaration') {
-        return { anchor: fn, name: fn.id?.name ?? 'default' };
+        return { anchor: fn, name: fn.id?.name ?? ANONYMOUS };
     }
-    if (parent.type === 'VariableDeclarator' && parent.id?.type === 'Identifier') {
+    if (parent.type === 'VariableDeclarator') {
         const statement = parent.parent;
         return {
             anchor: statement?.declarations?.length === 1 ? statement : parent,
-            name: parent.id.name,
+            name: parent.id?.name,
         };
     }
     if (parent.type === 'ExportDefaultDeclaration') {
-        return { anchor: fn, name: 'default' };
+        return { anchor: fn, name: ANONYMOUS };
     }
 
     return memberOf(fn);
@@ -138,7 +131,7 @@ function bindingOf(fn: Node): Binding | null {
 
 function isPublished(
     binding: Binding,
-    exportedLocals: ReadonlyMap<string, readonly string[]>,
+    localExports: readonly LocalExport[],
     published: ReturnType<typeof publishedNamesOf>,
 ): boolean {
     if (published === null || binding.name === undefined) {
@@ -148,10 +141,17 @@ function isPublished(
     const direct = EXPORTS.has(outer.parent?.type) || EXPORTS.has(outer.parent?.parent?.type);
     const names = direct
         ? [outer.parent?.type === 'ExportDefaultDeclaration' ? 'default' : binding.name]
-        : (exportedLocals.get(binding.name) ?? []);
+        : localExports
+              .filter(({ local }) => local === binding.name)
+              .map(({ exported }) => exported);
 
     return names.some((name) => published === EVERY_NAME || published.has(name));
 }
+
+function statementOf(anchor: Node): Node {
+    return EXPORTS.has(anchor.parent?.type) ? (anchor.parent ?? anchor) : anchor;
+}
+// Stryker restore OptionalChaining
 
 function documentingLinesOf(
     anchor: Node,
@@ -161,16 +161,18 @@ function documentingLinesOf(
     const { text } = sourceCode;
     const lines = new Set<number>();
     let first: Comment | null = null;
-    let top = lineOf(startOf(anchor));
+    let top = lineOf(anchor.start);
     for (const comment of sourceCode.getCommentsBefore(anchor).toReversed()) {
-        const start = startOf(comment);
-        const lineStart = text.lastIndexOf('\n', start - 1) + 1;
-        if (lineOf(endOf(comment) - 1) < top - 1 || text.slice(lineStart, start).trim() !== '') {
+        const lineStart = text.lastIndexOf('\n', comment.start) + 1;
+        if (
+            lineOf(comment.end - 1) < top - 1 ||
+            text.slice(lineStart, comment.start).trim() !== ''
+        ) {
             break;
         }
-        top = lineOf(start);
+        top = lineOf(comment.start);
         if (!DIRECTIVE.test(comment.value)) {
-            for (let line = top; line <= lineOf(endOf(comment) - 1); line += 1) {
+            for (let line = top; line <= lineOf(comment.end - 1); line += 1) {
                 lines.add(line);
             }
             first = comment;
@@ -181,8 +183,8 @@ function documentingLinesOf(
 }
 
 function bodyLinesOf(body: Node, lineOf: LineOf): number {
-    const opening = lineOf(startOf(body));
-    const closing = lineOf(endOf(body) - 1);
+    const opening = lineOf(body.start);
+    const closing = lineOf(body.end - 1);
     if (body.type !== 'BlockStatement') {
         return closing - opening + 1;
     }
@@ -213,28 +215,27 @@ export const commentNoLongerThanItsFunction = defineRule(
         type: 'suggestion',
     },
     {
-        create(context: RuleContext): Record<string, (node: Node) => void> {
+        create(
+            context: RuleContext,
+        ): Record<string, ((fn: FunctionNode) => void) | ((program: Program) => void)> {
             const { sourceCode } = context;
             const lineOf = lineIndexOf(sourceCode.text);
-            const published = publishedNamesOf(context.physicalFilename ?? context.filename);
-            let exportedLocals = new Map<string, string[]>();
+            const published = publishedNamesOf(context.filename);
+            let localExports: readonly LocalExport[];
 
-            const judge = (fn: Node): void => {
-                const { body } = fn;
-                if (body === undefined || Array.isArray(body)) {
-                    return;
-                }
+            const judge = (fn: FunctionNode): void => {
                 const binding = bindingOf(fn);
-                if (binding === null || isPublished(binding, exportedLocals, published)) {
+                if (binding === null || isPublished(binding, localExports, published)) {
                     return;
                 }
-                const anchor =
-                    binding.anchor.parent !== undefined && EXPORTS.has(binding.anchor.parent.type)
-                        ? binding.anchor.parent
-                        : binding.anchor;
-                const { first, lines } = documentingLinesOf(anchor, sourceCode, lineOf);
-                const bodyLines = bodyLinesOf(body, lineOf);
-                if (first !== null && lines > Math.max(bodyLines, 1)) {
+                const { first, lines } = documentingLinesOf(
+                    statementOf(binding.anchor),
+                    sourceCode,
+                    lineOf,
+                );
+                const bodyLines = bodyLinesOf(fn.body, lineOf);
+                // Stryker disable next-line ConditionalExpression: a line counted means a comment was kept
+                if (first !== null && lines > bodyLines) {
                     context.report({
                         data: { body: bodyLines, lines },
                         messageId: 'longer',
@@ -244,8 +245,8 @@ export const commentNoLongerThanItsFunction = defineRule(
             };
 
             return {
-                Program(program: Node): void {
-                    exportedLocals = exportedLocalsOf(program);
+                Program(program: Program): void {
+                    localExports = localExportsOf(program);
                 },
                 ...Object.fromEntries([...FUNCTIONS].map((type) => [type, judge])),
             };
