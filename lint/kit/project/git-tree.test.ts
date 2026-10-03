@@ -1,29 +1,17 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { forgetTree, moveKeepingHistory, treeKind, treeNames, treeStamp } from './git-tree.js';
-
-function project(files: string[], git?: { add: string[]; ignore?: string }): string {
-    const root = mkdtempSync(join(tmpdir(), 'tree-'));
-    for (const path of files) {
-        mkdirSync(dirname(join(root, path)), { recursive: true });
-        writeFileSync(join(root, path), `${path}\n`);
-    }
-    if (git !== undefined) {
-        if (git.ignore !== undefined) {
-            writeFileSync(join(root, '.gitignore'), git.ignore);
-        }
-        execFileSync('git', ['init', '--quiet'], { cwd: root });
-        if (git.add.length > 0) {
-            execFileSync('git', ['add', ...git.add], { cwd: root });
-        }
-    }
-    forgetTree();
-    return root;
-}
+import { gitAsked, project } from './git-tree.fixtures.js';
+import {
+    forgetTree,
+    moveKeepingHistory,
+    treeEntries,
+    treeKind,
+    treeNames,
+    treeStamp,
+} from './git-tree.js';
 
 describe('git-tree', () => {
     test('the tree git does not ignore — lists an untracked file beside a tracked one — a new file needs no `git add`', () => {
@@ -137,6 +125,81 @@ describe('git-tree', () => {
 
         // Then - a missing directory is not an empty one
         expect(() => treeNames(join(root, 'specs', 'gone'))).toThrow(/ENOENT/u);
+    });
+
+    test('the tree git does not ignore — reads the disk once the index is unreadable, before a first listing or after it', () => {
+        // Given - two repositories ignoring logs, one read before its index is broken
+        const read = project(['src/a.ts', 'src/b.log'], { add: ['src'], ignore: '*.log\n' });
+        const fresh = project(['src/a.ts', 'src/b.log'], { add: ['src'], ignore: '*.log\n' });
+        expect(treeNames(join(read, 'src'))).toStrictEqual(['a.ts']);
+
+        // When - both indexes are overwritten with garbage
+        writeFileSync(join(read, '.git', 'index'), 'garbage');
+        writeFileSync(join(fresh, '.git', 'index'), 'garbage');
+
+        // Then - each answer, asked again, is the disk's, and the broken listing is dropped for the folder's place
+        const answers: string[][] = [];
+        const asked = gitAsked(() => {
+            for (const root of [read, read, read, fresh, fresh]) {
+                answers.push(treeNames(join(root, 'src')).toSorted());
+            }
+        });
+        expect(answers).toStrictEqual(Array.from({ length: 5 }, () => ['a.ts', 'b.log']));
+        expect(asked).toStrictEqual(['ls-files', 'rev-parse', 'ls-files', 'rev-parse', 'ls-files']);
+    });
+
+    test('the tree git does not ignore — names each entry with its kind, the work tree itself a directory', () => {
+        // Given - a tracked file, a folder and a link
+        const root = project(['src/a.ts'], { add: ['src'] });
+        symlinkSync('src', join(root, 'link'));
+
+        // Then - each kind is the disk's
+        const kinds = treeEntries(root)
+            .toSorted((left, right) => left.name.localeCompare(right.name))
+            .map((entry) => [
+                entry.name,
+                entry.isFile(),
+                entry.isDirectory(),
+                entry.isSymbolicLink(),
+            ]);
+        expect(kinds).toStrictEqual([
+            ['link', false, false, true],
+            ['src', false, true, false],
+        ]);
+        expect(treeKind(root)).toBe('directory');
+    });
+
+    test('the tree git does not ignore — lists a nested repository as a folder that holds nothing of the outer tree', () => {
+        // Given - a repository holding another one nobody added
+        const root = project(['src/a.ts', 'sub/b.ts'], { add: ['src'] });
+        execFileSync('git', ['init', '--quiet'], { cwd: join(root, 'sub') });
+
+        // Then - the outer listing names the folder, and no child under it
+        expect(treeNames(root).toSorted()).toStrictEqual(['src', 'sub']);
+        expect(treeNames(join(root, 'sub'))).toStrictEqual([]);
+    });
+
+    test('the listing git is asked for — once per work tree, its folders read from it, until it is forgotten', () => {
+        // Given - two repositories
+        const root = project(['src/a.ts'], { add: ['src'] });
+        const other = project(['other.ts'], { add: ['other.ts'] });
+
+        // Then - a first read asks git, the next ones read its listing, another tree and a forget ask again
+        expect(gitAsked(() => treeNames(root))).toStrictEqual(['rev-parse', 'ls-files']);
+        expect(gitAsked(() => [treeNames(root), treeNames(join(root, 'src'))])).toStrictEqual([]);
+        expect(gitAsked(() => treeNames(other))).toStrictEqual(['rev-parse', 'ls-files']);
+        forgetTree();
+        expect(gitAsked(() => treeNames(root))).toStrictEqual(['rev-parse', 'ls-files']);
+    });
+
+    test('the listing git is asked for — once per folder in no work tree, until it is forgotten', () => {
+        // Given - files and no repository
+        const root = project(['src/a.ts']);
+
+        // Then - git is asked where the folder is once, and lists nothing
+        expect(gitAsked(() => [treeNames(root), treeNames(root)])).toStrictEqual(['rev-parse']);
+        forgetTree();
+        expect(gitAsked(() => treeNames(root))).toStrictEqual(['rev-parse']);
     });
 
     test("the listing's own freshness stamp — stays the same while neither the folder nor the index changed", () => {

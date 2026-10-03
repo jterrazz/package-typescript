@@ -20,24 +20,20 @@ const trees: WorkTree[] = [];
 const outsideWorkTrees = new Set<string>();
 
 function under(dir: string, root: string): boolean {
-    return dir === root || dir.startsWith(root.endsWith(sep) ? root : `${root}${sep}`);
+    return dir === root || dir.startsWith(`${root}${sep}`);
 }
 
 function listNotIgnored(top: string): null | string[] {
     const listed = spawnSync(
         'git',
         ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
-        {
-            cwd: top,
-            encoding: 'utf8',
-            maxBuffer: 256 * 1024 * 1024,
-            stdio: ['ignore', 'pipe', 'ignore'],
-        },
+        // Stryker disable next-line ArithmeticOperator: the cap only binds past a listing of a million bytes, which no test tree reaches
+        { cwd: top, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 },
     );
-    if (listed.error !== undefined || listed.status !== 0) {
+    if (listed.status !== 0) {
         return null;
     }
-    return listed.stdout.split('\0').filter((path) => path !== '');
+    return listed.stdout.split('\0');
 }
 
 function indexOf(top: string, paths: string[], index: string, listedAt: number): WorkTree {
@@ -65,6 +61,7 @@ function changedAt(path: string): number {
 }
 
 function isListingStale(tree: WorkTree, dir: string): boolean {
+    // Stryker disable next-line EqualityOperator: a change stamped in the listing's own millisecond is relisted or not by chance, either way
     return changedAt(tree.index) > tree.listedAt || changedAt(dir) > tree.listedAt;
 }
 
@@ -72,6 +69,21 @@ function listTree(top: string, index: string): null | WorkTree {
     const listedAt = Date.now();
     const paths = listNotIgnored(top);
     return paths === null ? null : indexOf(top, paths, index, listedAt);
+}
+
+function locate(dir: string): null | { index: string; top: string } {
+    const located = spawnSync('git', ['rev-parse', '--show-cdup', '--git-path', 'index'], {
+        cwd: dir,
+        encoding: 'utf8',
+    });
+    if (located.status !== 0) {
+        return null;
+    }
+    // outside: `--show-cdup` prints an empty line at the top level: the two answers are
+    // read by position, never trimmed together.
+    const [cdup = '', index = ''] = located.stdout.split('\n');
+
+    return { index: resolve(dir, index), top: resolve(dir, cdup) };
 }
 
 function inDependency(path: string): boolean {
@@ -99,19 +111,8 @@ function workTreeOf(dir: string, read: string): null | WorkTree {
     if ([...outsideWorkTrees].some((root) => under(dir, root))) {
         return null;
     }
-    const located = spawnSync('git', ['rev-parse', '--show-cdup', '--git-path', 'index'], {
-        cwd: dir,
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'ignore'],
-    });
-    // outside: `--show-cdup` prints an empty line at the top level: the two answers are
-    // read by position, never trimmed together.
-    const [cdup = '', index = ''] = (located.stdout ?? '').split('\n');
-    const top = resolve(dir, cdup);
-    const tree =
-        located.error === undefined && located.status === 0
-            ? listTree(top, resolve(dir, index))
-            : null;
+    const located = locate(dir);
+    const tree = located === null ? null : listTree(located.top, located.index);
     if (tree === null) {
         outsideWorkTrees.add(dir);
         return null;
@@ -186,12 +187,10 @@ export function forgetTree(): void {
 }
 
 export function moveKeepingHistory(from: string, to: string): void {
-    const moved = spawnSync('git', ['mv', from, to], {
-        cwd: dirname(from),
-        stdio: 'ignore',
-    });
+    const moved = spawnSync('git', ['mv', from, to], { cwd: dirname(from) });
     if (moved.status !== 0) {
         renameSync(from, to);
     }
+    // Stryker disable next-line CallExpression: a move inside the millisecond of the last listing leaves no newer stamp to see
     forgetTree();
 }
