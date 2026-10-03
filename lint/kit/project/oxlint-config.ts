@@ -69,7 +69,7 @@ export type Applied = { namespaces: ReadonlySet<string>; rules: PrintedRules };
 
 const asOxlintGlob = (glob: string): string => (glob.includes('/') ? glob : `**/${glob}`);
 
-// A JS plugin's rules never appear in `--print-config`: its directives are unverifiable, never dead.
+// outside: a JS plugin's rules never appear in `--print-config`: its directives are unverifiable, never dead.
 export function resolveConfig(
     root: string,
     oxlint: string,
@@ -92,7 +92,7 @@ export function resolveConfig(
     return { namespaces: namespacesOf(resolved, decided), overrides, rules: { ...resolved.rules } };
 }
 
-// A directive is judged by the rules of the file it was written in: overrides match by path, the later wins.
+// invariant: a directive is judged by the rules of the file it was written in: overrides match by path, the later wins.
 export function configAt(path: string, config: null | Resolved): Applied | null {
     if (config === null) {
         return null;
@@ -108,7 +108,7 @@ export function configAt(path: string, config: null | Resolved): Applied | null 
     return { namespaces: config.namespaces, rules };
 }
 
-// With a JS plugin loaded, a namespace oxlint did not print is that plugin's and answers nothing.
+// outside: with a JS plugin loaded, a namespace oxlint did not print is that plugin's and answers nothing.
 function namespacesOf(resolved: PrintedOxlintConfig, rules: PrintedRules): ReadonlySet<string> {
     const namespaces = new Set<string>();
     for (const name of Object.keys(rules)) {

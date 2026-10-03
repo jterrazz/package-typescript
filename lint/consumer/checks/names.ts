@@ -46,7 +46,7 @@ type Named = { fileName?: string; name: string };
 
 const CONSTRUCT_SUFFIX = 'types';
 
-// A swept root's own name is the toolchain's, never judged: `lib/` is also a grab-bag word.
+// invariant: a swept root's own name is the toolchain's, never judged: `lib/` is also a grab-bag word.
 const SWEPT: ReadonlySet<string> = new Set([
     'apps',
     'bin',
@@ -60,20 +60,20 @@ const SWEPT: ReadonlySet<string> = new Set([
 
 const DECLARATION = 'typescript.roots';
 
-// The only gestures the flows speak; a workspace member owes none of them.
+// invariant: the only gestures the flows speak; a workspace member owes none of them.
 const MAKE_TARGETS = Object.freeze(['install', 'build', 'lint', 'fix', 'test', 'check']);
 
 const MAKEFILE = 'Makefile';
 
-// A recipe line opens on a tab and never matches; `:=` and `::=` open assignments.
+// invariant: a recipe line opens on a tab and never matches; `:=` and `::=` open assignments.
 const RULE_LINE = /^(?<targets>[^\s:#=][^:#=]*?)\s*(?:::|:)(?![:=])/u;
 
-// Below `app/`, a Next.js directory is a URL the product serves, not a name the tree chose.
+// outside: below `app/`, a Next.js directory is a URL the product serves, not a name the tree chose.
 const ROUTER_ROOT = 'app';
 
 const unmarked = (name: string): string => name.replace(/^_/u, '').toLowerCase();
 
-// A name is read segment by segment, split on the hyphen; the `_` marker excuses none.
+// invariant: a name is read segment by segment, split on the hyphen; the `_` marker excuses none.
 const isShortcut = (name: string, { shortcuts }: Universal): boolean =>
     unmarked(name)
         .split('-')
@@ -106,7 +106,7 @@ function namesOf(files: readonly string[]): [string, Named][] {
     return [...named].toSorted(([left], [right]) => (left < right ? -1 : 1));
 }
 
-// A word the grab-bag roster already refuses is left to it, so a name is reported once.
+// invariant: a word the grab-bag roster already refuses is left to it, so a name is reported once.
 function findingsOf(files: readonly string[], universal: Universal): Finding[] {
     const findings: Finding[] = [];
 
@@ -226,7 +226,7 @@ function filesPublish(files: readonly unknown[], path: string): boolean {
     return published;
 }
 
-// A `lint/` nothing publishes holds rules no consumer receives: `src/` under another name.
+// invariant: a `lint/` nothing publishes holds rules no consumer receives: `src/` under another name.
 function shipsLint(disk: Disk, manifest: Manifest, unit: string): boolean {
     const files: unknown[] = Array.isArray(manifest.files) ? manifest.files : [];
     const byFiles = files.some(
@@ -381,7 +381,7 @@ function targetsOf(text: string): ReadonlySet<string> {
     return targets;
 }
 
-// Asked only where a `.git` stands beside the root, so a member, a fixture or a bare directory is never asked.
+// invariant: asked only where a `.git` stands beside the root, so a member, a fixture or a bare directory is never asked.
 function makefileOf({ read, root }: Context, files: readonly string[]): Finding[] {
     if (!isRepositoryRoot(root)) {
         return [];

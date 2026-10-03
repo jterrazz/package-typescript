@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 import { auditDocs } from './docs.js';
 import type { DocsTree } from './docs.js';
 
-// The smallest compliant manual; each test breaks exactly one thing.
+// invariant: the smallest compliant manual; each test breaks exactly one thing.
 function manual(overrides: Partial<DocsTree> = {}): DocsTree {
     return {
         agents: '# Agent brief\n\nThe corpus is docs/README.md.\n',

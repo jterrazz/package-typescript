@@ -109,18 +109,8 @@ export function namesPass(check: Check): Launched | undefined {
     };
 }
 
-export function commentsPass(check: Check): Launched | undefined {
-    if (!check.selected('comments') || check.fix) {
-        return undefined;
-    }
-    const log = check.logs.at('comments.log');
-    const args = ['.', ...check.lintArgs];
-
-    return { log, status: checker('comments', args, { path: log }) };
-}
-
 export function architecturePass(check: Check): Launched | undefined {
-    // The base preset's laws hold a `lint/` tree wherever one stands, with or without a settings file.
+    // invariant: the base preset's laws hold a `lint/` tree wherever one stands, with or without a settings file.
     if (
         !check.selected('architecture') ||
         !(

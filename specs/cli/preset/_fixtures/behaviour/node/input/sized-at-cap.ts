@@ -1,5 +1,5 @@
 /*
- * A file of exactly 300 lines, the cap `max-lines` draws: it reports nothing,
+ * outside: a file of exactly 300 lines, the cap `max-lines` draws: it reports nothing,
  * and one more line would be refused.
  */
 

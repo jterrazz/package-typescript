@@ -17,7 +17,7 @@ export const OXLINT_SUPPRESSIONS = 'oxlint-suppressions.json';
 
 export const SUPPRESSIONS_LEDGER = '.jterrazz/oxlint-suppressions.json';
 
-// oxlint reads and writes its suppressions at the root of the run, under that one name, and offers no option to move them: the ledger is laid there for the run, and taken back after it.
+// outside: oxlint reads and writes its suppressions at the root of the run, under that one name, and offers no option to move them: the ledger is laid there for the run, and taken back after it.
 export async function withStagedSuppressions<T>(root: string, run: () => Promise<T>): Promise<T> {
     const ledger = join(root, SUPPRESSIONS_LEDGER);
     const staged = join(root, OXLINT_SUPPRESSIONS);

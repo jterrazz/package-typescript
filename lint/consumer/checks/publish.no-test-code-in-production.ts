@@ -42,7 +42,6 @@ function finding(file: string, found: string, fix: string): Finding {
     };
 }
 
-// An external specifier is judged by `testPackageOf` unless the package declares it to run in production.
 export function noTestCodeInProductionFindings({
     chunks,
     manifest,

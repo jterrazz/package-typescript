@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest';
 
 import { diagnosticsOf, oxfmt, oxlint, PROFILES, sandbox } from './_setup/rulebook.js';
 
-// Two rounds of `oxlint --fix` then `oxfmt` must land on the same bytes over shapes the two tools both rewrite.
+// invariant: two rounds of `oxlint --fix` then `oxfmt` must land on the same bytes over shapes the two tools both rewrite.
 
 const FIXTURES = resolve(import.meta.dirname, '_fixtures/fixpoint');
 

@@ -9,7 +9,7 @@ export type Entry = Merged & {
 
 type Resolved = Omit<Entry, 'profiles'>;
 
-// Composition is last-wins per rule, so each profile resolves before grouping: a reader is owed
+// invariant: composition is last-wins per rule, so each profile resolves before grouping: a reader is owed
 // `import/extensions` as `always` under node and `never` under the bundler profiles, each on its own line.
 
 export function decisions(profiles: Readonly<Record<string, Profile>>): Entry[] {

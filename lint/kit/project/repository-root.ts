@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { isFile } from './fs-cache.js';
 
 export function isRepositoryRoot(dir: string): boolean {
-    // `.git` is a directory in a clone and a file in a worktree.
+    // outside: `.git` is a directory in a clone and a file in a worktree.
     return existsSync(join(dir, '.git'));
 }
 

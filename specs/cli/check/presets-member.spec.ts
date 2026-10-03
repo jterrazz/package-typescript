@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, passOf, SELECTING_BIN } from '../_setup/check-passes.js';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
-// The stubs fail unless a case asks otherwise: a passing pass prints nothing, which would leave the claim unmade.
+// invariant: the stubs fail unless a case asks otherwise: a passing pass prints nothing, which would leave the claim unmade.
 
 const FIXTURE = resolve(import.meta.dirname, '_fixtures/presets-member');
 

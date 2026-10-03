@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 
 /*
- * A spec file past 300 lines is reported by nothing here: its size is
+ * outside: a spec file past 300 lines is reported by nothing here: its size is
  * `@jterrazz/test`'s `spec-file-within-line-limit`, at 400, and one cap judges a file. The lines below
  * only carry the file past the toolchain's cap.
  * line 000 of the scenario's narration

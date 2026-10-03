@@ -1,4 +1,4 @@
-// What test material IS belongs to `@jterrazz/test` alone: its reader is loaded from the install
+// invariant: what test material IS belongs to `@jterrazz/test` alone: its reader is loaded from the install
 // the package resolves, never copied here, and never from the toolchain's own install.
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';

@@ -8,7 +8,7 @@ import { onlyPasses } from '../_setup/check-passes.js';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 import { cli } from '../cli.specification.js';
 
-// The oracle is oxlint's own report over a copy of the same ground in the same environment.
+// invariant: the oracle is oxlint's own report over a copy of the same ground in the same environment.
 
 const REPOSITORY = resolve(import.meta.dirname, '../../..');
 const OXLINT = resolve(REPOSITORY, 'node_modules/.bin/oxlint');
@@ -59,7 +59,7 @@ function oxlintAlone(form: Record<string, string>): string {
     return linted.stdout;
 }
 
-// A run's duration is the one thing two runs of the same lint never share.
+// invariant: a run's duration is the one thing two runs of the same lint never share.
 function timeless(text: string): string {
     return text.replaceAll(/Finished in \d+(?:ms|\.\d+s)/gu, 'Finished in <time>');
 }
@@ -109,7 +109,7 @@ describe('oxlint-report', () => {
         );
     });
 
-    // A JS plugin records every oxlint process loading it in the file `RUNS_LOG` names, and nowhere without one.
+    // outside: a JS plugin records every oxlint process loading it in the file `RUNS_LOG` names, and nowhere without one.
     test.each([
         { held: false, name: 'a failing pass with no baseline to judge it' },
         { held: true, name: 'a pass the baseline holds' },

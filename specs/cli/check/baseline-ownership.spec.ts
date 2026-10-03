@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
-// oxlint refuses two plugins by one name in one run, and @jterrazz/test's checks load every config of this
+// outside: oxlint refuses two plugins by one name in one run, and @jterrazz/test's checks load every config of this
 // repository: the fixture cannot hold the stub preset, so each case writes it.
 
 function contribution(lines: string, failed: boolean): string {
@@ -55,7 +55,7 @@ function groundOf(): string {
     return project;
 }
 
-// npm sets `INIT_CWD` for whatever script started this suite, and `baseline` records into it.
+// outside: npm sets `INIT_CWD` for whatever script started this suite, and `baseline` records into it.
 function run(
     project: string,
     command: string,
@@ -167,7 +167,7 @@ describe('baseline-ownership', () => {
 
     const FAILING_CHECKER = contribution("'conventions checker: 1 error(s) found'", true);
 
-    // With nothing but PATH and HOME, oxlint picks the framed form, which closes on `Finished in …` even over nothing.
+    // outside: with nothing but PATH and HOME, oxlint picks the framed form, which closes on `Finished in …` even over nothing.
     test('draws nothing under a green oxlint pass when no diagnostic stands behind the broken section', () => {
         // Given - a checker failing, and a config arming no rule, in the framed form's environment
         const project = groundOf();

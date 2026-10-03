@@ -11,14 +11,14 @@ const FENCE_RUN_LIMIT = 15;
 
 const SECTION_PROSE_LIMIT = 30;
 
-// A skill ships beside its package's `docs/`, so a chapter it names resolves there.
+// invariant: a skill ships beside its package's `docs/`, so a chapter it names resolves there.
 const CHAPTER = /(?<![\w/.-])docs\/(?<chapter>\d{2}-[a-z\d-]+\.md)/gu;
 
 const SKILL_PAGE = /^(?<root>(?:.*\/)?)skills\/[^/]+\/.+\.md$/u;
 
 const OWN_RUMDL_CONFIGS = ['.rumdl.toml', 'rumdl.toml'];
 
-// The opening segments are closed on purpose, or every `a/b` in a sentence would read as a
+// invariant: the opening segments are closed on purpose, or every `a/b` in a sentence would read as a
 // coordinate; `docs/` and `src/` are absent because a page teaching a convention names the reader's tree.
 const BACKTICK_PATH =
     /`(?<path>(?:apps|bin|lib|lint|packages|presets|specs|tests)\/[a-zA-Z\d._/-]+)`/gu;
@@ -143,7 +143,7 @@ function flatSections(markdown: string): string[] {
             const level = (heading.groups?.hashes ?? '').length;
             if (level <= 2) {
                 close();
-                // An h1 titles the page; it is not one of its questions.
+                // invariant: an h1 titles the page; it is not one of its questions.
                 title = level === 2 ? line.trim() : '';
                 start = index + 1;
                 prose = 0;

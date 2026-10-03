@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
-// A document's `run` has no per-run `cwd`, and `fixture:` cannot place an ancestor `.gitignore` above the working directory.
+// outside: a document's `run` has no per-run `cwd`, and `fixture:` cannot place an ancestor `.gitignore` above the working directory.
 
 function checkFromMember(fixture: string): { status: null | number; stdout: string } {
     const workDir = temporaryDirectory('spec-gitignore-workspace-');

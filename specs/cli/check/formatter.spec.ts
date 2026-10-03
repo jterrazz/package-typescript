@@ -9,7 +9,7 @@ import { cli as oxfmtCli } from '../oxfmt.specification.js';
 
 const BUILT_FROM = resolve(import.meta.dirname, '../../..');
 
-// Each probe targets one style decision the preset makes, never oxfmt's overall output.
+// invariant: each probe targets one style decision the preset makes, never oxfmt's overall output.
 const ENTRY = join(BUILT_FROM, 'dist/oxfmt.js');
 const CONFIG_PATH = join(newDirectory('spec-formatter-config-'), 'oxfmt.config.mjs');
 writeFileSync(
@@ -49,14 +49,14 @@ describe('formatter', () => {
         expect(result.exitCode).toBe(0);
     });
 
-    // The preset's ignores resolve against the config's directory, so the tree sits beside a config composing it.
+    // outside: the preset's ignores resolve against the config's directory, so the tree sits beside a config composing it.
     test('formats none of the asset trees, build caches and ground a project holds', () => {
         // Given - the same unformatted file at the root and under every tree the preset ignores, beside a consumer config
         const created = temporaryDirectory('spec-formatter-ignores-');
         cpSync(resolve(import.meta.dirname, '_fixtures/formatter/asset-trees'), created, {
             recursive: true,
         });
-        // A tracked `.next/` is the committed artefact the Gitignore pass refuses.
+        // invariant: a tracked `.next/` is the committed artefact the Gitignore pass refuses.
         mkdirSync(join(created, '.next'));
         cpSync(join(created, 'index.ts'), join(created, '.next/app.ts'));
         writeFileSync(

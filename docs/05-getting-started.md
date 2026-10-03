@@ -167,7 +167,7 @@ Beyond the files above, `check` judges what the project already holds. On an emp
 
 - **Names.** A folder or file named `utils`, `helpers`, `common`, `types.ts`, an abbreviation such as `auth` or `cfg`: [the three rosters](07-quality-checks.md#the-names-tree-pass).
 - **Root folders.** A root folder off [the root spine](07-quality-checks.md#the-root-spine), such as `scripts/`, `test/` or `docker/`, is declared with its reason: [A root beside the spine](07-quality-checks.md#a-root-beside-the-spine).
-- **Comments.** The comment lines are counted, and the count is recorded once with `typescript baseline`: [the Comments pass](07-quality-checks.md#the-comments-density-pass).
+- **Comments.** Every comment opens with the kind of thing it states, and an old tree records the ones it holds with `typescript baseline`: [A comment states its kind](08-lint-presets.md#a-comment-states-its-kind).
 - **Prose.** Every Markdown page, the README included, keeps its links resolving and its paragraphs within twelve lines: [the Markdown pass](07-quality-checks.md#the-markdown-prose-pass).
 - **Secrets.** A file carrying a live-looking credential: [the Secrets pass](07-quality-checks.md#the-secrets-credentials-pass).
 - **Unused code.** An export, a file or a dependency nothing uses: [knip](08-lint-presets.md#unused-code-knip).

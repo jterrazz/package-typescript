@@ -12,7 +12,7 @@ import { resolve } from 'node:path';
 
 import { newDirectory } from '../../_setup/temporary-directory.js';
 
-// oxlint 1.83 hazards: `--type-aware` walks up for `node_modules/.bin/tsgolint`, or every type-aware rule
+// hazard: oxlint 1.83 hazards: `--type-aware` walks up for `node_modules/.bin/tsgolint`, or every type-aware rule
 // silently skips; and a symlinked `node_modules` under `oxlint --fix .` rewrites the real dependency tree —
 // so the sandbox links two entries and every run names its files.
 
@@ -29,7 +29,7 @@ export const PROFILES = Object.freeze([
     { name: 'react', tsconfig: 'react' },
 ] as const);
 
-// The profiles ship as values of the `#rulebook` entry; oxlint reads a config by path, so each is laid as a module.
+// outside: the profiles ship as values of the `#rulebook` entry; oxlint reads a config by path, so each is laid as a module.
 const PROFILE_MODULES = newDirectory('jterrazz-profiles-');
 
 export const DERIVED_CONFIG = `import { oxlintConfigAt } from ${JSON.stringify(resolve(REPOSITORY, 'dist/rulebook.js'))};\n\nexport default await oxlintConfigAt(import.meta.dirname);\n`;
@@ -50,7 +50,7 @@ writeFileSync(
     `import { oxfmtConfig } from ${JSON.stringify(resolve(REPOSITORY, 'dist/oxfmt.js'))};\n\nexport default await oxfmtConfig(import.meta.url);\n`,
 );
 
-// A real directory, never a link: tsc resolves a preset's own `extends` from its real path.
+// hazard: a real directory, never a link: tsc resolves a preset's own `extends` from its real path.
 export function installTsconfigPresets(project: string): void {
     const installed = resolve(project, 'node_modules/@jterrazz/typescript');
     mkdirSync(installed, { recursive: true });
@@ -89,7 +89,7 @@ export function sandbox(
         resolve(path, 'node_modules/@types'),
         'dir',
     );
-    // An unresolved `vitest` import makes every call an `any`, which the type-aware rules would report.
+    // hazard: an unresolved `vitest` import makes every call an `any`, which the type-aware rules would report.
     symlinkSync(
         resolve(REPOSITORY, 'node_modules/vitest'),
         resolve(path, 'node_modules/vitest'),
@@ -156,7 +156,7 @@ export function printConfig(name: string): ResolvedConfig {
     return JSON.parse(stdout) as ResolvedConfig;
 }
 
-// `--format=json` is the one form that is the same on a laptop and on a runner.
+// value: `--format=json` is the one form that is the same on a laptop and on a runner.
 export function diagnosticsOf(report: { stdout: string }): Diagnostic[] {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint's own --format=json output is oxlint's contract
     return (JSON.parse(report.stdout) as { diagnostics: Diagnostic[] }).diagnostics;

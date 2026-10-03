@@ -32,7 +32,7 @@ export function runTool(
     };
 }
 
-// gitleaks reads a directory, so the judged files are copied into one, each at the project's own path.
+// outside: gitleaks reads a directory, so the judged files are copied into one, each at the project's own path.
 function stageFiles(root: string, files: readonly string[]): string {
     const staged = mkdtempSync(join(tmpdir(), 'typescript-secrets-'));
     for (const path of files) {
@@ -44,7 +44,7 @@ function stageFiles(root: string, files: readonly string[]): string {
             mkdirSync(dirname(join(staged, path)), { recursive: true });
             copyFileSync(source, join(staged, path));
         } catch {
-            // A file gone from the disk has nothing left to leak.
+            // invariant: a file gone from the disk has nothing left to leak.
         }
     }
 

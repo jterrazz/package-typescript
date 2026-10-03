@@ -9,7 +9,7 @@ import { onlyPasses, TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 import { cli } from '../cli.specification.js';
 
-// A config in the folder above a project is never read; `fixture:` spreads into its cwd, so that case is built in a temp directory.
+// outside: a config in the folder above a project is never read; `fixture:` spreads into its cwd, so that case is built in a temp directory.
 
 function checkBelowDecoy(): string {
     const tree = temporaryDirectory('spec-default-config-');

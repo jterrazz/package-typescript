@@ -15,7 +15,7 @@ export function pack(...flags: string[]): { filename: string; paths: string[] } 
     if (run.status !== 0) {
         throw new Error(`npm pack failed: ${run.stderr}`);
     }
-    // npm 10 prints one report per package in an array, npm 12 keys them by name.
+    // outside: npm 10 prints one report per package in an array, npm 12 keys them by name.
     const printed: unknown = JSON.parse(run.stdout);
     const reports: unknown[] = Array.isArray(printed)
         ? printed

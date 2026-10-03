@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest';
 import { cli as oxlintCli } from '../oxlint.specification.js';
 import { profilePath } from './_setup/rulebook.js';
 
-// A profile never auto-detects another @jterrazz package: the `test()` preset's rules exist only where it is listed.
+// invariant: a profile never auto-detects another @jterrazz package: the `test()` preset's rules exist only where it is listed.
 
 const NODE_CONFIG = profilePath('node');
 

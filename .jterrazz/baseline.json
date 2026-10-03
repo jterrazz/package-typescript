@@ -2,9 +2,6 @@
     "typescript.mutation": {
         "score": 21.9
     },
-    "typescript": {
-        "comments/comment-lines-held-by-the-baseline": 342
-    },
     "test": {
         "jterrazz-check/facet-test-uses-its-runner": 20
     }

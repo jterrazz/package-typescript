@@ -13,7 +13,7 @@ import { describe, expect, test } from 'vitest';
 import { DERIVED_CONFIG, diagnosticsOf, oxlint, PROFILES, sandbox } from './_setup/rulebook.js';
 import type { Diagnostic } from './_setup/rulebook.js';
 
-// One case per decision this package owns, never per upstream rule. The `_expected/` tree holds only the files
+// invariant: one case per decision this package owns, never per upstream rule. The `_expected/` tree holds only the files
 // `--fix` rewrote, so a reasoned `off` states itself by absence. Regenerate with `TEST_UPDATE=1 npm test`.
 
 const FIXTURES = resolve(import.meta.dirname, '_fixtures/behaviour');
@@ -102,7 +102,7 @@ describe('behaviour', () => {
         expect(orphans).toStrictEqual([]);
     });
 
-    // A JS plugin's rules never reach `--print-config`, so only `reportUnusedDisableDirectives` refuses this.
+    // outside: a JS plugin's rules never reach `--print-config`, so only `reportUnusedDisableDirectives` refuses this.
     test('refuses a directive naming a @jterrazz/test rule the plugin does not ship', () => {
         // Given - the node profile with @jterrazz/test's test() preset, and a directive naming a rule it never shipped
         using work = sandbox(resolve(FIXTURES, 'node', 'input'), 'node', 'node');

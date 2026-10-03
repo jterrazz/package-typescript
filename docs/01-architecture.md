@@ -63,7 +63,7 @@ A refusal of the run rather than of the project — `baseline-ratchet`, `baselin
 
 - `checker.ts` reads the command line, runs the pass it is handed over what the kit reads and the settings resolved through the presets the module at the root of `lint/` hands it, prints and reports its findings, judges a held pass against the baseline and writes a fix;
 - `report-line.ts` writes a positioned finding in the compiler's convention, and `stop.ts` unwinds a run to its exit code;
-- `baseline.ts` is the `baseline` command, which refuses an oxlint rule left in the section or writes the section from the Architecture, Names and Comments counts;
+- `baseline.ts` is the `baseline` command, which refuses an oxlint rule left in the section or writes the section from the Architecture and Names counts;
 - `project-queries.ts` holds what the command asks of a project.
 
 ### The laws that keep it apart

@@ -43,7 +43,7 @@ function listNotIgnored(top: string): null | string[] {
 function indexOf(top: string, paths: string[], index: string, listedAt: number): WorkTree {
     const children = new Map<string, Set<string>>();
     for (const path of paths) {
-        // An untracked nested repository is listed as `sub/`: the trailing
+        // outside: an untracked nested repository is listed as `sub/`: the trailing
         // separator names no child.
         const segments = path.split('/').filter((segment) => segment !== '');
         let parent = top;
@@ -104,7 +104,7 @@ function workTreeOf(dir: string, read: string): null | WorkTree {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
     });
-    // `--show-cdup` prints an empty line at the top level: the two answers are
+    // outside: `--show-cdup` prints an empty line at the top level: the two answers are
     // read by position, never trimmed together.
     const [cdup = '', index = ''] = (located.stdout ?? '').split('\n');
     const top = resolve(dir, cdup);

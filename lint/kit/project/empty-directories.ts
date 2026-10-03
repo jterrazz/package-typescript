@@ -1,4 +1,4 @@
-// Read off the disk: git tracks no directory, so a sweep of what git lists can never see one.
+// outside: read off the disk: git tracks no directory, so a sweep of what git lists can never see one.
 
 import { spawnSync } from 'node:child_process';
 import { readdirSync, rmdirSync } from 'node:fs';
@@ -7,20 +7,19 @@ import { join, matchesGlob } from 'node:path';
 
 import { UNSWEPT } from './project-files.js';
 
-// A repository, a worktree or a submodule: never entered.
+// invariant: a repository, a worktree or a submodule: never entered.
 const REPOSITORY_MARKER = '.git';
 
 const namedByGlob = (path: string, pattern: string): boolean =>
     matchesGlob(path, pattern) || matchesGlob(`${path}/child`, pattern);
 
-// `root` itself excepted: a project that is empty is refused elsewhere.
+// invariant: `root` itself excepted: a project that is empty is refused elsewhere.
 export function emptyDirectories(
     root: string,
     { ignorePatterns = [] }: { ignorePatterns?: readonly string[] } = {},
 ): string[] {
     const tops: string[] = [];
 
-    // Empty children join `tops` when the directory itself is not empty.
     function isEmpty(relativePath: string): boolean {
         let entries: Dirent[];
         try {
@@ -87,7 +86,7 @@ function ignoredByGit(root: string, paths: readonly string[]): ReadonlySet<strin
     );
 }
 
-// One `rmdir` at a time, bottom-up, so a file that landed since it was read stops the deletion.
+// hazard: one `rmdir` at a time, bottom-up, so a file that landed since it was read stops the deletion.
 export function removeEmptyDirectory(root: string, relativePath: string): boolean {
     const path = join(root, relativePath);
     try {

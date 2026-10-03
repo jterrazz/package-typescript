@@ -5,7 +5,7 @@ import { describe, expect, test } from 'vitest';
 
 import { shippedModules } from '../../../lint/kit/testing/shipped-modules.js';
 
-// The module walk sees only what an import builds; a literal audience holds whoever calls the builder, and when.
+// invariant: the module walk sees only what an import builds; a literal audience holds whoever calls the builder, and when.
 // The tarball holds the bundle, so the builder's calls are read where they are written.
 
 const CONTRACT = /(?:^|\/)compiler\/decision\.js$/u;

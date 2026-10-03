@@ -32,7 +32,7 @@ type Part = (typeof LESSON_PARTS)[number];
 
 const isPart = (name: string): name is Part => (LESSON_PARTS as readonly string[]).includes(name);
 
-// A part out of order, or stated twice, makes it no lesson.
+// invariant: a part out of order, or stated twice, makes it no lesson.
 export function lessonParts(message: string): Partial<Record<Part, string>> | undefined {
     const starts = [...message.matchAll(PART_START)];
     const order = starts.map((start) => start.groups?.part ?? '');
@@ -68,7 +68,7 @@ export function messageOf(error: unknown): string {
 
 const ABBREVIATIONS = ['e.g', 'i.e', 'vs', 'etc'];
 
-// Never a period inside a code span (`*.spec.ts`), nor an abbreviation's.
+// invariant: never a period inside a code span (`*.spec.ts`), nor an abbreviation's.
 export function firstSentence(text: string): string {
     let inCode = false;
     for (let index = 0; index < text.length; index += 1) {
@@ -101,7 +101,7 @@ export function lessonOf(docs: Taught, read: ChapterAnchor, teaching: Teaching):
     return refusal({ ...teaching, read, why: whyOf(docs) });
 }
 
-// A `{{data}}` placeholder is oxlint's, filled at report time.
+// outside: a `{{data}}` placeholder is oxlint's, filled at report time.
 export function lessonsOf(
     docs: Taught,
     read: ChapterAnchor,

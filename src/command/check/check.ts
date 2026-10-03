@@ -16,14 +16,7 @@ import { argumentsOf, membersOf, targetsOf, toolsOf } from './setup.js';
 import type { Check } from './setup.js';
 import { started } from './started.js';
 import type { Started } from './started.js';
-import {
-    commentsVerdict,
-    lintVerdictOf,
-    presetVerdicts,
-    publishVerdict,
-    settled,
-    settledLint,
-} from './verdicts.js';
+import { lintVerdictOf, presetVerdicts, publishVerdict, settled, settledLint } from './verdicts.js';
 import type { Verdict } from './verdicts.js';
 
 export { CHECK_PASSES, EVERY_PASS } from './passes.js';
@@ -96,7 +89,6 @@ async function reported(
     const config = await settled(passes.config);
     const typescript = await settled(passes.typescript);
     const linted = await settledLint(run, passes);
-    const comments = await commentsVerdict(run, passes);
     const [
         names,
         format,
@@ -141,7 +133,6 @@ async function reported(
         ...labelled('Suppressions (directives)', suppressions, fix),
         ...labelled('Markdown (prose)', markdown, fix),
         ...labelled('Names (tree)', selected('names') ? names : undefined, fix),
-        ...labelled('Comments (density)', selected('comments') ? comments : undefined, fix),
         ...labelled('Secrets (credentials)', secrets),
     ];
 }

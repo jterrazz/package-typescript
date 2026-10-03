@@ -1,7 +1,7 @@
 import { fragment, on } from '../../../kit/compiler/decision.js';
 import { IMPORT_EXTENSIONS_NEVER } from '../import.js';
 
-// oxlint ships no `react-native` plugin. Metro resolves an import but resolves an asset by its extension,
+// outside: oxlint ships no `react-native` plugin. Metro resolves an import but resolves an asset by its extension,
 // and `require()` is how an asset is named in a React Native tree.
 export default fragment({
     id: 'frameworks/react-native',

@@ -9,7 +9,7 @@ import {
 } from '../../kit/compiler/decision.js';
 import type { Stated } from '../../kit/compiler/decision.js';
 
-// Every rule tsgolint runs is decided, nursery included, so a tsgolint release never adds an unnamed check.
+// invariant: every rule tsgolint runs is decided, nursery included, so a tsgolint release never adds an unnamed check.
 
 const NURSERY_SINCE = '11.0.0';
 
@@ -168,7 +168,7 @@ export default fragment({
             typeAware(),
             'drops a cast a widened platform type needs',
         ),
-        // For `import/consistent-type-specifier-style`'s reason: an inline type specifier survives as an empty import.
+        // hazard: for `import/consistent-type-specifier-style`'s reason: an inline type specifier survives as an empty import.
         'typescript/consistent-type-imports': on([
             {
                 disallowTypeAnnotations: true,
@@ -178,12 +178,12 @@ export default fragment({
         ]),
         'typescript/no-import-type-side-effects': on(),
         'typescript/explicit-member-accessibility': on([{ accessibility: 'no-public' }]),
-        // Booleans excepted: `false ?? x` is `false` and `false || x` is `x`.
+        // hazard: booleans excepted: `false ?? x` is `false` and `false || x` is `x`.
         'typescript/prefer-nullish-coalescing': typeAware([
             { ignorePrimitives: { boolean: true } },
         ]),
         'typescript/method-signature-style': on(['property']),
-        // Nursery upstream, decided because tsgolint runs it.
+        // outside: nursery upstream, decided because tsgolint runs it.
         'typescript/prefer-optional-chain': { ...typeAware(), since: NURSERY_SINCE },
         'typescript/return-await': typeAware(['always']),
 

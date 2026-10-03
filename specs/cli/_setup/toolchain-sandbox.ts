@@ -3,11 +3,11 @@ import { join, resolve } from 'node:path';
 
 import { temporaryDirectory } from './temporary-directory.js';
 
-// A copy, not a link: Node resolves a symlinked script back to the checkout it points at.
+// hazard: a copy, not a link: Node resolves a symlinked script back to the checkout it points at.
 
 const REPOSITORY = resolve(import.meta.dirname, '../../..');
 
-// A version writes a manifest claiming it; `null` leaves the tool out.
+// invariant: a version writes a manifest claiming it; `null` leaves the tool out.
 export function toolchainWith(tools: Record<string, null | string>): string {
     const root = temporaryDirectory('spec-toolchain-');
 

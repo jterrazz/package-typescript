@@ -5,7 +5,7 @@ import type { JsonObject } from '../../lint/kit/project/json.js';
 
 type Step = { kept: string; next: number; open: boolean };
 
-// A comment marker inside a string (`"**/*.js"`) is data.
+// invariant: a comment marker inside a string (`"**/*.js"`) is data.
 function withoutComments(text: string): string {
     let output = '';
     let index = 0;
@@ -96,7 +96,7 @@ function withoutTrailingCommas(text: string): string {
     return output;
 }
 
-// JSONC, so an ignore carries its reason beside it.
+// outside: JSONC, so an ignore carries its reason beside it.
 export function readJsonc(path: string): JsonObject {
     const document = readFileSync(path, 'utf8');
 

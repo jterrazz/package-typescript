@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 
 import { cli } from '../cli.specification.js';
 
-// Each config only arms rules — no root-only `options`, no plugin named `jterrazz` — so it is safe to commit.
+// invariant: each config only arms rules — no root-only `options`, no plugin named `jterrazz` — so it is safe to commit.
 
 const caseOf = (config: string, name: string) =>
     cli

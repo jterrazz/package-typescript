@@ -29,7 +29,7 @@ const NEVER_MUTATED = [
     '**/_expected/**',
 ];
 
-// Stryker 10 names a test by its suites and title joined with a space, where Vitest 5 joins them with ` > `: without this plugin every mutant runs no test and survives.
+// outside: Stryker 10 names a test by its suites and title joined with a space, where Vitest 5 joins them with ` > `: without this plugin every mutant runs no test and survives.
 const TEST_NAMES = `const strykerTestNames = {
     configureVitest({ project }) {
         let pattern;
@@ -45,7 +45,7 @@ const TEST_NAMES = `const strykerTestNames = {
     name: 'stryker-test-names',
 };`;
 
-// A spawned process runs the instrumented build and reads the active mutant from its environment.
+// invariant: a spawned process runs the instrumented build and reads the active mutant from its environment.
 const ACTIVE_MUTANT = `import { afterAll, beforeEach } from 'vitest';
 
 const namespace = () => globalThis.__stryker__;
@@ -64,7 +64,7 @@ afterAll(() => {
 });
 `;
 
-// The checks a test runs read the git tree, and the sandbox lies in the ignored .artifacts/, where git sees none.
+// outside: the checks a test runs read the git tree, and the sandbox lies in the ignored .artifacts/, where git sees none.
 const sandboxScript = (
     build: boolean,
 ): string => `import { execFileSync } from 'node:child_process';

@@ -14,7 +14,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { newDirectory, temporaryDirectory } from '../_setup/temporary-directory.js';
 
-// Which scanner answers depends on the machine's PATH, so the chain names it by handing over a PATH.
+// outside: which scanner answers depends on the machine's PATH, so the chain names it by handing over a PATH.
 
 const FIXTURE = resolve(import.meta.dirname, '_fixtures/secrets/leaked');
 

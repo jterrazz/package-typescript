@@ -4,7 +4,7 @@ import { PROFILES as PROFILE_TABLE } from '../../../lint/consumer/rulebook/profi
 import { decisions } from '../../../lint/kit/catalogue/decisions.js';
 import { printConfig, PROFILES } from './_setup/rulebook.js';
 
-// Two rules demanding opposite shapes cannot both be armed: no edit closes both.
+// invariant: two rules demanding opposite shapes cannot both be armed: no edit closes both.
 
 const PAIRS = Object.freeze([
     ['no-ternary', 'unicorn/prefer-ternary', 'one forbids the ternary the other demands'],

@@ -1,4 +1,4 @@
-// oxlint constraints this file is shaped by: an override is the one form that reaches a rule a
+// outside: oxlint constraints this file is shaped by: an override is the one form that reaches a rule a
 // consumer's own overrides arm again; `-c` switches nested-config discovery off, and a nested config
 // replaces the root's rules in its subtree; globs resolve against the config's own directory, so a
 // wrapper sits beside the config it wraps. Unused directives are not reported: this run turned rules off.

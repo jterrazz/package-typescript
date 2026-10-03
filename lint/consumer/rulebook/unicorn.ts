@@ -1,6 +1,6 @@
 import { allOn, fragment, off, on, unsafeFix } from '../../kit/compiler/decision.js';
 
-// Two offs are the formatter's: unicorn's fixer and oxfmt disagree about the same bytes (specs/cli/preset).
+// outside: two offs are the formatter's: unicorn's fixer and oxfmt disagree about the same bytes (specs/cli/preset).
 export default fragment({
     id: 'unicorn',
     audience: 'consumer',
@@ -133,7 +133,7 @@ export default fragment({
         ),
 
         'unicorn/filename-case': on([{ case: 'kebabCase' }]),
-        // Named builtin imports are what the type-aware rules read and what `verbatimModuleSyntax` keeps.
+        // invariant: named builtin imports are what the type-aware rules read and what `verbatimModuleSyntax` keeps.
         'unicorn/import-style': on([
             {
                 styles: {

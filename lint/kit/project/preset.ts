@@ -79,7 +79,7 @@ const isPreset = (value: unknown): value is Preset =>
     value.name !== '' &&
     typeof value.package === 'string';
 
-// Depth first: a preset's own presets come before it, and a name met twice keeps its first place.
+// invariant: depth first: a preset's own presets come before it, and a name met twice keeps its first place.
 function flattened(presets: readonly unknown[], into: Map<string, Preset>): null | string {
     for (const preset of presets) {
         if (!isPreset(preset)) {
@@ -244,7 +244,7 @@ function lawsOf(
 export function resolveConfig(declaredSettings: object, baseOf: BasePresets): Resolution {
     const declared = objectOf(declaredSettings);
     const listed: unknown = declared.presets ?? [];
-    // A file that cannot be resolved still leaves the base laws standing.
+    // invariant: a file that cannot be resolved still leaves the base laws standing.
     const refusedWith = (problem: string): Resolution => ({
         problem,
         resolved:

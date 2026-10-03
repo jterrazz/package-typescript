@@ -2,7 +2,7 @@ import { projectFiles, readText } from './project-files.js';
 
 export const SOURCE = /\.(?:astro|[cm]?[jt]sx?|svelte|vue)$/u;
 
-// A checker reads a directive only at the opening of a comment; prose about one is not one.
+// invariant: a checker reads a directive only at the opening of a comment; prose about one is not one.
 const COMMENT = String.raw`(?:\/\/|\/\*+|^\s*\*(?!\/))\s*`;
 
 export const DISABLE = new RegExp(
@@ -15,7 +15,7 @@ export const TS_DIRECTIVE = new RegExp(
     'gu',
 );
 
-// No project of this toolchain runs Biome.
+// outside: no project of this toolchain runs Biome.
 export const BIOME = new RegExp(`${COMMENT}biome-ignore\\b`, 'u');
 
 const QUOTES: ReadonlySet<string> = new Set(['"', "'"]);
@@ -126,7 +126,7 @@ const READERS: Readonly<Record<string, Reader>> = {
 
 type Lexed = { comments: Span[][]; strings: Span[][] };
 
-// A regular-expression literal is read as code, and a template's `${…}` as code again.
+// invariant: a regular-expression literal is read as code, and a template's `${…}` as code again.
 function lexed(text: string): Lexed {
     const reading: Reading = {
         blockStart: 0,
@@ -163,7 +163,7 @@ function lexed(text: string): Lexed {
     return { comments, strings };
 }
 
-// A directive inside a string is text a program prints, never one a checker reads.
+// invariant: a directive inside a string is text a program prints, never one a checker reads.
 export const commentSpansOf = (text: string): Span[][] => lexed(text).comments;
 
 function blanked(line: string, spans: readonly Span[]): string {

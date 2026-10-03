@@ -1,6 +1,6 @@
 import { matchesGlob } from 'node:path';
 
-// npm ships these whatever `files` says.
+// outside: npm ships these whatever `files` says.
 const ALWAYS_PACKED = /^(?:package\.json|readme|license|licence|changelog)/iu;
 
 export const withoutDotSlash = (target: string): string => target.replace(/^\.\//u, '');

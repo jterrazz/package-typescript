@@ -38,10 +38,6 @@ runs:
           baseline-ratchet  .jterrazz/baseline.json › typescript  found: `names/no-language-construct-name` is at 1, below its baseline of 2 · why: each count is held exactly, so a debt that fell is recorded the day it falls and cannot grow back unseen · fix: run 'typescript fix', which re-records the fall · read: docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds
           ✗ Failed with exit code 1
 
-           RUN  Comments (density)
-
-          ✓ Passed
-
            RUN  Secrets (credentials)
 
           ✓ Passed
@@ -87,10 +83,6 @@ runs:
            RUN  Names (tree)
 
           re-recorded .jterrazz/baseline.json › typescript › names/no-language-construct-name 2 → 1
-          ✓ Passed
-
-           RUN  Comments (density)
-
           ✓ Passed
 
            END  Finalizing quality fixes
@@ -144,10 +136,6 @@ runs:
           ✓ Passed
 
            RUN  Names (tree)
-
-          ✓ Passed
-
-           RUN  Comments (density)
 
           ✓ Passed
 

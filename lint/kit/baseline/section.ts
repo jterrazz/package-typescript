@@ -9,7 +9,7 @@ export type Ratchet = { lower: string; record: string };
 const byKey = ([left]: [string, number], [right]: [string, number]): number =>
     left < right ? -1 : 1;
 
-// The section is exact: a count above OR below its entry fails, and only the recording gesture raises one.
+// invariant: the section is exact: a count above OR below its entry fails, and only the recording gesture raises one.
 export function judgeExact(counts: Counts, recorded: Counts, ratchet: Ratchet): Broken[] {
     const broken: Broken[] = [];
     const record = `fix the findings, or run '${ratchet.record}' to record where the project stands`;
@@ -62,7 +62,7 @@ export function judgeExact(counts: Counts, recorded: Counts, ratchet: Ratchet): 
     return broken;
 }
 
-// Lowers what fell and drops zeros, never raises nor adds a key: debt that grew is the recording gesture's to write.
+// invariant: lowers what fell and drops zeros, never raises nor adds a key: debt that grew is the recording gesture's to write.
 export function tightened(
     counts: Counts,
     recorded: Counts,
@@ -103,7 +103,7 @@ export function reRecord(
     return { lines, section: next };
 }
 
-// A floor only rises: a measure below its recorded floor fails, and recording keeps the higher of the two.
+// invariant: a floor only rises: a measure below its recorded floor fails, and recording keeps the higher of the two.
 export function judgeFloor(now: Counts, floor: Counts): Broken[] {
     return Object.entries(floor)
         .toSorted(byKey)

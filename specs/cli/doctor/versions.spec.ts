@@ -6,7 +6,7 @@ import manifest from '../../../package.json' with { type: 'json' };
 import { toolchainWith } from '../_setup/toolchain-sandbox.js';
 import { cli } from '../cli.specification.js';
 
-// Every number here is a version, which a golden would pin to a dependency bump.
+// value: every number here is a version, which a golden would pin to a dependency bump.
 
 function doctorOf(root: string): { rows: string[]; status: null | number; verdict: string } {
     const result = spawnSync('node', [join(root, 'dist/typescript.js'), 'doctor'], {

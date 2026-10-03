@@ -74,12 +74,12 @@ function namesPassOf(project: string): string {
     return passOf(result.stdout, 'Names (tree)');
 }
 
-// npm's INIT_CWD names the project the CLI answers for; a chain started under npm must name its own.
+// outside: npm's INIT_CWD names the project the CLI answers for; a chain started under npm must name its own.
 function inProject(project: string, env: Record<string, string> = {}): NodeJS.ProcessEnv {
     return { ...process.env, ...env, INIT_CWD: project };
 }
 
-// git refuses to track a nested `.git`, so a fixture cannot be a repository.
+// outside: git refuses to track a nested `.git`, so a fixture cannot be a repository.
 
 const FOUR_TARGETS = [
     '.PHONY: install build lint test',
@@ -107,7 +107,7 @@ function treeVerdictsOf(stdout: string): string[] {
 
 function writeDataFolder(project: string): void {
     mkdirSync(join(project, 'data'));
-    // Spelled in two halves, so this file carries no key of its own.
+    // hazard: spelled in two halves, so this file carries no key of its own.
     const key = ['AKIA', 'Q7RJ4KDNPZ2WX6TB'].join('');
     writeFileSync(
         join(project, 'data/NOTES.md'),

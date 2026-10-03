@@ -7,7 +7,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 import { onlyPasses, TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { newDirectory } from '../_setup/temporary-directory.js';
 
-// The Astro pass runs the consumer's `astro check`, so the project carries a binary where npm would put one.
+// outside: the Astro pass runs the consumer's `astro check`, so the project carries a binary where npm would put one.
 
 const project = newDirectory('spec-astro-');
 
@@ -52,7 +52,7 @@ describe('astro', () => {
         );
         mkdirSync(join(project, 'src'), { recursive: true });
         writeFileSync(join(project, 'src/page.astro'), '<p   class="wide"  >hello</p>\n');
-        // tsc refuses a project with no input of its own.
+        // outside: tsc refuses a project with no input of its own.
         writeFileSync(join(project, 'src/site.ts'), 'export const title = "spec";\n');
         installAstroStub(project);
 

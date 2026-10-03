@@ -49,7 +49,7 @@ function toolsLine(behind: readonly ToolVersion[]): string {
 const sum = (recorded: Counts): number =>
     Object.values(recorded).reduce((total, count) => total + count, 0);
 
-// A file the Oxlint pass refuses as `baseline-unreadable` holds no count any row may claim; a floor is no debt, so its measures are counted and never summed.
+// invariant: a file the Oxlint pass refuses as `baseline-unreadable` holds no count any row may claim; a floor is no debt, so its measures are counted and never summed.
 function baselineReader(
     root: string,
     floors: ReadonlySet<string>,

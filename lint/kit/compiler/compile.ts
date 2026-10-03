@@ -1,4 +1,4 @@
-// Never emits `categories`: a category arms rules of plugins the config never names, which fire unannounced
+// hazard: never emits `categories`: a category arms rules of plugins the config never names, which fire unannounced
 // once a framework config activates the plugin.
 
 import type { OxlintConfig, OxlintGlobals } from 'oxlint';
@@ -21,9 +21,9 @@ export const OPTIONS: Readonly<NonNullable<OxlintConfig['options']>> = Object.fr
 });
 
 const CONCAT_DEDUPE = new Set(['extends', 'ignorePatterns', 'jsPlugins', 'plugins']);
-// Order matters: no dedupe.
+// invariant: order matters: no dedupe.
 const CONCAT = new Set(['overrides']);
-// The last config wins per key.
+// invariant: the last config wins per key.
 const SHALLOW_MERGE = new Set(['env', 'globals', 'options', 'rules', 'settings']);
 
 export function compile(

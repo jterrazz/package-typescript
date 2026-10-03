@@ -6,7 +6,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { newDirectory, temporaryDirectory } from '../_setup/temporary-directory.js';
 
-// oxlint loads every `oxlint.config.*` under the project, even one its `ignorePatterns` excludes, so a
+// outside: oxlint loads every `oxlint.config.*` under the project, even one its `ignorePatterns` excludes, so a
 // config that cannot load is built in a temp directory.
 
 const project = newDirectory('spec-oxlint-config-');

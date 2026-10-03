@@ -33,7 +33,7 @@ function rulesOf(tail: string): string[] {
 const hasReason = (tail: string): boolean =>
     (tail.split(REASON)[1] ?? '').replace(/\*\/\s*$/u, '').trim() !== '';
 
-// oxlint reads a glob with no `/` as a basename, matching at any depth.
+// outside: oxlint reads a glob with no `/` as a basename, matching at any depth.
 function standingOf(name: string, config: Applied | null): 'dead' | 'live' | 'unverifiable' {
     if (config === null) {
         return 'unverifiable';
@@ -48,7 +48,7 @@ function standingOf(name: string, config: Applied | null): 'dead' | 'live' | 'un
     const level =
         config.rules[name] ??
         Object.entries(config.rules).find(([key]) => key.split('/').at(-1) === bare)?.[1];
-    // A rule carrying options is printed as `[severity, [options]]`.
+    // outside: a rule carrying options is printed as `[severity, [options]]`.
     const severity: unknown = Array.isArray(level) ? level[0] : level;
 
     return severity === undefined || severity === 'allow' ? 'dead' : 'live';

@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest';
 import { cli as oxlintCli } from '../oxlint.specification.js';
 import { profilePath } from './_setup/rulebook.js';
 
-// The `test()` preset's oxlint composes after the profile and an override replaces options, so its options win (ADR-008).
+// outside: the `test()` preset's oxlint composes after the profile and an override replaces options, so its options win (ADR-008).
 // `_fixtures/owning-preset/` stands in for it; one rule proves the precedence all three share.
 
 const NODE_CONFIG = profilePath('node');

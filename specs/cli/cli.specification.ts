@@ -3,7 +3,7 @@ import { afterAll } from 'vitest';
 
 import { SELECTING_BIN } from './_setup/check-passes.js';
 
-// Rolldown's slow-plugin advisory depends on the machine's load, never on the command: no token covers it.
+// outside: Rolldown's slow-plugin advisory depends on the machine's load, never on the command: no token covers it.
 const SLOW_PLUGIN_ADVISORY =
     /\[PLUGIN_TIMINGS\][\s\S]*?checks#plugintimings for more details\.\n?/gu;
 

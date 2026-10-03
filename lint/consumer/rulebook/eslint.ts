@@ -8,7 +8,7 @@ export default fragment({
     audience: 'consumer',
     plugins: ['eslint'],
     overrides: [
-        // A spec file's size has one judge: `@jterrazz/test`'s `spec-file-within-line-limit`, at 400 lines.
+        // invariant: a spec file's size has one judge: `@jterrazz/test`'s `spec-file-within-line-limit`, at 400 lines.
         scoped({
             files: ['**/*.spec.ts'],
             rules: {
@@ -19,7 +19,7 @@ export default fragment({
             },
             since: SIZE_SINCE,
         }),
-        // A test file's one `describe` (`one-describe-per-file`) is a function as long as the file; `test-body-within-line-limit` caps a test body instead.
+        // invariant: a test file's one `describe` (`one-describe-per-file`) is a function as long as the file; `test-body-within-line-limit` caps a test body instead.
         scoped({
             files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts'],
             rules: {
@@ -192,25 +192,25 @@ export default fragment({
             ...on([{ ignoreClassesWithImplements: 'all' }]),
             since: RULE_REVIEW_SINCE,
         },
-        // `modified`: a dispatch over a closed union is one decision, not N paths to test.
+        // value: `modified`: a dispatch over a closed union is one decision, not N paths to test.
         complexity: { ...on([{ max: 12, variant: 'modified' }]), since: SIZE_SINCE },
         'func-style': on(['declaration', { allowArrowFunctions: true }]),
         'max-depth': on([4]),
-        // Both caps count every line, comments included, as `spec-file-within-line-limit` does.
+        // invariant: both caps count every line, comments included, as `spec-file-within-line-limit` does.
         'max-lines': { ...on([{ max: 300 }]), since: SIZE_SINCE },
         'max-lines-per-function': { ...on([{ max: 60 }]), since: SIZE_SINCE },
         'max-params': on([4]),
         'no-duplicate-imports': on([{ allowSeparateTypeImports: true }]),
         'no-unmodified-loop-condition': on([{ checkConditionalExpressions: true }]),
-        // A hoisted function declaration has no temporal dead zone; the estate writes helpers below their caller.
+        // outside: a hoisted function declaration has no temporal dead zone; the estate writes helpers below their caller.
         'no-use-before-define': on([{ classes: true, functions: false, variables: true }]),
         'no-unused-expressions': on([
             { allowShortCircuit: true, allowTaggedTemplates: true, allowTernary: true },
         ]),
         'no-void': on([{ allowAsStatement: true }]),
-        // `const [, , , operating] = SPINE` is not clearer than `SPINE[3]`.
+        // value: `const [, , , operating] = SPINE` is not clearer than `SPINE[3]`.
         'prefer-destructuring': on([{ array: false, object: true }]),
-        // The `always` fixer fuses declarations and pulls a `// Given -` narration comment inside the chain.
+        // hazard: the `always` fixer fuses declarations and pulls a `// Given -` narration comment inside the chain.
         'one-var': on(['never']),
 
         'capitalized-comments': off({
@@ -222,7 +222,7 @@ export default fragment({
             kind: 'evidence',
         }),
         'init-declarations': off({ by: 'no-unassigned-vars, prefer-const', kind: 'covered' }),
-        // oxfmt writes one statement per line, so the per-function line cap bounds statements.
+        // invariant: oxfmt writes one statement per line, so the per-function line cap bounds statements.
         'max-statements': off(
             {
                 by: 'max-lines-per-function (60) — oxfmt puts one statement per line',

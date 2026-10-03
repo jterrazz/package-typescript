@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 import { installTsconfigPresets } from './_setup/rulebook.js';
 
-// Relative globs in an extended config resolve against the preset file: `${configDir}` is the only form
+// outside: relative globs in an extended config resolve against the preset file: `${configDir}` is the only form
 // that means the extending project.
 
 const ROOT = resolve(import.meta.dirname, '../../..');

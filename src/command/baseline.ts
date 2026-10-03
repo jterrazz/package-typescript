@@ -50,25 +50,16 @@ async function recordPass(pass: string, report: string, args: readonly string[])
         pass,
         ['.', '--format', 'json', ...args],
         { path: report },
-        { stderr: 'ignore', typeless: pass !== 'comments' },
+        { stderr: 'ignore', typeless: true },
     );
 }
 
-type Reports = { architecture: string; comments: string; names: string };
+type Reports = { architecture: string; names: string };
 
 async function written(reports: Reports): Promise<number> {
     return await checker(
         'baseline',
-        [
-            '.',
-            '--architecture',
-            reports.architecture,
-            '--names',
-            reports.names,
-            '--comments',
-            reports.comments,
-            '--write',
-        ],
+        ['.', '--architecture', reports.architecture, '--names', reports.names, '--write'],
         'inherit',
         { stderr: 'inherit' },
     );
@@ -96,7 +87,6 @@ export async function baseline(args: readonly string[]): Promise<number> {
             await inScratch(async (scratch) => {
                 const reports: Reports = {
                     architecture: join(scratch, 'architecture.json'),
-                    comments: join(scratch, 'comments.json'),
                     names: join(scratch, 'names.json'),
                 };
                 print(`${badge('TYPESCRIPT')} Recording the baseline...\n\n`);
@@ -111,7 +101,6 @@ export async function baseline(args: readonly string[]): Promise<number> {
                     binaryIn('ls-lint', HOISTED_BESIDE_PACKAGE),
                     ...args,
                 ]);
-                await recordPass('comments', reports.comments, args);
                 if ((await written(reports)) !== 0 || (await recordedPresets()) !== 0) {
                     return 1;
                 }

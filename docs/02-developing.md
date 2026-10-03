@@ -50,7 +50,7 @@ A generated table is regenerated, never edited: `TEST_UPDATE=1 npm test` rewrite
 - Relative imports carry their `.js` extension: `import { foo } from './bar.js'`.
 - The API is the types: a public export's signature is its documentation, and no generated reference sits beside it.
 - An error a project can cause is a four-part `refusal()`; one only the toolchain can cause is `invariant()` ([Architecture § The command](01-architecture.md#the-command)).
-- Comments default to none; a name carries the meaning ([Lint presets](08-lint-presets.md#a-comment-no-longer-than-its-function)).
+- Comments default to none; a name carries the meaning, and a comment that stays states its kind ([Lint presets](08-lint-presets.md#a-comment-states-its-kind)).
 
 ## The specs' scratch space
 

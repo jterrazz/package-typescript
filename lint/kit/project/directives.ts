@@ -9,7 +9,7 @@ const DIRECTIVE_TEXT = /\.(?:[cm]?[jt]sx?|ya?ml|json|md|sql|http|txt)$/u;
 
 export const holdsDirectives = (path: string): boolean => DIRECTIVE_TEXT.test(path);
 
-// Only in a comment: the word inside a string is a test talking about suppressions.
+// invariant: only in a comment: the word inside a string is a test talking about suppressions.
 const COMMENT_LEAD = /(?:^|\s)(?:\/\/|\/\*|\*|#)\s*$/u;
 
 const idsOf = (rest: string): string[] =>
@@ -25,9 +25,9 @@ const applies = (raw: string, id: string): boolean => {
     return ids.includes(id) || ids.includes('*');
 };
 
-// `// <stem>-disable-next-line <id>[,<id>] -- reason` claims the next line of code, stepping over blank lines and other tools' directives; `<stem>-disable-line` claims its own.
+// invariant: `// <stem>-disable-next-line <id>[,<id>] -- reason` claims the next line of code, stepping over blank lines and other tools' directives; `<stem>-disable-line` claims its own.
 export function suppressionDirectives(stem: string): SuppressionDirectives {
-    // Case-insensitive: the formatter capitalizes a comment's lead.
+    // outside: case-insensitive: the formatter capitalizes a comment's lead.
     const nextLine = new RegExp(`${stem}-disable-next-line\\s+(?<ids>.*)$`, 'iu');
     const ownLine = new RegExp(`${stem}-disable-line\\s+(?<ids>.*)$`, 'iu');
     const directive = new RegExp(

@@ -10,7 +10,7 @@ import { AUDIENCES } from '../../kit/compiler/decision.js';
 import { shippedModules } from '../../kit/testing/shipped-modules.js';
 import { CHANNELS, fieldText, REFUSALS, ROOT, rows, rowsOf } from './audience.js';
 
-// A `self` row names the home that holds it — a path the package leaves out — and the names the tarball audit greps for.
+// invariant: a `self` row names the home that holds it — a path the package leaves out — and the names the tarball audit greps for.
 
 function byName(left: string, right: string): number {
     return left.localeCompare(right);

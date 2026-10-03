@@ -1,6 +1,6 @@
 import { REASON_KINDS } from '../../kit/compiler/decision.js';
 
-// `fragment()` is not exported, so the decision invariants are a `self` rule, audited over every
+// invariant: `fragment()` is not exported, so the decision invariants are a `self` rule, audited over every
 // fragment a module of `lint/` or `src/` exports, whether a profile carries it or not.
 
 export const FRAGMENT_WALK = Object.freeze({

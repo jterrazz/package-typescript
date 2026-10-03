@@ -1,4 +1,4 @@
-// Found the way node resolves, from the package outward to the repository boundary: npm hoists a
+// outside: found the way node resolves, from the package outward to the repository boundary: npm hoists a
 // shared devDependency, and `@jterrazz/test`'s `exports` hides `./package.json` from `require.resolve`.
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';

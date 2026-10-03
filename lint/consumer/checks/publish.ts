@@ -26,7 +26,7 @@ function targetsOf(exports: unknown): string[] {
     return [];
 }
 
-// A wildcard names a family: its directory must exist and hold something the pattern matches.
+// invariant: a wildcard names a family: its directory must exist and hold something the pattern matches.
 function resolvesOnDisk({ exists, list, root }: Context, target: string): boolean {
     const path = withoutDotSlash(target);
     if (!path.includes('*')) {

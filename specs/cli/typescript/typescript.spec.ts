@@ -55,10 +55,6 @@ describe('typescript', () => {
 
             ✓ Passed
 
-             RUN  Comments (density)
-
-            ✓ Passed
-
              RUN  Secrets (credentials)
 
             ✓ Passed
@@ -123,10 +119,6 @@ describe('typescript', () => {
             ✓ Passed
 
              RUN  Names (tree)
-
-            ✓ Passed
-
-             RUN  Comments (density)
 
             ✓ Passed
 

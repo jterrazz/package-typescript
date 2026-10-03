@@ -16,7 +16,7 @@ function tableCells(table: string): string[] {
         );
 }
 
-// The chapter's generated tables are projections of `lint/`; `TEST_UPDATE=1 npm test` regenerates them.
+// invariant: the chapter's generated tables are projections of `lint/`; `TEST_UPDATE=1 npm test` regenerates them.
 
 describe('PROJECTIONS', () => {
     test.each(Object.entries(PROJECTIONS))(
@@ -35,7 +35,7 @@ describe('PROJECTIONS', () => {
                 writeFileSync(page, spliceBetween(before, markers, table, page));
             }
 
-            // Column-insensitive: oxfmt aligns a table's pipes, and a projection owes only the decisions.
+            // outside: column-insensitive: oxfmt aligns a table's pipes, and a projection owes only the decisions.
             const fresh = readFileSync(page, 'utf8');
             const carried = fresh.slice(
                 fresh.indexOf(markers.start) + markers.start.length,

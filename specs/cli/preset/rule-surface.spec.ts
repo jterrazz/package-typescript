@@ -5,9 +5,9 @@ import { decisions, unsafeFixers } from '../../../lint/kit/catalogue/decisions.j
 import { REASON_KINDS } from '../../../lint/kit/compiler/decision.js';
 import { printConfig, PROFILES, roster } from './_setup/rulebook.js';
 
-// Nursery is upstream's one exception: a nursery rule is declared unstable, so the rulebook does not decide it.
+// outside: nursery is upstream's one exception: a nursery rule is declared unstable, so the rulebook does not decide it.
 
-// oxlint reports a plugin scope with underscores and spells the rule id with dashes.
+// outside: oxlint reports a plugin scope with underscores and spells the rule id with dashes.
 function idOf(rule: { scope: string; value: string }): string {
     const scope = rule.scope.replaceAll('_', '-');
     return scope === 'eslint' ? rule.value : `${scope}/${rule.value}`;
@@ -62,7 +62,7 @@ describe('rule-surface', () => {
         // Given - the compiled profile a consumer extends
         const compiled = JSON.stringify(PROFILE_TABLE[name]);
 
-        // A category arms rules of plugins the config never names, which fire unannounced once activated.
+        // hazard: a category arms rules of plugins the config never names, which fire unannounced once activated.
 
         // Then - nothing in the manifest reaches for a category
         expect(compiled).not.toContain('categories');
@@ -81,7 +81,7 @@ describe('rule-surface', () => {
         expect(wrong).toStrictEqual([]);
     });
 
-    // Measured on 1.85: a `conditional_dangerous` fixer rewrote a `declare module` block without `--fix-dangerously`.
+    // outside: measured on 1.85: a `conditional_dangerous` fixer rewrote a `declare module` block without `--fix-dangerously`.
     const APPLIED_BY_FIX = new Set([
         'conditional_dangerous_fix',
         'conditional_dangerous_fix_or_suggestion',
@@ -123,7 +123,7 @@ describe('rule-surface', () => {
     });
 
     test('keeps only the perfectionist rules oxfmt does not sort', () => {
-        // Measured: oxfmt's `sortImports` leaves the specifiers inside one statement alone.
+        // outside: measured: oxfmt's `sortImports` leaves the specifiers inside one statement alone.
 
         // Given - oxfmt owns import order, package.json key order and Tailwind class order
         const OWNED_BY_OXFMT = new Set([

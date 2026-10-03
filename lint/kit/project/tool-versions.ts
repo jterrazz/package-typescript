@@ -22,7 +22,7 @@ export type ToolVersion = {
     verdict: 'absent' | 'newer' | 'ok' | 'old';
 };
 
-// Versions are read off installed manifests: two of these tools answer `--version` in a shape of their own.
+// outside: versions are read off installed manifests: two of these tools answer `--version` in a shape of their own.
 function manifestAt(path: string): Manifest {
     const parsed = parsedObject(readFileSync(path, 'utf8'));
 
@@ -51,7 +51,7 @@ function goCompilerPackage(): string {
     return `@typescript/typescript-${os}-${arch}`;
 }
 
-// A package whose `exports` hides `./package.json` (knip) is invisible to `require`; the two
+// outside: a package whose `exports` hides `./package.json` (knip) is invisible to `require`; the two
 // directories after it are the ones the command's binary lookup walks.
 function installedVersion(name: string): null | string {
     for (const at of [
@@ -86,7 +86,7 @@ function compareVersions(left: string, right: string): number {
     return 0;
 }
 
-// As npm reads it: below 1.0.0 a caret allows the patch line only.
+// outside: as npm reads it: below 1.0.0 a caret allows the patch line only.
 function boundsOf(range: string): { ceiling: null | string; exact?: boolean; floor: string } {
     const floor = range.replace(/^[\^>=~ ]+/u, '');
     const [major = 0, minor = 0] = versionParts(floor);

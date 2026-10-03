@@ -1,4 +1,4 @@
-// Only the line declaring itself fake is forgiven: an allow-list of paths is where a real leak hides.
+// hazard: only the line declaring itself fake is forgiven: an allow-list of paths is where a real leak hides.
 
 import type { Finding, Pass } from '../../kit/checker/pass.js';
 import { runGitleaks } from '../../kit/checker/tool-run.js';

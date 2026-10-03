@@ -7,7 +7,7 @@ export function newDirectory(prefix: string): string {
     return mkdtempSync(join(tmpdir(), prefix));
 }
 
-// Removed when the current test finishes.
+// invariant: removed when the current test finishes.
 export function temporaryDirectory(prefix: string): string {
     const directory = newDirectory(prefix);
     onTestFinished(() => {

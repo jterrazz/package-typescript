@@ -5,7 +5,7 @@ export type Merged = { problem: null | string; value: unknown };
 const shapeOf = (value: unknown): string =>
     Array.isArray(value) ? 'a list' : isJsonObject(value) ? 'an object' : 'a single value';
 
-// Lists concatenate with duplicates dropped, records merge key by key, and a single value written wins over a default; a list or a record is never replaced by another shape, so no default law is written away.
+// invariant: lists concatenate with duplicates dropped, records merge key by key, and a single value written wins over a default; a list or a record is never replaced by another shape, so no default law is written away.
 export function mergeSettings(base: unknown, own: unknown, at = 'the section'): Merged {
     if (own === undefined) {
         return { problem: null, value: base };

@@ -1,4 +1,4 @@
-// The single executable copy of the rule ids and of each sentence they print; pages name ids, never
+// invariant: the single executable copy of the rule ids and of each sentence they print; pages name ids, never
 // messages. Nothing here reads the filesystem, so a clone nobody installed into is judged the same.
 import type { DocsTree } from '../../kit/project/docs-tree.js';
 
@@ -22,15 +22,15 @@ export const HEAD_LINES = 20;
 
 const SPINE = ['01-architecture.md', '02-developing.md', '03-testing.md', '04-operating.md'];
 
-// 04 is required only by the presence test.
+// invariant: 04 is required only by the presence test.
 const REQUIRED_SPINE = SPINE.slice(0, 3);
 
 const SUBFOLDERS: ReadonlySet<string> = new Set(['_assets/', 'decisions/']);
 
-// A generated API reference is a second copy of the types an editor resolves: refused by name.
+// invariant: a generated API reference is a second copy of the types an editor resolves: refused by name.
 const GENERATED_REFERENCE = 'reference/';
 
-// A chapter names a subject, never the state of a piece of work.
+// invariant: a chapter names a subject, never the state of a piece of work.
 const JOURNAL_WORDS: ReadonlySet<string> = new Set([
     'draft',
     'exploration',
@@ -90,7 +90,7 @@ function isChapterLink(target: string): boolean {
     return /^\d/u.test(target) && !target.includes('/');
 }
 
-// A result still opening on `..` climbed above the repository root.
+// invariant: a result still opening on `..` climbed above the repository root.
 function resolveLink(from: string, link: string): string {
     const stack: string[] = [];
 
@@ -222,7 +222,7 @@ function auditChapters(
 function auditChapterNumbering(report: Report, chapters: readonly Chapter[]): void {
     const numbers = chapters.map((chapter) => chapter.number).toSorted((a, b) => a - b);
     const hasOperating = numbers.includes(4);
-    // 04 is never required by the spine, so a run missing it is contiguous with every later number shifted down.
+    // invariant: 04 is never required by the spine, so a run missing it is contiguous with every later number shifted down.
     const expected = (index: number): number =>
         !hasOperating && index + 1 >= 4 ? index + 2 : index + 1;
     const contiguous = numbers.every((number, index) => number === expected(index));
@@ -398,7 +398,7 @@ function auditLinks(
     }
 }
 
-// A repository with no `docs/` gets exactly one violation: every other rule would restate the absence.
+// invariant: a repository with no `docs/` gets exactly one violation: every other rule would restate the absence.
 /** What breaks the shape of `docs/`, in rule order. An empty array is a compliant manual. */
 export function auditDocs(tree: DocsTree): readonly DocsViolation[] {
     const files = tree.files ?? [];

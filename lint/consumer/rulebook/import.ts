@@ -1,9 +1,9 @@
 import { allOn, fragment, off, on } from '../../kit/compiler/decision.js';
 
-// `import/extensions` is re-decided per platform (next, astro, react-native, bundler), always at `error`.
+// outside: `import/extensions` is re-decided per platform (next, astro, react-native, bundler), always at `error`.
 // `import/no-cycle` ignores type-only imports, so a value edge one way and a type edge back is invisible (oxc#20551).
 
-// A bundler resolves an asset by its extension, on every platform.
+// outside: a bundler resolves an asset by its extension, on every platform.
 export const IMPORT_ASSETS = {
     avif: 'always',
     css: 'always',
@@ -51,7 +51,7 @@ export default fragment({
             ].map((rule) => `import/${rule}`),
         ),
 
-        // Under `verbatimModuleSyntax`, `import { type X } from 'leaflet'` emits a runtime `import {} from 'leaflet'`.
+        // hazard: under `verbatimModuleSyntax`, `import { type X } from 'leaflet'` emits a runtime `import {} from 'leaflet'`.
         'import/consistent-type-specifier-style': on(['prefer-top-level']),
         'import/extensions': IMPORT_EXTENSIONS_ALWAYS,
 

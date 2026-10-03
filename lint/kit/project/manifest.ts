@@ -38,7 +38,7 @@ export function workspacePatterns(manifest: Manifest): string[] {
         : [];
 }
 
-// A package's published subpaths, `<name>/<subpath>`, read from the first manifest above `from`: naming another package, the walk has left its tree.
+// invariant: a package's published subpaths, `<name>/<subpath>`, read from the first manifest above `from`: naming another package, the walk has left its tree.
 export function declaredSubpaths(name: string, from: string): string[] {
     let dir = from;
     for (;;) {

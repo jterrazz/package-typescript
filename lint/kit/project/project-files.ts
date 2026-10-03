@@ -1,4 +1,4 @@
-// The ground a test stands on is its scenario's, judged where the scenario runs it, never here.
+// invariant: the ground a test stands on is its scenario's, judged where the scenario runs it, never here.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
@@ -43,7 +43,7 @@ function gitSweep(root: string): null | string[] {
     }
 }
 
-// `dist/` in .gitignore matches the directory form only, so each path is asked in both spellings; outside a git tree nothing is ignored.
+// outside: `dist/` in .gitignore matches the directory form only, so each path is asked in both spellings; outside a git tree nothing is ignored.
 export function ignoredPaths(root: string, paths: readonly string[]): ReadonlySet<string> {
     if (paths.length === 0) {
         return new Set();
@@ -62,7 +62,7 @@ export function ignoredPaths(root: string, paths: readonly string[]): ReadonlySe
 export const isGitIgnored = (root: string, target: string): boolean =>
     ignoredPaths(root, [target]).has(target);
 
-// Outside a git tree there is nothing committed.
+// invariant: outside a git tree there is nothing committed.
 export function trackedFiles(root: string): string[] {
     try {
         return execFileSync('git', ['ls-files', '-z'], {
@@ -176,7 +176,7 @@ export function orRefused<T>(read: () => T): T {
     }
 }
 
-// A symlink's content belongs to its target, judged there once instead of twice.
+// invariant: a symlink's content belongs to its target, judged there once instead of twice.
 export function readText(root: string, path: string): null | string {
     if (BINARY.test(path)) {
         return null;

@@ -1,4 +1,4 @@
-// Two invariants the package rests on: a decision is `error` or `off`, never `warn`, and an `off`
+// invariant: two invariants the package rests on: a decision is `error` or `off`, never `warn`, and an `off`
 // carries exactly one reason. The builders enforce nothing; the package's own suite audits every fragment.
 
 import type { OxlintConfig, OxlintGlobals } from 'oxlint';
@@ -80,7 +80,7 @@ export type Merged = Decision & {
 
 export const RULEBOOK_BIRTH_VERSION = '10.0.0';
 
-// A `consumer` rule ships; a `self` rule is this package's suite discipline and lives in its tests.
+// invariant: a `consumer` rule ships; a `self` rule is this package's suite discipline and lives in its tests.
 export const AUDIENCES: readonly Audience[] = Object.freeze(['consumer', 'self']);
 
 /** The five reasons an `off` may carry, and no other. */
@@ -105,7 +105,7 @@ export function allOn(rules: readonly string[]): Record<string, Stated> {
     return Object.fromEntries(rules.map((rule) => [rule, on()]));
 }
 
-// "Too strict" is not a reason.
+// invariant: "Too strict" is not a reason.
 export function off(reason: Reason, since?: string): Stated {
     return Object.freeze({ level: 'off', reason: Object.freeze({ ...reason }), since });
 }
@@ -115,7 +115,7 @@ export function unsafeFix(decision: Stated, why: string): Stated {
     return Object.freeze({ ...decision, fixer: 'unsafe', fixerReason: why });
 }
 
-// Every profile of this package runs `oxlint --type-aware`; the catalogue reads the mark.
+// invariant: every profile of this package runs `oxlint --type-aware`; the catalogue reads the mark.
 export function typeAware(options?: unknown): Stated {
     return Object.freeze({ level: 'error', options, typeAware: true });
 }
@@ -177,7 +177,7 @@ export function decisionsOf(...fragments: readonly Fragment[]): Record<string, M
     return merged;
 }
 
-// An override's rule options replace the base entry, never merge: a block states every option.
+// invariant: an override's rule options replace the base entry, never merge: a block states every option.
 export function scoped({
     files,
     rules,

@@ -57,27 +57,6 @@ export function heldSummary(root: string, section: string): string {
         : `${labelOf(section)}: ${String(total)} held across ${String(entries.length)} rule${entries.length === 1 ? '' : 's'}`;
 }
 
-function judgeOneEntry(run: HeldRun, namespace: string): number {
-    const { context, findings, held, pass, print, result } = run;
-    const entry = pass.entry ?? '';
-    const count = findings.length;
-    const counts = count > 0 ? { [entry]: count } : {};
-    const recorded = recordedOf({ held, namespace, root: context.root }, context.fix).reRecorded(
-        counts,
-        print,
-    );
-    const stray = judgeExact(counts, recorded, held).filter(({ rule }) => rule !== entry);
-    const kept = count === (recorded[entry] ?? 0);
-    if (!kept) {
-        print([
-            `${entry}  ${labelOf(held.section)}  ${pass.verdict?.(count, recorded[entry], result) ?? ''}`,
-        ]);
-    }
-    print(stray.map((broken) => ratchetLine(held, broken)));
-
-    return kept && stray.length === 0 ? 0 : 1;
-}
-
 const unrecorded = (held: HeldSection, namespace: string): string =>
     refusalReading(held.read, {
         fix: `fix them, or run '${held.record}' to record where the project stands`,
@@ -107,11 +86,5 @@ function judgeEntries(run: HeldRun, namespace: string): number {
     return broken.length > 0 ? 1 : 0;
 }
 
-// Where the baseline records no entry of the pass, every finding is a failure.
-export function judgeHeld(run: HeldRun): number {
-    const namespace = `${run.pass.namespace ?? run.name}/`;
-
-    return run.pass.entry === undefined
-        ? judgeEntries(run, namespace)
-        : judgeOneEntry(run, namespace);
-}
+export const judgeHeld = (run: HeldRun): number =>
+    judgeEntries(run, `${run.pass.namespace ?? run.name}/`);

@@ -61,7 +61,7 @@ const pathsOf = (path: unknown): string[] =>
 
 const LEADING_FOLDER = /^\^(?<folder>[\w.-]+)\//u;
 
-// A side whose every path opens on a folder the project does not hold can match no module, so the rule refuses no import: an always-on law costs a project without its tree no cruise.
+// invariant: a side whose every path opens on a folder the project does not hold can match no module, so the rule refuses no import: an always-on law costs a project without its tree no cruise.
 function isInert(rule: ArchitectureRule, holds: (folder: string) => boolean): boolean {
     const absent = (side: unknown): boolean => {
         const folders = pathsOf(side).map((path) => LEADING_FOLDER.exec(path)?.groups?.folder);

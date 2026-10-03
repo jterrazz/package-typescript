@@ -1,11 +1,11 @@
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-// Under `/tmp`, never the system's `TMPDIR`: a tool walking up for a config reads every parent, and a per-user
+// hazard: under `/tmp`, never the system's `TMPDIR`: a tool walking up for a config reads every parent, and a per-user
 // temp folder can hold hundreds of thousands of entries. macOS `mktemp` ignores `TMPDIR`.
 const BASE = '/tmp';
 
-// A fixture resolves the toolchain the way an install does, from a `node_modules/` above it: its editor files and its settings import it, and the node preset reads `@types/node`.
+// invariant: a fixture resolves the toolchain the way an install does, from a `node_modules/` above it: its editor files and its settings import it, and the node preset reads `@types/node`.
 const REPOSITORY = resolve(import.meta.dirname, '../../..');
 
 export default function setup(): () => void {

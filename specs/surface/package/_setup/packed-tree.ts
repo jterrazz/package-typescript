@@ -54,7 +54,7 @@ function literally(text: string): string {
     return text.replaceAll(/[$()*+.?[\\\]^{|}]/gu, String.raw`\$&`);
 }
 
-// A `*` matches as Node matches it: one character or more, `/` included, the same text wherever repeated.
+// invariant: a `*` matches as Node matches it: one character or more, `/` included, the same text wherever repeated.
 function targetsOf(target: unknown, files: string[]): string[] {
     if (typeof target === 'string') {
         const pattern = target.replace(/^\.\//u, '');
@@ -165,7 +165,6 @@ export function argvFlags(tree: string): string[] {
     return [...new Set(flags.map((match) => match.groups?.flag ?? ''))];
 }
 
-// The specs' own selection, and every variable the modules read, naming a pass.
 export function selectingEnvironments(tree: string): Record<string, Record<string, string>> {
     return {
         'every variable the modules read, naming a pass': Object.fromEntries(

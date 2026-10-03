@@ -35,7 +35,6 @@ export type PassResult = {
     findings?: Finding[];
     json?: unknown;
     lines?: string[];
-    sourceLines?: number;
     tools?: Tool[];
     writes?: { path: string; text: string }[];
 };
@@ -44,11 +43,9 @@ export type Removal = { directory: string; line: string };
 
 export type Pass = {
     check: (context: Context) => PassResult | Promise<PassResult>;
-    entry?: string;
     namespace?: string;
     prepare?: (context: Context) => { removals?: Removal[] };
     valued?: readonly string[];
-    verdict?: (count: number, recorded: number | undefined, result: PassResult) => string;
 };
 
 export type Passes = Readonly<Record<string, () => Promise<Pass>>>;

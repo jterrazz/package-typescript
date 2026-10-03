@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 
 import { cli } from '../cli.specification.js';
 
-// The watch stream is cut wherever its waitFor marker lands, so there is no byte-exact stdout to state.
+// outside: the watch stream is cut wherever its waitFor marker lands, so there is no byte-exact stdout to state.
 
 describe('dev', () => {
     test('shows the startup message', async () => {

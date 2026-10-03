@@ -54,18 +54,6 @@ export async function settledLint(check: Check, passes: Started): Promise<number
     return linted === 0 ? held : linted;
 }
 
-export async function commentsVerdict(check: Check, passes: Started): Promise<Passed> {
-    if (!check.fix || !check.selected('comments')) {
-        return await settled(passes.comments);
-    }
-    const log = check.logs.at('comments.log');
-
-    return {
-        log,
-        status: await checker('comments', ['.', ...check.lintArgs, '--fix'], { path: log }),
-    };
-}
-
 async function presetVerdict(
     check: Check,
     log: string,

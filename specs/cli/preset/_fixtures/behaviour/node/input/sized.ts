@@ -1,12 +1,12 @@
 /*
- * The size and complexity decisions, each at the edge it draws, one case on each
+ * outside: the size and complexity decisions, each at the edge it draws, one case on each
  * side of it. `complexity` is 12 in its `modified` variant, where a `switch`
  * counts once; a function holds 60 lines, where upstream's default is 50; a file
  * holds 300 — `sized-at-cap.ts` is exactly that, `long.specification.ts` is 301,
  * and this one is longer, so it is reported once, at its last line.
  */
 
-// complexity: modified — fifteen paths under the classic count, one decision here.
+// outside: complexity: modified — fifteen paths under the classic count, one decision here.
 export function route(kind: string): number {
     switch (kind) {
         case 'kind-0': {
@@ -57,7 +57,7 @@ export function route(kind: string): number {
     }
 }
 
-// complexity: 12 — eleven decisions and the function's own path, at the cap.
+// outside: complexity: 12 — eleven decisions and the function's own path, at the cap.
 export function weighed(input: number): number {
     let score = 0;
     if (input > 0) {
@@ -96,7 +96,7 @@ export function weighed(input: number): number {
     return score;
 }
 
-// complexity: 13 — twelve decisions and the function's own path, one past the cap.
+// outside: complexity: 13 — twelve decisions and the function's own path, one past the cap.
 export function tangled(input: number): number {
     let score = 0;
     if (input > 0) {
@@ -138,7 +138,7 @@ export function tangled(input: number): number {
     return score;
 }
 
-// max-lines-per-function: 60 — fifty-five lines, which upstream's 50 would refuse.
+// outside: max-lines-per-function: 60 — fifty-five lines, which upstream's 50 would refuse.
 export function measured(input: number): number {
     let total = input;
     total += 1;
@@ -195,7 +195,7 @@ export function measured(input: number): number {
     return total;
 }
 
-// max-lines-per-function: 60 — sixty lines, exactly at the cap.
+// outside: max-lines-per-function: 60 — sixty lines, exactly at the cap.
 export function brimming(input: number): number {
     let total = input;
     total += 1;
@@ -257,7 +257,7 @@ export function brimming(input: number): number {
     return total;
 }
 
-// max-lines-per-function: 60 — sixty-one lines, one past the cap.
+// outside: max-lines-per-function: 60 — sixty-one lines, one past the cap.
 export function overgrown(input: number): number {
     let total = input;
     total += 1;
@@ -320,7 +320,7 @@ export function overgrown(input: number): number {
     return total;
 }
 
-// max-lines: 300 — what follows only carries the file past it.
+// outside: max-lines: 300 — what follows only carries the file past it.
 export const STEP_000 = 0;
 export const STEP_001 = 1;
 export const STEP_002 = 2;

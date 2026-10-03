@@ -1,4 +1,4 @@
-// A member is a directory matching a glob AND holding a package.json, as the package managers rule.
+// outside: a member is a directory matching a glob AND holding a package.json, as the package managers rule.
 
 import { readdirSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
@@ -18,7 +18,7 @@ function toPattern(glob: string): RegExp {
     return new RegExp(`^${escaped}$`, 'u');
 }
 
-// Empty for a single-package project, which every caller reads as "the root is the unit".
+// invariant: empty for a single-package project, which every caller reads as "the root is the unit".
 export function workspaceMembers(root = '.'): string[] {
     const absolute = resolve(root);
     const manifest = readManifest(absolute);

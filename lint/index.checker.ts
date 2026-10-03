@@ -17,11 +17,6 @@ const PASSES: Passes = Object.freeze({
 
         return architecture;
     },
-    async comments() {
-        const { comments } = await import('./consumer/checks/comments.js');
-
-        return comments;
-    },
     async docs() {
         const [{ auditDocs, HEAD_LINES }, { readDocsTree }, { publishes }] = await Promise.all([
             import('./consumer/checks/docs.js'),
@@ -78,7 +73,7 @@ const PASSES: Passes = Object.freeze({
 
 const HELD: Held = Object.freeze({
     lower: 'typescript fix',
-    passes: Object.freeze(['architecture', 'comments', 'names']),
+    passes: Object.freeze(['architecture', 'names']),
     read: 'docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds',
     record: 'typescript baseline',
     section: BASELINE_SECTION,

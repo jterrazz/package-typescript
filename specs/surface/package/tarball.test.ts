@@ -21,7 +21,7 @@ import {
 
 afterAll(removePackedTree);
 
-// Judged on content, never on names: no text the tarball holds names a `self` rule, whatever file carries it.
+// invariant: judged on content, never on names: no text the tarball holds names a `self` rule, whatever file carries it.
 
 const ROOT = resolve(import.meta.dirname, '../../..');
 

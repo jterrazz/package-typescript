@@ -1,15 +1,15 @@
 import { allOn, fragment, off, on, scoped, unsafeFix } from '../../kit/compiler/decision.js';
 
-// Four offs are one half of an exclusive pair; `exclusive-pairs.test.ts` proves no profile arms both.
+// invariant: four offs are one half of an exclusive pair; `exclusive-pairs.test.ts` proves no profile arms both.
 
-// A file another runner owns takes that runner's suffix (`*.e2e.ts`, `*.render.tsx`), which no glob here names.
+// invariant: a file another runner owns takes that runner's suffix (`*.e2e.ts`, `*.render.tsx`), which no glob here names.
 export const TEST_FILES = Object.freeze([
     '**/*.{test,spec,test-d,spec-d}.{ts,tsx,js,jsx}',
     '**/specs/**/*.{ts,tsx}',
     '**/__tests__/**/*.{ts,tsx,js,jsx}',
 ]);
 
-// ADR-008 gave `@jterrazz/test`'s `test()` preset three more, with their options.
+// outside: ADR-008 gave `@jterrazz/test`'s `test()` preset three more, with their options.
 const ON_IN_TESTS = [
     'consistent-each-for',
     'consistent-vitest-vi',
@@ -65,7 +65,6 @@ const ON_IN_TESTS = [
     'warn-todo',
 ].map((rule) => `vitest/${rule}`);
 
-// Named rather than inline: a decision three calls deep inside an override reads as nesting.
 const CONSISTENT_TEST_IT = unsafeFix(
     on([{ fn: 'test' }]),
     'rewrites `it(` into `test(` and leaves `import { it }` behind',
@@ -87,7 +86,7 @@ const PREFER_CALLED_WITH = unsafeFix(
     'rewrites `toHaveBeenCalled()` into `toHaveBeenCalledWith()`, an assertion of NO arguments',
 );
 
-// A floor under the `test()` preset (`file-suffix-matches-place`, ADR-008).
+// outside: a floor under the `test()` preset (`file-suffix-matches-place`, ADR-008).
 const CONSISTENT_TEST_FILENAME = on([{ pattern: String.raw`.*\.(spec|test)\.[tj]sx?$` }]);
 
 const COVERED_BY_TESTING = { by: '@jterrazz/test testing', kind: 'covered' };
@@ -110,7 +109,7 @@ export default fragment({
                 'vitest/prefer-strict-boolean-matchers': PREFER_STRICT_BOOLEAN_MATCHERS,
                 'vitest/prefer-called-with': PREFER_CALLED_WITH,
 
-                // ADR-008: two owners of one rule's options is a config that depends on composition order.
+                // outside: ADR-008: two owners of one rule's options is a config that depends on composition order.
                 'vitest/max-nested-describe': off(COVERED_BY_TESTING, '10.3.0'),
                 'vitest/no-restricted-matchers': off(COVERED_BY_TESTING, '10.3.0'),
                 'vitest/no-restricted-vi-methods': off(COVERED_BY_TESTING, '10.3.0'),

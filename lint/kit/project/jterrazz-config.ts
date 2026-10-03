@@ -1,4 +1,4 @@
-// Node loads the file as oxlint loads `oxlint.config.ts`, by a dynamic `import()`. Without
+// outside: Node loads the file as oxlint loads `oxlint.config.ts`, by a dynamic `import()`. Without
 // `"type": "module"` Node warns while reparsing it as ESM, so the reader loads it with that warning off.
 
 import { existsSync, statSync } from 'node:fs';
@@ -89,7 +89,7 @@ const loadModule = createRequire(import.meta.url);
 
 const loaded = new Map<string, Resolution>();
 
-// For a reader that runs synchronously, as an oxlint rule does; Node loads a module once per process, and a file that appears later is still read.
+// outside: for a reader that runs synchronously, as an oxlint rule does; Node loads a module once per process, and a file that appears later is still read.
 export function readConfigSync(unit: string, base: BasePresets): Resolution {
     const path = join(unit, SETTINGS_FILE);
     if (!existsSync(path)) {

@@ -4,7 +4,10 @@ import { afterAll } from 'vitest';
 export const { cleanup, lint } = await specification.lint({
     config: {
         categories: { correctness: 'off' },
-        rules: { 'jterrazz-typescript/comment-no-longer-than-its-function': 'error' },
+        rules: {
+            'jterrazz-typescript/comment-no-longer-than-its-function': 'error',
+            'jterrazz-typescript/comment-states-its-kind': 'error',
+        },
     },
     plugins: ['../../dist/plugin.js'],
 });

@@ -4,7 +4,7 @@ export function cell(text: string): string {
 
 export const anchor = (name: string): string => `<a id="${name}"></a>`;
 
-// Padded as oxfmt pads a table, so a generated chapter is format-clean; every character of a cell counts as one column.
+// invariant: padded as oxfmt pads a table, so a generated chapter is format-clean; every character of a cell counts as one column.
 export function markdownTable(
     headings: readonly string[],
     rows: readonly (readonly string[])[],

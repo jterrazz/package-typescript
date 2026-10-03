@@ -1,6 +1,5 @@
 import {
     architecturePass,
-    commentsPass,
     configPass,
     docsPass,
     gitignorePass,
@@ -25,7 +24,6 @@ import {
 export type Started = {
     architecture: Launched | undefined;
     astro: Launched | undefined;
-    comments: Launched | undefined;
     config: Launched | undefined;
     docs: Launched | undefined;
     format: Launched | undefined;
@@ -69,7 +67,6 @@ export async function started(check: Check): Promise<Started> {
     const suppressions = suppressionsPass(check);
     const markdown = markdownPass(check);
     const names = namesPass(check);
-    const comments = commentsPass(check);
     const secrets = secretsPass(check);
     const astro = astroPass(check);
     const architecture = architecturePass(check);
@@ -78,7 +75,6 @@ export async function started(check: Check): Promise<Started> {
     return {
         architecture,
         astro,
-        comments,
         config,
         docs,
         format,

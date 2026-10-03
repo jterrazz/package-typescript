@@ -6,7 +6,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 import { SELECTING_BIN } from '../_setup/check-passes.js';
 import { newDirectory } from '../_setup/temporary-directory.js';
 
-// git refuses to track a nested `.git`, so a fixture cannot be the repository the pass asks for.
+// outside: git refuses to track a nested `.git`, so a fixture cannot be the repository the pass asks for.
 
 const FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/on-convention');
 

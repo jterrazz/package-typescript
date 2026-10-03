@@ -1,3 +1,4 @@
+/* oxlint-disable jterrazz-typescript/comment-states-its-kind -- the subject is a comment's height, not its kind */
 /**
  * Doubles a value,
  * by adding it to itself.

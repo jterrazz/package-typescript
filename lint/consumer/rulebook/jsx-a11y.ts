@@ -1,6 +1,6 @@
 import { allOn, fragment } from '../../kit/compiler/decision.js';
 
-// No off here: an accessibility rule describes what a person using the product can reach.
+// invariant: no off here: an accessibility rule describes what a person using the product can reach.
 export default fragment({
     id: 'jsx-a11y',
     audience: 'consumer',

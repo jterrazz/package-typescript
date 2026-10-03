@@ -1,4 +1,4 @@
-// The Dockerfile and `.infrastructure/` clauses are read at every member's root too; the publishable
+// invariant: the Dockerfile and `.infrastructure/` clauses are read at every member's root too; the publishable
 // clause stays on the root's declared kind.
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -31,7 +31,7 @@ const LINK = /!?\[[^\]]*\]\(\s*(?<target>[^\s)]+)/gu;
 
 const INFRASTRUCTURE = '.infrastructure';
 
-// `docs/` itself is the first entry when it exists — its absence is the whole verdict.
+// invariant: `docs/` itself is the first entry when it exists — its absence is the whole verdict.
 function listDocs(root: string): string[] {
     const paths: string[] = [];
 
@@ -56,7 +56,7 @@ function listDocs(root: string): string[] {
     return paths;
 }
 
-// An unreadable file is an absent one.
+// invariant: an unreadable file is an absent one.
 function read(path: string): null | string {
     try {
         return readFileSync(path, 'utf8');

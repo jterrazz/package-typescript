@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
-// `.git` is the one path a fixture cannot carry: git does not track it.
+// outside: `.git` is the one path a fixture cannot carry: git does not track it.
 
 const ANCESTOR_COMPLAINT = '.gitignore names coverage/';
 

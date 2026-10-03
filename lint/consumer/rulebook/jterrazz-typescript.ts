@@ -7,5 +7,6 @@ export default fragment({
     since: '11.0.0',
     rules: {
         'jterrazz-typescript/comment-no-longer-than-its-function': on(),
+        'jterrazz-typescript/comment-states-its-kind': on(),
     },
 });

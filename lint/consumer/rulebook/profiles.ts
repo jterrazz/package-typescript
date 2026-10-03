@@ -18,7 +18,7 @@ import typescript from './typescript.js';
 import unicorn from './unicorn.js';
 import vitest from './vitest.js';
 
-// A profile adds a framework's plugins and ignores to the core rulebook, and never sets a core rule `off`.
+// invariant: a profile adds a framework's plugins and ignores to the core rulebook, and never sets a core rule `off`.
 
 export const CORE = Object.freeze([
     eslint,
@@ -34,11 +34,11 @@ export const CORE = Object.freeze([
     vitest,
 ]);
 
-// `.artifacts/` is absent on purpose: oxlint reads `.gitignore` itself, and naming it here would make it unlintable by name.
+// hazard: `.artifacts/` is absent on purpose: oxlint reads `.gitignore` itself, and naming it here would make it unlintable by name.
 const IGNORED = Object.freeze([
     'dist/**',
     'node_modules/**',
-    // The ground a test stands on is deliberately broken or held byte for byte: none of it is source.
+    // invariant: the ground a test stands on is deliberately broken or held byte for byte: none of it is source.
     ...GROUND_GLOBS,
 ]);
 

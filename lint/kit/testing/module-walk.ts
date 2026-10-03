@@ -8,7 +8,7 @@ import { argv, execPath } from 'node:process';
 import { setImmediate as nextTurn } from 'node:timers/promises';
 import { pathToFileURL } from 'node:url';
 
-// The child runs under Node with types stripped, so this file imports nothing of the repository; the process's
+// invariant: the child runs under Node with types stripped, so this file imports nothing of the repository; the process's
 // exit is refused and the module gets a bare command line in an empty directory.
 
 export type DeclaredFragment = {
@@ -105,7 +105,7 @@ function sourceText(source: unknown): string {
 }
 
 function keepWalking(): void {
-    // An error the module leaves behind must not end the child before it writes its report.
+    // hazard: an error the module leaves behind must not end the child before it writes its report.
 }
 
 async function walkHere(tree: string, module: string, report: string): Promise<void> {
@@ -138,7 +138,7 @@ async function walkHere(tree: string, module: string, report: string): Promise<v
     try {
         exported = await import(pathToFileURL(join(tree, module)).href);
     } catch {
-        // A module that exits or throws on import still reports what it built before.
+        // invariant: a module that exits or throws on import still reports what it built before.
     }
     await nextTurn();
     const seen = new Set<unknown>();

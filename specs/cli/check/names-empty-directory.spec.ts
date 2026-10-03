@@ -7,7 +7,7 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
-// git tracks no directory, so a fixture can carry no empty one.
+// outside: git tracks no directory, so a fixture can carry no empty one.
 
 const SIX_TARGETS = [
     '.PHONY: install build lint fix test check',

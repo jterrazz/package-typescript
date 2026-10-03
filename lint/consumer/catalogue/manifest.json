@@ -72,11 +72,6 @@
     {
         "audience": "consumer",
         "channel": "checker",
-        "id": "comments"
-    },
-    {
-        "audience": "consumer",
-        "channel": "checker",
         "id": "secrets"
     },
     {

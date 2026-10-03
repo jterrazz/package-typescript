@@ -1,7 +1,7 @@
 import { allOn, fragment, off, scoped } from '../../../kit/compiler/decision.js';
 import { IMPORT_EXTENSIONS_NEVER } from '../import.js';
 
-// `next-env.d.ts` is a side-effect import Next writes itself.
+// outside: `next-env.d.ts` is a side-effect import Next writes itself.
 export default fragment({
     id: 'frameworks/next',
     audience: 'consumer',

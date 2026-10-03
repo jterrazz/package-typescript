@@ -23,7 +23,7 @@ type Judged = { lines: string[]; writes: { path: string; text: string }[] };
 
 const ARTIFACTS = '.artifacts';
 
-// A build's product stays beside `src/` and is published from there.
+// invariant: a build's product stays beside `src/` and is published from there.
 const PRODUCT = 'dist';
 
 const ARTEFACT_DIRECTORIES: ReadonlyMap<string, string> = new Map([
@@ -44,13 +44,13 @@ const ARTEFACT_EXTENSIONS: readonly (readonly [string, string])[] = [
     ['.log', '.artifacts/logs/'],
 ];
 
-// Paths a toolchain owns and cannot be told to move, or a framework expects at a fixed path.
+// outside: paths a toolchain owns and cannot be told to move, or a framework expects at a fixed path.
 const EXCEPTIONS: ReadonlySet<string> = new Set([
     '.build',
     '.expo',
     '.gradle',
     '.swiftpm',
-    // Turborepo's `.turbo/turbo-<task>.log` has no key, flag or variable to move it.
+    // outside: Turborepo's `.turbo/turbo-<task>.log` has no key, flag or variable to move it.
     '.turbo',
     '.vercel',
     'DerivedData',
@@ -61,7 +61,7 @@ const EXCEPTIONS: ReadonlySet<string> = new Set([
     'node_modules',
 ]);
 
-// Expo stamps a suffix onto it.
+// outside: Expo stamps a suffix onto it.
 const EXCEPTION_PREFIXES = ['.metro-health-check'];
 
 const NEXT_CONFIG_FILES = [
@@ -73,7 +73,7 @@ const NEXT_CONFIG_FILES = [
     'next.config.cts',
 ];
 
-// With `output: 'export'`, Next keeps its working directory at `.next` whatever `distDir` says
+// outside: with `output: 'export'`, Next keeps its working directory at `.next` whatever `distDir` says
 // (`next/dist/export/utils.js`, `hasCustomExportOutput`). Read as text: a config may not load here.
 // An unreadable config answers as a missing one does.
 function nextConfigDeclaresExport(disk: Disk, dir: string): boolean {
@@ -108,7 +108,7 @@ function isWorkspaceRoot(disk: Disk, dir: string): boolean {
     }
 }
 
-// Never passes the nearest repository boundary, so a `root` with its own `.git` has no ancestor.
+// invariant: never passes the nearest repository boundary, so a `root` with its own `.git` has no ancestor.
 function findWorkspaceRoot(disk: Disk, root: string): null | string {
     const start = resolve(root);
     if (isRepositoryRoot(start)) {
@@ -132,12 +132,12 @@ function findWorkspaceRoot(disk: Disk, root: string): null | string {
     return isWorkspaceRoot(disk, dir) ? dir : null;
 }
 
-// git's own reading: an anchored pattern in an ancestor's file never reaches a nested package.
+// outside: git's own reading: an anchored pattern in an ancestor's file never reaches a nested package.
 function isAnchored(pattern: string): boolean {
     return pattern.replace(/\/+$/u, '').includes('/');
 }
 
-// `/out/`, `out/` and `**/out` all name `out`; `npm-debug.log*` reads as a log.
+// invariant: `/out/`, `out/` and `**/out` all name `out`; `npm-debug.log*` reads as a log.
 function lastNamedSegment(pattern: string): string {
     const segments = pattern
         .replace(/\/+$/u, '')
@@ -227,7 +227,7 @@ function readSource(
     };
 }
 
-// Narrower than ARTEFACT_DIRECTORIES: a tracked file under `bin/` or `build/` may be source.
+// hazard: narrower than ARTEFACT_DIRECTORIES: a tracked file under `bin/` or `build/` may be source.
 const TRACKED_ARTEFACT_DIRECTORIES: ReadonlySet<string> = new Set([
     '.artifacts',
     '.cache',
@@ -350,7 +350,7 @@ function sourcesOf(context: Context, ancestorPath: null | string): Source[] {
     return sources;
 }
 
-// Only the package's own file: never created, and an ancestor is a different project's.
+// invariant: only the package's own file: never created, and an ancestor is a different project's.
 function fixed(sources: readonly Source[]): Judged {
     const own = sources.find((source) => source.own);
     if (own === undefined || (own.misplaced.length === 0 && own.isIgnored)) {
@@ -378,7 +378,7 @@ function misplacedLines(sources: readonly Source[]): string[] {
     if (misplaced.length === 0 && isIgnored) {
         return [];
     }
-    // A workspace root's file covers every member, so a missing `.artifacts/` belongs there.
+    // invariant: a workspace root's file covers every member, so a missing `.artifacts/` belongs there.
     const target = sources.find((source) => !source.own) ?? sources[0];
 
     return [

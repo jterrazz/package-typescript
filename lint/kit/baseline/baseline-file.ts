@@ -65,7 +65,7 @@ export function sectionOf(root: string, section: string): Counts | null {
     return sections?.[section] ?? null;
 }
 
-// A file that is no object of sections keeps its section too: every finding then reads as new debt rather than passing.
+// invariant: a file that is no object of sections keeps its section too: every finding then reads as new debt rather than passing.
 export function keepsSection(root: string, section: string): boolean {
     const { problem, sections } = readBaseline(root);
 
@@ -75,7 +75,7 @@ export function keepsSection(root: string, section: string): boolean {
 const byKey = ([left]: [string, number], [right]: [string, number]): number =>
     left < right ? -1 : 1;
 
-// The formatter owns the indent of a file it formatted, so a rewrite keeps the file's own, and a new file takes the formatter's.
+// outside: the formatter owns the indent of a file it formatted, so a rewrite keeps the file's own, and a new file takes the formatter's.
 const FORMATTED_INDENT = '    ';
 
 export function serialise(counts: Counts, indent: string = FORMATTED_INDENT): string {
@@ -133,7 +133,7 @@ function stringEnd(text: string, start: number): number {
     return index + 1;
 }
 
-// The text has already parsed, so the scan never meets malformed input.
+// invariant: the text has already parsed, so the scan never meets malformed input.
 type Member = { end: number; key: string; keyStart: number; start: number };
 
 function membersOf(text: string): Member[] {

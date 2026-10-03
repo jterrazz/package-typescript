@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest';
 
 import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 
-// Each run starts one directory above the fixture, as npm does from a workspace root: `INIT_CWD` is the project.
+// outside: each run starts one directory above the fixture, as npm does from a workspace root: `INIT_CWD` is the project.
 
 const FIXTURES = resolve(import.meta.dirname, '_fixtures/browser-pin');
 

@@ -6,7 +6,7 @@ import { packedFiles, packedTree, removePackedTree } from './_setup/packed-tree.
 
 afterAll(removePackedTree);
 
-// A relative link to a page kept home is dead in `node_modules`. `docs/README.md` is the exception: the Docs
+// invariant: a relative link to a page kept home is dead in `node_modules`. `docs/README.md` is the exception: the Docs
 // (layout) pass holds it to a relative row for every chapter.
 
 const ROOT = resolve(import.meta.dirname, '../../..');

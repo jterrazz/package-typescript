@@ -13,7 +13,7 @@ type Pair =
     | { provider: string[]; runner: string[]; verdict: 'ok' | 'skewed' }
     | { unread: string; verdict: 'unread' };
 
-// `@vitest/browser-playwright` ships from vitest's repository with vitest's version: a patch
+// outside: `@vitest/browser-playwright` ships from vitest's repository with vitest's version: a patch
 // apart loads a second copy of vitest's internals and fails in the browser.
 const PINNED_PAIR: { readonly provider: string; readonly runner: string } = Object.freeze({
     provider: '@vitest/browser-playwright',
@@ -35,7 +35,7 @@ function npmVersions(text: string, name: string): ReadonlySet<string> {
     return versions;
 }
 
-// `bun.lock` is JSON with trailing commas.
+// outside: `bun.lock` is JSON with trailing commas.
 function bunVersions(text: string, name: string): ReadonlySet<string> {
     const versions = new Set<string>();
     const packages = objectOf(
@@ -70,7 +70,7 @@ function lockedVersions(path: string, read: Read, name: string): null | string[]
     }
 }
 
-// In a monorepo the member running browser mode declares the provider, not the root.
+// outside: in a monorepo the member running browser mode declares the provider, not the root.
 function declaredAnywhere(root: string, name: string): boolean {
     return ['.', ...workspaceMembers(root)].some((member) => {
         try {

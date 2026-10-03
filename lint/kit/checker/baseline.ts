@@ -27,7 +27,6 @@ function passReportsOf(commandLine: CommandLine): PassReport[] {
     return [
         { flag: '--architecture', label: 'Architecture (layer map)' },
         { flag: '--names', label: 'Names (tree)' },
-        { flag: '--comments', label: 'Comments (density)' },
     ].flatMap(({ flag, label }) => {
         const path = commandLine.value(flag);
 
@@ -107,7 +106,7 @@ function oxlintRulesLeftInTheSection(
 }
 
 export function baseline(args: readonly string[], { held }: Checker): number {
-    const commandLine = readCommandLine(args, ['--architecture', '--names', '--comments']);
+    const commandLine = readCommandLine(args, ['--architecture', '--names']);
     const root = resolve(commandLine.positionals[0] ?? '.');
     if (held === undefined) {
         return 0;

@@ -38,10 +38,6 @@ runs:
           baseline-ratchet  .jterrazz/baseline.json › typescript  found: `names/no-grab-bag-name` is at zero, and its entry is still recorded · why: an entry with nothing left to hold would let the debt grow back to its old count unseen · fix: run 'typescript fix', which deletes the entry · read: docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds
           ✗ Failed with exit code 1
 
-           RUN  Comments (density)
-
-          ✓ Passed
-
            RUN  Secrets (credentials)
 
           ✓ Passed

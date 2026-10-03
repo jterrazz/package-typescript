@@ -6,7 +6,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { newDirectory } from '../_setup/temporary-directory.js';
 
-// git refuses to track a nested `.git`, so a fixture cannot be the repository this needs.
+// outside: git refuses to track a nested `.git`, so a fixture cannot be the repository this needs.
 
 const FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/on-convention');
 const TURBO_FIXTURE = resolve(import.meta.dirname, '_fixtures/gitignore/turbo');

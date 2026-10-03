@@ -104,7 +104,7 @@ function groundIgnores(dir: string, depth: number): string[] {
         });
 }
 
-// Knip resolves `ignore` globs from the root, so a member's paths carry its prefix.
+// outside: Knip resolves `ignore` globs from the root, so a member's paths carry its prefix.
 function conventionIgnores(): string[] {
     const ignores: string[] = [];
     for (const unit of ['.', ...workspaceMembers('.')]) {
@@ -112,7 +112,7 @@ function conventionIgnores(): string[] {
         if (existsSync(`${prefix}docs`)) {
             ignores.push(`${prefix}docs/**`);
         }
-        // The preset's `entry` names the root's settings file and reaches no member's.
+        // outside: the preset's `entry` names the root's settings file and reaches no member's.
         if (prefix !== '' && existsSync(`${prefix}jterrazz.config.ts`)) {
             ignores.push(`${prefix}jterrazz.config.ts`);
         }
@@ -161,7 +161,7 @@ function declaredOf(manifest: JsonObject): JsonObject {
     };
 }
 
-// knip crashes on vitest.workspace.ts, so a vitest dependency gets an explicit config.
+// outside: knip crashes on vitest.workspace.ts, so a vitest dependency gets an explicit config.
 function withVitest(merged: KnipConfig, declared: JsonObject): void {
     if (declared.vitest !== undefined && merged.vitest === undefined) {
         const config = [...VITEST_CONFIGS, ...VITEST_WORKSPACES].find((name) => existsSync(name));
@@ -175,7 +175,7 @@ function withVitest(merged: KnipConfig, declared: JsonObject): void {
     }
 }
 
-// Global setup/teardown are named as strings in the Playwright config, which knip cannot trace.
+// outside: global setup/teardown are named as strings in the Playwright config, which knip cannot trace.
 function withPlaywright(merged: KnipConfig, declared: JsonObject): void {
     if (declared['@playwright/test'] === undefined && declared.playwright === undefined) {
         return;
@@ -198,23 +198,21 @@ function derivesFromAnother(
     names: readonly string[],
     peers: readonly string[],
 ): boolean {
-    // `@hono/node-server` when `hono` is installed.
     const scope = /^@(?<scope>[^/]+)\//u.exec(dependency)?.groups?.scope;
     if (scope !== undefined && (peers.includes(scope) || names.includes(scope))) {
         return true;
     }
-    // `vitepress-plugin-llms` when `vitepress` is installed.
     const parent = /^(?<parent>.+?)-(?:plugin|preset|transformer|loader)-/u.exec(dependency)?.groups
         ?.parent;
     if (parent !== undefined && names.includes(parent)) {
         return true;
     }
 
-    // An eslint plugin is loaded by a config, never imported.
+    // outside: an eslint plugin is loaded by a config, never imported.
     return dependency.startsWith('eslint-plugin-');
 }
 
-// A binary-only tool in `dependencies` is shipped for consumers to run, never imported.
+// invariant: a binary-only tool in `dependencies` is shipped for consumers to run, never imported.
 function shipsABinary(dependency: string): boolean {
     try {
         const { bin } = parsedObject(
@@ -234,7 +232,7 @@ function ignoredDependencies(manifest: JsonObject): string[] {
     const development = dependencyNames(manifest, 'devDependencies');
     const peers = dependencyNames(manifest, 'peerDependencies');
     const names = Object.keys(declaredOf(manifest));
-    // A devDependency that is also a peer is installed only to test against.
+    // invariant: a devDependency that is also a peer is installed only to test against.
     const ignored = development.filter((dependency) => peers.includes(dependency));
     for (const dependency of [...production, ...development]) {
         if (derivesFromAnother(dependency, names, peers)) {

@@ -119,7 +119,25 @@ Context that lives outside the codebase is the one comment the names cannot carr
 // oxlint-disable-next-line jterrazz-typescript/comment-no-longer-than-its-function -- <the external context>
 ```
 
-The count of comment lines a project holds is the Comments (density) pass's, [Quality checks](07-quality-checks.md#the-comments-density-pass).
+## A comment states its kind
+
+A comment is kept for exactly one reason: it states what the code cannot. `jterrazz-typescript/comment-states-its-kind` makes that reason readable — every comment opens with the kind of thing it states, in lower case, followed by a colon:
+
+| Kind         | States                                                                    |
+| ------------ | ------------------------------------------------------------------------- |
+| `invariant:` | what holds whatever path the code takes, and that the code relies on      |
+| `hazard:`    | what breaks if the code is changed the obvious way                        |
+| `outside:`   | a constraint or a fact that lives outside the codebase — a tool, a policy |
+| `value:`     | why a value is this one and not another                                   |
+
+```ts
+// outside: the registry holds a deleted name 72 hours before it can be published again
+export const NAME_HOLD_HOURS = 72;
+```
+
+A run of `//` lines states its kind once, on its first line; a `/* … */` block states it at its opening. Four shapes are not prose, and need no kind: a one-line `/** … */` above a declaration, which is the symbol's hover in an editor; a directive another tool reads — `oxlint-disable*`, `@ts-expect-error`, `oxfmt-ignore`, `v8 ignore`, `@vite-ignore`, `Stryker disable`, `@__PURE__`, a triple-slash reference; a test's `// Given -`, `// When -` and `// Then -` markers; and every comment of a file whose first five lines carry `@generated`. A sibling package adds the openings its own tools read through the rule's `openings` option, as `@jterrazz/test` does for its checker's directives.
+
+A comment that fits none of these is refused where it opens. The answer is to delete it, or to rename what needed it — and where it does state what the code cannot, to say which.
 
 ## Estate conventions the rulebook rests on
 
@@ -302,6 +320,7 @@ Every decision a profile ships, the profiles that carry it, its state, the reaso
 | `jsx-a11y/scope`                                             | astro, expo, next, react            | on    | —                                                                                                                                                                                                                                                                      | 10.0.0 |
 | `jsx-a11y/tabindex-no-positive`                              | astro, expo, next, react            | on    | —                                                                                                                                                                                                                                                                      | 10.0.0 |
 | `jterrazz-typescript/comment-no-longer-than-its-function`    | astro, bun, expo, next, node, react | on    | —                                                                                                                                                                                                                                                                      | 11.0.0 |
+| `jterrazz-typescript/comment-states-its-kind`                | astro, bun, expo, next, node, react | on    | —                                                                                                                                                                                                                                                                      | 11.0.0 |
 | `logical-assignment-operators`                               | astro, bun, expo, next, node, react | on    | —                                                                                                                                                                                                                                                                      | 10.0.0 |
 | `max-classes-per-file`                                       | astro, bun, expo, next, node, react | on    | —                                                                                                                                                                                                                                                                      | 10.0.0 |
 | `max-depth`                                                  | astro, bun, expo, next, node, react | on    | —                                                                                                                                                                                                                                                                      | 10.0.0 |

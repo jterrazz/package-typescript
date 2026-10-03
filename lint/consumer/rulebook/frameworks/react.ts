@@ -138,7 +138,7 @@ export default fragment({
             kind: 'covered',
         }),
 
-        // `import '../../../rulebook/frameworks/index.css'` is how a React tree carries its styles: there is nothing to bind it to.
+        // outside: `import '../../../rulebook/frameworks/index.css'` is how a React tree carries its styles: there is nothing to bind it to.
         'import/no-unassigned-import': on([{ allow: ['**/*.css', '**/*.scss'] }]),
     },
 });

@@ -6,7 +6,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { newDirectory } from '../_setup/temporary-directory.js';
 
-// A coordinate git ignores needs a real repository, and a fixture cannot be one.
+// outside: a coordinate git ignores needs a real repository, and a fixture cannot be one.
 
 const project = newDirectory('spec-markdown-ignored-');
 

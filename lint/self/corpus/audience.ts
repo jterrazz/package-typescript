@@ -26,7 +26,7 @@ export function rowsOf(channel: string, audience: string): Record<string, unknow
     return rows.filter((row) => row.channel === channel && row.audience === audience);
 }
 
-// An exit with anything but a literal 0 counts, a variable's value included.
+// invariant: an exit with anything but a literal 0 counts, a variable's value included.
 export const REFUSALS: Record<string, RegExp> = {
     exit: /\bexit\((?!0\))/gu,
     reject: /\breject\(/gu,

@@ -13,7 +13,6 @@ export const CHECK_PASSES = [
     'suppressions',
     'markdown',
     'names',
-    'comments',
     'secrets',
     'drift',
 ] as const;

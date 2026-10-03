@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses, passOf, SELECTING_BIN } from '../_setup/check-passes.js';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
-// The runner copies files rather than initialising a repository, so a fixture cannot say what git ignores.
+// outside: the runner copies files rather than initialising a repository, so a fixture cannot say what git ignores.
 
 const MISFORMATTED = 'export const shape = {wide:1}\n';
 

@@ -1,5 +1,5 @@
 /*
- * A specification file is not a spec: `max-lines` holds it at 300 and
+ * outside: a specification file is not a spec: `max-lines` holds it at 300 and
  * `max-lines-per-function` at 60, as any source file. The function below is
  * sixty-one lines and this file is 301, each one past its cap.
  */
@@ -67,7 +67,7 @@ export function assembled(input: number): number {
 }
 
 /*
- * line 000 of the harness's narration
+ * outside: line 000 of the harness's narration
  * line 001 of the harness's narration
  * line 002 of the harness's narration
  * line 003 of the harness's narration
