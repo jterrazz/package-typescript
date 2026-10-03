@@ -24,7 +24,7 @@ function survivorOf(file: string, mutant: Record<string, unknown>): Survivor {
     };
 }
 
-/** Stryker's report, read as the gate reads it: a mutant a module test runs is detected or survives; one no module test runs is the specs' to measure. An incremental report keeps the files of earlier runs, so only the files measured are judged. */
+/** Stryker's report, read as the gate reads it: a mutant a module test runs is detected or survives; one no module test runs is the specs' to measure. An incremental report keeps the files of earlier runs, so only the files measured are judged, and it keeps the results of static mutants the gate no longer runs, so none of those is judged either. */
 export function judgedReport(report: unknown, measured: ReadonlySet<string>): Judged {
     const judged: Judged = { detected: 0, survivors: [], uncovered: 0 };
     for (const [file, entry] of Object.entries(objectOf(objectOf(report).files))) {
@@ -33,6 +33,9 @@ export function judgedReport(report: unknown, measured: ReadonlySet<string>): Ju
         }
         const { mutants } = objectOf(entry);
         for (const mutant of isList(mutants) ? mutants.map((one) => objectOf(one)) : []) {
+            if (mutant.static === true) {
+                continue;
+            }
             if (DETECTED.has(mutant.status)) {
                 judged.detected += 1;
             } else if (mutant.status === 'Survived') {

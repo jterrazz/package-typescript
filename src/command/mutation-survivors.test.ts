@@ -11,7 +11,7 @@ const mutant = (status: string, line: number, replacement = 'true') => ({
 
 describe('mutation-survivors', () => {
     test('a run whose every covered mutant is detected passes, counting what no module test runs apart', () => {
-        // Given - a report of two detected mutants and one no module test runs, beside a file an earlier run measured
+        // Given - a report of two detected mutants, one no module test runs and a static one an earlier run left, beside a file an earlier run measured
         const judged = judgedReport(
             {
                 files: {
@@ -20,6 +20,7 @@ describe('mutation-survivors', () => {
                             mutant('Killed', 3),
                             mutant('Timeout', 4),
                             mutant('NoCoverage', 9),
+                            { ...mutant('Survived', 1), static: true },
                         ],
                     },
                     'src/kept-from-an-earlier-run.ts': { mutants: [mutant('Survived', 1)] },
