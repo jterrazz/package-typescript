@@ -1,16 +1,12 @@
 import { join } from 'node:path';
 import process from 'node:process';
 
-import { OXLINT_CONFIG_NAMES } from '../../lint/kit/project/oxlint-config-names.js';
+import {
+    OXFMT_CONFIG_NAMES,
+    OXLINT_CONFIG_NAMES,
+} from '../../lint/kit/project/editor-config-names.js';
 import { isFileOnDisk } from './disk.js';
 import { presetAt } from './toolchain.js';
-
-const OXFMT_CONFIG_NAMES = [
-    '.oxfmtrc.json',
-    '.oxfmtrc.jsonc',
-    'oxfmt.config.ts',
-    'oxfmt.config.mts',
-];
 
 export type ToolConfig = {
     args: string[];

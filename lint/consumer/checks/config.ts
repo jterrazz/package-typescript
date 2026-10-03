@@ -5,6 +5,13 @@ import { defineCheck, rowNamed } from '../../kit/catalogue/rule.js';
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import { KINDS, listed, PLATFORMS } from '../../kit/project/declaration.js';
 import type { Declaration } from '../../kit/project/declaration.js';
+import {
+    namesBeside,
+    OXFMT_CONFIG,
+    OXFMT_CONFIG_NAMES,
+    OXLINT_CONFIG,
+    OXLINT_CONFIG_NAMES,
+} from '../../kit/project/editor-config-names.js';
 import type { EditorFile } from '../../kit/project/editor-files.js';
 import {
     derivedEditorFiles,
@@ -30,15 +37,8 @@ const TOOL_CONFIGS: Readonly<Record<string, readonly string[]>> = Object.freeze(
     ],
     knip: ['knip.json', 'knip.jsonc', '.knip.json', '.knip.jsonc', 'knip.config.ts', 'knip.ts'],
     'ls-lint': ['.ls-lint.yml', '.ls-lint.yaml'],
-    oxfmt: ['.oxfmtrc.json', '.oxfmtrc.jsonc', 'oxfmt.config.mts'],
-    oxlint: [
-        '.oxlintrc.json',
-        '.oxlintrc.jsonc',
-        'oxlint.config.mts',
-        'oxlint.config.js',
-        'oxlint.config.mjs',
-        'oxlint.config.cjs',
-    ],
+    oxfmt: namesBeside(OXFMT_CONFIG_NAMES, OXFMT_CONFIG),
+    oxlint: namesBeside(OXLINT_CONFIG_NAMES, OXLINT_CONFIG),
     stryker: [
         'stryker.config.json',
         'stryker.config.js',

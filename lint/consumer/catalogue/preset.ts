@@ -1,4 +1,5 @@
 import type { Declaration, Platform } from '../../kit/project/declaration.js';
+import { OXFMT_CONFIG, OXLINT_CONFIG } from '../../kit/project/editor-config-names.js';
 import type { EditorFile } from '../../kit/project/editor-files.js';
 import type { ArchitectureRule, BasePresets, Preset, Sources } from '../../kit/project/preset.js';
 
@@ -154,8 +155,8 @@ const fromTheToolchain = (tool: 'oxfmt' | 'oxlint'): EditorFile => ({
 });
 
 const editorFilesOf = (declaration: Declaration | null): Readonly<Record<string, EditorFile>> => ({
-    'oxfmt.config.ts': fromTheToolchain('oxfmt'),
-    'oxlint.config.ts': fromTheToolchain('oxlint'),
+    [OXFMT_CONFIG]: fromTheToolchain('oxfmt'),
+    [OXLINT_CONFIG]: fromTheToolchain('oxlint'),
     'tsconfig.json': {
         json: {
             extends: `@jterrazz/typescript/tsconfig/${TSCONFIG_OF[declaration?.platform ?? 'node']}`,
