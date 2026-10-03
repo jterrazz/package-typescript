@@ -1,7 +1,7 @@
 import { appendFileSync } from 'node:fs';
 
-import { vanishedEntries } from '../../../lint/engine/baseline/oxlint-suppressions.js';
-import { refusal } from '../../../lint/engine/catalogue/lesson.js';
+import { vanishedEntries } from '../../../lint/kit/baseline/oxlint-suppressions.js';
+import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { isModulePackage } from './project.js';
 import type { Check } from './setup.js';
 

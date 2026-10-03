@@ -1,11 +1,11 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 
-import { invariant, messageOf, refusal } from '../../lint/engine/catalogue/lesson.js';
-import { isGroundFolder } from '../../lint/engine/project/ground.js';
-import { isList, objectOf, parsedObject } from '../../lint/engine/project/json.js';
-import type { JsonObject } from '../../lint/engine/project/json.js';
-import { workspaceMembers } from '../../lint/engine/project/workspace-members.js';
+import { invariant, messageOf, refusal } from '../../lint/kit/catalogue/lesson.js';
+import { isGroundFolder } from '../../lint/kit/project/ground.js';
+import { isList, objectOf, parsedObject } from '../../lint/kit/project/json.js';
+import type { JsonObject } from '../../lint/kit/project/json.js';
+import { workspaceMembers } from '../../lint/kit/project/workspace-members.js';
 import { readJsonc } from './jsonc.js';
 
 type KnipConfig = Record<string, unknown>;

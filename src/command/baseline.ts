@@ -4,9 +4,9 @@ import process from 'node:process';
 import {
     OXLINT_SUPPRESSIONS,
     removeWhenEmpty,
-} from '../../lint/engine/baseline/oxlint-suppressions.js';
-import { binaryIn, HOISTED_BESIDE_PACKAGE } from '../../lint/engine/project/package-root.js';
-import { ignorePatternsOf } from '../../lint/engine/project/project-files.js';
+} from '../../lint/kit/baseline/oxlint-suppressions.js';
+import { binaryIn, HOISTED_BESIDE_PACKAGE } from '../../lint/kit/project/package-root.js';
+import { ignorePatternsOf } from '../../lint/kit/project/project-files.js';
 import { checker } from './checker.js';
 import { lintTargets } from './lint-targets.js';
 import { run } from './processes.js';

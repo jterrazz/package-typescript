@@ -1,16 +1,16 @@
 import { basename, dirname, join } from 'node:path';
 
-import type { Context, Finding } from '../../engine/checker/pass.js';
+import type { Context, Finding } from '../../kit/checker/pass.js';
 import {
     defaultSourceOf,
     outputOf,
     publishedOf,
     unbuiltCodeOf,
-} from '../../engine/project/entry-points.js';
-import type { Published } from '../../engine/project/entry-points.js';
-import { GROUND_FOLDERS } from '../../engine/project/ground.js';
-import { parsedObject } from '../../engine/project/json.js';
-import { withoutDotSlash } from '../../engine/project/packed-files.js';
+} from '../../kit/project/entry-points.js';
+import type { Published } from '../../kit/project/entry-points.js';
+import { GROUND_FOLDERS } from '../../kit/project/ground.js';
+import { parsedObject } from '../../kit/project/json.js';
+import { withoutDotSlash } from '../../kit/project/packed-files.js';
 import { namesFinding } from './names.lessons.js';
 
 type Disk = Pick<Context, 'exists' | 'read'>;
@@ -112,8 +112,8 @@ function strayBinFinding(path: string): Finding {
 
 function strayFinding(path: string): Finding {
     return namesFinding('names/index-is-an-entry', path, {
-        fix: 'name it for what it holds, or publish it: a subpath in `exports` built from it',
-        found: `\`${path}\` is named \`index\`, and builds nothing the package publishes`,
+        fix: 'name it for what it holds, or build it as an entry: a subpath in `exports`, or a private `#` import in `imports`, built from it',
+        found: `\`${path}\` is named \`index\`, and builds nothing the package publishes or imports`,
     });
 }
 

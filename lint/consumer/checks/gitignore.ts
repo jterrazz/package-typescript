@@ -1,9 +1,9 @@
 import { dirname, join, relative, resolve } from 'node:path';
 
-import type { Context, Pass } from '../../engine/checker/pass.js';
-import { parsedObject } from '../../engine/project/json.js';
-import { trackedFiles } from '../../engine/project/project-files.js';
-import { isRepositoryRoot } from '../../engine/project/repository-root.js';
+import type { Context, Pass } from '../../kit/checker/pass.js';
+import { parsedObject } from '../../kit/project/json.js';
+import { trackedFiles } from '../../kit/project/project-files.js';
+import { isRepositoryRoot } from '../../kit/project/repository-root.js';
 
 type Disk = Pick<Context, 'exists' | 'read'>;
 

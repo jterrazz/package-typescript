@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { shippedModules } from '../../engine/testing/shipped-modules.js';
+import { shippedModules } from '../../kit/testing/shipped-modules.js';
 import { headingsOf, refusalFindings, refusalLine } from './refusals.js';
 
 const ROOT = resolve(import.meta.dirname, '../../..');

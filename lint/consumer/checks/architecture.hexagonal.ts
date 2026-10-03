@@ -1,4 +1,4 @@
-import type { ArchitectureRule } from '../../engine/project/preset.js';
+import type { ArchitectureRule } from '../../kit/project/preset.js';
 
 const READ = 'docs/07-quality-checks.md#the-hexagonal-map';
 

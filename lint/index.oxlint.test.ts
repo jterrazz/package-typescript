@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'vitest';
 
-import { missingParts } from './engine/catalogue/lesson.js';
 import {
     astro,
     bun,
@@ -13,6 +12,7 @@ import {
     node,
     react,
 } from './index.oxlint.js';
+import { missingParts } from './kit/catalogue/lesson.js';
 
 function refusalOf(composing: () => unknown): string {
     try {

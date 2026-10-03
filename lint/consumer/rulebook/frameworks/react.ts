@@ -1,4 +1,4 @@
-import { allOn, fragment, off, on } from '../../../engine/compiler/decision.js';
+import { allOn, fragment, off, on } from '../../../kit/compiler/decision.js';
 
 export default fragment({
     id: 'frameworks/react',

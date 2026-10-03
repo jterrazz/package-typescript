@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 
-import { parsedObject } from '../../lint/engine/project/json.js';
-import type { JsonObject } from '../../lint/engine/project/json.js';
+import { parsedObject } from '../../lint/kit/project/json.js';
+import type { JsonObject } from '../../lint/kit/project/json.js';
 
 type Step = { kept: string; next: number; open: boolean };
 

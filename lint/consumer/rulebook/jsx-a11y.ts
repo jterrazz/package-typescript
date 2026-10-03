@@ -1,4 +1,4 @@
-import { allOn, fragment } from '../../engine/compiler/decision.js';
+import { allOn, fragment } from '../../kit/compiler/decision.js';
 
 // No off here: an accessibility rule describes what a person using the product can reach.
 export default fragment({

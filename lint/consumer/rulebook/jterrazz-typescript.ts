@@ -1,4 +1,4 @@
-import { fragment, on } from '../../engine/compiler/decision.js';
+import { fragment, on } from '../../kit/compiler/decision.js';
 
 export default fragment({
     id: 'jterrazz-typescript',

@@ -1,10 +1,11 @@
 import { existsSync, realpathSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { delimiter, dirname, join } from 'node:path';
 import process from 'node:process';
 
-import { binaryIn, isExecutable, PACKAGE_ROOT } from '../../lint/engine/project/package-root.js';
+import { binaryIn, isExecutable, PACKAGE_ROOT } from '../../lint/kit/project/package-root.js';
 
-export const CHECKER = join(PACKAGE_ROOT, 'dist/checker.js');
+export const checkerProgram = (): string => createRequire(import.meta.url).resolve('#checker');
 
 export function presetAt(path: string): string {
     return join(PACKAGE_ROOT, path);

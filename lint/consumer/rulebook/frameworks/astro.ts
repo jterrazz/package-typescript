@@ -1,4 +1,4 @@
-import { fragment, off, on, scoped } from '../../../engine/compiler/decision.js';
+import { fragment, off, on, scoped } from '../../../kit/compiler/decision.js';
 import { IMPORT_ASSETS } from '../import.js';
 
 // oxlint parses an `.astro` file's script body but not its frontmatter as a module, so these decisions are scoped to `*.astro`.

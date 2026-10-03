@@ -1,6 +1,6 @@
-import { defineRule } from '../../../engine/catalogue/rule.js';
-import { EVERY_NAME } from '../../../engine/project/importers.js';
-import { publishedNamesOf } from '../../../engine/project/published-names.js';
+import { defineRule } from '../../../kit/catalogue/rule.js';
+import { EVERY_NAME } from '../../../kit/project/importers.js';
+import { publishedNamesOf } from '../../../kit/project/published-names.js';
 import FINDINGS from '../../catalogue/findings.json' with { type: 'json' };
 
 type Node = {

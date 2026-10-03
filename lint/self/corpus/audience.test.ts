@@ -5,9 +5,9 @@ import { describe, expect, test } from 'vitest';
 
 import { CHECK_PASSES } from '../../../src/command/check/passes.js';
 import { PROFILES } from '../../consumer/rulebook/profiles.js';
-import { decisions } from '../../engine/catalogue/decisions.js';
-import { AUDIENCES } from '../../engine/compiler/decision.js';
-import { shippedModules } from '../../engine/testing/shipped-modules.js';
+import { decisions } from '../../kit/catalogue/decisions.js';
+import { AUDIENCES } from '../../kit/compiler/decision.js';
+import { shippedModules } from '../../kit/testing/shipped-modules.js';
 import { CHANNELS, fieldText, REFUSALS, ROOT, rows, rowsOf } from './audience.js';
 
 // A `self` row names the home that holds it — a path the package leaves out — and the names the tarball audit greps for.

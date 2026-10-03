@@ -1,9 +1,9 @@
-import { BASE_PRESETS } from './base-presets.js';
+import { BASE_PRESETS } from './consumer/catalogue/preset.js';
 import type { PresetChecks } from './consumer/checks/preset-checks.js';
-import { runChecker as runPasses } from './engine/checker/checker.js';
-import type { Checker } from './engine/checker/pass.js';
-import { readConfig, readConfigSync } from './engine/project/jterrazz-config.js';
-import type { Resolution } from './engine/project/preset.js';
+import { runChecker as runPasses } from './kit/checker/checker.js';
+import type { Checker } from './kit/checker/pass.js';
+import { readConfig, readConfigSync } from './kit/project/jterrazz-config.js';
+import type { Resolution } from './kit/project/preset.js';
 
 export {
     defineInvariant,
@@ -15,7 +15,7 @@ export {
     refusal,
     refusalBlock,
     whyOf,
-} from './engine/catalogue/lesson.js';
+} from './kit/catalogue/lesson.js';
 export type {
     ChapterAnchor,
     InvariantOwner,
@@ -23,7 +23,7 @@ export type {
     Taught,
     Teaching,
     Unread,
-} from './engine/catalogue/lesson.js';
+} from './kit/catalogue/lesson.js';
 export {
     byName,
     defineCheck,
@@ -31,7 +31,7 @@ export {
     lessonsAt,
     readAt,
     rowNamed,
-} from './engine/catalogue/rule.js';
+} from './kit/catalogue/rule.js';
 export type {
     Audience,
     Chapter,
@@ -45,17 +45,12 @@ export type {
     RuleMeta,
     RuleOptions,
     RuleType,
-} from './engine/catalogue/rule.js';
-export { anchor, cell, markdownTable } from './engine/catalogue/table.js';
-export {
-    anchorsOf,
-    projected,
-    spliceBetween,
-    writeProjections,
-} from './engine/catalogue/chapter.js';
-export type { Markers, Projection } from './engine/catalogue/chapter.js';
-export { countsOf } from './engine/baseline/counts.js';
-export { OXLINT_SUPPRESSIONS } from './engine/baseline/oxlint-suppressions.js';
+} from './kit/catalogue/rule.js';
+export { anchor, cell, markdownTable } from './kit/catalogue/table.js';
+export { anchorsOf, projected, spliceBetween, writeProjections } from './kit/catalogue/chapter.js';
+export type { Markers, Projection } from './kit/catalogue/chapter.js';
+export { countsOf } from './kit/baseline/counts.js';
+export { OXLINT_SUPPRESSIONS } from './kit/baseline/oxlint-suppressions.js';
 export {
     BASELINE,
     keepsSection,
@@ -63,29 +58,29 @@ export {
     readBaseline,
     sectionOf,
     writeSection,
-} from './engine/baseline/baseline-file.js';
-export type { Counts, ReadBaseline, Sections } from './engine/baseline/baseline-file.js';
-export { judgeExact, judgeFloor, raisedFloor, tightened } from './engine/baseline/section.js';
-export type { Broken, Ratchet } from './engine/baseline/section.js';
-export { readCommandLine } from './engine/checker/command-line.js';
-export type { CommandLine } from './engine/checker/command-line.js';
+} from './kit/baseline/baseline-file.js';
+export type { Counts, ReadBaseline, Sections } from './kit/baseline/baseline-file.js';
+export { judgeExact, judgeFloor, raisedFloor, tightened } from './kit/baseline/section.js';
+export type { Broken, Ratchet } from './kit/baseline/section.js';
+export { readCommandLine } from './kit/checker/command-line.js';
+export type { CommandLine } from './kit/checker/command-line.js';
 export type {
     Checker,
     Commands,
     Context,
-    EngineCommand,
     Finding,
     Held,
     HeldSection,
+    KitCommand,
     Pass,
     Passes,
     PassResult,
-} from './engine/checker/pass.js';
-export { reportLine } from './engine/checker/report-line.js';
-export { exitCodeOf, stop } from './engine/checker/stop.js';
-export { holdsDirectives, suppressionDirectives } from './engine/project/directives.js';
-export type { Directive, SuppressionDirectives } from './engine/project/directives.js';
-export { entryPoints } from './engine/project/entry-points.js';
+} from './kit/checker/pass.js';
+export { reportLine } from './kit/checker/report-line.js';
+export { exitCodeOf, stop } from './kit/checker/stop.js';
+export { holdsDirectives, suppressionDirectives } from './kit/project/directives.js';
+export type { Directive, SuppressionDirectives } from './kit/project/directives.js';
+export { entryPoints } from './kit/project/entry-points.js';
 export {
     folderChanged,
     isDirectory,
@@ -93,15 +88,15 @@ export {
     isOnDisk,
     listDirectory,
     readFileCached,
-} from './engine/project/fs-cache.js';
+} from './kit/project/fs-cache.js';
 export {
     forgetTree,
     moveKeepingHistory,
     treeEntries,
     treeKind,
     treeNames,
-} from './engine/project/git-tree.js';
-export type { TreeEntry } from './engine/project/git-tree.js';
+} from './kit/project/git-tree.js';
+export type { TreeEntry } from './kit/project/git-tree.js';
 export {
     GROUND_EXPECTED,
     GROUND_FIXTURES,
@@ -115,27 +110,27 @@ export {
     SETUP_FOLDER,
     SHARED_FOLDER,
     UNMARKED_RESERVED,
-} from './engine/project/ground.js';
+} from './kit/project/ground.js';
 export {
     declaredSubpaths,
     MEMBER_DEPTH,
     readManifest,
     workspacePatterns,
-} from './engine/project/manifest.js';
-export type { Manifest } from './engine/project/manifest.js';
-export { OXLINT_CONFIG_NAMES } from './engine/project/oxlint-config-names.js';
-export type { PresetLaw, Resolution, Resolved } from './engine/project/preset.js';
+} from './kit/project/manifest.js';
+export type { Manifest } from './kit/project/manifest.js';
+export { OXLINT_CONFIG_NAMES } from './kit/project/oxlint-config-names.js';
+export type { PresetLaw, Resolution, Resolved } from './kit/project/preset.js';
 export type { PresetChecks } from './consumer/checks/preset-checks.js';
-export { filesUnder, ignoredPaths, projectFiles, PRUNED } from './engine/project/project-files.js';
+export { filesUnder, ignoredPaths, projectFiles, PRUNED } from './kit/project/project-files.js';
 export {
     holdsManifest,
     isProjectRoot,
     isRepositoryRoot,
     nearestRoot,
-} from './engine/project/repository-root.js';
-export { blankComments, quotedMask } from './engine/project/comments.js';
-export type { Span } from './engine/project/comments.js';
-export { workspaceMembers } from './engine/project/workspace-members.js';
+} from './kit/project/repository-root.js';
+export { blankComments, quotedMask } from './kit/project/comments.js';
+export type { Span } from './kit/project/comments.js';
+export { workspaceMembers } from './kit/project/workspace-members.js';
 
 export const runChecker = async (
     checker: Omit<Checker, 'presets'>,

@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { PROFILES } from '../../consumer/rulebook/profiles.js';
-import { decisions } from '../../engine/catalogue/decisions.js';
+import { decisions } from '../../kit/catalogue/decisions.js';
 import {
     AUDIENCES,
     fragment,
@@ -10,9 +10,9 @@ import {
     on,
     REASON_KINDS,
     unsafeFix,
-} from '../../engine/compiler/decision.js';
-import type { Reason, Stated } from '../../engine/compiler/decision.js';
-import { lintFragments } from '../../engine/testing/lint-fragments.js';
+} from '../../kit/compiler/decision.js';
+import type { Reason, Stated } from '../../kit/compiler/decision.js';
+import { lintFragments } from '../../kit/testing/lint-fragments.js';
 import problemsOf, { FRAGMENT_WALK } from './decision-invariants.js';
 
 const declared = await lintFragments(resolve(import.meta.dirname, '../../..'), FRAGMENT_WALK);

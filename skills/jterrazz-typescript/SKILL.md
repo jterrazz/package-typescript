@@ -55,7 +55,7 @@ The drift report closes the run; its one refusal is a profile rule turned off wi
 - A `knip.json` ignore carries a `//` reason above it — the file is read as JSONC.
 - The API is the types: there is no generated reference, and `docs/` never holds one.
 - A repository root holds `src/`, `lint/`, `specs/`, `docs/`, `skills/` — any other root folder fails Names (tree) unless the ecosystem imposes it (`bin/`, `public/`, `app/`…) or `jterrazz.config.ts` declares it under `typescript.roots` with a reason.
-- A `lint/` holds at its root the modules that compose it — its entries, its bins, what `src/` reads — and three folders: `consumer/` and `self/` hold declarations alone, and `engine/` holds the code that runs them — `docs/07-quality-checks.md`, The lint tree.
+- A `lint/` holds at its root the modules that compose it — its entries, its bins, what `src/` reads — and three folders: `consumer/` and `self/` hold declarations alone, and `kit/` holds the code that runs them — `docs/07-quality-checks.md`, The lint tree.
 - A repository's root `Makefile` answers `make install`, `build`, `lint`, `fix`, `test` and `check`; a workspace member owes none of them.
 - What a package holds a project to reaches it through the preset the project lists under `presets` in `jterrazz.config.ts`, after the base `typescript()` that is always on; the project's own layers, roots and name rules go in its `typescript` section, and a preset's law is set aside only under `optOuts`, with its reason — `docs/06-configuration.md`, Presets.
 - A rule a package writes for its consumers is written with `@jterrazz/typescript/rules` — `docs/10-rules-kit.md`.

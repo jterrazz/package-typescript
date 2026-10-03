@@ -8,7 +8,7 @@ export {
     refusal,
     refusalBlock,
     whyOf,
-} from './engine/catalogue/lesson.js';
+} from './kit/catalogue/lesson.js';
 export {
     byName,
     defineCheck,
@@ -16,8 +16,8 @@ export {
     lessonsAt,
     readAt,
     rowNamed,
-} from './engine/catalogue/rule.js';
-export { anchor, cell, markdownTable } from './engine/catalogue/table.js';
+} from './kit/catalogue/rule.js';
+export { anchor, cell, markdownTable } from './kit/catalogue/table.js';
 export {
     GROUND_EXPECTED,
     GROUND_FIXTURES,
@@ -31,4 +31,4 @@ export {
     SETUP_FOLDER,
     SHARED_FOLDER,
     UNMARKED_RESERVED,
-} from './engine/project/ground.js';
+} from './kit/project/ground.js';

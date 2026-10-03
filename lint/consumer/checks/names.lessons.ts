@@ -1,6 +1,6 @@
-import type { ChapterAnchor, Teaching } from '../../engine/catalogue/lesson.js';
-import { defineCheck, rowNamed } from '../../engine/catalogue/rule.js';
-import type { Finding } from '../../engine/checker/pass.js';
+import type { ChapterAnchor, Teaching } from '../../kit/catalogue/lesson.js';
+import { defineCheck, rowNamed } from '../../kit/catalogue/rule.js';
+import type { Finding } from '../../kit/checker/pass.js';
 import FINDINGS from '../catalogue/findings.json' with { type: 'json' };
 
 const CHAPTER = 'docs/07-quality-checks.md';

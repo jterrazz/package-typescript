@@ -3,7 +3,7 @@ import { join, resolve } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
 
-import { shippedModules } from '../../../lint/engine/testing/shipped-modules.js';
+import { shippedModules } from '../../../lint/kit/testing/shipped-modules.js';
 
 // The module walk sees only what an import builds; a literal audience holds whoever calls the builder, and when.
 // The tarball holds the bundle, so the builder's calls are read where they are written.

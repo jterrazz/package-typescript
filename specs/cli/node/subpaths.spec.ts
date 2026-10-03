@@ -22,7 +22,7 @@ describe('subpaths', () => {
             @jterrazz/typescript/oxfmt (types) → ./dist/oxfmt.d.ts: held
             @jterrazz/typescript/oxfmt (default) → ./dist/oxfmt.js: loads, 2 names
             @jterrazz/typescript/oxlint (types) → ./dist/oxlint.d.ts: held
-            @jterrazz/typescript/oxlint (default) → ./dist/oxlint.js: loads, 10 names
+            @jterrazz/typescript/oxlint (default) → ./dist/oxlint.js: loads, 11 names
             @jterrazz/typescript/rules (types) → ./dist/rules.d.ts: held
             @jterrazz/typescript/rules (browser) → ./dist/rules.browser.js: reaches 5 modules, and imports no package
             @jterrazz/typescript/rules (default) → ./dist/rules.js: loads, 84 names
@@ -56,7 +56,7 @@ describe('subpaths', () => {
             @jterrazz/typescript/config: defineConfig, definePreset, typescript
             @jterrazz/typescript/docs: HEAD_LINES, auditDocs
             @jterrazz/typescript/oxfmt: base, defineConfig
-            @jterrazz/typescript/oxlint: astro, bun, compose, defineConfig, expo, fromPresets, nested, next, node, react
+            @jterrazz/typescript/oxlint: UNSAFE_FIXERS, astro, bun, compose, defineConfig, expo, fromPresets, nested, next, node, react
             @jterrazz/typescript/rules: BASELINE, GROUND_EXPECTED, GROUND_FIXTURES, GROUND_FOLDERS, GROUND_GLOB, GROUND_REQUESTS, GROUND_SEEDS, LESSON_PARTS, MEMBER_DEPTH, OXLINT_CONFIG_NAMES, OXLINT_SUPPRESSIONS, PRUNED, RESERVED_FOLDERS, SETUP_FOLDER, SHARED_FOLDER, UNMARKED_RESERVED, anchor, anchorsOf, blankComments, byName, cell, countsOf, declaredSubpaths, defineCheck, defineInvariant, defineRule, entryPoints, exitCodeOf, filesUnder, firstSentence, folderChanged, forgetTree, holdsDirectives, holdsManifest, ignoredPaths, isDirectory, isFile, isGroundFolder, isOnDisk, isProjectRoot, isRepositoryRoot, isReservedFolder, judgeExact, judgeFloor, keepsSection, labelOf, lessonOf, lessonParts, lessonsAt, listDirectory, markdownTable, missingParts, moveKeepingHistory, nearestRoot, presetChecks, projectFiles, projected, quotedMask, raisedFloor, readAt, readBaseline, readCommandLine, readFileCached, readManifest, readSettings, readSettingsSync, refusal, refusalBlock, reportLine, rowNamed, runChecker, sectionOf, spliceBetween, stop, suppressionDirectives, tightened, treeEntries, treeKind, treeNames, whyOf, workspaceMembers, workspacePatterns, writeProjections, writeSection
             the . entry's oxlint profiles are the oxlint entry's: yes
             the . entry's oxfmt is the oxfmt entry's base: yes

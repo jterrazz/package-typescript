@@ -1,4 +1,4 @@
-import type { ArchitectureRule, Preset } from '../../engine/project/preset.js';
+import type { ArchitectureRule, Preset } from '../../kit/project/preset.js';
 
 const READ = 'docs/01-architecture.md#the-judging-layer';
 
@@ -6,15 +6,15 @@ const TEST_MATERIAL = String.raw`\.(?:test|spec|test-d|spec-d|fixtures)\.[cm]?[j
 
 export const LINT_LAYERS: readonly ArchitectureRule[] = Object.freeze([
     {
-        fix: 'hand the declaration to engine/ from a module at the root of lint/, never import it from engine/',
-        from: { path: '^lint/engine/' },
-        name: 'engine-knows-no-declaration',
+        fix: 'hand the declaration to kit/ from a module at the root of lint/, never import it from kit/',
+        from: { path: '^lint/kit/' },
+        name: 'kit-knows-no-declaration',
         read: READ,
         to: { path: '^(lint/consumer/|lint/self/|lint/[^/]+$|src/)' },
-        why: 'lint/engine/ runs declarations and knows none — it receives them from a module at the root of lint/, which it never imports',
+        why: 'lint/kit/ runs declarations and knows none — it receives them from a module at the root of lint/, which it never imports',
     },
     {
-        fix: 'move what both folders need into the catalogue or into engine/',
+        fix: 'move what both folders need into the catalogue or into kit/',
         from: { path: '^lint/consumer/(rulebook|rules|checks)/' },
         name: 'consumer-folders-apart',
         read: READ,
@@ -22,26 +22,26 @@ export const LINT_LAYERS: readonly ArchitectureRule[] = Object.freeze([
             path: '^lint/consumer/(rulebook|rules|checks)/',
             pathNot: '^lint/consumer/$1/',
         },
-        why: 'a consumer declaration reads the catalogue and engine/, never a sibling folder',
+        why: 'a consumer declaration reads the catalogue and kit/, never a sibling folder',
     },
     {
-        fix: 'move what both folders need into the catalogue or into engine/',
+        fix: 'move what both folders need into the catalogue or into kit/',
         from: { path: '^lint/self/(rules|checks|corpus)/' },
         name: 'self-folders-apart',
         read: READ,
         to: { path: '^lint/self/(rules|checks|corpus)/', pathNot: '^lint/self/$1/' },
-        why: 'a self declaration reads its catalogue, consumer/, engine/ and src/, never a sibling folder',
+        why: 'a self declaration reads its catalogue, consumer/, kit/ and src/, never a sibling folder',
     },
     {
-        fix: 'move what the catalogue needs into engine/',
+        fix: 'move what the catalogue needs into kit/',
         from: { path: '^lint/(consumer|self)/catalogue/', pathNot: TEST_MATERIAL },
         name: 'catalogue-at-the-bottom',
         read: READ,
         to: { path: '^(lint/consumer|lint/self|src)/', pathNot: '^lint/($1|consumer)/catalogue/' },
-        why: 'a catalogue is data at the bottom of the arrow — it reads engine/ and, for the self catalogue, the consumer catalogue it extends; its tests audit what it catalogues',
+        why: 'a catalogue is data at the bottom of the arrow — it reads kit/ and, for the self catalogue, the consumer catalogue it extends; its tests audit what it catalogues',
     },
     {
-        fix: 'move what the shipped code needs out of self/ and src/ into engine/',
+        fix: 'move what the shipped code needs out of self/ and src/ into kit/',
         from: { path: '^lint/(consumer/|[^/]+$)', pathNot: TEST_MATERIAL },
         name: 'shipped-lint-reads-no-self',
         read: READ,
@@ -49,18 +49,18 @@ export const LINT_LAYERS: readonly ArchitectureRule[] = Object.freeze([
         why: 'the shipped lint/ never reads self/ (never shipped) nor src/ (the command); its tests are not shipped, and may run a rule through the package that ships it',
     },
     {
-        fix: 'move what src/ needs into engine/, or compose it in a module at the root of `lint/`, and import it from there',
+        fix: 'move what src/ needs into kit/, or compose it in a module at the root of `lint/`, and import it from there',
         from: { path: '^src/' },
         name: 'src-reads-no-declaration',
         read: READ,
         to: { path: '^lint/(consumer|self)/' },
-        why: 'src/ runs what lint/ declares through the modules at the root of lint/ and engine/, never a declaration of consumer/ or self/',
+        why: 'src/ runs what lint/ declares through the modules at the root of lint/ and kit/, never a declaration of consumer/ or self/',
     },
 ]);
 
 export const LINT_TREE = Object.freeze({
     consumer: Object.freeze(['catalogue', 'rulebook', 'rules', 'checks']),
-    engine: Object.freeze(['project', 'baseline', 'checker', 'catalogue', 'compiler', 'testing']),
+    kit: Object.freeze(['project', 'baseline', 'checker', 'catalogue', 'compiler', 'testing']),
     self: Object.freeze(['catalogue', 'rules', 'checks', 'corpus']),
 });
 
@@ -119,3 +119,5 @@ export function typescriptPreset({ profile = 'node' }: { profile?: ProfileName }
         baseline: [BASELINE_SECTION],
     };
 }
+
+export const BASE_PRESETS: readonly Preset[] = Object.freeze([typescriptPreset()]);

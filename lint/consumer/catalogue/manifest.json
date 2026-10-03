@@ -85,7 +85,7 @@
         "channel": "runtime",
         "id": "empty-sweep",
         "message": "nothing to read under",
-        "module": "lint/engine/project/project-files.ts"
+        "module": "lint/kit/project/project-files.ts"
     },
     {
         "audience": "consumer",
@@ -125,7 +125,7 @@
         "channel": "runtime",
         "id": "checker-command-failed",
         "message": "exit(await run(rest, checker))",
-        "module": "lint/engine/checker/checker.ts"
+        "module": "lint/kit/checker/checker.ts"
     },
     {
         "audience": "consumer",
@@ -133,7 +133,7 @@
         "channel": "runtime",
         "id": "checker-unknown-pass",
         "message": "the checker runs no pass named",
-        "module": "lint/engine/checker/checker.ts"
+        "module": "lint/kit/checker/checker.ts"
     },
     {
         "audience": "consumer",
@@ -141,7 +141,7 @@
         "channel": "runtime",
         "id": "checker-pass-failed",
         "message": "exit(await runPass(",
-        "module": "lint/engine/checker/checker.ts"
+        "module": "lint/kit/checker/checker.ts"
     },
     {
         "audience": "consumer",
@@ -149,7 +149,7 @@
         "channel": "runtime",
         "id": "empty-sweep-exit",
         "message": "stderr.write(`${error.message}\\n`);",
-        "module": "lint/engine/project/project-files.ts"
+        "module": "lint/kit/project/project-files.ts"
     },
     {
         "audience": "consumer",
@@ -157,7 +157,7 @@
         "channel": "runtime",
         "id": "chapter-markers-lost",
         "message": "has lost its markers",
-        "module": "lint/engine/catalogue/chapter.ts"
+        "module": "lint/kit/catalogue/chapter.ts"
     },
     {
         "audience": "consumer",
@@ -165,7 +165,7 @@
         "channel": "runtime",
         "id": "catalogue-row-unnamed",
         "message": "no catalogue row is named",
-        "module": "lint/engine/catalogue/rule.ts"
+        "module": "lint/kit/catalogue/rule.ts"
     },
     {
         "audience": "consumer",
@@ -173,7 +173,7 @@
         "channel": "runtime",
         "id": "checker-stopped",
         "message": "stopped with ${String(code)} outside exitCodeOf",
-        "module": "lint/engine/checker/stop.ts"
+        "module": "lint/kit/checker/stop.ts"
     },
     {
         "audience": "consumer",
@@ -197,6 +197,6 @@
         "channel": "runtime",
         "id": "baseline-unwritable",
         "message": "then record again",
-        "module": "lint/engine/baseline/baseline-file.ts"
+        "module": "lint/kit/baseline/baseline-file.ts"
     }
 ]

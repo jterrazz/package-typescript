@@ -1,4 +1,4 @@
-import { allOn, fragment, off } from '../../engine/compiler/decision.js';
+import { allOn, fragment, off } from '../../kit/compiler/decision.js';
 
 // JSDoc is never required — TypeScript carries the types — but a block that is written must be well formed.
 const BY_TYPESCRIPT = {

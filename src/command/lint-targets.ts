@@ -1,9 +1,9 @@
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { SOURCE } from '../../lint/engine/project/comments.js';
-import { objectOf, stringsOf } from '../../lint/engine/project/json.js';
-import { projectFiles } from '../../lint/engine/project/project-files.js';
+import { SOURCE } from '../../lint/kit/project/comments.js';
+import { objectOf, stringsOf } from '../../lint/kit/project/json.js';
+import { projectFiles } from '../../lint/kit/project/project-files.js';
 
 export async function lintTargets(
     root: string,

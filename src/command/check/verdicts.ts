@@ -1,8 +1,7 @@
 import { appendFileSync, readFileSync } from 'node:fs';
 
-import { BASE_PRESETS } from '../../../lint/base-presets.js';
-import { labelOf } from '../../../lint/engine/baseline/baseline-file.js';
-import { readConfig } from '../../../lint/engine/project/jterrazz-config.js';
+import { readSettings } from '../../../lint/index.rules.js';
+import { labelOf } from '../../../lint/kit/baseline/baseline-file.js';
 import { checker } from '../checker.js';
 import type { Conventions } from './conventions.js';
 import type { Launched } from './launched.js';
@@ -19,8 +18,12 @@ type Passed = undefined | Verdict;
 const escaped = (text: string): string => text.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
 
 async function heldSummaryOf(): Promise<null | RegExp> {
-    const { resolved } = await readConfig('.', BASE_PRESETS);
-    const toolchain = new Set(BASE_PRESETS.flatMap((preset) => preset.baseline ?? []));
+    const { resolved } = await readSettings('.');
+    const toolchain = new Set(
+        resolved.presets
+            .filter((preset) => preset.package === '@jterrazz/typescript')
+            .flatMap((preset) => preset.baseline ?? []),
+    );
     const labels = resolved.baseline
         .filter((section) => !toolchain.has(section) && !resolved.floors.includes(section))
         .map((section) => escaped(labelOf(section)));

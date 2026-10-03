@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import process from 'node:process';
 
-import { refusal } from '../../lint/engine/catalogue/lesson.js';
+import { refusal } from '../../lint/kit/catalogue/lesson.js';
 import { baseline } from './baseline.js';
 import { build, bundle, clean, dev, start } from './build.js';
 import { EVERY_PASS, runChecks } from './check/check.js';
@@ -9,7 +9,7 @@ import type { Selected } from './check/check.js';
 import { doctor } from './doctor.js';
 import { handOver } from './processes.js';
 import { badge, print } from './terminal.js';
-import { CHECKER, projectRoot, tscIn } from './toolchain.js';
+import { checkerProgram, projectRoot, tscIn } from './toolchain.js';
 
 export { CHECK_PASSES } from './check/check.js';
 export type { CheckPass, Selected } from './check/check.js';
@@ -72,7 +72,7 @@ const COMMANDS: Readonly<Record<string, Command>> = {
     dev: async () => await dev(),
     'docs-layout': async ([root]) =>
         await handOver(process.execPath, [
-            CHECKER,
+            checkerProgram(),
             'docs',
             root === undefined || root === '' ? projectRoot() : root,
         ]),

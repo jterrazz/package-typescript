@@ -57,7 +57,7 @@ export type HeldSection = Ratchet & { read: ChapterAnchor; section: string };
 
 export type Held = HeldSection & { passes: readonly string[]; summarised?: boolean };
 
-export type Commands = Readonly<Record<string, () => Promise<EngineCommand>>>;
+export type Commands = Readonly<Record<string, () => Promise<KitCommand>>>;
 
 export type Checker = {
     commands?: Commands;
@@ -66,4 +66,4 @@ export type Checker = {
     presets: readonly Preset[];
 };
 
-export type EngineCommand = (args: string[], checker: Checker) => number | Promise<number>;
+export type KitCommand = (args: string[], checker: Checker) => number | Promise<number>;

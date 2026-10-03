@@ -36,7 +36,7 @@ make install
 ## Repo layout
 
 ```text
-lint/     # every judgement: consumer/ and self/ declare, engine/ runs
+lint/     # every judgement: consumer/ and self/ declare, kit/ runs
 src/      # the command, the presets, the importable entries
 docs/     # the corpus: numbered chapters and decisions/
 skills/   # the Claude Code skill — one hand-written SKILL.md

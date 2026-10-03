@@ -3,11 +3,11 @@ import type { Dirent } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { refusal } from '../../engine/catalogue/lesson.js';
-import type { Finding } from '../../engine/checker/pass.js';
-import { runTool } from '../../engine/checker/tool-run.js';
-import { GROUND_FOLDERS } from '../../engine/project/ground.js';
-import { objectOf } from '../../engine/project/json.js';
+import { refusal } from '../../kit/catalogue/lesson.js';
+import type { Finding } from '../../kit/checker/pass.js';
+import { runTool } from '../../kit/checker/tool-run.js';
+import { GROUND_FOLDERS } from '../../kit/project/ground.js';
+import { objectOf } from '../../kit/project/json.js';
 import { LINT_ROOT, TOPS } from './names.lint-tree.js';
 import type { LintTree, Top } from './names.lint-tree.js';
 import { placementFindingOf } from './names.placement.js';
@@ -44,16 +44,21 @@ const COMPOSERS: Rules = Object.freeze({
     ...Object.fromEntries(MODULE_EXTENSIONS.map((extension) => [extension, `regex:${KEBAB}`])),
 });
 
+const ENTRIES: Rules = Object.freeze({
+    '.*': REFUSED_FILE_BY_FILE,
+    ...Object.fromEntries(MODULE_EXTENSIONS.map((extension) => [extension, 'regex:index'])),
+});
+
 const ROOT_FILES: Readonly<Record<Top, Rules>> = Object.freeze({
     consumer: { '.*': 'exists:0' },
-    engine: { '.*': 'exists:0' },
+    kit: { '.*': 'exists:0' },
     self: COMPOSERS,
 });
 
 function lintTreeRules(prefix: string, tree: LintTree): Record<string, Rules> {
     const lint = `${prefix}${LINT_ROOT}`;
     const rules: Record<string, Rules> = {
-        [lint]: { ...COMPOSERS, '.dir': `regex:${LINT_ROOT}` },
+        [lint]: { ...ENTRIES, '.dir': `regex:${LINT_ROOT}` },
     };
     for (const top of TOPS) {
         rules[`${lint}/${top}`] = { ...ROOT_FILES[top], '.dir': `regex:${top}` };

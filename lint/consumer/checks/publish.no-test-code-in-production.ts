@@ -1,9 +1,9 @@
 import { isAbsolute, relative, sep } from 'node:path';
 
-import type { Finding } from '../../engine/checker/pass.js';
-import type { BuiltChunk } from '../../engine/project/built-chunks.js';
-import { isPacked } from '../../engine/project/packed-files.js';
-import type { TestMaterialReader } from '../../engine/project/test-material.js';
+import type { Finding } from '../../kit/checker/pass.js';
+import type { BuiltChunk } from '../../kit/project/built-chunks.js';
+import { isPacked } from '../../kit/project/packed-files.js';
+import type { TestMaterialReader } from '../../kit/project/test-material.js';
 
 export type Manifest = {
     dependencies?: Record<string, string>;

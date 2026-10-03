@@ -1,8 +1,8 @@
 // The single executable copy of the rule ids and of each sentence they print; pages name ids, never
 // messages. Nothing here reads the filesystem, so a clone nobody installed into is judged the same.
-import type { DocsTree } from '../../engine/project/docs-tree.js';
+import type { DocsTree } from '../../kit/project/docs-tree.js';
 
-export type { DocsTree } from '../../engine/project/docs-tree.js';
+export type { DocsTree } from '../../kit/project/docs-tree.js';
 
 /** One broken rule, naming the path it is about and the sentence the gate prints. */
 export type DocsViolation = {

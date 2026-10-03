@@ -1,7 +1,7 @@
 import { dirname } from 'node:path';
 import process from 'node:process';
 
-import { testPackageBin } from '../../../lint/engine/project/test-package.js';
+import { testPackageBin } from '../../../lint/kit/project/test-package.js';
 import { run } from '../processes.js';
 import type { Launched } from './launched.js';
 import { nearestPackageDir, specsRoots, usesTestPackage } from './project.js';

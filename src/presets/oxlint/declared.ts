@@ -3,14 +3,14 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
-import { BASE_PRESETS } from '../../../lint/base-presets.js';
-import { objectOf } from '../../../lint/engine/project/json.js';
-import { readConfig, SETTINGS_FILE } from '../../../lint/engine/project/jterrazz-config.js';
 import { fromPresets } from '../../../lint/index.oxlint.js';
+import { readSettings } from '../../../lint/index.rules.js';
+import { objectOf } from '../../../lint/kit/project/json.js';
+import { SETTINGS_FILE } from '../../../lint/kit/project/jterrazz-config.js';
 
 const settingsAt = join(process.cwd(), SETTINGS_FILE);
 
-const { problem } = await readConfig(process.cwd(), BASE_PRESETS);
+const { problem } = await readSettings(process.cwd());
 
 const declared: object =
     problem === null && existsSync(settingsAt)

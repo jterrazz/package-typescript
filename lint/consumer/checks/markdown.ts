@@ -1,7 +1,7 @@
 import { dirname, join, resolve } from 'node:path';
 
-import type { Context, Finding, Pass, Tool } from '../../engine/checker/pass.js';
-import { isGitIgnored, readText } from '../../engine/project/project-files.js';
+import type { Context, Finding, Pass, Tool } from '../../kit/checker/pass.js';
+import { isGitIgnored, readText } from '../../kit/project/project-files.js';
 
 type Found = { message: string; rule: string };
 

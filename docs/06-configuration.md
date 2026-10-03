@@ -62,7 +62,7 @@ A preset is an object carrying its `name` (the section of `jterrazz.config.ts` i
 
 `typescript()` is always on, whether the file names it or not. Naming it chooses its `profile`, the oxlint profile `fromPresets` starts from, `node` where none is named. It carries the laws every repository of the family keeps:
 
-- the direction of `lint/`: `engine-knows-no-declaration`, `consumer-folders-apart`, `self-folders-apart`, `catalogue-at-the-bottom`, `shipped-lint-reads-no-self` and `src-reads-no-declaration`, layers the Architecture pass holds a `lint/` tree to wherever one stands ([Architecture](01-architecture.md#the-judging-layer));
+- the direction of `lint/`: `kit-knows-no-declaration`, `consumer-folders-apart`, `self-folders-apart`, `catalogue-at-the-bottom`, `shipped-lint-reads-no-self` and `src-reads-no-declaration`, layers the Architecture pass holds a `lint/` tree to wherever one stands ([Architecture](01-architecture.md#the-judging-layer));
 - the folders of the lint tree, the root spine, the roots a tool imposes, and the three word rosters of the Names pass ([Quality checks](07-quality-checks.md#the-names-tree-pass)).
 
 A law whose `from` names no file of the project costs nothing: the Architecture pass drops it before it runs, so a repository without a `lint/` tree runs no cruise for the base preset's laws.

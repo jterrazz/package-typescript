@@ -8,7 +8,7 @@ export default defineConfig([
         clean: true,
         dts: true,
         entry: {
-            checker: 'lint/checker.ts',
+            checker: 'lint/index.checker.ts',
             command: 'src/command/main.ts',
             config: 'lint/index.config.ts',
             docs: 'lint/index.docs.ts',

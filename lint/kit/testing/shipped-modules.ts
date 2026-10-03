@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-const UNSHIPPED = new Set(['lint/engine/testing', 'lint/self']);
+const UNSHIPPED = new Set(['lint/kit/testing', 'lint/self']);
 
 export function shippedModules(root: string, directory: string): string[] {
     return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {

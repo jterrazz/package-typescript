@@ -2,17 +2,17 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { refusal } from '../../engine/catalogue/lesson.js';
-import type { ChapterAnchor } from '../../engine/catalogue/lesson.js';
-import { defineCheck } from '../../engine/catalogue/rule.js';
-import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
-import { runTool } from '../../engine/checker/tool-run.js';
-import type { ToolRun } from '../../engine/checker/tool-run.js';
-import { GROUND_FOLDERS } from '../../engine/project/ground.js';
-import { isJsonObject, objectOf, stringOf } from '../../engine/project/json.js';
-import { DEPENDENCY_CRUISER_CONFIGS, SETTINGS_FILE } from '../../engine/project/jterrazz-config.js';
-import { isChapterAnchor, presetLesson } from '../../engine/project/preset.js';
-import type { ArchitectureRule } from '../../engine/project/preset.js';
+import { refusal } from '../../kit/catalogue/lesson.js';
+import type { ChapterAnchor } from '../../kit/catalogue/lesson.js';
+import { defineCheck } from '../../kit/catalogue/rule.js';
+import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
+import { runTool } from '../../kit/checker/tool-run.js';
+import type { ToolRun } from '../../kit/checker/tool-run.js';
+import { GROUND_FOLDERS } from '../../kit/project/ground.js';
+import { isJsonObject, objectOf, stringOf } from '../../kit/project/json.js';
+import { DEPENDENCY_CRUISER_CONFIGS, SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
+import { isChapterAnchor, presetLesson } from '../../kit/project/preset.js';
+import type { ArchitectureRule } from '../../kit/project/preset.js';
 import { ARCHITECTURE_HEXAGONAL } from './architecture.hexagonal.js';
 
 const SOURCE = /\.[cm]?[jt]sx?$/u;

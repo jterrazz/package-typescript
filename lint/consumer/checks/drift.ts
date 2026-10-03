@@ -1,16 +1,16 @@
 import { join, resolve } from 'node:path';
 
-import { labelOf, readBaseline, sectionOf } from '../../engine/baseline/baseline-file.js';
-import type { Counts } from '../../engine/baseline/baseline-file.js';
-import { OXLINT_SUPPRESSIONS, suppressedCount } from '../../engine/baseline/oxlint-suppressions.js';
-import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
-import { countSuppressions } from '../../engine/project/comments.js';
-import { printedOxlintConfig } from '../../engine/project/oxlint-config.js';
-import type { PrintedRules } from '../../engine/project/oxlint-config.js';
-import type { OptOut } from '../../engine/project/preset.js';
-import { orRefused } from '../../engine/project/project-files.js';
-import { toolVersions } from '../../engine/project/tool-versions.js';
-import type { ToolVersion } from '../../engine/project/tool-versions.js';
+import { labelOf, readBaseline, sectionOf } from '../../kit/baseline/baseline-file.js';
+import type { Counts } from '../../kit/baseline/baseline-file.js';
+import { OXLINT_SUPPRESSIONS, suppressedCount } from '../../kit/baseline/oxlint-suppressions.js';
+import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
+import { countSuppressions } from '../../kit/project/comments.js';
+import { printedOxlintConfig } from '../../kit/project/oxlint-config.js';
+import type { PrintedRules } from '../../kit/project/oxlint-config.js';
+import type { OptOut } from '../../kit/project/preset.js';
+import { orRefused } from '../../kit/project/project-files.js';
+import { toolVersions } from '../../kit/project/tool-versions.js';
+import type { ToolVersion } from '../../kit/project/tool-versions.js';
 import { BASELINE_SECTION as SECTION } from '../catalogue/preset.js';
 import { profileNamesAt, profileOfProject } from './drift.profile.js';
 import type { Project } from './drift.profile.js';

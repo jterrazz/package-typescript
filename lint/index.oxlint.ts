@@ -2,15 +2,16 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'oxlint';
 import type { OxlintConfig } from 'oxlint';
 
-import { BASE_PRESETS } from './base-presets.js';
+import { BASE_PRESETS } from './consumer/catalogue/preset.js';
 import { PROFILES } from './consumer/rulebook/profiles.js';
-import { refusal } from './engine/catalogue/lesson.js';
-import { merge, profile } from './engine/compiler/compile.js';
-import { SETTINGS_FILE } from './engine/project/jterrazz-config.js';
-import { presetLesson, resolveConfig } from './engine/project/preset.js';
+import { unsafeFixers } from './kit/catalogue/decisions.js';
+import { refusal } from './kit/catalogue/lesson.js';
+import { merge, profile } from './kit/compiler/compile.js';
+import { SETTINGS_FILE } from './kit/project/jterrazz-config.js';
+import { presetLesson, resolveConfig } from './kit/project/preset.js';
 
 /** Merges oxlint configs left to right: lists concatenated and deduped, maps shallow-merged with the last winning. */
-export { merge as compose } from './engine/compiler/compile.js';
+export { merge as compose } from './kit/compiler/compile.js';
 
 // A consumer's bare `from 'oxlint'` resolves only where it declares oxlint itself, which pnpm refuses to assume.
 export { defineConfig } from 'oxlint';
@@ -75,3 +76,5 @@ export function fromPresets(config: object): OxlintConfig {
         ),
     );
 }
+
+export const UNSAFE_FIXERS = unsafeFixers(PROFILES);

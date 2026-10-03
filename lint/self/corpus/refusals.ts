@@ -2,9 +2,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 
-import { refusal } from '../../engine/catalogue/lesson.js';
+import { refusal } from '../../kit/catalogue/lesson.js';
 
-export const LESSON_MODULE = 'lint/engine/catalogue/lesson.ts';
+export const LESSON_MODULE = 'lint/kit/catalogue/lesson.ts';
 
 const ID = 'error-is-a-refusal-or-an-invariant';
 

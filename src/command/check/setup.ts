@@ -7,9 +7,9 @@ import {
     HOISTED_BESIDE_PACKAGE,
     isExecutable,
     PACKAGE_ROOT,
-} from '../../../lint/engine/project/package-root.js';
-import { ignorePatternsOf } from '../../../lint/engine/project/project-files.js';
-import { workspaceMembers } from '../../../lint/engine/project/workspace-members.js';
+} from '../../../lint/kit/project/package-root.js';
+import { ignorePatternsOf } from '../../../lint/kit/project/project-files.js';
+import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { lintTargets } from '../lint-targets.js';
 import type { ToolConfigs } from '../tool-configs.js';
 import { tscIn, withTsgolintOnPath } from '../toolchain.js';

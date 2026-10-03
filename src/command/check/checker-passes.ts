@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import {
     DEPENDENCY_CRUISER_CONFIGS,
     SETTINGS_FILE,
-} from '../../../lint/engine/project/jterrazz-config.js';
+} from '../../../lint/kit/project/jterrazz-config.js';
 import { checker } from '../checker.js';
 import { isDirectoryOnDisk, isFileOnDisk } from '../disk.js';
 import { presetAt } from '../toolchain.js';

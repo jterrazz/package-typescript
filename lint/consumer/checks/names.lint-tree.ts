@@ -1,12 +1,12 @@
-import { catalogueFamilies } from '../../engine/catalogue/families.js';
-import type { Finding } from '../../engine/checker/pass.js';
-import { exportedFunctions, exportedValues } from '../../engine/project/exported-names.js';
-import { GROUND_FOLDERS } from '../../engine/project/ground.js';
-import { EVERY_NAME, importersOf } from '../../engine/project/importers.js';
-import { isJsonObject, stringsOf } from '../../engine/project/json.js';
-import { readText } from '../../engine/project/project-files.js';
+import { catalogueFamilies } from '../../kit/catalogue/families.js';
+import type { Finding } from '../../kit/checker/pass.js';
+import { exportedFunctions, exportedValues } from '../../kit/project/exported-names.js';
+import { GROUND_FOLDERS } from '../../kit/project/ground.js';
+import { EVERY_NAME, importersOf } from '../../kit/project/importers.js';
+import { isJsonObject, stringsOf } from '../../kit/project/json.js';
+import { readText } from '../../kit/project/project-files.js';
 
-export type Top = 'consumer' | 'engine' | 'self';
+export type Top = 'consumer' | 'kit' | 'self';
 
 export type LintTree = Readonly<Record<Top, readonly string[]>>;
 
@@ -16,14 +16,14 @@ type Candidate = Exported & { file: string };
 
 export const LINT_ROOT = 'lint';
 
-export const TOPS: readonly Top[] = Object.freeze(['consumer', 'engine', 'self']);
+export const TOPS: readonly Top[] = Object.freeze(['consumer', 'kit', 'self']);
 
 export function lintFoldersOf(declared: unknown): LintTree {
     const tree = isJsonObject(declared) ? declared : {};
 
     return {
         consumer: stringsOf(tree.consumer),
-        engine: stringsOf(tree.engine),
+        kit: stringsOf(tree.kit),
         self: stringsOf(tree.self),
     };
 }
@@ -52,8 +52,8 @@ function helperFinding(path: string, names: readonly string[], tree: LintTree): 
     return {
         message: [
             `found: \`${path}\` hands ${listed} to another module, named for no declaration of its file`,
-            'why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what a module at the root of lint/ composes; one named for something else is code or data other files share, and that is the engine’s',
-            `fix: move ${names.length === 1 ? 'it' : 'them'} under engine/ — ${tree.engine.map((folder) => `${folder}/`).join(', ')} — or, when it is this declaration’s own, name it for the file`,
+            'why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what a module at the root of lint/ composes; one named for something else is code or data other files share, and that is the kit’s',
+            `fix: move ${names.length === 1 ? 'it' : 'them'} under kit/ — ${tree.kit.map((folder) => `${folder}/`).join(', ')} — or, when it is this declaration’s own, name it for the file`,
             READ,
         ].join(' · '),
         path,
@@ -65,8 +65,8 @@ function programFinding(path: string): Finding {
     return {
         message: [
             `found: \`${path}\` is a program — it reads the command line, ends the process or runs when executed`,
-            'why: consumer/ and self/ hold declarations alone, and the checker is what reads a command line, runs the declarations and says how the run ended; a program filed as a declaration is engine code no lock sees',
-            'fix: move the program under engine/checker/ and hand it this declaration from a module at the root of lint/, leaving here only what it judges',
+            'why: consumer/ and self/ hold declarations alone, and the checker is what reads a command line, runs the declarations and says how the run ended; a program filed as a declaration is kit code no lock sees',
+            'fix: move the program under kit/checker/ and hand it this declaration from a module at the root of lint/, leaving here only what it judges',
             READ,
         ].join(' · '),
         path,

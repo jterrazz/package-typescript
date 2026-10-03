@@ -6,8 +6,8 @@ import {
     keptAcross,
     OXLINT_SUPPRESSIONS,
     removeWhenEmpty,
-} from '../../../lint/engine/baseline/oxlint-suppressions.js';
-import { invariant, messageOf, refusal } from '../../../lint/engine/catalogue/lesson.js';
+} from '../../../lint/kit/baseline/oxlint-suppressions.js';
+import { invariant, messageOf, refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { isFileOnDisk } from '../disk.js';
 import { mergedKnipConfig } from '../merge-knip-config.js';
 import { run } from '../processes.js';

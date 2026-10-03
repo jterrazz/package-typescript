@@ -2,7 +2,7 @@ import process from 'node:process';
 
 import { run } from './processes.js';
 import type { Stream } from './processes.js';
-import { CHECKER } from './toolchain.js';
+import { checkerProgram } from './toolchain.js';
 
 const TYPELESS_WARNING = '--disable-warning=MODULE_TYPELESS_PACKAGE_JSON';
 
@@ -17,7 +17,7 @@ export async function checker(
 ): Promise<number> {
     return await run(
         process.execPath,
-        [...(typeless ? [TYPELESS_WARNING] : []), CHECKER, pass, ...args],
+        [...(typeless ? [TYPELESS_WARNING] : []), checkerProgram(), pass, ...args],
         { stderr, stdout },
     );
 }

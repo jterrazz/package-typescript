@@ -37,9 +37,9 @@ Open these by topic, usually from the `read:` of a finding.
 
 ## Writing rules for the family
 
-| Chapter                           | Answers                                                                                                   |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| [10 — Rules kit](10-rules-kit.md) | The engine a sibling package writes its rules with: the row, the lesson, the check, the chapter, the debt |
+| Chapter                           | Answers                                                                                                |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| [10 — Rules kit](10-rules-kit.md) | The kit a sibling package writes its rules with: the row, the lesson, the check, the chapter, the debt |
 
 ## Changing the toolchain itself
 

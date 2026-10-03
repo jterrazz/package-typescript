@@ -2,8 +2,8 @@ import { existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
 
-import { refusal } from '../../lint/engine/catalogue/lesson.js';
-import { binaryIn } from '../../lint/engine/project/package-root.js';
+import { refusal } from '../../lint/kit/catalogue/lesson.js';
+import { binaryIn } from '../../lint/kit/project/package-root.js';
 import { handOver, run } from './processes.js';
 import { badge, GREEN, print, RED, RESET } from './terminal.js';
 import { presetAt, projectRoot } from './toolchain.js';

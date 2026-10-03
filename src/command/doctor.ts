@@ -1,10 +1,10 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { refusal } from '../../lint/engine/catalogue/lesson.js';
-import { objectOf, parsedObject } from '../../lint/engine/project/json.js';
-import { toolVersions } from '../../lint/engine/project/tool-versions.js';
-import { workspaceMembers } from '../../lint/engine/project/workspace-members.js';
+import { refusal } from '../../lint/kit/catalogue/lesson.js';
+import { objectOf, parsedObject } from '../../lint/kit/project/json.js';
+import { toolVersions } from '../../lint/kit/project/tool-versions.js';
+import { workspaceMembers } from '../../lint/kit/project/workspace-members.js';
 import { print } from './terminal.js';
 
 type Read = (text: string, name: string) => ReadonlySet<string>;

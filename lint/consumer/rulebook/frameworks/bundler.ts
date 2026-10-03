@@ -1,4 +1,4 @@
-import { fragment } from '../../../engine/compiler/decision.js';
+import { fragment } from '../../../kit/compiler/decision.js';
 import { IMPORT_EXTENSIONS_NEVER } from '../import.js';
 
 // oxlint has no plugin for a bare bundler, so this fragment carries its one decision: no extension on an import.

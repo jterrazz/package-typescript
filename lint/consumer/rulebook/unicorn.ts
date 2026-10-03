@@ -1,4 +1,4 @@
-import { allOn, fragment, off, on, unsafeFix } from '../../engine/compiler/decision.js';
+import { allOn, fragment, off, on, unsafeFix } from '../../kit/compiler/decision.js';
 
 // Two offs are the formatter's: unicorn's fixer and oxfmt disagree about the same bytes (specs/cli/preset).
 export default fragment({

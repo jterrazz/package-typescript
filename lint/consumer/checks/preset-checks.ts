@@ -1,12 +1,12 @@
 import { resolve } from 'node:path';
 
-import { contextOf } from '../../engine/checker/checker.js';
-import { readCommandLine } from '../../engine/checker/command-line.js';
-import type { Context, Finding } from '../../engine/checker/pass.js';
-import { binaryIn, HOISTED_BESIDE_PACKAGE } from '../../engine/project/package-root.js';
-import { resolveConfig } from '../../engine/project/preset.js';
-import type { Preset } from '../../engine/project/preset.js';
-import { workspaceMembers } from '../../engine/project/workspace-members.js';
+import { contextOf } from '../../kit/checker/checker.js';
+import { readCommandLine } from '../../kit/checker/command-line.js';
+import type { Context, Finding } from '../../kit/checker/pass.js';
+import { binaryIn, HOISTED_BESIDE_PACKAGE } from '../../kit/project/package-root.js';
+import { resolveConfig } from '../../kit/project/preset.js';
+import type { Preset } from '../../kit/project/preset.js';
+import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import { architecture } from './architecture.js';
 import { declaredNamesFindings, declaredNamesRules } from './names.declared.js';
 

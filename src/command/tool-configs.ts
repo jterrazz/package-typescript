@@ -1,4 +1,4 @@
-import { OXLINT_CONFIG_NAMES } from '../../lint/engine/project/oxlint-config-names.js';
+import { OXLINT_CONFIG_NAMES } from '../../lint/kit/project/oxlint-config-names.js';
 import { isFileOnDisk } from './disk.js';
 import { presetAt } from './toolchain.js';
 

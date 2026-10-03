@@ -1,8 +1,7 @@
-import { BASE_PRESETS } from './base-presets.js';
-import { BASELINE_SECTION } from './consumer/catalogue/preset.js';
-import { runChecker } from './engine/checker/checker.js';
-import { ENGINE_COMMANDS } from './engine/checker/engine-commands.js';
-import type { Held, Passes } from './engine/checker/pass.js';
+import { BASE_PRESETS, BASELINE_SECTION } from './consumer/catalogue/preset.js';
+import { runChecker } from './kit/checker/checker.js';
+import { KIT_COMMANDS } from './kit/checker/kit-commands.js';
+import type { Held, Passes } from './kit/checker/pass.js';
 
 const PASSES: Passes = Object.freeze({
     async architecture() {
@@ -18,7 +17,7 @@ const PASSES: Passes = Object.freeze({
     async docs() {
         const [{ auditDocs, HEAD_LINES }, { readDocsTree }] = await Promise.all([
             import('./consumer/checks/docs.js'),
-            import('./engine/project/docs-tree.js'),
+            import('./kit/project/docs-tree.js'),
         ]);
 
         return {
@@ -72,7 +71,7 @@ const HELD: Held = Object.freeze({
 
 if (import.meta.main) {
     await runChecker({
-        commands: ENGINE_COMMANDS,
+        commands: KIT_COMMANDS,
         held: HELD,
         passes: PASSES,
         presets: BASE_PRESETS,

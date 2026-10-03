@@ -61,8 +61,22 @@ function binsOf(bin: unknown, name: unknown): Published[] {
     );
 }
 
+function importedOf(imports: unknown): Published[] {
+    return Object.entries(isJsonObject(imports) ? imports : {}).flatMap(([key, value]) => {
+        if (!key.startsWith('#') || key.includes('*')) {
+            return [];
+        }
+        const what = `the private import \`${key}\``;
+
+        return exportedOf(value, `./${key.slice(1)}`, false).map(
+            ({ browser, stem, target }): Published => ({ browser, stem, target, what }),
+        );
+    });
+}
+
 const declaredOf = (manifest: JsonObject): Published[] => [
     ...exportedOf(manifest.exports, '.', false),
+    ...importedOf(manifest.imports),
     ...exportedOf(manifest.main, '.', false),
     ...binsOf(manifest.bin, manifest.name),
 ];

@@ -1,7 +1,7 @@
 import { basename, dirname, join, resolve } from 'node:path';
 
-import type { Context } from '../../engine/checker/pass.js';
-import { OXLINT_CONFIG_NAMES } from '../../engine/project/oxlint-config-names.js';
+import type { Context } from '../../kit/checker/pass.js';
+import { OXLINT_CONFIG_NAMES } from '../../kit/project/oxlint-config-names.js';
 
 export type Project = {
     configName: string | undefined;

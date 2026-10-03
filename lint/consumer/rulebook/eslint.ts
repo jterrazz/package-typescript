@@ -1,4 +1,4 @@
-import { allOn, fragment, off, on, scoped } from '../../engine/compiler/decision.js';
+import { allOn, fragment, off, on, scoped } from '../../kit/compiler/decision.js';
 
 const SIZE_SINCE = '11.0.0';
 const RULE_REVIEW_SINCE = '11.0.0';

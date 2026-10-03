@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
-import { spliceBetween } from '../../engine/catalogue/chapter.js';
+import { spliceBetween } from '../../kit/catalogue/chapter.js';
 import { PROJECTIONS } from './chapter-projections.js';
 
 function tableCells(table: string): string[] {

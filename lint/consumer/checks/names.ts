@@ -1,20 +1,20 @@
 import { join, matchesGlob } from 'node:path';
 
-import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
-import { emptyDirectories } from '../../engine/project/empty-directories.js';
+import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
+import { emptyDirectories } from '../../kit/project/empty-directories.js';
 import {
     isJsonObject,
     objectOf,
     parsedObject,
     stringRecordOf,
     stringsOf,
-} from '../../engine/project/json.js';
-import type { JsonObject } from '../../engine/project/json.js';
-import { SETTINGS_FILE } from '../../engine/project/jterrazz-config.js';
-import { withoutDotSlash } from '../../engine/project/packed-files.js';
-import type { Resolution } from '../../engine/project/preset.js';
-import { isRepositoryRoot } from '../../engine/project/repository-root.js';
-import { workspaceMembers } from '../../engine/project/workspace-members.js';
+} from '../../kit/project/json.js';
+import type { JsonObject } from '../../kit/project/json.js';
+import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
+import { withoutDotSlash } from '../../kit/project/packed-files.js';
+import type { Resolution } from '../../kit/project/preset.js';
+import { isRepositoryRoot } from '../../kit/project/repository-root.js';
+import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import { declaredNamesFindings, declaredNamesRules } from './names.declared.js';
 import { buildMapOf, entryGrammarOf } from './names.entries.js';
 import { namesFinding } from './names.lessons.js';

@@ -2,10 +2,10 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-import { objectOf, parsedObject } from '../../../lint/engine/project/json.js';
-import type { JsonObject } from '../../../lint/engine/project/json.js';
-import { isGitIgnored, PRUNED } from '../../../lint/engine/project/project-files.js';
-import { testPackageVersion } from '../../../lint/engine/project/test-package.js';
+import { objectOf, parsedObject } from '../../../lint/kit/project/json.js';
+import type { JsonObject } from '../../../lint/kit/project/json.js';
+import { isGitIgnored, PRUNED } from '../../../lint/kit/project/project-files.js';
+import { testPackageVersion } from '../../../lint/kit/project/test-package.js';
 import { isFileOnDisk } from '../disk.js';
 
 const DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies'];

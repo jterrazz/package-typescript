@@ -1,6 +1,6 @@
-import type { Finding, Pass } from '../../engine/checker/pass.js';
-import { commentSpansOf, isDirective, SOURCE } from '../../engine/project/comments.js';
-import { readText } from '../../engine/project/project-files.js';
+import type { Finding, Pass } from '../../kit/checker/pass.js';
+import { commentSpansOf, isDirective, SOURCE } from '../../kit/project/comments.js';
+import { readText } from '../../kit/project/project-files.js';
 
 const ENTRY = 'comments/comment-lines-held-by-the-baseline';
 const GENERATED = /@generated\b/u;

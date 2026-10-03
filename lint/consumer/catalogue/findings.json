@@ -93,7 +93,7 @@
     {
         "family": "names",
         "id": "names/index-is-an-entry",
-        "sentence": "A module named index is the entry of a subpath the package publishes, or that entry's test."
+        "sentence": "A module named index is the entry of a subpath the package publishes or of a private import it declares, or that entry's test."
     },
     {
         "family": "names",
@@ -312,13 +312,13 @@
     },
     {
         "family": "tree",
-        "id": "names/lint-root-holds-only-composers",
-        "sentence": "The root of lint/ holds modules alone: its entries, its bins and the compositions src/ reads."
+        "id": "names/lint-root-holds-only-entries",
+        "sentence": "The root of lint/ holds its entries alone, each index[.<name>].ts built as a published subpath or a private import."
     },
     {
         "family": "tree",
         "id": "names/lint-folder-is-known",
-        "sentence": "Every folder of lint/ is one of consumer, self and engine."
+        "sentence": "Every folder of lint/ is one of consumer, self and kit."
     },
     {
         "family": "tree",
@@ -332,8 +332,8 @@
     },
     {
         "family": "tree",
-        "id": "names/engine-folder-is-known",
-        "sentence": "Every folder of lint/engine/ is one of project, baseline, checker, catalogue, compiler and testing, and no file sits at its root."
+        "id": "names/kit-folder-is-known",
+        "sentence": "Every folder of lint/kit/ is one of project, baseline, checker, catalogue, compiler and testing, and no file sits at its root."
     },
     {
         "family": "tree",

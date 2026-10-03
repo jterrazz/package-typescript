@@ -2,7 +2,7 @@ import process from 'node:process';
 import { defineConfig } from 'tsdown';
 import type { UserConfig } from 'tsdown';
 
-import { buildEntriesOf } from '../../../lint/engine/project/entry-points.js';
+import { buildEntriesOf } from '../../../lint/kit/project/entry-points.js';
 
 export type { UserConfig } from 'tsdown';
 

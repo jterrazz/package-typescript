@@ -1,5 +1,5 @@
-import type { Profile } from '../../engine/compiler/compile.js';
-import { GROUND_GLOBS } from '../../engine/project/ground.js';
+import type { Profile } from '../../kit/compiler/compile.js';
+import { GROUND_GLOBS } from '../../kit/project/ground.js';
 import eslint from './eslint.js';
 import astro from './frameworks/astro.js';
 import bundler from './frameworks/bundler.js';

@@ -1,17 +1,17 @@
-import type { Finding } from '../../engine/checker/pass.js';
+import type { Finding } from '../../kit/checker/pass.js';
 import { isTop, LINT_ROOT, TOPS } from './names.lint-tree.js';
 import type { LintTree, Top } from './names.lint-tree.js';
 
 const HOLDS: Readonly<Record<Top, string>> = Object.freeze({
     consumer:
         'the declarations every consumer is held to — the catalogue, the rulebook of upstream decisions, our own rules by family, the checks',
-    engine: 'what runs the declarations and knows none of them — how a project is read, the baseline, the checker, the catalogue rendered, the compiler of a rulebook into a config, the test tooling',
+    kit: 'what runs the declarations and knows none of them — how a project is read, the baseline, the checker, the catalogue rendered, the compiler of a rulebook into a config, the test tooling',
     self: 'the declarations only this repository is held to — its catalogue, its rules by family, its checks, the meta-tests of its corpus',
 });
 
 const FOLDER_RULES: Readonly<Record<Top, string>> = Object.freeze({
     consumer: 'names/consumer-folder-is-known',
-    engine: 'names/engine-folder-is-known',
+    kit: 'names/kit-folder-is-known',
     self: 'names/self-folder-is-known',
 });
 
@@ -29,7 +29,7 @@ function audienceFinding(
 
     return lintFinding(`${prefix}${LINT_ROOT}/${top}/${rest}`, FOLDER_RULES[top], [
         `found: ${found}`,
-        `why: ${top}/ holds ${HOLDS[top]}, so its folders are ${folders.join(', ')}${top === 'self' ? ', beside the modules that compose them with engine/' : ''}`,
+        `why: ${top}/ holds ${HOLDS[top]}, so its folders are ${folders.join(', ')}${top === 'self' ? ', beside the modules that compose them with kit/' : ''}`,
         `fix: move ${rest === '' ? 'the file' : 'its files'} into the folder its nature names — ${folders.map((folder) => `${folder}/`).join(', ')}`,
     ]);
 }
@@ -40,17 +40,17 @@ function lintTreeFinding(
 ): Finding | undefined {
     const [top = '', folder, ...deeper] = path.split('/');
     if (!isDirectory && folder === undefined) {
-        return lintFinding(`${prefix}${LINT_ROOT}/${top}`, 'names/lint-root-holds-only-composers', [
-            `found: \`${prefix}${LINT_ROOT}/${top}\` sits at the root of lint/`,
-            'why: lint/ has one tree in every repository — its root holds the modules that compose consumer/ with engine/: the entries, the bins and what src/ reads, and a folder names the audience of every other file',
-            `fix: move it into the folder its audience names — ${TOPS.join(', ')} — or into docs/ if it explains`,
+        return lintFinding(`${prefix}${LINT_ROOT}/${top}`, 'names/lint-root-holds-only-entries', [
+            `found: \`${prefix}${LINT_ROOT}/${top}\` sits at the root of lint/, and is no entry`,
+            'why: lint/ has one tree in every repository — its root holds the entries alone, each `index[.<name>].ts` built as a subpath the package publishes or a private import, where consumer/ meets kit/, and a folder names the audience of every other file',
+            `fix: move it into the folder its audience names — ${TOPS.join(', ')} — name it \`index.<name>.ts\` and declare it if it is an entry, or move it into docs/ if it explains`,
         ]);
     }
     if (!isTop(top)) {
         return lintFinding(`${prefix}${LINT_ROOT}/${top}/`, 'names/lint-folder-is-known', [
             `found: \`${prefix}${LINT_ROOT}/${top}/\` is not a folder of the lint tree`,
             `why: lint/ has one tree in every repository, split by audience — ${TOPS.join(', ')}`,
-            'fix: move its files where their audience puts them — a declaration every consumer is held to under consumer/, one only this repository is held to under self/, what runs them under engine/',
+            'fix: move its files where their audience puts them — a declaration every consumer is held to under consumer/, one only this repository is held to under self/, what runs them under kit/',
         ]);
     }
     if (folder === undefined || (!isDirectory && deeper.length === 0)) {

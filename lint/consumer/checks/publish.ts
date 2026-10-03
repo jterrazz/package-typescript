@@ -2,12 +2,12 @@ import { dirname, join, matchesGlob, relative } from 'node:path';
 import { cwd } from 'node:process';
 import { stripVTControlCharacters } from 'node:util';
 
-import type { Context, Finding, Pass } from '../../engine/checker/pass.js';
-import { buildOf, builtChunks } from '../../engine/project/built-chunks.js';
-import type { Build, BuiltChunk } from '../../engine/project/built-chunks.js';
-import { parsedObject, stringRecordOf, stringsOf } from '../../engine/project/json.js';
-import { isPacked, withoutDotSlash } from '../../engine/project/packed-files.js';
-import { testMaterialReader } from '../../engine/project/test-material.js';
+import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
+import { buildOf, builtChunks } from '../../kit/project/built-chunks.js';
+import type { Build, BuiltChunk } from '../../kit/project/built-chunks.js';
+import { parsedObject, stringRecordOf, stringsOf } from '../../kit/project/json.js';
+import { isPacked, withoutDotSlash } from '../../kit/project/packed-files.js';
+import { testMaterialReader } from '../../kit/project/test-material.js';
 import { noTestCodeInProductionFindings } from './publish.no-test-code-in-production.js';
 import type { Manifest } from './publish.no-test-code-in-production.js';
 

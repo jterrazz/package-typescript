@@ -41,9 +41,9 @@ describe('entries', () => {
                 fix: rename it \`src/index.config.ts\`, its build entry with it
                 read: docs/07-quality-checks.md#the-entry-grammar
             src/facets/api/index.ts:1:1  names(index-is-an-entry)
-                found: \`src/facets/api/index.ts\` is named \`index\`, and builds nothing the package publishes
-                why: A module named index is the entry of a subpath the package publishes, or that entry's test.
-                fix: name it for what it holds, or publish it: a subpath in \`exports\` built from it
+                found: \`src/facets/api/index.ts\` is named \`index\`, and builds nothing the package publishes or imports
+                why: A module named index is the entry of a subpath the package publishes or of a private import it declares, or that entry's test.
+                fix: name it for what it holds, or build it as an entry: a subpath in \`exports\`, or a private \`#\` import in \`imports\`, built from it
                 read: docs/07-quality-checks.md#the-entry-grammar
             src/tool.ts:1:1  names(entry-follows-its-grammar)
                 found: \`src/tool.ts\` builds the bin \`tool\` (./dist/tool.js), and is not named \`tool.bin.ts\`

@@ -1,16 +1,16 @@
 import { join } from 'node:path';
 
-import type { Finding, Pass } from '../../engine/checker/pass.js';
+import type { Finding, Pass } from '../../kit/checker/pass.js';
 import {
     BIOME,
     commentSpansOf,
     DISABLE,
     SOURCE,
     TS_DIRECTIVE,
-} from '../../engine/project/comments.js';
-import { configAt, resolveConfig } from '../../engine/project/oxlint-config.js';
-import type { Applied, Resolved } from '../../engine/project/oxlint-config.js';
-import { readText } from '../../engine/project/project-files.js';
+} from '../../kit/project/comments.js';
+import { configAt, resolveConfig } from '../../kit/project/oxlint-config.js';
+import type { Applied, Resolved } from '../../kit/project/oxlint-config.js';
+import { readText } from '../../kit/project/project-files.js';
 
 type Found = { message: string; rule: string };
 

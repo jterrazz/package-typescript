@@ -1,4 +1,4 @@
-import { allOn, fragment, off } from '../../engine/compiler/decision.js';
+import { allOn, fragment, off } from '../../kit/compiler/decision.js';
 
 // The estate writes `await`: two rules describing a well-behaved `.then()` chain cannot hold beside `prefer-await-to-then`.
 export default fragment({
