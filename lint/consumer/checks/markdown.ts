@@ -166,7 +166,12 @@ function flatSections(markdown: string): string[] {
     return found;
 }
 
+const DECISION_RECORD = /(?:^|\/)docs\/decisions\/[^/]+\.md$/u;
+
 function missingPaths({ exists, root }: Context, path: string, cited: string): Found[] {
+    if (DECISION_RECORD.test(path)) {
+        return [];
+    }
     const found: Found[] = [];
     for (const match of cited.matchAll(BACKTICK_PATH)) {
         const target = (match.groups?.path ?? '').replace(/\/$/u, '');

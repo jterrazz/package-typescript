@@ -513,13 +513,13 @@ The prose gate reads what no Markdown linter knows: whether a backticked coordin
 
 <!-- GENERATED:findings markdown -->
 
-| Rule                                    | Requirement                                                            |
-| --------------------------------------- | ---------------------------------------------------------------------- |
-| `markdown/path-resolves`                | Every backticked repository path of a page names something on disk.    |
-| `markdown/chapter-reference-resolves`   | Every chapter a skill names is one its package ships.                  |
-| `markdown/prose-block-is-short`         | A paragraph or a list item runs twelve lines at most.                  |
-| `markdown/fenced-run-is-short`          | A fenced block breathes within fifteen lines.                          |
-| `markdown/long-section-has-subheadings` | A section over thirty prose lines is broken by a subheading or a list. |
+| Rule                                    | Requirement                                                                                                                     |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `markdown/path-resolves`                | Every backticked repository path of a page names something on disk, but in a decision record, which names the paths of its day. |
+| `markdown/chapter-reference-resolves`   | Every chapter a skill names is one its package ships.                                                                           |
+| `markdown/prose-block-is-short`         | A paragraph or a list item runs twelve lines at most.                                                                           |
+| `markdown/fenced-run-is-short`          | A fenced block breathes within fifteen lines.                                                                                   |
+| `markdown/long-section-has-subheadings` | A section over thirty prose lines is broken by a subheading or a list.                                                          |
 
 <!-- /GENERATED:findings markdown -->
 

@@ -1,4 +1,4 @@
-description: fails a page whose link, whose anchor and whose backticked path name nothing, each at its position
+description: fails stale links, anchors and paths at their position, and keeps a decision record's paths
 fixture: ./_fixtures/markdown/stale-coordinates/
 runs:
     - command: check
