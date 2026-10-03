@@ -131,22 +131,16 @@ const fromTheToolchain = (subpath: string): EditorFile => ({
     text: `export { default } from '@jterrazz/typescript/${subpath}';\n`,
 });
 
-function editorFilesOf(declaration: Declaration | null): Readonly<Record<string, EditorFile>> {
-    const files: Record<string, EditorFile> = {
-        'oxfmt.config.ts': fromTheToolchain('oxfmt'),
-        'oxlint.config.ts': fromTheToolchain('oxlint'),
-    };
-    if (declaration?.kind !== 'workspace') {
-        files['tsconfig.json'] = {
-            json: {
-                extends: `@jterrazz/typescript/tsconfig/${TSCONFIG_OF[declaration?.platform ?? 'node']}`,
-            },
-            scope: 'unit',
-        };
-    }
-
-    return files;
-}
+const editorFilesOf = (declaration: Declaration | null): Readonly<Record<string, EditorFile>> => ({
+    'oxfmt.config.ts': fromTheToolchain('oxfmt'),
+    'oxlint.config.ts': fromTheToolchain('oxlint'),
+    'tsconfig.json': {
+        json: {
+            extends: `@jterrazz/typescript/tsconfig/${TSCONFIG_OF[declaration?.platform ?? 'node']}`,
+        },
+        scope: 'unit',
+    },
+});
 
 export function typescriptPreset(declaration: Declaration | null): Preset {
     const platformRoots =

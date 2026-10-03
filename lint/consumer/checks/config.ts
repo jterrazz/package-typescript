@@ -150,7 +150,10 @@ function editorFindings(
             }
             continue;
         }
-        if (written !== null && holdsEditorFile(written, expected)) {
+        if (
+            (written !== null && holdsEditorFile(written, expected)) ||
+            (expected.scope === 'unit' && unit.declaration?.kind === 'workspace')
+        ) {
             continue;
         }
         const text = editorFileText(expected);
