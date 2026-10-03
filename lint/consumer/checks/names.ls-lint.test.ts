@@ -1,15 +1,12 @@
 import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import { LINT_TREE } from '../catalogue/preset.js';
 import { ignoredOf, lsLintConfig, lsLintFindings, runLsLint } from './names.ls-lint.js';
 
 const LS_LINT = join(import.meta.dirname, '../../../node_modules/.bin/ls-lint');
-
-const scratchFolders = (): string[] =>
-    readdirSync(tmpdir()).filter((name) => name.startsWith('typescript-ls-lint-'));
 
 function findingsOf(
     swept: readonly string[],
@@ -138,10 +135,12 @@ describe('names.ls-lint', () => {
         const config = lsLintConfig({ ignorePatterns: [], tree: LINT_TREE, units: [''] });
         const refused = onDisk(['src/Api_Client/client.ts']);
         const clean = onDisk(['src/api-client/client.ts']);
-        const before = scratchFolders();
+        const scratch = mkdtempSync(join(tmpdir(), 'names-ls-lint-scratch-'));
+        vi.stubEnv('TMPDIR', scratch);
 
         // When - ls-lint runs over each
         const runs = [runLsLint(LS_LINT, refused, config), runLsLint(LS_LINT, clean, config)];
+        vi.unstubAllEnvs();
 
         // Then - the refused folder is named, the clean tree has nothing, and the scratch folders are gone
         expect(runs).toStrictEqual([
@@ -151,7 +150,7 @@ describe('names.ls-lint', () => {
             },
             { failures: {}, problem: null },
         ]);
-        expect(scratchFolders()).toStrictEqual(before);
+        expect(readdirSync(scratch)).toStrictEqual([]);
     });
 
     test('refuses through ls-lint every place the lint tree, the skills and the named roots close', () => {
