@@ -311,9 +311,7 @@ import { expect, test } from 'vitest';
  */
 
 test('states a claim in a long file', () => {
-    // Given - a value the rulebook has no opinion about
     const answer = 1;
 
-    // Then - the size of the file is the subject here, not the assertion
     expect(answer).toBe(1);
 });

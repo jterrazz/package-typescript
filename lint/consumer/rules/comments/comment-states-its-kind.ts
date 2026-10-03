@@ -33,8 +33,6 @@ const KIND = new RegExp(`^(?:${COMMENT_KINDS.join('|')}): \\S`, 'u');
 const TOOL_INSTRUCTION =
     /^(?:(?:es|ox)lint-(?:disable|enable)|@ts-|biome-ignore|(?:oxfmt|prettier|dprint)-ignore\b|(?:v8|c8|istanbul|node:coverage) ignore\b|@vite-ignore\b|webpack[A-Z]|Stryker (?:disable|restore)\b|[#@]__PURE__|@__NO_SIDE_EFFECTS__|@jsx|@vitest-environment\b|type-coverage:|<reference )/u;
 
-const TEST_MARKER = /^(?:Given|When|Then) - /u;
-
 const GENERATED = /@generated\b/u;
 
 const GENERATED_HEAD_LINES = 5;
@@ -123,7 +121,6 @@ export const commentStatesItsKind = defineRule(
 
             const isStructure = (opening: string): boolean =>
                 TOOL_INSTRUCTION.test(opening) ||
-                TEST_MARKER.test(opening) ||
                 openings.some((declared) => opening.startsWith(declared));
 
             return {

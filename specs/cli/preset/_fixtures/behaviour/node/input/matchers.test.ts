@@ -7,17 +7,13 @@ import { expect, test } from 'vitest';
  */
 
 test('states a boolean strictly', () => {
-    // Given - a boolean
     const ready = Boolean(1);
 
-    // Then - the strict matcher survives the fixer untouched
     expect(ready).toBe(true);
 });
 
 test('states a boolean loosely', () => {
-    // Given - the same boolean
     const ready = Boolean(1);
 
-    // Then - the loose matcher is what the rulebook reports now
     expect(ready).toBeTruthy();
 });

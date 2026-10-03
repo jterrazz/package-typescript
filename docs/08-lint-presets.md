@@ -135,7 +135,7 @@ A comment is kept for exactly one reason: it states what the code cannot. `jterr
 export const NAME_HOLD_HOURS = 72;
 ```
 
-A run of `//` lines states its kind once, on its first line; a `/* … */` block states it at its opening. Four shapes are not prose, and need no kind: a one-line `/** … */` above a declaration, which is the symbol's hover in an editor; a directive another tool reads — `oxlint-disable*`, `@ts-expect-error`, `oxfmt-ignore`, `v8 ignore`, `@vite-ignore`, `Stryker disable`, `@__PURE__`, a triple-slash reference; a test's `// Given -`, `// When -` and `// Then -` markers; and every comment of a file whose first five lines carry `@generated`. A sibling package adds the openings its own tools read through the rule's `openings` option, as `@jterrazz/test` does for its checker's directives.
+A run of `//` lines states its kind once, on its first line; a `/* … */` block states it at its opening. Three shapes are not prose, and need no kind: a one-line `/** … */` above a declaration, which is the symbol's hover in an editor; a directive another tool reads — `oxlint-disable*`, `@ts-expect-error`, `oxfmt-ignore`, `v8 ignore`, `@vite-ignore`, `Stryker disable`, `@__PURE__`, a triple-slash reference; and every comment of a file whose first five lines carry `@generated`. A sibling package adds the openings its own tools read through the rule's `openings` option, as `@jterrazz/test` does for a test's `// Given -`, `// When -` and `// Then -` markers and its checker's directives.
 
 A comment that fits none of these is refused where it opens. The answer is to delete it, or to rename what needed it — and where it does state what the code cannot, to say which.
 
