@@ -33,10 +33,14 @@ beside both.
   `jterrazz.config.ts` of the module's directory — the `url`, since a
   browser platform's types declare no `dirname`, and jiti, which knip
   loads configs with, rewrites `import.meta.url` to the file's own but
-  hands the bare `import.meta` over as its wrapper's; `tsconfig.json`
-  extends the platform's preset, with what `typescript.tsconfig` adds and why; and a project on
-  `@jterrazz/test`'s preset keeps the `vitest.config.ts` it derives. The
-  Config (one file) pass refuses any other content, and `fix` writes them.
+  hands the bare `import.meta` over as its wrapper's. The Config (one
+  file) pass refuses any other content, and `fix` writes them.
+- `tsconfig.json` extends the platform's preset, with what
+  `typescript.tsconfig` adds and why; and a project on `@jterrazz/test`'s
+  preset keeps the `vitest.config.ts` it derives, of the same shape —
+  `export default await vitestConfig(import.meta.url)` from
+  `@jterrazz/test/vitest` — which vitest and knip's loader, jiti's async
+  import, both read.
 - The config files name their directory because nothing else can: a bare
   re-export derived from the directory the tool runs in, so oxlint started
   in `src/` dropped every preset and setting with no error, and Node loads

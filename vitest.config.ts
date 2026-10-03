@@ -1,3 +1,3 @@
-import { vitestConfig } from '@jterrazz/test/vitest/config';
+import { vitestConfig } from '@jterrazz/test/vitest';
 
-export default vitestConfig(import.meta.url);
+export default await vitestConfig(import.meta.url);
