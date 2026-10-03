@@ -3,8 +3,8 @@ import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
-import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // outside: oxlint refuses two plugins by one name in one run, and @jterrazz/test's checks load every config of this
 // repository: the fixture cannot hold the stub preset, so each case writes it.

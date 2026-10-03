@@ -10,8 +10,14 @@ import {
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { DERIVED_CONFIG, diagnosticsOf, oxlint, PROFILES, sandbox } from './_setup/rulebook.js';
-import type { Diagnostic } from './_setup/rulebook.js';
+import {
+    DERIVED_CONFIG,
+    diagnosticsOf,
+    oxlint,
+    PROFILES,
+    sandbox,
+} from '../../_shared/_setup/rulebook.js';
+import type { Diagnostic } from '../../_shared/_setup/rulebook.js';
 
 // invariant: one case per decision this package owns, never per upstream rule. The `_expected/` tree holds only the files
 // `--fix` rewrote, so a reasoned `off` states itself by absence. Regenerate with `TEST_UPDATE=1 npm test`.
@@ -86,15 +92,12 @@ describe('behaviour', () => {
         },
     );
 
-    test('keeps a behaviour or fixpoint ground only for a profile the rulebook ships', () => {
-        // Given - every entry of the behaviour goldens and of the behaviour and fixpoint fixtures
+    test('keeps a behaviour ground only for a profile the rulebook ships', () => {
+        // Given - every entry of the behaviour goldens and fixtures
         const owners = new Set<string>(PROFILES.map(({ name }) => name));
         const entries = [
             ...readdirSync(EXPECTED).map((entry) => `_expected/behaviour/${entry}`),
             ...readdirSync(FIXTURES).map((entry) => `_fixtures/behaviour/${entry}`),
-            ...readdirSync(resolve(import.meta.dirname, '_fixtures/fixpoint')).map(
-                (entry) => `_fixtures/fixpoint/${entry}`,
-            ),
         ];
 
         // Then - each one is named for a shipped profile, and none outlives one

@@ -4,8 +4,8 @@ import { join } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
+import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
-import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // outside: git tracks no directory, so a fixture can carry no empty one.
 

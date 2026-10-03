@@ -5,8 +5,8 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import manifest from '../../../package.json' with { type: 'json' };
+import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { onlyPasses } from '../_setup/check-passes.js';
-import { temporaryDirectory } from '../_setup/temporary-directory.js';
 import { toolchainWith } from '../_setup/toolchain-sandbox.js';
 import { cli } from '../cli.specification.js';
 

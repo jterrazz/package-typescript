@@ -2,20 +2,20 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { printConfig, PROFILES } from './_setup/rulebook.js';
+import { printConfig, PROFILES } from '../../_shared/_setup/rulebook.js';
 
 // invariant: `~ ` marks a rule the base config leaves to an `overrides` block. Names only: options are the manifest's,
 // and a name list survives an upstream option reshuffle. Regenerate with `TEST_UPDATE=1 npm test`.
 
-const EXPECTED = resolve(import.meta.dirname, '_expected');
+const HERE = import.meta.dirname;
 
 const GOLDENS: Record<string, string> = {
-    astro: 'astro.rules.txt',
-    bun: 'bun.rules.txt',
-    expo: 'expo.rules.txt',
-    next: 'next.rules.txt',
-    node: 'node.rules.txt',
-    react: 'react.rules.txt',
+    astro: '_expected/astro.rules.txt',
+    bun: '_expected/bun.rules.txt',
+    expo: '_expected/expo.rules.txt',
+    next: '_expected/next.rules.txt',
+    node: '_expected/node.rules.txt',
+    react: '_expected/react.rules.txt',
 };
 
 const MARKERS: Record<string, string> = { allow: '- ', deny: '', warn: '~ ' };
@@ -76,7 +76,7 @@ describe('resolved-config', () => {
             .toSorted((left, right) => left.localeCompare(right))
             .map((rule) => `${MARKERS[levelOf(rules[rule])] ?? '? '}${rule}`)
             .join('\n')}\n`;
-        const golden = resolve(EXPECTED, GOLDENS[name] ?? '');
+        const golden = resolve(HERE, GOLDENS[name] ?? '');
 
         if (process.env.TEST_UPDATE === '1') {
             writeFileSync(golden, report);

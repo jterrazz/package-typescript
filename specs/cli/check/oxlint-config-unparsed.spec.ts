@@ -3,8 +3,8 @@ import { rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
+import { newDirectory, temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
-import { newDirectory, temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // outside: oxlint loads every `oxlint.config.*` under the project, even one its `ignorePatterns` excludes, so a
 // config that cannot load is built in a temp directory.

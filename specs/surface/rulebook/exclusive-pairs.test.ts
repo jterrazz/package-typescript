@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { PROFILES as PROFILE_TABLE } from '../../../lint/consumer/rulebook/profiles.js';
 import { decisions } from '../../../lint/kit/catalogue/decisions.js';
-import { printConfig, PROFILES } from './_setup/rulebook.js';
+import { printConfig, PROFILES } from '../../_shared/_setup/rulebook.js';
 
 // invariant: two rules demanding opposite shapes cannot both be armed: no edit closes both.
 

@@ -1,7 +1,7 @@
 import { cpSync, mkdirSync, readdirSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-import { temporaryDirectory } from './temporary-directory.js';
+import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
 
 // hazard: a copy, not a link: Node resolves a symlinked script back to the checkout it points at.
 

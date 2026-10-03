@@ -5,8 +5,8 @@ import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
+import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { onlyPasses, TYPESCRIPT_BIN } from '../_setup/check-passes.js';
-import { temporaryDirectory } from '../_setup/temporary-directory.js';
 import { cli } from '../cli.specification.js';
 
 // outside: a config in the folder above a project is never read; `fixture:` spreads into its cwd, so that case is built in a temp directory.

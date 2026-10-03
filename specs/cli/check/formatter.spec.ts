@@ -4,7 +4,7 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { newDirectory, temporaryDirectory } from '../_setup/temporary-directory.js';
+import { newDirectory, temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { cli as oxfmtCli } from '../oxfmt.specification.js';
 
 const BUILT_FROM = resolve(import.meta.dirname, '../../..');

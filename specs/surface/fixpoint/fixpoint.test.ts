@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { diagnosticsOf, oxfmt, oxlint, PROFILES, sandbox } from './_setup/rulebook.js';
+import { diagnosticsOf, oxfmt, oxlint, PROFILES, sandbox } from '../../_shared/_setup/rulebook.js';
 
 // invariant: two rounds of `oxlint --fix` then `oxfmt` must land on the same bytes over shapes the two tools both rewrite.
 
@@ -43,4 +43,12 @@ describe('fixpoint', () => {
             expect(report.status).toBe(0);
         },
     );
+
+    test('keeps a fixpoint ground only for a profile the rulebook ships', () => {
+        // Given - every profile folder of the fixpoint fixtures
+        const owners = new Set<string>(PROFILES.map(({ name }) => name));
+
+        // Then - each one is named for a shipped profile, and none outlives one
+        expect(readdirSync(FIXTURES).filter((entry) => !owners.has(entry))).toStrictEqual([]);
+    });
 });

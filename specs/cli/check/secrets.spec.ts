@@ -11,8 +11,8 @@ import {
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
+import { newDirectory, temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
-import { newDirectory, temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // outside: which scanner answers depends on the machine's PATH, so the chain names it by handing over a PATH.
 

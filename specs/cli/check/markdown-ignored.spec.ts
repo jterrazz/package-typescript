@@ -3,8 +3,8 @@ import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
+import { newDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
-import { newDirectory } from '../_setup/temporary-directory.js';
 
 // outside: a coordinate git ignores needs a real repository, and a fixture cannot be one.
 

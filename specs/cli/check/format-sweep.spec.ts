@@ -3,8 +3,8 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { onlyPasses, passOf, SELECTING_BIN } from '../_setup/check-passes.js';
-import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // outside: the runner copies files rather than initialising a repository, so a fixture cannot say what git ignores.
 

@@ -3,8 +3,8 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { onlyPasses, passOf, SELECTING_BIN } from '../_setup/check-passes.js';
-import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
 // invariant: the stubs fail unless a case asks otherwise: a passing pass prints nothing, which would leave the claim unmade.
 

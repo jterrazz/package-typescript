@@ -10,14 +10,14 @@ import {
 } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { isRecord, parsedJson } from '../../_setup/parsed-json.js';
-import { newDirectory } from '../../_setup/temporary-directory.js';
+import { isRecord, parsedJson } from './parsed-json.js';
+import { newDirectory } from './temporary-directory.js';
 
 // hazard: on oxlint 1.83, `--type-aware` walks up for `node_modules/.bin/tsgolint`, or every type-aware rule
 // silently skips; and a symlinked `node_modules` under `oxlint --fix .` rewrites the real dependency tree —
 // so the sandbox links two entries and every run names its files.
 
-const REPOSITORY = resolve(import.meta.dirname, '../../../..');
+const REPOSITORY = resolve(import.meta.dirname, '../../..');
 const OXLINT = resolve(REPOSITORY, 'node_modules/.bin/oxlint');
 const OXFMT = resolve(REPOSITORY, 'node_modules/.bin/oxfmt');
 

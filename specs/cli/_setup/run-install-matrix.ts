@@ -19,7 +19,7 @@ const REPOSITORY = resolve(import.meta.dirname, '../../..');
 const PACKED = process.env.PACKED_PACKAGE ?? '';
 
 const CONSUMERS = join(REPOSITORY, 'specs/cli/preset/_fixtures/install-matrix');
-const ASTRO_PACKAGE = join(REPOSITORY, 'specs/cli/preset/_fixtures/astro-package');
+const ASTRO_PACKAGE = join(REPOSITORY, 'specs/_shared/_fixtures/astro-package');
 
 const root = mkdtempSync(join(tmpdir(), 'install-matrix-'));
 

@@ -3,9 +3,9 @@ import { cpSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { isRecord, parsedJson } from '../_setup/parsed-json.js';
-import { temporaryDirectory } from '../_setup/temporary-directory.js';
-import { installTsconfigPresets } from './_setup/rulebook.js';
+import { isRecord, parsedJson } from '../../_shared/_setup/parsed-json.js';
+import { installTsconfigPresets } from '../../_shared/_setup/rulebook.js';
+import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
 
 // outside: relative globs in an extended config resolve against the preset file: `${configDir}` is the only form
 // that means the extending project.
@@ -28,7 +28,7 @@ type ResolvedConfig = {
 function consumer(ground: string, preset: string): string {
     const created = temporaryDirectory(`spec-tsconfig-${preset}-`);
     const dir = realpathSync(created);
-    cpSync(resolve(import.meta.dirname, '_fixtures', ground), dir, { recursive: true });
+    cpSync(resolve(import.meta.dirname, ground), dir, { recursive: true });
     installTsconfigPresets(dir);
     symlinkSync(resolve(ROOT, 'node_modules/@types'), join(dir, 'node_modules/@types'), 'dir');
     writeFileSync(
@@ -62,7 +62,7 @@ function resolvedConfig(dir: string): ResolvedConfig {
 
 const PRESETS = ['node', 'next', 'astro', 'expo', 'react'] as const;
 
-const FIXTURES = PRESETS.map((preset) => [preset, `tsconfig-${preset}`] as const);
+const FIXTURES = PRESETS.map((preset) => [preset, `./_fixtures/tsconfig-${preset}`] as const);
 
 describe('tsconfig', () => {
     test.each(FIXTURES)(
@@ -101,7 +101,7 @@ describe('tsconfig', () => {
         'the %s preset leaves the ground a test stands on out of the compiled file set, wherever it sits',
         (preset) => {
             // Given - a consumer whose specs/ holds each of the four ground folders beside a `_setup/` module, and whose src/ holds a module test's _fixtures/
-            const dir = consumer('tsconfig-ground', preset);
+            const dir = consumer('./_fixtures/tsconfig-ground', preset);
 
             // When - tsc lists the files the preset compiles
             const listed = execFileSync(TSC, ['--listFilesOnly'], { cwd: dir, encoding: 'utf8' })
@@ -121,7 +121,7 @@ describe('tsconfig', () => {
     test('the astro preset extends Astro strict, and its own ground and JSX runtime win', () => {
         // Given - an Astro consumer that writes the one extends the chapter documents
         const { compilerOptions, dir, exclude } = resolvedConfig(
-            consumer('tsconfig-astro', 'astro'),
+            consumer('./_fixtures/tsconfig-astro', 'astro'),
         );
 
         // Then - Astro's settings arrive underneath, and ours are the ones that hold

@@ -1,8 +1,8 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
+import { profilePath } from '../../_shared/_setup/rulebook.js';
 import { cli as oxlintCli } from '../oxlint.specification.js';
-import { profilePath } from './_setup/rulebook.js';
 
 // invariant: a profile never auto-detects another @jterrazz package: the `test()` preset's rules exist only where it is listed.
 

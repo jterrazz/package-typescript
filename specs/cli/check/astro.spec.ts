@@ -4,8 +4,8 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { afterAll, describe, expect, test } from 'vitest';
 
+import { newDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { onlyPasses, TYPESCRIPT_BIN } from '../_setup/check-passes.js';
-import { newDirectory } from '../_setup/temporary-directory.js';
 
 // outside: the Astro pass runs the consumer's `astro check`, so the project carries a binary where npm would put one.
 

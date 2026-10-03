@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { diagnosticsOf, oxlint, sandbox } from './_setup/rulebook.js';
+import { diagnosticsOf, oxlint, sandbox } from '../../_shared/_setup/rulebook.js';
 
 const FIXTURE = new URL('_fixtures/augmentation/', import.meta.url).pathname;
 

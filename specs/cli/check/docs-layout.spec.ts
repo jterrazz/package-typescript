@@ -3,8 +3,8 @@ import { cpSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
+import { newDirectory } from '../../_shared/_setup/temporary-directory.js';
 import { SELECTING_BIN } from '../_setup/check-passes.js';
-import { newDirectory } from '../_setup/temporary-directory.js';
 
 // outside: git refuses to track a nested `.git`, so a fixture cannot be the repository the pass asks for.
 
