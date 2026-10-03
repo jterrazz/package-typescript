@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { describe, expect, test } from 'vitest';
 
-import { TYPESCRIPT_BIN } from '../_setup/check-passes.js';
+import { onlyPasses, TYPESCRIPT_BIN } from '../_setup/check-passes.js';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 import { cli } from '../cli.specification.js';
 
@@ -45,6 +45,7 @@ describe('default-config', () => {
         // Given - a project whose root config arms `eqeqeq` alone, and a nested config turning it off in src/legacy/
         // When - the quality checks run
         const result = await cli
+            .with({ env: onlyPasses('oxlint') })
             .fixture(directory('./_fixtures/default-config/own-nested/'))
             .exec('check');
 
