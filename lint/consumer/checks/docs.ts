@@ -1,6 +1,10 @@
 // invariant: the single executable copy of the rule ids and of each sentence they print; pages name ids, never
 // messages. Nothing here reads the filesystem, so a clone nobody installed into is judged the same.
 import type { DocsTree } from '../../kit/project/docs-tree.js';
+import { auditChapters } from './docs.chapters.js';
+import type { Chapter } from './docs.chapters.js';
+import { auditDecisions } from './docs.decisions.js';
+import type { Report } from './docs.decisions.js';
 
 export type { DocsTree } from '../../kit/project/docs-tree.js';
 
@@ -11,75 +15,18 @@ export type DocsViolation = {
     readonly rule: string;
 };
 
-type Report = (rule: string, path: string, message: string) => void;
-
-type Chapter = { name: string; number: number; path: string };
-
-type Entry = { name: string; path: string };
-
 /** How many opening lines of a file a rule may read. */
 export const HEAD_LINES = 20;
-
-const SPINE = ['01-architecture.md', '02-developing.md', '03-testing.md', '04-operating.md'];
-
-// invariant: 04 is required only by the presence test.
-const REQUIRED_SPINE = SPINE.slice(0, 3);
 
 const SUBFOLDERS: ReadonlySet<string> = new Set(['_assets/', 'decisions/']);
 
 // invariant: a generated API reference is a second copy of the types an editor resolves: refused by name.
 const GENERATED_REFERENCE = 'reference/';
 
-// invariant: a chapter names a subject, never the state of a piece of work.
-const JOURNAL_WORDS: ReadonlySet<string> = new Set([
-    'draft',
-    'exploration',
-    'legacy',
-    'misc',
-    'notes',
-    'old',
-    'proposal',
-    'review',
-    'todo',
-    'wip',
-]);
-
-const STATUSES: ReadonlySet<string> = new Set(['Proposed', 'Accepted', 'Deprecated']);
-
-const SUPERSEDED = /^Superseded by \[ADR-\d{3}\]\([^)]+\)$/u;
-
-const BARE_SUPERSEDED = /^Superseded by ADR-\d{3}$/u;
-
-const CHAPTER_NAME = /^\d{2}-[a-z\d]+(?:-[a-z\d]+)*\.md$/u;
-
-const DECISION_NAME = /^\d{3}-[a-z\d]+(?:-[a-z\d]+)*\.md$/u;
-
-const DECISION_HEADING = /^# ADR-(?<number>\d{3}): \S/u;
-
-const DECISION_STATUS = /^\*\*Status:\*\*\s*(?<status>.+?)\s*$/u;
-
 const SCHEME = /^[a-z][\d+.a-z-]*:/iu;
-
-const SHIPPING_REASONS: readonly (readonly [keyof DocsTree['ships'], string])[] = [
-    ['dockerfile', 'an image (a Dockerfile)'],
-    ['infrastructure', 'a deployment (.infrastructure/)'],
-    ['publishable', 'a published package (it declares a library or a cli)'],
-];
 
 function directChildren(files: readonly string[]): string[] {
     return files.filter((path) => /^docs\/[^/]+\/?$/u.test(path));
-}
-
-function filesUnder(files: readonly string[], folder: string): Entry[] {
-    const prefix = `docs/${folder}`;
-
-    return files
-        .filter((path) => path.startsWith(prefix) && !path.endsWith('/'))
-        .map((path) => ({ name: path.slice(prefix.length), path }));
-}
-
-function twoDigit(value: number): string {
-    return String(value).padStart(2, '0');
 }
 
 function targetPath(link: string): string {
@@ -163,123 +110,6 @@ function auditMap(
     }
 }
 
-function auditOperating(
-    report: Report,
-    { chapters, ships }: { chapters: readonly Chapter[]; ships: DocsTree['ships'] | undefined },
-): void {
-    const operating = SPINE[3];
-    const reason = SHIPPING_REASONS.find(([fact]) => ships?.[fact] === true)?.[1];
-    if (reason !== undefined && !chapters.some((chapter) => chapter.name === operating)) {
-        report(
-            'docs/operating-chapter-present-when-shipping',
-            `docs/${operating ?? ''}`,
-            `${operating ?? ''} is missing — this repository ships ${reason}`,
-        );
-    }
-}
-
-function auditChapters(
-    report: Report,
-    { chapters, ships }: { chapters: readonly Chapter[]; ships: DocsTree['ships'] | undefined },
-): void {
-    for (const chapter of chapters) {
-        if (!CHAPTER_NAME.test(chapter.name)) {
-            report(
-                'docs/chapter-named-by-number-and-subject',
-                chapter.path,
-                `${chapter.path} is not NN-kebab.md — two digits, lowercase words, single hyphens`,
-            );
-        }
-    }
-
-    auditChapterNumbering(report, chapters);
-
-    for (const chapter of chapters) {
-        const reserved = SPINE[chapter.number - 1];
-        if (reserved !== undefined && chapter.name !== reserved) {
-            report(
-                'docs/spine-number-reserved',
-                chapter.path,
-                `${chapter.path} takes number ${twoDigit(chapter.number)}, which is reserved for ${reserved}`,
-            );
-        }
-    }
-
-    for (const name of REQUIRED_SPINE) {
-        if (!chapters.some((chapter) => chapter.name === name)) {
-            report(
-                'docs/spine-chapters-present',
-                `docs/${name}`,
-                `${name} is missing — the spine is architecture, developing, testing`,
-            );
-        }
-    }
-
-    auditOperating(report, { chapters, ships });
-    auditChapterWords(report, chapters);
-}
-
-function auditChapterNumbering(report: Report, chapters: readonly Chapter[]): void {
-    const numbers = chapters.map((chapter) => chapter.number).toSorted((a, b) => a - b);
-    const hasOperating = numbers.includes(4);
-    // invariant: 04 is never required by the spine, so a run missing it is contiguous with every later number shifted down.
-    const expected = (index: number): number =>
-        !hasOperating && index + 1 >= 4 ? index + 2 : index + 1;
-    const contiguous = numbers.every((number, index) => number === expected(index));
-    if (numbers.length === 0 || contiguous) {
-        return;
-    }
-
-    report(
-        'docs/chapters-numbered-contiguously',
-        'docs/',
-        `chapter numbers run ${numbers.map((number) => twoDigit(number)).join(', ')}: they are contiguous from 01, one file per number, except that 04 may be absent`,
-    );
-}
-
-function auditChapterWords(report: Report, chapters: readonly Chapter[]): void {
-    for (const chapter of chapters) {
-        const word = chapter.name.split(/[.-]/u).find((segment) => JOURNAL_WORDS.has(segment));
-        if (word !== undefined) {
-            report(
-                'docs/chapter-names-a-subject',
-                chapter.path,
-                `${chapter.path} names a journal, not a subject — ${word}; the record is an ADR, the history is git's`,
-            );
-        }
-    }
-}
-
-function auditDecisionNumbers(report: Report, records: readonly Entry[]): void {
-    const numbers = [...new Set(records.map((record) => record.name.slice(0, 3)))].toSorted(
-        (left, right) => left.localeCompare(right),
-    );
-    const sequential = numbers.every((number, index) => Number.parseInt(number, 10) === index + 1);
-    if (numbers.length > 0 && !sequential) {
-        report(
-            'docs/decisions-numbered-contiguously',
-            'docs/decisions/',
-            `docs/decisions/ numbers run ${numbers.join(', ')}: they run from 001 with no gap — a decision that moved folders takes the next number where it lands`,
-        );
-    }
-
-    const claimed = new Map<string, string>();
-    for (const record of records) {
-        const number = record.name.slice(0, 3);
-        const first = claimed.get(number);
-
-        if (first === undefined) {
-            claimed.set(number, record.name);
-        } else {
-            report(
-                'docs/decision-number-unique',
-                'docs/decisions/',
-                `ADR-${number} is claimed by ${first} and ${record.name}`,
-            );
-        }
-    }
-}
-
 function auditFolder(report: Report, { children }: { children: readonly string[] }): void {
     for (const path of children) {
         const name = path.slice('docs/'.length);
@@ -305,76 +135,6 @@ function auditFolder(report: Report, { children }: { children: readonly string[]
                 `${path} is neither the map nor a chapter — number it, or move it under _assets/`,
             );
         }
-    }
-}
-
-function auditRecord(report: Report, record: Entry, heads: DocsTree['heads']): void {
-    const number = record.name.slice(0, 3);
-    const head = heads[record.path] ?? [];
-    const opening = head[0] ?? '';
-
-    if (DECISION_HEADING.exec(opening)?.groups?.number !== number) {
-        report(
-            'docs/decision-heading-carries-its-number',
-            record.path,
-            `${record.path} opens on ${opening === '' ? 'an empty line' : opening}: the mold is "# ADR-${number}: Title"`,
-        );
-    }
-
-    const status = head
-        .map((line) => DECISION_STATUS.exec(line)?.groups?.status)
-        .find((found) => found !== undefined && found !== '');
-    if (status === undefined || !(STATUSES.has(status) || SUPERSEDED.test(status))) {
-        const message =
-            status !== undefined && BARE_SUPERSEDED.test(status)
-                ? `${record.path}: **Status:** names a successor but no link — write Superseded by [ADR-NNN](file.md)`
-                : `${record.path}: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated`;
-        report('docs/decision-status-known', record.path, message);
-    }
-}
-
-function auditDecisions(
-    report: Report,
-    { files, heads }: { files: readonly string[]; heads: DocsTree['heads'] },
-): void {
-    if (!files.includes('docs/decisions/')) {
-        return;
-    }
-
-    const entries = filesUnder(files, 'decisions/');
-
-    for (const entry of entries) {
-        const mold = entry.name === '_template.md' || entry.name === 'README.md';
-        if (!mold && !DECISION_NAME.test(entry.name)) {
-            report(
-                'docs/decision-named-by-number-and-subject',
-                entry.path,
-                `${entry.path} is not NNN-kebab.md`,
-            );
-        }
-    }
-
-    const records = entries.filter((entry) => /^\d{3}-/u.test(entry.name));
-    for (const record of records) {
-        auditRecord(report, record, heads);
-    }
-
-    auditDecisionNumbers(report, records);
-
-    if (files.includes('docs/decisions/README.md')) {
-        report(
-            'docs/decision-listed-in-the-map',
-            'docs/decisions/README.md',
-            'docs/decisions/README.md is an index — an index is a copy; the queue is derived (terra <brand> decisions)',
-        );
-    }
-
-    if (!files.includes('docs/decisions/_template.md')) {
-        report(
-            'docs/decision-template-present',
-            'docs/decisions/_template.md',
-            'docs/decisions/_template.md is missing — the mold sits where the record is written',
-        );
     }
 }
 

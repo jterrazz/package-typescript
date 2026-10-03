@@ -1,11 +1,11 @@
 import { dirname, join, relative, resolve } from 'node:path';
 
 import type { Context, Pass } from '../../kit/checker/pass.js';
-import { parsedObject } from '../../kit/project/json.js';
-import { trackedFiles } from '../../kit/project/project-files.js';
-import { isRepositoryRoot } from '../../kit/project/repository-root.js';
-
-type Disk = Pick<Context, 'exists' | 'read'>;
+import { committedLines, trackedArtefacts } from './gitignore.tracked.js';
+import { MISPLACED, misplacedTurboCache, turboJudged } from './gitignore.turbo.js';
+import type { Judged } from './gitignore.turbo.js';
+import { findWorkspaceRoot, nextConfigDeclaresExport } from './gitignore.workspace.js';
+import type { Disk } from './gitignore.workspace.js';
 
 type Line = { home: null | string; isNegation: boolean; pattern: string; text: string };
 
@@ -18,8 +18,6 @@ type Source = {
     own: boolean;
     path: string;
 };
-
-type Judged = { lines: string[]; writes: { path: string; text: string }[] };
 
 const ARTIFACTS = '.artifacts';
 
@@ -63,74 +61,6 @@ const EXCEPTIONS: ReadonlySet<string> = new Set([
 
 // outside: Expo stamps a suffix onto it.
 const EXCEPTION_PREFIXES = ['.metro-health-check'];
-
-const NEXT_CONFIG_FILES = [
-    'next.config.js',
-    'next.config.mjs',
-    'next.config.ts',
-    'next.config.mts',
-    'next.config.cjs',
-    'next.config.cts',
-];
-
-// outside: with `output: 'export'`, Next keeps its working directory at `.next` whatever `distDir` says
-// (`next/dist/export/utils.js`, `hasCustomExportOutput`). Read as text: a config may not load here.
-// An unreadable config answers as a missing one does.
-function nextConfigDeclaresExport(disk: Disk, dir: string): boolean {
-    return NEXT_CONFIG_FILES.some((name) =>
-        /output\s*:\s*['"]export['"]/u.test(disk.read(join(dir, name)) ?? ''),
-    );
-}
-
-const WORKSPACE_LOCKFILES = [
-    'bun.lock',
-    'bun.lockb',
-    'npm-shrinkwrap.json',
-    'package-lock.json',
-    'pnpm-lock.yaml',
-    'yarn.lock',
-];
-
-function isWorkspaceRoot(disk: Disk, dir: string): boolean {
-    if (WORKSPACE_LOCKFILES.some((name) => disk.exists(join(dir, name)))) {
-        return true;
-    }
-
-    const manifest = disk.read(join(dir, 'package.json'));
-    if (manifest === null) {
-        return false;
-    }
-
-    try {
-        return parsedObject(manifest).workspaces !== undefined;
-    } catch {
-        return false;
-    }
-}
-
-// invariant: never passes the nearest repository boundary, so a `root` with its own `.git` has no ancestor.
-function findWorkspaceRoot(disk: Disk, root: string): null | string {
-    const start = resolve(root);
-    if (isRepositoryRoot(start)) {
-        return null;
-    }
-
-    let dir = dirname(start);
-    let parent = dirname(dir);
-
-    while (dir !== parent) {
-        if (isWorkspaceRoot(disk, dir)) {
-            return dir;
-        }
-        if (isRepositoryRoot(dir)) {
-            return null;
-        }
-        dir = parent;
-        parent = dirname(dir);
-    }
-
-    return isWorkspaceRoot(disk, dir) ? dir : null;
-}
 
 // outside: git's own reading: an anchored pattern in an ancestor's file never reaches a nested package.
 function isAnchored(pattern: string): boolean {
@@ -226,92 +156,6 @@ function readSource(
         path,
     };
 }
-
-// hazard: narrower than ARTEFACT_DIRECTORIES: a tracked file under `bin/` or `build/` may be source.
-const TRACKED_ARTEFACT_DIRECTORIES: ReadonlySet<string> = new Set([
-    '.artifacts',
-    '.cache',
-    '.next',
-    '.turbo',
-    '.vite',
-    'coverage',
-    'playwright-report',
-    'test-results',
-]);
-
-const TRACKED_ARTEFACT_EXTENSION = '.tsbuildinfo';
-
-function trackedArtefacts(root: string): string[] {
-    return trackedFiles(root).filter((path) => {
-        const segments = path.split('/');
-
-        return (
-            segments.slice(0, -1).some((segment) => TRACKED_ARTEFACT_DIRECTORIES.has(segment)) ||
-            path.endsWith(TRACKED_ARTEFACT_EXTENSION)
-        );
-    });
-}
-
-const TURBO_CACHE = '.artifacts/turbo';
-
-type TurboCache = { found: string; path: string; text: string };
-
-function misplacedTurboCache(context: Context): null | TurboCache {
-    const path = join(context.root, 'turbo.json');
-    const written = context.read(path);
-    if (written === null) {
-        return null;
-    }
-    let config: Readonly<Record<string, unknown>>;
-    try {
-        config = parsedObject(written);
-    } catch {
-        return null;
-    }
-    const { cacheDir } = config;
-    if (
-        typeof cacheDir === 'string' &&
-        cacheDir.replace(/^\.\//u, '').replace(/\/$/u, '') === TURBO_CACHE
-    ) {
-        return null;
-    }
-
-    return {
-        found: typeof cacheDir === 'string' ? cacheDir : '.turbo/cache, its default',
-        path,
-        text: `${JSON.stringify({ ...config, cacheDir: TURBO_CACHE }, null, 4)}\n`,
-    };
-}
-
-const MISPLACED = 'Artefacts belong under .artifacts/<tool>/ at the project root:';
-
-function turboJudged(turbo: null | TurboCache, fix: boolean, headed: boolean): Judged {
-    if (turbo === null) {
-        return { lines: [], writes: [] };
-    }
-
-    return fix
-        ? {
-              lines: [`turbo.json rewritten: cacheDir ${TURBO_CACHE}`],
-              writes: [{ path: turbo.path, text: turbo.text }],
-          }
-        : {
-              lines: [
-                  ...(headed ? [] : [MISPLACED]),
-                  `  ✗ turbo.json caches in ${turbo.found} — its home is ${TURBO_CACHE}/, set as its cacheDir`,
-                  "Run 'typescript fix' to set it.",
-              ],
-              writes: [],
-          };
-}
-
-const committedLines = (tracked: readonly string[]): string[] =>
-    tracked.length === 0
-        ? []
-        : [
-              'Artefacts must never be committed:',
-              ...tracked.map((path) => `  ✗ ${path} is tracked — git rm --cached ${path}`),
-          ];
 
 function rewrite(lines: readonly Line[]): string {
     const kept = lines.filter((line) => line.home === null);

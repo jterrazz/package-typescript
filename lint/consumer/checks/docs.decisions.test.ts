@@ -1,0 +1,219 @@
+import { describe, expect, test } from 'vitest';
+
+import { manual, messageOf, rulesBrokenBy, withDecisions } from './docs.fixtures.js';
+
+describe('auditDecisions', () => {
+    test('passes a well-formed decisions folder', () => {
+        // Given - one record on the mold, beside the mold itself
+        // Then - nothing to say
+        expect(rulesBrokenBy(withDecisions())).toStrictEqual([]);
+    });
+
+    test('names a decision file that is not NNN-kebab.md', () => {
+        // Given - a record named without its number
+        const tree = withDecisions({
+            files: [...withDecisions().files, 'docs/decisions/the-second-call.md'],
+        });
+
+        // Then - the mold of the name is stated
+        expect(messageOf(tree, 'docs/decision-named-by-number-and-subject')).toBe(
+            'docs/decisions/the-second-call.md is not NNN-kebab.md',
+        );
+    });
+
+    test('names a decision opening on the wrong heading', () => {
+        // Given - a record whose title forgets the ADR number
+        const tree = withDecisions({
+            heads: {
+                'docs/decisions/001-the-first-call.md': [
+                    '# The first call',
+                    '',
+                    '**Status:** Accepted',
+                ],
+            },
+        });
+
+        // Then - the line it opens on, and the mold it owes
+        expect(messageOf(tree, 'docs/decision-heading-carries-its-number')).toBe(
+            'docs/decisions/001-the-first-call.md opens on # The first call: the mold is "# ADR-001: Title"',
+        );
+    });
+
+    test('names a decision whose heading claims another number', () => {
+        // Given - a record numbered 001 titled ADR-002
+        const tree = withDecisions({
+            heads: {
+                'docs/decisions/001-the-first-call.md': [
+                    '# ADR-002: The first call',
+                    '',
+                    '**Status:** Accepted',
+                ],
+            },
+        });
+
+        // Then - the same rule catches the disagreement
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-heading-carries-its-number']);
+    });
+
+    test('names a decision outside the status vocabulary', () => {
+        // Given - a record declaring a status nobody defined
+        const tree = withDecisions({
+            heads: {
+                'docs/decisions/001-the-first-call.md': [
+                    '# ADR-001: The first call',
+                    '',
+                    '**Status:** Draft',
+                ],
+            },
+        });
+
+        // Then - the four the vocabulary holds
+        expect(messageOf(tree, 'docs/decision-status-known')).toBe(
+            'docs/decisions/001-the-first-call.md: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated',
+        );
+    });
+
+    test('accepts a superseded status that links the record replacing it', () => {
+        // Given - the one status carrying an argument, written as a citation
+        const tree = withDecisions({
+            heads: {
+                'docs/decisions/001-the-first-call.md': [
+                    '# ADR-001: The first call',
+                    '',
+                    '**Status:** Superseded by [ADR-014](014-the-later-call.md)',
+                ],
+            },
+        });
+
+        // Then - nothing to say
+        expect(rulesBrokenBy(tree)).toStrictEqual([]);
+    });
+
+    test('refuses a superseded status with no link naming the successor', () => {
+        // Given - the bare form: a successor is named, but not as a place to look
+        const tree = withDecisions({
+            heads: {
+                'docs/decisions/001-the-first-call.md': [
+                    '# ADR-001: The first call',
+                    '',
+                    '**Status:** Superseded by ADR-014',
+                ],
+            },
+        });
+
+        // Then - the missing link is the whole complaint
+        expect(messageOf(tree, 'docs/decision-status-known')).toBe(
+            'docs/decisions/001-the-first-call.md: **Status:** names a successor but no link — write Superseded by [ADR-NNN](file.md)',
+        );
+    });
+
+    test('passes an empty decisions folder', () => {
+        // Given - the folder exists but holds no record yet
+        const tree = manual({ files: [...manual().files, 'docs/decisions/'] });
+
+        // Then - a folder with nothing to number has no sequence to break
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-template-present']);
+    });
+
+    test('passes a decisions folder holding only the template', () => {
+        // Given - the mold, and not a single record beside it
+        const tree = manual({
+            files: [...manual().files, 'docs/decisions/', 'docs/decisions/_template.md'],
+        });
+
+        // Then - nothing to say
+        expect(rulesBrokenBy(tree)).toStrictEqual([]);
+    });
+
+    test('refuses a decision sequence that starts above 001', () => {
+        // Given - 006 and 008, with nothing numbered before them
+        const tree = withDecisions({
+            files: [
+                ...manual().files,
+                'docs/decisions/',
+                'docs/decisions/006-the-sixth-call.md',
+                'docs/decisions/008-the-eighth-call.md',
+                'docs/decisions/_template.md',
+            ],
+            heads: {
+                'docs/decisions/006-the-sixth-call.md': [
+                    '# ADR-006: The sixth call',
+                    '',
+                    '**Status:** Accepted',
+                ],
+                'docs/decisions/008-the-eighth-call.md': [
+                    '# ADR-008: The eighth call',
+                    '',
+                    '**Status:** Accepted',
+                ],
+            },
+        });
+
+        // Then - the same rule, from an offset start
+        expect(messageOf(tree, 'docs/decisions-numbered-contiguously')).toBe(
+            'docs/decisions/ numbers run 006, 008: they run from 001 with no gap — a decision that moved folders takes the next number where it lands',
+        );
+    });
+
+    test('lets a duplicated number pass the sequence check on its own', () => {
+        // Given - two records claiming 001, and none other — the set is just {001}
+        const tree = withDecisions({
+            files: [...withDecisions().files, 'docs/decisions/001-the-same-call.md'],
+            heads: {
+                ...withDecisions().heads,
+                'docs/decisions/001-the-same-call.md': [
+                    '# ADR-001: The same call',
+                    '',
+                    '**Status:** Proposed',
+                ],
+            },
+        });
+
+        // Then - docs/decision-number-unique still refuses it; the sequence itself is not the gap
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-number-unique']);
+    });
+
+    test('names a number two records claim', () => {
+        // Given - two records numbered 001
+        const tree = withDecisions({
+            files: [...withDecisions().files, 'docs/decisions/001-the-same-call.md'],
+            heads: {
+                ...withDecisions().heads,
+                'docs/decisions/001-the-same-call.md': [
+                    '# ADR-001: The same call',
+                    '',
+                    '**Status:** Proposed',
+                ],
+            },
+        });
+
+        // Then - both claimants are named
+        expect(messageOf(tree, 'docs/decision-number-unique')).toBe(
+            'ADR-001 is claimed by 001-the-first-call.md and 001-the-same-call.md',
+        );
+    });
+
+    test('names a hand-written decisions index', () => {
+        // Given - a README.md listing the records
+        const tree = withDecisions({
+            files: [...withDecisions().files, 'docs/decisions/README.md'],
+        });
+
+        // Then - an index is a copy, and the queue is derived
+        expect(messageOf(tree, 'docs/decision-listed-in-the-map')).toBe(
+            'docs/decisions/README.md is an index — an index is a copy; the queue is derived (terra <brand> decisions)',
+        );
+    });
+
+    test('names a decisions folder with no mold', () => {
+        // Given - records with no _template.md beside them
+        const tree = withDecisions({
+            files: withDecisions().files.filter((path) => path !== 'docs/decisions/_template.md'),
+        });
+
+        // Then - the mold sits where the record is written
+        expect(messageOf(tree, 'docs/decision-template-present')).toBe(
+            'docs/decisions/_template.md is missing — the mold sits where the record is written',
+        );
+    });
+});
