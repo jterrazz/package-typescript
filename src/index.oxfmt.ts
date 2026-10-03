@@ -10,5 +10,5 @@ export type {
     SortTailwindcssUserConfig as SortTailwindcss,
 } from 'oxfmt';
 
-export const oxfmtConfig = async (config: ImportMeta): Promise<OxfmtConfig> =>
-    await oxfmtConfigAt(dirname(fileURLToPath(config.url)));
+export const oxfmtConfig = async (configUrl: string): Promise<OxfmtConfig> =>
+    await oxfmtConfigAt(dirname(fileURLToPath(configUrl)));

@@ -50,14 +50,14 @@ An editor reads its tools' configs from fixed names at the root, so three files 
 // oxlint.config.ts
 import { oxlintConfig } from '@jterrazz/typescript/oxlint';
 
-export default await oxlintConfig(import.meta);
+export default await oxlintConfig(import.meta.url);
 ```
 
 ```ts
 // oxfmt.config.ts
 import { oxfmtConfig } from '@jterrazz/typescript/oxfmt';
 
-export default await oxfmtConfig(import.meta);
+export default await oxfmtConfig(import.meta.url);
 ```
 
 ```json

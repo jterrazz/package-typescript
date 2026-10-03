@@ -47,7 +47,7 @@ export function profilePath(name: string): string {
 export const OXFMT_CONFIG = resolve(PROFILE_MODULES, 'oxfmt.config.mjs');
 writeFileSync(
     OXFMT_CONFIG,
-    `import { oxfmtConfig } from ${JSON.stringify(resolve(REPOSITORY, 'dist/oxfmt.js'))};\n\nexport default await oxfmtConfig(import.meta);\n`,
+    `import { oxfmtConfig } from ${JSON.stringify(resolve(REPOSITORY, 'dist/oxfmt.js'))};\n\nexport default await oxfmtConfig(import.meta.url);\n`,
 );
 
 // A real directory, never a link: tsc resolves a preset's own `extends` from its real path.

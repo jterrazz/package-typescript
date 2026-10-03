@@ -8,5 +8,5 @@ export type { OxlintConfig, OxlintOverride } from 'oxlint';
 
 export type RuleEntry = NonNullable<OxlintConfig['rules']>[string];
 
-export const oxlintConfig = async (config: ImportMeta): Promise<OxlintConfig> =>
-    await oxlintConfigAt(dirname(fileURLToPath(config.url)));
+export const oxlintConfig = async (configUrl: string): Promise<OxlintConfig> =>
+    await oxlintConfigAt(dirname(fileURLToPath(configUrl)));

@@ -14,7 +14,7 @@ const ENTRY = join(BUILT_FROM, 'dist/oxfmt.js');
 const CONFIG_PATH = join(newDirectory('spec-formatter-config-'), 'oxfmt.config.mjs');
 writeFileSync(
     CONFIG_PATH,
-    `import { oxfmtConfig } from '${ENTRY}';\n\nexport default await oxfmtConfig(import.meta);\n`,
+    `import { oxfmtConfig } from '${ENTRY}';\n\nexport default await oxfmtConfig(import.meta.url);\n`,
 );
 const OXFMT = resolve(import.meta.dirname, '../../../node_modules/.bin/oxfmt');
 
@@ -61,7 +61,7 @@ describe('formatter', () => {
         cpSync(join(created, 'index.ts'), join(created, '.next/app.ts'));
         writeFileSync(
             join(created, 'oxfmt.config.ts'),
-            `import { oxfmtConfig } from '${ENTRY}';\n\nexport default await oxfmtConfig(import.meta);\n`,
+            `import { oxfmtConfig } from '${ENTRY}';\n\nexport default await oxfmtConfig(import.meta.url);\n`,
         );
 
         // When - oxfmt checks the whole tree
