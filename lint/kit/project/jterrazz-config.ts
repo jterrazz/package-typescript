@@ -1,7 +1,7 @@
 // Node loads the file as oxlint loads `oxlint.config.ts`, by a dynamic `import()`. Without
 // `"type": "module"` Node warns while reparsing it as ESM, so the reader loads it with that warning off.
 
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import process from 'node:process';
@@ -63,7 +63,7 @@ async function importedQuietly(path: string): Promise<unknown> {
         }
     };
     try {
-        return await import(pathToFileURL(path).href);
+        return await import(`${pathToFileURL(path).href}?mtime=${String(statSync(path).mtimeMs)}`);
     } finally {
         if (descriptor === undefined) {
             Reflect.deleteProperty(process, 'emitWarning');

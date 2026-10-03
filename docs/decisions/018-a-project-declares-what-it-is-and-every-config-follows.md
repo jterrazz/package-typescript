@@ -45,9 +45,18 @@ beside both.
   file itself afresh, which is the one module that knows where it lies.
 - Each integration was run as the editor runs it: `oxlint --lsp` started
   at the project root loads the config and reports the profile's rules,
-  the TypeScript 7 language server resolves the `extends`, and the Vitest
-  extension loads its config from the config's own directory. Started on a
-  folder above the project, oxlint — CLI and language server alike — finds
+  `oxfmt --lsp` started there formats a file at the root and one in
+  `src/presets/` by the derived config (four spaces, single quotes) where
+  a folder with no config gets its defaults, the TypeScript 7 language
+  server resolves the `extends`, and the Vitest extension loads its config
+  from the config's own directory.
+- The oxlint language server watches its own config names, never
+  `jterrazz.config.ts`, so an edit of the declaration reaches it when it
+  reloads — on a save of `oxlint.config.ts` or a restart. The reader
+  imports the declaration afresh whenever its mtime changes, since Node
+  would hand a reload the first import; a rule that reads settings while
+  it lints keeps its first read until the server restarts.
+- Started on a folder above the project, oxlint — CLI and language server alike — finds
   the project's config as a nested one, refuses the `options.typeAware` the
   config sets, and lints with its own defaults: an editor is opened on the
   project. knip skips a config that only re-exports from a package, which
