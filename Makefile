@@ -25,12 +25,12 @@ fix: build
 test: install-self
 	npm test
 
-check: lint test
+check: lint test mutation
 
 check-links:
 	@command -v lychee > /dev/null || { echo "check-links: lychee is not installed on this machine — brew install lychee"; exit 1; }
 	lychee --no-progress README.md docs skills
 
-# Minutes to hours where `check` takes seconds, so `check` never calls it.
+# Incremental: only the mutants whose source or tests changed since the report left in .artifacts/stryker/ run again.
 mutation: build
 	node dist/typescript.js mutation

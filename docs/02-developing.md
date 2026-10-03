@@ -6,21 +6,21 @@ How a change to the toolchain itself is made: the loop, where each kind of chang
 
 The package builds itself with the build plan it ships, so a build comes before every other gesture, and the specs drive the built command.
 
-| Gesture        | Runs                                                                                                                          |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `make install` | `npm ci`, once per change of the lockfile                                                                                     |
-| `make build`   | `npm run build`: the build plan the manifest derives, into `dist/` ([Architecture](01-architecture.md#building-this-package)) |
-| `make lint`    | this package's own `typescript check`, run on this package from `dist/`                                                       |
-| `make fix`     | `typescript fix`, `@jterrazz/test`'s fixers first inside it                                                                   |
-| `make test`    | the three vitest projects ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md))            |
-| `make check`   | `make lint`, then `make test`: the gate before a commit                                                                       |
+| Gesture         | Runs                                                                                                                          |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `make install`  | `npm ci`, once per change of the lockfile                                                                                     |
+| `make build`    | `npm run build`: the build plan the manifest derives, into `dist/` ([Architecture](01-architecture.md#building-this-package)) |
+| `make lint`     | this package's own `typescript check`, run on this package from `dist/`                                                       |
+| `make fix`      | `typescript fix`, `@jterrazz/test`'s fixers first inside it                                                                   |
+| `make test`     | the three vitest projects ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md))            |
+| `make mutation` | `typescript mutation` over the sources a module test proves — below                                                           |
+| `make check`    | `make lint`, `make test`, then `make mutation`: the gate before a commit                                                      |
 
 `make lint` and `make test` first lay the repository's own install of itself again from this build's tarball (`install-self`), so neither judges an install older than the checkout.
 
-Two gestures are opt-in and never part of `check`:
+`make check-links` is opt-in and never part of `check`: it runs [lychee](https://lychee.cli.rs) over `README.md`, `docs/` and `skills/`, remote links included. It needs the network and a lychee on the machine, and says so where there is none. Why the gate leaves remote links out is [Quality checks](07-quality-checks.md#what-rumdl-judges)'s.
 
-- `make check-links` runs [lychee](https://lychee.cli.rs) over `README.md`, `docs/` and `skills/`, remote links included. It needs the network and a lychee on the machine, and says so where there is none. Why the gate leaves remote links out is [Quality checks](07-quality-checks.md#what-rumdl-judges)'s.
-- `make mutation` runs `typescript mutation` — [Stryker](https://stryker-mutator.io) over the sources of `src/` and `lint/` that carry a module test, against the module tests of the `unit` project ([Quality checks](07-quality-checks.md#mutation)). It mutates a sandbox copy under `.artifacts/stryker/tmp/`, never the checkout, leaves its report in `.artifacts/stryker/`, and fails on any mutant a module test runs and none detects ([its verdict](07-quality-checks.md#every-mutant-a-module-test-runs-is-detected)). The specs spawn the built command, which no mutant of that run reaches, so its score measures the module tests alone; what the specs leave alive is [Testing § The mutants no test kills](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#the-mutants-no-test-kills).
+`make mutation` runs `typescript mutation` — [Stryker](https://stryker-mutator.io) over the sources of `src/` and `lint/` that carry a module test, against the module tests of the `unit` project ([Quality checks](07-quality-checks.md#mutation)). It mutates a sandbox copy under `.artifacts/stryker/tmp/`, never the checkout, leaves its report in `.artifacts/stryker/`, and fails on any mutant a module test runs and none detects ([its verdict](07-quality-checks.md#every-mutant-a-module-test-runs-is-detected)). The specs spawn the built command, which no mutant of that run reaches, so its score measures the module tests alone; what the specs leave alive is [Testing § The mutants no test kills](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#the-mutants-no-test-kills). It is incremental: Stryker re-runs only the mutants whose source or tests changed since the report it left, so a run inside `check` takes seconds, and a first run in a fresh clone under two minutes.
 
 ## Where a change lands
 
