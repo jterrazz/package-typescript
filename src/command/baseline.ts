@@ -36,7 +36,6 @@ async function recordLinter(args: readonly string[], projectBin: string): Promis
         return;
     }
     for (const recording of ['--suppress-all', '--prune-suppressions']) {
-        // oxlint-disable-next-line no-await-in-loop -- the prune reads the file the record wrote
         await run(
             binaryIn('oxlint', projectBin),
             [...oxlint.args, '--type-aware', recording, ...args, ...targets],
@@ -77,7 +76,6 @@ async function written(reports: Reports): Promise<number> {
 
 async function recordedPresets(): Promise<number> {
     for (const contributed of await debtHoldingCheckersOf('.')) {
-        // oxlint-disable-next-line no-await-in-loop -- each preset writes its own section of the one baseline file
         if ((await presetChecker(contributed, ['baseline'], 'inherit')) !== 0) {
             return 1;
         }

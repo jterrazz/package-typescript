@@ -16,7 +16,6 @@ export async function builtChunks(root: string, build: Build): Promise<BuiltChun
     const { build: tsdown } = await import('tsdown');
     const chunks: BuiltChunk[] = [];
     for (const step of build.steps.filter(({ outDir }) => outDir === DIST)) {
-        // oxlint-disable-next-line no-await-in-loop -- one tsdown run at a time keeps its logger and its chunks apart
         await tsdown({
             ...step,
             attw: false,

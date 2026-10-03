@@ -8,7 +8,6 @@ import type { OxlintConfig } from '@jterrazz/typescript/oxlint';
 import { refusal } from '@jterrazz/typescript/rules';
 
 declare module '@jterrazz/typescript/config' {
-    // oxlint-disable-next-line typescript/consistent-type-definitions -- an augmentation merges into an interface only; a type alias would redeclare the name
     interface JterrazzConfig {
         sibling?: { readonly strict: boolean };
     }

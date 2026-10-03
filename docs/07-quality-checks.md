@@ -257,11 +257,10 @@ The second is the silent one: a `.cjs` config, or a `.js` config in a package th
 
 A fixer that changes MEANING is never applied unattended, so the oxlint run of fix mode turns off each rule marked `unsafe` in the manifest — the rewrite does not land, the diagnostic stays — `fix` and `check` report it alike — and a human answers it. The list, and what each rewrite does, is [Lint presets](08-lint-presets.md).
 
-oxlint has a safe/dangerous split of its own — `--fix` applies the safe fixes, `--fix-dangerously` the rest — and it covers none of the twelve. Measured on oxlint 1.85, each rule alone on a sample that triggers it:
+oxlint has a safe/dangerous split of its own — `--fix` applies the safe fixes, `--fix-dangerously` the rest — and it covers none of the eleven. Measured on oxlint 1.85, each rule alone on a sample that triggers it:
 
 | Rule                                        | oxlint's fix kind                | Plain `--fix` rewrites                                  |
 | ------------------------------------------- | -------------------------------- | ------------------------------------------------------- |
-| `typescript/consistent-type-definitions`    | `conditional_dangerous_fix`      | yes — a `declare module` interface into a `type`        |
 | `typescript/no-confusing-void-expression`   | `fixable_safe_fix_or_suggestion` | yes — an arrow's void body into a block                 |
 | `typescript/no-unnecessary-type-assertion`  | `fixable_fix`                    | yes — `s as string` into `s`                            |
 | `typescript/promise-function-async`         | `conditional_fix`                | yes — adds `async` to a promise-returning function      |
@@ -278,9 +277,9 @@ So the toolchain keeps its own switch. A mark on a rule with no fixer, or on one
 
 The switch is a wrapper config around the one the linter runs with — the project's own, or the default where it keeps none — that the pass writes beside that config and deletes after the run. It goes there and nowhere else, because oxlint resolves `ignorePatterns` and override globs against the directory its config sits in — and every run IGNORES the wrapper's name, so no diagnostic ever names a path the operator cannot open and no tree can ever clear.
 
-That wrapper also stops the run reporting UNUSED DIRECTIVES. Every profile ships `reportUnusedDisableDirectives`, and a run that has just turned twelve rules off cannot judge a directive naming one of them — the rule is off for that run alone, and the directive would be called dead on evidence the wrapper itself created. An unused directive is reported by the check-shaped run made after the fixer, where the consumer's own rules are armed again, and by `check`.
+That wrapper also stops the run reporting UNUSED DIRECTIVES. Every profile ships `reportUnusedDisableDirectives`, and a run that has just turned eleven rules off cannot judge a directive naming one of them — the rule is off for that run alone, and the directive would be called dead on evidence the wrapper itself created. An unused directive is reported by the check-shaped run made after the fixer, where the consumer's own rules are armed again, and by `check`.
 
-For the same reason the wrapped runs never keep what they write to `.jterrazz/oxlint-suppressions.json`. oxlint rewrites that file on every `--fix` run, dropping each entry whose rule the run did not report — and a wrapped run has twelve rules off. The pass puts the file back as it was after the fixers, and the prune that follows reads it with every rule armed. `@jterrazz/test`'s own fixes, whose wrapper arms the plugin alone, do the same.
+For the same reason the wrapped runs never keep what they write to `.jterrazz/oxlint-suppressions.json`. oxlint rewrites that file on every `--fix` run, dropping each entry whose rule the run did not report — and a wrapped run has eleven rules off. The pass puts the file back as it was after the fixers, and the prune that follows reads it with every rule armed. `@jterrazz/test`'s own fixes, whose wrapper arms the plugin alone, do the same.
 
 ### A wrapper fix mode cannot write
 

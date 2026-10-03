@@ -13,7 +13,6 @@ export type {
 export type { Platform, ProjectDeclaration, ProjectKind } from './kit/project/project-kind.js';
 
 /** A repository's settings for the @jterrazz toolchain family; a sibling package adds its section by interface merging. */
-// oxlint-disable-next-line typescript/consistent-type-definitions -- a sibling package adds its section by merging into this declaration, which a `type` alias cannot take
 export interface JterrazzConfig {
     /** Laws of a preset the repository sets aside, each `<preset>/<law>` mapped to the reason it is set aside. */
     optOuts?: Readonly<Record<string, string>>;

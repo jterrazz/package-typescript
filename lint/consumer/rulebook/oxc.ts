@@ -1,10 +1,22 @@
-import { allOn, fragment, off } from '../../kit/compiler/decision.js';
+import { allOn, fragment, off, scoped } from '../../kit/compiler/decision.js';
 
-// The three offs restrict syntax for a target older than the one the estate compiles to.
+// outside: the three offs restrict syntax for a target older than the one the estate compiles to.
 export default fragment({
     id: 'oxc',
     audience: 'consumer',
     plugins: ['oxc'],
+    overrides: [
+        scoped({
+            files: ['**/index.ts', '**/index.*.ts', '**/index.tsx', '**/index.*.tsx'],
+            rules: {
+                'oxc/no-barrel-file': off({
+                    by: 'names/index-is-an-entry — a module named index is a published entry, and an entry re-exports its subpath by definition',
+                    kind: 'covered',
+                }),
+            },
+            since: '11.0.0',
+        }),
+    ],
     rules: {
         ...allOn(
             [

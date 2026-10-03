@@ -31,13 +31,6 @@ export default fragment({
                     by: '@jterrazz/test test-body-within-line-limit — a test body holds at most 60 lines, and oxfmt puts one statement per line',
                     kind: 'covered',
                 }),
-                'no-await-in-loop': off(
-                    {
-                        by: '@jterrazz/test sequence-expressed-by-seeding — a test acts in the order it states, so an awaited loop is its sequence, not a lost parallelism',
-                        kind: 'convention',
-                    },
-                    RULE_REVIEW_SINCE,
-                ),
             },
             since: SIZE_SINCE,
         }),
@@ -68,7 +61,6 @@ export default fragment({
             'no-alert',
             'no-array-constructor',
             'no-async-promise-executor',
-            'no-await-in-loop',
             'no-bitwise',
             'no-caller',
             'no-case-declarations',
@@ -237,6 +229,13 @@ export default fragment({
                 kind: 'covered',
             },
             SIZE_SINCE,
+        ),
+        'no-await-in-loop': off(
+            {
+                by: 'rule review, 2026-10-03 — 51 reports on package-test and package-typescript, about 85% an ordered sequence (a poll, a seed, a pass writing what the next one reads); the rule judges speed, never correctness',
+                kind: 'evidence',
+            },
+            RULE_REVIEW_SINCE,
         ),
         'no-continue': off({ by: 'max-depth (4)', kind: 'exclusive' }),
         'no-implied-eval': off({ by: 'typescript/no-implied-eval', kind: 'covered' }),

@@ -128,7 +128,7 @@ new-cap
 no-alert
 no-array-constructor
 no-async-promise-executor
-no-await-in-loop
+- no-await-in-loop
 no-bitwise
 no-caller
 no-case-declarations
@@ -422,7 +422,7 @@ typescript/consistent-generic-constructors
 typescript/consistent-indexed-object-style
 typescript/consistent-return
 typescript/consistent-type-assertions
-typescript/consistent-type-definitions
+- typescript/consistent-type-definitions
 typescript/consistent-type-exports
 typescript/consistent-type-imports
 typescript/dot-notation

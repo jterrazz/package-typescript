@@ -63,7 +63,6 @@ async function fixed(check: Check, runs: readonly Planned[]): Promise<PresetRun[
     const done: PresetRun[] = [];
     for (const [index, { args, checker, root }] of runs.entries()) {
         const log = check.logs.at(`preset-${String(index)}.log`);
-        // oxlint-disable-next-line no-await-in-loop -- each run writes files the next one reads
         const status = await presetChecker(checker, args, { path: log });
         done.push({ label: checker.label, log, root, status: Promise.resolve(status) });
     }

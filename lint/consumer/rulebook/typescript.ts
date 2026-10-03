@@ -39,17 +39,6 @@ export default fragment({
             files: ['**/*.js', '**/*.cjs', '**/*.mjs'],
             rules: Object.fromEntries(UNTYPED_IN_JAVASCRIPT),
         }),
-        // Only an interface merges into a module augmentation; a `type` alias redeclares the name.
-        scoped({
-            files: ['**/*.d.ts'],
-            rules: {
-                'typescript/consistent-type-definitions': off({
-                    by: 'TypeScript — an augmentation merges only as an interface, and a declaration file is where augmentations live',
-                    kind: 'covered',
-                }),
-            },
-            since: '10.2.0',
-        }),
     ],
     rules: {
         ...allOn(
@@ -160,9 +149,12 @@ export default fragment({
                 'ts-nocheck': true,
             },
         ]),
-        'typescript/consistent-type-definitions': unsafeFix(
-            on(['type']),
-            'rewrites a `declare module` augmentation into an alias, which no longer merges',
+        'typescript/consistent-type-definitions': off(
+            {
+                by: 'rule review, 2026-10-03 — 0 reports held and 32 suppressions on package-test and package-typescript, every one a place the language needs an interface (a `this`-typed member, a module augmentation, a declaration merge); one spelling prevents no defect',
+                kind: 'evidence',
+            },
+            '11.0.0',
         ),
         'typescript/no-confusing-void-expression': unsafeFix(
             typeAware(),

@@ -190,7 +190,6 @@ async function runPass(
 async function runEvery(checker: Checker, args: readonly string[]): Promise<number> {
     let status = 0;
     for (const [name, load] of Object.entries(checker.passes)) {
-        // oxlint-disable-next-line no-await-in-loop -- a pass may write what the next one reads
         const ran = await runPass({ checker, name, pass: await load() }, args);
         status = Math.max(status, ran);
     }

@@ -86,7 +86,6 @@ async function fixedScopes(check: Check, scopes: readonly FixScope[]): Promise<n
     const log = check.logs.at('fix-scopes.log');
     let status = 0;
     for (const { files, wrapper } of scopes) {
-        // oxlint-disable-next-line no-await-in-loop -- each scope rewrites files the next one may lint
         const fixed = await run(
             check.tools.oxlint,
             [

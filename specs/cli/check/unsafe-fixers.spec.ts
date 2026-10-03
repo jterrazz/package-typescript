@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses } from '../_setup/check-passes.js';
 import { cli } from '../cli.specification.js';
 
-// A nested config naming `options` is refused wherever oxlint walks this repository, so a case needing a
+// outside: a nested config naming `options` is refused wherever oxlint walks this repository, so a case needing a
 // root-only option runs the default profile.
 
 const caseOf = (name: string) =>
@@ -58,7 +58,7 @@ describe('unsafe-fixers', () => {
         expect(fixed.stdout.text).not.toContain('Unused oxlint-disable directive');
     });
 
-    // Only reachable in a log the pass prints, which is a failing one: hence the second, unsuppressed call.
+    // invariant: only reachable in a log the pass prints, which is a failing one: hence the second, unsuppressed call.
     test('never calls a directive dead because the wrapper disarmed its rule', async () => {
         // Given - the same project, one call suppressed with its reason and one left to report
         // When - the fix runs, and fails on the call nothing suppresses
@@ -80,7 +80,7 @@ describe('unsafe-fixers', () => {
         expect(fixed.file('oxlint.fix.config.mjs').exists).toBe(false);
     });
 
-    // A crashed run can leave its wrapper behind, where this run's sweep would read it as an untracked file.
+    // hazard: a crashed run can leave its wrapper behind, where this run's sweep would read it as an untracked file.
     test('never reports the wrapper config, including one a crashed run left behind', async () => {
         // Given - a project whose oxlint.fix.config.mjs, an absolute import, already sits at its root — the shape a crashed prior run's own wrapper would leave, and a rule armed that names exactly that
         // When - the fix runs, with a diagnostic of the tree's own to keep the log on the stream
@@ -91,7 +91,7 @@ describe('unsafe-fixers', () => {
         expect(fixed.stdout.text).not.toContain('oxlint.fix.config');
     });
 
-    // A type-aware rule runs in `tsgolint`, not oxlint, so the wrapper's override must reach it too.
+    // outside: a type-aware rule runs in `tsgolint`, not oxlint, so the wrapper's override must reach it too.
     test('leaves a type-aware fixer alone — the double cast the call still needs', async () => {
         // Given - a project on the default profile, one of whose diagnostics is a type-aware unsafe fixer
         // When - the fix runs
@@ -105,7 +105,7 @@ describe('unsafe-fixers', () => {
         expect(fixed.stdout.text).toContain('no-unnecessary-type-assertion');
     });
 
-    // oxlint reads a nested config as the whole config of its subtree, replacing the root's rules.
+    // outside: oxlint reads a nested config as the whole config of its subtree, replacing the root's rules.
     test("applies a nested config's profile in fix, as check reads it", async () => {
         // Given - a root arming prefer-const, and a subtree whose own config turns it off and arms prefer-node-protocol
         // When - the fix runs
@@ -142,16 +142,5 @@ describe('unsafe-fixers', () => {
         // Then - and the rule is still reported, because the answer is a human's
         expect(fixed.exitCode).toBe(1);
         expect(fixed.stdout.text).toContain('prefer-import-in-mock');
-    });
-
-    test('leaves a declare module augmentation an interface, and keeps its export {}', async () => {
-        // Given - a project whose one file augments a library, with both rewriters armed
-        // When - the fix runs
-        const fixed = await caseOf('augmentation').exec('fix');
-
-        // Then - the block still merges: an interface, and the export that makes it an augmentation
-        const source = fixed.file('index.ts').content;
-        expect(source).toContain('interface Options');
-        expect(source).toContain('export {};');
     });
 });
