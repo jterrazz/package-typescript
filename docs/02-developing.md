@@ -4,38 +4,38 @@ How a change to the toolchain itself is made: the loop, where each kind of chang
 
 ## The loop
 
-The package builds itself with the tsdown it ships, so a build comes before every other gesture, and the specs drive the built command.
+The package builds itself with the build plan it ships, so a build comes before every other gesture, and the specs drive the built command.
 
-| Gesture        | Runs                                                                                                               |
-| -------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `make install` | `npm ci`, once per change of the lockfile                                                                          |
-| `make build`   | `npm run build`: tsdown over `tsdown.config.ts` into `dist/`                                                       |
-| `make lint`    | this package's own `typescript check`, run on this package from `dist/`                                            |
-| `make fix`     | `typescript fix`, `@jterrazz/test`'s fixers first inside it                                                        |
-| `make test`    | the three vitest projects ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md)) |
-| `make check`   | `make lint`, then `make test`: the gate before a commit                                                            |
+| Gesture        | Runs                                                                                                                          |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `make install` | `npm ci`, once per change of the lockfile                                                                                     |
+| `make build`   | `npm run build`: the build plan the manifest derives, into `dist/` ([Architecture](01-architecture.md#building-this-package)) |
+| `make lint`    | this package's own `typescript check`, run on this package from `dist/`                                                       |
+| `make fix`     | `typescript fix`, `@jterrazz/test`'s fixers first inside it                                                                   |
+| `make test`    | the three vitest projects ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md))            |
+| `make check`   | `make lint`, then `make test`: the gate before a commit                                                                       |
 
 `make lint` and `make test` first lay the repository's own install of itself again from this build's tarball (`install-self`), so neither judges an install older than the checkout.
 
 Two gestures are opt-in and never part of `check`:
 
 - `make check-links` runs [lychee](https://lychee.cli.rs) over `README.md`, `docs/` and `skills/`, remote links included. It needs the network and a lychee on the machine, and says so where there is none. Why the gate leaves remote links out is [Quality checks](07-quality-checks.md#what-rumdl-judges)'s.
-- `make mutation` runs [Stryker](https://stryker-mutator.io) over `src/` and `lint/` against the module tests of the `unit` project. It rewrites the sources in place for the whole run, so nothing else runs beside it, and leaves its report in `.artifacts/stryker/`. The specs spawn the built command, which no mutant of that run reaches, so its score measures the module tests alone; what the specs leave alive is [Testing § The mutants no test kills](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#the-mutants-no-test-kills).
+- `make mutation` runs `typescript mutation` — [Stryker](https://stryker-mutator.io) over `src/` and `lint/` against the module tests of the `unit` project ([Quality checks](07-quality-checks.md#mutation)). It rewrites the sources in place for the whole run, so nothing else runs beside it, and leaves its report in `.artifacts/stryker/`. The specs spawn the built command, which no mutant of that run reaches, so its score measures the module tests alone; what the specs leave alive is [Testing § The mutants no test kills](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#the-mutants-no-test-kills).
 
 ## Where a change lands
 
 The layers decide it ([Architecture](01-architecture.md)):
 
-| Change                           | Lands in                                                                                                                                                                                                                                                         |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| a lint decision                  | one line of a fragment under `lint/consumer/rulebook/`; the catalogue in [Lint presets](08-lint-presets.md) is its projection                                                                                                                                    |
-| a lint rule of this package's    | a file under `lint/consumer/rules/<family>/`, assembled by `plugin.ts`, with its row in the catalogue                                                                                                                                                            |
-| a new pass of `check`            | its declaration in `lint/consumer/checks/`, listed by `lint/index.checker.ts`; a key in `src/command/check/passes.ts` with the function under `src/command/check/` that decides whether it applies; its `checker` row in `lint/consumer/catalogue/manifest.json` |
-| code two declarations share      | `lint/kit/`                                                                                                                                                                                                                                                      |
-| a refusal a shipped module makes | a `runtime` row of the manifest, and, when thrown, a four-part `refusal()` reading a heading of this manual                                                                                                                                                      |
-| a law every repository keeps     | a line of the base preset, `lint/consumer/catalogue/preset.ts`, never of a repository's `jterrazz.config.ts`                                                                                                                                                     |
-| a new configuration              | a file under `src/presets/`, and an entry of `tsdown.config.ts` when a tool loads it by path                                                                                                                                                                     |
-| a new importable entry           | a `.ts` named by [the entry grammar](07-quality-checks.md#the-entry-grammar), in `src/`, or at the root of `lint/` when it exports the kit as `./rules` does; an entry of `tsdown.config.ts`; an `exports` subpath; the specs that load every subpath            |
+| Change                           | Lands in                                                                                                                                                                                                                                                                    |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| a lint decision                  | one line of a fragment under `lint/consumer/rulebook/`; the catalogue in [Lint presets](08-lint-presets.md) is its projection                                                                                                                                               |
+| a lint rule of this package's    | a file under `lint/consumer/rules/<family>/`, assembled by `plugin.ts`, with its row in the catalogue                                                                                                                                                                       |
+| a new pass of `check`            | its declaration in `lint/consumer/checks/`, listed by `lint/index.checker.ts`; a key in `src/command/check/passes.ts` with the function under `src/command/check/` that decides whether it applies; its `checker` row in `lint/consumer/catalogue/manifest.json`            |
+| code two declarations share      | `lint/kit/`                                                                                                                                                                                                                                                                 |
+| a refusal a shipped module makes | a `runtime` row of the manifest, and, when thrown, a four-part `refusal()` reading a heading of this manual                                                                                                                                                                 |
+| a law every repository keeps     | a line of the base preset, `lint/consumer/catalogue/preset.ts`, never of a repository's `jterrazz.config.ts`                                                                                                                                                                |
+| a new configuration              | a file under `src/presets/`, and an `imports` entry of the manifest when the command loads it by path                                                                                                                                                                       |
+| a new importable entry           | a `.ts` named by [the entry grammar](07-quality-checks.md#the-entry-grammar), in `src/`, or at the root of `lint/` when it exports the kit as `./rules` does; an `exports` subpath, or an `imports` one when only the package reaches it; the specs that load every subpath |
 
 How the manifest and its audiences work is [Testing § Who a rule is for](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#who-a-rule-is-for).
 

@@ -15,8 +15,8 @@ The consumer-facing corpus is `docs/` + `README.md`, mapped by `docs/README.md`.
 | wiring a project onto the toolchain               | `docs/05-getting-started.md` |
 | `jterrazz.config.ts`, presets, their merge order  | `docs/06-configuration.md`   |
 | check / fix and their passes, the ratchet         | `docs/07-quality-checks.md`  |
-| the rulebook, profiles, `compose`, knip           | `docs/08-lint-presets.md`    |
-| build / bundle / start / dev / tsc                | `docs/09-building.md`        |
+| the rulebook, profiles, knip                      | `docs/08-lint-presets.md`    |
+| build / start / dev / tsc                         | `docs/09-building.md`        |
 | the rules kit a sibling package writes rules with | `docs/10-rules-kit.md`       |
 
 The first four chapters are the spine every repository of the ecosystem carries — architecture, developing, testing, operating — and this repository's own gate refuses a tree that breaks it (`docs/07-quality-checks.md`, the Docs (layout) pass).
@@ -31,7 +31,7 @@ One Claude Code skill routes into this corpus: `skills/jterrazz-typescript/SKILL
 make install
 ```
 
-`make build` compiles the TypeScript into `dist/` with tsdown; `make lint`, `make test` and `make fix` build first. It dogfoods its own CLI (`make lint` → `npm run lint` → `node dist/typescript.js check`).
+`make build` compiles the TypeScript into `dist/` with the build plan it ships; `make lint`, `make test` and `make fix` build first. It dogfoods its own CLI (`make lint` → `npm run lint` → `node dist/typescript.js check`).
 
 ## Repo layout
 

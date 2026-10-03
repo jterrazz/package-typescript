@@ -25,10 +25,11 @@ Every command exits `0` when it succeeded and non-zero otherwise; `check` and `f
 
 ## The passes
 
-`typescript check` runs up to fifteen passes. Three spawn a tool on every invocation, knip and five tree gates run on every `check`, and the other six are opt-in — they appear only when the project qualifies.
+`typescript check` runs up to sixteen passes. The Config pass runs first, three spawn a tool on every invocation, knip and five tree gates run on every `check`, and the other six are opt-in — they appear only when the project qualifies.
 
 | Pass                      | Tool                        | When it runs                                                                                     |
 | ------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------ |
+| Config (one file)         | the config gate             | always (check and fix — `--fix` writes the derived files)                                        |
 | TypeScript Check          | tsc (TypeScript 7, Go)      | always                                                                                           |
 | Oxlint Check              | oxlint (`--type-aware`)     | always (judged by the ratchet's `typescript` section where there is one)                         |
 | Oxfmt Check               | oxfmt (Rust)                | always                                                                                           |
@@ -45,7 +46,7 @@ Every command exits `0` when it succeeded and non-zero otherwise; `check` and `f
 | Comments (density)        | the comment gate            | always (check and fix — `--fix` re-records a fall)                                               |
 | Secrets (credentials)     | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                                         |
 
-`typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate, dependency-cruiser (`--fix` re-records a fall), rumdl (`--fix`) with the prose gate, the naming gate and the comment gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
+`typescript fix` runs the config gate, tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate, dependency-cruiser (`--fix` re-records a fall), rumdl (`--fix`) with the prose gate, the naming gate and the comment gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
 
 ### In a workspace
 
@@ -63,17 +64,42 @@ Three doors, each narrower than the one before it:
 
 - **`.gitignore`.** The linter, the formatter and every tree gate read the same sweep, the files git does not ignore, so a path git ignores is out of all of them: generated output, a local data folder.
 - **`--ignore-pattern <glob>`** on `check` and `fix`, written into the `package.json` scripts so every run passes it: a tracked path left out of the linter, the formatter and the tree gates — Suppressions, Markdown, Names, Comments and Secrets.
-- **`ignorePatterns`** in the project's `oxlint.config.ts`, added through `compose()`: the linter alone ([Configuration § The lint config](06-configuration.md#the-lint-config)).
+- **`typescript.oxlint.overrides`** or **`typescript.oxfmt.ignore`** in `jterrazz.config.ts`, each with its reason: the rules a set of files is judged by, or the files the formatter leaves as written ([Configuration § The lint rules](06-configuration.md#the-lint-rules)).
 
-tsc reads the files its tsconfig preset includes, and knip what its preset and the project's `knip.json` name ([Lint presets](08-lint-presets.md#unused-code-knip)): neither reads the sweep.
+tsc reads the files its tsconfig preset includes, and knip what its preset and the project's `typescript.knip` name ([Lint presets](08-lint-presets.md#unused-code-knip)): neither reads the sweep.
 
 ### An unreadable tree
 
 Every tree gate reads the same sweep: the files git does not ignore, or the disk outside a git checkout. A sweep that comes back empty while the tree holds something — folders and no file, or files git ignores whole — is refused rather than read as nothing to judge, since a gate over nothing passes. The pass prints the refusal in four parts, `found: … · why: … · fix: … · read: …`, and fails.
 
-### A file knip is configured from does not parse
+## The Config (one file) pass
 
-knip runs on one config: the preset this package ships, merged with the project's own `knip.json` or `knip.jsonc` and with what its `package.json` declares. A project file that does not parse would leave knip judging the project against a config it never wrote, so the Knip pass prints a four-part refusal naming the file and the parser's message, and fails without running knip. A preset of this package's that does not parse is the toolchain's own fault and says so.
+The root holds what a person wrote, and one file says what the project is. This pass holds both: `jterrazz.config.ts` declares a kind and a platform from the two closed lists ([Getting started](05-getting-started.md#1-declare-what-the-project-is)), the files an editor reads at the root are the lines that declaration derives, and no tool keeps a config of its own beside it. It runs first, at the root and in every workspace member, and reads nothing but those files and the manifest.
+
+<!-- GENERATED:findings config -->
+
+| Rule                           | Requirement                                                                                                                 |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `config/project-declared`      | A repository, and each member of a workspace, declares what it is once — its kind and its platform — in jterrazz.config.ts. |
+| `config/editor-file-derived`   | Each config file an editor discovers is the one line jterrazz.config.ts derives, so the editor and the check judge alike.   |
+| `config/no-tool-config`        | A tool only the toolchain runs keeps no config file of its own: the command hands it the config jterrazz.config.ts derives. |
+| `config/kind-matches-manifest` | A library publishes its exports, and a cli names its bin.                                                                   |
+
+<!-- /GENERATED:findings config -->
+
+### The derived files
+
+An editor reads `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json` by their names, so they stay at the root, but their content is the toolchain's: a re-export of the `./oxlint` and `./oxfmt` entries, which derive the config from `jterrazz.config.ts` where the tool runs, and an `extends` of the platform's tsconfig preset. Each integration was run the way an editor runs it before the files were cut to one line: the oxc language servers (`oxlint --lsp`, `oxfmt --lsp`) load the re-export and derive from the directory the editor starts them in, the TypeScript 7 language server resolves the `extends`, and the Vitest extension loads `vitest.config.ts` from its own directory. A workspace keeps the two re-exports at its root alone, which derive each member's own rules, and a `tsconfig.json` in each member.
+
+`typescript fix` writes every derived file that is missing or says something else, and `check` names the line to write. A setting that once lived in one of them — a rule turned off, a path the formatter skips — moves to `jterrazz.config.ts`, under the section its owner reads, with its reason ([Configuration](06-configuration.md#the-typescript-section)).
+
+### No config of its own
+
+knip, tsdown and Stryker are run by the command alone, which derives their config and hands it over by path, so a `knip.json`, a `tsdown.config.ts` or a `stryker.config.json` at the root is a second place a setting could hide. So is an alternate name of an editor file (`.oxlintrc.json`, `oxlint.config.mts`), a `.dependency-cruiser.*` or `.ls-lint.yml`, a second vitest config (`vitest.<name>.config.ts`), and a member's own `oxlint.config.ts`, which would replace the root's in its subtree. Each is refused, naming where its settings go.
+
+### The kind and the manifest
+
+The kind says what the manifest must hold: a `library` publishes `exports` or a `main`, a `cli` names its `bin`. A project that declares itself one and publishes as the other is refused at its `package.json`, since every law that follows from the kind would judge the wrong thing.
 
 ## The Gitignore (artefacts) pass
 
@@ -109,9 +135,9 @@ A preset's checks run once over the repository, at its root, and the preset walk
 
 The verdict is the checks' exit code, and nothing here forgives it: a preset records its own debt and judges it, in its own section of the ratchet file ([the ratchet](#the-ratchet)). `fix` runs every preset's checks with `--fix` first, one run after another, before oxlint and the formatter, so the last writer of every file is the one `check` judges its format by; `baseline` runs each preset's `baseline` command after recording its own sections.
 
-A green pass says one thing about each section a listed preset holds: the held line of the run over the project root, `jterrazz.baseline.json › test: <n> held across <k> rules` — or `jterrazz.baseline.json › test: nothing held` for a project keeping no `test` section. The sections are the ones the presets of `jterrazz.config.ts` declare in their `baseline`, the toolchain's own and every floor aside, so a preset that declares no section is shown no line; a line in any other shape is left out rather than echoed as a second shape.
+A green pass says one thing about each section a listed preset holds: the held line of the run over the project root, `.jterrazz/baseline.json › test: <n> held across <k> rules` — or `.jterrazz/baseline.json › test: nothing held` for a project keeping no `test` section. The sections are the ones the presets of `jterrazz.config.ts` declare in their `baseline`, the toolchain's own and every floor aside, so a preset that declares no section is shown no line; a line in any other shape is left out rather than echoed as a second shape.
 
-A preset's checks judge their own passes and nothing of oxlint's: a plugin's `jterrazz(*)` diagnostics are oxlint rules, printed by the Oxlint pass and held in `oxlint-suppressions.json` ([the ratchet](#the-ratchet)). So the runs start beside the linter rather than after it, and none of them lints the project.
+A preset's checks judge their own passes and nothing of oxlint's: a plugin's `jterrazz(*)` diagnostics are oxlint rules, printed by the Oxlint pass and held in `.jterrazz/oxlint-suppressions.json` ([the ratchet](#the-ratchet)). So the runs start beside the linter rather than after it, and none of them lints the project.
 
 ## The Docs (layout) pass
 
@@ -199,9 +225,9 @@ The linter is handed the project's files it parses rather than the directory, th
 
 ### The config it runs with
 
-A project that keeps an oxlint config at its root — `oxlint.config.ts`, `.mts`, `.mjs`, `.js` or `.cjs`, `.oxlintrc.json` or `.jsonc` — is linted by it, and oxlint finds it, and the nested configs beneath it, where it looks. A project that keeps none is handed the toolchain's default by path: the config its declared presets compose, as its own `oxlint.config.ts` would with `fromPresets` — the profile `typescript({ profile })` names, `node` where none is named, then each preset's oxlint rules ([Configuration](06-configuration.md#the-merge-order)). Left to itself oxlint would walk up the tree for a config and apply whatever the folder the project sits in happens to hold, a temp folder or a workbench of clones among them. `baseline` hands the same default, so the file records what `check` reports.
+oxlint finds the project's `oxlint.config.ts` where it looks, and that file is the one line the [Config pass](#the-config-one-file-pass) holds it to: the config derived from `jterrazz.config.ts` — the platform's profile, each preset's rules, the project's `typescript.oxlint`, and in a workspace each member's own, scoped to its folder ([Lint presets](08-lint-presets.md#how-the-config-is-merged)). Where the file is missing, `check` hands oxlint the same entry by path, so the run lints by the same config while the Config pass names the line to write; left to itself oxlint would walk up the tree for a config and apply whatever the folder the project sits in happens to hold. `baseline` hands the same config, so the ledger records what `check` reports.
 
-A config handed by path resolves its `ignorePatterns` against its own directory, which is this package's. So the sweep leaves out what the default's patterns name instead, and a project with no config is spared the same folders as one whose config composes the profile.
+A config handed by path resolves its `ignorePatterns` against its own directory, which is this package's. So the sweep leaves out what the derived patterns name instead, and a project with no file is spared the same folders as one with it.
 
 ### One run, printed as oxlint prints it
 
@@ -251,7 +277,7 @@ The switch is a wrapper config around the one the linter runs with — the proje
 
 That wrapper also stops the run reporting UNUSED DIRECTIVES. Every profile ships `reportUnusedDisableDirectives`, and a run that has just turned twelve rules off cannot judge a directive naming one of them — the rule is off for that run alone, and the directive would be called dead on evidence the wrapper itself created. An unused directive is reported by the check-shaped run made after the fixer, where the consumer's own rules are armed again, and by `check`.
 
-For the same reason the wrapped runs never keep what they write to `oxlint-suppressions.json`. oxlint rewrites that file on every `--fix` run, dropping each entry whose rule the run did not report — and a wrapped run has twelve rules off. The pass puts the file back as it was after the fixers, and the prune that follows reads it with every rule armed. `@jterrazz/test`'s own fixes, whose wrapper arms the plugin alone, do the same.
+For the same reason the wrapped runs never keep what they write to `.jterrazz/oxlint-suppressions.json`. oxlint rewrites that file on every `--fix` run, dropping each entry whose rule the run did not report — and a wrapped run has twelve rules off. The pass puts the file back as it was after the fixers, and the prune that follows reads it with every rule armed. `@jterrazz/test`'s own fixes, whose wrapper arms the plugin alone, do the same.
 
 ### A wrapper fix mode cannot write
 
@@ -281,25 +307,25 @@ The formatter is handed the same sweep, whole rather than cut to the shapes a li
 
 ## The ratchet
 
-A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. The toolchain takes the second, and the lint debt is oxlint's own to hold: `oxlint-suppressions.json`, one tracked file at the project root, counts every recorded diagnostic file by file and rule by rule, and oxlint reads it on every run. A file's count held exactly is suppressed; one past it fails the run, with each of that rule's diagnostics in the file listed; an entry the tree has paid down fails it too — the count is exact both ways, so the file shrinks the day the debt falls, and no slack is left for new debt to grow back into. oxlint judges only the files it lints, so an entry for a file that is gone — deleted or moved — is the pass's own to find, and it fails the run the same way.
+A project adopting a stricter rulebook has two honest options: burn every diagnostic down before the first green run, or record where it stands and refuse to go backwards. The toolchain takes the second, and the lint debt is oxlint's own to hold: `.jterrazz/oxlint-suppressions.json`, one tracked file, counts every recorded diagnostic file by file and rule by rule, in oxlint's own format. oxlint reads that file only as `oxlint-suppressions.json` at the root, and takes no path for it, so `check`, `fix` and `baseline` stage the ledger there for the length of a run and move it back after, pruned or written; an editor's oxlint ignores the file either way, so the debt the ledger holds still shows in the editor. A file's count held exactly is suppressed; one past it fails the run, with each of that rule's diagnostics in the file listed; an entry the tree has paid down fails it too — the count is exact both ways, so the file shrinks the day the debt falls, and no slack is left for new debt to grow back into. oxlint judges only the files it lints, so an entry for a file that is gone — deleted or moved — is the pass's own to find, and it fails the run the same way.
 
 oxlint's help names `oxlint --suppress-all` and `oxlint --prune-suppressions`, which would lint with another config, without types, and a bare tree. The pass adds the toolchain's word after oxlint's:
 
 ```text
-found: a diagnostic oxlint-suppressions.json does not hold — each one is listed above · why: … · fix: fix it, or run 'typescript baseline' to record where the project stands — never a bare `oxlint --suppress-all`, which lints with another config · read: docs/07-quality-checks.md#the-ratchet
-found: oxlint-suppressions.json holds more than the project has left · why: … · fix: run 'typescript fix', which prunes the file · read: docs/07-quality-checks.md#the-ratchet
-found: oxlint-suppressions.json holds entries for files that are gone: src/moved.ts · why: … · fix: run 'typescript fix', which prunes the file · read: docs/07-quality-checks.md#the-ratchet
+found: a diagnostic .jterrazz/oxlint-suppressions.json does not hold — each one is listed above · why: … · fix: fix it, or run 'typescript baseline' to record where the project stands — never a bare `oxlint --suppress-all`, which lints with another config · read: docs/07-quality-checks.md#the-ratchet
+found: .jterrazz/oxlint-suppressions.json holds more than the project has left · why: … · fix: run 'typescript fix', which prunes the file · read: docs/07-quality-checks.md#the-ratchet
+found: .jterrazz/oxlint-suppressions.json holds entries for files that are gone: src/moved.ts · why: … · fix: run 'typescript fix', which prunes the file · read: docs/07-quality-checks.md#the-ratchet
 ```
 
 The flags that write the file are not in oxlint's `--help` yet; the toolchain pins oxlint to one exact version, and its specs run each one.
 
-### What `jterrazz.baseline.json` still holds
+### What `.jterrazz/baseline.json` still holds
 
-`jterrazz.baseline.json` holds what no linter judges — one section per preset, each named by the preset that owns it, `{ "typescript": { … }, "test": { … }, "test.coverage": { … } }` — read, written and judged by one engine, the kit's ([Rules kit](10-rules-kit.md#the-ratchet-engine)), which keeps every section but the one it writes byte for byte. The `typescript` section holds the Architecture (layer map) pass's `architecture/<name>` entries ([its section](#the-architecture-layer-map-pass)), the Names (tree) pass's `names/*` entries ([its section](#the-names-tree-pass)) and the Comments (density) pass's `comments/comment-lines-held-by-the-baseline` ([its section](#the-comments-density-pass)), each judged by its own pass, exactly, with the same four refusals, each printed in four parts under `baseline-ratchet`: a count above its entry, a rule with findings and no entry, a count below its entry, an entry at zero. Each finding prints at its position in the compiler's convention, `src/types.ts:1:1: error names(no-language-construct-name): found: … · why: … · fix: … · read: …`, and a pass whose findings the section records no entry of adds one lesson after them, naming `typescript baseline` as the gesture that records where the project stands. The `test` sections are `@jterrazz/test`'s — its checker passes' counts, and the coverage floor — which that package writes and judges.
+`.jterrazz/baseline.json` holds what no linter judges — one section per preset, each named by the preset that owns it, `{ "typescript": { … }, "test": { … }, "test.coverage": { … } }` — read, written and judged by one engine, the kit's ([Rules kit](10-rules-kit.md#the-ratchet-engine)), which keeps every section but the one it writes byte for byte. The `typescript` section holds the Architecture (layer map) pass's `architecture/<name>` entries ([its section](#the-architecture-layer-map-pass)), the Names (tree) pass's `names/*` entries ([its section](#the-names-tree-pass)) and the Comments (density) pass's `comments/comment-lines-held-by-the-baseline` ([its section](#the-comments-density-pass)), each judged by its own pass, exactly, with the same four refusals, each printed in four parts under `baseline-ratchet`: a count above its entry, a rule with findings and no entry, a count below its entry, an entry at zero. Each finding prints at its position in the compiler's convention, `src/types.ts:1:1: error names(no-language-construct-name): found: … · why: … · fix: … · read: …`, and a pass whose findings the section records no entry of adds one lesson after them, naming `typescript baseline` as the gesture that records where the project stands. The `test` sections are `@jterrazz/test`'s — its checker passes' counts, and the coverage floor — which that package writes and judges.
 
-An oxlint rule left in the `typescript` section — one recorded before oxlint held its own — is refused in the Oxlint pass under `baseline-moved-to-oxlint`, in four parts, naming `typescript baseline`, which records it in `oxlint-suppressions.json` and drops the entry. `baseline-unreadable` refuses a `jterrazz.baseline.json` that is not JSON, or that holds a top-level key whose value is not a section of counts.
+An oxlint rule left in the `typescript` section — one recorded before oxlint held its own — is refused in the Oxlint pass under `baseline-moved-to-oxlint`, in four parts, naming `typescript baseline`, which records it in `.jterrazz/oxlint-suppressions.json` and drops the entry. `baseline-unreadable` refuses a `.jterrazz/baseline.json` that is not JSON, or that holds a top-level key whose value is not a section of counts.
 
-`fix` lowers what FELL and never records what grew: it prunes `oxlint-suppressions.json` — the file goes when nothing is left in it — and the Architecture, Names and Comments passes re-record their own falls, each named in its pass (`re-recorded jterrazz.baseline.json › typescript › <rule> <was> → <now>`). Debt that grew is written only by `typescript baseline`, by hand.
+`fix` lowers what FELL and never records what grew: it prunes `.jterrazz/oxlint-suppressions.json` — the file goes when nothing is left in it — and the Architecture, Names and Comments passes re-record their own falls, each named in its pass (`re-recorded .jterrazz/baseline.json › typescript › <rule> <was> → <now>`). Debt that grew is written only by `typescript baseline`, by hand.
 
 ### Recording it
 
@@ -334,11 +360,11 @@ The first two rule ids overlap publint on purpose. They read the SOURCE TREE and
 
 ### The build guard
 
-A published build never carries test material, and `publish/no-test-code-in-production` refuses one that does. The pass builds the package as it builds — its own `tsdown.config.*`, else the `bundle` preset over the entries its `exports` map earns — and reads each chunk's module ids off a `generateBundle` hook.
+A published build never carries test material, and `publish/no-test-code-in-production` refuses one that does. The pass builds the package as it builds — the plan `typescript build` derives from its manifest — and reads each chunk's module ids off a `generateBundle` hook.
 
-Without a config of its own, that build IS `typescript bundle`'s: the same preset file, and the entries the same [entry-points.ts](https://github.com/jterrazz/package-typescript/blob/main/lint/kit/project/entry-points.ts) reads off the map. Each chunk is named as the build writes it — `.js` and `.cjs` under the preset, and `.mjs` for an ESM chunk of a config that sets no extension — so `files` is asked about the path the tarball holds.
+That build IS `typescript build`'s: the same plan, from the entries [entry-points.ts](https://github.com/jterrazz/package-typescript/blob/main/lint/kit/project/entry-points.ts) reads off the map. Each chunk is named as the build writes it, `.js` and `.cjs`, so `files` is asked about the path the tarball holds.
 
-That build leaves the disk alone as far as tsdown lets it: no chunk is written, and the config's `copy`, `exe` and `onSuccess` are switched off. A config's own `hooks` are the one thing an inline option cannot switch off, so a `build:done` hook that writes still writes.
+That build leaves the disk alone: no chunk is written.
 
 A file `files` ships — read as npm reads it, where a later `!` entry takes back what an earlier one gave — is judged on three counts:
 
@@ -366,6 +392,8 @@ A map is declared in `jterrazz.config.ts`, under `typescript.architecture`:
 import { defineConfig } from '@jterrazz/typescript/config';
 
 export default defineConfig({
+    kind: 'library',
+    platform: 'node',
     typescript: {
         architecture: {
             hexagonal: true,
@@ -394,7 +422,7 @@ src/handlers/orders.ts:2:24: error architecture(handlers-reach-services): found:
 
 A project that already keeps a `.dependency-cruiser.cjs`, `.js` or `.mjs` at its root has it extended, not replaced: its own rules run beside the declared ones, and a violation of one prints its `comment` as the why. A cruise starts from every top-level folder the sweep holds a source file in — never a dot-folder, never the ground a spec stands on, which the cruise skips at any depth — so a map judges `app/domain/` as it judges `src/domain/`. A declared map with no such folder to cruise fails the pass in four parts: its silence would read as every boundary kept. The pass is launched wherever a `jterrazz.config.ts` or a `lint/` folder exists and resolves the settings itself, so a map written by shorthand, a spread or an imported object is judged like one written in place. A layer whose `from` names no file of the project is dropped before the cruise: the base preset's laws cost a project without a `lint/` tree nothing. A map the pass cannot read, such as a `jterrazz.config.ts` that does not load or a layer missing one of its six parts, fails the pass in four parts, and so does a dependency-cruiser that cannot run or that stops with no report.
 
-A project that adopts a map its tree already crosses records the crossings with `typescript baseline`: each `architecture/<name>` count goes into `jterrazz.baseline.json › typescript` and is held exactly, like every count of [the ratchet](#what-jterrazzbaselinejson-still-holds), so a new crossing fails the run and a paid one is re-recorded by `typescript fix`.
+A project that adopts a map its tree already crosses records the crossings with `typescript baseline`: each `architecture/<name>` count goes into `.jterrazz/baseline.json › typescript` and is held exactly, like every count of [the ratchet](#what-jterrazzbaselinejson-still-holds), so a new crossing fails the run and a paid one is re-recorded by `typescript fix`.
 
 A package that ships layers for its consumers hands them in its preset, and a project declaring the preset is held to them beside its own: [Configuration § Presets](06-configuration.md#presets).
 
@@ -431,33 +459,20 @@ Not a pass: a report, printed at the end of every `check`. Four numbers, because
 ```text
  DRIFT  Deviations from the profile
 
-  profile                              node
-  rules off vs profile                 none
-  suppressions                         2
-  jterrazz.baseline.json › typescript  7
-  jterrazz.baseline.json › test        3
-  tool versions                        in range
+  declared                              api on node
+  rules off vs profile                  1 (no-console)
+  suppressions                          2
+  .jterrazz/oxlint-suppressions.json    nothing held
+  .jterrazz/baseline.json › typescript  7
+  .jterrazz/baseline.json › test        3
+  tool versions                         in range
 ```
 
-A rule turned off, a suppression written, a baseline entry recorded and a tool left behind are the four ways a project drifts — and a preset's law set aside, the fifth, printed as `laws set aside` with each law's name wherever the project keeps one under `optOuts` ([Configuration](06-configuration.md#setting-a-law-aside)). The baseline is named by every section the file keeps — `typescript` always, each other only where the project keeps it — because a count with no section beside it says nothing about which debt it is. A section absent, or holding no entry, reads `nothing held` — the Oxlint pass's words for the same state, so one state has one word. A file the Oxlint pass refuses as `baseline-unreadable` reads `unreadable`: it was never read, so it holds no count the row may claim, not even none. `typescript check --json` prints the same reading for a machine — the block under the `DRIFT` header becomes one JSON object, every pass above it still prints for a human — which is how a fleet-wide sweep collects the table. Its `baseline` is the `typescript` section's total, `null` where the file does not keep it, or `"unreadable"`; `sections` maps every other section of debt the file keeps to its total, and `floors` each section a preset declares a floor to its count of measures — a person reads `a floor of 4 measure(s)`, since percentages summed say nothing; `optOuts` lists each law set aside with its reason. Where a person reads `nothing held`, the machine keeps an absent section (`null`, or no key in `sections`) apart from an emptied one (`0`), because a sweep counting who adopted the ratchet needs the difference.
+A rule set apart, a suppression written, a baseline entry recorded and a tool left behind are the four ways a project drifts — and a preset's law set aside, the fifth, printed as `laws set aside` with each law's name wherever the project keeps one under `optOuts` ([Configuration](06-configuration.md#setting-a-law-aside)). The baseline is named by every section the file keeps — `typescript` always, each other only where the project keeps it — because a count with no section beside it says nothing about which debt it is. A section absent, or holding no entry, reads `nothing held` — the Oxlint pass's words for the same state, so one state has one word. A file the Oxlint pass refuses as `baseline-unreadable` reads `unreadable`: it was never read, so it holds no count the row may claim, not even none. `typescript check --json` prints the same reading for a machine — the block under the `DRIFT` header becomes one JSON object, every pass above it still prints for a human — which is how a fleet-wide sweep collects the table. Its `baseline` is the `typescript` section's total, `null` where the file does not keep it, or `"unreadable"`; `sections` maps every other section of debt the file keeps to its total, and `floors` each section a preset declares a floor to its count of measures — a person reads `a floor of 4 measure(s)`, since percentages summed say nothing; `optOuts` lists each law set aside with its reason. Where a person reads `nothing held`, the machine keeps an absent section (`null`, or no key in `sections`) apart from an emptied one (`0`), because a sweep counting who adopted the ratchet needs the difference.
 
-**The profile is read off the consumer's config, and a config that names none is NOT measured.** A project extending no profile of this package is not drifting from one, it never joined it, and reporting two hundred rules as "off" would say nothing about anything. The name comes from the config's own `import`, which is the only evidence there is: oxlint's config schema is closed, so a compiled profile cannot carry its own name through to `--print-config`.
-
-A project with no oxlint config of its own is measured against the default `check` hands its linter, the config its presets compose: its profile line names the profile its presets resolve, `node (the default — no config of its own)` where none is named, and `--json` names it with `config: "default"` — where a project whose own config extends `node` reads `config: "own"`, so a fleet sweep tells the two apart. The default is what the presets hold the project to, so no rule is off it and nothing can be unreasoned; the other three numbers are the project's as for any other.
+**The profile is the declared platform's, and what is off is read from the settings.** `declared` names the kind and the platform, or says the project declares nothing and is measured on `node`; `rules off vs profile` counts the rules `typescript.oxlint` turns off, each of which already carries its reason there ([Configuration](06-configuration.md#the-lint-rules)), so the report names them and refuses nothing. `--json` prints the declaration as `declaration`, `null` where there is none, and the rules as `rulesOff`.
 
 The versions line reports only what deviates. The full table is `typescript doctor`'s, and printing it on every run would put a number that changes with every dependency bump in front of a reader looking for what changed in their own tree.
-
-### The one thing it refuses
-
-<!-- GENERATED:findings drift -->
-
-| Rule                               | Requirement                                                                   |
-| ---------------------------------- | ----------------------------------------------------------------------------- |
-| `drift/off-rule-states-its-reason` | A rule the profile has on, turned off by the project, carries its // reason:. |
-
-<!-- /GENERATED:findings drift -->
-
-A project may know things the profile does not, so turning a rule off is allowed. Doing it silently is not: the reason is what the next reader — or the next bump — needs, and a config line is where it belongs. Everything else in the report only ever reports.
 
 ## The Suppressions (directives) pass
 
@@ -481,7 +496,7 @@ export function announce(message: string): void {
 }
 ```
 
-Turning a rule off for the whole project is the lint config's, with a `// reason:` ([Configuration § The lint config](06-configuration.md#the-lint-config)).
+Turning a rule off for the whole project is `typescript.oxlint`'s, with its reason ([Configuration § The lint rules](06-configuration.md#the-lint-rules)).
 
 A directive is read only where a checker reads one: at the OPENING of a comment. Prose about a suppression, and a string carrying its spelling — the gate's own source is made of both — is not a suppression, and neither oxlint nor tsc would treat it as one.
 
@@ -554,7 +569,7 @@ A construct is judged on the WHOLE name: `type-registry.ts` names a subject and 
 
 A package that publishes a build names each entry for what it publishes, so the tree says which file a consumer's `import` lands on without the manifest open. The source a subpath is built from is `index[.<subpath>][.browser].ts`: `.` from `index.ts`, `./config` from `index.config.ts`, `./rules` under its `browser` condition from `index.rules.browser.ts`, a nested subpath with a dot for each slash. `node` is the default runtime, never a variant, so no entry is named `.node`. A bin the build compiles is `<command>.bin.ts`, named for the command a consumer types: `typescript` from `typescript.bin.ts`. A module the package's own code loads by path — a program it spawns, a plugin a tool loads — is a private entry: it is declared as a `#` import in the manifest's `imports`, `#checker` built from `index.checker.ts`, and named by the same grammar.
 
-The pass reads the `exports`, `imports`, `main` and `bin` targets under the build's output folder, and maps each to its source through the unit's own `tsdown.config.*` — read as text, an entry named for its key, or for its file where it has none — or, with no config of its own, through the mapping the `build` and `bundle` presets compile by: each published target from its entry under `src/`, named by this grammar ([Building](09-building.md#the-entries)). A pattern subpath (`./tsconfig/*`) publishes a folder, not an entry, and a target outside the build that is not code (a JSON preset) is no compiled entry: neither is judged. In a package that publishes a build, a bin, or a `.js`, `.cjs` or `.mjs` module, published from outside it is code no source compiles, and is refused; a package that builds nothing publishes its JavaScript as written.
+The pass reads the `exports`, `imports`, `main` and `bin` targets under the build's output folder, and maps each to its source through the mapping the build compiles by: each published target from its entry under `src/` or at the root of `lint/`, named by this grammar ([Building](09-building.md#the-entries)). A pattern subpath (`./tsconfig/*`) publishes a folder, not an entry, and a target outside the build that is not code (a JSON preset) is no compiled entry: neither is judged. In a package that publishes a build, a bin, or a `.js`, `.cjs` or `.mjs` module, published from outside it is code no source compiles, and is refused; a package that builds nothing publishes its JavaScript as written.
 
 - `names/entry-follows-its-grammar` refuses an entry named otherwise, at the source.
 - `names/index-is-an-entry` refuses a module under `src/` or `lint/` named `index` that builds nothing the package publishes — its test passes beside the entry it tests. A module that composes others for the package's own code is named for what it composes.
@@ -582,6 +597,8 @@ A project names its own rules of where a name sits under `typescript.names`, in 
 import { defineConfig } from '@jterrazz/typescript/config';
 
 export default defineConfig({
+    kind: 'library',
+    platform: 'node',
     typescript: {
         names: [
             {
@@ -633,7 +650,7 @@ The **root spine** is the folders a repository root holds, the same in every rep
 
 A skill is hand-written and read from the install, so anything beside its page — a file or a folder — is a second copy of a chapter or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
 
-`lint/` stands on the spine only where the package SHIPS it, and it ships it one of two ways. Directly: an entry of its `package.json`'s `files`, or a target of its `exports`, reaches into `lint/`. Or through its build: an entry of its `tsdown.config.*` compiles a `lint/` source, and the output it compiles to — `dist/<entry>`, or under the config's `outDir` — is published by an `exports`, `bin` or `main` target, or by a `files` entry no later `!` entry takes back. A package that ships its rules as `dist/oxlint.js`, built from its `./oxlint` entry under `lint/` ([the entry grammar](#the-entry-grammar)), is the case the second way exists for.
+`lint/` stands on the spine only where the package SHIPS it, and it ships it one of two ways. Directly: an entry of its `package.json`'s `files`, or a target of its `exports`, reaches into `lint/`. Or through its build: a target the build compiles from a `lint/` source ([Building](09-building.md#the-entries)) is published by an `exports`, `bin` or `main` target, or by a `files` entry no later `!` entry takes back. A package that ships its rules as `dist/oxlint.js`, built from its `./oxlint` entry under `lint/` ([the entry grammar](#the-entry-grammar)), is the case the second way exists for.
 
 A `lint/` nothing publishes holds rules no consumer receives — `src/` under another name — and is refused as `names/no-undeclared-root-folder`. The build config is read as text, never run: an entry is named for its key, `oxlint: 'lint/index.oxlint.ts'`, or for its file where it has none.
 
@@ -681,6 +698,8 @@ The second ground is that saying: the repository declares the root in its settin
 import { defineConfig } from '@jterrazz/typescript/config';
 
 export default defineConfig({
+    kind: 'library',
+    platform: 'node',
     typescript: { roots: { scripts: 'the release scripts the CI workflow runs' } },
 });
 ```
@@ -713,7 +732,7 @@ A directory holding only empty directories is empty, and is named once, at its t
 
 ### What the ratchet records
 
-Every rule is printed and recorded as `names/<rule>`, and carries the code `names(<rule>)`: `typescript baseline` writes the pass's counts into the `typescript` section of `jterrazz.baseline.json`, which holds only the `architecture/`, `names/` and `comments/` counts, while the linter's debt lives in `oxlint-suppressions.json`. Where the section holds a `names/*` entry, this pass is judged by it exactly, with the four refusals of [the ratchet](#the-ratchet), and `typescript fix` re-records the entries that fell. A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
+Every rule is printed and recorded as `names/<rule>`, and carries the code `names(<rule>)`: `typescript baseline` writes the pass's counts into the `typescript` section of `.jterrazz/baseline.json`, which holds only the `architecture/`, `names/` and `comments/` counts, while the linter's debt lives in `.jterrazz/oxlint-suppressions.json`. Where the section holds a `names/*` entry, this pass is judged by it exactly, with the four refusals of [the ratchet](#the-ratchet), and `typescript fix` re-records the entries that fell. A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
 
 ## The Comments (density) pass
 
@@ -732,7 +751,7 @@ The default is no comment: the code speaks through its names, and a name that ne
 
 <!-- /GENERATED:findings comments -->
 
-The count is recorded as `comments/comment-lines-held-by-the-baseline` in the `typescript` section of `jterrazz.baseline.json`, and judged with the four refusals of [the ratchet](#the-ratchet): a count above the entry, a count and no entry, a count below it, an entry left at zero. `typescript fix` lowers the entry to a count that fell, and drops it at zero; only `typescript baseline` raises it, by hand, for a comment that states what the code cannot. The finding states itself in four parts, `found: … · why: … · fix: … · read: …`, and its `found` gives the density — the lines, and their share of the measured source.
+The count is recorded as `comments/comment-lines-held-by-the-baseline` in the `typescript` section of `.jterrazz/baseline.json`, and judged with the four refusals of [the ratchet](#the-ratchet): a count above the entry, a count and no entry, a count below it, an entry left at zero. `typescript fix` lowers the entry to a count that fell, and drops it at zero; only `typescript baseline` raises it, by hand, for a comment that states what the code cannot. The finding states itself in four parts, `found: … · why: … · fix: … · read: …`, and its `found` gives the density — the lines, and their share of the measured source.
 
 ## The Secrets (credentials) pass
 
@@ -759,14 +778,25 @@ Which scanner runs is decided inside the gate rather than by the command, becaus
 
 **There is no exception list, and there will not be one.** A hit is forgiven by exactly one thing: the same line declaring itself `fake`, `dummy`, `example`, `sample`, `synthetic` or `redacted`. A path allow-list is the first place a real leak hides, so the only way to silence this gate is to make the line say what it is.
 
+## Mutation
+
+```bash
+typescript mutation                                     # the module tests, against mutants of src/ and lint/
+typescript mutation --specs --mutate src/a.ts:10-20     # the whole suite, against mutants of the lines named
+```
+
+Not a pass and never part of `check`: [Stryker](https://stryker-mutator.io) rewrites the sources one mutant at a time and asks whether a test fails, which says what the coverage number cannot — whether a line the tests run is a line they judge. The command derives Stryker's config and the Vitest config it runs into `.artifacts/stryker/`, and a project keeps neither: Stryker and its Vitest runner are this package's dependencies. The default run mutates `src/` and `lint/` against the `unit` project, incrementally; `--specs` runs every project but the browser ones against a build of each mutant, which is slow enough that the run names the ranges it measures, and is refused without them.
+
+What a run leaves out is declared under `typescript.mutation`, each path mapped to its reason: `exclude` the tests that read the sources as text, and see the instrumented ones, and `ignore` the sources no test of the package can judge.
+
 ## Pitfalls
 
 - **A nested `oxlint.config.*` is loaded only on the path of a file oxlint is handed.** `check` hands it the sweep, which never holds the ground a test stands on, so a config committed under `_fixtures/` is never read, armed or broken. Handed a directory instead — the fallback when the sweep could not answer — oxlint discovers every config beneath it and loads them all before it lints anything, and one that cannot load fails the run.
-- **An ignore without a reason is the expected form of nothing.** Every entry in the project's `knip.json` tells the gate to overlook something, and the next reader has to re-derive why. The file is read as JSONC, so the reason goes beside the entry as a `//` comment — that is the form this toolchain expects, and the shape of the file is [Lint presets](08-lint-presets.md)'s.
-- **An export used in its own file is not dead.** The base preset sets `ignoreExportsUsedInFile: true`, so the `cleanup-passed-to-after-all` idiom's same-file `cleanup` and a capsule's flags read back by its sibling test never need a project-local `knip.json` line to stay unreported.
+- **An ignore without a reason is the expected form of nothing.** Every entry under `typescript.knip` tells the gate to overlook something, and the next reader would have to re-derive why — so each one maps to its reason ([Lint presets](08-lint-presets.md#unused-code-knip)).
+- **An export used in its own file is not dead.** The base preset sets `ignoreExportsUsedInFile: true`, so the `cleanup-passed-to-after-all` idiom's same-file `cleanup` and a capsule's flags read back by its sibling test never need a `typescript.knip` line to stay unreported.
 - **Knip is check-only.** Fix mode never runs it because its remedies (deleting exports, files, deps) are destructive.
 - **Knip runs uncached, on purpose.** Its `--cache` would be the obvious speed-up and it can lie: a cached glob is validated against the mtimes of the directories that held a match, so a file added to a directory that held none is invisible, and the cached run passes a project the uncached run fails. Every other cache in the toolchain — tsc's buildinfo — is keyed on content and cannot.
 
 ## Related
 
-- [Lint presets](08-lint-presets.md) — oxlint presets, compose, architecture.
+- [Lint presets](08-lint-presets.md) — the rulebook, how the config merges, knip.

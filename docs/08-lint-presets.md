@@ -1,6 +1,6 @@
 # Lint presets
 
-The rulebook: what the Oxlint pass holds a project to. Every rule of every plugin this package loads is decided by name, either on at `error` or `off` with a recorded reason. A profile is a tested slice of that rulebook for one kind of project, named once in `jterrazz.config.ts` ([Getting started](05-getting-started.md#1-pick-a-profile)). The chapter opens on the laws every decision follows, then the profiles, then the decisions worth explaining, and ends on the full catalogue, generated from the rulebook itself.
+The rulebook: what the Oxlint pass holds a project to. Every rule of every plugin this package loads is decided by name, either on at `error` or `off` with a recorded reason. A profile is a tested slice of that rulebook for one platform, which the project's declared `platform` picks in `jterrazz.config.ts` ([Getting started](05-getting-started.md#1-declare-what-the-project-is)). The chapter opens on the laws every decision follows, then the profiles, then the decisions worth explaining, and ends on the full catalogue, generated from the rulebook itself.
 
 ## The four laws
 
@@ -23,14 +23,14 @@ This package's own suite refuses a fragment that breaks either invariant, so no 
 
 ## The profiles
 
-| Profile | Adds to the rulebook                                                  | tsconfig preset                                                |
-| ------- | --------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `node`  | nothing — services, command-line tools and published packages         | `tsconfig/node`, or `tsconfig/library` for a published package |
-| `next`  | react, jsx-a11y, nextjs; `import/extensions` at `never`               | `tsconfig/next`                                                |
-| `astro` | react, jsx-a11y, the `*.astro` decisions; Next is a restricted import | `tsconfig/astro`                                               |
-| `expo`  | react, jsx-a11y, the React Native platform decisions                  | `tsconfig/expo`                                                |
-| `bun`   | the globals Bun's runtime defines                                     | `tsconfig/node`                                                |
-| `react` | react, jsx-a11y; `import/extensions` at `never`, no framework plugin  | `tsconfig/react`                                               |
+| Profile | Adds to the rulebook                                                  | tsconfig preset  |
+| ------- | --------------------------------------------------------------------- | ---------------- |
+| `node`  | nothing — services, command-line tools and published packages         | `tsconfig/node`  |
+| `next`  | react, jsx-a11y, nextjs; `import/extensions` at `never`               | `tsconfig/next`  |
+| `astro` | react, jsx-a11y, the `*.astro` decisions; Next is a restricted import | `tsconfig/astro` |
+| `expo`  | react, jsx-a11y, the React Native platform decisions                  | `tsconfig/expo`  |
+| `bun`   | the globals Bun's runtime defines                                     | `tsconfig/node`  |
+| `react` | react, jsx-a11y; `import/extensions` at `never`, no framework plugin  | `tsconfig/react` |
 
 Type-aware linting is on in every one of them (`options.typeAware`), answered by `oxlint-tsgolint`, which embeds its own TypeScript — a consumer gets the 59 type-aware rules, each decided by name, without migrating to TypeScript 7.
 
@@ -40,9 +40,9 @@ Two conditions make those rules real, and both fail silently when they are not m
 
 Node ESM resolves a specifier literally and needs the `.js`; a bundler resolves it and refuses one. `node` and `bun` carry `always`; `next`, `astro`, `expo` and `react` carry `never`. Asset specifiers keep their extension everywhere, because a bundler resolves them BY it, and `astro` keeps `.astro` for the same reason: Astro's `resolve.extensions` does not carry it, so a layout imported without it fails the build. Both are `error` — a profile changes the convention, never the level.
 
-## `compose()` semantics
+## How the config is merged
 
-`compose(...configs)` merges deterministically, left to right:
+The derived config is the platform's profile, then each preset's oxlint config, then the project's `typescript.oxlint`, merged deterministically, left to right ([the merge order](06-configuration.md#the-merge-order)):
 
 | Keys                                                | Merge                                   |
 | --------------------------------------------------- | --------------------------------------- |
@@ -51,7 +51,7 @@ Node ESM resolves a specifier literally and needs the `.js`; a bundler resolves 
 | `env`, `globals`, `options`, `rules`, `settings`    | shallow-merged, last wins per key       |
 | anything else                                       | taken from the last config that sets it |
 
-`fromPresets(settings)` is one `compose` call over the profile of the base preset and each preset's own rules, in [the merge order](06-configuration.md#the-merge-order); a project's own additions are composed after it ([Configuration § The lint config](06-configuration.md#the-lint-config)).
+A workspace adds one block per member that declares itself: the member's own derived config, scoped to its folder as overrides after the root's — its rules, with every rule the root arms and the member's profile does not turned off, and its plugins — so each member is linted by its own platform from the one root config.
 
 ## Import boundaries
 
@@ -142,41 +142,40 @@ Several `off` reasons of kind `convention` name this page. Here is what they nam
 
 ## Unused code (knip)
 
-`typescript check` runs [Knip](https://knip.dev/) with a base config auto-merged with any project-local `knip.json`:
+`typescript check` runs [Knip](https://knip.dev/) with a config it derives and hands over by path; a project keeps no `knip.json`, and the [Config (one file) pass](07-quality-checks.md#the-config-one-file-pass) refuses one. The derived config is this package's preset, then what the project's manifest and build already say, then the project's `typescript.knip`:
 
-- `@jterrazz/*` packages auto-ignored.
-- Published libraries: `exports` / `types` / `files` rules auto-disabled.
-- Convention paths auto-ignored — `docs/`, and the ground a test stands on: `_fixtures/`, `_expected/`, `_seeds/` and `_requests/` wherever they sit, the four ground folders among the `_` names `@jterrazz/test` reserves — the same four the oxlint profiles, the oxfmt preset and the tsconfig presets leave out; every one but the tsconfig presets, which JSON keeps literal, reads them from the roster in `lint/kit/project/ground.ts`. Its `_setup/` is code, not ground: it is linted, formatted and typechecked like any source. At the root and inside every workspace member, because the convention belongs to the package.
-- Plugin dependencies (`*-plugin-*`, `@scope/*`) auto-ignored.
-- The toolchain's own config files — `oxlint.config.ts`, `oxfmt.config.ts`, `vitest.config.*`, `tsdown.config.*` — are named as `entry`, so they read as used even though a consumer never declares oxlint, oxfmt, vitest or tsdown itself: knip's own plugins for those tools only auto-enable when the tool is a DIRECT dependency, and this preset's contract is one devDependency ([Getting started](05-getting-started.md#the-shape-a-consumer-keeps)).
-- `jterrazz.config.ts`, the family's settings file, is named as `entry` too: the toolchain loads it and nothing imports it. A workspace member's own copy is ignored rather than entered, because the preset's `entry` reaches the root alone.
+- `@jterrazz/*` packages ignored, and the toolchain's own binaries, which a consumer never declares.
+- Published libraries: `exports` / `types` / `files` rules disabled.
+- Convention paths ignored — `docs/`, and the ground a test stands on: `_fixtures/`, `_expected/`, `_seeds/` and `_requests/` wherever they sit, the four ground folders among the `_` names `@jterrazz/test` reserves — the same four the oxlint profiles, the oxfmt preset and the tsconfig presets leave out; every one but the tsconfig presets, which JSON keeps literal, reads them from the roster in `lint/kit/project/ground.ts`. Its `_setup/` is code, not ground: it is linted, formatted and typechecked like any source. At the root and inside every workspace member, because the convention belongs to the package.
+- Plugin dependencies (`*-plugin-*`, `@scope/*`) ignored.
+- Every entry the build compiles is an `entry` — the manifest's targets and `typescript.build`'s ([Building](09-building.md#the-entries)) — so knip reads the same entry points the build does.
+- The editor files and `jterrazz.config.ts` are named as `entry`: the toolchain loads them and nothing imports them. knip's own oxlint plugin is off, since the config it would read is derived.
 
-Create a `knip.json` only for project-specific overrides. It is read as **JSONC** — comments and trailing commas — so every override states why it exists ([Quality checks](07-quality-checks.md)):
+What knip cannot trace is declared under `typescript.knip`, each path or name mapped to the reason it is named:
 
-```json
-{
-    "ignoreDependencies": [
-        // Loaded by the bundler at runtime, never imported from source.
-        "some-runtime-plugin"
-    ]
-}
+```ts
+// jterrazz.config.ts
+import { defineConfig } from '@jterrazz/typescript/config';
+
+export default defineConfig({
+    kind: 'api',
+    platform: 'node',
+    typescript: {
+        knip: {
+            ignoreDependencies: {
+                'some-runtime-plugin':
+                    'loaded by the bundler at runtime, never imported from source',
+            },
+        },
+    },
+});
 ```
 
-`knip.jsonc` is read the same way, for a project that prefers the extension. The two differ only under the formatter: it drops a trailing comma from a `.json` and keeps one in a `.jsonc`, and the parser accepts either.
+The four keys are `entry`, `ignore`, `ignoreBinaries` and `ignoreDependencies`, each added to the preset's own. The config is derived from the project's `package.json` too, so one that does not parse is refused in four parts before knip runs, rather than leaving knip to judge the project against a config it never wrote.
 
 ### Workspaces
 
-Knip is workspace-aware on its own: it reads the `workspaces` globs from your `package.json` and reports per member from a single run — which is why `check` invokes it once, at the root. Per-member settings go under a `workspaces` key in your `knip.json`:
-
-```json
-{
-    "workspaces": {
-        "apps/api": { "ignoreDependencies": ["some-local-dep"] }
-    }
-}
-```
-
-The base preset declares no `workspaces`, so the key reaches knip exactly as written.
+Knip is workspace-aware on its own: it reads the `workspaces` globs from your `package.json` and reports per member from a single run — which is why `check` invokes it once, at the root, with the root's settings. knip resolves `ignore` from the root, so a member's path carries its folder: `apps/api/src/generated/**`.
 
 ## The catalogue
 
@@ -653,9 +652,9 @@ Every decision a profile ships, the profiles that carry it, its state, the reaso
 | `typescript/consistent-type-exports`                         | astro, bun, expo, next, node, react | on    | type-aware                                                                                                                                                                                                                                | 10.0.0 |
 | `typescript/consistent-type-imports`                         | astro, bun, expo, next, node, react | on    | —                                                                                                                                                                                                                                         | 10.0.0 |
 | `typescript/dot-notation`                                    | astro, bun, expo, next, node, react | on    | type-aware                                                                                                                                                                                                                                | 10.0.0 |
-| `typescript/explicit-function-return-type`                   | astro, bun, expo, next, node, react | off   | covered — src/presets/tsdown/bundle.ts — isolatedDeclarations requires the annotation exactly where it is load-bearing, on a published export                                                                                             | 10.0.0 |
+| `typescript/explicit-function-return-type`                   | astro, bun, expo, next, node, react | off   | covered — TypeScript — the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS4058)                                                                                  | 10.0.0 |
 | `typescript/explicit-member-accessibility`                   | astro, bun, expo, next, node, react | on    | —                                                                                                                                                                                                                                         | 10.0.0 |
-| `typescript/explicit-module-boundary-types`                  | astro, bun, expo, next, node, react | off   | covered — src/presets/tsdown/bundle.ts — isolatedDeclarations requires the annotation exactly where it is load-bearing, on a published export                                                                                             | 10.0.0 |
+| `typescript/explicit-module-boundary-types`                  | astro, bun, expo, next, node, react | off   | covered — TypeScript — the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS4058)                                                                                  | 10.0.0 |
 | `typescript/method-signature-style`                          | astro, bun, expo, next, node, react | on    | —                                                                                                                                                                                                                                         | 10.0.0 |
 | `typescript/no-array-delete`                                 | astro, bun, expo, next, node, react | on    | type-aware                                                                                                                                                                                                                                | 10.0.0 |
 | `typescript/no-base-to-string`                               | astro, bun, expo, next, node, react | on    | type-aware                                                                                                                                                                                                                                | 10.0.0 |
@@ -980,4 +979,4 @@ Every decision a profile ships, the profiles that carry it, its state, the reaso
 ## Related
 
 - [Quality checks](07-quality-checks.md) — how the presets are run.
-- [Configuration](06-configuration.md) — the settings file that names a profile.
+- [Configuration](06-configuration.md) — the settings file whose platform picks a profile.

@@ -1,6 +1,6 @@
 # Getting started
 
-From an empty folder to a green `typescript check`: one install, one profile, three small config files, the scripts, a `Makefile` and a small manual. Every file below is complete as written.
+From an empty folder to a green `typescript check`: one install, one declaration, three derived lines, the scripts, a `Makefile` and a small manual. Every file below is complete as written.
 
 ## Before you start
 
@@ -12,78 +12,65 @@ From an empty folder to a green `typescript check`: one install, one profile, th
 npm install @jterrazz/typescript --save-dev
 ```
 
-tsc, oxlint, oxfmt, knip and tsdown are the package's own dependencies and arrive with it. Never install one of them directly: the project would then hold two opinions of its own toolchain, and their versions drift apart from there.
+tsc, oxlint, oxfmt, knip, tsdown and Stryker are the package's own dependencies and arrive with it. Never install one of them directly: the project would then hold two opinions of its own toolchain, and their versions drift apart from there.
 
-## 1. Pick a profile
+## 1. Declare what the project is
 
-A project names one profile. It decides which lint rules apply, and the tsconfig preset follows from the same choice:
+A project says two things about itself, in `jterrazz.config.ts`, and every law, check and editor file follows from them: its **kind**, what it is, and its **platform**, what it runs on.
 
-| Profile | For                                | `extends` in `tsconfig.json`            |
-| ------- | ---------------------------------- | --------------------------------------- |
-| `node`  | services and command-line tools    | `@jterrazz/typescript/tsconfig/node`    |
-| `node`  | a package published to a registry  | `@jterrazz/typescript/tsconfig/library` |
-| `next`  | a Next.js application              | `@jterrazz/typescript/tsconfig/next`    |
-| `astro` | an Astro site                      | `@jterrazz/typescript/tsconfig/astro`   |
-| `expo`  | an Expo / React Native application | `@jterrazz/typescript/tsconfig/expo`    |
-| `bun`   | a project on the Bun runtime       | `@jterrazz/typescript/tsconfig/node`    |
-| `react` | React with no framework under it   | `@jterrazz/typescript/tsconfig/react`   |
+```ts
+// jterrazz.config.ts
+import { defineConfig } from '@jterrazz/typescript/config';
 
-A published package lints as `node` and compiles under `library`: what sets it apart is how it is built, not which rules it keeps.
+export default defineConfig({ kind: 'api', platform: 'node' });
+```
 
-The `node` and `library` presets type Node's own API, so a project on either installs those types beside the toolchain; without them the TypeScript Check pass fails on `Cannot find type definition file for 'node'`:
+| Kind        | What it is                                  | Its platforms                                         |
+| ----------- | ------------------------------------------- | ----------------------------------------------------- |
+| `library`   | a package others import, its `exports` kept | any                                                   |
+| `api`       | a service answering requests                | `node`, `bun`                                         |
+| `cli`       | a command, named in `bin`                   | `node`, `bun`                                         |
+| `website`   | a site or web application                   | `react`, `next`, `astro`                              |
+| `mobile`    | a mobile application                        | `expo`                                                |
+| `workspace` | the root of a monorepo                      | none — each member declares its own kind and platform |
+
+Both are closed lists, typed: an editor refuses `{ kind: 'api', platform: 'react' }` as you write it, and the [Config (one file) pass](07-quality-checks.md#the-config-one-file-pass) refuses it in `check`. The platform picks the lint profile and the tsconfig preset; the kind picks what the manifest must hold — a library its `exports`, a cli its `bin`. What each profile adds to the rulebook is [Lint presets](08-lint-presets.md#the-profiles)'s; what each tsconfig preset settles is [Configuration](06-configuration.md#the-tsconfig-presets)'s.
+
+The `node` and `bun` presets type Node's own API, so a project on either installs those types beside the toolchain; without them the TypeScript Check pass fails on `Cannot find type definition file for 'node'`:
 
 ```bash
 npm install @types/node --save-dev
 ```
 
-The `tsconfig.json` is one line, and nothing else belongs in it:
+## 2. The editor files are derived
+
+An editor reads its tools' configs from fixed names at the root, so three files stay there — and each is a line the declaration derives, never a place to configure anything:
+
+```ts
+// oxlint.config.ts
+export { default } from '@jterrazz/typescript/oxlint';
+```
+
+```ts
+// oxfmt.config.ts
+export { default } from '@jterrazz/typescript/oxfmt';
+```
 
 ```json
 { "extends": "@jterrazz/typescript/tsconfig/node" }
 ```
 
-What each profile adds to the rulebook is [Lint presets](08-lint-presets.md#the-profiles)'s; what each tsconfig preset settles is [Configuration](06-configuration.md#the-tsconfig-presets)'s.
+The `tsconfig.json` names the preset of the platform — `node` for `bun`, the platform's own for the others — and a `workspace` keeps none at its root, its members each keeping theirs. `typescript fix` writes all three, and `check` refuses one that says anything else (`config/editor-file-derived`): the content is the toolchain's, so a project changes its lint rules, its format or its build through `jterrazz.config.ts`, where every setting carries its reason ([Configuration](06-configuration.md)). The `oxlint` and `oxfmt` entries read `jterrazz.config.ts` from the directory the tool runs in, which is the project root for `check`, for the oxc language servers an editor starts there, and for a terminal at the root.
 
-## 2. Write the three config files
+No other tool config belongs at the root: knip, the build and mutation testing are configured by the command that runs them, from the same file, and a `knip.json`, a `tsdown.config.ts` or a `stryker.config.json` is refused (`config/no-tool-config`).
 
-The settings file names the profile, through the base preset `typescript()`:
-
-```ts
-// jterrazz.config.ts
-import { defineConfig, typescript } from '@jterrazz/typescript/config';
-
-export default defineConfig({ presets: [typescript({ profile: 'node' })] });
-```
-
-The lint config composes what the settings file declares, and names nothing else:
-
-```ts
-// oxlint.config.ts
-import { defineConfig, fromPresets } from '@jterrazz/typescript/oxlint';
-
-import settings from './jterrazz.config.ts';
-
-export default defineConfig(fromPresets(settings));
-```
-
-The format config takes the shared formatting as it is:
-
-```ts
-// oxfmt.config.ts
-import { base, defineConfig } from '@jterrazz/typescript/oxfmt';
-
-export default defineConfig(base);
-```
-
-Each file imports `@jterrazz/typescript` and nothing else, its tool's `defineConfig` included. Importing `defineConfig` from `oxlint` or `oxfmt` would make the project declare those packages too, and under pnpm, which resolves only what a project declares, the import fails with `ERR_MODULE_NOT_FOUND`.
-
-A project using `@jterrazz/test` lists its preset beside the base one, `presets: [typescript({ profile: 'node' }), test()]`, and the same `fromPresets` line arms its lint rules. Everything else the settings file can say is [Configuration](06-configuration.md)'s.
+A project using `@jterrazz/test` lists its preset, `presets: [test()]`, and its lint rules and checks join the toolchain's. Everything else the settings file can say is [Configuration](06-configuration.md)'s.
 
 ## 3. Wire the CLI into package.json
 
-Every config file above is an ES module, so `package.json` says `"type": "module"`; without it Node refuses `import` in all three, and every pass that reads one fails. An application is `"private": true` and keeps no `main`: `npm init` writes a `main` and no `private`, and a package that is not private is judged as one the registry would publish, by the [Publish pass](07-quality-checks.md#the-publish-packaging-pass) and the docs spine of step 5.
+Every config file above is an ES module, so `package.json` says `"type": "module"`; without it Node warns on every file it loads, and the tools reading one print it. An application is `"private": true` and keeps no `main`: `npm init` writes a `main` and no `private`, and a package that is not private is judged as one the registry would publish, by the [Publish pass](07-quality-checks.md#the-publish-packaging-pass) and the docs spine of step 5.
 
-An application builds with `build`:
+The scripts are the same for every kind:
 
 ```json
 {
@@ -100,21 +87,9 @@ An application builds with `build`:
 }
 ```
 
-A library builds with `bundle`, which adds a CommonJS output beside the ESM one:
+`build` compiles what the manifest publishes — the `exports`, `main` and `bin` targets, each from its source — and a `.cjs` target gets a CommonJS output beside the ESM one, so a library and an application build with the same command. A library drops `"private": true` and `start`/`dev`.
 
-```json
-{
-    "type": "module",
-    "scripts": {
-        "build": "typescript bundle",
-        "lint": "typescript check",
-        "lint:fix": "typescript fix",
-        "test": "vitest --run --passWithNoTests"
-    }
-}
-```
-
-What each build command produces, and which entries it compiles, is [Building](09-building.md).
+What the build produces, and how it reads the entries, is [Building](09-building.md).
 
 `test` runs the project's own test runner: the toolchain ships none. The scripts above use vitest, which `@jterrazz/test` builds on, installed beside it with `npm install vitest --save-dev`; `--passWithNoTests` keeps an empty project green until its first test lands, and goes then.
 
@@ -170,12 +145,12 @@ A repository that ships — a `package.json` not marked `"private": true`, such 
 ✓ Passed
 
  DRIFT  Deviations from the profile
-  profile                              node
-  rules off vs profile                 none
-  suppressions                         0
-  oxlint-suppressions.json             nothing held
-  jterrazz.baseline.json › typescript  nothing held
-  tool versions                        in range
+  declared                              api on node
+  rules off vs profile                  none
+  suppressions                          0
+  .jterrazz/oxlint-suppressions.json    nothing held
+  .jterrazz/baseline.json › typescript  nothing held
+  tool versions                         in range
 
 ✓ All checks passed
 ```
@@ -200,15 +175,16 @@ That is the whole contract, and it is meant to stay that size:
 
 - **One devDependency**, `@jterrazz/typescript`.
 - **Two commands**, `typescript check` and `typescript fix`. Every gate sits behind them, so a script calling a tool underneath skips the passes the command orchestrates.
-- **One line of tsconfig**, the `extends`, required: the TypeScript Check pass compiles by it. In a workspace it is one line per member: the toolchain measures from the package, not the repository.
-- **Three config files, each optional to `check`.** Where `jterrazz.config.ts` is missing, the project is held to the base preset on the `node` profile; where `oxlint.config.ts` or `oxfmt.config.ts` is, `check` hands the same composition by path. Written out, they say the profile in the open, and they are what a tool run outside `check`, an editor's included, finds.
+- **One file of settings**, `jterrazz.config.ts`: the kind, the platform, the presets, and every setting with its reason.
+- **Three derived lines**, `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json`, each written by `fix` and refused by `check` when it says anything else. In a workspace the `tsconfig.json` is one per member: the toolchain measures from the package, not the repository.
+- **Two tracked ledgers at most**, under `.jterrazz/`: the debt the ratchet holds, gone when it is paid ([the ratchet](07-quality-checks.md#the-ratchet)).
 - **Six gestures**, the `Makefile` above, and **a manual**, `AGENTS.md` and `docs/`: both required at a repository root.
 
-A local `compilerOption` is a smell, not a shortcut. It says the preset lacks something, and settles that lack for one project where nobody else reads it, so the next project meets the same gap and answers it differently. Change the preset instead, where every project gets the answer.
+A local `compilerOption` has no place to go, and that is the point. It says the preset lacks something, and settles that lack for one project where nobody else reads it, so the next project meets the same gap and answers it differently. Change the preset instead, where every project gets the answer.
 
 ## Where a tool's output goes
 
-Every build, test and lint artefact lives under `.artifacts/<tool>/` at the project root: `.artifacts/tsc/` for the incremental build info, `.artifacts/vitest/coverage/` for coverage, one folder per tool that writes. One directory to ignore, one to delete, and nothing beside the source.
+Every build, test and lint artefact lives under `.artifacts/<tool>/` at the project root: `.artifacts/tsc/` for the incremental build info, `.artifacts/vitest/` for the test cache and coverage, `.artifacts/stryker/` for mutation runs, `.artifacts/dev/` for the scripts a repository builds for itself — one folder per tool that writes, all of it regenerable. One directory to ignore, one to delete, and nothing beside the source.
 
 `dist/` is the one exception. It is a build's product, published from beside `src/`, not an artefact.
 

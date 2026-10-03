@@ -10,8 +10,8 @@ The work itself runs in fast native tools wherever one exists: [Oxc](https://oxc
 
 ## The ideas to hold
 
-- **A profile.** A project names one of six profiles, `node`, `next`, `astro`, `expo`, `bun` or `react`, and the tsconfig preset that goes with it. The profile decides which lint rules apply ([Lint presets](docs/08-lint-presets.md#the-profiles)). A profile is not a preset: the words are told apart in [the manual's map](docs/README.md#the-words-of-this-manual).
-- **The settings file.** `jterrazz.config.ts` is the one settings file of the `@jterrazz` family. It lists the presets the project is held to: the base `typescript()` preset always, and the preset of any sibling package it uses, such as `@jterrazz/test`'s ([Configuration](docs/06-configuration.md)).
+- **A declaration.** A project says what it is — its kind, `library`, `api`, `cli`, `website`, `mobile` or `workspace` — and what it runs on — its platform, `node`, `bun`, `react`, `next`, `astro` or `expo`. The lint profile, the tsconfig preset, the laws and the checks follow from those two words ([Getting started](docs/05-getting-started.md#1-declare-what-the-project-is)). The words are told apart in [the manual's map](docs/README.md#the-words-of-this-manual).
+- **The settings file.** `jterrazz.config.ts` is the one settings file of the `@jterrazz` family. It holds the declaration, the presets of the sibling packages the project uses, such as `@jterrazz/test`'s, and every setting of every tool, each with its reason. The files an editor reads at the root — `oxlint.config.ts`, `oxfmt.config.ts`, `tsconfig.json` — are one derived line each, and no other tool keeps a config ([Configuration](docs/06-configuration.md)).
 - **Two everyday commands.** `typescript check` runs every quality pass in parallel and fails on any finding, each printed with what was found, why it matters, how to fix it and the chapter to read. `typescript fix` repairs whatever can be repaired automatically ([Quality checks](docs/07-quality-checks.md)).
 - **A baseline.** When a stricter release lands on an existing project, `typescript baseline` records today's debt. From then on each count may only fall ([Operating § Adopting a stricter release](docs/04-operating.md#adopting-a-stricter-release)).
 
@@ -21,13 +21,12 @@ The work itself runs in fast native tools wherever one exists: [Oxc](https://oxc
 npm install @jterrazz/typescript --save-dev
 ```
 
-What it needs from the machine — a Node version, a package manager, git — is [Getting started § Before you start](docs/05-getting-started.md#before-you-start). Then follow [Getting started](docs/05-getting-started.md): pick a profile, write three short config files, wire the scripts and the `Makefile`, and run `npx typescript check`. Every file it shows is complete as written.
+What it needs from the machine — a Node version, a package manager, git — is [Getting started § Before you start](docs/05-getting-started.md#before-you-start). Then follow [Getting started](docs/05-getting-started.md): declare the project, let `fix` write the derived files, wire the scripts and the `Makefile`, and run `npx typescript check`. Every file it shows is complete as written.
 
 ## The commands
 
 ```bash
-npx typescript build           # Build an application (ESM + types)
-npx typescript bundle          # Bundle a library (ESM + CJS + types)
+npx typescript build           # Build what the manifest publishes (ESM, CJS where it names one, types)
 npx typescript start           # Run the built application
 npx typescript dev             # Build, run, and rebuild on changes
 npx typescript check           # Every quality pass, in parallel, ending on a drift report
