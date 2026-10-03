@@ -1,3 +1,5 @@
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { OxfmtConfig } from 'oxfmt';
 
 import { oxfmtConfigAt } from './presets/oxfmt/project.js';
@@ -9,4 +11,4 @@ export type {
 } from 'oxfmt';
 
 export const oxfmtConfig = async (config: ImportMeta): Promise<OxfmtConfig> =>
-    await oxfmtConfigAt(config.dirname);
+    await oxfmtConfigAt(dirname(fileURLToPath(config.url)));
