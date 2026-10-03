@@ -11,6 +11,11 @@
     },
     {
         "family": "config",
+        "id": "config/editor-file-in-its-unit",
+        "sentence": "An editor file sits in the unit it is derived for: the oxlint and oxfmt configs at the repository root alone, a tsconfig.json — or a preset's file such as vitest.config.ts — in each declared project, and never at a workspace root, which declares no platform."
+    },
+    {
+        "family": "config",
         "id": "config/no-tool-config",
         "sentence": "A tool only the toolchain runs keeps no config file of its own: the command hands it the config jterrazz.config.ts derives."
     },

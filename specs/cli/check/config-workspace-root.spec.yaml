@@ -1,0 +1,17 @@
+description: refuses a tsconfig.json at a workspace root, whose members each keep their own
+fixture: ./_fixtures/config/workspace-root/
+env: TYPESCRIPT_CHECK_PASSES=config
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Config (one file)
+
+          tsconfig.json:1:1: error config(editor-file-in-its-unit): found: tsconfig.json sits at a workspace root, which declares no platform to derive it from · why: An editor file sits in the unit it is derived for: the oxlint and oxfmt configs at the repository root alone, a tsconfig.json — or a preset's file such as vitest.config.ts — in each declared project, and never at a workspace root, which declares no platform. · fix: delete it: each member keeps its own tsconfig.json, derived from its own jterrazz.config.ts · read: docs/07-quality-checks.md#the-config-one-file-pass
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

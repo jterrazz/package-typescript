@@ -145,7 +145,7 @@ function editorFindings(
         if (unit.path !== '.' && expected.scope === 'repository') {
             if (written !== null) {
                 findings.push(
-                    finding('config/no-tool-config', path, {
+                    finding('config/editor-file-in-its-unit', path, {
                         fix: `delete it: the root's ${name} derives this member's own from ${prefixed(unit.path, SETTINGS_FILE)}`,
                         found: `${path} is a second ${name} inside the repository, and replaces the root's in its subtree`,
                     }),
@@ -153,10 +153,18 @@ function editorFindings(
             }
             continue;
         }
-        if (
-            (written !== null && holdsEditorFile(written, expected)) ||
-            (expected.scope === 'unit' && unit.declaration?.kind === 'workspace')
-        ) {
+        if (expected.scope === 'unit' && unit.declaration?.kind === 'workspace') {
+            if (written !== null) {
+                findings.push(
+                    finding('config/editor-file-in-its-unit', path, {
+                        fix: `delete it: each member keeps its own ${name}, derived from its own ${SETTINGS_FILE}`,
+                        found: `${path} sits at a workspace root, which declares no platform to derive it from`,
+                    }),
+                );
+            }
+            continue;
+        }
+        if (written !== null && holdsEditorFile(written, expected)) {
             continue;
         }
         const text = editorFileText(expected);
