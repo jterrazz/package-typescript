@@ -252,6 +252,67 @@ function trackedArtefacts(root: string): string[] {
     });
 }
 
+const TURBO_CACHE = '.artifacts/turbo';
+
+type TurboCache = { found: string; path: string; text: string };
+
+function misplacedTurboCache(context: Context): null | TurboCache {
+    const path = join(context.root, 'turbo.json');
+    const written = context.read(path);
+    if (written === null) {
+        return null;
+    }
+    let config: Readonly<Record<string, unknown>>;
+    try {
+        config = parsedObject(written);
+    } catch {
+        return null;
+    }
+    const { cacheDir } = config;
+    if (
+        typeof cacheDir === 'string' &&
+        cacheDir.replace(/^\.\//u, '').replace(/\/$/u, '') === TURBO_CACHE
+    ) {
+        return null;
+    }
+
+    return {
+        found: typeof cacheDir === 'string' ? cacheDir : '.turbo/cache, its default',
+        path,
+        text: `${JSON.stringify({ ...config, cacheDir: TURBO_CACHE }, null, 4)}\n`,
+    };
+}
+
+const MISPLACED = 'Artefacts belong under .artifacts/<tool>/ at the project root:';
+
+function turboJudged(turbo: null | TurboCache, fix: boolean, headed: boolean): Judged {
+    if (turbo === null) {
+        return { lines: [], writes: [] };
+    }
+
+    return fix
+        ? {
+              lines: [`turbo.json rewritten: cacheDir ${TURBO_CACHE}`],
+              writes: [{ path: turbo.path, text: turbo.text }],
+          }
+        : {
+              lines: [
+                  ...(headed ? [] : [MISPLACED]),
+                  `  ✗ turbo.json caches in ${turbo.found} — its home is ${TURBO_CACHE}/, set as its cacheDir`,
+                  "Run 'typescript fix' to set it.",
+              ],
+              writes: [],
+          };
+}
+
+const committedLines = (tracked: readonly string[]): string[] =>
+    tracked.length === 0
+        ? []
+        : [
+              'Artefacts must never be committed:',
+              ...tracked.map((path) => `  ✗ ${path} is tracked — git rm --cached ${path}`),
+          ];
+
 function rewrite(lines: readonly Line[]): string {
     const kept = lines.filter((line) => line.home === null);
     const isIgnored = kept.some(
@@ -321,7 +382,7 @@ function misplacedLines(sources: readonly Source[]): string[] {
     const target = sources.find((source) => !source.own) ?? sources[0];
 
     return [
-        'Artefacts belong under .artifacts/<tool>/ at the project root:',
+        MISPLACED,
         ...misplaced.map(
             (line) =>
                 `  ✗ ${line.source.label} names ${line.pattern} — its home is ${line.home ?? ''}`,
@@ -343,28 +404,21 @@ export const gitignore: Pass = Object.freeze({
         }
 
         const sources = sourcesOf(context, ancestorPath);
-        if (sources.length === 0) {
+        const turbo = misplacedTurboCache(context);
+        if (sources.length === 0 && turbo === null) {
             return {};
         }
         const judged: Judged = context.fix
             ? fixed(sources)
             : { lines: misplacedLines(sources), writes: [] };
+        const cache = turboJudged(turbo, context.fix, judged.lines.length > 0);
         const tracked = trackedArtefacts(context.root);
+        const reported = judged.lines.length + cache.lines.length;
 
         return {
-            failed: tracked.length > 0 || (!context.fix && judged.lines.length > 0),
-            lines: [
-                ...judged.lines,
-                ...(tracked.length === 0
-                    ? []
-                    : [
-                          'Artefacts must never be committed:',
-                          ...tracked.map(
-                              (path) => `  ✗ ${path} is tracked — git rm --cached ${path}`,
-                          ),
-                      ]),
-            ],
-            writes: judged.writes,
+            failed: tracked.length > 0 || (!context.fix && reported > 0),
+            lines: [...judged.lines, ...cache.lines, ...committedLines(tracked)],
+            writes: [...judged.writes, ...cache.writes],
         };
     },
 });

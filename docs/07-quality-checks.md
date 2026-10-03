@@ -108,11 +108,12 @@ Every build, test and lint artefact lives under `.artifacts/<tool>/` at the proj
 
 The second file matters in a workspace whose `lint` DELEGATES to members — each one calling `typescript check` on its own, cwd'd there. Without it, a member with no `.gitignore` of its own would pass silently even when neither it nor the root ever declared the convention: the pass is opt-in on a file's existence, and only the package's own file used to be asked. An ancestor's pattern counts only when it is not ANCHORED to the ancestor's own directory — `.artifacts/`, not `/.artifacts/` — the same rule git applies when deciding whether a pattern reaches into a nested directory; a root that ignores `.artifacts/` this way covers every member beneath it.
 
-Three things fail it:
+Four things fail it:
 
 - **An artefact named outside `.artifacts/`** — `*.tsbuildinfo`, `.next` (see the conditional exception below), `out`, `build`, `coverage`, `target`, `test-results`, `playwright-report`, a `*.log`, `.vite`, `.cache`, or `bin/` (a Go output). The message names the `.artifacts/<tool>/` home each one moves to, and which file — the project's own or the ancestor's — named it. A pattern is read by the segment that carries its meaning, so `packages/*/coverage` and `coverage/` fail alike.
 - **`.artifacts/` not ignored by either file** — the convention's own directory must never reach a commit. When a workspace root exists, the message points at it — that is the shared file the fix belongs in.
 - **A committed artefact** — a tracked `*.tsbuildinfo`, or a tracked file under `.artifacts/`, `.next/`, `.turbo/`, `.vite/`, `.cache/`, `coverage/`, `playwright-report/` or `test-results/`. The remedy is `git rm --cached`, and it stays yours: the pass never deletes a file git is tracking.
+- **A turbo cache outside `.artifacts/turbo/`** — a `turbo.json` at the project root whose `cacheDir` is unset or names another path. `fix` sets it.
 
 `dist` is the one exception the convention itself carves out — a build's product stays beside `src/` and is published from there.
 
@@ -120,7 +121,7 @@ Three things fail it:
 
 These ignored paths are not artefacts of the convention, and the pass says nothing about them: `.expo/`, `ios/`, `android/`, `next-env.d.ts`, `.vercel`, `.build/`, `.swiftpm/`, `Package.resolved`, `DerivedData/`, `.gradle/`, `.metro-health-check*`, `.turbo/`, `node_modules/`. Each is a platform working directory a toolchain owns and cannot be told to move, or a file a framework expects at a fixed path. The list is closed: a path that is not on it and matches an artefact form fails.
 
-`.turbo/` is the one member a tool moves only HALF of: Turborepo pins its per-task log at `<package>/.turbo/turbo-<task>.log` with no key, flag or environment variable to relocate it, while its cache obeys `cacheDir` and still belongs at `.artifacts/turbo/`. Ignoring the directory is granted; committing what it holds is the tracked-file failure above.
+`.turbo/` is the one member a tool moves only HALF of: Turborepo pins its per-task log at `<package>/.turbo/turbo-<task>.log` with no key, flag or environment variable to relocate it, while its cache obeys `cacheDir` and still belongs at `.artifacts/turbo/`: a `turbo.json` whose `cacheDir` is anything else, or unset — the default is `.turbo/cache` — fails the pass, and `fix` sets it. Ignoring the directory is granted; committing what it holds is the tracked-file failure above.
 
 One more exception joins the list CONDITIONALLY: `.next`, but only when the project's `next.config.*` declares `output: 'export'`. In that mode Next reads `distDir` as the export destination and keeps its working directory pinned at `.next` regardless — `next/dist/export/utils.js`'s `hasCustomExportOutput` refuses to move it, proven by a real consumer's static site. The pass reads the config file textually for `output:\s*['"]export['"]`; without a match — including when there is no `next.config.*` at all — `.next` stays an ordinary artefact whose home is `.artifacts/next/`.
 

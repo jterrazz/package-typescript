@@ -1,0 +1,44 @@
+description: refuses a turbo cache outside .artifacts/turbo, and fix sets its cacheDir
+fixture: ./_fixtures/gitignore/turbo-cache/
+env: TYPESCRIPT_CHECK_PASSES=gitignore
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Gitignore (artefacts)
+
+          Artefacts belong under .artifacts/<tool>/ at the project root:
+            ✗ turbo.json caches in .turbo/cache, its default — its home is .artifacts/turbo/, set as its cacheDir
+          Run 'typescript fix' to set it.
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed
+    - command: fix
+      exit: 0
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  Gitignore (artefacts)
+
+          turbo.json rewritten: cacheDir .artifacts/turbo
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✓ All checks passed
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Gitignore (artefacts)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

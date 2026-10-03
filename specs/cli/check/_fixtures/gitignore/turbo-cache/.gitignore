@@ -1,0 +1,11 @@
+node_modules/
+dist/
+
+# Turborepo pins its task logs beside each package; its cache obeys cacheDir.
+.turbo/
+**/.turbo/
+apps/web/.turbo/
+
+# Build, test and lint artefacts (@jterrazz/typescript)
+.artifacts/
+.artifacts/turbo/
