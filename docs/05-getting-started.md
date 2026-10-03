@@ -34,7 +34,7 @@ export default defineConfig({ kind: 'api', platform: 'node' });
 | `mobile`    | a mobile application                        | `expo`                                                |
 | `workspace` | the root of a monorepo                      | none — each member declares its own kind and platform |
 
-Both are closed lists, typed: an editor refuses `{ kind: 'api', platform: 'react' }` as you write it, and the [Config (one file) pass](07-quality-checks.md#the-config-one-file-pass) refuses it in `check`. The platform picks the lint profile and the tsconfig preset; the kind picks what the manifest must hold — a library its `exports`, a cli its `bin`. What each profile adds to the rulebook is [Lint presets](08-lint-presets.md#the-profiles)'s; what each tsconfig preset settles is [Configuration](06-configuration.md#the-tsconfig-presets)'s.
+Both are closed lists, typed: an editor refuses `{ kind: 'api', platform: 'react' }` as you write it, and the [Config (one file) pass](07-quality-checks.md#the-config-one-file-pass) refuses it in `check`. The platform picks the lint profile and the tsconfig preset; the kind picks what the manifest must hold — a library its `exports`, a cli its `bin`, an application (`api`, `website`, `mobile`) `"private": true`. What each profile adds to the rulebook is [Lint presets](08-lint-presets.md#the-profiles)'s; what each tsconfig preset settles is [Configuration](06-configuration.md#the-tsconfig-presets)'s.
 
 The `node` and `bun` presets type Node's own API, so a project on either installs those types beside the toolchain; without them the TypeScript Check pass fails on `Cannot find type definition file for 'node'`:
 

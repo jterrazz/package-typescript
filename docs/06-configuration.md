@@ -35,10 +35,12 @@ Node loads the file itself, its types stripped, so it needs no build. A file tha
 
 The two closed lists, and which platforms each kind runs on, are [Getting started](05-getting-started.md#1-declare-what-the-project-is)'s table. What follows from them:
 
-| Follows from | What                                                                                                                                       |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| the platform | the oxlint profile ([Lint presets](08-lint-presets.md#the-profiles)), the tsconfig preset, the roots its framework imposes, the Astro pass |
-| the kind     | what the manifest holds — a library its `exports` or `main`, a cli its `bin` — and, for a `workspace`, that each member declares its own   |
+| Follows from | What                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| the platform | the oxlint profile ([Lint presets](08-lint-presets.md#the-profiles)), the tsconfig preset, the roots its framework imposes, the Astro pass                                                                                                                                                                                                                                                             |
+| the kind     | what the manifest holds — a library its `exports` or `main`, a cli its `bin`, an `api`, `website` or `mobile` app `"private": true`; whether the [Publish pass](07-quality-checks.md#the-publish-packaging-pass) judges it (a library or a cli) and knip reads its exports as a public surface (a library); for a `workspace`, that each member declares its own and the root keeps no `tsconfig.json` |
+
+An `api`, a `website` and a `mobile` app owe the same — an application nobody installs — and on purpose the kind derives nothing more between them: what differs is their platform's, which already picks the profile, the tsconfig preset and the framework's roots. The kind names what the project is, so a reader and a per-kind proof can tell them apart.
 
 A `workspace` declares no platform: its root `oxlint.config.ts` lints each member by the platform that member declares, the member's own profile and presets scoped to its folder, so one config serves a React website and a Node api side by side. A member keeps no `oxlint.config.ts` or `oxfmt.config.ts` of its own — a nested one would replace the root's in its subtree — and keeps its own `tsconfig.json`, derived from its platform.
 

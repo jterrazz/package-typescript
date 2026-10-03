@@ -48,7 +48,7 @@ for (const binary of ['oxlint', 'oxfmt']) {
 
 writeFileSync(
     join(root, 'package.json'),
-    `${JSON.stringify({ devDependencies: { '@jterrazz/typescript': '*' }, name: 'strict-consumer', type: 'module', version: '1.0.0' }, null, 4)}\n`,
+    `${JSON.stringify({ devDependencies: { '@jterrazz/typescript': '*' }, name: 'strict-consumer', private: true, type: 'module', version: '1.0.0' }, null, 4)}\n`,
 );
 writeFileSync(
     join(root, 'jterrazz.config.ts'),

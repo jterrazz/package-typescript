@@ -84,7 +84,7 @@ The root holds what a person wrote, and one file says what the project is. This 
 | `config/editor-file-derived`     | Each config file an editor discovers is the file jterrazz.config.ts derives, so the editor and the check judge alike.                                                                                                                                              |
 | `config/editor-file-in-its-unit` | An editor file sits in the unit it is derived for: the oxlint and oxfmt configs at the repository root alone, a tsconfig.json — or a preset's file such as vitest.config.ts — in each declared project, and never at a workspace root, which declares no platform. |
 | `config/no-tool-config`          | A tool only the toolchain runs keeps no config file of its own: the command hands it the config jterrazz.config.ts derives.                                                                                                                                        |
-| `config/kind-matches-manifest`   | A library publishes its exports, and a cli names its bin.                                                                                                                                                                                                          |
+| `config/kind-matches-manifest`   | A library publishes its exports, a cli names its bin, and an application — an api, a website, a mobile app — is private, never published.                                                                                                                          |
 
 <!-- /GENERATED:findings config -->
 

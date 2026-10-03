@@ -11,10 +11,11 @@ import {
     editorFileText,
     holdsEditorFile,
 } from '../../kit/project/editor-files.js';
-import { isJsonObject, parsedObject } from '../../kit/project/json.js';
+import { parsedObject } from '../../kit/project/json.js';
 import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import FINDINGS from '../catalogue/findings.json' with { type: 'json' };
+import { manifestGap, NAMED } from './config.manifest.js';
 
 const READ = 'docs/07-quality-checks.md#the-config-one-file-pass';
 
@@ -102,35 +103,33 @@ function declarationFindings(context: Context, unit: Unit): Finding[] {
 }
 
 function manifestFindings(context: Context, unit: Unit): Finding[] {
-    const manifest = manifestOf(context, unit.path);
     const kind = unit.declaration?.kind;
+    const gap = manifestGap(kind, manifestOf(context, unit.path));
+    if (gap === null || kind === undefined) {
+        return [];
+    }
     const path = prefixed(unit.path, 'package.json');
-    if (kind === 'library' && manifest.exports === undefined && manifest.main === undefined) {
-        return [
-            finding('config/kind-matches-manifest', path, {
-                fix: 'publish what the library offers in `exports`, or declare the kind the project is',
-                found: `${prefixed(unit.path, SETTINGS_FILE)} declares a library, and ${path} publishes no \`exports\``,
-            }),
-        ];
-    }
-    if (
-        kind === 'cli' &&
-        (manifest.bin === undefined ||
-            (isJsonObject(manifest.bin) && Object.keys(manifest.bin).length === 0))
-    ) {
-        return [
-            finding('config/kind-matches-manifest', path, {
-                fix: 'name the command in `bin`, or declare the kind the project is',
-                found: `${prefixed(unit.path, SETTINGS_FILE)} declares a cli, and ${path} names no \`bin\``,
-            }),
-        ];
-    }
 
-    return [];
+    return [
+        finding('config/kind-matches-manifest', path, {
+            fix: gap.fix,
+            found: `${prefixed(unit.path, SETTINGS_FILE)} declares ${NAMED[kind]}, and ${path} ${gap.owes}`,
+        }),
+    ];
 }
 
 const shownOf = (file: EditorFile, text: string): string =>
     'text' in file ? text.trim().replaceAll(/\n+/gu, ' ') : text.trim();
+
+const workspaceRootFindings = (path: string, name: string, written: null | string): Finding[] =>
+    written === null
+        ? []
+        : [
+              finding('config/editor-file-in-its-unit', path, {
+                  fix: `delete it: each member keeps its own ${name}, derived from its own ${SETTINGS_FILE}`,
+                  found: `${path} sits at a workspace root, which declares no platform to derive it from`,
+              }),
+          ];
 
 function editorFindings(
     context: Context,
@@ -155,14 +154,7 @@ function editorFindings(
             continue;
         }
         if (expected.scope === 'unit' && unit.declaration?.kind === 'workspace') {
-            if (written !== null) {
-                findings.push(
-                    finding('config/editor-file-in-its-unit', path, {
-                        fix: `delete it: each member keeps its own ${name}, derived from its own ${SETTINGS_FILE}`,
-                        found: `${path} sits at a workspace root, which declares no platform to derive it from`,
-                    }),
-                );
-            }
+            findings.push(...workspaceRootFindings(path, name, written));
             continue;
         }
         if (written !== null && holdsEditorFile(written, expected)) {

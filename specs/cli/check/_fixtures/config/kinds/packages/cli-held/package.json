@@ -1,0 +1,8 @@
+{
+    "name": "cli-held",
+    "version": "1.0.0",
+    "type": "module",
+    "bin": {
+        "clock": "./dist/clock.js"
+    }
+}

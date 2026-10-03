@@ -26,6 +26,10 @@ for (const tool of ['tsc', 'oxfmt', 'knip', 'ls-lint']) {
 stub(join(installed, 'node_modules/.bin/oxlint'), `echo '{ "diagnostics": [] }'`);
 
 writeFileSync(
+    join(root, 'package.json'),
+    `${JSON.stringify({ name: 'split-consumer', private: true, type: 'module', version: '1.0.0' }, null, 4)}\n`,
+);
+writeFileSync(
     join(root, 'jterrazz.config.ts'),
     "export default { kind: 'api', platform: 'node' };\n",
 );
