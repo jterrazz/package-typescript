@@ -9,6 +9,7 @@ import {
 } from 'node:fs';
 import { dirname, join } from 'node:path';
 
+import { cleanedUpOnEnding } from '../checker/ending.js';
 import { objectOf } from '../project/json.js';
 import { removeLedger } from './ledger-file.js';
 
@@ -23,16 +24,15 @@ export async function withStagedSuppressions<T>(root: string, run: () => Promise
     if (existsSync(ledger)) {
         copyFileSync(ledger, staged);
     }
-    try {
-        return await run();
-    } finally {
+
+    return await cleanedUpOnEnding(() => {
         if (existsSync(staged)) {
             mkdirSync(dirname(ledger), { recursive: true });
             renameSync(staged, ledger);
         } else {
             removeLedger(ledger);
         }
-    }
+    }, run);
 }
 
 export async function keptAcross<T>(root: string, run: () => Promise<T>): Promise<T> {
