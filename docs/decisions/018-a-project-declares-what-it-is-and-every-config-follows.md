@@ -29,13 +29,16 @@ beside both.
 - The files an editor discovers by name stay at the root as derived lines:
   `oxlint.config.ts` and `oxfmt.config.ts` re-export the `./oxlint` and
   `./oxfmt` entries, which derive the config from `jterrazz.config.ts` in
-  the directory the tool runs in, and `tsconfig.json` extends the platform's
-  preset. The Config (one file) pass refuses any other content, and `fix`
-  writes them. Each integration was run as the editor runs it before the
-  form was cut to one line: `oxlint --lsp` and `oxfmt --lsp` load the
-  re-export from the worktree root, the TypeScript 7 language server
-  resolves the `extends`, and the Vitest extension loads its config from
-  the config's own directory.
+  the directory the tool runs in, and `tsconfig.json` extends the
+  platform's preset, with what `typescript.tsconfig` adds and why. The
+  Config (one file) pass refuses any other content, and `fix` writes them.
+- Each integration was run as the editor runs it before the form was cut
+  to one line: `oxlint --lsp` and `oxfmt --lsp` load the re-export from
+  the worktree root, the TypeScript 7 language server resolves the
+  `extends`, and the Vitest extension loads its config from the config's
+  own directory. One integration refused the bare re-export: knip skips a
+  config that only re-exports from a package, so a sibling preset's
+  `vitest.config.ts` imports a call and default-exports it.
 - A tool only the command runs keeps no config: the command derives knip's,
   tsdown's and Stryker's from the manifest and `jterrazz.config.ts`, where
   every setting maps to its reason (`typescript.knip`, `typescript.build`,
