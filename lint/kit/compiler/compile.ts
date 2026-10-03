@@ -100,6 +100,7 @@ function asArray(value: unknown): unknown[] {
 }
 
 function objectOf(value: unknown): object {
+    // Stryker disable next-line ConditionalExpression,LogicalOperator: a merged key holds a table or nothing, and spreading nothing adds what `{}` adds
     return typeof value === 'object' && value !== null ? value : {};
 }
 
