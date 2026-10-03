@@ -1,7 +1,7 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { afterAll, describe, expect, onTestFinished, test } from 'vitest';
 
 import { PROFILES } from '../../../lint/consumer/rulebook/profiles.js';
 import { decisions } from '../../../lint/kit/catalogue/decisions.js';
@@ -15,8 +15,11 @@ import {
     packedTree,
     publishedBins,
     publishedTargets,
+    removePackedTree,
     selectingEnvironments,
 } from './_setup/packed-tree.js';
+
+afterAll(removePackedTree);
 
 // Judged on content, never on names: no text the tarball holds names a `self` rule, whatever file carries it.
 

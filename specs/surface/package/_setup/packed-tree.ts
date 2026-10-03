@@ -8,25 +8,28 @@ import { stripVTControlCharacters } from 'node:util';
 
 import { isRecord, unpackedInto } from '../../../_shared/_setup/packed/pack.js';
 
-// Unpacked under this checkout's .artifacts/, beside its install and apart from the run directory other spec files clean up, and removed when the process ends.
-
 const ROOT = resolve(import.meta.dirname, '../../../..');
 
-let extracted: string | undefined;
+let unpacked: undefined | { destination: string; tree: string };
 
 export function packedTree(): string {
-    if (extracted !== undefined) {
-        return extracted;
+    if (unpacked !== undefined) {
+        return unpacked.tree;
     }
     mkdirSync(join(ROOT, '.artifacts'), { recursive: true });
     const destination = mkdtempSync(join(ROOT, '.artifacts', 'tarball-audience-'));
-    process.once('exit', () => {
-        rmSync(destination, { force: true, recursive: true });
-    });
-    extracted = unpackedInto(destination);
-    symlinkSync(join(ROOT, 'node_modules'), join(extracted, 'node_modules'));
+    const tree = unpackedInto(destination);
+    symlinkSync(join(ROOT, 'node_modules'), join(tree, 'node_modules'));
+    unpacked = { destination, tree };
 
-    return extracted;
+    return tree;
+}
+
+export function removePackedTree(): void {
+    if (unpacked !== undefined) {
+        rmSync(unpacked.destination, { force: true, recursive: true });
+        unpacked = undefined;
+    }
 }
 
 export function packedFiles(tree: string, directory = tree): string[] {
