@@ -37,7 +37,7 @@ Every command exits `0` when it succeeded and non-zero otherwise; `check` and `f
 | Knip (unused code)        | knip (Node)                 | always (check only — it is not run in fix)                                                       |
 | a preset's label          | the preset's checks         | per `specs/` root and per member, for each declared preset that brings checks (check and fix)    |
 | Docs (layout)             | the manual gate             | check: at a repository root (a `.git` beside the project)                                        |
-| Publish (packaging)       | publint + attw + a build    | per package the registry would accept (not `private`)                                            |
+| Publish (packaging)       | publint + attw + a build    | per unit that declares a `library` or a `cli`                                                    |
 | Architecture (layer map)  | dependency-cruiser          | a `jterrazz.config.ts`, or a `.dependency-cruiser.*` (check and fix — `--fix` re-records a fall) |
 | Astro (check + format)    | astro check + prettier      | per project that depends on `astro` (check and fix)                                              |
 | Suppressions (directives) | the suppression gate        | always (check and fix — `--fix` settles two spellings)                                           |
@@ -342,7 +342,7 @@ A command of its own, because it neither checks nor repairs: it writes down wher
 
 This pass refuses a tarball the repository cannot see is broken. A packaging mistake is fatal in the registry: an `exports` entry pointing at a file nobody built, a subpath left out of `files` so it resolves in development and 404s in a consumer, a type declaration a modern resolver cannot see. [The build guard](#the-build-guard) refuses a build that compiles in test material, which works in the registry and ships what no product runs.
 
-It runs once per package the registry would accept — one that names an entry (`exports`, `main`) or a `publishConfig` and never says it is `private`. A private package, and a workspace root that only holds members, have no tarball to be judged on.
+It runs once per unit — the root, and each workspace member — that declares a kind npm publishes, a `library` or a `cli` ([Configuration](06-configuration.md#kind-and-platform)). An application, a workspace root that only holds members, and a project that declares nothing have no tarball to be judged on.
 
 <!-- GENERATED:findings publish -->
 
