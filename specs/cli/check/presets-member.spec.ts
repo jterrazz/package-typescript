@@ -18,9 +18,7 @@ function contribution(name: string, exit: 0 | 1): string {
                 valued: ['--member'],
                 check(context) {
                     const member = context.value('--member');
-                    const said = member === undefined
-                        ? \`${name} tree pass: \${context.positionals[0]}\`
-                        : \`${name} member pass: \${member}\`;
+                    const said = member === undefined ? '${name} repository pass' : \`${name} member pass: \${member}\`;
 
                     return { failed: ${String(exit === 1)}, lines: [said] };
                 },
@@ -107,7 +105,7 @@ const WRITING = `export default {
             return {
                 valued: ['--member'],
                 check(context) {
-                    return context.fix && context.value('--member') === '.'
+                    return context.fix
                         ? { writes: [{ path: 'written.ts', text: 'export const  written =1\\n' }] }
                         : {};
                 },
@@ -156,14 +154,14 @@ describe('presets-member', () => {
         expect(stdout).toContain('the stub recorded its section');
     });
 
-    test("runs a declared preset's checks once per member, and once per specs root", () => {
+    test("runs a declared preset's checks once, over the whole repository", () => {
         // Given - a workspace whose only declaration is the root's, one member with specs and one without
         // When - the quality checks run at the root
         const { status, stdout } = check(workspace());
 
-        // Then - every member is asked under the preset's own label, the one that owns no specs/ included, and the tree pass still runs per specs root
-        expect(passOf(stdout, 'Stub Conventions')).toContain(
-            'root tree pass: apps/api/specs\nroot member pass: .\nroot member pass: apps/api\nroot member pass: apps/web\n',
+        // Then - the preset is asked once, under its own label, and walks the members itself
+        expect(passOf(stdout, 'Stub Conventions')).toMatch(
+            /^Stub Conventions\n\nroot repository pass\n\S*✗ Failed/u,
         );
         expect(status).toBe(1);
     });
@@ -183,7 +181,7 @@ describe('presets-member', () => {
         expect(status).toBe(0);
     });
 
-    test('runs the preset a member declares, not the root one', () => {
+    test('runs the checks a member declares on that member, beside the repository run', () => {
         // Given - a member declaring its own preset beside the root's
         const root = workspace();
         declare(join(root, 'apps/api'), 'nested');
@@ -191,27 +189,9 @@ describe('presets-member', () => {
         // When - the quality checks run at the root
         const { stdout } = check(root);
 
-        // Then - the member is judged by its own declaration, and every other one by the root's
-        expect(stdout).toContain('nested member pass: apps/api');
-        expect(stdout).not.toContain('root member pass: apps/api');
-        expect(stdout).toContain('root member pass: apps/web');
-    });
-
-    test('stays out of a foreign tree vendored inside a member', () => {
-        // Given - a member holding a vendored project of its own, a repository with its own specs
-        const root = workspace();
-        const vendored = join(root, 'apps/api/vendor/other-project');
-        mkdirSync(join(vendored, 'specs'), { recursive: true });
-        writeFileSync(join(vendored, '.git'), 'gitdir: /nowhere\n');
-        writeFileSync(join(vendored, 'package.json'), '{ "name": "other-project" }\n');
-        writeFileSync(join(vendored, 'specs/index.test.ts'), 'export const value = 1;\n');
-
-        // When - the quality checks run at the root
-        const { stdout } = check(root);
-
-        // Then - the member's own specs are judged, and the vendored ones are another project's
+        // Then - the member is judged by its own declaration, the repository by the root's
         expect(passOf(stdout, 'Stub Conventions')).toContain(
-            'root tree pass: apps/api/specs\nroot member pass: .\n',
+            'root repository pass\nnested member pass: apps/api\n',
         );
     });
 

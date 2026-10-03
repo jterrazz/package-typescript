@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import process from 'node:process';
 
 import { readSettings } from '../../../lint/index.rules.js';
@@ -9,14 +9,12 @@ import { run } from '../processes.js';
 import type { Stream } from '../processes.js';
 import { checkerProgram } from '../toolchain.js';
 import type { Launched } from './launched.js';
-import { nearestPackageDir, specsRoots } from './project.js';
 import type { Check } from './setup.js';
 
 export type PresetRun = Launched & { label: string; root: boolean };
 
 export async function presetCheckersOf(unit: string): Promise<PresetChecker[]> {
-    const declaring = existsSync(join(unit, SETTINGS_FILE)) ? unit : '.';
-    const { resolved } = await readSettings(declaring);
+    const { resolved } = await readSettings(unit);
 
     return resolved.presets.flatMap(({ checker }) => (checker === undefined ? [] : [checker]));
 }
@@ -34,57 +32,46 @@ export async function presetChecker(
 
 type Planned = { args: string[]; checker: PresetChecker; root: boolean };
 
-async function treeRuns(check: Check): Promise<Planned[]> {
-    const planned = await Promise.all(
-        specsRoots(check.members).map(async (root) => {
-            const owner = nearestPackageDir(dirname(root));
-            const checkers = owner === null ? [] : await presetCheckersOf(owner);
-
-            return checkers.map((checker) => ({ args: [root], checker, root: false }));
-        }),
-    );
-
-    return planned.flat();
-}
-
-async function memberRuns(check: Check): Promise<Planned[]> {
-    const planned = await Promise.all(
-        ['.', ...check.members].map(async (member) => {
-            const checkers = await presetCheckersOf(member);
+async function planned(check: Check): Promise<Planned[]> {
+    const fixing = check.fix ? ['--fix'] : [];
+    const declaring = check.members.filter((member) => existsSync(join(member, SETTINGS_FILE)));
+    const units = await Promise.all(
+        ['.', ...declaring].map(async (unit) => {
+            const checkers = await presetCheckersOf(unit);
 
             return checkers.map((checker) => ({
-                args: ['--member', member, ...(check.fix ? ['--fix'] : [])],
+                args: unit === '.' ? fixing : ['--member', unit, ...fixing],
                 checker,
-                root: member === '.',
+                root: unit === '.',
             }));
         }),
     );
 
-    return planned.flat();
+    return units.flat();
 }
 
-async function fixed(check: Check, planned: readonly Planned[]): Promise<PresetRun[]> {
-    const runs: PresetRun[] = [];
-    for (const [index, { args, checker, root }] of planned.entries()) {
+async function fixed(check: Check, runs: readonly Planned[]): Promise<PresetRun[]> {
+    const done: PresetRun[] = [];
+    for (const [index, { args, checker, root }] of runs.entries()) {
         const log = check.logs.at(`preset-${String(index)}.log`);
         // oxlint-disable-next-line no-await-in-loop -- each run writes files the next one reads
         const status = await presetChecker(checker, args, { path: log });
-        runs.push({ label: checker.label, log, root, status: Promise.resolve(status) });
+        done.push({ label: checker.label, log, root, status: Promise.resolve(status) });
     }
 
-    return runs;
+    return done;
 }
 
 export async function presetRuns(check: Check): Promise<PresetRun[]> {
     if (!check.selected('presets')) {
         return [];
     }
-    const planned = [...(check.fix ? [] : await treeRuns(check)), ...(await memberRuns(check))];
+    const runs = await planned(check);
     if (check.fix) {
-        return await fixed(check, planned);
+        return await fixed(check, runs);
     }
 
-    return planned.map(({ args, checker, root }, index) => {
+    return runs.map(({ args, checker, root }, index) => {
         const log = check.logs.at(`preset-${String(index)}.log`);
 
         return {
