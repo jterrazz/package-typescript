@@ -200,11 +200,11 @@ export default fragment({
             kind: 'covered',
         }),
         'typescript/explicit-function-return-type': off({
-            by: 'src/presets/tsdown/bundle.ts — isolatedDeclarations requires the annotation exactly where it is load-bearing, on a published export',
+            by: 'TypeScript — the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS4058)',
             kind: 'covered',
         }),
         'typescript/explicit-module-boundary-types': off({
-            by: 'src/presets/tsdown/bundle.ts — isolatedDeclarations requires the annotation exactly where it is load-bearing, on a published export',
+            by: 'TypeScript — the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS4058)',
             kind: 'covered',
         }),
         'typescript/no-empty-interface': off({

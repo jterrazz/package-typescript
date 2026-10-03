@@ -4,7 +4,7 @@ runs:
     - command: build
       exit: 0
       stdout: |4
-           TYPESCRIPT  Building application (ESM + types)...
+           TYPESCRIPT  Building the entries the manifest publishes...
 
           ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
           ℹ config file: {{path}} 

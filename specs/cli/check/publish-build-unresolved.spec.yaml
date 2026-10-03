@@ -25,7 +25,7 @@ runs:
            RUN  Publish (packaging)
 
           publish/no-test-code-in-production: nothing to judge — no @jterrazz/test resolves from this package, and what test material is is its to say
-          package.json:1:1: error publish(build-succeeds): found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else `typescript bundle` · read: @jterrazz/typescript's docs/07-quality-checks.md#the-build-guard
+          package.json:1:1: error publish(build-succeeds): found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — `typescript build` names what failed · read: @jterrazz/typescript's docs/07-quality-checks.md#the-build-guard
           ✗ Failed with exit code 1
 
            RUN  Suppressions (directives)
@@ -38,7 +38,9 @@ runs:
 
            RUN  Names (tree)
 
-          ✓ Passed
+          package.json:1:1: error names(export-has-an-entry): found: `.` is published as ./dist/index.js, and no source the build compiles builds it · why: Every subpath and bin the package publishes as code is compiled by its build, from a source the build names. · fix: write its entry, `index.ts`, at the root of src/ or lint/, or take the subpath out of the manifest · read: docs/07-quality-checks.md#the-entry-grammar
+          found: every finding above, and .jterrazz/baseline.json records no `names/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds
+          ✗ Failed with exit code 1
 
            RUN  Comments (density)
 
@@ -50,12 +52,12 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            profile                              node (the default — no config of its own)
-            rules off vs profile                 none
-            suppressions                         0
-            oxlint-suppressions.json             nothing held
-            jterrazz.baseline.json › typescript  nothing held
-            tool versions                        in range
+            declared                              nothing — node, the default
+            rules off vs profile                  none
+            suppressions                          0
+            .jterrazz/oxlint-suppressions.json    nothing held
+            .jterrazz/baseline.json › typescript  nothing held
+            tool versions                         in range
 
            END  Finalizing quality checks
 

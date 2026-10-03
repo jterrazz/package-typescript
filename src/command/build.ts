@@ -1,26 +1,72 @@
-import { existsSync, rmSync } from 'node:fs';
+import { existsSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
 
+import { readSettings } from '../../lint/index.rules.js';
 import { refusal } from '../../lint/kit/catalogue/lesson.js';
+import { buildPlanOf, buildSettingsOf } from '../../lint/kit/project/build-plan.js';
+import type { BuildStep } from '../../lint/kit/project/build-plan.js';
+import { SETTINGS_FILE } from '../../lint/kit/project/jterrazz-config.js';
 import { binaryIn } from '../../lint/kit/project/package-root.js';
+import { presetLesson } from '../../lint/kit/project/preset.js';
 import { handOver, run } from './processes.js';
+import { inScratch } from './scratch.js';
 import { badge, GREEN, print, RED, RESET } from './terminal.js';
-import { presetAt, projectRoot } from './toolchain.js';
-
-const BUILD_PRESET = presetAt('dist/presets/tsdown/build.js');
-
-const BUNDLE_PRESET = presetAt('dist/presets/tsdown/bundle.js');
+import { projectRoot } from './toolchain.js';
 
 function tsdown(project: string): string {
     return binaryIn('tsdown', join(project, 'node_modules/.bin'));
 }
 
-async function built(config: string, label: string): Promise<number> {
-    print(`${badge('TYPESCRIPT')} ${label}...\n\n`);
+async function planOf(project: string): Promise<BuildStep[] | string> {
+    const { problem, resolved } = await readSettings(project);
+    const declared = buildSettingsOf(resolved.sections.typescript);
+    const refused = problem ?? declared.problem;
+
+    return refused === null
+        ? buildPlanOf(project, {
+              declaration: resolved.declaration,
+              settings: declared.settings,
+          })
+        : refusal({
+              ...presetLesson(refused, SETTINGS_FILE),
+              read: 'docs/09-building.md#the-entries',
+          });
+}
+
+function written(scratch: string, steps: readonly BuildStep[]): string {
+    const config = join(scratch, 'tsdown.config.mjs');
+    writeFileSync(config, `export default ${JSON.stringify(steps, null, 4)};\n`);
+
+    return config;
+}
+
+export async function builtFrom(
+    steps: readonly BuildStep[],
+    project: string,
+    flags: readonly string[] = [],
+): Promise<number> {
+    return await inScratch(
+        async (scratch) =>
+            await run(tsdown(project), [
+                '--config',
+                written(scratch, steps),
+                '--cwd',
+                project,
+                ...flags,
+            ]),
+    );
+}
+
+export async function build(): Promise<number> {
+    print(`${badge('TYPESCRIPT')} Building the entries the manifest publishes...\n\n`);
     const project = projectRoot();
     process.chdir(project);
-    const status = await run(tsdown(project), ['--config', config, '--cwd', project]);
+    const steps = await planOf(project);
+    const status =
+        typeof steps === 'string'
+            ? (print(`${RED}${steps}${RESET}\n`), 1)
+            : await builtFrom(steps, project);
     if (status !== 0) {
         print(
             `${RED}${refusal({
@@ -38,14 +84,6 @@ async function built(config: string, label: string): Promise<number> {
     return 0;
 }
 
-export async function build(): Promise<number> {
-    return await built(BUILD_PRESET, 'Building application (ESM + types)');
-}
-
-export async function bundle(): Promise<number> {
-    return await built(BUNDLE_PRESET, 'Bundling library (ESM + CJS + types)');
-}
-
 export async function start(args: readonly string[]): Promise<number> {
     return await handOver(
         process.execPath,
@@ -57,19 +95,28 @@ export async function start(args: readonly string[]): Promise<number> {
 export async function dev(): Promise<number> {
     print(`${badge('TYPESCRIPT')} Starting dev mode...\n\n`);
     const project = projectRoot();
+    const steps = await planOf(project);
+    if (typeof steps === 'string') {
+        print(`${RED}${steps}${RESET}\n`);
 
-    return await handOver(
-        tsdown(project),
-        [
-            '--config',
-            BUILD_PRESET,
-            '--cwd',
-            project,
-            '--watch',
-            '--on-success',
-            'node --enable-source-maps dist/index.js',
-        ],
-        project,
+        return 1;
+    }
+
+    return await inScratch(
+        async (scratch) =>
+            await handOver(
+                tsdown(project),
+                [
+                    '--config',
+                    written(scratch, steps),
+                    '--cwd',
+                    project,
+                    '--watch',
+                    '--on-success',
+                    'node --enable-source-maps dist/index.js',
+                ],
+                project,
+            ),
     );
 }
 

@@ -1,0 +1,18 @@
+description: builds the declarations of a library whose export has no annotation from the type it infers
+fixture: ./_fixtures/inferred-lib/
+runs:
+    - command: build
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Building the entries the manifest publishes...
+
+          {{any}}
+
+          Build completed
+      files:
+          dist/index.d.ts:
+              equals: |-
+                  //#region src/index.d.ts
+                  export declare const answer: number;
+                  //#endregion
+                  //# sourceMappingURL=index.d.ts.map

@@ -2,7 +2,7 @@ description: names the member each nothing-to-judge note is about, in a workspac
 fixture: ./_fixtures/publish/workspace/
 runs:
     - command: check
-      exit: 0
+      exit: 1
       stdout: |4
            START  Running quality checks
 
@@ -20,12 +20,13 @@ runs:
 
            RUN  Knip (unused code)
 
-          ✓ Passed
+          Unused files (2)
+          packages/alpha/tsdown.config.mjs
+          packages/beta/tsdown.config.mjs 
+          ✗ Failed with exit code 1
 
            RUN  Publish (packaging)
 
-          publish/no-test-code-in-production: nothing to judge in packages/alpha — no @jterrazz/test resolves from this package, and what test material is is its to say
-          publish/no-test-code-in-production: nothing to judge in packages/beta — no @jterrazz/test resolves from this package, and what test material is is its to say
           ✓ Passed
 
            RUN  Suppressions (directives)
@@ -50,13 +51,13 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            profile                              node (the default — no config of its own)
-            rules off vs profile                 none
-            suppressions                         0
-            oxlint-suppressions.json             nothing held
-            jterrazz.baseline.json › typescript  nothing held
-            tool versions                        in range
+            declared                              nothing — node, the default
+            rules off vs profile                  none
+            suppressions                          0
+            .jterrazz/oxlint-suppressions.json    nothing held
+            .jterrazz/baseline.json › typescript  nothing held
+            tool versions                         in range
 
            END  Finalizing quality checks
 
-          ✓ All checks passed
+          ✗ Some checks failed

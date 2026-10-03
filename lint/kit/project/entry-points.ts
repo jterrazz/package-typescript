@@ -109,34 +109,42 @@ export const outputOf = (target: string, outDir: string): string =>
         .slice(outDir.length + 1)
         .replace(BUILT, '');
 
-export const defaultSourceOf = ({ stem }: Published): string => `src/${stem}.ts`;
+export const ENTRY_ROOTS: readonly string[] = Object.freeze(['src', 'lint']);
 
-/** Output name to source, for every published file whose entry is on disk; empty when the package publishes nothing it builds. */
+export const entrySourcesOf = ({ stem }: Published): string[] =>
+    ENTRY_ROOTS.map((root) => `${root}/${stem}.ts`);
+
+export type Sources = ReadonlyMap<string, string>;
+
+export function entrySources(
+    manifest: JsonObject,
+    exists: (source: string) => boolean,
+): Map<string, string> {
+    const entries = new Map<string, string>();
+    for (const one of publishedOf(manifest, DIST)) {
+        const output = outputOf(one.target, DIST);
+        const source = entrySourcesOf(one).find((candidate) => exists(candidate));
+        if (!entries.has(output) && source !== undefined) {
+            entries.set(output, source);
+        }
+    }
+
+    return new Map([...entries].toSorted(([left], [right]) => left.localeCompare(right)));
+}
+
 export function entryPoints(root: string): Record<string, string> {
     const manifest = join(root, 'package.json');
     if (!existsSync(manifest)) {
         return {};
     }
-
-    let published: Published[];
     try {
-        published = publishedOf(parsedObject(readFileSync(manifest, 'utf8')), DIST);
+        const read = parsedObject(readFileSync(manifest, 'utf8'));
+        const sources = entrySources(read, (source) => existsSync(join(root, source)));
+
+        return Object.fromEntries(sources);
     } catch {
         return {};
     }
-
-    const entries = new Map<string, string>();
-    for (const one of published) {
-        const source = defaultSourceOf(one);
-        const output = outputOf(one.target, DIST);
-        if (!entries.has(output) && existsSync(join(root, source))) {
-            entries.set(output, source);
-        }
-    }
-
-    return Object.fromEntries(
-        [...entries].toSorted(([left], [right]) => left.localeCompare(right)),
-    );
 }
 
 export const DEFAULT_SOURCE = 'src/index.ts';
@@ -144,9 +152,3 @@ export const DEFAULT_SOURCE = 'src/index.ts';
 export const DEFAULT_ENTRY: Readonly<Record<string, string>> = Object.freeze({
     index: DEFAULT_SOURCE,
 });
-
-export function buildEntriesOf(root: string): Record<string, string> {
-    const entries = entryPoints(root);
-
-    return Object.keys(entries).length > 0 ? entries : { ...DEFAULT_ENTRY };
-}

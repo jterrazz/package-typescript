@@ -16,7 +16,7 @@ import type { Resolution } from '../../kit/project/preset.js';
 import { isRepositoryRoot } from '../../kit/project/repository-root.js';
 import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import { declaredNamesFindings, declaredNamesRules } from './names.declared.js';
-import { buildMapOf, entryGrammarOf } from './names.entries.js';
+import { buildSourcesOf, entryGrammarOf } from './names.entries.js';
 import { namesFinding } from './names.lessons.js';
 import { LINT_ROOT, lintFoldersOf, lintTreeOf } from './names.lint-tree.js';
 import type { LintTree } from './names.lint-tree.js';
@@ -205,14 +205,9 @@ function targetsOfExports(exports: unknown): string[] {
 }
 
 function lintOutputsOf(disk: Disk, unit: string): string[] {
-    const build = buildMapOf(disk, unit);
-    if (build === null) {
-        return [];
-    }
-
-    return [...build.sources]
+    return [...buildSourcesOf(disk, unit)]
         .filter(([, source]) => source.startsWith('lint/'))
-        .map(([name]) => `${build.outDir}/${name}`);
+        .map(([name]) => `dist/${name}`);
 }
 
 function filesPublish(files: readonly unknown[], path: string): boolean {

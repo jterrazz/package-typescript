@@ -6,8 +6,11 @@
         ".": "./dist/index.js"
     },
     "dependencies": {
-        "@vitest/mocker": "*",
-        "@vitest/spy": "*"
+        "@vitest/mocker": "*"
+    },
+    "devDependencies": {
+        "@vitest/spy": "*",
+        "ms": "*"
     },
     "peerDependencies": {
         "playwright": "*"

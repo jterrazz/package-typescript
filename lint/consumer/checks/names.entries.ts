@@ -2,8 +2,8 @@ import { basename, dirname, join } from 'node:path';
 
 import type { Context, Finding } from '../../kit/checker/pass.js';
 import {
-    defaultSourceOf,
-    outputOf,
+    entrySources,
+    entrySourcesOf,
     publishedOf,
     unbuiltCodeOf,
 } from '../../kit/project/entry-points.js';
@@ -17,22 +17,7 @@ type Disk = Pick<Context, 'exists' | 'read'>;
 
 type Entry = Published & { source: string };
 
-// tsdown's own lookup order.
-const BUILD_CONFIGS = [
-    'tsdown.config.ts',
-    'tsdown.config.mts',
-    'tsdown.config.cts',
-    'tsdown.config.js',
-    'tsdown.config.mjs',
-    'tsdown.config.cjs',
-];
-
 const DEFAULT_OUT_DIR = 'dist';
-
-const BUILD_ENTRY =
-    /(?:(?:(?<quoted>['"])(?<quotedKey>[^'"]+)\k<quoted>|(?<key>[\w$-]+))\s*:\s*)?['"](?:\.\/)?(?<source>[\w./-]+\.(?:[cm]?ts|tsx))['"]/gu;
-
-const ENTRY_KEYS = new Set(['entry', 'input']);
 
 const SOURCE = /\.(?:[cm]?ts|tsx)$/u;
 
@@ -44,33 +29,14 @@ const GROUND = new RegExp(`(?:^|/)(?:${GROUND_FOLDERS.join('|')})/`, 'u');
 
 const stemOf = (fileName: string): string => fileName.replace(SOURCE, '');
 
-export type BuildMap = { outDir: string; sources: ReadonlyMap<string, string> };
+export function buildSourcesOf(disk: Disk, unit: string): ReadonlyMap<string, string> {
+    try {
+        const manifest = parsedObject(disk.read(join(unit, 'package.json')) ?? '{}');
 
-function sourcesOf(text: string): Map<string, string> {
-    const sources = new Map<string, string>();
-    for (const { groups } of text.matchAll(BUILD_ENTRY)) {
-        const source = groups?.source ?? '';
-        const key = groups?.quotedKey ?? groups?.key;
-        sources.set(
-            key === undefined || ENTRY_KEYS.has(key) ? stemOf(basename(source)) : key,
-            source,
-        );
+        return entrySources(manifest, (source) => disk.exists(join(unit, source)));
+    } catch {
+        return new Map();
     }
-
-    return sources;
-}
-
-/** What the unit's own build compiles, output name to source; the config is a module a bundler loads, so it is read, never run. */
-export function buildMapOf(disk: Disk, unit: string): BuildMap | null {
-    const config = BUILD_CONFIGS.find((name) => disk.exists(join(unit, name)));
-    if (config === undefined) {
-        return null;
-    }
-    const text = disk.read(join(unit, config)) ?? '';
-    const outDir =
-        /outDir\s*:\s*['"](?<dir>[^'"]+)['"]/u.exec(text)?.groups?.dir ?? DEFAULT_OUT_DIR;
-
-    return { outDir: withoutDotSlash(outDir).replace(/\/$/u, ''), sources: sourcesOf(text) };
 }
 
 const isNamedAsExpected = (source: string, expected: string): boolean =>
@@ -85,9 +51,9 @@ function grammarFinding(path: string, { stem, target, what }: Published): Findin
     });
 }
 
-function unbuiltFinding(path: string, { target, what }: Published): Finding {
+function unbuiltFinding(path: string, { stem, target, what }: Published): Finding {
     return namesFinding('names/export-has-an-entry', path, {
-        fix: 'name the source it is built from in the build config, or take the subpath out of the manifest',
+        fix: `write its entry, \`${stem}.ts\`, at the root of src/ or lint/, or take the subpath out of the manifest`,
         found: `${what} is published as ${target}, and no source the build compiles builds it`,
     });
 }
@@ -120,7 +86,7 @@ function strayFinding(path: string): Finding {
 function entriesOf(
     disk: Disk,
     unit: string,
-    { build, prefix }: { build: BuildMap | null; prefix: string },
+    prefix: string,
 ): { entries: Entry[]; findings: Finding[] } {
     let manifest: Record<string, unknown> = {};
     try {
@@ -128,7 +94,7 @@ function entriesOf(
     } catch {
         return { entries: [], findings: [] };
     }
-    const outDir = build?.outDir ?? DEFAULT_OUT_DIR;
+    const outDir = DEFAULT_OUT_DIR;
     const published = publishedOf(manifest, outDir);
     const entries = new Map<string, Entry>();
     const findings: Finding[] =
@@ -138,9 +104,8 @@ function entriesOf(
                   outsideBuildFinding(`${prefix}package.json`, one, outDir),
               );
     for (const one of published) {
-        const source =
-            build === null ? defaultSourceOf(one) : build.sources.get(outputOf(one.target, outDir));
-        if (source === undefined || !disk.exists(join(unit, source))) {
+        const source = entrySourcesOf(one).find((candidate) => disk.exists(join(unit, candidate)));
+        if (source === undefined) {
             findings.push(unbuiltFinding(`${prefix}package.json`, one));
             continue;
         }
@@ -173,8 +138,7 @@ export function entryGrammarOf(
     unit: string,
     { files, prefix }: { files: readonly string[]; prefix: string },
 ): Finding[] {
-    const build = buildMapOf(disk, unit);
-    const { entries, findings } = entriesOf(disk, unit, { build, prefix });
+    const { entries, findings } = entriesOf(disk, unit, prefix);
     if (entries.length === 0 && findings.length === 0) {
         return [];
     }

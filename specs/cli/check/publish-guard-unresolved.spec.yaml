@@ -1,10 +1,10 @@
 description: passes a fixtures-module build that resolves no @jterrazz/test, saying nothing is judged
 fixture: ./_fixtures/publish/fixtures-module/
 runs:
-    - command: bundle
+    - command: build
       exit: 0
       stdout: |4
-           TYPESCRIPT  Bundling library (ESM + CJS + types)...
+           TYPESCRIPT  Building the entries the manifest publishes...
 
           ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
           ℹ config file: {{path}} 
@@ -61,12 +61,12 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            profile                              node (the default — no config of its own)
-            rules off vs profile                 none
-            suppressions                         0
-            oxlint-suppressions.json             nothing held
-            jterrazz.baseline.json › typescript  nothing held
-            tool versions                        in range
+            declared                              nothing — node, the default
+            rules off vs profile                  none
+            suppressions                          0
+            .jterrazz/oxlint-suppressions.json    nothing held
+            .jterrazz/baseline.json › typescript  nothing held
+            tool versions                         in range
 
            END  Finalizing quality checks
 

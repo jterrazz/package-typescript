@@ -2,12 +2,11 @@
     "name": "fixture-publish-broken-build",
     "version": "1.0.0",
     "files": [
-        "index.js"
+        "dist"
     ],
     "type": "module",
-    "main": "index.js",
     "exports": {
-        ".": "./index.js",
+        ".": "./dist/index.js",
         "./greeter": "./greeter.js"
     }
 }

@@ -1,10 +1,10 @@
 description: generates CJS output with exports
 fixture: ./_fixtures/sample-lib/
 runs:
-    - command: bundle
+    - command: build
       exit: 0
       stdout: |4
-           TYPESCRIPT  Bundling library (ESM + CJS + types)...
+           TYPESCRIPT  Building the entries the manifest publishes...
 
           ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
           ℹ config file: {{path}} 

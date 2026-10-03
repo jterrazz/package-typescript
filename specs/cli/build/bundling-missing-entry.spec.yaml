@@ -1,10 +1,10 @@
 description: bundling fails on a missing entry point
 fixture: ./_fixtures/empty-app/
 runs:
-    - command: bundle
+    - command: build
       exit: 1
       stdout: |4
-           TYPESCRIPT  Bundling library (ESM + CJS + types)...
+           TYPESCRIPT  Building the entries the manifest publishes...
 
           ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
           ℹ config file: {{path}} 
@@ -12,7 +12,7 @@ runs:
           ℹ tsconfig: tsconfig.json
           ℹ Build start
           found: tsdown could not build the project — its own report is above · why: dist/ is what `start` runs and what the package publishes, and a build that stopped part-way leaves it stale · fix: repair what tsdown names above, then run the build again · read: docs/09-building.md#a-build-that-fails
-      stderr: |
+      stderr: |-
           {{any}}
            ERROR  Error: Build failed with 1 error:
 

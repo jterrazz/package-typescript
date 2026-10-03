@@ -17,19 +17,18 @@ const fixturesFinding = (file: string): string =>
     `${file}:1:1: error publish(no-test-code-in-production): found: ${file} is compiled from src/domain/user.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/24-linting.md#no-test-code-in-production`;
 
 const BUILD_FINDING =
-    "package.json:1:1: error publish(build-succeeds): found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else `typescript bundle` · read: @jterrazz/typescript's docs/07-quality-checks.md#the-build-guard";
+    "package.json:1:1: error publish(build-succeeds): found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — `typescript build` names what failed · read: @jterrazz/typescript's docs/07-quality-checks.md#the-build-guard";
 
 describe('publish-guard', () => {
-    test('fails a package whose second export is compiled from a fixtures module, one finding per ESM and CJS chunk', async () => {
+    test('fails a package whose second export is compiled from a fixtures module, at the chunk the manifest publishes', async () => {
         // Given - a library whose second export imports a fixtures module, its dist laid by hand, resolving the installed @jterrazz/test
         const result = await publish
             .fixture(directory('./_fixtures/publish/fixtures-module/'))
             .link('@jterrazz/test')
             .exec('check');
 
-        // Then - the pass fails on one finding per chunk of the second export, its ESM and its CJS build
+        // Then - the pass fails on the second export's chunk, built as the manifest publishes it
         expect(publishPass(result.stdout.text)).toStrictEqual([
-            fixturesFinding('dist/index.extra.cjs'),
             fixturesFinding('dist/index.extra.js'),
             '✗ Failed with exit code 1',
         ]);
@@ -128,7 +127,7 @@ describe('publish-guard', () => {
     });
 
     test('fails the pass on a build that fails, and nothing else', async () => {
-        // Given - a package publint and attw accept, whose own config names an entry nobody wrote
+        // Given - a package publint and attw accept, whose manifest publishes an entry nobody wrote
         const result = await publish
             .fixture(directory('./_fixtures/publish/broken-build-alone/'))
             .link('@jterrazz/test')

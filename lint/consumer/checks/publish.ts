@@ -3,6 +3,7 @@ import { cwd } from 'node:process';
 import { stripVTControlCharacters } from 'node:util';
 
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
+import { buildPlanOf, buildSettingsOf } from '../../kit/project/build-plan.js';
 import { buildOf, builtChunks } from '../../kit/project/built-chunks.js';
 import type { Build, BuiltChunk } from '../../kit/project/built-chunks.js';
 import { parsedObject, stringRecordOf, stringsOf } from '../../kit/project/json.js';
@@ -57,7 +58,7 @@ async function chunksOrFinding(
         return {
             chunks: null,
             finding: {
-                message: `found: the build failed — ${reason} · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — its own tsdown.config, else \`typescript bundle\` · read: @jterrazz/typescript's docs/07-quality-checks.md#the-build-guard`,
+                message: `found: the build failed — ${reason} · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — \`typescript build\` names what failed · read: @jterrazz/typescript's docs/07-quality-checks.md#the-build-guard`,
                 path: 'package.json',
                 rule: 'publish/build-succeeds',
             },
@@ -150,7 +151,15 @@ export const publish: Pass = Object.freeze({
             ...(typeof manifest.main === 'string' ? [manifest.main] : []),
             ...(typeof manifest.types === 'string' ? [manifest.types] : []),
         ];
-        const build = buildOf(context.root, targets, context.value('--bundle-preset', ''));
+        const { resolved } = await context.config();
+        const { settings } = buildSettingsOf(resolved.sections.typescript);
+        const build = buildOf(
+            targets,
+            buildPlanOf(context.root, {
+                declaration: resolved.declaration,
+                settings,
+            }),
+        );
         const built =
             build === null
                 ? { findings: [], lines: [] }
@@ -169,5 +178,5 @@ export const publish: Pass = Object.freeze({
             ],
         };
     },
-    valued: ['--publint', '--attw', '--bundle-preset'],
+    valued: ['--publint', '--attw'],
 });
