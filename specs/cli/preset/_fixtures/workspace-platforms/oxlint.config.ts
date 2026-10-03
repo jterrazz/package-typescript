@@ -1,1 +1,3 @@
-export { default } from '@jterrazz/typescript/oxlint';
+import { oxlintConfig } from '@jterrazz/typescript/oxlint';
+
+export default await oxlintConfig(import.meta.dirname);

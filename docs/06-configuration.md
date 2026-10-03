@@ -6,8 +6,8 @@ What a project says about itself, and where it says it. Most projects stop at th
 | -------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `jterrazz.config.ts` | what the project is — its `kind` and `platform` — the presets it is held to, and every setting, with its reason |
 | `tsconfig.json`      | one `extends` line, derived from the platform                                                                   |
-| `oxlint.config.ts`   | one re-export, derived                                                                                          |
-| `oxfmt.config.ts`    | one re-export, derived                                                                                          |
+| `oxlint.config.ts`   | derived from its folder                                                                                         |
+| `oxfmt.config.ts`    | derived from its folder                                                                                         |
 | `.jterrazz/`         | the debt the ratchet holds, tracked, and gone when it is paid ([the ratchet](07-quality-checks.md#the-ratchet)) |
 
 The three derived files are an editor's, which reads its tools' configs from fixed names, and they say nothing of their own: `typescript fix` writes them, and the [Config (one file) pass](07-quality-checks.md#the-config-one-file-pass) refuses one that says anything else. Every other tool — knip, the build, mutation testing — is configured by the command that runs it, from the same file, and keeps no config at the root.

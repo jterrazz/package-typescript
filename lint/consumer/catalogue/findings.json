@@ -7,7 +7,7 @@
     {
         "family": "config",
         "id": "config/editor-file-derived",
-        "sentence": "Each config file an editor discovers is the one line jterrazz.config.ts derives, so the editor and the check judge alike."
+        "sentence": "Each config file an editor discovers is the file jterrazz.config.ts derives, so the editor and the check judge alike."
     },
     {
         "family": "config",

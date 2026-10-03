@@ -1,5 +1,5 @@
 import { appendFileSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { basename } from 'node:path';
 import process from 'node:process';
 
 import { readSettings } from '../../../lint/index.rules.js';
@@ -14,7 +14,6 @@ import { isFileOnDisk } from '../disk.js';
 import { knipSettingsOf } from '../knip-settings.js';
 import { mergedKnipConfig } from '../merge-knip-config.js';
 import { run } from '../processes.js';
-import { DEFAULT_OXLINT_CONFIG } from '../tool-configs.js';
 import { presetAt } from '../toolchain.js';
 import type { FixScope } from '../unsafe-fixers.js';
 import type { Launched } from './launched.js';
@@ -58,7 +57,7 @@ async function pruned(check: Check): Promise<number> {
 }
 
 async function fixScopes(check: Check): Promise<FixScope[]> {
-    const { own } = check.configs.oxlint;
+    const { own, path } = check.configs.oxlint;
     const { writeFixScopes } = await import('../unsafe-fixers.js').catch((error: unknown) => {
         throw invariant(`the unsafe-fixers module does not load: ${messageOf(error)}`);
     });
@@ -66,7 +65,7 @@ async function fixScopes(check: Check): Promise<FixScope[]> {
         return writeFixScopes({
             nested: own !== undefined,
             root: process.cwd(),
-            rootConfig: own === undefined ? DEFAULT_OXLINT_CONFIG : join(process.cwd(), own),
+            rootConfig: path,
             targets: check.lintTargets.paths,
         });
     } catch (error) {

@@ -5,7 +5,7 @@ import { cli } from '../packed-cli.specification.js';
 
 describe('oxfmt', () => {
     test('the one-line consumer config handing oxfmt the derived preset formats the project to the estate style, and leaves its ground as written', async () => {
-        // Given - a consumer's project whose oxfmt.config.ts is the one-line re-export of the derived preset, a module written in another style, and ground a spec stands on
+        // Given - a consumer's project whose oxfmt.config.ts derives the preset from its own folder, a module written in another style, and ground a spec stands on
         const result = await cli.fixture(directory('./_fixtures/formatting/')).exec('oxfmt');
 
         // Then - four spaces, single quotes, 100 columns, trailing commas, imports and classes sorted, package.json keys in order; the ground untouched

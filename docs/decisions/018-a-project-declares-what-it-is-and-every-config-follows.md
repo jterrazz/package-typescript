@@ -1,6 +1,6 @@
 # ADR-018: A project declares what it is, and every config follows
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-03
 
 ## Context
@@ -26,19 +26,29 @@ beside both.
   platforms each kind may run on typed. The base preset, the lint profile,
   the tsconfig preset, the roots a framework imposes and the checks follow
   from them; `typescript()` and the profile choice are gone.
-- The files an editor discovers by name stay at the root as derived lines:
-  `oxlint.config.ts` and `oxfmt.config.ts` re-export the `./oxlint` and
-  `./oxfmt` entries, which derive the config from `jterrazz.config.ts` in
-  the directory the tool runs in, and `tsconfig.json` extends the
-  platform's preset, with what `typescript.tsconfig` adds and why. The
+- The files an editor discovers by name stay at the root, derived:
+  `oxlint.config.ts` and `oxfmt.config.ts` pass their own directory,
+  `import.meta.dirname`, to the `oxlintConfig` and `oxfmtConfig` of the
+  `./oxlint` and `./oxfmt` entries, which derive the config from the
+  `jterrazz.config.ts` there; `tsconfig.json` extends the platform's
+  preset, with what `typescript.tsconfig` adds and why; and a project on
+  `@jterrazz/test`'s preset keeps the `vitest.config.ts` it derives. The
   Config (one file) pass refuses any other content, and `fix` writes them.
-- Each integration was run as the editor runs it before the form was cut
-  to one line: `oxlint --lsp` and `oxfmt --lsp` load the re-export from
-  the worktree root, the TypeScript 7 language server resolves the
-  `extends`, and the Vitest extension loads its config from the config's
-  own directory. One integration refused the bare re-export: knip skips a
-  config that only re-exports from a package, so a sibling preset's
-  `vitest.config.ts` imports a call and default-exports it.
+- The config files name their directory because nothing else can: a bare
+  re-export derived from the directory the tool runs in, so oxlint started
+  in `src/` dropped every preset and setting with no error, and Node loads
+  the entry once per process, so a language server serving two projects
+  would have handed both the first one's config. oxlint imports the config
+  file itself afresh, which is the one module that knows where it lies.
+- Each integration was run as the editor runs it: `oxlint --lsp` started
+  at the project root loads the config and reports the profile's rules,
+  the TypeScript 7 language server resolves the `extends`, and the Vitest
+  extension loads its config from the config's own directory. Started on a
+  folder above the project, oxlint — CLI and language server alike — finds
+  the project's config as a nested one, refuses the `options.typeAware` the
+  config sets, and lints with its own defaults: an editor is opened on the
+  project. knip skips a config that only re-exports from a package, which
+  the forms above never do.
 - A tool only the command runs keeps no config: the command derives knip's,
   tsdown's and Stryker's from the manifest and `jterrazz.config.ts`, where
   every setting maps to its reason (`typescript.knip`, `typescript.build`,
@@ -56,9 +66,10 @@ beside both.
 ## Consequences
 
 - A project's root reads as what a person wrote: the declaration, the
-  manifest, three derived lines, and its own code and manual.
+  manifest, the derived editor files, and its own code and manual.
 - A setting can no longer be set without a reason, nor in two places.
-- An editor and `check` judge alike, since both load the one derived config;
+- An editor opened on the project and `check` judge alike, since both load
+  the one derived config;
   an editor's oxlint does not read the suppressions ledger, so held debt
   still shows there.
 - `isolatedDeclarations` left with the `bundle` preset: it fights

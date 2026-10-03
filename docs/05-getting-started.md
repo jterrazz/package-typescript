@@ -1,6 +1,6 @@
 # Getting started
 
-From an empty folder to a green `typescript check`: one install, one declaration, three derived lines, the scripts, a `Makefile` and a small manual. Every file below is complete as written.
+From an empty folder to a green `typescript check`: one install, one declaration, three derived files, the scripts, a `Makefile` and a small manual. Every file below is complete as written.
 
 ## Before you start
 
@@ -44,23 +44,27 @@ npm install @types/node --save-dev
 
 ## 2. The editor files are derived
 
-An editor reads its tools' configs from fixed names at the root, so three files stay there — and each is a line the declaration derives, never a place to configure anything:
+An editor reads its tools' configs from fixed names at the root, so three files stay there — and each is what the declaration derives, never a place to configure anything:
 
 ```ts
 // oxlint.config.ts
-export { default } from '@jterrazz/typescript/oxlint';
+import { oxlintConfig } from '@jterrazz/typescript/oxlint';
+
+export default await oxlintConfig(import.meta.dirname);
 ```
 
 ```ts
 // oxfmt.config.ts
-export { default } from '@jterrazz/typescript/oxfmt';
+import { oxfmtConfig } from '@jterrazz/typescript/oxfmt';
+
+export default await oxfmtConfig(import.meta.dirname);
 ```
 
 ```json
 { "extends": "@jterrazz/typescript/tsconfig/node" }
 ```
 
-The `tsconfig.json` names the preset of the platform — `node` for `bun`, the platform's own for the others — and a `workspace` keeps none at its root, its members each keeping theirs. `typescript fix` writes all three, and `check` refuses one that says anything else (`config/editor-file-derived`): the content is the toolchain's, so a project changes its lint rules, its format or its build through `jterrazz.config.ts`, where every setting carries its reason ([Configuration](06-configuration.md)). The `oxlint` and `oxfmt` entries read `jterrazz.config.ts` from the directory the tool runs in, which is the project root for `check`, for the oxc language servers an editor starts there, and for a terminal at the root.
+The `tsconfig.json` names the preset of the platform — `node` for `bun`, the platform's own for the others — and a `workspace` keeps none at its root, its members each keeping theirs. `typescript fix` writes all three, and `check` refuses one that says anything else (`config/editor-file-derived`): the content is the toolchain's, so a project changes its lint rules, its format or its build through `jterrazz.config.ts`, where every setting carries its reason ([Configuration](06-configuration.md)). Each config passes its own directory, so the `jterrazz.config.ts` beside it is the one read wherever the tool starts — a terminal in `src/` included; an editor is opened on the project itself, since oxlint refuses a type-aware config it finds nested below the folder it starts in ([Quality checks § The derived files](07-quality-checks.md#the-derived-files)).
 
 No other tool config belongs at the root: knip, the build and mutation testing are configured by the command that runs them, from the same file, and a `knip.json`, a `tsdown.config.ts` or a `stryker.config.json` is refused (`config/no-tool-config`).
 
@@ -176,7 +180,7 @@ That is the whole contract, and it is meant to stay that size:
 - **One devDependency**, `@jterrazz/typescript`.
 - **Two commands**, `typescript check` and `typescript fix`. Every gate sits behind them, so a script calling a tool underneath skips the passes the command orchestrates.
 - **One file of settings**, `jterrazz.config.ts`: the kind, the platform, the presets, and every setting with its reason.
-- **Three derived lines**, `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json`, each written by `fix` and refused by `check` when it says anything else. In a workspace the `tsconfig.json` is one per member: the toolchain measures from the package, not the repository.
+- **Three derived files**, `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json`, each written by `fix` and refused by `check` when it says anything else. In a workspace the `tsconfig.json` is one per member: the toolchain measures from the package, not the repository.
 - **Two tracked ledgers at most**, under `.jterrazz/`: the debt the ratchet holds, gone when it is paid ([the ratchet](07-quality-checks.md#the-ratchet)).
 - **Six gestures**, the `Makefile` above, and **a manual**, `AGENTS.md` and `docs/`: both required at a repository root.
 

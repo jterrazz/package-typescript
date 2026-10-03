@@ -46,8 +46,8 @@ describe('subpaths', () => {
         expect(result.stdout).toMatch(`
             @jterrazz/typescript/config: defineConfig, definePreset
             @jterrazz/typescript/docs: HEAD_LINES, auditDocs
-            @jterrazz/typescript/oxfmt: default
-            @jterrazz/typescript/oxlint: default
+            @jterrazz/typescript/oxfmt: oxfmtConfig
+            @jterrazz/typescript/oxlint: oxlintConfig
             @jterrazz/typescript/rules: BASELINE, GROUND_EXPECTED, GROUND_FIXTURES, GROUND_FOLDERS, GROUND_GLOB, GROUND_REQUESTS, GROUND_SEEDS, LESSON_PARTS, MEMBER_DEPTH, OXLINT_CONFIG_NAMES, OXLINT_SUPPRESSIONS, PRUNED, RESERVED_FOLDERS, SETUP_FOLDER, SHARED_FOLDER, SUPPRESSIONS_LEDGER, UNMARKED_RESERVED, anchor, anchorsOf, blankComments, byName, cell, countsOf, declaredSubpaths, defineCheck, defineInvariant, defineRule, entryPoints, exitCodeOf, filesUnder, firstSentence, folderChanged, forgetTree, holdsDirectives, holdsManifest, ignoredPaths, isDirectory, isFile, isGroundFolder, isOnDisk, isProjectRoot, isRepositoryRoot, isReservedFolder, judgeExact, judgeFloor, keepsSection, labelOf, lessonOf, lessonParts, lessonsAt, listDirectory, markdownTable, missingParts, moveKeepingHistory, nearestRoot, presetChecks, projectFiles, projected, quotedMask, raisedFloor, readAt, readBaseline, readCommandLine, readFileCached, readManifest, readSettings, readSettingsSync, refusal, refusalBlock, reportLine, rowNamed, runChecker, sectionOf, spliceBetween, stop, suppressionDirectives, tightened, treeEntries, treeKind, treeNames, whyOf, workspaceMembers, workspacePatterns, writeProjections, writeSection
             the oxlint entry derives the declared project's rules: yes
             the oxfmt entry derives the estate style: yes

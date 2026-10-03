@@ -91,7 +91,7 @@ function memberScoped(member: string, root: OxlintConfig, own: OxlintConfig): Ox
     ];
 }
 
-export async function oxlintConfigAt(unit: string): Promise<OxlintConfig> {
+export async function oxlintConfig(unit: string): Promise<OxlintConfig> {
     const resolution = await readConfig(unit, basePresetsOf);
     const root = oxlintConfigOf(resolution);
     if (resolution.resolved.declaration?.kind !== 'workspace') {

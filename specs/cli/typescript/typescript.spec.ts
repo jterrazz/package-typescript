@@ -5,7 +5,7 @@ import { cli } from '../packed-cli.specification.js';
 
 describe('typescript', () => {
     test('the bin npm links from the install checks a consumer project that keeps every rule', async () => {
-        // Given - a consumer api declared on node, its editor files the one-liners its declaration derives
+        // Given - a consumer api declared on node, its editor files the ones its declaration derives
         const result = await cli
             .fixture(directory('./_fixtures/project/'))
             .exec('typescript check');

@@ -22,6 +22,8 @@
     "imports": {
         "#checker": "./dist/checker.js",
         "#command": "./dist/command.js",
+        "#oxfmt-standin": "./dist/oxfmt-standin.js",
+        "#oxlint-standin": "./dist/oxlint-standin.js",
         "#plugin": "./dist/plugin.js",
         "#rulebook": "./dist/rulebook.js"
     },

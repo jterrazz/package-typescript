@@ -1,8 +1,9 @@
 import { defineConfig, definePreset } from '@jterrazz/typescript/config';
 import type { JterrazzConfig } from '@jterrazz/typescript/config';
 import { auditDocs } from '@jterrazz/typescript/docs';
-import format from '@jterrazz/typescript/oxfmt';
-import lint from '@jterrazz/typescript/oxlint';
+import { oxfmtConfig } from '@jterrazz/typescript/oxfmt';
+import type { OxfmtConfig } from '@jterrazz/typescript/oxfmt';
+import { oxlintConfig } from '@jterrazz/typescript/oxlint';
 import type { OxlintConfig } from '@jterrazz/typescript/oxlint';
 import { refusal } from '@jterrazz/typescript/rules';
 
@@ -40,9 +41,9 @@ export const undeclaredSection = defineConfig({ kind: 'library', platform: 'node
 // @ts-expect-error — a preset is named for the package that ships it
 export const namelessPreset = definePreset({ layers: [] });
 
-export const derivedLint: OxlintConfig = lint;
+export const derivedLint: OxlintConfig = await oxlintConfig(import.meta.dirname);
 
-export const derivedFormat: typeof format = format;
+export const derivedFormat: OxfmtConfig = await oxfmtConfig(import.meta.dirname);
 
 export const message: string = refusal({
     fix: 'name the reason',

@@ -128,6 +128,9 @@ function manifestFindings(context: Context, unit: Unit): Finding[] {
     return [];
 }
 
+const shownOf = (file: EditorFile, text: string): string =>
+    'text' in file ? text.trim().replaceAll(/\n+/gu, ' ') : text.trim();
+
 function editorFindings(
     context: Context,
     unit: Unit,
@@ -162,11 +165,11 @@ function editorFindings(
                 'config/editor-file-derived',
                 path,
                 {
-                    fix: `run \`typescript fix\`, which writes it: ${text.trim()}`,
+                    fix: `run \`typescript fix\`, which writes it: ${shownOf(expected, text)}`,
                     found:
                         written === null
                             ? `${path} is missing`
-                            : `${path} says something other than the line ${prefixed(unit.path, SETTINGS_FILE)} derives`,
+                            : `${path} says something other than the file ${prefixed(unit.path, SETTINGS_FILE)} derives`,
                 },
                 context.fix,
             ),

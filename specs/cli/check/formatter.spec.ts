@@ -4,13 +4,18 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { beforeAll, describe, expect, test } from 'vitest';
 
-import { temporaryDirectory } from '../_setup/temporary-directory.js';
+import { newDirectory, temporaryDirectory } from '../_setup/temporary-directory.js';
 import { cli as oxfmtCli } from '../oxfmt.specification.js';
 
 const BUILT_FROM = resolve(import.meta.dirname, '../../..');
 
 // Each probe targets one style decision the preset makes, never oxfmt's overall output.
-const CONFIG_PATH = join(BUILT_FROM, 'dist/oxfmt.js');
+const ENTRY = join(BUILT_FROM, 'dist/oxfmt.js');
+const CONFIG_PATH = join(newDirectory('spec-formatter-config-'), 'oxfmt.config.mjs');
+writeFileSync(
+    CONFIG_PATH,
+    `import { oxfmtConfig } from '${ENTRY}';\n\nexport default await oxfmtConfig(import.meta.dirname);\n`,
+);
 const OXFMT = resolve(import.meta.dirname, '../../../node_modules/.bin/oxfmt');
 
 type FormatResult = Awaited<ReturnType<typeof oxfmtCli.exec>>;
@@ -56,7 +61,7 @@ describe('formatter', () => {
         cpSync(join(created, 'index.ts'), join(created, '.next/app.ts'));
         writeFileSync(
             join(created, 'oxfmt.config.ts'),
-            `export { default } from '${CONFIG_PATH}';\n`,
+            `import { oxfmtConfig } from '${ENTRY}';\n\nexport default await oxfmtConfig(import.meta.dirname);\n`,
         );
 
         // When - oxfmt checks the whole tree

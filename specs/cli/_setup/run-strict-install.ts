@@ -56,11 +56,11 @@ writeFileSync(
 );
 writeFileSync(
     join(root, 'oxlint.config.ts'),
-    "export { default } from '@jterrazz/typescript/oxlint';\n",
+    "import { oxlintConfig } from '@jterrazz/typescript/oxlint';\n\nexport default await oxlintConfig(import.meta.dirname);\n",
 );
 writeFileSync(
     join(root, 'oxfmt.config.ts'),
-    "export { default } from '@jterrazz/typescript/oxfmt';\n",
+    "import { oxfmtConfig } from '@jterrazz/typescript/oxfmt';\n\nexport default await oxfmtConfig(import.meta.dirname);\n",
 );
 writeFileSync(
     join(root, 'tsconfig.json'),
