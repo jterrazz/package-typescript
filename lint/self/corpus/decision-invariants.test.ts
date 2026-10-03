@@ -11,7 +11,6 @@ import {
     REASON_KINDS,
     unsafeFix,
 } from '../../kit/compiler/decision.js';
-import type { Reason, Stated } from '../../kit/compiler/decision.js';
 import { lintFragments } from '../../kit/testing/lint-fragments.js';
 import problemsOf, { FRAGMENT_WALK } from './decision-invariants.js';
 
@@ -31,9 +30,13 @@ describe('problemsOf', () => {
         expect(declared.length).toBeGreaterThan(15);
 
         // Then - each one names an audience of the closed pair
-        for (const { fragment: one, path } of declared) {
-            expect.soft(AUDIENCES, `${path} declares no audience`).toContain(one.audience);
-        }
+        expect(
+            declared
+                .filter(
+                    ({ fragment: one }) => !AUDIENCES.some((audience) => audience === one.audience),
+                )
+                .map(({ path }) => path),
+        ).toStrictEqual([]);
     });
 
     test('every decision carries the version it was taken in', () => {
@@ -42,9 +45,11 @@ describe('problemsOf', () => {
         expect(entries.length).toBeGreaterThan(500);
 
         // Then - each one names a semver, which is what replaces a changelog here
-        for (const entry of entries) {
-            expect.soft(entry.since, `${entry.rule} has no since`).toMatch(/^\d+\.\d+\.\d+$/u);
-        }
+        expect(
+            entries
+                .filter((entry) => !/^\d+\.\d+\.\d+$/u.test(entry.since))
+                .map((entry) => entry.rule),
+        ).toStrictEqual([]);
     });
 
     test('names an off with no reason', () => {
@@ -52,7 +57,8 @@ describe('problemsOf', () => {
         const probe = fragment({
             audience: 'consumer',
             id: 'probe',
-            rules: { curly: off(undefined as unknown as Reason) },
+            // @ts-expect-error -- the compiler refuses an off with no reason, and the audit must too
+            rules: { curly: off() },
         });
 
         // Then - the audit refuses it
@@ -91,7 +97,8 @@ describe('problemsOf', () => {
         const probe = fragment({
             audience: 'consumer',
             id: 'probe',
-            rules: { curly: { level: 'warn' } as unknown as Stated },
+            // @ts-expect-error -- the compiler refuses a warn level, and the audit must too
+            rules: { curly: { level: 'warn' } },
         });
 
         // Then - there is no warn in this rulebook

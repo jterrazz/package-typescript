@@ -10,9 +10,10 @@ import {
 } from 'node:fs';
 import { resolve } from 'node:path';
 
+import { isRecord, parsedJson } from '../../_setup/parsed-json.js';
 import { newDirectory } from '../../_setup/temporary-directory.js';
 
-// hazard: oxlint 1.83 hazards: `--type-aware` walks up for `node_modules/.bin/tsgolint`, or every type-aware rule
+// hazard: on oxlint 1.83, `--type-aware` walks up for `node_modules/.bin/tsgolint`, or every type-aware rule
 // silently skips; and a symlinked `node_modules` under `oxlint --fix .` rewrites the real dependency tree —
 // so the sandbox links two entries and every run names its files.
 
@@ -152,20 +153,25 @@ export type RosterEntry = {
 
 export function printConfig(name: string): ResolvedConfig {
     const { stdout } = run(OXLINT, ['-c', profilePath(name), '--print-config'], REPOSITORY);
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint's own --print-config output is oxlint's contract
-    return JSON.parse(stdout) as ResolvedConfig;
+    return parsedJson(
+        stdout,
+        (value): value is ResolvedConfig =>
+            isRecord(value) && Array.isArray(value.plugins) && isRecord(value.rules),
+    );
 }
 
 // value: `--format=json` is the one form that is the same on a laptop and on a runner.
 export function diagnosticsOf(report: { stdout: string }): Diagnostic[] {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint's own --format=json output is oxlint's contract
-    return (JSON.parse(report.stdout) as { diagnostics: Diagnostic[] }).diagnostics;
+    return parsedJson(
+        report.stdout,
+        (value): value is { diagnostics: Diagnostic[] } =>
+            isRecord(value) && Array.isArray(value.diagnostics),
+    ).diagnostics;
 }
 
 export function roster(): RosterEntry[] {
     const { stdout } = run(OXLINT, ['--rules', '--format=json'], REPOSITORY);
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint's own --rules output is oxlint's contract
-    return JSON.parse(stdout) as RosterEntry[];
+    return parsedJson(stdout, (value): value is RosterEntry[] => Array.isArray(value));
 }
 
 function run(binary: string, args: string[], cwd: string): { status: number; stdout: string } {

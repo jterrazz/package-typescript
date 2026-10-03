@@ -3,6 +3,7 @@ import { cpSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { isRecord, parsedJson } from '../_setup/parsed-json.js';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 import { installTsconfigPresets } from './_setup/rulebook.js';
 
@@ -39,13 +40,17 @@ function consumer(ground: string, preset: string): string {
 
 function resolvedConfig(dir: string): ResolvedConfig {
     const stdout = execFileSync(TSC, ['--showConfig'], { cwd: dir, encoding: 'utf8' });
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tsc's own --showConfig output is tsc's contract
-    const config = JSON.parse(stdout) as {
-        compilerOptions?: ResolvedConfig['compilerOptions'];
-        exclude?: string[];
-        files?: string[];
-        include?: string[];
-    };
+    const config = parsedJson(
+        stdout,
+        (
+            value,
+        ): value is {
+            compilerOptions?: ResolvedConfig['compilerOptions'];
+            exclude?: string[];
+            files?: string[];
+            include?: string[];
+        } => isRecord(value),
+    );
 
     return {
         compilerOptions: config.compilerOptions ?? {},
@@ -68,10 +73,12 @@ describe('tsconfig', () => {
 
             // Then - every path the preset contributes stays inside the consumer's own directory
             expect(scoped.length).toBeGreaterThan(0);
-            for (const entry of scoped) {
-                const absolute = isAbsolute(entry) ? entry : resolve(dir, entry);
-                expect(absolute.startsWith(dir + sep)).toBe(true);
-            }
+            expect(
+                scoped.filter(
+                    (entry) =>
+                        !(isAbsolute(entry) ? entry : resolve(dir, entry)).startsWith(dir + sep),
+                ),
+            ).toStrictEqual([]);
         },
     );
 

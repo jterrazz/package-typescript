@@ -1,6 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, realpathSync, symlinkSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 
+import { isRecord, parsedJson } from '../parsed-json.ts';
+
 export const CHECKOUT = resolve(import.meta.dirname, '../../../..');
 
 const CHECKOUT_MODULES = join(CHECKOUT, 'node_modules');
@@ -16,8 +18,10 @@ type Manifest = {
 };
 
 export function readManifest(directory: string): Manifest {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse answers `any`: these are the fields an install reads
-    return JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8')) as Manifest;
+    return parsedJson(
+        readFileSync(join(directory, 'package.json'), 'utf8'),
+        (value): value is Manifest => isRecord(value),
+    );
 }
 
 export function runtimeDependencies(manifest: Manifest): string[] {
