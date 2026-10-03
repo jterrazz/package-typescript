@@ -20,10 +20,10 @@ describe('exported-names', () => {
             'plain',
             'waited',
             'Shape',
-            'ambient',
             'arrow',
             'bare',
             'typed',
+            'ambient',
         ]);
     });
 
@@ -68,5 +68,41 @@ describe('exported-names', () => {
 
         // Then - the three values are named, under the names they are exported as
         expect(exportedValues(text)).toStrictEqual(['rows', 'HEAD_LINES', 'FRAGMENT_WALK']);
+    });
+
+    test('reads every declarator of a statement, an async arrow, a function and a class expression, and skips a pattern', () => {
+        // Given - one statement binding a value and an async arrow, two expressions, and a destructured export, an ambient value and a second name for one
+        const text = [
+            'export const LIMIT = 3, run = async () => LIMIT;',
+            'export const named = function () {};',
+            'export const Shape = class {};',
+            'export const { left, right } = pair;',
+            'export declare const ambient: number;',
+            'export { LIMIT as MAXIMUM };',
+        ].join('\n');
+
+        // Then - each binding is read by what it holds
+        expect([exportedFunctions(text), exportedValues(text)]).toStrictEqual([
+            ['run', 'named', 'Shape'],
+            ['LIMIT', 'ambient', 'MAXIMUM'],
+        ]);
+    });
+
+    test('names nothing a list exports as the default, nor a type it lists', () => {
+        // Given - a local function and value listed as the default, and a type listed by name
+        const text = [
+            'function walk() {}',
+            'const LIMIT = 3;',
+            'type Tree = string;',
+            'export { walk as default };',
+            'export { LIMIT as default };',
+            'export type { Tree };',
+            'export default class {}',
+            'function other() {}',
+            "export { other } from './other.js';",
+        ].join('\n');
+
+        // Then - nothing is named
+        expect([exportedFunctions(text), exportedValues(text)]).toStrictEqual([[], []]);
     });
 });

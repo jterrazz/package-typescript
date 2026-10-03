@@ -1,112 +1,99 @@
-const DECLARED =
-    /^[ \t]*export[ \t]+(?:declare[ \t]+)?(?:abstract[ \t]+)?(?:async[ \t]+)?(?:function[ \t]*\*?|class)[ \t]*(?<name>[\w$]+)/gmu;
+import type ts from 'typescript';
 
-const BOUND =
-    /^[ \t]*(?<exported>export[ \t]+)?(?:declare[ \t]+)?(?:const|let|var)[ \t]+(?<name>[\w$]+)[^=\n]*=/gmu;
+import { refusal } from '../catalogue/lesson.js';
 
-const LOCAL_FUNCTION = /^[ \t]*(?:async[ \t]+)?(?:function[ \t]*\*?|class)[ \t]*(?<name>[\w$]+)/gmu;
+type Api = typeof ts;
 
-const LISTED = /^[ \t]*export[ \t]*\{(?<names>[^}]*)\}(?![ \t]*from\b)/gmu;
+type Named = { isFunction: boolean; name: string };
 
-const OPENERS: Readonly<Record<string, string>> = { '(': ')', '<': '>' };
-
-function closingOf(text: string, start: number): number {
-    const open = text[start];
-    const close = OPENERS[open ?? ''];
-    let depth = 0;
-    for (let index = start; index < text.length; index += 1) {
-        if (text[index] === open) {
-            depth += 1;
-        } else if (text[index] === close) {
-            depth -= 1;
-            if (depth === 0) {
-                return index;
-            }
-        }
-    }
-
-    return -1;
-}
-
-function isFunctionAt(text: string, start: number): boolean {
-    let rest = text.slice(start).trimStart();
-    const offset = text.length - start - rest.length;
-    let at = start + offset;
-    if (/^async\b/u.test(rest)) {
-        rest = rest.slice('async'.length).trimStart();
-        at = text.length - rest.length;
-    }
-    if (/^(?:function|class)\b/u.test(rest)) {
-        return true;
-    }
-    if (/^[\w$]+\s*=>/u.test(rest)) {
-        return true;
-    }
-    if (rest.startsWith('<')) {
-        const end = closingOf(text, at);
-        if (end === -1) {
-            return false;
-        }
-        rest = text.slice(end + 1).trimStart();
-        at = text.length - rest.length;
-    }
-    if (!rest.startsWith('(')) {
-        return false;
-    }
-    const end = closingOf(text, at);
-
-    return end !== -1 && /^\s*(?::[^=;{]+)?=>/u.test(text.slice(end + 1));
-}
+type Binding = Named & { exported: boolean };
 
 type Names = { functions: string[]; values: string[] };
 
-function listedOf(entry: string): { local: string | undefined; name: string | undefined } {
-    const [local, alias] = entry
-        .trim()
-        .replace(/^type\s+/u, '')
-        .split(/\s+as\s+/u);
-
-    return { local, name: alias ?? local };
+let installed: Api | undefined;
+try {
+    ({ default: installed } = await import('typescript'));
+} catch {
+    // hazard: the names pass also loads where typescript is not installed; only a lint tree, whose owner installs it, is parsed.
 }
 
-function withListed(
-    text: string,
-    { functions, values }: Names,
-    locals: { functions: ReadonlySet<string>; values: ReadonlySet<string> },
-): void {
-    for (const match of text.matchAll(LISTED)) {
-        for (const { local, name } of (match.groups?.names ?? '').split(',').map(listedOf)) {
-            if (local === undefined || name === undefined || name === 'default') {
-                continue;
+function apiOf(): Api {
+    // Stryker disable next-line ConditionalExpression: typescript is installed wherever this module's tests run
+    if (installed === undefined) {
+        throw new Error(
+            refusal({
+                fix: "run 'npm install' so the typescript @jterrazz/typescript depends on is installed beside it, then run again",
+                found: 'the lint tree cannot be read — typescript is not installed',
+                read: 'docs/07-quality-checks.md#the-names-tree-pass',
+                why: 'what a lint module exports is read from its syntax tree, and typescript parses it',
+            }),
+        );
+    }
+
+    return installed;
+}
+
+const hasModifier = (api: Api, node: ts.Node, kind: ts.SyntaxKind): boolean =>
+    api.canHaveModifiers(node) &&
+    api.getModifiers(node)?.some((modifier) => modifier.kind === kind) === true;
+
+const isFunctionLike = (api: Api, initializer: ts.Expression | undefined): boolean =>
+    initializer !== undefined &&
+    (api.isArrowFunction(initializer) ||
+        api.isFunctionExpression(initializer) ||
+        api.isClassExpression(initializer));
+
+function* bindingsOf(api: Api, statements: readonly ts.Statement[]): Generator<Binding> {
+    for (const statement of statements) {
+        const exported = hasModifier(api, statement, api.SyntaxKind.ExportKeyword);
+        if (api.isFunctionDeclaration(statement) || api.isClassDeclaration(statement)) {
+            const name = statement.name?.text;
+            // Stryker disable next-line ConditionalExpression: only a default export may go unnamed
+            if (name !== undefined && !hasModifier(api, statement, api.SyntaxKind.DefaultKeyword)) {
+                yield { exported, isFunction: true, name };
             }
-            if (locals.functions.has(local)) {
-                functions.push(name);
-            } else if (locals.values.has(local)) {
-                values.push(name);
+        } else if (api.isVariableStatement(statement)) {
+            for (const declaration of statement.declarationList.declarations) {
+                if (api.isIdentifier(declaration.name)) {
+                    const isFunction = isFunctionLike(api, declaration.initializer);
+                    yield { exported, isFunction, name: declaration.name.text };
+                }
+            }
+        }
+    }
+}
+
+function* listedOf(api: Api, statements: readonly ts.Statement[]): Generator<ts.ExportSpecifier> {
+    for (const statement of statements) {
+        if (api.isExportDeclaration(statement) && statement.moduleSpecifier === undefined) {
+            const clause = statement.exportClause;
+            // Stryker disable next-line ConditionalExpression,LogicalOperator: an export with no `from` always lists its bindings in braces
+            if (clause !== undefined && api.isNamedExports(clause)) {
+                yield* clause.elements;
             }
         }
     }
 }
 
 function namesOf(text: string): Names {
-    const functions = [...text.matchAll(DECLARED)].map((match) => match.groups?.name ?? '');
-    const values: string[] = [];
-    const localFunctions = new Set(
-        [...text.matchAll(LOCAL_FUNCTION)].map((match) => match.groups?.name ?? ''),
-    );
-    const localValues = new Set<string>();
-    for (const match of text.matchAll(BOUND)) {
-        const isFunction = isFunctionAt(text, match.index + match[0].length);
-        const name = match.groups?.name ?? '';
-        if (match.groups?.exported === undefined) {
-            (isFunction ? localFunctions : localValues).add(name);
-        } else {
-            (isFunction ? functions : values).push(name);
-        }
-    }
-    withListed(text, { functions, values }, { functions: localFunctions, values: localValues });
+    const api = apiOf();
+    // Stryker disable next-line StringLiteral: the name only picks a script kind, and every kind reads these statements alike
+    const { statements } = api.createSourceFile('module.ts', text, api.ScriptTarget.Latest);
+    const bindings = [...bindingsOf(api, statements)];
+    const declared = new Map(bindings.map(({ isFunction, name }) => [name, isFunction]));
+    const listed = [...listedOf(api, statements)]
+        .filter(({ name }) => name.text !== 'default')
+        .flatMap(({ name, propertyName }): Named[] => {
+            const isFunction = declared.get((propertyName ?? name).text);
 
-    return { functions: [...new Set(functions)], values: [...new Set(values)] };
+            return isFunction === undefined ? [] : [{ isFunction, name: name.text }];
+        });
+    const exported: Named[] = [...bindings.filter((binding) => binding.exported), ...listed];
+
+    return {
+        functions: exported.filter(({ isFunction }) => isFunction).map(({ name }) => name),
+        values: exported.filter(({ isFunction }) => !isFunction).map(({ name }) => name),
+    };
 }
 
 export function exportedFunctions(text: string): string[] {
