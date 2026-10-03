@@ -8,7 +8,7 @@ describe('scope', () => {
         // Given - a workspace of an expo app and a node api, neither naming anything to mutate
         const result = await cli.fixture(directory('./_fixtures/workspace/')).exec('mutation');
 
-        // Then - the config handed to Stryker measures src/ everywhere, the expo routes and its .tsx, never lint/, and builds nothing the project does not
+        // Then - the config handed to Stryker measures src/ everywhere, the expo routes and its .tsx, never lint/, and the sandbox builds nothing the project does not
         const config: unknown = JSON.parse(
             result.file('.artifacts/stryker/stryker.config.json').content,
         );
@@ -28,6 +28,6 @@ describe('scope', () => {
                 '!**/_expected/**',
             ],
         });
-        expect(config).not.toHaveProperty('buildCommand');
+        expect(result.file('.artifacts/stryker/sandbox.mjs').content).not.toContain('npm');
     });
 });

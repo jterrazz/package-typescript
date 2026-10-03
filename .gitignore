@@ -1,7 +1,6 @@
 node_modules/
 dist/
 .DS_Store
-stryker-setup-*.js
 
 # Build, test and lint artefacts (@jterrazz/typescript)
 .artifacts/

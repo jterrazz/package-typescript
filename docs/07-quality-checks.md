@@ -792,7 +792,7 @@ Not a pass and never part of `check`: [Stryker](https://stryker-mutator.io) rewr
 
 What a run measures beyond that, and what it leaves out, is declared under `typescript.mutation`, each glob mapped to its reason: `mutate` the sources the platform does not name — a package's `lint/` rules —, `exclude` the tests that read the sources as text, and see the instrumented ones, and `ignore` the sources no test of the package can judge.
 
-The run is in place, since the checks a test runs read the git tree and a sandbox under the ignored `.artifacts/` is invisible to them. One file therefore lands at the root: Stryker's Vitest runner writes `stryker-setup-<worker>.js` into the working directory of each test runner — the project root, in place — and offers no option to move it. It removes the file when the run ends; a run that stops early leaves it behind, so a repository running mutation ignores `stryker-setup-*.js`, the one regenerable name its root may hold.
+A mutant never touches the checkout. Stryker copies the project into a sandbox under `.artifacts/stryker/tmp/` — everything but `.artifacts/` itself and `node_modules/`, which it links — and instruments, builds and tests there, so a run stopped at any point leaves the sources, `dist/` and the root as they were. The sandbox lies in an ignored folder, where git sees no tree, and the checks a test runs read the git tree: before the first test, the sandbox becomes a repository of its own, every file it holds added, and the `--specs` build runs there after.
 
 ## Pitfalls
 

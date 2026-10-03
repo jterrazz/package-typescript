@@ -14,7 +14,9 @@ import { handOver } from './processes.js';
 import { badge, print } from './terminal.js';
 import { projectRoot } from './toolchain.js';
 
-const OUT = '.artifacts/stryker';
+const ARTIFACTS = '.artifacts';
+
+const OUT = `${ARTIFACTS}/stryker`;
 
 const NEVER_MUTATED = [
     '**/*.test.ts',
@@ -59,6 +61,15 @@ afterAll(() => {
     delete namespace()?.mutantCoverage;
 });
 `;
+
+// The checks a test runs read the git tree, and the sandbox lies in the ignored .artifacts/, where git sees none.
+const sandboxScript = (
+    build: boolean,
+): string => `import { execFileSync } from 'node:child_process';
+
+execFileSync('git', ['init', '--quiet']);
+execFileSync('git', ['add', '--all']);
+${build ? "execFileSync('npm', ['run', 'build'], { stdio: 'inherit' });\n" : ''}`;
 
 type Settings = { exclude: string[]; ignore: string[]; mutated: string[] };
 
@@ -107,13 +118,13 @@ const typeCheckedGlob = (mutated: readonly string[]): string =>
         ),
     );
 
-function buildCommandOf(project: string): object {
+function buildsOf(project: string): boolean {
     try {
         const { scripts } = parsedObject(readFileSync(join(project, 'package.json'), 'utf8'));
 
-        return objectOf(scripts).build === undefined ? {} : { buildCommand: 'npm run build' };
+        return objectOf(scripts).build !== undefined;
     } catch {
-        return {};
+        return false;
     }
 }
 
@@ -121,9 +132,7 @@ function vitestConfig(settings: Settings, specs: boolean): string {
     const kept = specs
         ? 'projects.filter((project) => project.test?.browser?.enabled !== true)'
         : "projects.filter((project) => project.test?.name === 'unit')";
-    const setup = specs
-        ? `setupFiles: [${JSON.stringify(join(process.cwd(), OUT, 'active-mutant.mjs'))}], `
-        : '';
+    const setup = specs ? `setupFiles: [${JSON.stringify(`${OUT}/active-mutant.mjs`)}], ` : '';
 
     return `import { mergeConfig } from 'vitest/config';
 
@@ -148,15 +157,13 @@ export default {
 `;
 }
 
-function strykerConfig(
-    settings: Settings,
-    { project, specs }: { project: string; specs: boolean },
-): object {
+function strykerConfig(settings: Settings, specs: boolean): object {
     const shared = {
         $schema: '../../node_modules/@stryker-mutator/core/schema/stryker-schema.json',
+        buildCommand: `node ${OUT}/sandbox.mjs`,
         checkers: [],
         disableTypeChecks: typeCheckedGlob(settings.mutated),
-        inPlace: true,
+        ignorePatterns: [`/${ARTIFACTS}/**`, `!/${OUT}/*.mjs`],
         mutate: [
             ...settings.mutated,
             ...[...NEVER_MUTATED, ...settings.ignore].map((glob) => `!${glob}`),
@@ -170,7 +177,6 @@ function strykerConfig(
     return specs
         ? {
               ...shared,
-              ...buildCommandOf(project),
               concurrency: 6,
               coverageAnalysis: 'off',
               incremental: false,
@@ -214,11 +220,9 @@ export async function mutation(args: readonly string[]): Promise<number> {
     mkdirSync(OUT, { recursive: true });
     writeFileSync(join(OUT, 'vitest.config.mjs'), vitestConfig(settings, specs));
     writeFileSync(join(OUT, 'active-mutant.mjs'), ACTIVE_MUTANT);
+    writeFileSync(join(OUT, 'sandbox.mjs'), sandboxScript(specs && buildsOf(project)));
     const config = join(OUT, specs ? 'stryker.specs.config.json' : 'stryker.config.json');
-    writeFileSync(
-        config,
-        `${JSON.stringify(strykerConfig(settings, { project, specs }), null, 4)}\n`,
-    );
+    writeFileSync(config, `${JSON.stringify(strykerConfig(settings, specs), null, 4)}\n`);
     print(`${badge('TYPESCRIPT')} Measuring the suite against mutants of the sources...\n\n`);
 
     return await handOver(

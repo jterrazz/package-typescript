@@ -1,6 +1,6 @@
 {
     "typescript": {
-        "comments/comment-lines-held-by-the-baseline": 343
+        "comments/comment-lines-held-by-the-baseline": 344
     },
     "test": {
         "jterrazz-check/facet-test-uses-its-runner": 20

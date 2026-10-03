@@ -20,7 +20,7 @@ The package builds itself with the build plan it ships, so a build comes before 
 Two gestures are opt-in and never part of `check`:
 
 - `make check-links` runs [lychee](https://lychee.cli.rs) over `README.md`, `docs/` and `skills/`, remote links included. It needs the network and a lychee on the machine, and says so where there is none. Why the gate leaves remote links out is [Quality checks](07-quality-checks.md#what-rumdl-judges)'s.
-- `make mutation` runs `typescript mutation` — [Stryker](https://stryker-mutator.io) over `src/` and `lint/` against the module tests of the `unit` project ([Quality checks](07-quality-checks.md#mutation)). It rewrites the sources in place for the whole run, so nothing else runs beside it, and leaves its report in `.artifacts/stryker/`. The specs spawn the built command, which no mutant of that run reaches, so its score measures the module tests alone; what the specs leave alive is [Testing § The mutants no test kills](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#the-mutants-no-test-kills).
+- `make mutation` runs `typescript mutation` — [Stryker](https://stryker-mutator.io) over `src/` and `lint/` against the module tests of the `unit` project ([Quality checks](07-quality-checks.md#mutation)). It mutates a sandbox copy under `.artifacts/stryker/tmp/`, never the checkout, and leaves its report in `.artifacts/stryker/`. The specs spawn the built command, which no mutant of that run reaches, so its score measures the module tests alone; what the specs leave alive is [Testing § The mutants no test kills](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md#the-mutants-no-test-kills).
 
 ## Where a change lands
 
