@@ -28,7 +28,7 @@ function suppressingProject(toolchain: string): string {
     );
     writeFileSync(
         join(project, 'oxlint.config.ts'),
-        "import { oxlintConfig } from '@jterrazz/typescript/oxlint';\n\nexport default await oxlintConfig(import.meta.dirname);\n",
+        "import { oxlintConfig } from '@jterrazz/typescript/oxlint';\n\nexport default await oxlintConfig(import.meta);\n",
     );
     mkdirSync(join(project, 'node_modules/@jterrazz'), { recursive: true });
     symlinkSync(toolchain, join(project, 'node_modules/@jterrazz/typescript'), 'dir');

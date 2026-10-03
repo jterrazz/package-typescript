@@ -8,6 +8,6 @@ for (const entry of entries) {
 const oxlint = await import('@jterrazz/typescript/oxlint');
 const oxfmt = await import('@jterrazz/typescript/oxfmt');
 process.stdout.write(
-    `the oxlint entry derives the declared project's rules: ${Object.keys((await oxlint.oxlintConfig(import.meta.dirname)).rules ?? {}).length > 100 ? 'yes' : 'no'}\n`,
+    `the oxlint entry derives the declared project's rules: ${Object.keys((await oxlint.oxlintConfig(import.meta)).rules ?? {}).length > 100 ? 'yes' : 'no'}\n`,
 );
-process.stdout.write(`the oxfmt entry derives the estate style: ${(await oxfmt.oxfmtConfig(import.meta.dirname)).singleQuote === true ? 'yes' : 'no'}\n`);
+process.stdout.write(`the oxfmt entry derives the estate style: ${(await oxfmt.oxfmtConfig(import.meta)).singleQuote === true ? 'yes' : 'no'}\n`);

@@ -1,8 +1,8 @@
 import process from 'node:process';
 import type { OxfmtConfig } from 'oxfmt';
 
-import { oxfmtConfig } from './presets/oxfmt/project.js';
+import { oxfmtConfigAt } from './presets/oxfmt/project.js';
 
-const derived: OxfmtConfig = await oxfmtConfig(process.cwd());
+const derived: OxfmtConfig = await oxfmtConfigAt(process.cwd());
 
 export default derived;

@@ -32,7 +32,7 @@ export const PROFILES = Object.freeze([
 // The profiles ship as values of the `#rulebook` entry; oxlint reads a config by path, so each is laid as a module.
 const PROFILE_MODULES = newDirectory('jterrazz-profiles-');
 
-export const DERIVED_CONFIG = `import { oxlintConfig } from ${JSON.stringify(resolve(REPOSITORY, 'dist/rulebook.js'))};\n\nexport default await oxlintConfig(import.meta.dirname);\n`;
+export const DERIVED_CONFIG = `import { oxlintConfigAt } from ${JSON.stringify(resolve(REPOSITORY, 'dist/rulebook.js'))};\n\nexport default await oxlintConfigAt(import.meta.dirname);\n`;
 
 export function profilePath(name: string): string {
     const path = resolve(PROFILE_MODULES, `${name}.mjs`);
@@ -47,7 +47,7 @@ export function profilePath(name: string): string {
 export const OXFMT_CONFIG = resolve(PROFILE_MODULES, 'oxfmt.config.mjs');
 writeFileSync(
     OXFMT_CONFIG,
-    `import { oxfmtConfig } from ${JSON.stringify(resolve(REPOSITORY, 'dist/oxfmt.js'))};\n\nexport default await oxfmtConfig(import.meta.dirname);\n`,
+    `import { oxfmtConfig } from ${JSON.stringify(resolve(REPOSITORY, 'dist/oxfmt.js'))};\n\nexport default await oxfmtConfig(import.meta);\n`,
 );
 
 // A real directory, never a link: tsc resolves a preset's own `extends` from its real path.

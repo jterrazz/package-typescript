@@ -27,10 +27,11 @@ beside both.
   the tsconfig preset, the roots a framework imposes and the checks follow
   from them; `typescript()` and the profile choice are gone.
 - The files an editor discovers by name stay at the root, derived:
-  `oxlint.config.ts` and `oxfmt.config.ts` pass their own directory,
-  `import.meta.dirname`, to the `oxlintConfig` and `oxfmtConfig` of the
-  `./oxlint` and `./oxfmt` entries, which derive the config from the
-  `jterrazz.config.ts` there; `tsconfig.json` extends the platform's
+  `oxlint.config.ts` and `oxfmt.config.ts` hand their own `import.meta` to
+  the `oxlintConfig` and `oxfmtConfig` of the `./oxlint` and `./oxfmt`
+  entries, which derive the config from the `jterrazz.config.ts` of the
+  module's directory — the whole `import.meta`, since a browser platform's
+  types declare no `dirname`; `tsconfig.json` extends the platform's
   preset, with what `typescript.tsconfig` adds and why; and a project on
   `@jterrazz/test`'s preset keeps the `vitest.config.ts` it derives. The
   Config (one file) pass refuses any other content, and `fix` writes them.

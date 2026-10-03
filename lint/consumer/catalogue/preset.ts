@@ -128,7 +128,7 @@ const TSCONFIG_OF: Readonly<Record<Platform, string>> = Object.freeze({
 
 const fromTheToolchain = (tool: 'oxfmt' | 'oxlint'): EditorFile => ({
     scope: 'repository',
-    text: `import { ${tool}Config } from '@jterrazz/typescript/${tool}';\n\nexport default await ${tool}Config(import.meta.dirname);\n`,
+    text: `import { ${tool}Config } from '@jterrazz/typescript/${tool}';\n\nexport default await ${tool}Config(import.meta);\n`,
 });
 
 const editorFilesOf = (declaration: Declaration | null): Readonly<Record<string, EditorFile>> => ({

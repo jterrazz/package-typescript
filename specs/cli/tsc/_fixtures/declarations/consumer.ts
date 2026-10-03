@@ -41,9 +41,9 @@ export const undeclaredSection = defineConfig({ kind: 'library', platform: 'node
 // @ts-expect-error — a preset is named for the package that ships it
 export const namelessPreset = definePreset({ layers: [] });
 
-export const derivedLint: OxlintConfig = await oxlintConfig(import.meta.dirname);
+export const derivedLint: OxlintConfig = await oxlintConfig(import.meta);
 
-export const derivedFormat: OxfmtConfig = await oxfmtConfig(import.meta.dirname);
+export const derivedFormat: OxfmtConfig = await oxfmtConfig(import.meta);
 
 export const message: string = refusal({
     fix: 'name the reason',
