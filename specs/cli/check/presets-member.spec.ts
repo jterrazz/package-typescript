@@ -29,13 +29,14 @@ function contribution(name: string, exit: 0 | 1): string {
 `;
 }
 
-function declare(dir: string, name: string, exit: 0 | 1 = 1): void {
+function declare(dir: string, name: string, exit: 0 | 1 = 1, held = "baseline: ['stub'],"): void {
     writeFileSync(join(dir, 'conventions.mjs'), contribution(name, exit));
     writeFileSync(
         join(dir, 'jterrazz.config.ts'),
         `export default {
     presets: [
         {
+            ${held}
             checker: { label: 'Stub Conventions', module: new URL('./conventions.mjs', import.meta.url).pathname },
             name: 'stub',
             package: 'stub',
@@ -143,7 +144,7 @@ describe('presets-member', () => {
     });
 
     test("records a preset's own section when the baseline is recorded", () => {
-        // Given - a preset whose checks name a baseline command
+        // Given - a preset holding a section of debt, whose checks name a baseline command
         const root = workspace();
         writeFileSync(join(root, 'conventions.mjs'), WRITING);
 
@@ -152,6 +153,19 @@ describe('presets-member', () => {
 
         // Then - the preset recorded its own section
         expect(stdout).toContain('the stub recorded its section');
+    });
+
+    test('records nothing for a preset whose sections are all floors', () => {
+        // Given - a preset whose one section is a floor, which its own measuring gesture records
+        const root = workspace();
+        declare(root, 'root', 1, "baseline: ['stub.coverage'], floors: ['stub.coverage'],");
+        writeFileSync(join(root, 'conventions.mjs'), WRITING);
+
+        // When - the baseline is recorded
+        const { stdout } = run(root, 'baseline', 'presets');
+
+        // Then - the preset is never asked to record
+        expect(stdout).not.toContain('the stub recorded its section');
     });
 
     test("runs a declared preset's checks once, over the whole repository", () => {

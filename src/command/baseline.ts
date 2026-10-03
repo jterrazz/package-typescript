@@ -9,7 +9,7 @@ import {
 } from '../../lint/kit/baseline/oxlint-suppressions.js';
 import { binaryIn, HOISTED_BESIDE_PACKAGE } from '../../lint/kit/project/package-root.js';
 import { ignorePatternsOf } from '../../lint/kit/project/project-files.js';
-import { presetChecker, presetCheckersOf } from './check/presets.js';
+import { debtHoldingCheckersOf, presetChecker } from './check/presets.js';
 import { checker } from './checker.js';
 import { lintTargets } from './lint-targets.js';
 import { run } from './processes.js';
@@ -76,7 +76,7 @@ async function written(reports: Reports): Promise<number> {
 }
 
 async function recordedPresets(): Promise<number> {
-    for (const contributed of await presetCheckersOf('.')) {
+    for (const contributed of await debtHoldingCheckersOf('.')) {
         // oxlint-disable-next-line no-await-in-loop -- each preset writes its own section of the one baseline file
         if ((await presetChecker(contributed, ['baseline'], 'inherit')) !== 0) {
             return 1;
