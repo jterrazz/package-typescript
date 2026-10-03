@@ -790,6 +790,8 @@ Not a pass and never part of `check`: [Stryker](https://stryker-mutator.io) rewr
 
 What a run leaves out is declared under `typescript.mutation`, each path mapped to its reason: `exclude` the tests that read the sources as text, and see the instrumented ones, and `ignore` the sources no test of the package can judge.
 
+The run is in place, since the checks a test runs read the git tree and a sandbox under the ignored `.artifacts/` is invisible to them. One file therefore lands at the root: Stryker's Vitest runner writes `stryker-setup-<worker>.js` into the working directory of each test runner — the project root, in place — and offers no option to move it. It removes the file when the run ends; a run that stops early leaves it behind, so a repository running mutation ignores `stryker-setup-*.js`, the one regenerable name its root may hold.
+
 ## Pitfalls
 
 - **A nested `oxlint.config.*` is loaded only on the path of a file oxlint is handed.** `check` hands it the sweep, which never holds the ground a test stands on, so a config committed under `_fixtures/` is never read, armed or broken. Handed a directory instead — the fallback when the sweep could not answer — oxlint discovers every config beneath it and loads them all before it lints anything, and one that cannot load fails the run.

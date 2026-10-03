@@ -1,10 +1,6 @@
 node_modules/
 dist/
-.idea
 .DS_Store
-.test-fixtures/
-*.temp.json
-# The setup files Stryker's vitest runner writes at the root, and leaves behind when a run stops early.
 stryker-setup-*.js
 
 # Build, test and lint artefacts (@jterrazz/typescript)
