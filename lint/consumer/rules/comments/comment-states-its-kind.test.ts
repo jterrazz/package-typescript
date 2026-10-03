@@ -44,8 +44,56 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
             code: lines('// Invariant: the kind is lower case', 'const one = 1;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
         },
+        {
+            code: lines('//* a line comment dressed as a hover', 'const one = 1;'),
+            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+        },
+        {
+            code: lines(
+                '/** Sum. */ export const sum = 1;',
+                'export const end = 2; /** Trailing. */',
+            ),
+            errors: [
+                { column: 0, line: 1, messageId: 'unstated' },
+                { column: 22, line: 2, messageId: 'unstated' },
+            ],
+        },
+        {
+            code: lines('/* hazard: a block opens the run */', '// a line after it starts its own'),
+            errors: [{ column: 0, line: 2, messageId: 'unstated' }],
+        },
+        {
+            code: lines('// hazard: a line opens the run', '/* a block after it starts its own */'),
+            errors: [{ column: 0, line: 2, messageId: 'unstated' }],
+        },
+        {
+            code: lines('// value/: a slash is no part of the kind', 'const one = 1;'),
+            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+        },
+        {
+            code: lines(
+                '',
+                '',
+                '',
+                '',
+                '',
+                '// @generated below the head is no marker',
+                'export {};',
+            ),
+            errors: [{ column: 0, line: 6, messageId: 'unstated' }],
+        },
     ],
     valid: [
+        lines('#!/usr/bin/env node', '// hazard: the shebang is no comment', 'run();'),
+        lines('/** The sum of two values. */   ', 'export const sum = (a, b) => a + b;'),
+        lines(
+            'function drain() {',
+            '    // invariant: an indented run,',
+            '    // carried on by its second line',
+            '}',
+        ),
+        lines('// hazard: a run read across a Windows line break,\r', '// still one run'),
+        lines('///  <reference types="vite/client" />', 'export {};'),
         lines(
             '// invariant: the queue is drained before the next tick,',
             '// so a reader never sees half a batch',
