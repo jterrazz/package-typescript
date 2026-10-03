@@ -119,6 +119,7 @@ function occurrencesOf(listed: readonly unknown[], name: string): Preset[] {
     return listed.flatMap((preset) =>
         isPreset(preset)
             ? [
+                  // Stryker disable next-line ArrayDeclaration: an entry that is no preset is skipped
                   ...occurrencesOf(preset.presets ?? [], name),
                   ...(preset.name === name ? [preset] : []),
               ]
@@ -126,58 +127,41 @@ function occurrencesOf(listed: readonly unknown[], name: string): Preset[] {
     );
 }
 
-function withBase(
-    listed: readonly unknown[],
-    base: readonly Preset[],
-): { presets: unknown[]; problem: null | string } {
+// invariant: a listed copy of a base preset only merges its settings into the base, which keeps its first place.
+function withBase(listed: readonly unknown[], base: readonly Preset[]): string | unknown[] {
     const presets: unknown[] = [];
     for (const own of base) {
         const named = occurrencesOf(listed, own.name);
         const foreign = named.find((preset) => preset.package !== own.package);
         if (foreign !== undefined) {
-            return {
-                presets: [],
-                problem: `holds two presets named \`${own.name}\`, from ${own.package} and ${foreign.package}`,
-            };
+            return `holds two presets named \`${own.name}\`, from ${own.package} and ${foreign.package}`;
         }
         let settings: unknown = own.settings;
         for (const preset of named) {
             const law = writtenLawSetting(own, objectOf(own.settings), preset.settings);
             if (law !== undefined) {
-                return { presets: [], problem: lawSettingRefused(own.name, law) };
+                return lawSettingRefused(own.name, law);
             }
             const merged = mergeSettings(settings, preset.settings, own.name);
             if (merged.problem !== null) {
-                return { presets: [], problem: merged.problem };
+                return merged.problem;
             }
             settings = merged.value;
         }
         presets.push({ ...own, settings: objectOf(settings) });
     }
 
-    return {
-        presets: [
-            ...presets,
-            ...listed.filter(
-                (preset) => !isPreset(preset) || !base.some(({ name }) => name === preset.name),
-            ),
-        ],
-        problem: null,
-    };
+    return [...presets, ...listed];
 }
 
-function orderedPresets(
-    listed: readonly unknown[],
-    base: readonly Preset[],
-): { presets: Preset[]; problem: null | string } {
+function orderedPresets(listed: readonly unknown[], base: readonly Preset[]): Preset[] | string {
     const chosen = withBase(listed, base);
-    if (chosen.problem !== null) {
-        return { presets: [], problem: chosen.problem };
+    if (typeof chosen === 'string') {
+        return chosen;
     }
     const ordered = new Map<string, Preset>();
-    const problem = flattened(chosen.presets, ordered);
 
-    return { presets: [...ordered.values()], problem };
+    return flattened(chosen, ordered) ?? [...ordered.values()];
 }
 
 type Sections = {
@@ -256,13 +240,16 @@ export function resolveConfig(declaredSettings: object, baseOf: BasePresets): Re
     if (!Array.isArray(listed)) {
         return refusedWith('holds a `presets` that is not a list');
     }
-    const { presets, problem } = orderedPresets(listed, baseOf(declaration));
+    const presets = orderedPresets(listed, baseOf(declaration));
+    if (typeof presets === 'string') {
+        return refusedWith(presets);
+    }
     const { problem: unmerged, sections } = sectionsOf(presets, declared);
     const laws = presets.flatMap((preset) =>
         [...(preset.layers ?? []), ...(preset.names ?? [])].map((rule) => lawOf(preset, rule)),
     );
     const opted = optOutsOf(declared.optOuts, new Set(laws));
-    const refused = problem ?? unmerged ?? opted.problem;
+    const refused = unmerged ?? opted.problem;
     if (refused !== null) {
         return refusedWith(refused);
     }
