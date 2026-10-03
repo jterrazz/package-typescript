@@ -1,5 +1,6 @@
 description: overlooks, in every gate that reads the tree, what --ignore-pattern names
 fixture: ./_fixtures/ignore-pattern/notes-overlooked/
+env: TYPESCRIPT_CHECK_PASSES=typescript,oxlint,oxfmt,suppressions,markdown,names,comments,secrets
 runs:
     - command: check --ignore-pattern 'notes/**'
       exit: 0
@@ -15,10 +16,6 @@ runs:
           ✓ Passed
 
            RUN  Oxfmt Check
-
-          ✓ Passed
-
-           RUN  Knip (unused code)
 
           ✓ Passed
 
@@ -41,15 +38,6 @@ runs:
            RUN  Secrets (credentials)
 
           ✓ Passed
-
-           DRIFT  Deviations from the profile
-
-            declared                              nothing — node, the default
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
 
            END  Finalizing quality checks
 

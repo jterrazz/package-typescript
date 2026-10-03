@@ -1,63 +1,15 @@
 description: passes a Next project that ignores .next when output:'export' pins it there
 fixture: ./_fixtures/gitignore/next-export/
+env: TYPESCRIPT_CHECK_PASSES=gitignore
 runs:
     - command: check
       exit: 0
       stdout: |4
            START  Running quality checks
 
-           RUN  TypeScript Check
-
-          ✓ Passed
-
-           RUN  Oxlint Check
-
-          ✓ Passed
-
-           RUN  Oxfmt Check
-
-          ✓ Passed
-
            RUN  Gitignore (artefacts)
 
           ✓ Passed
-
-           RUN  Knip (unused code)
-
-          ✓ Passed
-
-           RUN  Publish (packaging)
-
-          ✓ Passed
-
-           RUN  Suppressions (directives)
-
-          ✓ Passed
-
-           RUN  Markdown (prose)
-
-          ✓ Passed
-
-           RUN  Names (tree)
-
-          ✓ Passed
-
-           RUN  Comments (density)
-
-          ✓ Passed
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed
-
-           DRIFT  Deviations from the profile
-
-            declared                              nothing — node, the default
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
 
            END  Finalizing quality checks
 

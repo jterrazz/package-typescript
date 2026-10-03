@@ -29,10 +29,6 @@ runs:
 
           ✓ Passed
 
-           RUN  Publish (packaging)
-
-          ✓ Passed
-
            RUN  Suppressions (directives)
 
           ✓ Passed

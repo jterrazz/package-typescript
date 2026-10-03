@@ -1,5 +1,6 @@
 description: names every lint directive that is misspelled or unreasoned, and leaves a TypeScript one to oxlint
 fixture: ./_fixtures/suppressions/looking-away/
+env: TYPESCRIPT_CHECK_PASSES=typescript,oxlint,suppressions
 runs:
     - command: check
       exit: 1
@@ -14,44 +15,11 @@ runs:
           {{any}}
           ✗ Failed with exit code 1
 
-           RUN  Oxfmt Check
-
-          ✓ Passed
-
-           RUN  Knip (unused code)
-
-          ✓ Passed
-
            RUN  Suppressions (directives)
 
           index.ts:1:1: error suppressions(spelled-for-this-toolchain): line 1 spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it
           index.ts:4:1: error suppressions(states-its-reason): line 4 disables no-unused-vars with no '-- reason' after it
           ✗ Failed with exit code 1
-
-           RUN  Markdown (prose)
-
-          ✓ Passed
-
-           RUN  Names (tree)
-
-          ✓ Passed
-
-           RUN  Comments (density)
-
-          ✓ Passed
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed
-
-           DRIFT  Deviations from the profile
-
-            declared                              nothing — node, the default
-            rules off vs profile                  none
-            suppressions                          6
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
 
            END  Finalizing quality checks
 
