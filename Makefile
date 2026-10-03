@@ -33,4 +33,4 @@ check-links:
 
 # Rewrites the sources in place for its whole run, so nothing else runs beside it; a measure, never a verdict: `check` never calls it.
 mutation: build
-	npx stryker run
+	node dist/typescript.js mutation
