@@ -36,6 +36,7 @@
     ],
     "exclude": [
         "${configDir}/node_modules",
+        "${configDir}/.artifacts",
         "${configDir}/**/_fixtures",
         "${configDir}/**/_expected",
         "${configDir}/**/_seeds",
