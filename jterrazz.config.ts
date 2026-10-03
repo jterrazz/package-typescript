@@ -24,8 +24,10 @@ export default defineConfig({
     typescript: {
         mutation: {
             mutate: {
-                'lint/**/*.ts':
+                'lint/*.ts': 'the entries of the lint rules the package ships',
+                'lint/consumer/**/*.ts':
                     'the lint rules the package ships, beside the src/ every node project measures',
+                'lint/kit/**/*.ts': 'the rules kit the package ships to the rules of its siblings',
             },
             exclude: {
                 'lint/self/corpus/audience.test.ts':
@@ -34,10 +36,6 @@ export default defineConfig({
                     'it reads the sources as text, and sees the instrumented ones',
                 'specs/surface/package/builder-calls.test.ts':
                     'it reads the sources as text, and sees the instrumented ones',
-            },
-            ignore: {
-                'lint/self/corpus/findings.ts':
-                    'the self corpus audits the catalogue, and ships nowhere',
             },
         },
         knip: {

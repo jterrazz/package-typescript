@@ -1,6 +1,6 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, globSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { join } from 'node:path';
+import { join, matchesGlob } from 'node:path';
 import process from 'node:process';
 
 import { readSettings } from '../../lint/index.rules.js';
@@ -11,7 +11,7 @@ import { objectOf, parsedObject } from '../../lint/kit/project/json.js';
 import type { Resolution } from '../../lint/kit/project/preset.js';
 import { workspaceMembers } from '../../lint/kit/project/workspace-members.js';
 import { projectBinary } from './check/setup.js';
-import { heldScore } from './mutation-floor.js';
+import { judgedReport, verdictOf } from './mutation-survivors.js';
 import { handOver } from './processes.js';
 import { badge, print } from './terminal.js';
 import { projectRoot } from './toolchain.js';
@@ -120,6 +120,20 @@ const typeCheckedGlob = (mutated: readonly string[]): string =>
         ),
     );
 
+const TEST_SUFFIXES = ['.test.ts', '.test.tsx'];
+
+/** A module test proves the module beside it: a source with no `<name>.test.ts` is the specs' to prove, measured by range with `--specs`. */
+function testedSources(project: string, settings: Settings): string[] {
+    const never = [...NEVER_MUTATED, ...settings.ignore];
+    const hasItsTest = (file: string): boolean =>
+        TEST_SUFFIXES.some((suffix) =>
+            existsSync(join(project, file.replace(/\.[cm]?[jt]sx?$/u, suffix))),
+        );
+    return [...new Set(settings.mutated.flatMap((glob) => globSync(glob, { cwd: project })))]
+        .filter((file) => !never.some((pattern) => matchesGlob(file, pattern)) && hasItsTest(file))
+        .toSorted();
+}
+
 function buildsOf(project: string): boolean {
     try {
         const { scripts } = parsedObject(readFileSync(join(project, 'package.json'), 'utf8'));
@@ -159,17 +173,19 @@ export default {
 `;
 }
 
-function strykerConfig(settings: Settings, specs: boolean): object {
+function strykerConfig(settings: Settings, specs: boolean, tested: readonly string[]): object {
     const shared = {
         $schema: '../../node_modules/@stryker-mutator/core/schema/stryker-schema.json',
         buildCommand: `node ${OUT}/sandbox.mjs`,
         checkers: [],
         disableTypeChecks: typeCheckedGlob(settings.mutated),
         ignorePatterns: [`/${ARTIFACTS}/**`, `!/${OUT}/*.mjs`, `!/${DEV_OUTPUT}/**`],
-        mutate: [
-            ...settings.mutated,
-            ...[...NEVER_MUTATED, ...settings.ignore].map((glob) => `!${glob}`),
-        ],
+        mutate: specs
+            ? [
+                  ...settings.mutated,
+                  ...[...NEVER_MUTATED, ...settings.ignore].map((glob) => `!${glob}`),
+              ]
+            : tested,
         plugins: [createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner')],
         tempDirName: `${OUT}/tmp`,
         testRunner: 'vitest',
@@ -224,7 +240,14 @@ export async function mutation(args: readonly string[]): Promise<number> {
     writeFileSync(join(OUT, 'active-mutant.mjs'), ACTIVE_MUTANT);
     writeFileSync(join(OUT, 'sandbox.mjs'), sandboxScript(specs && buildsOf(project)));
     const config = join(OUT, specs ? 'stryker.specs.config.json' : 'stryker.config.json');
-    writeFileSync(config, `${JSON.stringify(strykerConfig(settings, specs), null, 4)}\n`);
+    const tested = testedSources(project, settings);
+    if (!specs && tested.length === 0) {
+        print(
+            `${badge('TYPESCRIPT')} No source has a module test beside it: nothing to measure.\n`,
+        );
+        return 0;
+    }
+    writeFileSync(config, `${JSON.stringify(strykerConfig(settings, specs, tested), null, 4)}\n`);
     print(`${badge('TYPESCRIPT')} Measuring the suite against mutants of the sources...\n\n`);
 
     const status = await handOver(
@@ -232,11 +255,18 @@ export async function mutation(args: readonly string[]): Promise<number> {
         ['run', config, ...(mutate === undefined ? [] : ['--mutate', mutate])],
         project,
     );
-    if (status !== 0 || specs || mutate !== undefined) {
+    const report = join(OUT, 'report.json');
+    if (status !== 0 || specs || !existsSync(report)) {
         return status;
     }
-    const held = await heldScore(project, join(OUT, 'report.json'));
-    print(`\n${held.lines.join('\n')}\n`);
+    const measured = new Set(
+        mutate === undefined
+            ? tested
+            : mutate.split(',').map((range) => range.replace(/:[^:]*$/u, '')),
+    );
+    const parsed: unknown = JSON.parse(readFileSync(report, 'utf8'));
+    const verdict = verdictOf(judgedReport(parsed, measured));
+    print(`\n${verdict.lines.join('\n')}\n`);
 
-    return held.status;
+    return verdict.status;
 }

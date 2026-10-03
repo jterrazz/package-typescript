@@ -4,36 +4,39 @@ import { describe, expect, test } from 'vitest';
 import { cli } from '../packed-cli.specification.js';
 
 describe('mutation', () => {
-    test('typescript mutation — a first run records the score it reached as the floor', async () => {
+    test('typescript mutation — a mutant the module test runs and none detects fails the run, named at its place', async () => {
         // Given - a consumer installing the packed toolchain, one test leaving the guard of its source unjudged
         const result = await cli
             .fixture(directory('./_fixtures/mutation-consumer/'))
             .exec('typescript mutation');
 
-        // Then - the run passes and writes its score to the ledger
-        expect(result.exitCode).toBe(0);
-        expect(result.stdout.text).toContain(
-            '.jterrazz/baseline.json › typescript.mutation › score recorded at 55.55',
-        );
-        expect(JSON.parse(result.file('.jterrazz/baseline.json').content)).toStrictEqual({
-            'typescript.mutation': { score: 55.55 },
-        });
+        // Then - each survivor is named, then the lesson, and nothing is written to a ledger
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+             TYPESCRIPT  Measuring the suite against mutants of the sources...
+            {{any}}
+            src/discount.ts:2:9  ConditionalExpression → false
+            src/discount.ts:2:9  EqualityOperator → rate >= 0.5
+            found: 2 mutant(s) a module test runs and none detects · why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/07-quality-checks.md#mutation
+            2 mutant(s) no module test runs — the specs', measured by range: typescript mutation --specs --mutate <file>:<from>-<to>
+        `);
+        expect(result.file('.jterrazz/baseline.json').exists).toBe(false);
     });
 
-    test('typescript mutation — a score below the committed floor fails the run and keeps the floor', async () => {
-        // Given - the same consumer, its ledger holding a floor of 90
+    test('typescript mutation — a run whose every mutant the module tests run is detected passes', async () => {
+        // Given - the same consumer, its test judging the guard, its boundary and its message
         const result = await cli
             .fixture(directory('./_fixtures/mutation-consumer/'))
-            .fixture(directory('./_fixtures/mutation-floor-above/'))
+            .fixture(directory('./_fixtures/mutation-killing/'))
             .exec('typescript mutation');
 
-        // Then - the run fails with the lesson, and the floor is not lowered
-        expect(result.exitCode).toBe(1);
-        expect(result.stdout.text).toContain(
-            'found: `score` fell to 55.55, below its floor of 90.00 · why: a floor only rises, so what the project reached is never lost unseen · fix: raise it back, or lower the floor by hand in a commit that says why · read: docs/07-quality-checks.md#the-mutation-floor',
-        );
-        expect(JSON.parse(result.file('.jterrazz/baseline.json').content)).toStrictEqual({
-            'typescript.mutation': { score: 90 },
-        });
+        // Then - the verdict passes
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(`
+             TYPESCRIPT  Measuring the suite against mutants of the sources...
+            {{any}}
+            every mutant a module test runs is detected — 9 detected
+            0 mutant(s) no module test runs — the specs', measured by range: typescript mutation --specs --mutate <file>:<from>-<to>
+        `);
     });
 });
