@@ -39,7 +39,8 @@ const isKind = (value: unknown): value is ProjectKind =>
 const isPlatform = (value: unknown): value is Platform =>
     typeof value === 'string' && (PLATFORMS as readonly string[]).includes(value);
 
-const listed = (values: readonly string[]): string => values.map((one) => `\`${one}\``).join(', ');
+export const listed = (values: readonly string[]): string =>
+    values.map((one) => `\`${one}\``).join(', ');
 
 export type DeclarationRead = { declaration: Declaration | null; problem: null | string };
 

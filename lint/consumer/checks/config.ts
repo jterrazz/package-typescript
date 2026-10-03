@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { Teaching } from '../../kit/catalogue/lesson.js';
 import { defineCheck, rowNamed } from '../../kit/catalogue/rule.js';
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
+import { KINDS, listed, PLATFORMS } from '../../kit/project/declaration.js';
 import type { Declaration } from '../../kit/project/declaration.js';
 import type { EditorFile } from '../../kit/project/editor-files.js';
 import {
@@ -92,7 +93,7 @@ function declarationFindings(context: Context, unit: Unit): Finding[] {
 
     return [
         finding('config/project-declared', settings, {
-            fix: `write \`export default defineConfig({ kind, platform })\` from \`@jterrazz/typescript/config\` in ${settings} — the kind one of library, api, cli, website, mobile, workspace, the platform one of node, bun, react, next, astro, expo`,
+            fix: `write \`export default defineConfig({ kind, platform })\` from \`@jterrazz/typescript/config\` in ${settings} — the kind one of ${listed(KINDS)}, the platform one of ${listed(PLATFORMS)}`,
             found: context.exists(join(context.root, settings))
                 ? `${settings} ${unit.problem ?? 'declares no `kind`'}`
                 : `${settings} is missing`,
