@@ -1,8 +1,9 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 import { refusal } from '../catalogue/lesson.js';
 import { isJsonObject, objectOf } from '../project/json.js';
+import { removeLedger } from './ledger-file.js';
 
 export const BASELINE = '.jterrazz/baseline.json';
 
@@ -203,10 +204,7 @@ function written(path: string, text: null | string): void {
 
         return;
     }
-    rmSync(path, { force: true });
-    if (existsSync(dirname(path)) && readdirSync(dirname(path)).length === 0) {
-        rmSync(dirname(path), { recursive: true });
-    }
+    removeLedger(path);
 }
 
 export function writeSection(root: string, name: string, counts: Counts): void {

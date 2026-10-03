@@ -2,7 +2,6 @@ import {
     copyFileSync,
     existsSync,
     mkdirSync,
-    readdirSync,
     readFileSync,
     renameSync,
     rmSync,
@@ -11,6 +10,7 @@ import {
 import { dirname, join } from 'node:path';
 
 import { objectOf } from '../project/json.js';
+import { removeLedger } from './ledger-file.js';
 
 export const OXLINT_SUPPRESSIONS = 'oxlint-suppressions.json';
 
@@ -30,10 +30,7 @@ export async function withStagedSuppressions<T>(root: string, run: () => Promise
             mkdirSync(dirname(ledger), { recursive: true });
             renameSync(staged, ledger);
         } else {
-            rmSync(ledger, { force: true });
-            if (existsSync(dirname(ledger)) && readdirSync(dirname(ledger)).length === 0) {
-                rmSync(dirname(ledger), { recursive: true });
-            }
+            removeLedger(ledger);
         }
     }
 }
