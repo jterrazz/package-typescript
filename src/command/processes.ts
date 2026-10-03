@@ -1,6 +1,5 @@
 import { spawn } from 'node:child_process';
 import type { ChildProcess, StdioOptions } from 'node:child_process';
-import { once } from 'node:events';
 import { closeSync, openSync, writeSync } from 'node:fs';
 import { constants } from 'node:os';
 import process from 'node:process';
@@ -32,10 +31,6 @@ async function flushed(): Promise<void> {
     await Promise.all([drained(process.stdout), drained(process.stderr)]);
 }
 
-function isSignal(name: string): name is keyof typeof constants.signals {
-    return Object.hasOwn(constants.signals, name);
-}
-
 function descriptorOf(stream: Stream, opened: number[]): Descriptor {
     if (typeof stream === 'string') {
         return stream;
@@ -56,22 +51,16 @@ function notFound(command: string, err: Descriptor): void {
 }
 
 async function exited(child: ChildProcess, command: string, err: Descriptor): Promise<number> {
-    try {
-        const closed: unknown[] = await once(child, 'close');
-        const [code, signal] = closed;
-        if (typeof code === 'number') {
-            return code;
-        }
-
-        return (
-            SIGNALLED +
-            (typeof signal === 'string' && isSignal(signal) ? constants.signals[signal] : 0)
-        );
-    } catch {
-        notFound(command, err);
-
-        return NOT_FOUND;
-    }
+    return await new Promise((resolve) => {
+        child.once('error', () => {
+            notFound(command, err);
+            resolve(NOT_FOUND);
+        });
+        child.once('close', (code: null | number, signal: NodeJS.Signals | null) => {
+            // Stryker disable next-line ConditionalExpression: Node sets the signal whenever it leaves the code null
+            resolve(code ?? SIGNALLED + (signal === null ? 0 : constants.signals[signal]));
+        });
+    });
 }
 
 export async function run(
