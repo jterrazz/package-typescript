@@ -180,7 +180,7 @@ That is the whole contract, and it is meant to stay that size:
 - **Two tracked ledgers at most**, under `.jterrazz/`: the debt the ratchet holds, gone when it is paid ([the ratchet](07-quality-checks.md#the-ratchet)).
 - **Six gestures**, the `Makefile` above, and **a manual**, `AGENTS.md` and `docs/`: both required at a repository root.
 
-A local `compilerOption` has no place to go, and that is the point. It says the preset lacks something, and settles that lack for one project where nobody else reads it, so the next project meets the same gap and answers it differently. Change the preset instead, where every project gets the answer.
+A local `compilerOption` is written under `typescript.tsconfig`, with its reason, and lands in the derived `tsconfig.json`; it is still a smell rather than a shortcut. It says the preset lacks something, and settles that lack for one project where nobody else reads it, so the next project meets the same gap and answers it differently. Change the preset instead, where every project gets the answer.
 
 ## Where a tool's output goes
 

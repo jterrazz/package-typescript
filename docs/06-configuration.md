@@ -125,6 +125,7 @@ The section this package reads holds the project's own settings, every one of th
 | `architecture` | the layer map its imports are held to: the shipped `hexagonal` map, its own `layers`, or both | [the Architecture pass](07-quality-checks.md#the-architecture-layer-map-pass) |
 | `names`        | its own rules of where a name sits                                                            | [the Names pass](07-quality-checks.md#a-name-rule-a-project-declares)         |
 | `oxlint`       | the rules it sets apart from its profile, `rules` and `overrides`                             | [the lint rules](#the-lint-rules)                                             |
+| `tsconfig`     | `compilerOptions` and `include` the project adds to its platform's preset, with one `reason`  | the derived `tsconfig.json`                                                   |
 | `oxfmt`        | `ignore`: the paths the formatter leaves as written                                           | the derived `oxfmt.config.ts`                                                 |
 | `build`        | `entries` the manifest does not name, and `dev` scripts built for the repository itself       | [Building](09-building.md#the-entries)                                        |
 | `knip`         | `entry`, `ignore`, `ignoreBinaries`, `ignoreDependencies`: what knip cannot trace             | [Lint presets](08-lint-presets.md#unused-code-knip)                           |

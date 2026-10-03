@@ -58,6 +58,12 @@ export type TypescriptSettings = {
     };
     /** The paths the formatter leaves alone, each mapped to the reason. */
     oxfmt?: { ignore?: Reasoned };
+    /** What the project's tsconfig.json adds to its platform's preset, and why. */
+    tsconfig?: {
+        compilerOptions?: Readonly<Record<string, unknown>>;
+        include?: readonly string[];
+        reason: string;
+    };
     /** The root folders kept beside the spine, each mapped to the reason it is kept. */
     roots?: Reasoned;
 };

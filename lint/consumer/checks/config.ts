@@ -5,7 +5,11 @@ import { defineCheck, rowNamed } from '../../kit/catalogue/rule.js';
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import type { Declaration } from '../../kit/project/declaration.js';
 import type { EditorFile } from '../../kit/project/editor-files.js';
-import { editorFileText, holdsEditorFile } from '../../kit/project/editor-files.js';
+import {
+    derivedEditorFiles,
+    editorFileText,
+    holdsEditorFile,
+} from '../../kit/project/editor-files.js';
 import { isJsonObject, parsedObject } from '../../kit/project/json.js';
 import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { workspaceMembers } from '../../kit/project/workspace-members.js';
@@ -212,10 +216,12 @@ async function unitsOf(context: Context): Promise<{ findings: Finding[]; units: 
         ['.', ...declaring].map(async (path): Promise<Unit> => {
             const { problem, resolved } =
                 path === '.' ? root : await context.config(join(context.root, path));
-            const files: Record<string, EditorFile> = {};
-            for (const preset of resolved.presets) {
-                Object.assign(files, preset.files);
-            }
+            const files = derivedEditorFiles(
+                resolved.presets.flatMap((preset) =>
+                    preset.files === undefined ? [] : [preset.files],
+                ),
+                resolved.sections.typescript,
+            );
 
             return { declaration: resolved.declaration, files, path, problem };
         }),
