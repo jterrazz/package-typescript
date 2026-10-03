@@ -1,6 +1,6 @@
 {
     "display": "Node ESM",
-    "include": ["${configDir}/**/*.ts", "${configDir}/**/*.js"],
+    "include": ["${configDir}/**/*.ts", "${configDir}/**/*.tsx", "${configDir}/**/*.js"],
     "exclude": [
         "${configDir}/node_modules",
         "${configDir}/dist",
@@ -31,6 +31,7 @@
         "allowJs": true,
         "checkJs": false,
         "noEmit": true,
-        "allowImportingTsExtensions": true
+        "allowImportingTsExtensions": true,
+        "jsx": "react-jsx"
     }
 }

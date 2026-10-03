@@ -27,12 +27,12 @@ describe('subpaths', () => {
             @jterrazz/typescript/tsconfig/astro (default) → ./src/presets/tsconfig/astro.json: parses, 21 compiler options
             @jterrazz/typescript/tsconfig/expo (default) → ./src/presets/tsconfig/expo.json: parses, 21 compiler options
             @jterrazz/typescript/tsconfig/next (default) → ./src/presets/tsconfig/next.json: parses, 22 compiler options
-            @jterrazz/typescript/tsconfig/node (default) → ./src/presets/tsconfig/node.json: parses, 21 compiler options
+            @jterrazz/typescript/tsconfig/node (default) → ./src/presets/tsconfig/node.json: parses, 22 compiler options
             @jterrazz/typescript/tsconfig/react (default) → ./src/presets/tsconfig/react.json: parses, 21 compiler options
             @jterrazz/typescript/tsconfig/astro.json (default) → ./src/presets/tsconfig/astro.json: parses, 21 compiler options
             @jterrazz/typescript/tsconfig/expo.json (default) → ./src/presets/tsconfig/expo.json: parses, 21 compiler options
             @jterrazz/typescript/tsconfig/next.json (default) → ./src/presets/tsconfig/next.json: parses, 22 compiler options
-            @jterrazz/typescript/tsconfig/node.json (default) → ./src/presets/tsconfig/node.json: parses, 21 compiler options
+            @jterrazz/typescript/tsconfig/node.json (default) → ./src/presets/tsconfig/node.json: parses, 22 compiler options
             @jterrazz/typescript/tsconfig/react.json (default) → ./src/presets/tsconfig/react.json: parses, 21 compiler options
         `);
     });

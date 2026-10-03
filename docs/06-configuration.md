@@ -137,6 +137,8 @@ A project with nothing of its own to say keeps no section at all.
 
 Every preset scopes its `include` and `exclude` to `${configDir}`, the directory of the `tsconfig.json` that extends it, so a project inherits the right file set without restating one. Every preset checks and never emits, compiles incrementally into `.artifacts/tsc/`, and allows an import that names a `.ts` file: Node runs a module that way, and the check reads it as Node does. The declarations a library publishes are emitted by the build, never by `tsc`, so a library and a service on one platform share one preset ([Building](09-building.md)).
 
+The `node` preset reads `.tsx` too, with React's automatic JSX transform: a Node package rendering components — its server, or its component tests under `@jterrazz/test` — needs no option of its own for them.
+
 The `astro` preset stands on Astro's own. It extends `astro/tsconfigs/strict` first, for the file set Astro's tooling needs, `.astro/types.d.ts` included, then states this package's settings on top. `astro` is the project's dependency, never this package's: an Astro site already installs it, and the `extends` resolves it from the project's `node_modules`.
 
 ## The lint rules
