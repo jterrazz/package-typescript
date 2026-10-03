@@ -27,7 +27,7 @@
     {
         "audience": "consumer",
         "channel": "checker",
-        "id": "conventions"
+        "id": "presets"
     },
     {
         "audience": "consumer",
@@ -141,6 +141,22 @@
         "channel": "runtime",
         "id": "checker-pass-failed",
         "message": "exit(await runPass(",
+        "module": "lint/kit/checker/checker.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "exit",
+        "channel": "runtime",
+        "id": "checker-contribution-failed",
+        "message": "? await runEvery(checker, args)",
+        "module": "lint/kit/checker/checker.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
+        "id": "checker-contribution-malformed",
+        "message": "whose default export holds no `passes`",
         "module": "lint/kit/checker/checker.ts"
     },
     {

@@ -66,4 +66,6 @@ export type Checker = {
     presets: readonly Preset[];
 };
 
+export type Contribution = Omit<Checker, 'presets'>;
+
 export type KitCommand = (args: string[], checker: Checker) => number | Promise<number>;

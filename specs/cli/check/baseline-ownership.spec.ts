@@ -1,23 +1,46 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { onlyPasses, SELECTING_BIN } from '../_setup/check-passes.js';
 import { temporaryDirectory } from '../_setup/temporary-directory.js';
 
-// The stub checker lives under `node_modules/`, which git never tracks. oxlint refuses two plugins by one
-// name in one run, and @jterrazz/test's checker loads every config of this repository: the fixture cannot hold these.
+// oxlint refuses two plugins by one name in one run, and @jterrazz/test's checks load every config of this
+// repository: the fixture cannot hold the stub preset, so each case writes it.
 
-function checker(exitCode: number): string {
-    return `#!/usr/bin/env node
-process.stdout.write('[error] specs/x.spec.ts:1: a finding the stub always reports (no-unused-ground)\\n');
-process.exit(${exitCode});
+function contribution(lines: string, failed: boolean): string {
+    return `export default {
+    passes: {
+        async conventions() {
+            return {
+                valued: ['--member'],
+                check(context) {
+                    return { failed: ${String(failed)}, lines: context.value('--member') === '.' ? [${lines}] : [] };
+                },
+            };
+        },
+    },
+};
 `;
 }
 
+const ALWAYS_REPORTS = contribution(
+    "'[error] specs/x.spec.ts:1: a finding the stub always reports (no-unused-ground)'",
+    true,
+);
+
+function declared(project: string, module: string, { owns = false } = {}): void {
+    writeFileSync(join(project, 'conventions.mjs'), module);
+    const baseline = owns ? "baseline: ['test'], " : '';
+    writeFileSync(
+        join(project, 'jterrazz.config.ts'),
+        `export default { presets: [{ ${baseline}checker: { label: 'Test Conventions (stub)', module: new URL('./conventions.mjs', import.meta.url).pathname }, name: 'test', package: '@jterrazz/test' }] };\n`,
+    );
+}
+
 const CONFIG = `export default {
-    ignorePatterns: ['node_modules/**', 'plugin.mjs'],
+    ignorePatterns: ['node_modules/**', 'plugin.mjs', 'conventions.mjs'],
     jsPlugins: ['./plugin.mjs'],
     rules: { 'jterrazz/flags-every-file': 'error' },
 };
@@ -29,13 +52,6 @@ function groundOf(): string {
         recursive: true,
     });
     writeFileSync(join(project, 'oxlint.config.ts'), CONFIG);
-    const installed = join(project, 'node_modules/@jterrazz/test');
-    mkdirSync(join(installed, 'dist'), { recursive: true });
-    writeFileSync(
-        join(installed, 'package.json'),
-        `${JSON.stringify({ bin: { 'jterrazz-test-check': 'dist/checker.js' }, name: '@jterrazz/test', version: '17.0.0' }, null, 2)}\n`,
-    );
-    writeFileSync(join(installed, 'dist/checker.js'), checker(0));
 
     return project;
 }
@@ -141,40 +157,34 @@ describe('baseline-ownership', () => {
         expect(verdict(stdout, 'Oxlint Check')).toBe('✗ Failed');
     });
 
-    test("takes the checker's exit code as the Test Conventions verdict", () => {
-        // Given - a checker that fails, and a recorded baseline beside it
+    test("takes a preset's checks as its own verdict, under the preset's label", () => {
+        // Given - a declared preset whose checks fail, and a recorded baseline beside it
         const project = groundOf();
-        writeFileSync(join(project, 'node_modules/@jterrazz/test/dist/checker.js'), checker(1));
+        declared(project, ALWAYS_REPORTS);
         run(project, 'baseline');
 
         // When - the checks run
-        const { stdout } = run(project, 'check', { ...process.env, ...onlyPasses('conventions') });
+        const { stdout } = run(project, 'check', { ...process.env, ...onlyPasses('presets') });
 
         // Then - this package's file forgives nothing of the checker's
         expect(verdict(stdout, 'Test Conventions')).toBe('✗ Failed');
         expect(stdout).toContain('a finding the stub always reports');
     });
 
-    const FAILING_CHECKER = `#!/usr/bin/env node
-process.stdout.write('conventions checker: 1 error(s) found\\n');
-process.exit(1);
-`;
+    const FAILING_CHECKER = contribution("'conventions checker: 1 error(s) found'", true);
 
     // With nothing but PATH and HOME, oxlint picks the framed form, which closes on `Finished in …` even over nothing.
     test('draws nothing under a green oxlint pass when no diagnostic stands behind the broken section', () => {
         // Given - a checker failing, and a config arming no rule, in the framed form's environment
         const project = groundOf();
         writeFileSync(join(project, 'oxlint.config.ts'), 'export default { rules: {} };\n');
-        writeFileSync(
-            join(project, 'node_modules/@jterrazz/test/dist/checker.js'),
-            FAILING_CHECKER,
-        );
+        declared(project, FAILING_CHECKER);
 
         // When - the checks run
         const { stdout } = run(project, 'check', {
             HOME: process.env.HOME,
             PATH: process.env.PATH,
-            ...onlyPasses('oxlint', 'oxfmt', 'conventions'),
+            ...onlyPasses('oxlint', 'oxfmt', 'presets'),
         });
         const oxlint = stdout.slice(stdout.indexOf('Oxlint Check'), stdout.indexOf('Oxfmt Check'));
 
@@ -183,27 +193,20 @@ process.exit(1);
         expect(verdict(stdout, 'Oxlint Check')).toBe('✓ Passed');
     });
 
-    const HELD_CHECKER = `#!/usr/bin/env node
-const args = process.argv.slice(2);
-if (args[args.indexOf('--member') + 1] === '.') {
-    process.stdout.write('jterrazz.baseline.json › test: 3 held across 2 rules\\n');
-}
-process.exit(0);
-`;
-
-    const DECLARING_TEST =
-        "export default { presets: [{ baseline: ['test'], name: 'test', package: '@jterrazz/test' }] };\n";
+    const HELD_CHECKER = contribution(
+        "'jterrazz.baseline.json › test: 3 held across 2 rules'",
+        false,
+    );
 
     test("states @jterrazz/test's held line under the Test Conventions pass on a green run", () => {
         // Given - a checker whose root run holds its ratchet, in a project declaring the preset that owns the section
         const project = groundOf();
-        writeFileSync(join(project, 'node_modules/@jterrazz/test/dist/checker.js'), HELD_CHECKER);
-        writeFileSync(join(project, 'jterrazz.config.ts'), DECLARING_TEST);
+        declared(project, HELD_CHECKER, { owns: true });
 
         // When - the checks run
         const { stdout } = run(project, 'check', {
             ...process.env,
-            ...onlyPasses('conventions', 'suppressions'),
+            ...onlyPasses('presets', 'suppressions'),
         });
         const conventions = stdout.slice(
             stdout.indexOf('Test Conventions'),
@@ -215,27 +218,20 @@ process.exit(0);
         expect(conventions).toContain('✓ Passed');
     });
 
-    const NOTHING_HELD_CHECKER = `#!/usr/bin/env node
-const args = process.argv.slice(2);
-if (args[args.indexOf('--member') + 1] === '.') {
-    process.stdout.write('jterrazz.baseline.json › test: nothing held\\n');
-}
-process.exit(0);
-`;
+    const NOTHING_HELD_CHECKER = contribution(
+        "'jterrazz.baseline.json › test: nothing held'",
+        false,
+    );
 
     test("states @jterrazz/test's empty section under the Test Conventions pass on a green run", () => {
         // Given - a checker whose root run holds nothing, in a project declaring the preset that owns the section
         const project = groundOf();
-        writeFileSync(
-            join(project, 'node_modules/@jterrazz/test/dist/checker.js'),
-            NOTHING_HELD_CHECKER,
-        );
-        writeFileSync(join(project, 'jterrazz.config.ts'), DECLARING_TEST);
+        declared(project, NOTHING_HELD_CHECKER, { owns: true });
 
         // When - the checks run
         const { stdout } = run(project, 'check', {
             ...process.env,
-            ...onlyPasses('conventions', 'suppressions'),
+            ...onlyPasses('presets', 'suppressions'),
         });
         const conventions = stdout.slice(
             stdout.indexOf('Test Conventions'),
@@ -248,14 +244,14 @@ process.exit(0);
     });
 
     test('states no held line for a section no declared preset owns', () => {
-        // Given - the same checker, in a project declaring no preset beside the base one
+        // Given - the same checks, from a preset that owns no baseline section
         const project = groundOf();
-        writeFileSync(join(project, 'node_modules/@jterrazz/test/dist/checker.js'), HELD_CHECKER);
+        declared(project, HELD_CHECKER);
 
         // When - the checks run
         const { stdout } = run(project, 'check', {
             ...process.env,
-            ...onlyPasses('conventions', 'suppressions'),
+            ...onlyPasses('presets', 'suppressions'),
         });
 
         // Then - the pass is green, and the line is not the toolchain's to repeat

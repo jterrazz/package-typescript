@@ -1,5 +1,8 @@
+import process from 'node:process';
+import { pathToFileURL } from 'node:url';
+
 import { BASE_PRESETS, BASELINE_SECTION } from './consumer/catalogue/preset.js';
-import { runChecker } from './kit/checker/checker.js';
+import { runChecker, runContribution } from './kit/checker/checker.js';
 import { KIT_COMMANDS } from './kit/checker/kit-commands.js';
 import type { Held, Passes } from './kit/checker/pass.js';
 
@@ -69,11 +72,10 @@ const HELD: Held = Object.freeze({
     section: BASELINE_SECTION,
 });
 
-if (import.meta.main) {
-    await runChecker({
-        commands: KIT_COMMANDS,
-        held: HELD,
-        passes: PASSES,
-        presets: BASE_PRESETS,
-    });
+const [first, module = '', ...rest] = process.argv.slice(2);
+
+if (import.meta.main && first === '--preset') {
+    await runContribution(await import(pathToFileURL(module).href), BASE_PRESETS, rest);
+} else if (import.meta.main) {
+    await runChecker({ commands: KIT_COMMANDS, held: HELD, passes: PASSES, presets: BASE_PRESETS });
 }

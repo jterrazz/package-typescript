@@ -1,7 +1,13 @@
 import type { ArchitectureRule, NamesRule, Preset } from './kit/project/preset.js';
 
 export { definePreset } from './kit/project/preset.js';
-export type { ArchitectureRule, NamesRule, OptOut, Preset } from './kit/project/preset.js';
+export type {
+    ArchitectureRule,
+    NamesRule,
+    OptOut,
+    Preset,
+    PresetChecker,
+} from './kit/project/preset.js';
 export { typescriptPreset as typescript } from './consumer/catalogue/preset.js';
 export type { ProfileName } from './consumer/catalogue/preset.js';
 

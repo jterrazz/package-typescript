@@ -5,7 +5,6 @@ import { dirname, join } from 'node:path';
 import { objectOf, parsedObject } from '../../../lint/kit/project/json.js';
 import type { JsonObject } from '../../../lint/kit/project/json.js';
 import { isGitIgnored, PRUNED } from '../../../lint/kit/project/project-files.js';
-import { testPackageVersion } from '../../../lint/kit/project/test-package.js';
 import { isFileOnDisk } from '../disk.js';
 
 const DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies'];
@@ -24,13 +23,6 @@ function declares(dir: string, name: string): boolean {
     return (
         manifest !== null &&
         DEPENDENCY_FIELDS.some((field) => Boolean(objectOf(manifest[field])[name]))
-    );
-}
-
-export function usesTestPackage(dir: string): boolean {
-    return (
-        isFileOnDisk(join(dir, 'package.json')) &&
-        (declares(dir, '@jterrazz/test') || testPackageVersion(dir) !== null)
     );
 }
 

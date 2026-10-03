@@ -1,9 +1,10 @@
 // Node loads the file as oxlint loads `oxlint.config.ts`, by a dynamic `import()`. Without
-// `"type": "module"` Node warns while reparsing it as ESM, so the gates run with that warning off.
+// `"type": "module"` Node warns while reparsing it as ESM, so the reader loads it with that warning off.
 
 import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
+import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
 import { isJsonObject, objectOf } from './json.js';
@@ -44,13 +45,41 @@ function resolvedFrom(
     return read.problem === null ? resolution : { ...resolution, problem: read.problem };
 }
 
+const TYPELESS = 'MODULE_TYPELESS_PACKAGE_JSON';
+
+const isTypeless = (options: unknown): boolean =>
+    options === TYPELESS ||
+    (typeof options === 'object' &&
+        options !== null &&
+        'code' in options &&
+        options.code === TYPELESS);
+
+async function importedQuietly(path: string): Promise<unknown> {
+    const emit = process.emitWarning.bind(process);
+    const descriptor = Object.getOwnPropertyDescriptor(process, 'emitWarning');
+    process.emitWarning = (warning: Error | string, ...rest: unknown[]): void => {
+        if (!rest.some((option) => isTypeless(option))) {
+            Reflect.apply(emit, process, [warning, ...rest]);
+        }
+    };
+    try {
+        return await import(pathToFileURL(path).href);
+    } finally {
+        if (descriptor === undefined) {
+            Reflect.deleteProperty(process, 'emitWarning');
+        } else {
+            Object.defineProperty(process, 'emitWarning', descriptor);
+        }
+    }
+}
+
 export async function readConfig(unit: string, base: readonly Preset[]): Promise<Resolution> {
     const path = join(unit, SETTINGS_FILE);
     if (!existsSync(path)) {
         return resolveConfig(NOTHING_DECLARED, base);
     }
     try {
-        return resolvedFrom(declaredOf(await import(pathToFileURL(path).href)), base);
+        return resolvedFrom(declaredOf(await importedQuietly(path)), base);
     } catch (error) {
         return { ...resolveConfig(NOTHING_DECLARED, base), problem: failed(error) };
     }

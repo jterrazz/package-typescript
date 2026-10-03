@@ -120,7 +120,7 @@ What each build command produces, and which entries it compiles, is [Building](0
 
 ### With `@jterrazz/test`, or without it
 
-`@jterrazz/test` is optional. Without it, the Test Conventions pass never runs, a `specs/` folder is judged only by the gates every folder is, and `make test` runs whatever runner the project chose. With it, the project lists its preset in the settings file, as step 2 shows, and `make fix` runs its fixer beside this one ([step 4](#4-answer-the-six-gestures-in-a-makefile)). How to write its specs is [its own manual](https://www.npmjs.com/package/@jterrazz/test).
+`@jterrazz/test` is optional. Without it, its conventions never run, a `specs/` folder is judged only by the gates every folder is, and `make test` runs whatever runner the project chose. With it, the project lists its preset in the settings file, as step 2 shows, and `typescript check`, `fix` and `baseline` run its checks with their own ([A preset's checks](07-quality-checks.md#a-presets-checks)). How to write its specs is [its own manual](https://www.npmjs.com/package/@jterrazz/test).
 
 ## 4. Answer the six gestures in a Makefile
 

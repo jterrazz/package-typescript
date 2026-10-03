@@ -3,13 +3,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
-import { isJsonObject, parsedObject } from './json.js';
+import { parsedObject } from './json.js';
 import type { JsonObject } from './json.js';
 import { isRepositoryRoot } from './repository-root.js';
 
 const PACKAGE = '@jterrazz/test';
-
-const CHECKER_BIN = 'jterrazz-test-check';
 
 export type TestPackage = { dir: string; manifest: JsonObject };
 
@@ -42,22 +40,4 @@ export function testPackageVersion(dir: string): null | string {
     const version = resolveTestPackage(dir)?.manifest.version;
 
     return typeof version === 'string' ? version : null;
-}
-
-// The entry the same install declares: a `.bin` shim answers for whichever member npm hoisted to.
-export function testPackageBin(dir: string): null | string {
-    const resolved = resolveTestPackage(dir);
-    if (resolved === null) {
-        return null;
-    }
-
-    const { bin } = resolved.manifest;
-    const entry = typeof bin === 'string' ? bin : isJsonObject(bin) ? bin[CHECKER_BIN] : undefined;
-    if (typeof entry !== 'string') {
-        return null;
-    }
-
-    const path = join(resolved.dir, entry);
-
-    return existsSync(path) ? path : null;
 }

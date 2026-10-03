@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { stdout } from 'node:process';
 
 import { entryPoints } from '../project/entry-points.js';
-import { testPackageBin, testPackageVersion } from '../project/test-package.js';
+import { testPackageVersion } from '../project/test-package.js';
 import { workspaceMembers } from '../project/workspace-members.js';
 import { readCommandLine } from './command-line.js';
 
@@ -16,9 +16,8 @@ export function entryPointsQuery(args: readonly string[]): number {
 }
 
 export function testPackageQuery(args: readonly string[]): number {
-    const commandLine = readCommandLine(args);
-    const dir = commandLine.positionals[0] ?? '.';
-    const answer = commandLine.has('--bin') ? testPackageBin(dir) : testPackageVersion(dir);
+    const dir = readCommandLine(args).positionals[0] ?? '.';
+    const answer = testPackageVersion(dir);
     if (answer === null) {
         return 1;
     }

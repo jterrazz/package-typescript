@@ -68,6 +68,7 @@ export type {
     Checker,
     Commands,
     Context,
+    Contribution,
     Finding,
     Held,
     HeldSection,

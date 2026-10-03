@@ -42,11 +42,6 @@
             "count": 1
         }
     },
-    "specs/cli/check/checker-member.spec.ts": {
-        "jterrazz/no-probe-cluster": {
-            "count": 2
-        }
-    },
     "specs/cli/check/formatter.spec.ts": {
         "jterrazz/given-in-the-test": {
             "count": 1

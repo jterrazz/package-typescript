@@ -7,6 +7,7 @@ import {
 } from '../../lint/kit/baseline/oxlint-suppressions.js';
 import { binaryIn, HOISTED_BESIDE_PACKAGE } from '../../lint/kit/project/package-root.js';
 import { ignorePatternsOf } from '../../lint/kit/project/project-files.js';
+import { presetChecker, presetCheckersOf } from './check/presets.js';
 import { checker } from './checker.js';
 import { lintTargets } from './lint-targets.js';
 import { run } from './processes.js';
@@ -52,6 +53,37 @@ async function recordPass(pass: string, report: string, args: readonly string[])
     );
 }
 
+type Reports = { architecture: string; comments: string; names: string };
+
+async function written(reports: Reports): Promise<number> {
+    return await checker(
+        'baseline',
+        [
+            '.',
+            '--architecture',
+            reports.architecture,
+            '--names',
+            reports.names,
+            '--comments',
+            reports.comments,
+            '--write',
+        ],
+        'inherit',
+        { stderr: 'inherit' },
+    );
+}
+
+async function recordedPresets(): Promise<number> {
+    for (const contributed of await presetCheckersOf('.')) {
+        // oxlint-disable-next-line no-await-in-loop -- each preset writes its own section of the one baseline file
+        if ((await presetChecker(contributed, ['baseline'], 'inherit')) !== 0) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 export async function baseline(args: readonly string[]): Promise<number> {
     const project = projectRoot();
     process.chdir(project);
@@ -59,7 +91,7 @@ export async function baseline(args: readonly string[]): Promise<number> {
     withTsgolintOnPath(projectBin);
 
     return await inScratch(async (scratch) => {
-        const reports = {
+        const reports: Reports = {
             architecture: join(scratch, 'architecture.json'),
             comments: join(scratch, 'comments.json'),
             names: join(scratch, 'names.json'),
@@ -77,22 +109,7 @@ export async function baseline(args: readonly string[]): Promise<number> {
             ...args,
         ]);
         await recordPass('comments', reports.comments, args);
-        const written = await checker(
-            'baseline',
-            [
-                '.',
-                '--architecture',
-                reports.architecture,
-                '--names',
-                reports.names,
-                '--comments',
-                reports.comments,
-                '--write',
-            ],
-            'inherit',
-            { stderr: 'inherit' },
-        );
-        if (written !== 0) {
+        if ((await written(reports)) !== 0 || (await recordedPresets()) !== 0) {
             return 1;
         }
         await run(

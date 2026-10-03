@@ -45,16 +45,17 @@ jterrazz.config.ts:1:1: error names(jterrazz-config-loads): found: `jterrazz.con
 
 A preset is an object carrying its `name` (the section of `jterrazz.config.ts` it reads, and the prefix of its laws), its `package`, and what it adds:
 
-| Key           | Holds                                                                                                                     |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `settings`    | the defaults of its section, which the project's own section merges over                                                  |
-| `lawSettings` | the keys of its `settings` that are laws, which nothing merges over                                                       |
-| `oxlint`      | its oxlint config: a JS plugin and its rules, overrides                                                                   |
-| `layers`      | its import boundaries, in the vocabulary of [the Architecture pass](07-quality-checks.md#the-architecture-layer-map-pass) |
-| `names`       | its rules of where a name sits, in ls-lint's ([a name rule](07-quality-checks.md#a-name-rule-a-project-declares))         |
-| `baseline`    | the sections of `jterrazz.baseline.json` it writes and judges                                                             |
-| `floors`      | which of those sections hold a floor, which only rises, rather than a debt                                                |
-| `presets`     | the presets it includes                                                                                                   |
+| Key           | Holds                                                                                                                                                                    |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `settings`    | the defaults of its section, which the project's own section merges over                                                                                                 |
+| `lawSettings` | the keys of its `settings` that are laws, which nothing merges over                                                                                                      |
+| `oxlint`      | its oxlint config: a JS plugin and its rules, overrides                                                                                                                  |
+| `layers`      | its import boundaries, in the vocabulary of [the Architecture pass](07-quality-checks.md#the-architecture-layer-map-pass)                                                |
+| `names`       | its rules of where a name sits, in ls-lint's ([a name rule](07-quality-checks.md#a-name-rule-a-project-declares))                                                        |
+| `baseline`    | the sections of `jterrazz.baseline.json` it writes and judges                                                                                                            |
+| `floors`      | which of those sections hold a floor, which only rises, rather than a debt                                                                                               |
+| `checker`     | its own checks: the `module` whose default export is a kit `Contribution`, and the `label` they print under ([A preset's checks](07-quality-checks.md#a-presets-checks)) |
+| `presets`     | the presets it includes                                                                                                                                                  |
 
 `definePreset`, from `@jterrazz/typescript/config`, types one. Writing the rules a preset carries is [Rules kit](10-rules-kit.md)'s.
 

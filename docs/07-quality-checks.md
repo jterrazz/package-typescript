@@ -27,23 +27,23 @@ Every command exits `0` when it succeeded and non-zero otherwise; `check` and `f
 
 `typescript check` runs up to fifteen passes. Three spawn a tool on every invocation, knip and five tree gates run on every `check`, and the other six are opt-in — they appear only when the project qualifies.
 
-| Pass                              | Tool                        | When it runs                                                                                     |
-| --------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------ |
-| TypeScript Check                  | tsc (TypeScript 7, Go)      | always                                                                                           |
-| Oxlint Check                      | oxlint (`--type-aware`)     | always (judged by the ratchet's `typescript` section where there is one)                         |
-| Oxfmt Check                       | oxfmt (Rust)                | always                                                                                           |
-| Gitignore (artefacts)             | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own                                      |
-| Knip (unused code)                | knip (Node)                 | always (check only — it is not run in fix)                                                       |
-| Test Conventions (@jterrazz/test) | conventions checker         | per `specs/` root; per member resolving `@jterrazz/test`                                         |
-| Docs (layout)                     | the manual gate             | check: at a repository root (a `.git` beside the project)                                        |
-| Publish (packaging)               | publint + attw + a build    | per package the registry would accept (not `private`)                                            |
-| Architecture (layer map)          | dependency-cruiser          | a `jterrazz.config.ts`, or a `.dependency-cruiser.*` (check and fix — `--fix` re-records a fall) |
-| Astro (check + format)            | astro check + prettier      | per project that depends on `astro` (check and fix)                                              |
-| Suppressions (directives)         | the suppression gate        | always (check and fix — `--fix` settles two spellings)                                           |
-| Markdown (prose)                  | rumdl + the prose gate      | always (check and fix — `--fix` runs rumdl's own fixes)                                          |
-| Names (tree)                      | ls-lint + the naming gate   | always (check and fix — `--fix` deletes an empty directory)                                      |
-| Comments (density)                | the comment gate            | always (check and fix — `--fix` re-records a fall)                                               |
-| Secrets (credentials)             | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                                         |
+| Pass                      | Tool                        | When it runs                                                                                     |
+| ------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------ |
+| TypeScript Check          | tsc (TypeScript 7, Go)      | always                                                                                           |
+| Oxlint Check              | oxlint (`--type-aware`)     | always (judged by the ratchet's `typescript` section where there is one)                         |
+| Oxfmt Check               | oxfmt (Rust)                | always                                                                                           |
+| Gitignore (artefacts)     | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own                                      |
+| Knip (unused code)        | knip (Node)                 | always (check only — it is not run in fix)                                                       |
+| a preset's label          | the preset's checks         | per `specs/` root and per member, for each declared preset that brings checks (check and fix)    |
+| Docs (layout)             | the manual gate             | check: at a repository root (a `.git` beside the project)                                        |
+| Publish (packaging)       | publint + attw + a build    | per package the registry would accept (not `private`)                                            |
+| Architecture (layer map)  | dependency-cruiser          | a `jterrazz.config.ts`, or a `.dependency-cruiser.*` (check and fix — `--fix` re-records a fall) |
+| Astro (check + format)    | astro check + prettier      | per project that depends on `astro` (check and fix)                                              |
+| Suppressions (directives) | the suppression gate        | always (check and fix — `--fix` settles two spellings)                                           |
+| Markdown (prose)          | rumdl + the prose gate      | always (check and fix — `--fix` runs rumdl's own fixes)                                          |
+| Names (tree)              | ls-lint + the naming gate   | always (check and fix — `--fix` deletes an empty directory)                                      |
+| Comments (density)        | the comment gate            | always (check and fix — `--fix` re-records a fall)                                               |
+| Secrets (credentials)     | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                                         |
 
 `typescript fix` runs tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate, dependency-cruiser (`--fix` re-records a fall), rumdl (`--fix`) with the prose gate, the naming gate and the comment gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
 
@@ -101,21 +101,19 @@ One more exception joins the list CONDITIONALLY: `.next`, but only when the proj
 
 Fix mode rewrites the package's OWN `.gitignore` only — never an ancestor's, which is a different project's file, and never one that does not exist, since fix repairs a file, it does not create one. The artefact lines go, `.artifacts/` arrives, and everything else — the comments, the blank lines, the order, the project's own paths — survives untouched. It reports every line it removed and prints the file's negations, which it never touches: a `!` line rescues a tracked file, so what to do with one is a judgement, not a rewrite. A committed artefact is reported in fix mode too and still fails the run — untracking a file is not something a formatter should decide.
 
-## The Test Conventions pass
+## A preset's checks
 
-`@jterrazz/test` ships the checker; this package runs it, and the question it answers is "does this project write specs the way the framework says". It runs in two shapes, and both are needed because they answer for different things.
+A preset may bring checks of its own beside its laws: its `checker` names a module whose default export is a `Contribution` of the [rules kit](10-rules-kit.md) — its passes, the baseline section they hold, its commands — and the label its verdict is printed under. `@jterrazz/test`'s `test()` brings its conventions this way, under `Test Conventions (@jterrazz/test)`, and the question they answer is "does this project write specs the way the framework says". There is no second command: `typescript check`, `fix` and `baseline` run every declared preset's checks through this package's own checker program, and the module is a declaration, never a program of its own.
 
-One run per `specs/` root the workspace owns — the root's own, plus the first one found at or below each member — judging the tree: the document grammar, the fixtures, the goldens. And one run per workspace MEMBER, `--member <dir>`, judging what the member has rather than what its specs tree holds: a package with a `test` script and no `vitest.config.ts` owns a question no specs root can be asked, and a package with no `specs/` at all was previously never reached.
+A preset's checks run in two shapes, and both are needed because they answer for different things. One run per `specs/` root the workspace owns — the root's own, plus the first one found at or below each member — judging the tree: the document grammar, the fixtures, the goldens. And one run per workspace MEMBER, `--member <dir>`, judging what the member has rather than what its specs tree holds: a package with a `test` script and no `vitest.config.ts` owns a question no specs root can be asked.
 
-A member is a consumer of `@jterrazz/test` on either evidence: its own manifest names it, or it RESOLVES one from an ancestor — which is what npm makes of a monorepo, where a workspace declares the dependency once at the root and every member loads it. The resolution is the ancestor walk itself, `node_modules/@jterrazz/test/package.json` from the member upward, rather than `require.resolve`: the package's `exports` map does not publish `./package.json`, and a gate does not depend on a map the package is free to change. The walk stops at the nearest repository boundary, so a clone sitting inside another tree is never made a consumer by what the tree around it installed.
+Which presets judge a unit is read from its declaration: the member's own `jterrazz.config.ts`, else the repository root's. A member declaring its own presets is judged by what its file imports — its own install, not the one the root hoisted — and a project with no declaration is judged by none: a clone sitting inside another tree is never judged by the presets the tree around it declares.
 
-The binary is resolved from that same install, not from a name on `PATH` or a `node_modules/.bin` shim: a member whose `@jterrazz/test` is nested rather than hoisted holds a different release from the root's, and both halves of the question — which version, which executable — must come from one answer.
+The verdict is the checks' exit code, and nothing here forgives it: a preset records its own debt and judges it, in its own section of the ratchet file ([the ratchet](#the-ratchet)). `fix` runs every preset's checks with `--fix` first, one run after another, before oxlint and the formatter, so the last writer of every file is the one `check` judges its format by; `baseline` runs each preset's `baseline` command after recording its own sections.
 
-The pass's verdict is the checker's exit code, and nothing here forgives it: `@jterrazz/test` records its own debt and judges it, in its own section of the ratchet file ([the ratchet](#the-ratchet)).
+A green pass says one thing about each section a listed preset holds: the held line of the run over the project root, `jterrazz.baseline.json › test: <n> held across <k> rules` — or `jterrazz.baseline.json › test: nothing held` for a project keeping no `test` section. The sections are the ones the presets of `jterrazz.config.ts` declare in their `baseline`, the toolchain's own and every floor aside, so a preset that declares no section is shown no line; a line in any other shape is left out rather than echoed as a second shape.
 
-A green pass says one thing about each section a listed preset holds: the held line of the run over the project root, `jterrazz.baseline.json › test: <n> held across <k> rules` — or `jterrazz.baseline.json › test: nothing held` for a project keeping no `test` section. The sections are the ones the presets of `jterrazz.config.ts` declare in their `baseline`, the base preset's and every floor aside, so a project that does not list `test()` is shown no `test` line. `@jterrazz/test` 17 prints that line bare on every green ratchet run, through the kit's checker, so the pass passes no flag to ask for it; a line in any other shape is left out rather than echoed as a second shape.
-
-The checker judges its own passes and nothing of oxlint's: the plugin's `jterrazz(*)` diagnostics are oxlint rules, printed by the Oxlint pass and held in `oxlint-suppressions.json` ([the ratchet](#the-ratchet)). So the member runs start beside the linter rather than after it, and no run of the checker lints the project.
+A preset's checks judge their own passes and nothing of oxlint's: a plugin's `jterrazz(*)` diagnostics are oxlint rules, printed by the Oxlint pass and held in `oxlint-suppressions.json` ([the ratchet](#the-ratchet)). So the runs start beside the linter rather than after it, and none of them lints the project.
 
 ## The Docs (layout) pass
 
@@ -211,7 +209,7 @@ A config handed by path resolves its `ignorePatterns` against its own directory,
 
 `check` runs the type-aware linter once, and what a failing pass prints is oxlint's own output, in the form oxlint picks for the environment: one line per diagnostic under an AI agent, GitHub workflow commands on a GitHub runner, the framed report anywhere else, in colour where `CI` or `FORCE_COLOR` asks for it. The toolchain draws nothing of its own: the type-aware run is the costliest process of a check, and a second run, or a renderer re-drawing a JSON report, would only repeat what oxlint already says. The run's verdict is oxlint's exit code, the suppressions file included ([the ratchet](#the-ratchet)); the pass adds a line only where oxlint's own words would send a reader astray — a config it could not load, or a help naming a bare `oxlint --suppress-all`.
 
-`@jterrazz/test`'s conventions checker judges its own passes and reads no oxlint report: the plugin's `jterrazz(*)` rules are oxlint rules like any other, printed and held here.
+A preset's checks read no oxlint report: a plugin's `jterrazz(*)` rules are oxlint rules like any other, printed and held here.
 
 `fix` runs the fixers — one wrapped run per config scope, [below](#a-nested-config-fixes-its-own-subtree) — then prunes the suppressions file, then makes the same run `check` makes, whose output and exit are the pass's: so `fix` and `check` read the same verdict on the tree the fixers left. The fixers' own output is printed only when one of them could not run.
 
@@ -556,7 +554,7 @@ A construct is judged on the WHOLE name: `type-registry.ts` names a subject and 
 
 ### The entry grammar
 
-A package that publishes a build names each entry for what it publishes, so the tree says which file a consumer's `import` lands on without the manifest open. The source a subpath is built from is `index[.<subpath>][.browser].ts`: `.` from `index.ts`, `./config` from `index.config.ts`, `./rules` under its `browser` condition from `index.rules.browser.ts`, a nested subpath with a dot for each slash. `node` is the default runtime, never a variant, so no entry is named `.node`. A bin the build compiles is `<command>.bin.ts`, named for the command a consumer types: `jterrazz-test-check` from `jterrazz-test-check.bin.ts`. A module the package's own code loads by path — a program it spawns, a plugin a tool loads — is a private entry: it is declared as a `#` import in the manifest's `imports`, `#checker` built from `index.checker.ts`, and named by the same grammar.
+A package that publishes a build names each entry for what it publishes, so the tree says which file a consumer's `import` lands on without the manifest open. The source a subpath is built from is `index[.<subpath>][.browser].ts`: `.` from `index.ts`, `./config` from `index.config.ts`, `./rules` under its `browser` condition from `index.rules.browser.ts`, a nested subpath with a dot for each slash. `node` is the default runtime, never a variant, so no entry is named `.node`. A bin the build compiles is `<command>.bin.ts`, named for the command a consumer types: `typescript` from `typescript.bin.ts`. A module the package's own code loads by path — a program it spawns, a plugin a tool loads — is a private entry: it is declared as a `#` import in the manifest's `imports`, `#checker` built from `index.checker.ts`, and named by the same grammar.
 
 The pass reads the `exports`, `imports`, `main` and `bin` targets under the build's output folder, and maps each to its source through the unit's own `tsdown.config.*` — read as text, an entry named for its key, or for its file where it has none — or, with no config of its own, through the mapping the `build` and `bundle` presets compile by: each published target from its entry under `src/`, named by this grammar ([Building](09-building.md#the-entries)). A pattern subpath (`./tsconfig/*`) publishes a folder, not an entry, and a target outside the build that is not code (a JSON preset) is no compiled entry: neither is judged. In a package that publishes a build, a bin, or a `.js`, `.cjs` or `.mjs` module, published from outside it is code no source compiles, and is refused; a package that builds nothing publishes its JavaScript as written.
 
@@ -651,17 +649,14 @@ The contract is asked where a REPOSITORY is — a `.git` beside the project, as 
 
 A target counts when the `Makefile`'s own text writes a rule for it — `lint:`, `install build:`, `test::` — and an assignment (`LINT := …`) or a comment is no rule. A file the `Makefile` `include`s is not read, so the six stay written where a reader opens first.
 
-`fix` runs every fixer the repository has, each whatever the one before it said, and fails at the end if any of them did. Make stops a recipe at its first failing line, so fixers written one per line leave the next unrun whenever one reports — a checker failing on debt it cannot settle would keep the formatter from the files it had just rewritten. The recipe runs them in one shell and carries the verdict to its end.
-
-The order is the second half of the contract: `@jterrazz/test`'s checker first, `typescript fix` last. The checker's fixers write source — a `describe` wrapped, a ground file inlined — and the toolchain's formatter runs after them, so the last writer of every file is the one `check` judges its format by:
+`fix` runs every fixer the repository has. A preset's fixers run inside `typescript fix`, before the formatter ([A preset's checks](#a-presets-checks)), so a repository on the toolchain alone writes it as one line:
 
 ```make
 fix:
-	@status=0; \
-	npx jterrazz-test-check --fix || status=1; \
-	npx typescript fix || status=1; \
-	exit $$status
+	npx typescript fix
 ```
+
+A repository with fixers of its own outside the toolchain runs them in one shell and carries the verdict to its end, `typescript fix` last: Make stops a recipe at its first failing line, and a fixer failing on debt it cannot settle would otherwise keep the formatter from the files it had just rewritten.
 
 The pass reads that the rule exists, never what it runs, so this one is the chapter's to state and the repository's to keep.
 

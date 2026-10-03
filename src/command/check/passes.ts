@@ -4,7 +4,7 @@ export const CHECK_PASSES = [
     'oxfmt',
     'gitignore',
     'knip',
-    'conventions',
+    'presets',
     'docs',
     'publish',
     'architecture',

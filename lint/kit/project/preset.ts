@@ -27,8 +27,14 @@ export type NamesRule = {
 export const isChapterAnchor = (value: unknown): value is ChapterAnchor =>
     typeof value === 'string' && /^docs\/.+\.md#.+$/u.test(value);
 
+export type PresetChecker = {
+    label: string;
+    module: string;
+};
+
 export type Preset = {
     baseline?: readonly string[];
+    checker?: PresetChecker;
     floors?: readonly string[];
     lawSettings?: readonly string[];
     layers?: readonly ArchitectureRule[];

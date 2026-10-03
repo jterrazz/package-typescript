@@ -3,10 +3,10 @@ import { inScratch } from '../scratch.js';
 import { badge, GREEN, print, RED, RESET } from '../terminal.js';
 import { toolConfigs } from '../tool-configs.js';
 import { presetAt } from '../toolchain.js';
-import { checkerMembers, conventions } from './conventions.js';
-import type { Conventions } from './conventions.js';
 import { logsIn } from './logs.js';
 import type { Selected } from './passes.js';
+import { presetRuns } from './presets.js';
+import type { PresetRun } from './presets.js';
 import { reportPass } from './report.js';
 import { argumentsOf, membersOf, targetsOf, toolsOf } from './setup.js';
 import type { Check } from './setup.js';
@@ -14,8 +14,8 @@ import { started } from './started.js';
 import type { Started } from './started.js';
 import {
     commentsVerdict,
-    conventionsVerdict,
     lintVerdictOf,
+    presetVerdicts,
     publishVerdict,
     settled,
     settledLint,
@@ -71,7 +71,7 @@ function labelled(label: string, verdict: undefined | Verdict, writes?: boolean)
 async function reported(
     run: Check,
     passes: Started,
-    conventionRuns: Conventions,
+    presets: readonly PresetRun[],
 ): Promise<Reported[]> {
     const typescript = await settled(passes.typescript);
     const linted = await settledLint(run, passes);
@@ -101,7 +101,7 @@ async function reported(
             passes.secrets,
         ].map(async (launched) => await settled(launched)),
     );
-    const conventionsPass = await conventionsVerdict(run, conventionRuns);
+    const contributed = await presetVerdicts(run, presets);
     const publish = await publishVerdict(run, passes.publish);
     const { fix, selected } = run;
 
@@ -111,7 +111,7 @@ async function reported(
         ...labelled(fix ? 'Oxfmt Format' : 'Oxfmt Check', selected('oxfmt') ? format : undefined),
         ...labelled('Gitignore (artefacts)', gitignore, true),
         ...labelled('Knip (unused code)', knip),
-        ...labelled('Test Conventions (@jterrazz/test)', conventionsPass),
+        ...contributed,
         ...labelled('Docs (layout)', docs),
         ...labelled('Publish (packaging)', publish),
         ...labelled('Architecture (layer map)', architecture, fix),
@@ -164,11 +164,10 @@ export async function runChecks(
     return await inScratch(async (scratch) => {
         print(`${badge('START')} ${fix ? 'Running quality fixes' : 'Running quality checks'}\n`);
         const prepared = preparedCheck(args, fix, selected, scratch);
-        const members = checkerMembers(prepared);
+        const presets = await presetRuns(prepared);
         const run = await withTargets(prepared);
         const passes = await started(run);
-        const conventionRuns = conventions(run, members);
-        const verdicts = await reported(run, passes, conventionRuns);
+        const verdicts = await reported(run, passes, presets);
         for (const verdict of verdicts) {
             reportPass(run.logs, verdict);
         }

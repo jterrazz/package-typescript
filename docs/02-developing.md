@@ -11,7 +11,7 @@ The package builds itself with the tsdown it ships, so a build comes before ever
 | `make install` | `npm ci`, once per change of the lockfile                                                                          |
 | `make build`   | `npm run build`: tsdown over `tsdown.config.ts` into `dist/`                                                       |
 | `make lint`    | this package's own `typescript check`, run on this package from `dist/`                                            |
-| `make fix`     | `@jterrazz/test`'s checker, then `typescript fix`, each whatever the other said                                    |
+| `make fix`     | `typescript fix`, `@jterrazz/test`'s fixers first inside it                                                        |
 | `make test`    | the three vitest projects ([Testing](https://github.com/jterrazz/package-typescript/blob/main/docs/03-testing.md)) |
 | `make check`   | `make lint`, then `make test`: the gate before a commit                                                            |
 

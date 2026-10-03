@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { argv, exit, stdout } from 'node:process';
 
+import { invariant } from '../catalogue/lesson.js';
 import { removeEmptyDirectory } from '../project/empty-directories.js';
 import { readConfig } from '../project/jterrazz-config.js';
 import type { Preset, Resolution } from '../project/preset.js';
@@ -9,7 +10,16 @@ import { orRefused, projectFiles } from '../project/project-files.js';
 import { readCommandLine } from './command-line.js';
 import type { CommandLine } from './command-line.js';
 import { heldSummary, judgeHeld } from './held.js';
-import type { Checker, Context, Finding, Pass, PassResult, Removal, Tool } from './pass.js';
+import type {
+    Checker,
+    Context,
+    Contribution,
+    Finding,
+    Pass,
+    PassResult,
+    Removal,
+    Tool,
+} from './pass.js';
 import { reportLine } from './report-line.js';
 import { runTool } from './tool-run.js';
 
@@ -175,6 +185,48 @@ async function runPass(
     }
 
     return verdictOf({ checker, context, formatted, name, pass, run });
+}
+
+async function runEvery(checker: Checker, args: readonly string[]): Promise<number> {
+    let status = 0;
+    for (const [name, load] of Object.entries(checker.passes)) {
+        // oxlint-disable-next-line no-await-in-loop -- a pass may write what the next one reads
+        const ran = await runPass({ checker, name, pass: await load() }, args);
+        status = Math.max(status, ran);
+    }
+
+    return status;
+}
+
+const isContribution = (value: unknown): value is Contribution =>
+    typeof value === 'object' &&
+    value !== null &&
+    'passes' in value &&
+    typeof value.passes === 'object' &&
+    value.passes !== null;
+
+export async function runContribution(
+    loaded: unknown,
+    presets: readonly Preset[],
+    args: readonly string[],
+): Promise<never> {
+    const contribution =
+        typeof loaded === 'object' && loaded !== null && 'default' in loaded
+            ? loaded.default
+            : undefined;
+    if (!isContribution(contribution)) {
+        throw invariant('a preset names a checker module whose default export holds no `passes`');
+    }
+    const checker = { ...contribution, presets };
+    const [name = '', ...rest] = args;
+    const command = checker.commands?.[name];
+    exit(
+        command === undefined
+            ? await runEvery(checker, args)
+            : await (
+                  await command()
+              )(rest, checker),
+    );
 }
 
 export async function runChecker(

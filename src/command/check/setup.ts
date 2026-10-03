@@ -18,7 +18,6 @@ import type { Selected } from './passes.js';
 
 export type Tools = {
     attw: string;
-    checker: string;
     depcruise: string;
     knip: string;
     lsLint: string;
@@ -69,7 +68,6 @@ export function toolsOf(): Tools {
 
     return {
         attw: hoisted('attw'),
-        checker: projectBinary('jterrazz-test-check'),
         depcruise: hoisted('depcruise'),
         knip: hoisted('knip'),
         lsLint: hoisted('ls-lint'),

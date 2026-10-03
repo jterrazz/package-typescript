@@ -3,11 +3,11 @@ import { appendFileSync, readFileSync } from 'node:fs';
 import { readSettings } from '../../../lint/index.rules.js';
 import { labelOf } from '../../../lint/kit/baseline/baseline-file.js';
 import { checker } from '../checker.js';
-import type { Conventions } from './conventions.js';
 import type { Launched } from './launched.js';
 import { lintVerdict } from './lint-verdict.js';
 import type { LintVerdict } from './lint-verdict.js';
 import { joined } from './logs.js';
+import type { PresetRun } from './presets.js';
 import type { Check } from './setup.js';
 import type { Started } from './started.js';
 
@@ -66,20 +66,18 @@ export async function commentsVerdict(check: Check, passes: Started): Promise<Pa
     };
 }
 
-export async function conventionsVerdict(
+async function presetVerdict(
     check: Check,
-    { rootLog, runs }: Conventions,
-): Promise<Passed> {
-    if (runs.length === 0) {
-        return undefined;
-    }
+    log: string,
+    runs: readonly PresetRun[],
+): Promise<Verdict> {
     const outcomes = await Promise.all(runs.map(async (launched) => await settled(launched)));
     const failed = outcomes.flatMap((outcome) =>
         outcome === undefined || outcome.status === 0 ? [] : [outcome.log],
     );
-    const log = check.logs.at('checker.log');
     joined(check.logs, log, failed);
     const summary = await heldSummaryOf();
+    const rootLog = runs.find(({ root }) => root)?.log;
     const summaries =
         failed.length === 0 && rootLog !== undefined && summary !== null
             ? check.logs
@@ -92,6 +90,25 @@ export async function conventionsVerdict(
     }
 
     return { log, status: failed.length === 0 ? 0 : 1, writes: summaries.length > 0 };
+}
+
+export async function presetVerdicts(
+    check: Check,
+    runs: readonly PresetRun[],
+): Promise<(Verdict & { label: string })[]> {
+    const labels = [...new Set(runs.map(({ label }) => label))];
+
+    return await Promise.all(
+        labels.map(async (label, index) => {
+            const verdict = await presetVerdict(
+                check,
+                check.logs.at(`presets-${String(index)}.log`),
+                runs.filter((run) => run.label === label),
+            );
+
+            return Object.assign(verdict, { label });
+        }),
+    );
 }
 
 export async function publishVerdict(check: Check, runs: readonly Launched[]): Promise<Passed> {
