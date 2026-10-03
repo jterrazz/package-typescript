@@ -36,11 +36,17 @@ function candidatesOf(target: string): string[] {
     ];
 }
 
+function groupOf(match: RegExpExecArray, name: string): string {
+    // Stryker disable next-line OptionalChaining,StringLiteral: every named group of these patterns is set on each match they make
+    return match.groups?.[name] ?? '';
+}
+
 function namesOf(clause: string): string[] {
     if (clause.includes('*')) {
         return [EVERY_NAME];
     }
-    const listed = /\{(?<list>[^}]*)\}/u.exec(clause)?.groups?.list ?? '';
+    const braces = /\{(?<list>[^}]*)\}/u.exec(clause);
+    const listed = braces === null ? '' : groupOf(braces, 'list');
 
     return listed
         .split(',')
@@ -49,20 +55,20 @@ function namesOf(clause: string): string[] {
                 entry
                     .trim()
                     .replace(/^type\s+/u, '')
-                    .split(/\s+as\s+/u)[0] ?? '',
+                    .split(/\s+as\b/u)[0] ?? '',
         )
         .filter((name) => name !== '');
 }
 
 function importsOf(text: string): { names: string[]; specifier: string }[] {
     return [
-        ...[...text.matchAll(STATIC)].map(({ groups }) => ({
-            names: namesOf(groups?.clause ?? ''),
-            specifier: groups?.specifier ?? '',
+        ...[...text.matchAll(STATIC)].map((match) => ({
+            names: namesOf(groupOf(match, 'clause')),
+            specifier: groupOf(match, 'specifier'),
         })),
-        ...[...text.matchAll(DYNAMIC)].map(({ groups }) => ({
+        ...[...text.matchAll(DYNAMIC)].map((match) => ({
             names: [EVERY_NAME],
-            specifier: groups?.specifier ?? '',
+            specifier: groupOf(match, 'specifier'),
         })),
     ];
 }
