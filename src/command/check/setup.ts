@@ -47,10 +47,12 @@ export type Check = {
     tools: Tools;
 };
 
-export function projectBinary(name: string): string {
-    const local = join(process.cwd(), 'node_modules/.bin', name);
+export function projectBinary(name: string, unit = '.'): string {
+    const local = [join(process.cwd(), unit), process.cwd()]
+        .map((dir) => join(dir, 'node_modules/.bin', name))
+        .find((path) => isExecutable(path));
 
-    return isExecutable(local) ? local : binaryIn(name, HOISTED_BESIDE_PACKAGE);
+    return local ?? binaryIn(name, HOISTED_BESIDE_PACKAGE);
 }
 
 function prettierAstroPlugin(): string {

@@ -39,7 +39,7 @@ Every command exits `0` when it succeeded and non-zero otherwise; `check` and `f
 | Docs (layout)             | the manual gate             | check: at a repository root (a `.git` beside the project)                                        |
 | Publish (packaging)       | publint + attw + a build    | per unit that declares a `library` or a `cli`                                                    |
 | Architecture (layer map)  | dependency-cruiser          | a `jterrazz.config.ts`, or a `.dependency-cruiser.*` (check and fix — `--fix` re-records a fall) |
-| Astro (check + format)    | astro check + prettier      | per project that depends on `astro` (check and fix)                                              |
+| Astro (check + format)    | astro check + prettier      | per unit that declares the `astro` platform (check and fix)                                      |
 | Suppressions (directives) | the suppression gate        | always (check and fix — `--fix` settles two spellings)                                           |
 | Markdown (prose)          | rumdl + the prose gate      | always (check and fix — `--fix` runs rumdl's own fixes)                                          |
 | Names (tree)              | ls-lint + the naming gate   | always (check and fix — `--fix` deletes an empty directory)                                      |
@@ -447,7 +447,7 @@ Each folder matches at any depth, so a workspace member's `src/domain/` is held 
 
 ## The Astro (check + format) pass
 
-`.astro` is the one file shape oxfmt does not parse, and `astro check` is the only checker that reads a template's frontmatter. So where a project depends on `astro`, the pass runs both: the project's own `astro check`, and `prettier` over every `.astro` file.
+`.astro` is the one file shape oxfmt does not parse, and `astro check` is the only checker that reads a template's frontmatter. So in every unit that declares the `astro` platform — the root, or a workspace member — the pass runs both there: the unit's own `astro check`, and `prettier` over every `.astro` file under it.
 
 **`prettier` and `prettier-plugin-astro` are dependencies of THIS package**, with a config derived from the oxfmt values — 100 columns, 4 spaces, single quotes, trailing commas everywhere.
 

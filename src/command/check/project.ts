@@ -2,12 +2,10 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-import { objectOf, parsedObject } from '../../../lint/kit/project/json.js';
+import { parsedObject } from '../../../lint/kit/project/json.js';
 import type { JsonObject } from '../../../lint/kit/project/json.js';
 import { isGitIgnored, PRUNED } from '../../../lint/kit/project/project-files.js';
 import { isFileOnDisk } from '../disk.js';
-
-const DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies'];
 
 function manifestIn(dir: string): JsonObject | null {
     try {
@@ -15,19 +13,6 @@ function manifestIn(dir: string): JsonObject | null {
     } catch {
         return null;
     }
-}
-
-function declares(dir: string, name: string): boolean {
-    const manifest = manifestIn(dir);
-
-    return (
-        manifest !== null &&
-        DEPENDENCY_FIELDS.some((field) => Boolean(objectOf(manifest[field])[name]))
-    );
-}
-
-export function usesAstro(dir: string): boolean {
-    return declares(dir, 'astro');
 }
 
 export function isModulePackage(): boolean {

@@ -17,7 +17,6 @@ import { run } from '../processes.js';
 import { presetAt } from '../toolchain.js';
 import type { FixScope } from '../unsafe-fixers.js';
 import type { Launched } from './launched.js';
-import { usesAstro } from './project.js';
 import { oxfmt, oxlint } from './runners.js';
 import { projectBinary } from './setup.js';
 import type { Check } from './setup.js';
@@ -173,10 +172,14 @@ export function knipPass(check: Check): Launched | undefined {
     return { log, status: knipRun(check, log) };
 }
 
-async function astroRun(check: Check, log: string): Promise<number> {
-    const checked = await run(projectBinary('astro'), ['check'], {
+async function astroRun(check: Check, unit: string, log: string): Promise<number> {
+    if (unit !== '.') {
+        writeFileSync(log, `${unit}\n`);
+    }
+    const checked = await run(projectBinary('astro', unit), ['check'], {
+        cwd: unit,
         stderr: 'stdout',
-        stdout: { path: log },
+        stdout: { append: true, path: log },
     });
     const formatted = await run(
         check.tools.prettier,
@@ -189,19 +192,30 @@ async function astroRun(check: Check, log: string): Promise<number> {
             '--no-error-on-unmatched-pattern',
             '**/*.astro',
         ],
-        { stderr: 'stdout', stdout: { append: true, path: log } },
+        { cwd: unit, stderr: 'stdout', stdout: { append: true, path: log } },
     );
 
     return checked === 0 && formatted === 0 ? 0 : 1;
 }
 
+async function astroRuns(check: Check, units: readonly string[], log: string): Promise<number> {
+    const parts = units.map((_, index) => check.logs.at(`astro-${String(index)}.log`));
+    const statuses = await Promise.all(
+        units.map(async (unit, index) => await astroRun(check, unit, parts[index] ?? log)),
+    );
+    writeFileSync(log, parts.map((part) => check.logs.read(part)).join('\n'));
+
+    return statuses.some((status) => status !== 0) ? 1 : 0;
+}
+
 export function astroPass(check: Check): Launched | undefined {
-    const declared = check.declarations.get('.') ?? null;
-    const astro = declared === null ? usesAstro('.') : declared.platform === 'astro';
-    if (!check.selected('astro') || !astro) {
+    const units = ['.', ...check.members].filter(
+        (unit) => check.declarations.get(unit)?.platform === 'astro',
+    );
+    if (!check.selected('astro') || units.length === 0) {
         return undefined;
     }
     const log = check.logs.at('astro.log');
 
-    return { log, status: astroRun(check, log) };
+    return { log, status: astroRuns(check, units, log) };
 }
