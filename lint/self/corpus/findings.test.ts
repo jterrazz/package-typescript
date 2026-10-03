@@ -14,10 +14,16 @@ describe('findings', () => {
 
     test('printedFindingIds — findings — every row states its family and the one sentence it holds a project to', () => {
         // Given - every row of the findings catalogue
+        expect(FINDINGS.length).toBeGreaterThan(50);
+
         // Then - its family is a word of the closed list, and its sentence is one sentence
-        for (const row of FINDINGS) {
-            expect.soft(FAMILIES, `${row.id} has an unknown family`).toContain(row.family);
-            expect.soft(row.sentence, `${row.id} states no sentence`).toMatch(/^[A-Z`].*\.$/u);
-        }
+        expect(
+            FINDINGS.flatMap((row) =>
+                [
+                    FAMILIES.includes(row.family) ? null : `${row.id} has an unknown family`,
+                    /^[A-Z`].*\.$/u.test(row.sentence) ? null : `${row.id} states no sentence`,
+                ].filter((broken) => broken !== null),
+            ),
+        ).toStrictEqual([]);
     });
 });

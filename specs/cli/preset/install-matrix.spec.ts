@@ -9,9 +9,11 @@ describe('install-matrix', () => {
 
         // Then - every consumer passed `typescript check`
         expect(result.exitCode).toBe(0);
-        for (const consumer of ['astro', 'bun', 'expo', 'next', 'node', 'react']) {
-            expect(result.stdout.text).toContain(`checked: ${consumer}`);
-        }
+        expect(
+            ['astro', 'bun', 'expo', 'next', 'node', 'react'].filter(
+                (consumer) => !result.stdout.text.includes(`checked: ${consumer}`),
+            ),
+        ).toStrictEqual([]);
         // value: six strict installs: four times the e2e budget.
     }, 120_000);
 });

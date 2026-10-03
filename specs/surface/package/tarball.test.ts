@@ -111,11 +111,13 @@ describe('tarball', () => {
         );
 
         // Then - every fragment each one reaches serves a consumer
-        for (const { path, value } of loaded) {
-            for (const { fragment, path: where } of fragmentsIn(value, path)) {
-                expect.soft(fragment.audience, `${where} is not consumer`).toBe('consumer');
-            }
-        }
+        expect(
+            loaded.flatMap(({ path, value }) =>
+                fragmentsIn(value, path)
+                    .filter(({ fragment }) => fragment.audience !== 'consumer')
+                    .map(({ path: where }) => where),
+            ),
+        ).toStrictEqual([]);
     });
 
     test('every rule a packed profile states is a consumer decision the catalogue holds for it', async () => {
@@ -126,12 +128,12 @@ describe('tarball', () => {
         const entries: readonly Record<string, unknown>[] = decisions(PROFILES);
 
         // Then - each rule stated, at the top or in an override, is decided so for that profile
-        for (const name of PROFILE_NAMES) {
-            expect(statedRules(profiles[name]).length, `${name} states no rule`).toBeGreaterThan(
-                100,
-            );
-            expect(undecided(name, profiles[name], entries)).toStrictEqual([]);
-        }
+        expect(
+            PROFILE_NAMES.filter((name) => statedRules(profiles[name]).length <= 100),
+        ).toStrictEqual([]);
+        expect(
+            PROFILE_NAMES.flatMap((name) => undecided(name, profiles[name], entries)),
+        ).toStrictEqual([]);
     });
 
     test('the passes the packed command runs are consumer alone', async () => {
@@ -142,12 +144,14 @@ describe('tarball', () => {
         expect(passes.length).toBeGreaterThan(10);
 
         // Then - each is a consumer row of the manifest
-        for (const pass of passes) {
-            const row = rows.find(
-                (candidate) => candidate.channel === 'checker' && candidate.id === pass,
-            );
-            expect.soft(row?.audience, `${String(pass)} is not a consumer pass`).toBe('consumer');
-        }
+        expect(
+            passes.filter(
+                (pass) =>
+                    rows.find(
+                        (candidate) => candidate.channel === 'checker' && candidate.id === pass,
+                    )?.audience !== 'consumer',
+            ),
+        ).toStrictEqual([]);
     });
 
     test('every module the packed tree holds reaches consumer fragments alone, whatever it does when imported', async () => {
@@ -171,11 +175,11 @@ describe('tarball', () => {
             carried.map(({ id }) => id),
         );
         expect(rulebook.filter((id) => !built.has(id))).toStrictEqual([]);
-        for (const { audience, id, path } of fragments) {
-            expect
-                .soft(audience, `${path} reaches ${String(id)}, which is not consumer`)
-                .toBe('consumer');
-        }
+        expect(
+            fragments
+                .filter(({ audience }) => audience !== 'consumer')
+                .map(({ id, path }) => `${path} reaches ${String(id)}`),
+        ).toStrictEqual([]);
     });
 
     test('every command the tarball installs runs every pass, whatever its environment holds', async () => {
@@ -210,13 +214,24 @@ describe('tarball', () => {
         );
 
         // Then - the bare run reports the passes a bare tree runs, and every other run the same passes, to the same verdict
-        for (const { bare, bin, runs } of outcomes) {
-            expect(bare.passes).toContain('Secrets (credentials)');
-            expect(bare.passes.length).toBeGreaterThan(5);
-            for (const { name, outcome } of runs) {
-                expect.soft(outcome, `${bin} under ${name}`).toStrictEqual(bare);
-            }
-        }
+        expect(outcomes.length).toBeGreaterThan(0);
+        expect(
+            outcomes.flatMap(({ bare, bin, runs }) =>
+                [
+                    bare.passes.includes('Secrets (credentials)') && bare.passes.length > 5
+                        ? null
+                        : `${bin} runs too few passes bare: ${bare.passes.join(', ')}`,
+                ]
+                    .filter((broken) => broken !== null)
+                    .concat(
+                        runs
+                            .filter(
+                                ({ outcome }) => JSON.stringify(outcome) !== JSON.stringify(bare),
+                            )
+                            .map(({ name }) => `${bin} under ${name}`),
+                    ),
+            ),
+        ).toStrictEqual([]);
     });
 
     test('no text the tarball holds names a self rule', () => {

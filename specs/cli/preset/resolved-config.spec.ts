@@ -46,22 +46,19 @@ describe('resolved-config', () => {
             // Given - the profile, resolved by oxlint itself
             const config = printConfig(name);
 
-            for (const rule of UNAWAITED_PROMISE_RULES) {
-                // Then - the base config denies it, which is what a file inherits
-                expect
-                    .soft(levelOf(config.rules[rule]), `${name}: ${rule} in the base`)
-                    .toBe('deny');
+            // Then - the base config denies each, which is what a file inherits
+            expect(
+                UNAWAITED_PROMISE_RULES.filter((rule) => levelOf(config.rules[rule]) !== 'deny'),
+            ).toStrictEqual([]);
 
-                // Then - and no override relaxes it, so the vitest globs inherit it unchanged
-                for (const override of config.overrides ?? []) {
-                    expect
-                        .soft(
-                            override.rules[rule],
-                            `${name}: ${rule} under ${override.files.join(', ')}`,
-                        )
-                        .toBeUndefined();
-                }
-            }
+            // Then - and no override relaxes one, so the vitest globs inherit it unchanged
+            expect(
+                (config.overrides ?? []).flatMap((override) =>
+                    UNAWAITED_PROMISE_RULES.filter(
+                        (rule) => override.rules[rule] !== undefined,
+                    ).map((rule) => `${rule} under ${override.files.join(', ')}`),
+                ),
+            ).toStrictEqual([]);
         },
     );
 

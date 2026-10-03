@@ -64,11 +64,13 @@ describe('behaviour', () => {
             expect(existsSync(tree) ? readdirSync(tree).toSorted() : []).toStrictEqual(
                 rewritten.toSorted(),
             );
-            for (const file of rewritten) {
-                expect
-                    .soft(readFileSync(resolve(work.path, file), 'utf8'), `${name}/${file}`)
-                    .toBe(readFileSync(resolve(tree, file), 'utf8'));
-            }
+            expect(
+                rewritten.filter(
+                    (file) =>
+                        readFileSync(resolve(work.path, file), 'utf8') !==
+                        readFileSync(resolve(tree, file), 'utf8'),
+                ),
+            ).toStrictEqual([]);
 
             // Then - what the fixer cannot repair is exactly the report the golden records
             const golden = resolve(EXPECTED, `${name}.report.txt`);

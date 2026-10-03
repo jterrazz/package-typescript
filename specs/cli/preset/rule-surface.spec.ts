@@ -113,13 +113,18 @@ describe('rule-surface', () => {
         expect(offs.length).toBeGreaterThan(0);
 
         // Then - each one names its kind and what carries it
-        for (const entry of offs) {
-            const reason = entry.reason ?? { by: '', kind: 'none' };
-            expect
-                .soft(REASON_KINDS, `${entry.rule} has kind "${reason.kind}"`)
-                .toContain(reason.kind);
-            expect.soft(reason.by, `${entry.rule} names nothing`).not.toBe('');
-        }
+        expect(
+            offs.flatMap((entry) => {
+                const reason = entry.reason ?? { by: '', kind: 'none' };
+
+                return [
+                    REASON_KINDS.includes(reason.kind)
+                        ? null
+                        : `${entry.rule} has kind "${reason.kind}"`,
+                    reason.by === '' ? `${entry.rule} names nothing` : null,
+                ].filter((broken) => broken !== null);
+            }),
+        ).toStrictEqual([]);
     });
 
     test('keeps only the perfectionist rules oxfmt does not sort', () => {

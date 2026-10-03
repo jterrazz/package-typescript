@@ -19,20 +19,30 @@ function byName(left: string, right: string): number {
 describe('audience', () => {
     test('every profile carries consumer fragments alone', () => {
         // Given - the fragments each shipped profile is compiled from
+        const fragments = Object.entries(PROFILES).flatMap(([name, profile]) =>
+            profile.fragments.map((fragment) => ({ ...fragment, profile: name })),
+        );
+        expect(fragments.length).toBeGreaterThan(0);
+
         // Then - none is the package's own discipline
-        for (const [name, profile] of Object.entries(PROFILES)) {
-            for (const fragment of profile.fragments) {
-                expect.soft(fragment.audience, `${name} carries ${fragment.id}`).toBe('consumer');
-            }
-        }
+        expect(
+            fragments
+                .filter((fragment) => fragment.audience !== 'consumer')
+                .map((fragment) => `${fragment.profile} carries ${fragment.id}`),
+        ).toStrictEqual([]);
     });
 
     test('every catalogue entry carries the audience its fragment declared', () => {
         // Given - the catalogue, every decision of every profile
+        const entries = decisions(PROFILES);
+        expect(entries.length).toBeGreaterThan(0);
+
         // Then - each entry says who it is for
-        for (const entry of decisions(PROFILES)) {
-            expect.soft(AUDIENCES, `${entry.rule} has no audience`).toContain(entry.audience);
-        }
+        expect(
+            entries
+                .filter((entry) => !AUDIENCES.includes(entry.audience))
+                .map((entry) => entry.rule),
+        ).toStrictEqual([]);
     });
 
     test('every row of the manifest declares its audience, on a channel of its own', () => {
@@ -41,14 +51,18 @@ describe('audience', () => {
         const ids = rows.map((row) => fieldText(row, 'id'));
 
         // Then - each names an audience of the pair and a channel, under an id no other row takes
-        for (const row of rows) {
-            expect
-                .soft(AUDIENCES, `${fieldText(row, 'id')} declares no audience`)
-                .toContain(row.audience);
-            expect
-                .soft(CHANNELS, `${fieldText(row, 'id')} sits on no channel`)
-                .toContain(row.channel);
-        }
+        expect(
+            rows.flatMap((row) =>
+                [
+                    AUDIENCES.some((audience) => audience === row.audience)
+                        ? null
+                        : `${fieldText(row, 'id')} declares no audience`,
+                    CHANNELS.some((channel) => channel === row.channel)
+                        ? null
+                        : `${fieldText(row, 'id')} sits on no channel`,
+                ].filter((broken) => broken !== null),
+            ),
+        ).toStrictEqual([]);
         expect(ids.filter((id, index) => id === '' || ids.indexOf(id) !== index)).toStrictEqual([]);
     });
 
@@ -69,37 +83,44 @@ describe('audience', () => {
         );
         const runtime = rows.filter((row) => row.channel === 'runtime');
 
+        expect(modules.length).toBeGreaterThan(0);
+        expect(runtime.length).toBeGreaterThan(0);
+
         // Then - a module refuses in each way as often as its rows declare, each consumer, each still worded so
-        for (const module of modules) {
+        const undeclared = modules.flatMap((module) => {
             const source = readFileSync(join(ROOT, module), 'utf8');
-            for (const [by, spelling] of Object.entries(REFUSALS)) {
+
+            return Object.entries(REFUSALS).flatMap(([by, spelling]) => {
                 const made = source.match(spelling)?.length ?? 0;
                 const declaredRefusals = runtime.filter(
                     (row) => row.module === module && row.by === by,
-                );
-                expect
-                    .soft(
-                        declaredRefusals.length,
-                        `${module} refuses by ${by} where no row declares it`,
-                    )
-                    .toBe(made);
-            }
-        }
-        for (const row of runtime) {
+                ).length;
+
+                return declaredRefusals === made
+                    ? []
+                    : [
+                          `${module} refuses by ${by} ${made} times, and its rows declare ${declaredRefusals}`,
+                      ];
+            });
+        });
+        const stale = runtime.flatMap((row) => {
+            const id = fieldText(row, 'id');
             const module = fieldText(row, 'module');
-            expect
-                .soft(Object.keys(REFUSALS), `${fieldText(row, 'id')} refuses no known way`)
-                .toContain(row.by);
-            expect
-                .soft(row.audience, `${fieldText(row, 'id')} ships, so it is consumer`)
-                .toBe('consumer');
-            expect
-                .soft(
-                    existsSync(join(ROOT, module)) && readFileSync(join(ROOT, module), 'utf8'),
-                    `${fieldText(row, 'id')} is no longer worded so in ${module}`,
-                )
-                .toContain(fieldText(row, 'message'));
-        }
+            const source = existsSync(join(ROOT, module))
+                ? readFileSync(join(ROOT, module), 'utf8')
+                : '';
+
+            return [
+                Object.keys(REFUSALS).some((by) => by === row.by)
+                    ? null
+                    : `${id} refuses no known way`,
+                row.audience === 'consumer' ? null : `${id} ships, so it is consumer`,
+                source.includes(fieldText(row, 'message'))
+                    ? null
+                    : `${id} is no longer worded so in ${module}`,
+            ].filter((broken) => broken !== null);
+        });
+        expect([...undeclared, ...stale]).toStrictEqual([]);
     });
 
     test('a refusal counts however it is spelled, and a rethrow or a clean exit does not', () => {
@@ -117,16 +138,23 @@ describe('audience', () => {
         };
 
         // Then - every spelling counts once, where it is written, and nothing else counts
-        for (const [by, spelling] of Object.entries(REFUSALS)) {
-            const cases = spellings[by] ?? { counted: [], none: [] };
-            expect.soft(by in spellings, `${by} has no spelling proved`).toBe(true);
-            for (const line of cases.counted) {
-                expect.soft(line.match(spelling)?.length, `${line} is no ${by}`).toBe(1);
-            }
-            for (const line of cases.none) {
-                expect.soft(line.match(spelling), `${line} counts`).toBeNull();
-            }
-        }
+        expect(Object.keys(spellings).toSorted(byName)).toStrictEqual(
+            Object.keys(REFUSALS).toSorted(byName),
+        );
+        expect(
+            Object.entries(REFUSALS).flatMap(([by, spelling]) => {
+                const cases = spellings[by] ?? { counted: [], none: [] };
+
+                return cases.counted
+                    .filter((line) => line.match(spelling)?.length !== 1)
+                    .map((line) => `${line} is no ${by}`)
+                    .concat(
+                        cases.none
+                            .filter((line) => line.match(spelling) !== null)
+                            .map((line) => `${line} counts`),
+                    );
+            }),
+        ).toStrictEqual([]);
     });
 
     test('every self row names the home that holds it, which the package leaves out', () => {
@@ -140,25 +168,28 @@ describe('audience', () => {
         expect(self.length).toBeGreaterThan(0);
 
         // Then - each home exists here, ships nowhere, and holds every name the row greps for
-        for (const row of self) {
-            const home = fieldText(row, 'home');
-            const names: unknown[] = Array.isArray(row.names) ? row.names : [];
-            const source = existsSync(join(ROOT, home))
-                ? readFileSync(join(ROOT, home), 'utf8')
-                : '';
-            expect.soft(source, `${fieldText(row, 'id')} has no home`).not.toBe('');
-            expect
-                .soft(packed, `${fieldText(row, 'id')} ships its home`)
-                .not.toContain(`"${home}"`);
-            expect
-                .soft(fieldText(row, 'why'), `${fieldText(row, 'id')} says not why it stays home`)
-                .not.toBe('');
-            expect
-                .soft(names.length, `${fieldText(row, 'id')} names nothing to grep for`)
-                .toBeGreaterThan(0);
-            for (const name of names) {
-                expect.soft(source, `${basename(home)} holds no "${String(name)}"`).toContain(name);
-            }
-        }
+        expect(
+            self.flatMap((row) => {
+                const id = fieldText(row, 'id');
+                const home = fieldText(row, 'home');
+                const names: unknown[] = Array.isArray(row.names) ? row.names : [];
+                const source = existsSync(join(ROOT, home))
+                    ? readFileSync(join(ROOT, home), 'utf8')
+                    : '';
+
+                return [
+                    source === '' ? `${id} has no home` : null,
+                    packed.includes(`"${home}"`) ? `${id} ships its home` : null,
+                    fieldText(row, 'why') === '' ? `${id} says not why it stays home` : null,
+                    names.length === 0 ? `${id} names nothing to grep for` : null,
+                ]
+                    .filter((broken) => broken !== null)
+                    .concat(
+                        names
+                            .filter((name) => !source.includes(String(name)))
+                            .map((name) => `${basename(home)} holds no "${String(name)}"`),
+                    );
+            }),
+        ).toStrictEqual([]);
     });
 });

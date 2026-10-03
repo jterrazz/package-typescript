@@ -227,9 +227,9 @@ describe('names-repository', () => {
         const refusal = `found: nothing to read under ${realpathSync(project)}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/07-quality-checks.md#an-unreadable-tree`;
 
         // Then - every tree gate says that one line, and no stack, and the run fails where a silent gate would pass on everything
-        for (const label of TREE_GATES) {
-            expect(saidBy(result.stdout, label)).toStrictEqual([refusal]);
-        }
+        expect(TREE_GATES.map((label) => saidBy(result.stdout, label))).toStrictEqual(
+            TREE_GATES.map(() => [refusal]),
+        );
         expect(result.status).toBe(1);
     });
 
@@ -248,9 +248,9 @@ describe('names-repository', () => {
         const refusal = `found: nothing to read under ${project}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree`;
 
         // Then - every tree gate says that one line, and the run fails
-        for (const label of TREE_GATES) {
-            expect(saidBy(result.stdout, label)).toStrictEqual([refusal]);
-        }
+        expect(TREE_GATES.map((label) => saidBy(result.stdout, label))).toStrictEqual(
+            TREE_GATES.map(() => [refusal]),
+        );
         expect(result.status).toBe(1);
     });
 
