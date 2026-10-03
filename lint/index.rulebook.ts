@@ -16,6 +16,8 @@ import type { Platform } from './kit/project/project-kind.js';
 import { projectOxlintOf } from './kit/project/project-oxlint.js';
 import { workspaceMembers } from './kit/project/workspace-members.js';
 
+export { MUTATION_SECTION } from './consumer/catalogue/preset.js';
+
 const PLUGIN_PATHS: Readonly<Record<string, string>> = Object.freeze({
     'jterrazz-typescript': createRequire(import.meta.url).resolve('#plugin'),
 });

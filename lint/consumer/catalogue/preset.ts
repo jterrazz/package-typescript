@@ -140,6 +140,8 @@ export const WORDS = Object.freeze({
 
 export const BASELINE_SECTION = 'typescript';
 
+export const MUTATION_SECTION = 'typescript.mutation';
+
 const TSCONFIG_OF: Readonly<Record<Platform, string>> = Object.freeze({
     astro: 'astro',
     bun: 'node',
@@ -191,7 +193,8 @@ export function typescriptPreset(declaration: null | ProjectIdentity): Preset {
             toolRoots: { ...TOOL_ROOTS, ...platformRoots },
             words: WORDS,
         },
-        baseline: [BASELINE_SECTION],
+        baseline: [BASELINE_SECTION, MUTATION_SECTION],
+        floors: [MUTATION_SECTION],
         sources: sourcesOf(declaration?.platform ?? 'node'),
     };
 }

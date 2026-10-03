@@ -10,6 +10,7 @@ import { objectOf, parsedObject } from '../../lint/kit/project/json.js';
 import type { Resolution } from '../../lint/kit/project/preset.js';
 import { workspaceMembers } from '../../lint/kit/project/workspace-members.js';
 import { projectBinary } from './check/setup.js';
+import { heldScore } from './mutation-floor.js';
 import { handOver } from './processes.js';
 import { badge, print } from './terminal.js';
 import { projectRoot } from './toolchain.js';
@@ -225,9 +226,16 @@ export async function mutation(args: readonly string[]): Promise<number> {
     writeFileSync(config, `${JSON.stringify(strykerConfig(settings, specs), null, 4)}\n`);
     print(`${badge('TYPESCRIPT')} Measuring the suite against mutants of the sources...\n\n`);
 
-    return await handOver(
+    const status = await handOver(
         projectBinary('stryker'),
         ['run', config, ...(mutate === undefined ? [] : ['--mutate', mutate])],
         project,
     );
+    if (status !== 0 || specs || mutate !== undefined) {
+        return status;
+    }
+    const held = await heldScore(project, join(OUT, 'report.json'));
+    print(`\n${held.lines.join('\n')}\n`);
+
+    return held.status;
 }

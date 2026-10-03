@@ -9,15 +9,15 @@ One devDependency that builds, checks, lints and formats a project. The manual i
 
 ## What to run
 
-| Gesture                  | When                                                                                     |
-| ------------------------ | ---------------------------------------------------------------------------------------- |
-| `typescript fix`         | before every commit — lint fixes, formatting, `.gitignore`, spellings, empty directories |
-| `typescript check`       | the gate — every pass in parallel, then the drift report                                 |
-| `typescript build`       | what the manifest publishes into `dist/`: ESM + types, CJS where a target is `.cjs`      |
-| `typescript mutation`    | Stryker over the sources, from the config it derives — `--specs --mutate <ranges>`       |
-| `typescript doctor`      | first read after a bump: installed tools against the declared ranges                     |
-| `typescript baseline`    | a bump lands red: record today's counts, exact — `fix` lowers one that fell              |
-| `typescript docs-layout` | a repository with no npm project: the manual's shape, alone                              |
+| Gesture                  | When                                                                                               |
+| ------------------------ | -------------------------------------------------------------------------------------------------- |
+| `typescript fix`         | before every commit — lint fixes, formatting, `.gitignore`, spellings, empty directories           |
+| `typescript check`       | the gate — every pass in parallel, then the drift report                                           |
+| `typescript build`       | what the manifest publishes into `dist/`: ESM + types, CJS where a target is `.cjs`                |
+| `typescript mutation`    | Stryker over a sandbox copy, held to the `typescript.mutation` floor — `--specs --mutate <ranges>` |
+| `typescript doctor`      | first read after a bump: installed tools against the declared ranges                               |
+| `typescript baseline`    | a bump lands red: record today's counts, exact — `fix` lowers one that fell                        |
+| `typescript docs-layout` | a repository with no npm project: the manual's shape, alone                                        |
 
 A project declares its `kind` — `library`, `api`, `cli`, `website`, `mobile`, `workspace` — and its `platform` — `node`, `bun`, `react`, `next`, `astro`, `expo` — in `jterrazz.config.ts`, `defineConfig({ kind, platform })`; the profile, the tsconfig preset and every law follow. `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json` are derived — the first two hand their own `import.meta.url` to `oxlintConfig` / `oxfmtConfig` — and `typescript fix` writes them; every tool setting lives in `jterrazz.config.ts`, and no `knip.json`, `tsdown.config.ts` or `stryker.config.*` is kept. A repository root also owes a `Makefile` of six gestures and a `docs/` manual its `AGENTS.md` routes to. The whole wiring, from an empty folder to a green run, is `docs/05-getting-started.md`.
 
