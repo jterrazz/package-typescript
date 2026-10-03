@@ -1,10 +1,10 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
 import { refusal } from '../catalogue/lesson.js';
 import { isJsonObject, objectOf } from '../project/json.js';
 
-export const BASELINE = 'jterrazz.baseline.json';
+export const BASELINE = '.jterrazz/baseline.json';
 
 export type Counts = Record<string, number>;
 
@@ -77,7 +77,7 @@ const byKey = ([left]: [string, number], [right]: [string, number]): number =>
 // The formatter owns the indent of a file it formatted, so a rewrite keeps the file's own, and a new file takes the formatter's.
 const FORMATTED_INDENT = '    ';
 
-export function serialise(counts: Counts, indent = FORMATTED_INDENT): string {
+export function serialise(counts: Counts, indent: string = FORMATTED_INDENT): string {
     const sorted = Object.fromEntries(Object.entries(counts).toSorted(byKey));
 
     return JSON.stringify(sorted, null, indent).replaceAll('\n', `\n${indent}`);
@@ -133,8 +133,10 @@ function stringEnd(text: string, start: number): number {
 }
 
 // The text has already parsed, so the scan never meets malformed input.
-function membersOf(text: string): { end: number; key: string; start: number }[] {
-    const members: { end: number; key: string; start: number }[] = [];
+type Member = { end: number; key: string; keyStart: number; start: number };
+
+function membersOf(text: string): Member[] {
+    const members: Member[] = [];
     let index = text.indexOf('{') + 1;
     while (index < text.length) {
         const opening = text.indexOf('"', index);
@@ -150,7 +152,7 @@ function membersOf(text: string): { end: number; key: string; start: number }[] 
             start += 1;
         }
         const end = valueEnd(text, start);
-        members.push({ end, key, start });
+        members.push({ end, key, keyStart: opening, start });
         index = end;
     }
 
@@ -178,6 +180,35 @@ export function withSection(text: null | string, name: string, counts: Counts): 
         : `${text.slice(0, open)}\n${indent}${member},\n${indent}${rest.trimStart()}`;
 }
 
+function withoutSection(text: string, name: string): null | string {
+    const members = membersOf(text);
+    const index = members.findIndex(({ key }) => key === name);
+    const own = members[index];
+    if (own === undefined) {
+        return text;
+    }
+    const next = members[index + 1];
+    const previous = members[index - 1];
+    if (next !== undefined) {
+        return `${text.slice(0, own.keyStart)}${text.slice(next.keyStart)}`;
+    }
+
+    return previous === undefined ? null : `${text.slice(0, previous.end)}${text.slice(own.end)}`;
+}
+
+function written(path: string, text: null | string): void {
+    if (text !== null) {
+        mkdirSync(dirname(path), { recursive: true });
+        writeFileSync(path, text);
+
+        return;
+    }
+    rmSync(path, { force: true });
+    if (existsSync(dirname(path)) && readdirSync(dirname(path)).length === 0) {
+        rmSync(dirname(path), { recursive: true });
+    }
+}
+
 export function writeSection(root: string, name: string, counts: Counts): void {
     const { problem } = readBaseline(root);
     if (problem !== null) {
@@ -192,5 +223,9 @@ export function writeSection(root: string, name: string, counts: Counts): void {
     }
     const path = join(root, BASELINE);
     const text = existsSync(path) ? readFileSync(path, 'utf8') : null;
-    writeFileSync(path, withSection(text, name, counts));
+    if (Object.keys(counts).length > 0) {
+        written(path, withSection(text, name, counts));
+    } else if (text !== null) {
+        written(path, withoutSection(text, name));
+    }
 }

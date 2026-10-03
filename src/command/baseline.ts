@@ -1,9 +1,11 @@
 import { join } from 'node:path';
 import process from 'node:process';
 
+import { BASELINE } from '../../lint/kit/baseline/baseline-file.js';
 import {
     OXLINT_SUPPRESSIONS,
     removeWhenEmpty,
+    withStagedSuppressions,
 } from '../../lint/kit/baseline/oxlint-suppressions.js';
 import { binaryIn, HOISTED_BESIDE_PACKAGE } from '../../lint/kit/project/package-root.js';
 import { ignorePatternsOf } from '../../lint/kit/project/project-files.js';
@@ -90,42 +92,46 @@ export async function baseline(args: readonly string[]): Promise<number> {
     const projectBin = join(project, 'node_modules/.bin');
     withTsgolintOnPath(projectBin);
 
-    return await inScratch(async (scratch) => {
-        const reports: Reports = {
-            architecture: join(scratch, 'architecture.json'),
-            comments: join(scratch, 'comments.json'),
-            names: join(scratch, 'names.json'),
-        };
-        print(`${badge('TYPESCRIPT')} Recording the baseline...\n\n`);
-        await recordLinter(args, projectBin);
-        await recordPass('architecture', reports.architecture, [
-            '--depcruise',
-            binaryIn('depcruise', HOISTED_BESIDE_PACKAGE),
-            ...args,
-        ]);
-        await recordPass('names', reports.names, [
-            '--ls-lint',
-            binaryIn('ls-lint', HOISTED_BESIDE_PACKAGE),
-            ...args,
-        ]);
-        await recordPass('comments', reports.comments, args);
-        if ((await written(reports)) !== 0 || (await recordedPresets()) !== 0) {
-            return 1;
-        }
-        await run(
-            binaryIn('oxfmt', projectBin),
-            [
-                ...toolConfigs().oxfmt.args,
-                '--no-error-on-unmatched-pattern',
-                'jterrazz.baseline.json',
-                OXLINT_SUPPRESSIONS,
-            ],
-            {
-                stderr: 'ignore',
-                stdout: 'ignore',
-            },
-        );
+    return await withStagedSuppressions(
+        project,
+        async () =>
+            await inScratch(async (scratch) => {
+                const reports: Reports = {
+                    architecture: join(scratch, 'architecture.json'),
+                    comments: join(scratch, 'comments.json'),
+                    names: join(scratch, 'names.json'),
+                };
+                print(`${badge('TYPESCRIPT')} Recording the baseline...\n\n`);
+                await recordLinter(args, projectBin);
+                await recordPass('architecture', reports.architecture, [
+                    '--depcruise',
+                    binaryIn('depcruise', HOISTED_BESIDE_PACKAGE),
+                    ...args,
+                ]);
+                await recordPass('names', reports.names, [
+                    '--ls-lint',
+                    binaryIn('ls-lint', HOISTED_BESIDE_PACKAGE),
+                    ...args,
+                ]);
+                await recordPass('comments', reports.comments, args);
+                if ((await written(reports)) !== 0 || (await recordedPresets()) !== 0) {
+                    return 1;
+                }
+                await run(
+                    binaryIn('oxfmt', projectBin),
+                    [
+                        ...toolConfigs().oxfmt.args,
+                        '--no-error-on-unmatched-pattern',
+                        BASELINE,
+                        OXLINT_SUPPRESSIONS,
+                    ],
+                    {
+                        stderr: 'ignore',
+                        stdout: 'ignore',
+                    },
+                );
 
-        return 0;
-    });
+                return 0;
+            }),
+    );
 }

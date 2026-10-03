@@ -92,7 +92,7 @@
     },
     "specs/surface/package/tarball.test.ts": {
         "jterrazz/no-expect-in-a-loop": {
-            "count": 9
+            "count": 8
         }
     }
 }

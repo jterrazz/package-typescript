@@ -60,7 +60,7 @@ function ratchetLessons(printed: string, vanished: readonly string[]): string[] 
             ? [
                   `${refusal({
                       fix: "fix it, or run 'typescript baseline' to record where the project stands — never a bare `oxlint --suppress-all`, which lints with another config",
-                      found: 'a diagnostic oxlint-suppressions.json does not hold — each one is listed above',
+                      found: 'a diagnostic .jterrazz/oxlint-suppressions.json does not hold — each one is listed above',
                       read: 'docs/07-quality-checks.md#the-ratchet',
                       why: 'the file holds the debt the project recorded, file by file, and a diagnostic beyond it is a regression',
                   })}\n`,
@@ -72,7 +72,7 @@ function ratchetLessons(printed: string, vanished: readonly string[]): string[] 
                       fix: "set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it",
                       found: 'a warn-severity diagnostic — oxlint lists it above',
                       read: 'docs/07-quality-checks.md#a-warning-is-a-diagnostic',
-                      why: 'oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run',
+                      why: '.jterrazz/oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run',
                   })}\n`,
               ]
             : []),
@@ -82,8 +82,8 @@ function ratchetLessons(printed: string, vanished: readonly string[]): string[] 
                       fix: "run 'typescript fix', which prunes the file",
                       found:
                           vanished.length === 0
-                              ? 'oxlint-suppressions.json holds more than the project has left'
-                              : `oxlint-suppressions.json holds entries for files that are gone: ${vanished.join(', ')}`,
+                              ? '.jterrazz/oxlint-suppressions.json holds more than the project has left'
+                              : `.jterrazz/oxlint-suppressions.json holds entries for files that are gone: ${vanished.join(', ')}`,
                       read: 'docs/07-quality-checks.md#the-ratchet',
                       why: 'the count is exact, so a debt that fell is recorded the day it falls',
                   })}\n`,

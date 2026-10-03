@@ -95,10 +95,10 @@ function oxlintRulesLeftInTheSection(
     for (const rule of stray) {
         print(
             `baseline-moved-to-oxlint  ${labelOf(section)}  ${refusal({
-                fix: "run 'typescript baseline', which records the lint debt in oxlint-suppressions.json and drops the entry",
+                fix: "run 'typescript baseline', which records the lint debt in .jterrazz/oxlint-suppressions.json and drops the entry",
                 found: `\`${rule}\` is an oxlint rule, and the section holds its count`,
                 read: 'docs/07-quality-checks.md#the-ratchet',
-                why: 'oxlint holds its own rules in oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain',
+                why: 'oxlint holds its own rules in .jterrazz/oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain',
             })}`,
         );
     }
