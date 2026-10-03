@@ -14,9 +14,8 @@ function contribution(lines: string, failed: boolean): string {
     passes: {
         async conventions() {
             return {
-                valued: ['--member'],
-                check(context) {
-                    return { failed: ${String(failed)}, lines: context.value('--member') === '.' ? [${lines}] : [] };
+                check() {
+                    return { failed: ${String(failed)}, lines: [${lines}] };
                 },
             };
         },
