@@ -10,6 +10,7 @@ import {
     derivedEditorFiles,
     editorFileText,
     holdsEditorFile,
+    tsconfigAdditionsOf,
 } from '../../kit/project/editor-files.js';
 import { parsedObject } from '../../kit/project/json.js';
 import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
@@ -74,6 +75,7 @@ type Unit = {
     files: Readonly<Record<string, EditorFile>>;
     path: string;
     problem: null | string;
+    tsconfigProblem: null | string;
 };
 
 const prefixed = (unit: string, file: string): string => (unit === '.' ? file : `${unit}/${file}`);
@@ -98,6 +100,20 @@ function declarationFindings(context: Context, unit: Unit): Finding[] {
             found: context.exists(join(context.root, settings))
                 ? `${settings} ${unit.problem ?? 'declares no `kind`'}`
                 : `${settings} is missing`,
+        }),
+    ];
+}
+
+function tsconfigFindings(unit: Unit): Finding[] {
+    if (unit.tsconfigProblem === null) {
+        return [];
+    }
+    const settings = prefixed(unit.path, SETTINGS_FILE);
+
+    return [
+        finding('config/tsconfig-addition-reasoned', settings, {
+            fix: `state why under \`typescript.tsconfig.reason\` in ${settings}, or move the option into the platform's preset`,
+            found: `${settings} ${unit.tsconfigProblem}, so no tsconfig.json is derived from it`,
         }),
     ];
 }
@@ -223,14 +239,21 @@ async function unitsOf(context: Context): Promise<{ findings: Finding[]; units: 
         ['.', ...declaring].map(async (path): Promise<Unit> => {
             const { problem, resolved } =
                 path === '.' ? root : await context.config(join(context.root, path));
+            const tsconfig = tsconfigAdditionsOf(resolved.sections.typescript);
             const files = derivedEditorFiles(
                 resolved.presets.flatMap((preset) =>
                     preset.files === undefined ? [] : [preset.files],
                 ),
-                resolved.sections.typescript,
+                tsconfig.additions,
             );
 
-            return { declaration: resolved.declaration, files, path, problem };
+            return {
+                declaration: resolved.declaration,
+                files,
+                path,
+                problem,
+                tsconfigProblem: tsconfig.problem,
+            };
         }),
     );
 
@@ -257,6 +280,7 @@ export const config: Pass = Object.freeze({
                     : editorFindings(context, unit);
             findings.push(
                 ...declarationFindings(context, unit),
+                ...tsconfigFindings(unit),
                 ...editor.findings,
                 ...toolConfigFindings(context, unit.path),
             );

@@ -1,0 +1,6 @@
+{
+    "extends": "@jterrazz/typescript/tsconfig/node",
+    "compilerOptions": {
+        "noUncheckedSideEffectImports": false
+    }
+}

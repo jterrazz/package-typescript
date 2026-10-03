@@ -25,6 +25,11 @@
         "sentence": "A library publishes its exports, a cli names its bin, and an application — an api, a website, a mobile app — is private, never published."
     },
     {
+        "family": "config",
+        "id": "config/tsconfig-addition-reasoned",
+        "sentence": "What typescript.tsconfig adds to the derived tsconfig.json carries its reason, since every setting maps to why it is set."
+    },
+    {
         "family": "comments",
         "id": "jterrazz-typescript/comment-no-longer-than-its-function",
         "sentence": "A comment run above a function is no longer than the function it documents."
