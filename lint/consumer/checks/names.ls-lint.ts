@@ -1,7 +1,7 @@
 import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
 import { refusal } from '../../kit/catalogue/lesson.js';
 import type { Finding } from '../../kit/checker/pass.js';
@@ -25,7 +25,7 @@ const DIRECTORY = `(?:${KEBAB}|${FRAMEWORK_ROUTE_SEGMENT})`;
 
 const NAMED_ROOTS = ['apps', 'bin', 'lib', 'packages', 'specs', 'src', 'tests'];
 
-const ROUTE_SEGMENT = 'regex:.+';
+const ANY_NAME: Rules = Object.freeze({});
 
 const IGNORED = [
     'node_modules',
@@ -101,7 +101,7 @@ export function lsLintConfig({
     for (const prefix of units) {
         const named = `${prefix}{${NAMED_ROOTS.join(',')}}`;
         ls[named] = { '.dir': `regex:${DIRECTORY}` };
-        ls[`${named}/**/app`] = { '.dir': ROUTE_SEGMENT };
+        ls[`${named}/**/app`] = ANY_NAME;
         Object.assign(ls, lintTreeRules(prefix, tree), skillRules(prefix));
     }
 
@@ -121,9 +121,7 @@ function failedOf(root: string, failures: Failures, swept: ReadonlySet<string>):
         return (
             entries === null
                 ? [{ isDirectory: false, path }]
-                : entries
-                      .filter((entry) => entry.isFile())
-                      .map((entry) => ({ isDirectory: false, path: `${path}/${entry.name}` }))
+                : entries.map((entry) => ({ isDirectory: false, path: `${path}/${entry.name}` }))
         ).filter((failed) => swept.has(failed.path));
     });
 }
@@ -140,13 +138,13 @@ const isUnseenByLsLint = (name: string): boolean => name.startsWith('.') || !nam
 function unseenOf(units: readonly string[], swept: ReadonlySet<string>): Failed[] {
     return [...swept].flatMap((path): Failed[] => {
         const prefix =
+            // Stryker disable next-line StringLiteral: the root unit, '', prefixes every path
             units
                 .filter((unit) => path.startsWith(unit))
                 .toSorted((left, right) => right.length - left.length)[0] ?? '';
         const own = path.slice(prefix.length);
         const closed =
-            CLOSED_PLACES.some((place) => place.test(own)) &&
-            isUnseenByLsLint(own.split('/').at(-1) ?? '');
+            CLOSED_PLACES.some((place) => place.test(own)) && isUnseenByLsLint(basename(own));
 
         return closed ? [{ isDirectory: false, path }] : [];
     });
@@ -160,8 +158,8 @@ export function listed(directory: string): Dirent[] | null {
     }
 }
 
-const isInside = (path: string, directories: readonly string[]): boolean =>
-    directories.some((directory) => path.startsWith(`${directory}/`));
+const isInside = (path: string, folders: readonly string[]): boolean =>
+    folders.some((folder) => path.startsWith(`${folder}/`));
 
 export function lsLintFindings(
     root: string,
@@ -174,13 +172,14 @@ export function lsLintFindings(
 ): Finding[] {
     const held = new Set(swept);
     const failed = [...failedOf(root, failures, held), ...unseenOf(units, held)];
-    const directories = failed.filter(({ isDirectory }) => isDirectory).map(({ path }) => path);
+    const paths = failed.map(({ path }) => path);
     const reported = new Map<string, Finding>();
+    // Stryker disable next-line EqualityOperator: two failures of one path name the same finding, whichever comes first
     for (const one of failed.toSorted((left, right) => (left.path < right.path ? -1 : 1))) {
-        const finding = isInside(one.path, directories)
+        const finding = isInside(one.path, paths)
             ? undefined
             : placementFindingOf({ tree, units }, one);
-        if (finding !== undefined && !reported.has(finding.path)) {
+        if (finding !== undefined) {
             reported.set(finding.path, finding);
         }
     }
@@ -195,7 +194,7 @@ function failuresOf(parsed: unknown): Failures {
             Object.fromEntries(
                 Object.entries(objectOf(rules)).map(([key, failed]) => [
                     key,
-                    Array.isArray(failed) ? failed.map(String) : [],
+                    [failed].flat().map(String),
                 ]),
             ),
         ]),
@@ -207,6 +206,7 @@ export function runLsLint(
     root: string,
     config: string,
 ): { failures: Failures; problem: null | string } {
+    // Stryker disable next-line StringLiteral: the prefix only names the scratch folder for whoever finds it left behind
     const scratch = mkdtempSync(join(tmpdir(), 'typescript-ls-lint-'));
     try {
         const path = join(scratch, 'ls-lint.yml');
@@ -236,6 +236,6 @@ export function runLsLint(
             };
         }
     } finally {
-        rmSync(scratch, { force: true, recursive: true });
+        rmSync(scratch, { recursive: true });
     }
 }
