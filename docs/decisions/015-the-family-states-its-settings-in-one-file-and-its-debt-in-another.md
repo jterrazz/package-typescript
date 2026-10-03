@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-09-23
+**Amended by:** [ADR-018](018-a-project-declares-what-it-is-and-every-config-follows.md) — the ledgers' location: they live under `.jterrazz/`.
 
 Written 2026-09-27 from the working page of the 17 release, where the owner
 took this decision on 2026-09-23; it was folded here when that page was
