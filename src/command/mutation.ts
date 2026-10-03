@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import process from 'node:process';
@@ -6,7 +6,9 @@ import process from 'node:process';
 import { readSettings } from '../../lint/index.rules.js';
 import { refusal } from '../../lint/kit/catalogue/lesson.js';
 import { readCommandLine } from '../../lint/kit/checker/command-line.js';
-import { objectOf } from '../../lint/kit/project/json.js';
+import { objectOf, parsedObject } from '../../lint/kit/project/json.js';
+import type { Resolution } from '../../lint/kit/project/preset.js';
+import { workspaceMembers } from '../../lint/kit/project/workspace-members.js';
 import { projectBinary } from './check/setup.js';
 import { handOver } from './processes.js';
 import { badge, print } from './terminal.js';
@@ -14,10 +16,9 @@ import { projectRoot } from './toolchain.js';
 
 const OUT = '.artifacts/stryker';
 
-const MUTATED = ['src/**/*.ts', 'lint/**/*.ts'];
-
 const NEVER_MUTATED = [
     '**/*.test.ts',
+    '**/*.test.tsx',
     '**/*.test-d.ts',
     '**/*.fixtures.ts',
     '**/_fixtures/**',
@@ -59,17 +60,62 @@ afterAll(() => {
 });
 `;
 
-type Settings = { exclude: string[]; ignore: string[] };
+type Settings = { exclude: string[]; ignore: string[]; mutated: string[] };
 
-const settingsOf = (section: unknown): Settings => {
-    const { mutation: written } = objectOf(section);
-    const declared = objectOf(written);
+const extensionGlob = (extensions: readonly string[]): string =>
+    extensions.length === 1 ? (extensions[0] ?? 'ts') : `{${extensions.join(',')}}`;
+
+function sourceGlobsOf(unit: string, { resolved }: Resolution): string[] {
+    const prefix = unit === '.' ? '' : `${unit}/`;
+
+    return resolved.presets.flatMap(({ sources }) =>
+        sources === undefined
+            ? []
+            : sources.roots.map(
+                  (root) => `${prefix}${root}/**/*.${extensionGlob(sources.extensions)}`,
+              ),
+    );
+}
+
+async function settingsOf(project: string): Promise<Settings> {
+    const root = await readSettings(project);
+    const members = await Promise.all(
+        workspaceMembers(project).map(
+            async (member) =>
+                [member, await readSettings(join(project, member))] satisfies [string, Resolution],
+        ),
+    );
+    const declared = objectOf(objectOf(root.resolved.sections.typescript).mutation);
+    const derived = [['.', root] satisfies [string, Resolution], ...members].flatMap(
+        ([unit, resolution]) => sourceGlobsOf(unit, resolution),
+    );
 
     return {
         exclude: Object.keys(objectOf(declared.exclude)),
         ignore: Object.keys(objectOf(declared.ignore)),
+        mutated: [...new Set([...derived, ...Object.keys(objectOf(declared.mutate))])],
     };
-};
+}
+
+const oneGlob = (globs: readonly string[]): string =>
+    globs.length === 1 ? (globs[0] ?? '') : `{${globs.join(',')}}`;
+
+const typeCheckedGlob = (mutated: readonly string[]): string =>
+    oneGlob(
+        mutated.map((glob) =>
+            glob.replace(/\*\.(?<extension>[^/]+)$/u, '!(*.test-d).$<extension>'),
+        ),
+    );
+
+function buildCommandOf(project: string): object {
+    try {
+        const { scripts } = parsedObject(readFileSync(join(project, 'package.json'), 'utf8'));
+
+        return objectOf(scripts).build === undefined ? {} : { buildCommand: 'npm run build' };
+    } catch {
+        return {};
+    }
+}
 
 function vitestConfig(settings: Settings, specs: boolean): string {
     const kept = specs
@@ -102,13 +148,19 @@ export default {
 `;
 }
 
-function strykerConfig(settings: Settings, specs: boolean): object {
+function strykerConfig(
+    settings: Settings,
+    { project, specs }: { project: string; specs: boolean },
+): object {
     const shared = {
         $schema: '../../node_modules/@stryker-mutator/core/schema/stryker-schema.json',
         checkers: [],
-        disableTypeChecks: '{src,lint}/**/!(*.test-d).ts',
+        disableTypeChecks: typeCheckedGlob(settings.mutated),
         inPlace: true,
-        mutate: [...MUTATED, ...[...NEVER_MUTATED, ...settings.ignore].map((glob) => `!${glob}`)],
+        mutate: [
+            ...settings.mutated,
+            ...[...NEVER_MUTATED, ...settings.ignore].map((glob) => `!${glob}`),
+        ],
         plugins: [createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner')],
         tempDirName: `${OUT}/tmp`,
         testRunner: 'vitest',
@@ -118,7 +170,7 @@ function strykerConfig(settings: Settings, specs: boolean): object {
     return specs
         ? {
               ...shared,
-              buildCommand: 'npm run build',
+              ...buildCommandOf(project),
               concurrency: 6,
               coverageAnalysis: 'off',
               incremental: false,
@@ -158,13 +210,15 @@ export async function mutation(args: readonly string[]): Promise<number> {
 
         return 1;
     }
-    const { resolved } = await readSettings(project);
-    const settings = settingsOf(resolved.sections.typescript);
+    const settings = await settingsOf(project);
     mkdirSync(OUT, { recursive: true });
     writeFileSync(join(OUT, 'vitest.config.mjs'), vitestConfig(settings, specs));
     writeFileSync(join(OUT, 'active-mutant.mjs'), ACTIVE_MUTANT);
     const config = join(OUT, specs ? 'stryker.specs.config.json' : 'stryker.config.json');
-    writeFileSync(config, `${JSON.stringify(strykerConfig(settings, specs), null, 4)}\n`);
+    writeFileSync(
+        config,
+        `${JSON.stringify(strykerConfig(settings, { project, specs }), null, 4)}\n`,
+    );
     print(`${badge('TYPESCRIPT')} Measuring the suite against mutants of the sources...\n\n`);
 
     return await handOver(

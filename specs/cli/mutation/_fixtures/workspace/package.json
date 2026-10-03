@@ -1,0 +1,5 @@
+{
+    "name": "mutation-workspace",
+    "private": true,
+    "workspaces": ["apps/*"]
+}

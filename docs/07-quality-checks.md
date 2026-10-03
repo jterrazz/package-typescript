@@ -784,13 +784,13 @@ Which scanner runs is decided inside the gate rather than by the command, becaus
 ## Mutation
 
 ```bash
-typescript mutation                                     # the module tests, against mutants of src/ and lint/
+typescript mutation                                     # the module tests, against mutants of the declared sources
 typescript mutation --specs --mutate src/a.ts:10-20     # the whole suite, against mutants of the lines named
 ```
 
-Not a pass and never part of `check`: [Stryker](https://stryker-mutator.io) rewrites the sources one mutant at a time and asks whether a test fails, which says what the coverage number cannot — whether a line the tests run is a line they judge. The command derives Stryker's config and the Vitest config it runs into `.artifacts/stryker/`, and a project keeps neither: Stryker and its Vitest runner are this package's dependencies. The default run mutates `src/` and `lint/` against the `unit` project, incrementally; `--specs` runs every project but the browser ones against a build of each mutant, which is slow enough that the run names the ranges it measures, and is refused without them.
+Not a pass and never part of `check`: [Stryker](https://stryker-mutator.io) rewrites the sources one mutant at a time and asks whether a test fails, which says what the coverage number cannot — whether a line the tests run is a line they judge. The command derives Stryker's config and the Vitest config it runs into `.artifacts/stryker/`, and a project keeps neither: Stryker and its Vitest runner are this package's dependencies. The default run mutates the sources the declaration names against the `unit` project, incrementally: `src/` at the root and in every workspace member, the routes a framework reads its code from (`app/` on next and expo, `pages/` on next), and `.tsx` beside `.ts` on react, next and expo. `--specs` runs every project but the browser ones against a build of each mutant — the project's own `build` script, where it keeps one — which is slow enough that the run names the ranges it measures, and is refused without them.
 
-What a run leaves out is declared under `typescript.mutation`, each path mapped to its reason: `exclude` the tests that read the sources as text, and see the instrumented ones, and `ignore` the sources no test of the package can judge.
+What a run measures beyond that, and what it leaves out, is declared under `typescript.mutation`, each glob mapped to its reason: `mutate` the sources the platform does not name — a package's `lint/` rules —, `exclude` the tests that read the sources as text, and see the instrumented ones, and `ignore` the sources no test of the package can judge.
 
 The run is in place, since the checks a test runs read the git tree and a sandbox under the ignored `.artifacts/` is invisible to them. One file therefore lands at the root: Stryker's Vitest runner writes `stryker-setup-<worker>.js` into the working directory of each test runner — the project root, in place — and offers no option to move it. It removes the file when the run ends; a run that stops early leaves it behind, so a repository running mutation ignores `stryker-setup-*.js`, the one regenerable name its root may hold.
 

@@ -48,8 +48,8 @@ export type TypescriptSettings = {
         ignoreBinaries?: Reasoned;
         ignoreDependencies?: Reasoned;
     };
-    /** What `typescript mutation` leaves out: tests that read the sources as text, sources no test can judge. */
-    mutation?: { exclude?: Reasoned; ignore?: Reasoned };
+    /** What `typescript mutation` measures beyond the platform's sources, and what it leaves out: tests that read the sources as text, sources no test can judge. */
+    mutation?: { exclude?: Reasoned; ignore?: Reasoned; mutate?: Reasoned };
     names?: readonly NamesRule[];
     /** The rules set apart from the platform's profile, each with its reason. */
     oxlint?: {

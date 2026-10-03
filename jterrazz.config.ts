@@ -23,6 +23,10 @@ export default defineConfig({
     },
     typescript: {
         mutation: {
+            mutate: {
+                'lint/**/*.ts':
+                    'the lint rules the package ships, beside the src/ every node project measures',
+            },
             exclude: {
                 'lint/self/corpus/audience.test.ts':
                     'it reads the sources as text, and sees the instrumented ones',

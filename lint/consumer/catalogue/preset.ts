@@ -1,6 +1,6 @@
 import type { Declaration, Platform } from '../../kit/project/declaration.js';
 import type { EditorFile } from '../../kit/project/editor-files.js';
-import type { ArchitectureRule, BasePresets, Preset } from '../../kit/project/preset.js';
+import type { ArchitectureRule, BasePresets, Preset, Sources } from '../../kit/project/preset.js';
 
 const READ = 'docs/01-architecture.md#the-judging-layer';
 
@@ -70,9 +70,17 @@ export const SPINE: readonly string[] = Object.freeze(['docs', 'lint', 'skills',
 
 export const MEMBER_ROOTS: readonly string[] = Object.freeze(['apps', 'packages']);
 
-const PUBLIC = 'Next.js, Astro and Vite — static files served verbatim at the site root';
+type PlatformRoot = { code: boolean; reason: string };
 
-const APP = 'Next.js App Router and Expo Router — routes are read off this folder';
+const PUBLIC: PlatformRoot = {
+    code: false,
+    reason: 'Next.js, Astro and Vite — static files served verbatim at the site root',
+};
+
+const APP: PlatformRoot = {
+    code: true,
+    reason: 'Next.js App Router and Expo Router — routes are read off this folder',
+};
 
 export const TOOL_ROOTS: Readonly<Record<string, string>> = Object.freeze({
     bin: "npm — the files a package's `bin` entry links as commands",
@@ -80,23 +88,37 @@ export const TOOL_ROOTS: Readonly<Record<string, string>> = Object.freeze({
     prisma: 'Prisma — the schema and migrations its CLI reads by default',
 });
 
-export const PLATFORM_ROOTS: Readonly<Record<Platform, Readonly<Record<string, string>>>> =
+export const PLATFORM_ROOTS: Readonly<Record<Platform, Readonly<Record<string, PlatformRoot>>>> =
     Object.freeze({
         astro: { public: PUBLIC },
         bun: {},
         expo: {
-            android: 'React Native and Expo — the native Android project',
+            android: { code: false, reason: 'React Native and Expo — the native Android project' },
             app: APP,
-            ios: 'React Native and Expo — the native iOS project',
+            ios: { code: false, reason: 'React Native and Expo — the native iOS project' },
         },
         next: {
             app: APP,
-            pages: 'Next.js Pages Router — routes are read off this folder',
+            pages: { code: true, reason: 'Next.js Pages Router — routes are read off this folder' },
             public: PUBLIC,
         },
         node: {},
         react: { public: PUBLIC },
     });
+
+const JSX_PLATFORMS: ReadonlySet<Platform> = new Set(['expo', 'next', 'react']);
+
+function sourcesOf(platform: Platform): Sources {
+    return {
+        extensions: JSX_PLATFORMS.has(platform) ? ['ts', 'tsx'] : ['ts'],
+        roots: [
+            'src',
+            ...Object.entries(PLATFORM_ROOTS[platform])
+                .filter(([, root]) => root.code)
+                .map(([name]) => name),
+        ],
+    };
+}
 
 export const WORDS = Object.freeze({
     constructs: Object.freeze(['constants', 'helper', 'interfaces', 'type', 'types', 'util']),
@@ -146,7 +168,12 @@ export function typescriptPreset(declaration: Declaration | null): Preset {
     const platformRoots =
         declaration?.platform === undefined || declaration.platform === null
             ? {}
-            : PLATFORM_ROOTS[declaration.platform];
+            : Object.fromEntries(
+                  Object.entries(PLATFORM_ROOTS[declaration.platform]).map(([name, root]) => [
+                      name,
+                      root.reason,
+                  ]),
+              );
 
     return {
         files: editorFilesOf(declaration),
@@ -162,6 +189,7 @@ export function typescriptPreset(declaration: Declaration | null): Preset {
             words: WORDS,
         },
         baseline: [BASELINE_SECTION],
+        sources: sourcesOf(declaration?.platform ?? 'node'),
     };
 }
 
