@@ -49,11 +49,8 @@ function toolsLine(behind: readonly ToolVersion[]): string {
 const sum = (recorded: Counts): number =>
     Object.values(recorded).reduce((total, count) => total + count, 0);
 
-// invariant: a file the Oxlint pass refuses as `baseline-unreadable` holds no count any row may claim; a floor is no debt, so its measures are counted and never summed.
-function baselineReader(
-    root: string,
-    floors: ReadonlySet<string>,
-): {
+// invariant: a file the Oxlint pass refuses as `baseline-unreadable` holds no count any row may claim.
+function baselineReader(root: string): {
     heldOf: (section: string) => number | string;
     others: string[];
     totalOf: (section: string) => null | number | string;
@@ -65,7 +62,7 @@ function baselineReader(
             return problem === null ? null : 'unreadable';
         }
 
-        return floors.has(section) ? Object.keys(recorded).length : sum(recorded);
+        return sum(recorded);
     };
 
     return {
@@ -75,7 +72,7 @@ function baselineReader(
                 return typeof total === 'string' ? total : 'nothing held';
             }
 
-            return floors.has(section) ? `a floor of ${String(total)} measure(s)` : total;
+            return total;
         },
         others: Object.keys(sections ?? {})
             .filter((section) => section !== SECTION)
@@ -103,20 +100,18 @@ function rowsOf(
     {
         behind,
         declaration,
-        floors,
         off,
         optOuts,
         suppressions,
     }: {
         behind: readonly ToolVersion[];
         declaration: null | ProjectIdentity;
-        floors: ReadonlySet<string>;
         off: readonly string[];
         optOuts: readonly OptOut[];
         suppressions: number;
     },
 ): string[] {
-    const { heldOf, others } = baselineReader(root, floors);
+    const { heldOf, others } = baselineReader(root);
 
     return [
         ...rowsAligned([
@@ -146,28 +141,20 @@ export const drift: Pass = Object.freeze({
         const off = offOf(objectOf(resolved.sections.typescript).oxlint);
         const suppressions = orRefused(() => countSuppressions(root, context.ignorePatterns));
         const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
-        const floors = new Set(resolved.floors);
-        const { others, totalOf } = baselineReader(root, floors);
-        const totals = (kept: (section: string) => boolean): Record<string, unknown> =>
-            Object.fromEntries(
-                others
-                    .filter((section) => kept(section))
-                    .map((section) => [section, totalOf(section)]),
-            );
+        const { others, totalOf } = baselineReader(root);
 
         return {
             json: {
                 baseline: totalOf(SECTION),
                 declaration,
-                floors: totals((section) => floors.has(section)),
                 optOuts,
                 oxlintSuppressions: suppressedCount(root),
                 rulesOff: off,
                 suppressions,
-                sections: totals((section) => !floors.has(section)),
+                sections: Object.fromEntries(others.map((section) => [section, totalOf(section)])),
                 tools: behind,
             },
-            lines: rowsOf(root, { behind, declaration, floors, off, optOuts, suppressions }),
+            lines: rowsOf(root, { behind, declaration, off, optOuts, suppressions }),
         };
     },
 });

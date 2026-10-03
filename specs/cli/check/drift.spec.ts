@@ -107,7 +107,6 @@ describe('drift', () => {
         expect(JSON.parse(reading)).toStrictEqual({
             baseline: null,
             declaration: null,
-            floors: {},
             optOuts: [],
             oxlintSuppressions: null,
             rulesOff: [],

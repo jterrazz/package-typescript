@@ -25,7 +25,7 @@ async function heldSummaryOf(): Promise<null | RegExp> {
             .flatMap((preset) => preset.baseline ?? []),
     );
     const labels = resolved.baseline
-        .filter((section) => !toolchain.has(section) && !resolved.floors.includes(section))
+        .filter((section) => !toolchain.has(section))
         .map((section) => escaped(labelOf(section)));
 
     return labels.length === 0

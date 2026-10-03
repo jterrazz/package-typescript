@@ -43,7 +43,6 @@ runs:
           {
             "baseline": null,
             "declaration": null,
-            "floors": {},
             "optOuts": [],
             "oxlintSuppressions": null,
             "rulesOff": [],

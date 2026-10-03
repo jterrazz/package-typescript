@@ -72,7 +72,6 @@ A preset is an object carrying its `name` (the section of `jterrazz.config.ts` i
 | `names`       | its rules of where a name sits, in ls-lint's ([a name rule](07-quality-checks.md#a-name-rule-a-project-declares))                                                        |
 | `files`       | the editor files it derives, each with its exact content and whether it sits at the repository root or in every unit                                                     |
 | `baseline`    | the sections of `.jterrazz/baseline.json` it writes and judges                                                                                                           |
-| `floors`      | which of those sections hold a floor, which only rises, rather than a debt                                                                                               |
 | `checker`     | its own checks: the `module` whose default export is a kit `Contribution`, and the `label` they print under ([A preset's checks](07-quality-checks.md#a-presets-checks)) |
 | `presets`     | the presets it includes                                                                                                                                                  |
 

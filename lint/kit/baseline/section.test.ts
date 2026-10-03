@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { withSection } from './baseline-file.js';
-import { judgeExact, judgeFloor, raisedFloor, tightened } from './section.js';
+import { judgeExact, tightened } from './section.js';
 import type { Ratchet } from './section.js';
 
 const linterOwns = (rule: string): boolean => !rule.startsWith('names/');
@@ -22,6 +22,48 @@ describe('section', () => {
                     fix: "run 'typescript fix', which re-records the fall",
                     found: '`eslint/no-debugger` is at 1, below its baseline of 2',
                     why: 'each count is held exactly, so a debt that fell is recorded the day it falls and cannot grow back unseen',
+                },
+            },
+        ]);
+    });
+
+    test('names each break in key order: a new rule, a rise, a fall, and an entry at zero', () => {
+        // Given - counts listed out of order against a section that holds three of them
+        const counts = { 'eslint/eqeqeq': 2, 'eslint/no-var': 1, 'eslint/curly': 5 };
+        const baseline = { 'eslint/curly': 3, 'eslint/no-debugger': 4, 'eslint/no-var': 2 };
+
+        // Then - every break, in the order of its key, each with the gesture that answers it
+        expect(judgeExact(counts, baseline, RATCHET)).toStrictEqual([
+            {
+                rule: 'eslint/curly',
+                teaching: {
+                    fix: "fix the findings, or run 'typescript baseline' to record where the project stands",
+                    found: '`eslint/curly` is at 5, above its baseline of 3',
+                    why: 'each count is held exactly, and a count above its entry is a regression',
+                },
+            },
+            {
+                rule: 'eslint/eqeqeq',
+                teaching: {
+                    fix: "fix the findings, or run 'typescript baseline' to record where the project stands",
+                    found: '`eslint/eqeqeq` has 2 finding(s) and no entry records them',
+                    why: 'the section holds the debt the project recorded, and a finding no entry holds is new debt',
+                },
+            },
+            {
+                rule: 'eslint/no-var',
+                teaching: {
+                    fix: "run 'typescript fix', which re-records the fall",
+                    found: '`eslint/no-var` is at 1, below its baseline of 2',
+                    why: 'each count is held exactly, so a debt that fell is recorded the day it falls and cannot grow back unseen',
+                },
+            },
+            {
+                rule: 'eslint/no-debugger',
+                teaching: {
+                    fix: "run 'typescript fix', which deletes the entry",
+                    found: '`eslint/no-debugger` is at zero, and its entry is still recorded',
+                    why: 'an entry with nothing left to hold would let the debt grow back to its old count unseen',
                 },
             },
         ]);
@@ -81,18 +123,8 @@ describe('section', () => {
         expect(withSection(text, 'typescript', { 'names/b': 3 })).toBe(
             '{\n    "test": { "jterrazz-check/a": 2 },\n    "typescript": {\n        "names/b": 3\n    }\n}\n',
         );
-        expect(withSection(text, 'test.coverage', { 'all/lines': 70 })).toBe(
-            '{\n    "test.coverage": {\n        "all/lines": 70\n    },\n    "test": { "jterrazz-check/a": 2 },\n    "typescript": {\n        "names/b": 1\n    }\n}\n',
+        expect(withSection(text, 'test.routes', { 'GET /a': 1 })).toBe(
+            '{\n    "test.routes": {\n        "GET /a": 1\n    },\n    "test": { "jterrazz-check/a": 2 },\n    "typescript": {\n        "names/b": 1\n    }\n}\n',
         );
-    });
-
-    test('holds a floor one way: a fall breaks it, a rise is recorded', () => {
-        // Given - one measure that fell under its floor and one that rose above it
-        const floor = { 'all/branches': 70, 'all/lines': 76.95 };
-        const now = { 'all/branches': 69.5, 'all/lines': 80 };
-
-        // Then - the fall is refused, and recording keeps the higher of each
-        expect(judgeFloor(now, floor).map(({ rule }) => rule)).toStrictEqual(['all/branches']);
-        expect(raisedFloor(now, floor)).toStrictEqual({ 'all/branches': 70, 'all/lines': 80 });
     });
 });

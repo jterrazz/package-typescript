@@ -7,6 +7,7 @@ export type Broken = { rule: string; teaching: Unread };
 export type Ratchet = { lower: string; record: string };
 
 const byKey = ([left]: [string, number], [right]: [string, number]): number =>
+    // Stryker disable next-line EqualityOperator: two entries never share a key, so `<=` orders them as `<` does
     left < right ? -1 : 1;
 
 // invariant: the section is exact: a count above OR below its entry fails, and only the recording gesture raises one.
@@ -101,28 +102,4 @@ export function reRecord(
         );
 
     return { lines, section: next };
-}
-
-// invariant: a floor only rises: a measure below its recorded floor fails, and recording keeps the higher of the two.
-export function judgeFloor(now: Counts, floor: Counts): Broken[] {
-    return Object.entries(floor)
-        .toSorted(byKey)
-        .filter(([key, least]) => (now[key] ?? 0) < least)
-        .map(([key, least]) => ({
-            teaching: {
-                fix: 'raise it back, or lower the floor by hand in a commit that says why',
-                found: `\`${key}\` fell to ${(now[key] ?? 0).toFixed(2)}, below its floor of ${least.toFixed(2)}`,
-                why: 'a floor only rises, so what the project reached is never lost unseen',
-            },
-            rule: key,
-        }));
-}
-
-export function raisedFloor(now: Counts, floor: Counts): Counts {
-    const raised: Counts = { ...floor };
-    for (const [key, value] of Object.entries(now)) {
-        raised[key] = Math.max(floor[key] ?? 0, value);
-    }
-
-    return raised;
 }

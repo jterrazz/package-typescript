@@ -60,7 +60,7 @@ export {
     writeSection,
 } from './kit/baseline/baseline-file.js';
 export type { Counts, ReadBaseline, Sections } from './kit/baseline/baseline-file.js';
-export { judgeExact, judgeFloor, raisedFloor, tightened } from './kit/baseline/section.js';
+export { judgeExact, tightened } from './kit/baseline/section.js';
 export type { Broken, Ratchet } from './kit/baseline/section.js';
 export { readCommandLine } from './kit/checker/command-line.js';
 export type { CommandLine } from './kit/checker/command-line.js';

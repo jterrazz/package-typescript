@@ -31,7 +31,6 @@ runs:
           {
             "baseline": "unreadable",
             "declaration": null,
-            "floors": {},
             "optOuts": [],
             "oxlintSuppressions": null,
             "rulesOff": [],

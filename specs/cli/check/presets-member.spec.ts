@@ -30,14 +30,14 @@ function contribution(name: string, exit: 0 | 1): string {
 `;
 }
 
-function declare(dir: string, name: string, exit: 0 | 1 = 1, held = "baseline: ['stub'],"): void {
+function declare(dir: string, name: string, exit: 0 | 1 = 1): void {
     writeFileSync(join(dir, 'conventions.mjs'), contribution(name, exit));
     writeFileSync(
         join(dir, 'jterrazz.config.ts'),
         `export default {
     presets: [
         {
-            ${held}
+            baseline: ['stub'],
             checker: { label: 'Stub Conventions', module: new URL('./conventions.mjs', import.meta.url).pathname },
             name: 'stub',
             package: 'stub',
@@ -100,11 +100,9 @@ const WRITING = `export default {
 `;
 
 /** The workspace fixture, its root declaring the stub preset; `conventions` replaces the stub's checks. */
-function declared(
-    options: { conventions?: string; exit?: 0 | 1; held?: string } = {},
-): PrepareStep {
+function declared(options: { conventions?: string; exit?: 0 | 1 } = {}): PrepareStep {
     return (workdir) => {
-        declare(workdir, 'root', options.exit ?? 1, options.held);
+        declare(workdir, 'root', options.exit ?? 1);
         if (options.conventions !== undefined) {
             writeFileSync(join(workdir, 'conventions.mjs'), options.conventions);
         }
@@ -142,26 +140,6 @@ describe('presets-member', () => {
 
             .jterrazz/baseline.json › typescript written — 0 finding(s) across 0 rule(s)
             the stub recorded its section
-        `);
-    });
-
-    test('records nothing for a preset whose sections are all floors', async () => {
-        // Given - a preset whose one section is a floor, which its own measuring gesture records
-        // When - the baseline is recorded
-        const result = await passes('presets')
-            .prepare(
-                declared({
-                    conventions: WRITING,
-                    held: "baseline: ['stub.coverage'], floors: ['stub.coverage'],",
-                }),
-            )
-            .exec('baseline');
-
-        // Then - the preset is never asked to record
-        expect(result.stdout).toMatch(`
-             TYPESCRIPT  Recording the baseline...
-
-            .jterrazz/baseline.json › typescript written — 0 finding(s) across 0 rule(s)
         `);
     });
 

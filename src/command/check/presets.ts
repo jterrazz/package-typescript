@@ -21,10 +21,9 @@ export async function presetCheckersOf(unit: string): Promise<PresetChecker[]> {
 
 export async function debtHoldingCheckersOf(unit: string): Promise<PresetChecker[]> {
     const { resolved } = await readSettings(unit);
-    const floors = new Set(resolved.floors);
 
     return resolved.presets.flatMap(({ baseline = [], checker }) =>
-        checker === undefined || baseline.every((section) => floors.has(section)) ? [] : [checker],
+        checker === undefined || baseline.length === 0 ? [] : [checker],
     );
 }
 

@@ -39,7 +39,6 @@ export type Preset = {
     baseline?: readonly string[];
     checker?: PresetChecker;
     files?: Readonly<Record<string, EditorFile>>;
-    floors?: readonly string[];
     lawSettings?: readonly string[];
     layers?: readonly ArchitectureRule[];
     name: string;
@@ -60,7 +59,6 @@ export type BasePresets = (declaration: null | ProjectIdentity) => readonly Pres
 export type Resolved = {
     baseline: string[];
     declaration: null | ProjectIdentity;
-    floors: string[];
     laws: PresetLaw[];
     layers: unknown[];
     names: unknown[];
@@ -109,7 +107,6 @@ const EMPTY_DECLARATION = Object.freeze({});
 const EMPTY: Resolved = {
     baseline: [],
     declaration: null,
-    floors: [],
     laws: [],
     layers: [],
     names: [],
@@ -276,7 +273,6 @@ export function resolveConfig(declaredSettings: object, baseOf: BasePresets): Re
         resolved: {
             baseline: presets.flatMap((preset) => preset.baseline ?? []),
             declaration,
-            floors: presets.flatMap((preset) => preset.floors ?? []),
             laws,
             layers: [
                 ...lawsOf(presets, opted.optOuts, (preset) => preset.layers),
