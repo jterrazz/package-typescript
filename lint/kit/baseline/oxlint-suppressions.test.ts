@@ -46,7 +46,7 @@ describe('oxlint-suppressions', () => {
                 writeFileSync(join(root, OXLINT_SUPPRESSIONS), ledger ?? '{"b.ts":{}}');
                 process.emit('SIGINT', 'SIGINT');
 
-                return await Promise.resolve(existsSync(join(root, OXLINT_SUPPRESSIONS)));
+                return existsSync(join(root, OXLINT_SUPPRESSIONS));
             });
 
             // Then - the signal took the file back before the process ends, the ledger is what the run left, and the signal is raised again

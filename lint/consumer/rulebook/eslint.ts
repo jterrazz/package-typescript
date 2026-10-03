@@ -263,7 +263,13 @@ export default fragment({
             by: 'typescript/prefer-promise-reject-errors',
             kind: 'covered',
         }),
-        'require-await': off({ by: 'typescript/require-await', kind: 'covered' }),
+        'require-await': off(
+            {
+                by: 'rule review, 2026-10-03 — the finding `typescript/require-await` makes, off for the evidence stated there',
+                kind: 'evidence',
+            },
+            RULE_REVIEW_SINCE,
+        ),
         'sort-imports': off({ by: 'oxfmt sortImports', kind: 'covered' }),
         'sort-keys': off({
             by: 'docs/08-lint-presets.md — an object orders by meaning, and generic inference is order-sensitive',

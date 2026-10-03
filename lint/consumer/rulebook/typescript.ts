@@ -129,7 +129,6 @@ export default fragment({
                 'prefer-string-starts-ends-with',
                 'related-getter-setter-pairs',
                 'require-array-sort-compare',
-                'require-await',
                 'restrict-plus-operands',
                 'restrict-template-expressions',
                 'strict-boolean-expressions',
@@ -149,6 +148,13 @@ export default fragment({
                 'ts-nocheck': true,
             },
         ]),
+        'typescript/require-await': off(
+            {
+                by: "rule review, 2026-10-03 — 11 reports held and 92 `await Promise.resolve()` lines written only to quiet it on package-test and package-typescript: `promise-function-async` makes every promise-returning function async, so a synchronous implementation of an async port has nothing to await; a forgotten await is `no-floating-promises`'s and `await-thenable`'s",
+                kind: 'evidence',
+            },
+            '11.0.0',
+        ),
         'typescript/consistent-type-definitions': off(
             {
                 by: 'rule review, 2026-10-03 — 0 reports held and 32 suppressions on package-test and package-typescript, every one a place the language needs an interface (a `this`-typed member, a module augmentation, a declaration merge); one spelling prevents no defect',

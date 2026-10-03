@@ -510,7 +510,7 @@ typescript/prefer-ts-expect-error
 typescript/promise-function-async
 typescript/related-getter-setter-pairs
 typescript/require-array-sort-compare
-typescript/require-await
+- typescript/require-await
 typescript/restrict-plus-operands
 typescript/restrict-template-expressions
 typescript/return-await
