@@ -3,7 +3,9 @@ import type { Report } from './docs.decisions.js';
 
 export type Chapter = { name: string; number: number; path: string };
 
-const SPINE = ['01-architecture.md', '02-developing.md', '03-testing.md', '04-operating.md'];
+const OPERATING = '04-operating.md';
+
+const SPINE = ['01-architecture.md', '02-developing.md', '03-testing.md', OPERATING];
 
 // invariant: 04 is required only by the presence test.
 const REQUIRED_SPINE = SPINE.slice(0, 3);
@@ -36,22 +38,21 @@ function twoDigit(value: number): string {
 
 function auditOperating(
     report: Report,
-    { chapters, ships }: { chapters: readonly Chapter[]; ships: DocsTree['ships'] | undefined },
+    { chapters, ships }: { chapters: readonly Chapter[]; ships: DocsTree['ships'] },
 ): void {
-    const operating = SPINE[3];
-    const reason = SHIPPING_REASONS.find(([fact]) => ships?.[fact] === true)?.[1];
-    if (reason !== undefined && !chapters.some((chapter) => chapter.name === operating)) {
+    const reason = SHIPPING_REASONS.find(([fact]) => ships[fact])?.[1];
+    if (reason !== undefined && !chapters.some((chapter) => chapter.name === OPERATING)) {
         report(
             'docs/operating-chapter-present-when-shipping',
-            `docs/${operating ?? ''}`,
-            `${operating ?? ''} is missing — this repository ships ${reason}`,
+            `docs/${OPERATING}`,
+            `${OPERATING} is missing — this repository ships ${reason}`,
         );
     }
 }
 
 export function auditChapters(
     report: Report,
-    { chapters, ships }: { chapters: readonly Chapter[]; ships: DocsTree['ships'] | undefined },
+    { chapters, ships }: { chapters: readonly Chapter[]; ships: DocsTree['ships'] },
 ): void {
     for (const chapter of chapters) {
         if (!CHAPTER_NAME.test(chapter.name)) {
@@ -97,7 +98,7 @@ function auditChapterNumbering(report: Report, chapters: readonly Chapter[]): vo
     const expected = (index: number): number =>
         !hasOperating && index + 1 >= 4 ? index + 2 : index + 1;
     const contiguous = numbers.every((number, index) => number === expected(index));
-    if (numbers.length === 0 || contiguous) {
+    if (contiguous) {
         return;
     }
 

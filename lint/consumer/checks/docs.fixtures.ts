@@ -29,6 +29,12 @@ export function messageOf(tree: DocsTree, rule: string) {
     return auditDocs(tree).find((violation) => violation.rule === rule)?.message;
 }
 
+export function violationOf(tree: DocsTree, rule: string) {
+    const found = auditDocs(tree).find((violation) => violation.rule === rule);
+
+    return found === undefined ? undefined : { message: found.message, path: found.path };
+}
+
 export function withDecisions(overrides: Record<string, unknown> = {}) {
     return manual({
         files: [

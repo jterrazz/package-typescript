@@ -10,6 +10,21 @@ describe('docs', () => {
         expect(auditDocs(manual())).toStrictEqual([]);
     });
 
+    test('names a repository with no docs/, and nothing else', () => {
+        // Given - no manual at all
+        const tree = manual({ files: [] });
+
+        // Then - one violation; every other rule would restate the absence
+        expect(auditDocs(tree)).toStrictEqual([
+            {
+                message:
+                    'docs/ is missing — every repository carries its own manual, starting at docs/README.md',
+                path: 'docs/',
+                rule: 'docs/manual-present',
+            },
+        ]);
+    });
+
     test('names a docs/ with no map', () => {
         // Given - chapters with no README.md to route into them
         const tree = manual({
@@ -23,10 +38,67 @@ describe('docs', () => {
         });
 
         // Then - the map is the one file an outside corpus points at
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/map-present']);
-        expect(messageOf(tree, 'docs/map-present')).toBe(
-            'docs/README.md is missing — the map is the one file an outside corpus points at',
-        );
+        expect(auditDocs(tree)).toStrictEqual([
+            {
+                message:
+                    'docs/README.md is missing — the map is the one file an outside corpus points at',
+                path: 'docs/README.md',
+                rule: 'docs/map-present',
+            },
+        ]);
+    });
+
+    test('names a map row with no chapter, and a chapter with no row', () => {
+        // Given - a map routing to 04 while 03 has no row
+        const tree = manual({
+            links: {
+                'docs/README.md': ['01-architecture.md', '02-developing.md', '04-operating.md'],
+            },
+        });
+
+        // Then - each side of the disagreement is named
+        expect(auditDocs(tree)).toStrictEqual([
+            {
+                message: 'docs/README.md and the chapters disagree: 04-operating.md has no file',
+                path: 'docs/README.md',
+                rule: 'docs/map-matches-chapters',
+            },
+            {
+                message: 'docs/README.md and the chapters disagree: 03-testing.md has no row',
+                path: 'docs/README.md',
+                rule: 'docs/map-matches-chapters',
+            },
+        ]);
+    });
+
+    test('names every chapter of a map that links nothing', () => {
+        // Given - a map with no link at all
+        const tree = manual({ links: {} });
+
+        // Then - each chapter lacks its row, and nothing else is said
+        expect(rulesBrokenBy(tree)).toStrictEqual([
+            'docs/map-matches-chapters',
+            'docs/map-matches-chapters',
+            'docs/map-matches-chapters',
+        ]);
+    });
+
+    test('reads a map row through its ./, its anchor, and an anchor alone', () => {
+        // Given - rows written relative, one pointing into a section, and a link to the map's own heading
+        const tree = manual({
+            links: {
+                'docs/README.md': [
+                    './01-architecture.md',
+                    '02-developing.md#the-loop',
+                    '03-testing.md',
+                    '#reading-order',
+                    'decisions/001-the-first-call.md',
+                ],
+            },
+        });
+
+        // Then - every one routes into the manual
+        expect(rulesBrokenBy(tree)).toStrictEqual([]);
     });
 
     test('names a map link that leaves the manual', () => {
@@ -38,9 +110,26 @@ describe('docs', () => {
         });
 
         // Then - the map routes to chapters and decisions/, and nothing else
-        expect(messageOf(tree, 'docs/map-links-only-chapters')).toBe(
-            'docs/README.md links ../README.md: the map routes to its own chapters and nothing else',
-        );
+        expect(auditDocs(tree)).toStrictEqual([
+            {
+                message:
+                    'docs/README.md links ../README.md: the map routes to its own chapters and nothing else',
+                path: 'docs/README.md',
+                rule: 'docs/map-links-only-chapters',
+            },
+        ]);
+    });
+
+    test('names a map link to a page that is no chapter', () => {
+        // Given - a map routing to an unnumbered page that carries a digit
+        const tree = manual({
+            links: {
+                'docs/README.md': [...(manual().links['docs/README.md'] ?? []), 'notes-v2.md'],
+            },
+        });
+
+        // Then - it is not read as a row
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/map-links-only-chapters']);
     });
 
     test('lets the map route to decisions/', () => {
@@ -74,22 +163,48 @@ describe('docs', () => {
 
     test('names a subfolder that is none of the two', () => {
         // Given - a folder of dated QA passes under docs/
-        const tree = manual({ files: [...manual().files, 'docs/qa/', 'docs/qa/2026-01.md'] });
+        const tree = manual({
+            files: [...manual().files, 'docs/2026-qa/', 'docs/2026-qa/01-january.md'],
+        });
 
-        // Then - the two are named
-        expect(messageOf(tree, 'docs/no-unknown-subfolder')).toBe(
-            'docs/qa/ is not one of decisions/, _assets/',
-        );
+        // Then - the two are named, and the folder is no chapter
+        expect(auditDocs(tree)).toStrictEqual([
+            {
+                message: 'docs/2026-qa/ is not one of decisions/, _assets/',
+                path: 'docs/2026-qa/',
+                rule: 'docs/no-unknown-subfolder',
+            },
+        ]);
     });
 
     test('names a file under docs/ that is neither the map nor a chapter', () => {
         // Given - an unnumbered page dropped beside the chapters
-        const tree = manual({ files: [...manual().files, 'docs/automations.md'] });
+        const tree = manual({ files: [...manual().files, 'docs/automations-v2.md'] });
 
         // Then - number it, or move it out of the chapter space
-        expect(messageOf(tree, 'docs/no-loose-file')).toBe(
-            'docs/automations.md is neither the map nor a chapter — number it, or move it under _assets/',
-        );
+        expect(auditDocs(tree)).toStrictEqual([
+            {
+                message:
+                    'docs/automations-v2.md is neither the map nor a chapter — number it, or move it under _assets/',
+                path: 'docs/automations-v2.md',
+                rule: 'docs/no-loose-file',
+            },
+        ]);
+    });
+
+    test('judges only the direct children of docs/', () => {
+        // Given - an asset folder that nests a folder of its own named docs/
+        const tree = manual({
+            files: [
+                ...manual().files,
+                'docs/_assets/',
+                'docs/_assets/docs/',
+                'docs/_assets/docs/notes.md',
+            ],
+        });
+
+        // Then - what sits below a subfolder is the subfolder's
+        expect(rulesBrokenBy(tree)).toStrictEqual([]);
     });
 
     test('names a generated reference, stamped or not', () => {
@@ -115,9 +230,14 @@ describe('docs', () => {
         const tree = manual({ agents: null });
 
         // Then - the brief is a map, not a manual
-        expect(messageOf(tree, 'docs/agents-route-to-the-map')).toBe(
-            'AGENTS.md does not route to docs/README.md — the brief is a map, not a manual',
-        );
+        expect(auditDocs(tree)).toStrictEqual([
+            {
+                message:
+                    'AGENTS.md does not route to docs/README.md — the brief is a map, not a manual',
+                path: 'AGENTS.md',
+                rule: 'docs/agents-route-to-the-map',
+            },
+        ]);
     });
 
     test('names a brief that exists but routes elsewhere', () => {
@@ -126,38 +246,5 @@ describe('docs', () => {
 
         // Then - the same rule
         expect(rulesBrokenBy(tree)).toStrictEqual(['docs/agents-route-to-the-map']);
-    });
-
-    test('names a chapter reaching into another repository', () => {
-        // Given - a chapter linking a sibling clone's page
-        const tree = manual({
-            links: {
-                ...manual().links,
-                'docs/01-architecture.md': ['../../package-test/docs/README.md'],
-            },
-        });
-
-        // Then - another repository's tree is not a place this manual may reach
-        expect(messageOf(tree, 'docs/no-cross-repository-link')).toBe(
-            "docs/01-architecture.md links ../../package-test/docs/README.md: another repository's tree is not a place this manual may reach",
-        );
-    });
-
-    test('lets a chapter cite a sibling repository by url, and reach its own root', () => {
-        // Given - a forge link, an anchor, and a link back up to the repository's README
-        const tree = manual({
-            links: {
-                ...manual().links,
-                'docs/01-architecture.md': [
-                    'https://github.com/jterrazz/jterrazz-studio/blob/main/docs/08-repo-structure.md',
-                    '#the-spine',
-                    '../README.md',
-                    '02-developing.md',
-                ],
-            },
-        });
-
-        // Then - a citation is not a reach, and the repository's own tree is fair game
-        expect(rulesBrokenBy(tree)).toStrictEqual([]);
     });
 });

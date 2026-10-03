@@ -25,11 +25,9 @@ const DECISION_HEADING = /^# ADR-(?<number>\d{3}): \S/u;
 const DECISION_STATUS = /^\*\*Status:\*\*\s*(?<status>.+?)\s*$/u;
 
 function auditDecisionNumbers(report: Report, records: readonly Entry[]): void {
-    const numbers = [...new Set(records.map((record) => record.name.slice(0, 3)))].toSorted(
-        (left, right) => left.localeCompare(right),
-    );
+    const numbers = [...new Set(records.map((record) => record.name.slice(0, 3)))].toSorted();
     const sequential = numbers.every((number, index) => Number.parseInt(number, 10) === index + 1);
-    if (numbers.length > 0 && !sequential) {
+    if (!sequential) {
         report(
             'docs/decisions-numbered-contiguously',
             'docs/decisions/',
@@ -54,11 +52,17 @@ function auditDecisionNumbers(report: Report, records: readonly Entry[]): void {
     }
 }
 
+function statusOf(line: string): string | undefined {
+    // Stryker disable next-line OptionalChaining: a match of a pattern holding a named group always carries its groups
+    return DECISION_STATUS.exec(line)?.groups?.status;
+}
+
 function auditRecord(report: Report, record: Entry, heads: DocsTree['heads']): void {
     const number = record.name.slice(0, 3);
     const head = heads[record.path] ?? [];
     const opening = head[0] ?? '';
 
+    // Stryker disable next-line OptionalChaining: a match of a pattern holding a named group always carries its groups
     if (DECISION_HEADING.exec(opening)?.groups?.number !== number) {
         report(
             'docs/decision-heading-carries-its-number',
@@ -67,14 +71,17 @@ function auditRecord(report: Report, record: Entry, heads: DocsTree['heads']): v
         );
     }
 
-    const status = head
-        .map((line) => DECISION_STATUS.exec(line)?.groups?.status)
-        .find((found) => found !== undefined && found !== '');
-    if (status === undefined || !(STATUSES.has(status) || SUPERSEDED.test(status))) {
-        const message =
-            status !== undefined && BARE_SUPERSEDED.test(status)
-                ? `${record.path}: **Status:** names a successor but no link — write Superseded by [ADR-NNN](file.md)`
-                : `${record.path}: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated`;
+    const status = head.map((line) => statusOf(line)).find((found) => found !== undefined);
+    if (status === undefined) {
+        report(
+            'docs/decision-status-known',
+            record.path,
+            `${record.path} carries no **Status:** line — the mold is "**Status:** Proposed"`,
+        );
+    } else if (!(STATUSES.has(status) || SUPERSEDED.test(status))) {
+        const message = BARE_SUPERSEDED.test(status)
+            ? `${record.path}: **Status:** names a successor but no link — write Superseded by [ADR-NNN](file.md)`
+            : `${record.path}: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated`;
         report('docs/decision-status-known', record.path, message);
     }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { manual, messageOf, rulesBrokenBy, withDecisions } from './docs.fixtures.js';
+import { manual, messageOf, rulesBrokenBy, violationOf, withDecisions } from './docs.fixtures.js';
 
 describe('auditDecisions', () => {
     test('passes a well-formed decisions folder', () => {
@@ -12,13 +12,15 @@ describe('auditDecisions', () => {
     test('names a decision file that is not NNN-kebab.md', () => {
         // Given - a record named without its number
         const tree = withDecisions({
-            files: [...withDecisions().files, 'docs/decisions/the-second-call.md'],
+            files: [...withDecisions().files, 'docs/decisions/v002-the-second-call.md'],
         });
 
-        // Then - the mold of the name is stated
-        expect(messageOf(tree, 'docs/decision-named-by-number-and-subject')).toBe(
-            'docs/decisions/the-second-call.md is not NNN-kebab.md',
-        );
+        // Then - the mold of the name is stated, and the file is no record to number
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-named-by-number-and-subject']);
+        expect(violationOf(tree, 'docs/decision-named-by-number-and-subject')).toStrictEqual({
+            message: 'docs/decisions/v002-the-second-call.md is not NNN-kebab.md',
+            path: 'docs/decisions/v002-the-second-call.md',
+        });
     });
 
     test('names a decision opening on the wrong heading', () => {
@@ -34,9 +36,26 @@ describe('auditDecisions', () => {
         });
 
         // Then - the line it opens on, and the mold it owes
+        expect(violationOf(tree, 'docs/decision-heading-carries-its-number')).toStrictEqual({
+            message:
+                'docs/decisions/001-the-first-call.md opens on # The first call: the mold is "# ADR-001: Title"',
+            path: 'docs/decisions/001-the-first-call.md',
+        });
+    });
+
+    test('names a decision that opens on nothing at all', () => {
+        // Given - a record whose head was never read, or is empty
+        const tree = withDecisions({ heads: {} });
+
+        // Then - the empty line is named as one, and the missing status line too
         expect(messageOf(tree, 'docs/decision-heading-carries-its-number')).toBe(
-            'docs/decisions/001-the-first-call.md opens on # The first call: the mold is "# ADR-001: Title"',
+            'docs/decisions/001-the-first-call.md opens on an empty line: the mold is "# ADR-001: Title"',
         );
+        expect(violationOf(tree, 'docs/decision-status-known')).toStrictEqual({
+            message:
+                'docs/decisions/001-the-first-call.md carries no **Status:** line — the mold is "**Status:** Proposed"',
+            path: 'docs/decisions/001-the-first-call.md',
+        });
     });
 
     test('names a decision whose heading claims another number', () => {
@@ -150,9 +169,53 @@ describe('auditDecisions', () => {
         });
 
         // Then - the same rule, from an offset start
-        expect(messageOf(tree, 'docs/decisions-numbered-contiguously')).toBe(
-            'docs/decisions/ numbers run 006, 008: they run from 001 with no gap — a decision that moved folders takes the next number where it lands',
-        );
+        expect(violationOf(tree, 'docs/decisions-numbered-contiguously')).toStrictEqual({
+            message:
+                'docs/decisions/ numbers run 006, 008: they run from 001 with no gap — a decision that moved folders takes the next number where it lands',
+            path: 'docs/decisions/',
+        });
+    });
+
+    test('refuses a gap after 001', () => {
+        // Given - 001 then 003
+        const tree = withDecisions({
+            files: [...withDecisions().files, 'docs/decisions/003-the-third-call.md'],
+            heads: {
+                ...withDecisions().heads,
+                'docs/decisions/003-the-third-call.md': [
+                    '# ADR-003: The third call',
+                    '',
+                    '**Status:** Accepted',
+                ],
+            },
+        });
+
+        // Then - one record in place does not excuse the gap
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decisions-numbered-contiguously']);
+    });
+
+    test('judges the sequence of records listed out of order', () => {
+        // Given - 002 listed before 001
+        const tree = withDecisions({
+            files: [
+                ...manual().files,
+                'docs/decisions/',
+                'docs/decisions/002-the-second-call.md',
+                ...withDecisions().files.filter((path) => path.startsWith('docs/decisions/0')),
+                'docs/decisions/_template.md',
+            ],
+            heads: {
+                ...withDecisions().heads,
+                'docs/decisions/002-the-second-call.md': [
+                    '# ADR-002: The second call',
+                    '',
+                    '**Status:** Accepted',
+                ],
+            },
+        });
+
+        // Then - the run is read by number, and it has no gap
+        expect(rulesBrokenBy(tree)).toStrictEqual([]);
     });
 
     test('lets a duplicated number pass the sequence check on its own', () => {
@@ -188,9 +251,10 @@ describe('auditDecisions', () => {
         });
 
         // Then - both claimants are named
-        expect(messageOf(tree, 'docs/decision-number-unique')).toBe(
-            'ADR-001 is claimed by 001-the-first-call.md and 001-the-same-call.md',
-        );
+        expect(violationOf(tree, 'docs/decision-number-unique')).toStrictEqual({
+            message: 'ADR-001 is claimed by 001-the-first-call.md and 001-the-same-call.md',
+            path: 'docs/decisions/',
+        });
     });
 
     test('names a hand-written decisions index', () => {
@@ -199,10 +263,13 @@ describe('auditDecisions', () => {
             files: [...withDecisions().files, 'docs/decisions/README.md'],
         });
 
-        // Then - an index is a copy, and the queue is derived
-        expect(messageOf(tree, 'docs/decision-listed-in-the-map')).toBe(
-            'docs/decisions/README.md is an index — an index is a copy; the queue is derived (terra <brand> decisions)',
-        );
+        // Then - an index is a copy, and the queue is derived; its name is no misnamed record
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-listed-in-the-map']);
+        expect(violationOf(tree, 'docs/decision-listed-in-the-map')).toStrictEqual({
+            message:
+                'docs/decisions/README.md is an index — an index is a copy; the queue is derived (terra <brand> decisions)',
+            path: 'docs/decisions/README.md',
+        });
     });
 
     test('names a decisions folder with no mold', () => {
@@ -212,8 +279,10 @@ describe('auditDecisions', () => {
         });
 
         // Then - the mold sits where the record is written
-        expect(messageOf(tree, 'docs/decision-template-present')).toBe(
-            'docs/decisions/_template.md is missing — the mold sits where the record is written',
-        );
+        expect(violationOf(tree, 'docs/decision-template-present')).toStrictEqual({
+            message:
+                'docs/decisions/_template.md is missing — the mold sits where the record is written',
+            path: 'docs/decisions/_template.md',
+        });
     });
 });

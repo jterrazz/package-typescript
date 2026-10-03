@@ -5,6 +5,7 @@ import { auditChapters } from './docs.chapters.js';
 import type { Chapter } from './docs.chapters.js';
 import { auditDecisions } from './docs.decisions.js';
 import type { Report } from './docs.decisions.js';
+import { auditLinks } from './docs.links.js';
 
 export type { DocsTree } from '../../kit/project/docs-tree.js';
 
@@ -23,38 +24,17 @@ const SUBFOLDERS: ReadonlySet<string> = new Set(['_assets/', 'decisions/']);
 // invariant: a generated API reference is a second copy of the types an editor resolves: refused by name.
 const GENERATED_REFERENCE = 'reference/';
 
-const SCHEME = /^[a-z][\d+.a-z-]*:/iu;
-
 function directChildren(files: readonly string[]): string[] {
     return files.filter((path) => /^docs\/[^/]+\/?$/u.test(path));
 }
 
 function targetPath(link: string): string {
+    // Stryker disable next-line Regex: a map link carries `./` at its head or nowhere
     return (link.split('#')[0] ?? '').replace(/^\.\//u, '');
 }
 
 function isChapterLink(target: string): boolean {
     return /^\d/u.test(target) && !target.includes('/');
-}
-
-// invariant: a result still opening on `..` climbed above the repository root.
-function resolveLink(from: string, link: string): string {
-    const stack: string[] = [];
-
-    for (const segment of [...from.split('/').slice(0, -1), ...link.split('/')]) {
-        if (segment === '' || segment === '.') {
-            continue;
-        }
-        if (segment !== '..') {
-            stack.push(segment);
-        } else if (stack.length === 0 || stack.at(-1) === '..') {
-            stack.push('..');
-        } else {
-            stack.pop();
-        }
-    }
-
-    return stack.join('/');
 }
 
 function auditMap(
@@ -138,26 +118,6 @@ function auditFolder(report: Report, { children }: { children: readonly string[]
     }
 }
 
-function auditLinks(
-    report: Report,
-    { files, links }: { files: readonly string[]; links: DocsTree['links'] },
-): void {
-    for (const path of files) {
-        for (const link of links[path] ?? []) {
-            if (link.startsWith('#') || SCHEME.test(link)) {
-                continue;
-            }
-            if (link.startsWith('/') || resolveLink(path, link).startsWith('..')) {
-                report(
-                    'docs/no-cross-repository-link',
-                    path,
-                    `${path} links ${link}: another repository's tree is not a place this manual may reach`,
-                );
-            }
-        }
-    }
-}
-
 // invariant: a repository with no `docs/` gets exactly one violation: every other rule would restate the absence.
 /** What breaks the shape of `docs/`, in rule order. An empty array is a compliant manual. */
 export function auditDocs(tree: DocsTree): readonly DocsViolation[] {
@@ -195,7 +155,7 @@ export function auditDocs(tree: DocsTree): readonly DocsViolation[] {
     auditFolder(report, { children });
     auditDecisions(report, { files, heads });
 
-    if (tree.agents === null || !(tree.agents ?? '').includes('docs/README.md')) {
+    if (tree.agents?.includes('docs/README.md') !== true) {
         report(
             'docs/agents-route-to-the-map',
             'AGENTS.md',
@@ -203,7 +163,7 @@ export function auditDocs(tree: DocsTree): readonly DocsViolation[] {
         );
     }
 
-    auditLinks(report, { files, links });
+    auditLinks(report, { links });
 
     return violations;
 }

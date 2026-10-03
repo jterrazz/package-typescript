@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { manual, messageOf, rulesBrokenBy } from './docs.fixtures.js';
+import { manual, messageOf, rulesBrokenBy, violationOf } from './docs.fixtures.js';
 
 describe('auditChapters', () => {
     test('names a chapter that is not NN-kebab.md', () => {
@@ -35,9 +35,11 @@ describe('auditChapters', () => {
         });
 
         // Then - one sentence about the whole run
-        expect(messageOf(tree, 'docs/chapters-numbered-contiguously')).toBe(
-            'chapter numbers run 01, 02, 03, 05, 05: they are contiguous from 01, one file per number, except that 04 may be absent',
-        );
+        expect(violationOf(tree, 'docs/chapters-numbered-contiguously')).toStrictEqual({
+            message:
+                'chapter numbers run 01, 02, 03, 05, 05: they are contiguous from 01, one file per number, except that 04 may be absent',
+            path: 'docs/',
+        });
     });
 
     test('names a chapter sitting on a reserved number', () => {
@@ -65,9 +67,10 @@ describe('auditChapters', () => {
             'docs/spine-chapters-present',
             'docs/spine-chapters-present',
         ]);
-        expect(messageOf(tree, 'docs/spine-chapters-present')).toBe(
-            '02-developing.md is missing — the spine is architecture, developing, testing',
-        );
+        expect(violationOf(tree, 'docs/spine-chapters-present')).toStrictEqual({
+            message: '02-developing.md is missing — the spine is architecture, developing, testing',
+            path: 'docs/02-developing.md',
+        });
     });
 
     test('asks for 04-operating.md from a repository that ships an image', () => {
@@ -77,9 +80,41 @@ describe('auditChapters', () => {
         });
 
         // Then - the reason it is asked for is named
-        expect(messageOf(tree, 'docs/operating-chapter-present-when-shipping')).toBe(
-            '04-operating.md is missing — this repository ships an image (a Dockerfile)',
-        );
+        expect(violationOf(tree, 'docs/operating-chapter-present-when-shipping')).toStrictEqual({
+            message: '04-operating.md is missing — this repository ships an image (a Dockerfile)',
+            path: 'docs/04-operating.md',
+        });
+    });
+
+    test('asks nothing of a shipping repository that carries 04-operating.md', () => {
+        // Given - an image, and the operating chapter beside the spine
+        const tree = manual({
+            files: [...manual().files, 'docs/04-operating.md'],
+            links: {
+                'docs/README.md': [...(manual().links['docs/README.md'] ?? []), '04-operating.md'],
+            },
+            ships: { dockerfile: true, infrastructure: false, publishable: false },
+        });
+
+        // Then - the presence test is met
+        expect(rulesBrokenBy(tree)).toStrictEqual([]);
+    });
+
+    test('judges the numbering of chapters listed out of order', () => {
+        // Given - the operating chapter listed after a later one
+        const tree = manual({
+            files: [...manual().files, 'docs/05-building.md', 'docs/04-operating.md'],
+            links: {
+                'docs/README.md': [
+                    ...(manual().links['docs/README.md'] ?? []),
+                    '04-operating.md',
+                    '05-building.md',
+                ],
+            },
+        });
+
+        // Then - the run is read by number, and it is contiguous
+        expect(rulesBrokenBy(tree)).toStrictEqual([]);
     });
 
     test('asks for 04-operating.md from a published package', () => {
