@@ -6,6 +6,7 @@ import process from 'node:process';
 import { readSettings } from '../../lint/index.rules.js';
 import { refusal } from '../../lint/kit/catalogue/lesson.js';
 import { readCommandLine } from '../../lint/kit/checker/command-line.js';
+import { DEV_OUTPUT } from '../../lint/kit/project/build-plan.js';
 import { objectOf, parsedObject } from '../../lint/kit/project/json.js';
 import type { Resolution } from '../../lint/kit/project/preset.js';
 import { workspaceMembers } from '../../lint/kit/project/workspace-members.js';
@@ -164,7 +165,7 @@ function strykerConfig(settings: Settings, specs: boolean): object {
         buildCommand: `node ${OUT}/sandbox.mjs`,
         checkers: [],
         disableTypeChecks: typeCheckedGlob(settings.mutated),
-        ignorePatterns: [`/${ARTIFACTS}/**`, `!/${OUT}/*.mjs`],
+        ignorePatterns: [`/${ARTIFACTS}/**`, `!/${OUT}/*.mjs`, `!/${DEV_OUTPUT}/**`],
         mutate: [
             ...settings.mutated,
             ...[...NEVER_MUTATED, ...settings.ignore].map((glob) => `!${glob}`),

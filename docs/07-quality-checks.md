@@ -792,7 +792,7 @@ Not a pass and never part of `check`: [Stryker](https://stryker-mutator.io) rewr
 
 What a run measures beyond that, and what it leaves out, is declared under `typescript.mutation`, each glob mapped to its reason: `mutate` the sources the platform does not name — a package's `lint/` rules —, `exclude` the tests that read the sources as text, and see the instrumented ones, and `ignore` the sources no test of the package can judge.
 
-A mutant never touches the checkout. Stryker copies the project into a sandbox under `.artifacts/stryker/tmp/` — everything but `.artifacts/` itself and `node_modules/`, which it links — and instruments, builds and tests there, so a run stopped at any point leaves the sources, `dist/` and the root as they were. The sandbox lies in an ignored folder, where git sees no tree, and the checks a test runs read the git tree: before the first test, the sandbox becomes a repository of its own, every file it holds added, and the `--specs` build runs there after.
+A mutant never touches the checkout. Stryker copies the project into a sandbox under `.artifacts/stryker/tmp/` — everything but `node_modules/`, which it links, and `.artifacts/`, of which it keeps the configs the command derives and the repository's own scripts, built into `.artifacts/dev/` — and instruments, builds and tests there, so a run stopped at any point leaves the sources, `dist/` and the root as they were. The sandbox lies in an ignored folder, where git sees no tree, and the checks a test runs read the git tree: before the first test, the sandbox becomes a repository of its own, every file it holds added, and the `--specs` build runs there after.
 
 ### The mutation floor
 
