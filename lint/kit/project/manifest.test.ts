@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { declaredSubpaths } from './manifest.js';
+import { declaredSubpaths, readManifest } from './manifest.js';
 
 function manifestAt(dir: string, manifest: unknown): void {
     mkdirSync(dir, { recursive: true });
@@ -76,5 +76,20 @@ describe('manifest', () => {
 
         // Then - with no contract to read, no subpath can be vouched for
         expect(declaredSubpaths('@jterrazz/test', orphan)).toStrictEqual([]);
+    });
+
+    test('reads no manifest git ignores, beside one it does not', () => {
+        // Given - a repository holding a new manifest and one under an ignored folder
+        const root = mkdtempSync(resolve(tmpdir(), 'pkg-ignored-'));
+        manifestAt(resolve(root, 'fresh'), {});
+        manifestAt(resolve(root, 'local'), {});
+        writeFileSync(resolve(root, '.gitignore'), 'local/\n');
+        execFileSync('git', ['init', '--quiet'], { cwd: root });
+
+        // Then - only the one git sees declares a package
+        expect([
+            readManifest(resolve(root, 'fresh')),
+            readManifest(resolve(root, 'local')),
+        ]).toStrictEqual([{}, null]);
     });
 });

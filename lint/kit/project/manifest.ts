@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { treeKind } from './git-tree.js';
 import { isJsonObject } from './json.js';
 import type { JsonObject } from './json.js';
 
@@ -15,8 +16,11 @@ export type Manifest = JsonObject & {
     workspaces?: unknown;
 };
 
-/** No manifest, a folder by that name, and a file that is no JSON object all read as none. */
+/** No manifest, a folder by that name, one git ignores, and a file that is no JSON object all read as none. */
 export function readManifest(dir: string): Manifest | null {
+    if (treeKind(join(dir, 'package.json')) !== 'file') {
+        return null;
+    }
     try {
         // Stryker disable next-line StringLiteral: JSON.parse reads a Buffer as its UTF-8 text, so the encoding only names the type
         const parsed: unknown = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
