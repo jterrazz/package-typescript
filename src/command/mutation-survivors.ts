@@ -9,7 +9,12 @@ export type Survivor = {
     replacement: string;
 };
 
-export type Judged = { detected: number; survivors: Survivor[]; uncovered: number };
+export type Judged = {
+    detected: number;
+    outsideVerdict: Record<string, number>;
+    survivors: Survivor[];
+    uncoveredByFile: Record<string, number>;
+};
 
 const DETECTED: ReadonlySet<unknown> = new Set(['Killed', 'Timeout']);
 
@@ -24,9 +29,9 @@ function survivorOf(file: string, mutant: Record<string, unknown>): Survivor {
     };
 }
 
-/** Stryker's report, read as the gate reads it: a mutant a module test runs is detected or survives; one no module test runs is the specs' to measure. An incremental report keeps the files of earlier runs, so only the files measured are judged, and it keeps the results of static mutants the gate no longer runs, so none of those is judged either. */
+/** A static mutant or a file outside `measured` is never judged: the incremental report keeps both from earlier runs. */
 export function judgedReport(report: unknown, measured: ReadonlySet<string>): Judged {
-    const judged: Judged = { detected: 0, survivors: [], uncovered: 0 };
+    const judged: Judged = { detected: 0, outsideVerdict: {}, survivors: [], uncoveredByFile: {} };
     for (const [file, entry] of Object.entries(objectOf(objectOf(report).files))) {
         if (!measured.has(file)) {
             continue;
@@ -36,12 +41,15 @@ export function judgedReport(report: unknown, measured: ReadonlySet<string>): Ju
             if (mutant.static === true) {
                 continue;
             }
-            if (DETECTED.has(mutant.status)) {
+            const status = stringOf(mutant.status) ?? 'no status';
+            if (DETECTED.has(status)) {
                 judged.detected += 1;
-            } else if (mutant.status === 'Survived') {
+            } else if (status === 'Survived') {
                 judged.survivors.push(survivorOf(file, mutant));
-            } else if (mutant.status === 'NoCoverage') {
-                judged.uncovered += 1;
+            } else if (status === 'NoCoverage') {
+                judged.uncoveredByFile[file] = (judged.uncoveredByFile[file] ?? 0) + 1;
+            } else {
+                judged.outsideVerdict[status] = (judged.outsideVerdict[status] ?? 0) + 1;
             }
         }
     }
@@ -51,13 +59,29 @@ export function judgedReport(report: unknown, measured: ReadonlySet<string>): Ju
     return judged;
 }
 
+function countLines({ outsideVerdict, uncoveredByFile }: Judged): string[] {
+    const uncovered = Object.entries(uncoveredByFile).toSorted(
+        ([a, left], [b, right]) => right - left || a.localeCompare(b),
+    );
+    const total = uncovered.reduce((sum, [, count]) => sum + count, 0);
+    const outside = Object.entries(outsideVerdict).toSorted(([a], [b]) => a.localeCompare(b));
+    return [
+        `${total} mutant(s) no module test runs — the specs', measured by range: typescript mutation --specs --mutate <file>:<from>-<to>`,
+        ...uncovered.map(([file, count]) => `  ${file}  ${count}`),
+        ...(outside.length === 0
+            ? []
+            : [
+                  `${outside.reduce((sum, [, count]) => sum + count, 0)} mutant(s) outside the verdict — ${outside.map(([status, count]) => `${status} ${count}`).join(', ')}`,
+              ]),
+    ];
+}
+
 export function verdictOf(judged: Judged): { lines: string[]; status: number } {
-    const uncovered = `${judged.uncovered} mutant(s) no module test runs — the specs', measured by range: typescript mutation --specs --mutate <file>:<from>-<to>`;
     if (judged.survivors.length === 0) {
         return {
             lines: [
                 `every mutant a module test runs is detected — ${judged.detected} detected`,
-                uncovered,
+                ...countLines(judged),
             ],
             status: 0,
         };
@@ -74,7 +98,7 @@ export function verdictOf(judged: Judged): { lines: string[]; status: number } {
                 read: 'docs/07-quality-checks.md#mutation',
                 why: 'a test that runs a line and lets a change of it pass proves nothing of that line',
             }),
-            uncovered,
+            ...countLines(judged),
         ],
         status: 1,
     };

@@ -255,9 +255,21 @@ export async function mutation(args: readonly string[]): Promise<number> {
         ['run', config, ...(mutate === undefined ? [] : ['--mutate', mutate])],
         project,
     );
-    const report = join(OUT, 'report.json');
-    if (status !== 0 || specs || !existsSync(report)) {
+    if (status !== 0 || specs) {
         return status;
+    }
+    const report = join(OUT, 'report.json');
+    if (!existsSync(report)) {
+        print(
+            `${refusal({
+                fix: 'run typescript mutation again, and read what Stryker printed above if the report is still missing',
+                found: `Stryker exited 0 and left no ${report}`,
+                read: 'docs/07-quality-checks.md#mutation',
+                why: 'the verdict is read from the report, and a run judged from none would pass having judged nothing',
+            })}\n`,
+        );
+
+        return 1;
     }
     const measured = new Set(
         mutate === undefined
