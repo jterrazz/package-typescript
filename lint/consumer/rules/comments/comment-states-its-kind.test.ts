@@ -82,6 +82,18 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
             ),
             errors: [{ column: 0, line: 6, messageId: 'unstated' }],
         },
+        {
+            code: lines(
+                '// Stryker disable next-line CallExpression: outside: a kind after the mutator',
+                'const a = 1;',
+                '// oxlint-disable-next-line no-console -- hazard: a kind after the rule',
+                'console.log(a);',
+            ),
+            errors: [
+                { column: 0, line: 1, messageId: 'kindedInstruction' },
+                { column: 0, line: 3, messageId: 'kindedInstruction' },
+            ],
+        },
     ],
     valid: [
         lines('#!/usr/bin/env node', '// hazard: the shebang is no comment', 'run();'),

@@ -32,6 +32,8 @@ const KIND = new RegExp(`^(?:${COMMENT_KINDS.join('|')}): \\S`, 'u');
 const TOOL_INSTRUCTION =
     /^(?:(?:es|ox)lint-(?:disable|enable)|@ts-|biome-ignore|(?:oxfmt|prettier|dprint)-ignore\b|(?:v8|c8|istanbul|node:coverage) ignore\b|@vite-ignore\b|webpack[A-Z]|Stryker (?:disable|restore)\b|[#@]__PURE__|@__NO_SIDE_EFFECTS__|@jsx|@vitest-environment\b|type-coverage:|<reference )/u;
 
+const KIND_IN_INSTRUCTION = new RegExp(`(?::|--) (?:${COMMENT_KINDS.join('|')}): `, 'u');
+
 const GENERATED = /@generated\b/u;
 
 const GENERATED_HEAD_LINES = 5;
@@ -87,6 +89,10 @@ export const commentStatesItsKind = defineRule(
             why: WHY_FIX.why,
         },
         messages: {
+            kindedInstruction: {
+                fix: 'drop the kind: a tool instruction is its own kind, and its reason follows it bare',
+                found: 'a tool instruction whose reason states a kind',
+            },
             unstated: {
                 fix: WHY_FIX.fix,
                 found: 'a comment that states no kind',
@@ -123,7 +129,9 @@ export const commentStatesItsKind = defineRule(
                         .filter((comment) => comment.type !== 'Shebang');
                     for (const comment of runsOf(comments, text)) {
                         const opening = openingOf(comment);
-                        if (
+                        if (TOOL_INSTRUCTION.test(opening) && KIND_IN_INSTRUCTION.test(opening)) {
+                            context.report({ messageId: 'kindedInstruction', node: comment });
+                        } else if (
                             !isStructure(opening) &&
                             !KIND.test(opening) &&
                             !isHover(comment, text)

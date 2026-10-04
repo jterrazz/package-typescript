@@ -765,10 +765,10 @@ Two rules of the rulebook's own oxlint plugin judge comments, so their findings 
 
 <!-- GENERATED:findings comments -->
 
-| Rule                                                      | Requirement                                                                                                                                                             |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `jterrazz-typescript/comment-no-longer-than-its-function` | A comment run above a function is no longer than the function it documents.                                                                                             |
-| `jterrazz-typescript/comment-states-its-kind`             | A comment opens with the kind of thing it states — invariant, hazard, outside or value — unless it is a one-line hover doc, a directive or a marker another tool reads. |
+| Rule                                                      | Requirement                                                                                                                                                                                       |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jterrazz-typescript/comment-no-longer-than-its-function` | A comment run above a function is no longer than the function it documents.                                                                                                                       |
+| `jterrazz-typescript/comment-states-its-kind`             | A comment opens with the kind of thing it states — invariant, hazard, outside or value — unless it is a one-line hover doc, a directive or a marker another tool reads, whose reason states none. |
 
 <!-- /GENERATED:findings comments -->
 
