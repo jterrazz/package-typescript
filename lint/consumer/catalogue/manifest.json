@@ -99,14 +99,6 @@
         "audience": "consumer",
         "by": "throw",
         "channel": "runtime",
-        "id": "lint-tree-unreadable",
-        "message": "the lint tree cannot be read",
-        "module": "lint/kit/project/exported-names.ts"
-    },
-    {
-        "audience": "consumer",
-        "by": "throw",
-        "channel": "runtime",
         "id": "unsafe-fixers-unloaded",
         "message": "the unsafe-fixers module does not load",
         "module": "src/command/check/tool-passes.ts"
