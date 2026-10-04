@@ -633,7 +633,7 @@ unicorn/prefer-dom-node-append
 unicorn/prefer-dom-node-dataset
 unicorn/prefer-dom-node-remove
 unicorn/prefer-dom-node-text-content
-unicorn/prefer-event-target
+- unicorn/prefer-event-target
 unicorn/prefer-export-from
 unicorn/prefer-global-this
 unicorn/prefer-import-meta-properties

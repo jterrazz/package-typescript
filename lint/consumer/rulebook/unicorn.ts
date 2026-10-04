@@ -88,7 +88,6 @@ export default fragment({
                 'prefer-dom-node-dataset',
                 'prefer-dom-node-remove',
                 'prefer-dom-node-text-content',
-                'prefer-event-target',
                 'prefer-export-from',
                 'prefer-global-this',
                 'prefer-keyboard-event-key',
@@ -187,6 +186,13 @@ export default fragment({
             by: 'oxfmt — oxc#21949: the two disagree on the case of a hex literal and rewrite each other',
             kind: 'formatter',
         }),
+        'unicorn/prefer-event-target': off(
+            {
+                by: 'rule review, 2026-10-04 — its one report, signews-api’s pipeline event bus, would have changed how a throwing handler fails: EventEmitter throws it to the emitter, Node’s EventTarget raises it as an uncaught exception; the portability it buys is no server’s, and an emitter in browser code is a dependency the bundle already shows',
+                kind: 'evidence',
+            },
+            '11.0.0',
+        ),
         'unicorn/prefer-includes': off({
             by: 'typescript/prefer-includes — the type-aware rule of the same name',
             kind: 'covered',
