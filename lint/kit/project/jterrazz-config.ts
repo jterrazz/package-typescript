@@ -63,6 +63,7 @@ async function importedQuietly(path: string): Promise<unknown> {
         }
     };
     try {
+        // Stryker disable next-line StringLiteral: an empty import specifier fails the bundle every spec runs, so the mutant can reach no test
         return await import(`${pathToFileURL(path).href}?mtime=${String(statSync(path).mtimeMs)}`);
     } finally {
         if (descriptor === undefined) {

@@ -1,0 +1,13 @@
+{
+    "name": "consumer",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "mkdir -p dist && cp src/greeting.ts dist/greeting.ts"
+    },
+    "devDependencies": {
+        "@jterrazz/typescript": "11.0.0",
+        "vitest": "^5.0.1"
+    }
+}

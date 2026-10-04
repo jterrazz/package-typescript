@@ -23,5 +23,9 @@ describe('scope', () => {
             ],
         });
         expect(result.file('.artifacts/stryker/sandbox.mjs').content).not.toContain('npm');
+        // Then - Stryker, which the fixture installs no runner for, fails the run with its own status, and nothing is judged after it
+        expect(result.exitCode).toBe(1);
+        expect(result.stderr.text).not.toContain('ENOENT');
+        expect(result.stdout.text).not.toContain('Measuring the whole suite');
     });
 });

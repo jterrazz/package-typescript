@@ -37,6 +37,10 @@ export default defineConfig({
                     'it reads the sources as text, and sees the instrumented ones',
                 'specs/surface/package/builder-calls.test.ts':
                     'it reads the sources as text, and sees the instrumented ones',
+                'specs/surface/package/documented-examples.test.ts':
+                    'it type-checks against the built declarations, which an instrumented build infers wider',
+                'specs/cli/tsc/declarations.spec.ts':
+                    'it type-checks against the built declarations, which an instrumented build infers wider',
             },
         },
         knip: {
