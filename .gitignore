@@ -4,3 +4,6 @@ dist/
 
 # Build, test and lint artefacts (@jterrazz/typescript)
 .artifacts/
+
+# A fixture's dist/ is the ground a spec stands on, never a build's output
+!specs/**/_fixtures/**/dist/
