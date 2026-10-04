@@ -20,8 +20,8 @@ describe('mutation-survivors', () => {
                             mutant('Killed', 3),
                             mutant('Timeout', 4),
                             mutant('NoCoverage', 9),
-                            mutant('CompileError', 10),
-                            mutant('Ignored', 11),
+                            mutant('Ignored', 10),
+                            mutant('CompileError', 11),
                             { ...mutant('Survived', 1), static: true },
                         ],
                     },
@@ -52,18 +52,14 @@ describe('mutation-survivors', () => {
                 files: {
                     'src/b.ts': { mutants: [mutant('Survived', 2, '{}\n// more')] },
                     'src/a.ts': {
-                        mutants: [
-                            mutant('Survived', 7),
-                            mutant('Survived', 3),
-                            mutant('Ignored', 1),
-                        ],
+                        mutants: [mutant('Survived', 7), mutant('Survived', 3)],
                     },
                 },
             },
             new Set(['src/a.ts', 'src/b.ts']),
         );
 
-        // Then - each survivor on one line, then the four parts, then the uncovered count
+        // Then - each survivor on one line, then the four parts, then the uncovered count, and no line for statuses there are none of
         expect(verdictOf(judged)).toStrictEqual({
             lines: [
                 'src/a.ts:3:9  ConditionalExpression → true',
@@ -71,7 +67,6 @@ describe('mutation-survivors', () => {
                 'src/b.ts:2:9  ConditionalExpression → {}',
                 'found: 3 mutant(s) a module test runs and none detects · why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/07-quality-checks.md#mutation',
                 "0 mutant(s) no module test runs — the specs', measured by range: typescript mutation --specs --mutate <file>:<from>-<to>",
-                '1 mutant(s) outside the verdict — Ignored 1',
             ],
             status: 1,
         });
