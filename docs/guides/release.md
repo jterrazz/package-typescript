@@ -34,6 +34,16 @@ One line decides it, and it is the consumer's side of the wire: **breaking means
 
 **10.0.0 is a major on the fifth row, and on nothing else.** The rulebook got far stricter and the type-aware rules started running for the first time, and neither of those is what makes the number move: what does is that the four framework presets became six profiles, so every consumer rewrites the `import` line of its `oxlint.config.ts` and the `extends` of its `tsconfig.json`. A consumer that did not touch its config would resolve a name that is no longer there.
 
+**11.0.0 is a major on the fourth and fifth rows.** A project now declares what it is, and every config follows from that declaration, so a 10.x consumer rewrites:
+
+- its `oxlint.config.ts`, which composed profiles, into a `jterrazz.config.ts` that declares its `kind` and `platform` ([Getting started](../start/getting-started.md#1-declare-what-the-project-is)); `typescript fix` then writes the derived `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json`;
+- a `knip.json` into `typescript.knip`, and a `tsdown.config.ts` into the manifest's targets or `typescript.build`: `typescript bundle` is gone, and `typescript build` derives what it compiles ([Building](../reference/building.md#the-entries));
+- `jterrazz.baseline.json` and `oxlint-suppressions.json` into `.jterrazz/`, where `typescript baseline` writes them again;
+- a Makefile chaining `@jterrazz/test`'s own check bin into `presets: [test()]`, run by `typescript check`, `fix` and `baseline`;
+- each published entry's source onto [the entry grammar](../reference/quality-checks.md#the-entry-grammar), `index[.<subpath>].ts` and `<name>.bin.ts`.
+
+The GitHub Release of each version is where its notes live; this section keeps only what makes a version major.
+
 A new gate turning a consumer's `main` red is not treated as a breaking change, and that is deliberate: the toolchain's job is to say what is wrong, and a repository absorbs it when it bumps. The estate has no legacy mode and no warn-only window — a rule that is worth shipping is worth failing on.
 
 What the ratchet changes is not that rule but the SHAPE of absorbing it: a repository adopting a stricter release records its debt with `typescript baseline` and burns it down on its own clock, instead of holding the bump until the tree is clean.

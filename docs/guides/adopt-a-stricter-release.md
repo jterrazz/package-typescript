@@ -4,7 +4,7 @@ A new `@jterrazz/typescript` can land red on a project that was green: a stricte
 
 ## How a consumer takes it
 
-`@jterrazz/typescript` is a devDependency with a caret range, so a bump arrives by a dependency pull request in each repository and lands with that repository's own gates green. A migration a bump requires — a recut manual, a moved config — belongs in the same pull request as the bump, never in a follow-up.
+`@jterrazz/typescript` is a devDependency with a caret range, so a bump arrives by a dependency pull request in each repository and lands with that repository's own gates green. A migration a bump requires — a recut manual, a moved config — belongs in the same pull request as the bump, never in a follow-up. A major names the configs it makes a consumer rewrite in [Release § Which number moves](release.md#which-number-moves).
 
 ## The two gestures
 
