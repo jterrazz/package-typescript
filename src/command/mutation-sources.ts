@@ -19,6 +19,15 @@ const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
 };`;
 
 // invariant: every process a test spawns runs the instrumented build with this module imported first: it reports, on its way out, the mutants it ran — the parent credits them to the test that spawned it.
+// hazard: Stryker runs Vitest in worker threads, where a native addon a spec loads — a database driver — can crash the process; the suite runs each test file in a process of its own, as Vitest does by default.
+const OWN_PROCESSES_PLUGIN_SOURCE = `const ownProcesses = {
+    configureVitest({ project }) {
+        project.config.pool = 'forks';
+    },
+    name: 'stryker-own-processes',
+};
+`;
+
 export const CHILD_COVERAGE_SOURCE = `const { renameSync, writeFileSync } = require('node:fs');
 const { join } = require('node:path');
 
@@ -146,6 +155,7 @@ const project = typeof declared === 'function' ? await declared({ command: 'serv
 
 ${TEST_NAME_PLUGIN_SOURCE}
 
+${suite ? OWN_PROCESSES_PLUGIN_SOURCE : ''}
 const projects = project.test?.projects ?? [];
 
 const setup = resolve(${JSON.stringify(`${OUT}/mutant-setup.mjs`)});
@@ -160,7 +170,7 @@ export default {
         projects: ${kept}.map((one) =>
             mergeConfig(
                 { ...one, test: { ...one.test, setupFiles: [setup, ...listed(one.test?.setupFiles)] } },
-                { plugins: [strykerTestNames], test: { exclude: ${JSON.stringify(exclude)}, isolate: true } },
+                { plugins: [strykerTestNames${suite ? ', ownProcesses' : ''}], test: { exclude: ${JSON.stringify(exclude)}, isolate: true } },
             ),
         ),
     },
