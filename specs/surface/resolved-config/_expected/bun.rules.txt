@@ -88,7 +88,7 @@ max-lines-per-function
 max-nested-callbacks
 max-params
 - max-statements
-new-cap
+- new-cap
 no-alert
 no-array-constructor
 no-async-promise-executor

@@ -57,7 +57,6 @@ export default fragment({
             'logical-assignment-operators',
             'max-classes-per-file',
             'max-nested-callbacks',
-            'new-cap',
             'no-alert',
             'no-array-constructor',
             'no-async-promise-executor',
@@ -233,6 +232,13 @@ export default fragment({
         'no-await-in-loop': off(
             {
                 by: 'rule review, 2026-10-03 — 51 reports on package-test and package-typescript, about 85% an ordered sequence (a poll, a seed, a pass writing what the next one reads); the rule judges speed, never correctness',
+                kind: 'evidence',
+            },
+            RULE_REVIEW_SINCE,
+        ),
+        'new-cap': off(
+            {
+                by: 'rule review, 2026-10-04 — 56 reports on signews-api, every one the dependency-injection library’s `Injectable(…)`, a function its authors named in capitals; the defect the rule guards, a class called without `new`, is TS2348 under the type check',
                 kind: 'evidence',
             },
             RULE_REVIEW_SINCE,
