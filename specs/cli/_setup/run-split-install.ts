@@ -1,8 +1,16 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { chmodSync, cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    chmodSync,
+    cpSync,
+    mkdirSync,
+    mkdtempSync,
+    rmSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import process from 'node:process';
 
 const PACKED = process.env.PACKED_PACKAGE ?? '';
@@ -24,6 +32,11 @@ for (const tool of ['tsc', 'oxfmt', 'knip', 'ls-lint']) {
     stub(join(root, 'node_modules/.bin', tool), `echo "${tool}-stub-ran"`);
 }
 stub(join(installed, 'node_modules/.bin/oxlint'), `echo '{ "diagnostics": [] }'`);
+// outside: npm hoists the package's own dependency to the consumer root, beside the stubbed bins.
+symlinkSync(
+    resolve(import.meta.dirname, '../../../node_modules/typescript'),
+    join(root, 'node_modules/typescript'),
+);
 
 writeFileSync(
     join(root, 'package.json'),

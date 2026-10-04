@@ -4,7 +4,7 @@ import { cli as resolutionCli } from '../resolution.specification.js';
 
 describe('resolution', () => {
     test('resolves each tool independently when npm splits them between bin dirs', async () => {
-        // Given - oxlint nested under the package, the other tools hoisted to the consumer root
+        // Given - oxlint nested under the package, the other tools and the typescript it depends on hoisted to the consumer root
         const result = await resolutionCli.exec();
 
         // Then - the whole check output matches: every tool is found and runs, wherever npm placed it
@@ -59,7 +59,7 @@ describe('resolution', () => {
               suppressions                          0
               .jterrazz/oxlint-suppressions.json    nothing held
               .jterrazz/baseline.json › typescript  nothing held
-              tool versions                         tsc (Go) absent, typescript absent, oxlint absent, oxfmt absent, oxlint-tsgolint absent, knip absent, dependency-cruiser absent, ls-lint absent, rumdl absent
+              tool versions                         tsc (Go) absent, oxlint absent, oxfmt absent, oxlint-tsgolint absent, knip absent, dependency-cruiser absent, ls-lint absent, rumdl absent
 
              END  Finalizing quality checks
 
