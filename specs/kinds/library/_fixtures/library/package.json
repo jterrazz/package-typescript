@@ -1,0 +1,21 @@
+{
+    "name": "specimen-library",
+    "version": "1.0.0",
+    "license": "MIT",
+    "files": [
+        "dist"
+    ],
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        }
+    },
+    "devDependencies": {
+        "@jterrazz/test": "17.0.0",
+        "@jterrazz/typescript": "11.0.0",
+        "@types/node": "^26.6.2",
+        "vitest": "^5.0.1"
+    }
+}

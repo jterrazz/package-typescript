@@ -9,7 +9,7 @@ import {
     linkFromCheckout,
     readManifest,
     runtimeDependencies,
-} from './closure.ts';
+} from '../../../_shared/_setup/packed/closure.ts';
 
 const installed = join(process.cwd(), 'node_modules');
 const packed = process.env.PACKED_PACKAGE ?? '';

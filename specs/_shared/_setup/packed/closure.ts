@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, realpathSync, symlinkSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 
-import { isRecord, parsedJson } from '../../../_shared/_setup/parsed-json.ts';
+import { isRecord, parsedJson } from '../parsed-json.ts';
 
 export const CHECKOUT = resolve(import.meta.dirname, '../../../..');
 
@@ -15,6 +15,7 @@ type Manifest = {
     optionalDependencies?: Record<string, string>;
     peerDependencies?: Record<string, string>;
     peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+    workspaces?: string[];
 };
 
 export function readManifest(directory: string): Manifest {

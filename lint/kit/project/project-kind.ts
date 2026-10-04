@@ -23,7 +23,7 @@ type PlatformsOf = {
     >['platform'][];
 };
 
-const PLATFORMS_OF: PlatformsOf = {
+export const PLATFORMS_OF: PlatformsOf = {
     api: ['node', 'bun'],
     cli: ['node', 'bun'],
     library: PLATFORMS,

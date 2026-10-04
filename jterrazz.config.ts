@@ -16,6 +16,7 @@ export default defineConfig({
             { facet: 'lint' },
             {
                 facet: 'cli',
+                include: ['specs/cli/**/*.spec.ts', 'specs/kinds/**/*.spec.ts'],
                 setup: ['specs/cli/_setup/run-temp-root.ts', 'specs/cli/_setup/packed/per-run.ts'],
                 timeout: 120_000,
             },
@@ -40,6 +41,9 @@ export default defineConfig({
         },
         knip: {
             ignoreDependencies: {
+                '@types/react':
+                    'the website and mobile specimens of specs/kinds/ declare it, and their install links it from this checkout',
+                react: 'the website and mobile specimens of specs/kinds/ declare it, and their install links it from this checkout',
                 '@stryker-mutator/vitest-runner':
                     'Stryker loads the runner `typescript mutation` hands it by path, which knip cannot trace',
             },
