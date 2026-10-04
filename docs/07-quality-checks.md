@@ -353,7 +353,7 @@ It runs once per unit — the root, and each workspace member — that declares 
 
 <!-- /GENERATED:findings publish -->
 
-Beside them run `publint --strict` on the packed tarball and `attw --pack . --profile esm-only` on the declarations, and each prints its own report verbatim when it refuses.
+Beside them run `publint --strict` on the packed tarball and `attw --pack . --profile esm-only` on the declarations, and each prints its own report verbatim when it refuses. A package that publishes only a `bin` gets no attw: it offers an importer nothing to resolve.
 
 The first two rule ids overlap publint on purpose. They read the SOURCE TREE and it reads the TARBALL, which means they answer where npm is not reachable and they keep a stable id whatever publint's wording does next. A gate's vocabulary is its own.
 

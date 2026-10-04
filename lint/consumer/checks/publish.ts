@@ -170,11 +170,15 @@ export const publish: Pass = Object.freeze({
             lines: built.lines,
             tools: [
                 { args: ['--strict'], flag: '--publint', name: 'publint' },
-                {
-                    args: ['--pack', '.', '--profile', 'esm-only'],
-                    flag: '--attw',
-                    name: 'attw',
-                },
+                ...(targets.length === 0
+                    ? []
+                    : [
+                          {
+                              args: ['--pack', '.', '--profile', 'esm-only'],
+                              flag: '--attw',
+                              name: 'attw',
+                          },
+                      ]),
             ],
         };
     },
