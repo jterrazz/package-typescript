@@ -30,7 +30,7 @@ const NEVER_MUTATED = [
 ];
 
 // outside: Stryker 10 names a test by its suites and title joined with a space, where Vitest 5 joins them with ` > `: without this plugin every mutant runs no test and survives.
-const TEST_NAMES = `const strykerTestNames = {
+const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
     configureVitest({ project }) {
         let pattern;
         Object.defineProperty(project.config, 'testNamePattern', {
@@ -46,7 +46,7 @@ const TEST_NAMES = `const strykerTestNames = {
 };`;
 
 // invariant: a spawned process runs the instrumented build and reads the active mutant from its environment.
-const ACTIVE_MUTANT = `import { afterAll, beforeEach } from 'vitest';
+const ACTIVE_MUTANT_SETUP_SOURCE = `import { afterAll, beforeEach } from 'vitest';
 
 const namespace = () => globalThis.__stryker__;
 
@@ -65,7 +65,7 @@ afterAll(() => {
 `;
 
 // outside: the checks a test runs read the git tree, and the sandbox lies in the ignored .artifacts/, where git sees none.
-const sandboxScript = (
+const sandboxScriptSource = (
     build: boolean,
 ): string => `import { execFileSync } from 'node:child_process';
 
@@ -73,7 +73,7 @@ execFileSync('git', ['init', '--quiet']);
 execFileSync('git', ['add', '--all']);
 ${build ? "execFileSync('npm', ['run', 'build'], { stdio: 'inherit' });\n" : ''}`;
 
-type Settings = { exclude: string[]; ignore: string[]; mutated: string[] };
+type MutationScope = { exclude: string[]; ignore: string[]; mutated: string[] };
 
 const extensionGlob = (extensions: readonly string[]): string =>
     extensions.length === 1 ? (extensions[0] ?? 'ts') : `{${extensions.join(',')}}`;
@@ -90,7 +90,7 @@ function sourceGlobsOf(unit: string, { resolved }: Resolution): string[] {
     );
 }
 
-async function settingsOf(project: string): Promise<Settings> {
+async function mutationScopeOf(project: string): Promise<MutationScope> {
     const root = await readSettings(project);
     const members = await Promise.all(
         workspaceMembers(project).map(
@@ -123,13 +123,13 @@ const typeCheckedGlob = (mutated: readonly string[]): string =>
 const TEST_SUFFIXES = ['.test.ts', '.test.tsx'];
 
 /** A module test proves the module beside it: a source with no `<name>.test.ts` is the specs' to prove, measured by range with `--specs`. */
-function testedSources(project: string, settings: Settings): string[] {
-    const never = [...NEVER_MUTATED, ...settings.ignore];
+function testedSources(project: string, scope: MutationScope): string[] {
+    const never = [...NEVER_MUTATED, ...scope.ignore];
     const hasItsTest = (file: string): boolean =>
         TEST_SUFFIXES.some((suffix) =>
             existsSync(join(project, file.replace(/\.[cm]?[jt]sx?$/u, suffix))),
         );
-    return [...new Set(settings.mutated.flatMap((glob) => globSync(glob, { cwd: project })))]
+    return [...new Set(scope.mutated.flatMap((glob) => globSync(glob, { cwd: project })))]
         .filter((file) => !never.some((pattern) => matchesGlob(file, pattern)) && hasItsTest(file))
         .toSorted();
 }
@@ -144,7 +144,7 @@ function buildsOf(project: string): boolean {
     }
 }
 
-function vitestConfig(settings: Settings, specs: boolean): string {
+function mutationVitestConfigSource(scope: MutationScope, specs: boolean): string {
     const kept = specs
         ? 'projects.filter((project) => project.test?.browser?.enabled !== true)'
         : "projects.filter((project) => project.test?.name === 'unit')";
@@ -156,7 +156,7 @@ import declared from '../../vitest.config.ts';
 
 const project = typeof declared === 'function' ? await declared({ command: 'serve', mode: 'test' }) : await declared;
 
-${TEST_NAMES}
+${TEST_NAME_PLUGIN_SOURCE}
 
 const projects = project.test?.projects ?? [];
 
@@ -166,24 +166,24 @@ export default {
         ...project.test,
         coverage: { enabled: false },
         projects: ${kept}.map((one) =>
-            mergeConfig(one, { plugins: [strykerTestNames], test: { ${setup}exclude: ${JSON.stringify(settings.exclude)} } }),
+            mergeConfig(one, { plugins: [strykerTestNames], test: { ${setup}exclude: ${JSON.stringify(scope.exclude)} } }),
         ),
     },
 };
 `;
 }
 
-function strykerConfig(settings: Settings, specs: boolean, tested: readonly string[]): object {
+function strykerConfig(scope: MutationScope, specs: boolean, tested: readonly string[]): object {
     const shared = {
         $schema: '../../node_modules/@stryker-mutator/core/schema/stryker-schema.json',
         buildCommand: `node ${OUT}/sandbox.mjs`,
         checkers: [],
-        disableTypeChecks: typeCheckedGlob(settings.mutated),
+        disableTypeChecks: typeCheckedGlob(scope.mutated),
         ignorePatterns: [`/${ARTIFACTS}/**`, `!/${OUT}/*.mjs`, `!/${DEV_OUTPUT}/**`],
         mutate: specs
             ? [
-                  ...settings.mutated,
-                  ...[...NEVER_MUTATED, ...settings.ignore].map((glob) => `!${glob}`),
+                  ...scope.mutated,
+                  ...[...NEVER_MUTATED, ...scope.ignore].map((glob) => `!${glob}`),
               ]
             : tested,
         plugins: [createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner')],
@@ -234,20 +234,20 @@ export async function mutation(args: readonly string[]): Promise<number> {
 
         return 1;
     }
-    const settings = await settingsOf(project);
+    const scope = await mutationScopeOf(project);
     mkdirSync(OUT, { recursive: true });
-    writeFileSync(join(OUT, 'vitest.config.mjs'), vitestConfig(settings, specs));
-    writeFileSync(join(OUT, 'active-mutant.mjs'), ACTIVE_MUTANT);
-    writeFileSync(join(OUT, 'sandbox.mjs'), sandboxScript(specs && buildsOf(project)));
+    writeFileSync(join(OUT, 'vitest.config.mjs'), mutationVitestConfigSource(scope, specs));
+    writeFileSync(join(OUT, 'active-mutant.mjs'), ACTIVE_MUTANT_SETUP_SOURCE);
+    writeFileSync(join(OUT, 'sandbox.mjs'), sandboxScriptSource(specs && buildsOf(project)));
     const config = join(OUT, specs ? 'stryker.specs.config.json' : 'stryker.config.json');
-    const tested = testedSources(project, settings);
+    const tested = testedSources(project, scope);
     if (!specs && tested.length === 0) {
         print(
             `${badge('TYPESCRIPT')} No source has a module test beside it: nothing to measure.\n`,
         );
         return 0;
     }
-    writeFileSync(config, `${JSON.stringify(strykerConfig(settings, specs, tested), null, 4)}\n`);
+    writeFileSync(config, `${JSON.stringify(strykerConfig(scope, specs, tested), null, 4)}\n`);
     print(`${badge('TYPESCRIPT')} Measuring the suite against mutants of the sources...\n\n`);
 
     const status = await handOver(
