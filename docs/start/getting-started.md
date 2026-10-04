@@ -5,7 +5,7 @@ From an empty folder to a green `typescript check`: one install, one declaration
 ## Before you start
 
 - **Node 24 or later.** Node loads `jterrazz.config.ts` itself, stripping its types, which needs no flag from Node 24 on; the package declares it in `engines`.
-- **npm, pnpm or bun.** The package holds under each of them.
+- **npm, pnpm or bun.** The package holds under each of them. The examples below are npm's; under pnpm, `npx typescript …` is `pnpm exec typescript …` and `npm ci` is `pnpm install --frozen-lockfile`, and under bun they are `bunx typescript …` and `bun install --frozen-lockfile`. One check is narrower off npm: `typescript doctor` reads `package-lock.json` and `bun.lock` to pin the browser provider to vitest, and says so rather than parsing a `pnpm-lock.yaml` or a `bun.lockb` ([The provider pinned to its runner](../guides/adopt-a-stricter-release.md#the-provider-pinned-to-its-runner)).
 - **A git repository.** `git init` before the first run. Every gate reads the files git does not ignore, and the manual and the `Makefile` are asked for only at a repository root, a `.git` beside the project. Outside one, the gates walk the disk and those two are never asked.
 
 ```bash
@@ -91,7 +91,7 @@ The scripts are the same for every kind:
 }
 ```
 
-`build` compiles what the manifest publishes — the `exports`, `main` and `bin` targets, each from its source — and a `.cjs` target gets a CommonJS output beside the ESM one, so a library and an application build with the same command. A library drops `"private": true` and `start`/`dev`.
+`build` compiles what the manifest publishes — the `exports`, `main` and `bin` targets, each from its source — and a `.cjs` target gets a CommonJS output beside the ESM one, so a library and an application build with the same command. A library and a cli drop `"private": true` and `start`/`dev`: both commands run `dist/index.js`, which a cli whose only target is its `bin` never builds, so a cli is run as its users run it, `node dist/greet.js` ([Building](../reference/building.md)).
 
 What the build produces, and how it reads the entries, is [Building](../reference/building.md).
 
@@ -100,6 +100,8 @@ What the build produces, and how it reads the entries, is [Building](../referenc
 ### With `@jterrazz/test`, or without it
 
 `@jterrazz/test` is optional. Without it, its conventions never run, a `specs/` folder is judged only by the gates every folder is, and `make test` runs whatever runner the project chose. With it, the project lists its preset in the settings file, as step 2 shows, and `typescript check`, `fix` and `baseline` run its checks with their own ([A preset's checks](../reference/quality-checks.md#a-presets-checks)). How to write its specs is [its own manual](https://www.npmjs.com/package/@jterrazz/test).
+
+A project off the preset keeps its own `vitest.config.ts`, if it needs one, and no rule judges it: `config/editor-file-derived` judges that file only when a listed preset derives it, as `test()` does. What [No config of its own](../reference/quality-checks.md#no-config-of-its-own) refuses either way is a second vitest config, a `vitest.<name>.config.ts` or `vitest.workspace.ts`.
 
 ## 4. Answer the six gestures in a Makefile
 
@@ -115,12 +117,12 @@ build lint test:
 	npm run $@
 
 fix:
-	npm run lint:fix
+	npx typescript fix
 
 check: lint test
 ```
 
-The `Makefile` is a gate of its own: in a repository, `check` refuses a root with no `Makefile` (`names/repository-has-makefile`) and one with no rule for any of the six (`names/makefile-answers-every-gesture`). A workspace keeps one, at its root; a member owes none. A repository with a second fixer, `@jterrazz/test`'s, runs both from `fix` by the recipe [Quality checks](../reference/quality-checks.md#the-six-gestures) gives.
+The `Makefile` is a gate of its own: in a repository, `check` refuses a root with no `Makefile` (`names/repository-has-makefile`) and one with no rule for any of the six (`names/makefile-answers-every-gesture`). A workspace keeps one, at its root; a member owes none. `@jterrazz/test`'s fixers run inside `typescript fix`, so its preset changes nothing here; a repository with a fixer of its own outside the toolchain chains it by the recipe [Quality checks § The six gestures](../reference/quality-checks.md#the-six-gestures) shows.
 
 ## 5. Run the gate
 
@@ -199,6 +201,49 @@ typescript clean   # removes .artifacts/ and leaves dist/ alone
 ```
 
 The presets already write there, and the [Gitignore (artefacts) pass](../reference/quality-checks.md#the-gitignore-artefacts-pass) fails a `.gitignore` that still names an artefact anywhere else; `typescript fix` rewrites it.
+
+## Your editor
+
+Open the editor on the project folder, a workspace on its root, never on a folder above it: oxlint started above the project reads the derived config as a nested one and lints with its own defaults ([Quality checks § The derived files](../reference/quality-checks.md#the-derived-files)).
+
+- **Lint and format.** An Oxc integration — the Oxc extension in VS Code and its forks — runs `oxlint --lsp` and `oxfmt --lsp`; point it at the project's own `node_modules/.bin/oxlint` and `oxfmt`, so the editor runs the versions `check` runs. The type-aware rules need nothing more: oxlint finds `tsgolint` in the same `node_modules/.bin`. Turn off any ESLint or Prettier integration for the project, which would judge it by another rulebook.
+- **Types.** `check` type-checks with the TypeScript 7 compiler this package installs, at `node_modules/@typescript/typescript-<os>-<arch>/lib/tsc`, whose language server is `tsc --lsp --stdio`. Point the editor's TypeScript at it. `node_modules/typescript` is TypeScript 6, kept for two tools that read its JavaScript API ([Architecture](../concepts/architecture.md#two-typescript-compilers-on-purpose)); an editor told to use the workspace version picks that one, and can then disagree with `check`, which stays the verdict.
+- **After an edit of `jterrazz.config.ts`**, save `oxlint.config.ts` or restart the oxlint server: it watches its own config, not the declaration.
+
+## In a workspace
+
+A monorepo declares `kind: 'workspace'` at its root, with no platform, and each member declares its own kind and platform beside its `package.json`:
+
+```ts
+// jterrazz.config.ts, at the root
+import { defineConfig } from '@jterrazz/typescript/config';
+
+export default defineConfig({ kind: 'workspace' });
+```
+
+```ts
+// packages/greeting/jterrazz.config.ts
+import { defineConfig } from '@jterrazz/typescript/config';
+
+export default defineConfig({ kind: 'library', platform: 'node' });
+```
+
+```text
+package.json            # "private": true, "workspaces": ["packages/*"]
+jterrazz.config.ts      # { kind: 'workspace' }
+oxlint.config.ts        # derived; lints each member by its own declaration
+oxfmt.config.ts         # derived
+Makefile                # the six gestures, once for the repository
+AGENTS.md, docs/        # the manual, once for the repository
+.jterrazz/              # the ledgers, where check runs
+packages/greeting/
+  package.json
+  jterrazz.config.ts    # { kind: 'library', platform: 'node' }
+  tsconfig.json         # derived from the member's platform
+  src/
+```
+
+The root keeps no `tsconfig.json`, and a member keeps no `oxlint.config.ts`, `oxfmt.config.ts` or `Makefile`. `typescript check` and `fix` run at the root: which passes run once per member and which once for the tree is [Quality checks § In a workspace](../reference/quality-checks.md#in-a-workspace), and a member's knip paths carry its folder ([Lint presets § Workspaces](../reference/lint-presets.md#workspaces)).
 
 ## On an existing project
 

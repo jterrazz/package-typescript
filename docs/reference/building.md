@@ -9,6 +9,8 @@ Three commands cover a project's build and run: `build` produces `dist/`, `start
 | `typescript dev`   | builds, runs, then rebuilds and reruns on every change               | an application                           |
 | `typescript tsc`   | whatever the compiler emits                                          | a repository built on project references |
 
+`start` and `dev` always run `dist/index.js`, the output of `src/index.ts`, with whatever arguments follow; neither looks for a `bin`. A project with no `dist/index.js` — a `cli` whose only target is its `bin`, a workspace root that builds nothing itself — has nothing for them to run and Node fails to find the module, so it keeps neither script: a cli is run by its built bin, `node dist/greet.js`, and a workspace runs each member's own.
+
 ## The entries
 
 A build compiles what the package publishes, and its `package.json` already says what that is: its `exports`, `main` and `bin`. Each target under `dist/` is compiled from its entry under `src/`, named by [the entry grammar](quality-checks.md#the-entry-grammar), and written where the manifest says:

@@ -10,6 +10,8 @@ The work itself runs in fast native tools wherever one exists: [Oxc](https://oxc
 
 ## In 30 seconds
 
+Requires Node 24 or later, and npm, pnpm or bun.
+
 ```bash
 npm install @jterrazz/typescript @types/node --save-dev
 ```
