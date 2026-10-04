@@ -10,7 +10,7 @@ npx typescript check           # Every quality pass, in parallel, ending on a dr
 npx typescript fix             # Rewrite in place: lint, formatting, the .gitignore, spellings, fallen baseline counts
 npx typescript doctor          # Installed tool versions against the ranges this release declares
 npx typescript baseline        # Record today's debt so that it may only fall
-npx typescript mutation        # The module tests, against mutants of the sources they test
+npx typescript mutation        # The module tests, then the whole suite over the changed lines they leave
 npx typescript docs-layout .   # Check a repository's docs/ against the manual's shape
 npx typescript clean           # Remove .artifacts/ (dist/ stays: it is the product)
 npx typescript tsc             # The TypeScript 7 compiler, passed through
