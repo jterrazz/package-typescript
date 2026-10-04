@@ -1,5 +1,6 @@
+import { clock } from '@jterrazz/test';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { mkdirSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
@@ -12,6 +13,9 @@ import {
     treeNames,
     treeStamp,
 } from './git-tree.js';
+
+const PINNED = '2099-01-01T00:00:00Z';
+const PINNED_SECONDS = Date.parse(PINNED) / 1000;
 
 describe('git-tree', () => {
     test('the tree git does not ignore — lists an untracked file beside a tracked one — a new file needs no `git add`', () => {
@@ -48,15 +52,17 @@ describe('git-tree', () => {
         expect(treeKind(join(root, 'src', 'gone.ts'))).toBeUndefined();
     });
 
-    test('the tree git does not ignore — sees a file and a folder created after a first read, with no forget — an editor lints again', () => {
-        // Given - a repository whose tree was read once
+    test('the tree git does not ignore — sees a file and a folder created after a first read, though in its very millisecond, with no forget — an editor lints again', () => {
+        // Given - a repository whose tree was read once, at a pinned instant
         const root = project(['src/old.ts'], { add: ['src'] });
+        using _ = clock.at(PINNED);
         expect(treeNames(join(root, 'src'))).toStrictEqual(['old.ts']);
 
-        // When - a module and a folder are written after it, and nothing drops the listing
+        // When - a module and a folder are written after it, the folder stamped with that same instant, and nothing drops the listing
         writeFileSync(join(root, 'src', 'new.ts'), 'new\n');
         mkdirSync(join(root, 'src', 'nested'));
         writeFileSync(join(root, 'src', 'nested', 'deep.ts'), 'deep\n');
+        utimesSync(join(root, 'src'), PINNED_SECONDS, PINNED_SECONDS);
 
         // Then - the next read sees them
         expect(treeNames(join(root, 'src')).toSorted()).toStrictEqual([
@@ -82,19 +88,6 @@ describe('git-tree', () => {
 
         // Then - every module, and no log
         expect(treeNames(join(root, 'src')).toSorted()).toStrictEqual(modules);
-    });
-
-    test('the tree git does not ignore — reads the index again once it moved — a path `git rm --cached` and ignored leaves the tree', () => {
-        // Given - a tracked data file under a folder ignored after it was added, read once
-        const root = project(['data/dump.json', 'src/a.ts'], { add: ['data', 'src'] });
-        writeFileSync(join(root, '.gitignore'), 'data/\n');
-        expect(treeKind(join(root, 'data', 'dump.json'))).toBe('file');
-
-        // When - git stops tracking it: only the index changes
-        execFileSync('git', ['rm', '--cached', '--quiet', 'data/dump.json'], { cwd: root });
-
-        // Then - the ignore rule now hides it
-        expect(treeKind(join(root, 'data', 'dump.json'))).toBeUndefined();
     });
 
     test('the tree git does not ignore — reads the disk where git places the directory in no work tree', () => {
@@ -217,6 +210,21 @@ describe('git-tree', () => {
         expect(gitAsked(() => treeNames(root))).toStrictEqual(['rev-parse']);
     });
 
+    test('the tree git does not ignore — reads the index again once it moved, though in the very millisecond the tree was listed — a path `git rm --cached` and ignored leaves the tree', () => {
+        // Given - a tracked data file under a folder ignored after it was added, listed at a frozen instant
+        const root = project(['data/dump.json', 'src/a.ts'], { add: ['data', 'src'] });
+        writeFileSync(join(root, '.gitignore'), 'data/\n');
+        using _ = clock.at(PINNED);
+        expect(treeKind(join(root, 'data', 'dump.json'))).toBe('file');
+
+        // When - git stops tracking it, the index stamped with that same instant
+        execFileSync('git', ['rm', '--cached', '--quiet', 'data/dump.json'], { cwd: root });
+        utimesSync(join(root, '.git', 'index'), PINNED_SECONDS, PINNED_SECONDS);
+
+        // Then - the ignore rule now hides it
+        expect(treeKind(join(root, 'data', 'dump.json'))).toBeUndefined();
+    });
+
     test("the listing's own freshness stamp — stays the same while neither the folder nor the index changed", () => {
         // Given - a repository, its `src/` stamped once
         const root = project(['src/old.ts'], { add: ['src'] });
@@ -274,15 +282,16 @@ describe('git-tree', () => {
         expect(indexed.split('\n').filter(Boolean)).toStrictEqual(['src/new.ts']);
     });
 
-    test('the move that keeps history — moves an untracked file by rename, and the tree reads it at its new place', () => {
-        // Given - a repository, a new file nobody added, and the tree already read
+    test('the move that keeps history — moves an untracked file by rename, and the tree reads it at its new place even where the disk stamps behind the clock', () => {
+        // Given - a new file nobody added, the tree read at an instant later than any stamp the disk writes next
         const root = project(['src/kept.ts', 'src/draft.ts'], { add: ['src/kept.ts'] });
+        using _ = clock.at(PINNED);
         expect(treeNames(join(root, 'src')).toSorted()).toStrictEqual(['draft.ts', 'kept.ts']);
 
         // When - it is moved
         moveKeepingHistory(join(root, 'src', 'draft.ts'), join(root, 'src', 'final.ts'));
 
-        // Then - the listing was read again
+        // Then - the listing was read again, though no stamp is newer than it
         expect(treeNames(join(root, 'src')).toSorted()).toStrictEqual(['final.ts', 'kept.ts']);
     });
 });

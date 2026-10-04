@@ -62,8 +62,7 @@ function changedAt(path: string): number {
 }
 
 function isListingStale(tree: WorkTree, dir: string): boolean {
-    // Stryker disable next-line EqualityOperator: a change stamped in the listing's own millisecond is relisted or not by chance, either way
-    return changedAt(tree.index) > tree.listedAt || changedAt(dir) > tree.listedAt;
+    return changedAt(tree.index) >= tree.listedAt || changedAt(dir) >= tree.listedAt;
 }
 
 function listTree(top: string, index: string): null | WorkTree {
@@ -192,6 +191,5 @@ export function moveKeepingHistory(from: string, to: string): void {
     if (moved.status !== 0) {
         renameSync(from, to);
     }
-    // Stryker disable next-line CallExpression: a move inside the millisecond of the last listing leaves no newer stamp to see
     forgetTree();
 }
