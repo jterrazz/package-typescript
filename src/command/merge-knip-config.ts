@@ -141,7 +141,7 @@ function manifestHere(): JsonObject {
             refusal({
                 fix: 'repair package.json, then run again',
                 found: `package.json does not parse: ${messageOf(error)}`,
-                read: 'docs/08-lint-presets.md#unused-code-knip',
+                read: 'docs/reference/lint-presets.md#unused-code-knip',
                 why: 'knip is handed the preset merged with what the project declares, and would judge the project against a config it never wrote',
             }),
             { cause: error },

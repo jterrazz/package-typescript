@@ -32,7 +32,7 @@ describe('oxlint-config-unparsed', () => {
              RUN  Oxlint Check
 
             Failed to parse oxlint configuration file.{{any}}
-            oxlint-config-unparsed  oxlint.config.ts  found: oxlint refused this config and linted nothing — its own report is above · why: a run over a config oxlint could not parse enforces no rule, and would read as green · fix: repair what oxlint names above — usually a \`jsPlugins\` entry naming a module that is not there · read: docs/07-quality-checks.md#the-two-refusals-that-are-not-diagnostics
+            oxlint-config-unparsed  oxlint.config.ts  found: oxlint refused this config and linted nothing — its own report is above · why: a run over a config oxlint could not parse enforces no rule, and would read as green · fix: repair what oxlint names above — usually a \`jsPlugins\` entry naming a module that is not there · read: docs/reference/quality-checks.md#the-two-refusals-that-are-not-diagnostics
             ✗ Failed with exit code 1
 
              END  Finalizing quality checks

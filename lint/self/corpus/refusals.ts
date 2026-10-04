@@ -11,7 +11,7 @@ const ID = 'error-is-a-refusal-or-an-invariant';
 const WHY =
     'an error a project can cause is read by the agent that caused it, so it says what was found, why it matters, how to fix it and where to read; one only the toolchain can cause says the bug is ours';
 
-const READ = 'docs/03-testing.md#where-each-rule-declares-it';
+const READ = 'docs/guides/test.md#where-each-rule-declares-it';
 
 const BUILT_IN_ERRORS: ReadonlySet<string> = new Set([
     'AggregateError',

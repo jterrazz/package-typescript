@@ -32,9 +32,9 @@ runs:
 
            RUN  Names (tree)
 
-          src/constants.ts:1:1: error names(no-language-construct-name): found: `constants.ts` names a construct of the language · why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds · read: docs/07-quality-checks.md#the-names-tree-pass
-          src/types.ts:1:1: error names(no-language-construct-name): found: `types.ts` names a construct of the language · why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds · read: docs/07-quality-checks.md#the-names-tree-pass
-          baseline-ratchet  .jterrazz/baseline.json › typescript  found: `names/no-language-construct-name` is at 2, above its baseline of 1 · why: each count is held exactly, and a count above its entry is a regression · fix: fix the findings, or run 'typescript baseline' to record where the project stands · read: docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds
+          src/constants.ts:1:1: error names(no-language-construct-name): found: `constants.ts` names a construct of the language · why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds · read: docs/reference/quality-checks.md#the-names-tree-pass
+          src/types.ts:1:1: error names(no-language-construct-name): found: `types.ts` names a construct of the language · why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds · read: docs/reference/quality-checks.md#the-names-tree-pass
+          baseline-ratchet  .jterrazz/baseline.json › typescript  found: `names/no-language-construct-name` is at 2, above its baseline of 1 · why: each count is held exactly, and a count above its entry is a regression · fix: fix the findings, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
           ✗ Failed with exit code 1
 
            RUN  Secrets (credentials)

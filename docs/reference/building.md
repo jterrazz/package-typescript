@@ -1,6 +1,6 @@
 # Building
 
-Three commands cover a project's build and run: `build` produces `dist/`, `start` and `dev` run it. A fourth, `tsc`, passes the compiler through for the one thing they do not do. The pipeline is [tsdown](https://tsdown.dev) over [Rolldown](https://rolldown.rs): it transpiles, bundles and emits the declarations, from a config the command derives and hands over — a project keeps no `tsdown.config.ts`, and the [Config (one file) pass](07-quality-checks.md#the-config-one-file-pass) refuses one.
+Three commands cover a project's build and run: `build` produces `dist/`, `start` and `dev` run it. A fourth, `tsc`, passes the compiler through for the one thing they do not do. The pipeline is [tsdown](https://tsdown.dev) over [Rolldown](https://rolldown.rs): it transpiles, bundles and emits the declarations, from a config the command derives and hands over — a project keeps no `tsdown.config.ts`, and the [Config (one file) pass](quality-checks.md#the-config-one-file-pass) refuses one.
 
 | Command            | Produces                                                             | For                                      |
 | ------------------ | -------------------------------------------------------------------- | ---------------------------------------- |
@@ -11,7 +11,7 @@ Three commands cover a project's build and run: `build` produces `dist/`, `start
 
 ## The entries
 
-A build compiles what the package publishes, and its `package.json` already says what that is: its `exports`, `main` and `bin`. Each target under `dist/` is compiled from its entry under `src/`, named by [the entry grammar](07-quality-checks.md#the-entry-grammar), and written where the manifest says:
+A build compiles what the package publishes, and its `package.json` already says what that is: its `exports`, `main` and `bin`. Each target under `dist/` is compiled from its entry under `src/`, named by [the entry grammar](quality-checks.md#the-entry-grammar), and written where the manifest says:
 
 | Manifest                                                 | Entry                        | Output                  |
 | -------------------------------------------------------- | ---------------------------- | ----------------------- |
@@ -29,7 +29,7 @@ Each target decides its output by its extension and its condition:
 - a `browser` condition is built apart, for the browser platform, with no declarations — its `types` are the node build's;
 - the rest is built for the platform the project declares: the browser for `react`, `next`, `astro` and `expo`, Node otherwise.
 
-A module two entries share is written once, as `dist/shared-<name>.js`. A `library` emits its declarations with the type-checker, so an export with no annotation is published with the type the checker infers for it. [ADR-018](decisions/018-a-project-declares-what-it-is-and-every-config-follows.md#consequences) records why they are not built file by file with `isolatedDeclarations`.
+A module two entries share is written once, as `dist/shared-<name>.js`. A `library` emits its declarations with the type-checker, so an export with no annotation is published with the type the checker infers for it. [ADR-018](../decisions/018-a-project-declares-what-it-is-and-every-config-follows.md#consequences) records why they are not built file by file with `isolatedDeclarations`.
 
 ### What the manifest does not name
 
@@ -67,5 +67,5 @@ When tsdown stops, its own report is printed as it came, and below it the comman
 
 ## Related
 
-- [Getting started](05-getting-started.md): the scripts that call these commands.
-- [Quality checks](07-quality-checks.md#the-publish-packaging-pass): the Publish pass, which judges what a library's build would ship.
+- [Getting started](../start/getting-started.md): the scripts that call these commands.
+- [Quality checks](quality-checks.md#the-publish-packaging-pass): the Publish pass, which judges what a library's build would ship.

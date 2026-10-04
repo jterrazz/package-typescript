@@ -29,7 +29,7 @@ async function planOf(project: string): Promise<BuildStep[] | string> {
           })
         : refusal({
               ...presetLesson(refused, SETTINGS_FILE),
-              read: 'docs/09-building.md#the-entries',
+              read: 'docs/reference/building.md#the-entries',
           });
 }
 
@@ -70,7 +70,7 @@ export async function build(): Promise<number> {
             `${RED}${refusal({
                 fix: 'repair what tsdown names above, then run the build again',
                 found: 'tsdown could not build the project — its own report is above',
-                read: 'docs/09-building.md#a-build-that-fails',
+                read: 'docs/reference/building.md#a-build-that-fails',
                 why: 'dist/ is what `start` runs and what the package publishes, and a build that stopped part-way leaves it stale',
             })}${RESET}\n`,
         );

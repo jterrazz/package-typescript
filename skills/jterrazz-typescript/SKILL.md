@@ -5,7 +5,7 @@ description: Use when building, checking, linting, formatting, or configuring a 
 
 # @jterrazz/typescript
 
-One devDependency that builds, checks, lints and formats a project. The manual is the package's `docs/`, read from the install — `node_modules/@jterrazz/typescript/docs/` — or from this repository when the toolchain itself is the change. This page decides what to run and which chapter to open; the chapter owns the rule.
+One devDependency that builds, checks, lints and formats a project. The manual is the package's `docs/`, read from the install — `node_modules/@jterrazz/typescript/docs/` — or from this repository when the toolchain itself is the change. This page decides what to run and which page to open; the page owns the rule.
 
 ## What to run
 
@@ -19,11 +19,11 @@ One devDependency that builds, checks, lints and formats a project. The manual i
 | `typescript baseline`    | a bump lands red: record today's counts, exact — `fix` lowers one that fell                                   |
 | `typescript docs-layout` | a repository with no npm project: the manual's shape, alone                                                   |
 
-A project declares its `kind` — `library`, `api`, `cli`, `website`, `mobile`, `workspace` — and its `platform` — `node`, `bun`, `react`, `next`, `astro`, `expo` — in `jterrazz.config.ts`, `defineConfig({ kind, platform })`; the profile, the tsconfig preset and every law follow. `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json` are derived — the first two hand their own `import.meta.url` to `oxlintConfig` / `oxfmtConfig` — and `typescript fix` writes them; every tool setting lives in `jterrazz.config.ts`, and no `knip.json`, `tsdown.config.ts` or `stryker.config.*` is kept. A repository root also owes a `Makefile` of six gestures and a `docs/` manual its `AGENTS.md` routes to. The whole wiring, from an empty folder to a green run, is `docs/05-getting-started.md`.
+A project declares its `kind` — `library`, `api`, `cli`, `website`, `mobile`, `workspace` — and its `platform` — `node`, `bun`, `react`, `next`, `astro`, `expo` — in `jterrazz.config.ts`, `defineConfig({ kind, platform })`; the profile, the tsconfig preset and every law follow. `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json` are derived — the first two hand their own `import.meta.url` to `oxlintConfig` / `oxfmtConfig` — and `typescript fix` writes them; every tool setting lives in `jterrazz.config.ts`, and no `knip.json`, `tsdown.config.ts` or `stryker.config.*` is kept. A repository root also owes a `Makefile` of six gestures and a `docs/` manual its `AGENTS.md` routes to. The whole wiring, from an empty folder to a green run, is `docs/start/getting-started.md`.
 
 ## What a failing pass means
 
-Every pass that ran prints a `RUN` header and one verdict; a pass that did not apply prints nothing. Each rule id below is explained in `docs/07-quality-checks.md`, under the pass's own section.
+Every pass that ran prints a `RUN` header and one verdict; a pass that did not apply prints nothing. Each rule id below is explained in `docs/reference/quality-checks.md`, under the pass's own section.
 
 | Pass                      | It failed because                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -47,31 +47,33 @@ The drift report closes the run, and refuses nothing: a rule set apart already c
 
 ## Before writing
 
-- A file is named for its subject in the domain: never `types.ts`, `utils.ts`, `constants.ts`, nor a `*.types.ts` suffix. An `index` is an entry the package publishes, named `index[.<subpath>][.browser].ts` for its subpath, and a bin `<command>.bin.ts`, named for the command it publishes — `.bin` marks only a published bin, and a program the package does not publish is named for what it runs — `docs/07-quality-checks.md`, The entry grammar.
-- A file holds 300 lines and a function 60; a `*.spec.ts` is `@jterrazz/test`'s `spec-file-within-line-limit`, at 400 — `docs/08-lint-presets.md`.
-- The default is no comment: a name carries the meaning. A comment that stays opens with its kind — `invariant:`, `hazard:`, `outside:` or `value:` — or fails `jterrazz-typescript/comment-states-its-kind`; a symbol's hover is one `/** … */` line. A comment longer than the function it sits on fails `jterrazz-typescript/comment-no-longer-than-its-function` — `docs/08-lint-presets.md`, A comment states its kind.
+- A file is named for its subject in the domain: never `types.ts`, `utils.ts`, `constants.ts`, nor a `*.types.ts` suffix. An `index` is an entry the package publishes, named `index[.<subpath>][.browser].ts` for its subpath, and a bin `<command>.bin.ts`, named for the command it publishes — `.bin` marks only a published bin, and a program the package does not publish is named for what it runs — `docs/reference/quality-checks.md`, The entry grammar.
+- A file holds 300 lines and a function 60; a `*.spec.ts` is `@jterrazz/test`'s `spec-file-within-line-limit`, at 400 — `docs/reference/lint-presets.md`.
+- The default is no comment: a name carries the meaning. A comment that stays opens with its kind — `invariant:`, `hazard:`, `outside:` or `value:` — or fails `jterrazz-typescript/comment-states-its-kind`; a symbol's hover is one `/** … */` line. A comment longer than the function it sits on fails `jterrazz-typescript/comment-no-longer-than-its-function` — `docs/reference/lint-presets.md`, A comment states its kind.
 - A suppression carries its reason: `// oxlint-disable-next-line <rule> -- why`, and `@ts-expect-error` with a description.
 - Every artefact lives under `.artifacts/<tool>/`; `dist/` is the product, not an artefact.
 - What knip cannot trace goes under `typescript.knip`, each name mapped to its reason.
 - The API is the types: there is no generated reference, and `docs/` never holds one.
 - A repository root holds `src/`, `lint/`, `specs/`, `docs/`, `skills/` — any other root folder fails Names (tree) unless the ecosystem imposes it (`bin/`, `public/`, `app/`…) or `jterrazz.config.ts` declares it under `typescript.roots` with a reason.
-- A `lint/` holds at its root the modules that compose it — its entries, its bins, what `src/` reads — and three folders: `consumer/` and `self/` hold declarations alone, and `kit/` holds the code that runs them — `docs/07-quality-checks.md`, The lint tree.
+- A `lint/` holds at its root the modules that compose it — its entries, its bins, what `src/` reads — and three folders: `consumer/` and `self/` hold declarations alone, and `kit/` holds the code that runs them — `docs/reference/quality-checks.md`, The lint tree.
 - A repository's root `Makefile` answers `make install`, `build`, `lint`, `fix`, `test` and `check`; a workspace member owes none of them.
-- What a package holds a project to reaches it through the preset the project lists under `presets` in `jterrazz.config.ts`, after the base preset the declaration derives; the project's own layers, roots and name rules go in its `typescript` section, and a preset's law is set aside only under `optOuts`, with its reason — `docs/06-configuration.md`, Presets.
-- A rule a package writes for its consumers is written with `@jterrazz/typescript/rules` — `docs/10-rules-kit.md`.
+- What a package holds a project to reaches it through the preset the project lists under `presets` in `jterrazz.config.ts`, after the base preset the declaration derives; the project's own layers, roots and name rules go in its `typescript` section, and a preset's law is set aside only under `optOuts`, with its reason — `docs/reference/configuration.md`, Presets.
+- A rule a package writes for its consumers is written with `@jterrazz/typescript/rules` — `docs/reference/rules-kit.md`.
 - A local `compilerOption` is a smell — the preset is where the fix belongs.
 
-## The chapter to read next
+## The page to read next
 
-| Question                                                                                                                             | Chapter                                            |
-| ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
-| what the toolchain is, the four ideas to hold (declaration, settings file, two commands, baseline), and the order to read the manual | `README.md`, then `docs/README.md`                 |
-| wiring a project from an empty folder to a green `check`, `.artifacts/`                                                              | `docs/05-getting-started.md`                       |
-| `jterrazz.config.ts`, kind and platform, a preset, the merge order, an opt-out, a rule set apart, a tsconfig preset                  | `docs/06-configuration.md`                         |
-| a failing pass, a rule id, the baseline                                                                                              | `docs/07-quality-checks.md`                        |
-| a lint rule, a profile, how the config merges, knip                                                                                  | `docs/08-lint-presets.md`                          |
-| `build`, `start`, `dev`, `tsc`, an entry the manifest does not name                                                                  | `docs/09-building.md`                              |
-| a bump landed red, which number moves on a release                                                                                   | `docs/04-operating.md`                             |
-| writing a rule, a check or its chapter with the kit                                                                                  | `docs/10-rules-kit.md`                             |
-| changing the toolchain itself: its layers, its loop                                                                                  | `docs/01-architecture.md`, `docs/02-developing.md` |
-| how this toolchain proves itself, and the rules it keeps for its own suite — this repository alone, the install ships without it     | `docs/03-testing.md`                               |
+| Question                                                                                                                         | Page                                                      |
+| -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| what the toolchain is, and the map of the manual                                                                                 | `README.md`, then `docs/README.md`                        |
+| the four ideas: declaration, settings file, two commands, baseline                                                               | `docs/concepts/ideas.md`                                  |
+| wiring a project from an empty folder to a green `check`, `.artifacts/`                                                          | `docs/start/getting-started.md`                           |
+| `jterrazz.config.ts`, kind and platform, a preset, the merge order, an opt-out, a rule set apart, a tsconfig preset              | `docs/reference/configuration.md`                         |
+| a failing pass, a rule id, the baseline                                                                                          | `docs/reference/quality-checks.md`                        |
+| a lint rule, a profile, how the config merges, knip                                                                              | `docs/reference/lint-presets.md`                          |
+| `build`, `start`, `dev`, `tsc`, an entry the manifest does not name                                                              | `docs/reference/building.md`                              |
+| a bump landed red                                                                                                                | `docs/guides/adopt-a-stricter-release.md`                 |
+| which number moves on a release                                                                                                  | `docs/guides/release.md`                                  |
+| writing a rule, a check or its page with the kit                                                                                 | `docs/reference/rules-kit.md`                             |
+| changing the toolchain itself: its layers, its loop                                                                              | `docs/concepts/architecture.md`, `docs/guides/develop.md` |
+| how this toolchain proves itself, and the rules it keeps for its own suite — this repository alone, the install ships without it | `docs/guides/test.md`                                     |

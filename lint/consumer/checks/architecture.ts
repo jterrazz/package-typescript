@@ -24,7 +24,7 @@ const TSCONFIG = 'tsconfig.json';
 const OWN_FIX =
     'reach it through a layer the map allows, or change the map where the boundary moved';
 
-const OWN_READ: ChapterAnchor = 'docs/07-quality-checks.md#the-architecture-layer-map-pass';
+const OWN_READ: ChapterAnchor = 'docs/reference/quality-checks.md#the-architecture-layer-map-pass';
 
 type Declared = { problem: null | string; rules: ArchitectureRule[] };
 
@@ -48,7 +48,7 @@ function isRule(value: unknown): value is ArchitectureRule {
 const MALFORMED_LAYERS = refusal({
     fix: "give every entry of `typescript.architecture.layers` — and of each preset's `layers` — a `name`, a `from` and a `to` object, and a `why`, a `fix` and a `read`",
     found: 'jterrazz.config.ts holds a `layers` whose every entry is not `{ name, from, to, why, fix, read }`, `read` a chapter anchor `docs/<chapter>.md#<heading>`',
-    read: 'docs/07-quality-checks.md#the-architecture-layer-map-pass',
+    read: 'docs/reference/quality-checks.md#the-architecture-layer-map-pass',
     why: 'a layer is a dependency-cruiser rule and the lesson its refusal prints, and a layer missing a part can be neither judged nor taught',
 });
 
@@ -80,7 +80,7 @@ async function declaredRules(context: Context): Promise<Declared> {
         return {
             problem: refusal({
                 ...presetLesson(problem, SETTINGS_FILE),
-                read: 'docs/06-configuration.md#the-merge-order',
+                read: 'docs/reference/configuration.md#the-merge-order',
             }),
             rules: [],
         };
@@ -135,7 +135,7 @@ function cruisedRoots(context: Context): string[] {
 const UNCRUISED = refusal({
     fix: 'move the source into a folder, or remove the map that has nothing to judge',
     found: 'a layer map is declared, but no folder of the project holds a source file for it to cruise',
-    read: 'docs/07-quality-checks.md#the-architecture-layer-map-pass',
+    read: 'docs/reference/quality-checks.md#the-architecture-layer-map-pass',
     why: 'a map with nothing to cruise judges no import, and its silence would read as every boundary kept',
 });
 
@@ -223,7 +223,7 @@ function unreportedOf({ output, ran, status }: ToolRun): null | string {
         : refusal({
               fix: 'correct what dependency-cruiser printed — a layer whose `from` or `to` it cannot read, a tsconfig it cannot load — then run again',
               found: `dependency-cruiser stopped with no report — ${output.trim()}`,
-              read: 'docs/07-quality-checks.md#the-architecture-layer-map-pass',
+              read: 'docs/reference/quality-checks.md#the-architecture-layer-map-pass',
               why: 'the layer map is judged on the graph dependency-cruiser writes, and with no graph no import is judged',
           });
 }

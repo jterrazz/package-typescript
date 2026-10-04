@@ -325,8 +325,8 @@ describe('baseline-ownership', () => {
              RUN  Oxlint Check
 
             {{any}}
-            baseline-moved-to-oxlint  .jterrazz/baseline.json › typescript  found: \`eslint/no-debugger\` is an oxlint rule, and the section holds its count · why: oxlint holds its own rules in .jterrazz/oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain · fix: run 'typescript baseline', which records the lint debt in .jterrazz/oxlint-suppressions.json and drops the entry · read: docs/07-quality-checks.md#the-ratchet
-            baseline-moved-to-oxlint  .jterrazz/baseline.json › typescript  found: \`jterrazz/flags-every-file\` is an oxlint rule, and the section holds its count · why: oxlint holds its own rules in .jterrazz/oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain · fix: run 'typescript baseline', which records the lint debt in .jterrazz/oxlint-suppressions.json and drops the entry · read: docs/07-quality-checks.md#the-ratchet
+            baseline-moved-to-oxlint  .jterrazz/baseline.json › typescript  found: \`eslint/no-debugger\` is an oxlint rule, and the section holds its count · why: oxlint holds its own rules in .jterrazz/oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain · fix: run 'typescript baseline', which records the lint debt in .jterrazz/oxlint-suppressions.json and drops the entry · read: docs/reference/quality-checks.md#the-ratchet
+            baseline-moved-to-oxlint  .jterrazz/baseline.json › typescript  found: \`jterrazz/flags-every-file\` is an oxlint rule, and the section holds its count · why: oxlint holds its own rules in .jterrazz/oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain · fix: run 'typescript baseline', which records the lint debt in .jterrazz/oxlint-suppressions.json and drops the entry · read: docs/reference/quality-checks.md#the-ratchet
             ✗ Failed with exit code 1
 
              END  Finalizing quality checks

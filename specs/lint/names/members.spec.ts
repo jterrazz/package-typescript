@@ -14,12 +14,12 @@ describe('members', () => {
                 found: \`apps/api/scripts/\` is a root outside the spine
                 why: Every root folder is on the root spine, imposed by a tool, or declared with its reason.
                 fix: move it under src/, or declare it in apps/api/jterrazz.config.ts's \`typescript.roots\` with its reason
-                read: docs/07-quality-checks.md#a-root-beside-the-spine
+                read: docs/reference/quality-checks.md#a-root-beside-the-spine
             apps/web/lint/:1:1  names(no-undeclared-root-folder)
                 found: \`apps/web/lint/\` holds the lint rules a package ships, and neither apps/web/package.json nor its build publishes it
                 why: Every root folder is on the root spine, imposed by a tool, or declared with its reason.
                 fix: ship it, or move it under src/
-                read: docs/07-quality-checks.md#a-root-beside-the-spine
+                read: docs/reference/quality-checks.md#a-root-beside-the-spine
         `);
     });
 });

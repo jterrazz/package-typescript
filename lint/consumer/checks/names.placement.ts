@@ -15,7 +15,7 @@ const FOLDER_RULES: Readonly<Record<Top, string>> = Object.freeze({
     self: 'names/self-folder-is-known',
 });
 
-const LINT_READ = 'read: docs/07-quality-checks.md#the-lint-tree';
+const LINT_READ = 'read: docs/reference/quality-checks.md#the-lint-tree';
 
 function lintFinding(path: string, rule: string, parts: readonly string[]): Finding {
     return { message: [...parts, LINT_READ].join(' · '), path, rule };
@@ -86,7 +86,7 @@ function skillFinding(path: string): Finding {
             `found: \`${path}\` sits beside a skill's \`SKILL.md\``,
             'why: a skill is one `skills/<skill>/SKILL.md`, the one page an agent loads, and a file beside it is one no agent reads',
             'fix: fold what it says into the `SKILL.md` or into the chapter the skill routes to, and delete it',
-            'read: docs/07-quality-checks.md#the-names-tree-pass',
+            'read: docs/reference/quality-checks.md#the-names-tree-pass',
         ].join(' · '),
         path,
         rule: 'names/skill-holds-only-skill-md',
@@ -99,7 +99,7 @@ function directoryFinding(path: string): Finding {
             `found: \`${path}\` is not written in kebab-case`,
             'why: a directory name is part of every path and import that crosses it, and one case for every name reads the same on a disk that folds case and on one that does not',
             'fix: rename it in lowercase words joined by `-` — a leading `_` marks a folder the toolchain owns, and a route segment keeps its framework grammar (`[id]`, `(group)`, `@slot`)',
-            'read: docs/07-quality-checks.md#the-names-tree-pass',
+            'read: docs/reference/quality-checks.md#the-names-tree-pass',
         ].join(' · '),
         path,
         rule: 'names/directory-in-kebab-case',

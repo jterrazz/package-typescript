@@ -3,7 +3,7 @@ import { defineCheck, rowNamed } from '../../kit/catalogue/rule.js';
 import type { Finding } from '../../kit/checker/pass.js';
 import FINDINGS from '../catalogue/findings.json' with { type: 'json' };
 
-const CHAPTER = 'docs/07-quality-checks.md';
+const CHAPTER = 'docs/reference/quality-checks.md';
 
 const READ_BY_FAMILY: Readonly<Record<string, ChapterAnchor>> = Object.freeze({
     names: `${CHAPTER}#the-names-tree-pass`,
@@ -17,7 +17,7 @@ const READ_BY_NAME: Readonly<Record<string, ChapterAnchor>> = Object.freeze({
     'entry-follows-its-grammar': `${CHAPTER}#the-entry-grammar`,
     'export-has-an-entry': `${CHAPTER}#the-entry-grammar`,
     'index-is-an-entry': `${CHAPTER}#the-entry-grammar`,
-    'jterrazz-config-loads': 'docs/06-configuration.md#the-merge-order',
+    'jterrazz-config-loads': 'docs/reference/configuration.md#the-merge-order',
     'makefile-answers-every-gesture': `${CHAPTER}#the-six-gestures`,
     'no-empty-directory': `${CHAPTER}#an-empty-directory`,
     'no-undeclared-root-folder': `${CHAPTER}#a-root-beside-the-spine`,

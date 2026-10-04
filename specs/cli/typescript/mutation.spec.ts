@@ -17,7 +17,7 @@ describe('mutation', () => {
             {{any}}
             src/discount.ts:2:9  ConditionalExpression → false
             src/discount.ts:2:9  EqualityOperator → rate >= 0.5
-            found: 2 mutant(s) a module test runs and none detects · why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/07-quality-checks.md#mutation
+            found: 2 mutant(s) a module test runs and none detects · why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/reference/quality-checks.md#mutation
             2 mutant(s) no module test runs — the specs', measured by range: typescript mutation --specs --mutate <file>:<from>-<to>
               src/discount.ts  2
         `);

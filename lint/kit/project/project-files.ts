@@ -136,13 +136,13 @@ export function projectFiles(
                         ? {
                               fix: "add the project's files, then run again",
                               found: `nothing to read under ${root}: it holds folders and no file`,
-                              read: 'docs/07-quality-checks.md#an-unreadable-tree',
+                              read: 'docs/reference/quality-checks.md#an-unreadable-tree',
                               why: 'a sweep that reads nothing would turn every gate above it green',
                           }
                         : {
                               fix: "take the project's files out of .gitignore, then run again",
                               found: `nothing to read under ${root}: git ignores every file it holds`,
-                              read: 'docs/07-quality-checks.md#an-unreadable-tree',
+                              read: 'docs/reference/quality-checks.md#an-unreadable-tree',
                               why: 'a sweep that reads nothing would turn every gate above it green',
                           },
                 ),

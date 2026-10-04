@@ -3,7 +3,7 @@ import type { EditorFile } from '../../kit/project/editor-files.js';
 import type { ArchitectureRule, BasePresets, Preset } from '../../kit/project/preset.js';
 import type { Platform, ProjectIdentity } from '../../kit/project/project-kind.js';
 
-const READ = 'docs/01-architecture.md#the-judging-layer';
+const READ = 'docs/concepts/architecture.md#the-judging-layer';
 
 const TEST_MATERIAL = String.raw`\.(?:test|spec|test-d|spec-d|fixtures)\.[cm]?[jt]sx?$`;
 

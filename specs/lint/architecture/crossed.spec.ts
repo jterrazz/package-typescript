@@ -14,7 +14,7 @@ describe('crossed', () => {
                 found: \`src/domain/user.ts\` imports \`src/infrastructure/store.ts\`
                 why: A domain module never reaches for infrastructure.
                 fix: reach it through a layer the map allows, or change the map where the boundary moved
-                read: docs/07-quality-checks.md#the-architecture-layer-map-pass
+                read: docs/reference/quality-checks.md#the-architecture-layer-map-pass
         `);
     });
 });

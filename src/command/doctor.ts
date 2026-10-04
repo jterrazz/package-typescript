@@ -142,7 +142,7 @@ function reportPinnedPair(root: string): boolean {
             `${refusal({
                 fix: 'pin both to the same version',
                 found: `${PINNED_PAIR.provider} ${versionColumn(pair.provider)} is not ${PINNED_PAIR.runner} ${versionColumn(pair.runner)}`,
-                read: 'docs/04-operating.md#the-provider-pinned-to-its-runner',
+                read: 'docs/guides/adopt-a-stricter-release.md#the-provider-pinned-to-its-runner',
                 why: `${PINNED_PAIR.provider} is versioned with ${PINNED_PAIR.runner} and must equal it exactly: a patch apart loads a second copy of its internals`,
             })}\n`,
         );
@@ -172,7 +172,7 @@ export function doctor(root: string): number {
             `${refusal({
                 fix: 'install what this release declares, then run `typescript doctor` again',
                 found: 'a tool is older than its range, or not installed — its row reads `old` or `absent`',
-                read: 'docs/04-operating.md#adopting-a-stricter-release',
+                read: 'docs/guides/adopt-a-stricter-release.md#the-two-gestures',
                 why: 'a gate running an older tool enforces an older rulebook without saying so',
             })}\n`,
         );

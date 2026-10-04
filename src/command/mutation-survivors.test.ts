@@ -65,7 +65,7 @@ describe('mutation-survivors', () => {
                 'src/a.ts:3:9  ConditionalExpression → true',
                 'src/a.ts:7:9  ConditionalExpression → true',
                 'src/b.ts:2:9  ConditionalExpression → {}',
-                'found: 3 mutant(s) a module test runs and none detects · why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/07-quality-checks.md#mutation',
+                'found: 3 mutant(s) a module test runs and none detects · why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/reference/quality-checks.md#mutation',
                 "0 mutant(s) no module test runs — the specs', measured by range: typescript mutation --specs --mutate <file>:<from>-<to>",
             ],
             status: 1,
@@ -97,7 +97,7 @@ describe('mutation-survivors', () => {
         // Then - the four parts name every unjudged status, and the run fails
         expect(verdictOf(judged)).toStrictEqual({
             lines: [
-                'found: 4 mutant(s) the run never judged — no status 1, Pending 2, Skipped 1 · why: a mutant no test was run against says nothing of the line it mutates, so passing it would pass a run that judged nothing there · fix: run `typescript mutation` again to its end — a run stopped midway leaves its mutants Pending, and the next one runs them · read: docs/07-quality-checks.md#mutation',
+                'found: 4 mutant(s) the run never judged — no status 1, Pending 2, Skipped 1 · why: a mutant no test was run against says nothing of the line it mutates, so passing it would pass a run that judged nothing there · fix: run `typescript mutation` again to its end — a run stopped midway leaves its mutants Pending, and the next one runs them · read: docs/reference/quality-checks.md#mutation',
                 "0 mutant(s) no module test runs — the specs', measured by range: typescript mutation --specs --mutate <file>:<from>-<to>",
             ],
             status: 1,

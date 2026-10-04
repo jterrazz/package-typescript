@@ -58,7 +58,7 @@ async function chunksOrFinding(
         return {
             chunks: null,
             finding: {
-                message: `found: the build failed — ${reason} · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — \`typescript build\` names what failed · read: @jterrazz/typescript's docs/07-quality-checks.md#the-build-guard`,
+                message: `found: the build failed — ${reason} · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — \`typescript build\` names what failed · read: @jterrazz/typescript's docs/reference/quality-checks.md#the-build-guard`,
                 path: 'package.json',
                 rule: 'publish/build-succeeds',
             },

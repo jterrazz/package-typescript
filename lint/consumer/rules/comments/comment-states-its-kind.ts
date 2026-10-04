@@ -92,7 +92,7 @@ export const commentStatesItsKind = defineRule(
                 found: 'a comment that states no kind',
             },
         },
-        read: 'docs/08-lint-presets.md#a-comment-states-its-kind',
+        read: 'docs/reference/lint-presets.md#a-comment-states-its-kind',
         schema: [
             {
                 additionalProperties: false,

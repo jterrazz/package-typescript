@@ -108,7 +108,7 @@ function survivorLines({ survivors }: Judged): string[] {
         refusal({
             fix: 'assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent>',
             found: `${survivors.length} mutant(s) a module test runs and none detects`,
-            read: 'docs/07-quality-checks.md#mutation',
+            read: 'docs/reference/quality-checks.md#mutation',
             why: 'a test that runs a line and lets a change of it pass proves nothing of that line',
         }),
     ];
@@ -123,7 +123,7 @@ function unrunLines({ unrun }: Judged): string[] {
         refusal({
             fix: 'run `typescript mutation` again to its end — a run stopped midway leaves its mutants Pending, and the next one runs them',
             found: `${total} mutant(s) the run never judged — ${statuses}`,
-            read: 'docs/07-quality-checks.md#mutation',
+            read: 'docs/reference/quality-checks.md#mutation',
             why: 'a mutant no test was run against says nothing of the line it mutates, so passing it would pass a run that judged nothing there',
         }),
     ];

@@ -74,7 +74,7 @@ const PASSES: Passes = Object.freeze({
 const HELD: Held = Object.freeze({
     lower: 'typescript fix',
     passes: Object.freeze(['architecture', 'names']),
-    read: 'docs/07-quality-checks.md#what-jterrazzbaselinejson-still-holds',
+    read: 'docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds',
     record: 'typescript baseline',
     section: BASELINE_SECTION,
 });

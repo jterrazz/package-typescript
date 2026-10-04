@@ -217,7 +217,7 @@ export const commentNoLongerThanItsFunction = defineRule(
                 found: 'a comment of {{lines}} lines on a function whose body holds {{body}}',
             },
         },
-        read: 'docs/08-lint-presets.md#a-comment-no-longer-than-its-function',
+        read: 'docs/reference/lint-presets.md#a-comment-no-longer-than-its-function',
         type: 'suggestion',
     },
     {

@@ -219,7 +219,7 @@ function judgedRun(measured: ReadonlySet<string>): number {
             `${refusal({
                 fix: 'run typescript mutation again, and read what Stryker printed above if the report is still missing',
                 found: `Stryker exited 0 and left no ${report}`,
-                read: 'docs/07-quality-checks.md#mutation',
+                read: 'docs/reference/quality-checks.md#mutation',
                 why: 'the verdict is read from the report, and a run judged from none would pass having judged nothing',
             })}\n`,
         );
@@ -243,7 +243,7 @@ export async function mutation(args: readonly string[]): Promise<number> {
             `${refusal({
                 fix: 'name the ranges to measure: typescript mutation --specs --mutate src/a.ts:10-20,src/b.ts:4-4',
                 found: 'typescript mutation --specs names no ranges',
-                read: 'docs/07-quality-checks.md#mutation',
+                read: 'docs/reference/quality-checks.md#mutation',
                 why: 'every mutant reruns the whole suite and the processes it spawns, so a run is pointed at the lines it measures',
             })}\n`,
         );

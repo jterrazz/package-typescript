@@ -9,7 +9,7 @@ runs:
 
            RUN  Architecture (layer map)
 
-          found: jterrazz.config.ts holds a `layers` whose every entry is not `{ name, from, to, why, fix, read }`, `read` a chapter anchor `docs/<chapter>.md#<heading>` · why: a layer is a dependency-cruiser rule and the lesson its refusal prints, and a layer missing a part can be neither judged nor taught · fix: give every entry of `typescript.architecture.layers` — and of each preset's `layers` — a `name`, a `from` and a `to` object, and a `why`, a `fix` and a `read` · read: docs/07-quality-checks.md#the-architecture-layer-map-pass
+          found: jterrazz.config.ts holds a `layers` whose every entry is not `{ name, from, to, why, fix, read }`, `read` a chapter anchor `docs/<chapter>.md#<heading>` · why: a layer is a dependency-cruiser rule and the lesson its refusal prints, and a layer missing a part can be neither judged nor taught · fix: give every entry of `typescript.architecture.layers` — and of each preset's `layers` — a `name`, a `from` and a `to` object, and a `why`, a `fix` and a `read` · read: docs/reference/quality-checks.md#the-architecture-layer-map-pass
           ✗ Failed with exit code 1
 
            END  Finalizing quality checks

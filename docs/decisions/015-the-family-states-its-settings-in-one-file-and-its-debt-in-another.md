@@ -49,4 +49,4 @@ never belong in one file.
 - Oxlint's own diagnostics later left the shared file for oxlint's
   `oxlint-suppressions.json` ([ADR-013](013-adopt-the-tool-before-building-the-check.md));
   what `jterrazz.baseline.json` still holds is
-  [Quality checks § The ratchet](../07-quality-checks.md#what-jterrazzbaselinejson-still-holds)'s.
+  [Quality checks § The ratchet](../reference/quality-checks.md#what-jterrazzbaselinejson-still-holds)'s.

@@ -4,7 +4,7 @@ export const layer = (name: string): ArchitectureRule => ({
     fix: 'fix',
     from: { path: '^src/' },
     name,
-    read: 'docs/06-configuration.md#presets',
+    read: 'docs/reference/configuration.md#presets',
     to: { path: '^lint/' },
     why: 'why',
 });

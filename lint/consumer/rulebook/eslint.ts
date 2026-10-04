@@ -272,7 +272,7 @@ export default fragment({
         ),
         'sort-imports': off({ by: 'oxfmt sortImports', kind: 'covered' }),
         'sort-keys': off({
-            by: 'docs/08-lint-presets.md — an object orders by meaning, and generic inference is order-sensitive',
+            by: 'docs/reference/lint-presets.md — an object orders by meaning, and generic inference is order-sensitive',
             kind: 'convention',
         }),
         'sort-vars': off({ by: 'one-var (never)', kind: 'covered' }),

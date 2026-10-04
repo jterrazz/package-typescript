@@ -135,7 +135,7 @@ export default fragment({
                     kind: 'exclusive',
                 }),
                 'vitest/prefer-expect-assertions': off({
-                    by: 'docs/08-lint-presets.md — a spec states its assertions; counting them is bookkeeping the reader does not need',
+                    by: 'docs/reference/lint-presets.md — a spec states its assertions; counting them is bookkeeping the reader does not need',
                     kind: 'convention',
                 }),
                 'vitest/prefer-to-be-falsy': off({
@@ -151,16 +151,16 @@ export default fragment({
                     kind: 'covered',
                 }),
                 'vitest/require-hook': off({
-                    by: 'docs/08-lint-presets.md — the Given narration of a spec is the test body, not a hook',
+                    by: 'docs/reference/lint-presets.md — the Given narration of a spec is the test body, not a hook',
                     kind: 'convention',
                 }),
                 'vitest/require-test-timeout': off({
-                    by: 'docs/08-lint-presets.md — the vitest config owns the timeout, once, for every suite',
+                    by: 'docs/reference/lint-presets.md — the vitest config owns the timeout, once, for every suite',
                     kind: 'convention',
                 }),
 
                 'no-empty-function': off({
-                    by: 'docs/08-lint-presets.md — a test double with no behaviour is an empty function',
+                    by: 'docs/reference/lint-presets.md — a test double with no behaviour is an empty function',
                     kind: 'convention',
                 }),
             },

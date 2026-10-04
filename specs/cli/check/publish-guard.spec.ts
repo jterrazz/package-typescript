@@ -17,7 +17,7 @@ const fixturesFinding = (file: string): string =>
     `${file}:1:1: error publish(no-test-code-in-production): found: ${file} is compiled from src/domain/user.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/24-linting.md#no-test-code-in-production`;
 
 const BUILD_FINDING =
-    "package.json:1:1: error publish(build-succeeds): found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — `typescript build` names what failed · read: @jterrazz/typescript's docs/07-quality-checks.md#the-build-guard";
+    "package.json:1:1: error publish(build-succeeds): found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — `typescript build` names what failed · read: @jterrazz/typescript's docs/reference/quality-checks.md#the-build-guard";
 
 describe('publish-guard', () => {
     test('fails a package whose second export is compiled from a fixtures module, at the chunk the manifest publishes', async () => {

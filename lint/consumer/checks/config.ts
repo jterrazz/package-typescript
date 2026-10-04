@@ -25,7 +25,7 @@ import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import FINDINGS from '../catalogue/findings.json' with { type: 'json' };
 import { manifestGap, NAMED } from './config.manifest.js';
 
-const READ = 'docs/07-quality-checks.md#the-config-one-file-pass';
+const READ = 'docs/reference/quality-checks.md#the-config-one-file-pass';
 
 const NAMESPACE = 'config';
 

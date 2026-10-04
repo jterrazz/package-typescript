@@ -14,7 +14,7 @@
         "dist",
         "!dist/**/*.map",
         "docs",
-        "!docs/03-testing.md",
+        "!docs/guides/test.md",
         "src/presets/**/*.json",
         "src/presets/**/*.toml"
     ],

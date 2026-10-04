@@ -18,12 +18,16 @@ const DEFAULT_SETTINGS = `import { defineConfig } from '@jterrazz/typescript/con
 export default defineConfig({});
 `;
 
-function pages(): string[] {
-    const chapters = readdirSync(join(ROOT, 'docs'))
-        .filter((name) => name.endsWith('.md'))
-        .map((name) => join('docs', name));
+const SECTIONS = ['start', 'guides', 'concepts', 'reference'];
 
-    return ['README.md', 'skills/jterrazz-typescript/SKILL.md', ...chapters];
+function pages(): string[] {
+    const manual = SECTIONS.flatMap((section) =>
+        readdirSync(join(ROOT, 'docs', section))
+            .filter((name) => name.endsWith('.md'))
+            .map((name) => join('docs', section, name)),
+    );
+
+    return ['README.md', 'skills/jterrazz-typescript/SKILL.md', 'docs/README.md', ...manual];
 }
 
 type Example = { code: string; file: string; page: string };

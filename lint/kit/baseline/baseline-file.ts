@@ -214,7 +214,7 @@ export function writeSection(root: string, name: string, counts: Counts): void {
             refusal({
                 fix: `correct ${BASELINE} until it is one JSON object of sections, or delete it, then record again`,
                 found: `${BASELINE} ${problem}`,
-                read: 'docs/10-rules-kit.md#the-ratchet-engine',
+                read: 'docs/reference/rules-kit.md#the-ratchet-engine',
                 why: 'a section is written beside the others, and a file that cannot be read as sections would lose them',
             }),
         );

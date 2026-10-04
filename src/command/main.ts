@@ -22,7 +22,7 @@ const USAGE = [
     '  build        Build the entries the manifest publishes, as its conditions ask',
     '  start        Run the built application',
     '  dev          Build, run, and rebuild on changes',
-    "  docs-layout  Check a repository's docs/ against the docs spine",
+    "  docs-layout  Check a repository's docs/ against the manual's shape",
     '  doctor       Report the installed tool versions against the declared ranges',
     '  mutation     Measure the suite against mutants of the sources (--specs --mutate <ranges> for the whole suite)',
     "  baseline     Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json",
@@ -54,7 +54,7 @@ function usage(name: string): number {
             : `${refusal({
                   fix: 'run one of the commands below',
                   found: `no command named ${name}`,
-                  read: 'docs/05-getting-started.md#3-wire-the-cli-into-packagejson',
+                  read: 'docs/start/getting-started.md#3-wire-the-cli-into-packagejson',
                   why: 'the toolchain answers only the commands it declares',
               })}\n\n`;
     print(`${badge('TYPESCRIPT')} TypeScript toolchain\n\n${unknown}${USAGE.join('\n')}\n`);

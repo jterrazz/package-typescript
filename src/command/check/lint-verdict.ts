@@ -34,7 +34,7 @@ function configRefusals(check: Check, printed: string): string[] {
                   `oxlint-config-unparsed  ${own ?? ''}  ${refusal({
                       fix: 'repair what oxlint names above — usually a `jsPlugins` entry naming a module that is not there',
                       found: 'oxlint refused this config and linted nothing — its own report is above',
-                      read: 'docs/07-quality-checks.md#the-two-refusals-that-are-not-diagnostics',
+                      read: 'docs/reference/quality-checks.md#the-two-refusals-that-are-not-diagnostics',
                       why: 'a run over a config oxlint could not parse enforces no rule, and would read as green',
                   })}\n`,
               ]
@@ -45,7 +45,7 @@ function configRefusals(check: Check, printed: string): string[] {
                   `oxlint-config-commonjs  ${commonjs}  ${refusal({
                       fix: 'write oxlint.config.ts or .mjs',
                       found: 'a CommonJS config cannot load an ESM preset or plugin',
-                      read: 'docs/07-quality-checks.md#the-two-refusals-that-are-not-diagnostics',
+                      read: 'docs/reference/quality-checks.md#the-two-refusals-that-are-not-diagnostics',
                       why: 'oxlint drops a config it cannot load and exits 0, so the run enforces no rule the config names',
                   })}\n`,
               ]),
@@ -61,7 +61,7 @@ function ratchetLessons(printed: string, vanished: readonly string[]): string[] 
                   `${refusal({
                       fix: "fix it, or run 'typescript baseline' to record where the project stands — never a bare `oxlint --suppress-all`, which lints with another config",
                       found: 'a diagnostic .jterrazz/oxlint-suppressions.json does not hold — each one is listed above',
-                      read: 'docs/07-quality-checks.md#the-ratchet',
+                      read: 'docs/reference/quality-checks.md#the-ratchet',
                       why: 'the file holds the debt the project recorded, file by file, and a diagnostic beyond it is a regression',
                   })}\n`,
               ]
@@ -71,7 +71,7 @@ function ratchetLessons(printed: string, vanished: readonly string[]): string[] 
                   `${refusal({
                       fix: "set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it",
                       found: 'a warn-severity diagnostic — oxlint lists it above',
-                      read: 'docs/07-quality-checks.md#a-warning-is-a-diagnostic',
+                      read: 'docs/reference/quality-checks.md#a-warning-is-a-diagnostic',
                       why: '.jterrazz/oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run',
                   })}\n`,
               ]
@@ -84,7 +84,7 @@ function ratchetLessons(printed: string, vanished: readonly string[]): string[] 
                           vanished.length === 0
                               ? '.jterrazz/oxlint-suppressions.json holds more than the project has left'
                               : `.jterrazz/oxlint-suppressions.json holds entries for files that are gone: ${vanished.join(', ')}`,
-                      read: 'docs/07-quality-checks.md#the-ratchet',
+                      read: 'docs/reference/quality-checks.md#the-ratchet',
                       why: 'the count is exact, so a debt that fell is recorded the day it falls',
                   })}\n`,
               ]

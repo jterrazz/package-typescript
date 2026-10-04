@@ -74,7 +74,7 @@ describe('versions', () => {
         expect(rows).toContainEqual(expect.stringMatching(/^ {2}oxlint +0\.0\.1 +\S+ +old$/u));
         expect(rows).toContainEqual(expect.stringMatching(/^ {2}knip +— +\S+ +absent$/u));
         expect(verdict).toBe(
-            'found: a tool is older than its range, or not installed — its row reads `old` or `absent` · why: a gate running an older tool enforces an older rulebook without saying so · fix: install what this release declares, then run `typescript doctor` again · read: docs/04-operating.md#adopting-a-stricter-release',
+            'found: a tool is older than its range, or not installed — its row reads `old` or `absent` · why: a gate running an older tool enforces an older rulebook without saying so · fix: install what this release declares, then run `typescript doctor` again · read: docs/guides/adopt-a-stricter-release.md#the-two-gestures',
         );
         expect(status).toBe(1);
     });

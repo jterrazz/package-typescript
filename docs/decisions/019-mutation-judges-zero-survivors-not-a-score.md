@@ -5,7 +5,7 @@
 
 Written 2026-10-04 from commits 7e2c711f and 0654950b, which took the
 decision on 2026-10-03, and from the reading of the specs' mutants that
-`docs/03-testing.md` carried until then.
+`docs/guides/test.md` carried until then.
 
 ## Context
 
@@ -54,6 +54,6 @@ the specs now, by hand.
   package is proven by its specs: that part of the suite has no gate. The
   owner's word is asked on it — a scheduled `--specs` run over chosen
   ranges, a NoCoverage line in a module-tested file made a failure, or the
-  gap accepted as written in `docs/07-quality-checks.md#what-no-verdict-measures`.
+  gap accepted as written in `docs/reference/quality-checks.md#what-no-verdict-measures`.
 - A module-level table is never mutation-judged by the default run; the
   tests that read it are its only proof.

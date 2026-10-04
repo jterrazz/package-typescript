@@ -5,7 +5,7 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          found: no command named unknown · why: the toolchain answers only the commands it declares · fix: run one of the commands below · read: docs/05-getting-started.md#3-wire-the-cli-into-packagejson
+          found: no command named unknown · why: the toolchain answers only the commands it declares · fix: run one of the commands below · read: docs/start/getting-started.md#3-wire-the-cli-into-packagejson
 
           Usage: typescript <command>
 
@@ -13,7 +13,7 @@ runs:
             build        Build the entries the manifest publishes, as its conditions ask
             start        Run the built application
             dev          Build, run, and rebuild on changes
-            docs-layout  Check a repository's docs/ against the docs spine
+            docs-layout  Check a repository's docs/ against the manual's shape
             doctor       Report the installed tool versions against the declared ranges
             mutation     Measure the suite against mutants of the sources (--specs --mutate <ranges> for the whole suite)
             baseline     Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json
@@ -39,7 +39,7 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          found: no command named constructor · why: the toolchain answers only the commands it declares · fix: run one of the commands below · read: docs/05-getting-started.md#3-wire-the-cli-into-packagejson
+          found: no command named constructor · why: the toolchain answers only the commands it declares · fix: run one of the commands below · read: docs/start/getting-started.md#3-wire-the-cli-into-packagejson
 
           Usage: typescript <command>
 
@@ -47,7 +47,7 @@ runs:
             build        Build the entries the manifest publishes, as its conditions ask
             start        Run the built application
             dev          Build, run, and rebuild on changes
-            docs-layout  Check a repository's docs/ against the docs spine
+            docs-layout  Check a repository's docs/ against the manual's shape
             doctor       Report the installed tool versions against the declared ranges
             mutation     Measure the suite against mutants of the sources (--specs --mutate <ranges> for the whole suite)
             baseline     Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json

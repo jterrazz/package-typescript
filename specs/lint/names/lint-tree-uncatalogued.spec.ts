@@ -14,7 +14,7 @@ describe('lint-tree-uncatalogued', () => {
                 found: \`lint/README.md\` sits at the root of lint/, and is no entry
                 why: lint/ has one tree in every repository — its root holds the entries alone, each \`index[.<name>].ts\` built as a subpath the package publishes or a private import, where consumer/ meets kit/, and a folder names the audience of every other file
                 fix: move it into the folder its audience names — consumer, kit, self — name it \`index.<name>.ts\` and declare it if it is an entry, or move it into docs/ if it explains
-                read: docs/07-quality-checks.md#the-lint-tree
+                read: docs/reference/quality-checks.md#the-lint-tree
         `);
     });
 });

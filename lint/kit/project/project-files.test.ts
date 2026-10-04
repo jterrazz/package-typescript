@@ -110,11 +110,11 @@ describe('projectFiles', () => {
         // Then - each refusal names why, and an empty tree has nothing to say
         expect([refusalOf(ignored), refusalOf(hollow), projectFiles(empty)]).toStrictEqual([
             {
-                message: `found: nothing to read under ${ignored}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/07-quality-checks.md#an-unreadable-tree`,
+                message: `found: nothing to read under ${ignored}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree`,
                 name: 'EmptySweepError',
             },
             {
-                message: `found: nothing to read under ${hollow}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/07-quality-checks.md#an-unreadable-tree`,
+                message: `found: nothing to read under ${hollow}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree`,
                 name: 'EmptySweepError',
             },
             [],

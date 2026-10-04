@@ -8,7 +8,7 @@ import { kindMatrix } from './kind-matrix.js';
 
 const KINDS_SUITE = resolve(import.meta.dirname, '../../../specs/kinds');
 
-const CONFIGURATION = resolve(import.meta.dirname, '../../../docs/06-configuration.md');
+const CONFIGURATION = resolve(import.meta.dirname, '../../../docs/reference/configuration.md');
 
 // invariant: the matrix is a projection of the declaration and the kinds suite; `TEST_UPDATE=1 npm test` regenerates it.
 

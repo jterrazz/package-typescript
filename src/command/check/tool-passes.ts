@@ -94,7 +94,7 @@ async function fixScopes(check: Check): Promise<FixScope[]> {
             refusal({
                 fix: 'make the directory beside the oxlint config writable, then run `typescript fix` again',
                 found: `the fix wrapper could not be written: ${messageOf(error)}`,
-                read: 'docs/07-quality-checks.md#a-wrapper-fix-mode-cannot-write',
+                read: 'docs/reference/quality-checks.md#a-wrapper-fix-mode-cannot-write',
                 why: 'fix mode lints through a wrapper that turns the unsafe fixers off; without it no oxlint fix runs',
             }),
             { cause: error },

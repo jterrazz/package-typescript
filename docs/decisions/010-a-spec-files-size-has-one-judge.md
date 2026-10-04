@@ -3,7 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-09-24
 
-Written 2026-09-24 from the evidence it was reconstructed from: commit 139b8b9 (`feat(rulebook): size is capped — 300 lines a file, 60 a function`) and the `max-lines` rows of the catalogue in [Lint presets](../08-lint-presets.md). The function cap's scope in test files was decided the same day, with `test-body-within-line-limit`.
+Written 2026-09-24 from the evidence it was reconstructed from: commit 139b8b9 (`feat(rulebook): size is capped — 300 lines a file, 60 a function`) and the `max-lines` rows of the catalogue in [Lint presets](../reference/lint-presets.md). The function cap's scope in test files was decided the same day, with `test-body-within-line-limit`.
 
 ## Context
 

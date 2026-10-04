@@ -9,7 +9,7 @@ runs:
 
            RUN  Architecture (layer map)
 
-          found: a layer map is declared, but no folder of the project holds a source file for it to cruise · why: a map with nothing to cruise judges no import, and its silence would read as every boundary kept · fix: move the source into a folder, or remove the map that has nothing to judge · read: docs/07-quality-checks.md#the-architecture-layer-map-pass
+          found: a layer map is declared, but no folder of the project holds a source file for it to cruise · why: a map with nothing to cruise judges no import, and its silence would read as every boundary kept · fix: move the source into a folder, or remove the map that has nothing to judge · read: docs/reference/quality-checks.md#the-architecture-layer-map-pass
           ✗ Failed with exit code 1
 
            END  Finalizing quality checks

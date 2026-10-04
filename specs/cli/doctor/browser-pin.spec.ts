@@ -47,7 +47,7 @@ describe('browser-pin', () => {
               vitest                      4.1.10
               @vitest/browser-playwright  4.1.9       skewed
 
-            found: @vitest/browser-playwright 4.1.9 is not vitest 4.1.10 · why: @vitest/browser-playwright is versioned with vitest and must equal it exactly: a patch apart loads a second copy of its internals · fix: pin both to the same version · read: docs/04-operating.md#the-provider-pinned-to-its-runner
+            found: @vitest/browser-playwright 4.1.9 is not vitest 4.1.10 · why: @vitest/browser-playwright is versioned with vitest and must equal it exactly: a patch apart loads a second copy of its internals · fix: pin both to the same version · read: docs/guides/adopt-a-stricter-release.md#the-provider-pinned-to-its-runner
         `);
     });
 
@@ -71,7 +71,7 @@ describe('browser-pin', () => {
               vitest                      4.1.10
               @vitest/browser-playwright  4.1.9       skewed
 
-            found: @vitest/browser-playwright 4.1.9 is not vitest 4.1.10 · why: @vitest/browser-playwright is versioned with vitest and must equal it exactly: a patch apart loads a second copy of its internals · fix: pin both to the same version · read: docs/04-operating.md#the-provider-pinned-to-its-runner
+            found: @vitest/browser-playwright 4.1.9 is not vitest 4.1.10 · why: @vitest/browser-playwright is versioned with vitest and must equal it exactly: a patch apart loads a second copy of its internals · fix: pin both to the same version · read: docs/guides/adopt-a-stricter-release.md#the-provider-pinned-to-its-runner
         `);
     });
 

@@ -32,7 +32,7 @@ const AUDIENCES: ReadonlySet<string> = new Set(['consumer', 'self']);
 
 export const isTop = (name: string): name is Top => (TOPS as readonly string[]).includes(name);
 
-const READ = 'read: docs/07-quality-checks.md#the-lint-tree';
+const READ = 'read: docs/reference/quality-checks.md#the-lint-tree';
 
 const MODULE = /\.(?:[cm]?[jt]sx?)$/u;
 

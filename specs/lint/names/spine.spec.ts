@@ -14,12 +14,12 @@ describe('spine', () => {
                 found: \`scripts/\` is a root outside the spine
                 why: Every root folder is on the root spine, imposed by a tool, or declared with its reason.
                 fix: move it under src/, or declare it in jterrazz.config.ts's \`typescript.roots\` with its reason
-                read: docs/07-quality-checks.md#a-root-beside-the-spine
+                read: docs/reference/quality-checks.md#a-root-beside-the-spine
             skills/shop/references/:1:1  names(skill-holds-only-skill-md)
                 found: \`skills/shop/references/\` sits beside a skill's \`SKILL.md\`
                 why: a skill is one \`skills/<skill>/SKILL.md\`, the one page an agent loads, and a file beside it is one no agent reads
                 fix: fold what it says into the \`SKILL.md\` or into the chapter the skill routes to, and delete it
-                read: docs/07-quality-checks.md#the-names-tree-pass
+                read: docs/reference/quality-checks.md#the-names-tree-pass
         `);
     });
 });
