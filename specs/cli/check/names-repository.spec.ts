@@ -8,9 +8,8 @@ import { git, repository } from '../_setup/repository.js';
 import { cli } from '../cli.specification.js';
 import { formOnly } from './_setup/oxlint-forms.js';
 
-// outside: npm's INIT_CWD names the project the CLI answers for; a chain started under npm must name its own.
 function selected(passes: Record<string, null | string> = {}) {
-    return cli.with({ env: { ...passes, INIT_CWD: '$WORKDIR' } });
+    return cli.with({ env: passes });
 }
 
 const project = (passes: Record<string, null | string> = {}) =>

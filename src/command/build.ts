@@ -12,7 +12,6 @@ import { presetLesson } from '../../lint/kit/project/preset.js';
 import { handOver, run } from './processes.js';
 import { inScratch } from './scratch.js';
 import { badge, GREEN, print, RED, RESET } from './terminal.js';
-import { projectRoot } from './toolchain.js';
 
 function tsdown(project: string): string {
     return binaryIn('tsdown', join(project, 'node_modules/.bin'));
@@ -60,8 +59,7 @@ export async function builtFrom(
 
 export async function build(): Promise<number> {
     print(`${badge('TYPESCRIPT')} Building the entries the manifest publishes...\n\n`);
-    const project = projectRoot();
-    process.chdir(project);
+    const project = process.cwd();
     const steps = await planOf(project);
     const status =
         typeof steps === 'string'
@@ -88,13 +86,13 @@ export async function start(args: readonly string[]): Promise<number> {
     return await handOver(
         process.execPath,
         ['--enable-source-maps', 'dist/index.js', ...args],
-        projectRoot(),
+        process.cwd(),
     );
 }
 
 export async function dev(): Promise<number> {
     print(`${badge('TYPESCRIPT')} Starting dev mode...\n\n`);
-    const project = projectRoot();
+    const project = process.cwd();
     const steps = await planOf(project);
     if (typeof steps === 'string') {
         print(`${RED}${steps}${RESET}\n`);
@@ -121,7 +119,7 @@ export async function dev(): Promise<number> {
 }
 
 export function clean(): number {
-    const artefacts = join(projectRoot(), '.artifacts');
+    const artefacts = join(process.cwd(), '.artifacts');
     print(`${badge('TYPESCRIPT')} Removing artefacts...\n\n`);
     if (existsSync(artefacts)) {
         rmSync(artefacts, { force: true, recursive: true });

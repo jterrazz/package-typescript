@@ -16,7 +16,7 @@ import { run } from './processes.js';
 import { inScratch } from './scratch.js';
 import { badge, print } from './terminal.js';
 import { toolConfigs } from './tool-configs.js';
-import { projectRoot, withTsgolintOnPath } from './toolchain.js';
+import { withTsgolintOnPath } from './toolchain.js';
 
 async function listedTargets(
     ignoresOf: string | undefined,
@@ -76,8 +76,7 @@ async function recordedPresets(): Promise<number> {
 }
 
 export async function baseline(args: readonly string[]): Promise<number> {
-    const project = projectRoot();
-    process.chdir(project);
+    const project = process.cwd();
     const projectBin = join(project, 'node_modules/.bin');
     withTsgolintOnPath(projectBin);
 

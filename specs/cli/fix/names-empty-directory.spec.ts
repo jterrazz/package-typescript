@@ -8,7 +8,7 @@ import { cli } from '../cli.specification.js';
 // outside: git tracks no directory, so a fixture can carry no empty one.
 
 const names = cli
-    .with({ env: { ...onlyPasses('names'), INIT_CWD: '$WORKDIR' } })
+    .with({ env: onlyPasses('names') })
     .fixture(directory('../_fixtures/names/empty-directories/'));
 
 describe('names-empty-directory', () => {

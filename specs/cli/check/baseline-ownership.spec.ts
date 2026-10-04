@@ -78,10 +78,9 @@ const CONFIG = `export default {
 
 const DEBUGGER = 'export function stop(): void {\n    debugger;\n}\n';
 
-/** The stub plugin armed over the ownership tree; npm sets `INIT_CWD` for whatever script started this suite, and `baseline` records into it. */
 function ground(env: Record<string, null | string> = {}) {
     return cli
-        .with({ env: { INIT_CWD: '$WORKDIR', ...env } })
+        .with({ env })
         .fixture(directory('./_fixtures/baseline/ownership/'))
         .prepare(written({ 'oxlint.config.ts': CONFIG }));
 }

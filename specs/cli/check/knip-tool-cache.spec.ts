@@ -10,7 +10,7 @@ describe('knip-tool-cache', () => {
     test('loads a TypeScript config and leaves no transpiled copy of it under node_modules/', async () => {
         // Given - a project whose vitest.config.ts knip reads, and a node_modules/ a loader would cache into
         const result = await cli
-            .with({ env: { ...onlyPasses('knip'), INIT_CWD: '$WORKDIR' } })
+            .with({ env: onlyPasses('knip') })
             .fixture(directory('./_fixtures/knip/typescript-config/'))
             .prepare((workdir) => {
                 mkdirSync(join(workdir, 'node_modules'));

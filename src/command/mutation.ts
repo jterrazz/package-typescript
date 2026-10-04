@@ -14,7 +14,6 @@ import { projectBinary } from './check/setup.js';
 import { judgedReport, verdictOf } from './mutation-survivors.js';
 import { handOver } from './processes.js';
 import { badge, print } from './terminal.js';
-import { projectRoot } from './toolchain.js';
 
 const ARTIFACTS = '.artifacts';
 
@@ -235,8 +234,7 @@ function judgedRun(measured: ReadonlySet<string>): number {
 }
 
 export async function mutation(args: readonly string[]): Promise<number> {
-    const project = projectRoot();
-    process.chdir(project);
+    const project = process.cwd();
     const commandLine = readCommandLine(args, ['--mutate']);
     const specs = commandLine.has('--specs');
     const mutate = commandLine.value('--mutate');

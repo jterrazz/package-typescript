@@ -14,7 +14,6 @@ describe('default-config', () => {
                 env: {
                     ...formOnly({ AI_AGENT: 'spec' }),
                     ...onlyPasses('oxlint', 'oxfmt'),
-                    INIT_CWD: '$WORKDIR/project',
                 },
             })
             .fixture(directory('./_fixtures/default-config/decoy-parent/'))

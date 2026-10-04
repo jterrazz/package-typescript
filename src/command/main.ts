@@ -10,7 +10,7 @@ import { doctor } from './doctor.js';
 import { mutation } from './mutation.js';
 import { handOver } from './processes.js';
 import { badge, print } from './terminal.js';
-import { checkerProgram, projectRoot, tscIn } from './toolchain.js';
+import { checkerProgram, tscIn } from './toolchain.js';
 
 export { CHECK_PASSES } from './check/check.js';
 export type { CheckPass, Selected } from './check/check.js';
@@ -74,18 +74,18 @@ const COMMANDS: Readonly<Record<string, Command>> = {
         await handOver(process.execPath, [
             checkerProgram(),
             'docs',
-            root === undefined || root === '' ? projectRoot() : root,
+            root === undefined || root === '' ? process.cwd() : root,
         ]),
     doctor: () => {
         print(`${badge('TYPESCRIPT')} Checking the toolchain...\n\n`);
 
-        return doctor(projectRoot());
+        return doctor(process.cwd());
     },
     fix: async (args, selected) => await runChecks(args, { fix: true, selected }),
     mutation: async (args) => await mutation(args),
     start: async (args) => await start(args),
     tsc: async (args) => {
-        const project = projectRoot();
+        const project = process.cwd();
 
         return await handOver(tscIn(join(project, 'node_modules/.bin')), args, project);
     },

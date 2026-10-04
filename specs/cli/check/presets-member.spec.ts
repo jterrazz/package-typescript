@@ -111,7 +111,7 @@ function declared(options: { conventions?: string; exit?: 0 | 1 } = {}): Prepare
 
 function passes(selected: string) {
     return cli
-        .with({ env: { INIT_CWD: '$WORKDIR', TYPESCRIPT_CHECK_PASSES: selected } })
+        .with({ env: { TYPESCRIPT_CHECK_PASSES: selected } })
         .fixture(directory('./_fixtures/presets-member/'));
 }
 

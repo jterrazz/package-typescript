@@ -11,12 +11,6 @@ export function presetAt(path: string): string {
     return join(PACKAGE_ROOT, path);
 }
 
-export function projectRoot(): string {
-    const initial = process.env.INIT_CWD;
-
-    return initial === undefined || initial === '' ? process.cwd() : initial;
-}
-
 const PLATFORMS: Readonly<Record<string, string>> = {
     darwin: 'darwin',
     linux: 'linux',
