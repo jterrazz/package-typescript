@@ -71,4 +71,36 @@ describe('mutation-survivors', () => {
             status: 1,
         });
     });
+
+    test('a mutant the run never judged fails it, counted by status, an unknown or missing one included — a stopped run passes nothing', () => {
+        // Given - a detected mutant, two a stopped run left pending, one of a status no verdict knows, one with none
+        const judged = judgedReport(
+            {
+                files: {
+                    'src/a.ts': {
+                        mutants: [
+                            mutant('Killed', 1),
+                            mutant('Pending', 2),
+                            mutant('Pending', 3),
+                            mutant('Skipped', 4),
+                            {
+                                location: mutant('Killed', 5).location,
+                                mutatorName: 'BlockStatement',
+                            },
+                        ],
+                    },
+                },
+            },
+            new Set(['src/a.ts']),
+        );
+
+        // Then - the four parts name every unjudged status, and the run fails
+        expect(verdictOf(judged)).toStrictEqual({
+            lines: [
+                'found: 4 mutant(s) the run never judged — no status 1, Pending 2, Skipped 1 · why: a mutant no test was run against says nothing of the line it mutates, so passing it would pass a run that judged nothing there · fix: run `typescript mutation` again to its end — a run stopped midway leaves its mutants Pending, and the next one runs them · read: docs/07-quality-checks.md#mutation',
+                "0 mutant(s) no module test runs — the specs', measured by range: typescript mutation --specs --mutate <file>:<from>-<to>",
+            ],
+            status: 1,
+        });
+    });
 });
