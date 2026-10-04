@@ -29,7 +29,7 @@ Each target decides its output by its extension and its condition:
 - a `browser` condition is built apart, for the browser platform, with no declarations — its `types` are the node build's;
 - the rest is built for the platform the project declares: the browser for `react`, `next`, `astro` and `expo`, Node otherwise.
 
-A module two entries share is written once, as `dist/shared-<name>.js`. A `library` builds its declarations with `isolatedDeclarations`, emitted file by file without a type-checker, so the build refuses an export whose type it would have to infer: the annotation sits exactly where it is load-bearing, on what a consumer imports. It is the build's setting rather than the tsconfig's, because it is a property of the published artefact; in the tsconfig it would also reach every spec file, where it refuses the destructured export a specification hands back (TS9019).
+A module two entries share is written once, as `dist/shared-<name>.js`. A `library` emits its declarations with the type-checker, so an export with no annotation is published with the type the checker infers for it. [ADR-018](decisions/018-a-project-declares-what-it-is-and-every-config-follows.md#consequences) records why they are not built file by file with `isolatedDeclarations`.
 
 ### What the manifest does not name
 
