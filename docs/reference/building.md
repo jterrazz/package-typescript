@@ -22,7 +22,7 @@ A build compiles what the package publishes, and its `package.json` already says
 | `"./rules": { "browser": "./dist/rules.browser.js", … }` | `src/index.rules.browser.ts` | `dist/rules.browser.js` |
 | `"bin": { "greet": "./dist/greet.js" }`                  | `src/greet.bin.ts`           | `dist/greet.js`         |
 
-A package with no manifest target under `dist/` compiles `src/index.ts` alone. A pattern (`./tsconfig/*`) is skipped, since the map does not enumerate what it stands for, and so is a target whose entry is not on disk.
+A package with no manifest target under `dist/` compiles `src/index.ts`, beside the entries it declares under [`typescript.build`](#what-the-manifest-does-not-name), as an application does. A pattern (`./tsconfig/*`) is skipped, since the map does not enumerate what it stands for, and so is a target whose entry is not on disk.
 
 Each target decides its output by its extension and its condition:
 

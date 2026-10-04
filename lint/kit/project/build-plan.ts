@@ -1,7 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { DEFAULT_ENTRY, entrySourcesOf, outputOf, publishedOf } from './entry-points.js';
+import {
+    DEFAULT_ENTRY,
+    DEFAULT_SOURCE,
+    entrySourcesOf,
+    outputOf,
+    publishedOf,
+} from './entry-points.js';
 import { isJsonObject, parsedObject } from './json.js';
 import type { Platform, ProjectIdentity } from './project-kind.js';
 
@@ -128,11 +134,15 @@ function publishedSteps(
     planned: readonly [string, Planned][],
     shipped: Readonly<Record<string, string>>,
     own: BuildStep['platform'],
+    root: string,
 ): BuildStep[] {
     const dual = planned.filter(([, one]) => !one.browser && one.formats.has('cjs'));
     const browser = planned.filter(([, one]) => one.browser);
-    const first =
-        Object.keys(shipped).length > 0 ? shipped : planned.length === 0 ? DEFAULT_ENTRY : null;
+    const defaulted =
+        planned.length === 0 &&
+        (Object.keys(shipped).length === 0 || existsSync(join(root, DEFAULT_SOURCE)));
+    const entries = { ...(defaulted ? DEFAULT_ENTRY : {}), ...shipped };
+    const first = Object.keys(entries).length > 0 ? entries : null;
 
     return [
         ...(first === null ? [] : [stepOf(first, { platform: own })]),
@@ -157,6 +167,7 @@ export function buildPlanOf(
         planned,
         { ...entryRecord(main), ...sourcesBy(settings.entries) },
         own ? 'browser' : 'node',
+        root,
     );
     const [leading] = steps;
     if (leading !== undefined) {
