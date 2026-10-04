@@ -7,6 +7,8 @@ import { checker } from '../checker.js';
 import { inScratch } from '../scratch.js';
 import { badge, GREEN, print, RED, RESET } from '../terminal.js';
 import { toolConfigs } from '../tool-configs.js';
+import { configPass } from './checker-passes.js';
+import type { Launched } from './launched.js';
 import { logsIn } from './logs.js';
 import type { Selected } from './passes.js';
 import { presetRuns } from './presets.js';
@@ -59,6 +61,15 @@ async function preparedCheck(
         selected,
         tools: toolsOf(),
     };
+}
+
+async function withDerivedConfigs(prepared: Check, config: Launched | undefined): Promise<Check> {
+    if (!prepared.fix || config === undefined) {
+        return prepared;
+    }
+    await config.status;
+
+    return { ...prepared, configs: toolConfigs() };
 }
 
 async function withTargets(prepared: Check): Promise<Check> {
@@ -169,9 +180,11 @@ export async function runChecks(
                     `${badge('START')} ${fix ? 'Running quality fixes' : 'Running quality checks'}\n`,
                 );
                 const prepared = await preparedCheck(args, fix, selected, scratch);
-                const presets = await presetRuns(prepared);
-                const run = await withTargets(prepared);
-                const passes = await started(run);
+                const config = configPass(prepared);
+                const derived = await withDerivedConfigs(prepared, config);
+                const presets = await presetRuns(derived);
+                const run = await withTargets(derived);
+                const passes = await started(run, config);
                 const verdicts = await reported(run, passes, presets);
                 for (const verdict of verdicts) {
                     reportPass(run.logs, verdict);

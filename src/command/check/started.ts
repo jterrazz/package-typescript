@@ -1,6 +1,5 @@
 import {
     architecturePass,
-    configPass,
     docsPass,
     gitignorePass,
     markdownPass,
@@ -57,8 +56,7 @@ async function lintStarted(
     return { format: { log, status: Promise.resolve(formatted) }, lint: Promise.resolve(fixed) };
 }
 
-export async function started(check: Check): Promise<Started> {
-    const config = configPass(check);
+export async function started(check: Check, config: Launched | undefined): Promise<Started> {
     const typescript = typescriptPass(check);
     const { format, lint } = await lintStarted(check);
     const knip = knipPass(check);
