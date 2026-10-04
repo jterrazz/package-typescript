@@ -29,7 +29,8 @@ function gitSweep(root: string): null | string[] {
         ? null
         : [...new Set(listed)].filter(
               (path) =>
-                  path !== '' && lstatSync(join(root, path), { throwIfNoEntry: false }) !== undefined,
+                  path !== '' &&
+                  lstatSync(join(root, path), { throwIfNoEntry: false }) !== undefined,
           );
 }
 

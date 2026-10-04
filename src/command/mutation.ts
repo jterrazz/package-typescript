@@ -181,10 +181,7 @@ function strykerConfig(scope: MutationScope, specs: boolean, tested: readonly st
         disableTypeChecks: typeCheckedGlob(scope.mutated),
         ignorePatterns: [`/${ARTIFACTS}/**`, `!/${OUT}/*.mjs`, `!/${DEV_OUTPUT}/**`],
         mutate: specs
-            ? [
-                  ...scope.mutated,
-                  ...[...NEVER_MUTATED, ...scope.ignore].map((glob) => `!${glob}`),
-              ]
+            ? [...scope.mutated, ...[...NEVER_MUTATED, ...scope.ignore].map((glob) => `!${glob}`)]
             : tested,
         plugins: [createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner')],
         tempDirName: `${OUT}/tmp`,
@@ -214,6 +211,27 @@ function strykerConfig(scope: MutationScope, specs: boolean, tested: readonly st
               reporters: ['clear-text', 'html', 'json', 'progress'],
               timeoutMS: 30_000,
           };
+}
+
+function judgedRun(measured: ReadonlySet<string>): number {
+    const report = join(OUT, 'report.json');
+    if (!existsSync(report)) {
+        print(
+            `${refusal({
+                fix: 'run typescript mutation again, and read what Stryker printed above if the report is still missing',
+                found: `Stryker exited 0 and left no ${report}`,
+                read: 'docs/07-quality-checks.md#mutation',
+                why: 'the verdict is read from the report, and a run judged from none would pass having judged nothing',
+            })}\n`,
+        );
+
+        return 1;
+    }
+    const parsed: unknown = JSON.parse(readFileSync(report, 'utf8'));
+    const verdict = verdictOf(judgedReport(parsed, measured));
+    print(`\n${verdict.lines.join('\n')}\n`);
+
+    return verdict.status;
 }
 
 export async function mutation(args: readonly string[]): Promise<number> {
@@ -258,27 +276,11 @@ export async function mutation(args: readonly string[]): Promise<number> {
     if (status !== 0 || specs) {
         return status;
     }
-    const report = join(OUT, 'report.json');
-    if (!existsSync(report)) {
-        print(
-            `${refusal({
-                fix: 'run typescript mutation again, and read what Stryker printed above if the report is still missing',
-                found: `Stryker exited 0 and left no ${report}`,
-                read: 'docs/07-quality-checks.md#mutation',
-                why: 'the verdict is read from the report, and a run judged from none would pass having judged nothing',
-            })}\n`,
-        );
-
-        return 1;
-    }
-    const measured = new Set(
-        mutate === undefined
-            ? tested
-            : mutate.split(',').map((range) => range.replace(/:[^:]*$/u, '')),
+    return judgedRun(
+        new Set(
+            mutate === undefined
+                ? tested
+                : mutate.split(',').map((range) => range.replace(/:[^:]*$/u, '')),
+        ),
     );
-    const parsed: unknown = JSON.parse(readFileSync(report, 'utf8'));
-    const verdict = verdictOf(judgedReport(parsed, measured));
-    print(`\n${verdict.lines.join('\n')}\n`);
-
-    return verdict.status;
 }
