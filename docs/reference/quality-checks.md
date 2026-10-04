@@ -21,11 +21,28 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 
 Every command exits `0` when it succeeded and non-zero otherwise; `check` and `fix` exit `1` when any pass failed or the drift report refused. CI runs `make check` and reads that code, and on a GitHub runner oxlint prints its diagnostics as workflow annotations ([One run, printed as oxlint prints it](#one-run-printed-as-oxlint-prints-it)).
 
+A runner owes Node 24 and the install the lockfile describes, nothing more: the TypeScript 7 compiler arrives as the optional package of the runner's own platform, and the Secrets pass runs `gitleaks` only where it finds one on `PATH`, falling back to its own patterns. The repositories of the family call the shared `jterrazz/jterrazz-actions` validate workflow, which runs `make build`, `make lint` and `make test` on Node 24; a project outside the family writes the same in a few lines:
+
+```yaml
+# .github/workflows/validate.yaml
+name: Validate
+on: [push, pull_request]
+jobs:
+    validate:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with: { node-version: '24', cache: npm }
+            - run: make install
+            - run: make check
+```
+
 `fix` rewrites the project's files in place — the formatting, the linter's safe fixes, the order of `package.json`, the `.gitignore`, two directive spellings, empty directories, the baseline's fallen counts. Run it on a committed tree, and read its diff before committing it.
 
 ## The passes
 
-`typescript check` runs up to sixteen passes. The Config pass runs first, three spawn a tool on every invocation, knip and five tree gates run on every `check`, and the other six are opt-in — they appear only when the project qualifies.
+`typescript check` runs up to fifteen passes, one per row below. The Config pass runs first, three spawn a tool on every invocation (tsc, oxlint, oxfmt), knip and five tree gates (Gitignore, Suppressions, Markdown, Names, Secrets) run on every `check`, and the other five are opt-in — a preset's checks, Docs, Publish, Architecture and Astro appear only when the project qualifies. [Mutation](#mutation) is a command of its own, not a pass of `check`.
 
 | Pass                      | Tool                        | When it runs                                                                                     |
 | ------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -53,7 +70,7 @@ When the `package.json` at the cwd declares `workspaces`, the per-package passes
 
 The Docs (layout) pass measures from neither: its unit is the repository, and the section below says why.
 
-The other four passes are root-only, and that is not an omission. tsc, oxlint and oxfmt measure from their **config file**, not from a package, and each already reaches the whole tree from the cwd — oxlint and oxfmt through the project's files they are handed. Knip reads the workspace globs itself and reports per member from a single run, so a second invocation per member would only double-report.
+tsc runs once per member too, each run by the member's own `tsconfig.json`, since a workspace root keeps none. Three passes are root-only, and that is not an omission. oxlint and oxfmt measure from their **config file**, which a workspace keeps at its root alone, and each already reaches the whole tree through the project's files it is handed. Knip reads the workspace globs itself and reports per member from a single run, so a second invocation per member would only double-report.
 
 Discovery never leaves the workspace. A candidate is dropped when git ignores it — clones, workbenches and build output live under gitignored paths — and when the walk had to cross a nested `.git` or a `package.json` that no workspace glob claims to reach it: a vendored project's conventions are its own, not yours.
 
@@ -183,6 +200,7 @@ Why a manual has this shape is language-agnostic doctrine, and it is the estate'
 Three things about the roster are decisions, not details:
 
 - **The `guides/release.md` presence test is derived, and there is no configuration key.** It fires on a `Dockerfile` (or `Dockerfile.*`), on an `.infrastructure/` directory — either at the repository root or at a workspace member's root, since a monorepo deploys from a member as readily as from its root — or on a root that declares a kind npm publishes — a `library` or a `cli` ([Configuration](configuration.md#kind-and-platform)). The publishable clause reads the root's declaration alone: a workspace root holding a published member is a question for its owner, not a verdict for a gate, and a root that declares nothing publishes nothing.
+- **`docs/no-cross-repository-link` refuses a path, never a URL.** A link that starts with `/`, or whose relative path climbs above the repository root, reaches into whatever clone sits beside this one on one machine and breaks on every other. An absolute `https://` link to another repository on GitHub resolves for every reader, so it is how a manual cites a sibling's page, as this one cites jterrazz-studio's.
 - **The pass only ever REQUIRES a page; it never forbids one.** A repository that releases by a tagged workflow and ships neither an image nor a package writes its `guides/release.md` and hears nothing about it. Machine-holding the other half would mean parsing `.github/workflows/**`, which is another repository's shape.
 - **The journal-word roster is closed, and it is in the code.** `exploration`, `review`, `notes`, `proposal`, `draft`, `wip`, `old`, `legacy`, `misc`, `todo` — matched as whole words of a page's name. No page keeps a second copy of it; the one that matters is executable.
 
@@ -670,7 +688,15 @@ fix:
 	npx typescript fix
 ```
 
-A repository with fixers of its own outside the toolchain runs them in one shell and carries the verdict to its end, `typescript fix` last: Make stops a recipe at its first failing line, and a fixer failing on debt it cannot settle would otherwise keep the formatter from the files it had just rewritten.
+A repository with fixers of its own outside the toolchain runs them in one shell and carries the verdict to its end, `typescript fix` last: Make stops a recipe at its first failing line, and a fixer failing on debt it cannot settle would otherwise keep the formatter from the files it had just rewritten. With Prisma's formatter as that second fixer:
+
+```make
+fix:
+	status=0; \
+	npx prisma format || status=1; \
+	npx typescript fix || status=1; \
+	exit $$status
+```
 
 The pass reads that the rule exists, never what it runs, so this one is the page's to state and the repository's to keep.
 
