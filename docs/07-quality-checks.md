@@ -30,7 +30,7 @@ Every command exits `0` when it succeeded and non-zero otherwise; `check` and `f
 | Pass                      | Tool                        | When it runs                                                                                     |
 | ------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------ |
 | Config (one file)         | the config gate             | always (check and fix — `--fix` writes the derived files)                                        |
-| TypeScript Check          | tsc (TypeScript 7, Go)      | always                                                                                           |
+| TypeScript Check          | tsc (TypeScript 7, Go)      | always — in a workspace, once per member, each by its own `tsconfig.json`                        |
 | Oxlint Check              | oxlint (`--type-aware`)     | always (judged by the ratchet's `typescript` section where there is one)                         |
 | Oxfmt Check               | oxfmt (Rust)                | always                                                                                           |
 | Gitignore (artefacts)     | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own                                      |

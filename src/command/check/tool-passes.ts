@@ -21,16 +21,38 @@ import { oxfmt, oxlint } from './runners.js';
 import { projectBinary } from './setup.js';
 import type { Check } from './setup.js';
 
+async function typescriptRuns(
+    check: Check,
+    units: readonly string[],
+    log: string,
+): Promise<number> {
+    const parts = units.map((_, index) => check.logs.at(`type-${String(index)}.log`));
+    const statuses = await Promise.all(
+        units.map(
+            async (unit, index) =>
+                await run(
+                    check.tools.tsc,
+                    unit === '.' ? ['--noEmit'] : ['--noEmit', '--project', unit],
+                    {
+                        stderr: 'stdout',
+                        stdout: { path: parts[index] ?? log },
+                    },
+                ),
+        ),
+    );
+    writeFileSync(log, parts.map((part) => check.logs.read(part)).join(''));
+
+    return statuses.some((status) => status !== 0) ? 1 : 0;
+}
+
 export function typescriptPass(check: Check): Launched | undefined {
     if (!check.selected('typescript')) {
         return undefined;
     }
     const log = check.logs.at('type.log');
+    const units = check.declarations.get('.')?.kind === 'workspace' ? check.members : ['.'];
 
-    return {
-        log,
-        status: run(check.tools.tsc, ['--noEmit'], { stderr: 'stdout', stdout: { path: log } }),
-    };
+    return { log, status: typescriptRuns(check, units, log) };
 }
 
 export async function lintCheck(check: Check): Promise<number> {
