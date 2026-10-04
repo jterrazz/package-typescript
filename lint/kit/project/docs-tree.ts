@@ -16,7 +16,7 @@ export type DocsTree = {
     readonly heads: Readonly<Record<string, readonly string[]>>;
     /** Every markdown link target of each file under `docs/`, in the order the page carries them. */
     readonly links: Readonly<Record<string, readonly string[]>>;
-    /** The three facts the `04-operating.md` presence test is derived from. */
+    /** The three facts the `guides/release.md` presence test is derived from. */
     readonly ships: {
         /** A `Dockerfile` at the repository root or at a workspace member's. */
         readonly dockerfile: boolean;

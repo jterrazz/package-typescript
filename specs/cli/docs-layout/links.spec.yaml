@@ -1,11 +1,10 @@
-description: names a map that routes outside, an authored reference page and a link into another repository
+description: names a map that routes outside, a brief that routes nowhere and a link into another repository
 fixture: ./_fixtures/stray-links/
 runs:
     - command: docs-layout .
       exit: 1
       stdout: |
-          docs/README.md:1:1: error docs(map-links-only-chapters): docs/README.md links ../../jterrazz-os/home/_all/doctrine.md: the map routes to its own chapters and nothing else
-          docs/reference/:1:1: error docs(no-generated-reference): docs/reference/ is a generated API reference — the API is the types, and the manual holds no copy of them
+          docs/README.md:1:1: error docs(map-links-only-pages): docs/README.md links ../../jterrazz-os/home/_all/doctrine.md: the map routes to its own pages and nothing else
           AGENTS.md:1:1: error docs(agents-route-to-the-map): AGENTS.md does not route to docs/README.md — the brief is a map, not a manual
-          docs/01-architecture.md:1:1: error docs(no-cross-repository-link): docs/01-architecture.md links ../../package-test/docs/README.md: another repository's tree is not a place this manual may reach
           docs/README.md:1:1: error docs(no-cross-repository-link): docs/README.md links ../../jterrazz-os/home/_all/doctrine.md: another repository's tree is not a place this manual may reach
+          docs/concepts/architecture.md:1:1: error docs(no-cross-repository-link): docs/concepts/architecture.md links ../../../package-test/docs/README.md: another repository's tree is not a place this manual may reach

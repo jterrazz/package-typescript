@@ -1,7 +1,7 @@
 # The manual
 
-| Chapter                                 | Covers    |
-| --------------------------------------- | --------- |
-| [01 — Architecture](01-architecture.md) | The shape |
-| [02 — Developing](02-developing.md)     | The gesture |
-| [03 — Testing](03-testing.md)           | The proof |
+| Page                                         | Answers                         |
+| -------------------------------------------- | ------------------------------- |
+| [Architecture](concepts/architecture.md)     | What the repository is made of  |
+| [Develop](guides/develop.md)                 | How a change is made            |
+| [Test](guides/test.md)                       | What proves a change            |

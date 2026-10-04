@@ -1,11 +1,11 @@
 // invariant: the single executable copy of the rule ids and of each sentence they print; pages name ids, never
 // messages. Nothing here reads the filesystem, so a clone nobody installed into is judged the same.
 import type { DocsTree } from '../../kit/project/docs-tree.js';
-import { auditChapters } from './docs.chapters.js';
-import type { Chapter } from './docs.chapters.js';
 import { auditDecisions } from './docs.decisions.js';
 import type { Report } from './docs.decisions.js';
 import { auditLinks } from './docs.links.js';
+import { auditPages, pagesOf, SECTIONS } from './docs.pages.js';
+import type { Page } from './docs.pages.js';
 
 export type { DocsTree } from '../../kit/project/docs-tree.js';
 
@@ -19,10 +19,7 @@ export type DocsViolation = {
 /** How many opening lines of a file a rule may read. */
 export const HEAD_LINES = 20;
 
-const SUBFOLDERS: ReadonlySet<string> = new Set(['_assets/', 'decisions/']);
-
-// invariant: a generated API reference is a second copy of the types an editor resolves: refused by name.
-const GENERATED_REFERENCE = 'reference/';
+const FOLDERS: readonly string[] = [...SECTIONS, 'decisions/', '_assets/'];
 
 function directChildren(files: readonly string[]): string[] {
     return files.filter((path) => /^docs\/[^/]+\/?$/u.test(path));
@@ -33,17 +30,17 @@ function targetPath(link: string): string {
     return (link.split('#')[0] ?? '').replace(/^\.\//u, '');
 }
 
-function isChapterLink(target: string): boolean {
-    return /^\d/u.test(target) && !target.includes('/');
+function isPageLink(target: string): boolean {
+    return SECTIONS.some((section) => target.startsWith(section));
 }
 
 function auditMap(
     report: Report,
     {
-        chapters,
         files,
         links,
-    }: { chapters: readonly Chapter[]; files: readonly string[]; links: readonly string[] },
+        pages,
+    }: { files: readonly string[]; links: readonly string[]; pages: readonly Page[] },
 ): void {
     if (!files.includes('docs/README.md')) {
         report(
@@ -55,36 +52,38 @@ function auditMap(
         return;
     }
 
-    const rows = [...new Set(links.map((link) => targetPath(link)).filter(isChapterLink))];
+    const rows = [...new Set(links.map((link) => targetPath(link)).filter(isPageLink))];
+    const listed = pages.filter((page) => !page.name.includes('/'));
 
     for (const row of rows) {
-        if (!chapters.some((chapter) => chapter.name === row)) {
+        if (!listed.some((page) => page.path === `docs/${row}`)) {
             report(
-                'docs/map-matches-chapters',
+                'docs/map-matches-pages',
                 'docs/README.md',
-                `docs/README.md and the chapters disagree: ${row} has no file`,
+                `docs/README.md and the pages disagree: ${row} has no file`,
             );
         }
     }
-    for (const chapter of chapters) {
-        if (!rows.includes(chapter.name)) {
+    for (const page of listed) {
+        const row = page.path.slice('docs/'.length);
+        if (!rows.includes(row)) {
             report(
-                'docs/map-matches-chapters',
+                'docs/map-matches-pages',
                 'docs/README.md',
-                `docs/README.md and the chapters disagree: ${chapter.name} has no row`,
+                `docs/README.md and the pages disagree: ${row} has no row`,
             );
         }
     }
 
     for (const link of links) {
         const target = targetPath(link);
-        const routes = target === '' || isChapterLink(target) || target.startsWith('decisions/');
+        const routes = target === '' || isPageLink(target) || target.startsWith('decisions/');
 
         if (!routes) {
             report(
-                'docs/map-links-only-chapters',
+                'docs/map-links-only-pages',
                 'docs/README.md',
-                `docs/README.md links ${link}: the map routes to its own chapters and nothing else`,
+                `docs/README.md links ${link}: the map routes to its own pages and nothing else`,
             );
         }
     }
@@ -94,25 +93,19 @@ function auditFolder(report: Report, { children }: { children: readonly string[]
     for (const path of children) {
         const name = path.slice('docs/'.length);
 
-        if (name === GENERATED_REFERENCE) {
-            report(
-                'docs/no-generated-reference',
-                path,
-                `${path} is a generated API reference — the API is the types, and the manual holds no copy of them`,
-            );
-        } else if (name.endsWith('/')) {
-            if (!SUBFOLDERS.has(name)) {
+        if (name.endsWith('/')) {
+            if (!FOLDERS.includes(name)) {
                 report(
                     'docs/no-unknown-subfolder',
                     path,
-                    `${path} is not one of decisions/, _assets/`,
+                    `${path} is not one of ${FOLDERS.join(', ')}`,
                 );
             }
-        } else if (name !== 'README.md' && !/^\d/u.test(name)) {
+        } else if (name !== 'README.md') {
             report(
                 'docs/no-loose-file',
                 path,
-                `${path} is neither the map nor a chapter — number it, or move it under _assets/`,
+                `${path} sits outside the sections — move it under start/, guides/, concepts/ or reference/, or under _assets/ if a page embeds it`,
             );
         }
     }
@@ -140,18 +133,12 @@ export function auditDocs(tree: DocsTree): readonly DocsViolation[] {
     };
 
     const children = directChildren(files);
-    const chapters = children
-        .filter((path) => !path.endsWith('/') && /^\d/u.test(path.slice('docs/'.length)))
-        .map((path) => ({
-            name: path.slice('docs/'.length),
-            number: Number.parseInt(path.slice('docs/'.length), 10),
-            path,
-        }));
+    const pages = pagesOf(files);
     const heads = tree.heads ?? {};
     const links = tree.links ?? {};
 
-    auditMap(report, { chapters, files, links: links['docs/README.md'] ?? [] });
-    auditChapters(report, { chapters, ships: tree.ships });
+    auditMap(report, { files, links: links['docs/README.md'] ?? [], pages });
+    auditPages(report, { pages, ships: tree.ships });
     auditFolder(report, { children });
     auditDecisions(report, { files, heads });
 

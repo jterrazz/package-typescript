@@ -1,0 +1,7 @@
+description: asks a workspace whose member ships an image for its release guide
+fixture: ./_fixtures/workspace-member-image/
+runs:
+    - command: docs-layout .
+      exit: 1
+      stdout: |
+          docs/guides/release.md:1:1: error docs(release-guide-present-when-shipping): guides/release.md is missing — this repository ships an image (a Dockerfile)

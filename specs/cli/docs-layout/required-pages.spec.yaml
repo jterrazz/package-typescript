@@ -1,0 +1,11 @@
+description: names a missing map, a numbered page and every absent required page
+fixture: ./_fixtures/no-required-pages/
+runs:
+    - command: docs-layout .
+      exit: 1
+      stdout: |
+          docs/README.md:1:1: error docs(map-present): docs/README.md is missing — the map is the one file an outside corpus points at
+          docs/start/1-intro.md:1:1: error docs(page-named-in-kebab-case): docs/start/1-intro.md is not kebab-case.md — lowercase words, single hyphens, no number: the map gives the order
+          docs/concepts/architecture.md:1:1: error docs(required-pages-present): concepts/architecture.md is missing — every manual holds concepts/architecture.md, guides/develop.md and guides/test.md
+          docs/guides/develop.md:1:1: error docs(required-pages-present): guides/develop.md is missing — every manual holds concepts/architecture.md, guides/develop.md and guides/test.md
+          docs/guides/test.md:1:1: error docs(required-pages-present): guides/test.md is missing — every manual holds concepts/architecture.md, guides/develop.md and guides/test.md

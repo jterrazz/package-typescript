@@ -2,8 +2,8 @@
 
 The manual of a specimen the toolchain is proven on.
 
-| Chapter | Answers |
+| Page | Answers |
 | --- | --- |
-| [01 — Architecture](01-architecture.md) | What the specimen holds |
-| [02 — Developing](02-developing.md) | How it is changed |
-| [03 — Testing](03-testing.md) | What proves it |
+| [Architecture](concepts/architecture.md) | What the specimen holds |
+| [Develop](guides/develop.md) | How it is changed |
+| [Test](guides/test.md) | What proves it |

@@ -137,8 +137,8 @@
     },
     {
         "family": "markdown",
-        "id": "markdown/chapter-reference-resolves",
-        "sentence": "Every chapter a skill names is one its package ships."
+        "id": "markdown/page-reference-resolves",
+        "sentence": "Every page a skill names is one its package ships."
     },
     {
         "family": "markdown",
@@ -222,58 +222,48 @@
     },
     {
         "family": "docs",
-        "id": "docs/map-matches-chapters",
-        "sentence": "The map links every chapter, and only the chapters there are."
+        "id": "docs/map-matches-pages",
+        "sentence": "The map links every page of the four sections, and only the pages there are."
     },
     {
         "family": "docs",
-        "id": "docs/map-links-only-chapters",
-        "sentence": "The map links nothing but chapters and decisions/."
+        "id": "docs/map-links-only-pages",
+        "sentence": "The map links nothing but its own pages and decisions/."
     },
     {
         "family": "docs",
-        "id": "docs/chapter-named-by-number-and-subject",
-        "sentence": "A chapter is named NN-kebab.md."
+        "id": "docs/page-named-in-kebab-case",
+        "sentence": "A page is named kebab-case.md, with no number."
     },
     {
         "family": "docs",
-        "id": "docs/chapters-numbered-contiguously",
-        "sentence": "Chapters are numbered without a gap, one number per file."
+        "id": "docs/section-is-flat",
+        "sentence": "A section holds pages and no folder."
     },
     {
         "family": "docs",
-        "id": "docs/spine-number-reserved",
-        "sentence": "A reserved spine number holds its spine chapter alone."
+        "id": "docs/required-pages-present",
+        "sentence": "The manual holds concepts/architecture.md, guides/develop.md and guides/test.md."
     },
     {
         "family": "docs",
-        "id": "docs/spine-chapters-present",
-        "sentence": "The architecture, developing and testing chapters are present."
+        "id": "docs/release-guide-present-when-shipping",
+        "sentence": "A repository that ships an image or a package carries guides/release.md."
     },
     {
         "family": "docs",
-        "id": "docs/operating-chapter-present-when-shipping",
-        "sentence": "A repository that ships an image or a package carries its operating chapter."
-    },
-    {
-        "family": "docs",
-        "id": "docs/chapter-names-a-subject",
-        "sentence": "A chapter is named for a subject, never for the state of a piece of work."
+        "id": "docs/page-names-a-subject",
+        "sentence": "A page is named for a subject, never for the state of a piece of work."
     },
     {
         "family": "docs",
         "id": "docs/no-loose-file",
-        "sentence": "Every file directly under docs/ is the map or a chapter."
+        "sentence": "The only file directly under docs/ is the map."
     },
     {
         "family": "docs",
         "id": "docs/no-unknown-subfolder",
-        "sentence": "The manual holds no subfolder but decisions/ and _assets/."
-    },
-    {
-        "family": "docs",
-        "id": "docs/no-generated-reference",
-        "sentence": "The manual holds no generated API reference."
+        "sentence": "The manual holds no folder but start/, guides/, concepts/, reference/, decisions/ and _assets/."
     },
     {
         "family": "docs",

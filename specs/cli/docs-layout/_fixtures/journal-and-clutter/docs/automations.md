@@ -1,3 +1,3 @@
 # Automations
 
-A page with no number.
+A page beside the map, in no section.

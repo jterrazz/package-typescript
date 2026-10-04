@@ -11,8 +11,8 @@ const FENCE_RUN_LIMIT = 15;
 
 const SECTION_PROSE_LIMIT = 30;
 
-// invariant: a skill ships beside its package's `docs/`, so a chapter it names resolves there.
-const CHAPTER = /(?<![\w/.-])docs\/(?<chapter>\d{2}-[a-z\d-]+\.md)/gu;
+// invariant: a skill ships beside its package's `docs/`, so a page it names resolves there.
+const PAGE = /(?<![\w/.-])docs\/(?<page>(?:start|guides|concepts|reference)\/[a-z\d-]+\.md)/gu;
 
 const SKILL_PAGE = /^(?<root>(?:.*\/)?)skills\/[^/]+\/.+\.md$/u;
 
@@ -190,19 +190,19 @@ function missingPaths({ exists, root }: Context, path: string, cited: string): F
     return found;
 }
 
-function missingChapters({ exists, root }: Context, path: string, cited: string): Found[] {
+function missingPages({ exists, root }: Context, path: string, cited: string): Found[] {
     const skill = SKILL_PAGE.exec(path);
     if (skill === null) {
         return [];
     }
 
     const found: Found[] = [];
-    for (const match of cited.matchAll(CHAPTER)) {
-        const chapter = match.groups?.chapter ?? '';
-        if (!exists(join(root, skill.groups?.root ?? '', 'docs', chapter))) {
+    for (const match of cited.matchAll(PAGE)) {
+        const page = match.groups?.page ?? '';
+        if (!exists(join(root, skill.groups?.root ?? '', 'docs', page))) {
             found.push({
-                message: `docs/${chapter} is no chapter this package ships`,
-                rule: 'markdown/chapter-reference-resolves',
+                message: `docs/${page} is no page this package ships`,
+                rule: 'markdown/page-reference-resolves',
             });
         }
     }
@@ -212,7 +212,7 @@ function missingChapters({ exists, root }: Context, path: string, cited: string)
 
 function auditPage(context: Context, path: string, markdown: string): Found[] {
     const cited = withoutFences(markdown);
-    const found = [...missingPaths(context, path, cited), ...missingChapters(context, path, cited)];
+    const found = [...missingPaths(context, path, cited), ...missingPages(context, path, cited)];
 
     for (const reason of longProseBlocks(markdown)) {
         found.push({ message: reason, rule: 'markdown/prose-block-is-short' });
