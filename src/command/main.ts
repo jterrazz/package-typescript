@@ -91,6 +91,11 @@ const COMMANDS: Readonly<Record<string, Command>> = {
     },
 };
 
+// outside: jiti reads its cache place from options only; the variable merely turns the cache off.
+function writeNoJitiCache(): void {
+    process.env.JITI_FS_CACHE = 'false';
+}
+
 export async function main(
     args: readonly string[],
     { selected = EVERY_PASS }: { selected?: Selected } = {},
@@ -98,5 +103,10 @@ export async function main(
     const [name = '', ...rest] = args;
     const command = Object.hasOwn(COMMANDS, name) ? COMMANDS[name] : undefined;
 
-    return command === undefined ? usage(name) : await command(rest, selected);
+    if (command === undefined) {
+        return usage(name);
+    }
+    writeNoJitiCache();
+
+    return await command(rest, selected);
 }

@@ -1,0 +1,7 @@
+{
+    "name": "fixture-typescript-config",
+    "version": "1.0.0",
+    "devDependencies": {
+        "vitest": "^4.0.0"
+    }
+}

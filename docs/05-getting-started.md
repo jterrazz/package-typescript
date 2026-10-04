@@ -190,6 +190,8 @@ A local `compilerOption` is written under `typescript.tsconfig`, with its reason
 
 Every build, test and lint artefact lives under `.artifacts/<tool>/` at the project root: `.artifacts/tsc/` for the incremental build info, `.artifacts/vitest/` for the test cache and coverage, `.artifacts/stryker/` for mutation runs, `.artifacts/dev/` for the scripts a repository builds for itself — one folder per tool that writes, all of it regenerable. One directory to ignore, one to delete, and nothing beside the source.
 
+A cache with no place to point it is turned off rather than left elsewhere: the command runs its tools with jiti's transpile cache off, so knip reading a `vitest.config.ts` writes nothing under `node_modules/.cache/`.
+
 `dist/` is the one exception. It is a build's product, published from beside `src/`, not an artefact.
 
 ```bash
