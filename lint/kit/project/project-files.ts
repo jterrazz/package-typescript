@@ -6,6 +6,7 @@ import { join, matchesGlob } from 'node:path';
 import { exit, stderr } from 'node:process';
 
 import { refusal } from '../catalogue/lesson.js';
+import { listNotIgnored } from './git-tree.js';
 import { isGroundFolder } from './ground.js';
 
 export const UNSWEPT: ReadonlySet<string> = new Set([
@@ -22,25 +23,14 @@ export const UNSWEPT: ReadonlySet<string> = new Set([
 const BINARY = /\.(?:avif|bin|gif|ico|jpeg|jpg|lock|mp4|pdf|png|svg|ttf|webp|woff2?|zip)$/iu;
 
 function gitSweep(root: string): null | string[] {
-    const listed = spawnSync(
-        'git',
-        ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
-        {
-            cwd: root,
-            encoding: 'utf8',
-            // Stryker disable next-line ArithmeticOperator: the cap only binds past a listing of a million bytes, which no test tree reaches
-            maxBuffer: 256 * 1024 * 1024,
-        },
-    );
+    const listed = listNotIgnored(root);
 
-    if (listed.status !== 0) {
-        return null;
-    }
-
-    return [...new Set(listed.stdout.split('\0'))].filter(
-        (path) =>
-            path !== '' && lstatSync(join(root, path), { throwIfNoEntry: false }) !== undefined,
-    );
+    return listed === null
+        ? null
+        : [...new Set(listed)].filter(
+              (path) =>
+                  path !== '' && lstatSync(join(root, path), { throwIfNoEntry: false }) !== undefined,
+          );
 }
 
 // outside: `dist/` in .gitignore matches the directory form only, so each path is asked in both spellings; outside a git tree nothing is ignored.

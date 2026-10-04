@@ -23,12 +23,13 @@ function under(dir: string, root: string): boolean {
     return dir === root || dir.startsWith(`${root}${sep}`);
 }
 
-function listNotIgnored(top: string): null | string[] {
+const LISTING_CAP_BYTES = 256 * 1024 * 1024;
+
+export function listNotIgnored(top: string): null | string[] {
     const listed = spawnSync(
         'git',
         ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
-        // Stryker disable next-line ArithmeticOperator: the cap only binds past a listing of a million bytes, which no test tree reaches
-        { cwd: top, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 },
+        { cwd: top, encoding: 'utf8', maxBuffer: LISTING_CAP_BYTES },
     );
     if (listed.status !== 0) {
         return null;

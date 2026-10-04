@@ -69,6 +69,21 @@ describe('git-tree', () => {
         expect(treeNames(join(root, 'src', 'nested'))).toStrictEqual(['deep.ts']);
     });
 
+    test('the tree git does not ignore — lists a tree whose listing outgrows a pipe whole, still leaving out what `.gitignore` names', () => {
+        // Given - two thousand modules, a listing past the 64 KiB a pipe holds, and an ignored log
+        const modules = Array.from(
+            { length: 2000 },
+            (_, at) => `module-${String(at).padStart(4, '0')}-of-a-real-project.ts`,
+        );
+        const root = project([...modules.map((name) => `src/${name}`), 'src/debug.log'], {
+            add: [],
+            ignore: '*.log\n',
+        });
+
+        // Then - every module, and no log
+        expect(treeNames(join(root, 'src')).toSorted()).toStrictEqual(modules);
+    });
+
     test('the tree git does not ignore — reads the index again once it moved — a path `git rm --cached` and ignored leaves the tree', () => {
         // Given - a tracked data file under a folder ignored after it was added, read once
         const root = project(['data/dump.json', 'src/a.ts'], { add: ['data', 'src'] });
