@@ -97,12 +97,12 @@ function localExportsOf(program: Program): LocalExport[] {
 // Stryker disable next-line StringLiteral: an anonymous binding is published only by a default export, which its position names
 const ANONYMOUS = 'default';
 
-// Stryker disable OptionalChaining: a function, a member and a declarator always carry the parents and ids walked below
 function memberOf(fn: FunctionNode): Binding | null {
     const { parent } = fn;
     if (parent.value !== fn) {
         return null;
     }
+    // Stryker disable next-line OptionalChaining: a method or a property always sits in a body or an object
     const owner = parent.parent?.type === 'ClassBody' ? parent.parent.parent : undefined;
 
     return owner === undefined
@@ -118,7 +118,9 @@ function bindingOf(fn: FunctionNode): Binding | null {
     if (parent.type === 'VariableDeclarator') {
         const statement = parent.parent;
         return {
+            // Stryker disable next-line OptionalChaining: a declarator always sits in a declaration, which always lists its declarators
             anchor: statement?.declarations?.length === 1 ? statement : parent,
+            // Stryker disable next-line OptionalChaining: a declarator always has an id
             name: parent.id?.name,
         };
     }
@@ -138,9 +140,13 @@ function isPublished(
         return false;
     }
     const outer = binding.owner ?? binding.anchor;
-    const direct = EXPORTS.has(outer.parent?.type) || EXPORTS.has(outer.parent?.parent?.type);
+    // Stryker disable next-line OptionalChaining: a binding's statement, declarator or member is never the program, so it always has a parent
+    const holder = outer.parent?.type;
+    // Stryker disable next-line OptionalChaining: a binding's statement, declarator or member is never the program, so it always has a parent
+    const grandparent = outer.parent?.parent;
+    const direct = EXPORTS.has(holder) || EXPORTS.has(grandparent?.type);
     const names = direct
-        ? [outer.parent?.type === 'ExportDefaultDeclaration' ? 'default' : binding.name]
+        ? [holder === 'ExportDefaultDeclaration' ? 'default' : binding.name]
         : localExports
               .filter(({ local }) => local === binding.name)
               .map(({ exported }) => exported);
@@ -149,9 +155,9 @@ function isPublished(
 }
 
 function statementOf(anchor: Node): Node {
+    // Stryker disable next-line OptionalChaining: an anchor is never the program, so it always has a parent
     return EXPORTS.has(anchor.parent?.type) ? (anchor.parent ?? anchor) : anchor;
 }
-// Stryker restore OptionalChaining
 
 function documentingLinesOf(
     anchor: Node,
