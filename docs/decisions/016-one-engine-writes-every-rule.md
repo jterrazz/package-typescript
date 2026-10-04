@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-09-27
+**Amended by:** [ADR-019](019-mutation-judges-zero-survivors-not-a-score.md) — the floor judge: the kit judges exact debt alone.
 
 The owner approved the plan this records ("ok pour tout", 2026-09-27); this
 record states the decision taken within that approval.
