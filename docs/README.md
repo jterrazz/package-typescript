@@ -4,9 +4,9 @@ The toolchain that builds, checks, lints and formats a project from one devDepen
 
 ## Start
 
-| Page                                        | Answers                                                                                                                            |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| [Getting started](start/getting-started.md) | From an empty folder to a green `typescript check`: the declaration, the derived files, the scripts, the `Makefile`, the first run |
+| Page                                        | Answers                                                                                                                                                     |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Getting started](start/getting-started.md) | From an empty folder to a green `typescript check`: the declaration, the derived files, the scripts, the `Makefile`, the first run, the editor, a workspace |
 
 ## Guides
 
@@ -28,6 +28,13 @@ A smaller task is one section of a reference page:
 | understand a finding                           | its `read:`, a heading of this manual                                                           |
 | run it in CI, or read its result from a script | [Quality checks § Flags and exit codes](reference/quality-checks.md#flags-and-exit-codes)       |
 | hold imports to a layer map                    | [Quality checks § Architecture](reference/quality-checks.md#the-architecture-layer-map-pass)    |
+| add a compiler option                          | [Configuration § The `typescript` section](reference/configuration.md#the-typescript-section)   |
+| quiet knip on a dependency or a path           | [Lint presets § Unused code](reference/lint-presets.md#unused-code-knip)                        |
+| set a preset's law aside                       | [Configuration § Setting a law aside](reference/configuration.md#setting-a-law-aside)           |
+| look up why a rule is on or off                | [Lint presets § The catalogue](reference/lint-presets.md#the-catalogue)                         |
+| see what a major release asks of a project     | [Release § Which number moves](guides/release.md#which-number-moves)                            |
+| set the editor up                              | [Getting started § Your editor](start/getting-started.md#your-editor)                           |
+| lay out a monorepo                             | [Getting started § In a workspace](start/getting-started.md#in-a-workspace)                     |
 
 ## Concepts
 
