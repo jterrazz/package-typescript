@@ -43,7 +43,7 @@ function longProseBlocks(markdown: string): string[] {
     const close = (): void => {
         if (length > PROSE_BLOCK_LIMIT) {
             found.push(
-                `a block of ${length} lines at line ${start} — the floor is ${PROSE_BLOCK_LIMIT}`,
+                `a block of ${length} lines at line ${start} — the limit is ${PROSE_BLOCK_LIMIT}`,
             );
         }
         length = 0;
@@ -83,7 +83,7 @@ function airlessFences(markdown: string): string[] {
     const close = (): void => {
         if (run > FENCE_RUN_LIMIT) {
             found.push(
-                `a fenced block at line ${fenceStart} runs ${run} lines unbroken — the floor is ${FENCE_RUN_LIMIT}`,
+                `a fenced block at line ${fenceStart} runs ${run} lines unbroken — the limit is ${FENCE_RUN_LIMIT}`,
             );
         }
         run = 0;
