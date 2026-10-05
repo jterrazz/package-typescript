@@ -6,6 +6,7 @@ const escaped = (text: string): string => text.replaceAll(/[.*+?^${}()|[\]\\]/gu
 export function originalOf(path: string): string {
     const sandbox = new RegExp(
         `^(?<project>.+?)/${escaped(MUTATION_OUTPUT)}/tmp/sandbox-[^/]+(?<rest>/.*)?$`,
+        // Stryker disable next-line StringLiteral: the pattern is ASCII, which reads alike with or without the unicode flag
         'u',
     );
     const groups = sandbox.exec(path)?.groups;
