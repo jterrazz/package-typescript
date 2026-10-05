@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-09-27
+**Moved since (2026-10-05):** the command's `src/command/` is now `src/commands/<name>/`, one folder per subcommand, and the tools it runs are driven from `src/drivers/<tool>/` — [Architecture § Commands and drivers](../concepts/architecture.md#commands-and-drivers).
 
 The owner delegated the decision ("go tout faire") on 2026-09-27; this record
 states the decision taken within that delegation.
