@@ -178,9 +178,42 @@ describe('mutation-scope', () => {
         ).toStrictEqual([
             'src/c.ts:3-4',
             'src/c.ts:9-9',
-            'src/c.ts:10-11',
+            'src/c.ts:10-12',
             'src/c.ts:12-12',
             'src/new.ts',
+        ]);
+    });
+
+    test('a hunk opening a block, a call or a literal runs to the end of what it opens, as Stryker mutates only a node it holds whole', () => {
+        // Given - one-line hunks opening a function, an if inside it, a call over three lines and a closing brace, in a source no module test sits beside
+        const source = [
+            'export function f(a: number): number {',
+            '    if (a > 1) {',
+            '        return a;',
+            '    }',
+            '    return g(',
+            '        a,',
+            '    );',
+            '}',
+        ].join('\n');
+        const changed = new Map([
+            [
+                'src/c.ts',
+                [
+                    [1, 1],
+                    [2, 2],
+                    [5, 5],
+                    [8, 8],
+                ] as const,
+            ],
+        ]);
+
+        // Then - each range runs to the last line of the nodes starting on it, a line opening nothing stays alone
+        expect(changedRanges(['src/c.ts'], changed, () => source)).toStrictEqual([
+            'src/c.ts:1-8',
+            'src/c.ts:2-4',
+            'src/c.ts:5-7',
+            'src/c.ts:8-8',
         ]);
     });
 });

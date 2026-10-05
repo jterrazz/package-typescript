@@ -118,10 +118,33 @@ export function leftToTheSuite(modules: ModuleRun, changed: Changed): string[] {
     return [...new Set(ranges)];
 }
 
-/** One verdict over both runs: what the module tests left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant the change brought that the suite's report does not carry was judged by nothing; an earlier run's results the suite's report carries count for nothing. */
+/** Whether this run's `--mutate` ranges hold a mutant whole, as Stryker reads them: a file named bare holds all of it, a range of lines what starts and ends within them. */
+function heldBy(ranges: readonly string[], file: string, mutant: Mutant): boolean {
+    const { end, start } = objectOf(mutant.location);
+    const first = Number(objectOf(start).line);
+    const last = Number(objectOf(end).line);
+
+    return ranges.some((range) => {
+        if (range === file) {
+            return true;
+        }
+        const [from, to] = range
+            .slice(file.length + 1)
+            .split('-')
+            .map(Number);
+
+        return (
+            range.startsWith(`${file}:`) &&
+            first >= (from ?? Number.NaN) &&
+            last <= (to ?? Number.NaN)
+        );
+    });
+}
+
+/** One verdict over both runs: what the module tests left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant the change brought that the suite's report does not carry was judged by nothing; of a source no module test sits beside, the suite's report counts only what this run's ranges held — an earlier run's results it carries beyond them count for nothing. */
 export function judgedRuns(
     modules: ModuleRun,
-    suite?: { changed: Changed; report: unknown },
+    suite?: { changed: Changed; report: unknown; untested: readonly string[] },
 ): Judged {
     const judged: Judged = {
         detected: 0,
@@ -145,7 +168,7 @@ export function judgedRuns(
         for (const [file, mutant] of mutantsOf(suite.report)) {
             const measuredNow = modules.measured.has(file)
                 ? forwarded.delete(keyOf(file, mutant))
-                : reaches(suite.changed, file, lineOf(mutant));
+                : heldBy(suite.untested, file, mutant);
             if (measuredNow) {
                 tally(judged, file, mutant);
             }

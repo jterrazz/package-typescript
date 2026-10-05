@@ -3,8 +3,8 @@ import { describe, expect, test } from 'vitest';
 import { judgedRuns, leftToTheSuite, verdictOf } from './mutation-survivors.js';
 import type { Changed } from './mutation-survivors.js';
 
-const mutant = (status: string, line: number, replacement = 'true') => ({
-    location: { end: { column: 20, line }, start: { column: 9, line } },
+const mutant = (status: string, line: number, replacement = 'true', endLine = line) => ({
+    location: { end: { column: 20, line: endLine }, start: { column: 9, line } },
     mutatorName: 'ConditionalExpression',
     replacement,
     status,
@@ -128,10 +128,7 @@ describe('mutation-survivors', () => {
                             mutant('Pending', 2),
                             mutant('Pending', 3),
                             mutant('Skipped', 4),
-                            {
-                                location: mutant('Killed', 5).location,
-                                mutatorName: 'BlockStatement',
-                            },
+                            { ...mutant('Killed', 5), status: undefined },
                         ],
                     },
                 },
@@ -193,11 +190,11 @@ describe('mutation-survivors', () => {
     });
 
     test('one verdict over both runs: the suite judges what the change brought it of what the module tests left, and an earlier run it reports counts for nothing', () => {
-        // Given - the module tests killed one mutant and left three, the change reaching two of them and a source no module test sits beside; the suite killed one, let one survive, ran nothing of one mutant of that source, and still reports four results of an earlier run the change did not reach, one of them on a mutant the module tests left
+        // Given - the module tests killed one mutant and left three, the change reaching two of them and a source no module test sits beside, measured over lines 10 to 12 beside a range of another source; the suite killed one, let one survive, ran nothing of one mutant of that source, and still reports six results of an earlier run this one did not measure, one of them on a mutant the module tests left and two crossing an edge of the range
         const suite = {
             changed: new Map<string, (readonly [number, number])[] | true>([
                 ['src/a.ts', [[2, 3]]],
-                ['src/specs-only.ts', [[1, 2]]],
+                ['src/specs-only.ts', [[10, 12]]],
             ]),
             report: {
                 files: {
@@ -211,13 +208,16 @@ describe('mutation-survivors', () => {
                     },
                     'src/specs-only.ts': {
                         mutants: [
-                            mutant('Killed', 1),
-                            mutant('NoCoverage', 2),
-                            mutant('Survived', 9),
+                            mutant('Killed', 10),
+                            mutant('NoCoverage', 12),
+                            mutant('Survived', 11, 'true', 15),
+                            mutant('Survived', 9, 'true', 11),
+                            mutant('Survived', 19),
                         ],
                     },
                 },
             },
+            untested: ['src/specs-else.ts:1-99', 'src/specs-only.ts:10-12'],
         };
 
         // Then - three detected, the suite's survivor judged, what nothing runs counted by file, the mutant no change reached left, and neither earlier result judged
@@ -247,7 +247,7 @@ describe('mutation-survivors', () => {
                 ranByTests: NONE_RAN,
                 report: { files: { 'src/a.ts': { mutants: [mutant('NoCoverage', 2)] } } },
             },
-            { changed: new Map([['src/a.ts', true as const]]), report: { files: {} } },
+            { changed: new Map([['src/a.ts', true as const]]), report: {}, untested: [] },
         );
 
         // Then - named as never judged, never counted as left, and the run fails
@@ -260,14 +260,11 @@ describe('mutation-survivors', () => {
 
     test('what no test runs is counted file by file, most first, a tie in name order', () => {
         // Given - the suite ran nothing of three mutants in one file, and of one in each of two others
+        const files = ['src/a.ts', 'src/m.ts', 'src/z.ts'];
         const judged = judgedRuns(
             { measured: new Set(), ranByTests: NONE_RAN, report: {} },
             {
-                changed: new Map([
-                    ['src/a.ts', true as const],
-                    ['src/m.ts', true as const],
-                    ['src/z.ts', true as const],
-                ]),
+                changed: new Map(files.map((file) => [file, true as const])),
                 report: {
                     files: {
                         'src/z.ts': { mutants: [mutant('NoCoverage', 1)] },
@@ -281,6 +278,7 @@ describe('mutation-survivors', () => {
                         'src/a.ts': { mutants: [mutant('NoCoverage', 1)] },
                     },
                 },
+                untested: files,
             },
         );
 

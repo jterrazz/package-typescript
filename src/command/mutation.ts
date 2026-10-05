@@ -167,16 +167,16 @@ async function judgedAfterTheSuite({
     if (note !== undefined) {
         print(`${badge('TYPESCRIPT')} ${note}\n`);
     }
-    const left = [
-        ...changedRanges(untested, changed, (file) => String(readFileSync(join(project, file)))),
-        ...leftToTheSuite(modulesRun, changed),
-    ];
+    const reached = changedRanges(untested, changed, (file) =>
+        String(readFileSync(join(project, file))),
+    );
+    const left = [...reached, ...leftToTheSuite(modulesRun, changed)];
     if (left.length === 0) {
         return printed(modulesAlone);
     }
     return await afterStage(
         await measured(scope, { mutate: left, name: 'suite' }, project),
-        ({ report }) => printed(judgedRuns(modulesRun, { changed, report })),
+        ({ report }) => printed(judgedRuns(modulesRun, { changed, report, untested: reached })),
     );
 }
 
