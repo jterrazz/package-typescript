@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-export const ROOT = resolve(import.meta.dirname, '../../..');
+import { originalOf } from '../../kit/project/sandbox.js';
+
+export const ROOT = originalOf(resolve(import.meta.dirname, '../../..'));
 
 export const CHANNELS = ['checker', 'meta', 'runtime'];
 

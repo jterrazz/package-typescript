@@ -14,7 +14,7 @@ describe('subpaths', () => {
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toMatch(`
             @jterrazz/typescript/config (types) → ./dist/config.d.ts: held
-            @jterrazz/typescript/config (default) → ./dist/config.js: loads, 2 names
+            @jterrazz/typescript/config (default) → ./dist/config.js: loads, 4 names
             @jterrazz/typescript/docs (types) → ./dist/docs.d.ts: held
             @jterrazz/typescript/docs (default) → ./dist/docs.js: loads, 2 names
             @jterrazz/typescript/oxfmt (types) → ./dist/oxfmt.d.ts: held
@@ -23,7 +23,7 @@ describe('subpaths', () => {
             @jterrazz/typescript/oxlint (default) → ./dist/oxlint.js: loads, 1 names
             @jterrazz/typescript/rules (types) → ./dist/rules.d.ts: held
             @jterrazz/typescript/rules (browser) → ./dist/rules.browser.js: reaches 1 modules, and imports no package
-            @jterrazz/typescript/rules (default) → ./dist/rules.js: loads, 83 names
+            @jterrazz/typescript/rules (default) → ./dist/rules.js: loads, 84 names
             @jterrazz/typescript/tsconfig/astro (default) → ./src/presets/tsconfig/astro.json: parses, 21 compiler options
             @jterrazz/typescript/tsconfig/expo (default) → ./src/presets/tsconfig/expo.json: parses, 21 compiler options
             @jterrazz/typescript/tsconfig/next (default) → ./src/presets/tsconfig/next.json: parses, 22 compiler options
@@ -44,11 +44,11 @@ describe('subpaths', () => {
         // Then - the surface is exactly these names, and the oxlint and oxfmt entries hand out what the project's declaration derives
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toMatch(`
-            @jterrazz/typescript/config: defineConfig, definePreset
+            @jterrazz/typescript/config: defineConfig, definePreset, defineStandard, ownPresets
             @jterrazz/typescript/docs: HEAD_LINES, auditDocs
             @jterrazz/typescript/oxfmt: oxfmtConfig
             @jterrazz/typescript/oxlint: oxlintConfig
-            @jterrazz/typescript/rules: BASELINE, GROUND_EXPECTED, GROUND_FIXTURES, GROUND_FOLDERS, GROUND_GLOB, GROUND_REQUESTS, GROUND_SEEDS, LESSON_PARTS, MEMBER_DEPTH, OXLINT_CONFIG_NAMES, OXLINT_SUPPRESSIONS, PRUNED, RESERVED_FOLDERS, SETUP_FOLDER, SHARED_FOLDER, SUPPRESSIONS_LEDGER, UNMARKED_RESERVED, anchor, anchorsOf, blankComments, byName, cell, countsOf, declaredSubpaths, defineCheck, defineInvariant, defineRule, entryPoints, exitCodeOf, filesUnder, firstSentence, folderChanged, forgetTree, holdsDirectives, holdsManifest, ignoredPaths, isDirectory, isFile, isGroundFolder, isOnDisk, isProjectRoot, isRepositoryRoot, isReservedFolder, judgeExact, keepsSection, labelOf, lessonOf, lessonParts, lessonsAt, listDirectory, markdownTable, missingParts, moveKeepingHistory, nearestRoot, presetChecks, projectFiles, projected, quotedMask, readAt, readBaseline, readCommandLine, readFileCached, readManifest, readSettings, readSettingsSync, refusal, refusalBlock, reportLine, rowNamed, runChecker, sectionOf, spliceBetween, stop, suppressionDirectives, tightened, treeEntries, treeKind, treeNames, whyOf, workspaceMembers, workspacePatterns, writeProjections, writeSection
+            @jterrazz/typescript/rules: BASELINE, GROUND_EXPECTED, GROUND_FIXTURES, GROUND_FOLDERS, GROUND_GLOB, GROUND_REQUESTS, GROUND_SEEDS, LESSON_PARTS, MEMBER_DEPTH, OXLINT_CONFIG_NAMES, OXLINT_SUPPRESSIONS, PRUNED, RESERVED_FOLDERS, SETUP_FOLDER, SHARED_FOLDER, SUPPRESSIONS_LEDGER, UNMARKED_RESERVED, anchor, anchorsOf, blankComments, byName, cell, countsOf, declaredSubpaths, defineCheck, defineInvariant, defineRule, entryPoints, exitCodeOf, filesUnder, firstSentence, folderChanged, forgetTree, holdsDirectives, holdsManifest, ignoredPaths, isDirectory, isFile, isGroundFolder, isOnDisk, isProjectRoot, isRepositoryRoot, isReservedFolder, judgeExact, keepsSection, labelOf, lessonOf, lessonParts, lessonsAt, listDirectory, markdownTable, missingParts, moveKeepingHistory, nearestRoot, originalOf, presetChecks, projectFiles, projected, quotedMask, readAt, readBaseline, readCommandLine, readFileCached, readManifest, readSettings, readSettingsSync, refusal, refusalBlock, reportLine, rowNamed, runChecker, sectionOf, spliceBetween, stop, suppressionDirectives, tightened, treeEntries, treeKind, treeNames, whyOf, workspaceMembers, workspacePatterns, writeProjections, writeSection
             the oxlint entry derives the declared project's rules: yes
             the oxfmt entry derives the estate style: yes
         `);

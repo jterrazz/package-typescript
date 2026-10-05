@@ -3,10 +3,11 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { originalOf } from '../../kit/project/sandbox.js';
 import { shippedModules } from '../../kit/testing/shipped-modules.js';
 import { headingsOf, refusalFindings, refusalLine } from './refusals.js';
 
-const ROOT = resolve(import.meta.dirname, '../../..');
+const ROOT = originalOf(resolve(import.meta.dirname, '../../..'));
 
 function linesOf(module: string): string[] {
     const scratch = mkdtempSync(join(tmpdir(), 'refusals-'));

@@ -3,13 +3,12 @@ import { createRequire } from 'node:module';
 import { delimiter, join } from 'node:path';
 import process from 'node:process';
 
-import { ARTIFACTS, DEV_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { ARTIFACTS, DEV_OUTPUT, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { handOver } from '../run.js';
 import {
     CHILD_COVERAGE_SOURCE,
     MUTANT_SETUP_SOURCE,
-    OUT,
     RAN_BY_TESTS_VARIABLE,
     sandboxScriptSource,
     vitestConfigSource,
@@ -52,38 +51,41 @@ export function strykerConfig(
 
     return {
         $schema: '../../node_modules/@stryker-mutator/core/schema/stryker-schema.json',
-        buildCommand: `node ${OUT}/${files.sandbox}`,
+        buildCommand: `node ${MUTATION_OUTPUT}/${files.sandbox}`,
         checkers: [],
         concurrency: suite ? 6 : 8,
         coverageAnalysis: 'perTest',
         disableTypeChecks: typeCheckedGlob(scope.mutated),
         ...(suite ? { dryRunTimeoutMinutes: 60 } : {}),
-        htmlReporter: { fileName: `${OUT}/${files.report}.html` },
+        htmlReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.html` },
         ignorePatterns: [
             `/${ARTIFACTS}/**`,
-            `!/${OUT}/*.mjs`,
-            `!/${OUT}/*.cjs`,
+            `!/${MUTATION_OUTPUT}/*.mjs`,
+            `!/${MUTATION_OUTPUT}/*.cjs`,
             `!/${DEV_OUTPUT}/**`,
         ],
         ignoreStatic: true,
         incremental: true,
-        incrementalFile: `${OUT}/${files.incremental}.json`,
-        jsonReporter: { fileName: `${OUT}/${files.report}.json` },
+        incrementalFile: `${MUTATION_OUTPUT}/${files.incremental}.json`,
+        jsonReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.json` },
         mutate,
         plugins: [createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner')],
         reporters: ['clear-text', 'html', 'json', 'progress'],
-        tempDirName: `${OUT}/tmp`,
+        tempDirName: `${MUTATION_OUTPUT}/tmp`,
         testRunner: 'vitest',
         timeoutMS: suite ? 60_000 : 30_000,
-        vitest: { configFile: `${OUT}/${files.vitest}`, ...(suite ? { related: false } : {}) },
+        vitest: {
+            configFile: `${MUTATION_OUTPUT}/${files.vitest}`,
+            ...(suite ? { related: false } : {}),
+        },
     };
 }
 
 /** Lays the files every stage of the run loads, and the PATH its suite runs under. */
 export function strykerPrepared(project: string): void {
-    mkdirSync(OUT, { recursive: true });
-    writeFileSync(join(OUT, 'mutant-setup.mjs'), MUTANT_SETUP_SOURCE);
-    writeFileSync(join(OUT, 'child-coverage.cjs'), CHILD_COVERAGE_SOURCE);
+    mkdirSync(MUTATION_OUTPUT, { recursive: true });
+    writeFileSync(join(MUTATION_OUTPUT, 'mutant-setup.mjs'), MUTANT_SETUP_SOURCE);
+    writeFileSync(join(MUTATION_OUTPUT, 'child-coverage.cjs'), CHILD_COVERAGE_SOURCE);
     // outside: the suite runs as `npm test` runs it, its tools found on the PATH npm gives a script — a spec that spawns oxlint type-aware leaves it to find tsgolint there.
     // Stryker disable next-line StringLiteral: a spec runs this command with the project's node_modules/.bin already first on the PATH, as npm does, so no spec can tell the folders apart
     process.env.PATH = `${join(project, 'node_modules', '.bin')}${delimiter}${process.env.PATH ?? ''}`;
@@ -99,17 +101,17 @@ export async function strykerRun(
 ): Promise<Measured | { status: number }> {
     const files = FILES[stage.name];
     const suite = stage.name === 'suite';
-    writeFileSync(join(OUT, files.vitest), vitestConfigSource(scope.exclude, suite));
-    writeFileSync(join(OUT, files.sandbox), sandboxScriptSource(suite && buildsFirst));
+    writeFileSync(join(MUTATION_OUTPUT, files.vitest), vitestConfigSource(scope.exclude, suite));
+    writeFileSync(join(MUTATION_OUTPUT, files.sandbox), sandboxScriptSource(suite && buildsFirst));
     writeFileSync(
-        join(OUT, files.config),
+        join(MUTATION_OUTPUT, files.config),
         `${JSON.stringify(strykerConfig(scope, stage), null, 4)}\n`,
     );
-    const ranInto = mkdtempSync(join(project, OUT, 'ran-by-tests-'));
+    const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
     const status = await handOver(
         projectBinary('stryker'),
-        ['run', join(OUT, files.config)],
+        ['run', join(MUTATION_OUTPUT, files.config)],
         project,
     );
     const ranByTests = new Set(
@@ -122,7 +124,7 @@ export async function strykerRun(
     if (status !== 0) {
         return { status };
     }
-    const report = String(readFileSync(join(OUT, `${files.report}.json`)));
+    const report = String(readFileSync(join(MUTATION_OUTPUT, `${files.report}.json`)));
 
     return { ranByTests, report: JSON.parse(report) };
 }

@@ -130,6 +130,7 @@ export {
     nearestRoot,
 } from './kit/project/repository-root.js';
 export { blankComments, quotedMask } from './kit/project/comments.js';
+export { originalOf } from './kit/project/sandbox.js';
 export type { Span } from './kit/project/comments.js';
 export { workspaceMembers } from './kit/project/workspace-members.js';
 

@@ -1,6 +1,4 @@
-import { ARTIFACTS } from '../../../lint/kit/project/build-plan.js';
-
-export const OUT = `${ARTIFACTS}/stryker`;
+import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 
 // outside: Stryker 10 names a test by its suites and title joined with a space, where Vitest 5 joins them with ` > `: without this plugin every mutant runs no test and survives.
 const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
@@ -107,10 +105,10 @@ if (inject('mode') === 'mutant') {
     delete process.env.__STRYKER_CHILD_COVERAGE__;
 } else {
     delete process.env.__STRYKER_ACTIVE_MUTANT__;
-    const children = join(process.cwd(), ${JSON.stringify(OUT)}, 'children', \`\${process.pid}-\${threadId}\`);
+    const children = join(process.cwd(), ${JSON.stringify(MUTATION_OUTPUT)}, 'children', \`\${process.pid}-\${threadId}\`);
     mkdirSync(children, { recursive: true });
     process.env.__STRYKER_CHILD_COVERAGE__ = children;
-    const reporter = \`--require="\${join(process.cwd(), ${JSON.stringify(OUT)}, 'child-coverage.cjs')}"\`;
+    const reporter = \`--require="\${join(process.cwd(), ${JSON.stringify(MUTATION_OUTPUT)}, 'child-coverage.cjs')}"\`;
     if (!(process.env.NODE_OPTIONS ?? '').includes(reporter)) {
         process.env.NODE_OPTIONS = \`\${process.env.NODE_OPTIONS ?? ''} \${reporter}\`.trim();
     }
@@ -209,7 +207,7 @@ ${LOAD_FAILURES_REPORTER_SOURCE}
 ${suite ? OWN_PROCESSES_PLUGIN_SOURCE : ''}
 const projects = project.test?.projects ?? [];
 
-const setup = resolve(${JSON.stringify(`${OUT}/mutant-setup.mjs`)});
+const setup = resolve(${JSON.stringify(`${MUTATION_OUTPUT}/mutant-setup.mjs`)});
 
 const listed = (files) => (files === undefined ? [] : [files].flat());
 

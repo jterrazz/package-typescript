@@ -3,6 +3,7 @@ import { join, resolve } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
 
+import { originalOf } from '../../../lint/kit/project/sandbox.js';
 import { shippedModules } from '../../../lint/kit/testing/shipped-modules.js';
 
 // invariant: the module walk sees only what an import builds; a literal audience holds whoever calls the builder, and when.
@@ -98,7 +99,7 @@ function unstatedAudiences(tree: string, path: string): string[] {
     return found;
 }
 
-const ROOT = resolve(import.meta.dirname, '../../..');
+const ROOT = originalOf(resolve(import.meta.dirname, '../../..'));
 
 describe('builder-calls', () => {
     test('every fragment a shipped module can build states its audience where it is built', () => {
