@@ -11,11 +11,11 @@ runs:
 
             derived from the tree                                build.dev.release = "lint/release.cli.ts"
             derived from the tree                                build.entries.digest.worker = "src/digest.worker.ts"
-            @jterrazz/typescript src/standard/standard.ts        typescript.lint.consumer = ["catalogue", "rulebook", "rules", "checks"]
-            @jterrazz/typescript src/standard/standard.ts        typescript.lint.kit = ["project", "baseline", "checker", "catalogue", "compiler", "testing"]
-            @jterrazz/typescript src/standard/standard.ts        typescript.lint.self = ["catalogue", "rules", "checks", "corpus"]
+            @jterrazz/typescript src/standard/kinds/library.ts   typescript.lint.consumer = ["catalogue", "rulebook", "rules", "checks"]
+            @jterrazz/typescript src/standard/kinds/library.ts   typescript.lint.kit = ["project", "baseline", "checker", "catalogue", "compiler", "testing"]
+            @jterrazz/typescript src/standard/kinds/library.ts   typescript.lint.self = ["catalogue", "rules", "checks", "corpus"]
             @jterrazz/typescript src/standard/standard.ts        typescript.memberRoots = ["apps", "packages"]
-            @jterrazz/typescript src/standard/standard.ts        typescript.mutation.ignore.src/standard/**/*.ts = "a standard is data the Config pass keeps free of logic: a mutant rewrites a stated value, which the specs of what it configures read, never a decision a test of the module could hold"
+            @jterrazz/typescript src/standard/kinds/library.ts   typescript.mutation.ignore.src/standard/**/*.ts = "a standard is data the Config pass keeps free of logic: a mutant rewrites a stated value, which the specs of what it configures read, never a decision a test of the module could hold"
             @jterrazz/typescript src/standard/kinds/library.ts   typescript.mutation.mutate.lint/*.ts = "the entries of the lint rules a library ships"
             @jterrazz/typescript src/standard/kinds/library.ts   typescript.mutation.mutate.lint/consumer/**/*.ts = "the lint rules and checks a library ships to its consumers"
             @jterrazz/typescript src/standard/kinds/library.ts   typescript.mutation.mutate.lint/kit/**/*.ts = "the rules kit those rules and checks run on"
@@ -736,9 +736,9 @@ runs:
             @jterrazz/typescript src/standard/standard.ts        typescript.words.constructs = ["constants", "helper", "interfaces", "type", "types", "util"]
             @jterrazz/typescript src/standard/standard.ts        typescript.words.grabBag = ["base", "common", "helpers", "lib", "misc", "stuff", "tools", "utils"]
             @jterrazz/typescript src/standard/standard.ts        typescript.words.shortcuts = ["auth", "cfg", "impl", "infra", "k8s", "pkg", "repo", "repos", "svc", "tmp"]
-            @jterrazz/typescript src/standard/standard.ts        law typescript/kit-knows-no-declaration
-            @jterrazz/typescript src/standard/standard.ts        law typescript/consumer-folders-apart
-            @jterrazz/typescript src/standard/standard.ts        law typescript/self-folders-apart
-            @jterrazz/typescript src/standard/standard.ts        law typescript/catalogue-at-the-bottom
-            @jterrazz/typescript src/standard/standard.ts        law typescript/shipped-lint-reads-no-self
-            @jterrazz/typescript src/standard/standard.ts        law typescript/src-reads-no-declaration
+            @jterrazz/typescript src/standard/kinds/library.ts   law typescript/kit-knows-no-declaration
+            @jterrazz/typescript src/standard/kinds/library.ts   law typescript/consumer-folders-apart
+            @jterrazz/typescript src/standard/kinds/library.ts   law typescript/self-folders-apart
+            @jterrazz/typescript src/standard/kinds/library.ts   law typescript/catalogue-at-the-bottom
+            @jterrazz/typescript src/standard/kinds/library.ts   law typescript/shipped-lint-reads-no-self
+            @jterrazz/typescript src/standard/kinds/library.ts   law typescript/src-reads-no-declaration

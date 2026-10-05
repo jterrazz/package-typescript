@@ -16,9 +16,10 @@ import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import { declaredNamesFindings, declaredNamesRules } from './names.declared.js';
 import { entryGrammarOf } from './names.entries.js';
 import { namesFinding } from './names.lessons.js';
-import { LINT_ROOT, lintFoldersOf, lintTreeOf } from './names.lint-tree.js';
+import { LINT_ROOT, lintFoldersOf, lintTreeOf, TOPS } from './names.lint-tree.js';
 import type { LintTree } from './names.lint-tree.js';
 import { lsLintConfig, lsLintFindings, runLsLint } from './names.ls-lint.js';
+import type { LintTrees } from './names.ls-lint.js';
 import { makefileOf } from './names.makefile.js';
 import { shipsLint } from './names.published-lint.js';
 import { findingsOf } from './names.universal.js';
@@ -222,15 +223,41 @@ function configFinding(path: string, problem: string): Finding {
     });
 }
 
+const keepsTree = (tree: LintTree): boolean => TOPS.some((top) => tree[top].length > 0);
+
+// invariant: a unit is held to the lint tree its own kind lists; one whose kind ships no lint rules lists none, and its `lint/` is judged as a root alone.
+async function lintTreesOf(
+    context: Context,
+    units: readonly string[],
+    own: LintTree,
+): Promise<LintTrees> {
+    const trees = await Promise.all(
+        units.map(async (unit) =>
+            unit === ''
+                ? own
+                : settingsOf(await context.config(join(context.root, unit))).universal.lint,
+        ),
+    );
+
+    return Object.fromEntries(
+        units.flatMap((unit, index) => {
+            const tree = trees[index];
+
+            return tree !== undefined && keepsTree(tree) ? [[unit, tree]] : [];
+        }),
+    );
+}
+
 async function laidOut(
     context: Context,
     { swept, tree }: { swept: readonly string[]; tree: LintTree },
 ): Promise<{ findings: Finding[]; problems: string[] }> {
     const units = ['', ...workspaceMembers(context.root).map((member) => `${member}/`)];
+    const trees = await lintTreesOf(context, units, tree);
     const { failures, problem } = runLsLint(
         context.value('--ls-lint', 'ls-lint'),
         context.root,
-        lsLintConfig({ ignorePatterns: context.ignorePatterns, tree, units }),
+        lsLintConfig({ ignorePatterns: context.ignorePatterns, trees, units }),
     );
     const declared = declaredNamesRules(await context.config());
     const own = declaredNamesFindings(context, { rules: declared.rules, swept, units });
@@ -238,7 +265,7 @@ async function laidOut(
     return {
         findings: [
             ...(declared.problem === null ? [] : [configFinding(SETTINGS_FILE, declared.problem)]),
-            ...lsLintFindings(context.root, { failures, swept, tree, units }),
+            ...lsLintFindings(context.root, { failures, swept, trees, units }),
             ...own.findings,
         ],
         problems: [...(problem === null ? [] : [problem]), ...own.problems],

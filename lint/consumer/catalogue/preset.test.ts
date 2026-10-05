@@ -7,10 +7,11 @@ describe('preset', () => {
         // Given - a library on next
         const preset = typescriptPreset({ kind: 'library', platform: 'next' });
 
-        // Then - the files merged in order, the platform's code and tsconfig preset, the laws of the standard
+        // Then - the files merged in order, the platform's code and tsconfig preset, the laws of the library's lint tree
         expect(preset.origins?.map(({ file, laws }) => [file, laws])).toStrictEqual([
+            ['src/standard/standard.ts', []],
             [
-                'src/standard/standard.ts',
+                'src/standard/kinds/library.ts',
                 [
                     'kit-knows-no-declaration',
                     'consumer-folders-apart',
@@ -20,7 +21,6 @@ describe('preset', () => {
                     'src-reads-no-declaration',
                 ],
             ],
-            ['src/standard/kinds/library.ts', []],
             ['src/standard/platforms/next.ts', []],
         ]);
         expect([preset.name, preset.package, preset.baseline, preset.lawSettings]).toStrictEqual([
@@ -76,15 +76,19 @@ describe('preset', () => {
         // Given - no declaration
         const preset = typescriptPreset(null);
 
-        // Then - the standard and the node platform's, nothing a kind adds
+        // Then - the standard and the node platform's, nothing a kind adds: no law, no lint tree
         expect([
             preset.origins?.map(({ file }) => file),
             preset.sources,
             preset.settings?.tsconfigPreset,
+            preset.layers,
+            preset.settings?.lint,
         ]).toStrictEqual([
             ['src/standard/standard.ts', 'src/standard/platforms/node.ts'],
             { extensions: ['ts'], roots: ['src'] },
             'node',
+            [],
+            undefined,
         ]);
     });
 });

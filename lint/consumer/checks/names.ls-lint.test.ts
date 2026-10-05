@@ -3,10 +3,15 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test, vi } from 'vitest';
 
-import STANDARD from '../../../src/standard/standard.js';
+import LIBRARY from '../../../src/standard/kinds/library.js';
+import { objectOf, parsedObject } from '../../kit/project/json.js';
 import { ignoredOf, lsLintConfig, lsLintFindings, runLsLint } from './names.ls-lint.js';
+import type { LintTrees } from './names.ls-lint.js';
 
-const LINT_TREE = STANDARD.typescript?.lint ?? {};
+const LINT_TREE = LIBRARY.typescript?.lint ?? {};
+
+const treesOf = (units: readonly string[]): LintTrees =>
+    Object.fromEntries(units.map((unit) => [unit, LINT_TREE]));
 
 const LS_LINT = join(import.meta.dirname, '../../../node_modules/.bin/ls-lint');
 
@@ -17,7 +22,7 @@ function findingsOf(
         units = [''],
     }: { failures?: Parameters<typeof lsLintFindings>[1]['failures']; units?: string[] } = {},
 ): string[] {
-    return lsLintFindings(tmpdir(), { failures, swept, tree: LINT_TREE, units }).map(
+    return lsLintFindings(tmpdir(), { failures, swept, trees: treesOf(units), units }).map(
         ({ path, rule }) => `${rule}  ${path}`,
     );
 }
@@ -51,7 +56,7 @@ describe('names.ls-lint', () => {
         const findings = lsLintFindings(root, {
             failures,
             swept: ['lint/consumer/listing.ts'],
-            tree: LINT_TREE,
+            trees: treesOf(['']),
             units: [''],
         });
         rmSync(root, { force: true, recursive: true });
@@ -77,7 +82,7 @@ describe('names.ls-lint', () => {
         const findings = lsLintFindings(tmpdir(), {
             failures: {},
             swept,
-            tree: LINT_TREE,
+            trees: treesOf(['']),
             units: [''],
         });
 
@@ -121,6 +126,36 @@ describe('names.ls-lint', () => {
         ]);
     });
 
+    test('holds to no lint tree a member whose kind keeps none, and lays out no rule of it for ls-lint', () => {
+        // Given - the root keeping the lint tree, a member keeping none, each with a file at the root of its lint/
+        const trees = treesOf(['']);
+        const swept = ['lint/NOTES', 'packages/a/lint/NOTES'];
+
+        // When - the findings are read, and the config written
+        const findings = lsLintFindings(tmpdir(), {
+            failures: {},
+            swept,
+            trees,
+            units: ['', 'packages/a/'],
+        });
+        const config = lsLintConfig({ ignorePatterns: [], trees, units: ['', 'packages/a/'] });
+
+        // Then - only the root's lint/ is judged, and laid out
+        expect(findings.map(({ path, rule }) => `${rule}  ${path}`)).toStrictEqual([
+            'names/lint-root-holds-only-entries  lint/NOTES',
+        ]);
+        const places = Object.keys(objectOf(parsedObject(config).ls));
+        expect(places.filter((place) => place.includes('lint'))).toStrictEqual([
+            'lint',
+            'lint/consumer',
+            'lint/consumer/{catalogue,rulebook,rules,checks}',
+            'lint/kit',
+            'lint/kit/{project,baseline,checker,catalogue,compiler,testing}',
+            'lint/self',
+            'lint/self/{catalogue,rules,checks,corpus}',
+        ]);
+    });
+
     test('ignores what ls-lint never enters, and each pattern a project ignores as its folder', () => {
         // Given - two patterns, one a folder's whole content
         const ignored = ignoredOf(['vendor/**', 'tmp', 'docs/**/*.draft.md']);
@@ -134,7 +169,7 @@ describe('names.ls-lint', () => {
 
     test('runs ls-lint over a tree, reading its failures, and leaves no scratch folder', () => {
         // Given - a tree with one refused folder, and one with none
-        const config = lsLintConfig({ ignorePatterns: [], tree: LINT_TREE, units: [''] });
+        const config = lsLintConfig({ ignorePatterns: [], trees: treesOf(['']), units: [''] });
         const refused = onDisk(['src/Api_Client/client.ts']);
         const clean = onDisk(['src/api-client/client.ts']);
         const scratch = mkdtempSync(join(tmpdir(), 'names-ls-lint-scratch-'));
@@ -159,7 +194,7 @@ describe('names.ls-lint', () => {
         // Given - one tree breaking each rule, in the root and in a workspace member, beside what each rule allows
         const config = lsLintConfig({
             ignorePatterns: ['vendor/**'],
-            tree: LINT_TREE,
+            trees: treesOf(['', 'packages/m/']),
             units: ['', 'packages/m/'],
         });
         const root = onDisk([

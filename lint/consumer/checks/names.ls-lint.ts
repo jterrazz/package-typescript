@@ -88,13 +88,16 @@ export function ignoredOf(ignorePatterns: readonly string[]): string[] {
     return [...IGNORED, ...ignorePatterns.map((pattern) => pattern.replace(/\/\*\*$/u, ''))];
 }
 
+/** The lint tree of each unit that keeps one, keyed by the unit's prefix — a unit whose kind ships no lint rules has none. */
+export type LintTrees = Readonly<Record<string, LintTree>>;
+
 export function lsLintConfig({
     ignorePatterns,
-    tree,
+    trees,
     units,
 }: {
     ignorePatterns: readonly string[];
-    tree: LintTree;
+    trees: LintTrees;
     units: readonly string[];
 }): string {
     const ls: Record<string, Rules> = {};
@@ -102,7 +105,12 @@ export function lsLintConfig({
         const named = `${prefix}{${NAMED_ROOTS.join(',')}}`;
         ls[named] = { '.dir': `regex:${DIRECTORY}` };
         ls[`${named}/**/app`] = ANY_NAME;
-        Object.assign(ls, lintTreeRules(prefix, tree), skillRules(prefix));
+        const tree = trees[prefix];
+        Object.assign(
+            ls,
+            tree === undefined ? {} : lintTreeRules(prefix, tree),
+            skillRules(prefix),
+        );
     }
 
     return `${JSON.stringify({ ignore: ignoredOf(ignorePatterns), ls }, null, 2)}\n`;
@@ -166,9 +174,9 @@ export function lsLintFindings(
     {
         failures,
         swept,
-        tree,
+        trees,
         units,
-    }: { failures: Failures; swept: readonly string[]; tree: LintTree; units: readonly string[] },
+    }: { failures: Failures; swept: readonly string[]; trees: LintTrees; units: readonly string[] },
 ): Finding[] {
     const held = new Set(swept);
     const failed = [...failedOf(root, failures, held), ...unseenOf(units, held)];
@@ -178,7 +186,7 @@ export function lsLintFindings(
     for (const one of failed.toSorted((left, right) => (left.path < right.path ? -1 : 1))) {
         const finding = isInside(one.path, paths)
             ? undefined
-            : placementFindingOf({ tree, units }, one);
+            : placementFindingOf({ trees, units }, one);
         if (finding !== undefined) {
             reported.set(finding.path, finding);
         }

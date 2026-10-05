@@ -111,7 +111,7 @@ const SKILL_PAGE = /^skills\/[^/]+\/SKILL\.md$/u;
 export type Failed = { isDirectory: boolean; path: string };
 
 export function placementFindingOf(
-    { tree, units }: { tree: LintTree; units: readonly string[] },
+    { trees, units }: { trees: Readonly<Record<string, LintTree>>; units: readonly string[] },
     { isDirectory, path }: Failed,
 ): Finding | undefined {
     const prefix =
@@ -120,10 +120,11 @@ export function placementFindingOf(
             .toSorted((left, right) => right.length - left.length)[0] ?? '';
     const own = path.slice(prefix.length);
     if (own.startsWith(`${LINT_ROOT}/`)) {
-        return lintTreeFinding(
-            { isDirectory, path: own.slice(LINT_ROOT.length + 1), prefix },
-            tree,
-        );
+        const tree = trees[prefix];
+
+        return tree === undefined
+            ? undefined
+            : lintTreeFinding({ isDirectory, path: own.slice(LINT_ROOT.length + 1), prefix }, tree);
     }
     if (own.startsWith('skills/')) {
         return SKILL_PAGE.test(own) ? undefined : skillFinding(isDirectory ? `${path}/` : path);
