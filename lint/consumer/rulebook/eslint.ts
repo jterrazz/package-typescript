@@ -238,7 +238,7 @@ export default fragment({
         ),
         'new-cap': off(
             {
-                by: 'rule review, 2026-10-04 — 56 reports on signews-api, every one the dependency-injection library’s `Injectable(…)`, a function its authors named in capitals; the defect the rule guards, a class called without `new`, is TS2348 under the type check',
+                by: 'rule review, 2026-10-05 — 37 reports across the estate (jterrazz-design 20, signews-mobile 14, spwn 3), not one a defect: libraries’ factories their authors named in capitals — react-native-gesture-handler’s `Gesture.Pan()`, React Native’s `PlatformColor` and `DynamicColorIOS`, Skia’s `RuntimeEffect.Make`, next/font’s `Geist(…)` — and signews-mobile’s dependency-injection `Injectable(…)`; the defect the rule guards, a class called without `new`, is TS2348 under the type check',
                 kind: 'evidence',
             },
             RULE_REVIEW_SINCE,
