@@ -131,4 +131,22 @@ describe('mutation', () => {
             0 mutant(s) no test runs
         `);
     });
+
+    test('typescript mutation — a module-level mutant a test also runs is the module tests to answer', async () => {
+        // Given - the consumer, its module test judging everything, beside a function the module calls as it loads and a test calls again, judging only the sign of what it returns
+        const result = await cli
+            .fixture(directory('./_fixtures/mutation-consumer/'))
+            .fixture(directory('./_fixtures/mutation-killing/'))
+            .fixture(directory('./_fixtures/mutation-mixed/'))
+            .exec('typescript mutation');
+
+        // Then - the mutant the test runs and lets live fails the run, though loading the module ran it too
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+             TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
+            {{any}}
+            src/doubled.ts:2:12  ArithmeticOperator → value / 2
+            found: 1 mutant(s) a test runs and none detects{{any}}
+        `);
+    });
 });

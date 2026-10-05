@@ -73,8 +73,10 @@ function report() {
 process.on('exit', report);
 `;
 
-// invariant: first of every project's setup files — a mutant is live before the test file loads, and a static mutant is credited to every test of each file whose loading ran it.
-export const MUTANT_SETUP_SOURCE = `import { mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+export const RAN_BY_TESTS_VARIABLE = '__TYPESCRIPT_MUTATION_RAN_BY_TESTS__';
+
+// invariant: first of every project's setup files — a mutant is live before the test file loads, and a static mutant is credited to every test of each file whose loading ran it; the mutants a test ran, beyond loading its file, are written where RAN_BY_TESTS_VARIABLE names.
+export const MUTANT_SETUP_SOURCE = `import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { threadId } from 'node:worker_threads';
 import { afterAll, afterEach, beforeEach, inject } from 'vitest';
@@ -138,6 +140,17 @@ if (inject('mode') === 'mutant') {
     afterAll(({}, suite) => {
         add(fileWide, drained());
         const { perTest, static: statics } = coverage();
+        const ranInto = process.env.${RAN_BY_TESTS_VARIABLE};
+        if (ranInto !== undefined) {
+            const ran = new Set(Object.keys(fileWide));
+            for (const test of tests) {
+                for (const id of Object.keys(perTest[test] ?? {})) {
+                    ran.add(id);
+                }
+            }
+            mkdirSync(ranInto, { recursive: true });
+            writeFileSync(join(ranInto, \`\${process.pid}-\${threadId}-\${Math.random().toString(36).slice(2)}.txt\`), [...ran].join('\\n'));
+        }
         for (const [id, count] of Object.entries(statics)) {
             const before = loaded[id] ?? 0;
             if (count > before) {

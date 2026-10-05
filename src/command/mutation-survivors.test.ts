@@ -13,8 +13,11 @@ const mutant = (status: string, line: number, replacement = 'true') => ({
 const LESSON =
     'why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/reference/quality-checks.md#mutation';
 
+const NONE_RAN: ReadonlySet<string> = new Set();
+
 const MODULE_RUN_LEAVING_THREE = {
     measured: new Set(['src/a.ts']),
+    ranByTests: NONE_RAN,
     report: {
         files: {
             'src/a.ts': {
@@ -34,6 +37,7 @@ describe('mutation-survivors', () => {
         // Given - two detected mutants and a static one the tests loading its module detect, three no module test runs, a static one they let live and one no test could be credited with, one that did not compile, one that errored and one declared, a file Stryker found nothing to mutate in, beside a file an earlier run measured
         const judged = judgedRuns({
             measured: new Set(['src/a.ts', 'src/b.ts', 'src/c.ts']),
+            ranByTests: NONE_RAN,
             report: {
                 files: {
                     'src/a.ts': {
@@ -69,9 +73,10 @@ describe('mutation-survivors', () => {
     });
 
     test('a survivor fails the run, each named at its place, in file and line order, before the lesson', () => {
-        // Given - survivors in two files, out of order, two on one line, one replacing a block over several lines and one whose report names neither its mutator nor its replacement
+        // Given - survivors in two files, out of order, two on one line, one replacing a block over several lines, one whose report names neither its mutator nor its replacement, and two static ones, the first a test also ran, the second only loading ran
         const judged = judgedRuns({
             measured: new Set(['src/a.ts', 'src/b.ts']),
+            ranByTests: new Set(['ran']),
             report: {
                 files: {
                     'src/b.ts': { mutants: [mutant('Survived', 2, '{}\n// more')] },
@@ -86,21 +91,25 @@ describe('mutation-survivors', () => {
                                 status: 'Survived',
                             },
                             mutant('Survived', 3),
+                            { ...mutant('Survived', 9), id: 'ran', static: true },
+                            { ...mutant('Survived', 10), id: 'loaded', static: true },
                         ],
                     },
                 },
             },
         });
 
-        // Then - each survivor on one line, then the four parts, then the counts, and no line for what there is none of
+        // Then - each survivor on one line, the static one a test ran among them, then the four parts, then the counts, and no line for what there is none of
         expect(verdictOf(judged)).toStrictEqual({
             lines: [
                 'src/a.ts:3:9  ConditionalExpression → true',
                 'src/a.ts:3:24   → ',
                 'src/a.ts:7:9  ConditionalExpression → true',
+                'src/a.ts:9:9  ConditionalExpression → true',
                 'src/b.ts:2:9  ConditionalExpression → {}',
-                `found: 4 mutant(s) a test runs and none detects · ${LESSON}`,
+                `found: 5 mutant(s) a test runs and none detects · ${LESSON}`,
                 '0 mutant(s) no test runs',
+                '1 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does',
             ],
             status: 1,
         });
@@ -110,6 +119,7 @@ describe('mutation-survivors', () => {
         // Given - a detected mutant, two a stopped run left pending, one of a status no verdict knows, one with none
         const judged = judgedRuns({
             measured: new Set(['src/a.ts']),
+            ranByTests: NONE_RAN,
             report: {
                 files: {
                     'src/a.ts': {
@@ -172,8 +182,11 @@ describe('mutation-survivors', () => {
         // Then - one range per node the change reaches, two mutants of one node measured by one, its columns counted from zero as --mutate reads them; a survivor of a line a test runs stays the module tests' to answer
         expect(
             leftToTheSuite(
-                report,
-                new Set(['src/a.ts', 'src/added.ts', 'src/untouched.ts']),
+                {
+                    measured: new Set(['src/a.ts', 'src/added.ts', 'src/untouched.ts']),
+                    ranByTests: NONE_RAN,
+                    report,
+                },
                 changed,
             ),
         ).toStrictEqual(['src/a.ts:4:8-4:19', 'src/a.ts:6:8-6:19', 'src/added.ts:40:8-40:19']);
@@ -231,6 +244,7 @@ describe('mutation-survivors', () => {
         const judged = judgedRuns(
             {
                 measured: new Set(['src/a.ts']),
+                ranByTests: NONE_RAN,
                 report: { files: { 'src/a.ts': { mutants: [mutant('NoCoverage', 2)] } } },
             },
             { changed: new Map([['src/a.ts', true as const]]), report: { files: {} } },
@@ -247,7 +261,7 @@ describe('mutation-survivors', () => {
     test('what no test runs is counted file by file, most first, a tie in name order', () => {
         // Given - the suite ran nothing of three mutants in one file, and of one in each of two others
         const judged = judgedRuns(
-            { measured: new Set(), report: {} },
+            { measured: new Set(), ranByTests: NONE_RAN, report: {} },
             {
                 changed: new Map([
                     ['src/a.ts', true as const],

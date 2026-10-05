@@ -68,11 +68,22 @@ const keyOf = (file: string, mutant: Mutant): string => {
     return JSON.stringify([file, start.line, start.column, mutant.mutatorName, mutant.replacement]);
 };
 
-/** A mutant the module tests leave to the suite: none of them runs it, or it runs as a module loads and the tests loading it let it live or could not be credited with it. */
-function leftByTheModules(mutant: Mutant): boolean {
+/** What the module run hands the verdict: its report, the files it measured, and the mutants its tests ran beyond loading their files. */
+export type ModuleRun = {
+    measured: ReadonlySet<string>;
+    ranByTests: ReadonlySet<string>;
+    report: unknown;
+};
+
+/** A mutant the module tests leave to the suite: none of them runs it, or only loading a module runs it and the tests loading it let it live or could not be credited with it; one a test also ran is theirs to answer. */
+function leftByTheModules(mutant: Mutant, ranByTests: ReadonlySet<string>): boolean {
+    // Stryker disable next-line StringLiteral: a mutant without an id is in no set of ids, whatever stands in for it
+    const ranByATest = ranByTests.has(stringOf(mutant.id) ?? '');
+
     return (
         mutant.status === 'NoCoverage' ||
-        (mutant.static === true && (mutant.status === 'Survived' || mutant.status === 'Ignored'))
+        (mutant.static === true &&
+            (mutant.status === 'Ignored' || (mutant.status === 'Survived' && !ranByATest)))
     );
 }
 
@@ -89,14 +100,12 @@ export function reaches(changed: Changed, file: string, line: number): boolean {
 }
 
 /** The mutants the module tests left in `measured` on lines the change reaches, as the `--mutate` range of exactly each node, once, for the whole suite to measure. */
-export function leftToTheSuite(
-    report: unknown,
-    measured: ReadonlySet<string>,
-    changed: Changed,
-): string[] {
-    const ranges = mutantsOf(report, measured)
+export function leftToTheSuite(modules: ModuleRun, changed: Changed): string[] {
+    const ranges = mutantsOf(modules.report, modules.measured)
         .filter(
-            ([file, mutant]) => leftByTheModules(mutant) && reaches(changed, file, lineOf(mutant)),
+            ([file, mutant]) =>
+                leftByTheModules(mutant, modules.ranByTests) &&
+                reaches(changed, file, lineOf(mutant)),
         )
         .map(([file, mutant]) => {
             const { end, start } = objectOf(mutant.location);
@@ -111,7 +120,7 @@ export function leftToTheSuite(
 
 /** One verdict over both runs: what the module tests left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant the change brought that the suite's report does not carry was judged by nothing; an earlier run's results the suite's report carries count for nothing. */
 export function judgedRuns(
-    modules: { measured: ReadonlySet<string>; report: unknown },
+    modules: ModuleRun,
     suite?: { changed: Changed; report: unknown },
 ): Judged {
     const judged: Judged = {
@@ -124,7 +133,7 @@ export function judgedRuns(
     };
     const forwarded = new Set<string>();
     for (const [file, mutant] of mutantsOf(modules.report, modules.measured)) {
-        if (!leftByTheModules(mutant)) {
+        if (!leftByTheModules(mutant, modules.ranByTests)) {
             tally(judged, file, mutant);
         } else if (suite !== undefined && reaches(suite.changed, file, lineOf(mutant))) {
             forwarded.add(keyOf(file, mutant));

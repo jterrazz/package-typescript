@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import process from 'node:process';
 
@@ -23,11 +23,12 @@ import {
     CHILD_COVERAGE_SOURCE,
     MUTANT_SETUP_SOURCE,
     OUT,
+    RAN_BY_TESTS_VARIABLE,
     sandboxScriptSource,
     vitestConfigSource,
 } from './mutation-sources.js';
 import { judgedRuns, leftToTheSuite, verdictOf } from './mutation-survivors.js';
-import type { Judged } from './mutation-survivors.js';
+import type { Judged, ModuleRun } from './mutation-survivors.js';
 import { handOver } from './processes.js';
 import { badge, print, RED, RESET } from './terminal.js';
 
@@ -81,7 +82,7 @@ async function measured(
     scope: MutationScope,
     stage: Stage,
     project: string,
-): Promise<{ report: unknown } | { status: number }> {
+): Promise<{ ranByTests: ReadonlySet<string>; report: unknown } | { status: number }> {
     const files = FILES[stage.name];
     const suite = stage.name === 'suite';
     writeFileSync(join(OUT, files.vitest), vitestConfigSource(scope.exclude, suite));
@@ -90,6 +91,8 @@ async function measured(
         join(OUT, files.config),
         `${JSON.stringify(strykerConfig(scope, stage), null, 4)}\n`,
     );
+    const ranInto = mkdtempSync(join(project, OUT, 'ran-by-tests-'));
+    process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
     print(
         `${badge('TYPESCRIPT')} ${suite ? 'Measuring the whole suite against the changed lines no module test runs' : 'Measuring the module tests against mutants of the sources they test'}...\n\n`,
     );
@@ -98,23 +101,35 @@ async function measured(
         ['run', join(OUT, files.config)],
         project,
     );
+    const ranByTests = new Set(
+        readdirSync(ranInto).flatMap((name) =>
+            String(readFileSync(join(ranInto, name))).split('\n'),
+        ),
+    );
+    rmSync(ranInto, { recursive: true });
 
     if (status !== 0) {
         return { status };
     }
     const report = String(readFileSync(join(OUT, `${files.report}.json`)));
 
-    return { report: JSON.parse(report) };
+    return { ranByTests, report: JSON.parse(report) };
 }
 
-/** A stage's next step on its report — none when it measured nothing — or Stryker's status when it failed. */
+type Measured = { ranByTests: ReadonlySet<string>; report: unknown };
+
+const NOTHING_MEASURED: Measured = { ranByTests: new Set(), report: undefined };
+
+/** A stage's next step on what it measured — nothing when it measured nothing — or Stryker's status when it failed. */
 async function afterStage(
-    outcome: undefined | { report: unknown } | { status: number },
-    next: (report: unknown) => number | Promise<number>,
+    outcome: Measured | undefined | { status: number },
+    next: (measured: Measured) => number | Promise<number>,
 ): Promise<number> {
-    return outcome !== undefined && 'status' in outcome
-        ? outcome.status
-        : await next(outcome?.report);
+    if (outcome !== undefined && 'status' in outcome) {
+        return outcome.status;
+    }
+
+    return await next(outcome ?? NOTHING_MEASURED);
 }
 
 function printed(judged: Judged): number {
@@ -132,7 +147,7 @@ async function judgedAfterTheSuite({
     since,
     untested,
 }: {
-    modulesRun: { measured: ReadonlySet<string>; report: unknown };
+    modulesRun: ModuleRun;
     project: string;
     ranges: readonly string[] | undefined;
     scope: MutationScope;
@@ -145,14 +160,14 @@ async function judgedAfterTheSuite({
     }
     const left = [
         ...changedRanges(untested, changed),
-        ...leftToTheSuite(modulesRun.report, modulesRun.measured, changed),
+        ...leftToTheSuite(modulesRun, changed),
     ];
     if (left.length === 0) {
         return printed(judgedRuns(modulesRun));
     }
     return await afterStage(
         await measured(scope, { mutate: left, name: 'suite' }, project),
-        (report) => printed(judgedRuns(modulesRun, { changed, report })),
+        ({ report }) => printed(judgedRuns(modulesRun, { changed, report })),
     );
 }
 
@@ -193,11 +208,11 @@ export async function mutation(args: readonly string[]): Promise<number> {
             ? undefined
             : await measured(scope, { mutate: modules, name: 'modules' }, project);
 
-    return await afterStage(first, async (report) => {
+    return await afterStage(first, async ({ ranByTests, report }) => {
         const measuredFiles = new Set(modules.map((range) => fileOf(range)));
 
         return await judgedAfterTheSuite({
-            modulesRun: { measured: measuredFiles, report },
+            modulesRun: { measured: measuredFiles, ranByTests, report },
             project,
             ranges,
             scope,
