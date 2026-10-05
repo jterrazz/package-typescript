@@ -18,7 +18,6 @@ const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
     name: 'stryker-test-names',
 };`;
 
-// invariant: every process a test spawns runs the instrumented build with this module imported first: it reports, on its way out, the mutants it ran — the parent credits them to the test that spawned it.
 // hazard: Stryker reads the tests of each file, and a file a mutant stops from loading holds none, so the mutant would read as survived; the file's failure is handed over as a failed test.
 const LOAD_FAILURES_REPORTER_SOURCE = `const loadFailures = {
     onTestRunEnd(testModules) {
@@ -49,10 +48,15 @@ const OWN_PROCESSES_PLUGIN_SOURCE = `const ownProcesses = {
 };
 `;
 
+// invariant: every process a test spawns runs the instrumented build with this module imported first: it reports the mutants it ran — the parent credits them to the test that spawned it.
+// hazard: no handler catches SIGKILL, and one for SIGTERM would swallow a signal a process sends itself as it ends; the reporter hands back what is new every tenth of a second instead, so a killed process loses only its last tenth, and one still running after its test file's last test hands back nothing more.
 export const CHILD_COVERAGE_SOURCE = `const { renameSync, writeFileSync } = require('node:fs');
 const { join } = require('node:path');
 
 const into = process.env.__STRYKER_CHILD_COVERAGE__;
+const name = \`\${process.pid}-\${Date.now()}-\${Math.random().toString(36).slice(2)}\`;
+const sent = {};
+let written = 0;
 
 function report() {
     const coverage = globalThis.__stryker__?.mutantCoverage;
@@ -65,12 +69,26 @@ function report() {
             hits[id] = (hits[id] ?? 0) + count;
         }
     }
-    const path = join(into, \`\${process.pid}-\${Date.now()}-\${Math.random().toString(36).slice(2)}.json\`);
-    writeFileSync(\`\${path}.partial\`, JSON.stringify(hits));
+    const fresh = {};
+    let any = false;
+    for (const [id, count] of Object.entries(hits)) {
+        if (count > (sent[id] ?? 0)) {
+            fresh[id] = count - (sent[id] ?? 0);
+            sent[id] = count;
+            any = true;
+        }
+    }
+    if (!any) {
+        return;
+    }
+    written += 1;
+    const path = join(into, \`\${name}-\${written}.json\`);
+    writeFileSync(\`\${path}.partial\`, JSON.stringify(fresh));
     renameSync(\`\${path}.partial\`, path);
 }
 
 process.on('exit', report);
+setInterval(report, 100).unref();
 `;
 
 export const RAN_BY_TESTS_VARIABLE = '__TYPESCRIPT_MUTATION_RAN_BY_TESTS__';
@@ -92,7 +110,7 @@ if (inject('mode') === 'mutant') {
     const children = join(process.cwd(), ${JSON.stringify(OUT)}, 'children', \`\${process.pid}-\${threadId}\`);
     mkdirSync(children, { recursive: true });
     process.env.__STRYKER_CHILD_COVERAGE__ = children;
-    const reporter = \`--require=\${join(process.cwd(), ${JSON.stringify(OUT)}, 'child-coverage.cjs')}\`;
+    const reporter = \`--require="\${join(process.cwd(), ${JSON.stringify(OUT)}, 'child-coverage.cjs')}"\`;
     if (!(process.env.NODE_OPTIONS ?? '').includes(reporter)) {
         process.env.NODE_OPTIONS = \`\${process.env.NODE_OPTIONS ?? ''} \${reporter}\`.trim();
     }
