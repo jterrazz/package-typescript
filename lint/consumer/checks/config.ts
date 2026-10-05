@@ -1,7 +1,5 @@
 import { join } from 'node:path';
 
-import type { Teaching } from '../../kit/catalogue/lesson.js';
-import { defineCheck, rowNamed } from '../../kit/catalogue/rule.js';
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import {
     namesBeside,
@@ -22,13 +20,10 @@ import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { KINDS, listed, PLATFORMS } from '../../kit/project/project-kind.js';
 import type { ProjectIdentity } from '../../kit/project/project-kind.js';
 import { workspaceMembers } from '../../kit/project/workspace-members.js';
-import FINDINGS from '../catalogue/findings.json' with { type: 'json' };
+import { configFinding as finding } from './config.finding.js';
 import { manifestGap, NAMED } from './config.manifest.js';
 import { standardLogic } from './config.standard.js';
-
-const READ = 'docs/reference/quality-checks.md#the-config-one-file-pass';
-
-const NAMESPACE = 'config';
+import { synchronousLoad } from './config.synchronous.js';
 
 const TOOL_CONFIGS: Readonly<Record<string, readonly string[]>> = Object.freeze({
     'dependency-cruiser': [
@@ -57,19 +52,6 @@ const TOOL_CONFIGS: Readonly<Record<string, readonly string[]>> = Object.freeze(
         'tsdown.config.cjs',
     ],
 });
-
-const ROWS = FINDINGS.map((row) => ({ name: row.id, sentence: row.sentence }));
-
-function finding(id: `config/${string}`, path: string, teaching: Teaching, fixed = false): Finding {
-    const { sentence } = rowNamed(ROWS, id);
-    const name = id.slice(NAMESPACE.length + 1);
-    const check = defineCheck({ docs: { name, sentence }, namespace: NAMESPACE, read: READ });
-
-    return {
-        ...check.finding({ column: 1, line: 1, path }, teaching),
-        ...(fixed ? { fixed } : {}),
-    };
-}
 
 type Unit = {
     declaration: null | ProjectIdentity;
@@ -279,14 +261,14 @@ export const config: Pass = Object.freeze({
                 unit.declaration === null
                     ? { findings: [], writes: [] }
                     : editorFindings(context, unit);
+            const synchronous = await synchronousLoad(context, unit);
             findings.push(
                 ...declarationFindings(context, unit),
+                ...synchronous,
                 ...tsconfigFindings(unit),
                 ...editor.findings,
                 ...toolConfigFindings(context, unit.path),
-                ...standardLogic(context, unit.path).map(({ path, teaching }) =>
-                    finding('config/standard-is-data', path, teaching),
-                ),
+                ...standardLogic(context, unit.path),
             );
             writes.push(...editor.writes);
         }

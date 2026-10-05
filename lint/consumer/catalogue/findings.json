@@ -6,6 +6,11 @@
     },
     {
         "family": "config",
+        "id": "config/settings-load-synchronously",
+        "sentence": "jterrazz.config.ts loads synchronously too, since the oxlint rules read it so, and a file they cannot load would leave them judging on defaults."
+    },
+    {
+        "family": "config",
         "id": "config/editor-file-derived",
         "sentence": "Each config file an editor discovers is the file jterrazz.config.ts derives, so the editor and the check judge alike."
     },

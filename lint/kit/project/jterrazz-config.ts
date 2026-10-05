@@ -33,8 +33,10 @@ function declaredOf(loaded: unknown): { declared: object; problem: null | string
           };
 }
 
-const failed = (error: unknown): string =>
-    `does not load — ${String(error instanceof Error ? error.message : error).split('\n')[0] ?? ''}`;
+const messageOf = (error: unknown): string =>
+    String(error instanceof Error ? error.message : error).split('\n')[0] ?? '';
+
+const failed = (error: unknown): string => `does not load — ${messageOf(error)}`;
 
 function resolvedFrom(
     read: { declared: object; problem: null | string },
@@ -54,7 +56,7 @@ const isTypeless = (options: unknown): boolean =>
         'code' in options &&
         options.code === TYPELESS);
 
-async function importedQuietly(path: string): Promise<unknown> {
+async function quietly(load: () => unknown): Promise<unknown> {
     const emit = process.emitWarning.bind(process);
     const descriptor = Object.getOwnPropertyDescriptor(process, 'emitWarning');
     process.emitWarning = (warning: Error | string, ...rest: unknown[]): void => {
@@ -63,8 +65,7 @@ async function importedQuietly(path: string): Promise<unknown> {
         }
     };
     try {
-        // Stryker disable next-line StringLiteral: an empty import specifier fails the bundle every spec runs, so the mutant can reach no test
-        return await import(`${pathToFileURL(path).href}?mtime=${String(statSync(path).mtimeMs)}`);
+        return await load();
     } finally {
         if (descriptor === undefined) {
             Reflect.deleteProperty(process, 'emitWarning');
@@ -80,7 +81,9 @@ export async function readConfig(unit: string, base: BasePresets): Promise<Resol
         return resolveConfig(NOTHING_DECLARED, base);
     }
     try {
-        return resolvedFrom(declaredOf(await importedQuietly(path)), base);
+        // Stryker disable next-line StringLiteral: an empty import specifier fails the bundle every spec runs, so the mutant can reach no test
+        const specifier = `${pathToFileURL(path).href}?mtime=${String(statSync(path).mtimeMs)}`;
+        return resolvedFrom(declaredOf(await quietly(async () => await import(specifier))), base);
     } catch (error) {
         return { ...resolveConfig(NOTHING_DECLARED, base), problem: failed(error) };
     }
@@ -109,4 +112,19 @@ export function readConfigSync(unit: string, base: BasePresets): Resolution {
     loaded.set(path, config);
 
     return config;
+}
+
+/** The error the unit's settings file raises when loaded synchronously, as the oxlint rules load it — `null` when it loads, or when there is none. */
+export async function synchronousLoadProblem(unit: string): Promise<null | string> {
+    const path = join(unit, SETTINGS_FILE);
+    if (!existsSync(path)) {
+        return null;
+    }
+    try {
+        await quietly(() => loadModule(path));
+
+        return null;
+    } catch (error) {
+        return messageOf(error);
+    }
 }
