@@ -1,3 +1,5 @@
+import type { OxlintConfig } from 'oxlint';
+
 import { isJsonObject } from './json.js';
 import { SETTINGS_FILE } from './jterrazz-config.js';
 import type { Preset, Resolved } from './preset.js';
@@ -30,6 +32,11 @@ const isEmpty = (value: unknown): boolean =>
         ? value.length === 0
         : isJsonObject(value) && Object.keys(value).length === 0;
 
+// invariant: the oxlint keys merged key by key, as the compiler merges them: a later layer replaces each entry whole — a rule's `[level, options]` tuple is one value.
+const WHOLE_ENTRIES: ReadonlySet<string> = new Set(
+    ['env', 'globals', 'options', 'rules', 'settings'].map((key) => `typescript.oxlint.${key}`),
+);
+
 // invariant: replays the merge of a section: a list item keeps the first file that added it, a single value the last that wrote it.
 function walk(value: unknown, path: string, origin: string, into: Map<string, Entry>): void {
     if (path.includes('.') && isEmpty(value)) {
@@ -48,7 +55,16 @@ function walk(value: unknown, path: string, origin: string, into: Map<string, En
     }
     if (isJsonObject(value)) {
         for (const [key, child] of Object.entries(value)) {
-            walk(child, `${path}.${key}`, origin, into);
+            if (WHOLE_ENTRIES.has(path)) {
+                into.set(`${path}.${key}`, {
+                    list: false,
+                    origin,
+                    path: `${path}.${key}`,
+                    values: [shown(child)],
+                });
+            } else {
+                walk(child, `${path}.${key}`, origin, into);
+            }
         }
         return;
     }
@@ -73,11 +89,13 @@ const presetOrigin = (preset: Preset, file?: string): string =>
     `${preset.package} ${file ?? `preset ${preset.name}`}`;
 
 // invariant: the oxlint config is the platform's profile of the rulebook, then each preset's fragment, then the project's own.
-function oxlintLayers(resolved: Resolved): Layer[] {
+function oxlintLayers(resolved: Resolved, rulebook: OxlintConfig): Layer[] {
     return [
         {
             origin: RULEBOOK,
-            settings: { oxlint: { profile: resolved.declaration?.platform ?? 'node' } },
+            settings: {
+                oxlint: { profile: resolved.declaration?.platform ?? 'node', ...rulebook },
+            },
         },
         ...resolved.presets.flatMap((preset): Layer[] =>
             preset.oxlint === undefined
@@ -87,14 +105,18 @@ function oxlintLayers(resolved: Resolved): Layer[] {
     ];
 }
 
-function layersOf(resolved: Resolved, section: string, derived: Derived): Layer[] {
+function layersOf(
+    resolved: Resolved,
+    section: string,
+    { derived, rulebook }: { derived: Derived; rulebook: OxlintConfig },
+): Layer[] {
     const presets = resolved.presets.filter(({ name }) => name === section);
 
     return [
         ...(derived[section] === undefined
             ? []
             : [{ origin: DERIVED, settings: derived[section] }]),
-        ...(section === 'typescript' ? oxlintLayers(resolved) : []),
+        ...(section === 'typescript' ? oxlintLayers(resolved, rulebook) : []),
         ...presets.flatMap(
             (preset): Layer[] =>
                 preset.origins?.map(({ file, settings }) => ({
@@ -121,12 +143,18 @@ function filled(entries: ReadonlyMap<string, Entry>): Entry[] {
     );
 }
 
-/** Each setting of the resolved sections — and of what the tree derives — then each law and each one set aside, beside the file it comes from. */
-export function originLines(resolved: Resolved, derived: Derived = {}): OriginLine[] {
+/** Each setting of the resolved sections — of the rulebook's profile and of what the tree derives — then each law and each one set aside, beside the file it comes from. */
+export function originLines(
+    resolved: Resolved,
+    { derived = {}, rulebook = {} }: { derived?: Derived; rulebook?: OxlintConfig } = {},
+): OriginLine[] {
     const sections = [...new Set([...Object.keys(derived), ...Object.keys(resolved.sections)])];
     const settings = sections.flatMap((section) => {
         const entries = new Map<string, Entry>();
-        for (const { origin, settings: layer } of layersOf(resolved, section, derived)) {
+        for (const { origin, settings: layer } of layersOf(resolved, section, {
+            derived,
+            rulebook,
+        })) {
             walk(layer, section, origin, entries);
         }
 

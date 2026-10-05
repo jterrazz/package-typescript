@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { OxlintConfig } from 'oxlint';
 
 import { readSettings } from '../../../lint/index.rules.js';
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
@@ -175,6 +176,29 @@ function derivedOf(unit: string, resolved: Resolved): Derived {
     };
 }
 
+const NODE_MODULES = '/node_modules/';
+
+// invariant: a plugin the rulebook resolves from its own install is named inside the package that ships it, the same on every machine.
+async function shownProfile({ declaration }: Resolved): Promise<OxlintConfig> {
+    // hazard: the rulebook resolves its JS plugins as it loads, so it loads when the doctor prints it, never as the command line starts every other command.
+    const { rulebookProfileOf } = await import('../../../lint/index.rulebook.js');
+    const rulebook = rulebookProfileOf(declaration?.platform ?? 'node');
+    const plugins = rulebook.jsPlugins ?? [];
+
+    return {
+        ...rulebook,
+        ...(plugins.length === 0
+            ? {}
+            : {
+                  jsPlugins: plugins.map((plugin) =>
+                      typeof plugin === 'string' && plugin.includes(NODE_MODULES)
+                          ? plugin.slice(plugin.lastIndexOf(NODE_MODULES) + NODE_MODULES.length)
+                          : plugin,
+                  ),
+              }),
+    };
+}
+
 async function reportConfig(root: string): Promise<void> {
     for (const unit of ['.', ...workspaceMembers(root)]) {
         const { problem, resolved } = await readSettings(join(root, unit));
@@ -184,7 +208,10 @@ async function reportConfig(root: string): Promise<void> {
             print(`  ${file} ${problem}\n`);
             continue;
         }
-        const lines = originLines(resolved, derivedOf(join(root, unit), resolved));
+        const lines = originLines(resolved, {
+            derived: derivedOf(join(root, unit), resolved),
+            rulebook: await shownProfile(resolved),
+        });
         const width = Math.max(...lines.map(({ origin }) => origin.length)) + 2;
         for (const { origin, setting } of lines) {
             print(`  ${origin.padEnd(width)}${setting}\n`);

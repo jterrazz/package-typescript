@@ -29,6 +29,9 @@ export const PROFILE_CONFIGS: Readonly<Record<Platform, OxlintConfig>> = Object.
     react: profile(PROFILES.react, PLUGIN_PATHS),
 });
 
+/** The platform's profile with each JS plugin as the rulebook names it, never the path it resolves to on this machine. */
+export const rulebookProfileOf = (platform: Platform): OxlintConfig => profile(PROFILES[platform]);
+
 export const UNSAFE_FIXERS: readonly { rule: string; why: string }[] = unsafeFixers(PROFILES);
 
 const settingsRefusal = (problem: string): Error =>

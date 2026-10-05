@@ -1,3 +1,4 @@
+import type { OxlintConfig } from 'oxlint';
 import { describe, expect, test } from 'vitest';
 
 import { originLines } from './origins.js';
@@ -19,6 +20,12 @@ const BASE: Preset = {
     ],
     package: '@jterrazz/typescript',
     settings: { roster: ['x'], spine: ['src', 'lint', 'app'], tool: 'b' },
+};
+
+const RULEBOOK: OxlintConfig = {
+    jsPlugins: ['jterrazz-typescript'],
+    overrides: [{ files: ['**/*.test.ts'], rules: { 'max-lines': 'off' } }],
+    rules: { eqeqeq: 'error', 'no-console': 'error' },
 };
 
 describe('origins', () => {
@@ -132,7 +139,9 @@ describe('origins', () => {
         // Then - the derived projects first, each preset's fragment before the project's own, and the empty default only where nothing fills it
         expect(problem).toBeNull();
         expect(
-            originLines(resolved, { test: { projects: { api: {}, unit: { roots: ['src'] } } } }),
+            originLines(resolved, {
+                derived: { test: { projects: { api: {}, unit: { roots: ['src'] } } } },
+            }),
         ).toStrictEqual([
             { origin: 'jterrazz.config.ts', setting: 'test.allow.vitest = "the runtime ships"' },
             { origin: 'derived from the tree', setting: 'test.projects.api = {}' },
@@ -156,6 +165,63 @@ describe('origins', () => {
             {
                 origin: '@jterrazz/typescript rulebook',
                 setting: 'typescript.oxlint.profile = "next"',
+            },
+        ]);
+    });
+
+    test('origins — a rule the rulebook or a preset sets is replaced whole by the last layer setting it, options and level together', () => {
+        // Given - the rulebook's profile, then two presets setting one rule with options, the second also replacing a rule of the rulebook
+        const { problem, resolved } = resolveConfig(
+            {
+                presets: [
+                    {
+                        name: 'first',
+                        oxlint: { rules: { 'acme/kind': ['error', { openings: ['a'] }] } },
+                        package: '@acme/first',
+                    },
+                    {
+                        name: 'second',
+                        oxlint: {
+                            rules: {
+                                'acme/kind': ['error', { openings: ['a', 'b'] }],
+                                'no-console': 'off',
+                            },
+                        },
+                        package: '@acme/second',
+                    },
+                ],
+                typescript: {},
+            },
+            () => [],
+        );
+
+        // Then - each rule on one line, beside the last layer that set it, the rulebook's other keys beside the rulebook
+        expect(problem).toBeNull();
+        expect(originLines(resolved, { rulebook: RULEBOOK })).toStrictEqual([
+            {
+                origin: '@jterrazz/typescript rulebook',
+                setting: 'typescript.oxlint.jsPlugins = ["jterrazz-typescript"]',
+            },
+            {
+                origin: '@jterrazz/typescript rulebook',
+                setting:
+                    'typescript.oxlint.overrides = [{"files":["**/*.test.ts"],"rules":{"max-lines":"off"}}]',
+            },
+            {
+                origin: '@jterrazz/typescript rulebook',
+                setting: 'typescript.oxlint.profile = "node"',
+            },
+            {
+                origin: '@acme/second preset second',
+                setting: 'typescript.oxlint.rules.acme/kind = ["error",{"openings":["a","b"]}]',
+            },
+            {
+                origin: '@jterrazz/typescript rulebook',
+                setting: 'typescript.oxlint.rules.eqeqeq = "error"',
+            },
+            {
+                origin: '@acme/second preset second',
+                setting: 'typescript.oxlint.rules.no-console = "off"',
             },
         ]);
     });
