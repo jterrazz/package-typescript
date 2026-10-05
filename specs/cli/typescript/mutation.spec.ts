@@ -21,7 +21,7 @@ describe('mutation', () => {
             src/discount.ts:2:9  EqualityOperator → rate >= 0.5
             found: 2 mutant(s) a test runs and none detects · why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/reference/quality-checks.md#mutation
             0 mutant(s) no test runs
-            2 mutant(s) no module test runs, on lines no change has reached — the whole suite measures them when one does
+            2 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does
         `);
         expect(result.file('.jterrazz/baseline.json').exists).toBe(false);
     });

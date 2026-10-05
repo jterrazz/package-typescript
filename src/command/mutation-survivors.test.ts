@@ -61,7 +61,7 @@ describe('mutation-survivors', () => {
             lines: [
                 'every mutant a test runs is detected — 3 detected',
                 '0 mutant(s) no test runs',
-                '5 mutant(s) no module test runs, on lines no change has reached — the whole suite measures them when one does',
+                '5 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does',
                 '3 mutant(s) outside the verdict — CompileError 1, Ignored 1, RuntimeError 1',
             ],
             status: 0,
@@ -226,7 +226,7 @@ describe('mutation-survivors', () => {
         });
     });
 
-    test('a mutant the change brought to the suite that the suite reports nothing of stays left', () => {
+    test('a mutant the change brought to the suite that the suite reports nothing of was judged by nothing, and fails the run', () => {
         // Given - a mutant no module test runs, on a line the change reached, and a suite report holding nothing of it
         const judged = judgedRuns(
             {
@@ -236,8 +236,12 @@ describe('mutation-survivors', () => {
             { changed: new Map([['src/a.ts', true as const]]), report: { files: {} } },
         );
 
-        // Then - counted as left, never as judged
-        expect(judged.left).toBe(1);
+        // Then - named as never judged, never counted as left, and the run fails
+        expect([judged.left, judged.unrun, verdictOf(judged).status]).toStrictEqual([
+            0,
+            { 'absent from the suite report': 1 },
+            1,
+        ]);
     });
 
     test('what no test runs is counted file by file, most first, a tie in name order', () => {

@@ -21,6 +21,8 @@ export type Judged = {
 const DETECTED: ReadonlySet<unknown> = new Set(['Killed', 'Timeout']);
 const OUTSIDE_VERDICT: ReadonlySet<unknown> = new Set(['CompileError', 'Ignored', 'RuntimeError']);
 
+const ABSENT = 'absent from the suite report';
+
 function survivorOf(file: string, mutant: Mutant): Survivor {
     const start = objectOf(objectOf(mutant.location).start);
     return {
@@ -107,7 +109,7 @@ export function leftToTheSuite(
     return [...new Set(ranges)];
 }
 
-/** One verdict over both runs: what the module tests left is the suite's to judge where the change brought it there, and counted as left where it did not; an earlier run's results the suite's report carries count for nothing. */
+/** One verdict over both runs: what the module tests left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant the change brought that the suite's report does not carry was judged by nothing; an earlier run's results the suite's report carries count for nothing. */
 export function judgedRuns(
     modules: { measured: ReadonlySet<string>; report: unknown },
     suite?: { changed: Changed; report: unknown },
@@ -140,7 +142,9 @@ export function judgedRuns(
             }
         }
     }
-    judged.left += forwarded.size;
+    if (forwarded.size > 0) {
+        judged.unrun[ABSENT] = forwarded.size;
+    }
     judged.survivors.sort(
         (a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.column - b.column,
     );
@@ -155,11 +159,7 @@ function countsOf(byStatus: Record<string, number>): { statuses: string; total: 
     };
 }
 
-function countLines({
-    left: leftToTheSuiteCount,
-    outsideVerdict,
-    uncoveredByFile,
-}: Judged): string[] {
+function countLines({ left: leftCount, outsideVerdict, uncoveredByFile }: Judged): string[] {
     const uncovered = Object.entries(uncoveredByFile).toSorted(
         ([a, left], [b, right]) => right - left || a.localeCompare(b),
     );
@@ -168,10 +168,10 @@ function countLines({
     return [
         `${total} mutant(s) no test runs`,
         ...uncovered.map(([file, count]) => `  ${file}  ${count}`),
-        ...(leftToTheSuiteCount === 0
+        ...(leftCount === 0
             ? []
             : [
-                  `${leftToTheSuiteCount} mutant(s) no module test runs, on lines no change has reached — the whole suite measures them when one does`,
+                  `${leftCount} mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does`,
               ]),
         ...(outside.total === 0
             ? []
