@@ -5,7 +5,7 @@ import { lint } from '../names-lint.specification.js';
 
 describe('entries', () => {
     test('holds a published build to its entry grammar — an entry per subpath named for it, a bin named as one, no other index, no code published from outside the build', async () => {
-        // Given - a package whose build names its entries otherwise, keeps a facet index and a bin nothing publishes, publishes a subpath it never builds, and a bin and a module from outside its build
+        // Given - a package whose build names its entries otherwise, keeps a specification index and a bin nothing publishes, publishes a subpath it never builds, and a bin and a module from outside its build
         const result = await lint.fixture(directory('./_fixtures/entries/')).run();
 
         // Then - each finding at its position, with its lesson
@@ -55,8 +55,8 @@ describe('entries', () => {
                 why: Every subpath and bin the package publishes as code is compiled by its build, from a source the build names.
                 fix: write its entry, \`tool.bin.ts\`, at the root of src/ or lint/, or take the subpath out of the manifest
                 read: docs/reference/quality-checks.md#the-entry-grammar
-            src/facets/api/index.ts:1:1  names(index-is-an-entry)
-                found: \`src/facets/api/index.ts\` is named \`index\`, and builds nothing the package publishes or imports
+            src/specifications/api/index.ts:1:1  names(index-is-an-entry)
+                found: \`src/specifications/api/index.ts\` is named \`index\`, and builds nothing the package publishes or imports
                 why: A module named index is the entry of a subpath the package publishes or of a private import it declares, or that entry's test.
                 fix: name it for what it holds, or build it as an entry: a subpath in \`exports\`, or a private \`#\` import in \`imports\`, built from it
                 read: docs/reference/quality-checks.md#the-entry-grammar

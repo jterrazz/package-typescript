@@ -9,13 +9,13 @@ export default defineConfig({
         projects: [
             {
                 exclude: ['**/*.test.tsx'],
-                facet: 'unit',
+                specification: 'unit',
                 include: ['lint/**/*.test.ts', 'specs/surface/**/*.test.ts', 'src/**/*.test.ts'],
                 isolate: false,
             },
-            { facet: 'lint' },
+            { specification: 'lint' },
             {
-                facet: 'cli',
+                specification: 'cli',
                 include: ['specs/cli/**/*.spec.ts', 'specs/kinds/**/*.spec.ts'],
                 setup: ['specs/cli/_setup/run-temp-root.ts', 'specs/cli/_setup/packed/per-run.ts'],
                 timeout: 120_000,

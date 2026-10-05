@@ -1,1 +1,1 @@
-export const SELF_RULES = [{ family: 'architecture', name: 'facet-is-a-composition' }];
+export const SELF_RULES = [{ family: 'architecture', name: 'specification-is-a-composition' }];

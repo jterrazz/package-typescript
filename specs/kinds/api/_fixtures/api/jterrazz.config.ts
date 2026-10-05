@@ -5,5 +5,5 @@ export default defineConfig({
     kind: 'api',
     platform: 'node',
     presets: [test()],
-    test: { projects: [{ facet: 'api' }] },
+    test: { projects: [{ specification: 'api' }] },
 });

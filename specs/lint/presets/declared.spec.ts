@@ -10,10 +10,10 @@ describe('declared', () => {
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`
-            specs/notes.ts:1:1  names(specs-root-holds-facets)
+            specs/notes.ts:1:1  names(specs-root-holds-specifications)
                 found: \`specs/notes.ts\` breaks ls-lint's \`.*: exists:0\`
-                why: the specs root holds its facets and their runners alone
-                fix: move it into the facet that reads it
+                why: the specs root holds its specifications and their runners alone
+                fix: move it into the specification that reads it
                 read: docs/testing.md#the-specs-root
             src/orderLine.ts:1:1  names(module-in-kebab-case)
                 found: \`src/orderLine.ts\` breaks ls-lint's \`.ts: kebabcase\`

@@ -5,5 +5,5 @@ export default defineConfig({
     kind: 'library',
     platform: 'node',
     presets: [test()],
-    test: { projects: [{ facet: 'unit' }] },
+    test: { projects: [{ specification: 'unit' }] },
 });

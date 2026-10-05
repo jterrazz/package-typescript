@@ -5,7 +5,7 @@ export default defineConfig({
     kind: 'mobile',
     platform: 'expo',
     presets: [test()],
-    test: { projects: [{ facet: 'unit' }] },
+    test: { projects: [{ specification: 'unit' }] },
     typescript: {
         knip: {
             entry: {

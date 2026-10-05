@@ -5,5 +5,5 @@ export default defineConfig({
     kind: 'website',
     platform: 'react',
     presets: [test()],
-    test: { projects: [{ facet: 'unit' }] },
+    test: { projects: [{ specification: 'unit' }] },
 });

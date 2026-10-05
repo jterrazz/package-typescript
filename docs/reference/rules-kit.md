@@ -2,7 +2,7 @@
 
 For a package of the family that holds its consumers to rules of its own. `@jterrazz/typescript/rules` exports the kit this toolchain judges itself with, so a sibling package writes a rule, its message, its chapter and its debt the way this package does, and the family keeps one copy of each. The rules reach a project through the package's preset ([Configuration § Presets](configuration.md#presets)). This page follows a rule from its catalogue row to its message, its check, its chapter, its debt and what it reads.
 
-The kit is `lint/kit/`, exported through `lint/index.rules.ts` ([Architecture](../concepts/architecture.md#the-judging-layer)). Under the `browser` condition it is `lint/index.rules.browser.ts`, the half that reads no disk: the lesson, the rule, the table and the ground folders. Nothing in the kit knows a declaration, so a sibling package keeps in its own kit only what no other package reads; `@jterrazz/test` keeps its spec-document model, its facets and its stub kinds.
+The kit is `lint/kit/`, exported through `lint/index.rules.ts` ([Architecture](../concepts/architecture.md#the-judging-layer)). Under the `browser` condition it is `lint/index.rules.browser.ts`, the half that reads no disk: the lesson, the rule, the table and the ground folders. Nothing in the kit knows a declaration, so a sibling package keeps in its own kit only what no other package reads; `@jterrazz/test` keeps its spec-document model, its specifications and its stub kinds.
 
 ## A rule is a catalogue row
 

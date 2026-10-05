@@ -12,11 +12,11 @@ const testing = {
     name: 'testing',
     names: [
         {
-            fix: 'move it into the facet that reads it',
+            fix: 'move it into the specification that reads it',
             ls: { specs: { '.*': 'exists:0', '.specification.ts': 'regex:.+' } },
-            name: 'specs-root-holds-facets',
+            name: 'specs-root-holds-specifications',
             read: 'docs/testing.md#the-specs-root',
-            why: 'the specs root holds its facets and their runners alone',
+            why: 'the specs root holds its specifications and their runners alone',
         },
     ],
     package: '@acme/testing',

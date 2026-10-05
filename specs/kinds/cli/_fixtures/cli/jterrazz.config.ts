@@ -5,5 +5,5 @@ export default defineConfig({
     kind: 'cli',
     platform: 'node',
     presets: [test()],
-    test: { projects: [{ facet: 'cli' }] },
+    test: { projects: [{ specification: 'cli' }] },
 });

@@ -85,8 +85,8 @@ describe('lint-tree', () => {
                 why: self/ holds the declarations only this repository is held to — its catalogue, its rules by family, its checks, the meta-tests of its corpus, so its folders are catalogue, rules, checks, corpus, beside the modules that compose them with kit/
                 fix: move its files into the folder its nature names — catalogue/, rules/, checks/, corpus/
                 read: docs/reference/quality-checks.md#the-lint-tree
-            lint/self/rules/imports/facet-is-a-composition.js:1:1  names(rule-file-in-its-family-folder)
-                found: \`lint/self/rules/imports/facet-is-a-composition.js\` sits under \`rules/imports/\`, and its catalogue row gives it the family \`architecture\`
+            lint/self/rules/imports/specification-is-a-composition.js:1:1  names(rule-file-in-its-family-folder)
+                found: \`lint/self/rules/imports/specification-is-a-composition.js\` sits under \`rules/imports/\`, and its catalogue row gives it the family \`architecture\`
                 why: a rule file sits under the folder of its family, so the tree and the catalogue say one thing
                 fix: move it to \`rules/architecture/\`, or correct the family its catalogue row declares
                 read: docs/reference/quality-checks.md#the-lint-tree
