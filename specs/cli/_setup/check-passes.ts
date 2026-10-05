@@ -1,10 +1,8 @@
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 
 import type { CheckPass } from '#command';
 
 export const SELECTING_BIN = resolve(import.meta.dirname, 'check-selection.cli.ts');
-
-export const TYPESCRIPT_BIN = join(resolve(import.meta.dirname, '../../..'), 'dist/typescript.js');
 
 export function onlyPasses(...passes: [CheckPass, ...CheckPass[]]): {
     TYPESCRIPT_CHECK_PASSES: string;
