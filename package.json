@@ -56,7 +56,7 @@
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
-        "build": "tsdown src/command/self-build.ts --no-config --out-dir .artifacts/bootstrap --logLevel warn && node .artifacts/bootstrap/self-build.mjs",
+        "build": "tsdown src/commands/build/self-build.ts --no-config --out-dir .artifacts/bootstrap --logLevel warn && node .artifacts/bootstrap/self-build.mjs",
         "lint": "node dist/typescript.js check",
         "lint:fix": "node dist/typescript.js fix",
         "test": "vitest --run"

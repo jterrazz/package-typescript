@@ -30,6 +30,15 @@ export function isOnDisk(path: string): boolean {
     }
 }
 
+/** What the disk holds now, ignored or not: the command's probes ask before any sweep. */
+export function isFileOnDisk(path: string): boolean {
+    return statSync(path, { throwIfNoEntry: false })?.isFile() === true;
+}
+
+export function isDirectoryOnDisk(path: string): boolean {
+    return statSync(path, { throwIfNoEntry: false })?.isDirectory() === true;
+}
+
 type Read = { changedAt: number; text: null | string };
 
 const fileContents = new Map<string, Read>();

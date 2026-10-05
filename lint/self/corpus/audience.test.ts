@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { CHECK_PASSES } from '../../../src/command/check/passes.js';
+import { CHECK_PASSES } from '../../../src/commands/check/passes/passes.js';
 import { PROFILES } from '../../consumer/rulebook/profiles.js';
 import { decisions } from '../../kit/catalogue/decisions.js';
 import { AUDIENCES } from '../../kit/compiler/decision.js';

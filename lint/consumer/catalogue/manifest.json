@@ -93,7 +93,7 @@
         "channel": "runtime",
         "id": "fix-wrapper-unwritten",
         "message": "the fix wrapper could not be written",
-        "module": "src/command/check/tool-passes.ts"
+        "module": "src/commands/check/passes/tool-passes.ts"
     },
     {
         "audience": "consumer",
@@ -101,7 +101,7 @@
         "channel": "runtime",
         "id": "unsafe-fixers-unloaded",
         "message": "the unsafe-fixers module does not load",
-        "module": "src/command/check/tool-passes.ts"
+        "module": "src/commands/check/passes/tool-passes.ts"
     },
     {
         "audience": "consumer",
@@ -109,7 +109,7 @@
         "channel": "runtime",
         "id": "knip-config-unparsed",
         "message": "knip is handed the preset merged with what the project declares",
-        "module": "src/command/merge-knip-config.ts"
+        "module": "src/drivers/knip/config.ts"
     },
     {
         "audience": "consumer",
@@ -117,7 +117,7 @@
         "channel": "runtime",
         "id": "knip-preset-unparsed",
         "message": "the knip preset",
-        "module": "src/command/merge-knip-config.ts"
+        "module": "src/drivers/knip/config.ts"
     },
     {
         "audience": "consumer",

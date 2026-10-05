@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import process from 'node:process';
 
-import { main } from './command/main.js';
+import { main } from './commands/main.js';
 
 process.exitCode = await main(process.argv.slice(2));
