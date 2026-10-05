@@ -132,8 +132,8 @@ async function afterStage(
     return await next(outcome ?? NOTHING_MEASURED);
 }
 
-function printed(judged: Judged): number {
-    const verdict = verdictOf(judged);
+function printed(judged: Judged, untestedSources: number): number {
+    const verdict = verdictOf(judged, untestedSources);
     print(`\n${verdict.lines.join('\n')}\n`);
 
     return verdict.status;
@@ -161,7 +161,7 @@ async function judgedAfterTheSuite({
             `${badge('TYPESCRIPT')} The module tests' verdict fails: the whole suite measures the change once it passes.\n`,
         );
 
-        return printed(modulesAlone);
+        return printed(modulesAlone, untested.length);
     }
     const { changed, note } = changeOf(project, { ranges, since });
     if (note !== undefined) {
@@ -172,11 +172,15 @@ async function judgedAfterTheSuite({
     );
     const left = [...reached, ...leftToTheSuite(modulesRun, changed)];
     if (left.length === 0) {
-        return printed(modulesAlone);
+        return printed(modulesAlone, untested.length);
     }
     return await afterStage(
         await measured(scope, { mutate: left, name: 'suite' }, project),
-        ({ report }) => printed(judgedRuns(modulesRun, { changed, report, untested: reached })),
+        ({ report }) =>
+            printed(
+                judgedRuns(modulesRun, { changed, report, untested: reached }),
+                untested.length,
+            ),
     );
 }
 

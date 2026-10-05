@@ -191,7 +191,10 @@ function countsOf(byStatus: Record<string, number>): { statuses: string; total: 
     };
 }
 
-function countLines({ left: leftCount, outsideVerdict, uncoveredByFile }: Judged): string[] {
+function countLines(
+    { left: leftCount, outsideVerdict, uncoveredByFile }: Judged,
+    untestedSources: number,
+): string[] {
     const uncovered = Object.entries(uncoveredByFile).toSorted(
         ([a, left], [b, right]) => right - left || a.localeCompare(b),
     );
@@ -204,6 +207,11 @@ function countLines({ left: leftCount, outsideVerdict, uncoveredByFile }: Judged
             ? []
             : [
                   `${leftCount} mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does`,
+              ]),
+        ...(untestedSources === 0
+            ? []
+            : [
+                  `${untestedSources} source(s) no module test sits beside — the whole suite measures the lines a change reaches there; what no change reaches no count holds`,
               ]),
         ...(outside.total === 0
             ? []
@@ -244,16 +252,20 @@ function unrunLines({ unrun }: Judged): string[] {
     ];
 }
 
-export function verdictOf(judged: Judged): { lines: string[]; status: number } {
+/** The verdict's lines and status, counting apart the sources no module test sits beside, which no run mutates until a change reaches them. */
+export function verdictOf(
+    judged: Judged,
+    untestedSources: number,
+): { lines: string[]; status: number } {
     const refused = [...survivorLines(judged), ...unrunLines(judged)];
     if (refused.length === 0) {
         return {
             lines: [
                 `every mutant a test runs is detected — ${judged.detected} detected`,
-                ...countLines(judged),
+                ...countLines(judged, untestedSources),
             ],
             status: 0,
         };
     }
-    return { lines: [...refused, ...countLines(judged)], status: 1 };
+    return { lines: [...refused, ...countLines(judged, untestedSources)], status: 1 };
 }

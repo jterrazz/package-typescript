@@ -60,12 +60,13 @@ describe('mutation-survivors', () => {
             },
         });
 
-        // Then - the gate passes, and says what waits for a change to reach it and what it did not judge
-        expect(verdictOf(judged)).toStrictEqual({
+        // Then - the gate passes, and says what waits for a change to reach it — two sources no module test sits beside among it — and what it did not judge
+        expect(verdictOf(judged, 2)).toStrictEqual({
             lines: [
                 'every mutant a test runs is detected — 3 detected',
                 '0 mutant(s) no test runs',
                 '5 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does',
+                '2 source(s) no module test sits beside — the whole suite measures the lines a change reaches there; what no change reaches no count holds',
                 '3 mutant(s) outside the verdict — CompileError 1, Ignored 1, RuntimeError 1',
             ],
             status: 0,
@@ -100,7 +101,7 @@ describe('mutation-survivors', () => {
         });
 
         // Then - each survivor on one line, the static one a test ran among them, then the four parts, then the counts, and no line for what there is none of
-        expect(verdictOf(judged)).toStrictEqual({
+        expect(verdictOf(judged, 0)).toStrictEqual({
             lines: [
                 'src/a.ts:3:9  ConditionalExpression → true',
                 'src/a.ts:3:24   → ',
@@ -136,7 +137,7 @@ describe('mutation-survivors', () => {
         });
 
         // Then - the four parts name every unjudged status, and the run fails
-        expect(verdictOf(judged)).toStrictEqual({
+        expect(verdictOf(judged, 0)).toStrictEqual({
             lines: [
                 'found: 4 mutant(s) the run never judged — no status 1, Pending 2, Skipped 1 · why: a mutant no test was run against says nothing of the line it mutates, so passing it would pass a run that judged nothing there · fix: run `typescript mutation` again to its end — a run stopped midway leaves its mutants Pending, and the next one runs them · read: docs/reference/quality-checks.md#mutation',
                 '0 mutant(s) no test runs',
@@ -251,7 +252,7 @@ describe('mutation-survivors', () => {
         );
 
         // Then - named as never judged, never counted as left, and the run fails
-        expect([judged.left, judged.unrun, verdictOf(judged).status]).toStrictEqual([
+        expect([judged.left, judged.unrun, verdictOf(judged, 0).status]).toStrictEqual([
             0,
             { 'absent from the suite report': 1 },
             1,
@@ -283,7 +284,7 @@ describe('mutation-survivors', () => {
         );
 
         // Then - the total, then each file with its count
-        expect(verdictOf(judged).lines).toStrictEqual([
+        expect(verdictOf(judged, 0).lines).toStrictEqual([
             'every mutant a test runs is detected — 0 detected',
             '5 mutant(s) no test runs',
             '  src/m.ts  3',

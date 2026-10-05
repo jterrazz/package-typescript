@@ -62,8 +62,11 @@ Stryker estimated sixty hours for the 11,200 the module tests left.
 - Spec-proven code is measured where its source changes: no change lands with
   a changed source line the suite runs and lets change unseen. A change to a
   spec alone brings the suite nothing, so a weakened assertion is measured
-  only when a later change reaches the lines it proves. The code no change
-  has touched since is counted, not judged, and the count says how much.
+  only when a later change reaches the lines it proves. A mutant the module
+  tests left on a line no change has touched since is counted, not judged. A
+  source with no module test beside it is mutated by no run until a change
+  reaches it, so its mutants are neither judged nor counted: the verdict
+  counts those sources, in one number of files.
 - A change to code the specs reach everywhere costs, per surviving mutant, a
   run of every test reaching it — minutes each; the suite's dry run costs a
   build and a single-worker run of every node project, about five minutes
