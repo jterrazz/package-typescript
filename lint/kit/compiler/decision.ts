@@ -157,26 +157,6 @@ export function fragment(definition: FragmentDefinition): Fragment {
     });
 }
 
-export function decisionsOf(...fragments: readonly Fragment[]): Record<string, Merged> {
-    const merged: Record<string, Merged> = {};
-    for (const one of fragments) {
-        for (const [rule, decision] of Object.entries(one.decisions)) {
-            merged[rule] = { ...decision, audience: one.audience, fragment: one.id };
-        }
-        for (const override of one.overrides) {
-            for (const [rule, decision] of Object.entries(override.decisions)) {
-                merged[rule] = {
-                    ...decision,
-                    audience: one.audience,
-                    fragment: one.id,
-                    scoped: override.files,
-                };
-            }
-        }
-    }
-    return merged;
-}
-
 // invariant: an override's rule options replace the base entry, never merge: a block states every option.
 export function scoped({
     files,

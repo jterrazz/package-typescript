@@ -114,8 +114,6 @@ export const ENTRY_ROOTS: readonly string[] = Object.freeze(['src', 'lint']);
 export const entrySourcesOf = ({ stem }: Published): string[] =>
     ENTRY_ROOTS.map((root) => `${root}/${stem}.ts`);
 
-export type Sources = ReadonlyMap<string, string>;
-
 export function entrySources(
     manifest: JsonObject,
     exists: (source: string) => boolean,

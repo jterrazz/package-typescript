@@ -1,6 +1,6 @@
 import { readFileSync, statSync } from 'node:fs';
 
-import { forgetTree, treeKind, treeNames, treeStamp } from './git-tree.js';
+import { treeKind, treeNames, treeStamp } from './git-tree.js';
 
 /** Nothing is kept past the moment it could change: the editor's host keeps this module loaded across lint runs, and oxlint marks no run boundary a plugin can see. */
 
@@ -69,10 +69,4 @@ export function folderChanged(folder: string): boolean {
     const previous = folderStamps.get(folder);
     folderStamps.set(folder, stamp);
     return previous !== undefined && previous !== stamp;
-}
-
-export function resetFsCache(): void {
-    fileContents.clear();
-    folderStamps.clear();
-    forgetTree();
 }

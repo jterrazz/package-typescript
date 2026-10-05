@@ -196,9 +196,6 @@ export function quotedMask(text: string): boolean[] {
     });
 }
 
-export const isDirective = (comment: string): boolean =>
-    comment.search(DISABLE) !== -1 || comment.search(TS_DIRECTIVE) !== -1 || BIOME.test(comment);
-
 const commentsOf = (line: string, spans: readonly Span[]): string[] =>
     spans.map(([start, end]) => line.slice(start, end));
 

@@ -230,8 +230,3 @@ export function planOf(root: string, { problem, resolved }: Resolution): BuildSt
               read: 'docs/reference/building.md#the-entries',
           });
 }
-
-export const sourcesOf = (steps: readonly BuildStep[]): Map<string, string> =>
-    new Map(
-        steps.filter(({ outDir }) => outDir === DIST).flatMap(({ entry }) => Object.entries(entry)),
-    );
