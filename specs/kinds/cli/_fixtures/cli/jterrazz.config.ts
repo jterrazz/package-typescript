@@ -5,5 +5,4 @@ export default defineConfig({
     kind: 'cli',
     platform: 'node',
     presets: [test()],
-    test: { projects: [{ specification: 'cli' }] },
 });

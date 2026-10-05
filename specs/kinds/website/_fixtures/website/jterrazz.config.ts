@@ -5,5 +5,4 @@ export default defineConfig({
     kind: 'website',
     platform: 'react',
     presets: [test()],
-    test: { projects: [{ specification: 'unit' }] },
 });
