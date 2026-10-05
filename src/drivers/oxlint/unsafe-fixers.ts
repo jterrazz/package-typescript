@@ -12,7 +12,7 @@ type Scope = { config: string; directory: string; files: string[] };
 
 const FIX_WRAPPER = 'oxlint.fix.config.mjs';
 
-export function wrapperOf(consumerConfig: string): string {
+function wrapperOf(consumerConfig: string): string {
     const off = Object.fromEntries(UNSAFE_FIXERS.map(({ rule }) => [rule, 'off']));
     const attributes = consumerConfig.endsWith('.json') ? " with { type: 'json' }" : '';
 
