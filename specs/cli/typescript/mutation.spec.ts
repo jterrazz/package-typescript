@@ -92,4 +92,24 @@ describe('mutation', () => {
               src/greeting.ts  2
         `);
     });
+
+    test('typescript mutation — a mutant that stops a test file from loading is detected', async () => {
+        // Given - the consumer, its module test judging everything, beside a table read as its module loads, whose emptied table throws before the test file can load
+        const result = await cli
+            .fixture(directory('./_fixtures/mutation-consumer/'))
+            .fixture(directory('./_fixtures/mutation-killing/'))
+            .fixture(directory('./_fixtures/mutation-loading/'))
+            .exec('typescript mutation');
+
+        // Then - every mutant of the table detected, none left to the suite
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(`
+             TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
+            {{any}}
+             TYPESCRIPT  git names no commit HEAD: the whole suite measures nothing of this change.
+
+            every mutant a test runs is detected — 12 detected
+            0 mutant(s) no test runs
+        `);
+    });
 });

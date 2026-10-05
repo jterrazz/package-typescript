@@ -19,6 +19,27 @@ const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
 };`;
 
 // invariant: every process a test spawns runs the instrumented build with this module imported first: it reports, on its way out, the mutants it ran — the parent credits them to the test that spawned it.
+// hazard: Stryker reads the tests of each file, and a file a mutant stops from loading holds none, so the mutant would read as survived; the file's failure is handed over as a failed test.
+const LOAD_FAILURES_REPORTER_SOURCE = `const loadFailures = {
+    onTestRunEnd(testModules) {
+        for (const { task: file } of testModules) {
+            if (file.result?.state === 'fail' && file.tasks.length === 0) {
+                file.tasks.push({
+                    file,
+                    id: \`\${file.id}_loads\`,
+                    meta: {},
+                    mode: 'run',
+                    name: 'the test file loads',
+                    result: { errors: file.result.errors ?? [], state: 'fail' },
+                    suite: file,
+                    type: 'test',
+                });
+            }
+        }
+    },
+};
+`;
+
 // hazard: Stryker runs Vitest in worker threads, where a native addon a spec loads — a database driver — can crash the process; the suite runs each test file in a process of its own, as Vitest does by default.
 const OWN_PROCESSES_PLUGIN_SOURCE = `const ownProcesses = {
     configureVitest({ project }) {
@@ -155,6 +176,7 @@ const project = typeof declared === 'function' ? await declared({ command: 'serv
 
 ${TEST_NAME_PLUGIN_SOURCE}
 
+${LOAD_FAILURES_REPORTER_SOURCE}
 ${suite ? OWN_PROCESSES_PLUGIN_SOURCE : ''}
 const projects = project.test?.projects ?? [];
 
@@ -167,6 +189,7 @@ export default {
     test: {
         ...project.test,
         coverage: { enabled: false },
+        reporters: [loadFailures],
         projects: ${kept}.map((one) =>
             mergeConfig(
                 { ...one, test: { ...one.test, setupFiles: [setup, ...listed(one.test?.setupFiles)] } },
