@@ -58,4 +58,53 @@ describe('standard-logic', () => {
             { line: 13, what: 'an assignment' },
         ]);
     });
+
+    test('standard-logic — names each statement and declaration that computes, by its kind', () => {
+        // Given - one of each kind a standard never holds, and a constant whose name only contains a keyword
+        const cases = [
+            'async function load() {}',
+            'const loaded = await ready;',
+            'class Shape {}',
+            'const Shape = class {};',
+            'do {} while (ready);',
+            'for (const key in SHARED) {}',
+            'for (const key of SHARED) {}',
+            'for (;;) {}',
+            'const run = function () {};',
+            'const shape = { get size() { return 1; } };',
+            'if (ready) {}',
+            'const shape = { size() {} };',
+            'const roots = new Set();',
+            'const shape = { set size(value) {} };',
+            'switch (ready) {}',
+            "throw new Error('no');",
+            'try {} catch {}',
+            'while (ready) {}',
+        ];
+
+        // Then - each kind is named, beside what it holds of another kind, and the constant is data
+        expect(
+            cases.map((text) => logicIn('standard.ts', text).map(({ what }) => what)),
+        ).toStrictEqual([
+            ['a function'],
+            ['an await'],
+            ['a class'],
+            ['a class'],
+            ['a loop'],
+            ['a loop'],
+            ['a loop'],
+            ['a loop'],
+            ['a function'],
+            ['a function'],
+            ['a branch'],
+            ['a function'],
+            ['a construction'],
+            ['a function'],
+            ['a branch'],
+            ['a throw', 'a construction'],
+            ['a try'],
+            ['a loop'],
+        ]);
+        expect(logicIn('standard.ts', 'const outlet = 1;')).toStrictEqual([]);
+    });
 });

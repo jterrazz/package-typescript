@@ -51,7 +51,7 @@ const COMMAND = '.cli.ts';
 
 const SELF_ROOT = 'lint/self';
 
-const UNWALKED = /^(?:\.|_|node_modules$)/u;
+const UNWALKED = /^(?:[._]|node_modules)/u;
 
 // Stryker disable next-line ArrowFunction: APFS lists a folder in name order already, so only another file system tells the sort apart
 const byName = (left: Dirent, right: Dirent): number => left.name.localeCompare(right.name);

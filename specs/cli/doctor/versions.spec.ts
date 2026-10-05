@@ -63,16 +63,18 @@ describe('versions', () => {
         ).toStrictEqual([]);
     });
 
-    test('fails on a tool older than its range, and on one that is not installed', () => {
-        // Given - a toolchain whose oxlint claims 0.0.1 and whose knip is missing
-        const root = toolchainWith({ knip: null, oxlint: '0.0.1' });
+    test.each([
+        ['older than its range', { oxlint: '0.0.1' }, /^ {2}oxlint +0\.0\.1 +\S+ +old$/u],
+        ['not installed', { knip: null }, /^ {2}knip +— +\S+ +absent$/u],
+    ])('fails on a tool %s', (_, forged, row) => {
+        // Given - a toolchain with that one tool forged
+        const root = toolchainWith(forged);
 
         // When - the doctor reads it
         const { rows, status, verdict } = doctorOf(root);
 
-        // Then - each row carries its verdict, and the report fails on both
-        expect(rows).toContainEqual(expect.stringMatching(/^ {2}oxlint +0\.0\.1 +\S+ +old$/u));
-        expect(rows).toContainEqual(expect.stringMatching(/^ {2}knip +— +\S+ +absent$/u));
+        // Then - the row carries its verdict, and the report fails on it alone
+        expect(rows).toContainEqual(expect.stringMatching(row));
         expect(verdict).toBe(
             'found: a tool is older than its range, or not installed — its row reads `old` or `absent` · why: a gate running an older tool enforces an older rulebook without saying so · fix: install what this release declares, then run `typescript doctor` again · read: docs/guides/adopt-a-stricter-release.md#the-two-gestures',
         );
@@ -86,8 +88,9 @@ describe('versions', () => {
         // When - the doctor reads it
         const { rows, status, verdict } = doctorOf(root);
 
-        // Then - the row says newer, and the report leaves the decision to the project
+        // Then - the row says newer, the widest name keeps two spaces before its version, and the report leaves the decision to the project
         expect(rows).toContainEqual(expect.stringMatching(/^ {2}oxfmt +99\.0\.0 +\S+ +newer$/u));
+        expect(rows).toContainEqual(expect.stringMatching(/^ {2}dependency-cruiser {2}\S/u));
         expect(verdict).toBe(
             'A tool ahead of its range may be fine; the toolchain does not get to decide.',
         );

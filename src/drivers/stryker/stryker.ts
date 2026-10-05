@@ -107,6 +107,7 @@ export async function strykerRun(
         join(MUTATION_OUTPUT, files.config),
         `${JSON.stringify(strykerConfig(scope, stage), null, 4)}\n`,
     );
+    // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
     const status = await handOver(

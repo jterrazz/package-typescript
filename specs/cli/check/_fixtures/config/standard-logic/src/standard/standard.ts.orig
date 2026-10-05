@@ -1,0 +1,1 @@
+const stray = () => 'a copy left beside the standard is no module of it';
