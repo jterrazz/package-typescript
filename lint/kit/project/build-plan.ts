@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { refusal } from '../catalogue/lesson.js';
 import {
     DEFAULT_ENTRY,
     DEFAULT_SOURCE,
@@ -9,6 +10,9 @@ import {
     publishedOf,
 } from './entry-points.js';
 import { isJsonObject, parsedObject } from './json.js';
+import { SETTINGS_FILE } from './jterrazz-config.js';
+import { presetLesson } from './preset.js';
+import type { Resolution } from './preset.js';
 import type { Platform, ProjectIdentity } from './project-kind.js';
 
 export type BuildEntry = { reason: string; source: string };
@@ -178,6 +182,19 @@ export function buildPlanOf(
     return Object.keys(dev).length === 0
         ? steps
         : [...steps, stepOf(dev, { clean: true, outDir: DEV_OUTPUT, platform: 'node' })];
+}
+
+/** The build a project's manifest and its resolved settings derive, or the refusal of a settings file that does not resolve. */
+export function planOf(root: string, { problem, resolved }: Resolution): BuildStep[] | string {
+    const declared = buildSettingsOf(resolved.sections.typescript);
+    const refused = problem ?? declared.problem;
+
+    return refused === null
+        ? buildPlanOf(root, { declaration: resolved.declaration, settings: declared.settings })
+        : refusal({
+              ...presetLesson(refused, SETTINGS_FILE),
+              read: 'docs/reference/building.md#the-entries',
+          });
 }
 
 export const sourcesOf = (steps: readonly BuildStep[]): Map<string, string> =>

@@ -1,12 +1,14 @@
 import process from 'node:process';
 
-import { planOf, watched } from '../../drivers/tsdown/tsdown.js';
+import { readSettings } from '../../../lint/index.rules.js';
+import { planOf } from '../../../lint/kit/project/build-plan.js';
+import { watched } from '../../drivers/tsdown/tsdown.js';
 import { badge, print, RED, RESET } from '../check/report/terminal.js';
 
 export async function dev(): Promise<number> {
     print(`${badge('TYPESCRIPT')} Starting dev mode...\n\n`);
     const project = process.cwd();
-    const steps = await planOf(project);
+    const steps = planOf(project, await readSettings(project));
     if (typeof steps === 'string') {
         print(`${RED}${steps}${RESET}\n`);
 

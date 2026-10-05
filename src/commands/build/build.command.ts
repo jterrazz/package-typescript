@@ -1,13 +1,15 @@
 import process from 'node:process';
 
+import { readSettings } from '../../../lint/index.rules.js';
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
-import { builtFrom, planOf } from '../../drivers/tsdown/tsdown.js';
+import { planOf } from '../../../lint/kit/project/build-plan.js';
+import { builtFrom } from '../../drivers/tsdown/tsdown.js';
 import { badge, GREEN, print, RED, RESET } from '../check/report/terminal.js';
 
 export async function build(): Promise<number> {
     print(`${badge('TYPESCRIPT')} Building the entries the manifest publishes...\n\n`);
     const project = process.cwd();
-    const steps = await planOf(project);
+    const steps = planOf(project, await readSettings(project));
     const status =
         typeof steps === 'string'
             ? (print(`${RED}${steps}${RESET}\n`), 1)
