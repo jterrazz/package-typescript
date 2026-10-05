@@ -93,7 +93,7 @@ setInterval(report, 100).unref();
 
 export const RAN_BY_TESTS_VARIABLE = '__TYPESCRIPT_MUTATION_RAN_BY_TESTS__';
 
-// invariant: first of every project's setup files — a mutant is live before the test file loads, and a static mutant is credited to every test of each file whose loading ran it; the mutants a test ran, beyond loading its file, are written where RAN_BY_TESTS_VARIABLE names.
+// invariant: first of every project's setup files — a mutant is live before the test file loads, and a static mutant is credited to every test of each file whose loading ran it; the mutants a test ran in its own process, beyond loading its file, are written where RAN_BY_TESTS_VARIABLE names; what a process it spawned ran stays apart, since a child's loading and its calls cannot be told apart.
 export const MUTANT_SETUP_SOURCE = `import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { threadId } from 'node:worker_threads';
@@ -118,6 +118,7 @@ if (inject('mode') === 'mutant') {
     const coverage = () => ns.mutantCoverage ?? (ns.mutantCoverage = { perTest: {}, static: {} });
     const loaded = { ...coverage().static };
     const tests = new Set();
+    const ranByTests = new Set();
     let current;
 
     const add = (into, hits) => {
@@ -152,6 +153,9 @@ if (inject('mode') === 'mutant') {
 
     afterEach(() => {
         const perTest = coverage().perTest;
+        for (const id of Object.keys(perTest[current] ?? {})) {
+            ranByTests.add(id);
+        }
         add(perTest[current] ?? (perTest[current] = {}), drained());
     });
 
@@ -160,14 +164,8 @@ if (inject('mode') === 'mutant') {
         const { perTest, static: statics } = coverage();
         const ranInto = process.env.${RAN_BY_TESTS_VARIABLE};
         if (ranInto !== undefined) {
-            const ran = new Set(Object.keys(fileWide));
-            for (const test of tests) {
-                for (const id of Object.keys(perTest[test] ?? {})) {
-                    ran.add(id);
-                }
-            }
             mkdirSync(ranInto, { recursive: true });
-            writeFileSync(join(ranInto, \`\${process.pid}-\${threadId}-\${Math.random().toString(36).slice(2)}.txt\`), [...ran].join('\\n'));
+            writeFileSync(join(ranInto, \`\${process.pid}-\${threadId}-\${Math.random().toString(36).slice(2)}.txt\`), [...ranByTests].join('\\n'));
         }
         for (const [id, count] of Object.entries(statics)) {
             const before = loaded[id] ?? 0;
