@@ -7,7 +7,7 @@
     {
         "family": "config",
         "id": "config/settings-load-synchronously",
-        "sentence": "jterrazz.config.ts loads synchronously too, since the oxlint rules read it so, and a file they cannot load would leave them judging on defaults."
+        "sentence": "A settings file loads synchronously too, since the oxlint rules read jterrazz.config.ts so, and one they cannot load would leave them judging on defaults."
     },
     {
         "family": "config",
