@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { declaredSubpaths, readManifest } from './manifest.js';
+import { declaredDependencies, declaredSubpaths, readManifest } from './manifest.js';
 
 function manifestAt(dir: string, manifest: unknown): void {
     mkdirSync(dir, { recursive: true });
@@ -91,5 +91,21 @@ describe('manifest', () => {
             readManifest(resolve(root, 'fresh')),
             readManifest(resolve(root, 'local')),
         ]).toStrictEqual([{}, null]);
+    });
+
+    test('declaredDependencies — the dependencies and devDependencies a manifest declares, none with no manifest', () => {
+        // Given - a manifest declaring a package of each kind and a peer, and a folder holding none
+        const root = mkdtempSync(resolve(tmpdir(), 'pkg-dependencies-'));
+        manifestAt(root, {
+            dependencies: { '@prisma/client': '^7.0.0' },
+            devDependencies: { vitest: '^5.0.0' },
+            peerDependencies: { react: '>=19' },
+        });
+
+        // Then - the two it installs, and nothing where no manifest stands
+        expect([
+            [...declaredDependencies(root)],
+            [...declaredDependencies(resolve(root, 'none'))],
+        ]).toStrictEqual([['@prisma/client', 'vitest'], []]);
     });
 });

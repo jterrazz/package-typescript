@@ -118,4 +118,36 @@ describe('preset', () => {
             {},
         ]);
     });
+
+    test('typescriptPreset — merges the standard of each package the manifest declares, after the platform’s', () => {
+        // Given - an api on node declaring Prisma's client and a package with no standard
+        const preset = typescriptPreset(
+            { kind: 'api', platform: 'node' },
+            new Set(['@prisma/client', 'hono']),
+        );
+
+        // Then - Prisma's standard last, its override in the merged settings
+        expect([preset.origins?.map(({ file }) => file), preset.settings?.oxlint]).toStrictEqual([
+            [
+                'src/standard/standard.ts',
+                'src/standard/kinds/api.ts',
+                'src/standard/platforms/node.ts',
+                'src/standard/dependencies/prisma.ts',
+            ],
+            {
+                overrides: [
+                    {
+                        files: ['src/index.ts'],
+                        reason: 'the process entry decides how the process ends: a graceful stop exits 0, a failed start or stop exits 1',
+                        rules: { 'unicorn/no-process-exit': 'off' },
+                    },
+                    {
+                        files: ['src/infrastructure/outbound/persistence/**'],
+                        reason: 'a Prisma batch transaction takes the lazy PrismaPromises its queries return, and an async wrapper would run each query before the transaction does',
+                        rules: { 'typescript/promise-function-async': 'off' },
+                    },
+                ],
+            },
+        ]);
+    });
 });

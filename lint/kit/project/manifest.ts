@@ -31,6 +31,16 @@ export function readManifest(dir: string): Manifest | null {
     }
 }
 
+/** The packages a unit's manifest declares, as dependencies or devDependencies — none when it has no manifest. */
+export function declaredDependencies(dir: string): ReadonlySet<string> {
+    const manifest = readManifest(dir);
+
+    return new Set([
+        ...Object.keys(manifest?.dependencies ?? {}),
+        ...Object.keys(manifest?.devDependencies ?? {}),
+    ]);
+}
+
 export function workspacePatterns(manifest: Manifest): string[] {
     const { workspaces } = manifest;
     const declared = isJsonObject(workspaces) ? workspaces.packages : workspaces;

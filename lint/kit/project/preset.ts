@@ -59,7 +59,10 @@ export type { OptOut } from './opt-outs.js';
 
 export type PresetLaw = `${string}/${string}`;
 
-export type BasePresets = (declaration: null | ProjectIdentity) => readonly Preset[];
+export type BasePresets = (
+    declaration: null | ProjectIdentity,
+    dependencies?: ReadonlySet<string>,
+) => readonly Preset[];
 
 export type Resolved = {
     baseline: string[];
@@ -105,9 +108,7 @@ function flattened(presets: readonly unknown[], into: Map<string, Preset>): null
     return null;
 }
 
-type Named = { name: string };
-
-const lawOf = (preset: Preset, rule: Named): PresetLaw => `${preset.name}/${rule.name}`;
+const lawOf = (preset: Preset, rule: { name: string }): PresetLaw => `${preset.name}/${rule.name}`;
 
 const EMPTY_DECLARATION = Object.freeze({});
 
@@ -229,7 +230,7 @@ const listOf = (value: unknown): unknown[] => (Array.isArray(value) ? value : []
 function lawsOf(
     presets: readonly Preset[],
     optOuts: readonly OptOut[],
-    pick: (preset: Preset) => readonly Named[] | undefined,
+    pick: (preset: Preset) => readonly { name: string }[] | undefined,
 ): unknown[] {
     const waived = new Set(optOuts.map(({ law }) => law));
 

@@ -8,6 +8,7 @@ import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
 import { isJsonObject, objectOf } from './json.js';
+import { declaredDependencies } from './manifest.js';
 import { resolveConfig } from './preset.js';
 import type { BasePresets, Resolution } from './preset.js';
 
@@ -75,7 +76,14 @@ async function quietly(load: () => unknown): Promise<unknown> {
     }
 }
 
-export async function readConfig(unit: string, base: BasePresets): Promise<Resolution> {
+// invariant: a unit's base presets read the packages its own manifest declares.
+const boundTo =
+    (unit: string, base: BasePresets): BasePresets =>
+    (declaration) =>
+        base(declaration, declaredDependencies(unit));
+
+export async function readConfig(unit: string, unbound: BasePresets): Promise<Resolution> {
+    const base = boundTo(unit, unbound);
     const path = join(unit, SETTINGS_FILE);
     if (!existsSync(path)) {
         return resolveConfig(NOTHING_DECLARED, base);
@@ -94,7 +102,8 @@ const loadModule = createRequire(import.meta.url);
 const loaded = new Map<string, Resolution>();
 
 // outside: for a reader that runs synchronously, as an oxlint rule does; Node loads a module once per process, and a file that appears later is still read.
-export function readConfigSync(unit: string, base: BasePresets): Resolution {
+export function readConfigSync(unit: string, unbound: BasePresets): Resolution {
+    const base = boundTo(unit, unbound);
     const path = join(unit, SETTINGS_FILE);
     if (!existsSync(path)) {
         return resolveConfig(NOTHING_DECLARED, base);

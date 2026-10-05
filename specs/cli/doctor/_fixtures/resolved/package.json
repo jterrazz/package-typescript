@@ -1,6 +1,9 @@
 {
     "name": "resolved",
     "version": "1.0.0",
+    "dependencies": {
+        "@prisma/client": "^7.0.0"
+    },
     "exports": "./dist/index.js",
     "type": "module"
 }

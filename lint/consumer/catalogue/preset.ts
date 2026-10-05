@@ -1,3 +1,4 @@
+import PRISMA from '../../../src/standard/dependencies/prisma.js';
 import API from '../../../src/standard/kinds/api.js';
 import CLI from '../../../src/standard/kinds/cli.js';
 import LIBRARY from '../../../src/standard/kinds/library.js';
@@ -38,6 +39,11 @@ const PLATFORM_STANDARDS: Readonly<Record<Platform, Standard>> = {
     react: REACT,
 };
 
+// invariant: a package keyed here brings its standard to every unit whose manifest declares it, named for the package.
+const DEPENDENCY_STANDARDS: Readonly<Record<string, { name: string; standard: Standard }>> = {
+    '@prisma/client': { name: 'prisma', standard: PRISMA },
+};
+
 export const BASELINE_SECTION = 'typescript';
 
 const fromTheToolchain = (tool: 'oxfmt' | 'oxlint'): EditorFile => ({
@@ -54,8 +60,11 @@ const editorFilesOf = (tsconfigPreset: unknown): Readonly<Record<string, EditorF
     },
 });
 
-// invariant: the merge order of the standard: the package's, then the kind's, then the platform's — a workspace and an undeclared project read the node platform's.
-function standardsOf(declaration: null | ProjectIdentity): StandardOrigin[] {
+// invariant: the merge order of the standard: the package's, then the kind's, then the platform's, then each declared dependency's — a workspace and an undeclared project read the node platform's.
+function standardsOf(
+    declaration: null | ProjectIdentity,
+    dependencies: ReadonlySet<string>,
+): StandardOrigin[] {
     const platform = declaration?.platform ?? 'node';
 
     return [
@@ -69,6 +78,12 @@ function standardsOf(declaration: null | ProjectIdentity): StandardOrigin[] {
                   },
               ]),
         { file: `src/standard/platforms/${platform}.ts`, standard: PLATFORM_STANDARDS[platform] },
+        ...Object.entries(DEPENDENCY_STANDARDS)
+            .filter(([dependency]) => dependencies.has(dependency))
+            .map(([, { name, standard }]) => ({
+                file: `src/standard/dependencies/${name}.ts`,
+                standard,
+            })),
     ];
 }
 
@@ -80,9 +95,12 @@ function sourcesOf(settings: Readonly<Record<string, unknown>>): NonNullable<Pre
     return { extensions: stringsOf(extensions), roots: stringsOf(roots) };
 }
 
-/** The toolchain's own preset: its standard, merged for the project's kind and platform. */
-export function typescriptPreset(declaration: null | ProjectIdentity): Preset {
-    const standards = standardsOf(declaration);
+/** The toolchain's own preset: its standard, merged for the project's kind, platform and declared dependencies. */
+export function typescriptPreset(
+    declaration: null | ProjectIdentity,
+    dependencies: ReadonlySet<string> = new Set(),
+): Preset {
+    const standards = standardsOf(declaration, dependencies);
     const origins = standards.map(({ file, standard }) => ({
         file,
         laws: [...(standard.laws?.layers ?? []), ...(standard.laws?.names ?? [])].map(
@@ -119,4 +137,6 @@ export function typescriptPreset(declaration: null | ProjectIdentity): Preset {
     };
 }
 
-export const basePresetsOf: BasePresets = (declaration) => [typescriptPreset(declaration)];
+export const basePresetsOf: BasePresets = (declaration, dependencies) => [
+    typescriptPreset(declaration, dependencies),
+];
