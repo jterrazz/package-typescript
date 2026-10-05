@@ -114,6 +114,8 @@ A refusal the command's own code can meet from a project — a map it cannot com
 
 The tools run beneath them, each from one folder: `src/drivers/<tool>/<tool>.ts` resolves the tool's binary, spawns it and imports its package — `oxlint`, `oxfmt`, `tsc`, `tsdown`, `knip`, `stryker`, `dependency-cruiser`, `ls-lint`, `rumdl`, `publint`, `attw`, `prettier`, `astro`, `git`, `node`, and `checker`, this package's own checker program, which runs as a process like the rest. A process is spawned under `src/drivers/` alone, most through `run.ts`, the runner the drivers share; a command calls a driver, a driver calls no command and no other tool's driver, and what two drivers share sits at the root of `src/drivers/`. A tool's config, where it has one, is its folder of `src/presets/`. The folder is `drivers/` and not `tools/`, since `tools` is a word of the grab-bag roster the Names pass refuses ([Quality checks](../reference/quality-checks.md#the-names-tree-pass)).
 
+This repository's own suite holds the tree to both: a subcommand with no folder, a folder with no command file, a process spawned or a binary resolved outside `src/drivers/`, a tool's package imported outside its driver and its preset, and a driver reaching another driver or a command each fail it at their module ([Test § The self rules](https://github.com/jterrazz/package-typescript/blob/main/docs/guides/test.md#the-self-rules)).
+
 ## The importable surface
 
 Five subpaths, all declared in the exports map — each a built `.js` beside the `.d.ts` the build generates — and the tsconfig presets as data:

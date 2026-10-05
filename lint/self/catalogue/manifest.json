@@ -85,5 +85,13 @@
         "id": "error-is-a-refusal-or-an-invariant",
         "names": ["LESSON_MODULE", "refusalFindings", "refusalLine"],
         "why": "judges this package's own shipped modules: an error a user can cause is thrown as a four-part refusal reading a heading that exists, and one only the toolchain can cause is `invariant()`"
+    },
+    {
+        "audience": "self",
+        "channel": "meta",
+        "home": "lint/self/corpus/src-layout.ts",
+        "id": "src-layout",
+        "names": ["srcLayoutFindings"],
+        "why": "judges this package's own src/: every subcommand a user types is its folder of src/commands/ with its `<name>.command.ts`, and every external tool is driven — its process spawned, its binary resolved, its package imported — from its own folder of src/drivers/ alone"
     }
 ]
