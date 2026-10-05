@@ -19,6 +19,12 @@ export const IMPORT_ASSETS = {
     webp: 'always',
 };
 
+// outside: a module imported for what loading it does is named so by its package: `<package>/register` registers a hook, `dotenv/config` loads a .env file.
+export const IMPORT_SIDE_EFFECT_MODULES: readonly string[] = Object.freeze([
+    '**/register',
+    'dotenv/config',
+]);
+
 export const IMPORT_EXTENSIONS_ALWAYS = on(['always', { ignorePackages: true, ...IMPORT_ASSETS }]);
 export const IMPORT_EXTENSIONS_NEVER = on(['never', IMPORT_ASSETS]);
 
@@ -46,7 +52,6 @@ export default fragment({
                 'no-named-default',
                 'no-namespace',
                 'no-self-import',
-                'no-unassigned-import',
                 'no-webpack-loader-syntax',
             ].map((rule) => `import/${rule}`),
         ),
@@ -54,6 +59,10 @@ export default fragment({
         // hazard: under `verbatimModuleSyntax`, `import { type X } from 'leaflet'` emits a runtime `import {} from 'leaflet'`.
         'import/consistent-type-specifier-style': on(['prefer-top-level']),
         'import/extensions': IMPORT_EXTENSIONS_ALWAYS,
+        'import/no-unassigned-import': {
+            ...on([{ allow: [...IMPORT_SIDE_EFFECT_MODULES] }]),
+            since: '11.0.0',
+        },
 
         'import/exports-last': off({
             by: 'docs/reference/lint-presets.md — an export sits with the declaration it exports; three repositories had refused this rule locally before the decision moved here',

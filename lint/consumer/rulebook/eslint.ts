@@ -34,6 +34,17 @@ export default fragment({
             },
             since: SIZE_SINCE,
         }),
+        // invariant: a rule test is one table of the cases its rule decides; its length counts them, never two subjects in one file.
+        scoped({
+            files: ['lint/consumer/rules/**/*.test.ts'],
+            rules: {
+                'max-lines': off({
+                    by: 'docs/reference/rules-kit.md#testing-a-rule — a rule is proven by one RuleTester table of every case it decides',
+                    kind: 'convention',
+                }),
+            },
+            since: SIZE_SINCE,
+        }),
     ],
     rules: {
         ...allOn([

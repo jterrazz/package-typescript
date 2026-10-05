@@ -1,4 +1,5 @@
 import { allOn, fragment, off, on } from '../../../kit/compiler/decision.js';
+import { IMPORT_SIDE_EFFECT_MODULES } from '../import.js';
 
 export default fragment({
     id: 'frameworks/react',
@@ -139,6 +140,8 @@ export default fragment({
         }),
 
         // outside: `import '../../../rulebook/frameworks/index.css'` is how a React tree carries its styles: there is nothing to bind it to.
-        'import/no-unassigned-import': on([{ allow: ['**/*.css', '**/*.scss'] }]),
+        'import/no-unassigned-import': on([
+            { allow: [...IMPORT_SIDE_EFFECT_MODULES, '**/*.css', '**/*.scss'] },
+        ]),
     },
 });

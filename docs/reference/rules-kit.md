@@ -65,6 +65,8 @@ A preset hands its passes to the toolchain rather than shipping a program: a `Co
 
 `@jterrazz/test` is the kit to test what this one writes ([Lint specs](https://github.com/jterrazz/package-test/blob/main/docs/guides/lint-specs.md)): `ruleTester()` runs a rule's visitor on snippets, and refuses an invalid case that states no `line` and `column`; `specification.lint()` lints a fixture tree with the real oxlint, a checker's command or the laws of presets, and compares the whole report. A rule is proven where its behaviour lives — its visitor on a snippet, what it says about a tree on a tree.
 
+A rule's module test is one table of every case the rule decides, so its length counts them: the rulebook leaves `max-lines` off for `lint/consumer/rules/**/*.test.ts`, in every repository that ships rules.
+
 ## A chapter carries its catalogue
 
 A chapter that lists rules carries them between markers and never by hand. A `Projection` is a page, its `Markers` and the `render` that writes the block; `projected(text, page, projections)` splices every block of a page, `writeProjections(projections)` writes only a page whose text changed, and `spliceBetween` refuses a page that lost its markers. `markdownTable` pads a table as the formatter does, so a generated block is format-clean; `cell` escapes a pipe, `anchor(name)` gives a row the anchor its lesson reads, and `anchorsOf(text)` lists every heading and row anchor a page holds.
