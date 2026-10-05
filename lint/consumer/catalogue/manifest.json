@@ -91,6 +91,22 @@
         "audience": "consumer",
         "by": "throw",
         "channel": "runtime",
+        "id": "own-presets-unbuilt",
+        "message": "this repository's presets are not built",
+        "module": "lint/kit/project/own-presets.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
+        "id": "own-preset-unexported",
+        "message": "exports no preset",
+        "module": "lint/kit/project/own-presets.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
         "id": "fix-wrapper-unwritten",
         "message": "the fix wrapper could not be written",
         "module": "src/commands/check/passes/tool-passes.ts"
