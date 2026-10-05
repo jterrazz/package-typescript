@@ -1,8 +1,9 @@
+import { ARTIFACTS } from '../../kit/project/build-plan.js';
 import { trackedFiles } from '../../kit/project/project-files.js';
 
 // hazard: narrower than ARTEFACT_DIRECTORIES: a tracked file under `bin/` or `build/` may be source.
 const TRACKED_ARTEFACT_DIRECTORIES: ReadonlySet<string> = new Set([
-    '.artifacts',
+    ARTIFACTS,
     '.cache',
     '.next',
     '.turbo',

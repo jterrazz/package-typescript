@@ -3,11 +3,10 @@ import { createRequire } from 'node:module';
 import { delimiter, join } from 'node:path';
 import process from 'node:process';
 
-import { DEV_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { ARTIFACTS, DEV_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { handOver } from '../run.js';
 import {
-    ARTIFACTS,
     CHILD_COVERAGE_SOURCE,
     MUTANT_SETUP_SOURCE,
     OUT,

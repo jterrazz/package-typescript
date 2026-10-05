@@ -1,4 +1,4 @@
-export const ARTIFACTS = '.artifacts';
+import { ARTIFACTS } from '../../../lint/kit/project/build-plan.js';
 
 export const OUT = `${ARTIFACTS}/stryker`;
 

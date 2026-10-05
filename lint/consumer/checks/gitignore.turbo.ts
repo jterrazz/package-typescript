@@ -1,11 +1,12 @@
 import { join } from 'node:path';
 
 import type { Context } from '../../kit/checker/pass.js';
+import { ARTIFACTS } from '../../kit/project/build-plan.js';
 import { parsedObject } from '../../kit/project/json.js';
 
 export type Judged = { lines: string[]; writes: { path: string; text: string }[] };
 
-const TURBO_CACHE = '.artifacts/turbo';
+const TURBO_CACHE = `${ARTIFACTS}/turbo`;
 
 type TurboCache = { found: string; path: string; text: string };
 

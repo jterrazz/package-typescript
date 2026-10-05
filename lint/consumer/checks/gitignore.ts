@@ -1,6 +1,7 @@
 import { dirname, join, relative, resolve } from 'node:path';
 
 import type { Context, Pass } from '../../kit/checker/pass.js';
+import { ARTIFACTS } from '../../kit/project/build-plan.js';
 import { committedLines, trackedArtefacts } from './gitignore.tracked.js';
 import { MISPLACED, misplacedTurboCache, turboJudged } from './gitignore.turbo.js';
 import type { Judged } from './gitignore.turbo.js';
@@ -18,8 +19,6 @@ type Source = {
     own: boolean;
     path: string;
 };
-
-const ARTIFACTS = '.artifacts';
 
 // invariant: a build's product stays beside `src/` and is published from there.
 const PRODUCT = 'dist';

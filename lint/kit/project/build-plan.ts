@@ -37,7 +37,9 @@ export type BuildStep = {
 
 export const DIST = 'dist';
 
-export const DEV_OUTPUT = '.artifacts/dev';
+export const ARTIFACTS = '.artifacts';
+
+export const DEV_OUTPUT = `${ARTIFACTS}/dev`;
 
 const BROWSER_PLATFORMS: ReadonlySet<Platform> = new Set(['astro', 'expo', 'next', 'react']);
 

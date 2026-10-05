@@ -5,12 +5,13 @@ import { join, matchesGlob } from 'node:path';
 import { exit, stderr } from 'node:process';
 
 import { refusal } from '../catalogue/lesson.js';
+import { ARTIFACTS } from './build-plan.js';
 import { listNotIgnored } from './git-tree.js';
 import { git } from './git.js';
 import { isGroundFolder } from './ground.js';
 
 export const UNSWEPT: ReadonlySet<string> = new Set([
-    '.artifacts',
+    ARTIFACTS,
     '.git',
     '.next',
     '.turbo',
