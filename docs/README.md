@@ -38,10 +38,11 @@ A smaller task is one section of a reference page:
 
 ## Concepts
 
-| Page                                     | Answers                                                                                      |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------- |
-| [The ideas](concepts/ideas.md)           | The declaration, the one settings file, the two commands, the ratchet — and why each is so   |
-| [Architecture](concepts/architecture.md) | The two sides, `lint/` that judges and `src/` that runs, the command, the published subpaths |
+| Page                                                     | Answers                                                                                                                        |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| [The ideas](concepts/ideas.md)                           | The declaration, the one settings file, the two commands, the ratchet — and why each is so                                     |
+| [Architecture](concepts/architecture.md)                 | The two sides, `lint/` that judges and `src/` that runs, the command, the published subpaths                                   |
+| [The composition root](concepts/the-composition-root.md) | Where a hexagonal application is built: `compose()`, its typed overrides, its ordered stop, and the two callers the map allows |
 
 ## Reference
 
