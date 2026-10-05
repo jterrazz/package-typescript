@@ -3,9 +3,12 @@ import { join } from 'node:path';
 
 import { readSettings } from '../../../lint/index.rules.js';
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
+import { conventionsOf } from '../../../lint/kit/project/build-plan.js';
 import { objectOf, parsedObject } from '../../../lint/kit/project/json.js';
 import { SETTINGS_FILE } from '../../../lint/kit/project/jterrazz-config.js';
 import { originLines } from '../../../lint/kit/project/origins.js';
+import type { Derived } from '../../../lint/kit/project/origins.js';
+import type { Resolved } from '../../../lint/kit/project/preset.js';
 import { toolVersions } from '../../../lint/kit/project/tool-versions.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { badge, print } from '../check/report/terminal.js';
@@ -154,6 +157,24 @@ function reportPinnedPair(root: string): boolean {
     return pair.verdict === 'skewed';
 }
 
+/** The entries the build reads off module names, and what each preset derives from the unit's tree. */
+function derivedOf(unit: string, resolved: Resolved): Derived {
+    const { dev, entries } = conventionsOf(unit).settings;
+    const build = {
+        ...(Object.keys(entries).length === 0 ? {} : { entries }),
+        ...(Object.keys(dev).length === 0 ? {} : { dev }),
+    };
+
+    return {
+        ...(Object.keys(build).length === 0 ? {} : { build }),
+        ...Object.fromEntries(
+            resolved.presets.flatMap(({ derive, name }) =>
+                derive === undefined ? [] : [[name, derive(unit)]],
+            ),
+        ),
+    };
+}
+
 async function reportConfig(root: string): Promise<void> {
     for (const unit of ['.', ...workspaceMembers(root)]) {
         const { problem, resolved } = await readSettings(join(root, unit));
@@ -163,7 +184,7 @@ async function reportConfig(root: string): Promise<void> {
             print(`  ${file} ${problem}\n`);
             continue;
         }
-        const lines = originLines(resolved);
+        const lines = originLines(resolved, derivedOf(join(root, unit), resolved));
         const width = Math.max(...lines.map(({ origin }) => origin.length)) + 2;
         for (const { origin, setting } of lines) {
             print(`  ${origin.padEnd(width)}${setting}\n`);

@@ -39,6 +39,8 @@ export type PresetChecker = {
 export type Preset = {
     baseline?: readonly string[];
     checker?: PresetChecker;
+    /** What it derives for its section from a unit's tree, which `typescript doctor` prints beside what the files declare. */
+    derive?: (root: string) => Readonly<Record<string, unknown>>;
     files?: Readonly<Record<string, EditorFile>>;
     lawSettings?: readonly string[];
     layers?: readonly ArchitectureRule[];

@@ -21,7 +21,7 @@ const BASE: Preset = {
     settings: { roster: ['x'], spine: ['src', 'lint', 'app'], tool: 'b' },
 };
 
-describe('originLines', () => {
+describe('origins', () => {
     test('origins — names the file each setting comes from, by setting, in the merge order', () => {
         // Given - a base merged from three files, a listed preset with no origins, and the project's own settings
         const { problem, resolved } = resolveConfig(
@@ -40,6 +40,10 @@ describe('originLines', () => {
         ).toStrictEqual([
             { origin: '@acme/test preset test', setting: 'test.roots = ["specs"]' },
             { origin: 'jterrazz.config.ts', setting: 'test.roots = ["e2e"]' },
+            {
+                origin: '@jterrazz/typescript rulebook',
+                setting: 'typescript.oxlint.profile = "node"',
+            },
             {
                 origin: 'jterrazz.config.ts',
                 setting: 'typescript.roots.scripts = "the release scripts"',
@@ -95,6 +99,63 @@ describe('originLines', () => {
             { origin: '@acme/bare preset bare', setting: 'law bare/bare-law' },
             { origin: '@acme/named preset named', setting: 'law named/named-law' },
             { origin: 'jterrazz.config.ts', setting: 'optOut typescript/base-law = "the reason"' },
+        ]);
+    });
+
+    test('origins — names the oxlint fragment of the rulebook and of each preset, what the tree derives, and an empty default no file fills', () => {
+        // Given - a preset stating empty defaults and an oxlint fragment, a project filling one default and adding its own override, and projects derived from the tree
+        const { problem, resolved } = resolveConfig(
+            {
+                kind: 'website',
+                platform: 'next',
+                presets: [
+                    {
+                        name: 'test',
+                        oxlint: {
+                            jsPlugins: ['@acme/test/oxlint'],
+                            overrides: [{ files: ['specs/**'], rules: { 'acme/spec': 'error' } }],
+                        },
+                        package: '@acme/test',
+                        settings: { allow: {}, words: [] },
+                    },
+                ],
+                test: { allow: { vitest: 'the runtime ships' } },
+                typescript: {
+                    oxlint: {
+                        overrides: [{ files: ['scripts/**'], rules: { 'no-console': 'off' } }],
+                    },
+                },
+            },
+            () => [],
+        );
+
+        // Then - the derived projects first, each preset's fragment before the project's own, and the empty default only where nothing fills it
+        expect(problem).toBeNull();
+        expect(
+            originLines(resolved, { test: { projects: { api: {}, unit: { roots: ['src'] } } } }),
+        ).toStrictEqual([
+            { origin: 'jterrazz.config.ts', setting: 'test.allow.vitest = "the runtime ships"' },
+            { origin: 'derived from the tree', setting: 'test.projects.api = {}' },
+            { origin: 'derived from the tree', setting: 'test.projects.unit.roots = ["src"]' },
+            { origin: '@acme/test preset test', setting: 'test.words = []' },
+            {
+                origin: '@acme/test preset test',
+                setting: 'typescript.oxlint.jsPlugins = ["@acme/test/oxlint"]',
+            },
+            {
+                origin: '@acme/test preset test',
+                setting:
+                    'typescript.oxlint.overrides = [{"files":["specs/**"],"rules":{"acme/spec":"error"}}]',
+            },
+            {
+                origin: 'jterrazz.config.ts',
+                setting:
+                    'typescript.oxlint.overrides = [{"files":["scripts/**"],"rules":{"no-console":"off"}}]',
+            },
+            {
+                origin: '@jterrazz/typescript rulebook',
+                setting: 'typescript.oxlint.profile = "next"',
+            },
         ]);
     });
 });

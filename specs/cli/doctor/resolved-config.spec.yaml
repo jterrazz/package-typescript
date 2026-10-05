@@ -1,4 +1,4 @@
-description: prints every resolved setting beside the file of the standard or the config it comes from
+description: prints every resolved and derived setting beside the file, preset or tree it comes from
 fixture: ./_fixtures/resolved/
 runs:
     - command: doctor
@@ -9,6 +9,8 @@ runs:
           {{any}}
           Resolved jterrazz.config.ts
 
+            derived from the tree                                build.dev.release = "lint/release.cli.ts"
+            derived from the tree                                build.entries.digest.worker = "src/digest.worker.ts"
             @jterrazz/typescript src/standard/standard.ts        typescript.lint.consumer = ["catalogue", "rulebook", "rules", "checks"]
             @jterrazz/typescript src/standard/standard.ts        typescript.lint.kit = ["project", "baseline", "checker", "catalogue", "compiler", "testing"]
             @jterrazz/typescript src/standard/standard.ts        typescript.lint.self = ["catalogue", "rules", "checks", "corpus"]
@@ -17,6 +19,7 @@ runs:
             @jterrazz/typescript src/standard/kinds/library.ts   typescript.mutation.mutate.lint/*.ts = "the entries of the lint rules a library ships"
             @jterrazz/typescript src/standard/kinds/library.ts   typescript.mutation.mutate.lint/consumer/**/*.ts = "the lint rules and checks a library ships to its consumers"
             @jterrazz/typescript src/standard/kinds/library.ts   typescript.mutation.mutate.lint/kit/**/*.ts = "the rules kit those rules and checks run on"
+            @jterrazz/typescript rulebook                        typescript.oxlint.profile = "next"
             jterrazz.config.ts                                   typescript.roots.scripts = "the release scripts the CI workflow runs"
             @jterrazz/typescript src/standard/standard.ts        typescript.sources.extensions = ["ts"]
             @jterrazz/typescript src/standard/platforms/next.ts  typescript.sources.extensions = ["tsx"]

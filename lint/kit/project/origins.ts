@@ -15,10 +15,27 @@ type Layer = { origin: string; settings: unknown };
 
 type Entry = { list: boolean; origin: string; path: string; values: string[] };
 
+/** The origin of what a command derives from the project's tree, never written in a file. */
+export const DERIVED = 'derived from the tree';
+
+const RULEBOOK = '@jterrazz/typescript rulebook';
+
+// invariant: an empty list or record below a section is keyed apart: it shows only when no file put anything at its path.
+const EMPTY = '\u0001';
+
 const shown = (value: unknown): string => JSON.stringify(value) ?? String(value);
+
+const isEmpty = (value: unknown): boolean =>
+    Array.isArray(value)
+        ? value.length === 0
+        : isJsonObject(value) && Object.keys(value).length === 0;
 
 // invariant: replays the merge of a section: a list item keeps the first file that added it, a single value the last that wrote it.
 function walk(value: unknown, path: string, origin: string, into: Map<string, Entry>): void {
+    if (path.includes('.') && isEmpty(value)) {
+        into.set(`${path}${EMPTY}`, { list: false, origin, path, values: [shown(value)] });
+        return;
+    }
     if (Array.isArray(value)) {
         for (const item of value) {
             const one = shown(item);
@@ -55,10 +72,29 @@ function grouped(entries: readonly Entry[]): Entry[] {
 const presetOrigin = (preset: Preset, file?: string): string =>
     `${preset.package} ${file ?? `preset ${preset.name}`}`;
 
-function layersOf(resolved: Resolved, section: string): Layer[] {
+// invariant: the oxlint config is the platform's profile of the rulebook, then each preset's fragment, then the project's own.
+function oxlintLayers(resolved: Resolved): Layer[] {
+    return [
+        {
+            origin: RULEBOOK,
+            settings: { oxlint: { profile: resolved.declaration?.platform ?? 'node' } },
+        },
+        ...resolved.presets.flatMap((preset): Layer[] =>
+            preset.oxlint === undefined
+                ? []
+                : [{ origin: presetOrigin(preset), settings: { oxlint: preset.oxlint } }],
+        ),
+    ];
+}
+
+function layersOf(resolved: Resolved, section: string, derived: Derived): Layer[] {
     const presets = resolved.presets.filter(({ name }) => name === section);
 
     return [
+        ...(derived[section] === undefined
+            ? []
+            : [{ origin: DERIVED, settings: derived[section] }]),
+        ...(section === 'typescript' ? oxlintLayers(resolved) : []),
         ...presets.flatMap(
             (preset): Layer[] =>
                 preset.origins?.map(({ file, settings }) => ({
@@ -70,15 +106,33 @@ function layersOf(resolved: Resolved, section: string): Layer[] {
     ];
 }
 
-/** Each setting of the resolved sections, then each law and each one set aside, beside the file it comes from. */
-export function originLines(resolved: Resolved): OriginLine[] {
-    const settings = Object.keys(resolved.sections).flatMap((section) => {
+/** What a command derives from the tree, by the section it would be written in. */
+export type Derived = Readonly<Record<string, Readonly<Record<string, unknown>>>>;
+
+const filled = (entries: ReadonlyMap<string, Entry>): Entry[] =>
+    [...entries].flatMap(([key, entry]) =>
+        key.endsWith(EMPTY) &&
+        [...entries.keys()].some(
+            (other) =>
+                other !== key &&
+                (other.startsWith(`${entry.path}.`) ||
+                    other.startsWith(`${entry.path}\u0000`) ||
+                    other === entry.path),
+        )
+            ? []
+            : [entry],
+    );
+
+/** Each setting of the resolved sections — and of what the tree derives — then each law and each one set aside, beside the file it comes from. */
+export function originLines(resolved: Resolved, derived: Derived = {}): OriginLine[] {
+    const sections = [...new Set([...Object.keys(derived), ...Object.keys(resolved.sections)])];
+    const settings = sections.flatMap((section) => {
         const entries = new Map<string, Entry>();
-        for (const { origin, settings: layer } of layersOf(resolved, section)) {
+        for (const { origin, settings: layer } of layersOf(resolved, section, derived)) {
             walk(layer, section, origin, entries);
         }
 
-        const byPath = [...entries.values()].toSorted((left, right) =>
+        const byPath = filled(entries).toSorted((left, right) =>
             left.path.localeCompare(right.path),
         );
 
