@@ -41,9 +41,10 @@ export function declaredRootsFindings(
     { prefix, roots }: { prefix: string; roots: ReadonlySet<string> },
 ): Finding[] {
     return ROOTS_DECLARATIONS.flatMap((key) =>
-        Object.entries(declared[key])
-            .toSorted(([left], [right]) => (left < right ? -1 : 1))
-            .flatMap(([root, reason]): Finding[] => {
+        Object.keys(declared[key])
+            .toSorted()
+            .flatMap((root): Finding[] => {
+                const reason = declared[key][root];
                 const where = `${prefix}${SETTINGS_FILE}'s \`typescript.${key}\``;
                 if (typeof reason !== 'string' || reason.trim() === '') {
                     return [

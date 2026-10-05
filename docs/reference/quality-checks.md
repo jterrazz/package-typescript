@@ -653,8 +653,8 @@ The **root spine** is the folders a repository root holds, the same in every rep
 | Rule                                     | Requirement                                                                                                                                           |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `names/no-undeclared-root-folder`        | Every root folder is on the root spine, imposed by a tool, or declared with its reason.                                                               |
-| `names/declared-root-states-its-reason`  | A root declared in typescript.roots states why the repository keeps it.                                                                               |
-| `names/declared-root-holds-files`        | A root declared in typescript.roots holds a file git does not ignore.                                                                                 |
+| `names/declared-root-states-its-reason`  | A root declared in typescript.roots or typescript.generated states why the repository keeps it.                                                       |
+| `names/declared-root-holds-files`        | A root declared in typescript.roots or typescript.generated holds a file git does not ignore.                                                         |
 | `names/jterrazz-config-loads`            | The settings file jterrazz.config.ts loads, and its typescript section has the declared shape.                                                        |
 | `names/skill-holds-only-skill-md`        | A skill is one skills/<skill>/SKILL.md and nothing beside it.                                                                                         |
 | `names/repository-has-makefile`          | Every repository root carries a Makefile.                                                                                                             |

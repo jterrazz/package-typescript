@@ -22,7 +22,7 @@ describe('roots-declared', () => {
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
             docker/:1:1  names(declared-root-states-its-reason)
                 found: \`docker/\` is declared in jterrazz.config.ts's \`typescript.roots\` with no reason
-                why: A root declared in typescript.roots states why the repository keeps it.
+                why: A root declared in typescript.roots or typescript.generated states why the repository keeps it.
                 fix: say why the repository keeps it
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
             ios/:1:1  names(no-undeclared-root-folder)
@@ -32,7 +32,7 @@ describe('roots-declared', () => {
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
             migrations/:1:1  names(declared-root-holds-files)
                 found: \`migrations/\` is declared in jterrazz.config.ts's \`typescript.roots\` and holds no file
-                why: A root declared in typescript.roots holds a file git does not ignore.
+                why: A root declared in typescript.roots or typescript.generated holds a file git does not ignore.
                 fix: delete the entry
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
         `);
