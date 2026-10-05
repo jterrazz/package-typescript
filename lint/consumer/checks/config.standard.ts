@@ -4,13 +4,16 @@ import type { Context, Finding } from '../../kit/checker/pass.js';
 import { logicIn, STANDARD_FOLDER } from '../../kit/project/standard-logic.js';
 import { configFinding } from './config.finding.js';
 
-const STANDARD_MODULE = /(?<!\.test)\.ts$/u;
+const SCRIPT_MODULE = /(?<!\.test)\.(?:[cm]?[jt]s|[jt]sx)$/u;
 
 function standardModules(context: Context, folder: string): string[] {
     return (context.list(join(context.root, folder)) ?? []).toSorted().flatMap((name) => {
         const path = `${folder}/${name}`;
+        if (context.list(join(context.root, path)) !== null) {
+            return standardModules(context, path);
+        }
 
-        return STANDARD_MODULE.test(name) ? [path] : standardModules(context, path);
+        return SCRIPT_MODULE.test(name) ? [path] : [];
     });
 }
 

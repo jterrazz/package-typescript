@@ -19,6 +19,7 @@ const LOGIC: ReadonlyMap<ts.SyntaxKind, string> = new Map([
     [ts.SyntaxKind.ClassDeclaration, 'a class'],
     [ts.SyntaxKind.ClassExpression, 'a class'],
     [ts.SyntaxKind.ConditionalExpression, 'a branch'],
+    [ts.SyntaxKind.DeleteExpression, 'an operation'],
     [ts.SyntaxKind.DoStatement, 'a loop'],
     [ts.SyntaxKind.ForInStatement, 'a loop'],
     [ts.SyntaxKind.ForOfStatement, 'a loop'],
@@ -34,6 +35,8 @@ const LOGIC: ReadonlyMap<ts.SyntaxKind, string> = new Map([
     [ts.SyntaxKind.TemplateExpression, 'a computed string'],
     [ts.SyntaxKind.ThrowStatement, 'a throw'],
     [ts.SyntaxKind.TryStatement, 'a try'],
+    [ts.SyntaxKind.TypeOfExpression, 'an operation'],
+    [ts.SyntaxKind.VoidExpression, 'an operation'],
     [ts.SyntaxKind.WhileStatement, 'a loop'],
 ]);
 
@@ -52,10 +55,18 @@ function operationOf(node: ts.BinaryExpression): string {
         : 'an operation';
 }
 
-const isUpdate = (node: ts.Node): boolean =>
-    // Stryker disable next-line ConditionalExpression: only a unary expression carries an operator the updates hold
-    (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) &&
-    UPDATES.has(node.operator);
+// invariant: a minus before a number literal is how a negative number is written, not a computation.
+const isNegativeNumber = (node: ts.PrefixUnaryExpression): boolean =>
+    node.operator === ts.SyntaxKind.MinusToken &&
+    (ts.isNumericLiteral(node.operand) || ts.isBigIntLiteral(node.operand));
+
+function unaryOf(node: ts.PrefixUnaryExpression): string | undefined {
+    if (UPDATES.has(node.operator)) {
+        return 'an assignment';
+    }
+
+    return isNegativeNumber(node) ? undefined : 'an operation';
+}
 
 function logicOf(node: ts.Node): string | undefined {
     if (ts.isCallExpression(node)) {
@@ -67,7 +78,10 @@ function logicOf(node: ts.Node): string | undefined {
     if (ts.isBinaryExpression(node)) {
         return operationOf(node);
     }
-    if (isUpdate(node)) {
+    if (ts.isPrefixUnaryExpression(node)) {
+        return unaryOf(node);
+    }
+    if (ts.isPostfixUnaryExpression(node)) {
         return 'an assignment';
     }
 

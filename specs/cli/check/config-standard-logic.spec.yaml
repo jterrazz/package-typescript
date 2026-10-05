@@ -1,4 +1,4 @@
-description: refuses a standard that computes a value instead of stating it, and reads no test of it
+description: refuses a standard module of any script kind that computes a value, and reads no test of it
 fixture: ./_fixtures/config/standard-logic/
 env: TYPESCRIPT_CHECK_PASSES=config
 runs:
@@ -11,6 +11,7 @@ runs:
 
           src/standard/kinds/library.ts:1:1: error config(standard-is-data): found: src/standard/kinds/library.ts:1 holds a branch · why: A package's standard under src/standard/ is data: no function, branch, call or variable but the defineStandard each file exports. · fix: state the value it computes, and move the code that applies the standard out of src/standard/ · read: docs/reference/quality-checks.md#the-config-one-file-pass
           src/standard/kinds/library.ts:1:1: error config(standard-is-data): found: src/standard/kinds/library.ts:1 holds an operation · why: A package's standard under src/standard/ is data: no function, branch, call or variable but the defineStandard each file exports. · fix: state the value it computes, and move the code that applies the standard out of src/standard/ · read: docs/reference/quality-checks.md#the-config-one-file-pass
+          src/standard/platforms/node.mjs:1:1: error config(standard-is-data): found: src/standard/platforms/node.mjs:1 holds an operation · why: A package's standard under src/standard/ is data: no function, branch, call or variable but the defineStandard each file exports. · fix: state the value it computes, and move the code that applies the standard out of src/standard/ · read: docs/reference/quality-checks.md#the-config-one-file-pass
           ✗ Failed with exit code 1
 
            END  Finalizing quality checks

@@ -22,7 +22,7 @@ describe('standard-logic', () => {
     });
 
     test('names each thing a standard computes, by its line', () => {
-        // Given - a function, a branch, calls, operations, a computed string, a variable, an update, assignments and tagged templates
+        // Given - a function, a branch, calls, operations — unary ones and typeof, void and delete among them — a computed string, a variable, updates, assignments, tagged templates, and a negative bigint, which is data
         const text = lines(
             'const pick = (value) => value;',
             "const kind = process.env.KIND === 'api' ? 'api' : 'cli';",
@@ -37,6 +37,14 @@ describe('standard-logic', () => {
             'const marked = html`<p></p>`;',
             "const held = 'roots' in SHARED;",
             'count ^= 1;',
+            'const off = !held;',
+            'const below = -count;',
+            'const flipped = ~count;',
+            '--count;',
+            'const kind = typeof held;',
+            'const nothing = void 0;',
+            'delete SHARED.roots;',
+            'const big = -1n;',
         );
 
         // Then - each is named where it stands
@@ -56,6 +64,13 @@ describe('standard-logic', () => {
             { line: 11, what: 'a call' },
             { line: 12, what: 'an operation' },
             { line: 13, what: 'an assignment' },
+            { line: 14, what: 'an operation' },
+            { line: 15, what: 'an operation' },
+            { line: 16, what: 'an operation' },
+            { line: 17, what: 'an assignment' },
+            { line: 18, what: 'an operation' },
+            { line: 19, what: 'an operation' },
+            { line: 20, what: 'an operation' },
         ]);
     });
 
