@@ -110,14 +110,28 @@ export function narrowed(files: readonly string[], ranges?: readonly string[]): 
     return ranges.filter((range) => named.has(fileOf(range)));
 }
 
-/** The untested sources the change reaches, each hunk as a range of whole lines. */
-export function changedRanges(untested: readonly string[], changed: Changed): string[] {
+const NO_CODE = /^(?:$|\/\/|\/\*|\*\/|\*(?: |$)|import\s[^;]*;$)/u;
+
+/** The untested sources the change reaches, each hunk holding code as a range of whole lines: a hunk of blank lines, comments and one-line imports holds no mutant, and would cost the suite's dry run for nothing. */
+export function changedRanges(
+    untested: readonly string[],
+    changed: Changed,
+    source: (file: string) => string,
+): string[] {
     return untested.flatMap((file) => {
         const lines = changed.get(file);
         if (lines === undefined) {
             return [];
         }
+        if (lines === true) {
+            return [file];
+        }
+        const text = source(file).split('\n');
 
-        return lines === true ? [file] : lines.map(([from, to]) => `${file}:${from}-${to}`);
+        return lines
+            .filter(([from, to]) =>
+                text.slice(from - 1, to).some((line) => !NO_CODE.test(line.trim())),
+            )
+            .map(([from, to]) => `${file}:${from}-${to}`);
     });
 }

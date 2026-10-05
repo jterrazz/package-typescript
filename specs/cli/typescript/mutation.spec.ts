@@ -5,17 +5,17 @@ import { cli } from '../packed-cli.specification.js';
 
 describe('mutation', () => {
     test('typescript mutation — a mutant the module test runs and none detects fails the run, named at its place', async () => {
-        // Given - a consumer installing the packed toolchain, one test leaving the guard of its source unjudged, measured since a commit its folder, no repository, cannot name
+        // Given - a consumer installing the packed toolchain, one test leaving the guard of its source unjudged
         const result = await cli
             .fixture(directory('./_fixtures/mutation-consumer/'))
-            .exec('typescript mutation --since main');
+            .exec('typescript mutation');
 
-        // Then - each survivor is named, then the lesson, and nothing is written to a ledger
+        // Then - the suite never starts on a failed verdict; each survivor is named, then the lesson, and nothing is written to a ledger
         expect(result.exitCode).toBe(1);
         expect(result.stdout).toMatch(`
              TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
             {{any}}
-             TYPESCRIPT  git names no commit main: the whole suite measures nothing of this change.
+             TYPESCRIPT  The module tests' verdict fails: the whole suite measures the change once it passes.
 
             src/discount.ts:2:9  ConditionalExpression → false
             src/discount.ts:2:9  EqualityOperator → rate >= 0.5
@@ -23,6 +23,7 @@ describe('mutation', () => {
             0 mutant(s) no test runs
             2 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does
         `);
+        expect(result.stdout.text).not.toContain('Measuring the whole suite');
         expect(result.file('.jterrazz/baseline.json').exists).toBe(false);
     });
 
@@ -94,7 +95,7 @@ describe('mutation', () => {
             .fixture(directory('./_fixtures/mutation-consumer/'))
             .fixture(directory('./_fixtures/mutation-killing/'))
             .fixture(directory('./_fixtures/mutation-spec-proven/'))
-            .exec('typescript mutation --mutate src/greeting.ts');
+            .exec('typescript mutation --mutate src/greeting.ts:1-3');
 
         // Then - the process kills the mutants of what the spec reads; the empty-name test it runs and never judges survives, and the branches it never takes are counted apart; the suite ran on the build
         expect(result.exitCode).toBe(1);

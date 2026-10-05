@@ -154,16 +154,25 @@ async function judgedAfterTheSuite({
     since: string;
     untested: readonly string[];
 }): Promise<number> {
+    const modulesAlone = judgedRuns(modulesRun);
+    // Stryker disable next-line ConditionalExpression: a mutant the run never judged fails the verdict whether or not the suite runs after it; the gate only spares the suite's minutes
+    if (modulesAlone.survivors.length > 0 || Object.keys(modulesAlone.unrun).length > 0) {
+        print(
+            `${badge('TYPESCRIPT')} The module tests' verdict fails: the whole suite measures the change once it passes.\n`,
+        );
+
+        return printed(modulesAlone);
+    }
     const { changed, note } = changeOf(project, { ranges, since });
     if (note !== undefined) {
         print(`${badge('TYPESCRIPT')} ${note}\n`);
     }
     const left = [
-        ...changedRanges(untested, changed),
+        ...changedRanges(untested, changed, (file) => String(readFileSync(join(project, file)))),
         ...leftToTheSuite(modulesRun, changed),
     ];
     if (left.length === 0) {
-        return printed(judgedRuns(modulesRun));
+        return printed(modulesAlone);
     }
     return await afterStage(
         await measured(scope, { mutate: left, name: 'suite' }, project),

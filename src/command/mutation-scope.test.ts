@@ -138,23 +138,49 @@ describe('mutation-scope', () => {
         expect(narrowed(['src/a.ts'])).toStrictEqual(['src/a.ts']);
     });
 
-    test('the suite measures each hunk the change made in a source no module test sits beside, and an added source whole', () => {
-        // Given - a change of two hunks in one untested source, one added, and one in a source left out
+    test('the suite measures each hunk of code the change made in a source no module test sits beside, and an added source whole', () => {
+        // Given - a change of six hunks in one untested source — two of code, one of an import and a blank line, one of comments, one opening an import over several lines, one of an import with code after it on its line —, one added, and one in a source left out
+        const source = [
+            "import { a } from './a.js';",
+            '',
+            'export const one = 1;',
+            '// a note',
+            '/**',
+            ' * a doc',
+            ' */',
+            '',
+            'export const two = a * 2;',
+            'import {',
+            '    b,',
+            "import { c } from './c.js'; export const d = c;",
+        ].join('\n');
         const changed = new Map<string, (readonly [number, number])[] | true>([
             [
                 'src/c.ts',
                 [
+                    [1, 2],
                     [3, 4],
+                    [5, 8],
                     [9, 9],
+                    [10, 11],
+                    [12, 12],
                 ],
             ],
             ['src/new.ts', true],
             ['src/elsewhere.ts', [[1, 1]]],
         ]);
 
-        // Then - a range of whole lines per hunk, the added file whole, and nothing of a file the change missed
+        // Then - a range of whole lines per hunk holding code, a hunk it cannot read as no code kept, the added file whole, and nothing of a file the change missed
         expect(
-            changedRanges(['src/c.ts', 'src/new.ts', 'src/untouched.ts'], changed),
-        ).toStrictEqual(['src/c.ts:3-4', 'src/c.ts:9-9', 'src/new.ts']);
+            changedRanges(['src/c.ts', 'src/new.ts', 'src/untouched.ts'], changed, (file) =>
+                file === 'src/c.ts' ? source : '',
+            ),
+        ).toStrictEqual([
+            'src/c.ts:3-4',
+            'src/c.ts:9-9',
+            'src/c.ts:10-11',
+            'src/c.ts:12-12',
+            'src/new.ts',
+        ]);
     });
 });
