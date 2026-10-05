@@ -110,7 +110,7 @@ describe('publish-guard', () => {
         ).toStrictEqual([
             "dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js is compiled from @vitest/spy, a test package · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/24-linting.md#no-test-code-in-production",
             'dist/index.js:1:1: error publish(no-test-code-in-production): found: dist/index.js imports vitest/config, a test package · why: a published build never carries test material · fix: cut the import, or declare vitest in "dependencies" when the product runs it · read: @jterrazz/test\'s docs/24-linting.md#no-test-code-in-production',
-            "dist/testing.js:1:1: error publish(no-test-code-in-production): found: dist/testing.js is compiled from src/orders.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/24-linting.md#no-test-code-in-production",
+            "dist/testing.global-setup.js:1:1: error publish(no-test-code-in-production): found: dist/testing.global-setup.js is compiled from src/orders.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/24-linting.md#no-test-code-in-production",
         ]);
     });
 

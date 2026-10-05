@@ -3,7 +3,7 @@ import { cwd } from 'node:process';
 import { stripVTControlCharacters } from 'node:util';
 
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
-import { buildPlanOf, buildSettingsOf } from '../../kit/project/build-plan.js';
+import { buildPlanOf, conventionsOf } from '../../kit/project/build-plan.js';
 import { buildOf, builtChunks } from '../../kit/project/built-chunks.js';
 import type { Build, BuiltChunk } from '../../kit/project/built-chunks.js';
 import { parsedObject, stringRecordOf, stringsOf } from '../../kit/project/json.js';
@@ -152,7 +152,7 @@ export const publish: Pass = Object.freeze({
             ...(typeof manifest.types === 'string' ? [manifest.types] : []),
         ];
         const { resolved } = await context.config();
-        const { settings } = buildSettingsOf(resolved.sections.typescript);
+        const { settings } = conventionsOf(context.root);
         const build = buildOf(
             targets,
             buildPlanOf(context.root, {

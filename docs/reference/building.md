@@ -22,7 +22,7 @@ A build compiles what the package publishes, and its `package.json` already says
 | `"./rules": { "browser": "./dist/rules.browser.js", … }` | `src/index.rules.browser.ts` | `dist/rules.browser.js` |
 | `"bin": { "greet": "./dist/greet.js" }`                  | `src/greet.bin.ts`           | `dist/greet.js`         |
 
-A package with no manifest target under `dist/` compiles `src/index.ts`, beside the entries it declares under [`typescript.build`](#what-the-manifest-does-not-name), as an application does. A pattern (`./tsconfig/*`) is skipped, since the map does not enumerate what it stands for, and so is a target whose entry is not on disk.
+A package with no manifest target under `dist/` compiles `src/index.ts`, beside the modules [named for how they are loaded](#what-the-manifest-does-not-name), as an application does. A pattern (`./tsconfig/*`) is skipped, since the map does not enumerate what it stands for, and so is a target whose entry is not on disk.
 
 Each target decides its output by its extension and its condition:
 
@@ -35,33 +35,21 @@ A module two entries share is written once, as `dist/shared-<name>.js`. A `libra
 
 ### What the manifest does not name
 
-Two kinds of entry are not in `exports`, `main` or `bin`, and are declared under `typescript.build` in `jterrazz.config.ts`, each with its reason:
+Two kinds of entry are not in `exports`, `main` or `bin`, and their names say so — nothing is declared:
 
-```ts
-// jterrazz.config.ts
-import { defineConfig } from '@jterrazz/typescript/config';
+| Named                                           | Loaded                                                  | Built into                                |
+| ----------------------------------------------- | ------------------------------------------------------- | ----------------------------------------- |
+| `src/instrumentation.ts`                        | by Node with `--import`, before the app                 | `dist/instrumentation.js`                 |
+| `src/**/<name>.worker.ts`                       | by a worker pool, by path                               | `dist/<name>.worker.js`                   |
+| `src/**/<name>.global-setup.ts`                 | by vitest, as a global setup a specification hands it   | `dist/<name>.global-setup.js`             |
+| `src/**/<name>.cli.ts`, `lint/**/<name>.cli.ts` | by the repository, a command it runs on itself          | `.artifacts/dev/<name>.js`, never shipped |
+| `lint/self/<name>.ts`                           | by the repository, the entries of its self-hosting tree | `.artifacts/dev/<name>.js`, never shipped |
 
-export default defineConfig({
-    kind: 'library',
-    platform: 'node',
-    typescript: {
-        build: {
-            dev: {
-                release: { reason: 'the release script CI runs', source: 'scripts/release.ts' },
-            },
-            entries: {
-                testing: { reason: 'loaded by path by the test preset', source: 'src/testing.ts' },
-            },
-        },
-    },
-});
-```
-
-`entries` are shipped beside the published ones, in `dist/`; `dev` entries are scripts the repository builds for itself, into `.artifacts/dev/`, never shipped. An entry with no `{ source, reason }` is refused in four parts, reading this section.
+The first three ship beside the published entries; the last two are the repository's own scripts and its self preset ([A repository held to its own presets](configuration.md#a-repository-held-to-its-own-presets)), as the modules at the root of `lint/` are the package's. A folder whose name opens on `.` or `_` is not read — a fixture is no entry. Two modules built to one output name are refused in four parts, reading this section; rename one.
 
 ## A build that fails
 
-When tsdown stops, its own report is printed as it came, and below it the command's four-part refusal: what failed, why a stale `dist/` matters, what to do, and this section. The command exits 1. Nothing of the partial output is cleaned up; the next build starts by clearing `dist/`. A configuration the command cannot derive — a `typescript.build` it cannot read — is refused before tsdown runs, in the same four parts.
+When tsdown stops, its own report is printed as it came, and below it the command's four-part refusal: what failed, why a stale `dist/` matters, what to do, and this section. The command exits 1. Nothing of the partial output is cleaned up; the next build starts by clearing `dist/`. A build the command cannot derive — a settings file that does not resolve, two modules built to one name — is refused before tsdown runs, in the same four parts.
 
 ## tsc
 

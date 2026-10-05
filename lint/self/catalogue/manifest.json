@@ -2,7 +2,7 @@
     {
         "audience": "self",
         "channel": "checker",
-        "home": "specs/cli/_setup/check-selection.ts",
+        "home": "specs/cli/_setup/check-selection.cli.ts",
         "id": "pass-selector",
         "names": ["TYPESCRIPT_CHECK_PASSES", "names no pass"],
         "why": "runs only the passes a spec asserts on, by handing the command a selection no install makes; no consumer project needs a partial check"

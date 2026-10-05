@@ -8,7 +8,7 @@ import {
     removeWhenEmpty,
 } from '../../../../lint/kit/baseline/oxlint-suppressions.js';
 import { messageOf, refusal } from '../../../../lint/kit/catalogue/lesson.js';
-import { buildPlanOf, buildSettingsOf } from '../../../../lint/kit/project/build-plan.js';
+import { buildPlanOf, conventionsOf } from '../../../../lint/kit/project/build-plan.js';
 import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
 import { astroChecked } from '../../../drivers/astro/astro.js';
 import { knip } from '../../../drivers/knip/knip.js';
@@ -144,10 +144,7 @@ export function formatCheck(check: Check): Launched | undefined {
 async function knipProject(): Promise<KnipProject> {
     const { resolved } = await readSettings('.');
     const { declaration } = resolved;
-    const steps = buildPlanOf('.', {
-        declaration,
-        settings: buildSettingsOf(resolved.sections.typescript).settings,
-    });
+    const steps = buildPlanOf('.', { declaration, settings: conventionsOf('.').settings });
 
     return {
         entries: steps.flatMap(({ entry }) => Object.values(entry)),

@@ -1,5 +1,5 @@
 {
-    "name": "app-with-entries",
+    "name": "app-with-conventions",
     "version": "1.0.0",
     "private": true,
     "type": "module"

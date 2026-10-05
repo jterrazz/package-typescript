@@ -2,7 +2,7 @@ import { join, resolve } from 'node:path';
 
 import type { CheckPass } from '#command';
 
-export const SELECTING_BIN = resolve(import.meta.dirname, 'check-selection.ts');
+export const SELECTING_BIN = resolve(import.meta.dirname, 'check-selection.cli.ts');
 
 export const TYPESCRIPT_BIN = join(resolve(import.meta.dirname, '../../..'), 'dist/typescript.js');
 

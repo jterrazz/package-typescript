@@ -1,5 +1,6 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import type { Dirent } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
 
 import { refusal } from '../catalogue/lesson.js';
 import {
@@ -9,17 +10,15 @@ import {
     outputOf,
     publishedOf,
 } from './entry-points.js';
-import { isJsonObject, parsedObject } from './json.js';
+import { parsedObject } from './json.js';
 import { SETTINGS_FILE } from './jterrazz-config.js';
 import { presetLesson } from './preset.js';
 import type { Resolution } from './preset.js';
 import type { Platform, ProjectIdentity } from './project-kind.js';
 
-export type BuildEntry = { reason: string; source: string };
-
 export type BuildSettings = {
-    dev: Readonly<Record<string, BuildEntry>>;
-    entries: Readonly<Record<string, BuildEntry>>;
+    dev: Readonly<Record<string, string>>;
+    entries: Readonly<Record<string, string>>;
 };
 
 export type BuildStep = {
@@ -41,43 +40,80 @@ export const ARTIFACTS = '.artifacts';
 
 export const DEV_OUTPUT = `${ARTIFACTS}/dev`;
 
+export const MUTATION_OUTPUT = `${ARTIFACTS}/stryker`;
+
 const BROWSER_PLATFORMS: ReadonlySet<Platform> = new Set(['astro', 'expo', 'next', 'react']);
 
-function entriesOf(written: unknown, key: string): Record<string, BuildEntry> | string {
-    if (written === undefined) {
-        return {};
+// invariant: a module loaded by path is named for how it is loaded: by Node before the app, by a worker pool, by vitest as a global setup.
+const SHIPPED = /^(?:instrumentation|.+\.worker|.+\.global-setup)\.ts$/u;
+
+const COMMAND = '.cli.ts';
+
+const SELF_ROOT = 'lint/self';
+
+const UNWALKED = /^(?:\.|_|node_modules$)/u;
+
+// Stryker disable next-line ArrowFunction: APFS lists a folder in name order already, so only another file system tells the sort apart
+const byName = (left: Dirent, right: Dirent): number => left.name.localeCompare(right.name);
+
+function modulesUnder(root: string, folder: string): string[] {
+    const path = join(root, folder);
+    if (!existsSync(path)) {
+        // Stryker disable next-line ArrayDeclaration: what a missing folder would list names no module the conventions build
+        return [];
     }
-    if (!isJsonObject(written)) {
-        return `holds a \`typescript.build.${key}\` that is not an object`;
-    }
-    const entries: Record<string, BuildEntry> = {};
-    for (const [output, entry] of Object.entries(written)) {
-        const { reason, source } = isJsonObject(entry) ? entry : {};
-        if (typeof source !== 'string' || typeof reason !== 'string' || reason.trim() === '') {
-            return `builds \`${output}\` under \`typescript.build.${key}\` with no \`{ source, reason }\``;
+
+    return readdirSync(path, { withFileTypes: true })
+        .filter(({ name }) => !UNWALKED.test(name))
+        .toSorted(byName)
+        .flatMap((entry) => {
+            const relative = `${folder}/${entry.name}`;
+
+            return entry.isDirectory() ? modulesUnder(root, relative) : [relative];
+        });
+}
+
+type Named = { output: string; source: string };
+
+function namedOnce(named: readonly Named[], into: string): Record<string, string> | string {
+    const entries: Record<string, string> = {};
+    for (const { output, source } of named) {
+        const known = entries[output];
+        if (known !== undefined) {
+            return `holds two modules built as \`${into}/${output}.js\`: ${known} and ${source} — rename one`;
         }
-        entries[output] = { reason, source };
+        entries[output] = source;
     }
 
     return entries;
 }
 
-export function buildSettingsOf(section: unknown): {
-    problem: null | string;
-    settings: BuildSettings;
-} {
-    const build = isJsonObject(section) ? section.build : undefined;
-    const written = isJsonObject(build) ? build : {};
-    const entries = entriesOf(written.entries, 'entries');
-    const dev = entriesOf(written.dev, 'dev');
+const stemOf = (source: string): string => basename(source, '.ts');
+
+/** The entries no manifest names, read off their names: shipped beside the published ones, or built for the repository's own scripts. */
+export function conventionsOf(root: string): { problem: null | string; settings: BuildSettings } {
+    const shipped = modulesUnder(root, 'src')
+        .filter((source) => SHIPPED.test(basename(source)))
+        .map((source) => ({ output: stemOf(source), source }));
+    const dev = [...modulesUnder(root, 'src'), ...modulesUnder(root, 'lint')]
+        .filter((source) => !source.endsWith('.test.ts') && source.endsWith('.ts'))
+        .flatMap((source): Named[] => {
+            if (basename(source).endsWith(COMMAND)) {
+                return [{ output: basename(source, COMMAND), source }];
+            }
+
+            return dirname(source) === SELF_ROOT ? [{ output: stemOf(source), source }] : [];
+        });
+    const entries = namedOnce(shipped, DIST);
+    const devEntries = namedOnce(dev, DEV_OUTPUT);
     const unread = { dev: {}, entries: {} };
     if (typeof entries === 'string') {
         return { problem: entries, settings: unread };
     }
 
-    return typeof dev === 'string'
-        ? { problem: dev, settings: unread }
-        : { problem: null, settings: { dev, entries } };
+    return typeof devEntries === 'string'
+        ? { problem: devEntries, settings: unread }
+        : { problem: null, settings: { dev: devEntries, entries } };
 }
 
 type Planned = { browser: boolean; formats: Set<'cjs' | 'esm'>; source: string };
@@ -130,9 +166,6 @@ const stepOf = (
     sourcemap: true,
 });
 
-const sourcesBy = (entries: Readonly<Record<string, BuildEntry>>): Record<string, string> =>
-    Object.fromEntries(Object.entries(entries).map(([output, { source }]) => [output, source]));
-
 const entryRecord = (outputs: readonly [string, Planned][]): Record<string, string> =>
     Object.fromEntries(outputs.map(([output, { source }]) => [output, source]));
 
@@ -171,7 +204,7 @@ export function buildPlanOf(
     const own = platform !== undefined && platform !== null && BROWSER_PLATFORMS.has(platform);
     const steps = publishedSteps(
         planned,
-        { ...entryRecord(main), ...sourcesBy(settings.entries) },
+        { ...entryRecord(main), ...settings.entries },
         own ? 'browser' : 'node',
         root,
     );
@@ -179,20 +212,20 @@ export function buildPlanOf(
     if (leading !== undefined) {
         leading.clean = true;
     }
-    const dev = sourcesBy(settings.dev);
+    const { dev } = settings;
 
     return Object.keys(dev).length === 0
         ? steps
         : [...steps, stepOf(dev, { clean: true, outDir: DEV_OUTPUT, platform: 'node' })];
 }
 
-/** The build a project's manifest and its resolved settings derive, or the refusal of a settings file that does not resolve. */
+/** The build a project's manifest, its tree and its declaration derive, or the refusal of a declaration that does not read; a setting the build does not read is the check's to refuse. */
 export function planOf(root: string, { problem, resolved }: Resolution): BuildStep[] | string {
-    const declared = buildSettingsOf(resolved.sections.typescript);
-    const refused = problem ?? declared.problem;
+    const derived = conventionsOf(root);
+    const refused = (resolved.declaration === null ? problem : null) ?? derived.problem;
 
     return refused === null
-        ? buildPlanOf(root, { declaration: resolved.declaration, settings: declared.settings })
+        ? buildPlanOf(root, { declaration: resolved.declaration, settings: derived.settings })
         : refusal({
               ...presetLesson(refused, SETTINGS_FILE),
               read: 'docs/reference/building.md#the-entries',

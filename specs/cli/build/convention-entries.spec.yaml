@@ -1,5 +1,5 @@
-description: an application with no manifest target builds its index beside the entries it declares
-fixture: ./_fixtures/app-with-entries/
+description: an application builds its index, a module named for how it is loaded, and a command apart
+fixture: ./_fixtures/app-with-conventions/
 runs:
     - command: build
       exit: 0
@@ -8,11 +8,9 @@ runs:
 
           ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
           ℹ config file: {{path}} 
-          ℹ entry: src/index.ts, src/worker.ts
-          ℹ tsconfig: tsconfig.json
-          ℹ Build start
           {{any}}
           Build completed
       files:
           dist/index.js: { contains: 'Hello from the app' }
-          dist/worker.js: { contains: 'answered by the worker' }
+          dist/answer.worker.js: { contains: 'answered by the worker' }
+          .artifacts/dev/seed.js: { contains: 'seeded by the repository' }
