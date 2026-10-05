@@ -30,6 +30,10 @@ export function hunksOf(diff: string): Map<string, [number, number][]> {
     return hunks;
 }
 
+/** Whether git, in the project, names `ref` as a commit. */
+export const namesACommit = (project: string, ref: string): boolean =>
+    git(project, ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) !== undefined;
+
 /** What the working tree changed since `since`, untracked files whole; `undefined` where git cannot say. */
 export function changeSince(project: string, since: string): Changed | undefined {
     const diff = git(project, [

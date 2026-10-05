@@ -26,20 +26,39 @@ describe('mutation', () => {
         expect(result.file('.jterrazz/baseline.json').exists).toBe(false);
     });
 
+    test('typescript mutation — a commit to measure from that git cannot name is refused before anything runs', async () => {
+        // Given - the consumer, outside any repository, measured since a commit named on the command line, then by CI's variable
+        const named = await cli
+            .fixture(directory('./_fixtures/mutation-consumer/'))
+            .exec('typescript mutation --since main');
+        const result = await cli
+            .fixture(directory('./_fixtures/mutation-consumer/'))
+            .env({ TYPESCRIPT_MUTATION_SINCE: 'main' })
+            .exec('typescript mutation');
+
+        // Then - the four parts name the commit either way, and no run starts
+        expect([named.exitCode, named.stdout.text]).toStrictEqual([1, result.stdout.text]);
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+            found: git names no commit main · why: the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing · fix: name a commit this clone holds — fetch it, or name the merge-base with the default branch — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the working tree against HEAD · read: docs/reference/quality-checks.md#mutation
+        `);
+        expect(result.stdout.text).not.toContain('Measuring');
+    });
+
     test('typescript mutation — a run whose every mutant the module tests run is detected passes', async () => {
-        // Given - the same consumer, its test judging the guard, its boundary and its message, the commit to measure from named by CI's variable
+        // Given - the same consumer, its test judging the guard, its boundary and its message, CI's variable left blank by an event that carries no commit
         const result = await cli
             .fixture(directory('./_fixtures/mutation-consumer/'))
             .fixture(directory('./_fixtures/mutation-killing/'))
-            .env({ TYPESCRIPT_MUTATION_SINCE: 'v1' })
+            .env({ TYPESCRIPT_MUTATION_SINCE: ' ' })
             .exec('typescript mutation');
 
-        // Then - the verdict passes, the suite never started
+        // Then - the blank variable reads as unset, so HEAD, which nothing outside a repository names; the verdict passes, the suite never started
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toMatch(`
              TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
             {{any}}
-             TYPESCRIPT  git names no commit v1: the whole suite measures nothing of this change.
+             TYPESCRIPT  git names no commit HEAD: the whole suite measures nothing of this change.
 
             every mutant a test runs is detected — 9 detected
             0 mutant(s) no test runs

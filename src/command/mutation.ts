@@ -3,12 +3,13 @@ import { delimiter, join } from 'node:path';
 import process from 'node:process';
 
 import { readSettings } from '../../lint/index.rules.js';
+import { refusal } from '../../lint/kit/catalogue/lesson.js';
 import { readCommandLine } from '../../lint/kit/checker/command-line.js';
 import { objectOf, parsedObject } from '../../lint/kit/project/json.js';
 import type { Resolution } from '../../lint/kit/project/preset.js';
 import { workspaceMembers } from '../../lint/kit/project/workspace-members.js';
 import { projectBinary } from './check/setup.js';
-import { changeOf } from './mutation-change.js';
+import { changeOf, namesACommit } from './mutation-change.js';
 import {
     changedRanges,
     fileOf,
@@ -28,7 +29,7 @@ import {
 import { judgedRuns, leftToTheSuite, verdictOf } from './mutation-survivors.js';
 import type { Judged } from './mutation-survivors.js';
 import { handOver } from './processes.js';
-import { badge, print } from './terminal.js';
+import { badge, print, RED, RESET } from './terminal.js';
 
 const extensionGlob = (extensions: readonly string[]): string =>
     extensions.length === 1 ? (extensions[0] ?? 'ts') : `{${extensions.join(',')}}`;
@@ -155,11 +156,28 @@ async function judgedAfterTheSuite({
     );
 }
 
+const blankAsUnset = (value: string | undefined): string | undefined =>
+    value === undefined || value.trim() === '' ? undefined : value;
+
 export async function mutation(args: readonly string[]): Promise<number> {
     const project = process.cwd();
     const commandLine = readCommandLine(args, ['--mutate', '--since']);
     const ranges = commandLine.value('--mutate')?.split(',');
-    const since = commandLine.value('--since') ?? process.env.TYPESCRIPT_MUTATION_SINCE ?? 'HEAD';
+    const named =
+        commandLine.value('--since') ?? blankAsUnset(process.env.TYPESCRIPT_MUTATION_SINCE);
+    if (named !== undefined && !namesACommit(project, named)) {
+        print(
+            `${RED}${refusal({
+                fix: 'name a commit this clone holds — fetch it, or name the merge-base with the default branch — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the working tree against HEAD',
+                found: `git names no commit ${named}`,
+                read: 'docs/reference/quality-checks.md#mutation',
+                why: 'the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing',
+            })}${RESET}\n`,
+        );
+
+        return 1;
+    }
+    const since = named ?? 'HEAD';
     const scope = await mutationScopeOf(project);
     const { tested, untested } = sourcesOf(project, scope);
     mkdirSync(OUT, { recursive: true });

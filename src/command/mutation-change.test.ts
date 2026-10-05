@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
-import { changeOf, changeSince, hunksOf } from './mutation-change.js';
+import { changeOf, changeSince, hunksOf, namesACommit } from './mutation-change.js';
 
 const created: string[] = [];
 
@@ -128,5 +128,18 @@ describe('mutation-change', () => {
                 note: 'git names no commit main: the whole suite measures nothing of this change.',
             },
         ]);
+    });
+
+    test('git names a commit the clone holds, and neither the zero commit a first push carries, a ref it lacks, nor anything outside a repository', () => {
+        // Given - a repository of one commit, and a folder outside any repository
+        const root = committedRepository({ 'a.ts': 'one\n' });
+
+        // Then - HEAD alone is a commit
+        expect([
+            namesACommit(root, 'HEAD'),
+            namesACommit(root, '0000000000000000000000000000000000000000'),
+            namesACommit(root, 'main-that-was-force-pushed'),
+            namesACommit(tmpdir(), 'HEAD'),
+        ]).toStrictEqual([true, false, false, false]);
     });
 });
