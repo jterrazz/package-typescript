@@ -403,7 +403,7 @@ A build that fails is a finding too. `publish/build-succeeds` names tsdown's fir
 
 ## The Architecture (layer map) pass
 
-[dependency-cruiser](https://github.com/sverweij/dependency-cruiser) holds the module graph to a layer map. It resolves every import the way the build does — the tsconfig's paths, a package's `exports`, an index file, a relative `../` — so an edge is judged by where it lands, never by how its specifier is spelled; oxlint's `no-restricted-imports` could only read the text. The pass runs where a map is declared — by a preset, the base preset's `lint/` direction included, or by the project — and nowhere else: a project with no declared architecture is not in breach of one.
+[dependency-cruiser](https://github.com/sverweij/dependency-cruiser) holds the module graph to a layer map. It resolves every import the way the build does — the tsconfig's paths, a package's `exports`, an index file, a relative `../` — so an edge is judged by where it lands, never by how its specifier is spelled; oxlint's `no-restricted-imports` could only read the text. The pass runs where a map is declared — by a preset, the library kind's `lint/` direction included, or by the project — or where the tree is laid out as a hexagonal application, and nowhere else: a project with no architecture is not in breach of one.
 
 A map is declared in `jterrazz.config.ts`, under `typescript.architecture`:
 
@@ -439,7 +439,7 @@ A layer is dependency-cruiser's own vocabulary — `from` and `to`, with `path`,
 src/handlers/orders.ts:2:24: error architecture(handlers-reach-services): found: `src/handlers/orders.ts` imports `src/store/orders.ts` · why: … · fix: … · read: docs/concepts/architecture.md#layers
 ```
 
-A project that already keeps a `.dependency-cruiser.cjs`, `.js` or `.mjs` at its root has it extended, not replaced: its own rules run beside the declared ones, and a violation of one prints its `comment` as the why. A cruise starts from every top-level folder the sweep holds a source file in — never a dot-folder, never the ground a spec stands on, which the cruise skips at any depth — so a map judges `app/domain/` as it judges `src/domain/`. A declared map with no such folder to cruise fails the pass in four parts: its silence would read as every boundary kept. The pass is launched wherever a `jterrazz.config.ts` or a `lint/` folder exists and resolves the settings itself, so a map written by shorthand, a spread or an imported object is judged like one written in place. A layer whose `from` names no file of the project is dropped before the cruise: the base preset's laws cost a project without a `lint/` tree nothing. A map the pass cannot read, such as a `jterrazz.config.ts` that does not load or a layer missing one of its six parts, fails the pass in four parts, and so does a dependency-cruiser that cannot run or that stops with no report.
+A project that already keeps a `.dependency-cruiser.cjs`, `.js` or `.mjs` at its root has it extended, not replaced: its own rules run beside the declared ones, and a violation of one prints its `comment` as the why. A cruise starts from every top-level folder the sweep holds a source file in — never a dot-folder, never the ground a spec stands on, which the cruise skips at any depth — so a map judges `app/domain/` as it judges `src/domain/`. A declared map with no such folder to cruise fails the pass in four parts: its silence would read as every boundary kept. The pass is launched wherever a `jterrazz.config.ts` or a dependency-cruiser config exists, or `src/` holds `domain/`, `application/` and `infrastructure/`, and resolves the settings itself, so a map written by shorthand, a spread or an imported object is judged like one written in place. A layer whose `from` names no file of the project is dropped before the cruise: a library's laws cost one without a `lint/` tree nothing. A map the pass cannot read, such as a `jterrazz.config.ts` that does not load or a layer missing one of its six parts, fails the pass in four parts, and so does a dependency-cruiser that cannot run or that stops with no report.
 
 A project that adopts a map its tree already crosses records the crossings with `typescript baseline`: each `architecture/<name>` count goes into `.jterrazz/baseline.json › typescript` and is held exactly, like every count of [the ratchet](#what-jterrazzbaselinejson-still-holds), so a new crossing fails the run and a paid one is re-recorded by `typescript fix`.
 
@@ -447,7 +447,7 @@ A package that ships layers for its consumers hands them in its preset, and a pr
 
 ### The hexagonal map
 
-`hexagonal: true` adds the map this package ships, eight boundaries whose arrow points inward:
+`hexagonal: true` adds the map this package ships, eight boundaries whose arrow points inward. A tree laid out as a hexagonal application — `src/` holding `domain/`, `application/` and `infrastructure/` — is held to it without writing it, and `typescript doctor` shows it `derived from the tree`; one that is not hexagonal for all that writes `hexagonal: false`:
 
 - `domain/` imports no other layer.
 - `application/use-cases/` and `application/ports/` reach the domain and the ports, never an implementation.

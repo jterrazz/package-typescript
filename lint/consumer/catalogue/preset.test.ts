@@ -1,4 +1,7 @@
-import { describe, expect, test } from 'vitest';
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { describe, expect, onTestFinished, test } from 'vitest';
 
 import { typescriptPreset } from './preset.js';
 
@@ -89,6 +92,30 @@ describe('preset', () => {
             'node',
             [],
             undefined,
+        ]);
+    });
+
+    test('typescriptPreset — derives the hexagonal map for a unit whose src/ holds domain/, application/ and infrastructure/', () => {
+        // Given - one unit laid out as a hexagonal application, one missing its infrastructure/
+        const laidOut = mkdtempSync(join(tmpdir(), 'preset-hexagonal-'));
+        const partial = mkdtempSync(join(tmpdir(), 'preset-partial-'));
+        for (const layer of ['domain', 'application', 'infrastructure']) {
+            mkdirSync(join(laidOut, 'src', layer), { recursive: true });
+        }
+        mkdirSync(join(partial, 'src', 'domain'), { recursive: true });
+        mkdirSync(join(partial, 'src', 'application'), { recursive: true });
+        onTestFinished(() => {
+            rmSync(laidOut, { force: true, recursive: true });
+            rmSync(partial, { force: true, recursive: true });
+        });
+
+        // When - the preset derives each unit's section
+        const { derive } = typescriptPreset({ kind: 'api', platform: 'node' });
+
+        // Then - only the laid-out unit is held to the map
+        expect([derive?.(laidOut), derive?.(partial)]).toStrictEqual([
+            { architecture: { hexagonal: true } },
+            {},
         ]);
     });
 });

@@ -25,7 +25,7 @@ export interface JterrazzConfig {
 
 /** The layer map the Architecture pass holds the import graph to. */
 export type ArchitectureSettings = {
-    /** The hexagonal map this package ships. */
+    /** The hexagonal map this package ships; derived from the tree when unwritten — on where `src/` holds `domain/`, `application/` and `infrastructure/`. */
     hexagonal?: boolean;
     /** The project's own boundaries, each in dependency-cruiser's `from`/`to` vocabulary. */
     layers?: readonly ArchitectureRule[];

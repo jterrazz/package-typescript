@@ -9,11 +9,11 @@ import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import { runTool } from '../../kit/checker/tool-run.js';
 import type { ToolRun } from '../../kit/checker/tool-run.js';
 import { GROUND_FOLDERS } from '../../kit/project/ground.js';
-import { isJsonObject, objectOf, stringOf } from '../../kit/project/json.js';
+import { objectOf, stringOf } from '../../kit/project/json.js';
 import { DEPENDENCY_CRUISER_CONFIGS, SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { isChapterAnchor, presetLesson } from '../../kit/project/preset.js';
 import type { ArchitectureRule } from '../../kit/project/preset.js';
-import { hexagonalRules } from './architecture.hexagonal.js';
+import { hexagonalMapOf } from './architecture.hexagonal.js';
 
 const SOURCE = /\.[cm]?[jt]sx?$/u;
 
@@ -88,16 +88,16 @@ async function declaredRules(context: Context): Promise<Declared> {
     if (!resolved.layers.every((layer) => isRule(layer))) {
         return { problem: MALFORMED_LAYERS, rules: [] };
     }
-    const typescript = resolved.sections.typescript ?? {};
-    const architecture = isJsonObject(typescript.architecture) ? typescript.architecture : {};
+    const architecture = objectOf(objectOf(resolved.sections.typescript).architecture);
     const holds = (folder: string): boolean => context.exists(join(context.root, folder));
 
     return {
         problem: null,
         rules: [
-            ...(architecture.hexagonal === true
-                ? hexagonalRules(resolved.declaration?.platform ?? null)
-                : []),
+            ...hexagonalMapOf(architecture.hexagonal, {
+                platform: resolved.declaration?.platform ?? null,
+                unit: context.root,
+            }),
             ...resolved.layers,
         ].filter((rule) => !isInert(rule, holds)),
     };

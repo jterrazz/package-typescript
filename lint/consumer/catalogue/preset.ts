@@ -14,6 +14,7 @@ import STANDARD from '../../../src/standard/standard.js';
 import type { Standard } from '../../index.config.js';
 import { OXFMT_CONFIG, OXLINT_CONFIG } from '../../kit/project/editor-config-names.js';
 import type { EditorFile } from '../../kit/project/editor-files.js';
+import { laidOutHexagonally } from '../../kit/project/hexagonal-layout.js';
 import { objectOf, stringsOf } from '../../kit/project/json.js';
 import type { BasePresets, Preset } from '../../kit/project/preset.js';
 import type { Platform, ProjectIdentity, ProjectKind } from '../../kit/project/project-kind.js';
@@ -113,6 +114,7 @@ export function typescriptPreset(declaration: null | ProjectIdentity): Preset {
         package: '@jterrazz/typescript',
         settings,
         baseline: [BASELINE_SECTION],
+        derive: (unit) => (laidOutHexagonally(unit) ? { architecture: { hexagonal: true } } : {}),
         sources: sourcesOf(settings),
     };
 }

@@ -1,3 +1,4 @@
+import { laidOutHexagonally } from '../../kit/project/hexagonal-layout.js';
 import type { ArchitectureRule } from '../../kit/project/preset.js';
 import type { Platform } from '../../kit/project/project-kind.js';
 
@@ -110,4 +111,12 @@ export function compositionEntriesOf(platform: null | Platform): string[] {
     return (platform === null ? [PROCESS_ENTRY] : COMPOSITION_ENTRIES[platform]).map(
         (entry) => `${ANY_DEPTH}${entry}${SOURCE}`,
     );
+}
+
+/** The hexagonal map a unit is held to: as its settings write it, or, left unwritten, as its tree is laid out. */
+export function hexagonalMapOf(
+    written: unknown,
+    { platform, unit }: { platform: null | Platform; unit: string },
+): readonly ArchitectureRule[] {
+    return (written ?? laidOutHexagonally(unit)) === true ? hexagonalRules(platform) : [];
 }

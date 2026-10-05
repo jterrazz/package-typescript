@@ -1,6 +1,8 @@
 import { existsSync } from 'node:fs';
+import process from 'node:process';
 
-import { isDirectoryOnDisk, isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
+import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
+import { laidOutHexagonally } from '../../../../lint/kit/project/hexagonal-layout.js';
 import {
     DEPENDENCY_CRUISER_CONFIGS,
     SETTINGS_FILE,
@@ -110,12 +112,12 @@ export function namesPass(check: Check): Launched | undefined {
 }
 
 export function architecturePass(check: Check): Launched | undefined {
-    // invariant: the base preset's laws hold a `lint/` tree wherever one stands, with or without a settings file.
+    // invariant: a tree laid out as a hexagonal application is held to the hexagonal map, with or without a settings file.
     if (
         !check.selected('architecture') ||
         !(
             [SETTINGS_FILE, ...DEPENDENCY_CRUISER_CONFIGS].some((name) => isFileOnDisk(name)) ||
-            isDirectoryOnDisk('lint')
+            laidOutHexagonally(process.cwd())
         )
     ) {
         return undefined;
