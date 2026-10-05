@@ -7,7 +7,7 @@ import {
     OXLINT_SUPPRESSIONS,
     removeWhenEmpty,
 } from '../../../../lint/kit/baseline/oxlint-suppressions.js';
-import { invariant, messageOf, refusal } from '../../../../lint/kit/catalogue/lesson.js';
+import { messageOf, refusal } from '../../../../lint/kit/catalogue/lesson.js';
 import { buildPlanOf, buildSettingsOf } from '../../../../lint/kit/project/build-plan.js';
 import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
 import { astroChecked } from '../../../drivers/astro/astro.js';
@@ -72,11 +72,8 @@ async function pruned(check: Check): Promise<number> {
 
 async function fixScopes(check: Check): Promise<FixScope[]> {
     const { own, path } = check.configs.oxlint;
-    const { writeFixScopes } = await import('../../../drivers/oxlint/unsafe-fixers.js').catch(
-        (error: unknown) => {
-            throw invariant(`the unsafe-fixers module does not load: ${messageOf(error)}`);
-        },
-    );
+    // hazard: loaded on a fix only: the rulebook it reads resolves every lint plugin as it loads, which no other command needs installed.
+    const { writeFixScopes } = await import('../../../drivers/oxlint/unsafe-fixers.js');
     try {
         return writeFixScopes({
             nested: own !== undefined,
