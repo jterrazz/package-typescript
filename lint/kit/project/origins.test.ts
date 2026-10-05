@@ -116,10 +116,10 @@ describe('origins', () => {
                             overrides: [{ files: ['specs/**'], rules: { 'acme/spec': 'error' } }],
                         },
                         package: '@acme/test',
-                        settings: { allow: {}, words: [] },
+                        settings: { allow: {}, roots: [], words: [] },
                     },
                 ],
-                test: { allow: { vitest: 'the runtime ships' } },
+                test: { allow: { vitest: 'the runtime ships' }, roots: ['e2e'] },
                 typescript: {
                     oxlint: {
                         overrides: [{ files: ['scripts/**'], rules: { 'no-console': 'off' } }],
@@ -137,6 +137,7 @@ describe('origins', () => {
             { origin: 'jterrazz.config.ts', setting: 'test.allow.vitest = "the runtime ships"' },
             { origin: 'derived from the tree', setting: 'test.projects.api = {}' },
             { origin: 'derived from the tree', setting: 'test.projects.unit.roots = ["src"]' },
+            { origin: 'jterrazz.config.ts', setting: 'test.roots = ["e2e"]' },
             { origin: '@acme/test preset test', setting: 'test.words = []' },
             {
                 origin: '@acme/test preset test',

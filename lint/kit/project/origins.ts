@@ -20,7 +20,7 @@ export const DERIVED = 'derived from the tree';
 
 const RULEBOOK = '@jterrazz/typescript rulebook';
 
-// invariant: an empty list or record below a section is keyed apart: it shows only when no file put anything at its path.
+// invariant: an empty list or record below a section is keyed apart, so a later file's entries at its path never overwrite it.
 const EMPTY = '\u0001';
 
 const shown = (value: unknown): string => JSON.stringify(value) ?? String(value);
@@ -109,19 +109,17 @@ function layersOf(resolved: Resolved, section: string, derived: Derived): Layer[
 /** What a command derives from the tree, by the section it would be written in. */
 export type Derived = Readonly<Record<string, Readonly<Record<string, unknown>>>>;
 
-const filled = (entries: ReadonlyMap<string, Entry>): Entry[] =>
-    [...entries].flatMap(([key, entry]) =>
+// invariant: an empty list or record shows only where no entry sits at its path or below it.
+function filled(entries: ReadonlyMap<string, Entry>): Entry[] {
+    const stated = [...entries].filter(([key]) => !key.endsWith(EMPTY)).map(([, { path }]) => path);
+
+    return [...entries].flatMap(([key, entry]) =>
         key.endsWith(EMPTY) &&
-        [...entries.keys()].some(
-            (other) =>
-                other !== key &&
-                (other.startsWith(`${entry.path}.`) ||
-                    other.startsWith(`${entry.path}\u0000`) ||
-                    other === entry.path),
-        )
+        stated.some((path) => path === entry.path || path.startsWith(`${entry.path}.`))
             ? []
             : [entry],
     );
+}
 
 /** Each setting of the resolved sections — and of what the tree derives — then each law and each one set aside, beside the file it comes from. */
 export function originLines(resolved: Resolved, derived: Derived = {}): OriginLine[] {
