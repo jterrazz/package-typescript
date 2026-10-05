@@ -36,6 +36,7 @@ const WHY_DRIVER =
 
 // invariant: every package of a tool a driver drives, by the folder of its driver.
 const TOOL_PACKAGES: Readonly<Record<string, readonly string[]>> = {
+    astro: ['astro', '@astrojs/check'],
     attw: ['@arethetypeswrong/cli'],
     'dependency-cruiser': ['dependency-cruiser'],
     knip: ['knip'],
@@ -46,8 +47,20 @@ const TOOL_PACKAGES: Readonly<Record<string, readonly string[]>> = {
     publint: ['publint'],
     rumdl: ['rumdl'],
     stryker: ['@stryker-mutator/core', '@stryker-mutator/vitest-runner'],
+    tsc: [
+        'typescript',
+        '@typescript/typescript-darwin-arm64',
+        '@typescript/typescript-darwin-x64',
+        '@typescript/typescript-linux-arm',
+        '@typescript/typescript-linux-arm64',
+        '@typescript/typescript-linux-x64',
+        '@typescript/typescript-win32-arm64',
+        '@typescript/typescript-win32-x64',
+    ],
     tsdown: ['tsdown'],
 };
+
+const RESOLVERS: ReadonlySet<string> = new Set(['binaryIn', 'isExecutable', 'projectBinary']);
 
 export type SrcLayoutFinding = { message: string; path: string };
 
@@ -89,7 +102,7 @@ const LOCKS: readonly Lock[] = [
         breaks: (module, { names, target }) =>
             !isUnder(DRIVERS, module) &&
             target === 'lint/kit/project/package-root.ts' &&
-            names.some((name) => name === 'binaryIn' || name === 'projectBinary'),
+            names.some((name) => RESOLVERS.has(name)),
         fix: () => `resolve it in the driver of that tool, under ${DRIVERS}/<tool>/`,
         found: (module) => `\`${module}\` resolves a tool's binary`,
     },

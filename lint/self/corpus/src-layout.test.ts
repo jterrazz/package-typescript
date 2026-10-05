@@ -37,7 +37,8 @@ describe('srcLayoutFindings', () => {
         const lines = findingsIn({
             'src/commands/main.ts':
                 "const COMMANDS = { build, 'docs-layout': docsLayout, start };\n",
-            'src/commands/build/build.command.ts': "import { run } from '../../drivers/run.js';\n",
+            'src/commands/build/build.command.ts':
+                "import { run } from '../../drivers/run.js';\nimport { isExecutable } from '../../../lint/kit/project/package-root.js';\n",
             'src/commands/docs-layout/docs-layout.command.ts':
                 "import { spawn } from 'node:child_process';\nimport { binaryIn } from '../../../lint/kit/project/package-root.js';\n",
             'src/commands/orphan/orphan.ts': '',
@@ -65,6 +66,7 @@ describe('srcLayoutFindings', () => {
             'src/commands/shared/  src-layout  found: `src/commands/shared/` is a subcommand src/commands/main.ts does not dispatch',
             'src/drivers/oxfmt/  src-layout  found: `src/drivers/oxfmt/` holds no `oxfmt.ts`',
             'src/commands/build/build.command.ts  src-layout  found: `src/commands/build/build.command.ts` spawns a process through `../../drivers/run.js`',
+            "src/commands/build/build.command.ts  src-layout  found: `src/commands/build/build.command.ts` resolves a tool's binary",
             'src/commands/docs-layout/checked.ts  src-layout  found: `src/commands/docs-layout/checked.ts` spawns a process through `../../../lint/kit/checker/tool-run.js`',
             'src/commands/docs-layout/checked.ts  src-layout  found: `src/commands/docs-layout/checked.ts` imports `dependency-cruiser`, the package of the tool src/drivers/dependency-cruiser/ drives',
             'src/commands/docs-layout/checked.ts  src-layout  found: `src/commands/docs-layout/checked.ts` imports `prettier-plugin-astro`, the package of the tool src/drivers/prettier/ drives',

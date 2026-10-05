@@ -1,7 +1,7 @@
 import { existsSync, globSync } from 'node:fs';
 import { join, matchesGlob } from 'node:path';
-import ts from 'typescript';
 
+import { lastLineReader } from '../../drivers/tsc/node-ends.js';
 import type { Changed } from './survivors.js';
 
 const NEVER_MUTATED = [
@@ -49,31 +49,7 @@ export function narrowed(files: readonly string[], ranges?: readonly string[]): 
 
 const NO_CODE = /^(?:$|\/\/|\/\*|\*\/|\*(?: |$)|import\s[^;]*;$)/u;
 
-/** The last line of every node that starts on a line from `from` to `to`, or `to` when none ends past it: Stryker mutates only a node it holds whole, so a hunk opening a block, a call or a literal must reach its end. */
-function lastLineOf(tree: ts.SourceFile, from: number, to: number): number {
-    const lineAt = (position: number): number =>
-        tree.getLineAndCharacterOfPosition(position).line + 1;
-    let last = to;
-    const visit = (node: ts.Node): void => {
-        // Stryker disable next-line ConditionalExpression,EqualityOperator,BlockStatement: a pruning only — a node ending before the hunk, and every node within it, starts before it too
-        if (lineAt(node.end) < from) {
-            return;
-        }
-        const start = lineAt(node.getStart(tree));
-        if (start > to) {
-            return;
-        }
-        if (start >= from) {
-            last = Math.max(last, lineAt(node.end));
-        }
-        ts.forEachChild(node, visit);
-    };
-    ts.forEachChild(tree, visit);
-
-    return last;
-}
-
-/** The untested sources the change reaches, each hunk holding code as a range of whole lines run to the end of every node it opens: a hunk of blank lines, comments and one-line imports holds no mutant, and would cost the suite's dry run for nothing. */
+/** The untested sources the change reaches, each hunk holding code as a range of whole lines run to the end of every node it opens, as Stryker mutates only a node it holds whole: a hunk of blank lines, comments and one-line imports holds no mutant, and would cost the suite's dry run for nothing. */
 export function changedRanges(
     untested: readonly string[],
     changed: Changed,
@@ -88,13 +64,13 @@ export function changedRanges(
             return [file];
         }
         const text = source(file);
-        const tree = ts.createSourceFile(file, text, ts.ScriptTarget.Latest);
+        const lastLine = lastLineReader(file, text);
         const textLines = text.split('\n');
 
         return lines
             .filter(([from, to]) =>
                 textLines.slice(from - 1, to).some((line) => !NO_CODE.test(line.trim())),
             )
-            .map(([from, to]) => `${file}:${from}-${lastLineOf(tree, from, to)}`);
+            .map(([from, to]) => `${file}:${from}-${lastLine(from, to)}`);
     });
 }
