@@ -185,11 +185,21 @@ function withPlaywright(merged: KnipConfig, declared: JsonObject): void {
     withEntries(merged, 'entry', entries);
 }
 
+// outside: DefinitelyTyped names `@scope/name`'s types `@types/scope__name`; the compiler reads them, nothing imports them.
+const typedName = (dependency: string): string | undefined =>
+    /^@types\/(?<name>.+)$/u
+        .exec(dependency)
+        ?.groups?.name?.replace(/^(?<scope>[^_]+)__/u, '@$<scope>/');
+
 function derivesFromAnother(
     dependency: string,
     names: readonly string[],
     peers: readonly string[],
 ): boolean {
+    const typed = typedName(dependency);
+    if (typed !== undefined && names.includes(typed)) {
+        return true;
+    }
     const scope = /^@(?<scope>[^/]+)\//u.exec(dependency)?.groups?.scope;
     if (scope !== undefined && (peers.includes(scope) || names.includes(scope))) {
         return true;

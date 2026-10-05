@@ -162,7 +162,7 @@ Several `off` reasons of kind `convention` name this page. Here is what they nam
 - `@jterrazz/*` packages ignored, and the toolchain's own binaries, which a consumer never declares.
 - Published libraries: `exports` / `types` / `files` rules disabled.
 - Convention paths ignored — `docs/`, and the ground a test stands on: `_fixtures/`, `_expected/`, `_seeds/` and `_requests/` wherever they sit, the four ground folders among the `_` names `@jterrazz/test` reserves — the same four the oxlint profiles, the oxfmt preset and the tsconfig presets leave out; every one but the tsconfig presets, which JSON keeps literal, reads them from the roster in `lint/kit/project/ground.ts`. Its `_setup/` is code, not ground: it is linted, formatted and typechecked like any source. At the root and inside every workspace member, because the convention belongs to the package.
-- Plugin dependencies (`*-plugin-*`, `@scope/*`) ignored.
+- Plugin dependencies (`*-plugin-*`, `@scope/*`) ignored, and a declared package's DefinitelyTyped types (`@types/<name>`, `@types/<scope>__<name>`).
 - Every entry the build compiles is an `entry` — the manifest's targets and the modules named for how they are loaded ([Building](building.md#what-the-manifest-does-not-name)) — so knip reads the same entry points the build does; a `*.cli.ts` anywhere is one too, a command run by its path.
 - The editor files and `jterrazz.config.ts` are named as `entry`: the toolchain loads them and nothing imports them. knip's own oxlint plugin is off, since the config it would read is derived.
 

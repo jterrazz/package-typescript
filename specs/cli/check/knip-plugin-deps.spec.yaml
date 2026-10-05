@@ -1,4 +1,4 @@
-description: auto-ignores plugin and scoped addon devDependencies
+description: auto-ignores plugin, scoped addon and DefinitelyTyped devDependencies of a declared package
 fixture: ./_fixtures/knip/plugin-deps/
 runs:
     - command: check

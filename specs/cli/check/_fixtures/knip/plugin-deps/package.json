@@ -2,9 +2,12 @@
     "name": "fixture-plugin-deps",
     "version": "1.0.0",
     "dependencies": {
+        "@hono/node-server": "^1.0.0",
         "vitepress": "^1.0.0"
     },
     "devDependencies": {
+        "@types/hono": "^1.0.0",
+        "@types/hono__node-server": "^1.0.0",
         "vitepress-plugin-llms": "^1.0.0"
     },
     "peerDependencies": {

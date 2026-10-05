@@ -30,8 +30,6 @@ export default defineConfig({
         },
         knip: {
             ignoreDependencies: {
-                '@types/react':
-                    'the website and mobile specimens of specs/kinds/ declare it, and their install links it from this checkout',
                 react: 'the website and mobile specimens of specs/kinds/ declare it, and their install links it from this checkout',
             },
         },
