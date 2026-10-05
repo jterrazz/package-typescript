@@ -37,16 +37,6 @@ const PLATFORM_STANDARDS: Readonly<Record<Platform, Standard>> = {
     react: REACT,
 };
 
-const LAW_SETTINGS = [
-    'lint',
-    'memberRoots',
-    'sources',
-    'spine',
-    'toolRoots',
-    'tsconfigPreset',
-    'words',
-];
-
 export const BASELINE_SECTION = 'typescript';
 
 const fromTheToolchain = (tool: 'oxfmt' | 'oxlint'): EditorFile => ({
@@ -107,7 +97,15 @@ export function typescriptPreset(declaration: null | ProjectIdentity): Preset {
 
     return {
         files: editorFilesOf(settings.tsconfigPreset),
-        lawSettings: LAW_SETTINGS,
+        lawSettings: [
+            'lint',
+            'memberRoots',
+            'sources',
+            'spine',
+            'toolRoots',
+            'tsconfigPreset',
+            'words',
+        ],
         layers: standards.flatMap(({ standard }) => standard.laws?.layers ?? []),
         names: standards.flatMap(({ standard }) => standard.laws?.names ?? []),
         name: 'typescript',

@@ -44,9 +44,6 @@ export const MUTATION_OUTPUT = `${ARTIFACTS}/stryker`;
 
 const BROWSER_PLATFORMS: ReadonlySet<Platform> = new Set(['astro', 'expo', 'next', 'react']);
 
-// invariant: a module loaded by path is named for how it is loaded: by Node before the app, by a worker pool, by vitest as a global setup.
-const SHIPPED = /^(?:instrumentation|.+\.worker|.+\.global-setup)\.ts$/u;
-
 const COMMAND = '.cli.ts';
 
 const SELF_ROOT = 'lint/self';
@@ -92,8 +89,10 @@ const stemOf = (source: string): string => basename(source, '.ts');
 
 /** The entries no manifest names, read off their names: shipped beside the published ones, or built for the repository's own scripts. */
 export function conventionsOf(root: string): { problem: null | string; settings: BuildSettings } {
+    // invariant: a module loaded by path is named for how it is loaded: by Node before the app, by a worker pool, by vitest as a global setup.
+    const loadedByPath = /^(?:instrumentation|.+\.worker|.+\.global-setup)\.ts$/u;
     const shipped = modulesUnder(root, 'src')
-        .filter((source) => SHIPPED.test(basename(source)))
+        .filter((source) => loadedByPath.test(basename(source)))
         .map((source) => ({ output: stemOf(source), source }));
     const dev = [...modulesUnder(root, 'src'), ...modulesUnder(root, 'lint')]
         .filter((source) => !source.endsWith('.test.ts') && source.endsWith('.ts'))

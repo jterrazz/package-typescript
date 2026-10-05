@@ -27,6 +27,8 @@ describe('build-plan', () => {
             'src/_fixtures/stray.worker.ts',
             'src/.cache/stray.global-setup.ts',
             'src/node_modules/stray.worker.ts',
+            'src/pool/xlsx.worker.ts.orig',
+            'src/legacy-instrumentation.ts',
             'src/index.ts',
             'lint/self/self.cli.ts',
             'lint/self/preset.ts',

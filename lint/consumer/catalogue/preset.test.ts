@@ -23,11 +23,19 @@ describe('preset', () => {
             ['src/standard/kinds/library.ts', []],
             ['src/standard/platforms/next.ts', []],
         ]);
-        expect([preset.name, preset.package, preset.baseline]).toStrictEqual([
+        expect([preset.name, preset.package, preset.baseline, preset.lawSettings]).toStrictEqual([
             'typescript',
             '@jterrazz/typescript',
             ['typescript'],
+            ['lint', 'memberRoots', 'sources', 'spine', 'toolRoots', 'tsconfigPreset', 'words'],
         ]);
+    });
+
+    test('typescriptPreset — derives the platform’s code, its editor files and its roots from the merged standard', () => {
+        // Given - a library on next
+        const preset = typescriptPreset({ kind: 'library', platform: 'next' });
+
+        // Then - the sources, the tsconfig preset, the files, the laws and the tool roots of the merge
         expect([
             preset.sources,
             preset.settings?.tsconfigPreset,

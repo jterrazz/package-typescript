@@ -186,7 +186,7 @@ export async function doctor(root: string): Promise<number> {
         );
     }
 
-    // Stryker disable next-line StringLiteral: a blank line between the table and its verdict, which no reader parses
+    // Stryker disable next-line StringLiteral,CallExpression: a blank line between the table and its verdict, which no reader parses
     print('\n');
 
     if (failed) {
