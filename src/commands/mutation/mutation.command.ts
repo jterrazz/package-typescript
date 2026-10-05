@@ -20,35 +20,46 @@ import type { Judged, ModuleRun } from './survivors.js';
 const extensionGlob = (extensions: readonly string[]): string =>
     extensions.length === 1 ? (extensions[0] ?? 'ts') : `{${extensions.join(',')}}`;
 
-function sourceGlobsOf(unit: string, { resolved }: Resolution): string[] {
-    const prefix = unit === '.' ? '' : `${unit}/`;
+const prefixOf = (unit: string): string => (unit === '.' ? '' : `${unit}/`);
 
+function sourceGlobsOf(unit: string, { resolved }: Resolution): string[] {
     return resolved.presets.flatMap(({ sources }) =>
         sources === undefined
             ? []
             : sources.roots.map(
-                  (root) => `${prefix}${root}/**/*.${extensionGlob(sources.extensions)}`,
+                  (root) => `${prefixOf(unit)}${root}/**/*.${extensionGlob(sources.extensions)}`,
               ),
     );
 }
 
+/** A unit's own `typescript.mutation` globs — its standard's and its settings file's — read from the repository root. */
+function declaredOf(unit: string, { resolved }: Resolution): MutationScope {
+    const declared = objectOf(objectOf(resolved.sections.typescript).mutation);
+    const globs = (key: string): string[] =>
+        Object.keys(objectOf(declared[key])).map((glob) => `${prefixOf(unit)}${glob}`);
+
+    return { exclude: globs('exclude'), ignore: globs('ignore'), mutated: globs('mutate') };
+}
+
 async function mutationScopeOf(project: string): Promise<MutationScope> {
-    const root = await readSettings(project);
     const members = await Promise.all(
         workspaceMembers(project).map(
             async (member) =>
                 [member, await readSettings(join(project, member))] satisfies [string, Resolution],
         ),
     );
-    const declared = objectOf(objectOf(root.resolved.sections.typescript).mutation);
-    const derived = [['.', root] satisfies [string, Resolution], ...members].flatMap(
-        ([unit, resolution]) => sourceGlobsOf(unit, resolution),
-    );
+    const units = [['.', await readSettings(project)] satisfies [string, Resolution], ...members];
+    const declared = units.map(([unit, resolution]) => declaredOf(unit, resolution));
 
     return {
-        exclude: Object.keys(objectOf(declared.exclude)),
-        ignore: Object.keys(objectOf(declared.ignore)),
-        mutated: [...new Set([...derived, ...Object.keys(objectOf(declared.mutate))])],
+        exclude: declared.flatMap(({ exclude }) => exclude),
+        ignore: declared.flatMap(({ ignore }) => ignore),
+        mutated: [
+            ...new Set([
+                ...units.flatMap(([unit, resolution]) => sourceGlobsOf(unit, resolution)),
+                ...declared.flatMap(({ mutated }) => mutated),
+            ]),
+        ],
     };
 }
 
