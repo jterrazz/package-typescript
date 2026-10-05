@@ -1,8 +1,8 @@
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, readFileSync } from 'node:fs';
 
 import { vanishedEntries } from '../../../lint/kit/baseline/oxlint-suppressions.js';
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
-import { isModulePackage } from './project.js';
+import { parsedObject } from '../../../lint/kit/project/json.js';
 import type { Check } from './setup.js';
 
 export type LintVerdict = { log: string; status: number; writes: boolean };
@@ -12,6 +12,14 @@ const UNPARSED = 'Failed to parse oxlint configuration file';
 const NEW_VIOLATIONS = 'There are new violations not covered by the suppressions file';
 
 const FALLEN = 'There are suppressions that do not occur anymore';
+
+function isModulePackage(): boolean {
+    try {
+        return parsedObject(readFileSync('package.json', 'utf8')).type === 'module';
+    } catch {
+        return false;
+    }
+}
 
 function commonjsConfig(own: string | undefined): string | undefined {
     if (own?.endsWith('.cjs') === true || (own?.endsWith('.js') === true && !isModulePackage())) {
