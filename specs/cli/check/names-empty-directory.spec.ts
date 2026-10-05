@@ -33,4 +33,16 @@ describe('names-empty-directory', () => {
         expect(result.exitCode).toBe(1);
         expect(result.stdout).toMatch(file('../_expected/names-empty-directory/named.txt'));
     });
+
+    test('names the empty directories when a glob leaves git none to ignore', async () => {
+        // Given - the same repository, with the one folder git ignores named by a glob
+        // When - the quality checks run with that glob
+        const result = await names
+            .prepare(emptyDirectories())
+            .exec("check --ignore-pattern 'local/**'");
+
+        // Then - the two empty trees are named all the same
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(file('../_expected/names-empty-directory/named.txt'));
+    });
 });

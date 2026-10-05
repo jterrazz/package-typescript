@@ -1,10 +1,10 @@
 // outside: read off the disk: git tracks no directory, so a sweep of what git lists can never see one.
 
-import { spawnSync } from 'node:child_process';
 import { readdirSync, rmdirSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { join, matchesGlob } from 'node:path';
 
+import { git } from './git.js';
 import { UNSWEPT } from './project-files.js';
 
 // invariant: a repository, a worktree or a submodule: never entered.
@@ -68,13 +68,12 @@ function ignoredByGit(root: string, paths: readonly string[]): ReadonlySet<strin
     if (paths.length === 0) {
         return new Set();
     }
-    const { status, stdout } = spawnSync('git', ['check-ignore', '--stdin', '-z'], {
-        cwd: root,
-        encoding: 'utf8',
-        input: paths.map((path) => `${path}/`).join('\0'),
-        stdio: ['pipe', 'pipe', 'ignore'],
-    });
-    if (status !== 0) {
+    const stdout = git(
+        root,
+        ['check-ignore', '--stdin', '-z'],
+        paths.map((path) => `${path}/`).join('\0'),
+    );
+    if (stdout === undefined) {
         return new Set();
     }
 

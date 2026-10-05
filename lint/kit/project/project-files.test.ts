@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { filesUnder, projectFiles, readText } from './project-files.js';
+import { filesUnder, projectFiles, readText, trackedFiles } from './project-files.js';
 
 function folderHolding(paths: readonly string[]): string {
     const root = mkdtempSync(join(tmpdir(), 'project-files-'));
@@ -165,5 +165,17 @@ describe('projectFiles', () => {
             return text === null ? null : text.length;
         });
         expect(read).toStrictEqual([5, null, null, 1_000_000, null, null, null]);
+    });
+
+    test("trackedFiles — is the repository's index, file by file, and nothing outside a repository", () => {
+        // Given - a repository tracking two files, and a folder git knows nothing of
+        const tracked = repositoryTracking(['src/b.ts', 'a.ts']);
+        const plain = folderHolding(['a.ts']);
+
+        // Then - the index's paths whole, and none for the folder
+        expect([trackedFiles(tracked), trackedFiles(plain)]).toStrictEqual([
+            ['a.ts', 'src/b.ts'],
+            [],
+        ]);
     });
 });

@@ -1,6 +1,7 @@
-import { spawnSync } from 'node:child_process';
 import { lstatSync, readdirSync, renameSync, statSync } from 'node:fs';
 import { basename, dirname, join, resolve, sep } from 'node:path';
+
+import { git } from './git.js';
 
 export type TreeEntry = {
     isDirectory: () => boolean;
@@ -23,18 +24,11 @@ function under(dir: string, root: string): boolean {
     return dir === root || dir.startsWith(`${root}${sep}`);
 }
 
-const LISTING_CAP_BYTES = 256 * 1024 * 1024;
-
 export function listNotIgnored(top: string): null | string[] {
-    const listed = spawnSync(
-        'git',
-        ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
-        { cwd: top, encoding: 'utf8', maxBuffer: LISTING_CAP_BYTES },
+    return (
+        git(top, ['ls-files', '--cached', '--others', '--exclude-standard', '-z'])?.split('\0') ??
+        null
     );
-    if (listed.status !== 0) {
-        return null;
-    }
-    return listed.stdout.split('\0');
 }
 
 function indexOf(top: string, paths: string[], index: string, listedAt: number): WorkTree {
@@ -72,16 +66,13 @@ function listTree(top: string, index: string): null | WorkTree {
 }
 
 function locate(dir: string): null | { index: string; top: string } {
-    const located = spawnSync('git', ['rev-parse', '--show-cdup', '--git-path', 'index'], {
-        cwd: dir,
-        encoding: 'utf8',
-    });
-    if (located.status !== 0) {
+    const located = git(dir, ['rev-parse', '--show-cdup', '--git-path', 'index']);
+    if (located === undefined) {
         return null;
     }
     // outside: `--show-cdup` prints an empty line at the top level: the two answers are
     // read by position, never trimmed together.
-    const [cdup = '', index = ''] = located.stdout.split('\n');
+    const [cdup = '', index = ''] = located.split('\n');
 
     return { index: resolve(dir, index), top: resolve(dir, cdup) };
 }
@@ -187,8 +178,7 @@ export function forgetTree(): void {
 }
 
 export function moveKeepingHistory(from: string, to: string): void {
-    const moved = spawnSync('git', ['mv', from, to], { cwd: dirname(from) });
-    if (moved.status !== 0) {
+    if (git(dirname(from), ['mv', from, to]) === undefined) {
         renameSync(from, to);
     }
     forgetTree();

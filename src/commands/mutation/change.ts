@@ -1,4 +1,4 @@
-import { git } from '../../drivers/git/git.js';
+import { git } from '../../../lint/kit/project/git.js';
 import { fileOf } from './scope.js';
 import type { Changed } from './survivors.js';
 

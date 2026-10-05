@@ -1,5 +1,4 @@
 // invariant: the ground a test stands on is its scenario's, judged where the scenario runs it, never here.
-import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { join, matchesGlob } from 'node:path';
@@ -7,6 +6,7 @@ import { exit, stderr } from 'node:process';
 
 import { refusal } from '../catalogue/lesson.js';
 import { listNotIgnored } from './git-tree.js';
+import { git } from './git.js';
 import { isGroundFolder } from './ground.js';
 
 export const UNSWEPT: ReadonlySet<string> = new Set([
@@ -39,13 +39,12 @@ export function ignoredPaths(root: string, paths: readonly string[]): ReadonlySe
     if (paths.length === 0) {
         return new Set();
     }
-    const answer = spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {
-        cwd: root,
-        encoding: 'utf8',
-        input: paths.flatMap((path) => [path, `${path}/`]).join('\n'),
-        stdio: ['pipe', 'pipe', 'ignore'],
-    });
-    const ignored = new Set((answer.stdout ?? '').split('\n').filter((line) => line !== ''));
+    const answer = git(
+        root,
+        ['check-ignore', '--no-index', '--stdin'],
+        paths.flatMap((path) => [path, `${path}/`]).join('\n'),
+    );
+    const ignored = new Set(answer?.split('\n'));
 
     return new Set(paths.filter((path) => ignored.has(path) || ignored.has(`${path}/`)));
 }
@@ -54,19 +53,8 @@ export const isGitIgnored = (root: string, target: string): boolean =>
     ignoredPaths(root, [target]).has(target);
 
 // invariant: outside a git tree there is nothing committed.
-export function trackedFiles(root: string): string[] {
-    try {
-        return execFileSync('git', ['ls-files', '-z'], {
-            cwd: root,
-            encoding: 'utf8',
-            stdio: ['ignore', 'pipe', 'ignore'],
-        })
-            .split('\0')
-            .filter((path) => path !== '');
-    } catch {
-        return [];
-    }
-}
+export const trackedFiles = (root: string): string[] =>
+    (git(root, ['ls-files', '-z']) ?? '').split('\0').filter((path) => path !== '');
 
 function walkSweep(root: string): string[] {
     const found: string[] = [];
