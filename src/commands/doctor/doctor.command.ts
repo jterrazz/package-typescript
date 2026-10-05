@@ -1,8 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { readSettings } from '../../../lint/index.rules.js';
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { objectOf, parsedObject } from '../../../lint/kit/project/json.js';
+import { SETTINGS_FILE } from '../../../lint/kit/project/jterrazz-config.js';
+import { originLines } from '../../../lint/kit/project/origins.js';
 import { toolVersions } from '../../../lint/kit/project/tool-versions.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { badge, print } from '../check/report/terminal.js';
@@ -151,7 +154,24 @@ function reportPinnedPair(root: string): boolean {
     return pair.verdict === 'skewed';
 }
 
-export function doctor(root: string): number {
+async function reportConfig(root: string): Promise<void> {
+    for (const unit of ['.', ...workspaceMembers(root)]) {
+        const { problem, resolved } = await readSettings(join(root, unit));
+        const file = unit === '.' ? SETTINGS_FILE : `${unit}/${SETTINGS_FILE}`;
+        print(`\nResolved ${file}\n\n`);
+        if (problem !== null) {
+            print(`  ${file} ${problem}\n`);
+            continue;
+        }
+        const lines = originLines(resolved);
+        const width = Math.max(...lines.map(({ origin }) => origin.length)) + 2;
+        for (const { origin, setting } of lines) {
+            print(`  ${origin.padEnd(width)}${setting}\n`);
+        }
+    }
+}
+
+export async function doctor(root: string): Promise<number> {
     print(`${badge('TYPESCRIPT')} Checking the toolchain...\n\n`);
     const rows = toolVersions();
     const failed = rows.some(({ verdict }) => verdict === 'old' || verdict === 'absent');
@@ -184,6 +204,7 @@ export function doctor(root: string): number {
     }
 
     const skewed = reportPinnedPair(root);
+    await reportConfig(root);
 
     return failed || skewed ? 1 : 0;
 }

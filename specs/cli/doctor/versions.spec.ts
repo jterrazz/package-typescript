@@ -59,7 +59,7 @@ describe('versions', () => {
 
         // Then - nothing installed here is older than what the toolchain asks for
         expect(
-            ['old', 'absent'].filter((verdict) => result.stdout.text.includes(verdict)),
+            result.stdout.text.split('\n').filter((line) => / (?:old|absent)$/u.test(line)),
         ).toStrictEqual([]);
     });
 

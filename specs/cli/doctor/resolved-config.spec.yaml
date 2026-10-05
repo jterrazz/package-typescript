@@ -1,0 +1,41 @@
+description: prints every resolved setting beside the file of the standard or the config it comes from
+fixture: ./_fixtures/resolved/
+runs:
+    - command: doctor
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Checking the toolchain...
+
+          {{any}}
+          Resolved jterrazz.config.ts
+
+            @jterrazz/typescript src/standard/standard.ts        typescript.lint.consumer = ["catalogue", "rulebook", "rules", "checks"]
+            @jterrazz/typescript src/standard/standard.ts        typescript.lint.kit = ["project", "baseline", "checker", "catalogue", "compiler", "testing"]
+            @jterrazz/typescript src/standard/standard.ts        typescript.lint.self = ["catalogue", "rules", "checks", "corpus"]
+            @jterrazz/typescript src/standard/standard.ts        typescript.memberRoots = ["apps", "packages"]
+            @jterrazz/typescript src/standard/standard.ts        typescript.mutation.ignore.src/standard/**/*.ts = "a standard is data the Config pass keeps free of logic: a mutant rewrites a stated value, which the specs of what it configures read, never a decision a test of the module could hold"
+            @jterrazz/typescript src/standard/kinds/library.ts   typescript.mutation.mutate.lint/*.ts = "the entries of the lint rules a library ships"
+            @jterrazz/typescript src/standard/kinds/library.ts   typescript.mutation.mutate.lint/consumer/**/*.ts = "the lint rules and checks a library ships to its consumers"
+            @jterrazz/typescript src/standard/kinds/library.ts   typescript.mutation.mutate.lint/kit/**/*.ts = "the rules kit those rules and checks run on"
+            jterrazz.config.ts                                   typescript.roots.scripts = "the release scripts the CI workflow runs"
+            @jterrazz/typescript src/standard/standard.ts        typescript.sources.extensions = ["ts"]
+            @jterrazz/typescript src/standard/platforms/next.ts  typescript.sources.extensions = ["tsx"]
+            @jterrazz/typescript src/standard/standard.ts        typescript.sources.roots = ["src"]
+            @jterrazz/typescript src/standard/platforms/next.ts  typescript.sources.roots = ["app", "pages"]
+            @jterrazz/typescript src/standard/standard.ts        typescript.spine = ["docs", "lint", "skills", "specs", "src"]
+            @jterrazz/typescript src/standard/platforms/next.ts  typescript.toolRoots.app = "Next.js App Router and Expo Router — routes are read off this folder"
+            @jterrazz/typescript src/standard/standard.ts        typescript.toolRoots.bin = "npm — the files a package's `bin` entry links as commands"
+            @jterrazz/typescript src/standard/standard.ts        typescript.toolRoots.config = "node-config — the default folder its `require('config')` reads"
+            @jterrazz/typescript src/standard/platforms/next.ts  typescript.toolRoots.pages = "Next.js Pages Router — routes are read off this folder"
+            @jterrazz/typescript src/standard/standard.ts        typescript.toolRoots.prisma = "Prisma — the schema and migrations its CLI reads by default"
+            @jterrazz/typescript src/standard/platforms/next.ts  typescript.toolRoots.public = "Next.js, Astro and Vite — static files served verbatim at the site root"
+            @jterrazz/typescript src/standard/platforms/next.ts  typescript.tsconfigPreset = "next"
+            @jterrazz/typescript src/standard/standard.ts        typescript.words.constructs = ["constants", "helper", "interfaces", "type", "types", "util"]
+            @jterrazz/typescript src/standard/standard.ts        typescript.words.grabBag = ["base", "common", "helpers", "lib", "misc", "stuff", "tools", "utils"]
+            @jterrazz/typescript src/standard/standard.ts        typescript.words.shortcuts = ["auth", "cfg", "impl", "infra", "k8s", "pkg", "repo", "repos", "svc", "tmp"]
+            @jterrazz/typescript src/standard/standard.ts        law typescript/kit-knows-no-declaration
+            @jterrazz/typescript src/standard/standard.ts        law typescript/consumer-folders-apart
+            @jterrazz/typescript src/standard/standard.ts        law typescript/self-folders-apart
+            @jterrazz/typescript src/standard/standard.ts        law typescript/catalogue-at-the-bottom
+            @jterrazz/typescript src/standard/standard.ts        law typescript/shipped-lint-reads-no-self
+            @jterrazz/typescript src/standard/standard.ts        law typescript/src-reads-no-declaration
