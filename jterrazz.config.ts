@@ -13,10 +13,6 @@ export default defineConfig({
                 setup: ['specs/cli/_setup/run-temp-root.ts', 'specs/cli/_setup/packed/per-run.ts'],
                 timeout: 120_000,
             },
-            unit: {
-                isolate: false,
-                reason: 'the module tests leave no state behind in a module, so a worker runs its files in one module graph',
-            },
         },
     },
     typescript: {
