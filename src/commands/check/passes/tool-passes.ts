@@ -1,15 +1,19 @@
 import { appendFileSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import process from 'node:process';
 
+import { readSettings } from '../../../../lint/index.rules.js';
 import {
     keptAcross,
     OXLINT_SUPPRESSIONS,
     removeWhenEmpty,
 } from '../../../../lint/kit/baseline/oxlint-suppressions.js';
 import { invariant, messageOf, refusal } from '../../../../lint/kit/catalogue/lesson.js';
+import { buildPlanOf, buildSettingsOf } from '../../../../lint/kit/project/build-plan.js';
 import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
 import { astroChecked } from '../../../drivers/astro/astro.js';
 import { knip } from '../../../drivers/knip/knip.js';
+import type { KnipProject } from '../../../drivers/knip/knip.js';
+import { knipSettingsOf } from '../../../drivers/knip/settings.js';
 import { fixedUnder } from '../../../drivers/oxlint/oxlint.js';
 import type { FixScope } from '../../../drivers/oxlint/unsafe-fixers.js';
 import { astroFormatted } from '../../../drivers/prettier/prettier.js';
@@ -140,16 +144,44 @@ export function formatCheck(check: Check): Launched | undefined {
     return { log, status: oxfmt(check, ['--check'], log) };
 }
 
+async function knipProject(): Promise<KnipProject> {
+    const { resolved } = await readSettings('.');
+    const { declaration } = resolved;
+    const steps = buildPlanOf('.', {
+        declaration,
+        settings: buildSettingsOf(resolved.sections.typescript).settings,
+    });
+
+    return {
+        entries: steps.flatMap(({ entry }) => Object.values(entry)),
+        library: declaration?.kind === 'library',
+        settings: knipSettingsOf(resolved.sections.typescript),
+    };
+}
+
+async function knipRun(check: Check, log: string): Promise<number> {
+    let project: KnipProject;
+    try {
+        project = await knipProject();
+    } catch (error) {
+        writeFileSync(log, `${messageOf(error)}\n`);
+
+        return 1;
+    }
+
+    return await knip(check.tools.knip, project, {
+        log,
+        merged: check.logs.at('knip-merged.json'),
+    });
+}
+
 export function knipPass(check: Check): Launched | undefined {
     if (check.fix || !check.selected('knip')) {
         return undefined;
     }
     const log = check.logs.at('knip.log');
 
-    return {
-        log,
-        status: knip(check.tools.knip, { log, merged: check.logs.at('knip-merged.json') }),
-    };
+    return { log, status: knipRun(check, log) };
 }
 
 async function astroRun(check: Check, unit: string, log: string): Promise<number> {

@@ -1,9 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { readSettings } from '../../../lint/index.rules.js';
 import { messageOf } from '../../../lint/kit/catalogue/lesson.js';
-import { buildPlanOf, buildSettingsOf } from '../../../lint/kit/project/build-plan.js';
 import {
     binaryIn,
     HOISTED_BESIDE_PACKAGE,
@@ -11,27 +9,23 @@ import {
 } from '../../../lint/kit/project/package-root.js';
 import { run } from '../run.js';
 import { mergedKnipConfig } from './config.js';
-import { knipSettingsOf } from './settings.js';
+import type { KnipSettings } from './settings.js';
 
 export const knipBinary = (): string => binaryIn('knip', HOISTED_BESIDE_PACKAGE);
+
+export type KnipProject = { entries: readonly string[]; library: boolean; settings: KnipSettings };
 
 /** Runs knip over the project with the preset merged with what it declares, written to `merged`; a merge that fails is the run's report. */
 export async function knip(
     binary: string,
+    project: KnipProject,
     { log, merged }: { log: string; merged: string },
 ): Promise<number> {
     try {
-        const { resolved } = await readSettings('.');
-        const declared = resolved.declaration;
-        const steps = buildPlanOf('.', {
-            declaration: declared,
-            settings: buildSettingsOf(resolved.sections.typescript).settings,
-        });
-        const config = mergedKnipConfig(join(PACKAGE_ROOT, 'src/presets/knip/config.json'), {
-            entries: steps.flatMap(({ entry }) => Object.values(entry)),
-            library: declared?.kind === 'library',
-            settings: knipSettingsOf(resolved.sections.typescript),
-        });
+        const config = mergedKnipConfig(
+            join(PACKAGE_ROOT, 'src/presets/knip/config.json'),
+            project,
+        );
         writeFileSync(merged, JSON.stringify(config));
     } catch (error) {
         writeFileSync(log, `${messageOf(error)}\n`);
