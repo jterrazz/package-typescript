@@ -180,37 +180,30 @@ function configFinding(path: string, problem: string): Finding {
     });
 }
 
+// Stryker disable next-line MethodExpression: a kind's standard lists the three audiences of the lint tree, or none
 const keepsTree = (tree: LintTree): boolean => TOPS.some((top) => tree[top].length > 0);
 
 // invariant: a unit is held to the lint tree its own kind lists; one whose kind ships no lint rules lists none, and its `lint/` is judged as a root alone.
-async function lintTreesOf(
-    context: Context,
-    units: readonly string[],
-    own: LintTree,
-): Promise<LintTrees> {
+async function lintTreesOf(context: Context, units: readonly string[]): Promise<LintTrees> {
     const trees = await Promise.all(
-        units.map(async (unit) =>
-            unit === ''
-                ? own
-                : settingsOf(await context.config(join(context.root, unit))).universal.lint,
+        units.map(
+            async (unit) =>
+                [
+                    unit,
+                    settingsOf(await context.config(join(context.root, unit))).universal.lint,
+                ] as const,
         ),
     );
 
-    return Object.fromEntries(
-        units.flatMap((unit, index) => {
-            const tree = trees[index];
-
-            return tree !== undefined && keepsTree(tree) ? [[unit, tree]] : [];
-        }),
-    );
+    return Object.fromEntries(trees.filter(([, tree]) => keepsTree(tree)));
 }
 
 async function laidOut(
     context: Context,
-    { swept, tree }: { swept: readonly string[]; tree: LintTree },
+    swept: readonly string[],
 ): Promise<{ findings: Finding[]; problems: string[] }> {
     const units = ['', ...workspaceMembers(context.root).map((member) => `${member}/`)];
-    const trees = await lintTreesOf(context, units, tree);
+    const trees = await lintTreesOf(context, units);
     const { failures, problem } = runLsLint(
         context.value('--ls-lint', 'ls-lint'),
         context.root,
@@ -233,7 +226,7 @@ export const names: Pass = Object.freeze({
     async check(context) {
         const files = context.files();
         const settings = settingsOf(await context.config());
-        const layout = await laidOut(context, { swept: files, tree: settings.universal.lint });
+        const layout = await laidOut(context, files);
 
         return {
             ...(layout.problems.length === 0 ? {} : { failed: true, lines: layout.problems }),

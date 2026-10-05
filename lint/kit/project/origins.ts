@@ -32,10 +32,11 @@ const isEmpty = (value: unknown): boolean =>
         ? value.length === 0
         : isJsonObject(value) && Object.keys(value).length === 0;
 
-// invariant: the oxlint keys merged key by key, as the compiler merges them: a later layer replaces each entry whole — a rule's `[level, options]` tuple is one value.
-const WHOLE_ENTRIES: ReadonlySet<string> = new Set(
-    ['env', 'globals', 'options', 'rules', 'settings'].map((key) => `typescript.oxlint.${key}`),
-);
+// invariant: the oxlint keys merged key by key whose entries are no single value, as the compiler merges them: a later layer replaces each entry whole — a rule's `[level, options]` tuple is one value; env, globals and options hold single values, shown whole anyway.
+const WHOLE_ENTRIES: ReadonlySet<string> = new Set([
+    'typescript.oxlint.rules',
+    'typescript.oxlint.settings',
+]);
 
 // invariant: replays the merge of a section: a list item keeps the first file that added it, a single value the last that wrote it.
 function walk(value: unknown, path: string, origin: string, into: Map<string, Entry>): void {

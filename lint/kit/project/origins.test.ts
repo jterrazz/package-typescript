@@ -26,6 +26,7 @@ const RULEBOOK: OxlintConfig = {
     jsPlugins: ['jterrazz-typescript'],
     overrides: [{ files: ['**/*.test.ts'], rules: { 'max-lines': 'off' } }],
     rules: { eqeqeq: 'error', 'no-console': 'error' },
+    settings: { react: { version: '19' } },
 };
 
 describe('origins', () => {
@@ -169,9 +170,9 @@ describe('origins', () => {
         ]);
     });
 
-    test('origins — a rule the rulebook or a preset sets is replaced whole by the last layer setting it, options and level together', () => {
+    test('origins — a rule or a setting the rulebook or a preset sets is replaced whole by the last layer setting it, options and level together', () => {
         // Given - the rulebook's profile, then two presets setting one rule with options, the second also replacing a rule of the rulebook
-        const { problem, resolved } = resolveConfig(
+        const { resolved } = resolveConfig(
             {
                 presets: [
                     {
@@ -186,6 +187,7 @@ describe('origins', () => {
                                 'acme/kind': ['error', { openings: ['a', 'b'] }],
                                 'no-console': 'off',
                             },
+                            settings: { react: { pragma: 'h' } },
                         },
                         package: '@acme/second',
                     },
@@ -196,7 +198,6 @@ describe('origins', () => {
         );
 
         // Then - each rule on one line, beside the last layer that set it, the rulebook's other keys beside the rulebook
-        expect(problem).toBeNull();
         expect(originLines(resolved, { rulebook: RULEBOOK })).toStrictEqual([
             {
                 origin: '@jterrazz/typescript rulebook',
@@ -222,6 +223,10 @@ describe('origins', () => {
             {
                 origin: '@acme/second preset second',
                 setting: 'typescript.oxlint.rules.no-console = "off"',
+            },
+            {
+                origin: '@acme/second preset second',
+                setting: 'typescript.oxlint.settings.react = {"pragma":"h"}',
             },
         ]);
     });

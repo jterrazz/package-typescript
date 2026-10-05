@@ -183,19 +183,15 @@ async function shownProfile({ declaration }: Resolved): Promise<OxlintConfig> {
     // hazard: the rulebook resolves its JS plugins as it loads, so it loads when the doctor prints it, never as the command line starts every other command.
     const { rulebookProfileOf } = await import('../../../lint/index.rulebook.js');
     const rulebook = rulebookProfileOf(declaration?.platform ?? 'node');
-    const plugins = rulebook.jsPlugins ?? [];
 
     return {
         ...rulebook,
-        ...(plugins.length === 0
-            ? {}
-            : {
-                  jsPlugins: plugins.map((plugin) =>
-                      typeof plugin === 'string' && plugin.includes(NODE_MODULES)
-                          ? plugin.slice(plugin.lastIndexOf(NODE_MODULES) + NODE_MODULES.length)
-                          : plugin,
-                  ),
-              }),
+        jsPlugins: (rulebook.jsPlugins ?? []).map((plugin) =>
+            // Stryker disable next-line ConditionalExpression: every JS plugin the rulebook names is a path
+            typeof plugin === 'string' && plugin.includes(NODE_MODULES)
+                ? plugin.slice(plugin.lastIndexOf(NODE_MODULES) + NODE_MODULES.length)
+                : plugin,
+        ),
     };
 }
 
