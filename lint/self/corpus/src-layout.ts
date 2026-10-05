@@ -4,6 +4,9 @@ import ts from 'typescript';
 
 import { refusal } from '../../kit/catalogue/lesson.js';
 import { shippedModules } from '../../kit/testing/shipped-modules.js';
+import { syntaxWalk } from '../../kit/testing/syntax-walk.js';
+import { moduleEdges } from './module-edges.js';
+import type { Edge } from './module-edges.js';
 
 const ID = 'src-layout';
 
@@ -17,11 +20,19 @@ const PRESETS = 'src/presets';
 
 const DISPATCHER = `${COMMANDS}/main.ts`;
 
+// invariant: every module that spawns a process for its caller — node's own, the drivers' runner, the checker program's.
+const SPAWNERS: ReadonlySet<string> = new Set([
+    'child_process',
+    'node:child_process',
+    `${DRIVERS}/run.ts`,
+    'lint/kit/checker/tool-run.ts',
+]);
+
 const WHY_COMMAND =
     'a subcommand a user types is one folder of src/commands/ and one `<name>.command.ts` in it, so the tree lists the commands the usage prints and what only one of them uses sits beside it';
 
 const WHY_DRIVER =
-    'an external tool is driven from one folder of src/drivers/ alone — its binary resolved, its process spawned, its package imported there, its config beside it in src/presets/ — so a change of the tool lands in one place';
+    "an external tool the command's process drives is driven from one folder of src/drivers/ alone — its binary resolved, its process spawned, its package imported there, its config beside it in src/presets/ — so a change of the tool lands in one place; the checker program runs its passes' tools through lint/kit/checker/tool-run.ts, never the command";
 
 // invariant: every package of a tool a driver drives, by the folder of its driver.
 const TOOL_PACKAGES: Readonly<Record<string, readonly string[]>> = {
@@ -39,8 +50,6 @@ const TOOL_PACKAGES: Readonly<Record<string, readonly string[]>> = {
 };
 
 export type SrcLayoutFinding = { message: string; path: string };
-
-type Edge = { names: readonly string[]; specifier: string; target: string; value: boolean };
 
 type Lock = {
     breaks: (module: string, edge: Edge) => boolean;
@@ -71,9 +80,7 @@ const toolOf = (edge: Edge): string =>
 
 const LOCKS: readonly Lock[] = [
     {
-        breaks: (module, { target }) =>
-            !isUnder(DRIVERS, module) &&
-            ['child_process', 'node:child_process', `${DRIVERS}/run.ts`].includes(target),
+        breaks: (module, { target }) => !isUnder(DRIVERS, module) && SPAWNERS.has(target),
         fix: () =>
             `move the run into the driver of its tool, under ${DRIVERS}/<tool>/, and call the driver`,
         found: (module, { specifier }) => `\`${module}\` spawns a process through \`${specifier}\``,
@@ -129,59 +136,6 @@ function foldersIn(root: string, folder: string): string[] {
         : [];
 }
 
-function walk(node: ts.Node, visit: (node: ts.Node) => void): void {
-    visit(node);
-    ts.forEachChild(node, (child) => {
-        walk(child, visit);
-    });
-}
-
-type Imported = Pick<Edge, 'names' | 'value'>;
-
-function importOf(node: ts.ImportDeclaration): Imported {
-    const clause = node.importClause;
-    const bindings = clause?.namedBindings;
-    const named = bindings !== undefined && ts.isNamedImports(bindings) ? bindings.elements : [];
-    const values = named.filter((element) => !element.isTypeOnly);
-    const typeOnly =
-        clause?.phaseModifier === ts.SyntaxKind.TypeKeyword ||
-        (clause?.name === undefined && named.length > 0 && values.length === 0);
-
-    return {
-        names: values.map((element) => (element.propertyName ?? element.name).text),
-        value: !typeOnly,
-    };
-}
-
-function importedBy(node: ts.Node): [ts.Expression | undefined, Imported] | undefined {
-    if (ts.isImportDeclaration(node)) {
-        return [node.moduleSpecifier, importOf(node)];
-    }
-    if (ts.isExportDeclaration(node)) {
-        return [node.moduleSpecifier, { names: [], value: !node.isTypeOnly }];
-    }
-
-    return ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword
-        ? [node.arguments[0], { names: [], value: true }]
-        : undefined;
-}
-
-function edgesOf(module: string, source: ts.SourceFile): Edge[] {
-    const edges: Edge[] = [];
-    walk(source, (node) => {
-        const [specifier, imported] = importedBy(node) ?? [];
-        if (specifier !== undefined && imported !== undefined && ts.isStringLiteral(specifier)) {
-            const { text } = specifier;
-            const target = text.startsWith('.')
-                ? posix.join(posix.dirname(module), text).replace(/\.js$/u, '.ts')
-                : text;
-            edges.push({ ...imported, specifier: text, target });
-        }
-    });
-
-    return edges;
-}
-
 function dispatched(root: string): string[] {
     const path = join(root, DISPATCHER);
     if (!existsSync(path)) {
@@ -189,9 +143,9 @@ function dispatched(root: string): string[] {
     }
     const source = ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest);
     const literals: ts.ObjectLiteralExpression[] = [];
-    walk(source, (node) => {
+    syntaxWalk(source, (node) => {
         if (ts.isVariableDeclaration(node) && node.name.getText(source) === 'COMMANDS') {
-            walk(node, (inner) => {
+            syntaxWalk(node, (inner) => {
                 if (ts.isObjectLiteralExpression(inner)) {
                     literals.push(inner);
                 }
@@ -280,7 +234,7 @@ function driverFindings(root: string, modules: readonly string[]): SrcLayoutFind
             const text = readFileSync(join(root, module), 'utf8');
             const source = ts.createSourceFile(module, text, ts.ScriptTarget.Latest);
 
-            return edgesOf(module, source).flatMap((edge) =>
+            return moduleEdges(module, source).flatMap((edge) =>
                 LOCKS.filter((lock) => lock.breaks(module, edge)).map((lock) =>
                     finding(module, lock.found(module, edge), WHY_DRIVER, lock.fix(edge)),
                 ),

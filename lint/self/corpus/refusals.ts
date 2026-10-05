@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import ts from 'typescript';
 
 import { refusal } from '../../kit/catalogue/lesson.js';
+import { syntaxWalk } from '../../kit/testing/syntax-walk.js';
 
 export const LESSON_MODULE = 'lint/kit/catalogue/lesson.ts';
 
@@ -32,18 +33,11 @@ type Parsed = { path: string; source: ts.SourceFile };
 
 type Taught = { at: ts.Node; fix: string; found: string };
 
-function walk(node: ts.Node, visit: (node: ts.Node) => void): void {
-    visit(node);
-    ts.forEachChild(node, (child) => {
-        walk(child, visit);
-    });
-}
-
 function errorClasses(modules: readonly Parsed[]): ReadonlySet<string> {
     const classes = new Set(BUILT_IN_ERRORS);
     const declared: { name: string; parent: string }[] = [];
     for (const { source } of modules) {
-        walk(source, (node) => {
+        syntaxWalk(source, (node) => {
             const parent = ts.isClassDeclaration(node)
                 ? node.heritageClauses?.[0]?.types[0]?.expression
                 : undefined;
@@ -83,7 +77,7 @@ function isStackRead(node: ts.Node): boolean {
 
 function constructions(source: ts.SourceFile, classes: ReadonlySet<string>): Taught[] {
     const found: Taught[] = [];
-    walk(source, (node) => {
+    syntaxWalk(source, (node) => {
         if (!ts.isNewExpression(node) && !ts.isCallExpression(node)) {
             return;
         }
@@ -115,7 +109,7 @@ function lessonsIn(argument: ts.Expression): ts.ObjectLiteralExpression[] {
 
 function readsWrittenElsewhere(source: ts.SourceFile): Taught[] {
     const found: Taught[] = [];
-    walk(source, (node) => {
+    syntaxWalk(source, (node) => {
         const argument = isRefusalCall(node) ? node.arguments[0] : undefined;
         for (const lesson of argument === undefined ? [] : lessonsIn(argument)) {
             const read = lesson.properties.find(
@@ -166,7 +160,7 @@ function isHeading(root: string, chapter: string, anchor: string): boolean {
 
 function unreadHeadings(source: ts.SourceFile, root: string): Taught[] {
     const found: Taught[] = [];
-    walk(source, (node) => {
+    syntaxWalk(source, (node) => {
         const groups = ts.isStringLiteralLike(node)
             ? CHAPTER_ANCHOR.exec(node.text)?.groups
             : undefined;

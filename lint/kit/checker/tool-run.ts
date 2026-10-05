@@ -13,6 +13,7 @@ export function runTool(
     args: readonly string[],
     root: string,
 ): ToolRun {
+    // Stryker disable next-line StringLiteral: the streams are read through a template, which decodes a buffer to the same text
     const run = spawnSync(binary, args, { cwd: root, encoding: 'utf8' });
     if (run.error !== undefined) {
         const line = refusal({
@@ -30,6 +31,13 @@ export function runTool(
         ran: true,
         status: run.status ?? 1,
     };
+}
+
+/** What the tool prints on its stdout, and nothing where it cannot run or fails. */
+export function toolOutput(binary: string, args: readonly string[], root: string): string {
+    const run = spawnSync(binary, args, { cwd: root, encoding: 'utf8' });
+
+    return run.status === 0 ? run.stdout : '';
 }
 
 // outside: gitleaks reads a directory, so the judged files are copied into one, each at the project's own path.

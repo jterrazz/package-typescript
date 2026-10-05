@@ -1,6 +1,6 @@
-import { execFileSync } from 'node:child_process';
 import { matchesGlob } from 'node:path';
 
+import { toolOutput } from '../checker/tool-run.js';
 import { isJsonObject, objectOf, parsedObject, stringsOf } from './json.js';
 
 export type PrintedRules = Record<string, unknown>;
@@ -42,15 +42,14 @@ export function printedOxlintConfig(
     oxlint: string,
     configPath?: null | string,
 ): null | PrintedOxlintConfig {
+    const printed = toolOutput(
+        oxlint,
+        configPath === null || configPath === undefined
+            ? ['--print-config']
+            : ['-c', configPath, '--print-config'],
+        root,
+    );
     try {
-        const printed = execFileSync(
-            oxlint,
-            configPath === null || configPath === undefined
-                ? ['--print-config']
-                : ['-c', configPath, '--print-config'],
-            { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-        );
-
         return printedConfig(printed);
     } catch {
         return null;
