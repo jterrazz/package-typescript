@@ -1,4 +1,6 @@
-import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { join } from 'node:path';
+
+import { DIST, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 
 // outside: Stryker 10 names a test by its suites and title joined with a space, where Vitest 5 joins them with ` > `: without this plugin every mutant runs no test and survives.
 const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
@@ -180,13 +182,25 @@ if (inject('mode') === 'mutant') {
 `;
 
 // outside: the checks a test runs read the git tree, and the sandbox lies in the ignored .artifacts/, where git sees none.
-export const sandboxScriptSource = (
-    build: boolean,
-): string => `import { execFileSync } from 'node:child_process';
-
+// invariant: the build the suite runs against holds the declarations of the project's own build: a mutant changes what the code does, never the types it declares, and a declaration emitted from instrumented code infers wider types than the code states.
+export const sandboxScriptSource = (build: boolean, project: string): string =>
+    `import { execFileSync } from 'node:child_process';
+${build ? "import { cpSync, existsSync, statSync } from 'node:fs';\n" : ''}
 execFileSync('git', ['init', '--quiet']);
 execFileSync('git', ['add', '--all']);
-${build ? "execFileSync('npm', ['run', 'build'], { stdio: 'inherit' });\n" : ''}`;
+${
+    build
+        ? `execFileSync('npm', ['run', 'build'], { stdio: 'inherit' });
+const declarations = ${JSON.stringify(join(project, DIST))};
+if (existsSync(declarations)) {
+    cpSync(declarations, ${JSON.stringify(DIST)}, {
+        filter: (path) => statSync(path).isDirectory() || /\\.d\\.[cm]?ts(?:\\.map)?$/u.test(path),
+        recursive: true,
+    });
+}
+`
+        : ''
+}`;
 
 export function vitestConfigSource(exclude: readonly string[], suite: boolean): string {
     const kept = suite

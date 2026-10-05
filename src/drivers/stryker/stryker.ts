@@ -102,7 +102,10 @@ export async function strykerRun(
     const files = FILES[stage.name];
     const suite = stage.name === 'suite';
     writeFileSync(join(MUTATION_OUTPUT, files.vitest), vitestConfigSource(scope.exclude, suite));
-    writeFileSync(join(MUTATION_OUTPUT, files.sandbox), sandboxScriptSource(suite && buildsFirst));
+    writeFileSync(
+        join(MUTATION_OUTPUT, files.sandbox),
+        sandboxScriptSource(suite && buildsFirst, project),
+    );
     writeFileSync(
         join(MUTATION_OUTPUT, files.config),
         `${JSON.stringify(strykerConfig(scope, stage), null, 4)}\n`,

@@ -73,8 +73,10 @@ Stryker estimated sixty hours for the 11,200 the module tests left.
   whenever a change reaches a line the module tests leave and their
   verdict passes.
 - A test that cannot run against instrumented code — one reading the sources
-  as text, one type-checking the built declarations — is excluded by
-  `typescript.mutation.exclude`, with its reason.
+  as text — is excluded by `typescript.mutation.exclude`, with its reason.
+  (Amended 2026-10-05: one type-checking the built declarations is no longer
+  excluded — the suite's build carries the declarations of the project's
+  own build, since a mutant changes no declared type.)
 - A mutant an instrumented build cannot bundle (an empty import specifier) is
   declared where it stands: it can reach no test.
 - Measured when the decision was taken: every static mutant now runs. Here,

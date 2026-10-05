@@ -16,14 +16,6 @@ export default defineConfig({
         },
     },
     typescript: {
-        mutation: {
-            exclude: {
-                'specs/surface/package/documented-examples.test.ts':
-                    'it type-checks against the built declarations, which an instrumented build infers wider',
-                'specs/cli/tsc/declarations.spec.ts':
-                    'it type-checks against the built declarations, which an instrumented build infers wider',
-            },
-        },
         knip: {
             ignoreDependencies: {
                 react: 'the website and mobile specimens of specs/kinds/ declare it, and their install links it from this checkout',
