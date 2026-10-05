@@ -7,6 +7,7 @@ import { isJsonObject, objectOf } from './json.js';
 import { lawSettingRefused, writtenLawSetting } from './law-settings.js';
 import { optOutsOf } from './opt-outs.js';
 import type { OptOut } from './opt-outs.js';
+import type { SettingsOrigin } from './origins.js';
 import { readProjectKind } from './project-kind.js';
 import type { ProjectIdentity } from './project-kind.js';
 import { mergeSettings } from './settings-merge.js';
@@ -43,6 +44,8 @@ export type Preset = {
     layers?: readonly ArchitectureRule[];
     name: string;
     names?: readonly NamesRule[];
+    /** The files its `settings` are merged from, in order, each named inside its package. */
+    origins?: readonly SettingsOrigin[];
     oxlint?: OxlintConfig;
     package: string;
     presets?: readonly Preset[];
@@ -63,6 +66,8 @@ export type Resolved = {
     layers: unknown[];
     names: unknown[];
     optOuts: OptOut[];
+    /** The sections as the project's own file writes them, before any default. */
+    own: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
     presets: Preset[];
     sections: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
 };
@@ -71,7 +76,7 @@ export type Resolution = { problem: null | string; resolved: Resolved };
 
 const RESERVED = new Set(['kind', 'optOuts', 'platform', 'presets']);
 
-const isPreset = (value: unknown): value is Preset =>
+export const isPreset = (value: unknown): value is Preset =>
     isJsonObject(value) &&
     typeof value.name === 'string' &&
     value.name !== '' &&
@@ -104,6 +109,9 @@ const lawOf = (preset: Preset, rule: Named): PresetLaw => `${preset.name}/${rule
 
 const EMPTY_DECLARATION = Object.freeze({});
 
+const identityOf = ({ kind, platform }: ProjectIdentity): object =>
+    platform === null ? { kind } : { kind, platform };
+
 const EMPTY: Resolved = {
     baseline: [],
     declaration: null,
@@ -111,6 +119,7 @@ const EMPTY: Resolved = {
     layers: [],
     names: [],
     optOuts: [],
+    own: {},
     presets: [],
     sections: {},
 };
@@ -165,11 +174,12 @@ function orderedPresets(listed: readonly unknown[], base: readonly Preset[]): Pr
 }
 
 type Sections = {
+    own: Record<string, Readonly<Record<string, unknown>>>;
     problem: null | string;
     sections: Record<string, Readonly<Record<string, unknown>>>;
 };
 
-const sectionRefused = (problem: string): Sections => ({ problem, sections: {} });
+const sectionRefused = (problem: string): Sections => ({ own: {}, problem, sections: {} });
 
 function sectionsOf(
     presets: readonly Preset[],
@@ -180,6 +190,7 @@ function sectionsOf(
         ...Object.keys(declared).filter((key) => !RESERVED.has(key)),
     ]);
     const sections: Record<string, Readonly<Record<string, unknown>>> = {};
+    const owned: Record<string, Readonly<Record<string, unknown>>> = {};
     for (const name of [...names].toSorted()) {
         const own = declared[name];
         if (own !== undefined && !isJsonObject(own)) {
@@ -203,9 +214,12 @@ function sectionsOf(
             return sectionRefused(merged.problem);
         }
         sections[name] = objectOf(merged.value);
+        if (own !== undefined) {
+            owned[name] = own;
+        }
     }
 
-    return { problem: null, sections };
+    return { own: owned, problem: null, sections };
 }
 
 const listOf = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
@@ -225,33 +239,32 @@ function lawsOf(
 export function resolveConfig(declaredSettings: object, baseOf: BasePresets): Resolution {
     const declared = objectOf(declaredSettings);
     const listed: unknown = declared.presets ?? [];
-    // invariant: a file that cannot be resolved still leaves the base laws standing.
-    const refusedWith = (problem: string): Resolution => ({
+    // invariant: a file that cannot be resolved still leaves the base laws standing, for what it declares when that much reads.
+    const refusedWith = (problem: string, identity: object = EMPTY_DECLARATION): Resolution => ({
         problem,
-        resolved:
-            declaredSettings === EMPTY_DECLARATION
-                ? EMPTY
-                : resolveConfig(EMPTY_DECLARATION, baseOf).resolved,
+        resolved: declaredSettings === identity ? EMPTY : resolveConfig(identity, baseOf).resolved,
     });
     const { declaration, problem: undeclared } = readProjectKind(declared);
     if (undeclared !== null) {
         return refusedWith(undeclared);
     }
+    const refused = (problem: string): Resolution =>
+        refusedWith(problem, declaration === null ? EMPTY_DECLARATION : identityOf(declaration));
     if (!Array.isArray(listed)) {
-        return refusedWith('holds a `presets` that is not a list');
+        return refused('holds a `presets` that is not a list');
     }
     const presets = orderedPresets(listed, baseOf(declaration));
     if (typeof presets === 'string') {
-        return refusedWith(presets);
+        return refused(presets);
     }
-    const { problem: unmerged, sections } = sectionsOf(presets, declared);
+    const { own, problem: unmerged, sections } = sectionsOf(presets, declared);
     const laws = presets.flatMap((preset) =>
         [...(preset.layers ?? []), ...(preset.names ?? [])].map((rule) => lawOf(preset, rule)),
     );
     const opted = optOutsOf(declared.optOuts, new Set(laws));
-    const refused = unmerged ?? opted.problem;
-    if (refused !== null) {
-        return refusedWith(refused);
+    const unresolved = unmerged ?? opted.problem;
+    if (unresolved !== null) {
+        return refused(unresolved);
     }
     const typescript = sections.typescript ?? {};
 
@@ -270,6 +283,7 @@ export function resolveConfig(declaredSettings: object, baseOf: BasePresets): Re
                 ...listOf(typescript.names),
             ],
             optOuts: opted.optOuts,
+            own,
             presets,
             sections,
         },

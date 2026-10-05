@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-03
+**Amended by:** [ADR-021](021-a-package-standard-is-data-and-the-settings-file-holds-its-exceptions.md) — the defaults are each package's standard, and `typescript.build` is gone.
 
 ## Context
 

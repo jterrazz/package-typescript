@@ -211,6 +211,22 @@ describe('preset', () => {
             [names],
         ]);
         expect(resolved.laws).toStrictEqual(['typescript/base-law', 'web/web-names']);
+        expect(resolved.own).toStrictEqual({ knip: { entry: ['scripts/run.ts'] } });
+    });
+
+    test('keeps what a refused file declares itself to be', () => {
+        // Given - a library on node and a workspace, whose presets are no list
+        const { problem, resolved } = resolveConfig(
+            { kind: 'library', platform: 'node', presets: 'test' },
+            BASE_OF,
+        );
+
+        const workspace = resolveConfig({ kind: 'workspace', presets: 'test' }, BASE_OF);
+
+        // Then - the file is refused, and its declaration still reads, a workspace's with no platform
+        expect(problem).toBe('holds a `presets` that is not a list');
+        expect(resolved.declaration).toStrictEqual({ kind: 'library', platform: 'node' });
+        expect(workspace.resolved.declaration).toStrictEqual({ kind: 'workspace', platform: null });
     });
 
     test('resolves a base that refuses itself to nothing', () => {

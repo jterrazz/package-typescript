@@ -92,24 +92,30 @@ A preset is an object carrying its `name` (the section of `jterrazz.config.ts` i
 
 `definePreset`, from `@jterrazz/typescript/config`, types one. Writing the rules a preset carries is [Rules kit](rules-kit.md)'s.
 
-### The base preset
+### The standard
 
-The toolchain's own preset is always on, and nobody names it: the declaration derives it, its profile the platform's, its editor files and its tool roots the platform's too. It carries the laws every repository of the family keeps:
+The toolchain's own preset is always on, and nobody names it: it is this package's standard, the data under `src/standard/` — `standard.ts` for every project, `kinds/<kind>.ts` for its kind, `platforms/<platform>.ts` for its platform — merged in that order for the project's declaration. A workspace, and a project that declares nothing, read the `node` platform's. What the standard holds:
 
-- the direction of `lint/`: `kit-knows-no-declaration`, `consumer-folders-apart`, `self-folders-apart`, `catalogue-at-the-bottom`, `shipped-lint-reads-no-self` and `src-reads-no-declaration`, layers the Architecture pass holds a `lint/` tree to wherever one stands ([Architecture](../concepts/architecture.md#the-judging-layer));
-- the folders of the lint tree, the root spine, the roots a tool imposes, and the three word rosters of the Names pass ([Quality checks](quality-checks.md#the-names-tree-pass)).
+- the laws every repository of the family keeps, the direction of `lint/`: `kit-knows-no-declaration`, `consumer-folders-apart`, `self-folders-apart`, `catalogue-at-the-bottom`, `shipped-lint-reads-no-self` and `src-reads-no-declaration`, layers the Architecture pass holds a `lint/` tree to wherever one stands ([Architecture](../concepts/architecture.md#the-judging-layer));
+- the folders of the lint tree, the root spine, the member roots, the roots a tool imposes and the three word rosters of the Names pass ([Quality checks](quality-checks.md#the-names-tree-pass)), with what the platform's code is — its source roots, its extensions, its tsconfig preset, its framework's roots;
+- what a kind owes by default: a library shipping rules has its `lint/` measured by mutation testing, an api's `src/index.ts` and a cli's `src/*.bin.ts` decide how the process ends.
+- what mutation testing leaves out: the standard itself, data with no decision a test could hold.
 
-A law whose `from` names no file of the project costs nothing: the Architecture pass drops it before it runs, so a repository without a `lint/` tree runs no cruise for the base preset's laws.
+A standard is written as the settings file it defaults is, typed by `defineStandard` from `@jterrazz/typescript/config`, and it is data only: a function, a branch, a call but the `defineStandard` it exports, or a variable under a package's `src/standard/` is the Config pass's finding `config/standard-is-data` ([The Config (one file) pass](quality-checks.md#the-config-one-file-pass)). The code that applies it — the merge, the conventions the build reads names by — lives elsewhere. Every package of the family keeps its own there: `@jterrazz/test`'s `src/standard/standard.ts` holds the defaults of its `test` section, and its `test()` preset hands them on as they are.
+
+A law whose `from` names no file of the project costs nothing: the Architecture pass drops it before it runs, so a repository without a `lint/` tree runs no cruise for the standard's laws.
 
 ### The merge order
 
 Resolution is deterministic, and the same in every reader:
 
-1. The base preset the declaration derives first, then each listed preset in the order written. A preset's own presets come before it, depth first, and a preset named twice keeps its first place. Two presets of one name from two packages are refused.
+1. The standard first — `standard.ts`, then the kind's, then the platform's — then each listed preset in the order written, then the project's own file. A preset's own presets come before it, depth first, and a preset named twice keeps its first place. Two presets of one name from two packages are refused.
 
-2. Each section is its presets' `settings` merged in that order, then the project's own section over them. A list concatenates with duplicates dropped, a record merges key by key, and a single value the project writes wins. A list or a record is never replaced by another shape, so a `null` or a string written over the root spine is refused: a default is added to, never written away. A setting a preset names in its `lawSettings` is a law, and nothing adds to it. The base preset's are the lint tree, the root spine, the member roots, the tool roots and the word rosters; a root the project keeps beside the root spine is declared under `typescript.roots` with its reason.
+2. Each section is its presets' `settings` merged in that order, then the project's own section over them. A list concatenates with duplicates dropped, a record merges key by key, and a single value the project writes wins. A list or a record is never replaced by another shape, so a `null` or a string written over the root spine is refused: a default is added to, never written away. A setting a preset names in its `lawSettings` is a law, and nothing adds to it. The standard's are the lint tree, the root spine, the member roots, the tool roots, the word rosters and what the platform's code is; a root the project keeps beside the root spine is declared under `typescript.roots` with its reason.
 3. The laws, `layers` and `names`, are every preset's in that order, then the project's own (`typescript.architecture.layers`, `typescript.names`).
 4. `oxlint` is the platform's profile, then every preset's config in that order, then the project's own `typescript.oxlint` ([the lint rules](#the-lint-rules)).
+
+`typescript doctor` prints the resolved settings, one per line, each beside the file it comes from — a file of a package's standard, a preset, or `jterrazz.config.ts` — then every law and every one set aside.
 
 A file that does not load, a `presets` that is not a list of presets, a section that is not an object, a setting that replaces a default's shape, a write to a law setting, or a `presets` written inside a section rather than at the top level is refused in four parts by the pass that reads it, reading this heading.
 
@@ -132,21 +138,40 @@ export default defineConfig({
 
 An opt-out with no reason, or one naming a law no preset declares, is refused like a file that does not load. Each one is counted: the drift report prints how many laws the project set aside, and which ([Quality checks](quality-checks.md#the-drift-report)).
 
+### A repository held to its own presets
+
+A package that ships a preset holds itself to it, from its own build: `ownPresets` maps each built module to the preset it exports.
+
+```ts
+// jterrazz.config.ts
+import { defineConfig, ownPresets } from '@jterrazz/typescript/config';
+
+export default defineConfig({
+    kind: 'library',
+    platform: 'node',
+    presets: await ownPresets(import.meta.url, {
+        './dist/config.js': 'test',
+        './.artifacts/dev/preset.js': 'self',
+    }),
+});
+```
+
+`typescript build` reads the file before the build exists, so it runs on none of them; every other command is refused in four parts, reading this section, until `npm run build` made them — a run without them would judge nothing they hold.
+
 ## The `typescript` section
 
-The section this package reads holds the project's own settings, every one of them a name or a path mapped to the reason it is there:
+The section this package reads holds what the project cannot derive from its tree, its kind or its platform: the exceptions to its standard, every one of them a name or a path mapped to the reason it is there. The drift report counts them ([Quality checks](quality-checks.md#the-drift-report)).
 
-| Setting        | Declares                                                                                                                       | Read by                                                                    |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| `roots`        | each folder the repository keeps beside the root spine                                                                         | [the Names pass](quality-checks.md#a-root-beside-the-spine)                |
-| `architecture` | the layer map its imports are held to: the shipped `hexagonal` map, its own `layers`, or both                                  | [the Architecture pass](quality-checks.md#the-architecture-layer-map-pass) |
-| `names`        | its own rules of where a name sits                                                                                             | [the Names pass](quality-checks.md#a-name-rule-a-project-declares)         |
-| `oxlint`       | the rules it sets apart from its profile, `rules` and `overrides`                                                              | [the lint rules](#the-lint-rules)                                          |
-| `tsconfig`     | `compilerOptions` and `include` the project adds to its platform's preset, with one `reason`                                   | the derived `tsconfig.json`                                                |
-| `oxfmt`        | `ignore`: the paths the formatter leaves as written                                                                            | the derived `oxfmt.config.ts`                                              |
-| `build`        | `entries` the manifest does not name, and `dev` scripts built for the repository itself                                        | [Building](building.md#the-entries)                                        |
-| `knip`         | `entry`, `ignore`, `ignoreBinaries`, `ignoreDependencies`: what knip cannot trace                                              | [Lint presets](lint-presets.md#unused-code-knip)                           |
-| `mutation`     | `mutate`: sources measured beyond the platform's; `exclude`: tests mutation runs leave out; `ignore`: sources it never mutates | [Quality checks](quality-checks.md#mutation)                               |
+| Setting        | Declares                                                                                                                                      | Read by                                                                    |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `roots`        | each folder the repository keeps beside the root spine                                                                                        | [the Names pass](quality-checks.md#a-root-beside-the-spine)                |
+| `architecture` | the layer map its imports are held to: the shipped `hexagonal` map, its own `layers`, or both                                                 | [the Architecture pass](quality-checks.md#the-architecture-layer-map-pass) |
+| `names`        | its own rules of where a name sits                                                                                                            | [the Names pass](quality-checks.md#a-name-rule-a-project-declares)         |
+| `oxlint`       | the rules it sets apart from its profile, `rules` and `overrides`                                                                             | [the lint rules](#the-lint-rules)                                          |
+| `tsconfig`     | `compilerOptions` and `include` the project adds to its platform's preset, with one `reason`                                                  | the derived `tsconfig.json`                                                |
+| `oxfmt`        | `ignore`: the paths the formatter leaves as written                                                                                           | the derived `oxfmt.config.ts`                                              |
+| `knip`         | `entry`, `ignore`, `ignoreBinaries`, `ignoreDependencies`: what knip cannot trace                                                             | [Lint presets](lint-presets.md#unused-code-knip)                           |
+| `mutation`     | `mutate`: sources measured beyond the platform's and the kind's; `exclude`: tests mutation runs leave out; `ignore`: sources it never mutates | [Quality checks](quality-checks.md#mutation)                               |
 
 A project with nothing of its own to say keeps no section at all.
 

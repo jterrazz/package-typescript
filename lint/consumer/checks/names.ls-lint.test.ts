@@ -3,8 +3,10 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test, vi } from 'vitest';
 
-import { LINT_TREE } from '../catalogue/preset.js';
+import STANDARD from '../../../src/standard/standard.js';
 import { ignoredOf, lsLintConfig, lsLintFindings, runLsLint } from './names.ls-lint.js';
+
+const LINT_TREE = STANDARD.typescript?.lint ?? {};
 
 const LS_LINT = join(import.meta.dirname, '../../../node_modules/.bin/ls-lint');
 

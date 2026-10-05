@@ -1,4 +1,3 @@
-import type { BuildEntry } from './kit/project/build-plan.js';
 import type { ArchitectureRule, NamesRule, Preset } from './kit/project/preset.js';
 import type { ProjectDeclaration } from './kit/project/project-kind.js';
 import type { ProjectOverride, ProjectRule } from './kit/project/project-oxlint.js';
@@ -11,6 +10,8 @@ export type {
     PresetChecker,
 } from './kit/project/preset.js';
 export type { Platform, ProjectDeclaration, ProjectKind } from './kit/project/project-kind.js';
+export { ownPresets } from './kit/project/own-presets.js';
+export type { OwnPresets } from './kit/project/own-presets.js';
 
 /** A repository's settings for the @jterrazz toolchain family; a sibling package adds its section by interface merging. */
 export interface JterrazzConfig {
@@ -35,11 +36,6 @@ type Reasoned = Readonly<Record<string, string>>;
 /** The `typescript` section of `jterrazz.config.ts`: every setting the toolchain's tools read, each with its reason. */
 export type TypescriptSettings = {
     architecture?: ArchitectureSettings;
-    /** Entries the manifest does not name: shipped and loaded by path, or built for this repository's own scripts. */
-    build?: {
-        dev?: Readonly<Record<string, BuildEntry>>;
-        entries?: Readonly<Record<string, BuildEntry>>;
-    };
     /** What knip cannot trace, each path or name mapped to the reason it is named. */
     knip?: {
         entry?: Reasoned;
@@ -69,6 +65,26 @@ export type TypescriptSettings = {
 
 export type ProjectConfig = JterrazzConfig & ProjectDeclaration;
 
+/** The settings of the `typescript` section no project writes: the laws of the tree, and what the platform's code is. */
+export type TypescriptLaws = {
+    lint?: Readonly<Record<string, readonly string[]>>;
+    memberRoots?: readonly string[];
+    /** The folders the platform's code sits in, and its file extensions. */
+    sources?: { extensions: readonly string[]; roots: readonly string[] };
+    spine?: readonly string[];
+    toolRoots?: Readonly<Record<string, string>>;
+    /** The tsconfig preset of the platform, `@jterrazz/typescript/tsconfig/<name>`. */
+    tsconfigPreset?: string;
+    words?: Readonly<Record<string, readonly string[]>>;
+};
+
+/** A package's standard: the defaults of the sections `jterrazz.config.ts` writes, and the laws it holds every project to — data only. */
+export type Standard = Omit<JterrazzConfig, 'optOuts' | 'presets' | 'typescript'> & {
+    /** The laws a project sets aside by name, as `<preset>/<law>`, under `optOuts`. */
+    laws?: { layers?: readonly ArchitectureRule[]; names?: readonly NamesRule[] };
+    typescript?: TypescriptLaws & TypescriptSettings;
+};
+
 /** The settings as written, typed: what the project is, then every section a package of the family declares. */
 export function defineConfig(config: ProjectConfig): ProjectConfig {
     return config;
@@ -76,4 +92,9 @@ export function defineConfig(config: ProjectConfig): ProjectConfig {
 
 export function definePreset(preset: Preset): Preset {
     return preset;
+}
+
+/** A standard as written under a package's `src/standard/`, typed as the settings file it defaults. */
+export function defineStandard(standard: Standard): Standard {
+    return standard;
 }

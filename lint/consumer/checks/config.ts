@@ -24,6 +24,7 @@ import type { ProjectIdentity } from '../../kit/project/project-kind.js';
 import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import FINDINGS from '../catalogue/findings.json' with { type: 'json' };
 import { manifestGap, NAMED } from './config.manifest.js';
+import { standardLogic } from './config.standard.js';
 
 const READ = 'docs/reference/quality-checks.md#the-config-one-file-pass';
 
@@ -248,7 +249,7 @@ async function unitsOf(context: Context): Promise<{ findings: Finding[]; units: 
             );
 
             return {
-                declaration: resolved.declaration,
+                declaration: problem === null ? resolved.declaration : null,
                 files,
                 path,
                 problem,
@@ -283,6 +284,9 @@ export const config: Pass = Object.freeze({
                 ...tsconfigFindings(unit),
                 ...editor.findings,
                 ...toolConfigFindings(context, unit.path),
+                ...standardLogic(context, unit.path).map(({ path, teaching }) =>
+                    finding('config/standard-is-data', path, teaching),
+                ),
             );
             writes.push(...editor.writes);
         }

@@ -30,6 +30,11 @@
         "sentence": "What typescript.tsconfig adds to the derived tsconfig.json carries its reason, since every setting maps to why it is set."
     },
     {
+        "family": "config",
+        "id": "config/standard-is-data",
+        "sentence": "A package's standard under src/standard/ is data: no function, branch, call or variable but the defineStandard each file exports."
+    },
+    {
         "family": "comments",
         "id": "jterrazz-typescript/comment-no-longer-than-its-function",
         "sentence": "A comment run above a function is no longer than the function it documents."
