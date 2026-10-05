@@ -6,8 +6,12 @@ import style from './style.js';
 
 export async function oxfmtConfigAt(unit: string): Promise<OxfmtConfig> {
     const { resolved } = await readSettings(unit);
-    const { oxfmt } = objectOf(resolved.sections.typescript);
-    const ignored = Object.keys(objectOf(objectOf(oxfmt).ignore));
+    const { generated, oxfmt } = objectOf(resolved.sections.typescript);
+    // invariant: a root a script writes is written byte for byte, and the formatter leaves it alone.
+    const ignored = [
+        ...Object.keys(objectOf(objectOf(oxfmt).ignore)),
+        ...Object.keys(objectOf(generated)),
+    ];
 
     return { ...style, ignorePatterns: [...(style.ignorePatterns ?? []), ...ignored] };
 }

@@ -2,13 +2,7 @@ import { join } from 'node:path';
 
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import { emptyDirectories } from '../../kit/project/empty-directories.js';
-import {
-    isJsonObject,
-    objectOf,
-    parsedObject,
-    stringRecordOf,
-    stringsOf,
-} from '../../kit/project/json.js';
+import { objectOf, parsedObject, stringRecordOf, stringsOf } from '../../kit/project/json.js';
 import type { JsonObject } from '../../kit/project/json.js';
 import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import type { Resolution } from '../../kit/project/preset.js';
@@ -22,6 +16,13 @@ import { lsLintConfig, lsLintFindings, runLsLint } from './names.ls-lint.js';
 import type { LintTrees } from './names.ls-lint.js';
 import { makefileOf } from './names.makefile.js';
 import { shipsLint } from './names.published-lint.js';
+import {
+    declaredRootsFindings,
+    declaredRootsOf,
+    isDeclaredRoot,
+    NO_DECLARED_ROOTS,
+} from './names.roots.js';
+import type { DeclaredRoots } from './names.roots.js';
 import { findingsOf } from './names.universal.js';
 import type { Universal } from './names.universal.js';
 
@@ -31,11 +32,9 @@ type Manifest = JsonObject;
 
 type Settings = {
     problem: null | string;
-    roots: Readonly<Record<string, unknown>>;
+    roots: DeclaredRoots;
     universal: Universal;
 };
-
-const DECLARATION = 'typescript.roots';
 
 function manifestOf(disk: Disk, unit: string): Manifest {
     const manifest = disk.read(join(unit, 'package.json'));
@@ -70,22 +69,10 @@ function settingsOf({ problem, resolved }: Resolution): Settings {
     const section = resolved.sections.typescript ?? {};
     const universal = universalOf(section);
     if (problem !== null) {
-        return { problem, roots: {}, universal };
+        return { problem, roots: NO_DECLARED_ROOTS, universal };
     }
 
-    const { roots } = section;
-    if (roots === undefined) {
-        return { problem: null, roots: {}, universal };
-    }
-    if (!isJsonObject(roots)) {
-        return {
-            problem: `holds a \`${DECLARATION}\` that is not an object mapping each folder to its reason`,
-            roots: {},
-            universal,
-        };
-    }
-
-    return { problem: null, roots, universal };
+    return { ...declaredRootsOf(section), universal };
 }
 
 function foreignRoot(root: string, prefix: string): Finding {
@@ -100,40 +87,10 @@ function foreignRoot(root: string, prefix: string): Finding {
                   found: `\`${prefix}lint/\` holds the lint rules a package ships, and neither ${manifestPath} nor its build publishes it`,
               }
             : {
-                  fix: `move it under src/, or declare it in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` with its reason`,
+                  fix: `move it under src/, or declare it in ${prefix}${SETTINGS_FILE}'s \`typescript.roots\` with its reason`,
                   found: `\`${prefix}${root}/\` is a root outside the spine`,
               },
     );
-}
-
-function declaredRootFindings(
-    declared: Settings['roots'],
-    roots: ReadonlySet<string>,
-    prefix: string,
-): Finding[] {
-    const findings: Finding[] = [];
-
-    for (const [root, reason] of Object.entries(declared).toSorted(([left], [right]) =>
-        left < right ? -1 : 1,
-    )) {
-        if (typeof reason !== 'string' || reason.trim() === '') {
-            findings.push(
-                namesFinding('names/declared-root-states-its-reason', `${prefix}${root}/`, {
-                    fix: 'say why the repository keeps it',
-                    found: `\`${prefix}${root}/\` is declared in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` with no reason`,
-                }),
-            );
-        } else if (!roots.has(root)) {
-            findings.push(
-                namesFinding('names/declared-root-holds-files', `${prefix}${root}/`, {
-                    fix: 'delete the entry',
-                    found: `\`${prefix}${root}/\` is declared in ${prefix}${SETTINGS_FILE}'s \`${DECLARATION}\` and holds no file`,
-                }),
-            );
-        }
-    }
-
-    return findings;
 }
 
 function spineOf(
@@ -166,7 +123,7 @@ function spineOf(
         (spine.has(root) && (root !== LINT_ROOT || shipsLint(disk, manifest, unit))) ||
         memberRoots.has(root) ||
         Object.hasOwn(toolRoots, root) ||
-        Object.hasOwn(declared, root);
+        isDeclaredRoot(declared, root);
 
     return [
         ...findings,
@@ -176,7 +133,7 @@ function spineOf(
             .toSorted((left, right) => (left < right ? -1 : 1))
             .filter((root) => !isCodified(root))
             .map((root) => foreignRoot(root, prefix)),
-        ...declaredRootFindings(declared, roots, prefix),
+        ...declaredRootsFindings(declared, { prefix, roots }),
     ];
 }
 
