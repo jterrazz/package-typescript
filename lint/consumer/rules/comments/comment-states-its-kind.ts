@@ -20,12 +20,7 @@ type RuleContext = {
 
 export const COMMENT_STATES_ITS_KIND_NAME = 'comment-states-its-kind';
 
-export const COMMENT_KINDS: readonly string[] = Object.freeze([
-    'invariant',
-    'hazard',
-    'outside',
-    'value',
-]);
+const COMMENT_KINDS: readonly string[] = Object.freeze(['invariant', 'hazard', 'outside', 'value']);
 
 const KIND = new RegExp(`^(?:${COMMENT_KINDS.join('|')}): \\S`, 'u');
 

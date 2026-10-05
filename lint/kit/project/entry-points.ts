@@ -15,13 +15,13 @@ const DECLARATION = /\.d\.[cm]?ts$/u;
 
 const CODE = /\.[cm]?js$/u;
 
-export function subpathStemOf(subpath: string, browser: boolean): string {
+function subpathStemOf(subpath: string, browser: boolean): string {
     const parts = subpath === '.' ? [] : withoutDotSlash(subpath).split('/');
 
     return ['index', ...parts, ...(browser ? ['browser'] : [])].join('.');
 }
 
-export const binStemOf = (command: string): string => `${command}.bin`;
+const binStemOf = (command: string): string => `${command}.bin`;
 
 function exportedOf(value: unknown, subpath: string, browser: boolean): Published[] {
     if (typeof value === 'string') {

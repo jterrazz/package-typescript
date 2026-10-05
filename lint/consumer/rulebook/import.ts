@@ -27,7 +27,7 @@ export const IMPORT_SIDE_EFFECT_MODULES: readonly string[] = Object.freeze([
 ]);
 // Stryker restore ArrayDeclaration,StringLiteral
 
-export const IMPORT_EXTENSIONS_ALWAYS = on(['always', { ignorePackages: true, ...IMPORT_ASSETS }]);
+const IMPORT_EXTENSIONS_ALWAYS = on(['always', { ignorePackages: true, ...IMPORT_ASSETS }]);
 export const IMPORT_EXTENSIONS_NEVER = on(['never', IMPORT_ASSETS]);
 
 export default fragment({

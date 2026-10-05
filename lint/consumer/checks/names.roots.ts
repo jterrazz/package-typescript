@@ -4,7 +4,7 @@ import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { namesFinding } from './names.lessons.js';
 
 /** The two settings declaring a root beside the spine, each folder mapped to its reason: `generated` is a root a script writes, which the formatter leaves alone. */
-export const ROOTS_DECLARATIONS = ['roots', 'generated'] as const;
+const ROOTS_DECLARATIONS = ['roots', 'generated'] as const;
 
 export type DeclaredRoots = Readonly<
     Record<(typeof ROOTS_DECLARATIONS)[number], Readonly<Record<string, unknown>>>

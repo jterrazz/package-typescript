@@ -15,7 +15,7 @@ export type Profile = {
     readonly ignorePatterns?: readonly string[];
 };
 
-export const OPTIONS: Readonly<NonNullable<OxlintConfig['options']>> = Object.freeze({
+const OPTIONS: Readonly<NonNullable<OxlintConfig['options']>> = Object.freeze({
     reportUnusedDisableDirectives: 'error',
     typeAware: true,
 });

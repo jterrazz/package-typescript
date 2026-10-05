@@ -11,7 +11,7 @@ const SOURCE = String.raw`\.[cm]?[jt]sx?$`;
 const PROCESS_ENTRY = 'src/index';
 
 /** The module each platform enters the app by — the one that calls `compose()` and hands the graph down. */
-export const COMPOSITION_ENTRIES: Readonly<Record<Platform, readonly string[]>> = Object.freeze({
+const COMPOSITION_ENTRIES: Readonly<Record<Platform, readonly string[]>> = Object.freeze({
     astro: ['src/middleware'],
     bun: [PROCESS_ENTRY],
     expo: ['(src/)?app/_layout'],

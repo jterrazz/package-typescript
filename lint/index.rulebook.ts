@@ -42,7 +42,7 @@ const settingsRefusal = (problem: string): Error =>
         }),
     );
 
-export function oxlintConfigOf({ problem, resolved }: Resolution): OxlintConfig {
+function oxlintConfigOf({ problem, resolved }: Resolution): OxlintConfig {
     if (problem !== null) {
         throw settingsRefusal(problem);
     }

@@ -78,7 +78,7 @@ const byKey = ([left]: [string, number], [right]: [string, number]): number =>
 // outside: the formatter owns the indent of a file it formatted, so a rewrite keeps the file's own, and a new file takes the formatter's.
 const FORMATTED_INDENT = '    ';
 
-export function serialise(counts: Counts, indent: string = FORMATTED_INDENT): string {
+function serialise(counts: Counts, indent: string = FORMATTED_INDENT): string {
     const sorted = Object.fromEntries(Object.entries(counts).toSorted(byKey));
 
     return JSON.stringify(sorted, null, indent).replaceAll('\n', `\n${indent}`);

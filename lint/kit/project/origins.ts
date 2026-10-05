@@ -18,7 +18,7 @@ type Layer = { origin: string; settings: unknown };
 type Entry = { list: boolean; origin: string; path: string; values: string[] };
 
 /** The origin of what a command derives from the project's tree, never written in a file. */
-export const DERIVED = 'derived from the tree';
+const DERIVED = 'derived from the tree';
 
 const RULEBOOK = '@jterrazz/typescript rulebook';
 

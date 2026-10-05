@@ -29,7 +29,7 @@ const RULEBOOK: OxlintConfig = {
     settings: { react: { version: '19' } },
 };
 
-describe('origins', () => {
+describe('originLines', () => {
     test('origins — names the file each setting comes from, by setting, in the merge order', () => {
         // Given - a base merged from three files, a listed preset with no origins, and the project's own settings
         const { problem, resolved } = resolveConfig(

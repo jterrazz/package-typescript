@@ -13,7 +13,7 @@ export type Unread = Omit<Lesson, 'read'>;
 
 export const LESSON_PARTS = ['found', 'why', 'fix', 'read'] as const;
 
-export const LESSON_SEPARATOR = ' · ';
+const LESSON_SEPARATOR = ' · ';
 
 export function refusal(lesson: Lesson): string {
     return LESSON_PARTS.map((part) => `${part}: ${lesson[part]}`).join(LESSON_SEPARATOR);

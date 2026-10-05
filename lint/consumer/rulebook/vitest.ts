@@ -3,7 +3,7 @@ import { allOn, fragment, off, on, scoped, unsafeFix } from '../../kit/compiler/
 // invariant: four offs are one half of an exclusive pair; `exclusive-pairs.test.ts` proves no profile arms both.
 
 // invariant: a file another runner owns takes that runner's suffix (`*.e2e.ts`, `*.render.tsx`), which no glob here names.
-export const TEST_FILES = Object.freeze([
+const TEST_FILES = Object.freeze([
     '**/*.{test,spec,test-d,spec-d}.{ts,tsx,js,jsx}',
     '**/specs/**/*.{ts,tsx}',
     '**/__tests__/**/*.{ts,tsx,js,jsx}',

@@ -5,7 +5,7 @@ import ts from 'typescript';
 import { refusal } from '../../kit/catalogue/lesson.js';
 import { syntaxWalk } from '../../kit/testing/syntax-walk.js';
 
-export const LESSON_MODULE = 'lint/kit/catalogue/lesson.ts';
+const LESSON_MODULE = 'lint/kit/catalogue/lesson.ts';
 
 const ID = 'error-is-a-refusal-or-an-invariant';
 

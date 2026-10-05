@@ -78,7 +78,7 @@ export type Merged = Decision & {
     readonly scoped?: readonly string[] | undefined;
 };
 
-export const RULEBOOK_BIRTH_VERSION = '10.0.0';
+const RULEBOOK_BIRTH_VERSION = '10.0.0';
 
 // invariant: a `consumer` rule ships; a `self` rule is this package's suite discipline and lives in its tests.
 export const AUDIENCES: readonly Audience[] = Object.freeze(['consumer', 'self']);

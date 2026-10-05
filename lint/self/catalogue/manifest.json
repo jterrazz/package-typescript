@@ -83,7 +83,7 @@
         "channel": "meta",
         "home": "lint/self/corpus/refusals.ts",
         "id": "error-is-a-refusal-or-an-invariant",
-        "names": ["LESSON_MODULE", "refusalFindings", "refusalLine"],
+        "names": ["refusalFindings", "refusalLine"],
         "why": "judges this package's own shipped modules: an error a user can cause is thrown as a four-part refusal reading a heading that exists, and one only the toolchain can cause is `invariant()`"
     },
     {

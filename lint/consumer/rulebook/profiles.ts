@@ -20,7 +20,7 @@ import vitest from './vitest.js';
 
 // invariant: a profile adds a framework's plugins and ignores to the core rulebook, and never sets a core rule `off`.
 
-export const CORE = Object.freeze([
+const CORE = Object.freeze([
     eslint,
     typescript,
     unicorn,
