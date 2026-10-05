@@ -44,15 +44,19 @@ describe('jterrazz-config', () => {
         // When - each is read both ways
         const read = await Promise.all([readConfig(bare, BASE), readConfig(declared, BASE)]);
         const readings = [
+            read[0].problem,
             read[0].resolved.sections.typescript,
+            readConfigSync(bare, BASE).problem,
             readConfigSync(bare, BASE).resolved.sections.typescript,
             read[1].resolved.sections.typescript,
             readConfigSync(declared, BASE).resolved.sections.typescript,
         ];
 
-        // Then - every reading carries the two declared packages, the declared unit its kind
+        // Then - no file is no problem, every reading carries the two declared packages, the declared unit its kind
         expect(readings).toStrictEqual([
+            null,
             { kind: 'none', uses: ['@prisma/client', 'vitest'] },
+            null,
             { kind: 'none', uses: ['@prisma/client', 'vitest'] },
             { kind: 'api', uses: ['@prisma/client', 'vitest'] },
             { kind: 'api', uses: ['@prisma/client', 'vitest'] },
@@ -71,11 +75,67 @@ describe('jterrazz-config', () => {
         );
         const broken = unitWith({ 'jterrazz.config.ts': "throw new Error('no settings here');\n" });
 
-        // Then - the second reading is the first, and the broken file names its error
-        expect([readConfigSync(unit, BASE), first.resolved.declaration]).toStrictEqual([
-            first,
+        // Then - the second reading is the first itself, and the broken file names its error
+        expect(readConfigSync(unit, BASE)).toBe(first);
+        expect([first.resolved.declaration, readConfigSync(broken, BASE).problem]).toStrictEqual([
             { kind: 'cli', platform: 'node' },
+            'does not load — no settings here',
         ]);
-        expect(readConfigSync(broken, BASE).problem).toBe('does not load — no settings here');
+    });
+
+    test('readConfig and readConfigSync — a file exporting no settings object, or settings that do not resolve, is its problem', async () => {
+        // Given - a settings file whose default export is a number, and one whose presets are no list
+        const units = [
+            unitWith({ 'jterrazz.config.ts': 'export default 42;\n' }),
+            unitWith({ 'jterrazz.config.ts': "export default { presets: 'test' };\n" }),
+        ];
+
+        // When - each is read both ways
+        const read = await Promise.all(units.map(async (unit) => await readConfig(unit, BASE)));
+        const problems = [...read, ...units.map((unit) => readConfigSync(unit, BASE))].map(
+            ({ problem }) => problem,
+        );
+
+        // Then - each says what the file lacks
+        expect(problems).toStrictEqual([
+            'exports no settings object as its default — write `export default defineConfig({ … })`',
+            'holds a `presets` that is not a list',
+            'exports no settings object as its default — write `export default defineConfig({ … })`',
+            'holds a `presets` that is not a list',
+        ]);
+    });
+
+    test('readConfig — a warning the settings file raises reaches the process, but Node’s typeless-package one, and the process keeps its own emitter', async () => {
+        // Given - a settings file raising a typeless-package warning both ways Node spells it, then others: with a code, with none, with a type, with nothing
+        const unit = unitWith({
+            'jterrazz.config.ts': [
+                "process.emitWarning('typeless', 'MODULE_TYPELESS_PACKAGE_JSON');",
+                "process.emitWarning('typeless', { code: 'MODULE_TYPELESS_PACKAGE_JSON' });",
+                "process.emitWarning('kept', { code: 'OTHER' });",
+                "process.emitWarning('plain');",
+                "process.emitWarning('typed', 'DeprecationWarning');",
+                "process.emitWarning('nulled', null);",
+                "export default { kind: 'cli', platform: 'node' };",
+                '',
+            ].join('\n'),
+        });
+        const warned: unknown[] = [];
+        const emitter = (warning: unknown): void => {
+            warned.push(warning);
+        };
+        const original: typeof process.emitWarning = Reflect.get(process, 'emitWarning');
+        process.emitWarning = emitter;
+        onTestFinished(() => {
+            process.emitWarning = original;
+        });
+
+        // When - it is read
+        await readConfig(unit, BASE);
+
+        // Then - only the other warning reached the emitter, which is the process's again
+        expect([warned, process.emitWarning === emitter]).toStrictEqual([
+            ['kept', 'plain', 'typed', 'nulled'],
+            true,
+        ]);
     });
 });

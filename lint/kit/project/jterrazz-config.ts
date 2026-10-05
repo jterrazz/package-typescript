@@ -50,29 +50,20 @@ function resolvedFrom(
 
 const TYPELESS = 'MODULE_TYPELESS_PACKAGE_JSON';
 
-const isTypeless = (options: unknown): boolean =>
-    options === TYPELESS ||
-    (typeof options === 'object' &&
-        options !== null &&
-        'code' in options &&
-        options.code === TYPELESS);
+const isTypeless = (option: unknown): boolean =>
+    option === TYPELESS || (isJsonObject(option) && option.code === TYPELESS);
 
 async function quietly(load: () => unknown): Promise<unknown> {
-    const emit = process.emitWarning.bind(process);
-    const descriptor = Object.getOwnPropertyDescriptor(process, 'emitWarning');
+    const original: typeof process.emitWarning = Reflect.get(process, 'emitWarning');
     process.emitWarning = (warning: Error | string, ...rest: unknown[]): void => {
         if (!rest.some((option) => isTypeless(option))) {
-            Reflect.apply(emit, process, [warning, ...rest]);
+            Reflect.apply(original, process, [warning, ...rest]);
         }
     };
     try {
         return await load();
     } finally {
-        if (descriptor === undefined) {
-            Reflect.deleteProperty(process, 'emitWarning');
-        } else {
-            Object.defineProperty(process, 'emitWarning', descriptor);
-        }
+        process.emitWarning = original;
     }
 }
 
