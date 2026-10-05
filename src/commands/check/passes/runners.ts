@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 
-import { runOxfmt } from '../../../drivers/oxfmt/oxfmt.js';
-import { runOxlint } from '../../../drivers/oxlint/oxlint.js';
+import { formatted } from '../../../drivers/oxfmt/oxfmt.js';
+import { linted } from '../../../drivers/oxlint/oxlint.js';
 import type { Check } from './setup.js';
 
 export async function oxlint(check: Check, args: readonly string[], log: string): Promise<number> {
@@ -9,10 +9,10 @@ export async function oxlint(check: Check, args: readonly string[], log: string)
         return 0;
     }
 
-    return await runOxlint(
+    return await linted(
         check.tools.oxlint,
         [...check.configs.oxlint.args, ...args, ...check.lintTargets.paths],
-        { stderr: 'stdout', stdout: { append: true, path: log } },
+        log,
     );
 }
 
@@ -22,13 +22,11 @@ export async function oxfmt(check: Check, args: readonly string[], log: string):
 
         return 0;
     }
-    const targets =
-        check.formatTargets.paths.length === 0
-            ? []
-            : ['--no-error-on-unmatched-pattern', ...check.formatTargets.paths];
 
-    return await runOxfmt(check.tools.oxfmt, [...check.configs.oxfmt.args, ...args, ...targets], {
-        stderr: 'stdout',
-        stdout: { path: log },
-    });
+    return await formatted(
+        check.tools.oxfmt,
+        [...check.configs.oxfmt.args, ...args],
+        check.formatTargets.paths,
+        log,
+    );
 }

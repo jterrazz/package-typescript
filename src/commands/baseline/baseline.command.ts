@@ -15,11 +15,11 @@ import { ignorePatternsOf } from '../../../lint/kit/project/project-files.js';
 import { checker, presetChecker } from '../../drivers/checker/checker.js';
 import { depcruiseBinary } from '../../drivers/dependency-cruiser/dependency-cruiser.js';
 import { lsLintBinary } from '../../drivers/ls-lint/ls-lint.js';
-import { oxfmtBinary, oxfmtConfig, runOxfmt } from '../../drivers/oxfmt/oxfmt.js';
+import { filesFormatted, oxfmtBinary, oxfmtConfig } from '../../drivers/oxfmt/oxfmt.js';
 import {
     oxlintBinary,
     oxlintConfig,
-    runOxlint,
+    suppressionsRecorded,
     withTsgolintOnPath,
 } from '../../drivers/oxlint/oxlint.js';
 import { badge, print } from '../check/report/terminal.js';
@@ -41,13 +41,7 @@ async function recordLinter(args: readonly string[], projectBin: string): Promis
     if (targets === null || targets.length === 0) {
         return;
     }
-    for (const recording of ['--suppress-all', '--prune-suppressions']) {
-        await runOxlint(
-            oxlintBinary(projectBin),
-            [...oxlint.args, '--type-aware', recording, ...args, ...targets],
-            { stderr: 'ignore', stdout: 'ignore' },
-        );
-    }
+    await suppressionsRecorded(oxlintBinary(projectBin), oxlint.args, args, targets);
     removeWhenEmpty('.');
 }
 
@@ -113,18 +107,11 @@ export async function baseline(args: readonly string[]): Promise<number> {
                 if ((await written(reports)) !== 0 || (await recordedPresets()) !== 0) {
                     return 1;
                 }
-                await runOxfmt(
+                await filesFormatted(
                     oxfmtBinary(projectBin),
-                    [
-                        ...oxfmtConfig().args,
-                        '--no-error-on-unmatched-pattern',
-                        BASELINE,
-                        OXLINT_SUPPRESSIONS,
-                    ],
-                    {
-                        stderr: 'ignore',
-                        stdout: 'ignore',
-                    },
+                    oxfmtConfig().args,
+                    BASELINE,
+                    OXLINT_SUPPRESSIONS,
                 );
 
                 return 0;

@@ -1,5 +1,4 @@
 import { appendFileSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { basename } from 'node:path';
 import process from 'node:process';
 
 import {
@@ -11,7 +10,7 @@ import { invariant, messageOf, refusal } from '../../../../lint/kit/catalogue/le
 import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
 import { astroChecked } from '../../../drivers/astro/astro.js';
 import { knip } from '../../../drivers/knip/knip.js';
-import { runOxlint } from '../../../drivers/oxlint/oxlint.js';
+import { fixedUnder } from '../../../drivers/oxlint/oxlint.js';
 import type { FixScope } from '../../../drivers/oxlint/unsafe-fixers.js';
 import { astroFormatted } from '../../../drivers/prettier/prettier.js';
 import { typeChecked } from '../../../drivers/tsc/tsc.js';
@@ -100,19 +99,11 @@ async function fixedScopes(check: Check, scopes: readonly FixScope[]): Promise<n
     const log = check.logs.at('fix-scopes.log');
     let status = 0;
     for (const { files, wrapper } of scopes) {
-        const fixed = await runOxlint(
+        const fixed = await fixedUnder(
             check.tools.oxlint,
-            [
-                '--type-aware',
-                '--fix',
-                '-c',
-                wrapper,
-                '--ignore-pattern',
-                basename(wrapper),
-                ...check.lintArgs,
-                ...files,
-            ],
-            { stderr: 'stdout', stdout: { append: true, path: log } },
+            wrapper,
+            [...check.lintArgs, ...files],
+            log,
         );
         status = fixed > COULD_NOT_RUN ? fixed : status;
         rmSync(wrapper, { force: true });
