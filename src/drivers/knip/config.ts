@@ -1,12 +1,12 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 
-import { invariant, messageOf, refusal } from '../../../lint/kit/catalogue/lesson.js';
+import { messageOf, refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { isGroundFolder } from '../../../lint/kit/project/ground.js';
 import { isList, objectOf, parsedObject } from '../../../lint/kit/project/json.js';
 import type { JsonObject } from '../../../lint/kit/project/json.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
-import { readJsonc } from './jsonc.js';
+import { KNIP_PRESET } from '../../presets/knip/config.js';
 import type { KnipSettings } from './settings.js';
 
 type KnipConfig = Record<string, unknown>;
@@ -120,14 +120,6 @@ function conventionIgnores(): string[] {
     }
 
     return ignores;
-}
-
-function presetFile(path: string): JsonObject {
-    try {
-        return readJsonc(path);
-    } catch (error) {
-        throw invariant(`the knip preset ${path} does not parse: ${messageOf(error)}`);
-    }
 }
 
 function manifestHere(): JsonObject {
@@ -248,15 +240,16 @@ function ignoredDependencies(manifest: JsonObject): string[] {
     ];
 }
 
-export function mergedKnipConfig(
-    basePath: string,
-    {
-        entries,
-        library,
-        settings,
-    }: { entries: readonly string[]; library: boolean; settings: KnipSettings },
-): KnipConfig {
-    const merged = mergedConfigs(presetFile(basePath), {
+export function mergedKnipConfig({
+    entries,
+    library,
+    settings,
+}: {
+    entries: readonly string[];
+    library: boolean;
+    settings: KnipSettings;
+}): KnipConfig {
+    const merged = mergedConfigs(KNIP_PRESET, {
         ...settings,
         entry: [...entries, ...settings.entry],
     });

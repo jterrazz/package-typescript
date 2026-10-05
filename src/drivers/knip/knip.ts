@@ -1,12 +1,7 @@
 import { writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 
 import { messageOf } from '../../../lint/kit/catalogue/lesson.js';
-import {
-    binaryIn,
-    HOISTED_BESIDE_PACKAGE,
-    PACKAGE_ROOT,
-} from '../../../lint/kit/project/package-root.js';
+import { binaryIn, HOISTED_BESIDE_PACKAGE } from '../../../lint/kit/project/package-root.js';
 import { run } from '../run.js';
 import { mergedKnipConfig } from './config.js';
 import type { KnipSettings } from './settings.js';
@@ -22,10 +17,7 @@ export async function knip(
     { log, merged }: { log: string; merged: string },
 ): Promise<number> {
     try {
-        const config = mergedKnipConfig(
-            join(PACKAGE_ROOT, 'src/presets/knip/config.json'),
-            project,
-        );
+        const config = mergedKnipConfig(project);
         writeFileSync(merged, JSON.stringify(config));
     } catch (error) {
         writeFileSync(log, `${messageOf(error)}\n`);

@@ -113,14 +113,6 @@
     },
     {
         "audience": "consumer",
-        "by": "throw",
-        "channel": "runtime",
-        "id": "knip-preset-unparsed",
-        "message": "the knip preset",
-        "module": "src/drivers/knip/config.ts"
-    },
-    {
-        "audience": "consumer",
         "by": "exit",
         "channel": "runtime",
         "id": "checker-command-failed",
