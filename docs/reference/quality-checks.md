@@ -450,12 +450,12 @@ A package that ships layers for its consumers hands them in its preset, and a pr
 - `domain/` imports no other layer.
 - `application/use-cases/` and `application/ports/` reach the domain and the ports, never an implementation.
 - `composition/` is the one layer that imports `infrastructure/`: no other layer does, the specs aside.
-- `composition/` is imported by `src/index.ts` and by a `specs/**/*.specification.ts` runner, and by nothing else.
+- `composition/` is imported by the app's entry and by a `specs/**/*.specification.ts` runner, and by nothing else. The entry is the declared platform's: `src/index` for `node` and `bun` — and for a project that declares no platform — the root layout `app/_layout` for `expo`, `app/layout` or `pages/_app` for `next`, `src/main` or `src/index` for `react`, and `src/middleware` for `astro`, each also under `src/` where the framework allows it.
 - `infrastructure/inbound/` reaches an outbound adapter through injection, not by import.
 - `presentation/ui/atoms/` and `molecules/` stay clear of navigation.
 - `presentation/features/<feature>/` reaches no other feature, except `features/common/`.
 
-Why the two `composition/` boundaries hold, and how the entry and a runner build the app through it, are [The composition root](../concepts/the-composition-root.md)'s. Each folder matches at any depth, so a workspace member's `src/domain/` is held like the root's. The eight are `ARCHITECTURE_HEXAGONAL` in `lint/consumer/checks/architecture.hexagonal.ts`, each with its why and its fix.
+Why the two `composition/` boundaries hold, and how the entry and a runner build the app through it, are [The composition root](../concepts/the-composition-root.md)'s. Each folder matches at any depth, so a workspace member's `src/domain/` is held like the root's. The eight are `hexagonalRules(platform)` in `lint/consumer/checks/architecture.hexagonal.ts`, each with its why and its fix, the entries by platform its `COMPOSITION_ENTRIES`.
 
 ### What the pass needs from the tree
 

@@ -1,4 +1,5 @@
 import type { ArchitectureRule } from '../../kit/project/preset.js';
+import type { Platform } from '../../kit/project/project-kind.js';
 
 const READ = 'docs/reference/quality-checks.md#the-hexagonal-map';
 
@@ -6,11 +7,29 @@ const ANY_DEPTH = '(^|/)';
 
 const SOURCE = String.raw`\.[cm]?[jt]sx?$`;
 
-const APP_ENTRY = `${ANY_DEPTH}src/index${SOURCE}`;
+const PROCESS_ENTRY = 'src/index';
+
+/** The module each platform enters the app by — the one that calls `compose()` and hands the graph down. */
+export const COMPOSITION_ENTRIES: Readonly<Record<Platform, readonly string[]>> = Object.freeze({
+    astro: ['src/middleware'],
+    bun: [PROCESS_ENTRY],
+    expo: ['(src/)?app/_layout'],
+    next: ['(src/)?app/layout', '(src/)?pages/_app'],
+    node: [PROCESS_ENTRY],
+    react: ['src/(index|main)'],
+});
+
+const COMPOSITION_IS_THE_ROOT: Omit<ArchitectureRule, 'from'> = Object.freeze({
+    fix: 'take what it needs as an argument, and let the app entry or the spec runner call `compose()` and hand it down',
+    name: 'hexagonal-composition-is-the-root',
+    read: READ,
+    to: { path: `${ANY_DEPTH}composition/` },
+    why: 'the composition root builds the app once, for the app entry and for a spec runner; a module that reached it would depend on the whole graph',
+});
 
 const SPEC_RUNNER = String.raw`${ANY_DEPTH}specs/.*\.specification${SOURCE}`;
 
-export const ARCHITECTURE_HEXAGONAL: readonly ArchitectureRule[] = Object.freeze([
+const ARCHITECTURE_HEXAGONAL: readonly ArchitectureRule[] = Object.freeze([
     {
         fix: 'move what it needs into the domain, or declare a port the domain owns and let an outer layer implement it',
         from: { path: `${ANY_DEPTH}domain/` },
@@ -59,14 +78,6 @@ export const ARCHITECTURE_HEXAGONAL: readonly ArchitectureRule[] = Object.freeze
         why: '`composition/` is the one layer that builds an implementation and hands it to the application',
     },
     {
-        fix: 'take what it needs as a constructor argument, and let the app entry or the spec runner call `compose()`',
-        from: { pathNot: [`${ANY_DEPTH}composition/`, APP_ENTRY, SPEC_RUNNER] },
-        name: 'hexagonal-composition-is-the-root',
-        read: READ,
-        to: { path: `${ANY_DEPTH}composition/` },
-        why: 'the composition root builds the app once, for the process entry and for a spec runner; a module that reached it would depend on the whole graph',
-    },
-    {
         fix: 'hand the atom or molecule a callback, and let the feature that renders it navigate',
         from: { path: `${ANY_DEPTH}presentation/ui/(atoms|molecules)/` },
         name: 'hexagonal-ui-stays-pure',
@@ -86,3 +97,17 @@ export const ARCHITECTURE_HEXAGONAL: readonly ArchitectureRule[] = Object.freeze
         why: 'a feature is independent — shared code lives in features/common',
     },
 ]);
+
+/** The hexagonal map, its composition root entered where the declared platform enters an app — `src/index` when none is declared. */
+export function hexagonalRules(platform: null | Platform): readonly ArchitectureRule[] {
+    const pathNot = [`${ANY_DEPTH}composition/`, ...compositionEntriesOf(platform), SPEC_RUNNER];
+
+    return [...ARCHITECTURE_HEXAGONAL, { ...COMPOSITION_IS_THE_ROOT, from: { pathNot } }];
+}
+
+/** The paths of the modules a platform enters the app by, at any depth — `src/index` when none is declared. */
+export function compositionEntriesOf(platform: null | Platform): string[] {
+    return (platform === null ? [PROCESS_ENTRY] : COMPOSITION_ENTRIES[platform]).map(
+        (entry) => `${ANY_DEPTH}${entry}${SOURCE}`,
+    );
+}

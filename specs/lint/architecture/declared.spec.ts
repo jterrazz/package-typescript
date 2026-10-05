@@ -32,13 +32,13 @@ describe('declared', () => {
                 read: docs/01-architecture.md#layers
             src/indexing/feed.ts:1:25  architecture(hexagonal-composition-is-the-root)
                 found: \`src/indexing/feed.ts\` imports \`src/composition/compose.ts\`
-                why: the composition root builds the app once, for the process entry and for a spec runner; a module that reached it would depend on the whole graph
-                fix: take what it needs as a constructor argument, and let the app entry or the spec runner call \`compose()\`
+                why: the composition root builds the app once, for the app entry and for a spec runner; a module that reached it would depend on the whole graph
+                fix: take what it needs as an argument, and let the app entry or the spec runner call \`compose()\` and hand it down
                 read: docs/reference/quality-checks.md#the-hexagonal-map
             src/infrastructure/inbound/router.ts:1:25  architecture(hexagonal-composition-is-the-root)
                 found: \`src/infrastructure/inbound/router.ts\` imports \`src/composition/compose.ts\`
-                why: the composition root builds the app once, for the process entry and for a spec runner; a module that reached it would depend on the whole graph
-                fix: take what it needs as a constructor argument, and let the app entry or the spec runner call \`compose()\`
+                why: the composition root builds the app once, for the app entry and for a spec runner; a module that reached it would depend on the whole graph
+                fix: take what it needs as an argument, and let the app entry or the spec runner call \`compose()\` and hand it down
                 read: docs/reference/quality-checks.md#the-hexagonal-map
             src/presentation/features/articles/card.ts:3:24  architecture(hexagonal-feature-is-independent)
                 found: \`src/presentation/features/articles/card.ts\` imports \`src/presentation/features/quiz/sheet.ts\`

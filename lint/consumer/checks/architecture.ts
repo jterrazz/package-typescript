@@ -13,7 +13,7 @@ import { isJsonObject, objectOf, stringOf } from '../../kit/project/json.js';
 import { DEPENDENCY_CRUISER_CONFIGS, SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { isChapterAnchor, presetLesson } from '../../kit/project/preset.js';
 import type { ArchitectureRule } from '../../kit/project/preset.js';
-import { ARCHITECTURE_HEXAGONAL } from './architecture.hexagonal.js';
+import { hexagonalRules } from './architecture.hexagonal.js';
 
 const SOURCE = /\.[cm]?[jt]sx?$/u;
 
@@ -95,7 +95,9 @@ async function declaredRules(context: Context): Promise<Declared> {
     return {
         problem: null,
         rules: [
-            ...(architecture.hexagonal === true ? ARCHITECTURE_HEXAGONAL : []),
+            ...(architecture.hexagonal === true
+                ? hexagonalRules(resolved.declaration?.platform ?? null)
+                : []),
             ...resolved.layers,
         ].filter((rule) => !isInert(rule, holds)),
     };
