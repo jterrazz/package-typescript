@@ -3,6 +3,7 @@ import type { Counts } from '../../kit/baseline/baseline-file.js';
 import { suppressedCount, SUPPRESSIONS_LEDGER } from '../../kit/baseline/oxlint-suppressions.js';
 import type { Pass } from '../../kit/checker/pass.js';
 import { countSuppressions } from '../../kit/project/comments.js';
+import { exceptionsIn } from '../../kit/project/exceptions.js';
 import { objectOf } from '../../kit/project/json.js';
 import type { OptOut } from '../../kit/project/preset.js';
 import { orRefused } from '../../kit/project/project-files.js';
@@ -100,12 +101,14 @@ function rowsOf(
     {
         behind,
         declaration,
+        exceptions,
         off,
         optOuts,
         suppressions,
     }: {
         behind: readonly ToolVersion[];
         declaration: null | ProjectIdentity;
+        exceptions: number;
         off: readonly string[];
         optOuts: readonly OptOut[];
         suppressions: number;
@@ -116,6 +119,7 @@ function rowsOf(
     return [
         ...rowsAligned([
             ...declaredOf(declaration),
+            ['exceptions', exceptions],
             ['rules off vs profile', rulesOffOf(off)],
             ...(optOuts.length === 0
                 ? []
@@ -137,8 +141,9 @@ export const drift: Pass = Object.freeze({
     async check(context) {
         const { root } = context;
         const { resolved } = await context.config();
-        const { declaration, optOuts } = resolved;
-        const off = offOf(objectOf(resolved.sections.typescript).oxlint);
+        const { declaration, optOuts, own } = resolved;
+        const off = offOf(objectOf(own.typescript).oxlint);
+        const exceptions = exceptionsIn(own);
         const suppressions = orRefused(() => countSuppressions(root, context.ignorePatterns));
         const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
         const { others, totalOf } = baselineReader(root);
@@ -147,6 +152,7 @@ export const drift: Pass = Object.freeze({
             json: {
                 baseline: totalOf(SECTION),
                 declaration,
+                exceptions,
                 optOuts,
                 oxlintSuppressions: suppressedCount(root),
                 rulesOff: off,
@@ -154,7 +160,7 @@ export const drift: Pass = Object.freeze({
                 sections: Object.fromEntries(others.map((section) => [section, totalOf(section)])),
                 tools: behind,
             },
-            lines: rowsOf(root, { behind, declaration, off, optOuts, suppressions }),
+            lines: rowsOf(root, { behind, declaration, exceptions, off, optOuts, suppressions }),
         };
     },
 });

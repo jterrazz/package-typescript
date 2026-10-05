@@ -55,6 +55,7 @@ describe('resolution', () => {
              DRIFT  Deviations from the profile
 
               declared                              api on node
+              exceptions                            0
               rules off vs profile                  none
               suppressions                          0
               .jterrazz/oxlint-suppressions.json    nothing held

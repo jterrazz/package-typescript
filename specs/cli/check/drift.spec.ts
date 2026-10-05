@@ -47,7 +47,7 @@ describe('drift', () => {
 
         // Then - the report names the declaration and the rule turned off
         expect(reasoned.stdout.text).toContain(
-            'declared                              api on node\n  rules off vs profile                  1 (no-debugger)\n',
+            'declared                              api on node\n  exceptions                            1\n  rules off vs profile                  1 (no-debugger)\n',
         );
         expect(reasoned.exitCode).toBe(0);
     });
@@ -107,6 +107,7 @@ describe('drift', () => {
         expect(JSON.parse(reading)).toStrictEqual({
             baseline: null,
             declaration: null,
+            exceptions: 0,
             optOuts: [],
             oxlintSuppressions: null,
             rulesOff: [],

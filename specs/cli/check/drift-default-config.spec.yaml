@@ -43,6 +43,7 @@ runs:
           {
             "baseline": null,
             "declaration": null,
+            "exceptions": 0,
             "optOuts": [],
             "oxlintSuppressions": null,
             "rulesOff": [],
