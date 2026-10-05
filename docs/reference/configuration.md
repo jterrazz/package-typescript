@@ -149,14 +149,14 @@ import { defineConfig, ownPresets } from '@jterrazz/typescript/config';
 export default defineConfig({
     kind: 'library',
     platform: 'node',
-    presets: await ownPresets(import.meta.url, {
+    presets: ownPresets(import.meta.url, {
         './dist/config.js': 'test',
         './.artifacts/dev/preset.js': 'self',
     }),
 });
 ```
 
-`typescript build` reads the file before the build exists, so it runs on none of them; every other command is refused in four parts, reading this section, until `npm run build` made them — a run without them would judge nothing they hold.
+`typescript build` reads the file before the build exists, so it runs on none of them; every other command is refused in four parts, reading this section, until `npm run build` made them — a run without them would judge nothing they hold. `ownPresets` loads them synchronously: the oxlint rules read the settings file synchronously, and a file holding a top-level `await` is one they cannot load — the Config pass refuses it (`config/settings-load-synchronously`).
 
 ## The `typescript` section
 

@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import process from 'node:process';
 
 import { refusal } from '../catalogue/lesson.js';
@@ -30,8 +31,8 @@ function presetIn(module: unknown, name: string, path: string): Preset {
     return preset;
 }
 
-/** The presets a repository holds itself to from its own build: none while `typescript build` makes it, refused when it is missing. */
-export async function ownPresets(settingsUrl: string, modules: OwnPresets): Promise<Preset[]> {
+/** The presets a repository holds itself to from its own build: none while `typescript build` makes it, refused when it is missing. Loaded synchronously, so the settings file holds no top-level await and its synchronous readers — the oxlint rules — read it whole. */
+export function ownPresets(settingsUrl: string, modules: OwnPresets): Preset[] {
     const missing = Object.keys(modules).filter((path) => !existsSync(new URL(path, settingsUrl)));
     if (missing.length > 0 && isBuilding()) {
         return [];
@@ -47,9 +48,7 @@ export async function ownPresets(settingsUrl: string, modules: OwnPresets): Prom
         );
     }
 
-    return await Promise.all(
-        Object.entries(modules).map(async ([path, name]) =>
-            presetIn(await import(new URL(path, settingsUrl).href), name, path),
-        ),
-    );
+    const load = createRequire(settingsUrl);
+
+    return Object.entries(modules).map(([path, name]) => presetIn(load(path), name, path));
 }

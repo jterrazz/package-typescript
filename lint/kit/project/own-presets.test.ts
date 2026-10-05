@@ -18,20 +18,18 @@ function repository(): string {
 }
 
 describe('ownPresets', () => {
-    test('own-presets — calls each preset the build exports, by the name the settings file gives it, the build itself included', async () => {
+    test('own-presets — calls each preset the build exports, by the name the settings file gives it, the build itself included', () => {
         // Given - a repository whose build holds its self preset, read by a check and by the build
         const settings = repository();
-        const checked = await ownPresets(settings, { './self.mjs': 'self' });
+        const checked = ownPresets(settings, { './self.mjs': 'self' });
         vi.spyOn(process, 'argv', 'get').mockReturnValue(['node', 'typescript', 'build']);
 
         // Then - the preset is made from the built module, for the build too
         expect(checked).toStrictEqual([{ name: 'self', package: '@acme/self' }]);
-        await expect(ownPresets(settings, { './self.mjs': 'self' })).resolves.toStrictEqual(
-            checked,
-        );
+        expect(ownPresets(settings, { './self.mjs': 'self' })).toStrictEqual(checked);
     });
 
-    test('own-presets — holds no preset while the build makes them, and refuses every other run without them', async () => {
+    test('own-presets — holds no preset while the build makes them, and refuses every other run without them', () => {
         // Given - a repository whose config preset is not built
         const settings = repository();
         const modules = {
@@ -42,12 +40,12 @@ describe('ownPresets', () => {
 
         // When - the build reads the settings file, then any other command
         vi.spyOn(process, 'argv', 'get').mockReturnValue(['node', 'typescript', 'build']);
-        const building = await ownPresets(settings, modules);
+        const building = ownPresets(settings, modules);
         vi.spyOn(process, 'argv', 'get').mockReturnValue(['node', 'typescript', 'check']);
 
         // Then - the build runs on no preset, and the check is refused, naming what is missing
         expect(building).toStrictEqual([]);
-        await expect(ownPresets(settings, modules)).rejects.toThrow(
+        expect(() => ownPresets(settings, modules)).toThrow(
             new Error(
                 [
                     "found: this repository's presets are not built: ./dist/config.js, ./dist/self.js missing",
@@ -59,11 +57,11 @@ describe('ownPresets', () => {
         );
     });
 
-    test('own-presets — refuses a built module that exports no preset by the name given', async () => {
+    test('own-presets — refuses a built module that exports no preset by the name given', () => {
         // Given - a repository whose built module exports its preset as `self`
 
         // Then - the name the settings file lists is not exported
-        await expect(ownPresets(repository(), { './self.mjs': 'test' })).rejects.toThrow(
+        expect(() => ownPresets(repository(), { './self.mjs': 'test' })).toThrow(
             new TypeError(
                 [
                     'found: ./self.mjs exports no preset `test`',
