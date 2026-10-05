@@ -1,10 +1,19 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    existsSync,
+    fstatSync,
+    mkdtempSync,
+    readdirSync,
+    readFileSync,
+    realpathSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
-import { run } from './processes.js';
+import { handOver, run } from './processes.js';
 
 const NODE_WRITES = String.raw`process.stdout.write('out\n'); process.stderr.write('err\n')`;
 
@@ -180,5 +189,63 @@ describe('processes', () => {
             [2, 2],
             [2, 2],
         ]);
+    });
+
+    test.each(['SIGHUP', 'SIGINT', 'SIGTERM'] as const)(
+        'hands %s on to the command it hands the terminal over to',
+        async (signal) => {
+            // Given - a command that exits 7 on the signal, once it says it listens
+            const ready = join(scratch(), 'ready');
+            const status = handOver(process.execPath, [
+                '--eval',
+                `process.on('${signal}', () => process.exit(7)); require('node:fs').writeFileSync(${JSON.stringify(ready)}, ''); setInterval(() => {}, 1000);`,
+            ]);
+            await vi.waitFor(() => {
+                expect(existsSync(ready)).toBe(true);
+            });
+
+            // When - the parent receives the signal
+            process.emit(signal, signal);
+
+            // Then - the command received it, and its status is the parent's
+            await expect(status).resolves.toBe(7);
+        },
+    );
+
+    test('hands the terminal over: the command runs in the folder named, on the parent streams, and the parent stops forwarding once it ends', async () => {
+        // Given - a folder, and a command writing where it runs and which files its streams are
+        const folder = realpathSync(scratch());
+        const seen = join(folder, 'seen.json');
+
+        // When - the terminal is handed over to it in that folder
+        const status = await handOver(
+            process.execPath,
+            [
+                '--eval',
+                `const { fstatSync, writeFileSync } = require('node:fs'); writeFileSync(${JSON.stringify(seen)}, JSON.stringify([process.cwd(), fstatSync(1).ino, fstatSync(2).ino]));`,
+            ],
+            folder,
+        );
+
+        // Then - it ran there on the parent's own stdout and stderr, and no signal is forwarded any more
+        expect([
+            status,
+            JSON.parse(readFileSync(seen, 'utf8')),
+            ['SIGHUP', 'SIGINT', 'SIGTERM'].map((signal) => process.listenerCount(signal)),
+        ]).toStrictEqual([0, [folder, fstatSync(1).ino, fstatSync(2).ino], [0, 0, 0]]);
+    });
+
+    test('tells the terminal a command handed over is not there', async () => {
+        // Given - the parent's stderr watched
+        const stderr = spied(process.stderr);
+
+        // When - the terminal is handed over to a tool no PATH holds
+        const status = await handOver('no-such-tool-anywhere', []);
+
+        // Then - the shell's status, and its line on the terminal
+        expect([
+            status,
+            stderr.mock.calls.filter(([chunk]) => chunk === LINE).length,
+        ]).toStrictEqual([127, 1]);
     });
 });
