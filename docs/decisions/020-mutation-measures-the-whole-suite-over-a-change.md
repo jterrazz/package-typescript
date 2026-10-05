@@ -59,8 +59,11 @@ Stryker estimated sixty hours for the 11,200 the module tests left.
 - A mutant an instrumented build cannot bundle (an empty import specifier) is
   declared where it stands: it can reach no test.
 - Measured when the decision was taken: every static mutant now runs. Here,
-  where Stryker skipped 515, the module tests kill 586 static mutants and
-  leave 231 to the suite; in `@jterrazz/test`, 2,032 killed and 1,196 left,
+  where Stryker skipped 515, the module tests kill 597 static mutants and
+  leave 220 to the suite; in `@jterrazz/test`, 2,245 killed and 983 left,
   where 648 had been judged with the mutant activated after their module
-  loaded. A first module run of `@jterrazz/test` takes 80 minutes, an
+  loaded. A first module run of `@jterrazz/test` takes 75 minutes, an
   incremental one seconds; the suite's dry run here, four and a half.
+- A mutant that stops a test file from loading counts as detected: the
+  file's failure is handed to Stryker as a failed test, which it would
+  otherwise read as a survivor (213 of `@jterrazz/test`'s static mutants).
