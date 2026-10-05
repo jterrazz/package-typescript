@@ -69,8 +69,8 @@ Stryker estimated sixty hours for the 11,200 the module tests left.
   counts those sources, in one number of files.
 - A change to code the specs reach everywhere costs, per surviving mutant, a
   run of every test reaching it — minutes each; the suite's dry run costs a
-  build and a single-worker run of every node project, about five minutes
-  here, whenever a change reaches a line the module tests leave and their
+  build and a single-worker run of every node project — measured below —
+  whenever a change reaches a line the module tests leave and their
   verdict passes.
 - A test that cannot run against instrumented code — one reading the sources
   as text, one type-checking the built declarations — is excluded by
@@ -82,7 +82,8 @@ Stryker estimated sixty hours for the 11,200 the module tests left.
   leave 220 to the suite; in `@jterrazz/test`, 2,245 killed and 983 left,
   where 648 had been judged with the mutant activated after their module
   loaded. A first module run of `@jterrazz/test` takes 75 minutes, an
-  incremental one seconds; the suite's dry run here, four and a half.
+  incremental one seconds; the suite's dry run here, four and a half
+  minutes.
 - A mutant that stops a test file from loading counts as detected: the
   file's failure is handed to Stryker as a failed test, which it would
   otherwise read as a survivor (213 of `@jterrazz/test`'s static mutants).
