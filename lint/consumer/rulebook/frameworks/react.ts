@@ -141,6 +141,7 @@ export default fragment({
 
         // outside: `import '../../../rulebook/frameworks/index.css'` is how a React tree carries its styles: there is nothing to bind it to.
         'import/no-unassigned-import': on([
+            // Stryker disable next-line StringLiteral: oxlint reads the rulebook in a process of its own, which no mutant reaches; the behaviour grounds of specs/cli/preset/ prove each name
             { allow: [...IMPORT_SIDE_EFFECT_MODULES, '**/*.css', '**/*.scss'] },
         ]),
     },

@@ -20,10 +20,12 @@ export const IMPORT_ASSETS = {
 };
 
 // outside: a module imported for what loading it does is named so by its package: `<package>/register` registers a hook, `dotenv/config` loads a .env file.
+// Stryker disable ArrayDeclaration,StringLiteral: oxlint reads the rulebook in a process of its own, which no mutant reaches; the behaviour grounds of specs/cli/preset/ prove each name
 export const IMPORT_SIDE_EFFECT_MODULES: readonly string[] = Object.freeze([
     '**/register',
     'dotenv/config',
 ]);
+// Stryker restore ArrayDeclaration,StringLiteral
 
 export const IMPORT_EXTENSIONS_ALWAYS = on(['always', { ignorePackages: true, ...IMPORT_ASSETS }]);
 export const IMPORT_EXTENSIONS_NEVER = on(['never', IMPORT_ASSETS]);
@@ -60,6 +62,7 @@ export default fragment({
         'import/consistent-type-specifier-style': on(['prefer-top-level']),
         'import/extensions': IMPORT_EXTENSIONS_ALWAYS,
         'import/no-unassigned-import': {
+            // Stryker disable next-line ArrayDeclaration,ObjectLiteral: oxlint reads the rulebook in a process of its own, which no mutant reaches; the behaviour grounds of specs/cli/preset/ prove each name
             ...on([{ allow: [...IMPORT_SIDE_EFFECT_MODULES] }]),
             since: '11.0.0',
         },
