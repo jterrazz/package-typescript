@@ -6,7 +6,7 @@ An application held to [the hexagonal map](../reference/quality-checks.md#the-he
 
 `src/composition/compose.ts` exports `compose(config, overrides?)`. It calls the constructors in dependency order — the constructors are the factories, and no container library stands between them — and returns the graph: an object typed member by member, plus `[Symbol.asyncDispose]`.
 
-Composing builds; it starts nothing. No constructor opens a port, schedules a job or dials a socket: the entry starts what the app runs — the server, the worker — once the graph is whole. `[Symbol.asyncDispose]` stops what the app runs on, in order: what drives the app (the worker, the server) before what it reads (the database), so no job or request meets a stopped dependency.
+Composing builds; it starts nothing. No constructor opens a port, schedules a job or dials a socket: the entry starts what the app runs — the server, the worker — once the graph is whole. `[Symbol.asyncDispose]` stops what `compose` built, in order: what drives the app (the worker, the server) before what it reads (the database), so no job or request meets a stopped dependency.
 
 ```ts
 // src/composition/compose.ts
@@ -20,13 +20,15 @@ export type Ports = { database: Stoppable; worker: Stoppable };
 export function compose(config: { databaseUrl: string }, overrides: Partial<Ports> = {}) {
     const database = overrides.database ?? newDatabase(config.databaseUrl);
     const worker = overrides.worker ?? newWorker(database);
+    const built = [worker, database].filter((port) => !Object.values(overrides).includes(port));
 
     return {
         database,
         worker,
         async [Symbol.asyncDispose]() {
-            await worker.stop();
-            await database.stop();
+            for (const port of built) {
+                await port.stop();
+            }
         },
     };
 }
