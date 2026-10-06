@@ -36,10 +36,10 @@ Node loads the file itself, its types stripped, so it needs no build. A file tha
 
 The two closed lists, and which platforms each kind runs on, are [Getting started](../start/getting-started.md#1-declare-what-the-project-is)'s table. What follows from them:
 
-| Follows from | What                                                                                                                                                                                                                                                                                             |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| the platform | the oxlint profile ([Lint presets](lint-presets.md#the-profiles)), the tsconfig preset, the roots its framework imposes, the Astro pass — at the root and in each workspace member that declares `astro`                                                                                         |
-| the kind     | the rows of the matrix below; beside them, whether its manual owes the release guide of a published package (a library or a cli), and whether knip reads its exports as a public surface (a library); for a `workspace`, that each member declares its own and the root keeps no `tsconfig.json` |
+| Follows from | What                                                                                                                                                                                                                         |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| the platform | the oxlint profile ([Lint presets](lint-presets.md#the-profiles)), the tsconfig preset, the roots its framework imposes, the Astro pass — at the root and in each workspace member that declares `astro`                     |
+| the kind     | the rows of the matrix below; beside them, whether its manual owes the release guide of a published package (a library or a cli); for a `workspace`, that each member declares its own and the root keeps no `tsconfig.json` |
 
 The matrix is generated from the declaration the toolchain reads, and its last two columns from the specs: each kind is proven by a specimen under `specs/kinds/<kind>/`, a small project written as a person writes one, into which the cli specs install both packed packages — `@jterrazz/typescript` and `@jterrazz/test` — and run the gestures it names. A kind declared without its specimen fails the self corpus.
 

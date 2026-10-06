@@ -252,11 +252,9 @@ function ignoredDependencies(manifest: JsonObject): string[] {
 
 export function mergedKnipConfig({
     entries,
-    library,
     settings,
 }: {
     entries: readonly string[];
-    library: boolean;
     settings: KnipSettings;
 }): KnipConfig {
     const merged = mergedConfigs(KNIP_PRESET, {
@@ -264,14 +262,6 @@ export function mergedKnipConfig({
         entry: [...entries, ...settings.entry],
     });
     const manifest = manifestHere();
-    if (library) {
-        merged.rules = {
-            exports: 'off',
-            files: 'off',
-            types: 'off',
-            ...objectOf(merged.rules),
-        };
-    }
     withEntries(merged, 'ignore', conventionIgnores());
     const declared = declaredOf(manifest);
     withVitest(merged, declared);

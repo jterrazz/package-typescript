@@ -17,6 +17,18 @@ export default defineConfig({
     },
     typescript: {
         knip: {
+            entry: {
+                'specs/cli/_setup/packed/consumer.ts':
+                    'specs/cli/packed-cli.specification.ts spawns it by its path',
+                'specs/cli/_setup/run-install-matrix.ts':
+                    'specs/cli/install-matrix.specification.ts spawns it by its path',
+                'specs/cli/_setup/run-split-install.ts':
+                    'specs/cli/resolution.specification.ts spawns it by its path',
+                'specs/cli/_setup/run-strict-install.ts':
+                    'specs/cli/strict-install.specification.ts spawns it by its path',
+                'specs/kinds/_setup/specimen.ts':
+                    'specs/kinds/kinds.specification.ts spawns it by its path',
+            },
             ignoreDependencies: {
                 react: 'the website and mobile specimens of specs/kinds/ declare it, and their install links it from this checkout',
             },

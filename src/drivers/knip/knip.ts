@@ -8,7 +8,7 @@ import type { KnipSettings } from './settings.js';
 
 export const knipBinary = (): string => binaryIn('knip', HOISTED_BESIDE_PACKAGE);
 
-export type KnipProject = { entries: readonly string[]; library: boolean; settings: KnipSettings };
+export type KnipProject = { entries: readonly string[]; settings: KnipSettings };
 
 /** Runs knip over the project with the preset merged with what it declares, written to `merged`; a merge that fails is the run's report. */
 export async function knip(

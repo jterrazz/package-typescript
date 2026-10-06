@@ -148,7 +148,6 @@ async function knipProject(): Promise<KnipProject> {
 
     return {
         entries: steps.flatMap(({ entry }) => Object.values(entry)),
-        library: declaration?.kind === 'library',
         settings: knipSettingsOf(resolved.sections.typescript),
     };
 }

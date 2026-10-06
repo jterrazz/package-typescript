@@ -1,8 +1,8 @@
-description: disables export rules for published libraries
+description: a library's entry exports are its public surface, and a dead export beneath them is reported
 fixture: ./_fixtures/knip/library-exports/
 runs:
     - command: check
-      exit: 0
+      exit: 1
       stdout: |4
            START  Running quality checks
 
@@ -24,7 +24,9 @@ runs:
 
            RUN  Knip (unused code)
 
-          ✓ Passed
+          Unused exports (1)
+          unread  label.ts:2:14
+          ✗ Failed with exit code 1
 
            RUN  Publish (packaging)
 
@@ -62,4 +64,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✓ All checks passed
+          ✗ Some checks failed
