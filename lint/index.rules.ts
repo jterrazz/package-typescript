@@ -50,20 +50,16 @@ export { anchor, cell, markdownTable } from './kit/catalogue/table.js';
 export { anchorsOf, projected, spliceBetween, writeProjections } from './kit/catalogue/chapter.js';
 export type { Markers, Projection } from './kit/catalogue/chapter.js';
 export { countsOf } from './kit/baseline/counts.js';
-export { OXLINT_SUPPRESSIONS, SUPPRESSIONS_LEDGER } from './kit/baseline/oxlint-suppressions.js';
+export { OXLINT_SUPPRESSIONS } from './kit/baseline/oxlint-suppressions.js';
 export {
     BASELINE,
     keepsSection,
     labelOf,
-    readBaseline,
     sectionOf,
     writeSection,
 } from './kit/baseline/baseline-file.js';
-export type { Counts, ReadBaseline, Sections } from './kit/baseline/baseline-file.js';
-export { judgeExact, tightened } from './kit/baseline/section.js';
-export type { Broken, Ratchet } from './kit/baseline/section.js';
-export { readCommandLine } from './kit/checker/command-line.js';
-export type { CommandLine } from './kit/checker/command-line.js';
+export type { Counts, Sections } from './kit/baseline/baseline-file.js';
+export type { Ratchet } from './kit/baseline/section.js';
 export type {
     Checker,
     Commands,
@@ -77,16 +73,13 @@ export type {
     Passes,
     PassResult,
 } from './kit/checker/pass.js';
-export { reportLine } from './kit/checker/report-line.js';
 export { exitCodeOf, stop } from './kit/checker/stop.js';
 export { holdsDirectives, suppressionDirectives } from './kit/project/directives.js';
 export type { Directive, SuppressionDirectives } from './kit/project/directives.js';
-export { entryPoints } from './kit/project/entry-points.js';
 export {
     folderChanged,
     isDirectory,
     isFile,
-    isOnDisk,
     listDirectory,
     readFileCached,
 } from './kit/project/fs-cache.js';
@@ -122,13 +115,8 @@ export type { Manifest } from './kit/project/manifest.js';
 export { OXLINT_CONFIG_NAMES } from './kit/project/editor-config-names.js';
 export type { PresetLaw, Resolution, Resolved } from './kit/project/preset.js';
 export type { PresetChecks } from './consumer/checks/preset-checks.js';
-export { filesUnder, ignoredPaths, projectFiles, PRUNED } from './kit/project/project-files.js';
-export {
-    holdsManifest,
-    isProjectRoot,
-    isRepositoryRoot,
-    nearestRoot,
-} from './kit/project/repository-root.js';
+export { filesUnder, PRUNED } from './kit/project/project-files.js';
+export { holdsManifest, isProjectRoot, nearestRoot } from './kit/project/repository-root.js';
 export { blankComments, quotedMask } from './kit/project/comments.js';
 export { originalOf } from './kit/project/sandbox.js';
 export type { Span } from './kit/project/comments.js';

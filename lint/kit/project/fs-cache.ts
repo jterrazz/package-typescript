@@ -20,16 +20,6 @@ export function isFile(path: string): boolean {
     return treeKind(path) === 'file';
 }
 
-/** For `.git`, which git never lists. */
-export function isOnDisk(path: string): boolean {
-    try {
-        statSync(path);
-        return true;
-    } catch {
-        return false;
-    }
-}
-
 /** What the disk holds now, ignored or not: the command's probes ask before any sweep. */
 export function isFileOnDisk(path: string): boolean {
     return statSync(path, { throwIfNoEntry: false })?.isFile() === true;
