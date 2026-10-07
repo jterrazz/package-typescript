@@ -106,12 +106,27 @@ export function ignoredOf(ignorePatterns: readonly string[]): string[] {
 /** The lint tree of each unit that keeps one, keyed by the unit's prefix — a unit whose kind ships no lint rules has none. */
 export type LintTrees = Readonly<Record<string, LintTree>>;
 
+/** The tool roots of each workspace member, keyed by the member's prefix: a folder a tool reads by its own grammar — Prisma's timestamped migrations — that the root's code roots would otherwise reach. */
+export type MemberToolRoots = Readonly<Record<string, readonly string[]>>;
+
+function toolRootRules(toolRoots: MemberToolRoots): Record<string, Rules> {
+    return Object.fromEntries(
+        Object.entries(toolRoots).flatMap(([prefix, roots]) =>
+            roots
+                .filter((root) => !CODE_ROOTS.includes(root))
+                .map((root): [string, Rules] => [`${prefix}${root}`, ANY_NAME]),
+        ),
+    );
+}
+
 export function lsLintConfig({
     ignorePatterns,
+    toolRoots = {},
     trees,
     units,
 }: {
     ignorePatterns: readonly string[];
+    toolRoots?: MemberToolRoots;
     trees: LintTrees;
     units: readonly string[];
 }): string {
@@ -128,6 +143,7 @@ export function lsLintConfig({
             skillRules(prefix),
         );
     }
+    Object.assign(ls, toolRootRules(toolRoots));
 
     return `${JSON.stringify({ ignore: ignoredOf(ignorePatterns), ls }, null, 2)}\n`;
 }

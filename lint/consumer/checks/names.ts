@@ -13,7 +13,7 @@ import { namesFinding } from './names.lessons.js';
 import { LINT_ROOT, lintFoldersOf, lintTreeOf, TOPS } from './names.lint-tree.js';
 import type { LintTree } from './names.lint-tree.js';
 import { lsLintConfig, lsLintFindings, runLsLint } from './names.ls-lint.js';
-import type { LintTrees } from './names.ls-lint.js';
+import type { LintTrees, MemberToolRoots } from './names.ls-lint.js';
 import { makefileOf } from './names.makefile.js';
 import { shipsLint } from './names.published-lint.js';
 import {
@@ -198,16 +198,32 @@ async function lintTreesOf(context: Context, units: readonly string[]): Promise<
     return Object.fromEntries(trees.filter(([, tree]) => keepsTree(tree)));
 }
 
+// invariant: a member's tool roots sit under the root's code roots (`apps/`, `packages/`), whose names the kebab law judges; each unit's own standard exempts them — at the root, where no code root reaches them, to no effect.
+async function memberToolRootsOf(
+    context: Context,
+    units: readonly string[],
+): Promise<MemberToolRoots> {
+    const toolRootsOf = async (prefix: string): Promise<readonly [string, string[]]> => {
+        const { universal } = settingsOf(await context.config(join(context.root, prefix)));
+
+        return [prefix, Object.keys(universal.toolRoots)];
+    };
+    const roots = await Promise.all(units.map(async (prefix) => await toolRootsOf(prefix)));
+
+    return Object.fromEntries(roots);
+}
+
 async function laidOut(
     context: Context,
     swept: readonly string[],
 ): Promise<{ findings: Finding[]; problems: string[] }> {
     const units = ['', ...workspaceMembers(context.root).map((member) => `${member}/`)];
     const trees = await lintTreesOf(context, units);
+    const toolRoots = await memberToolRootsOf(context, units);
     const { failures, problem } = runLsLint(
         context.value('--ls-lint', 'ls-lint'),
         context.root,
-        lsLintConfig({ ignorePatterns: context.ignorePatterns, trees, units }),
+        lsLintConfig({ ignorePatterns: context.ignorePatterns, toolRoots, trees, units }),
     );
     const declared = declaredNamesRules(await context.config());
     const own = declaredNamesFindings(context, { rules: declared.rules, swept, units });

@@ -205,10 +205,11 @@ describe('names.ls-lint', () => {
         ]);
     });
 
-    test('refuses through ls-lint every place the lint tree, the skills and the named roots close', () => {
-        // Given - one tree breaking each rule, in the root and in a workspace member, beside what each rule allows
+    test("refuses through ls-lint every place the lint tree, the skills and the named roots close, and leaves a member's tool roots to their tool", () => {
+        // Given - one tree breaking each rule, in the root and in a workspace member, beside what each rule allows — the member's Prisma migrations, timestamped by Prisma, among it, and its bin/, a code root as well as a tool root
         const config = lsLintConfig({
             ignorePatterns: ['vendor/**'],
+            toolRoots: { 'packages/m/': ['bin', 'prisma'] },
             trees: treesOf(['', 'packages/m/']),
             units: ['', 'packages/m/'],
         });
@@ -232,6 +233,8 @@ describe('names.ls-lint', () => {
             'vendor/Bad_Dir/x.ts',
             'packages/m/lint/stray.ts',
             'packages/m/src/Bad_Dir/x.ts',
+            'packages/m/bin/Bad_Dir/x.ts',
+            'packages/m/prisma/migrations/20260902230946_init/migration.sql',
         ]);
 
         // When - ls-lint runs over it
@@ -245,6 +248,7 @@ describe('names.ls-lint', () => {
             'lint/self/Bad_Name.ts',
             'lint/self/notes.md',
             'lint/stray.ts',
+            'packages/m/bin/Bad_Dir',
             'packages/m/lint/stray.ts',
             'packages/m/src/Bad_Dir',
             'skills',
