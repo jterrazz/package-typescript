@@ -163,7 +163,7 @@ Several `off` reasons of kind `convention` name this page. Here is what they nam
 - `@jterrazz/*` packages ignored, and the toolchain's own binaries, which a consumer never declares.
 - Convention paths ignored — `docs/`, and the ground a test stands on: `__fixtures__/`, `__expected__/`, `__seeds__/` and `__requests__/` wherever they sit, the four ground folders among the special `__<word>__` folders `@jterrazz/test` reads — the same four the oxlint profiles, the oxfmt preset and the tsconfig presets leave out; every one but the tsconfig presets, which JSON keeps literal, reads them from the roster in `lint/kit/project/ground.ts`. Its `__setup__/` is code, not ground: it is linted, formatted and typechecked like any source. At the root and inside every workspace member, because the convention belongs to the package.
 - Plugin dependencies (`*-plugin-*`, `@scope/*`) ignored, and a declared package's DefinitelyTyped types (`@types/<name>`, `@types/<scope>__<name>`).
-- Every entry the build compiles is an `entry` — the manifest's targets and the modules named for how they are loaded ([Building](building.md#what-the-manifest-does-not-name)) — so knip reads the same entry points the build does; a `*.cli.ts` anywhere is one too, a command run by its path.
+- Every entry the build compiles is an `entry` — the manifest's targets and the modules named for how they are loaded ([Building](building.md#what-the-manifest-does-not-name)) — so knip reads the same entry points the build does; a `*.cli.ts` anywhere is one too, a command run by its path, and so is a cli's `src/*.bin.ts`, which its bin or its compiled build runs.
 - The editor files and `jterrazz.config.ts` are named as `entry`: the toolchain loads them and nothing imports them. So is every path a package preset loads by name from its own section — `@jterrazz/test`'s component project's `wrap` — which the preset names through its `entries`, so a project declares none of them. knip's own oxlint plugin is off, since the config it would read is derived.
 
 What knip cannot trace is declared under `typescript.knip`, each path or name mapped to the reason it is named:
@@ -190,7 +190,7 @@ The four keys are `entry`, `ignore`, `ignoreBinaries` and `ignoreDependencies`, 
 
 ### Workspaces
 
-Knip is workspace-aware on its own: it reads the `workspaces` globs from your `package.json` and reports per member from a single run — which is why `check` invokes it once, at the root, with the root's settings. knip resolves `ignore` from the root, so a member's path carries its folder: `apps/api/src/generated/**`.
+Knip is workspace-aware on its own: it reads the `workspaces` globs from your `package.json` and reports per member from a single run — which is why `check` invokes it once, at the root. A flat config's `entry` reaches the root workspace alone, so the derived config writes a `workspaces` section: the root's entries under `.`, and each member's under its folder — the preset's own, the member's build's, the paths its presets load by name, and its own `typescript.knip`, whose `entry` and `ignore` are read from the member's folder (`'src/{popup,worker}.ts'` in an extension member's settings). The root's `typescript.knip` `ignore` is resolved from the root, so a path it names inside a member carries the member's folder: `apps/api/src/generated/**`.
 
 ## The catalogue
 

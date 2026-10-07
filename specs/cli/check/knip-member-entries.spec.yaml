@@ -1,0 +1,18 @@
+description: reads a member's command, entries and ignores, and still finds what nothing reaches
+fixture: ./__fixtures__/knip/member-entries/
+env: TYPESCRIPT_CHECK_PASSES=knip
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Knip (unused code)
+
+          Unused files (1)
+          apps/tool/src/forgotten.ts
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

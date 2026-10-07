@@ -9,7 +9,7 @@ import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js
 import { KNIP_PRESET } from '../../presets/knip/config.js';
 import type { KnipSettings } from './settings.js';
 
-type KnipConfig = Record<string, unknown>;
+export type KnipConfig = Record<string, unknown>;
 
 const UNSCANNED: ReadonlySet<string> = new Set(['dist', 'node_modules']);
 
@@ -69,7 +69,7 @@ function mergedConfigs(base: KnipConfig, project: KnipConfig): KnipConfig {
     return merged;
 }
 
-function listOf(value: unknown): readonly unknown[] {
+export function listOf(value: unknown): readonly unknown[] {
     return isList(value) ? value : [];
 }
 

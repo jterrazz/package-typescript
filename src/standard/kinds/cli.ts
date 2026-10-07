@@ -2,6 +2,12 @@ import { defineStandard } from '../../../lint/index.config.js';
 
 export default defineStandard({
     typescript: {
+        knip: {
+            entry: {
+                'src/*.bin.ts':
+                    'a command’s entry, which its bin or its compiled build runs: no import reaches it',
+            },
+        },
         oxlint: {
             overrides: [
                 {

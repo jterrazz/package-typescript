@@ -1,0 +1,11 @@
+{
+    "name": "fixture-knip-member-tool",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "seed": "seed-db --fresh"
+    },
+    "dependencies": {
+        "left-pad": "^1.3.0"
+    }
+}

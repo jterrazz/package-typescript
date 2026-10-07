@@ -12,7 +12,7 @@ import { buildPlanOf, conventionsOf } from '../../../../lint/kit/project/build-p
 import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
 import { astroChecked } from '../../../drivers/astro/astro.js';
 import { knip } from '../../../drivers/knip/knip.js';
-import type { KnipProject } from '../../../drivers/knip/knip.js';
+import type { KnipProject, KnipUnit } from '../../../drivers/knip/knip.js';
 import { knipSettingsOf } from '../../../drivers/knip/settings.js';
 import { fixedUnder } from '../../../drivers/oxlint/oxlint.js';
 import type { FixScope } from '../../../drivers/oxlint/unsafe-fixers.js';
@@ -141,10 +141,11 @@ export function formatCheck(check: Check): Launched | undefined {
     return { log, status: oxfmt(check, ['--check'], log) };
 }
 
-async function knipProject(): Promise<KnipProject> {
-    const { resolved } = await readSettings('.');
+/** What a unit hands knip as entries: its build's, the paths its presets load by name, and its settings'. */
+async function knipUnit(unit: string): Promise<KnipUnit> {
+    const { resolved } = await readSettings(unit);
     const { declaration } = resolved;
-    const steps = buildPlanOf('.', { declaration, settings: conventionsOf('.').settings });
+    const steps = buildPlanOf(unit, { declaration, settings: conventionsOf(unit).settings });
 
     // Stryker disable next-line ArrayDeclaration: knip skips an entry that names no file, so a seeded one changes nothing
     const loaded: string[] = [];
@@ -160,10 +161,20 @@ async function knipProject(): Promise<KnipProject> {
     };
 }
 
+/** A workspace root hands knip each member's own entries and ignores too, which a flat config would apply to the root alone. */
+async function knipProject(check: Check): Promise<KnipProject> {
+    const root = await knipUnit('.');
+    const units = await Promise.all(
+        check.members.map(async (member) => [member, await knipUnit(member)] as const),
+    );
+
+    return { ...root, members: Object.fromEntries(units) };
+}
+
 async function knipRun(check: Check, log: string): Promise<number> {
     let project: KnipProject;
     try {
-        project = await knipProject();
+        project = await knipProject(check);
     } catch (error) {
         writeFileSync(log, `${messageOf(error)}\n`);
 

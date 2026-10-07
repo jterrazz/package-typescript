@@ -7,6 +7,11 @@ export type KnipSettings = {
     ignoreDependencies: readonly string[];
 };
 
+export type KnipUnit = { entries: readonly string[]; settings: KnipSettings };
+
+/** The root's unit, and each workspace member's by its folder. */
+export type KnipProject = KnipUnit & { members: Readonly<Record<string, KnipUnit>> };
+
 export function knipSettingsOf(section: unknown): KnipSettings {
     const written = objectOf(objectOf(section).knip);
     const named = (key: string): string[] => Object.keys(objectOf(written[key]));
