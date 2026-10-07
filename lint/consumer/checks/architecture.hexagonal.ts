@@ -10,7 +10,7 @@ const SOURCE = String.raw`\.[cm]?[jt]sx?$`;
 
 const PROCESS_ENTRY = 'src/index';
 
-/** The module each platform enters the app by — the one that calls `compose()` and hands the graph down. */
+// invariant: a platform's entry is the module that calls `compose()` and hands the graph down.
 const COMPOSITION_ENTRIES: Readonly<Record<Platform, readonly string[]>> = Object.freeze({
     astro: ['src/middleware'],
     browser: ['src/(index|main)'],

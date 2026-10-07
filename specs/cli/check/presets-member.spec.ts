@@ -99,7 +99,7 @@ const WRITING = `export default {
 };
 `;
 
-/** The workspace fixture, its root declaring the stub preset; `conventions` replaces the stub's checks. */
+// invariant: `conventions` replaces the stub preset's checks.
 function declared(options: { conventions?: string; exit?: 0 | 1 } = {}): PrepareStep {
     return (workdir) => {
         declare(workdir, 'root', options.exit ?? 1);

@@ -158,7 +158,6 @@ function reportPinnedPair(root: string): boolean {
     return pair.verdict === 'skewed';
 }
 
-/** The entries the build reads off module names, and what each preset derives from the unit's tree. */
 function derivedOf(unit: string, resolved: Resolved): Derived {
     const { dev, entries } = conventionsOf(unit).settings;
     const build = {

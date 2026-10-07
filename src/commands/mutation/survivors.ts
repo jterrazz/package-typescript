@@ -75,7 +75,7 @@ export type ModuleRun = {
     report: unknown;
 };
 
-/** A mutant the module tests leave to the suite: none of them runs it, or only loading a module runs it and the tests loading it let it live or could not be credited with it; one a test also ran is theirs to answer. */
+// invariant: the module tests leave a mutant to the suite when none of them runs it, or only loading a module runs it and the tests loading it let it live or could not be credited with it; one a test also ran is theirs to answer.
 function leftByTheModules(mutant: Mutant, ranByTests: ReadonlySet<string>): boolean {
     // Stryker disable next-line StringLiteral: a mutant without an id is in no set of ids, whatever stands in for it
     const ranByATest = ranByTests.has(stringOf(mutant.id) ?? '');
@@ -118,7 +118,7 @@ export function leftToTheSuite(modules: ModuleRun, changed: Changed): string[] {
     return [...new Set(ranges)];
 }
 
-/** Whether this run's `--mutate` ranges hold a mutant whole, as Stryker reads them: a file named bare holds all of it, a range of lines what starts and ends within them. */
+// outside: Stryker holds a mutant in a `--mutate` range whole: a file named bare holds all of it, a range of lines what starts and ends within them.
 function heldBy(ranges: readonly string[], file: string, mutant: Mutant): boolean {
     const { end, start } = objectOf(mutant.location);
     const first = Number(objectOf(start).line);

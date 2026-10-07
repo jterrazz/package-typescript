@@ -98,7 +98,7 @@ function holdsSomething(root: string): boolean {
 // Stryker disable next-line EqualityOperator: a sweep lists each path once, so no two compare equal
 const byPath = (left: string, right: string): number => (left < right ? -1 : 1);
 
-/** Ground is a test's own under a specs tree or a module's tests folder; anywhere else it is a folder like any, which the Names pass judges. */
+// invariant: ground is a test's own under a specs tree or a module's tests folder; anywhere else it is a folder like any, which the Names pass judges.
 function isGround(path: string): boolean {
     const folders = path.split('/').slice(0, -1);
 

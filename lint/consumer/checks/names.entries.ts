@@ -127,7 +127,6 @@ const isIndexModule = (file: string): boolean => basename(file).split('.')[0] ==
 // Stryker disable next-line StringLiteral: the pattern holds no character outside ASCII, so the flag changes nothing
 const TESTS_SEGMENT = new RegExp(`(^|/)${TESTS_FOLDER}/`, 'u');
 
-/** A test names the module it tests: `dir/__tests__/a.test.ts` is `dir/a.ts`'s. */
 const testedOf = (file: string): string => file.replace(TEST, '').replace(TESTS_SEGMENT, '$1');
 
 const isBinModule = (file: string): boolean => stemOf(basename(testedOf(file))).endsWith('.bin');

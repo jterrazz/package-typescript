@@ -3,7 +3,7 @@ import { isJsonObject, objectOf } from '../../kit/project/json.js';
 import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { namesFinding } from './names.lessons.js';
 
-/** The two settings declaring a root beside the spine, each folder mapped to its reason: `generated` is a root a script writes, which the formatter leaves alone. */
+// invariant: each setting maps a folder to its reason; `generated` is a root a script writes, which the formatter leaves alone.
 const ROOTS_DECLARATIONS = ['roots', 'generated'] as const;
 
 export type DeclaredRoots = Readonly<

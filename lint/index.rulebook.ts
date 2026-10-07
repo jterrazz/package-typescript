@@ -98,7 +98,7 @@ function memberScoped(member: string, root: OxlintConfig, own: OxlintConfig): Ox
 
 const RESOLVED_BY_TSCONFIG = 'import/extensions';
 
-/** The unit's config with each folder `typescript.platforms` names linted by its own platform's profile, the unit's presets and own rules on top. */
+// invariant: each folder `typescript.platforms` names is linted by its own platform's profile, the unit's presets and own rules on top.
 function withFolderPlatforms(resolution: Resolution, unit: OxlintConfig): OxlintConfig {
     const { folders, problem: unplaced } = folderPlatformsOf(
         objectOf(resolution.resolved.sections.typescript).platforms,

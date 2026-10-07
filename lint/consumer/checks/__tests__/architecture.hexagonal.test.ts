@@ -16,7 +16,6 @@ const CANDIDATES = [
     'src/pages/_app.tsx',
 ];
 
-/** The candidate modules a platform's entry paths match. */
 function entriesOf(platform: null | Platform): string[] {
     const entries = compositionEntriesOf(platform).map((path) => new RegExp(path, 'u'));
 

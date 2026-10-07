@@ -3,7 +3,7 @@ import { listOf, mergedKnipConfig } from './config.js';
 import type { KnipConfig } from './config.js';
 import type { KnipProject, KnipUnit } from './settings.js';
 
-/** A member's own knip workspace: the preset's entries, its build's and its settings', with its ignores read from its folder. */
+// invariant: a member's ignores are read from its own folder.
 function memberWorkspace({ entries, settings }: KnipUnit): KnipConfig {
     return {
         entry: [...new Set([...listOf(KNIP_PRESET.entry), ...entries, ...settings.entry])],

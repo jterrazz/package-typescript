@@ -6,7 +6,7 @@ const ALWAYS_PACKED = /^(?:package\.json|readme|license|licence|changelog)/iu;
 export const withoutDotSlash = (target: string): string =>
     target.startsWith('./') ? target.slice(2) : target;
 
-/** npm reads an entry as a glob, and a folder it names ships whole. */
+// outside: npm reads an entry as a glob, and a folder it names ships whole.
 function names(entry: string, path: string): boolean {
     const packed = withoutDotSlash(entry).replace(/\/$/u, '');
 

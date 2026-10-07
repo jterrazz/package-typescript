@@ -141,7 +141,7 @@ export function formatCheck(check: Check): Launched | undefined {
     return { log, status: oxfmt(check, ['--check'], log) };
 }
 
-/** What a unit hands knip as entries: its build's, the paths its presets load by name, and its settings'. */
+// invariant: a unit hands knip its build's entries, the paths its presets load by name, and its settings'.
 async function knipUnit(unit: string): Promise<KnipUnit> {
     const { resolved } = await readSettings(unit);
     const { declaration } = resolved;
@@ -161,7 +161,7 @@ async function knipUnit(unit: string): Promise<KnipUnit> {
     };
 }
 
-/** A workspace root hands knip each member's own entries and ignores too, which a flat config would apply to the root alone. */
+// hazard: a flat config would apply each member's own entries and ignores to the root alone.
 async function knipProject(check: Check): Promise<KnipProject> {
     const root = await knipUnit('.');
     const units = await Promise.all(

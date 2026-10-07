@@ -34,7 +34,7 @@ function sourceGlobsOf(unit: string, { resolved }: Resolution): string[] {
     );
 }
 
-/** A unit's own `typescript.mutation` globs — its standard's and its settings file's — read from the repository root. */
+// invariant: a unit's `typescript.mutation` globs are its standard's and its settings file's, read from the repository root.
 function declaredOf(unit: string, { resolved }: Resolution): MutationScope {
     const declared = objectOf(objectOf(resolved.sections.typescript).mutation);
     const globs = (key: string): string[] =>
@@ -83,7 +83,7 @@ async function measured(
 
 const NOTHING_MEASURED: Measured = { ranByTests: new Set(), report: undefined };
 
-/** A stage's next step on what it measured — nothing when it measured nothing — or Stryker's status when it failed. */
+// invariant: a stage that measured nothing says nothing next; a failed one says Stryker's status.
 async function afterStage(
     outcome: Measured | undefined | { status: number },
     next: (measured: Measured) => number | Promise<number>,
@@ -147,7 +147,7 @@ async function judgedAfterTheSuite({
     );
 }
 
-/** A workspace root keeps no vitest config: each member is measured in its own folder, as `cd <member> && typescript mutation` measures it, into its own `.artifacts/stryker/`. */
+// invariant: a workspace root keeps no vitest config: each member is measured in its own folder, as `cd <member> && typescript mutation` measures it, into its own `.artifacts/stryker/`.
 async function membersMeasured(
     project: string,
     members: readonly string[],

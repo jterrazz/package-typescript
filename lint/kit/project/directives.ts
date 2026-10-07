@@ -13,7 +13,6 @@ export const holdsDirectives = (path: string): boolean => DIRECTIVE_TEXT.test(pa
 const COMMENT_LEAD = /(?:^|\s)(?:\/\/|\/\*|\*|#)\s*$/u;
 
 // Stryker disable Regex: a reason and a close both run to the end of the line, and a run of separators splits into empty ids the filter drops
-/** What follows the marker, up to the reason or the close of a block comment. */
 const idsOf = (rest: string): string[] =>
     rest
         .replace(/(?:--.*|\*\/\s*)$/u, '')

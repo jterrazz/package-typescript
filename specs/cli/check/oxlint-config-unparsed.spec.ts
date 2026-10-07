@@ -7,7 +7,7 @@ import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
 import { formOnly } from './__setup__/oxlint-forms.js';
 
-/** oxlint answers in its compact form whatever the machine's environment picks. */
+// outside: oxlint answers in its compact form whatever the machine's environment picks.
 const oxlint = cli.with({ env: { ...formOnly({ AI_AGENT: 'spec' }), ...onlyPasses('oxlint') } });
 
 describe('oxlint-config-unparsed', () => {

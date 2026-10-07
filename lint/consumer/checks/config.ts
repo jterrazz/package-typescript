@@ -61,7 +61,7 @@ const TOOL_CONFIGS: Readonly<Record<string, readonly string[]>> = Object.freeze(
 
 type Unit = {
     declaration: null | ProjectIdentity;
-    /** The workspace root's own `specs/`, the one member that may declare no kind. */
+    // invariant: true for the workspace root's own `specs/`, the one member that may declare no kind.
     suite: boolean;
     files: Readonly<Record<string, EditorFile>>;
     path: string;

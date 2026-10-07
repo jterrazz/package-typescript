@@ -145,7 +145,7 @@ function exportedSurfaceOf(
     };
 }
 
-/** The file's own test reads it from the `__tests__/` of its folder; a module of the same stem beside it is its own too. */
+// invariant: a file's own test reads it from the `__tests__/` of its folder; a module of the same stem beside it is its own too.
 const isOwnReader = (file: string, reader: string): boolean => {
     const folder = file.slice(0, file.lastIndexOf('/') + 1);
     if (!reader.startsWith(folder)) {

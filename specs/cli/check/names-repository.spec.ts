@@ -24,13 +24,12 @@ const names = (makefile?: 'four' | 'more' | 'six') => {
 
 const TREE_PASSES = onlyPasses('suppressions', 'markdown', 'names', 'secrets');
 
-/** The four tree gates, the linter answering in its compact form whatever the machine's environment picks. */
+// outside: the linter answers in its compact form whatever the machine's environment picks.
 const GATES = {
     ...formOnly({ AI_AGENT: 'spec' }),
     ...onlyPasses('oxlint', 'markdown', 'names', 'secrets'),
 };
 
-/** A folder nobody has added: notes linking nowhere and carrying a key, and a debugger. */
 function dataFolder(workdir: string): void {
     mkdirSync(join(workdir, 'data'));
     // hazard: spelled in two halves, so this file carries no key of its own.
@@ -45,7 +44,6 @@ function dataFolder(workdir: string): void {
     );
 }
 
-/** The same folder, and a generated src/Api_Client/, both named in .gitignore. */
 function ignoredFolders(workdir: string): void {
     dataFolder(workdir);
     mkdirSync(join(workdir, 'src/Api_Client'), { recursive: true });

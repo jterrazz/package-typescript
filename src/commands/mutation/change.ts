@@ -52,7 +52,6 @@ export function changeSince(project: string, since: string): Changed | undefined
     return changed;
 }
 
-/** The lines `--mutate` names, file by file — a range of positions widened to its lines, a file named alone whole. */
 function linesNamed(ranges: readonly string[]): Changed {
     const named = new Map<string, [number, number][] | true>();
     for (const range of ranges) {

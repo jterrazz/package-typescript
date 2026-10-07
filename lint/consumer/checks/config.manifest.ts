@@ -19,7 +19,7 @@ const SUITE_GAP = {
     owes: 'is not `private`, so npm would publish the suite',
 };
 
-/** A private cli is a binary its repository builds and installs itself, compiled or not: it owes no `bin`. */
+// invariant: a private cli is a binary its repository builds and installs itself, compiled or not: it owes no `bin`.
 function publishedGap(
     kind: ProjectKind,
     manifest: Readonly<Record<string, unknown>>,
