@@ -1,5 +1,5 @@
-description: bundling fails on a missing entry point
-fixture: ./__fixtures__/empty-app/
+description: an application that publishes nothing builds src/index.ts, and fails where it is missing
+fixture: ./__fixtures__/unpublished-app/
 runs:
     - command: build
       exit: 1

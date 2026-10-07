@@ -1,4 +1,4 @@
-description: building fails on a missing entry point
+description: refuses a manifest whose published main has no entry on disk, before anything is built
 fixture: ./__fixtures__/empty-app/
 runs:
     - command: build
@@ -6,15 +6,6 @@ runs:
       stdout: |4
            TYPESCRIPT  Building the entries the manifest publishes...
 
-          ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
-          ℹ config file: {{path}} 
-          ℹ entry: src/index.ts
-          ℹ tsconfig: tsconfig.json
-          ℹ Build start
-          found: tsdown could not build the project — its own report is above · why: dist/ is what `start` runs and what the package publishes, and a build that stopped part-way leaves it stale · fix: repair what tsdown names above, then run the build again · read: docs/reference/building.md#a-build-that-fails
-      stderr: |-
-          {{any}}
-           ERROR  Error: Build failed with 1 error:
-
-          [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts.
-          {{any}}
+          found: `.` publishes dist/index.js, but neither src/index.ts nor lint/index.ts exists · why: a build that skips a published target ships a package whose import of it resolves to nothing · fix: name each entry by the entry grammar — `./register` is built from src/index.register.ts — or drop the target from package.json · read: docs/reference/building.md#the-entries
+      files:
+          dist: absent

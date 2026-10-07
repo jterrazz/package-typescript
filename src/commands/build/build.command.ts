@@ -10,10 +10,19 @@ export async function build(): Promise<number> {
     print(`${badge('TYPESCRIPT')} Building the entries the manifest publishes...\n\n`);
     const project = process.cwd();
     const steps = planOf(project, await readSettings(project));
-    const status =
-        typeof steps === 'string'
-            ? (print(`${RED}${steps}${RESET}\n`), 1)
-            : await builtFrom(steps, project);
+    if (typeof steps === 'string') {
+        print(`${RED}${steps}${RESET}\n`);
+
+        return 1;
+    }
+    if (steps.length === 0) {
+        print(
+            `Nothing to build: a mobile app is bundled by its framework — \`npx expo export\` — and publishes nothing a package build compiles\n`,
+        );
+
+        return 0;
+    }
+    const status = await builtFrom(steps, project);
     if (status !== 0) {
         print(
             `${RED}${refusal({

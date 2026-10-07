@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "type": "module",
+    "main": "expo-router/entry",
     "dependencies": {
         "react": "^19.3.0"
     },

@@ -4,7 +4,7 @@ Three commands cover a project's build and run: `build` produces `dist/`, `start
 
 | Command            | Produces                                                             | For                                      |
 | ------------------ | -------------------------------------------------------------------- | ---------------------------------------- |
-| `typescript build` | what the manifest publishes: ESM, declarations and source maps       | every kind                               |
+| `typescript build` | what the manifest publishes: ESM, declarations and source maps       | every kind but `mobile`                  |
 | `typescript start` | nothing: runs the built `dist/index.js`, with `--enable-source-maps` | an application                           |
 | `typescript dev`   | builds, runs, then rebuilds and reruns on every change               | an application                           |
 | `typescript tsc`   | whatever the compiler emits                                          | a repository built on project references |
@@ -22,7 +22,9 @@ A build compiles what the package publishes, and its `package.json` already says
 | `"./rules": { "browser": "./dist/rules.browser.js", … }` | `src/index.rules.browser.ts` | `dist/rules.browser.js` |
 | `"bin": { "greet": "./dist/greet.js" }`                  | `src/greet.bin.ts`           | `dist/greet.js`         |
 
-A package with no manifest target under `dist/` compiles `src/index.ts`, beside the modules [named for how they are loaded](#what-the-manifest-does-not-name), as an application does. A pattern (`./tsconfig/*`) is skipped, since the map does not enumerate what it stands for, and so is a target whose entry is not on disk.
+A package with no manifest target under `dist/` compiles `src/index.ts`, beside the modules [named for how they are loaded](#what-the-manifest-does-not-name), as an application does. A pattern (`./tsconfig/*`) is skipped, since the map does not enumerate what it stands for. A code target whose entry is on no disk is refused in four parts before anything is built, naming the target and the two places its entry may sit — `src/register.ts` publishes nothing, `src/index.register.ts` does — since a build that skipped it would ship a package whose import of that subpath resolves to nothing.
+
+A `mobile` app builds nothing here: Metro bundles it, through `npx expo export`, and its manifest's `main` names the router's entry, never a module of `dist/`. `typescript build` says so and exits 0, building only the repository's own commands, if it keeps any.
 
 Each target decides its output by its extension and its condition:
 

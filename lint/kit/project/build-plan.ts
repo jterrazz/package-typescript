@@ -11,7 +11,9 @@ import {
     publishedOf,
 } from './entry-points.js';
 import { parsedObject } from './json.js';
+import type { JsonObject } from './json.js';
 import { SETTINGS_FILE } from './jterrazz-config.js';
+import { withoutDotSlash } from './packed-files.js';
 import { presetLesson } from './preset.js';
 import type { Resolution } from './preset.js';
 import type { Platform, ProjectIdentity } from './project-kind.js';
@@ -52,6 +54,9 @@ export const BROWSER_PLATFORMS: ReadonlySet<Platform> = new Set([
 ]);
 
 const COMMAND = '.cli.ts';
+
+// invariant: the build writes ESM as `.js` and CommonJS as `.cjs`; a `.mjs` target it does not write.
+const CODE_TARGET = /\.c?js$/u;
 
 const SELF_ROOT = 'lint/self';
 
@@ -122,26 +127,37 @@ export function conventionsOf(root: string): { problem: null | string; settings:
         : { problem: null, settings: { dev: devEntries, entries } };
 }
 
-type Planned = { browser: boolean; formats: Set<'cjs' | 'esm'>; source: string };
+type Planned = { browser: boolean; cjs: boolean; source: string };
+
+const manifestAt = (root: string): JsonObject => {
+    const path = join(root, 'package.json');
+
+    // Stryker disable next-line StringLiteral: JSON.parse reads a Buffer as its UTF-8 text, so the encoding only names the type
+    return existsSync(path) ? parsedObject(readFileSync(path, 'utf8')) : {};
+};
+
+/** The code targets the manifest publishes under `dist/` whose entry, by the entry grammar, is on no disk — each said in one line. */
+export function unsourcedOf(root: string): string[] {
+    return publishedOf(manifestAt(root), DIST)
+        .filter(({ target }) => CODE_TARGET.test(target))
+        .filter((one) => !entrySourcesOf(one).some((source) => existsSync(join(root, source))))
+        .map(
+            (one) =>
+                `${one.what} publishes ${withoutDotSlash(one.target)}, but neither ${entrySourcesOf(one).join(' nor ')} exists`,
+        );
+}
 
 function plannedOf(root: string): Map<string, Planned> {
-    const path = join(root, 'package.json');
-    const manifest = existsSync(path) ? parsedObject(readFileSync(path, 'utf8')) : {};
+    const manifest = manifestAt(root);
     const planned = new Map<string, Planned>();
     for (const one of publishedOf(manifest, DIST)) {
         const source = entrySourcesOf(one).find((candidate) => existsSync(join(root, candidate)));
-        const format = one.target.endsWith('.cjs')
-            ? 'cjs'
-            : one.target.endsWith('.js')
-              ? 'esm'
-              : null;
-        if (source === undefined || format === null) {
+        if (source === undefined || !CODE_TARGET.test(one.target)) {
             continue;
         }
         const output = outputOf(one.target, DIST);
-        const known = planned.get(output) ?? { browser: one.browser, formats: new Set(), source };
-        known.formats.add(format);
-        planned.set(output, known);
+        const known = planned.get(output) ?? { browser: one.browser, cjs: false, source };
+        planned.set(output, { ...known, cjs: known.cjs || one.target.endsWith('.cjs') });
     }
 
     return planned;
@@ -181,7 +197,7 @@ function publishedSteps(
     own: BuildStep['platform'],
     root: string,
 ): BuildStep[] {
-    const dual = planned.filter(([, one]) => !one.browser && one.formats.has('cjs'));
+    const dual = planned.filter(([, one]) => !one.browser && one.cjs);
     const browser = planned.filter(([, one]) => one.browser);
     const defaulted =
         planned.length === 0 &&
@@ -205,15 +221,19 @@ export function buildPlanOf(
     { declaration, settings }: { declaration: null | ProjectIdentity; settings: BuildSettings },
 ): BuildStep[] {
     const planned = [...plannedOf(root)];
-    const main = planned.filter(([, one]) => !one.browser && !one.formats.has('cjs'));
+    const main = planned.filter(([, one]) => !one.browser && !one.cjs);
     const platform = declaration?.platform;
-    const own = platform !== undefined && platform !== null && BROWSER_PLATFORMS.has(platform);
-    const steps = publishedSteps(
-        planned,
-        { ...entryRecord(main), ...settings.entries },
-        own ? 'browser' : 'node',
-        root,
-    );
+    const own = [...BROWSER_PLATFORMS].some((one) => one === platform);
+    // invariant: a mobile app is bundled by its framework — Metro, through `expo export` — and publishes nothing a package build compiles: its `main` names the router's entry, never a module of dist/.
+    const steps =
+        declaration?.kind === 'mobile'
+            ? []
+            : publishedSteps(
+                  planned,
+                  { ...entryRecord(main), ...settings.entries },
+                  own ? 'browser' : 'node',
+                  root,
+              );
     const [leading] = steps;
     if (leading !== undefined) {
         leading.clean = true;
@@ -229,11 +249,20 @@ export function buildPlanOf(
 export function planOf(root: string, { problem, resolved }: Resolution): BuildStep[] | string {
     const derived = conventionsOf(root);
     const refused = (resolved.declaration === null ? problem : null) ?? derived.problem;
+    if (refused !== null) {
+        return refusal({
+            ...presetLesson(refused, SETTINGS_FILE),
+            read: 'docs/reference/building.md#the-entries',
+        });
+    }
+    const unsourced = unsourcedOf(root);
 
-    return refused === null
+    return unsourced.length === 0
         ? buildPlanOf(root, { declaration: resolved.declaration, settings: derived.settings })
         : refusal({
-              ...presetLesson(refused, SETTINGS_FILE),
+              fix: 'name each entry by the entry grammar — `./register` is built from src/index.register.ts — or drop the target from package.json',
+              found: unsourced.join('; '),
               read: 'docs/reference/building.md#the-entries',
+              why: 'a build that skips a published target ships a package whose import of it resolves to nothing',
           });
 }
