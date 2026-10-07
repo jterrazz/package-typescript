@@ -8,10 +8,12 @@ import { readCommandLine } from '../../../lint/kit/checker/command-line.js';
 import { objectOf, parsedObject } from '../../../lint/kit/project/json.js';
 import type { Resolution } from '../../../lint/kit/project/preset.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
+import { toolchainIn } from '../../drivers/node/node.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
 import { badge, print, RED, RESET } from '../check/report/terminal.js';
 import { changeOf, namesACommit } from './change.js';
+import { memberRuns } from './members.js';
 import { changedRanges, fileOf, narrowed, sourcesOf } from './scope.js';
 import type { MutationScope } from './scope.js';
 import { judgedRuns, leftToTheSuite, verdictOf } from './survivors.js';
@@ -42,13 +44,7 @@ function declaredOf(unit: string, { resolved }: Resolution): MutationScope {
 }
 
 async function mutationScopeOf(project: string): Promise<MutationScope> {
-    const members = await Promise.all(
-        workspaceMembers(project).map(
-            async (member) =>
-                [member, await readSettings(join(project, member))] satisfies [string, Resolution],
-        ),
-    );
-    const units = [['.', await readSettings(project)] satisfies [string, Resolution], ...members];
+    const units = [['.', await readSettings(project)] satisfies [string, Resolution]];
     const declared = units.map(([unit, resolution]) => declaredOf(unit, resolution));
 
     return {
@@ -151,6 +147,21 @@ async function judgedAfterTheSuite({
     );
 }
 
+/** A workspace root keeps no vitest config: each member is measured in its own folder, as `cd <member> && typescript mutation` measures it, into its own `.artifacts/stryker/`. */
+async function membersMeasured(
+    project: string,
+    members: readonly string[],
+    asked: { ranges: readonly string[] | undefined; since: string | undefined },
+): Promise<number> {
+    let status = 0;
+    for (const { args, member } of memberRuns(members, asked)) {
+        print(`${badge('TYPESCRIPT')} ${member}\n\n`);
+        status = Math.max(status, await toolchainIn(join(project, member), ['mutation', ...args]));
+    }
+
+    return status;
+}
+
 const blankAsUnset = (value: string | undefined): string | undefined =>
     value === undefined || value.trim() === '' ? undefined : value;
 
@@ -171,6 +182,10 @@ export async function mutation(args: readonly string[]): Promise<number> {
         );
 
         return 1;
+    }
+    const members = workspaceMembers(project);
+    if (members.length > 0) {
+        return await membersMeasured(project, members, { ranges, since: named });
     }
     const since = named ?? 'HEAD';
     const scope = await mutationScopeOf(project);

@@ -3,40 +3,62 @@ import { describe, expect, test } from 'vitest';
 
 import { cli } from '../cli.specification.js';
 
+const configOf = (content: string): unknown => JSON.parse(content);
+
 describe('scope', () => {
-    test("mutates each member's tested sources by its platform and its kind's standard, and leaves lint/ to a project that names it", async () => {
-        // Given - a workspace of an expo app, a node api and a library shipping lint rules, none naming anything to mutate, each source but one with its module test in its folder's __tests__/
+    test("measures each member in its own folder, its tested sources by its platform and its kind's standard", async () => {
+        // Given - a workspace of an expo app, a node api and a library shipping lint rules, none naming anything to mutate, each source with its module test in its folder's __tests__/
         const result = await cli.fixture(directory('./__fixtures__/workspace/')).exec('mutation');
 
-        // Then - the config handed to Stryker mutates the tested sources of src/ everywhere, of the expo routes and its .tsx, the library's lint rules its standard names under its own folder, never the workspace's lint/ nor a source no module test proves, and the sandbox builds nothing the project does not
-        const config: unknown = JSON.parse(
-            result.file('.artifacts/stryker/stryker.config.json').content,
-        );
-        expect(config).toMatchObject({
-            disableTypeChecks:
-                '{src/**/!(*.test-d).ts,apps/api/src/**/!(*.test-d).ts,apps/kit/src/**/!(*.test-d).ts,apps/mobile/src/**/!(*.test-d).{ts,tsx},apps/mobile/app/**/!(*.test-d).{ts,tsx},apps/kit/lint/!(*.test-d).ts,apps/kit/lint/consumer/**/!(*.test-d).ts,apps/kit/lint/kit/**/!(*.test-d).ts}',
-            mutate: [
-                'apps/api/src/handler.ts',
-                'apps/kit/lint/consumer/rule.ts',
-                'apps/mobile/app/index.tsx',
-                'apps/mobile/src/screen.tsx',
-                'src/root.ts',
-            ],
-        });
-        expect(result.file('.artifacts/stryker/sandbox.mjs').content).not.toContain('npm');
-        // Then - Stryker, which the fixture installs no runner for, fails the run with its own status, and nothing is judged after it
+        // Then - each member hands Stryker its own config, under its own .artifacts/: the tested sources of its src/, the expo routes and their .tsx, the library's lint rules its standard names; the sandbox builds nothing the member does not
+        expect(
+            ['apps/api', 'apps/kit', 'apps/mobile'].map((member) =>
+                configOf(result.file(`${member}/.artifacts/stryker/stryker.config.json`).content),
+            ),
+        ).toMatchObject([
+            { disableTypeChecks: 'src/**/!(*.test-d).ts', mutate: ['src/handler.ts'] },
+            {
+                disableTypeChecks:
+                    '{src/**/!(*.test-d).ts,lint/!(*.test-d).ts,lint/consumer/**/!(*.test-d).ts,lint/kit/**/!(*.test-d).ts}',
+                mutate: ['lint/consumer/rule.ts'],
+            },
+            {
+                disableTypeChecks: '{src/**/!(*.test-d).{ts,tsx},app/**/!(*.test-d).{ts,tsx}}',
+                mutate: ['app/index.tsx', 'src/screen.tsx'],
+            },
+        ]);
+        expect([
+            result.file('apps/api/.artifacts/stryker/sandbox.mjs').content.includes('npm'),
+            result.file('.artifacts/stryker/stryker.config.json').exists,
+        ]).toStrictEqual([false, false]);
+        // Then - Stryker, which the fixture installs no runner for, fails each member's run with its own status, and nothing is judged after it
         expect(result.exitCode).toBe(1);
         expect(result.stderr.text).not.toContain('ENOENT');
         expect(result.stdout.text).not.toContain('Measuring the whole suite');
+    });
+
+    test('names each member it measures, and measures only the members a --mutate range names', async () => {
+        // Given - the same workspace, measured at one range of the api
+        const result = await cli
+            .fixture(directory('./__fixtures__/workspace/'))
+            .exec('mutation --mutate apps/api/src/handler.ts:1-3');
+
+        // Then - the api alone is measured, at its range read from its own folder
+        expect(result.stdout.text).toContain(' TYPESCRIPT  apps/api');
+        expect(result.stdout.text).not.toContain(' TYPESCRIPT  apps/kit');
+        expect(
+            configOf(result.file('apps/api/.artifacts/stryker/stryker.config.json').content),
+        ).toMatchObject({ mutate: ['src/handler.ts:1-3'] });
+        expect(result.file('apps/kit/.artifacts/stryker/stryker.config.json').exists).toBe(false);
     });
 
     test('runs no spec a mobile app drives its simulator with', async () => {
         // Given - a workspace whose expo app is of the mobile kind
         const result = await cli.fixture(directory('./__fixtures__/workspace/')).exec('mutation');
 
-        // Then - the Vitest config the run hands Stryker leaves out the mobile app's specs/mobile/
-        expect(result.file('.artifacts/stryker/vitest.config.mjs').content).toContain(
-            'exclude: ["apps/mobile/specs/mobile/**"]',
+        // Then - the Vitest config the mobile member hands Stryker leaves out its specs/mobile/
+        expect(result.file('apps/mobile/.artifacts/stryker/vitest.config.mjs').content).toContain(
+            'exclude: ["specs/mobile/**"]',
         );
     });
 });

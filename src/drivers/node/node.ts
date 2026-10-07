@@ -10,3 +10,8 @@ export async function builtApplication(args: readonly string[], project: string)
         project,
     );
 }
+
+/** Runs this toolchain's own command in another folder, as `cd <folder> && typescript <args>` runs it, handing it the terminal. */
+export async function toolchainIn(folder: string, args: readonly string[]): Promise<number> {
+    return await handOver(process.execPath, [String(process.argv[1]), ...args], folder);
+}
