@@ -3,6 +3,7 @@ import { join, posix } from 'node:path';
 import ts from 'typescript';
 
 import { refusal } from '../../kit/catalogue/lesson.js';
+import { TESTS_FOLDER } from '../../kit/project/ground.js';
 import { shippedModules } from '../../kit/testing/shipped-modules.js';
 import { syntaxWalk } from '../../kit/testing/syntax-walk.js';
 import { moduleEdges } from './module-edges.js';
@@ -143,7 +144,7 @@ function foldersIn(root: string, folder: string): string[] {
 
     return existsSync(path)
         ? readdirSync(path, { withFileTypes: true })
-              .filter((entry) => entry.isDirectory())
+              .filter((entry) => entry.isDirectory() && entry.name !== TESTS_FOLDER)
               .map((entry) => entry.name)
               .toSorted()
         : [];

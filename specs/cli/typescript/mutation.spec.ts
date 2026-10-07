@@ -7,7 +7,7 @@ describe('mutation', () => {
     test('typescript mutation — a mutant the module test runs and none detects fails the run, named at its place', async () => {
         // Given - a consumer installing the packed toolchain, one test leaving the guard of its source unjudged
         const result = await cli
-            .fixture(directory('./_fixtures/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
             .exec('typescript mutation');
 
         // Then - the suite never starts on a failed verdict; each survivor is named, then the lesson, and nothing is written to a ledger
@@ -30,10 +30,10 @@ describe('mutation', () => {
     test('typescript mutation — a commit to measure from that git cannot name is refused before anything runs', async () => {
         // Given - the consumer, outside any repository, measured since a commit named on the command line, then by CI's variable
         const named = await cli
-            .fixture(directory('./_fixtures/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
             .exec('typescript mutation --since main');
         const result = await cli
-            .fixture(directory('./_fixtures/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
             .env({ TYPESCRIPT_MUTATION_SINCE: 'main' })
             .exec('typescript mutation');
 
@@ -49,8 +49,8 @@ describe('mutation', () => {
     test('typescript mutation — a run whose every mutant the module tests run is detected passes', async () => {
         // Given - the same consumer, its test judging the guard, its boundary and its message, CI's variable left blank by an event that carries no commit
         const result = await cli
-            .fixture(directory('./_fixtures/mutation-consumer/'))
-            .fixture(directory('./_fixtures/mutation-killing/'))
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
             .env({ TYPESCRIPT_MUTATION_SINCE: ' ' })
             .exec('typescript mutation');
 
@@ -70,9 +70,9 @@ describe('mutation', () => {
     test('typescript mutation — a source no module test reaches waits for a change, and the module run builds nothing', async () => {
         // Given - the same consumer with its built, spec-proven source, outside any repository, so no change reaches it
         const result = await cli
-            .fixture(directory('./_fixtures/mutation-consumer/'))
-            .fixture(directory('./_fixtures/mutation-killing/'))
-            .fixture(directory('./_fixtures/mutation-spec-proven/'))
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .fixture(directory('./__fixtures__/mutation-spec-proven/'))
             .exec('typescript mutation');
 
         // Then - the module tests' verdict alone, the source waiting for a change counted apart, and a module sandbox that never ran the build
@@ -84,7 +84,7 @@ describe('mutation', () => {
 
             every mutant a test runs is detected — 9 detected
             0 mutant(s) no test runs
-            1 source(s) no module test sits beside — the whole suite measures the lines a change reaches there; what no change reaches no count holds
+            1 source(s) with no module test — the whole suite measures the lines a change reaches there; what no change reaches no count holds
         `);
         expect(result.stdout.text).not.toContain('Measuring the whole suite');
         expect(result.file('.artifacts/stryker/sandbox.mjs').content).not.toContain('npm');
@@ -93,9 +93,9 @@ describe('mutation', () => {
     test('typescript mutation — the whole suite judges what only a spec proves, through the processes it spawns', async () => {
         // Given - the same consumer, beside a source no module test reaches that a spec runs from its build as a process of its own, with a name and never an empty one, the run pointed at it
         const result = await cli
-            .fixture(directory('./_fixtures/mutation-consumer/'))
-            .fixture(directory('./_fixtures/mutation-killing/'))
-            .fixture(directory('./_fixtures/mutation-spec-proven/'))
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .fixture(directory('./__fixtures__/mutation-spec-proven/'))
             .exec('typescript mutation --mutate src/greeting.ts:1-3');
 
         // Then - the process kills the mutants of what the spec reads; the empty-name test it runs and never judges survives, and the branches it never takes are counted apart; the suite ran on the build
@@ -111,16 +111,16 @@ describe('mutation', () => {
             found: 2 mutant(s) a test runs and none detects · why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/reference/quality-checks.md#mutation
             2 mutant(s) no test runs
               src/greeting.ts  2
-            1 source(s) no module test sits beside — the whole suite measures the lines a change reaches there; what no change reaches no count holds
+            1 source(s) with no module test — the whole suite measures the lines a change reaches there; what no change reaches no count holds
         `);
     });
 
     test('typescript mutation — a mutant that stops a test file from loading is detected', async () => {
         // Given - the consumer, its module test judging everything, beside a table read as its module loads, whose emptied table throws before the test file can load
         const result = await cli
-            .fixture(directory('./_fixtures/mutation-consumer/'))
-            .fixture(directory('./_fixtures/mutation-killing/'))
-            .fixture(directory('./_fixtures/mutation-loading/'))
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .fixture(directory('./__fixtures__/mutation-loading/'))
             .exec('typescript mutation');
 
         // Then - every mutant of the table detected, none left to the suite
@@ -138,9 +138,9 @@ describe('mutation', () => {
     test('typescript mutation — a module-level mutant a test also runs is the module tests to answer', async () => {
         // Given - the consumer, its module test judging everything, beside a function the module calls as it loads and a test calls again, judging only the sign of what it returns
         const result = await cli
-            .fixture(directory('./_fixtures/mutation-consumer/'))
-            .fixture(directory('./_fixtures/mutation-killing/'))
-            .fixture(directory('./_fixtures/mutation-mixed/'))
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .fixture(directory('./__fixtures__/mutation-mixed/'))
             .exec('typescript mutation');
 
         // Then - the mutant the test runs and lets live fails the run, though loading the module ran it too

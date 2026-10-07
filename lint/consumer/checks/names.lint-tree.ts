@@ -1,7 +1,7 @@
 import { catalogueFamilies } from '../../kit/catalogue/families.js';
 import type { Finding } from '../../kit/checker/pass.js';
 import { exportedFunctions, exportedValues } from '../../kit/project/exported-names.js';
-import { GROUND_FOLDERS } from '../../kit/project/ground.js';
+import { GROUND_FOLDERS, TESTS_FOLDER } from '../../kit/project/ground.js';
 import { EVERY_NAME, importersOf } from '../../kit/project/importers.js';
 import { isJsonObject, stringsOf } from '../../kit/project/json.js';
 import { readText } from '../../kit/project/project-files.js';
@@ -40,7 +40,7 @@ const PROGRAM =
     /\bimport\.meta\.main\b|\bprocess\.(?:argv|exit)\b|\bimport\s*\{[^}]*\b(?:argv|exit)\b[^}]*\}\s*from\s*['"](?:node:)?process['"]/u;
 
 const TEST_MATERIAL = new RegExp(
-    `\\.test(?:-d)?\\.[cm]?[jt]sx?$|(?:^|/)(?:${GROUND_FOLDERS.join('|')})/`,
+    `\\.test(?:-d)?\\.[cm]?[jt]sx?$|(?:^|/)(?:${[...GROUND_FOLDERS, TESTS_FOLDER].join('|')})/`,
     'u',
 );
 
@@ -145,14 +145,17 @@ function exportedSurfaceOf(
     };
 }
 
+/** The file's own test reads it from the `__tests__/` of its folder; a module of the same stem beside it is its own too. */
 const isOwnReader = (file: string, reader: string): boolean => {
     const folder = file.slice(0, file.lastIndexOf('/') + 1);
+    if (!reader.startsWith(folder)) {
+        return false;
+    }
+    const rest = reader.slice(folder.length);
+    const own = rest.startsWith(`${TESTS_FOLDER}/`) ? rest.slice(TESTS_FOLDER.length + 1) : rest;
 
-    return (
-        reader.startsWith(folder) &&
-        !reader.slice(folder.length).includes('/') &&
-        stemOf(reader.slice(folder.length)) === stemOf(file.slice(folder.length))
-    );
+    // invariant: a folder's name holds no dot, so a reader in a folder below never shares the file's stem.
+    return stemOf(own) === stemOf(file.slice(folder.length));
 };
 
 const isComposer = (reader: string): boolean => {

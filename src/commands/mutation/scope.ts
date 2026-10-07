@@ -1,6 +1,7 @@
 import { existsSync, globSync } from 'node:fs';
 import { join, matchesGlob } from 'node:path';
 
+import { moduleTestOf } from '../../../lint/kit/project/ground.js';
 import { lastLineReader } from '../../drivers/tsc/node-ends.js';
 import type { Changed } from './survivors.js';
 
@@ -9,22 +10,28 @@ const NEVER_MUTATED = [
     '**/*.test.tsx',
     '**/*.test-d.ts',
     '**/*.fixtures.ts',
-    '**/_fixtures/**',
-    '**/_expected/**',
+    '**/__tests__/**',
+    '**/__fixtures__/**',
+    '**/__expected__/**',
 ];
 
 export type MutationScope = { exclude: string[]; ignore: string[]; mutated: string[] };
 
-const TEST_SUFFIXES = ['.test.ts', '.test.tsx'];
+const TEST_EXTENSIONS = ['.ts', '.tsx'];
 
-/** Every source the run mutates, split by whether a module test sits beside it: the module tests measure the first, the whole suite the rest. */
+/** Every source the run mutates, split by whether a module test sits in its folder's `__tests__/`: the module tests measure the first, the whole suite the rest. */
 export function sourcesOf(
     project: string,
     scope: MutationScope,
 ): { tested: string[]; untested: string[] } {
     const never = [...NEVER_MUTATED, ...scope.ignore];
-    const hasItsTest = (file: string): boolean =>
-        TEST_SUFFIXES.some((suffix) => existsSync(join(project, file.replace(/\.tsx?$/u, suffix))));
+    const hasItsTest = (file: string): boolean => {
+        const stem = file.replace(/\.tsx?$/u, '');
+
+        return TEST_EXTENSIONS.some((extension) =>
+            existsSync(join(project, moduleTestOf(`${stem}${extension}`))),
+        );
+    };
     const sources = [...new Set(scope.mutated.flatMap((glob) => globSync(glob, { cwd: project })))]
         .filter((file) => !never.some((pattern) => matchesGlob(file, pattern)))
         .toSorted();

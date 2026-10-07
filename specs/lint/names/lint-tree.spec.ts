@@ -6,7 +6,7 @@ import { lint } from '../names-lint.specification.js';
 describe('lint-tree', () => {
     test('holds lint/ to its tree — index, consumer, self and kit, declarations apart, rules by family', async () => {
         // Given - a lint/ tree with files at its roots, a module at its root that is no entry, a program, a helper, and a rule filed under another family
-        const result = await lint.fixture(directory('./_fixtures/lint-tree/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/lint-tree/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`
@@ -15,6 +15,11 @@ describe('lint-tree', () => {
                 why: lint/ has one tree in every repository — its root holds the entries alone, each \`index[.<name>].ts\` built as a subpath the package publishes or a private import, where consumer/ meets kit/, and a folder names the audience of every other file
                 fix: move it into the folder its audience names — consumer, kit, self — name it \`index.<name>.ts\` and declare it if it is an entry, or move it into docs/ if it explains
                 read: docs/reference/quality-checks.md#the-lint-tree
+            lint/__tests__/Odd_Dir/:1:1  names(directory-in-kebab-case)
+                found: \`lint/__tests__/Odd_Dir/\` is not written in kebab-case
+                why: a directory name is part of every path and import that crosses it, and one case for every name reads the same on a disk that folds case and on one that does not
+                fix: rename it in lowercase words joined by \`-\` — a \`__<word>__\` name is a special folder of the toolchain’s closed list, and a route segment keeps its framework grammar (\`[id]\`, \`(group)\`, \`@slot\`)
+                read: docs/reference/quality-checks.md#the-names-tree-pass
             lint/catalog.json:1:1  names(lint-root-holds-only-entries)
                 found: \`lint/catalog.json\` sits at the root of lint/, and is no entry
                 why: lint/ has one tree in every repository — its root holds the entries alone, each \`index[.<name>].ts\` built as a subpath the package publishes or a private import, where consumer/ meets kit/, and a folder names the audience of every other file

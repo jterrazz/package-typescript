@@ -8,7 +8,7 @@ import {
     unbuiltCodeOf,
 } from '../../kit/project/entry-points.js';
 import type { Published } from '../../kit/project/entry-points.js';
-import { GROUND_FOLDERS } from '../../kit/project/ground.js';
+import { GROUND_FOLDERS, TESTS_FOLDER } from '../../kit/project/ground.js';
 import { parsedObject } from '../../kit/project/json.js';
 import { withoutDotSlash } from '../../kit/project/packed-files.js';
 import { namesFinding } from './names.lessons.js';
@@ -124,11 +124,16 @@ const isEntryRootModule = (file: string): boolean =>
 
 const isIndexModule = (file: string): boolean => basename(file).split('.')[0] === 'index';
 
-const isBinModule = (file: string): boolean =>
-    stemOf(basename(file.replace(TEST, ''))).endsWith('.bin');
+// Stryker disable next-line StringLiteral: the pattern holds no character outside ASCII, so the flag changes nothing
+const TESTS_SEGMENT = new RegExp(`(^|/)${TESTS_FOLDER}/`, 'u');
+
+/** A test names the module it tests: `dir/__tests__/a.test.ts` is `dir/a.ts`'s. */
+const testedOf = (file: string): string => file.replace(TEST, '').replace(TESTS_SEGMENT, '$1');
+
+const isBinModule = (file: string): boolean => stemOf(basename(testedOf(file))).endsWith('.bin');
 
 const builds = (file: string, sources: ReadonlySet<string>): boolean => {
-    const module = file.replace(TEST, '');
+    const module = testedOf(file);
 
     return [module, module.replace(/\.tsx$/u, '.ts')].some((one) => sources.has(one));
 };

@@ -141,7 +141,7 @@ function heldBy(ranges: readonly string[], file: string, mutant: Mutant): boolea
     });
 }
 
-/** One verdict over both runs: what the module tests left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant the change brought that the suite's report does not carry was judged by nothing; of a source no module test sits beside, the suite's report counts only what this run's ranges held — an earlier run's results it carries beyond them count for nothing. */
+/** One verdict over both runs: what the module tests left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant the change brought that the suite's report does not carry was judged by nothing; of a source with no module test, the suite's report counts only what this run's ranges held — an earlier run's results it carries beyond them count for nothing. */
 export function judgedRuns(
     modules: ModuleRun,
     suite?: { changed: Changed; report: unknown; untested: readonly string[] },
@@ -211,7 +211,7 @@ function countLines(
         ...(untestedSources === 0
             ? []
             : [
-                  `${untestedSources} source(s) no module test sits beside — the whole suite measures the lines a change reaches there; what no change reaches no count holds`,
+                  `${untestedSources} source(s) with no module test — the whole suite measures the lines a change reaches there; what no change reaches no count holds`,
               ]),
         ...(outside.total === 0
             ? []
@@ -252,7 +252,7 @@ function unrunLines({ unrun }: Judged): string[] {
     ];
 }
 
-/** The verdict's lines and status, counting apart the sources no module test sits beside, which no run mutates until a change reaches them. */
+/** The verdict's lines and status, counting apart the sources with no module test, which no run mutates until a change reaches them. */
 export function verdictOf(
     judged: Judged,
     untestedSources: number,
