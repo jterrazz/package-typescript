@@ -1,4 +1,5 @@
 import { allOn, fragment, off, on } from '../../kit/compiler/decision.js';
+import { INLINE_INSTRUCTIONS } from '../catalogue/comment-kinds.js';
 import { ESLINT_SIZES_OVERRIDES, SIZE_SINCE } from './eslint.sizes.js';
 
 const RULE_REVIEW_SINCE = '11.0.0';
@@ -70,7 +71,6 @@ export default fragment({
             'no-implicit-coercion',
             'no-implicit-globals',
             'no-import-assign',
-            'no-inline-comments',
             'no-inner-declarations',
             'no-invalid-regexp',
             'no-irregular-whitespace',
@@ -172,6 +172,11 @@ export default fragment({
         'max-lines-per-function': { ...on([{ max: 60 }]), since: SIZE_SINCE },
         'max-params': on([4]),
         'no-duplicate-imports': on([{ allowSeparateTypeImports: true }]),
+        // invariant: a bundler's annotation and an editor's language tag act where they stand, inline, and are no prose.
+        'no-inline-comments': {
+            ...on([{ ignorePattern: INLINE_INSTRUCTIONS }]),
+            since: RULE_REVIEW_SINCE,
+        },
         'no-unmodified-loop-condition': on([{ checkConditionalExpressions: true }]),
         // invariant: a read inside a function runs after the module did, so neither a helper nor a constant written below its reader
         // is a temporal-dead-zone read; a read in the declaration's own scope still is, and stays refused.

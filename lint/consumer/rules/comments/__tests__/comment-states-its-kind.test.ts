@@ -9,14 +9,22 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
         {
             code: lines("test('adds', () => {", '    // Given - two numbers', '});'),
             errors: [{ column: 4, line: 2, messageId: 'unstated' }],
+            output: lines("test('adds', () => {", '});'),
         },
         {
             code: lines('// adds the two values', 'const sum = 1 + 2;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'const sum = 1 + 2;',
         },
         {
             code: lines('const sum = 1 + 2; // the sum'),
             errors: [{ column: 19, line: 1, messageId: 'unstated' }],
+            output: 'const sum = 1 + 2;',
+        },
+        {
+            code: lines('const sum = /* the sum */ 1 + 2;'),
+            errors: [{ column: 12, line: 1, messageId: 'unstated' }],
+            output: 'const sum = 1 + 2;',
         },
         {
             code: lines(
@@ -26,27 +34,37 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 'export const doubled = (value) => value * 2;',
             ),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'export const doubled = (value) => value * 2;',
         },
         {
             code: lines(
                 '// hazard: the first run states its kind',
                 'const one = 1;',
                 '// the second, apart from it, does not',
+                '// and its second line goes with it',
                 'const two = 2;',
             ),
             errors: [{ column: 0, line: 3, messageId: 'unstated' }],
+            output: lines(
+                '// hazard: the first run states its kind',
+                'const one = 1;',
+                'const two = 2;',
+            ),
         },
         {
             code: lines('/* a block of prose */', 'const one = 1;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'const one = 1;',
         },
         {
             code: lines('// Invariant: the kind is lower case', 'const one = 1;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'const one = 1;',
         },
         {
-            code: lines('//* a line comment dressed as a hover', 'const one = 1;'),
+            code: lines('//* a line comment dressed as a hover', 'export const one = 1;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'export const one = 1;',
         },
         {
             code: lines(
@@ -57,18 +75,89 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 { column: 0, line: 1, messageId: 'unstated' },
                 { column: 22, line: 2, messageId: 'unstated' },
             ],
+            output: lines('export const sum = 1;', 'export const end = 2;'),
+        },
+        {
+            code: lines('/* A block that is no doc block. */', 'export const one = 1;'),
+            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'export const one = 1;',
+        },
+        {
+            code: lines('// prose followed by blanks   ', 'const one = 1;'),
+            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'const one = 1;',
+        },
+        {
+            code: lines('const one = 1; // prose followed by blanks   ', 'const two = 2;'),
+            errors: [{ column: 15, line: 1, messageId: 'unstated' }],
+            output: lines('const one = 1;', 'const two = 2;'),
+        },
+        {
+            code: lines('const query =', '    // sql', '    `select 1`;'),
+            errors: [{ column: 4, line: 2, messageId: 'unstated' }],
+            output: lines('const query =', '    `select 1`;'),
+        },
+        {
+            code: lines('/** A private helper is no hover. */', 'const helper = () => 1;'),
+            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'const helper = () => 1;',
+        },
+        {
+            code: lines(
+                "/** A file header above an import is no symbol's hover. */",
+                "import { join } from 'node:path';",
+                'export const at = join;',
+            ),
+            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: lines("import { join } from 'node:path';", 'export const at = join;'),
+        },
+        {
+            code: lines(
+                'export function run() {',
+                '    /** A statement in a body is no member. */',
+                '    return 1;',
+                '}',
+            ),
+            errors: [{ column: 4, line: 2, messageId: 'unstated' }],
+            output: lines('export function run() {', '    return 1;', '}'),
+        },
+        {
+            code: lines(
+                '// oxlint-disable-next-line jterrazz-typescript/comment-no-longer-than-its-function -- a policy',
+                '/**',
+                ' * Rounds half away from zero,',
+                ' * as the ledger requires.',
+                ' */',
+                'export const rounded = (value) => Math.round(value);',
+            ),
+            errors: [{ column: 0, line: 2, messageId: 'unstated' }],
+            output: 'export const rounded = (value) => Math.round(value);',
+        },
+        {
+            code: lines(
+                '// oxlint-disable-next-line jterrazz-typescript/comment-states-its-kind , jterrazz-typescript/comment-no-longer-than-its-function',
+                '/**',
+                ' * Rounds half away from zero.',
+                ' */',
+                'const rounded = (value) => Math.round(value);',
+            ),
+            errors: [{ column: 0, line: 2, messageId: 'unstated' }],
+            output: 'const rounded = (value) => Math.round(value);',
         },
         {
             code: lines('/* hazard: a block opens the run */', '// a line after it starts its own'),
             errors: [{ column: 0, line: 2, messageId: 'unstated' }],
+            output: '/* hazard: a block opens the run */\n',
         },
         {
             code: lines('// hazard: a line opens the run', '/* a block after it starts its own */'),
             errors: [{ column: 0, line: 2, messageId: 'unstated' }],
+            output: '// hazard: a line opens the run\n',
         },
         {
             code: lines('// value/: a slash is no part of the kind', 'const one = 1;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'const one = 1;',
         },
         {
             code: lines(
@@ -81,6 +170,84 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 'export {};',
             ),
             errors: [{ column: 0, line: 6, messageId: 'unstated' }],
+            output: lines('', '', '', '', '', 'export {};'),
+        },
+        {
+            code: lines('const query = /* sql */ run(`select 1`);'),
+            errors: [{ column: 14, line: 1, messageId: 'unstated' }],
+            output: 'const query = run(`select 1`);',
+        },
+        {
+            code: lines('const query = /* sql */ "select 1";'),
+            errors: [{ column: 14, line: 1, messageId: 'unstated' }],
+            output: 'const query = "select 1";',
+        },
+        {
+            code: lines(
+                'export const View = () => (',
+                '    <main>',
+                '        {/* the list goes here */}',
+                '        <ul />',
+                '    </main>',
+                ');',
+            ),
+            errors: [{ column: 9, line: 3, messageId: 'unstated' }],
+            languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
+            output: lines(
+                'export const View = () => (',
+                '    <main>',
+                '        <ul />',
+                '    </main>',
+                ');',
+            ),
+        },
+        {
+            code: lines(
+                'export const View = () => (',
+                '    <main>',
+                '        {/* invariant: the list is never empty */ /* the list goes here */}',
+                '        {/* invariant: the footer stays */}',
+                '        <ul />',
+                '    </main>',
+                ');',
+            ),
+            errors: [{ column: 50, line: 3, messageId: 'unstated' }],
+            languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
+            output: lines(
+                'export const View = () => (',
+                '    <main>',
+                '        {/* invariant: the list is never empty */}',
+                '        {/* invariant: the footer stays */}',
+                '        <ul />',
+                '    </main>',
+                ');',
+            ),
+        },
+        {
+            code: lines('export const View = () => <main>{ /* spaced prose */ }</main>;'),
+            errors: [{ column: 34, line: 1, messageId: 'unstated' }],
+            languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
+            output: 'export const View = () => <main></main>;',
+        },
+        {
+            code: lines(
+                'export const View = () => (',
+                '    <main>',
+                '        {/* invariant: the footer stays */}',
+                '        <ul />',
+                '    </main>',
+                '); // the view',
+            ),
+            errors: [{ column: 3, line: 6, messageId: 'unstated' }],
+            languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
+            output: lines(
+                'export const View = () => (',
+                '    <main>',
+                '        {/* invariant: the footer stays */}',
+                '        <ul />',
+                '    </main>',
+                ');',
+            ),
         },
         {
             code: lines(
@@ -93,6 +260,12 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 { column: 0, line: 1, messageId: 'kindedInstruction' },
                 { column: 0, line: 3, messageId: 'kindedInstruction' },
             ],
+            output: lines(
+                '// Stryker disable next-line CallExpression: a kind after the mutator',
+                'const a = 1;',
+                '// oxlint-disable-next-line no-console -- a kind after the rule',
+                'console.log(a);',
+            ),
         },
     ],
     valid: [
@@ -115,6 +288,37 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
         lines('// outside: the registry keeps a name 72 hours', 'const hours = 72;'),
         lines('const width = 100; // value: the print width every repository is written at'),
         lines('/** The sum of two values. */', 'export const sum = (a, b) => a + b;'),
+        lines('/** The sum of two values. */', 'export default function sum(a, b) {}'),
+        lines(
+            '/** The sum of two values. */',
+            'export const sum = (a, b) => a + b;',
+            '// invariant: a later comment leaves the hover where it is',
+        ),
+        lines(
+            '/** The sum of two values. */',
+            '// Stryker disable next-line all: an equivalent mutant',
+            '/* v8 ignore next */',
+            'export const sum = (a, b) => a + b;',
+        ),
+        lines('/** The sum of two values. */', 'const sum = (a, b) => a + b;', 'export { sum };'),
+        lines('/** The sum of two values. */', 'function sum(a, b) {}', 'export default sum;'),
+        lines(
+            'export class Ledger {',
+            '    /** The entries, oldest first. */',
+            '    entries = [];',
+            '',
+            '    /** Adds one entry. */',
+            '    add(entry) {',
+            '        this.entries.push(entry);',
+            '    }',
+            '}',
+        ),
+        lines(
+            'export const settings = {',
+            '    /** The port the server listens on. */',
+            '    port: 8080,',
+            '};',
+        ),
         lines(
             '/**',
             ' * invariant: an id is never reused,',
@@ -123,11 +327,33 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
             'let next = 0;',
         ),
         lines('// oxlint-disable-next-line no-console -- the CLI prints', 'console.log(1);'),
+        lines(
+            '// oxlint-disable-next-line no-console -- a directive another rule reads stays',
+            '/** The banner. */',
+            'export const banner = 1;',
+        ),
         lines('// @ts-expect-error -- the fixture is wrong on purpose', 'const n = 1;'),
         lines('// oxfmt-ignore', 'const matrix = [1,0,0,1];'),
         lines('/* v8 ignore next */', 'if (process.env.CI) {}'),
         lines('// Stryker disable next-line all: an equivalent mutant', 'const a = 1;'),
         lines('const lazy = /* @__PURE__ */ make();'),
+        ...[
+            'css',
+            'glsl',
+            'gql',
+            'graphql',
+            'html',
+            'js',
+            'json',
+            'md',
+            'sql',
+            'svg',
+            'ts',
+            'wgsl',
+            'xml',
+            'yaml',
+        ].map((tag) => `const embedded = /* ${tag} */ \`text\`;`),
+        lines('const shader = /*wgsl*/`fn main() {}`;'),
         lines('/// <reference types="vite/client" />', 'export {};'),
         {
             code: lines(

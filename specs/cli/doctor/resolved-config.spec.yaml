@@ -221,7 +221,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-implicit-globals = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-implied-eval = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-import-assign = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-inline-comments = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-inline-comments = ["error",{"ignorePattern":"^\\s*(?:[#@]__PURE__|@__NO_SIDE_EFFECTS__|@vite-ignore|webpack[A-Z]\\w*:|(?:css|glsl|gql|graphql|html|js|json|md|sql|svg|ts|wgsl|xml|yaml)\\s*$)"}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-inner-declarations = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-invalid-regexp = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-irregular-whitespace = "error"
