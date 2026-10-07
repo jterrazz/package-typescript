@@ -108,7 +108,7 @@ A project off the preset keeps its own `vitest.config.ts`, if it needs one, and 
 Every repository answers the same six `make` targets at its root, whatever runs under them, so a reader who has never opened it knows how to install, prove and repair it:
 
 ```make
-.PHONY: install build lint fix test check
+.PHONY: install build lint fix test mutation check
 
 install:
 	npm ci
@@ -119,8 +119,16 @@ build lint test:
 fix:
 	npx typescript fix
 
-check: lint test
+mutation:
+	npx typescript mutation
+
+check: lint test mutation
 ```
+
+`check` ends on `mutation`, the verdict over the module tests and the whole suite ([Quality checks § Mutation](../reference/quality-checks.md#mutation)): it measures the change not yet committed, or the last commit on a clean tree. Two kinds add a line:
+
+- **A library** reads its build in both other gates — the Publish pass judges what `dist/` would ship, and a spec of the published package packs it — so its `Makefile` adds `lint test: build`, which builds first whatever the order the gestures run in.
+- **A mobile app** is bundled by its framework, so its `build` is `npx expo export`, never `typescript build`, which builds nothing for that kind ([Building](../reference/building.md#the-entries)).
 
 The `Makefile` is a gate of its own: in a repository, `check` refuses a root with no `Makefile` (`names/repository-has-makefile`) and one with no rule for any of the six (`names/makefile-answers-every-gesture`). A workspace keeps one, at its root; a member owes none. `@jterrazz/test`'s fixers run inside `typescript fix`, so its preset changes nothing here; a repository with a fixer of its own outside the toolchain chains it by the recipe [Quality checks § The six gestures](../reference/quality-checks.md#the-six-gestures) shows.
 
