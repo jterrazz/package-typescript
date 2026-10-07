@@ -145,8 +145,9 @@ export default fragment({
         ]),
         'unicorn/text-encoding-identifier-case': on(),
 
+        // invariant: a callback that does nothing on purpose is `() => undefined`: `() => {}` is no-empty-function's, which owns the empty body.
         'unicorn/no-useless-undefined': unsafeFix(
-            on(),
+            { ...on([{ checkArrowFunctionBody: false }]), since: '11.0.0' },
             'strips a REQUIRED argument, `mockReturnValue(undefined)` included (TS2554)',
         ),
         'unicorn/prefer-import-meta-properties': unsafeFix(

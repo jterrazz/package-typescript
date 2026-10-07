@@ -11,7 +11,7 @@ class-methods-use-this
 complexity
 constructor-super
 curly
-default-case
+- default-case
 default-case-last
 default-param-last
 eqeqeq
@@ -279,7 +279,7 @@ oxc/no-accumulating-spread
 oxc/no-async-endpoint-handlers
 oxc/no-barrel-file
 oxc/no-const-enum
-oxc/no-map-spread
+- oxc/no-map-spread
 - oxc/no-optional-chaining
 - oxc/no-rest-spread-properties
 oxc/no-this-in-exported-function
@@ -310,7 +310,7 @@ promise/no-new-statics
 promise/no-promise-in-callback
 promise/no-return-wrap
 promise/param-names
-promise/prefer-await-to-callbacks
+- promise/prefer-await-to-callbacks
 promise/prefer-await-to-then
 promise/prefer-catch
 promise/spec-only
@@ -399,7 +399,7 @@ react/state-in-constructor
 react/static-components
 react/style-prop-object
 react/syntax
-react/todo
+- react/todo
 react/unsupported-syntax
 react/use-memo
 react/void-dom-elements-no-children
@@ -420,7 +420,7 @@ typescript/ban-tslint-comment
 typescript/class-literal-property-style
 typescript/consistent-generic-constructors
 typescript/consistent-indexed-object-style
-typescript/consistent-return
+- typescript/consistent-return
 typescript/consistent-type-assertions
 - typescript/consistent-type-definitions
 typescript/consistent-type-exports

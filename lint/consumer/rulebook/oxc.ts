@@ -39,7 +39,6 @@ export default fragment({
                 'no-async-endpoint-handlers',
                 'no-barrel-file',
                 'no-const-enum',
-                'no-map-spread',
                 'no-this-in-exported-function',
                 'number-arg-out-of-range',
                 'only-used-in-recursion',
@@ -51,6 +50,13 @@ export default fragment({
             by: 'promise/prefer-await-to-then — one rule demands await, the other forbids it',
             kind: 'exclusive',
         }),
+        'oxc/no-map-spread': off(
+            {
+                by: 'eslint/prefer-object-spread — the copy no-map-spread accepts in a `.map` is `Object.assign`, which prefer-object-spread rewrites back into the spread, so the two fixers undo each other (jterrazz-web pilot, 2026-10-06); the estate copies, it does not mutate the item',
+                kind: 'exclusive',
+            },
+            '11.0.0',
+        ),
         'oxc/no-optional-chaining': off({
             by: 'docs/reference/lint-presets.md — the estate compiles to ESNext on Node 24, where optional chaining is native syntax',
             kind: 'convention',

@@ -1,51 +1,13 @@
-import { allOn, fragment, off, on, scoped } from '../../kit/compiler/decision.js';
+import { allOn, fragment, off, on } from '../../kit/compiler/decision.js';
+import { ESLINT_SIZES_OVERRIDES, SIZE_SINCE } from './eslint.sizes.js';
 
-const SIZE_SINCE = '11.0.0';
 const RULE_REVIEW_SINCE = '11.0.0';
 
 export default fragment({
     id: 'eslint',
     audience: 'consumer',
     plugins: ['eslint'],
-    overrides: [
-        // invariant: a spec file's size has one judge: `@jterrazz/test`'s `spec-file-within-line-limit`, at 400 lines.
-        scoped({
-            files: ['**/*.spec.ts'],
-            rules: {
-                'max-lines': off({
-                    by: '@jterrazz/test spec-file-within-line-limit — a spec file holds at most 400 lines, and one cap judges a file',
-                    kind: 'covered',
-                }),
-            },
-            since: SIZE_SINCE,
-        }),
-        // invariant: a test file's one `describe` (`one-describe-per-file`) is a function as long as the file; `test-body-within-line-limit` caps a test body instead.
-        scoped({
-            files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts'],
-            rules: {
-                'max-lines-per-function': off({
-                    by: "@jterrazz/test test-body-within-line-limit — a test body holds at most 60 lines, and a test file's one describe is as long as the file",
-                    kind: 'covered',
-                }),
-                'max-statements': off({
-                    by: '@jterrazz/test test-body-within-line-limit — a test body holds at most 60 lines, and oxfmt puts one statement per line',
-                    kind: 'covered',
-                }),
-            },
-            since: SIZE_SINCE,
-        }),
-        // invariant: a rule test is one table of the cases its rule decides; its length counts them, never two subjects in one file.
-        scoped({
-            files: ['lint/consumer/rules/**/*.test.ts'],
-            rules: {
-                'max-lines': off({
-                    by: 'docs/reference/rules-kit.md#testing-a-rule — a rule is proven by one RuleTester table of every case it decides',
-                    kind: 'convention',
-                }),
-            },
-            since: SIZE_SINCE,
-        }),
-    ],
+    overrides: ESLINT_SIZES_OVERRIDES,
     rules: {
         ...allOn([
             'accessor-pairs',
@@ -53,7 +15,6 @@ export default fragment({
             'block-scoped-var',
             'constructor-super',
             'curly',
-            'default-case',
             'default-case-last',
             'default-param-last',
             'eqeqeq',
@@ -212,8 +173,12 @@ export default fragment({
         'max-params': on([4]),
         'no-duplicate-imports': on([{ allowSeparateTypeImports: true }]),
         'no-unmodified-loop-condition': on([{ checkConditionalExpressions: true }]),
-        // outside: a hoisted function declaration has no temporal dead zone; the estate writes helpers below their caller.
-        'no-use-before-define': on([{ classes: true, functions: false, variables: true }]),
+        // invariant: a read inside a function runs after the module did, so neither a helper nor a constant written below its reader
+        // is a temporal-dead-zone read; a read in the declaration's own scope still is, and stays refused.
+        'no-use-before-define': {
+            ...on([{ classes: true, functions: false, variables: false }]),
+            since: RULE_REVIEW_SINCE,
+        },
         'no-unused-expressions': on([
             { allowShortCircuit: true, allowTaggedTemplates: true, allowTernary: true },
         ]),
@@ -227,6 +192,13 @@ export default fragment({
             by: 'jterrazz-design — 198 of 198 reports were false positives (quality study, 2026-09-15)',
             kind: 'evidence',
         }),
+        'default-case': off(
+            {
+                by: 'typescript/switch-exhaustiveness-check — set to require a `default` exactly where the cases cannot be listed and to take a `default` as the decision for the rest of a union; beside it, default-case demanded a `default` the exhaustive check does not count, and `case …: default:` is what unicorn/no-useless-switch-case refuses, so an exhaustive switch over a union had no spelling (package-telemetry pilot, 2026-10-06)',
+                kind: 'covered',
+            },
+            RULE_REVIEW_SINCE,
+        ),
         'id-length': off({
             by: 'measured on this package — every report was a conventional short binding (k, v, x)',
             kind: 'evidence',

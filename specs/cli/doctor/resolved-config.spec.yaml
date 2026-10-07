@@ -39,7 +39,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.complexity = ["error",{"max":12,"variant":"modified"}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.constructor-super = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.curly = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.default-case = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.default-case = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.default-case-last = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.default-param-last = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.eqeqeq = "error"
@@ -282,7 +282,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-labels = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-private-class-members = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-vars = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-use-before-define = ["error",{"classes":true,"functions":false,"variables":true}]
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-use-before-define = ["error",{"classes":true,"functions":false,"variables":false}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-useless-backreference = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-useless-call = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-useless-catch = "error"
@@ -296,7 +296,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-void = ["error",{"allowAsStatement":true}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-warning-comments = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-with = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.node/callback-return = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.node/callback-return = ["error",["callback","cb"]]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.node/exports-style = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.node/global-require = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.node/handle-callback-err = "error"
@@ -330,7 +330,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.oxc/no-async-endpoint-handlers = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.oxc/no-barrel-file = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.oxc/no-const-enum = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.oxc/no-map-spread = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.oxc/no-map-spread = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.oxc/no-optional-chaining = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.oxc/no-rest-spread-properties = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.oxc/no-this-in-exported-function = "error"
@@ -368,7 +368,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.promise/no-promise-in-callback = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.promise/no-return-wrap = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.promise/param-names = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.promise/prefer-await-to-callbacks = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.promise/prefer-await-to-callbacks = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.promise/prefer-await-to-then = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.promise/prefer-catch = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.promise/spec-only = "error"
@@ -401,7 +401,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-curly-brace-presence = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-filename-extension = ["error",{"extensions":[".jsx",".tsx"]}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-fragments = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-handler-names = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-handler-names = ["error",{"eventHandlerPrefix":"handle|on"}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-key = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-max-depth = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-no-comment-textnodes = "error"
@@ -457,7 +457,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/static-components = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/style-prop-object = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/syntax = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/todo = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/todo = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/unsupported-syntax = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/use-memo = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/void-dom-elements-no-children = "error"
@@ -478,7 +478,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/class-literal-property-style = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/consistent-generic-constructors = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/consistent-indexed-object-style = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/consistent-return = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/consistent-return = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/consistent-type-assertions = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/consistent-type-definitions = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/consistent-type-exports = "error"
@@ -574,7 +574,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/return-await = ["error","always"]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/strict-boolean-expressions = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/strict-void-return = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/switch-exhaustiveness-check = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/switch-exhaustiveness-check = ["error",{"considerDefaultExhaustiveForUnions":true,"requireDefaultForNonUnion":true}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/triple-slash-reference = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/unbound-method = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/unified-signatures = "error"
@@ -648,7 +648,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/no-useless-promise-resolve-reject = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/no-useless-spread = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/no-useless-switch-case = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/no-useless-undefined = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/no-useless-undefined = ["error",{"checkArrowFunctionBody":false}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/no-zero-fractions = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/number-literal-case = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/numeric-separators-style = "error"

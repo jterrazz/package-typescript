@@ -1,4 +1,4 @@
-import { fragment, on } from '../../../kit/compiler/decision.js';
+import { fragment, off, on } from '../../../kit/compiler/decision.js';
 import { IMPORT_EXTENSIONS_NEVER } from '../import.js';
 
 // outside: oxlint ships no `react-native` plugin. Metro resolves an import but resolves an asset by its extension,
@@ -17,6 +17,13 @@ export default fragment({
     ignorePatterns: ['.expo/**', 'assets/**', 'ios/**', 'android/**'],
     rules: {
         'import/extensions': IMPORT_EXTENSIONS_NEVER,
+        'react/capitalized-calls': off(
+            {
+                by: 'signews-mobile pilot, 2026-10-06 — 4 reports, 0 a component called as a function: react-native-gesture-handler builds its gestures with capitalised factories (`Gesture.Pan()`, `Tap()`, `Native()`, `Exclusive()`), as React Native names `PlatformColor` and `DynamicColorIOS` — the evidence that turned eslint/new-cap off',
+                kind: 'evidence',
+            },
+            '11.0.0',
+        ),
         'no-restricted-imports': on([
             {
                 patterns: [

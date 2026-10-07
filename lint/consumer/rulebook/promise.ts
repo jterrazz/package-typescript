@@ -15,7 +15,6 @@ export default fragment({
                 'no-promise-in-callback',
                 'no-return-wrap',
                 'param-names',
-                'prefer-await-to-callbacks',
                 'prefer-await-to-then',
                 'prefer-catch',
                 'spec-only',
@@ -26,6 +25,13 @@ export default fragment({
         'promise/avoid-new': off(
             {
                 by: 'rule review, 2026-09-27 — 17 reports on package-test and signews-api, every one wrapping a callback API, which only `new Promise` can do',
+                kind: 'evidence',
+            },
+            '11.0.0',
+        ),
+        'promise/prefer-await-to-callbacks': off(
+            {
+                by: "the vision-17 pilots, 2026-10-06 — every report a callback a framework's signature dictates, not one an API the estate wrote: Hono's `onError` (jterrazz-os console), commander's exit hook (jterrazz-os cli), OpenTelemetry's observable callback (package-telemetry, renamed to dodge the rule); it reads a first parameter named `error` and a parameter named `callback`, never whether an awaitable form exists",
                 kind: 'evidence',
             },
             '11.0.0',

@@ -24,6 +24,7 @@
         "allowImportingTsExtensions": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitOverride": true,
+        "noImplicitReturns": true,
         "noUncheckedIndexedAccess": true,
         "noUncheckedSideEffectImports": true,
         "resolveJsonModule": true,

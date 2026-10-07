@@ -65,6 +65,26 @@ const PAIRS = Object.freeze([
         'one rewrites a string into `[...word]`, the other refuses that spread',
     ],
     [
+        'typescript/consistent-return',
+        'unicorn/no-useless-undefined',
+        'an effect handing back its cleanup on one path: one asks for `return undefined`, the other refuses it',
+    ],
+    [
+        'default-case',
+        'typescript/switch-exhaustiveness-check',
+        'one demands a `default` over a union the other wants every member of, and `case …: default:` is refused',
+    ],
+    [
+        'oxc/no-map-spread',
+        'prefer-object-spread',
+        'one asks a `.map` for the `Object.assign` the other rewrites into the spread',
+    ],
+    [
+        'react/todo',
+        'typescript/prefer-nullish-coalescing',
+        'one asks a lazy init for the `??=` the other reports as not compiled yet',
+    ],
+    [
         'vitest/no-hooks',
         'vitest/prefer-hooks-in-order',
         'one forbids hooks, the other says where they go',

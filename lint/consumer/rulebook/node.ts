@@ -1,4 +1,4 @@
-import { allOn, fragment, off } from '../../kit/compiler/decision.js';
+import { allOn, fragment, off, on } from '../../kit/compiler/decision.js';
 
 export default fragment({
     id: 'node',
@@ -7,7 +7,6 @@ export default fragment({
     rules: {
         ...allOn(
             [
-                'callback-return',
                 'exports-style',
                 'global-require',
                 'handle-callback-err',
@@ -17,6 +16,10 @@ export default fragment({
                 'no-path-concat',
             ].map((rule) => `node/${rule}`),
         ),
+
+        // invariant: `next` is left out: in Hono's middleware it is a continuation the handler awaits and then runs on after,
+        // which the rule refuses for want of a `return`.
+        'node/callback-return': { ...on([['callback', 'cb']]), since: '11.0.0' },
 
         'node/no-process-env': off({
             by: 'docs/reference/lint-presets.md — the estate reads configuration from the environment at the edge and has no config-module to funnel it through',

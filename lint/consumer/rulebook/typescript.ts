@@ -88,7 +88,6 @@ export default fragment({
         ...Object.fromEntries(
             [
                 'await-thenable',
-                'consistent-return',
                 'consistent-type-exports',
                 'dot-notation',
                 'no-array-delete',
@@ -133,7 +132,6 @@ export default fragment({
                 'restrict-template-expressions',
                 'strict-boolean-expressions',
                 'strict-void-return',
-                'switch-exhaustiveness-check',
                 'unbound-method',
                 'use-unknown-in-catch-callback-variable',
             ].map((rule) => [`typescript/${rule}`, typeAware()]),
@@ -192,11 +190,24 @@ export default fragment({
         // outside: nursery upstream, decided because tsgolint runs it.
         'typescript/prefer-optional-chain': { ...typeAware(), since: NURSERY_SINCE },
         'typescript/return-await': typeAware(['always']),
+        'typescript/switch-exhaustiveness-check': {
+            ...typeAware([
+                { considerDefaultExhaustiveForUnions: true, requireDefaultForNonUnion: true },
+            ]),
+            since: '11.0.0',
+        },
 
         'typescript/ban-types': off({
             by: 'typescript/no-empty-object-type, no-unsafe-function-type, no-wrapper-object-types — its three successors',
             kind: 'covered',
         }),
+        'typescript/consistent-return': off(
+            {
+                by: 'TypeScript noImplicitReturns — set in every tsconfig preset, it refuses a path that falls off a function whose other paths return a value, and reads what the rule cannot: an exhaustive switch, and a return type that holds `undefined`; the rule refused both, and asked a React effect returning its cleanup on one path for the `return undefined` unicorn/no-useless-undefined refuses (jterrazz-web pilot, 2026-10-06)',
+                kind: 'covered',
+            },
+            '11.0.0',
+        ),
         'typescript/explicit-function-return-type': off({
             by: 'TypeScript — the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS4058)',
             kind: 'covered',

@@ -1,0 +1,45 @@
+import { off, scoped } from '../../kit/compiler/decision.js';
+import type { Scoped } from '../../kit/compiler/decision.js';
+
+export const SIZE_SINCE = '11.0.0';
+
+// invariant: where a file's size has another judge, the caps of the eslint fragment stand aside.
+export const ESLINT_SIZES_OVERRIDES: readonly Scoped[] = [
+    // invariant: a spec file's size has one judge: `@jterrazz/test`'s `spec-file-within-line-limit`, at 400 lines.
+    scoped({
+        files: ['**/*.spec.ts'],
+        rules: {
+            'max-lines': off({
+                by: '@jterrazz/test spec-file-within-line-limit — a spec file holds at most 400 lines, and one cap judges a file',
+                kind: 'covered',
+            }),
+        },
+        since: SIZE_SINCE,
+    }),
+    // invariant: a test file's one `describe` (`one-describe-per-file`) is a function as long as the file; `test-body-within-line-limit` caps a test body instead.
+    scoped({
+        files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts'],
+        rules: {
+            'max-lines-per-function': off({
+                by: "@jterrazz/test test-body-within-line-limit — a test body holds at most 60 lines, and a test file's one describe is as long as the file",
+                kind: 'covered',
+            }),
+            'max-statements': off({
+                by: '@jterrazz/test test-body-within-line-limit — a test body holds at most 60 lines, and oxfmt puts one statement per line',
+                kind: 'covered',
+            }),
+        },
+        since: SIZE_SINCE,
+    }),
+    // invariant: a rule test is one table of the cases its rule decides; its length counts them, never two subjects in one file.
+    scoped({
+        files: ['lint/consumer/rules/**/*.test.ts'],
+        rules: {
+            'max-lines': off({
+                by: 'docs/reference/rules-kit.md#testing-a-rule — a rule is proven by one RuleTester table of every case it decides',
+                kind: 'convention',
+            }),
+        },
+        since: SIZE_SINCE,
+    }),
+];

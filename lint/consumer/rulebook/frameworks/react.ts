@@ -28,7 +28,6 @@ export default fragment({
                 'jsx-boolean-value',
                 'jsx-curly-brace-presence',
                 'jsx-fragments',
-                'jsx-handler-names',
                 'jsx-key',
                 'jsx-no-comment-textnodes',
                 'jsx-no-constructed-context-values',
@@ -77,7 +76,6 @@ export default fragment({
                 'static-components',
                 'style-prop-object',
                 'syntax',
-                'todo',
                 'unsupported-syntax',
                 'use-memo',
                 'void-dom-elements-no-children',
@@ -89,6 +87,11 @@ export default fragment({
             { namedComponents: 'function-declaration', unnamedComponents: 'arrow-function' },
         ]),
         'react/jsx-filename-extension': on([{ extensions: ['.jsx', '.tsx'] }]),
+        // invariant: `on` beside `handle`: a binding a hook returns for a component's `on*` prop is forwarded under that prop's name (`rail.onDayChange`).
+        'react/jsx-handler-names': {
+            ...on([{ eventHandlerPrefix: 'handle|on' }]),
+            since: '11.0.0',
+        },
 
         'react-perf/jsx-no-jsx-as-prop': off({
             by: 'react/static-components, react/use-memo — the React Compiler rules decide memoisation, and an inline prop is the idiom they are written for',
@@ -134,6 +137,13 @@ export default fragment({
             by: 'docs/reference/lint-presets.md — a Next route file exports its metadata beside its component',
             kind: 'convention',
         }),
+        'react/todo': off(
+            {
+                by: 'typescript/prefer-nullish-coalescing — it asks a lazy init for the `??=` the React Compiler does not compile yet, and `todo` reports that gap as an error (jterrazz-web pilot, 2026-10-06); a construct the compiler skips leaves a component unoptimised, never wrong',
+                kind: 'exclusive',
+            },
+            '11.0.0',
+        ),
         'react/react-in-jsx-scope': off({
             by: 'src/presets/tsconfig/next.json — the automatic JSX runtime (jsx: react-jsx) imports it',
             kind: 'covered',
