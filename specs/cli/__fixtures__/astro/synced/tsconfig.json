@@ -1,0 +1,1 @@
+{ "compilerOptions": { "strict": true, "noEmit": true }, "include": ["src/**/*.ts", ".astro/types.d.ts"] }

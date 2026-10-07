@@ -470,6 +470,8 @@ Why the two `composition/` boundaries hold, and how the entry and a runner build
 
 `.astro` is the one file shape oxfmt does not parse, and `astro check` is the only checker that reads a template's frontmatter. So in every unit that declares the `astro` platform — the root, or a workspace member — the pass runs both there: the unit's own `astro check`, and `prettier` over every `.astro` file under it.
 
+`astro check` reads the templates alone: it is handed a tsconfig, derived into `.artifacts/astro/`, that extends the unit's own and whose root files are its `.astro` files, so a template still type-checks against the modules it imports while a module's own error is reported once, by the TypeScript Check pass, never twice. Both passes read the module types `astro sync` writes into `.astro/` — `astro:content`, `astro:middleware` — which git ignores and a fresh clone lacks, so in every such unit `astro sync` runs once per run, before either reads them, and a failed sync fails both with its report. The Knip pass is handed, as entries, the local modules the unit's Astro config loads by an `entrypoint` path — an image service, a renderer — which knip's Astro plugin does not read.
+
 **`prettier` and `prettier-plugin-astro` are dependencies of THIS package**, with a config derived from the oxfmt values — 100 columns, 4 spaces, single quotes, trailing commas everywhere.
 
 The plugin is handed to prettier as a resolved path rather than as a name in the config, because prettier resolves a plugin name from the working directory — and the working directory is the consumer's, which is precisely the project that no longer declares it.

@@ -10,7 +10,7 @@ import {
 import { messageOf, refusal } from '../../../../lint/kit/catalogue/lesson.js';
 import { buildPlanOf, conventionsOf } from '../../../../lint/kit/project/build-plan.js';
 import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
-import { astroChecked } from '../../../drivers/astro/astro.js';
+import { astroChecked, astroEntrypointsOf, astroSynced } from '../../../drivers/astro/astro.js';
 import { knip } from '../../../drivers/knip/knip.js';
 import type { KnipProject, KnipUnit } from '../../../drivers/knip/knip.js';
 import { knipSettingsOf } from '../../../drivers/knip/settings.js';
@@ -22,6 +22,41 @@ import type { Launched } from './launched.js';
 import { oxfmt, oxlint } from './runners.js';
 import type { Check } from './setup.js';
 
+type Synced = { log: string; status: number };
+
+const syncs = new WeakMap<Check, Map<string, Promise<Synced>>>();
+
+const syncedInto = async (unit: string, log: string): Promise<Synced> => ({
+    log,
+    status: await astroSynced(unit, log),
+});
+
+// invariant: `astro sync` writes the module types both the TypeScript Check and the Astro pass read, so it runs once per unit and run, before either reads them; each pass it fails prints its report.
+async function astroSyncedOnce(check: Check, unit: string, log: string): Promise<number> {
+    const runs = syncs.get(check) ?? new Map<string, Promise<Synced>>();
+    syncs.set(check, runs);
+    const syncLog = check.logs.at(`astro-sync-${String(runs.size)}.log`);
+    const synced = runs.get(unit) ?? syncedInto(unit, syncLog);
+    runs.set(unit, synced);
+    const { log: report, status } = await synced;
+    if (status !== 0) {
+        appendFileSync(log, check.logs.read(report));
+    }
+
+    return status;
+}
+
+const isAstro = (check: Check, unit: string): boolean =>
+    check.declarations.get(unit)?.platform === 'astro';
+
+async function typeCheckedUnit(check: Check, unit: string, log: string): Promise<number> {
+    if (isAstro(check, unit) && (await astroSyncedOnce(check, unit, log)) !== 0) {
+        return 1;
+    }
+
+    return await typeChecked(check.tools.tsc, unit, log);
+}
+
 async function typescriptRuns(
     check: Check,
     units: readonly string[],
@@ -29,9 +64,7 @@ async function typescriptRuns(
 ): Promise<number> {
     const parts = units.map((_, index) => check.logs.at(`type-${String(index)}.log`));
     const statuses = await Promise.all(
-        units.map(
-            async (unit, index) => await typeChecked(check.tools.tsc, unit, parts[index] ?? log),
-        ),
+        units.map(async (unit, index) => await typeCheckedUnit(check, unit, parts[index] ?? log)),
     );
     writeFileSync(log, parts.map((part) => check.logs.read(part)).join(''));
 
@@ -156,7 +189,11 @@ async function knipUnit(unit: string): Promise<KnipUnit> {
     }
 
     return {
-        entries: [...steps.flatMap(({ entry }) => Object.values(entry)), ...loaded],
+        entries: [
+            ...steps.flatMap(({ entry }) => Object.values(entry)),
+            ...loaded,
+            ...astroEntrypointsOf(unit),
+        ],
         settings: knipSettingsOf(resolved.sections.typescript),
     };
 }
@@ -200,6 +237,9 @@ async function astroRun(check: Check, unit: string, log: string): Promise<number
     if (unit !== '.') {
         writeFileSync(log, `${unit}\n`);
     }
+    if ((await astroSyncedOnce(check, unit, log)) !== 0) {
+        return 1;
+    }
     const checked = await astroChecked(unit, log);
     const formatted = await astroFormatted(
         { binary: check.tools.prettier, plugin: check.tools.prettierAstroPlugin },
@@ -220,9 +260,7 @@ async function astroRuns(check: Check, units: readonly string[], log: string): P
 }
 
 export function astroPass(check: Check): Launched | undefined {
-    const units = ['.', ...check.members].filter(
-        (unit) => check.declarations.get(unit)?.platform === 'astro',
-    );
+    const units = ['.', ...check.members].filter((unit) => isAstro(check, unit));
     if (!check.selected('astro') || units.length === 0) {
         return undefined;
     }

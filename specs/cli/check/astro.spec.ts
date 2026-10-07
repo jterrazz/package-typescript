@@ -1,7 +1,7 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { astroStub } from '../__setup__/astro.js';
+import { astroStub, astroStubFailingSync } from '../__setup__/astro.js';
 import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
 
@@ -58,6 +58,48 @@ describe('astro', () => {
             Checking formatting...
             [warn] src/page.astro
             [warn] Code style issues found in the above file. Run Prettier with --write to fix.
+            ✗ Failed with exit code 1
+
+             END  Finalizing quality checks
+
+            ✗ Some checks failed
+        `);
+    });
+
+    test('type-checks a module importing the types astro sync writes, which a fresh clone lacks', async () => {
+        // Given - a website on astro whose middleware imports astro:middleware, and no .astro/ folder yet
+        const result = await cli
+            .with({ env: onlyPasses('typescript') })
+            .fixture(directory('../__fixtures__/astro/synced/'))
+            .prepare(astroStub)
+            .exec('check');
+
+        // Then - astro sync ran first, so the module types resolve and the check passes
+        expect(result.exitCode).toBe(0);
+        expect(result.file('.astro/types.d.ts').exists).toBe(true);
+    });
+
+    test('fails the type check and the Astro pass alike, each with the report, when astro sync fails, and checks nothing past it', async () => {
+        // Given - the same middleware, and an astro whose sync fails
+        const result = await cli
+            .with({ env: onlyPasses('typescript', 'astro') })
+            .fixture(directory('../__fixtures__/astro/synced/'))
+            .prepare(astroStubFailingSync)
+            .exec('check');
+
+        // Then - both passes print the sync's report, and neither the type check nor astro check ran
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+             START  Running quality checks
+
+             RUN  TypeScript Check
+
+            astro-sync-failed
+            ✗ Failed with exit code 1
+
+             RUN  Astro (check + format)
+
+            astro-sync-failed
             ✗ Failed with exit code 1
 
              END  Finalizing quality checks
