@@ -6,7 +6,7 @@ import { lint } from '../architecture-lint.specification.js';
 describe('derived', () => {
     test('holds a tree laid out as a hexagonal application to the hexagonal map, declared or not', async () => {
         // Given - src/ holding domain/, application/ and infrastructure/, no settings file, and the domain importing the infrastructure
-        const result = await lint.fixture(directory('./_fixtures/laid-out/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/laid-out/')).run();
 
         // Then - the crossing is refused as the declared map refuses it
         expect(result.report).toMatch(`
@@ -20,7 +20,7 @@ describe('derived', () => {
 
     test('leaves the same tree alone once its settings write the map off', async () => {
         // Given - the same tree, its settings writing `hexagonal: false`
-        const result = await lint.fixture(directory('./_fixtures/laid-out-opted-out/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/laid-out-opted-out/')).run();
 
         // Then - nothing is refused
         expect(result.report).toMatch('');

@@ -1,7 +1,7 @@
 description: refuses a jterrazz.config.ts whose default export is no settings object
 fixture:
-    - ./_fixtures/drift/project/
-    - ./_fixtures/presets/not-an-object/
+    - ./__fixtures__/drift/project/
+    - ./__fixtures__/presets/not-an-object/
 env: TYPESCRIPT_CHECK_PASSES=architecture,names
 runs:
     - command: check

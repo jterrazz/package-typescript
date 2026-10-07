@@ -1,15 +1,15 @@
 import { directory, file } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
-import { emptyDirectories, OVERLOOKED } from '../_setup/names-empty-directory.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
+import { emptyDirectories, OVERLOOKED } from '../__setup__/names-empty-directory.js';
 import { cli } from '../cli.specification.js';
 
 // outside: git tracks no directory, so a fixture can carry no empty one.
 
 const names = cli
     .with({ env: onlyPasses('names') })
-    .fixture(directory('../_fixtures/names/empty-directories/'));
+    .fixture(directory('../__fixtures__/names/empty-directories/'));
 
 describe('names-empty-directory', () => {
     test('names each empty directory git does not ignore, once at its top, in four parts', async () => {
@@ -19,7 +19,7 @@ describe('names-empty-directory', () => {
 
         // Then - the two empty trees are named at their top, each as a lesson, and nothing else is
         expect(result.exitCode).toBe(1);
-        expect(result.stdout).toMatch(file('../_expected/names-empty-directory/named.txt'));
+        expect(result.stdout).toMatch(file('../__expected__/names-empty-directory/named.txt'));
     });
 
     test('names no empty directory an --ignore-pattern glob names', async () => {
@@ -31,7 +31,7 @@ describe('names-empty-directory', () => {
 
         // Then - the two empty trees are named, and drafts/ is not
         expect(result.exitCode).toBe(1);
-        expect(result.stdout).toMatch(file('../_expected/names-empty-directory/named.txt'));
+        expect(result.stdout).toMatch(file('../__expected__/names-empty-directory/named.txt'));
     });
 
     test('names the empty directories when a glob leaves git none to ignore', async () => {
@@ -43,6 +43,6 @@ describe('names-empty-directory', () => {
 
         // Then - the two empty trees are named all the same
         expect(result.exitCode).toBe(1);
-        expect(result.stdout).toMatch(file('../_expected/names-empty-directory/named.txt'));
+        expect(result.stdout).toMatch(file('../__expected__/names-empty-directory/named.txt'));
     });
 });

@@ -6,7 +6,7 @@ import { lint } from '../names-lint.specification.js';
 describe('lint-unshipped', () => {
     test('refuses a lint/ the build compiles into an output the package does not publish', async () => {
         // Given - a lint/ the build compiles into an output the package never publishes
-        const result = await lint.fixture(directory('./_fixtures/lint-unshipped/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/lint-unshipped/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`

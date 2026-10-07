@@ -1,5 +1,5 @@
 description: refuses a typescript.tsconfig with no reason, and derives no tsconfig.json from it
-fixture: ./_fixtures/config/tsconfig-unreasoned/
+fixture: ./__fixtures__/config/tsconfig-unreasoned/
 env: TYPESCRIPT_CHECK_PASSES=config
 runs:
     - command: check

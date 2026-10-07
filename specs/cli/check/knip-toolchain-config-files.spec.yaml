@@ -1,5 +1,5 @@
 description: reads the toolchain's config files, jterrazz.config.ts too, as used with no tool declared
-fixture: ./_fixtures/knip/toolchain-config-files/
+fixture: ./__fixtures__/knip/toolchain-config-files/
 runs:
     - command: check
       exit: 1

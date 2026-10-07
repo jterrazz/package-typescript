@@ -1,5 +1,5 @@
 description: refuses to record the section when the Names pass wrote no report, and writes no file
-fixture: ./_fixtures/baseline/names-refused/
+fixture: ./__fixtures__/baseline/names-refused/
 runs:
     - command: baseline
       exit: 1

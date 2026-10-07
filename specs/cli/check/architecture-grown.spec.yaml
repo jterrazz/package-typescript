@@ -1,5 +1,5 @@
 description: fails a crossing past the count the ratchet recorded
-fixture: ./_fixtures/architecture-map/grown/
+fixture: ./__fixtures__/architecture-map/grown/
 env: TYPESCRIPT_CHECK_PASSES=architecture
 runs:
     - command: check

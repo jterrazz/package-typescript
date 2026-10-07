@@ -1,5 +1,5 @@
 description: fails a build that fails where the package resolves no @jterrazz/test
-fixture: ./_fixtures/publish/broken-build-alone/
+fixture: ./__fixtures__/publish/broken-build-alone/
 env: TYPESCRIPT_CHECK_PASSES=publish
 runs:
     - command: check

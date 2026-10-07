@@ -1,7 +1,7 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
 
 // outside: a nested config naming `options` is refused wherever oxlint walks this repository, so a case needing a
@@ -10,8 +10,8 @@ import { cli } from '../cli.specification.js';
 const caseOf = (name: string) =>
     cli
         .env(onlyPasses('oxlint'))
-        .fixture(directory('./_fixtures/unsafe-fixers/project/'))
-        .fixture(directory(`./_fixtures/unsafe-fixers/${name}/`));
+        .fixture(directory('./__fixtures__/unsafe-fixers/project/'))
+        .fixture(directory(`./__fixtures__/unsafe-fixers/${name}/`));
 
 describe('unsafe-fixers', () => {
     test('leaves a meaning-changing fixer alone and still reports it', async () => {

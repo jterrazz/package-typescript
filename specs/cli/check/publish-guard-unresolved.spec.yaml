@@ -1,5 +1,5 @@
 description: passes a fixtures-module build that resolves no @jterrazz/test, saying nothing is judged
-fixture: ./_fixtures/publish/fixtures-module/
+fixture: ./__fixtures__/publish/fixtures-module/
 env: TYPESCRIPT_CHECK_PASSES=publish
 runs:
     - command: build

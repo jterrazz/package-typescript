@@ -6,7 +6,7 @@ import { lint } from '../comments-lint.specification.js';
 describe('kinds', () => {
     test('refuses a comment that states no kind, and none that does or that is a hover', async () => {
         // Given - a tagged comment, a hover doc, and two comments that state no kind
-        const result = await lint.fixture(directory('./_fixtures/kinds/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/kinds/')).run();
 
         // Then - each untagged comment at its position, with its lesson
         expect(result.report).toMatch(`

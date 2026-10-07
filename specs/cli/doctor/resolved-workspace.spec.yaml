@@ -1,5 +1,5 @@
 description: prints each member of a workspace apart, and a member file it cannot resolve as its problem
-fixture: ./_fixtures/resolved-workspace/
+fixture: ./__fixtures__/resolved-workspace/
 runs:
     - command: doctor
       exit: 0

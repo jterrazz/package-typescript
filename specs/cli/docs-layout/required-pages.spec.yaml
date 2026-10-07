@@ -1,5 +1,5 @@
 description: names a missing map, a numbered page and every absent required page
-fixture: ./_fixtures/no-required-pages/
+fixture: ./__fixtures__/no-required-pages/
 runs:
     - command: docs-layout .
       exit: 1

@@ -7,9 +7,9 @@ import { cli } from '../cli.specification.js';
 
 const caseOf = (config: string, name: string) =>
     cli
-        .fixture(directory('./_fixtures/suppressions-resolved-config/project/'))
-        .fixture(directory(`./_fixtures/suppressions-resolved-config/${config}/`))
-        .fixture(directory(`./_fixtures/suppressions-resolved-config/${name}/`));
+        .fixture(directory('./__fixtures__/suppressions-resolved-config/project/'))
+        .fixture(directory(`./__fixtures__/suppressions-resolved-config/${config}/`))
+        .fixture(directory(`./__fixtures__/suppressions-resolved-config/${name}/`));
 
 const REWRITTEN =
     "spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it";

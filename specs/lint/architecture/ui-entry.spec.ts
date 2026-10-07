@@ -6,7 +6,7 @@ import { lint } from '../architecture-lint.specification.js';
 describe('ui-entry', () => {
     test("ui entry — lets an Expo app's root layout reach the composition root, and refuses a hook and `src/index` that reach it", async () => {
         // Given - an Expo app whose root layout composes the app, and a hook and a `src/index` that compose it too
-        const result = await lint.fixture(directory('./_fixtures/ui-entry/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/ui-entry/')).run();
 
         // Then - the hook and `src/index` refused, the root layout let through
         expect(result.report).toMatch(`

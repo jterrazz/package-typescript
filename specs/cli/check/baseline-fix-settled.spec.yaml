@@ -1,5 +1,5 @@
 description: removes the suppressions file a fix run prunes to nothing, on a tree that owes nothing
-fixture: ./_fixtures/baseline/settled/
+fixture: ./__fixtures__/baseline/settled/
 runs:
     - command: fix
       exit: 0

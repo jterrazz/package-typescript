@@ -1,7 +1,7 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
 
 const gitignore = cli.with({ env: onlyPasses('gitignore') });
@@ -11,7 +11,7 @@ describe('gitignore-workspace', () => {
         // Given - a workspace root that holds the convention, a member with none of its own
         // When - the member runs its own quality checks
         const result = await gitignore
-            .fixture(directory('./_fixtures/gitignore/workspace-root-covers/'))
+            .fixture(directory('./__fixtures__/gitignore/workspace-root-covers/'))
             .exec('check', { cwd: 'packages/foo' });
 
         // Then - the ancestor covers it, and the run is green
@@ -33,7 +33,7 @@ describe('gitignore-workspace', () => {
         // Given - a workspace root with a `.gitignore` that never reached the convention
         // When - the member runs its own quality checks
         const result = await gitignore
-            .fixture(directory('./_fixtures/gitignore/workspace-root-missing/'))
+            .fixture(directory('./__fixtures__/gitignore/workspace-root-missing/'))
             .exec('check', { cwd: 'packages/foo' });
 
         // Then - the gate names the ROOT file, two directories up from the member
@@ -58,7 +58,7 @@ describe('gitignore-workspace', () => {
         // Given - a root that already ignores .artifacts/, and a member with a stray old-layout line
         // When - the member runs its own quality checks
         const result = await gitignore
-            .fixture(directory('./_fixtures/gitignore/workspace-member-stray/'))
+            .fixture(directory('./__fixtures__/gitignore/workspace-member-stray/'))
             .exec('check', { cwd: 'packages/foo' });
 
         // Then - the member's own line is named, and the root is never asked to change

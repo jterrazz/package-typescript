@@ -1,5 +1,5 @@
 description: ignores the dependencies jterrazz.config.ts names, each with its reason
-fixture: ./_fixtures/knip/with-overrides/
+fixture: ./__fixtures__/knip/with-overrides/
 runs:
     - command: check
       exit: 1

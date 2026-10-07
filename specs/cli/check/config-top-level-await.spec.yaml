@@ -1,5 +1,5 @@
 description: refuses a settings file the oxlint rules cannot load, as they load it synchronously
-fixture: ./_fixtures/config/top-level-await/
+fixture: ./__fixtures__/config/top-level-await/
 env: TYPESCRIPT_CHECK_PASSES=config
 runs:
     - command: check

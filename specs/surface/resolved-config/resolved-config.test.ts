@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { printConfig, PROFILES } from '../../_shared/_setup/rulebook.js';
+import { printConfig, PROFILES } from '../../__setup__/rulebook.js';
 
 // invariant: `~ ` marks a rule the base config leaves to an `overrides` block. Names only: options are the manifest's,
 // and a name list survives an upstream option reshuffle. Regenerate with `TEST_UPDATE=1 npm test`.
@@ -10,12 +10,12 @@ import { printConfig, PROFILES } from '../../_shared/_setup/rulebook.js';
 const HERE = import.meta.dirname;
 
 const GOLDENS: Record<string, string> = {
-    astro: '_expected/astro.rules.txt',
-    bun: '_expected/bun.rules.txt',
-    expo: '_expected/expo.rules.txt',
-    next: '_expected/next.rules.txt',
-    node: '_expected/node.rules.txt',
-    react: '_expected/react.rules.txt',
+    astro: '__expected__/astro.rules.txt',
+    bun: '__expected__/bun.rules.txt',
+    expo: '__expected__/expo.rules.txt',
+    next: '__expected__/next.rules.txt',
+    node: '__expected__/node.rules.txt',
+    react: '__expected__/react.rules.txt',
 };
 
 const MARKERS: Record<string, string> = { allow: '- ', deny: '', warn: '~ ' };

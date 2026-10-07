@@ -92,6 +92,7 @@ export {
 } from './kit/project/git-tree.js';
 export type { TreeEntry } from './kit/project/git-tree.js';
 export {
+    CODE_SPECIAL_FOLDERS,
     GROUND_EXPECTED,
     GROUND_FIXTURES,
     GROUND_FOLDERS,
@@ -99,11 +100,15 @@ export {
     GROUND_REQUESTS,
     GROUND_SEEDS,
     isGroundFolder,
-    isReservedFolder,
-    RESERVED_FOLDERS,
+    isSpecialFolder,
+    isSpecialFolderName,
+    moduleStemOfTest,
+    moduleTestOf,
+    RENAMED_FOLDERS,
+    RETIRED_SHARED_FOLDERS,
     SETUP_FOLDER,
-    SHARED_FOLDER,
-    UNMARKED_RESERVED,
+    SPECIAL_FOLDERS,
+    TESTS_FOLDER,
 } from './kit/project/ground.js';
 export {
     declaredSubpaths,

@@ -1,5 +1,5 @@
 description: names a map that routes outside, a brief that routes nowhere and a link into another repository
-fixture: ./_fixtures/stray-links/
+fixture: ./__fixtures__/stray-links/
 runs:
     - command: docs-layout .
       exit: 1

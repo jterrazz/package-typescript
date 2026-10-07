@@ -7,7 +7,7 @@ describe('typescript', () => {
     test('the bin npm links from the install checks a consumer project that keeps every rule', async () => {
         // Given - a consumer api declared on node, its editor files the ones its declaration derives
         const result = await cli
-            .fixture(directory('./_fixtures/project/'))
+            .fixture(directory('./__fixtures__/project/'))
             .exec('typescript check');
 
         // Then - every pass runs from the install and passes, and the drift report reads the declaration
@@ -78,8 +78,8 @@ describe('typescript', () => {
     test('the bin npm links from the install fixes what the profile and the format preset rewrite', async () => {
         // Given - the same project, its module breaking a rule the profile fixes and the preset's format
         const result = await cli
-            .fixture(directory('./_fixtures/project/'))
-            .fixture(directory('./_fixtures/misformatted/'))
+            .fixture(directory('./__fixtures__/project/'))
+            .fixture(directory('./__fixtures__/misformatted/'))
             .exec('typescript fix');
 
         // Then - every fixing pass runs from the install and passes, and the module is rewritten as the profile and the preset write it

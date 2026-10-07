@@ -1,5 +1,5 @@
 description: refuses a declared map with no folder of source to cruise, in four parts
-fixture: ./_fixtures/architecture-map/unrooted/
+fixture: ./__fixtures__/architecture-map/unrooted/
 env: TYPESCRIPT_CHECK_PASSES=architecture
 runs:
     - command: check

@@ -2,11 +2,11 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { diagnosticsOf, oxfmt, oxlint, PROFILES, sandbox } from '../../_shared/_setup/rulebook.js';
+import { diagnosticsOf, oxfmt, oxlint, PROFILES, sandbox } from '../../__setup__/rulebook.js';
 
 // invariant: two rounds of `oxlint --fix` then `oxfmt` must land on the same bytes over shapes the two tools both rewrite.
 
-const FIXTURES = resolve(import.meta.dirname, '_fixtures/fixpoint');
+const FIXTURES = resolve(import.meta.dirname, '__fixtures__/fixpoint');
 
 function snapshot(directory: string): Record<string, string> {
     const files: Record<string, string> = {};

@@ -7,7 +7,7 @@ describe('workspace', () => {
     test('a workspace fixes and checks every member from its root, and each member builds and tests', async () => {
         // Given - a workspace whose one member is a library on node, both packed packages installed
         const result = await cli
-            .fixture(directory('./_fixtures/workspace/'))
+            .fixture(directory('./__fixtures__/workspace/'))
             .exec(['typescript fix', 'npm run build', 'typescript check', 'npm test']);
 
         // Then - every gesture passes, and the editor files derive from what it declares

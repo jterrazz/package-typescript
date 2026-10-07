@@ -1,5 +1,5 @@
 description: passes a project that keeps every artefact under .artifacts/
-fixture: ./_fixtures/gitignore/on-convention/
+fixture: ./__fixtures__/gitignore/on-convention/
 runs:
     - command: check
       exit: 0

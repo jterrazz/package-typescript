@@ -7,7 +7,7 @@ describe('editor', () => {
     test('oxlint started in a subfolder lints the project by its own declaration', async () => {
         // Given - a project that turns `no-debugger` off with its reason, and a source that pauses and declares a `var`
         const result = await cli
-            .fixture(directory('./_fixtures/subfolder-project/'))
+            .fixture(directory('./__fixtures__/subfolder-project/'))
             .exec('node lint-from-src.mjs');
 
         // Then - the config is derived from its own folder, not from src/: the profile refuses the `var`, and the project's own setting lets the pause stand

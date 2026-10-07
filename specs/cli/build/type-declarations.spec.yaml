@@ -1,5 +1,5 @@
 description: generates type declarations exposing the public API
-fixture: ./_fixtures/sample-lib/
+fixture: ./__fixtures__/sample-lib/
 runs:
     - command: build
       exit: 0

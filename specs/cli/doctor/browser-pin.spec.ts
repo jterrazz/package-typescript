@@ -7,7 +7,7 @@ describe('browser-pin', () => {
     test('passes a lockfile that resolves both to the same version', async () => {
         // Given - a project whose lockfile pins the provider at vitest's own version
         const result = await cli
-            .fixture(directory('./_fixtures/browser-pin/matched/'))
+            .fixture(directory('./__fixtures__/browser-pin/matched/'))
             .exec('doctor');
 
         // Then - both are named at one version, and nothing is owed
@@ -33,7 +33,7 @@ describe('browser-pin', () => {
     test('fails a lockfile one patch apart, naming both versions', async () => {
         // Given - the same project with the provider a patch behind the runner
         const result = await cli
-            .fixture(directory('./_fixtures/browser-pin/skewed/'))
+            .fixture(directory('./__fixtures__/browser-pin/skewed/'))
             .exec('doctor');
 
         // Then - the report names both numbers and says what the pin owes
@@ -61,7 +61,7 @@ describe('browser-pin', () => {
     test('reads a bun.lock, trailing commas and all', async () => {
         // Given - a bun workspace whose provider resolved a patch behind the runner
         const result = await cli
-            .fixture(directory('./_fixtures/browser-pin/bun-skewed/'))
+            .fixture(directory('./__fixtures__/browser-pin/bun-skewed/'))
             .exec('doctor');
 
         // Then - the pin is checked, not passed over: bun.lock is JSON once the commas go
@@ -89,7 +89,7 @@ describe('browser-pin', () => {
     test('says so where the lockfile is one it does not parse', async () => {
         // Given - a project declaring the provider under a lockfile this report cannot read
         const result = await cli
-            .fixture(directory('./_fixtures/browser-pin/unread/'))
+            .fixture(directory('./__fixtures__/browser-pin/unread/'))
             .exec('doctor');
 
         // Then - the gap is stated rather than passed over, and it fails nothing
@@ -114,7 +114,7 @@ describe('browser-pin', () => {
     test('states the gap for a provider declared by a member rather than the root', async () => {
         // Given - a workspace whose root declares nothing and whose member runs browser mode
         const result = await cli
-            .fixture(directory('./_fixtures/browser-pin/unread-member/'))
+            .fixture(directory('./__fixtures__/browser-pin/unread-member/'))
             .exec('doctor');
 
         // Then - the notice fires: the provider belongs to whichever package runs browser mode

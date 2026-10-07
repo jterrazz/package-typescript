@@ -1,5 +1,5 @@
 description: fails when dist does not exist
-fixture: ../_fixtures/sample-app/
+fixture: ../__fixtures__/sample-app/
 runs:
     - command: start
       exit: 1

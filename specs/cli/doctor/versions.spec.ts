@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import manifest from '../../../package.json' with { type: 'json' };
-import { toolchainWith } from '../_setup/toolchain-sandbox.js';
+import { toolchainWith } from '../__setup__/toolchain-sandbox.js';
 import { cli } from '../cli.specification.js';
 
 // value: every number here is a version, which a golden would pin to a dependency bump.

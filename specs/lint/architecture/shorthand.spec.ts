@@ -6,7 +6,7 @@ import { lint } from '../architecture-lint.specification.js';
 describe('shorthand', () => {
     test('judges a map declared by shorthand', async () => {
         // Given - a layer map declared by shorthand, and an import crossing it
-        const result = await lint.fixture(directory('./_fixtures/shorthand/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/shorthand/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`

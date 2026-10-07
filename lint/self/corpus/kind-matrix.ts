@@ -29,7 +29,7 @@ function settingsUnder(folder: string): string[] {
 
 function specimenOf(kinds: string, kind: ProjectKind): null | Specimen {
     const spec = join(kinds, kind, `${kind}.spec.ts`);
-    const project = join(kinds, kind, '_fixtures', kind);
+    const project = join(kinds, kind, '__fixtures__', kind);
     const settings = settingsUnder(project);
     const root = existsSync(join(project, 'jterrazz.config.ts'))
         ? readFileSync(join(project, 'jterrazz.config.ts'), 'utf8')

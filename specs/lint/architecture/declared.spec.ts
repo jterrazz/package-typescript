@@ -6,7 +6,7 @@ import { lint } from '../architecture-lint.specification.js';
 describe('declared', () => {
     test('fails the hexagonal map and a layer of its own at each import, type-only ones included, and lets the entry and a spec runner reach the composition root', async () => {
         // Given - the hexagonal map and a layer of its own, crossed by value and type-only imports, each layer reaching what it may, the composition root reached by the entry, a spec runner and two modules that may not
-        const result = await lint.fixture(directory('./_fixtures/declared/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/declared/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`

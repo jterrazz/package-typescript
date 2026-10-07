@@ -6,7 +6,7 @@ import { afterAll, describe, expect, onTestFinished, test } from 'vitest';
 import { PROFILES } from '../../../lint/consumer/rulebook/profiles.js';
 import { decisions } from '../../../lint/kit/catalogue/decisions.js';
 import { fragmentsIn, walkModules } from '../../../lint/kit/testing/module-walk.js';
-import { isRecord, pack } from '../../_shared/_setup/packed/pack.js';
+import { isRecord, pack } from '../../__setup__/packed/pack.js';
 import {
     argvFlags,
     checkOutcome,
@@ -17,7 +17,7 @@ import {
     publishedTargets,
     removePackedTree,
     selectingEnvironments,
-} from './_setup/packed-tree.js';
+} from './__setup__/packed-tree.js';
 
 afterAll(removePackedTree);
 

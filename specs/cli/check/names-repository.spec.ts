@@ -3,23 +3,23 @@ import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
-import { git, repository } from '../_setup/repository.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
+import { git, repository } from '../__setup__/repository.js';
 import { cli } from '../cli.specification.js';
-import { formOnly } from './_setup/oxlint-forms.js';
+import { formOnly } from './__setup__/oxlint-forms.js';
 
 function selected(passes: Record<string, null | string> = {}) {
     return cli.with({ env: passes });
 }
 
 const project = (passes: Record<string, null | string> = {}) =>
-    selected(passes).fixture(directory('../_fixtures/names/repository/project/'));
+    selected(passes).fixture(directory('../__fixtures__/names/repository/project/'));
 
 const names = (makefile?: 'four' | 'more' | 'six') => {
     const chain = project(onlyPasses('names'));
     return makefile === undefined
         ? chain
-        : chain.fixture(file(`../_fixtures/names/repository/makefiles/${makefile}/Makefile`));
+        : chain.fixture(file(`../__fixtures__/names/repository/makefiles/${makefile}/Makefile`));
 };
 
 const TREE_PASSES = onlyPasses('suppressions', 'markdown', 'names', 'secrets');
@@ -62,7 +62,7 @@ describe('names-repository', () => {
         // Given - a green repository, and a data/ folder nobody has added and nothing ignores
         // When - the quality checks run
         const result = await project(GATES)
-            .fixture(file('../_fixtures/names/repository/makefiles/six/Makefile'))
+            .fixture(file('../__fixtures__/names/repository/makefiles/six/Makefile'))
             .prepare(repository)
             .prepare(dataFolder)
             .exec('check');
@@ -103,7 +103,7 @@ describe('names-repository', () => {
         // Given - the same repository and data/ folder
         // When - the baseline is recorded
         const result = await project()
-            .fixture(file('../_fixtures/names/repository/makefiles/six/Makefile'))
+            .fixture(file('../__fixtures__/names/repository/makefiles/six/Makefile'))
             .prepare(repository)
             .prepare(dataFolder)
             .exec('baseline');
@@ -124,7 +124,7 @@ describe('names-repository', () => {
         // Given - the same repository and data/ folder, the folder and a generated src/Api_Client/ named in .gitignore
         // When - the quality checks run
         const result = await project(GATES)
-            .fixture(file('../_fixtures/names/repository/makefiles/six/Makefile'))
+            .fixture(file('../__fixtures__/names/repository/makefiles/six/Makefile'))
             .prepare(repository)
             .prepare(ignoredFolders)
             .exec('check');
@@ -160,7 +160,7 @@ describe('names-repository', () => {
         // Given - the same repository and its ignored folders
         // When - the baseline is recorded
         const result = await project()
-            .fixture(file('../_fixtures/names/repository/makefiles/six/Makefile'))
+            .fixture(file('../__fixtures__/names/repository/makefiles/six/Makefile'))
             .prepare(repository)
             .prepare(ignoredFolders)
             .exec('baseline');
@@ -180,14 +180,14 @@ describe('names-repository', () => {
 
         // Then - the new Makefile answers the contract, and the Names pass is green
         expect(result.exitCode).toBe(0);
-        expect(result.stdout).toMatch(file('./_expected/names-repository/names-green.txt'));
+        expect(result.stdout).toMatch(file('./__expected__/names-repository/names-green.txt'));
     });
 
     test('refuses to judge a repository whose every file git ignores, in one line that says what to do', async () => {
         // Given - a repository whose .gitignore ignores every file, itself included
         // When - the tree gates run
         const result = await project(TREE_PASSES)
-            .fixture(file('../_fixtures/names/repository/makefiles/six/Makefile'))
+            .fixture(file('../__fixtures__/names/repository/makefiles/six/Makefile'))
             .prepare((workdir) => {
                 writeFileSync(join(workdir, '.gitignore'), '*\n');
                 initialised(workdir);
@@ -272,7 +272,7 @@ describe('names-repository', () => {
 
         // Then - the contract holds, and the Names pass is green
         expect(result.exitCode).toBe(0);
-        expect(result.stdout).toMatch(file('./_expected/names-repository/names-green.txt'));
+        expect(result.stdout).toMatch(file('./__expected__/names-repository/names-green.txt'));
     });
 
     test('accepts a repository whose Makefile answers more than the six gestures', async () => {
@@ -282,7 +282,7 @@ describe('names-repository', () => {
 
         // Then - the contract only requires, so the extra targets are no finding, and the Names pass is green
         expect(result.exitCode).toBe(0);
-        expect(result.stdout).toMatch(file('./_expected/names-repository/names-green.txt'));
+        expect(result.stdout).toMatch(file('./__expected__/names-repository/names-green.txt'));
     });
 
     test('names each gesture a repository Makefile has no rule for', async () => {
@@ -315,7 +315,7 @@ describe('names-repository', () => {
 
         // Then - the absence is one finding
         expect(result.exitCode).toBe(1);
-        expect(result.stdout).toMatch(file('./_expected/names-repository/no-makefile.txt'));
+        expect(result.stdout).toMatch(file('./__expected__/names-repository/no-makefile.txt'));
     });
 
     test('passes a linter run whatever the Names pass would say', async () => {
@@ -350,7 +350,7 @@ describe('names-repository', () => {
 
         // Then - the deleted file answers nothing, and the absence is one finding
         expect(result.exitCode).toBe(1);
-        expect(result.stdout).toMatch(file('./_expected/names-repository/no-makefile.txt'));
+        expect(result.stdout).toMatch(file('./__expected__/names-repository/no-makefile.txt'));
     });
 
     test('asks a directory that is no repository for nothing', async () => {
@@ -360,14 +360,14 @@ describe('names-repository', () => {
 
         // Then - a workspace member or a bare directory owes the root's gestures nothing
         expect(result.exitCode).toBe(0);
-        expect(result.stdout).toMatch(file('./_expected/names-repository/names-green.txt'));
+        expect(result.stdout).toMatch(file('./__expected__/names-repository/names-green.txt'));
     });
 
     test('records a missing gesture in the ratchet, and the run it records is green', async () => {
         // Given - a repository missing two gestures, recorded by the baseline command
         // When - the linter and the Names pass run after it
         const result = await project(onlyPasses('oxlint', 'names'))
-            .fixture(file('../_fixtures/names/repository/makefiles/four/Makefile'))
+            .fixture(file('../__fixtures__/names/repository/makefiles/four/Makefile'))
             .prepare(repository)
             .exec(['baseline', 'check']);
 

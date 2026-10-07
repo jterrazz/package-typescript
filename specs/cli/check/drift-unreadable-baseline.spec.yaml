@@ -1,7 +1,7 @@
 description: reads a baseline that is not JSON as unreadable, and claims no section it never read
 fixture:
-    - ./_fixtures/drift/project/
-    - ./_fixtures/drift/unreadable-baseline/
+    - ./__fixtures__/drift/project/
+    - ./__fixtures__/drift/unreadable-baseline/
 env: TYPESCRIPT_CHECK_PASSES=drift
 runs:
     - command: check

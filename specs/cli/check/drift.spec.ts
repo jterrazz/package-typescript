@@ -5,9 +5,9 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import manifest from '../../../package.json' with { type: 'json' };
-import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
-import { onlyPasses } from '../_setup/check-passes.js';
-import { toolchainWith } from '../_setup/toolchain-sandbox.js';
+import { temporaryDirectory } from '../../__setup__/temporary-directory.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
+import { toolchainWith } from '../__setup__/toolchain-sandbox.js';
 import { cli } from '../cli.specification.js';
 
 const driftPass = cli.with({ env: onlyPasses('drift') });
@@ -40,8 +40,8 @@ describe('drift', () => {
     test('reports a rule the settings set apart from the profile, which the settings say why of', async () => {
         // Given - a project whose jterrazz.config.ts turns a rule of its profile off, with its reason
         const reasoned = await driftPass
-            .fixture(directory('./_fixtures/drift/project/'))
-            .fixture(directory('./_fixtures/drift/off-with-reason/'))
+            .fixture(directory('./__fixtures__/drift/project/'))
+            .fixture(directory('./__fixtures__/drift/off-with-reason/'))
             .link('@jterrazz/typescript')
             .exec('check');
 
@@ -56,8 +56,8 @@ describe('drift', () => {
         // Given - the same rule turned off, with no reason
         const silent = await cli
             .with({ env: onlyPasses('oxlint') })
-            .fixture(directory('./_fixtures/drift/project/'))
-            .fixture(directory('./_fixtures/drift/off-without-reason/'))
+            .fixture(directory('./__fixtures__/drift/project/'))
+            .fixture(directory('./__fixtures__/drift/off-without-reason/'))
             .link('@jterrazz/typescript')
             .exec('check');
 

@@ -1,5 +1,5 @@
 description: refuses a tsconfig.json at a workspace root, whose members each keep their own
-fixture: ./_fixtures/config/workspace-root/
+fixture: ./__fixtures__/config/workspace-root/
 env: TYPESCRIPT_CHECK_PASSES=config
 runs:
     - command: check

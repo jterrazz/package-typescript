@@ -1,11 +1,12 @@
 import { execFileSync } from 'node:child_process';
-import { cpSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, readFileSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { isRecord, parsedJson } from '../../_shared/_setup/parsed-json.js';
-import { installTsconfigPresets } from '../../_shared/_setup/rulebook.js';
-import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
+import { GROUND_FOLDERS } from '../../../lint/kit/project/ground.js';
+import { isRecord, parsedJson } from '../../__setup__/parsed-json.js';
+import { installTsconfigPresets } from '../../__setup__/rulebook.js';
+import { temporaryDirectory } from '../../__setup__/temporary-directory.js';
 
 // outside: relative globs in an extended config resolve against the preset file: `${configDir}` is the only form
 // that means the extending project.
@@ -62,7 +63,7 @@ function resolvedConfig(dir: string): ResolvedConfig {
 
 const PRESETS = ['node', 'next', 'astro', 'expo', 'react'] as const;
 
-const FIXTURES = PRESETS.map((preset) => [preset, `./_fixtures/tsconfig-${preset}`] as const);
+const FIXTURES = PRESETS.map((preset) => [preset, `./__fixtures__/tsconfig-${preset}`] as const);
 
 describe('tsconfig', () => {
     test.each(FIXTURES)(
@@ -100,8 +101,8 @@ describe('tsconfig', () => {
     test.each(PRESETS)(
         'the %s preset leaves the ground a test stands on out of the compiled file set, wherever it sits',
         (preset) => {
-            // Given - a consumer whose specs/ holds each of the four ground folders beside a `_setup/` module, and whose src/ holds a module test's _fixtures/
-            const dir = consumer('./_fixtures/tsconfig-ground', preset);
+            // Given - a consumer whose specs/ holds each of the four ground folders beside a `__setup__/` module, and whose src/ holds a module test's __fixtures__/ in its __tests__/
+            const dir = consumer('./__fixtures__/tsconfig-ground', preset);
 
             // When - tsc lists the files the preset compiles
             const listed = execFileSync(TSC, ['--listFilesOnly'], { cwd: dir, encoding: 'utf8' })
@@ -110,18 +111,34 @@ describe('tsconfig', () => {
                 .map((path) => path.slice(dir.length + 1))
                 .toSorted();
 
-            // Then - the `_setup/` module and the product compile; the ground never does, under specs/ or src/
+            // Then - the `__setup__/` module and the product compile; the ground never does, under specs/ or src/
             expect(listed).toStrictEqual([
-                'specs/orders/_setup/order.ts',
+                'specs/orders/__setup__/order.ts',
                 'src/catalog/catalog.ts',
             ]);
+        },
+    );
+
+    test.each(PRESETS)(
+        'the %s preset leaves out the ground folders the kit lists, as JSON keeps them literal',
+        (preset) => {
+            // Given - the preset as it ships
+            const shipped = parsedJson(
+                readFileSync(resolve(ROOT, `src/presets/tsconfig/${preset}.json`), 'utf8'),
+                (value): value is { exclude?: string[] } => isRecord(value),
+            );
+
+            // Then - its ground entries are the kit's list, in its order
+            expect(
+                (shipped.exclude ?? []).filter((entry) => entry.startsWith(`\${configDir}/**/`)),
+            ).toStrictEqual(GROUND_FOLDERS.map((folder) => `\${configDir}/**/${folder}`));
         },
     );
 
     test('the astro preset extends Astro strict, and its own ground and JSX runtime win', () => {
         // Given - an Astro consumer that writes the one extends the chapter documents
         const { compilerOptions, dir, exclude } = resolvedConfig(
-            consumer('./_fixtures/tsconfig-astro', 'astro'),
+            consumer('./__fixtures__/tsconfig-astro', 'astro'),
         );
 
         // Then - Astro's settings arrive underneath, and ours are the ones that hold
@@ -132,10 +149,7 @@ describe('tsconfig', () => {
                 'node_modules',
                 'dist',
                 '.artifacts',
-                '**/_fixtures',
-                '**/_expected',
-                '**/_seeds',
-                '**/_requests',
+                ...GROUND_FOLDERS.map((folder) => `**/${folder}`),
             ]),
         );
     });

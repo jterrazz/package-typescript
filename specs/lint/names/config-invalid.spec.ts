@@ -6,7 +6,7 @@ import { lint } from '../names-lint.specification.js';
 describe('config-invalid', () => {
     test('refuses a jterrazz.config.ts it cannot read, and holds no root it would have declared', async () => {
         // Given - a jterrazz.config.ts whose `roots` is not an object, beside the root it would have declared
-        const result = await lint.fixture(directory('./_fixtures/config-invalid/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/config-invalid/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`

@@ -1,5 +1,5 @@
 description: leaves an unsafe fixer of the default profile alone in a project with no config of its own
-fixture: ./_fixtures/default-config/unsafe-fixer/
+fixture: ./__fixtures__/default-config/unsafe-fixer/
 runs:
     - command: fix
       exit: 1

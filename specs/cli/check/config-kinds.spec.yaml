@@ -1,5 +1,5 @@
 description: holds each kind's manifest to what the kind owes
-fixture: ./_fixtures/config/kinds/
+fixture: ./__fixtures__/config/kinds/
 env: TYPESCRIPT_CHECK_PASSES=config
 runs:
     - command: check

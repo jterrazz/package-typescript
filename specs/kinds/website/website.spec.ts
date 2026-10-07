@@ -7,7 +7,7 @@ describe('website', () => {
     test('a website fixes, checks and tests from its declaration alone', async () => {
         // Given - a react site, which its framework builds, both packed packages installed
         const result = await cli
-            .fixture(directory('./_fixtures/website/'))
+            .fixture(directory('./__fixtures__/website/'))
             .exec(['typescript fix', 'typescript check', 'vitest --run']);
 
         // Then - every gesture passes, and the editor files derive from what it declares

@@ -1,5 +1,5 @@
 description: hands --ignore-pattern to the linter when the sweep refused and the linter is handed the directory
-fixture: ./_fixtures/ignore-pattern/directory-handed/
+fixture: ./__fixtures__/ignore-pattern/directory-handed/
 runs:
     - command: check --ignore-pattern 'app/**'
       exit: 1

@@ -1,7 +1,7 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
 
 describe('wrapper-unwritable', () => {
@@ -10,7 +10,7 @@ describe('wrapper-unwritable', () => {
         // When - the fix runs
         const fixed = await cli
             .env(onlyPasses('oxlint'))
-            .fixture(directory('./_fixtures/wrapper-unwritable/'))
+            .fixture(directory('./__fixtures__/wrapper-unwritable/'))
             .exec('fix');
 
         // Then - the pass fails on the refusal, and the root's wrapper written first is gone

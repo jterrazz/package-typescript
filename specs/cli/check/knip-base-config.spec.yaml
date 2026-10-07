@@ -1,5 +1,5 @@
 description: passes with no knip.json, the base config covering dependencies and commands, and no cache
-fixture: ./_fixtures/knip/no-config/
+fixture: ./__fixtures__/knip/no-config/
 runs:
     - command: check
       exit: 1

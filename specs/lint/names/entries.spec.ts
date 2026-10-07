@@ -6,7 +6,7 @@ import { lint } from '../names-lint.specification.js';
 describe('entries', () => {
     test('holds a published build to its entry grammar — an entry per subpath named for it, a bin named as one, no other index, no code published from outside the build', async () => {
         // Given - a package whose build names its entries otherwise, keeps a specification index and a bin nothing publishes, publishes a subpath it never builds, and a bin and a module from outside its build
-        const result = await lint.fixture(directory('./_fixtures/entries/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/entries/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`
@@ -65,7 +65,7 @@ describe('entries', () => {
 
     test('holds a package with no build config of its own to the same grammar — each subpath and bin from its entry under src/', async () => {
         // Given - a package with no tsdown config, publishing `.`, `./config` and a bin, each from the entry the grammar names
-        const result = await lint.fixture(directory('./_fixtures/entries-unconfigured/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/entries-unconfigured/')).run();
 
         // Then - nothing is refused
         expect(result.report).toMatch('');

@@ -1,5 +1,5 @@
 description: passes a project ignoring turbo's task logs, in every spelling of the path
-fixture: ./_fixtures/gitignore/turbo/
+fixture: ./__fixtures__/gitignore/turbo/
 runs:
     - command: check
       exit: 0

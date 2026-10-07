@@ -1,5 +1,5 @@
 description: prints no held line while the Names side of the ratchet file has grown
-fixture: ./_fixtures/baseline/names-grown/
+fixture: ./__fixtures__/baseline/names-grown/
 runs:
     - command: check
       exit: 1

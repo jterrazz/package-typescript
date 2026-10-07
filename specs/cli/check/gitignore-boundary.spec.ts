@@ -3,13 +3,13 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
-import { git } from '../_setup/repository.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
+import { git } from '../__setup__/repository.js';
 import { cli } from '../cli.specification.js';
 
 const bounded = cli
     .with({ env: onlyPasses('gitignore') })
-    .fixture(directory('./_fixtures/gitignore/repository-boundary/'));
+    .fixture(directory('./__fixtures__/gitignore/repository-boundary/'));
 
 describe('gitignore-boundary', () => {
     test("reads the parent's .gitignore when nothing marks a boundary", async () => {
@@ -46,7 +46,7 @@ describe('gitignore-boundary', () => {
 
         // Then - the walk stops at the clone: only its own .gitignore is read, and it holds the convention
         expect(result.exitCode).toBe(0);
-        expect(result.stdout).toMatch(file('./_expected/gitignore-boundary/bounded.txt'));
+        expect(result.stdout).toMatch(file('./__expected__/gitignore-boundary/bounded.txt'));
     });
 
     test('stops at a .git FILE — a worktree inside another repository', async () => {
@@ -64,6 +64,6 @@ describe('gitignore-boundary', () => {
 
         // Then - a .git file is a boundary as a .git folder is
         expect(result.exitCode).toBe(0);
-        expect(result.stdout).toMatch(file('./_expected/gitignore-boundary/bounded.txt'));
+        expect(result.stdout).toMatch(file('./__expected__/gitignore-boundary/bounded.txt'));
     });
 });

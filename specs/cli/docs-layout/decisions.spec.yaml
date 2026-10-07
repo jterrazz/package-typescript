@@ -1,5 +1,5 @@
 description: names every way a decisions folder leaves the mold
-fixture: ./_fixtures/decisions/
+fixture: ./__fixtures__/decisions/
 runs:
     - command: docs-layout .
       exit: 1

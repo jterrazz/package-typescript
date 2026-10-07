@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { diagnosticsOf, oxlint, sandbox } from '../../_shared/_setup/rulebook.js';
+import { diagnosticsOf, oxlint, sandbox } from '../../__setup__/rulebook.js';
 
-const FIXTURE = new URL('_fixtures/augmentation/', import.meta.url).pathname;
+const FIXTURE = new URL('__fixtures__/augmentation/', import.meta.url).pathname;
 
 function rulesOn(file: string): string[] {
     using work = sandbox(FIXTURE, 'node', 'node');

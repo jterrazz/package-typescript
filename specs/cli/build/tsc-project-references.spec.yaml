@@ -1,5 +1,5 @@
 description: builds a project-reference graph with the compiler the toolchain ships
-fixture: ./_fixtures/references/
+fixture: ./__fixtures__/references/
 runs:
     - command: tsc --build
       exit: 0

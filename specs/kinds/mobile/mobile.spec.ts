@@ -7,7 +7,7 @@ describe('mobile', () => {
     test('a mobile app fixes, checks and tests from its declaration alone', async () => {
         // Given - an expo app, its screens under app/, both packed packages installed
         const result = await cli
-            .fixture(directory('./_fixtures/mobile/'))
+            .fixture(directory('./__fixtures__/mobile/'))
             .exec(['typescript fix', 'typescript check', 'vitest --run']);
 
         // Then - every gesture passes, and the editor files derive from what it declares

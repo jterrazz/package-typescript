@@ -4,8 +4,8 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
-import { repository } from '../_setup/repository.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
+import { repository } from '../__setup__/repository.js';
 import { cli } from '../cli.specification.js';
 
 // outside: which scanner answers depends on the machine's PATH, so the chain names it by handing over a PATH.
@@ -24,7 +24,7 @@ describe('secrets', () => {
         // When - the quality checks run with no gitleaks on PATH, so the built-in patterns answer
         const result = await cli
             .with({ env: { ...onlyPasses('secrets'), PATH: pathWithoutGitleaks() } })
-            .fixture(directory('./_fixtures/secrets/leaked/'))
+            .fixture(directory('./__fixtures__/secrets/leaked/'))
             .exec('check');
 
         // Then - one finding per shape, each under its own rule id, on its own line, and none on the sample's line 5
@@ -62,7 +62,7 @@ describe('secrets', () => {
                     PATH: `$WORKDIR/tools${delimiter}${process.env.PATH ?? ''}`,
                 },
             })
-            .fixture(directory('./_fixtures/secrets/scanned/'))
+            .fixture(directory('./__fixtures__/secrets/scanned/'))
             .prepare((workdir) => {
                 writeFileSync(join(workdir, '.gitignore'), 'data/local.md\ntools/\n');
                 repository(workdir);

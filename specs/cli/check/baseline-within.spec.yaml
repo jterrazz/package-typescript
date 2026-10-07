@@ -1,5 +1,5 @@
 description: passes fix and check alike on a project whose diagnostics stand at the counts it recorded
-fixture: ./_fixtures/baseline/within/
+fixture: ./__fixtures__/baseline/within/
 runs:
     - command: fix
       exit: 0

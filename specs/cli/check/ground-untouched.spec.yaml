@@ -1,5 +1,5 @@
-description: says nothing about the ground a test stands on, under specs/ or src/, however broken
-fixture: ./_fixtures/ground/untouched/
+description: says nothing about the ground a test stands on, under specs/ or a tests folder, however broken
+fixture: ./__fixtures__/ground/untouched/
 runs:
     - command: check
       exit: 0

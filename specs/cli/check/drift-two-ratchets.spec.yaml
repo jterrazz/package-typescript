@@ -1,5 +1,5 @@
 description: the drift report names both ratchet files, each with its own total
-fixture: ./_fixtures/drift/two-ratchets/
+fixture: ./__fixtures__/drift/two-ratchets/
 runs:
     - command: check
       exit: 1

@@ -1,5 +1,5 @@
 description: keeps an entry jterrazz.config.ts names beside the toolchain's config-file entries
-fixture: ./_fixtures/knip/toolchain-config-files-with-entry/
+fixture: ./__fixtures__/knip/toolchain-config-files-with-entry/
 runs:
     - command: check
       exit: 1

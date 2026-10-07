@@ -1,4 +1,11 @@
 import type { Finding } from '../../kit/checker/pass.js';
+import {
+    CODE_SPECIAL_FOLDERS,
+    isGroundFolder,
+    isSpecialFolderName,
+    SPECIAL_FOLDERS,
+    TESTS_FOLDER,
+} from '../../kit/project/ground.js';
 import { isTop, LINT_ROOT, TOPS } from './names.lint-tree.js';
 import type { LintTree, Top } from './names.lint-tree.js';
 
@@ -39,6 +46,9 @@ function lintTreeFinding(
     tree: LintTree,
 ): Finding | undefined {
     const [top = '', folder, ...deeper] = path.split('/');
+    if (top === TESTS_FOLDER) {
+        return isDirectory ? directoryFinding(`${prefix}${LINT_ROOT}/${path}/`) : undefined;
+    }
     if (!isDirectory && folder === undefined) {
         return lintFinding(`${prefix}${LINT_ROOT}/${top}`, 'names/lint-root-holds-only-entries', [
             `found: \`${prefix}${LINT_ROOT}/${top}\` sits at the root of lint/, and is no entry`,
@@ -93,12 +103,42 @@ function skillFinding(path: string): Finding {
     };
 }
 
+const SPECS_SEGMENT = /(?:^|\/)specs\//u;
+
+function specialFolderFinding(path: string, name: string): Finding {
+    const inSpecs = SPECS_SEGMENT.test(path);
+    const known = (inSpecs ? SPECIAL_FOLDERS : CODE_SPECIAL_FOLDERS)
+        .map((folder) => `\`${folder}/\``)
+        .join(', ');
+    const groundOfATest = !inSpecs && isGroundFolder(name);
+
+    return {
+        message: [
+            groundOfATest
+                ? `found: \`${path}\` is the ground of a test outside every \`${TESTS_FOLDER}/\``
+                : `found: \`${path}\` is spelt like a special folder, and \`${name}/\` is none`,
+            `why: a \`__<word>__/\` folder is one the toolchain gives a meaning to — ${inSpecs ? 'under specs/' : 'in a code root'} the special folders are ${known}, and every other folder is named for what it holds`,
+            groundOfATest
+                ? `fix: move it into the \`${TESTS_FOLDER}/\` of its folder, beside the module tests that read it`
+                : `fix: move what it holds into one of ${known}, or rename it in kebab-case for what it holds`,
+            'read: docs/reference/quality-checks.md#the-names-tree-pass',
+        ].join(' · '),
+        path,
+        rule: 'names/directory-in-kebab-case',
+    };
+}
+
 function directoryFinding(path: string): Finding {
+    const name = path.split('/').at(-2) ?? '';
+    if (isSpecialFolderName(name)) {
+        return specialFolderFinding(path, name);
+    }
+
     return {
         message: [
             `found: \`${path}\` is not written in kebab-case`,
             'why: a directory name is part of every path and import that crosses it, and one case for every name reads the same on a disk that folds case and on one that does not',
-            'fix: rename it in lowercase words joined by `-` — a leading `_` marks a folder the toolchain owns, and a route segment keeps its framework grammar (`[id]`, `(group)`, `@slot`)',
+            'fix: rename it in lowercase words joined by `-` — a `__<word>__` name is a special folder of the toolchain’s closed list, and a route segment keeps its framework grammar (`[id]`, `(group)`, `@slot`)',
             'read: docs/reference/quality-checks.md#the-names-tree-pass',
         ].join(' · '),
         path,

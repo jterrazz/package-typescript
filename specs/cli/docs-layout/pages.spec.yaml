@@ -1,5 +1,5 @@
 description: names map drift, a page named out of mold, journal pages, a nested folder and what clutters docs/
-fixture: ./_fixtures/journal-and-clutter/
+fixture: ./__fixtures__/journal-and-clutter/
 runs:
     - command: docs-layout .
       exit: 1

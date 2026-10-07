@@ -1,5 +1,5 @@
 description: refuses a declared layer with no lesson, in four parts
-fixture: ./_fixtures/architecture-map/malformed/
+fixture: ./__fixtures__/architecture-map/malformed/
 env: TYPESCRIPT_CHECK_PASSES=architecture
 runs:
     - command: check

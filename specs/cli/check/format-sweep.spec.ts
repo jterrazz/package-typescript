@@ -1,14 +1,14 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { FORMATTED, formatter, MISFORMATTED, sweptRepository } from '../_setup/format-sweep.js';
+import { FORMATTED, formatter, MISFORMATTED, sweptRepository } from '../__setup__/format-sweep.js';
 
 describe('format-sweep', () => {
     test('judges no ground file and no ignored file, with no oxfmt config to say so', async () => {
         // Given - formatted source files, tracked and new, beside a misformatted ground file and a misformatted ignored file
         // When - the quality checks run
         const result = await formatter
-            .fixture(directory('../_fixtures/format-sweep/formatted/'))
+            .fixture(directory('../__fixtures__/format-sweep/formatted/'))
             .prepare(sweptRepository(FORMATTED))
             .exec('check');
 
@@ -31,7 +31,7 @@ describe('format-sweep', () => {
         // Given - the same project, whose tracked source file and new source file are misformatted
         // When - the quality checks run
         const result = await formatter
-            .fixture(directory('../_fixtures/format-sweep/misformatted/'))
+            .fixture(directory('../__fixtures__/format-sweep/misformatted/'))
             .prepare(sweptRepository(MISFORMATTED))
             .exec('check');
 

@@ -1,5 +1,5 @@
 description: says nothing about a manual cut into its sections
-fixture: ./_fixtures/compliant/
+fixture: ./__fixtures__/compliant/
 runs:
     - command: docs-layout .
       exit: 0

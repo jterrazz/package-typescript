@@ -1,5 +1,5 @@
 description: lints a project with no oxlint config by the profile and the rules its presets declare
-fixture: ./_fixtures/default-config/declared-presets/
+fixture: ./__fixtures__/default-config/declared-presets/
 runs:
     - command: check
       exit: 1

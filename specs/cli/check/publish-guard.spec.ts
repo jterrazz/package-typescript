@@ -1,7 +1,7 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses, passOf } from '../_setup/check-passes.js';
+import { onlyPasses, passOf } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
 
 const publish = cli.with({ env: onlyPasses('publish') });
@@ -23,7 +23,7 @@ describe('publish-guard', () => {
     test('fails a package whose second export is compiled from a fixtures module, at the chunk the manifest publishes', async () => {
         // Given - a library whose second export imports a fixtures module, its dist laid by hand, resolving the installed @jterrazz/test
         const result = await publish
-            .fixture(directory('./_fixtures/publish/fixtures-module/'))
+            .fixture(directory('./__fixtures__/publish/fixtures-module/'))
             .link('@jterrazz/test')
             .exec('check');
 
@@ -37,8 +37,8 @@ describe('publish-guard', () => {
     test('passes the same package once its second export no longer imports the fixtures module', async () => {
         // Given - the same library with that import cut
         const result = await publish
-            .fixture(directory('./_fixtures/publish/fixtures-module/'))
-            .fixture(directory('./_fixtures/publish/fixtures-module-cut/'))
+            .fixture(directory('./__fixtures__/publish/fixtures-module/'))
+            .fixture(directory('./__fixtures__/publish/fixtures-module-cut/'))
             .link('@jterrazz/test')
             .exec('check');
 
@@ -49,8 +49,8 @@ describe('publish-guard', () => {
     test('passes a build whose @jterrazz/test reader fails to load, naming what it threw', async () => {
         // Given - a package that builds, beside an install whose ./oxlint entry throws on import
         const result = await publish
-            .fixture(directory('./_fixtures/publish/own-build/'))
-            .link('@jterrazz/test', directory('./_fixtures/publish/broken-reader/'))
+            .fixture(directory('./__fixtures__/publish/own-build/'))
+            .link('@jterrazz/test', directory('./__fixtures__/publish/broken-reader/'))
             .exec('check');
 
         // Then - the pass names what the entry threw
@@ -63,8 +63,8 @@ describe('publish-guard', () => {
     test('passes a build whose @jterrazz/test publishes no reader of test material, saying so', async () => {
         // Given - a package that builds, beside an install whose ./oxlint entry loads and exports no reader
         const result = await publish
-            .fixture(directory('./_fixtures/publish/own-build/'))
-            .link('@jterrazz/test', directory('./_fixtures/publish/readerless/'))
+            .fixture(directory('./__fixtures__/publish/own-build/'))
+            .link('@jterrazz/test', directory('./__fixtures__/publish/readerless/'))
             .exec('check');
 
         // Then - the pass names what the entry lacks, and judges nothing
@@ -77,7 +77,7 @@ describe('publish-guard', () => {
     test('names a test package compiled into a shipped chunk and one it imports undeclared, and judges no chunk `files` leaves out', async () => {
         // Given - a library bundling @vitest/spy though it declares it and ms, importing vitest/config undeclared, @vitest/mocker declared, playwright as a peer and node:path, its second chunk compiled from a fixtures module and left out of `files`
         const result = await publish
-            .fixture(directory('./_fixtures/publish/test-packages/'))
+            .fixture(directory('./__fixtures__/publish/test-packages/'))
             .link('@jterrazz/test')
             .link('@vitest/spy')
             .link('ms')
@@ -95,8 +95,8 @@ describe('publish-guard', () => {
     test('judges every chunk of a package that names no `files`, since npm then ships them all', async () => {
         // Given - the same library, its manifest naming no `files`
         const result = await publish
-            .fixture(directory('./_fixtures/publish/test-packages/'))
-            .fixture(directory('./_fixtures/publish/test-packages-unfiled/'))
+            .fixture(directory('./__fixtures__/publish/test-packages/'))
+            .fixture(directory('./__fixtures__/publish/test-packages-unfiled/'))
             .link('@jterrazz/test')
             .link('@vitest/spy')
             .link('ms')
@@ -117,7 +117,7 @@ describe('publish-guard', () => {
     test('judges what the build runs, never its declarations: a type taken from a test package is no finding', async () => {
         // Given - a library whose shipped module takes a type from vitest, a dev dependency, and runs nothing of it
         const result = await publish
-            .fixture(directory('./_fixtures/publish/type-from-test-package/'))
+            .fixture(directory('./__fixtures__/publish/type-from-test-package/'))
             .link('@jterrazz/test')
             .link('vitest')
             .exec('check');
@@ -129,7 +129,7 @@ describe('publish-guard', () => {
     test('fails the pass on a build that fails, and nothing else', async () => {
         // Given - a package publint and attw accept, whose manifest publishes an entry nobody wrote
         const result = await publish
-            .fixture(directory('./_fixtures/publish/broken-build-alone/'))
+            .fixture(directory('./__fixtures__/publish/broken-build-alone/'))
             .link('@jterrazz/test')
             .exec('check');
 
@@ -143,7 +143,7 @@ describe('publish-guard', () => {
     test('carries on to publint past a build that fails', async () => {
         // Given - a package whose build fails and whose map names a file `files` leaves out
         const result = await publish
-            .fixture(directory('./_fixtures/publish/broken-build/'))
+            .fixture(directory('./__fixtures__/publish/broken-build/'))
             .link('@jterrazz/test')
             .exec('check');
 

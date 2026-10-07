@@ -4,16 +4,16 @@ import { cpSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { temporaryDirectory } from '../../_shared/_setup/temporary-directory.js';
-import { onlyPasses } from '../_setup/check-passes.js';
+import { temporaryDirectory } from '../../__setup__/temporary-directory.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
-import { FORM_VARIABLES, formOnly } from './_setup/oxlint-forms.js';
+import { FORM_VARIABLES, formOnly } from './__setup__/oxlint-forms.js';
 
 // invariant: the oracle is oxlint's own report over a copy of the same ground in the same environment.
 
 const REPOSITORY = resolve(import.meta.dirname, '../../..');
 const OXLINT = resolve(REPOSITORY, 'node_modules/.bin/oxlint');
-const SHAPES = resolve(import.meta.dirname, '_fixtures/oxlint-report');
+const SHAPES = resolve(import.meta.dirname, '__fixtures__/oxlint-report');
 
 const WARNING_LESSON =
     "found: a warn-severity diagnostic — oxlint lists it above · why: .jterrazz/oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/reference/quality-checks.md#a-warning-is-a-diagnostic\n";
@@ -77,7 +77,7 @@ describe('oxlint-report', () => {
         // When - the quality checks run there, in the same environment
         const result = await cli
             .env({ ...formOnly(form), ...onlyPasses('oxlint') })
-            .fixture(directory('./_fixtures/oxlint-report/'))
+            .fixture(directory('./__fixtures__/oxlint-report/'))
             .exec('check');
 
         // Then - the pass prints oxlint's own report, byte for byte but the run's duration, in the form this environment picks, and the lesson its warning owes
@@ -95,9 +95,9 @@ describe('oxlint-report', () => {
         // Given - a project whose oxlint config loads a plugin that counts the linter runs
         const project = cli
             .env({ RUNS_LOG: '$WORKDIR/runs.log' })
-            .fixture(directory('./_fixtures/oxlint-once/project/'));
+            .fixture(directory('./__fixtures__/oxlint-once/project/'));
         const counted = held
-            ? project.fixture(directory('./_fixtures/oxlint-once/held/'))
+            ? project.fixture(directory('./__fixtures__/oxlint-once/held/'))
             : project;
 
         // When - the quality checks run there

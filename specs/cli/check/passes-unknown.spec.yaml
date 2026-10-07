@@ -1,5 +1,5 @@
 description: refuses a pass selector naming no pass, listing the passes
-fixture: ./_fixtures/typechecker/invalid/
+fixture: ./__fixtures__/typechecker/invalid/
 env: TYPESCRIPT_CHECK_PASSES=typescript,lint
 runs:
     - command: check

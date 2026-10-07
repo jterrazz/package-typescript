@@ -1,5 +1,5 @@
 description: auto-ignores a member's convention paths, not just the root's
-fixture: ./_fixtures/knip/workspace-conventions/
+fixture: ./__fixtures__/knip/workspace-conventions/
 runs:
     - command: check
       exit: 1

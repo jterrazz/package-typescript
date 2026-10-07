@@ -1,5 +1,5 @@
 description: asks a repository that declares a library for its release guide
-fixture: ./_fixtures/declared-library/
+fixture: ./__fixtures__/declared-library/
 runs:
     - command: docs-layout .
       exit: 1

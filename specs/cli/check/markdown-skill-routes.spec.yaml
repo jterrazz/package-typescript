@@ -1,5 +1,5 @@
 description: fails a skill that routes to a page its package does not ship, and passes the one it does
-fixture: ./_fixtures/markdown/skill-routes/
+fixture: ./__fixtures__/markdown/skill-routes/
 runs:
     - command: check
       exit: 1

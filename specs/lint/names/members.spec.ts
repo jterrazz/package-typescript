@@ -6,7 +6,7 @@ import { lint } from '../names-lint.specification.js';
 describe('members', () => {
     test('holds every workspace member to a spine of its own, lint/ only where the member ships it', async () => {
         // Given - a workspace whose members keep their own spine, one with a root beside it and one holding a lint/ it never publishes
-        const result = await lint.fixture(directory('./_fixtures/members/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/members/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`

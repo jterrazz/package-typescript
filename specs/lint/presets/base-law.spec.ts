@@ -6,7 +6,7 @@ import { lint } from '../preset-lint.specification.js';
 describe('base-law', () => {
     test('holds a lint/ tree to the base preset alone, refusing each of its six laws at its import, and lets through each edge a law allows', async () => {
         // Given - a lint/ tree breaking each law once, beside the edges the laws allow — the self catalogue reading the consumer one, a catalogue test reading what it audits, a rule test reading src/
-        const result = await lint.fixture(directory('./_fixtures/every-law/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/every-law/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`

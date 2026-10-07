@@ -1,5 +1,5 @@
 description: refuses a standard module of any script kind that computes a value, and reads no test of it
-fixture: ./_fixtures/config/standard-logic/
+fixture: ./__fixtures__/config/standard-logic/
 env: TYPESCRIPT_CHECK_PASSES=config
 runs:
     - command: check

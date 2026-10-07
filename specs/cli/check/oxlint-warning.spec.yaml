@@ -1,5 +1,5 @@
 description: fails a warn-severity diagnostic, naming the promotion no baseline can replace, in check and in fix
-fixture: ./_fixtures/warnings/warned/
+fixture: ./__fixtures__/warnings/warned/
 runs:
     - command: check
       exit: 1

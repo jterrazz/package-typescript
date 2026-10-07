@@ -1,5 +1,5 @@
 description: fails a recorded crossing count that fell, until fix re-records it
-fixture: ./_fixtures/architecture-map/fell/
+fixture: ./__fixtures__/architecture-map/fell/
 env: TYPESCRIPT_CHECK_PASSES=architecture
 runs:
     - command: check

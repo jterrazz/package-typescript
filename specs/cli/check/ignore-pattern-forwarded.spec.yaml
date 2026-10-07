@@ -1,5 +1,5 @@
 description: overlooks, in every gate that reads the tree, what --ignore-pattern names
-fixture: ./_fixtures/ignore-pattern/notes-overlooked/
+fixture: ./__fixtures__/ignore-pattern/notes-overlooked/
 env: TYPESCRIPT_CHECK_PASSES=typescript,oxlint,oxfmt,suppressions,markdown,names,comments,secrets
 runs:
     - command: check --ignore-pattern 'notes/**'

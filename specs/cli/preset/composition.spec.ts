@@ -1,7 +1,7 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { profilePath } from '../../_shared/_setup/rulebook.js';
+import { profilePath } from '../../__setup__/rulebook.js';
 import { cli as oxlintCli } from '../oxlint.specification.js';
 
 // invariant: a profile never auto-detects another @jterrazz package: the `test()` preset's rules exist only where it is listed.
@@ -12,8 +12,8 @@ describe('composition', () => {
     test('enables the jterrazz rules when the consumer lists the test() preset', async () => {
         // Given - a probe spec in a project whose settings list test(), its oxlint config derived from them
         const result = await oxlintCli
-            .fixture(directory('./_fixtures/enabled/'))
-            .fixture(directory('./_fixtures/declaring-test/'))
+            .fixture(directory('./__fixtures__/enabled/'))
+            .fixture(directory('./__fixtures__/declaring-test/'))
             .link('@jterrazz/test')
             .exec('probe.test.ts');
 
@@ -26,7 +26,7 @@ describe('composition', () => {
     test('stays silent when the consumer does not list test()', async () => {
         // Given - the same probe linted with the bare node profile
         const result = await oxlintCli
-            .fixture(directory('./_fixtures/enabled/'))
+            .fixture(directory('./__fixtures__/enabled/'))
             .exec(`-c ${NODE_CONFIG} probe.test.ts`);
 
         // Then - no jterrazz rule is registered: wiring is explicit, never auto-detected

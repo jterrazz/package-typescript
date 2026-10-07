@@ -6,11 +6,11 @@ import { lint } from '../names-lint.specification.js';
 describe('vague', () => {
     test('fails a tree whose folder names no subject and whose file names one in half', async () => {
         // Given - grab-bag folders, and names with a word written in half
-        const result = await lint.fixture(directory('./_fixtures/vague/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/vague/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`
-            specs/orders/_setup/utils:1:1  names(no-grab-bag-name)
+            specs/orders/__setup__/utils:1:1  names(no-grab-bag-name)
                 found: \`utils\` names no subject — it holds whatever nobody placed
                 why: A directory or file is named for the subject it holds, never a grab-bag word.
                 fix: name it for the subject it holds, or move what it holds beside the code that uses it

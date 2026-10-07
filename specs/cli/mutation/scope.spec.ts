@@ -5,8 +5,8 @@ import { cli } from '../cli.specification.js';
 
 describe('scope', () => {
     test("mutates each member's tested sources by its platform and its kind's standard, and leaves lint/ to a project that names it", async () => {
-        // Given - a workspace of an expo app, a node api and a library shipping lint rules, none naming anything to mutate, each source but one with its module test beside it
-        const result = await cli.fixture(directory('./_fixtures/workspace/')).exec('mutation');
+        // Given - a workspace of an expo app, a node api and a library shipping lint rules, none naming anything to mutate, each source but one with its module test in its folder's __tests__/
+        const result = await cli.fixture(directory('./__fixtures__/workspace/')).exec('mutation');
 
         // Then - the config handed to Stryker mutates the tested sources of src/ everywhere, of the expo routes and its .tsx, the library's lint rules its standard names under its own folder, never the workspace's lint/ nor a source no module test proves, and the sandbox builds nothing the project does not
         const config: unknown = JSON.parse(

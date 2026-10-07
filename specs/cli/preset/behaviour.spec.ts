@@ -16,14 +16,14 @@ import {
     oxlint,
     PROFILES,
     sandbox,
-} from '../../_shared/_setup/rulebook.js';
-import type { Diagnostic } from '../../_shared/_setup/rulebook.js';
+} from '../../__setup__/rulebook.js';
+import type { Diagnostic } from '../../__setup__/rulebook.js';
 
-// invariant: one case per decision this package owns, never per upstream rule. The `_expected/` tree holds only the files
+// invariant: one case per decision this package owns, never per upstream rule. The `__expected__/` tree holds only the files
 // `--fix` rewrote, so a reasoned `off` states itself by absence. Regenerate with `TEST_UPDATE=1 npm test`.
 
-const FIXTURES = resolve(import.meta.dirname, '_fixtures/behaviour');
-const EXPECTED = resolve(import.meta.dirname, '_expected/behaviour');
+const FIXTURES = resolve(import.meta.dirname, '__fixtures__/behaviour');
+const EXPECTED = resolve(import.meta.dirname, '__expected__/behaviour');
 const UPDATING = process.env.TEST_UPDATE === '1';
 
 function rulesOf(diagnostics: Diagnostic[]): string {
@@ -96,8 +96,8 @@ describe('behaviour', () => {
         // Given - every entry of the behaviour goldens and fixtures
         const owners = new Set<string>(PROFILES.map(({ name }) => name));
         const entries = [
-            ...readdirSync(EXPECTED).map((entry) => `_expected/behaviour/${entry}`),
-            ...readdirSync(FIXTURES).map((entry) => `_fixtures/behaviour/${entry}`),
+            ...readdirSync(EXPECTED).map((entry) => `__expected__/behaviour/${entry}`),
+            ...readdirSync(FIXTURES).map((entry) => `__fixtures__/behaviour/${entry}`),
         ];
 
         // Then - each one is named for a shipped profile, and none outlives one

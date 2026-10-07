@@ -1,5 +1,5 @@
 description: names a ratchet file keeping no typescript section as holding nothing, on a green check
-fixture: ./_fixtures/baseline/sectionless/
+fixture: ./__fixtures__/baseline/sectionless/
 runs:
     - command: check
       exit: 0

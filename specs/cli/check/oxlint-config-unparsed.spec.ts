@@ -3,9 +3,9 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
-import { formOnly } from './_setup/oxlint-forms.js';
+import { formOnly } from './__setup__/oxlint-forms.js';
 
 /** oxlint answers in its compact form whatever the machine's environment picks. */
 const oxlint = cli.with({ env: { ...formOnly({ AI_AGENT: 'spec' }), ...onlyPasses('oxlint') } });
@@ -15,7 +15,7 @@ describe('oxlint-config-unparsed', () => {
         // Given - a project whose oxlint config loads a plugin module nobody wrote — a config this repository cannot hold, since oxlint loads every config under it
         // When - the quality checks run there
         const result = await oxlint
-            .fixture(directory('./_fixtures/oxlint-config/plugin-missing/'))
+            .fixture(directory('./__fixtures__/oxlint-config/plugin-missing/'))
             .prepare((workdir) => {
                 writeFileSync(
                     join(workdir, 'oxlint.config.ts'),
@@ -45,7 +45,7 @@ describe('oxlint-config-unparsed', () => {
         // Given - a project whose oxlint config ignores the one source file it has, so oxlint lints nothing
         // When - the quality checks run there
         const result = await oxlint
-            .fixture(directory('./_fixtures/oxlint-config/lints-nothing/'))
+            .fixture(directory('./__fixtures__/oxlint-config/lints-nothing/'))
             .exec('check');
 
         // Then - oxlint says it found nothing to lint, and its exit fails the pass

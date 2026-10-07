@@ -1,5 +1,5 @@
 description: refuses a comment taller than a private function, and takes a disable only with its reason
-fixture: ./_fixtures/comments/rule/
+fixture: ./__fixtures__/comments/rule/
 runs:
     - command: check
       exit: 1

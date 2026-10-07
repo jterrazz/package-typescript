@@ -1,5 +1,5 @@
 description: bundling fails on a missing entry point
-fixture: ./_fixtures/empty-app/
+fixture: ./__fixtures__/empty-app/
 runs:
     - command: build
       exit: 1

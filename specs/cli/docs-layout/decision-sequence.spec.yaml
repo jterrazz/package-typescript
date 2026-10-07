@@ -1,5 +1,5 @@
 description: refuses a decisions folder that skips a number
-fixture: ./_fixtures/decision-sequence/
+fixture: ./__fixtures__/decision-sequence/
 runs:
     - command: docs-layout .
       exit: 1

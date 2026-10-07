@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 import { PROFILES as PROFILE_TABLE } from '../../../lint/consumer/rulebook/profiles.js';
 import { decisions, unsafeFixers } from '../../../lint/kit/catalogue/decisions.js';
 import { REASON_KINDS } from '../../../lint/kit/compiler/decision.js';
-import { printConfig, PROFILES, roster } from '../../_shared/_setup/rulebook.js';
+import { printConfig, PROFILES, roster } from '../../__setup__/rulebook.js';
 
 // outside: nursery is upstream's one exception: a nursery rule is declared unstable, so the rulebook does not decide it.
 

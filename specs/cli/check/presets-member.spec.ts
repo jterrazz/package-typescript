@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
 
 // invariant: the stubs fail unless a case asks otherwise: a passing pass prints nothing, which would leave the claim unmade.
@@ -112,7 +112,7 @@ function declared(options: { conventions?: string; exit?: 0 | 1 } = {}): Prepare
 function passes(selected: string) {
     return cli
         .with({ env: { TYPESCRIPT_CHECK_PASSES: selected } })
-        .fixture(directory('./_fixtures/presets-member/'));
+        .fixture(directory('./__fixtures__/presets-member/'));
 }
 
 describe('presets-member', () => {

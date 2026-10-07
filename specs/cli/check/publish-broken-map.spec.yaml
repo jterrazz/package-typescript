@@ -1,5 +1,5 @@
 description: fails an exports map naming a file that is absent and one the tarball leaves out
-fixture: ./_fixtures/publish/broken-map/
+fixture: ./__fixtures__/publish/broken-map/
 env: TYPESCRIPT_CHECK_PASSES=publish
 runs:
     - command: check

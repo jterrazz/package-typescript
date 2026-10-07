@@ -1,5 +1,5 @@
 description: names the member each nothing-to-judge note is about, in a workspace of two publishable packages
-fixture: ./_fixtures/publish/workspace/
+fixture: ./__fixtures__/publish/workspace/
 env: TYPESCRIPT_CHECK_PASSES=publish
 runs:
     - command: check

@@ -29,7 +29,7 @@ One word per meaning:
 
 ## The project's tree
 
-- **Ground** — the folders a test stands on rather than code: `_fixtures/`, `_expected/`, `_seeds/` and `_requests/`, wherever they sit. The linter, the formatter, knip and tsc leave them out ([Lint presets § Unused code](lint-presets.md#unused-code-knip)).
+- **Ground** — the folders a test stands on rather than code: `__fixtures__/`, `__expected__/`, `__seeds__/` and `__requests__/`, wherever they sit. The linter, the formatter, knip and tsc leave them out ([Lint presets § Unused code](lint-presets.md#unused-code-knip)).
 - **Specimen** — a small project per kind under this package's `specs/kinds/<kind>/`, into which the specs install the packed packages to prove that kind's gestures ([Configuration § Kind and platform](configuration.md#kind-and-platform)).
 
 ## The two shapes

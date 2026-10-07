@@ -1,5 +1,5 @@
 description: builds the declarations of a library whose export has no annotation from the type it infers
-fixture: ./_fixtures/inferred-lib/
+fixture: ./__fixtures__/inferred-lib/
 runs:
     - command: build
       exit: 0

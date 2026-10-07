@@ -1,15 +1,15 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { astroStub } from '../_setup/astro.js';
-import { onlyPasses } from '../_setup/check-passes.js';
+import { astroStub } from '../__setup__/astro.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
 
 // outside: the Astro pass runs the consumer's `astro check`, so the project carries a binary where npm would put one — under node_modules/, which no fixture can hold.
 
 const site = cli
     .with({ env: onlyPasses('astro') })
-    .fixture(directory('../_fixtures/astro/site/'))
+    .fixture(directory('../__fixtures__/astro/site/'))
     .prepare(astroStub);
 
 describe('astro', () => {
@@ -42,7 +42,7 @@ describe('astro', () => {
         // When - the Astro pass runs at the workspace root
         const result = await cli
             .with({ env: onlyPasses('astro') })
-            .fixture(directory('../_fixtures/astro/workspace/'))
+            .fixture(directory('../__fixtures__/astro/workspace/'))
             .prepare(astroStub)
             .exec('check');
 

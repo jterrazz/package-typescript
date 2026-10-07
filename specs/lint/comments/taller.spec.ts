@@ -6,7 +6,7 @@ import { lint } from '../comments-lint.specification.js';
 describe('taller', () => {
     test('refuses a comment taller than a private function, and none a disable directive sets aside', async () => {
         // Given - a doc comment over each private function, two of them disabled
-        const result = await lint.fixture(directory('./_fixtures/taller/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/taller/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`

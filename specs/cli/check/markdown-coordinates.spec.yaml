@@ -1,5 +1,5 @@
 description: fails stale links, anchors and paths at their position, and keeps a decision record's paths
-fixture: ./_fixtures/markdown/stale-coordinates/
+fixture: ./__fixtures__/markdown/stale-coordinates/
 runs:
     - command: check
       exit: 1

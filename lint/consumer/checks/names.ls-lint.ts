@@ -6,7 +6,12 @@ import { basename, join } from 'node:path';
 import { refusal } from '../../kit/catalogue/lesson.js';
 import type { Finding } from '../../kit/checker/pass.js';
 import { runTool } from '../../kit/checker/tool-run.js';
-import { GROUND_FOLDERS } from '../../kit/project/ground.js';
+import {
+    CODE_SPECIAL_FOLDERS,
+    GROUND_FOLDERS,
+    SPECIAL_FOLDERS,
+    TESTS_FOLDER,
+} from '../../kit/project/ground.js';
 import { objectOf } from '../../kit/project/json.js';
 import { LINT_ROOT, TOPS } from './names.lint-tree.js';
 import type { LintTree, Top } from './names.lint-tree.js';
@@ -21,9 +26,14 @@ const KEBAB = String.raw`_?[a-z0-9]+(-[a-z0-9]+)*`;
 
 const FRAMEWORK_ROUTE_SEGMENT = String.raw`\[{1,2}(\.{3})?[A-Za-z0-9]+\]{1,2}|\([a-z0-9-]+\)|@[a-z0-9-]+`;
 
-const DIRECTORY = `(?:${KEBAB}|${FRAMEWORK_ROUTE_SEGMENT})`;
+const directoryOf = (special: readonly string[]): string =>
+    `(?:${KEBAB}|${FRAMEWORK_ROUTE_SEGMENT}|${special.join('|')})`;
 
-const NAMED_ROOTS = ['apps', 'bin', 'lib', 'packages', 'specs', 'src', 'tests'];
+const CODE_DIRECTORY = directoryOf(CODE_SPECIAL_FOLDERS);
+
+const SPECS_DIRECTORY = directoryOf(SPECIAL_FOLDERS);
+
+const CODE_ROOTS = ['apps', 'bin', 'lib', 'packages', 'src', 'tests'];
 
 const ANY_NAME: Rules = Object.freeze({});
 
@@ -32,7 +42,11 @@ const IGNORED = [
     '**/node_modules',
     'dist',
     '**/.*',
-    ...GROUND_FOLDERS.map((folder) => `**/${folder}`),
+    // invariant: the ground a test stands on is its own — under a specs tree, or in a module's tests folder; anywhere else it is a folder like any.
+    ...GROUND_FOLDERS.flatMap((folder) => [
+        `**/specs/**/${folder}`,
+        `**/${TESTS_FOLDER}/**/${folder}`,
+    ]),
 ];
 
 const MODULE_EXTENSIONS = ['.cjs', '.cts', '.js', '.jsx', '.mjs', '.mts', '.ts', '.tsx'];
@@ -64,9 +78,10 @@ function lintTreeRules(prefix: string, tree: LintTree): Record<string, Rules> {
         rules[`${lint}/${top}`] = { ...ROOT_FILES[top], '.dir': `regex:${top}` };
         rules[`${lint}/${top}/{${tree[top].join(',')}}`] = {
             '.*': 'regex:.+',
-            '.dir': `regex:${KEBAB}`,
+            '.dir': `regex:${CODE_DIRECTORY}`,
         };
     }
+    rules[`${lint}/${TESTS_FOLDER}`] = { '.*': 'regex:.+', '.dir': `regex:${CODE_DIRECTORY}` };
 
     return rules;
 }
@@ -102,9 +117,10 @@ export function lsLintConfig({
 }): string {
     const ls: Record<string, Rules> = {};
     for (const prefix of units) {
-        const named = `${prefix}{${NAMED_ROOTS.join(',')}}`;
-        ls[named] = { '.dir': `regex:${DIRECTORY}` };
+        const named = `${prefix}{${CODE_ROOTS.join(',')}}`;
+        ls[named] = { '.dir': `regex:${CODE_DIRECTORY}` };
         ls[`${named}/**/app`] = ANY_NAME;
+        ls[`${prefix}specs`] = { '.dir': `regex:${SPECS_DIRECTORY}` };
         const tree = trees[prefix];
         Object.assign(
             ls,

@@ -6,7 +6,7 @@ import { lint } from '../declared-preset-lint.specification.js';
 describe('declared', () => {
     test('holds the project to the layers and the name rules its presets and its own settings declare', async () => {
         // Given - a tree crossing the layer and the name rule a preset declares, and a name rule of the settings
-        const result = await lint.fixture(directory('./_fixtures/declared/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/declared/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`
@@ -15,16 +15,16 @@ describe('declared', () => {
                 why: the specs root holds its specifications and their runners alone
                 fix: move it into the specification that reads it
                 read: docs/testing.md#the-specs-root
+            src/__tests__/widget.test.ts:1:23  architecture(no-test-to-test-import)
+                found: \`src/__tests__/widget.test.ts\` imports \`src/__tests__/other.test.ts\`
+                why: a test importing a test couples two files that each prove one thing
+                fix: move what both tests read into a module neither of them is
+                read: docs/testing.md#sharing
             src/orderLine.ts:1:1  names(module-in-kebab-case)
                 found: \`src/orderLine.ts\` breaks ls-lint's \`.ts: kebabcase\`
                 why: one case for every module keeps a search to one spelling
                 fix: rename it in kebab-case
                 read: docs/naming.md#modules
-            src/widget.test.ts:1:23  architecture(no-test-to-test-import)
-                found: \`src/widget.test.ts\` imports \`src/other.test.ts\`
-                why: a test importing a test couples two files that each prove one thing
-                fix: move what both tests read into a module neither of them is
-                read: docs/testing.md#sharing
         `);
     });
 });

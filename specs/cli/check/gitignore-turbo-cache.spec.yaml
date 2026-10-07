@@ -1,5 +1,5 @@
 description: refuses a turbo cache outside .artifacts/turbo, and fix sets its cacheDir
-fixture: ./_fixtures/gitignore/turbo-cache/
+fixture: ./__fixtures__/gitignore/turbo-cache/
 env: TYPESCRIPT_CHECK_PASSES=gitignore
 runs:
     - command: check

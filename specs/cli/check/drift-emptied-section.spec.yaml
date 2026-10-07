@@ -1,7 +1,7 @@
 description: reports no section, and passes, when the baseline's typescript section is emptied (--json)
 fixture:
-    - ./_fixtures/drift/project/
-    - ./_fixtures/drift/emptied-section/
+    - ./__fixtures__/drift/project/
+    - ./__fixtures__/drift/emptied-section/
 env: TYPESCRIPT_CHECK_PASSES=drift
 runs:
     - command: check --json

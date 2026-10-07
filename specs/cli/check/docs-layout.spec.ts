@@ -1,8 +1,8 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
-import { git } from '../_setup/repository.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
+import { git } from '../__setup__/repository.js';
 import { cli } from '../cli.specification.js';
 
 describe('docs-layout', () => {
@@ -10,7 +10,7 @@ describe('docs-layout', () => {
         // Given - a project on the convention, made a repository, with no docs/
         const result = await cli
             .with({ env: onlyPasses('docs') })
-            .fixture(directory('./_fixtures/gitignore/on-convention/'))
+            .fixture(directory('./__fixtures__/gitignore/on-convention/'))
             .prepare((workdir) => {
                 git(workdir, 'init', '--quiet');
             })

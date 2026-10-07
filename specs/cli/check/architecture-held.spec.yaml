@@ -1,5 +1,5 @@
 description: records a crossed boundary in the ratchet, and the run it records is green
-fixture: ./_fixtures/architecture-map/held/
+fixture: ./__fixtures__/architecture-map/held/
 env: TYPESCRIPT_CHECK_PASSES=architecture
 runs:
     - command: baseline

@@ -1,5 +1,5 @@
 description: asks a workspace whose member ships an image for its release guide
-fixture: ./_fixtures/workspace-member-image/
+fixture: ./__fixtures__/workspace-member-image/
 runs:
     - command: docs-layout .
       exit: 1

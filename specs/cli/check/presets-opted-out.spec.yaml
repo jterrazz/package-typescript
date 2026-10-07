@@ -1,5 +1,5 @@
 description: sets a law of the base preset aside with its reason, and counts it in the drift report
-fixture: ./_fixtures/presets/opted-out/
+fixture: ./__fixtures__/presets/opted-out/
 env: TYPESCRIPT_CHECK_PASSES=architecture,drift
 runs:
     - command: check

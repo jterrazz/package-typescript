@@ -1,5 +1,5 @@
 description: names every lint directive that is misspelled or unreasoned, and leaves a TypeScript one to oxlint
-fixture: ./_fixtures/suppressions/looking-away/
+fixture: ./__fixtures__/suppressions/looking-away/
 env: TYPESCRIPT_CHECK_PASSES=typescript,oxlint,suppressions
 runs:
     - command: check

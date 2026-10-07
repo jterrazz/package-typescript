@@ -1,5 +1,5 @@
 description: refuses a preset that carries no name, in each pass that reads presets
-fixture: ./_fixtures/presets/unnamed/
+fixture: ./__fixtures__/presets/unnamed/
 env: TYPESCRIPT_CHECK_PASSES=architecture,names
 runs:
     - command: check

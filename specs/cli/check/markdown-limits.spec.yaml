@@ -1,5 +1,5 @@
 description: fails a page whose prose, fence and section run past the readability limits
-fixture: ./_fixtures/markdown/walls/
+fixture: ./__fixtures__/markdown/walls/
 runs:
     - command: check
       exit: 1

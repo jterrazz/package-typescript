@@ -6,7 +6,7 @@ import { lint } from '../names-lint.specification.js';
 describe('construct', () => {
     test('fails a tree whose files and folders are named after a construct of the language', async () => {
         // Given - files and folders named `types`, `helper`, `constants` and the like
-        const result = await lint.fixture(directory('./_fixtures/construct/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/construct/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`

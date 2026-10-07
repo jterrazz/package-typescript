@@ -1,5 +1,5 @@
 description: a library's entry exports are its public surface, and a dead export beneath them is reported
-fixture: ./_fixtures/knip/library-exports/
+fixture: ./__fixtures__/knip/library-exports/
 runs:
     - command: check
       exit: 1

@@ -1,5 +1,5 @@
 description: fails a project whose gitignore still names artefacts outside .artifacts/
-fixture: ./_fixtures/gitignore/old-layout/
+fixture: ./__fixtures__/gitignore/old-layout/
 runs:
     - command: check
       exit: 1

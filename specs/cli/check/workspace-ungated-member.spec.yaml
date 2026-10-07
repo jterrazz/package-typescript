@@ -1,5 +1,5 @@
 description: stays out of a member that does not depend on @jterrazz/test
-fixture: ./_fixtures/workspace-ungated/
+fixture: ./__fixtures__/workspace-ungated/
 runs:
     - command: check
       exit: 1

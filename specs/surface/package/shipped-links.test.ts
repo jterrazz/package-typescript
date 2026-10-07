@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, normalize, resolve } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
-import { packedFiles, packedTree, removePackedTree } from './_setup/packed-tree.js';
+import { packedFiles, packedTree, removePackedTree } from './__setup__/packed-tree.js';
 
 afterAll(removePackedTree);
 

@@ -1,5 +1,5 @@
 description: an export used only in its own file is not unused, with no local knip.json
-fixture: ./_fixtures/knip/same-file-export/
+fixture: ./__fixtures__/knip/same-file-export/
 runs:
     - command: check
       exit: 1

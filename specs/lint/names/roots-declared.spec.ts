@@ -6,7 +6,7 @@ import { lint } from '../names-lint.specification.js';
 describe('roots-declared', () => {
     test('accepts a root the tools of its platform impose or one jterrazz.config.ts declares, and refuses every other', async () => {
         // Given - a Next.js website holding roots Next.js and Expo impose, one the settings declare with its reason, and one nobody declares
-        const result = await lint.fixture(directory('./_fixtures/roots-declared/')).run();
+        const result = await lint.fixture(directory('./__fixtures__/roots-declared/')).run();
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`

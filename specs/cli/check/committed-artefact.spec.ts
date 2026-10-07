@@ -3,8 +3,8 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
-import { git } from '../_setup/repository.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
+import { git } from '../__setup__/repository.js';
 import { cli } from '../cli.specification.js';
 
 describe('committed-artefact', () => {
@@ -12,7 +12,7 @@ describe('committed-artefact', () => {
         // Given - a project on the convention, in a repository whose index tracks a buildinfo its .gitignore excludes
         const result = await cli
             .with({ env: onlyPasses('gitignore') })
-            .fixture(directory('./_fixtures/gitignore/on-convention/'))
+            .fixture(directory('./__fixtures__/gitignore/on-convention/'))
             .prepare((workdir) => {
                 writeFileSync(join(workdir, 'tsconfig.tsbuildinfo'), '{"version":"stale"}\n');
                 git(workdir, 'init', '--quiet');
@@ -41,7 +41,7 @@ describe('committed-artefact', () => {
         // Given - a project whose ignored .turbo/ is allowed, with one of its logs tracked
         const result = await cli
             .with({ env: onlyPasses('gitignore') })
-            .fixture(directory('./_fixtures/gitignore/turbo/'))
+            .fixture(directory('./__fixtures__/gitignore/turbo/'))
             .prepare((workdir) => {
                 mkdirSync(join(workdir, '.turbo'));
                 writeFileSync(join(workdir, '.turbo/turbo-build.log'), 'cache miss\n');

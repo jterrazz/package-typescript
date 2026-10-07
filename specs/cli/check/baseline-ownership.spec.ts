@@ -4,9 +4,9 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
-import { formOnly } from './_setup/oxlint-forms.js';
+import { formOnly } from './__setup__/oxlint-forms.js';
 
 // outside: oxlint refuses two plugins by one name in one run, and @jterrazz/test's checks load every config of this
 // repository: the fixture cannot hold the stub plugin's config, nor the stub preset, so each case writes them.
@@ -81,7 +81,7 @@ const DEBUGGER = 'export function stop(): void {\n    debugger;\n}\n';
 function ground(env: Record<string, null | string> = {}) {
     return cli
         .with({ env })
-        .fixture(directory('./_fixtures/baseline/ownership/'))
+        .fixture(directory('./__fixtures__/baseline/ownership/'))
         .prepare(written({ 'oxlint.config.ts': CONFIG }));
 }
 

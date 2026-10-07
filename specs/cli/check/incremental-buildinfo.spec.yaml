@@ -1,5 +1,5 @@
 description: leaves the incremental buildinfo under .artifacts/tsc/
-fixture: ../_fixtures/incremental-app/
+fixture: ../__fixtures__/incremental-app/
 runs:
     - command: check
       exit: 0

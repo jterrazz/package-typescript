@@ -1,9 +1,9 @@
 import { directory } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
-import { onlyPasses } from '../_setup/check-passes.js';
+import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
-import { formOnly } from './_setup/oxlint-forms.js';
+import { formOnly } from './__setup__/oxlint-forms.js';
 
 describe('default-config', () => {
     test('hands a project with no config of its own the default, never the config above it', async () => {
@@ -16,7 +16,7 @@ describe('default-config', () => {
                     ...onlyPasses('oxlint', 'oxfmt'),
                 },
             })
-            .fixture(directory('./_fixtures/default-config/decoy-parent/'))
+            .fixture(directory('./__fixtures__/default-config/decoy-parent/'))
             .exec('check', { cwd: 'project' });
 
         // Then - the default profile reports the debugger, and the default formatter passes the four-space source and ignores public/
@@ -44,7 +44,7 @@ describe('default-config', () => {
         // When - the quality checks run
         const result = await cli
             .with({ env: onlyPasses('oxlint') })
-            .fixture(directory('./_fixtures/default-config/own-nested/'))
+            .fixture(directory('./__fixtures__/default-config/own-nested/'))
             .exec('check');
 
         // Then - the root `==` is reported, the nested one is not, and no rule of the default profile speaks

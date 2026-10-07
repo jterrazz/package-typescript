@@ -1,5 +1,5 @@
 description: an application builds its index, a module named for how it is loaded, and a command apart
-fixture: ./_fixtures/app-with-conventions/
+fixture: ./__fixtures__/app-with-conventions/
 runs:
     - command: build
       exit: 0

@@ -1,5 +1,5 @@
 description: compiles each published subpath and bin from the entry its grammar names, with no config
-fixture: ./_fixtures/multi-entry/
+fixture: ./__fixtures__/multi-entry/
 runs:
     - command: build
       exit: 0

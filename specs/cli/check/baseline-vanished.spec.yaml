@@ -1,5 +1,5 @@
 description: fails a suppressions file holding an entry for a file that is gone, until fix prunes it
-fixture: ./_fixtures/baseline/vanished/
+fixture: ./__fixtures__/baseline/vanished/
 runs:
     - command: check
       exit: 1

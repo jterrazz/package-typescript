@@ -7,7 +7,7 @@ describe('cli', () => {
     test('a cli fixes, builds, checks and runs its cli specs from its declaration alone', async () => {
         // Given - a command on node, its bin built from src/, both packed packages installed
         const result = await cli
-            .fixture(directory('./_fixtures/cli/'))
+            .fixture(directory('./__fixtures__/cli/'))
             .exec(['typescript fix', 'typescript build', 'typescript check', 'vitest --run']);
 
         // Then - every gesture passes, and the editor files derive from what it declares

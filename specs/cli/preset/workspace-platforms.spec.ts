@@ -7,7 +7,7 @@ describe('workspace-platforms', () => {
     test('the root config of a workspace lints each member by the platform it declares', async () => {
         // Given - a workspace whose react website and node api hold the same list rendered without keys, its root oxlint.config.ts the one-line derived entry
         const result = await oxlintCli
-            .fixture(directory('./_fixtures/workspace-platforms/'))
+            .fixture(directory('./__fixtures__/workspace-platforms/'))
             .exec('--format unix apps/web/src/list.tsx apps/api/src/list.tsx');
 
         // Then - the react rule fires in the website and stays silent in the api

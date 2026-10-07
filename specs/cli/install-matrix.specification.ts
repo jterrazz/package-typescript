@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { afterAll } from 'vitest';
 
 // invariant: not a third-party binary, so `cli-runs-the-product-binary` does not apply: an install tree no fixture can reproduce.
-const BIN = resolve(import.meta.dirname, '_setup/run-install-matrix.ts');
+const BIN = resolve(import.meta.dirname, '__setup__/run-install-matrix.ts');
 
 export const { cleanup, cli } = await specification.cli(BIN);
 
