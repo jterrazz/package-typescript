@@ -1,9 +1,12 @@
+import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { delimiter, join } from 'node:path';
 import process from 'node:process';
 
+import { readSettings } from '../../../lint/index.rules.js';
 import { ARTIFACTS, DEV_OUTPUT, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { handOver } from '../run.js';
 import {
@@ -42,8 +45,17 @@ const FILES = {
     },
 } as const;
 
+/** The tool roots git ignores: trees a tool generates, as `expo run:ios` lays `ios/`, which no test reads and the sandbox must not copy. */
+export function generatedRoots(project: string, toolRoots: readonly string[]): string[] {
+    return toolRoots.filter(
+        (root) =>
+            spawnSync('git', ['check-ignore', '--quiet', '--', root], { cwd: project }).status ===
+            0,
+    );
+}
+
 export function strykerConfig(
-    scope: { readonly mutated: readonly string[] },
+    scope: { readonly generated: readonly string[]; readonly mutated: readonly string[] },
     { mutate, name }: Stage,
 ): object {
     const files = FILES[name];
@@ -60,6 +72,7 @@ export function strykerConfig(
         htmlReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.html` },
         ignorePatterns: [
             `/${ARTIFACTS}/**`,
+            ...scope.generated.map((root) => `/${root}`),
             `!/${MUTATION_OUTPUT}/*.mjs`,
             `!/${MUTATION_OUTPUT}/*.cjs`,
             `!/${DEV_OUTPUT}/**`,
@@ -101,6 +114,9 @@ export async function strykerRun(
 ): Promise<Measured | { status: number }> {
     const files = FILES[stage.name];
     const suite = stage.name === 'suite';
+    const { resolved } = await readSettings(project);
+    const toolRoots = Object.keys(stringRecordOf(objectOf(resolved.sections.typescript).toolRoots));
+    const generated = generatedRoots(project, toolRoots);
     writeFileSync(join(MUTATION_OUTPUT, files.vitest), vitestConfigSource(scope.exclude, suite));
     writeFileSync(
         join(MUTATION_OUTPUT, files.sandbox),
@@ -108,7 +124,7 @@ export async function strykerRun(
     );
     writeFileSync(
         join(MUTATION_OUTPUT, files.config),
-        `${JSON.stringify(strykerConfig(scope, stage), null, 4)}\n`,
+        `${JSON.stringify(strykerConfig({ ...scope, generated }, stage), null, 4)}\n`,
     );
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
