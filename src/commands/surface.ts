@@ -58,7 +58,7 @@ export const SURFACES = {
             },
             {
                 name: '--since',
-                says: 'Measure the change since this commit instead of HEAD',
+                says: 'Measure the change since this commit instead of the uncommitted change, or the last commit on a clean tree',
                 value: '<ref>',
             },
         ],

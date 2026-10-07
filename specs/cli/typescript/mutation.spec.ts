@@ -1,4 +1,5 @@
 import { directory } from '@jterrazz/test';
+import { execFileSync } from 'node:child_process';
 import { describe, expect, test } from 'vitest';
 
 import { cli } from '../packed-cli.specification.js';
@@ -41,7 +42,7 @@ describe('mutation', () => {
         expect([named.exitCode, named.stdout.text]).toStrictEqual([1, result.stdout.text]);
         expect(result.exitCode).toBe(1);
         expect(result.stdout).toMatch(`
-            found: git names no commit main · why: the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing · fix: name a commit this clone holds — fetch it, or name the merge-base with the default branch — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the working tree against HEAD · read: docs/reference/quality-checks.md#mutation
+            found: git names no commit main · why: the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing · fix: name a commit this clone holds — fetch it, or name the merge-base with the default branch — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the change not yet committed, or the last commit on a clean tree · read: docs/reference/quality-checks.md#mutation
         `);
         expect(result.stdout.text).not.toContain('Measuring');
     });
@@ -150,6 +151,36 @@ describe('mutation', () => {
             {{any}}
             src/doubled.ts:2:12  ArithmeticOperator → value / 2
             found: 1 mutant(s) a test runs and none detects{{any}}
+        `);
+    });
+
+    test('typescript mutation — a commit named on the command line is the one the change is measured from, and a clean tree against it is said to have changed nothing', async () => {
+        // Given - the consumer, its test judging everything, committed whole, measured since the commit it sits on
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .prepare((workdir) => {
+                const git = (...args: string[]): void => {
+                    execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...args], {
+                        cwd: workdir,
+                        stdio: 'ignore',
+                    });
+                };
+                git('init', '--quiet');
+                git('add', '--all');
+                git('commit', '--quiet', '--message', 'first');
+            })
+            .exec('typescript mutation --since HEAD');
+
+        // Then - the note names the commit as written, and the suite measures no change
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(`
+             TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
+            {{any}}
+             TYPESCRIPT  The working tree equals HEAD: no line changed, so the whole suite measures no change — name the commit the work started from with --since to measure one.
+
+            every mutant a test runs is detected — 9 detected
+            0 mutant(s) no test runs
         `);
     });
 });

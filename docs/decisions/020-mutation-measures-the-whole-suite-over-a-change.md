@@ -3,6 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-10-04
 **Accepted:** 2026-10-05 — the owner's word on the whole set ("ok parfait pour tout").
+**Amended by:** [ADR-023](023-a-committed-change-is-still-a-change.md) — the default base is where HEAD left the default branch.
 
 ## Context
 

@@ -12,7 +12,8 @@ import { toolchainIn } from '../../drivers/node/node.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
 import { badge, print, RED, RESET } from '../check/report/terminal.js';
-import { changeOf, namesACommit } from './change.js';
+import { changeOf, defaultBaseOf, namesACommit } from './change.js';
+import type { Base } from './change.js';
 import { memberRuns } from './members.js';
 import { changedRanges, fileOf, narrowed, sourcesOf } from './scope.js';
 import type { MutationScope } from './scope.js';
@@ -114,7 +115,7 @@ async function judgedAfterTheSuite({
     project: string;
     ranges: readonly string[] | undefined;
     scope: MutationScope;
-    since: string;
+    since: Base;
     untested: readonly string[];
 }): Promise<number> {
     const modulesAlone = judgedRuns(modulesRun);
@@ -174,7 +175,7 @@ export async function mutation(args: readonly string[]): Promise<number> {
     if (named !== undefined && !namesACommit(project, named)) {
         print(
             `${RED}${refusal({
-                fix: 'name a commit this clone holds — fetch it, or name the merge-base with the default branch — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the working tree against HEAD',
+                fix: 'name a commit this clone holds — fetch it, or name the merge-base with the default branch — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the change not yet committed, or the last commit on a clean tree',
                 found: `git names no commit ${named}`,
                 read: 'docs/reference/quality-checks.md#mutation',
                 why: 'the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing',
@@ -187,7 +188,8 @@ export async function mutation(args: readonly string[]): Promise<number> {
     if (members.length > 0) {
         return await membersMeasured(project, members, { ranges, since: named });
     }
-    const since = named ?? 'HEAD';
+    const since: Base =
+        named === undefined ? defaultBaseOf(project) : { commit: named, names: named };
     const scope = await mutationScopeOf(project);
     const { tested, untested } = sourcesOf(project, scope);
     strykerPrepared(project);

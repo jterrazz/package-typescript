@@ -27,6 +27,25 @@ export function hunksOf(diff: string): Map<string, [number, number][]> {
 export const namesACommit = (project: string, ref: string): boolean =>
     git(project, ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) !== undefined;
 
+/** The commit a run measures the working tree against when none is named, and how the verdict names it. */
+export type Base = { commit: string; names: string };
+
+/** The change a run measures when no commit is named: the uncommitted one against HEAD, or, the working tree being clean, the last commit — so a gate run after the commit still measures it; HEAD alone where there is no commit before it. */
+export function defaultBaseOf(project: string): Base {
+    const status = git(project, ['status', '--porcelain', '--untracked-files=all', '--', '.']);
+    if (status !== '') {
+        return { commit: 'HEAD', names: 'HEAD — the change not yet committed' };
+    }
+    const previous = git(project, ['rev-parse', '--verify', '--quiet', 'HEAD~1^{commit}'])?.trim();
+
+    return previous === undefined
+        ? { commit: 'HEAD', names: 'HEAD — the first commit, with no commit before it' }
+        : {
+              commit: previous,
+              names: `the commit before HEAD (${previous.slice(0, 8)}) — the working tree is clean, so the last commit is the change`,
+          };
+}
+
 /** What the working tree changed since `since`, untracked files whole; `undefined` where git cannot say. */
 export function changeSince(project: string, since: string): Changed | undefined {
     const diff = git(project, [
@@ -69,20 +88,27 @@ function linesNamed(ranges: readonly string[]): Changed {
     return named;
 }
 
-/** The change the suite measures: what `--mutate` names, else what the tree changed since `since`, with a note when git could not say. */
+/** The change the suite measures: what `--mutate` names, else what the tree changed since the base, with a note naming the base, or saying that git could not answer or that the change is empty — a run that measured nothing says so. */
 export function changeOf(
     project: string,
-    { ranges, since }: { ranges: readonly string[] | undefined; since: string },
+    { ranges, since }: { ranges: readonly string[] | undefined; since: Base },
 ): { changed: Changed; note?: string } {
     if (ranges !== undefined) {
         return { changed: linesNamed(ranges) };
     }
-    const changed = changeSince(project, since);
+    const changed = changeSince(project, since.commit);
+    if (changed === undefined) {
+        return {
+            changed: new Map(),
+            note: `git names no commit ${since.commit}: the whole suite measures nothing of this change.`,
+        };
+    }
 
-    return changed === undefined
-        ? {
-              changed: new Map(),
-              note: `git names no commit ${since}: the whole suite measures nothing of this change.`,
-          }
-        : { changed };
+    return {
+        changed,
+        note:
+            changed.size === 0
+                ? `The working tree equals ${since.names}: no line changed, so the whole suite measures no change — name the commit the work started from with --since to measure one.`
+                : `The change: the working tree against ${since.names}.`,
+    };
 }

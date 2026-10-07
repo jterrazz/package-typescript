@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
-import { changeOf, changeSince, hunksOf, namesACommit } from '../change.js';
+import { changeOf, changeSince, defaultBaseOf, hunksOf, namesACommit } from '../change.js';
 
 const created: string[] = [];
 
@@ -13,6 +13,12 @@ afterAll(() => {
         rmSync(root, { force: true, recursive: true });
     }
 });
+
+const gitIn = (root: string, ...args: string[]): string =>
+    execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...args], {
+        cwd: root,
+        encoding: 'utf8',
+    }).trim();
 
 function committedRepository(files: Record<string, string>): string {
     const root = mkdtempSync(join(tmpdir(), 'mutation-change-'));
@@ -86,10 +92,12 @@ describe('change', () => {
         expect(changeSince(tmpdir(), 'HEAD')).toBeUndefined();
     });
 
-    test('the suite measures the lines --mutate names, a file named alone whole, else the change since the commit asked, and says when git cannot answer', () => {
-        // Given - a repository whose first line was rewritten since its commit, and a folder outside any repository
+    test('the suite measures the lines --mutate names, a file named alone whole, else the change since the base, which it names, and says when git cannot answer or nothing changed', () => {
+        // Given - a repository whose first line was rewritten since its commit, a clean one, and a folder outside any repository
         const root = committedRepository({ 'a.ts': 'one\n' });
         writeFileSync(join(root, 'a.ts'), '1\n');
+        const clean = committedRepository({ 'a.ts': 'one\n' });
+        const head = { commit: 'HEAD', names: 'the base' };
 
         // Then - the named files, the rewritten line, and nothing but a note naming the commit git could not find
         expect([
@@ -103,10 +111,11 @@ describe('change', () => {
                     'src/w.ts',
                     'src/w.ts:5-6',
                 ],
-                since: 'HEAD',
+                since: head,
             }),
-            changeOf(root, { ranges: undefined, since: 'HEAD' }),
-            changeOf(tmpdir(), { ranges: undefined, since: 'main' }),
+            changeOf(root, { ranges: undefined, since: head }),
+            changeOf(clean, { ranges: undefined, since: head }),
+            changeOf(tmpdir(), { ranges: undefined, since: { commit: 'main', names: 'main' } }),
         ]).toStrictEqual([
             {
                 changed: new Map<string, [number, number][] | true>([
@@ -122,11 +131,41 @@ describe('change', () => {
                     ['src/w.ts', true],
                 ]),
             },
-            { changed: new Map([['a.ts', [[1, 1]]]]) },
+            {
+                changed: new Map([['a.ts', [[1, 1]]]]),
+                note: 'The change: the working tree against the base.',
+            },
+            {
+                changed: new Map(),
+                note: 'The working tree equals the base: no line changed, so the whole suite measures no change — name the commit the work started from with --since to measure one.',
+            },
             {
                 changed: new Map(),
                 note: 'git names no commit main: the whole suite measures nothing of this change.',
             },
+        ]);
+    });
+
+    test('with no commit named, a run measures the change not yet committed, else the last commit, and the first commit alone', () => {
+        // Given - a repository of two commits with an edit not yet committed, the same left clean, and a repository of one commit
+        const dirty = committedRepository({ 'a.ts': 'one\n' });
+        writeFileSync(join(dirty, 'a.ts'), 'two\n');
+        gitIn(dirty, 'commit', '--quiet', '--all', '--message', 'second');
+        writeFileSync(join(dirty, 'a.ts'), 'three\n');
+        const clean = committedRepository({ 'a.ts': 'one\n' });
+        const first = gitIn(clean, 'rev-parse', 'HEAD');
+        writeFileSync(join(clean, 'a.ts'), 'two\n');
+        gitIn(clean, 'commit', '--quiet', '--all', '--message', 'second');
+        const only = committedRepository({ 'a.ts': 'one\n' });
+
+        // Then - HEAD for the edit, the commit before HEAD for the clean tree, HEAD for the lone commit
+        expect([dirty, clean, only].map((root) => defaultBaseOf(root))).toStrictEqual([
+            { commit: 'HEAD', names: 'HEAD — the change not yet committed' },
+            {
+                commit: first,
+                names: `the commit before HEAD (${first.slice(0, 8)}) — the working tree is clean, so the last commit is the change`,
+            },
+            { commit: 'HEAD', names: 'HEAD — the first commit, with no commit before it' },
         ]);
     });
 
