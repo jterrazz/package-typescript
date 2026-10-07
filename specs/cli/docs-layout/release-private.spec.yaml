@@ -1,0 +1,5 @@
+description: asks a private library, which npm never publishes, for no release guide
+fixture: ./__fixtures__/private-library/
+runs:
+    - command: docs-layout .
+      exit: 0

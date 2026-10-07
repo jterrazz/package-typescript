@@ -1,0 +1,24 @@
+description: names a declaration with a platform and no kind as a suite
+fixture:
+    - ./__fixtures__/drift/project/
+    - ./__fixtures__/drift/suite/
+env: TYPESCRIPT_CHECK_PASSES=drift
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           DRIFT  Deviations from the profile
+
+            declared                              a suite on node
+            exceptions                            0
+            rules off vs profile                  none
+            suppressions                          0
+            .jterrazz/oxlint-suppressions.json    nothing held
+            .jterrazz/baseline.json › typescript  nothing held
+            tool versions                         in range
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

@@ -27,7 +27,7 @@
     {
         "family": "config",
         "id": "config/kind-matches-manifest",
-        "sentence": "A library publishes its exports, a cli names its bin, and an application — an api, a website, a mobile app — is private, never published."
+        "sentence": "A library publishes its exports, a published cli names its bin, and an application — an api, a website, a mobile app — is private, never published, as is a workspace's own suite."
     },
     {
         "family": "config",

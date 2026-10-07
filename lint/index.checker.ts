@@ -18,16 +18,18 @@ const PASSES: Passes = Object.freeze({
         return architecture;
     },
     async docs() {
-        const [{ auditDocs, HEAD_LINES }, { readDocsTree }, { publishes }] = await Promise.all([
-            import('./consumer/checks/docs.js'),
-            import('./kit/project/docs-tree.js'),
-            import('./kit/project/project-kind.js'),
-        ]);
+        const [{ auditDocs, HEAD_LINES }, { readDocsTree }, { readManifest }, { publishes }] =
+            await Promise.all([
+                import('./consumer/checks/docs.js'),
+                import('./kit/project/docs-tree.js'),
+                import('./kit/project/manifest.js'),
+                import('./kit/project/project-kind.js'),
+            ]);
 
         return {
             async check({ config, root }) {
                 const { resolved } = await config();
-                const publishable = publishes(resolved.declaration);
+                const publishable = publishes(resolved.declaration, readManifest(root) ?? {});
                 const tree = readDocsTree(root, { headLines: HEAD_LINES, publishable });
 
                 return { findings: [...auditDocs(tree)] };

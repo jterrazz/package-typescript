@@ -7,6 +7,7 @@ import {
     DEPENDENCY_CRUISER_CONFIGS,
     SETTINGS_FILE,
 } from '../../../../lint/kit/project/jterrazz-config.js';
+import { readManifest } from '../../../../lint/kit/project/manifest.js';
 import { publishes } from '../../../../lint/kit/project/project-kind.js';
 import { checker } from '../../../drivers/checker/checker.js';
 import { RUMDL_CONFIG } from '../../../drivers/rumdl/rumdl.js';
@@ -141,7 +142,7 @@ export function publishPasses(check: Check): Launched[] {
     }
 
     return ['.', ...check.members]
-        .filter((root) => publishes(check.declarations.get(root)))
+        .filter((root) => publishes(check.declarations.get(root), readManifest(root) ?? {}))
         .map((root, index) => {
             const log = check.logs.at(`publish-${String(index)}.log`);
             const args = [root, '--publint', check.tools.publint, '--attw', check.tools.attw];

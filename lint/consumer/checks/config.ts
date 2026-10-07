@@ -17,8 +17,14 @@ import {
 } from '../../kit/project/editor-files.js';
 import { parsedObject } from '../../kit/project/json.js';
 import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
-import { KINDS, listed, PLATFORMS } from '../../kit/project/project-kind.js';
-import type { ProjectIdentity } from '../../kit/project/project-kind.js';
+import {
+    KINDS,
+    listed,
+    PLATFORMS,
+    SUITE_FOLDER,
+    SUITE_PLATFORMS,
+} from '../../kit/project/project-kind.js';
+import type { ProjectIdentity, ProjectKind } from '../../kit/project/project-kind.js';
 import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import { configFinding as finding } from './config.finding.js';
 import { manifestGap, NAMED } from './config.manifest.js';
@@ -55,6 +61,8 @@ const TOOL_CONFIGS: Readonly<Record<string, readonly string[]>> = Object.freeze(
 
 type Unit = {
     declaration: null | ProjectIdentity;
+    /** The workspace root's own `specs/`, the one member that may declare no kind. */
+    suite: boolean;
     files: Readonly<Record<string, EditorFile>>;
     path: string;
     problem: null | string;
@@ -73,18 +81,27 @@ function manifestOf(context: Context, unit: string): Readonly<Record<string, unk
 
 function declarationFindings(context: Context, unit: Unit): Finding[] {
     const settings = prefixed(unit.path, SETTINGS_FILE);
-    if (unit.declaration !== null) {
-        return manifestFindings(context, unit);
+    const { declaration } = unit;
+    if (declaration === null) {
+        return [
+            finding('config/project-declared', settings, {
+                fix: `write \`export default defineConfig({ kind, platform })\` from \`@jterrazz/typescript/config\` in ${settings} — the kind one of ${listed(KINDS)}, the platform one of ${listed(PLATFORMS)}; a workspace's own suite at \`${SUITE_FOLDER}/\` declares its platform alone, one of ${listed(SUITE_PLATFORMS)}`,
+                found: context.exists(join(context.root, settings))
+                    ? `${settings} ${unit.problem ?? 'declares no `kind`'}`
+                    : `${settings} is missing`,
+            }),
+        ];
+    }
+    if (declaration.kind === null && !unit.suite) {
+        return [
+            finding('config/project-declared', settings, {
+                fix: `declare its kind in ${settings} — one of ${listed(KINDS)} — or, for tests of the whole repository, keep them in the workspace member at \`${SUITE_FOLDER}/\``,
+                found: `${settings} declares a platform and no kind, which only a workspace's own suite at \`${SUITE_FOLDER}/\` may`,
+            }),
+        ];
     }
 
-    return [
-        finding('config/project-declared', settings, {
-            fix: `write \`export default defineConfig({ kind, platform })\` from \`@jterrazz/typescript/config\` in ${settings} — the kind one of ${listed(KINDS)}, the platform one of ${listed(PLATFORMS)}`,
-            found: context.exists(join(context.root, settings))
-                ? `${settings} ${unit.problem ?? 'declares no `kind`'}`
-                : `${settings} is missing`,
-        }),
-    ];
+    return manifestFindings(context, unit.path, declaration.kind);
 }
 
 function tsconfigFindings(unit: Unit): Finding[] {
@@ -101,18 +118,17 @@ function tsconfigFindings(unit: Unit): Finding[] {
     ];
 }
 
-function manifestFindings(context: Context, unit: Unit): Finding[] {
-    const kind = unit.declaration?.kind;
-    const gap = manifestGap(kind, manifestOf(context, unit.path));
-    if (gap === null || kind === undefined) {
+function manifestFindings(context: Context, unit: string, kind: null | ProjectKind): Finding[] {
+    const gap = manifestGap(kind, manifestOf(context, unit));
+    if (gap === null) {
         return [];
     }
-    const path = prefixed(unit.path, 'package.json');
+    const path = prefixed(unit, 'package.json');
 
     return [
         finding('config/kind-matches-manifest', path, {
             fix: gap.fix,
-            found: `${prefixed(unit.path, SETTINGS_FILE)} declares ${NAMED[kind]}, and ${path} ${gap.owes}`,
+            found: `${prefixed(unit, SETTINGS_FILE)} declares ${kind === null ? 'no kind, a suite' : NAMED[kind]}, and ${path} ${gap.owes}`,
         }),
     ];
 }
@@ -235,6 +251,7 @@ async function unitsOf(context: Context): Promise<{ findings: Finding[]; units: 
                 files,
                 path,
                 problem,
+                suite: workspace && path === SUITE_FOLDER,
                 tsconfigProblem: tsconfig.problem,
             };
         }),

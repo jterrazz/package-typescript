@@ -54,7 +54,7 @@ jobs:
 | Knip (unused code)        | knip (Node)                 | always (check only — it is not run in fix)                                                       |
 | a preset's label          | the preset's checks         | per `specs/` root and per member, for each declared preset that brings checks (check and fix)    |
 | Docs (layout)             | the manual gate             | check: at a repository root (a `.git` beside the project)                                        |
-| Publish (packaging)       | publint + attw + a build    | per unit that declares a `library` or a `cli`                                                    |
+| Publish (packaging)       | publint + attw + a build    | per unit that declares a `library` or a `cli` and is not `private`                               |
 | Architecture (layer map)  | dependency-cruiser          | a `jterrazz.config.ts`, or a `.dependency-cruiser.*` (check and fix — `--fix` re-records a fall) |
 | Astro (check + format)    | astro check + prettier      | per unit that declares the `astro` platform (check and fix)                                      |
 | Suppressions (directives) | the suppression gate        | always (check and fix — `--fix` settles two spellings)                                           |
@@ -101,7 +101,7 @@ The root holds what a person wrote, and one file says what the project is. This 
 | `config/editor-file-derived`         | Each config file an editor discovers is the file jterrazz.config.ts derives, so the editor and the check judge alike.                                                                                                                                              |
 | `config/editor-file-in-its-unit`     | An editor file sits in the unit it is derived for: the oxlint and oxfmt configs at the repository root alone, a tsconfig.json — or a preset's file such as vitest.config.ts — in each declared project, and never at a workspace root, which declares no platform. |
 | `config/no-tool-config`              | A tool only the toolchain runs keeps no config file of its own: the command hands it the config jterrazz.config.ts derives.                                                                                                                                        |
-| `config/kind-matches-manifest`       | A library publishes its exports, a cli names its bin, and an application — an api, a website, a mobile app — is private, never published.                                                                                                                          |
+| `config/kind-matches-manifest`       | A library publishes its exports, a published cli names its bin, and an application — an api, a website, a mobile app — is private, never published, as is a workspace's own suite.                                                                                 |
 | `config/tsconfig-addition-reasoned`  | What typescript.tsconfig adds to the derived tsconfig.json carries its reason, since every setting maps to why it is set.                                                                                                                                          |
 | `config/standard-is-data`            | A package's standard under src/standard/ is data: no function, branch, call or variable but the defineStandard each file exports.                                                                                                                                  |
 
@@ -119,7 +119,7 @@ knip, tsdown and Stryker are run by the command alone, which derives their confi
 
 ### The kind and the manifest
 
-The kind says what the manifest must hold: a `library` publishes `exports` or a `main`, a `cli` names its `bin`. A project that declares itself one and publishes as the other is refused at its `package.json`, since every law that follows from the kind would judge the wrong thing.
+The kind says what the manifest must hold: a `library` publishes `exports` or a `main`, a `cli` names its `bin` unless it is `private` — a binary its repository installs itself —, and a workspace's own suite, which declares no kind, is `private`. A project that declares itself one and publishes as the other is refused at its `package.json`, since every law that follows from the kind would judge the wrong thing.
 
 ## The Gitignore (artefacts) pass
 
@@ -201,7 +201,7 @@ Why a manual has this shape is language-agnostic doctrine, and it is the estate'
 
 Three things about the roster are decisions, not details:
 
-- **The `guides/release.md` presence test is derived, and there is no configuration key.** It fires on a `Dockerfile` (or `Dockerfile.*`), on an `.infrastructure/` directory — either at the repository root or at a workspace member's root, since a monorepo deploys from a member as readily as from its root — or on a root that declares a kind npm publishes — a `library` or a `cli` ([Configuration](configuration.md#kind-and-platform)). The publishable clause reads the root's declaration alone: a workspace root holding a published member is a question for its owner, not a verdict for a gate, and a root that declares nothing publishes nothing.
+- **The `guides/release.md` presence test is derived, and there is no configuration key.** It fires on a `Dockerfile` (or `Dockerfile.*`), on an `.infrastructure/` directory — either at the repository root or at a workspace member's root, since a monorepo deploys from a member as readily as from its root — or on a root that declares a kind npm publishes — a `library` or a `cli` whose manifest is not `private` ([Configuration](configuration.md#kind-and-platform)). The publishable clause reads the root's declaration alone: a workspace root holding a published member is a question for its owner, not a verdict for a gate, and a root that declares nothing publishes nothing.
 - **`docs/no-cross-repository-link` refuses a path, never a URL.** A link that starts with `/`, or whose relative path climbs above the repository root, reaches into whatever clone sits beside this one on one machine and breaks on every other. An absolute `https://` link to another repository on GitHub resolves for every reader, so it is how a manual cites a sibling's page, as this one cites jterrazz-studio's.
 - **The pass only ever REQUIRES a page; it never forbids one.** A repository that releases by a tagged workflow and ships neither an image nor a package writes its `guides/release.md` and hears nothing about it. Machine-holding the other half would mean parsing `.github/workflows/**`, which is another repository's shape.
 - **The journal-word roster is closed, and it is in the code.** `exploration`, `review`, `notes`, `proposal`, `draft`, `wip`, `old`, `legacy`, `misc`, `todo` — matched as whole words of a page's name. No page keeps a second copy of it; the one that matters is executable.
@@ -358,7 +358,7 @@ A command of its own, because it neither checks nor repairs: it writes down wher
 
 This pass refuses a tarball the repository cannot see is broken. A packaging mistake is fatal in the registry: an `exports` entry pointing at a file nobody built, a subpath left out of `files` so it resolves in development and 404s in a consumer, a type declaration a modern resolver cannot see. [The build guard](#the-build-guard) refuses a build that compiles in test material, which works in the registry and ships what no product runs.
 
-It runs once per unit — the root, and each workspace member — that declares a kind npm publishes, a `library` or a `cli` ([Configuration](configuration.md#kind-and-platform)). An application, a workspace root that only holds members, and a project that declares nothing have no tarball to be judged on.
+It runs once per unit — the root, and each workspace member — that declares a kind npm publishes, a `library` or a `cli`, and whose manifest is not `private` ([Configuration](configuration.md#kind-and-platform)). A private one, an application, a workspace root that only holds members, and a project that declares nothing have no tarball to be judged on.
 
 <!-- GENERATED:findings publish -->
 

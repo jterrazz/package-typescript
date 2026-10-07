@@ -69,7 +69,7 @@ function standardsOf(
 
     return [
         { file: 'src/standard/standard.ts', standard: STANDARD },
-        ...(declaration === null
+        ...(declaration?.kind === null || declaration?.kind === undefined
             ? []
             : [
                   {

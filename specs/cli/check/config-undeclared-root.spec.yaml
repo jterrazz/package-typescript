@@ -1,0 +1,17 @@
+description: names the settings file a project that declares nothing is missing
+fixture: ./__fixtures__/config/undeclared-root/
+env: TYPESCRIPT_CHECK_PASSES=config
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Config (one file)
+
+          jterrazz.config.ts:1:1: error config(project-declared): found: jterrazz.config.ts is missing · why: A repository, and each member of a workspace, declares what it is once — its kind and its platform — in jterrazz.config.ts. · fix: write `export default defineConfig({ kind, platform })` from `@jterrazz/typescript/config` in jterrazz.config.ts — the kind one of `library`, `api`, `cli`, `website`, `mobile`, `workspace`, the platform one of `node`, `bun`, `react`, `next`, `astro`, `expo`; a workspace's own suite at `specs/` declares its platform alone, one of `node`, `bun` · read: docs/reference/quality-checks.md#the-config-one-file-pass
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

@@ -14,7 +14,8 @@ export type ProjectDeclaration =
     | { kind: 'library'; platform: Platform }
     | { kind: 'mobile'; platform: 'expo' }
     | { kind: 'website'; platform: 'astro' | 'next' | 'react' }
-    | { kind: 'workspace' };
+    | { kind: 'workspace' }
+    | { kind?: undefined; platform: 'bun' | 'node' };
 
 type PlatformsOf = {
     readonly [Kind in Exclude<ProjectKind, 'workspace'>]: readonly Extract<
@@ -31,7 +32,14 @@ export const PLATFORMS_OF: PlatformsOf = {
     website: ['react', 'next', 'astro'],
 };
 
-export type ProjectIdentity = { kind: ProjectKind; platform: null | Platform };
+/** `kind: null` is a workspace's own suite: a member of tests alone, which is no product and so declares no kind. */
+export type ProjectIdentity = { kind: null | ProjectKind; platform: null | Platform };
+
+/** The platforms a suite's tests run on. */
+export const SUITE_PLATFORMS: readonly Platform[] = ['node', 'bun'];
+
+/** The one folder a kind-less member may be: the workspace root's own `specs/`. */
+export const SUITE_FOLDER = 'specs';
 
 export type Publication = 'members' | 'private' | 'published';
 
@@ -44,8 +52,19 @@ export const PUBLICATION: Readonly<Record<ProjectKind, Publication>> = Object.fr
     workspace: 'members',
 });
 
-export const publishes = (identity: null | ProjectIdentity | undefined): boolean =>
-    identity !== null && identity !== undefined && PUBLICATION[identity.kind] === 'published';
+const PUBLISHED_KINDS: ReadonlySet<unknown> = new Set(
+    KINDS.filter((kind) => PUBLICATION[kind] === 'published'),
+);
+
+/** A kind that publishes is published unless its manifest says `"private": true`: a workspace's internal library, a binary compiled and installed by hand. */
+export const publishes = (
+    identity: null | ProjectIdentity | undefined,
+    manifest: Readonly<Record<string, unknown>>,
+): boolean => PUBLISHED_KINDS.has(identity?.kind) && manifest.private !== true;
+
+/** A declaration as a sentence reads it: `library on node`, `a suite on bun`, `workspace on its members' platforms`. */
+export const declaredAs = ({ kind, platform }: ProjectIdentity): string =>
+    `${kind ?? 'a suite'} on ${platform ?? "its members' platforms"}`;
 
 const isKind = (value: unknown): value is ProjectKind =>
     (KINDS as readonly unknown[]).includes(value);
@@ -62,6 +81,9 @@ export function readProjectKind(declared: object): ProjectKindRead {
     const { kind, platform } = isJsonObject(declared) ? declared : {};
     if (kind === undefined && platform === undefined) {
         return { declaration: null, problem: null };
+    }
+    if (kind === undefined && runsOn(SUITE_PLATFORMS, platform)) {
+        return { declaration: { kind: null, platform }, problem: null };
     }
     if (!isKind(kind)) {
         return {

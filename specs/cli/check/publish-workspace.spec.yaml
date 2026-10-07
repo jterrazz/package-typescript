@@ -1,4 +1,4 @@
-description: names the member each nothing-to-judge note is about, in a workspace of two publishable packages
+description: names the member of each nothing-to-judge note, and leaves a private one alone
 fixture: ./__fixtures__/publish/workspace/
 env: TYPESCRIPT_CHECK_PASSES=publish
 runs:

@@ -7,6 +7,7 @@ import { exceptionsIn } from '../../kit/project/exceptions.js';
 import { objectOf } from '../../kit/project/json.js';
 import type { OptOut } from '../../kit/project/opt-outs.js';
 import { orRefused } from '../../kit/project/project-files.js';
+import { declaredAs } from '../../kit/project/project-kind.js';
 import type { ProjectIdentity } from '../../kit/project/project-kind.js';
 import { levelOf, projectOxlintOf } from '../../kit/project/project-oxlint.js';
 import { toolVersions } from '../../kit/project/tool-versions.js';
@@ -88,12 +89,7 @@ const rulesOffOf = (off: readonly string[]): string =>
 function declaredOf(declaration: null | ProjectIdentity): Row[] {
     return declaration === null
         ? [['declared', 'nothing — node, the default']]
-        : [
-              [
-                  'declared',
-                  `${declaration.kind} on ${declaration.platform ?? "its members' platforms"}`,
-              ],
-          ];
+        : [['declared', declaredAs(declaration)]];
 }
 
 function rowsOf(

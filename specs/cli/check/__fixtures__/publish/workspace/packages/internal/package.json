@@ -1,0 +1,11 @@
+{
+    "name": "fixture-publish-workspace-internal",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./greeting": "./src/greeting.ts"
+    },
+    "dependencies": {
+        "fixture-publish-workspace-alpha": "workspace:*"
+    }
+}

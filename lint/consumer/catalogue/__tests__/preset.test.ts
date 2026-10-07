@@ -95,6 +95,17 @@ describe('preset', () => {
         ]);
     });
 
+    test('typescriptPreset — reads a workspace suite as its platform’s alone, with no kind’s standard', () => {
+        // Given - the kind-less declaration of a workspace's own suite
+        const preset = typescriptPreset({ kind: null, platform: 'bun' });
+
+        // Then - the standard and the bun platform's, nothing a kind adds
+        expect([
+            preset.origins?.map(({ file }) => file),
+            preset.settings?.tsconfigPreset,
+        ]).toStrictEqual([['src/standard/standard.ts', 'src/standard/platforms/bun.ts'], 'node']);
+    });
+
     test('typescriptPreset — derives the hexagonal map for a unit whose src/ holds domain/, application/ and infrastructure/', () => {
         // Given - one unit laid out as a hexagonal application, one missing its infrastructure/
         const laidOut = mkdtempSync(join(tmpdir(), 'preset-hexagonal-'));
