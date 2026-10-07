@@ -1,0 +1,8 @@
+{
+  "name": "fixture-preset-entries",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "@jterrazz/typescript": "^9.1.0"
+  }
+}

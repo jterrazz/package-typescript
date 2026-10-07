@@ -41,6 +41,8 @@ export type Preset = {
     checker?: PresetChecker;
     /** What it derives for its section from a unit's tree, which `typescript doctor` prints beside what the files declare. */
     derive?: (root: string) => Readonly<Record<string, unknown>>;
+    /** The paths it loads by name, read from its resolved section: knip takes each as an entry, so no project declares them. */
+    entries?: (section: Readonly<Record<string, unknown>>) => readonly string[];
     files?: Readonly<Record<string, EditorFile>>;
     lawSettings?: readonly string[];
     layers?: readonly ArchitectureRule[];
@@ -54,8 +56,6 @@ export type Preset = {
     settings?: Readonly<Record<string, unknown>>;
     sources?: { extensions: readonly string[]; roots: readonly string[] };
 };
-
-export type { OptOut } from './opt-outs.js';
 
 export type PresetLaw = `${string}/${string}`;
 

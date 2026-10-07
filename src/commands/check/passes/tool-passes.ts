@@ -146,8 +146,15 @@ async function knipProject(): Promise<KnipProject> {
     const { declaration } = resolved;
     const steps = buildPlanOf('.', { declaration, settings: conventionsOf('.').settings });
 
+    const loaded: string[] = [];
+    for (const { entries, name } of resolved.presets) {
+        if (entries !== undefined) {
+            loaded.push(...entries(resolved.sections[name] ?? {}));
+        }
+    }
+
     return {
-        entries: steps.flatMap(({ entry }) => Object.values(entry)),
+        entries: [...steps.flatMap(({ entry }) => Object.values(entry)), ...loaded],
         settings: knipSettingsOf(resolved.sections.typescript),
     };
 }

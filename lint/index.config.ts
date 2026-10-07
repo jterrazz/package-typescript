@@ -2,13 +2,8 @@ import type { ArchitectureRule, NamesRule, Preset } from './kit/project/preset.j
 import type { ProjectDeclaration } from './kit/project/project-kind.js';
 import type { ProjectOverride, ProjectRule } from './kit/project/project-oxlint.js';
 
-export type {
-    ArchitectureRule,
-    NamesRule,
-    OptOut,
-    Preset,
-    PresetChecker,
-} from './kit/project/preset.js';
+export type { OptOut } from './kit/project/opt-outs.js';
+export type { ArchitectureRule, NamesRule, Preset, PresetChecker } from './kit/project/preset.js';
 export type { Platform, ProjectDeclaration, ProjectKind } from './kit/project/project-kind.js';
 export { ownPresets } from './kit/project/own-presets.js';
 export type { OwnPresets } from './kit/project/own-presets.js';

@@ -5,7 +5,7 @@ import type { Pass } from '../../kit/checker/pass.js';
 import { countSuppressions } from '../../kit/project/comments.js';
 import { exceptionsIn } from '../../kit/project/exceptions.js';
 import { objectOf } from '../../kit/project/json.js';
-import type { OptOut } from '../../kit/project/preset.js';
+import type { OptOut } from '../../kit/project/opt-outs.js';
 import { orRefused } from '../../kit/project/project-files.js';
 import type { ProjectIdentity } from '../../kit/project/project-kind.js';
 import { levelOf, projectOxlintOf } from '../../kit/project/project-oxlint.js';

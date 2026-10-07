@@ -88,6 +88,7 @@ A preset is an object carrying its `name` (the section of `jterrazz.config.ts` i
 | `files`       | the editor files it derives, each with its exact content and whether it sits at the repository root or in every unit                                                  |
 | `baseline`    | the sections of `.jterrazz/baseline.json` it writes and judges                                                                                                        |
 | `checker`     | its own checks: the `module` whose default export is a kit `Contribution`, and the `label` they print under ([A preset's checks](quality-checks.md#a-presets-checks)) |
+| `entries`     | the paths it loads by name, read from its resolved section, which knip takes as entries ([Unused code](lint-presets.md#unused-code-knip))                             |
 | `presets`     | the presets it includes                                                                                                                                               |
 
 `definePreset`, from `@jterrazz/typescript/config`, types one. Writing the rules a preset carries is [Rules kit](rules-kit.md)'s.
