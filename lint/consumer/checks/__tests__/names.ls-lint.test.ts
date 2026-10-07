@@ -174,7 +174,7 @@ describe('names.ls-lint', () => {
     });
 
     test('allows the special folders of each root, and no other spelt alike', () => {
-        // Given - the specs root's __setup__ beside an unknown special folder, a stray __setup__ and stray ground in a code root, folders off kebab-case under specs/, the lint tree's tests and the ground of a spec or a module test, and one in a folder no rule names
+        // Given - the specs root's __setup__ beside an unknown special folder, a stray __setup__ and stray ground in a code root, a folder off kebab-case under tests/, folders off kebab-case under specs/, the lint tree's tests and the ground of a spec or a module test, and one in a folder no rule names
         const config = lsLintConfig({ ignorePatterns: [], trees: treesOf(['']), units: [''] });
         const root = onDisk([
             'docs/Notes_Dir/a.md',
@@ -187,6 +187,7 @@ describe('names.ls-lint', () => {
             'src/__setup__/a.ts',
             'src/__tests__/a.test.ts',
             'src/x/__tests__/__fixtures__/Odd_Name/a.json',
+            'tests/Bad_Dir/a.ts',
         ]);
 
         // When - ls-lint runs over it
@@ -200,6 +201,7 @@ describe('names.ls-lint', () => {
             'specs/__mocks__',
             'src/__fixtures__',
             'src/__setup__',
+            'tests/Bad_Dir',
         ]);
     });
 

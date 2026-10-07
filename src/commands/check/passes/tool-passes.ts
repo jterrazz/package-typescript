@@ -146,6 +146,7 @@ async function knipProject(): Promise<KnipProject> {
     const { declaration } = resolved;
     const steps = buildPlanOf('.', { declaration, settings: conventionsOf('.').settings });
 
+    // Stryker disable next-line ArrayDeclaration: knip skips an entry that names no file, so a seeded one changes nothing
     const loaded: string[] = [];
     for (const { entries, name } of resolved.presets) {
         if (entries !== undefined) {

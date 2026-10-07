@@ -75,6 +75,11 @@ describe('lint-tree', () => {
                 why: lint/ has one tree in every repository, split by audience — consumer, kit, self
                 fix: move its files where their audience puts them — a declaration every consumer is held to under consumer/, one only this repository is held to under self/, what runs them under kit/
                 read: docs/reference/quality-checks.md#the-lint-tree
+            lint/self/checks/depth-limit.js:1:1  names(audience-holds-only-declarations)
+                found: \`lint/self/checks/depth-limit.js\` hands \`DEPTH\` to another module, named for no declaration of its file
+                why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what a module at the root of lint/ composes; one named for something else is code or data other files share, and that is the kit’s
+                fix: move it under kit/ — project/, baseline/, checker/, catalogue/, compiler/, testing/ — or, when it is this declaration’s own, name it for the file
+                read: docs/reference/quality-checks.md#the-lint-tree
             lint/self/checks/layers.js:1:1  names(audience-holds-only-declarations)
                 found: \`lint/self/checks/layers.js\` hands \`folderOf\` to another module, named for no declaration of its file
                 why: consumer/ and self/ hold declarations alone — a rule, a check, a decision on an upstream rule, a catalogue entry, their tests — and what a declaration hands another module carries its file’s name, a value as a function, but for a catalogue row or what a module at the root of lint/ composes; one named for something else is code or data other files share, and that is the kit’s
