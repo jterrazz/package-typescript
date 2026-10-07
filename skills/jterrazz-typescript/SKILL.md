@@ -9,15 +9,15 @@ One devDependency that builds, checks, lints and formats a project. The manual i
 
 ## What to run
 
-| Gesture                  | When                                                                                                                                                             |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `typescript fix`         | before every commit — lint fixes, formatting, `.gitignore`, spellings, empty directories                                                                         |
-| `typescript check`       | the gate — every pass in parallel, then the drift report                                                                                                         |
-| `typescript build`       | what the manifest publishes into `dist/`: ESM + types, CJS where a target is `.cjs`                                                                              |
-| `typescript mutation`    | Stryker over a sandbox copy; fails on a mutant a test runs and lets live — the module tests, then the whole suite over the changed lines (`--since`, `--mutate`) |
-| `typescript doctor`      | first read after a bump: installed tools against the declared ranges, then every setting beside the file it comes from                                           |
-| `typescript baseline`    | a bump lands red: record today's counts, exact — `fix` lowers one that fell                                                                                      |
-| `typescript docs-layout` | a repository with no npm project: the manual's shape, alone                                                                                                      |
+| Gesture                  | When                                                                                                                                                                                    |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `typescript fix`         | before every commit — lint fixes, formatting, `.gitignore`, spellings, empty directories                                                                                                |
+| `typescript check`       | the gate — every pass in parallel, then the drift report                                                                                                                                |
+| `typescript build`       | what the manifest publishes into `dist/`: ESM + types, CJS where a target is `.cjs`                                                                                                     |
+| `typescript mutation`    | Stryker over a sandbox copy; fails on a mutant a test runs and lets live — the module tests, then the whole suite over what they let live and the changed lines (`--since`, `--mutate`) |
+| `typescript doctor`      | first read after a bump: installed tools against the declared ranges, then every setting beside the file it comes from                                                                  |
+| `typescript baseline`    | a bump lands red: record today's counts, exact — `fix` lowers one that fell                                                                                                             |
+| `typescript docs-layout` | a repository with no npm project: the manual's shape, alone                                                                                                                             |
 
 `typescript <command> --help` prints a command's flags and runs nothing; a flag it does not read, or one given twice, is refused before anything is written (`docs/reference/commands.md`).
 

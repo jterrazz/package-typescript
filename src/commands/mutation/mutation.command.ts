@@ -17,8 +17,9 @@ import type { Base } from './change.js';
 import { memberRuns } from './members.js';
 import { changedRanges, fileOf, narrowed, sourcesOf } from './scope.js';
 import type { MutationScope } from './scope.js';
-import { judgedRuns, leftToTheSuite, verdictOf } from './survivors.js';
+import { handedToTheSuite, judgedRuns } from './survivors.js';
 import type { Judged, ModuleRun } from './survivors.js';
+import { verdictOf } from './verdict.js';
 
 const extensionGlob = (extensions: readonly string[]): string =>
     extensions.length === 1 ? (extensions[0] ?? 'ts') : `{${extensions.join(',')}}`;
@@ -76,7 +77,7 @@ async function measured(
     project: string,
 ): Promise<Measured | { status: number }> {
     print(
-        `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'Measuring the whole suite against the changed lines no module test runs' : 'Measuring the module tests against mutants of the sources they test'}...\n\n`,
+        `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'Measuring the whole suite against what the module tests let live, and the changed lines they do not run' : 'Measuring the module tests against mutants of the sources they test'}...\n\n`,
     );
 
     return await strykerRun(scope, stage, { buildsFirst: buildsOf(project), project });
@@ -120,11 +121,7 @@ async function judgedAfterTheSuite({
 }): Promise<number> {
     const modulesAlone = judgedRuns(modulesRun);
     // Stryker disable next-line ConditionalExpression: a mutant the run never judged fails the verdict whether or not the suite runs after it; the gate only spares the suite's minutes
-    if (modulesAlone.survivors.length > 0 || Object.keys(modulesAlone.unrun).length > 0) {
-        print(
-            `${badge('TYPESCRIPT')} The module tests' verdict fails: the whole suite measures the change once it passes.\n`,
-        );
-
+    if (Object.keys(modulesAlone.unrun).length > 0) {
         return printed(modulesAlone, untested.length);
     }
     const { changed, note } = changeOf(project, { ranges, since });
@@ -134,12 +131,12 @@ async function judgedAfterTheSuite({
     const reached = changedRanges(untested, changed, (file) =>
         String(readFileSync(join(project, file))),
     );
-    const left = [...reached, ...leftToTheSuite(modulesRun, changed)];
-    if (left.length === 0) {
+    const handed = [...reached, ...handedToTheSuite(modulesRun, changed)];
+    if (handed.length === 0) {
         return printed(modulesAlone, untested.length);
     }
     return await afterStage(
-        await measured(scope, { mutate: left, name: 'suite' }, project),
+        await measured(scope, { mutate: handed, name: 'suite' }, project),
         ({ report }) =>
             printed(
                 judgedRuns(modulesRun, { changed, report, untested: reached }),

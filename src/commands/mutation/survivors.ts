@@ -1,4 +1,3 @@
-import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { isList, objectOf, stringOf } from '../../../lint/kit/project/json.js';
 
 export type Survivor = {
@@ -11,6 +10,7 @@ export type Survivor = {
 
 export type Judged = {
     detected: number;
+    detectedBySuite: number;
     left: number;
     outsideVerdict: Record<string, number>;
     survivors: Survivor[];
@@ -99,13 +99,18 @@ export function reaches(changed: Changed, file: string, line: number): boolean {
     return lines === true || (lines?.some(([from, to]) => line >= from && line <= to) ?? false);
 }
 
-/** The mutants the module tests left in `measured` on lines the change reaches, as the `--mutate` range of exactly each node, once, for the whole suite to measure. */
-export function leftToTheSuite(modules: ModuleRun, changed: Changed): string[] {
+// invariant: a mutant a module test runs and none detects is the whole suite's to answer, wherever it stands: a spec may prove the line the module test only runs, and the verdict fails only on what the suite also lets live.
+const survivedTheModules = (mutant: Mutant, ranByTests: ReadonlySet<string>): boolean =>
+    mutant.status === 'Survived' && !leftByTheModules(mutant, ranByTests);
+
+/** What the module tests hand the whole suite in `measured`, as the `--mutate` range of exactly each node, once: every mutant they let live, and what they could not measure on the lines the change reaches. */
+export function handedToTheSuite(modules: ModuleRun, changed: Changed): string[] {
     const ranges = mutantsOf(modules.report, modules.measured)
         .filter(
             ([file, mutant]) =>
-                leftByTheModules(mutant, modules.ranByTests) &&
-                reaches(changed, file, lineOf(mutant)),
+                survivedTheModules(mutant, modules.ranByTests) ||
+                (leftByTheModules(mutant, modules.ranByTests) &&
+                    reaches(changed, file, lineOf(mutant))),
         )
         .map(([file, mutant]) => {
             const { end, start } = objectOf(mutant.location);
@@ -141,22 +146,63 @@ function heldBy(ranges: readonly string[], file: string, mutant: Mutant): boolea
     });
 }
 
-/** One verdict over both runs: what the module tests left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant the change brought that the suite's report does not carry was judged by nothing; of a source with no module test, the suite's report counts only what this run's ranges held — an earlier run's results it carries beyond them count for nothing. */
+type Answering = {
+    answered: Map<string, Survivor>;
+    forwarded: Set<string>;
+    judged: Judged;
+    modules: ModuleRun;
+};
+
+// invariant: a survivor the module tests handed on is detected where the suite detects it, and survives as the module tests reported it otherwise; a mutant they left counts where this run handed it on; a source with no module test counts what this run's ranges held.
+function suiteAnswer(
+    { answered, forwarded, judged, modules }: Answering,
+    suite: { report: unknown; untested: readonly string[] },
+): void {
+    for (const [file, mutant] of mutantsOf(suite.report)) {
+        const key = keyOf(file, mutant);
+        const survivor = answered.get(key);
+        if (survivor !== undefined) {
+            answered.delete(key);
+            if (DETECTED.has(mutant.status)) {
+                judged.detected += 1;
+                judged.detectedBySuite += 1;
+            } else {
+                judged.survivors.push(survivor);
+            }
+        } else if (
+            modules.measured.has(file)
+                ? forwarded.delete(key)
+                : heldBy(suite.untested, file, mutant)
+        ) {
+            tally(judged, file, mutant);
+        }
+    }
+}
+
+/** One verdict over both runs: a mutant the module tests let live is the suite's to answer, and survives only where the suite lets it live too; what they left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant handed to the suite that its report does not carry was judged by nothing; of a source with no module test, the suite's report counts only what this run's ranges held — an earlier run's results it carries beyond them count for nothing. */
 export function judgedRuns(
     modules: ModuleRun,
     suite?: { changed: Changed; report: unknown; untested: readonly string[] },
 ): Judged {
-    const judged: Judged = {
-        detected: 0,
-        left: 0,
-        outsideVerdict: {},
-        survivors: [],
-        uncoveredByFile: {},
-        unrun: {},
+    const answering: Answering = {
+        answered: new Map(),
+        forwarded: new Set(),
+        judged: {
+            detected: 0,
+            detectedBySuite: 0,
+            left: 0,
+            outsideVerdict: {},
+            survivors: [],
+            uncoveredByFile: {},
+            unrun: {},
+        },
+        modules,
     };
-    const forwarded = new Set<string>();
+    const { answered, forwarded, judged } = answering;
     for (const [file, mutant] of mutantsOf(modules.report, modules.measured)) {
-        if (!leftByTheModules(mutant, modules.ranByTests)) {
+        if (suite !== undefined && survivedTheModules(mutant, modules.ranByTests)) {
+            answered.set(keyOf(file, mutant), survivorOf(file, mutant));
+        } else if (!leftByTheModules(mutant, modules.ranByTests)) {
             tally(judged, file, mutant);
         } else if (suite !== undefined && reaches(suite.changed, file, lineOf(mutant))) {
             forwarded.add(keyOf(file, mutant));
@@ -165,107 +211,13 @@ export function judgedRuns(
         }
     }
     if (suite !== undefined) {
-        for (const [file, mutant] of mutantsOf(suite.report)) {
-            const measuredNow = modules.measured.has(file)
-                ? forwarded.delete(keyOf(file, mutant))
-                : heldBy(suite.untested, file, mutant);
-            if (measuredNow) {
-                tally(judged, file, mutant);
-            }
-        }
+        suiteAnswer(answering, suite);
     }
-    if (forwarded.size > 0) {
-        judged.unrun[ABSENT] = forwarded.size;
+    if (forwarded.size + answered.size > 0) {
+        judged.unrun[ABSENT] = forwarded.size + answered.size;
     }
     judged.survivors.sort(
         (a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.column - b.column,
     );
     return judged;
-}
-
-function countsOf(byStatus: Record<string, number>): { statuses: string; total: number } {
-    const sorted = Object.entries(byStatus).toSorted(([a], [b]) => a.localeCompare(b));
-    return {
-        statuses: sorted.map(([status, count]) => `${status} ${count}`).join(', '),
-        total: sorted.reduce((sum, [, count]) => sum + count, 0),
-    };
-}
-
-function countLines(
-    { left: leftCount, outsideVerdict, uncoveredByFile }: Judged,
-    untestedSources: number,
-): string[] {
-    const uncovered = Object.entries(uncoveredByFile).toSorted(
-        ([a, left], [b, right]) => right - left || a.localeCompare(b),
-    );
-    const total = uncovered.reduce((sum, [, count]) => sum + count, 0);
-    const outside = countsOf(outsideVerdict);
-    return [
-        `${total} mutant(s) no test runs`,
-        ...uncovered.map(([file, count]) => `  ${file}  ${count}`),
-        ...(leftCount === 0
-            ? []
-            : [
-                  `${leftCount} mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does`,
-              ]),
-        ...(untestedSources === 0
-            ? []
-            : [
-                  `${untestedSources} source(s) with no module test — the whole suite measures the lines a change reaches there; what no change reaches no count holds`,
-              ]),
-        ...(outside.total === 0
-            ? []
-            : [`${outside.total} mutant(s) outside the verdict — ${outside.statuses}`]),
-    ];
-}
-
-function survivorLines({ survivors }: Judged): string[] {
-    if (survivors.length === 0) {
-        return [];
-    }
-    return [
-        ...survivors.map(
-            ({ column, file, line, mutator, replacement }) =>
-                `${file}:${line}:${column}  ${mutator} → ${String(replacement.split('\n', 1))}`,
-        ),
-        refusal({
-            fix: 'assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent>',
-            found: `${survivors.length} mutant(s) a test runs and none detects`,
-            read: 'docs/reference/quality-checks.md#mutation',
-            why: 'a test that runs a line and lets a change of it pass proves nothing of that line',
-        }),
-    ];
-}
-
-function unrunLines({ unrun }: Judged): string[] {
-    const { statuses, total } = countsOf(unrun);
-    if (total === 0) {
-        return [];
-    }
-    return [
-        refusal({
-            fix: 'run `typescript mutation` again to its end — a run stopped midway leaves its mutants Pending, and the next one runs them',
-            found: `${total} mutant(s) the run never judged — ${statuses}`,
-            read: 'docs/reference/quality-checks.md#mutation',
-            why: 'a mutant no test was run against says nothing of the line it mutates, so passing it would pass a run that judged nothing there',
-        }),
-    ];
-}
-
-/** The verdict's lines and status, counting apart the sources with no module test, which no run mutates until a change reaches them. */
-export function verdictOf(
-    judged: Judged,
-    untestedSources: number,
-): { lines: string[]; status: number } {
-    const refused = [...survivorLines(judged), ...unrunLines(judged)];
-    if (refused.length === 0) {
-        return {
-            lines: [
-                `every mutant a test runs is detected — ${judged.detected} detected`,
-                ...countLines(judged, untestedSources),
-            ],
-            status: 0,
-        };
-    }
-    return { lines: [...refused, ...countLines(judged, untestedSources)], status: 1 };
 }

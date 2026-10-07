@@ -5,27 +5,47 @@ import { describe, expect, test } from 'vitest';
 import { cli } from '../packed-cli.specification.js';
 
 describe('mutation', () => {
-    test('typescript mutation — a mutant the module test runs and none detects fails the run, named at its place', async () => {
-        // Given - a consumer installing the packed toolchain, one test leaving the guard of its source unjudged
+    test('typescript mutation — a mutant the module test runs and none detects, and no spec detects either, fails the run, named at its place', async () => {
+        // Given - a consumer installing the packed toolchain, one test leaving the guard of its source unjudged, and no spec beside it
         const result = await cli
             .fixture(directory('./__fixtures__/mutation-consumer/'))
             .exec('typescript mutation');
 
-        // Then - the suite never starts on a failed verdict; each survivor is named, then the lesson, and nothing is written to a ledger
+        // Then - the module tests hand what they let live to the whole suite, which lets it live too; each survivor is named, then the lesson, and nothing is written to a ledger
         expect(result.exitCode).toBe(1);
         expect(result.stdout).toMatch(`
              TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
             {{any}}
-             TYPESCRIPT  The module tests' verdict fails: the whole suite measures the change once it passes.
-
+             TYPESCRIPT  Measuring the whole suite against what the module tests let live, and the changed lines they do not run...
+            {{any}}
             src/discount.ts:2:9  ConditionalExpression → false
             src/discount.ts:2:9  EqualityOperator → rate >= 0.5
             found: 2 mutant(s) a test runs and none detects · why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/reference/quality-checks.md#mutation
             0 mutant(s) no test runs
             2 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does
         `);
-        expect(result.stdout.text).not.toContain('Measuring the whole suite');
         expect(result.file('.jterrazz/baseline.json').exists).toBe(false);
+    });
+
+    test('typescript mutation — a mutant the module test lets live that a spec detects passes the run', async () => {
+        // Given - the same consumer, its module test leaving the guard unjudged, beside a spec that judges the boundary and the refusal
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-spec-answers/'))
+            .exec('typescript mutation');
+
+        // Then - the whole suite detects both, and the verdict counts them among the detected
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(`
+             TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
+            {{any}}
+             TYPESCRIPT  Measuring the whole suite against what the module tests let live, and the changed lines they do not run...
+            {{any}}
+            every mutant a test runs is detected — 7 detected
+            2 mutant(s) the module tests let live, detected by the whole suite
+            0 mutant(s) no test runs
+            2 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does
+        `);
     });
 
     test('typescript mutation — a commit to measure from that git cannot name is refused before anything runs', async () => {
@@ -105,7 +125,7 @@ describe('mutation', () => {
             "execFileSync('npm', ['run', 'build'], { stdio: 'inherit' });",
         );
         expect(result.stdout).toMatch(`
-             TYPESCRIPT  Measuring the whole suite against the changed lines no module test runs...
+             TYPESCRIPT  Measuring the whole suite against what the module tests let live, and the changed lines they do not run...
             {{any}}
             src/greeting.ts:3:22  ConditionalExpression → false
             src/greeting.ts:3:31  StringLiteral → "Stryker was here!"
