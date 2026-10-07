@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
+import { objectOf } from '../../../kit/project/json.js';
 import { typescriptPreset } from '../preset.js';
 
 describe('preset', () => {
@@ -159,6 +160,31 @@ describe('preset', () => {
                     },
                 ],
             },
+        ]);
+    });
+
+    test('typescriptPreset — a tool that reads a folder or loads a package by name brings what knip and the Names pass cannot see', () => {
+        // Given - an expo app declaring patch-package, Appium's iOS driver and Astro's checker
+        const preset = typescriptPreset(
+            { kind: 'mobile', platform: 'expo' },
+            new Set(['@astrojs/check', 'appium-xcuitest-driver', 'patch-package']),
+        );
+        const { knip, toolRoots } = objectOf(preset.settings);
+        const ignored = objectOf(knip).ignoreDependencies;
+
+        // Then - each package's standard after the kind's and the platform's, patches/ beside the platform's roots, and both packages named to knip
+        expect([
+            preset.origins?.map(({ file }) => file).slice(3),
+            Object.keys(objectOf(toolRoots)),
+            Object.keys(objectOf(ignored)),
+        ]).toStrictEqual([
+            [
+                'src/standard/dependencies/astro-check.ts',
+                'src/standard/dependencies/appium-xcuitest-driver.ts',
+                'src/standard/dependencies/patch-package.ts',
+            ],
+            ['bin', 'config', 'prisma', 'android', 'app', 'assets', 'ios', 'patches'],
+            ['@astrojs/check', 'appium-xcuitest-driver'],
         ]);
     });
 });

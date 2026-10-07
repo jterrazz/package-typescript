@@ -1,3 +1,6 @@
+import APPIUM_XCUITEST_DRIVER from '../../../src/standard/dependencies/appium-xcuitest-driver.js';
+import ASTRO_CHECK from '../../../src/standard/dependencies/astro-check.js';
+import PATCH_PACKAGE from '../../../src/standard/dependencies/patch-package.js';
 import PRISMA from '../../../src/standard/dependencies/prisma.js';
 import API from '../../../src/standard/kinds/api.js';
 import CLI from '../../../src/standard/kinds/cli.js';
@@ -43,7 +46,10 @@ const PLATFORM_STANDARDS: Readonly<Record<Platform, Standard>> = {
 
 // invariant: a package keyed here brings its standard to every unit whose manifest declares it, named for the package.
 const DEPENDENCY_STANDARDS: Readonly<Record<string, { name: string; standard: Standard }>> = {
+    '@astrojs/check': { name: 'astro-check', standard: ASTRO_CHECK },
     '@prisma/client': { name: 'prisma', standard: PRISMA },
+    'appium-xcuitest-driver': { name: 'appium-xcuitest-driver', standard: APPIUM_XCUITEST_DRIVER },
+    'patch-package': { name: 'patch-package', standard: PATCH_PACKAGE },
 };
 
 export const BASELINE_SECTION = 'typescript';
