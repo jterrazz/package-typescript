@@ -33,6 +33,11 @@ runs:
           found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
           ✗ Failed with exit code 1
 
+           RUN  Comments (styles, scripts, YAML)
+
+          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
+          ✗ Failed with exit code 1
+
            RUN  Markdown (prose)
 
           found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
@@ -77,6 +82,11 @@ runs:
           ✓ Passed
 
            RUN  Suppressions (directives)
+
+          found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
+          ✗ Failed with exit code 1
+
+           RUN  Comments (styles, scripts, YAML)
 
           found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
           ✗ Failed with exit code 1

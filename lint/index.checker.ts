@@ -7,6 +7,11 @@ import { KIT_COMMANDS } from './kit/checker/kit-commands.js';
 import type { Held, Passes } from './kit/checker/pass.js';
 
 const PASSES: Passes = Object.freeze({
+    async comments() {
+        const { comments } = await import('./consumer/checks/comments.js');
+
+        return comments;
+    },
     async config() {
         const { config } = await import('./consumer/checks/config.js');
 

@@ -1,5 +1,6 @@
 import {
     architecturePass,
+    commentsPass,
     docsPass,
     gitignorePass,
     markdownPass,
@@ -23,6 +24,7 @@ import {
 export type Started = {
     architecture: Launched | undefined;
     astro: Launched | undefined;
+    comments: Launched | undefined;
     config: Launched | undefined;
     docs: Launched | undefined;
     format: Launched | undefined;
@@ -63,6 +65,7 @@ export async function started(check: Check, config: Launched | undefined): Promi
     const gitignore = await gitignorePass(check);
     const docs = docsPass(check);
     const suppressions = suppressionsPass(check);
+    const comments = commentsPass(check);
     const markdown = markdownPass(check);
     const names = namesPass(check);
     const secrets = secretsPass(check);
@@ -73,6 +76,7 @@ export async function started(check: Check, config: Launched | undefined): Promi
     return {
         architecture,
         astro,
+        comments,
         config,
         docs,
         format,

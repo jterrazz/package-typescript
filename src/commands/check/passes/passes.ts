@@ -11,6 +11,7 @@ export const CHECK_PASSES = [
     'architecture',
     'astro',
     'suppressions',
+    'comments',
     'markdown',
     'names',
     'secrets',

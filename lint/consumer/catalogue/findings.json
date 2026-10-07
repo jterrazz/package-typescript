@@ -50,6 +50,11 @@
         "sentence": "A comment opens with the kind of thing it states — invariant, hazard, outside or value — unless it is a one-line hover doc, a directive or a marker another tool reads, whose reason states none."
     },
     {
+        "family": "comments",
+        "id": "comments/comment-states-its-kind",
+        "sentence": "A comment of a style sheet, a shell script, a Makefile, a Dockerfile or a YAML file opens with its kind, as a comment of code does — unless it is a directive another tool reads."
+    },
+    {
         "family": "suppressions",
         "id": "suppressions/spelled-for-this-toolchain",
         "sentence": "A suppression is spelled for the linter this toolchain runs: oxlint-disable, never eslint-disable or biome-ignore."

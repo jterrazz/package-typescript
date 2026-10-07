@@ -220,6 +220,15 @@ export function countSuppressions(root: string, ignorePatterns: readonly string[
     return found;
 }
 
+// invariant: the files whose comments the Comments pass reads, a `#` at the head of a line or a style sheet's block; code is the rulebook's.
+const HASH_COMMENTED =
+    /(?:^|\/)(?:Makefile|GNUmakefile|Dockerfile(?:\.[\w.-]+)?|[^/]+\.(?:mk|sh|bash|zsh|ya?ml|dockerfile))$/u;
+
+export const STYLE_COMMENTED = /\.(?:css|scss|astro|svelte|vue)$/u;
+
+export const isCommentedElsewhere = (path: string): boolean =>
+    (HASH_COMMENTED.test(path) && !path.endsWith('-lock.yaml')) || STYLE_COMMENTED.test(path);
+
 // invariant: a comment alone on its lines takes them whole; one beside code takes its span and the blanks on one side, so the code around it stays spaced as it was.
 export function commentDeletion(
     text: string,

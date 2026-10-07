@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: validate
+on: push
+jobs:
+    validate:
+        # Use the shared runner
+        runs-on: ubuntu-latest
+        steps:
+            - run: |
+                  # not a comment of the file: the script's own line
+                  make check

@@ -1,0 +1,9 @@
+/*! license: kept by every minifier */
+:root {
+    /* Accepted Crescendo: the ramp the review settled on */
+    --ramp: 1.25;
+    /* value: 4px is the grid every spacing token divides */
+    --grid: 4px;
+    --icon: url(https://example.com/a//b.svg);
+    content: '/* not a comment */';
+}

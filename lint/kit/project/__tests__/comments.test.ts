@@ -4,6 +4,7 @@ import {
     blankComments,
     commentDeletion,
     commentSpansOf,
+    isCommentedElsewhere,
     quotedMask,
 } from '../comments.js';
 
@@ -163,4 +164,36 @@ describe('comments', () => {
         expect(`${text.slice(0, from)}${text.slice(to)}`).toBe(kept);
     });
 
+    test('reads the comments of style sheets, scripts, Makefiles, Dockerfiles and YAML, a lockfile and code aside', () => {
+        // Given - one path of every kind the pass reads, and the paths it leaves to others
+        const paths = [
+            'Makefile',
+            'tools/GNUmakefile',
+            'rules.mk',
+            'deploy/Dockerfile',
+            'Dockerfile.prod',
+            'api.dockerfile',
+            'run.sh',
+            'run.bash',
+            'run.zsh',
+            '.github/workflows/ci.yml',
+            'compose.yaml',
+            'theme.css',
+            'theme.scss',
+            'page.astro',
+            'Card.svelte',
+            'Card.vue',
+            'pnpm-lock.yaml',
+            'index.ts',
+            'notes.md',
+            'theMakefile',
+            'Makefile.orig',
+            'theme.css.map',
+        ];
+
+        // Then - the commented files, and nothing else
+        expect(paths.filter((path) => isCommentedElsewhere(path))).toStrictEqual(
+            paths.slice(0, 16),
+        );
+    });
 });

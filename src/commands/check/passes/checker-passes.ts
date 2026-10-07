@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import process from 'node:process';
 
+import { isCommentedElsewhere } from '../../../../lint/kit/project/comments.js';
 import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
 import { laidOutHexagonally } from '../../../../lint/kit/project/hexagonal-layout.js';
 import {
@@ -8,6 +9,7 @@ import {
     SETTINGS_FILE,
 } from '../../../../lint/kit/project/jterrazz-config.js';
 import { readManifest } from '../../../../lint/kit/project/manifest.js';
+import { ignorePatternsOf, projectFiles } from '../../../../lint/kit/project/project-files.js';
 import { publishes } from '../../../../lint/kit/project/project-kind.js';
 import { checker } from '../../../drivers/checker/checker.js';
 import { RUMDL_CONFIG } from '../../../drivers/rumdl/rumdl.js';
@@ -65,6 +67,30 @@ export function suppressionsPass(check: Check): Launched | undefined {
     ];
 
     return { log, status: checker('suppressions', args, { path: log }) };
+}
+
+// invariant: launched only where the tree holds a file whose comments it reads, so a tree of code alone prints no pass for it.
+export function commentsPass(check: Check): Launched | undefined {
+    if (!check.selected('comments')) {
+        return undefined;
+    }
+    let read: boolean;
+    try {
+        // Stryker disable next-line ObjectLiteral: the packed command, which no mutant reaches, runs it; specs/cli/check/ignore-pattern-forwarded proves the patterns
+        read = projectFiles('.', { ignorePatterns: ignorePatternsOf(check.lintArgs) }).some(
+            (path) => isCommentedElsewhere(path),
+        );
+    } catch {
+        read = true;
+    }
+    if (!read) {
+        return undefined;
+    }
+    const log = check.logs.at('comments.log');
+    // Stryker disable next-line StringLiteral,ArrayDeclaration: the packed command, which no mutant reaches, runs it; specs/cli/check/comments-other-languages proves both modes
+    const args = ['.', ...(check.fix ? ['--fix'] : []), ...check.lintArgs];
+
+    return { log, status: checker('comments', args, { path: log }) };
 }
 
 export function markdownPass(check: Check): Launched | undefined {

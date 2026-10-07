@@ -44,27 +44,28 @@ jobs:
 
 ## The passes
 
-`typescript check` runs up to fifteen passes, one per row below. The Config pass runs first, three spawn a tool on every invocation (tsc, oxlint, oxfmt), knip and five tree gates (Gitignore, Suppressions, Markdown, Names, Secrets) run on every `check`, and the other five are opt-in — a preset's checks, Docs, Publish, Architecture and Astro appear only when the project qualifies. [Mutation](#mutation) is a command of its own, not a pass of `check`.
+`typescript check` runs up to sixteen passes, one per row below. The Config pass runs first, three spawn a tool on every invocation (tsc, oxlint, oxfmt), knip and five tree gates (Gitignore, Suppressions, Markdown, Names, Secrets) run on every `check`, and the other six are opt-in — a preset's checks, Docs, Publish, Architecture, Astro and Comments appear only when the project qualifies. [Mutation](#mutation) is a command of its own, not a pass of `check`.
 
-| Pass                      | Tool                        | When it runs                                                                                     |
-| ------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------ |
-| Config (one file)         | the config gate             | always (check and fix — `--fix` writes the derived files)                                        |
-| TypeScript Check          | tsc (TypeScript 7, Go)      | always — in a workspace, once per member, each by its own `tsconfig.json`                        |
-| Oxlint Check              | oxlint (`--type-aware`)     | always (judged by the ratchet's `typescript` section where there is one)                         |
-| Oxfmt Check               | oxfmt (Rust)                | always                                                                                           |
-| Gitignore (artefacts)     | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own                                      |
-| Knip (unused code)        | knip (Node)                 | always (check only — it is not run in fix)                                                       |
-| a preset's label          | the preset's checks         | per `specs/` root and per member, for each declared preset that brings checks (check and fix)    |
-| Docs (layout)             | the manual gate             | check: at a repository root (a `.git` beside the project)                                        |
-| Publish (packaging)       | publint + attw + a build    | per unit that declares a `library` or a `cli` and is not `private`                               |
-| Architecture (layer map)  | dependency-cruiser          | a `jterrazz.config.ts`, or a `.dependency-cruiser.*` (check and fix — `--fix` re-records a fall) |
-| Astro (check + format)    | astro check + prettier      | per unit that declares the `astro` platform (check and fix)                                      |
-| Suppressions (directives) | the suppression gate        | always (check and fix — `--fix` settles two spellings)                                           |
-| Markdown (prose)          | rumdl + the prose gate      | always (check and fix — `--fix` runs rumdl's own fixes)                                          |
-| Names (tree)              | ls-lint + the naming gate   | always (check and fix — `--fix` deletes an empty directory)                                      |
-| Secrets (credentials)     | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                                         |
+| Pass                             | Tool                        | When it runs                                                                                                                                    |
+| -------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Config (one file)                | the config gate             | always (check and fix — `--fix` writes the derived files)                                                                                       |
+| TypeScript Check                 | tsc (TypeScript 7, Go)      | always — in a workspace, once per member, each by its own `tsconfig.json`                                                                       |
+| Oxlint Check                     | oxlint (`--type-aware`)     | always (judged by the ratchet's `typescript` section where there is one)                                                                        |
+| Oxfmt Check                      | oxfmt (Rust)                | always                                                                                                                                          |
+| Gitignore (artefacts)            | the artefact gate           | check: project or ancestor `.gitignore`; fix: project's own                                                                                     |
+| Knip (unused code)               | knip (Node)                 | always (check only — it is not run in fix)                                                                                                      |
+| a preset's label                 | the preset's checks         | per `specs/` root and per member, for each declared preset that brings checks (check and fix)                                                   |
+| Docs (layout)                    | the manual gate             | check: at a repository root (a `.git` beside the project)                                                                                       |
+| Publish (packaging)              | publint + attw + a build    | per unit that declares a `library` or a `cli` and is not `private`                                                                              |
+| Architecture (layer map)         | dependency-cruiser          | a `jterrazz.config.ts`, or a `.dependency-cruiser.*` (check and fix — `--fix` re-records a fall)                                                |
+| Astro (check + format)           | astro check + prettier      | per unit that declares the `astro` platform (check and fix)                                                                                     |
+| Suppressions (directives)        | the suppression gate        | always (check and fix — `--fix` settles two spellings)                                                                                          |
+| Comments (styles, scripts, YAML) | the comment gate            | a tree holding a style sheet, a script, a Makefile, a Dockerfile or a YAML file (check and fix — `--fix` deletes a comment that states no kind) |
+| Markdown (prose)                 | rumdl + the prose gate      | always (check and fix — `--fix` runs rumdl's own fixes)                                                                                         |
+| Names (tree)                     | ls-lint + the naming gate   | always (check and fix — `--fix` deletes an empty directory)                                                                                     |
+| Secrets (credentials)            | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                                                                                        |
 
-`typescript fix` runs the config gate, tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate, dependency-cruiser (`--fix` re-records a fall), rumdl (`--fix`) with the prose gate, and the naming gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
+`typescript fix` runs the config gate, tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate, the comment gate, dependency-cruiser (`--fix` re-records a fall), rumdl (`--fix`) with the prose gate, and the naming gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
 
 ### In a workspace
 
@@ -768,7 +769,15 @@ Every rule is printed and recorded as `names/<rule>`, and carries the code `name
 
 ## Comments
 
-Two rules of the rulebook's own oxlint plugin judge comments, so their findings are the Oxlint pass's and their debt, like any rule's, is `.jterrazz/oxlint-suppressions.json`'s. What each one holds, and the four kinds a comment may state, are [Lint presets](lint-presets.md#a-comment-states-its-kind)'s.
+Two rules of the rulebook's own oxlint plugin judge the comments of code, so their findings are the Oxlint pass's and their debt, like any rule's, is `.jterrazz/oxlint-suppressions.json`'s. What each one holds, and the four kinds a comment may state, are [Lint presets](lint-presets.md#a-comment-states-its-kind)'s.
+
+### The Comments (styles, scripts, YAML) pass
+
+oxlint reads code alone, so the comments of every other file the repository writes are this pass's: the `/* … */` of a `.css` and a `.scss` — a Sass `//` line too — and of the `<style>` block of an `.astro`, `.svelte` or `.vue` file, and the `#` lines of a shell script (`.sh`, `.bash`, `.zsh`), a Makefile (`Makefile`, `GNUmakefile`, `.mk`), a Dockerfile and a YAML file, a lockfile aside. It reads every file git does not ignore, the ground a test stands on and `--ignore-pattern` left out, and runs only where the tree holds one of them.
+
+A `#` comment is a line that opens with `#`, and a run of them states its kind once, on its first line, as a run of `//` lines does; a comment trailing a command is the command's text, which only its interpreter could tell apart. A shebang, the lines a heredoc carries and the lines of a YAML block scalar (`run: |`) are text, never a comment of the file. A directive another tool reads states no kind: `# shellcheck …`, `# yamllint …`, `# hadolint …`, `# yaml-language-server: …`, a Dockerfile's `# syntax=`, `# escape=` and `# check=`, `# renovate: …`, and in a style sheet `/*! … */`, which every minifier keeps, `/* stylelint-disable … */` and `/* prettier-ignore */`; so does every comment of a file whose first five lines carry `@generated`.
+
+`typescript fix` deletes each comment that states no kind — its lines whole when it stands alone on them — and names every file it rewrote; the diff gives back the line that did state something the code cannot, which comes back with its kind.
 
 <!-- GENERATED:findings comments -->
 
@@ -776,6 +785,7 @@ Two rules of the rulebook's own oxlint plugin judge comments, so their findings 
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `jterrazz-typescript/comment-no-longer-than-its-function` | A comment run above a function is no longer than the function it documents.                                                                                                                       |
 | `jterrazz-typescript/comment-states-its-kind`             | A comment opens with the kind of thing it states — invariant, hazard, outside or value — unless it is a one-line hover doc, a directive or a marker another tool reads, whose reason states none. |
+| `comments/comment-states-its-kind`                        | A comment of a style sheet, a shell script, a Makefile, a Dockerfile or a YAML file opens with its kind, as a comment of code does — unless it is a directive another tool reads.                 |
 
 <!-- /GENERATED:findings comments -->
 

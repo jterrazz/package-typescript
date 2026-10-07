@@ -163,6 +163,10 @@ A comment that fits none of these is refused where it opens. The answer is to de
 
 `no-inline-comments` holds a comment to its own line, the inline shapes another tool reads where they stand aside — `@__PURE__`, `@__NO_SIDE_EFFECTS__`, `@vite-ignore`, a `webpack…:` magic comment and a language tag.
 
+### Beyond the code
+
+The same law holds every comment the repository writes, not only its code's: the [Comments (styles, scripts, YAML) pass](quality-checks.md#the-comments-styles-scripts-yaml-pass) reads a style sheet's `/* … */` — a `.css`, a `.scss` and the `<style>` of an `.astro`, `.svelte` or `.vue` file, a Sass `//` line too — and the `#` lines of a shell script, a Makefile, a Dockerfile and a YAML file, with the same four kinds and the same fix.
+
 ## Estate conventions the rulebook rests on
 
 Several `off` reasons of kind `convention` name this page. Here is what they name:
