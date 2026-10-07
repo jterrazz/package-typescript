@@ -165,6 +165,17 @@ export default fragment({
                 }),
             },
         }),
+        // invariant: a no-op adapter is the test double a library ships for its consumers' tests, named `noop.adapter.ts`, or `noop-<port>.adapter.ts` when it ships one per port.
+        scoped({
+            files: ['**/noop.adapter.ts', '**/noop-*.adapter.ts'],
+            rules: {
+                'no-empty-function': off({
+                    by: "docs/reference/lint-presets.md — a no-op adapter is the null object a consumer's tests are handed: it answers its port by doing nothing",
+                    kind: 'convention',
+                }),
+            },
+            since: '11.0.0',
+        }),
     ],
     rules: {},
 });
