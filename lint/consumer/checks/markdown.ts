@@ -1,7 +1,9 @@
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, matchesGlob, resolve } from 'node:path';
 
 import type { Context, Finding, Pass, Tool } from '../../kit/checker/pass.js';
+import { keptByteForByte } from '../../kit/project/byte-for-byte.js';
 import { isGitIgnored, readText } from '../../kit/project/project-files.js';
+import { workspaceMembers } from '../../kit/project/workspace-members.js';
 
 type Found = { message: string; rule: string };
 
@@ -249,12 +251,35 @@ function rumdl(context: Context, pages: readonly string[]): Tool[] {
     ];
 }
 
+// invariant: the pass judges the manual, never content: a page the formatter keeps byte for byte — a content tree such as assets/, a script's output, a test's ground — is a page the pass neither judges nor rewrites, in the root and in every workspace member.
+async function keptOf(context: Context): Promise<string[]> {
+    const units = ['', ...workspaceMembers(context.root).map((member) => `${member}/`)];
+    const kept = await Promise.all(
+        units.map(async (prefix) => {
+            const { resolved } = await context.config(join(context.root, prefix));
+
+            return keptByteForByte(resolved.sections.typescript).map(
+                (pattern) => `${prefix}${pattern}`,
+            );
+        }),
+    );
+
+    return kept.flat();
+}
+
 export const markdown: Pass = Object.freeze({
-    check(context) {
+    async check(context) {
         const findings: Finding[] = [];
-        const pages = context.files().filter((file) => file.endsWith('.md'));
+        const kept = await keptOf(context);
+        const pages = context
+            .files()
+            .filter(
+                (file) =>
+                    file.endsWith('.md') && !kept.some((pattern) => matchesGlob(file, pattern)),
+            );
         for (const path of pages) {
             const text = readText(context.root, path);
+            // Stryker disable next-line ConditionalExpression: a page the tree lists is a file on disk, which reads
             if (text !== null) {
                 findings.push(
                     ...auditPage(context, path, text).map(({ message, rule }) => ({

@@ -1,7 +1,7 @@
 import { defineConfig } from 'oxfmt';
 import type { OxfmtConfig } from 'oxfmt';
 
-import { GROUND_GLOBS } from '../../../lint/kit/project/ground.js';
+import { keptByteForByte } from '../../../lint/kit/project/byte-for-byte.js';
 
 // outside: sorting is formatting: oxfmt owns import, package.json and Tailwind order, so no lint rule reorders them.
 // Width, indent, quotes and commas are the estate's: every repository is written to them.
@@ -31,16 +31,7 @@ const base: OxfmtConfig = defineConfig({
     tabWidth: 4,
     trailingComma: 'all',
     useTabs: false,
-    // hazard: a content tree can hold signed bytes (jterrazz-web's attestations) one formatter pass would invalidate.
-    ignorePatterns: [
-        'dist/**',
-        'assets/**',
-        'public/**',
-        '.next/**',
-        '.expo/**',
-        // invariant: a spec's ground is mis-shaped or held byte for byte on purpose.
-        ...GROUND_GLOBS,
-    ],
+    ignorePatterns: keptByteForByte({}),
 });
 
 export default base;
