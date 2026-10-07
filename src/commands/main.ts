@@ -1,6 +1,7 @@
 import process from 'node:process';
 
 import { refusal } from '../../lint/kit/catalogue/lesson.js';
+import { readArguments } from './arguments.js';
 import { baseline } from './baseline/baseline.command.js';
 import { build } from './build/build.command.js';
 import { check } from './check/check.command.js';
@@ -14,44 +15,41 @@ import { doctor } from './doctor/doctor.command.js';
 import { fix } from './fix/fix.command.js';
 import { mutation } from './mutation/mutation.command.js';
 import { start } from './start/start.command.js';
+import { helpOf, SURFACES } from './surface.js';
+import type { CommandName, Surface } from './surface.js';
 import { tsc } from './tsc/tsc.command.js';
 
 export { CHECK_PASSES } from './check/passes/passes.js';
 export type { CheckPass, Selected } from './check/passes/passes.js';
 
+const LISTED = Object.entries(SURFACES).map(([name, surface]: [string, Surface]) => ({
+    example: surface.example === undefined ? name : `${name} ${surface.example}`,
+    name,
+    says: surface.says,
+}));
+
 const USAGE = [
-    'Usage: typescript <command>',
+    'Usage: typescript <command> [flags]',
     '',
     'Commands:',
-    '  build        Build the entries the manifest publishes, as its conditions ask',
-    '  start        Run the built application',
-    '  dev          Build, run, and rebuild on changes',
-    "  docs-layout  Check a repository's docs/ against the manual's shape",
-    '  doctor       Report the installed tool versions against the declared ranges, and the file every setting comes from',
-    '  mutation     Measure the suite against mutants of the sources (--mutate <ranges> narrows it)',
-    "  baseline     Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json",
-    '  tsc          Run the TypeScript 7 compiler this package ships (emit, --build)',
-    '  check        Check types, lint, formatting, and unused code',
-    '  fix          Auto-fix lint and formatting issues',
-    "  clean        Remove .artifacts/ — dist/ stays, it is the build's product",
+    ...LISTED.map(({ name, says }) => `  ${name.padEnd(13)}${says}`),
     '',
     'Examples:',
-    ...[
-        'build',
-        'start',
-        'dev',
-        'docs-layout .',
-        'doctor',
-        'mutation',
-        'baseline',
-        'tsc --build',
-        'check',
-        'fix',
-        'clean',
-    ].map((example) => `  typescript ${example}`),
+    ...LISTED.map(({ example }) => `  typescript ${example}`),
+    '',
+    "A command's flags: typescript <command> --help",
 ];
 
+const BANNER = `${badge('TYPESCRIPT')} TypeScript toolchain\n\n`;
+
+const HELP: ReadonlySet<string> = new Set(['--help', '-h']);
+
 function usage(name: string): number {
+    if (HELP.has(name)) {
+        print(`${BANNER}${USAGE.join('\n')}\n`);
+
+        return 0;
+    }
     const unknown =
         name === ''
             ? ''
@@ -61,14 +59,16 @@ function usage(name: string): number {
                   read: 'docs/start/getting-started.md#3-wire-the-cli-into-packagejson',
                   why: 'the toolchain answers only the commands it declares',
               })}\n\n`;
-    print(`${badge('TYPESCRIPT')} TypeScript toolchain\n\n${unknown}${USAGE.join('\n')}\n`);
+    print(`${BANNER}${unknown}${USAGE.join('\n')}\n`);
 
     return 1;
 }
 
+const isCommand = (name: string): name is CommandName => Object.hasOwn(SURFACES, name);
+
 type Command = (args: readonly string[], selected: Selected) => number | Promise<number>;
 
-const COMMANDS: Readonly<Record<string, Command>> = {
+const COMMANDS: Readonly<Record<CommandName, Command>> = {
     baseline,
     build,
     check,
@@ -92,12 +92,22 @@ export async function main(
     { selected = EVERY_PASS }: { selected?: Selected } = {},
 ): Promise<number> {
     const [name = '', ...rest] = args;
-    const command = Object.hasOwn(COMMANDS, name) ? COMMANDS[name] : undefined;
-
-    if (command === undefined) {
+    if (!isCommand(name)) {
         return usage(name);
+    }
+    const surface: Surface = SURFACES[name];
+    const reading = readArguments(name, surface, rest);
+    if (reading.kind === 'help') {
+        print(`${BANNER}${helpOf(name, surface)}\n`);
+
+        return 0;
+    }
+    if (reading.kind === 'refused') {
+        print(`${BANNER}${reading.lesson}\n\n${helpOf(name, surface)}\n`);
+
+        return 1;
     }
     writeNoJitiCache();
 
-    return await command(rest, selected);
+    return await COMMANDS[name](reading.args, selected);
 }

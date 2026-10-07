@@ -7,7 +7,7 @@ runs:
 
           found: no command named unknown · why: the toolchain answers only the commands it declares · fix: run one of the commands below · read: docs/start/getting-started.md#3-wire-the-cli-into-packagejson
 
-          Usage: typescript <command>
+          Usage: typescript <command> [flags]
 
           Commands:
             build        Build the entries the manifest publishes, as its conditions ask
@@ -34,6 +34,8 @@ runs:
             typescript check
             typescript fix
             typescript clean
+
+          A command's flags: typescript <command> --help
     - command: constructor
       exit: 1
       stdout: |4
@@ -41,7 +43,7 @@ runs:
 
           found: no command named constructor · why: the toolchain answers only the commands it declares · fix: run one of the commands below · read: docs/start/getting-started.md#3-wire-the-cli-into-packagejson
 
-          Usage: typescript <command>
+          Usage: typescript <command> [flags]
 
           Commands:
             build        Build the entries the manifest publishes, as its conditions ask
@@ -68,3 +70,5 @@ runs:
             typescript check
             typescript fix
             typescript clean
+
+          A command's flags: typescript <command> --help

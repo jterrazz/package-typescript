@@ -1,0 +1,32 @@
+description: refuses a second root, and a word where the command takes none
+runs:
+    - command: docs-layout docs extra
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          found: `typescript docs-layout` was given extra, a second <root> · why: an argument the command does not read would be ignored, and the run would not be the one asked for · fix: name one <root>, or none · read: docs/reference/commands.md#flags-and-help
+
+          Usage: typescript docs-layout [<root>]
+
+          Check a repository's docs/ against the manual's shape
+
+          Flags:
+            -h, --help  Print this help and run nothing
+
+          Read: docs/reference/quality-checks.md#outside-an-npm-project
+    - command: build dist
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          found: `typescript build` was given dist, an argument it does not read · why: an argument the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — `typescript build` takes no argument · read: docs/reference/commands.md#flags-and-help
+
+          Usage: typescript build
+
+          Build the entries the manifest publishes, as its conditions ask
+
+          Flags:
+            -h, --help  Print this help and run nothing
+
+          Read: docs/reference/building.md#the-entries

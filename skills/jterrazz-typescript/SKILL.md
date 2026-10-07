@@ -19,6 +19,8 @@ One devDependency that builds, checks, lints and formats a project. The manual i
 | `typescript baseline`    | a bump lands red: record today's counts, exact — `fix` lowers one that fell                                                                                      |
 | `typescript docs-layout` | a repository with no npm project: the manual's shape, alone                                                                                                      |
 
+`typescript <command> --help` prints a command's flags and runs nothing; a flag it does not read, or one given twice, is refused before anything is written (`docs/reference/commands.md`).
+
 A project declares its `kind` — `library`, `api`, `cli`, `website`, `mobile`, `workspace` — and its `platform` — `node`, `bun`, `react`, `next`, `astro`, `expo` — in `jterrazz.config.ts`, `defineConfig({ kind, platform })`; the profile, the tsconfig preset and every law follow. `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json` are derived — the first two hand their own `import.meta.url` to `oxlintConfig` / `oxfmtConfig` — and `typescript fix` writes them; every tool setting lives in `jterrazz.config.ts`, and no `knip.json`, `tsdown.config.ts` or `stryker.config.*` is kept. A repository root also owes a `Makefile` of six gestures and a `docs/` manual its `AGENTS.md` routes to. The whole wiring, from an empty folder to a green run, is `docs/start/getting-started.md`.
 
 ## What a failing pass means

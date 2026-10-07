@@ -1,0 +1,96 @@
+description: prints the usage of every command asked for its help, and runs none of them
+runs:
+    - command: build --help
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          Usage: typescript build
+
+          Build the entries the manifest publishes, as its conditions ask
+
+          Flags:
+            -h, --help  Print this help and run nothing
+
+          Read: docs/reference/building.md#the-entries
+    - command: dev --help
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          Usage: typescript dev
+
+          Build, run, and rebuild on changes
+
+          Flags:
+            -h, --help  Print this help and run nothing
+
+          Read: docs/reference/building.md#the-entries
+    - command: doctor --help
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          Usage: typescript doctor
+
+          Report the installed tool versions against the declared ranges, and the file every setting comes from
+
+          Flags:
+            -h, --help  Print this help and run nothing
+
+          Read: docs/guides/adopt-a-stricter-release.md#the-two-gestures
+    - command: clean -h
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          Usage: typescript clean
+
+          Remove .artifacts/ — dist/ stays, it is the build's product
+
+          Flags:
+            -h, --help  Print this help and run nothing
+
+          Read: docs/start/getting-started.md#where-a-tools-output-goes
+    - command: baseline --help
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          Usage: typescript baseline [--ignore-pattern <glob>]...
+
+          Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json
+
+          Flags:
+            --ignore-pattern <glob>  Leave a path out of every gate, as many times as needed
+            -h, --help               Print this help and run nothing
+
+          Read: docs/guides/adopt-a-stricter-release.md#the-two-gestures
+    - command: docs-layout --help
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          Usage: typescript docs-layout [<root>]
+
+          Check a repository's docs/ against the manual's shape
+
+          Flags:
+            -h, --help  Print this help and run nothing
+
+          Read: docs/reference/quality-checks.md#outside-an-npm-project
+    - command: check --help
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          Usage: typescript check [--ignore-pattern <glob>]... [--json]
+
+          Check types, lint, formatting, and unused code
+
+          Flags:
+            --ignore-pattern <glob>  Leave a path out of every gate, as many times as needed
+            --json                   Print the drift report as one JSON object for a machine
+            -h, --help               Print this help and run nothing
+
+          Read: docs/reference/quality-checks.md#flags-and-exit-codes

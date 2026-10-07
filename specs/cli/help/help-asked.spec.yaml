@@ -1,0 +1,70 @@
+description: prints the commands and exits 0 when the help is asked for, by either spelling
+runs:
+    - command: '--help'
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          Usage: typescript <command> [flags]
+
+          Commands:
+            build        Build the entries the manifest publishes, as its conditions ask
+            start        Run the built application
+            dev          Build, run, and rebuild on changes
+            docs-layout  Check a repository's docs/ against the manual's shape
+            doctor       Report the installed tool versions against the declared ranges, and the file every setting comes from
+            mutation     Measure the suite against mutants of the sources (--mutate <ranges> narrows it)
+            baseline     Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json
+            tsc          Run the TypeScript 7 compiler this package ships (emit, --build)
+            check        Check types, lint, formatting, and unused code
+            fix          Auto-fix lint and formatting issues
+            clean        Remove .artifacts/ — dist/ stays, it is the build's product
+
+          Examples:
+            typescript build
+            typescript start
+            typescript dev
+            typescript docs-layout .
+            typescript doctor
+            typescript mutation
+            typescript baseline
+            typescript tsc --build
+            typescript check
+            typescript fix
+            typescript clean
+
+          A command's flags: typescript <command> --help
+    - command: '-h'
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          Usage: typescript <command> [flags]
+
+          Commands:
+            build        Build the entries the manifest publishes, as its conditions ask
+            start        Run the built application
+            dev          Build, run, and rebuild on changes
+            docs-layout  Check a repository's docs/ against the manual's shape
+            doctor       Report the installed tool versions against the declared ranges, and the file every setting comes from
+            mutation     Measure the suite against mutants of the sources (--mutate <ranges> narrows it)
+            baseline     Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json
+            tsc          Run the TypeScript 7 compiler this package ships (emit, --build)
+            check        Check types, lint, formatting, and unused code
+            fix          Auto-fix lint and formatting issues
+            clean        Remove .artifacts/ — dist/ stays, it is the build's product
+
+          Examples:
+            typescript build
+            typescript start
+            typescript dev
+            typescript docs-layout .
+            typescript doctor
+            typescript mutation
+            typescript baseline
+            typescript tsc --build
+            typescript check
+            typescript fix
+            typescript clean
+
+          A command's flags: typescript <command> --help

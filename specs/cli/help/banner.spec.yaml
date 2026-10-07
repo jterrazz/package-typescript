@@ -5,7 +5,7 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          Usage: typescript <command>
+          Usage: typescript <command> [flags]
 
           Commands:
             build        Build the entries the manifest publishes, as its conditions ask
@@ -32,3 +32,5 @@ runs:
             typescript check
             typescript fix
             typescript clean
+
+          A command's flags: typescript <command> --help

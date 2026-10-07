@@ -1,0 +1,58 @@
+description: refuses a second --mutate and a valueless --since, and prints its usage on --help
+fixture: ../__fixtures__/incremental-app/
+runs:
+    - command: mutation --mutate src/a.ts:1-2 --mutate src/b.ts:1-2
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          found: --mutate is given more than once · why: the command reads it once, and a second value would silently replace the first · fix: give it once, every range in one comma-separated value: --mutate src/a.ts:10-20,src/b.ts:1-5 · read: docs/reference/commands.md#flags-and-help
+
+          Usage: typescript mutation [--mutate <ranges>] [--since <ref>]
+
+          Measure the suite against mutants of the sources (--mutate <ranges> narrows it)
+
+          Flags:
+            --mutate <ranges>  Point both runs at these lines, every range in one comma-separated value: src/a.ts:10-20,src/b.ts:1-5
+            --since <ref>      Measure the change since this commit instead of HEAD
+            -h, --help         Print this help and run nothing
+
+          Read: docs/reference/quality-checks.md#mutation
+      files:
+          .artifacts: absent
+    - command: mutation --since
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          found: --since has no value · why: a flag read without its value would run the command on another value than the one meant · fix: write it --since <ref> · read: docs/reference/commands.md#flags-and-help
+
+          Usage: typescript mutation [--mutate <ranges>] [--since <ref>]
+
+          Measure the suite against mutants of the sources (--mutate <ranges> narrows it)
+
+          Flags:
+            --mutate <ranges>  Point both runs at these lines, every range in one comma-separated value: src/a.ts:10-20,src/b.ts:1-5
+            --since <ref>      Measure the change since this commit instead of HEAD
+            -h, --help         Print this help and run nothing
+
+          Read: docs/reference/quality-checks.md#mutation
+      files:
+          .artifacts: absent
+    - command: mutation --help
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          Usage: typescript mutation [--mutate <ranges>] [--since <ref>]
+
+          Measure the suite against mutants of the sources (--mutate <ranges> narrows it)
+
+          Flags:
+            --mutate <ranges>  Point both runs at these lines, every range in one comma-separated value: src/a.ts:10-20,src/b.ts:1-5
+            --since <ref>      Measure the change since this commit instead of HEAD
+            -h, --help         Print this help and run nothing
+
+          Read: docs/reference/quality-checks.md#mutation
+      files:
+          .artifacts: absent

@@ -1,0 +1,79 @@
+description: refuses an unknown flag, a repeated one, a value where none is taken and a missing value
+fixture: ../__fixtures__/incremental-app/
+runs:
+    - command: check --watch
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          found: `typescript check` has no flag --watch · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — it reads --ignore-pattern <glob>, --json · read: docs/reference/commands.md#flags-and-help
+
+          Usage: typescript check [--ignore-pattern <glob>]... [--json]
+
+          Check types, lint, formatting, and unused code
+
+          Flags:
+            --ignore-pattern <glob>  Leave a path out of every gate, as many times as needed
+            --json                   Print the drift report as one JSON object for a machine
+            -h, --help               Print this help and run nothing
+
+          Read: docs/reference/quality-checks.md#flags-and-exit-codes
+      files:
+          .artifacts: absent
+    - command: check --json --json
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          found: --json is given more than once · why: the command reads it once, and a line that says it twice was written for another run than this one · fix: give it once: --json · read: docs/reference/commands.md#flags-and-help
+
+          Usage: typescript check [--ignore-pattern <glob>]... [--json]
+
+          Check types, lint, formatting, and unused code
+
+          Flags:
+            --ignore-pattern <glob>  Leave a path out of every gate, as many times as needed
+            --json                   Print the drift report as one JSON object for a machine
+            -h, --help               Print this help and run nothing
+
+          Read: docs/reference/quality-checks.md#flags-and-exit-codes
+      files:
+          .artifacts: absent
+    - command: check --json=1
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          found: --json takes no value · why: a value the command does not read would be ignored, and the run would not be the one asked for · fix: write it --json, alone · read: docs/reference/commands.md#flags-and-help
+
+          Usage: typescript check [--ignore-pattern <glob>]... [--json]
+
+          Check types, lint, formatting, and unused code
+
+          Flags:
+            --ignore-pattern <glob>  Leave a path out of every gate, as many times as needed
+            --json                   Print the drift report as one JSON object for a machine
+            -h, --help               Print this help and run nothing
+
+          Read: docs/reference/quality-checks.md#flags-and-exit-codes
+      files:
+          .artifacts: absent
+    - command: check --ignore-pattern
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          found: --ignore-pattern has no value · why: a flag read without its value would run the command on another value than the one meant · fix: write it --ignore-pattern <glob> · read: docs/reference/commands.md#flags-and-help
+
+          Usage: typescript check [--ignore-pattern <glob>]... [--json]
+
+          Check types, lint, formatting, and unused code
+
+          Flags:
+            --ignore-pattern <glob>  Leave a path out of every gate, as many times as needed
+            --json                   Print the drift report as one JSON object for a machine
+            -h, --help               Print this help and run nothing
+
+          Read: docs/reference/quality-checks.md#flags-and-exit-codes
+      files:
+          .artifacts: absent

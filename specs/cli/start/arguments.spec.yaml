@@ -1,0 +1,25 @@
+description: prints its usage on --help, and hands the application every other argument
+fixture: ./__fixtures__/argv-app/
+runs:
+    - command: start --help
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          Usage: typescript start [<argument>...]
+
+          Run the built application
+
+          Flags:
+            <argument>...  Handed to the application; after --, every argument is, -h and --help included
+            -h, --help     Print this help and run nothing
+
+          Read: docs/reference/building.md#the-entries
+    - command: start --port 3000
+      exit: 0
+      stdout: |
+          ["--port","3000"]
+    - command: start -- --help -h
+      exit: 0
+      stdout: |
+          ["--help","-h"]

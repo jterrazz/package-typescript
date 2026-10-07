@@ -19,6 +19,8 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 - `--ignore-pattern <glob>`, as many times as needed, leaves a path out ([below](#leaving-a-path-out)).
 - `--json`, on `check`, prints [the drift report](#the-drift-report) as one JSON object for a machine; every pass above it still prints for a person.
 
+Any other flag, or `--json` given twice, is refused before a pass starts, and `--help` prints the command's usage and runs nothing ([Commands § Flags and help](commands.md#flags-and-help)).
+
 Every command exits `0` when it succeeded and non-zero otherwise; `check` and `fix` exit `1` when any pass failed or the drift report refused. CI runs `make check` and reads that code, and on a GitHub runner oxlint prints its diagnostics as workflow annotations ([One run, printed as oxlint prints it](#one-run-printed-as-oxlint-prints-it)).
 
 A runner owes Node 24 and the install the lockfile describes, nothing more: the TypeScript 7 compiler arrives as the optional package of the runner's own platform, and the Secrets pass runs `gitleaks` only where it finds one on `PATH`, falling back to its own patterns. The repositories of the family call the shared `jterrazz/jterrazz-actions` validate workflow, which runs `make build`, `make lint` and `make test` on Node 24; a project outside the family writes the same in a few lines:
@@ -808,6 +810,7 @@ Which scanner runs is decided inside the gate rather than by the command, becaus
 typescript mutation                                # the module tests, then the whole suite over the changed lines they leave
 typescript mutation --since main                   # the change measured from another commit than HEAD
 typescript mutation --mutate src/a.ts:10-20        # both runs pointed at the lines named, changed or not
+typescript mutation --mutate src/a.ts:1-9,src/b.ts:4-8   # several ranges, one comma-separated value: a second --mutate is refused
 ```
 
 Not a pass of `check`: [Stryker](https://stryker-mutator.io) rewrites the sources one mutant at a time and asks whether a test fails, which says what the coverage number cannot — whether a line the tests run is a line they judge. The command derives Stryker's configs and the Vitest configs they run into `.artifacts/stryker/`, and a project keeps none of them: Stryker and its Vitest runner are this package's dependencies. A run is two, each incremental, each with its own report:

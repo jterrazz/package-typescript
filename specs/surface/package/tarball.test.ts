@@ -213,7 +213,7 @@ describe('tarball', () => {
             })),
         );
 
-        // Then - the bare run reports the passes a bare tree runs, and every other run the same passes, to the same verdict
+        // Then - the bare run reports the passes a bare tree runs, and every other run the same passes to the same verdict, or none when the command refuses the line or prints its help
         expect(outcomes.length).toBeGreaterThan(0);
         expect(
             outcomes.flatMap(({ bare, bin, runs }) =>
@@ -226,7 +226,9 @@ describe('tarball', () => {
                     .concat(
                         runs
                             .filter(
-                                ({ outcome }) => JSON.stringify(outcome) !== JSON.stringify(bare),
+                                ({ outcome }) =>
+                                    outcome.passes.length > 0 &&
+                                    JSON.stringify(outcome) !== JSON.stringify(bare),
                             )
                             .map(({ name }) => `${bin} under ${name}`),
                     ),

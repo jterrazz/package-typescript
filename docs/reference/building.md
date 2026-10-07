@@ -9,7 +9,7 @@ Three commands cover a project's build and run: `build` produces `dist/`, `start
 | `typescript dev`   | builds, runs, then rebuilds and reruns on every change               | an application                           |
 | `typescript tsc`   | whatever the compiler emits                                          | a repository built on project references |
 
-`start` and `dev` always run `dist/index.js`, the output of `src/index.ts`, with whatever arguments follow; neither looks for a `bin`. A project with no `dist/index.js` — a `cli` whose only target is its `bin`, a workspace root that builds nothing itself — has nothing for them to run and Node fails to find the module, so it keeps neither script: a cli is run by its built bin, `node dist/greet.js`, and a workspace runs each member's own.
+`start` and `dev` always run `dist/index.js`, the output of `src/index.ts`, and `start` hands it whatever arguments follow, except `-h` and `--help`, which print its usage — after `--`, every argument reaches the application ([Commands § Flags and help](commands.md#flags-and-help)); neither looks for a `bin`. A project with no `dist/index.js` — a `cli` whose only target is its `bin`, a workspace root that builds nothing itself — has nothing for them to run and Node fails to find the module, so it keeps neither script: a cli is run by its built bin, `node dist/greet.js`, and a workspace runs each member's own.
 
 ## The entries
 
