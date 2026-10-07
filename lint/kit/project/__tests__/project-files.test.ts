@@ -82,12 +82,14 @@ describe('projectFiles', () => {
     });
 
     test('leaves out the ground of a specs tree or a tests folder at any depth, and what the project ignores by pattern', () => {
-        // Given - ground under specs/ at two depths and in a tests folder, ground outside both, a file merely named like ground, and a folder ignored by pattern
+        // Given - ground under specs/ at two depths and in a tests folder, ground outside both — a specs folder below it included — a file merely named like ground, and a folder ignored by pattern
         const root = repositoryTracking([
             '__fixtures__/top.ts',
             'apps/api/specs/__seeds__/rows.sql',
             'specs/__fixtures__/x.ts',
+            'specs/__seeds__',
             'specs/a/__expected__/y.txt',
+            'src/__fixtures__/specs/rows.json',
             'src/__fixtures__/stray.json',
             'src/__seeds__',
             'src/a/__tests__/__fixtures__/z.json',
@@ -98,6 +100,8 @@ describe('projectFiles', () => {
         // Then - what the scenarios own is theirs, ground anywhere else is swept like any folder, and the pattern holds
         expect(projectFiles(root, { ignorePatterns: ['vendor/**'] })).toStrictEqual([
             '__fixtures__/top.ts',
+            'specs/__seeds__',
+            'src/__fixtures__/specs/rows.json',
             'src/__fixtures__/stray.json',
             'src/__seeds__',
             'src/kept.ts',
