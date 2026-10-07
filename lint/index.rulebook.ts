@@ -8,6 +8,7 @@ import { PROFILES } from './consumer/rulebook/profiles.js';
 import { unsafeFixers } from './kit/catalogue/decisions.js';
 import { refusal } from './kit/catalogue/lesson.js';
 import { merge, profile } from './kit/compiler/compile.js';
+import { folderPlatformsOf } from './kit/project/folder-platforms.js';
 import { objectOf } from './kit/project/json.js';
 import { readConfig, SETTINGS_FILE } from './kit/project/jterrazz-config.js';
 import { presetLesson } from './kit/project/preset.js';
@@ -95,9 +96,41 @@ function memberScoped(member: string, root: OxlintConfig, own: OxlintConfig): Ox
     ];
 }
 
+const RESOLVED_BY_TSCONFIG = 'import/extensions';
+
+/** The unit's config with each folder `typescript.platforms` names linted by its own platform's profile, the unit's presets and own rules on top. */
+function withFolderPlatforms(resolution: Resolution, unit: OxlintConfig): OxlintConfig {
+    const { folders, problem: unplaced } = folderPlatformsOf(
+        objectOf(resolution.resolved.sections.typescript).platforms,
+    );
+    if (unplaced !== null) {
+        throw settingsRefusal(unplaced);
+    }
+    const { rules = {} } = unit;
+    // invariant: a folder compiles under its unit's tsconfig, so the import spelling module resolution decides stays the unit's.
+    const kept: OxlintConfig = {
+        rules: Object.fromEntries(
+            // Stryker disable next-line ConditionalExpression,MethodExpression: a profile re-decides no core rule but import/extensions, so keeping the unit's others leaves the folder's as they are
+            Object.entries(rules).filter(([rule]) => rule === RESOLVED_BY_TSCONFIG),
+        ),
+    };
+    const scoped = folders.flatMap(({ folder, platform }) => {
+        // invariant: a config reads the platform of its declaration alone; the kind's standard is already in the resolved presets.
+        const onIt = { ...resolution.resolved, declaration: { kind: null, platform } };
+
+        return memberScoped(
+            folder,
+            unit,
+            merge(oxlintConfigOf({ ...resolution, resolved: onIt }), kept),
+        );
+    });
+
+    return merge(unit, { overrides: scoped });
+}
+
 export async function oxlintConfigAt(unit: string): Promise<OxlintConfig> {
     const resolution = await readConfig(unit, basePresetsOf);
-    const root = oxlintConfigOf(resolution);
+    const root = withFolderPlatforms(resolution, oxlintConfigOf(resolution));
     if (resolution.resolved.declaration?.kind !== 'workspace') {
         return root;
     }
@@ -106,7 +139,8 @@ export async function oxlintConfigAt(unit: string): Promise<OxlintConfig> {
     );
     const scoped = await Promise.all(
         members.map(async (member) => {
-            const own = oxlintConfigOf(await readConfig(join(unit, member), basePresetsOf));
+            const read = await readConfig(join(unit, member), basePresetsOf);
+            const own = withFolderPlatforms(read, oxlintConfigOf(read));
 
             return {
                 ignores: within(member, own.ignorePatterns ?? []),

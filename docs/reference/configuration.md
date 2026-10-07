@@ -60,6 +60,28 @@ An `api`, a `website` and a `mobile` app owe the same — an application nobody 
 
 A `workspace` declares no platform: its root `oxlint.config.ts` lints each member by the platform that member declares, the member's own profile and presets scoped to its folder, so one config serves a React website and a Node api side by side. A member keeps no `oxlint.config.ts` or `oxfmt.config.ts` of its own — a nested one would replace the root's in its subtree — and keeps its own `tsconfig.json`, derived from its platform.
 
+A unit runs on one platform, and a folder of it may run on another: an api on `bun` that serves its own React UI from `web/`. `typescript.platforms` names that folder, from the unit, with the platform it runs on and why, and the unit's `oxlint.config.ts` lints it by that platform's profile — its plugins, its rules, the unit's presets and own rules on top — while the rest of the unit keeps its own:
+
+```ts
+// jterrazz.config.ts
+import { defineConfig } from '@jterrazz/typescript/config';
+
+export default defineConfig({
+    kind: 'api',
+    platform: 'bun',
+    typescript: {
+        platforms: {
+            web: {
+                platform: 'react',
+                reason: 'the console UI, a React tree vite builds for the api to serve',
+            },
+        },
+    },
+});
+```
+
+The folder still compiles under the unit's `tsconfig.json`, so how it spells an import — `import/extensions`, which module resolution decides — stays the unit's. A path that is no folder of the unit (a glob, `..`), a platform outside the list and a folder with no reason are refused where the settings are read.
+
 A `library` or a `cli` whose manifest says `"private": true` is not published: a workspace's internal package its siblings import through `workspace:*`, or a binary its repository compiles and installs itself. The Publish pass leaves it, its manual owes no release guide, and a private `cli` owes no `bin`; a private `library` still names its `exports`, which is how its siblings import it.
 
 A workspace's own suite — the tests of the whole repository, owned by no member — is the member at `specs/`, and it is the one unit that declares no kind: `defineConfig({ platform: 'node', presets: [...] })`, on `node` or `bun`, its manifest `private`. It is no product, so no kind's standard applies to it; its platform derives its `tsconfig.json` and its profile, and its presets the rest. A declaration with a platform and no kind anywhere else is `config/project-declared`.

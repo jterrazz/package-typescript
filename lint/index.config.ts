@@ -1,5 +1,5 @@
 import type { ArchitectureRule, NamesRule, Preset } from './kit/project/preset.js';
-import type { ProjectDeclaration } from './kit/project/project-kind.js';
+import type { Platform, ProjectDeclaration } from './kit/project/project-kind.js';
 import type { ProjectOverride, ProjectRule } from './kit/project/project-oxlint.js';
 
 export type { OptOut } from './kit/project/opt-outs.js';
@@ -48,6 +48,8 @@ export type TypescriptSettings = {
     };
     /** The paths the formatter leaves alone, each mapped to the reason. */
     oxfmt?: { ignore?: Reasoned };
+    /** A folder of the unit linted by another platform's profile than the unit's, each with its reason. */
+    platforms?: Readonly<Record<string, { platform: Platform; reason: string }>>;
     /** What the project's tsconfig.json adds to its platform's preset, and why. */
     tsconfig?: {
         compilerOptions?: Readonly<Record<string, unknown>>;

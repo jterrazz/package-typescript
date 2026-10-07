@@ -211,6 +211,14 @@
         "audience": "consumer",
         "by": "throw",
         "channel": "runtime",
+        "id": "folder-platforms-unresolved",
+        "message": "throw settingsRefusal(unplaced)",
+        "module": "lint/index.rulebook.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
         "id": "baseline-unwritable",
         "message": "then record again",
         "module": "lint/kit/baseline/baseline-file.ts"
