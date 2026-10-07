@@ -29,4 +29,14 @@ describe('scope', () => {
         expect(result.stderr.text).not.toContain('ENOENT');
         expect(result.stdout.text).not.toContain('Measuring the whole suite');
     });
+
+    test('runs no spec a mobile app drives its simulator with', async () => {
+        // Given - a workspace whose expo app is of the mobile kind
+        const result = await cli.fixture(directory('./__fixtures__/workspace/')).exec('mutation');
+
+        // Then - the Vitest config the run hands Stryker leaves out the mobile app's specs/mobile/
+        expect(result.file('.artifacts/stryker/vitest.config.mjs').content).toContain(
+            'exclude: ["apps/mobile/specs/mobile/**"]',
+        );
+    });
 });
