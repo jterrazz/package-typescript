@@ -38,8 +38,8 @@ describe('project-kind', () => {
         expect(refused).toStrictEqual([
             'declares the kind `service`, which is none of `library`, `api`, `cli`, `website`, `mobile`, `workspace`',
             'declares the kind `undefined`, which is none of `library`, `api`, `cli`, `website`, `mobile`, `workspace`',
-            'declares a `website` on the platform `node`, where a website runs on `react`, `next`, `astro`',
-            'declares a `website` on the platform `vue`, where a website runs on `react`, `next`, `astro`',
+            'declares a `website` on the platform `node`, where a website runs on `react`, `next`, `astro`, `browser`',
+            'declares a `website` on the platform `vue`, where a website runs on `react`, `next`, `astro`, `browser`',
             'declares a `mobile` on the platform `undefined`, where a mobile runs on `expo`',
             'declares a `platform` for a workspace, whose members each declare their own',
         ]);

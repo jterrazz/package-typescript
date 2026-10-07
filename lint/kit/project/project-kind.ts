@@ -2,7 +2,7 @@ import { isJsonObject } from './json.js';
 
 export const KINDS = ['library', 'api', 'cli', 'website', 'mobile', 'workspace'] as const;
 
-export const PLATFORMS = ['node', 'bun', 'react', 'next', 'astro', 'expo'] as const;
+export const PLATFORMS = ['node', 'bun', 'react', 'next', 'astro', 'expo', 'browser'] as const;
 
 export type ProjectKind = (typeof KINDS)[number];
 
@@ -13,7 +13,7 @@ export type ProjectDeclaration =
     | { kind: 'cli'; platform: 'bun' | 'node' }
     | { kind: 'library'; platform: Platform }
     | { kind: 'mobile'; platform: 'expo' }
-    | { kind: 'website'; platform: 'astro' | 'next' | 'react' }
+    | { kind: 'website'; platform: 'astro' | 'browser' | 'next' | 'react' }
     | { kind: 'workspace' }
     | { kind?: undefined; platform: 'bun' | 'node' };
 
@@ -29,7 +29,7 @@ export const PLATFORMS_OF: PlatformsOf = {
     cli: ['node', 'bun'],
     library: PLATFORMS,
     mobile: ['expo'],
-    website: ['react', 'next', 'astro'],
+    website: ['react', 'next', 'astro', 'browser'],
 };
 
 /** `kind: null` is a workspace's own suite: a member of tests alone, which is no product and so declares no kind. */

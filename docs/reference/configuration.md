@@ -45,14 +45,14 @@ The matrix is generated from the declaration the toolchain reads, and its last t
 
 <!-- GENERATED:kinds -->
 
-| Kind        | Platforms                                       | Publication                 | Config refuses a manifest that                         | Publish pass             | Specimen                           | Gestures it proves                                                       |
-| ----------- | ----------------------------------------------- | --------------------------- | ------------------------------------------------------ | ------------------------ | ---------------------------------- | ------------------------------------------------------------------------ |
-| `library`   | `node`, `bun`, `react`, `next`, `astro`, `expo` | published, unless `private` | publishes no `exports`                                 | judged, unless `private` | `specs/kinds/library/` on `node`   | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
-| `api`       | `node`, `bun`                                   | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/api/` on `node`       | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
-| `cli`       | `node`, `bun`                                   | published, unless `private` | names no `bin`                                         | judged, unless `private` | `specs/kinds/cli/` on `node`       | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
-| `website`   | `react`, `next`, `astro`                        | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/website/` on `react`  | `typescript fix`, `typescript check`, `vitest --run`                     |
-| `mobile`    | `expo`                                          | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/mobile/` on `expo`    | `typescript fix`, `typescript check`, `vitest --run`                     |
-| `workspace` | none — each member its own                      | members                     | —                                                      | —                        | `specs/kinds/workspace/` on `node` | `typescript fix`, `npm run build`, `typescript check`, `npm test`        |
+| Kind        | Platforms                                                  | Publication                 | Config refuses a manifest that                         | Publish pass             | Specimen                           | Gestures it proves                                                       |
+| ----------- | ---------------------------------------------------------- | --------------------------- | ------------------------------------------------------ | ------------------------ | ---------------------------------- | ------------------------------------------------------------------------ |
+| `library`   | `node`, `bun`, `react`, `next`, `astro`, `expo`, `browser` | published, unless `private` | publishes no `exports`                                 | judged, unless `private` | `specs/kinds/library/` on `node`   | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
+| `api`       | `node`, `bun`                                              | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/api/` on `node`       | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
+| `cli`       | `node`, `bun`                                              | published, unless `private` | names no `bin`                                         | judged, unless `private` | `specs/kinds/cli/` on `node`       | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
+| `website`   | `react`, `next`, `astro`, `browser`                        | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/website/` on `react`  | `typescript fix`, `typescript check`, `vitest --run`                     |
+| `mobile`    | `expo`                                                     | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/mobile/` on `expo`    | `typescript fix`, `typescript check`, `vitest --run`                     |
+| `workspace` | none — each member its own                                 | members                     | —                                                      | —                        | `specs/kinds/workspace/` on `node` | `typescript fix`, `npm run build`, `typescript check`, `npm test`        |
 
 <!-- /GENERATED:kinds -->
 
@@ -183,6 +183,8 @@ A project with nothing of its own to say keeps no section at all.
 ## The tsconfig presets
 
 Every preset scopes its `include` and `exclude` to `${configDir}`, the directory of the `tsconfig.json` that extends it, so a project inherits the right file set without restating one. Every preset checks and never emits, compiles incrementally into `.artifacts/tsc/`, and allows an import that names a `.ts` file: Node runs a module that way, and the check reads it as Node does. The declarations a library publishes are emitted by the build, never by `tsc`, so a library and a service on one platform share one preset ([Building](building.md)).
+
+The `browser` preset is `react`'s without its JSX transform: the DOM's libraries and bundler resolution, for a page or an extension that runs plain DOM code — a `.tsx` component test included, which renders without JSX.
 
 The `node` preset reads `.tsx` too, with React's automatic JSX transform: a Node package rendering components — its server, or its component tests under `@jterrazz/test` — needs no option of its own for them.
 

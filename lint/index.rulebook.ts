@@ -22,6 +22,7 @@ const PLUGIN_PATHS: Readonly<Record<string, string>> = Object.freeze({
 
 export const PROFILE_CONFIGS: Readonly<Record<Platform, OxlintConfig>> = Object.freeze({
     astro: profile(PROFILES.astro, PLUGIN_PATHS),
+    browser: profile(PROFILES.browser, PLUGIN_PATHS),
     bun: profile(PROFILES.bun, PLUGIN_PATHS),
     expo: profile(PROFILES.expo, PLUGIN_PATHS),
     next: profile(PROFILES.next, PLUGIN_PATHS),

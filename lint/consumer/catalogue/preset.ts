@@ -6,6 +6,7 @@ import MOBILE from '../../../src/standard/kinds/mobile.js';
 import WEBSITE from '../../../src/standard/kinds/website.js';
 import WORKSPACE from '../../../src/standard/kinds/workspace.js';
 import ASTRO from '../../../src/standard/platforms/astro.js';
+import BROWSER from '../../../src/standard/platforms/browser.js';
 import BUN from '../../../src/standard/platforms/bun.js';
 import EXPO from '../../../src/standard/platforms/expo.js';
 import NEXT from '../../../src/standard/platforms/next.js';
@@ -32,6 +33,7 @@ const KIND_STANDARDS: Readonly<Record<ProjectKind, Standard>> = {
 
 const PLATFORM_STANDARDS: Readonly<Record<Platform, Standard>> = {
     astro: ASTRO,
+    browser: BROWSER,
     bun: BUN,
     expo: EXPO,
     next: NEXT,

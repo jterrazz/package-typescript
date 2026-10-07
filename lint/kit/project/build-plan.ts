@@ -42,7 +42,14 @@ export const DEV_OUTPUT = `${ARTIFACTS}/dev`;
 
 export const MUTATION_OUTPUT = `${ARTIFACTS}/stryker`;
 
-const BROWSER_PLATFORMS: ReadonlySet<Platform> = new Set(['astro', 'expo', 'next', 'react']);
+/** The platforms whose code a bundler ships to a browser or a device: their build targets the browser. */
+export const BROWSER_PLATFORMS: ReadonlySet<Platform> = new Set([
+    'astro',
+    'browser',
+    'expo',
+    'next',
+    'react',
+]);
 
 const COMMAND = '.cli.ts';
 

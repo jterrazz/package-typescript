@@ -3,7 +3,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { conventionsOf } from '../build-plan.js';
+import { BROWSER_PLATFORMS, conventionsOf } from '../build-plan.js';
+import { PLATFORMS } from '../project-kind.js';
 
 function tree(files: readonly string[]): string {
     const root = mkdtempSync(join(tmpdir(), 'build-plan-'));
@@ -77,6 +78,18 @@ describe('build-plan', () => {
                 settings: { dev: {}, entries: {} },
             },
             { problem: null, settings: { dev: {}, entries: {} } },
+        ]);
+    });
+
+    test('the browser platforms — every platform whose code runs in a browser or a device builds for the browser, the others for node', () => {
+        // Given - every platform a project declares
+        // Then - the ones a bundler ships to a browser or a device are the browser's
+        expect(PLATFORMS.filter((platform) => BROWSER_PLATFORMS.has(platform))).toStrictEqual([
+            'react',
+            'next',
+            'astro',
+            'expo',
+            'browser',
         ]);
     });
 });

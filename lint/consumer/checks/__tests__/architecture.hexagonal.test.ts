@@ -31,6 +31,7 @@ describe('architecture.hexagonal', () => {
             Object.fromEntries(PLATFORMS.map((platform) => [platform, entriesOf(platform)])),
         ).toStrictEqual({
             astro: ['src/middleware.ts'],
+            browser: ['src/index.ts', 'src/main.tsx'],
             bun: ['src/index.ts'],
             expo: ['app/_layout.tsx', 'src/app/_layout.tsx'],
             next: ['app/layout.tsx', 'pages/_app.tsx', 'src/app/layout.tsx', 'src/pages/_app.tsx'],

@@ -18,7 +18,7 @@ The words this manual uses, one meaning each.
 
 One word per meaning:
 
-- **Declaration** — what a project says it is in `jterrazz.config.ts`: its **kind** (`library`, `api`, `cli`, `website`, `mobile`, `workspace`) and its **platform** (`node`, `bun`, `react`, `next`, `astro`, `expo`). Every law, check and derived file follows from it ([Getting started § Declare what the project is](../start/getting-started.md#1-declare-what-the-project-is)).
+- **Declaration** — what a project says it is in `jterrazz.config.ts`: its **kind** (`library`, `api`, `cli`, `website`, `mobile`, `workspace`) and its **platform** (`node`, `bun`, `react`, `next`, `astro`, `expo`, `browser`). Every law, check and derived file follows from it ([Getting started § Declare what the project is](../start/getting-started.md#1-declare-what-the-project-is)).
 - **Profile** — which framework's lint rules a project takes, one of six ([Lint presets § The profiles](lint-presets.md#the-profiles)). The platform picks it.
 - **Preset** — what a package holds a project to, listed under `presets` in `jterrazz.config.ts`: lint rules, layers, name rules, checks, debt and settings ([Configuration § Presets](configuration.md#presets)).
 - **Standard** — the data a package holds every project to by default, under its `src/standard/`; this package's, merged for the declaration's kind and platform, is its own preset, always on and never listed, carrying the family's laws ([Configuration § The standard](configuration.md#the-standard)).

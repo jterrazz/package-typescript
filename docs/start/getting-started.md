@@ -30,7 +30,7 @@ export default defineConfig({ kind: 'api', platform: 'node' });
 | `library`   | a package others import, its `exports` kept | any                                                   |
 | `api`       | a service answering requests                | `node`, `bun`                                         |
 | `cli`       | a command, named in `bin`                   | `node`, `bun`                                         |
-| `website`   | a site or web application                   | `react`, `next`, `astro`                              |
+| `website`   | a site or web application                   | `react`, `next`, `astro`, `browser`                   |
 | `mobile`    | a mobile application                        | `expo`                                                |
 | `workspace` | the root of a monorepo                      | none — each member declares its own kind and platform |
 

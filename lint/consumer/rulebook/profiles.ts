@@ -48,6 +48,12 @@ export const PROFILES = Object.freeze({
         fragments: [...CORE, react, jsxA11y, astro],
         ignorePatterns: [...IGNORED],
     },
+    browser: {
+        // Stryker disable next-line ObjectLiteral,BooleanLiteral: no rule of the rulebook reads the environment's globals — the type checker resolves them — so the env names the platform's globals for a reader and an editor
+        env: { browser: true, builtin: true },
+        fragments: [...CORE, bundler],
+        ignorePatterns: [...IGNORED],
+    },
     bun: {
         env: { builtin: true, node: true },
         fragments: [...CORE],
