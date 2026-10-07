@@ -103,7 +103,7 @@ describe('preset', () => {
         expect([
             preset.origins?.map(({ file }) => file),
             preset.settings?.tsconfigPreset,
-        ]).toStrictEqual([['src/standard/standard.ts', 'src/standard/platforms/bun.ts'], 'node']);
+        ]).toStrictEqual([['src/standard/standard.ts', 'src/standard/platforms/bun.ts'], 'bun']);
     });
 
     test('typescriptPreset — derives the hexagonal map for a unit whose src/ holds domain/, application/ and infrastructure/', () => {

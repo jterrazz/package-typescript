@@ -15,7 +15,7 @@
         "exactOptionalPropertyTypes": true,
         "incremental": true,
         "jsx": "react-native",
-        "lib": ["DOM", "ESNext"],
+        "lib": ["DOM", "ES2022"],
         "module": "ESNext",
         "moduleResolution": "bundler",
         "noEmit": true,

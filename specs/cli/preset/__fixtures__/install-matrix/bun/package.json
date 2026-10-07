@@ -5,6 +5,7 @@
     "type": "module",
     "devDependencies": {
         "@jterrazz/typescript": "*",
+        "@types/bun": "*",
         "@types/node": "*",
         "vitest": "*"
     }

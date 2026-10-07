@@ -5,6 +5,9 @@ export const PUBLIC_ROOT =
 
 export const APP_ROOT = 'Next.js App Router and Expo Router — routes are read off this folder';
 
+export const ASSETS_ROOT =
+    'Expo and Astro — the images, fonts and authored pages the app imports or serves by path, kept byte for byte';
+
 export default defineStandard({
     typescript: {
         memberRoots: ['apps', 'packages'],

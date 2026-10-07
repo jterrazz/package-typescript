@@ -1,0 +1,38 @@
+{
+    "display": "Bun",
+    "include": ["${configDir}/**/*.ts", "${configDir}/**/*.tsx", "${configDir}/**/*.js"],
+    "exclude": [
+        "${configDir}/node_modules",
+        "${configDir}/dist",
+        "${configDir}/.artifacts",
+        "${configDir}/**/__expected__",
+        "${configDir}/**/__fixtures__",
+        "${configDir}/**/__requests__",
+        "${configDir}/**/__seeds__"
+    ],
+    "compilerOptions": {
+        "moduleResolution": "Bundler",
+        "module": "ESNext",
+        "target": "ESNext",
+        "types": ["node", "bun"],
+        "strict": true,
+        "exactOptionalPropertyTypes": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noUncheckedIndexedAccess": true,
+        "noUncheckedSideEffectImports": true,
+        "verbatimModuleSyntax": true,
+        "incremental": true,
+        "tsBuildInfoFile": "${configDir}/.artifacts/tsc/tsconfig.tsbuildinfo",
+        "experimentalDecorators": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "allowJs": true,
+        "checkJs": false,
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
+        "jsx": "react-jsx"
+    }
+}

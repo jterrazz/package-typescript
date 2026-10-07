@@ -1,5 +1,13 @@
-import { execFileSync } from 'node:child_process';
-import { cpSync, readFileSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import {
+    cpSync,
+    mkdirSync,
+    readdirSync,
+    readFileSync,
+    realpathSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
@@ -31,7 +39,20 @@ function consumer(ground: string, preset: string): string {
     const dir = realpathSync(created);
     cpSync(resolve(import.meta.dirname, ground), dir, { recursive: true });
     installTsconfigPresets(dir);
-    symlinkSync(resolve(ROOT, 'node_modules/@types'), join(dir, 'node_modules/@types'), 'dir');
+    mkdirSync(join(dir, 'node_modules/@types'), { recursive: true });
+    for (const types of readdirSync(resolve(ROOT, 'node_modules/@types'))) {
+        symlinkSync(
+            resolve(ROOT, 'node_modules/@types', types),
+            join(dir, 'node_modules/@types', types),
+            'dir',
+        );
+    }
+    // outside: the checkout installs no Bun, so the bun preset's `types` find a one-line stand-in for @types/bun.
+    symlinkSync(
+        resolve(import.meta.dirname, '../../__fixtures__/bun-types'),
+        join(dir, 'node_modules/@types/bun'),
+        'dir',
+    );
     writeFileSync(
         join(dir, 'tsconfig.json'),
         `${JSON.stringify({ extends: `@jterrazz/typescript/tsconfig/${preset}` })}\n`,
@@ -61,7 +82,14 @@ function resolvedConfig(dir: string): ResolvedConfig {
     };
 }
 
-const PRESETS = ['node', 'next', 'astro', 'expo', 'react'] as const;
+function hermesErrorsUnder(preset: string): string {
+    return spawnSync(TSC, ['--noEmit', '--pretty', 'false'], {
+        cwd: consumer('./__fixtures__/tsconfig-hermes', preset),
+        encoding: 'utf8',
+    }).stdout;
+}
+
+const PRESETS = ['node', 'bun', 'next', 'astro', 'expo', 'react'] as const;
 
 const FIXTURES = PRESETS.map((preset) => [preset, `./__fixtures__/tsconfig-${preset}`] as const);
 
@@ -152,5 +180,15 @@ describe('tsconfig', () => {
                 ...GROUND_FOLDERS.map((folder) => `**/${folder}`),
             ]),
         );
+    });
+
+    test('the expo preset refuses what Hermes does not implement, which the node preset compiles', () => {
+        // Given - one module sorting a copy with `toSorted`, under the expo preset and under node's
+
+        // Then - the expo app's type check names the call, the node project's passes
+        expect([
+            hermesErrorsUnder('expo').includes("Property 'toSorted' does not exist"),
+            hermesErrorsUnder('node'),
+        ]).toStrictEqual([true, '']);
     });
 });

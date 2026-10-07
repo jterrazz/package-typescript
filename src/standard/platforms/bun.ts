@@ -1,3 +1,3 @@
 import { defineStandard } from '../../../lint/index.config.js';
 
-export default defineStandard({});
+export default defineStandard({ typescript: { tsconfigPreset: 'bun' } });

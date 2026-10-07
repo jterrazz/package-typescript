@@ -21,6 +21,9 @@ const PACKED = process.env.PACKED_PACKAGE ?? '';
 const CONSUMERS = join(REPOSITORY, 'specs/cli/preset/__fixtures__/install-matrix');
 const ASTRO_PACKAGE = join(REPOSITORY, 'specs/__fixtures__/astro-package');
 
+// outside: the checkout installs no Bun, so a consumer declaring @types/bun is handed a one-line stand-in.
+const BUN_TYPES = join(REPOSITORY, 'specs/__fixtures__/bun-types');
+
 const root = mkdtempSync(join(tmpdir(), 'install-matrix-'));
 
 function resolvesFrom(directory: string, tool: string): boolean {
@@ -106,6 +109,9 @@ function consumerOf(
         join(project, 'node_modules/@types/node'),
     );
     symlinkSync(join(REPOSITORY, 'node_modules/vitest'), join(project, 'node_modules/vitest'));
+    if (readFileSync(join(project, 'package.json'), 'utf8').includes('"@types/bun"')) {
+        symlinkSync(BUN_TYPES, join(project, 'node_modules/@types/bun'));
+    }
 
     return { name, project, runner: join(installed, 'dist/typescript.js') };
 }
