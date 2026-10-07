@@ -8,8 +8,11 @@ const BASE = '/tmp';
 // invariant: a fixture resolves the toolchain the way an install does, from a `node_modules/` above it: its editor files and its settings import it, and the node preset reads `@types/node`.
 const REPOSITORY = resolve(import.meta.dirname, '../../..');
 
+// invariant: a spec's command measures what its own fixture changed; the commit CI names for this repository's run names none of a fixture's.
 export default function setup(): () => void {
     const previous = process.env.TMPDIR;
+    const since = process.env.TYPESCRIPT_MUTATION_SINCE;
+    delete process.env.TYPESCRIPT_MUTATION_SINCE;
     const root = mkdtempSync(join(BASE, 'typescript-specs-'));
     process.env.TMPDIR = root;
     mkdirSync(join(root, 'node_modules/@jterrazz'), { recursive: true });
@@ -21,6 +24,9 @@ export default function setup(): () => void {
             delete process.env.TMPDIR;
         } else {
             process.env.TMPDIR = previous;
+        }
+        if (since !== undefined) {
+            process.env.TYPESCRIPT_MUTATION_SINCE = since;
         }
         rmSync(root, { force: true, recursive: true });
     };
