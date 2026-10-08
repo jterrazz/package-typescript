@@ -44,6 +44,29 @@ The app's entry and the spec runners are the only modules that import `compositi
 
 A UI app has no process to enter: its entry is the module its framework renders first, an Expo app's root layout `app/_layout.tsx` for one. That module composes the app once and hands the graph down through one provider at the top of the tree; a hook or a component reads what it needs from that provider, never from `composition/`. Which module is the entry follows the platform `jterrazz.config.ts` declares — the list is [the hexagonal map](../reference/quality-checks.md#the-hexagonal-map)'s.
 
+### A UI app
+
+Three things differ from a process, and the signews-mobile app met each:
+
+- **No overrides.** Its specs drive the installed build on a device, never an in-process runner, so nothing hands a double in: `compose(configuration = expoConfiguration())` takes the configuration alone, and `Partial<Ports>` is a process app's.
+- **A start, never a stop.** Composing starts nothing, as for a process; what the graph must start once it is whole — translations, analytics — is `app.start()`, which the entry calls after composing. An app is never stopped, so the graph carries no `[Symbol.asyncDispose]`.
+- **State the screen reacts to is a port.** A store the UI subscribes to is read through a `StatePort<State>` the application declares — `getState()` and `subscribe(listener)`, which a zustand store satisfies as it is — and a hook renders it through `useSyncExternalStore`, so a screen depends on the port, never on the store's library.
+
+The entry, `app/_layout.tsx`, composes once, starts, and hands the graph down:
+
+```text
+const app = compose();
+app.start();
+
+export default function RootLayout() {
+    return (
+        <DependenciesProvider value={app}>
+            <Stack />
+        </DependenciesProvider>
+    );
+}
+```
+
 An override is a typed member of `Partial<Ports>`: a runner names the port it replaces and hands a value of that port's type. There is no string token to misspell and no cast to lie with — a wrong double fails the type check, where a container's lookup would have failed at run time, or not at all. An override is the caller's to stop: the ordered stop closes what the app opened, never a port handed in.
 
 ## What the map holds

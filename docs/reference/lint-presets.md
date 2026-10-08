@@ -103,6 +103,8 @@ A fixer that changes MEANING is never applied unattended. The rules below stay a
 
 <!-- /GENERATED:fixers -->
 
+The same holds for oxlint's own suggestions: `typescript fix` runs `oxlint --fix`, never `--fix-suggestions` or `--fix-dangerously`. On this rulebook a suggestion removes the `console.log` that is a command's only output, rewrites `void promise()` to `undefined` and changes what an optional chain evaluates — run by hand, every one of them is a diff to read line by line.
+
 ### Module augmentation
 
 An augmentation merges into an existing declaration only as an INTERFACE — a `type` alias redeclares the name, and every member of the original is lost — and the `export {}` beside it is what makes a file carrying `declare module` an augmentation rather than an ambient redeclaration. `typescript/consistent-type-definitions` is therefore off: every place it reported on the estate was one where the language needs an interface, and the one spelling it held prevents no defect. `typescript/no-useless-empty-export` stays on: it fires only where the file is already a module by another export, which is the case the `export {}` adds nothing to.
@@ -123,7 +125,7 @@ perfectionist therefore keeps six rules, all of them about an order oxfmt does n
 
 Three caps, and each one counts a different property. `complexity` counts the paths through a function: 12, in its `modified` variant, where a `switch` counts once — a dispatch over a closed union is one decision, not one path per case. `max-lines-per-function` (60) and `max-lines` (300) count size, which complexity never did, since a long function can have a single path. Both count every line, comments and blank lines included, the way `spec-file-within-line-limit` counts. `max-statements` is off everywhere, covered by whichever cap bounds the file's functions: `max-lines-per-function` outside a test file, `@jterrazz/test`'s `test-body-within-line-limit` inside one — oxfmt writes one statement per line either way, so a line cap bounds the count.
 
-A spec file's size has one judge. `@jterrazz/test`'s `spec-file-within-line-limit` holds every `*.spec.ts` to 400 lines, so `max-lines` is off there, scoped by the same suffix, and the two caps never judge one file. A module test (`*.test.ts`), a `*.specification.ts` and every other file under `specs/` are code, and hold 300.
+A spec file's size has one judge. `@jterrazz/test`'s `spec-file-within-line-limit` holds every `*.spec.ts` to 400 lines, so `max-lines` is off there, scoped by the same suffix, and the two caps never judge one file. A module test (`*.test.ts`), a `*.specification.ts` and every other file under `specs/` are code, and hold 300. A module test past that cap is answered by splitting the MODULE it tests: one module has one test file (`@jterrazz/test`'s `one-test-file-per-module`), so a second test file for the same module is refused, and a module whose test needs more than 300 lines holds more than one subject.
 
 A test file's functions have one judge too. A test file holds one `describe` (`one-describe-per-file`), and that callback is a function as long as the file, so `max-lines-per-function` is off under the three suffixes that declare tests — `*.test.ts`, `*.test.tsx`, `*.spec.ts` — and `@jterrazz/test`'s `test-body-within-line-limit` caps what it would have caught there, a test body, at the same 60 lines. Every other file, a `*.specification.ts` included, holds its functions to 60.
 
