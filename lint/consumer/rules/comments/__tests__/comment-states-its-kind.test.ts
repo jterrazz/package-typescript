@@ -7,6 +7,51 @@ const lines = (...text: string[]): string => text.join('\n');
 ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
     invalid: [
         {
+            code: lines(
+                '/**',
+                ' * A summary line.',
+                ' * A second line naming the @param list is prose.',
+                ' */',
+                'export const listed = 1;',
+            ),
+            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'export const listed = 1;',
+        },
+        {
+            code: lines(
+                '/**',
+                ' * @deprecated',
+                ' * and a line of prose after it.',
+                ' */',
+                'export const old = 1;',
+            ),
+            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'export const old = 1;',
+        },
+        {
+            code: lines(
+                '/**',
+                ' * A typed catalogue of metrics.',
+                ' * A second line of prose is a paragraph, no hover.',
+                ' * @example createMetrics({})',
+                ' */',
+                'export const createMetrics = (catalogue) => catalogue;',
+            ),
+            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'export const createMetrics = (catalogue) => catalogue;',
+        },
+        {
+            code: lines(
+                '/**',
+                ' * A private helper keeps no hover, tags or not.',
+                ' * @example helper()',
+                ' */',
+                'const helper = () => 1;',
+            ),
+            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
+            output: 'const helper = () => 1;',
+        },
+        {
             code: lines("test('adds', () => {", '    // Given - two numbers', '});'),
             errors: [{ column: 4, line: 2, messageId: 'unstated' }],
             output: lines("test('adds', () => {", '});'),
@@ -271,6 +316,31 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
     valid: [
         lines('#!/usr/bin/env node', '// hazard: the shebang is no comment', 'run();'),
         lines('/** The sum of two values. */   ', 'export const sum = (a, b) => a + b;'),
+        lines(
+            '/**',
+            ' * A typed catalogue of the metrics an app records.',
+            ' * @param catalogue - every metric, by name',
+            ' * @example',
+            ' * createMetrics<AppMetrics>({ requests: counter() });',
+            ' */',
+            'export function createMetrics(catalogue) {',
+            '    return catalogue;',
+            '}',
+        ),
+        lines(
+            '/**',
+            ' *    ',
+            ' * The sum of two values.',
+            ' * @returns their sum',
+            ' */',
+            'export const total = (a, b) => a + b;',
+        ),
+        lines(
+            '/** The sum of two values.',
+            ' * @example sum(1, 2) // 3',
+            ' */',
+            'export const sum = (a, b) => a + b;',
+        ),
         lines(
             'function drain() {',
             '    // invariant: an indented run,',

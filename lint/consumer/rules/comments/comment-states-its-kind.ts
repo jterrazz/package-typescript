@@ -49,8 +49,13 @@ const BLANK_TO_LINE_END = /^[^\S\n]*\n/u;
 
 const BEFORE_TEMPLATE = /^\s*`/u;
 
+// Stryker disable next-line Regex: each line is trimmed after its margin goes, so the margin's own spaces are the trim's too
+const HOVER_LINE_MARGIN = /^\s*\*?\s?/u;
+
+const BLOCK_TAG = /^@[a-zA-Z]+\b/u;
+
 const WHY_FIX = {
-    fix: `delete it, or rename what needed it; a comment that states what the code cannot opens with its kind — ${COMMENT_KINDS.map((kind) => `\`${kind}:\``).join(', ')} — and an exported symbol's editor hover is one \`/** … */\` line above it`,
+    fix: `delete it, or rename what needed it; a comment that states what the code cannot opens with its kind — ${COMMENT_KINDS.map((kind) => `\`${kind}:\``).join(', ')} — and an exported symbol's editor hover is one \`/** … */\` line above it, its block tags — \`@param\`, \`@example\` — on the lines after it`,
     why: 'the default is no comment — the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one',
 };
 
@@ -74,6 +79,18 @@ function nextTokenAt(text: string, from: number, comments: readonly Comment[]): 
     return at;
 }
 
+// invariant: a hover's prose is one line; what follows it on lines of its own are the block tags — `@param`, `@returns`, `@example` and its code — an editor and typedoc render as the published symbol's documentation.
+function isHoverShape(value: string): boolean {
+    if (!value.includes('\n')) {
+        return true;
+    }
+    return value
+        .split('\n')
+        .map((line) => line.replace(HOVER_LINE_MARGIN, '').trim())
+        .filter((line) => line !== '')
+        .some((line, index) => index === 1 && BLOCK_TAG.test(line));
+}
+
 function isHover(
     comment: Comment,
     text: string,
@@ -83,7 +100,7 @@ function isHover(
     return (
         comment.type === 'Block' &&
         comment.value.startsWith('*') &&
-        !comment.value.includes('\n') &&
+        isHoverShape(comment.value) &&
         BLANK_TO_LINE_END.test(text.slice(comment.end)) &&
         targets.has(nextTokenAt(text, comment.end, comments))
     );

@@ -804,11 +804,11 @@ A `#` comment is a line that opens with `#`, and a run of them states its kind o
 
 <!-- GENERATED:findings comments -->
 
-| Rule                                                      | Requirement                                                                                                                                                                                       |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `jterrazz-typescript/comment-no-longer-than-its-function` | A comment run above a function is no longer than the function it documents.                                                                                                                       |
-| `jterrazz-typescript/comment-states-its-kind`             | A comment opens with the kind of thing it states — invariant, hazard, outside or value — unless it is a one-line hover doc, a directive or a marker another tool reads, whose reason states none. |
-| `comments/comment-states-its-kind`                        | A comment of a style sheet, a shell script, a Makefile, a Dockerfile or a YAML file opens with its kind, as a comment of code does — unless it is a directive another tool reads.                 |
+| Rule                                                      | Requirement                                                                                                                                                                                                                                              |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jterrazz-typescript/comment-no-longer-than-its-function` | A comment run above a function is no longer than the function it documents.                                                                                                                                                                              |
+| `jterrazz-typescript/comment-states-its-kind`             | A comment opens with the kind of thing it states — invariant, hazard, outside or value — unless it is an exported symbol's hover doc (one line of prose, its block tags after it), a directive or a marker another tool reads, whose reason states none. |
+| `comments/comment-states-its-kind`                        | A comment of a style sheet, a shell script, a Makefile, a Dockerfile or a YAML file opens with its kind, as a comment of code does — unless it is a directive another tool reads.                                                                        |
 
 <!-- /GENERATED:findings comments -->
 
