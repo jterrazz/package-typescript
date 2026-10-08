@@ -2,6 +2,7 @@ import { file } from '@jterrazz/test';
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { env } from 'node:process';
 import { describe, expect, test } from 'vitest';
 
 import { newDirectory, temporaryDirectory } from '../../__setup__/temporary-directory.js';
@@ -55,7 +56,13 @@ describe('formatter', () => {
         );
 
         // When - oxfmt checks the whole tree
-        const result = spawnSync(OXFMT, ['--check'], { cwd: created, encoding: 'utf8' });
+
+        // invariant: oxfmt colours its paths whenever `CI` is set, an empty value included, so the run states its own colour.
+        const result = spawnSync(OXFMT, ['--check'], {
+            cwd: created,
+            encoding: 'utf8',
+            env: { ...env, CI: undefined, NO_COLOR: '1' },
+        });
 
         // Then - the root file alone is reported
         expect(result.status).toBe(1);
