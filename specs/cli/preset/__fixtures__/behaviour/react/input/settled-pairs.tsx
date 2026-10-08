@@ -55,3 +55,12 @@ function Days({ onDayChange }: Rail): React.JSX.Element {
 export function Calendar({ rail }: { rail: Rail }): React.JSX.Element {
     return <Days onDayChange={rail.onDayChange} />;
 }
+
+// outside: a scrollable region reached by the keyboard: no-noninteractive-tabindex refused its tabIndex, prefer-tag-over-role its role.
+export function Listing({ code }: { code: string }): React.JSX.Element {
+    return (
+        <section aria-label="Source" tabIndex={0}>
+            <pre>{code}</pre>
+        </section>
+    );
+}
