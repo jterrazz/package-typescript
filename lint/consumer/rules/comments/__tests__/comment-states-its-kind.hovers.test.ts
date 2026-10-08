@@ -175,6 +175,26 @@ ruleTester().run('comment-states-its-kind.hovers', probe, {
             filename: 'members.ts',
         },
         {
+            code: lines(
+                'export const handler = (value) => ({ key: value });',
+                'export const named = function (value) { return { key: value }; };',
+                'export function typed(options: { port: number }) {}',
+                'export function made() { return { key: 1 }; }',
+            ),
+            errors: [
+                at(1, 0),
+                at(1, 7),
+                at(2, 0),
+                at(2, 7),
+                at(3, 0),
+                at(3, 7),
+                at(3, 33),
+                at(4, 0),
+                at(4, 7),
+            ],
+            filename: 'bodies.ts',
+        },
+        {
             code: lines('declare module "x" { const a: number; }', 'export = {};'),
             errors: [at(1, 0), at(2, 0)],
             filename: 'module.d.ts',

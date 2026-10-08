@@ -52,6 +52,16 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
             output: 'const helper = () => 1;',
         },
         {
+            code: lines(
+                'export const handler = (value) => ({',
+                '    /** Restates the key. */',
+                '    key: value,',
+                '});',
+            ),
+            errors: [{ column: 4, line: 2, messageId: 'unstated' }],
+            output: lines('export const handler = (value) => ({', '    key: value,', '});'),
+        },
+        {
             code: lines("test('adds', () => {", '    // Given - two numbers', '});'),
             errors: [{ column: 4, line: 2, messageId: 'unstated' }],
             output: lines("test('adds', () => {", '});'),

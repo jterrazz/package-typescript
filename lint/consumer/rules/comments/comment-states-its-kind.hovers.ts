@@ -34,7 +34,11 @@ const MEMBERS: ReadonlySet<string> = new Set([
     'TSPropertySignature',
 ]);
 
-const BODIES: ReadonlySet<string> = new Set(['BlockStatement', 'StaticBlock']);
+const FUNCTIONS: ReadonlySet<string> = new Set([
+    'ArrowFunctionExpression',
+    'FunctionDeclaration',
+    'FunctionExpression',
+]);
 
 const isNode = (value: unknown): value is AstNode =>
     typeof value === 'object' && value !== null && 'type' in value;
@@ -98,15 +102,17 @@ function addWithDecorators(targets: Set<number>, node: AstNode): void {
     }
 }
 
-// invariant: a member counts outside a function body only: a statement in a body is no part of what an importer sees.
+// invariant: a member counts outside a function's body and a class's static block only: what a body holds is no part of what an importer sees.
 function addMembers(targets: Set<number>, node: AstNode): void {
     if (MEMBERS.has(node.type)) {
         addWithDecorators(targets, node);
     }
-    if (!BODIES.has(node.type)) {
-        for (const child of childrenOf(node)) {
-            addMembers(targets, child);
-        }
+    if (node.type === 'StaticBlock') {
+        return;
+    }
+    const body = FUNCTIONS.has(node.type) ? node.body : undefined;
+    for (const child of childrenOf(node).filter((one) => one !== body)) {
+        addMembers(targets, child);
     }
 }
 
