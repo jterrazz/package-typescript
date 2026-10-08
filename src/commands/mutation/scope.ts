@@ -44,6 +44,24 @@ export function sourcesOf(
 
 export const fileOf = (range: string): string => range.replace(/:\d+(?::\d+)?-\d+(?::\d+)?/u, '');
 
+const RANGE = /^(?<file>[^:]+)(?::(?<from>\d+)(?::\d+)?-(?<to>\d+)(?::\d+)?)?$/u;
+
+/** The first `--mutate` range that reaches no source of the run — a path it does not mutate, or lines written other than `from-to` in order — else `undefined`. */
+export function unreachedRange(
+    ranges: readonly string[],
+    sources: ReadonlySet<string>,
+): string | undefined {
+    return ranges.find((range) => {
+        const groups = RANGE.exec(range)?.groups;
+
+        return (
+            groups === undefined ||
+            !sources.has(String(groups.file)) ||
+            Number(groups.from) > Number(groups.to)
+        );
+    });
+}
+
 /** The ranges `--mutate` names in the files given, or every file whole when it names none. */
 export function narrowed(files: readonly string[], ranges?: readonly string[]): string[] {
     if (ranges === undefined) {

@@ -52,6 +52,21 @@ describe('scope', () => {
         expect(result.file('apps/kit/.artifacts/stryker/stryker.config.json').exists).toBe(false);
     });
 
+    test('refuses a --mutate range that sits in no member, before any member runs', async () => {
+        // Given - the same workspace, measured at a range named from the api's own folder
+        const result = await cli
+            .fixture(directory('./__fixtures__/workspace/'))
+            .exec('mutation --mutate src/handler.ts:1-3');
+
+        // Then - the range is refused, and no member is measured
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout.text).toContain(
+            'found: --mutate names src/handler.ts:1-3, which reaches no source the run mutates',
+        );
+        expect(result.stdout.text).toContain('fix: name a source of a member of the workspace');
+        expect(result.file('apps/api/.artifacts/stryker/stryker.config.json').exists).toBe(false);
+    });
+
     test('runs no spec a mobile app drives its simulator with', async () => {
         // Given - a workspace whose expo app is of the mobile kind
         const result = await cli.fixture(directory('./__fixtures__/workspace/')).exec('mutation');

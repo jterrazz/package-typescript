@@ -67,6 +67,24 @@ describe('mutation', () => {
         expect(result.stdout.text).not.toContain('Measuring');
     });
 
+    test('typescript mutation — a --mutate range that reaches no source is refused before anything runs', async () => {
+        // Given - the consumer, measured at a path it does not hold, then at its source's lines written backwards
+        const misspelled = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .exec('typescript mutation --mutate=src/discont.ts:1-5');
+        const backwards = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .exec('typescript mutation --mutate src/discount.ts:9-2');
+
+        // Then - each is refused, naming the range, and no run starts
+        expect([misspelled.exitCode, backwards.exitCode]).toStrictEqual([1, 1]);
+        expect(misspelled.stdout).toMatch(`
+            found: --mutate names src/discont.ts:1-5, which reaches no source the run mutates · why: a range that reaches no source narrows both runs to nothing, and the run would pass having measured nothing · fix: name a source the run mutates, by its path from the project's root and its lines as from-to — src/a.ts:10-20 — or the whole file by its path · read: docs/reference/quality-checks.md#mutation
+        `);
+        expect(backwards.stdout.text).toContain('found: --mutate names src/discount.ts:9-2,');
+        expect(`${misspelled.stdout.text}${backwards.stdout.text}`).not.toContain('Measuring');
+    });
+
     test('typescript mutation — a run whose every mutant the module tests run is detected passes', async () => {
         // Given - the same consumer, its test judging the guard, its boundary and its message, CI's variable left blank by an event that carries no commit
         const result = await cli

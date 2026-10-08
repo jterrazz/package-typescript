@@ -3,13 +3,15 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
-import { changedRanges, fileOf, narrowed, sourcesOf } from '../scope.js';
+import { changedRanges, fileOf, narrowed, sourcesOf, unreachedRange } from '../scope.js';
 
 const SCOPE = {
     exclude: [],
     ignore: ['src/generated/**'],
     mutated: ['src/**/*.ts', 'src/**/*.tsx', 'lint/*.ts'],
 };
+
+const SOURCES: ReadonlySet<string> = new Set(['src/a.ts', 'src/b.ts']);
 
 const created: string[] = [];
 
@@ -120,5 +122,30 @@ describe('scope', () => {
             'src/c.ts:12-12',
             'src/new.ts',
         ]);
+    });
+
+    test('unreachedRange — reaches every source named whole, by its lines, or by its lines and columns', () => {
+        // Given - ranges naming the sources in each form --mutate takes
+        // Then - none is unreached
+        expect(
+            unreachedRange(
+                ['src/a.ts', 'src/a.ts:3-3', 'src/b.ts:1:2-4:5', 'src/b.ts:10:12-20:30'],
+                SOURCES,
+            ),
+        ).toBeUndefined();
+    });
+
+    test.each([
+        ['a path the run does not mutate', 'src/c.ts:1-2'],
+        ['a bare word', 'x'],
+        ['an empty range', ''],
+        ['lines written backwards', 'src/a.ts:9-2'],
+        ['lines with no end', 'src/a.ts:3'],
+        ['lines that are no numbers', 'src/a.ts:a-b'],
+        ['a path behind a word and a colon', 'x:src/a.ts'],
+    ])('unreachedRange — names %s as the range that reaches nothing', (_case, range) => {
+        // Given - a reached range, then the stray one
+        // Then - the stray one is named
+        expect(unreachedRange(['src/a.ts:1-2', range], SOURCES)).toBe(range);
     });
 });

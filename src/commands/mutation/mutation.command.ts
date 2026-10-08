@@ -14,8 +14,8 @@ import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
 import { badge, print, RED, RESET } from '../check/report/terminal.js';
 import { changeOf, defaultBaseOf, namesACommit } from './change.js';
 import type { Base } from './change.js';
-import { memberRuns } from './members.js';
-import { changedRanges, fileOf, narrowed, sourcesOf } from './scope.js';
+import { memberRuns, unownedRange } from './members.js';
+import { changedRanges, fileOf, narrowed, sourcesOf, unreachedRange } from './scope.js';
 import type { MutationScope } from './scope.js';
 import { handedToTheSuite, judgedRuns } from './survivors.js';
 import type { Judged, ModuleRun } from './survivors.js';
@@ -145,12 +145,29 @@ async function judgedAfterTheSuite({
     );
 }
 
+function refusedRange(range: string, where: string): number {
+    print(
+        `${RED}${refusal({
+            fix: `name ${where}, by its path from the project's root and its lines as from-to — src/a.ts:10-20 — or the whole file by its path`,
+            found: `--mutate names ${range}, which reaches no source the run mutates`,
+            read: 'docs/reference/quality-checks.md#mutation',
+            why: 'a range that reaches no source narrows both runs to nothing, and the run would pass having measured nothing',
+        })}${RESET}\n`,
+    );
+
+    return 1;
+}
+
 // invariant: a workspace root keeps no vitest config: each member is measured in its own folder, as `cd <member> && typescript mutation` measures it, into its own `.artifacts/stryker/`.
 async function membersMeasured(
     project: string,
     members: readonly string[],
     asked: { ranges: readonly string[] | undefined; since: string | undefined },
 ): Promise<number> {
+    const unowned = unownedRange(members, asked.ranges ?? []);
+    if (unowned !== undefined) {
+        return refusedRange(unowned, 'a source of a member of the workspace');
+    }
     let status = 0;
     for (const { args, member } of memberRuns(members, asked)) {
         print(`${badge('TYPESCRIPT')} ${member}\n\n`);
@@ -189,6 +206,10 @@ export async function mutation(args: readonly string[]): Promise<number> {
         named === undefined ? defaultBaseOf(project) : { commit: named, names: named };
     const scope = await mutationScopeOf(project);
     const { tested, untested } = sourcesOf(project, scope);
+    const unreached = unreachedRange(ranges ?? [], new Set([...tested, ...untested]));
+    if (unreached !== undefined) {
+        return refusedRange(unreached, 'a source the run mutates');
+    }
     strykerPrepared(project);
 
     const modules = narrowed(tested, ranges);

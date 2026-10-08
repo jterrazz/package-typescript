@@ -21,3 +21,10 @@ export function memberRuns(
             : [{ args: [...sinceArgs, '--mutate', own.join(',')], member }];
     });
 }
+
+/** The first `--mutate` range that sits in no member of the workspace, else `undefined`. */
+export const unownedRange = (
+    members: readonly string[],
+    ranges: readonly string[],
+): string | undefined =>
+    ranges.find((range) => !members.some((member) => range.startsWith(`${member}/`)));
