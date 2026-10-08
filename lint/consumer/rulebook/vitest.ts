@@ -165,6 +165,17 @@ export default fragment({
                 }),
             },
         }),
+        // invariant: a workspace suite's settings file sits under `specs/` and names the `test()` preset, which no vitest global is.
+        scoped({
+            files: ['**/specs/jterrazz.config.ts'],
+            rules: {
+                'vitest/prefer-importing-vitest-globals': off({
+                    by: "jterrazz-os pilot, 2026-10-07 — its fix wrote `import { test } from 'vitest'` over the settings file's `test` preset import, and every reader of the file then judged on defaults",
+                    kind: 'evidence',
+                }),
+            },
+            since: '11.0.0',
+        }),
         // invariant: a no-op adapter is the test double a library ships for its consumers' tests, named `noop.adapter.ts`, or `noop-<port>.adapter.ts` when it ships one per port.
         scoped({
             files: ['**/noop.adapter.ts', '**/noop-*.adapter.ts'],
