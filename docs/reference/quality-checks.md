@@ -693,7 +693,7 @@ A workspace member is a spine of its own, judged the same way from its own folde
 
 #### The six gestures
 
-Every repository answers the same six at its root, whatever the language under it: `make install`, `make build`, `make lint`, `make fix`, `make test` and `make check`. The flows speak only these, so a session that has never opened the repository still knows how to install, prove and repair it. What each recipe runs is the repository's, save how `fix` meets a failure; that the rule exists is the contract.
+Every repository answers the same six at its root, whatever the language under it: `make install`, `make build`, `make lint`, `make fix`, `make test` and `make check`. The flows speak only these, so a session that has never opened the repository still knows how to install, prove and repair it. What each recipe runs is the repository's, save how `fix` meets a failure; that the rule exists is the contract. A target beyond the six — the `mutation` that [Getting started](../start/getting-started.md#4-answer-the-six-gestures-in-a-makefile)'s `check` runs — is a helper of a recipe, and no gesture.
 
 The contract is asked where a REPOSITORY is — a `.git` beside the project, as for [the Docs (layout) pass](#the-docs-layout-pass) — and an ignored `Makefile` counts for none, like every path a tree gate skips. A workspace member owes nothing: the repository's root answers for every member, and a member linted on its own is never asked.
 
