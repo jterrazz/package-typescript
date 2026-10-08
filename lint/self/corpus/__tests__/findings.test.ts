@@ -2,6 +2,10 @@ import { describe, expect, test } from 'vitest';
 
 import { DOCS_RULES } from '../../../consumer/checks/docs.decisions.js';
 import {
+    FOCUSABLE_SECTION_IS_LABELLED_NAME,
+    focusableSectionIsLabelled,
+} from '../../../consumer/rules/accessibility/focusable-section-is-labelled.js';
+import {
     COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME,
     commentNoLongerThanItsFunction,
 } from '../../../consumer/rules/comments/comment-no-longer-than-its-function.js';
@@ -64,6 +68,7 @@ describe('findings', () => {
             [COMMENT_STATES_ITS_KIND_NAME]: commentStatesItsKind.meta,
             [DATA_MODULE_HOLDS_DATA_NAME]: dataModuleHoldsData.meta,
             [ERROR_FAMILY_SHARES_ITS_BASE_NAME]: errorFamilySharesItsBase.meta,
+            [FOCUSABLE_SECTION_IS_LABELLED_NAME]: focusableSectionIsLabelled.meta,
             [PROMISE_IS_AWAITED_NAME]: promiseIsAwaited.meta,
         };
         expect(Object.keys(rules).toSorted()).toStrictEqual(Object.keys(plugin.rules).toSorted());

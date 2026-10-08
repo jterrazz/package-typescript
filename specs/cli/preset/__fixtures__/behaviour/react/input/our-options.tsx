@@ -20,3 +20,12 @@ export function Badge({ muted }: { muted: boolean }): React.JSX.Element {
 export function Portrait(): React.JSX.Element {
     return <img src="/portrait.png" />;
 }
+
+// outside: jterrazz-typescript/focusable-section-is-labelled — an unlabelled section is no region, so its tabIndex is a stray tab stop.
+export function Strip({ code }: { code: string }): React.JSX.Element {
+    return (
+        <section tabIndex={0}>
+            <pre>{code}</pre>
+        </section>
+    );
+}

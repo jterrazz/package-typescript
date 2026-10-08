@@ -148,6 +148,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jterrazz-typescript/comment-states-its-kind = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jterrazz-typescript/data-module-holds-data = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jterrazz-typescript/error-family-shares-its-base = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.jterrazz-typescript/focusable-section-is-labelled = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jterrazz-typescript/promise-is-awaited = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.logical-assignment-operators = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.max-classes-per-file = "error"

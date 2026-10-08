@@ -45,7 +45,7 @@ export default fragment({
                 'tabindex-no-positive',
             ].map((rule) => `jsx-a11y/${rule}`),
         ),
-        // outside: a scrollable region must be reachable by the keyboard (WCAG 2.1.1, axe scrollable-region-focusable): a labelled `<section>` — the tag prefer-tag-over-role asks for a region — takes `tabIndex={0}`.
+        // outside: a scrollable region must be reachable by the keyboard (WCAG 2.1.1, axe scrollable-region-focusable): a `<section>` — the tag prefer-tag-over-role asks for a region — takes `tabIndex={0}`, and jterrazz-typescript/focusable-section-is-labelled holds it to the label that makes it one.
         'jsx-a11y/no-noninteractive-tabindex': {
             ...on([{ roles: ['tabpanel', 'region'], tags: ['section'] }]),
             since: '11.0.0',

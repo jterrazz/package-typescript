@@ -1,4 +1,8 @@
 import {
+    FOCUSABLE_SECTION_IS_LABELLED_NAME,
+    focusableSectionIsLabelled,
+} from './accessibility/focusable-section-is-labelled.js';
+import {
     COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME,
     commentNoLongerThanItsFunction,
 } from './comments/comment-no-longer-than-its-function.js';
@@ -23,6 +27,7 @@ const plugin: { meta: { name: string }; rules: Readonly<Record<string, object>> 
         [COMMENT_STATES_ITS_KIND_NAME]: commentStatesItsKind,
         [DATA_MODULE_HOLDS_DATA_NAME]: dataModuleHoldsData,
         [ERROR_FAMILY_SHARES_ITS_BASE_NAME]: errorFamilySharesItsBase,
+        [FOCUSABLE_SECTION_IS_LABELLED_NAME]: focusableSectionIsLabelled,
         [PROMISE_IS_AWAITED_NAME]: promiseIsAwaited,
     },
 };

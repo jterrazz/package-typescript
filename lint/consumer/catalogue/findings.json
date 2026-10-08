@@ -60,6 +60,11 @@
         "sentence": "An `errors.ts` or `*.errors.ts` module holds one family of classes — a base and what derives from it — so the class-count cap stands aside for it."
     },
     {
+        "family": "accessibility",
+        "id": "jterrazz-typescript/focusable-section-is-labelled",
+        "sentence": "A `<section>` that takes the keyboard's focus names the region it scrolls with `aria-label` or `aria-labelledby`, since an unlabelled section is no region and its `tabIndex` a stray tab stop."
+    },
+    {
         "family": "promises",
         "id": "jterrazz-typescript/promise-is-awaited",
         "sentence": "A promise is awaited, never threaded through a `.then()`, `.catch()` or `.finally()` chain nor wrapped in an async function called at the module's top level — and a `.catch()` given a value, which no promise takes, is a schema's fallback the rule leaves alone."

@@ -790,6 +790,18 @@ One rule of the rulebook's own oxlint plugin judges what a module holds, so its 
 
 <!-- /GENERATED:findings modules -->
 
+## Accessibility
+
+One rule of the rulebook's own oxlint plugin judges what jsx-a11y cannot read from a tag alone, so its findings are the Oxlint pass's: a `<section>` that takes the keyboard's focus names the region it is ([Lint presets](lint-presets.md#a-focusable-section-is-labelled)).
+
+<!-- GENERATED:findings accessibility -->
+
+| Rule                                                | Requirement                                                                                                                                                                                     |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jterrazz-typescript/focusable-section-is-labelled` | A `<section>` that takes the keyboard's focus names the region it scrolls with `aria-label` or `aria-labelledby`, since an unlabelled section is no region and its `tabIndex` a stray tab stop. |
+
+<!-- /GENERATED:findings accessibility -->
+
 ## Promises
 
 One rule of the rulebook's own oxlint plugin judges how a promise is read, so its findings are the Oxlint pass's: a promise is awaited, and a `.catch()` given a value — a schema's fallback — is no promise ([Lint presets](lint-presets.md#a-promise-is-awaited)).
