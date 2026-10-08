@@ -503,14 +503,15 @@ The versions line reports only what deviates. The full table is `typescript doct
 
 ## The Suppressions (directives) pass
 
-Every place the project told a checker to look away. A suppression is a decision, and a decision the next reader cannot re-derive is a defect waiting to be re-introduced, so two rules hold what oxlint does not.
+Every place the project told a checker to look away. A suppression is a decision, and a decision the next reader cannot re-derive is a defect waiting to be re-introduced, so three rules hold what oxlint and Stryker do not.
 
 <!-- GENERATED:findings suppressions -->
 
 | Rule                                      | Requirement                                                                                                        |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `suppressions/spelled-for-this-toolchain` | A suppression is spelled for the linter this toolchain runs: oxlint-disable, never eslint-disable or biome-ignore. |
-| `suppressions/states-its-reason`          | Every oxlint-disable directive states the reason it exists.                                                        |
+| `suppressions/states-its-reason`          | Every oxlint-disable and Stryker disable directive states the reason it exists.                                    |
+| `suppressions/stryker-names-its-mutators` | A Stryker disable directive names the mutators it declares equivalent, never all of them.                          |
 
 <!-- /GENERATED:findings suppressions -->
 
@@ -524,6 +525,8 @@ export function announce(message: string): void {
 ```
 
 Turning a rule off for the whole project is `typescript.oxlint`'s, with its reason ([Configuration § The lint rules](configuration.md#the-lint-rules)).
+
+A mutation directive is a suppression too, read the same way: `// Stryker disable next-line ConditionalExpression: <why no test can tell it apart>`, its reason after the colon, its mutators named — never `all` ([The mutation verdict](#mutation)).
 
 A directive is read only where a checker reads one: at the OPENING of a comment. Prose about a suppression, and a string carrying its spelling — the gate's own source is made of both — is not a suppression, and neither oxlint nor tsc would treat it as one.
 
@@ -845,7 +848,7 @@ A mutant never touches the checkout. Stryker copies the project into a sandbox u
 
 ### Every mutant a test runs is detected
 
-A run ends on one verdict: every mutant a test runs is detected — killed, or timed out — or declared. A survivor is a line a test runs and lets change unseen, and the run fails naming each one at its place, `src/discount.ts:2:9  ConditionalExpression → false`, before the four-part lesson; the fix is an assertion of what the line decides, and a value compared whole kills most of them. A mutant that no change of behaviour can tell apart — a cache that only saves time, a comparator over keys that never tie — is declared where it stands, `// Stryker disable next-line <mutator>: <why it is equivalent>`, and the reason is read in review like any other suppression. A mutant no test runs at all is no survivor: the run counts them file by file. One the module tests left on a line no change has reached is counted apart, in one number, until a change brings it to the suite. A source with no module test is mutated by no run until a change reaches it, so its mutants are in no count: the run counts those sources apart, in one number of files; one a change brought there that the suite's report does not carry was judged by nothing, and fails the run. A mutant the module tests let live and the suite detects counts among the detected, and the verdict says how many the suite answered that way. A mutant that did not compile, errored at runtime or was declared is outside the verdict, counted by its status. A mutant of any other status — left `Pending` by a run stopped midway, or with no status at all — was judged by nothing, and fails the run, as a run that leaves no report is refused rather than passed.
+A run ends on one verdict: every mutant a test runs is detected — killed, or timed out — or declared. A survivor is a line a test runs and lets change unseen, and the run fails naming each one at its place, `src/discount.ts:2:9  ConditionalExpression → false`, before the four-part lesson; the fix is an assertion of what the line decides, and a value compared whole kills most of them. A mutant that no change of behaviour can tell apart — a cache that only saves time, a comparator over keys that never tie — is declared where it stands, `// Stryker disable next-line <mutator>: <why it is equivalent>`, and the reason is read in review like any other suppression. The Suppressions pass refuses a directive with no reason after its colon, and one that names `all`: it silences every mutator that line opens, today's and the next change's, where a declaration is about the mutators named. A directive covers the line it names, and a block starts on the line of its opening brace — `// Stryker disable next-line` above `} catch {` covers that line, never the catch body under it; a block is declared by a `// Stryker disable <mutator>: <why>` … `// Stryker restore <mutator>` range around it. A guard that exists only to narrow an index read for `noUncheckedIndexedAccess` is no equivalence to declare: read the value through `.at()`, or a helper that owns the one narrowing, and the dead branch is gone. A mutant no test runs at all is no survivor: the run counts them file by file. One the module tests left on a line no change has reached is counted apart, in one number, until a change brings it to the suite. A source with no module test is mutated by no run until a change reaches it, so its mutants are in no count: the run counts those sources apart, in one number of files; one a change brought there that the suite's report does not carry was judged by nothing, and fails the run. A mutant the module tests let live and the suite detects counts among the detected, and the verdict says how many the suite answered that way. A mutant that did not compile, errored at runtime or was declared is outside the verdict, counted by its status. A mutant of any other status — left `Pending` by a run stopped midway, or with no status at all — was judged by nothing, and fails the run, as a run that leaves no report is refused rather than passed.
 
 There is no score and no floor to hold: zero is the only count the verdict accepts, so nothing is recorded in `.jterrazz/baseline.json` ([ADR-019](../decisions/019-mutation-judges-zero-survivors-not-a-score.md), [ADR-020](../decisions/020-mutation-measures-the-whole-suite-over-a-change.md)). The incremental files under `.artifacts/stryker/` keep each run to the mutants of what changed, which is what lets a repository run it inside its own `make check`, and the shared validate workflow run it on every push.
 

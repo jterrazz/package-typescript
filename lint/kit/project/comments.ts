@@ -15,6 +15,11 @@ export const TS_DIRECTIVE = new RegExp(
     'gu',
 );
 
+export const STRYKER_DISABLE = new RegExp(
+    `${COMMENT}Stryker disable(?: next-line)? (?<tail>[^\n*]*)`,
+    'gu',
+);
+
 // outside: no project of this toolchain runs Biome.
 export const BIOME = new RegExp(`${COMMENT}biome-ignore\\b`, 'u');
 

@@ -21,6 +21,8 @@ runs:
            RUN  Suppressions (directives)
 
           index.ts:4:1: error suppressions(states-its-reason): line 4 disables no-unused-vars with no '-- reason' after it
+          index.ts:16:1: error suppressions(stryker-names-its-mutators): line 16 disables every mutator — name the ones the code cannot be killed by
+          index.ts:19:1: error suppressions(states-its-reason): line 19 disables ConditionalExpression with no ': reason' after it
           index.ts rewritten — the directive now names the checker this project runs
           ✗ Failed with exit code 1
 

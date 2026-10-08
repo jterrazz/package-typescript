@@ -62,7 +62,12 @@
     {
         "family": "suppressions",
         "id": "suppressions/states-its-reason",
-        "sentence": "Every oxlint-disable directive states the reason it exists."
+        "sentence": "Every oxlint-disable and Stryker disable directive states the reason it exists."
+    },
+    {
+        "family": "suppressions",
+        "id": "suppressions/stryker-names-its-mutators",
+        "sentence": "A Stryker disable directive names the mutators it declares equivalent, never all of them."
     },
     {
         "family": "names",

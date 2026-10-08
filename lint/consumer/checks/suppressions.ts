@@ -6,6 +6,7 @@ import {
     commentSpansOf,
     DISABLE,
     SOURCE,
+    STRYKER_DISABLE,
     TS_DIRECTIVE,
 } from '../../kit/project/comments.js';
 import { configAt, resolveConfig } from '../../kit/project/oxlint-config.js';
@@ -66,7 +67,7 @@ function auditLine(
 
     for (const [start, end] of spans) {
         let comment = line.slice(start, end);
-        for (const audit of [auditBiome, auditDisables, auditTypeScript]) {
+        for (const audit of [auditBiome, auditDisables, auditStryker, auditTypeScript]) {
             const { fixed: rewritten, found: reported } = audit(comment, number, config);
             found.push(...reported);
             comment = rewritten;
@@ -141,6 +142,32 @@ function auditOxlintDirective(number: number, tail: string, named: readonly stri
           ];
 }
 
+const STRYKER_REASON = ':';
+
+// invariant: `all` silences every mutator a later line of code would open there too, so a declared equivalence names the mutators it is about.
+function auditStryker(line: string, number: number): Audited {
+    const found: Found[] = [];
+    for (const match of line.matchAll(STRYKER_DISABLE)) {
+        // Stryker disable next-line OptionalChaining: a match of the pattern always carries its groups
+        const [named = '', ...reason] = (match.groups?.tail ?? '').split(STRYKER_REASON);
+        const mutators = named.split(',').map((name) => name.trim());
+        if (mutators.includes('all')) {
+            found.push({
+                message: `line ${number} disables every mutator — name the ones the code cannot be killed by`,
+                rule: 'suppressions/stryker-names-its-mutators',
+            });
+        }
+        if (reason.join(STRYKER_REASON).trim() === '') {
+            found.push({
+                message: `line ${number} disables ${named.trim()} with no '${STRYKER_REASON} reason' after it`,
+                rule: 'suppressions/states-its-reason',
+            });
+        }
+    }
+
+    return { fixed: line, found };
+}
+
 function auditTypeScript(line: string): Audited {
     let fixed = line;
     for (const match of line.matchAll(TS_DIRECTIVE)) {
@@ -161,7 +188,8 @@ function auditSource(
     violations: (Found & { line: number; rewritable: boolean })[];
 } {
     const text = readText(root, path);
-    if (text === null || !/(?:es|ox)lint-disable|@ts-|biome-ignore/u.test(text)) {
+    // Stryker disable next-line ConditionalExpression,LogicalOperator,BlockStatement: the probe spares reading a source that holds no directive, and one read whole finds none either; a listed source is a file that reads
+    if (text === null || !/(?:es|ox)lint-disable|@ts-|biome-ignore|Stryker disable/u.test(text)) {
         return null;
     }
 
