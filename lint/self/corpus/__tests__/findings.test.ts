@@ -2,6 +2,10 @@ import { describe, expect, test } from 'vitest';
 
 import { DOCS_RULES } from '../../../consumer/checks/docs.decisions.js';
 import {
+    ACCESSIBLE_ELEMENT_IS_JSX_NAME,
+    accessibleElementIsJsx,
+} from '../../../consumer/rules/accessibility/accessible-element-is-jsx.js';
+import {
     FOCUSABLE_SECTION_IS_LABELLED_NAME,
     focusableSectionIsLabelled,
 } from '../../../consumer/rules/accessibility/focusable-section-is-labelled.js';
@@ -64,6 +68,7 @@ describe('findings', () => {
     test('printedFindingIds — the rules of the oxlint plugin — each teaches the row of its id: its family, its sentence, its audience and a kind oxlint knows', () => {
         // Given - every rule the plugin registers, beside its catalogue row
         const rules = {
+            [ACCESSIBLE_ELEMENT_IS_JSX_NAME]: accessibleElementIsJsx.meta,
             [COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME]: commentNoLongerThanItsFunction.meta,
             [COMMENT_STATES_ITS_KIND_NAME]: commentStatesItsKind.meta,
             [DATA_MODULE_HOLDS_DATA_NAME]: dataModuleHoldsData.meta,

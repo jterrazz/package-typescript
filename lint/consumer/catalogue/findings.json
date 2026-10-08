@@ -61,6 +61,11 @@
     },
     {
         "family": "accessibility",
+        "id": "jterrazz-typescript/accessible-element-is-jsx",
+        "sentence": "An element whose role, tab stop or aria attribute is set is written in JSX, never through `createElement`, whose props no jsx-a11y rule reads."
+    },
+    {
+        "family": "accessibility",
         "id": "jterrazz-typescript/focusable-section-is-labelled",
         "sentence": "A `<section>` that takes the keyboard's focus names the region it scrolls with `aria-label` or `aria-labelledby`, since an unlabelled section is no region and its `tabIndex` a stray tab stop."
     },

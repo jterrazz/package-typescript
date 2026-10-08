@@ -144,6 +144,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jsx-a11y/role-supports-aria-props = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jsx-a11y/scope = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jsx-a11y/tabindex-no-positive = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.jterrazz-typescript/accessible-element-is-jsx = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jterrazz-typescript/comment-no-longer-than-its-function = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jterrazz-typescript/comment-states-its-kind = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jterrazz-typescript/data-module-holds-data = "error"

@@ -6,6 +6,7 @@ export default fragment({
     jsPlugins: ['jterrazz-typescript'],
     since: '11.0.0',
     rules: {
+        'jterrazz-typescript/accessible-element-is-jsx': on(),
         'jterrazz-typescript/comment-no-longer-than-its-function': on(),
         'jterrazz-typescript/comment-states-its-kind': on(),
         'jterrazz-typescript/data-module-holds-data': on(),

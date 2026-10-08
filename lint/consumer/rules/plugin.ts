@@ -1,4 +1,8 @@
 import {
+    ACCESSIBLE_ELEMENT_IS_JSX_NAME,
+    accessibleElementIsJsx,
+} from './accessibility/accessible-element-is-jsx.js';
+import {
     FOCUSABLE_SECTION_IS_LABELLED_NAME,
     focusableSectionIsLabelled,
 } from './accessibility/focusable-section-is-labelled.js';
@@ -23,6 +27,7 @@ import { PROMISE_IS_AWAITED_NAME, promiseIsAwaited } from './promises/promise-is
 const plugin: { meta: { name: string }; rules: Readonly<Record<string, object>> } = {
     meta: { name: 'jterrazz-typescript' },
     rules: {
+        [ACCESSIBLE_ELEMENT_IS_JSX_NAME]: accessibleElementIsJsx,
         [COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME]: commentNoLongerThanItsFunction,
         [COMMENT_STATES_ITS_KIND_NAME]: commentStatesItsKind,
         [DATA_MODULE_HOLDS_DATA_NAME]: dataModuleHoldsData,

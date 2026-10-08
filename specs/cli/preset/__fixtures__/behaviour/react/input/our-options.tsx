@@ -4,6 +4,8 @@
  * person who cannot see the page is told.
  */
 
+import { createElement } from 'react';
+
 // outside: import/extensions: never — a bundler resolves the specifier, so it carries no extension.
 import { useTone } from './widgets.tsx';
 
@@ -28,4 +30,9 @@ export function Strip({ code }: { code: string }): React.JSX.Element {
             <pre>{code}</pre>
         </section>
     );
+}
+
+// outside: jterrazz-typescript/accessible-element-is-jsx — jsx-a11y never reads a role set through createElement.
+export function Region({ as }: { as: 'div' | 'pre' }): React.JSX.Element {
+    return createElement(as, { 'aria-label': 'Source', role: 'region', tabIndex: 0 });
 }

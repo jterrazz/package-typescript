@@ -792,12 +792,13 @@ One rule of the rulebook's own oxlint plugin judges what a module holds, so its 
 
 ## Accessibility
 
-One rule of the rulebook's own oxlint plugin judges what jsx-a11y cannot read from a tag alone, so its findings are the Oxlint pass's: a `<section>` that takes the keyboard's focus names the region it is ([Lint presets](lint-presets.md#a-focusable-section-is-labelled)).
+Two rules of the rulebook's own oxlint plugin judge what jsx-a11y cannot read, so their findings are the Oxlint pass's: a `<section>` that takes the keyboard's focus names the region it is ([Lint presets](lint-presets.md#a-focusable-section-is-labelled)), and an element's accessibility props are written where jsx-a11y reads them ([Lint presets](lint-presets.md#an-accessible-element-is-written-in-jsx)).
 
 <!-- GENERATED:findings accessibility -->
 
 | Rule                                                | Requirement                                                                                                                                                                                     |
 | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jterrazz-typescript/accessible-element-is-jsx`     | An element whose role, tab stop or aria attribute is set is written in JSX, never through `createElement`, whose props no jsx-a11y rule reads.                                                  |
 | `jterrazz-typescript/focusable-section-is-labelled` | A `<section>` that takes the keyboard's focus names the region it scrolls with `aria-label` or `aria-labelledby`, since an unlabelled section is no region and its `tabIndex` a stray tab stop. |
 
 <!-- /GENERATED:findings accessibility -->
