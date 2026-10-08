@@ -2,14 +2,14 @@ import { describe, expect, test } from 'vitest';
 
 import { manual, messageOf, rulesBrokenBy, violationOf, withDecisions } from './docs.fixtures.js';
 
-describe('auditDecisions', () => {
-    test('passes a well-formed decisions folder', () => {
+describe('docs.decisions', () => {
+    test('auditDecisions — passes a well-formed decisions folder', () => {
         // Given - one record on the mold, beside the mold itself
         // Then - nothing to say
         expect(rulesBrokenBy(withDecisions())).toStrictEqual([]);
     });
 
-    test('names a decision file that is not NNN-kebab.md', () => {
+    test('auditDecisions — names a decision file that is not NNN-kebab.md', () => {
         // Given - a record named without its number
         const tree = withDecisions({
             files: [...withDecisions().files, 'docs/decisions/v002-the-second-call.md'],
@@ -23,7 +23,7 @@ describe('auditDecisions', () => {
         });
     });
 
-    test('names a decision opening on the wrong heading', () => {
+    test('auditDecisions — names a decision opening on the wrong heading', () => {
         // Given - a record whose title forgets the ADR number
         const tree = withDecisions({
             heads: {
@@ -43,7 +43,7 @@ describe('auditDecisions', () => {
         });
     });
 
-    test('names a decision that opens on nothing at all', () => {
+    test('auditDecisions — names a decision that opens on nothing at all', () => {
         // Given - a record whose head was never read, or is empty
         const tree = withDecisions({ heads: {} });
 
@@ -58,7 +58,7 @@ describe('auditDecisions', () => {
         });
     });
 
-    test('names a decision whose heading claims another number', () => {
+    test('auditDecisions — names a decision whose heading claims another number', () => {
         // Given - a record numbered 001 titled ADR-002
         const tree = withDecisions({
             heads: {
@@ -74,7 +74,7 @@ describe('auditDecisions', () => {
         expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-heading-carries-its-number']);
     });
 
-    test('names a decision outside the status vocabulary', () => {
+    test('auditDecisions — names a decision outside the status vocabulary', () => {
         // Given - a record declaring a status nobody defined
         const tree = withDecisions({
             heads: {
@@ -92,7 +92,7 @@ describe('auditDecisions', () => {
         );
     });
 
-    test('accepts a superseded status that links the record replacing it', () => {
+    test('auditDecisions — accepts a superseded status that links the record replacing it', () => {
         // Given - the one status carrying an argument, written as a citation
         const tree = withDecisions({
             heads: {
@@ -108,7 +108,7 @@ describe('auditDecisions', () => {
         expect(rulesBrokenBy(tree)).toStrictEqual([]);
     });
 
-    test('refuses a superseded status with no link naming the successor', () => {
+    test('auditDecisions — refuses a superseded status with no link naming the successor', () => {
         // Given - the bare form: a successor is named, but not as a place to look
         const tree = withDecisions({
             heads: {
@@ -126,7 +126,7 @@ describe('auditDecisions', () => {
         );
     });
 
-    test('passes an empty decisions folder', () => {
+    test('auditDecisions — passes an empty decisions folder', () => {
         // Given - the folder exists but holds no record yet
         const tree = manual({ files: [...manual().files, 'docs/decisions/'] });
 
@@ -134,7 +134,7 @@ describe('auditDecisions', () => {
         expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-template-present']);
     });
 
-    test('passes a decisions folder holding only the template', () => {
+    test('auditDecisions — passes a decisions folder holding only the template', () => {
         // Given - the mold, and not a single record beside it
         const tree = manual({
             files: [...manual().files, 'docs/decisions/', 'docs/decisions/_template.md'],
@@ -144,7 +144,7 @@ describe('auditDecisions', () => {
         expect(rulesBrokenBy(tree)).toStrictEqual([]);
     });
 
-    test('refuses a decision sequence that starts above 001', () => {
+    test('auditDecisions — refuses a decision sequence that starts above 001', () => {
         // Given - 006 and 008, with nothing numbered before them
         const tree = withDecisions({
             files: [
@@ -176,7 +176,7 @@ describe('auditDecisions', () => {
         });
     });
 
-    test('refuses a gap after 001', () => {
+    test('auditDecisions — refuses a gap after 001', () => {
         // Given - 001 then 003
         const tree = withDecisions({
             files: [...withDecisions().files, 'docs/decisions/003-the-third-call.md'],
@@ -194,7 +194,7 @@ describe('auditDecisions', () => {
         expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decisions-numbered-contiguously']);
     });
 
-    test('judges the sequence of records listed out of order', () => {
+    test('auditDecisions — judges the sequence of records listed out of order', () => {
         // Given - 002 listed before 001
         const tree = withDecisions({
             files: [
@@ -218,7 +218,7 @@ describe('auditDecisions', () => {
         expect(rulesBrokenBy(tree)).toStrictEqual([]);
     });
 
-    test('lets a duplicated number pass the sequence check on its own', () => {
+    test('auditDecisions — lets a duplicated number pass the sequence check on its own', () => {
         // Given - two records claiming 001, and none other — the set is just {001}
         const tree = withDecisions({
             files: [...withDecisions().files, 'docs/decisions/001-the-same-call.md'],
@@ -236,7 +236,7 @@ describe('auditDecisions', () => {
         expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-number-unique']);
     });
 
-    test('names a number two records claim', () => {
+    test('auditDecisions — names a number two records claim', () => {
         // Given - two records numbered 001
         const tree = withDecisions({
             files: [...withDecisions().files, 'docs/decisions/001-the-same-call.md'],
@@ -257,7 +257,7 @@ describe('auditDecisions', () => {
         });
     });
 
-    test('names a hand-written decisions index', () => {
+    test('auditDecisions — names a hand-written decisions index', () => {
         // Given - a README.md listing the records
         const tree = withDecisions({
             files: [...withDecisions().files, 'docs/decisions/README.md'],
@@ -272,7 +272,7 @@ describe('auditDecisions', () => {
         });
     });
 
-    test('names a decisions folder with no mold', () => {
+    test('auditDecisions — names a decisions folder with no mold', () => {
         // Given - records with no _template.md beside them
         const tree = withDecisions({
             files: withDecisions().files.filter((path) => path !== 'docs/decisions/_template.md'),

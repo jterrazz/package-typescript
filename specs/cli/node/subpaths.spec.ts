@@ -16,7 +16,7 @@ describe('subpaths', () => {
             @jterrazz/typescript/config (types) → ./dist/config.d.ts: held
             @jterrazz/typescript/config (default) → ./dist/config.js: loads, 4 names
             @jterrazz/typescript/docs (types) → ./dist/docs.d.ts: held
-            @jterrazz/typescript/docs (default) → ./dist/docs.js: loads, 2 names
+            @jterrazz/typescript/docs (default) → ./dist/docs.js: loads, 3 names
             @jterrazz/typescript/oxfmt (types) → ./dist/oxfmt.d.ts: held
             @jterrazz/typescript/oxfmt (default) → ./dist/oxfmt.js: loads, 1 names
             @jterrazz/typescript/oxlint (types) → ./dist/oxlint.d.ts: held
@@ -51,7 +51,7 @@ describe('subpaths', () => {
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toMatch(`
             @jterrazz/typescript/config: defineConfig, definePreset, defineStandard, ownPresets
-            @jterrazz/typescript/docs: HEAD_LINES, auditDocs
+            @jterrazz/typescript/docs: DOCS_RULES, HEAD_LINES, auditDocs
             @jterrazz/typescript/oxfmt: oxfmtConfig
             @jterrazz/typescript/oxlint: oxlintConfig
             @jterrazz/typescript/rules: BASELINE, CODE_SPECIAL_FOLDERS, GROUND_EXPECTED, GROUND_FIXTURES, GROUND_FOLDERS, GROUND_GLOB, GROUND_REQUESTS, GROUND_SEEDS, LESSON_PARTS, MEMBER_DEPTH, OXLINT_CONFIG_NAMES, OXLINT_SUPPRESSIONS, PRUNED, RENAMED_FOLDERS, RETIRED_SHARED_FOLDERS, SETUP_FOLDER, SPECIAL_FOLDERS, TESTS_FOLDER, anchor, anchorsOf, blankComments, byName, cell, countsOf, declaredSubpaths, defineCheck, defineInvariant, defineRule, exitCodeOf, filesUnder, firstSentence, folderChanged, forgetTree, holdsDirectives, holdsManifest, isDirectory, isFile, isGroundFolder, isProjectRoot, isSpecialFolder, isSpecialFolderName, keepsSection, labelOf, lessonOf, lessonParts, lessonsAt, listDirectory, markdownTable, missingParts, moduleStemOfTest, moduleTestOf, moveKeepingHistory, nearestRoot, originalOf, presetChecks, projected, quotedMask, readAt, readFileCached, readManifest, readSettings, readSettingsSync, refusal, refusalBlock, rowNamed, runChecker, sectionOf, spliceBetween, stop, suppressionDirectives, treeEntries, treeKind, treeNames, whyOf, workspaceMembers, workspacePatterns, writeProjections, writeSection

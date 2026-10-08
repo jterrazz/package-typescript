@@ -2,18 +2,20 @@
 // messages. Nothing here reads the filesystem, so a clone nobody installed into is judged the same.
 import type { DocsTree } from '../../kit/project/docs-tree.js';
 import { auditDecisions } from './docs.decisions.js';
-import type { Report } from './docs.decisions.js';
+import type { DocsRule, Report } from './docs.decisions.js';
 import { auditLinks } from './docs.links.js';
 import { auditPages, pagesOf, SECTIONS } from './docs.pages.js';
 import type { Page } from './docs.pages.js';
 
 export type { DocsTree } from '../../kit/project/docs-tree.js';
+export { DOCS_RULES } from './docs.decisions.js';
+export type { DocsRule } from './docs.decisions.js';
 
 /** One broken rule, naming the path it is about and the sentence the gate prints. */
 export type DocsViolation = {
     readonly message: string;
     readonly path: string;
-    readonly rule: string;
+    readonly rule: DocsRule;
 };
 
 /** How many opening lines of a file a rule may read. */

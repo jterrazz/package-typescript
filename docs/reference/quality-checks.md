@@ -238,7 +238,7 @@ const tree: DocsTree = {
 export const violations = auditDocs(tree);
 ```
 
-A `DocsTree` is a plain description of one repository: the paths under `docs/`, the opening lines of each page, each page's link targets, the root `AGENTS.md`, and the three presence facts. Each violation is a `{ rule, path, message }`. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
+A `DocsTree` is a plain description of one repository: the paths under `docs/`, the opening lines of each page, each page's link targets, the root `AGENTS.md`, and the three presence facts. Each violation is a `{ rule, path, message }`, its `rule` typed `DocsRule` — the union of the pass's ids, `DOCS_RULES` as a value — so a consumer that compares a rule id stops compiling when a release renames it, rather than reading every tree as broken. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
 
 ## The Oxlint pass
 

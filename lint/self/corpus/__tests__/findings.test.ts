@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
+import { DOCS_RULES } from '../../../consumer/checks/docs.decisions.js';
 import { FAMILIES, FINDINGS, printedFindingIds } from '../findings.js';
 
 describe('findings', () => {
@@ -25,5 +26,13 @@ describe('findings', () => {
                 ].filter((broken) => broken !== null),
             ),
         ).toStrictEqual([]);
+    });
+
+    test('printedFindingIds — findings — the union a docs consumer compares with is every docs row', () => {
+        // Given - the rows of the docs family
+        const catalogued = FINDINGS.filter(({ family }) => family === 'docs').map(({ id }) => id);
+
+        // Then - the ids @jterrazz/typescript/docs publishes are exactly those rows
+        expect([...DOCS_RULES].toSorted()).toStrictEqual(catalogued.toSorted());
     });
 });

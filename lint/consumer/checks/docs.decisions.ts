@@ -1,6 +1,32 @@
 import type { DocsTree } from '../../kit/project/docs-tree.js';
 
-export type Report = (rule: string, path: string, message: string) => void;
+export const DOCS_RULES = [
+    'docs/agents-route-to-the-map',
+    'docs/decision-heading-carries-its-number',
+    'docs/decision-listed-in-the-map',
+    'docs/decision-named-by-number-and-subject',
+    'docs/decision-number-unique',
+    'docs/decision-status-known',
+    'docs/decision-template-present',
+    'docs/decisions-numbered-contiguously',
+    'docs/manual-present',
+    'docs/map-links-only-pages',
+    'docs/map-matches-pages',
+    'docs/map-present',
+    'docs/no-cross-repository-link',
+    'docs/no-loose-file',
+    'docs/no-unknown-subfolder',
+    'docs/page-named-in-kebab-case',
+    'docs/page-names-a-subject',
+    'docs/release-guide-present-when-shipping',
+    'docs/required-pages-present',
+    'docs/section-is-flat',
+] as const;
+
+/** A rule of the Docs (layout) pass, by its id: a rename breaks the build of a consumer comparing one. */
+export type DocsRule = (typeof DOCS_RULES)[number];
+
+export type Report = (rule: DocsRule, path: string, message: string) => void;
 
 type Entry = { name: string; path: string };
 
