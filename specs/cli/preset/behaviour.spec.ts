@@ -16,6 +16,7 @@ import {
     oxlint,
     PROFILES,
     sandbox,
+    tsc,
 } from '../../__setup__/rulebook.js';
 import type { Diagnostic } from '../../__setup__/rulebook.js';
 
@@ -91,6 +92,24 @@ describe('behaviour', () => {
             expect(report).toBe(readFileSync(golden, 'utf8'));
         },
     );
+
+    test.each([
+        { file: 'settled-pairs.ts', name: 'node', tsconfig: 'node' },
+        { file: 'settled-pairs.tsx', name: 'react', tsconfig: 'react' },
+    ])('$name types its settled pairs under its tsconfig preset', ({ file, name, tsconfig }) => {
+        // Given - the profile's settled pairs, under the tsconfig preset its projects extend
+        using work = sandbox(resolve(FIXTURES, name, 'input'), name, tsconfig);
+        writeFileSync(
+            resolve(work.path, 'tsconfig.settled.json'),
+            JSON.stringify({ extends: './tsconfig.json', files: [file], include: [] }),
+        );
+
+        // When - the type-checker reads the file
+        const result = tsc(work.path, ['--noEmit', '-p', 'tsconfig.settled.json']);
+
+        // Then - each shape a pair settled is a shape TypeScript accepts too
+        expect(result).toStrictEqual({ status: 0, stdout: '' });
+    });
 
     test('keeps a behaviour ground only for a profile the rulebook ships', () => {
         // Given - every entry of the behaviour goldens and fixtures

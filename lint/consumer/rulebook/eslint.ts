@@ -129,7 +129,6 @@ export default fragment({
             'no-useless-constructor',
             'no-useless-escape',
             'no-useless-rename',
-            'no-useless-return',
             'no-var',
             'no-warning-comments',
             'no-with',
@@ -232,6 +231,13 @@ export default fragment({
             RULE_REVIEW_SINCE,
         ),
         'no-continue': off({ by: 'max-depth (4)', kind: 'exclusive' }),
+        'no-useless-return': off(
+            {
+                by: 'TypeScript noImplicitReturns — set in every tsconfig preset: a function whose other paths return a value ends on the bare `return;` it asks for, which this rule refuses as useless; a React effect returning its cleanup inside an `if` is the shape (pilot review, 2026-10-08)',
+                kind: 'exclusive',
+            },
+            RULE_REVIEW_SINCE,
+        ),
         'no-implied-eval': off({ by: 'typescript/no-implied-eval', kind: 'covered' }),
         'no-lonely-if': off({ by: 'unicorn/no-lonely-if', kind: 'covered' }),
         'no-magic-numbers': off({

@@ -296,7 +296,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-useless-constructor = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-useless-escape = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-useless-rename = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-useless-return = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-useless-return = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-var = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-void = ["error",{"allowAsStatement":true}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-warning-comments = "error"

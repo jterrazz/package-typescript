@@ -20,6 +20,7 @@ import { newDirectory } from './temporary-directory.js';
 const REPOSITORY = resolve(import.meta.dirname, '../..');
 const OXLINT = resolve(REPOSITORY, 'node_modules/.bin/oxlint');
 const OXFMT = resolve(REPOSITORY, 'node_modules/.bin/oxfmt');
+const TSC = resolve(REPOSITORY, 'node_modules/.bin/tsc');
 
 export const PROFILES = Object.freeze([
     { name: 'node', tsconfig: 'node' },
@@ -120,6 +121,10 @@ export function sandbox(
 
 export function oxlint(cwd: string, args: string[]): { status: number; stdout: string } {
     return run(OXLINT, args, cwd);
+}
+
+export function tsc(cwd: string, args: string[]): { status: number; stdout: string } {
+    return run(TSC, args, cwd);
 }
 
 export function oxfmt(cwd: string, args: string[]): { status: number; stdout: string } {

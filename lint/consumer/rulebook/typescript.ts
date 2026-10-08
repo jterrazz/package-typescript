@@ -203,7 +203,7 @@ export default fragment({
         }),
         'typescript/consistent-return': off(
             {
-                by: 'TypeScript noImplicitReturns — set in every tsconfig preset, it refuses a path that falls off a function whose other paths return a value, and reads what the rule cannot: an exhaustive switch, and a return type that holds `undefined`; the rule refused both, and asked a React effect returning its cleanup on one path for the `return undefined` unicorn/no-useless-undefined refuses (jterrazz-web pilot, 2026-10-06)',
+                by: 'TypeScript noImplicitReturns — set in every tsconfig preset, it refuses a path that falls off a function whose other paths return a value, and reads what the rule cannot: an exhaustive switch, and a return type that holds `void`; the rule refused both, and asked a React effect returning its cleanup on one path for the `return undefined` unicorn/no-useless-undefined refuses (jterrazz-web pilot, 2026-10-06)',
                 kind: 'covered',
             },
             '11.0.0',

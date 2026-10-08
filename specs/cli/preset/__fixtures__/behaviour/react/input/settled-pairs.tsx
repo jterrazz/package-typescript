@@ -22,6 +22,23 @@ export function Clock({ live }: { live: boolean }): React.JSX.Element {
     return <output>{now}</output>;
 }
 
+// outside: an effect returning its cleanup inside an `if`: noImplicitReturns asks the bare `return;` no-useless-return refused.
+export function Ticker({ live }: { live: boolean }): React.JSX.Element {
+    const [ticks, setTicks] = useState(0);
+    useEffect(() => {
+        if (live) {
+            const timer = setInterval(() => {
+                setTicks((count) => count + 1);
+            }, 1000);
+            return () => {
+                clearInterval(timer);
+            };
+        }
+        return;
+    }, [live]);
+    return <output>{ticks}</output>;
+}
+
 class Painter {
     readonly strokes: number[] = [];
 }
