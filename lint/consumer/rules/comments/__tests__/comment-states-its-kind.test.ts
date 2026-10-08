@@ -14,19 +14,11 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 ' */',
                 'export const listed = 1;',
             ),
-            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'export const listed = 1;',
-        },
-        {
-            code: lines(
-                '/**',
-                ' * @deprecated',
-                ' * and a line of prose after it.',
-                ' */',
-                'export const old = 1;',
+            errors: [{ column: 0, line: 1, messageId: 'wrappedHover' }],
+            output: lines(
+                '/** A summary line. A second line naming the @param list is prose. */',
+                'export const listed = 1;',
             ),
-            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'export const old = 1;',
         },
         {
             code: lines(
@@ -37,8 +29,14 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 ' */',
                 'export const createMetrics = (catalogue) => catalogue;',
             ),
-            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'export const createMetrics = (catalogue) => catalogue;',
+            errors: [{ column: 0, line: 1, messageId: 'wrappedHover' }],
+            output: lines(
+                '/**',
+                ' * A typed catalogue of metrics. A second line of prose is a paragraph, no hover.',
+                ' * @example createMetrics({})',
+                ' */',
+                'export const createMetrics = (catalogue) => catalogue;',
+            ),
         },
         {
             code: lines(
@@ -50,6 +48,57 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
             ),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
             output: 'const helper = () => 1;',
+        },
+        {
+            code: lines(
+                '/**',
+                ' * Parses an amount written in a ledger,',
+                ' * rounding half away from zero.',
+                ' * @param text - the amount as written',
+                ' * @example parsed("1.5") // 2',
+                ' */',
+                'export function parsed(text) {',
+                '    return Math.round(Number(text));',
+                '}',
+            ),
+            errors: [{ column: 0, line: 1, messageId: 'wrappedHover' }],
+            output: lines(
+                '/**',
+                ' * Parses an amount written in a ledger, rounding half away from zero.',
+                ' * @param text - the amount as written',
+                ' * @example parsed("1.5") // 2',
+                ' */',
+                'export function parsed(text) {',
+                '    return Math.round(Number(text));',
+                '}',
+            ),
+        },
+        {
+            code: lines(
+                'export class Ledger {',
+                '    /**',
+                '     * The entries,',
+                '     * oldest first.',
+                '     * @see add',
+                '     */',
+                '    entries = [];',
+                '}',
+            ),
+            errors: [{ column: 4, line: 2, messageId: 'wrappedHover' }],
+            output: lines(
+                'export class Ledger {',
+                '    /**',
+                '     * The entries, oldest first.',
+                '     * @see add',
+                '     */',
+                '    entries = [];',
+                '}',
+            ),
+        },
+        {
+            code: lines('/** Rounds half away', ' * from zero. */', 'export const rounded = 1;'),
+            errors: [{ column: 0, line: 1, messageId: 'wrappedHover' }],
+            output: lines('/** Rounds half away from zero. */', 'export const rounded = 1;'),
         },
         {
             code: lines(
@@ -88,8 +137,18 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 ' */',
                 'export const doubled = (value) => value * 2;',
             ),
-            errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'export const doubled = (value) => value * 2;',
+            errors: [
+                {
+                    column: 0,
+                    line: 1,
+                    message:
+                        "found: an exported symbol's hover whose prose runs past one line · why: the default is no comment — the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: join its prose onto one line above its block tags — an exported symbol's hover is one line of what it is, and the tags after it stay; `typescript fix` joins it, and keeps every tag · read: docs/reference/lint-presets.md#a-comment-states-its-kind",
+                },
+            ],
+            output: lines(
+                '/** Doubles a value. */',
+                'export const doubled = (value) => value * 2;',
+            ),
         },
         {
             code: lines(
@@ -185,8 +244,11 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 ' */',
                 'export const rounded = (value) => Math.round(value);',
             ),
-            errors: [{ column: 0, line: 2, messageId: 'unstated' }],
-            output: 'export const rounded = (value) => Math.round(value);',
+            errors: [{ column: 0, line: 2, messageId: 'wrappedHover' }],
+            output: lines(
+                '/** Rounds half away from zero, as the ledger requires. */',
+                'export const rounded = (value) => Math.round(value);',
+            ),
         },
         {
             code: lines(
@@ -344,6 +406,13 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
             ' * @returns their sum',
             ' */',
             'export const total = (a, b) => a + b;',
+        ),
+        lines(
+            '/**',
+            ' * @deprecated',
+            ' * and a line of prose after it.',
+            ' */',
+            'export const old = 1;',
         ),
         lines(
             '/** The sum of two values.',

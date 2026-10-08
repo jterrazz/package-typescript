@@ -16,7 +16,10 @@ type Comment = {
     value: string;
 };
 
-type Fixer = { removeRange: (range: readonly [number, number]) => unknown };
+type Fixer = {
+    removeRange: (range: readonly [number, number]) => unknown;
+    replaceTextRange: (range: readonly [number, number], text: string) => unknown;
+};
 
 type SourceCode = { getAllComments: () => Comment[]; text: string };
 
@@ -54,6 +57,9 @@ const HOVER_LINE_MARGIN = /^\s*\*?\s?/u;
 
 const BLOCK_TAG = /^@[a-zA-Z]+\b/u;
 
+const WRAPPED_HOVER_FIX =
+    "join its prose onto one line above its block tags — an exported symbol's hover is one line of what it is, and the tags after it stay; `typescript fix` joins it, and keeps every tag";
+
 const WHY_FIX = {
     fix: `delete it, or rename what needed it; a comment that states what the code cannot opens with its kind — ${COMMENT_KINDS.map((kind) => `\`${kind}:\``).join(', ')} — and an exported symbol's editor hover is one \`/** … */\` line above it, its block tags — \`@param\`, \`@example\` — on the lines after it`,
     why: 'the default is no comment — the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one',
@@ -79,19 +85,41 @@ function nextTokenAt(text: string, from: number, comments: readonly Comment[]): 
     return at;
 }
 
-// invariant: a hover's prose is one line; what follows it on lines of its own are the block tags — `@param`, `@returns`, `@example` and its code — an editor and typedoc render as the published symbol's documentation.
+const proseOf = (line: string): string => line.replace(HOVER_LINE_MARGIN, '').trim();
+
+// invariant: a hover's prose is one line; what follows it from its first block tag on — `@param`, `@returns`, `@example` and its code — is the tags' own, an editor and typedoc render as the published symbol's documentation.
 function isHoverShape(value: string): boolean {
     if (!value.includes('\n')) {
         return true;
     }
-    return value
+    const firstTag = value
         .split('\n')
-        .map((line) => line.replace(HOVER_LINE_MARGIN, '').trim())
+        .map((line) => proseOf(line))
         .filter((line) => line !== '')
-        .some((line, index) => index === 1 && BLOCK_TAG.test(line));
+        .findIndex((line) => BLOCK_TAG.test(line));
+
+    return firstTag === 0 || firstTag === 1;
 }
 
-function isHover(
+// invariant: the prose joins onto one line and every line from the first block tag on stays as written, so the hover keeps what it documents.
+function hoverOf(comment: Comment, indent: string): string {
+    const lines = comment.value.split('\n');
+    const firstTag = lines.findIndex((line) => BLOCK_TAG.test(proseOf(line)));
+    const prose = lines
+        .slice(0, firstTag === -1 ? lines.length : firstTag)
+        .map((line) => proseOf(line))
+        .filter((line) => line !== '')
+        .join(' ');
+
+    return firstTag === -1
+        ? `/** ${prose} */`
+        : `/**\n${indent} * ${prose}\n${lines.slice(firstTag).join('\n')}*/`;
+}
+
+const indentBefore = (text: string, at: number): string =>
+    text.slice(text.lastIndexOf('\n', at) + 1, at);
+
+function isHoverPlace(
     comment: Comment,
     text: string,
     targets: ReadonlySet<number>,
@@ -100,7 +128,6 @@ function isHover(
     return (
         comment.type === 'Block' &&
         comment.value.startsWith('*') &&
-        isHoverShape(comment.value) &&
         BLANK_TO_LINE_END.test(text.slice(comment.end)) &&
         targets.has(nextTokenAt(text, comment.end, comments))
     );
@@ -183,6 +210,10 @@ export const commentStatesItsKind = defineRule(
         },
         fixable: 'code',
         messages: {
+            wrappedHover: {
+                fix: WRAPPED_HOVER_FIX,
+                found: "an exported symbol's hover whose prose runs past one line",
+            },
             kindedInstruction: {
                 fix: 'drop the kind: a tool instruction is its own kind, and its reason follows it bare — `typescript fix` drops it',
                 found: 'a tool instruction whose reason states a kind',
@@ -233,12 +264,20 @@ export const commentStatesItsKind = defineRule(
                                 messageId: 'kindedInstruction',
                                 node: comment,
                             });
-                        } else if (
-                            !isStructure(opening) &&
-                            !COMMENT_KIND_OPENING.test(opening) &&
-                            !isHover(comment, text, targets, comments) &&
-                            !isLanguageTag(comment, text)
-                        ) {
+                        } else if (isStructure(opening) || COMMENT_KIND_OPENING.test(opening)) {
+                            // invariant: a structure or a kinded opening is no prose, and is not judged.
+                        } else if (isHoverPlace(comment, text, targets, comments)) {
+                            if (!isHoverShape(comment.value)) {
+                                const start = startOf(run, text, comments);
+                                const hover = hoverOf(comment, indentBefore(text, start));
+                                context.report({
+                                    fix: (fixer) =>
+                                        fixer.replaceTextRange([start, comment.end], hover),
+                                    messageId: 'wrappedHover',
+                                    node: comment,
+                                });
+                            }
+                        } else if (!isLanguageTag(comment, text)) {
                             const deleted = commentDeletion(
                                 text,
                                 spanOf(run, text, empties, comments),
