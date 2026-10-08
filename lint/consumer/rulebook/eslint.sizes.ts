@@ -31,6 +31,17 @@ export const ESLINT_SIZES_OVERRIDES: readonly Scoped[] = [
         },
         since: SIZE_SINCE,
     }),
+    // invariant: a data module's length counts its rows, never its logic — `data-module-holds-data` keeps logic out of it.
+    scoped({
+        files: ['**/*.data.ts', '**/*.data.tsx'],
+        rules: {
+            'max-lines': off({
+                by: 'jterrazz-typescript/data-module-holds-data — a `*.data.ts` module holds imports, types and the literals it exports, and no function, class or statement',
+                kind: 'covered',
+            }),
+        },
+        since: SIZE_SINCE,
+    }),
     // invariant: a rule test is one table of the cases its rule decides; its length counts them, never two subjects in one file.
     scoped({
         files: ['lint/consumer/rules/**/*.test.ts'],

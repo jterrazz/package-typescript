@@ -1,1 +1,12 @@
-["comments", "config", "docs", "markdown", "names", "publish", "secrets", "suppressions", "tree"]
+[
+    "comments",
+    "config",
+    "docs",
+    "markdown",
+    "modules",
+    "names",
+    "publish",
+    "secrets",
+    "suppressions",
+    "tree"
+]

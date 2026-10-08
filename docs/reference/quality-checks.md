@@ -777,6 +777,18 @@ A directory holding only empty directories is empty, and is named once, at its t
 
 Every rule is printed and recorded as `names/<rule>`, and carries the code `names(<rule>)`: `typescript baseline` writes the pass's counts into the `typescript` section of `.jterrazz/baseline.json`, which holds only the `architecture/` and `names/` counts, while the linter's debt lives in `.jterrazz/oxlint-suppressions.json`. Where the section holds a `names/*` entry, this pass is judged by it exactly, with the four refusals of [the ratchet](#the-ratchet), and `typescript fix` re-records the entries that fell. A project adopting the construct roster records its existing sites once and renames them by domain, one entry at a time.
 
+## Modules
+
+One rule of the rulebook's own oxlint plugin judges what a module holds, so its findings are the Oxlint pass's. A `*.data.ts` module is a table of rows the file-size cap stands aside for, and the rule keeps logic out of it ([Lint presets](lint-presets.md#a-data-module-holds-data)).
+
+<!-- GENERATED:findings modules -->
+
+| Rule                                         | Requirement                                                                                                                                                       |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jterrazz-typescript/data-module-holds-data` | A `*.data.ts` module holds its imports, its types and the literals it exports — no function, class or statement — so the file-size cap stands aside for its rows. |
+
+<!-- /GENERATED:findings modules -->
+
 ## Comments
 
 Two rules of the rulebook's own oxlint plugin judge the comments of code, so their findings are the Oxlint pass's and their debt, like any rule's, is `.jterrazz/oxlint-suppressions.json`'s. What each one holds, and the four kinds a comment may state, are [Lint presets](lint-presets.md#a-comment-states-its-kind)'s.

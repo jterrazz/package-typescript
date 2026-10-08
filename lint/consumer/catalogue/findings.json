@@ -50,6 +50,11 @@
         "sentence": "A comment opens with the kind of thing it states — invariant, hazard, outside or value — unless it is a one-line hover doc, a directive or a marker another tool reads, whose reason states none."
     },
     {
+        "family": "modules",
+        "id": "jterrazz-typescript/data-module-holds-data",
+        "sentence": "A `*.data.ts` module holds its imports, its types and the literals it exports — no function, class or statement — so the file-size cap stands aside for its rows."
+    },
+    {
         "family": "comments",
         "id": "comments/comment-states-its-kind",
         "sentence": "A comment of a style sheet, a shell script, a Makefile, a Dockerfile or a YAML file opens with its kind, as a comment of code does — unless it is a directive another tool reads."

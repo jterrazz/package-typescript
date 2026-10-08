@@ -8,5 +8,6 @@ export default fragment({
     rules: {
         'jterrazz-typescript/comment-no-longer-than-its-function': on(),
         'jterrazz-typescript/comment-states-its-kind': on(),
+        'jterrazz-typescript/data-module-holds-data': on(),
     },
 });
