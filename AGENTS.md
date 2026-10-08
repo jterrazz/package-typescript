@@ -6,19 +6,20 @@ The complete TypeScript toolchain for the @jterrazz ecosystem: builds and qualit
 
 The consumer-facing corpus is `docs/` + `README.md`, mapped by `docs/README.md`. Decisions this package alone took are in `docs/decisions/`. Do not duplicate it — link to it.
 
-| Working on…                                       | Read                                      |
-| ------------------------------------------------- | ----------------------------------------- |
-| the layers, the exports map, the two compilers    | `docs/concepts/architecture.md`           |
-| the loop, where a change lands, what it owes      | `docs/guides/develop.md`                  |
-| the specs, the fixtures, the self rules           | `docs/guides/test.md`                     |
-| the release, which number moves                   | `docs/guides/release.md`                  |
-| a bump that lands red on a project                | `docs/guides/adopt-a-stricter-release.md` |
-| wiring a project onto the toolchain               | `docs/start/getting-started.md`           |
-| `jterrazz.config.ts`, presets, their merge order  | `docs/reference/configuration.md`         |
-| check / fix and their passes, the ratchet         | `docs/reference/quality-checks.md`        |
-| the rulebook, profiles, knip                      | `docs/reference/lint-presets.md`          |
-| build / start / dev / tsc                         | `docs/reference/building.md`              |
-| the rules kit a sibling package writes rules with | `docs/reference/rules-kit.md`             |
+| Working on…                                       | Read                                         |
+| ------------------------------------------------- | -------------------------------------------- |
+| the layers, the exports map, the two compilers    | `docs/concepts/architecture.md`              |
+| the loop, where a change lands, what it owes      | `docs/guides/develop.md`                     |
+| the specs, the fixtures, the self rules           | `docs/guides/test.md`                        |
+| the release, which number moves                   | `docs/guides/release.md`                     |
+| a bump that lands red on a project                | `docs/guides/adopt-a-stricter-release.md`    |
+| a project taking a build before it is published   | `docs/guides/install-an-unreleased-build.md` |
+| wiring a project onto the toolchain               | `docs/start/getting-started.md`              |
+| `jterrazz.config.ts`, presets, their merge order  | `docs/reference/configuration.md`            |
+| check / fix and their passes, the ratchet         | `docs/reference/quality-checks.md`           |
+| the rulebook, profiles, knip                      | `docs/reference/lint-presets.md`             |
+| build / start / dev / tsc                         | `docs/reference/building.md`                 |
+| the rules kit a sibling package writes rules with | `docs/reference/rules-kit.md`                |
 
 The manual is cut by its reader's need — `start/`, `guides/`, `concepts/`, `reference/` — the shape every repository of the ecosystem keeps, and this repository's own gate refuses a tree that breaks it (`docs/reference/quality-checks.md`, the Docs (layout) pass).
 

@@ -27,4 +27,5 @@ Last, `doctor` prints the settings `jterrazz.config.ts` resolves to — of the r
 
 ## Related
 
+- [Install an unreleased build](install-an-unreleased-build.md) — taking a release from a local checkout, before it is published.
 - [Quality checks](../reference/quality-checks.md) — the gates a consumer inherits on a bump.

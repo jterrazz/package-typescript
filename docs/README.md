@@ -10,12 +10,13 @@ The toolchain that builds, checks, lints and formats a project from one devDepen
 
 ## Guides
 
-| Page                                                           | Answers                                                                                                             |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| [Adopt a stricter release](guides/adopt-a-stricter-release.md) | Taking a bump that lands red to green: `doctor`, `baseline`, the provider pinned to its runner                      |
-| [Develop](guides/develop.md)                                   | Changing the toolchain itself: the loop, where each kind of change lands, what a change owes                        |
-| [Test](guides/test.md)                                         | Proving a change: the three test projects, the documents that drive the command, the packed tarball, the self rules |
-| [Release](guides/release.md)                                   | How this package is published, and which number a change moves                                                      |
+| Page                                                                 | Answers                                                                                                                                       |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Adopt a stricter release](guides/adopt-a-stricter-release.md)       | Taking a bump that lands red to green: `doctor`, `baseline`, the provider pinned to its runner                                                |
+| [Install an unreleased build](guides/install-an-unreleased-build.md) | Proving a release on a project before it is published: the `file:` install under npm and bun, the lockfile, the order of a wave, the way back |
+| [Develop](guides/develop.md)                                         | Changing the toolchain itself: the loop, where each kind of change lands, what a change owes                                                  |
+| [Test](guides/test.md)                                               | Proving a change: the three test projects, the documents that drive the command, the packed tarball, the self rules                           |
+| [Release](guides/release.md)                                         | How this package is published, and which number a change moves                                                                                |
 
 A smaller task is one section of a reference page:
 

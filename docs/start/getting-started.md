@@ -12,7 +12,7 @@ From an empty folder to a green `typescript check`: one install, one declaration
 npm install @jterrazz/typescript --save-dev
 ```
 
-tsc, oxlint, oxfmt, knip, tsdown and Stryker are the package's own dependencies and arrive with it. Never install one of them directly: the project would then hold two opinions of its own toolchain, and their versions drift apart from there.
+tsc, oxlint, oxfmt, knip, tsdown and Stryker are the package's own dependencies and arrive with it. Never install one of them directly: the project would then hold two opinions of its own toolchain, and their versions drift apart from there. A build not yet published is installed from its checkout by [Install an unreleased build](../guides/install-an-unreleased-build.md).
 
 ## 1. Declare what the project is
 
