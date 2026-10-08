@@ -10,6 +10,10 @@ import {
     DATA_MODULE_HOLDS_DATA_NAME,
     dataModuleHoldsData,
 } from './modules/data-module-holds-data.js';
+import {
+    ERROR_FAMILY_SHARES_ITS_BASE_NAME,
+    errorFamilySharesItsBase,
+} from './modules/error-family-shares-its-base.js';
 
 const plugin: { meta: { name: string }; rules: Readonly<Record<string, object>> } = {
     meta: { name: 'jterrazz-typescript' },
@@ -17,6 +21,7 @@ const plugin: { meta: { name: string }; rules: Readonly<Record<string, object>> 
         [COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME]: commentNoLongerThanItsFunction,
         [COMMENT_STATES_ITS_KIND_NAME]: commentStatesItsKind,
         [DATA_MODULE_HOLDS_DATA_NAME]: dataModuleHoldsData,
+        [ERROR_FAMILY_SHARES_ITS_BASE_NAME]: errorFamilySharesItsBase,
     },
 };
 

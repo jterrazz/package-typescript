@@ -42,6 +42,17 @@ export const ESLINT_SIZES_OVERRIDES: readonly Scoped[] = [
         },
         since: SIZE_SINCE,
     }),
+    // invariant: an errors module is one vocabulary — a base and its subclasses — read together; `error-family-shares-its-base` keeps any other class out.
+    scoped({
+        files: ['**/errors.ts', '**/*.errors.ts'],
+        rules: {
+            'max-classes-per-file': off({
+                by: 'jterrazz-typescript/error-family-shares-its-base — an errors module holds one class family, a base and what derives from it',
+                kind: 'covered',
+            }),
+        },
+        since: SIZE_SINCE,
+    }),
     // invariant: a rule test is one table of the cases its rule decides; its length counts them, never two subjects in one file.
     scoped({
         files: ['lint/consumer/rules/**/*.test.ts'],

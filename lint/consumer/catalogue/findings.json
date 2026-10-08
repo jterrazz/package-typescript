@@ -55,6 +55,11 @@
         "sentence": "A `*.data.ts` module holds its imports, its types and the literals it exports — no function, class or statement — so the file-size cap stands aside for its rows."
     },
     {
+        "family": "modules",
+        "id": "jterrazz-typescript/error-family-shares-its-base",
+        "sentence": "An `errors.ts` or `*.errors.ts` module holds one family of classes — a base and what derives from it — so the class-count cap stands aside for it."
+    },
+    {
         "family": "comments",
         "id": "comments/comment-states-its-kind",
         "sentence": "A comment of a style sheet, a shell script, a Makefile, a Dockerfile or a YAML file opens with its kind, as a comment of code does — unless it is a directive another tool reads."

@@ -783,9 +783,10 @@ One rule of the rulebook's own oxlint plugin judges what a module holds, so its 
 
 <!-- GENERATED:findings modules -->
 
-| Rule                                         | Requirement                                                                                                                                                       |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `jterrazz-typescript/data-module-holds-data` | A `*.data.ts` module holds its imports, its types and the literals it exports — no function, class or statement — so the file-size cap stands aside for its rows. |
+| Rule                                               | Requirement                                                                                                                                                       |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jterrazz-typescript/data-module-holds-data`       | A `*.data.ts` module holds its imports, its types and the literals it exports — no function, class or statement — so the file-size cap stands aside for its rows. |
+| `jterrazz-typescript/error-family-shares-its-base` | An `errors.ts` or `*.errors.ts` module holds one family of classes — a base and what derives from it — so the class-count cap stands aside for it.                |
 
 <!-- /GENERATED:findings modules -->
 

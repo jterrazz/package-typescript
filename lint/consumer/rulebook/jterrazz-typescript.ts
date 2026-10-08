@@ -9,5 +9,6 @@ export default fragment({
         'jterrazz-typescript/comment-no-longer-than-its-function': on(),
         'jterrazz-typescript/comment-states-its-kind': on(),
         'jterrazz-typescript/data-module-holds-data': on(),
+        'jterrazz-typescript/error-family-shares-its-base': on(),
     },
 });

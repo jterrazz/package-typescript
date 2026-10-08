@@ -1,6 +1,23 @@
 import { describe, expect, test } from 'vitest';
 
 import { DOCS_RULES } from '../../../consumer/checks/docs.decisions.js';
+import {
+    COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME,
+    commentNoLongerThanItsFunction,
+} from '../../../consumer/rules/comments/comment-no-longer-than-its-function.js';
+import {
+    COMMENT_STATES_ITS_KIND_NAME,
+    commentStatesItsKind,
+} from '../../../consumer/rules/comments/comment-states-its-kind.js';
+import {
+    DATA_MODULE_HOLDS_DATA_NAME,
+    dataModuleHoldsData,
+} from '../../../consumer/rules/modules/data-module-holds-data.js';
+import {
+    ERROR_FAMILY_SHARES_ITS_BASE_NAME,
+    errorFamilySharesItsBase,
+} from '../../../consumer/rules/modules/error-family-shares-its-base.js';
+import plugin from '../../../consumer/rules/plugin.js';
 import { FAMILIES, FINDINGS, printedFindingIds } from '../findings.js';
 
 describe('findings', () => {
@@ -34,5 +51,27 @@ describe('findings', () => {
 
         // Then - the ids @jterrazz/typescript/docs publishes are exactly those rows
         expect([...DOCS_RULES].toSorted()).toStrictEqual(catalogued.toSorted());
+    });
+
+    test('printedFindingIds — the rules of the oxlint plugin — each teaches the row of its id: its family, its sentence, its audience and a kind oxlint knows', () => {
+        // Given - every rule the plugin registers, beside its catalogue row
+        const rules = {
+            [COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME]: commentNoLongerThanItsFunction.meta,
+            [COMMENT_STATES_ITS_KIND_NAME]: commentStatesItsKind.meta,
+            [DATA_MODULE_HOLDS_DATA_NAME]: dataModuleHoldsData.meta,
+            [ERROR_FAMILY_SHARES_ITS_BASE_NAME]: errorFamilySharesItsBase.meta,
+        };
+        expect(Object.keys(rules).toSorted()).toStrictEqual(Object.keys(plugin.rules).toSorted());
+        const taught = Object.entries(rules).map(([name, { docs, type }]) => {
+            const row = FINDINGS.find(({ id }) => id === `jterrazz-typescript/${name}`);
+            const kind = ['problem', 'suggestion'].includes(type) ? type : '?';
+            return [docs.name, docs.audience, docs.family, docs.sentence, kind].join(' | ') ===
+                [name, 'consumer', row?.family, row?.sentence, type].join(' | ')
+                ? null
+                : name;
+        });
+
+        // Then - none departs from its row
+        expect(taught.filter((name) => name !== null)).toStrictEqual([]);
     });
 });
