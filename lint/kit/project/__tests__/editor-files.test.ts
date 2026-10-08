@@ -63,17 +63,19 @@ describe('editor-files', () => {
     });
 
     test('tsconfigAdditionsOf — what a section adds — reads each value in its shape, and a blank reason is no reason', () => {
-        // Given - options written as a list, a blank reason, and no section at all
-        // Then - the list is no options, the blank reason a problem, the absent section nothing to add
+        // Given - options written as a list, a blank reason, and a section that is a list or null
+        // Then - the list is no options, the blank reason a problem, a section that is no record nothing to add
         expect([
             tsconfigAdditionsOf({
                 tsconfig: { compilerOptions: ['strict'], files: 'a.d.ts', reason: 'r' },
             }),
             tsconfigAdditionsOf({ tsconfig: { include: ['x'], reason: '   ' } }),
             tsconfigAdditionsOf(['tsconfig']),
+            tsconfigAdditionsOf(null),
         ]).toStrictEqual([
             { additions: {}, problem: null },
             { additions: null, problem: 'sets `typescript.tsconfig` with no `reason`' },
+            { additions: {}, problem: null },
             { additions: {}, problem: null },
         ]);
     });
