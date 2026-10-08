@@ -12,7 +12,17 @@ ruleTester().run('focusable-section-is-labelled', focusableSectionIsLabelled, {
             filename: FILENAME,
         },
         {
-            code: 'export const Strip = () => <section title="Source" tabIndex={-1} />;',
+            code: 'export const Strip = () => <section title="Source" tabIndex="0" />;',
+            errors: [{ column: 27, line: 1, messageId: 'unlabelled' }],
+            filename: FILENAME,
+        },
+        {
+            code: 'export const Strip = () => <section tabIndex />;',
+            errors: [{ column: 27, line: 1, messageId: 'unlabelled' }],
+            filename: FILENAME,
+        },
+        {
+            code: 'export const Strip = () => <section tabIndex={+1} />;',
             errors: [{ column: 27, line: 1, messageId: 'unlabelled' }],
             filename: FILENAME,
         },
@@ -31,6 +41,14 @@ ruleTester().run('focusable-section-is-labelled', focusableSectionIsLabelled, {
             filename: FILENAME,
         },
         { code: 'export const Plain = () => <section><pre /></section>;', filename: FILENAME },
+        {
+            code: 'export const Target = () => <section id="explore" tabIndex={-1} />;',
+            filename: FILENAME,
+        },
+        {
+            code: 'export const Target = () => <section id="explore" tabIndex="-1" />;',
+            filename: FILENAME,
+        },
         {
             code: 'export const Spread = (props) => <section {...props} tabIndex={0} />;',
             filename: FILENAME,

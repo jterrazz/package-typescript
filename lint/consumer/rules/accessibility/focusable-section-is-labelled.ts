@@ -1,12 +1,21 @@
 import { defineRule } from '../../../kit/catalogue/rule.js';
 import FINDINGS from '../../catalogue/findings.json' with { type: 'json' };
 
+type Value = {
+    argument?: Value;
+    expression?: Value;
+    operator?: string;
+    type: string;
+    value?: unknown;
+};
+
 type Node = {
     attributes: Node[];
     end: number;
     name: { name?: unknown };
     start: number;
     type: string;
+    value?: null | Value;
 };
 
 type RuleContext = {
@@ -16,6 +25,23 @@ type RuleContext = {
 export const FOCUSABLE_SECTION_IS_LABELLED_NAME = 'focusable-section-is-labelled';
 
 const LABELS: ReadonlySet<string> = new Set(['aria-label', 'aria-labelledby']);
+
+function numberOf(value: undefined | Value): number {
+    if (value?.type === 'UnaryExpression' && value.operator === '-') {
+        return -numberOf(value.argument);
+    }
+    return Number(value?.value);
+}
+
+// invariant: a negative `tabIndex` takes focus from a script or a fragment link alone, never from the Tab key, so it adds no tab stop.
+function isTabStop(attribute: Node): boolean {
+    if (attribute.name.name !== 'tabIndex') {
+        return false;
+    }
+    const value = attribute.value ?? undefined;
+    const index = numberOf(value?.type === 'JSXExpressionContainer' ? value.expression : value);
+    return !(index < 0);
+}
 
 const WHY_FIX = {
     fix: 'name the region it scrolls with `aria-label` or `aria-labelledby`, or drop its `tabIndex`',
@@ -59,7 +85,10 @@ export const focusableSectionIsLabelled = defineRule(
                     }
                     // invariant: a namespaced attribute (`xlink:href`) names an object, which no label or `tabIndex` equals.
                     const names = new Set(attributes.map((attribute) => attribute.name.name));
-                    if (names.has('tabIndex') && ![...LABELS].some((label) => names.has(label))) {
+                    if (
+                        attributes.some((attribute) => isTabStop(attribute)) &&
+                        ![...LABELS].some((label) => names.has(label))
+                    ) {
                         context.report({ messageId: 'unlabelled', node: element });
                     }
                 },

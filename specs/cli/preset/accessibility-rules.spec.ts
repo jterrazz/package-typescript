@@ -7,8 +7,8 @@ import { cli as oxlintCli } from '../oxlint.specification.js';
 const REACT_CONFIG = profilePath('react');
 
 describe('accessibility-rules', () => {
-    test('an unlabelled section taking the focus and a role set through createElement are each refused with their lesson', async () => {
-        // Given - a scrolling section with no label, and a polymorphic region built with createElement
+    test('an unlabelled section taking the focus and a role set through createElement are each refused with their lesson, and a fragment target out of the tab order passes', async () => {
+        // Given - a scrolling section with no label, a polymorphic region built with createElement, and two sections a fragment link focuses at a negative tabIndex
         const result = await oxlintCli
             .fixture(directory('./__fixtures__/accessibility-rules/'))
             .exec(`-c ${REACT_CONFIG} region.tsx`);

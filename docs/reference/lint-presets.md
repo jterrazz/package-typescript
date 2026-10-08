@@ -142,7 +142,7 @@ A closed family of errors — a base and the subclasses a caller tells apart —
 
 ## A focusable section is labelled
 
-A region that scrolls is reached by the keyboard (WCAG 2.1.1), so `jsx-a11y/no-noninteractive-tabindex` lets a `<section>` take `tabIndex={0}` — the tag `jsx-a11y/prefer-tag-over-role` asks for in place of `role="region"`. jsx-a11y reads the tag alone, and a `<section>` is a region only when it is labelled: an unlabelled one is a stray tab stop a screen reader announces as nothing. `jterrazz-typescript/focusable-section-is-labelled` holds the exemption to its reason — a `<section>` carrying `tabIndex` names its region with `aria-label` or `aria-labelledby`. A section whose props are spread from its caller is the caller's to label, and is not read.
+A region that scrolls is reached by the keyboard (WCAG 2.1.1), so `jsx-a11y/no-noninteractive-tabindex` lets a `<section>` take `tabIndex={0}` — the tag `jsx-a11y/prefer-tag-over-role` asks for in place of `role="region"`. jsx-a11y reads the tag alone, and a `<section>` is a region only when it is labelled: an unlabelled one is a stray tab stop a screen reader announces as nothing. `jterrazz-typescript/focusable-section-is-labelled` holds the exemption to its reason — a `<section>` carrying `tabIndex` names its region with `aria-label` or `aria-labelledby`. A negative `tabIndex` adds no tab stop — the section a fragment link or a script focuses, `tabIndex={-1}` — and is not read. A section whose props are spread from its caller is the caller's to label, and is not read.
 
 ## An accessible element is written in JSX
 
