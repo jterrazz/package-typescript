@@ -30,7 +30,7 @@ export default fragment({
             kind: 'convention',
         }),
         'node/no-top-level-await': off({
-            by: 'unicorn/prefer-top-level-await — one rule demands it, the other forbids it',
+            by: 'jterrazz-typescript/promise-is-awaited — one rule demands it, the other forbids it',
             kind: 'exclusive',
         }),
     },

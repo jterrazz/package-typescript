@@ -117,7 +117,6 @@ export default fragment({
                 'prefer-string-trim-start-end',
                 'prefer-structured-clone',
                 'prefer-ternary',
-                'prefer-top-level-await',
                 'prefer-type-error',
                 'relative-url-style',
                 'require-array-join-separator',
@@ -159,6 +158,13 @@ export default fragment({
             'unwraps `Promise.resolve({ … })` in an arrow body into a bare object literal, which is a block',
         ),
 
+        'unicorn/prefer-top-level-await': off(
+            {
+                by: 'jterrazz-typescript/promise-is-awaited — it reads a module-level `.catch()` as a promise chain whatever the type, so every zod schema given a fallback failed it (signews-web’s response schemas, read 2026-10-08); the plugin’s rule refuses a top-level chain and an async function called where it is declared, and reads a value given to `.catch()` as no promise',
+                kind: 'covered',
+            },
+            '11.0.0',
+        ),
         'unicorn/explicit-length-check': off({
             by: 'typescript/strict-boolean-expressions — it already refuses a length used as a condition',
             kind: 'covered',

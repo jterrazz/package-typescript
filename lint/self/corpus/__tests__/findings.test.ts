@@ -18,6 +18,10 @@ import {
     errorFamilySharesItsBase,
 } from '../../../consumer/rules/modules/error-family-shares-its-base.js';
 import plugin from '../../../consumer/rules/plugin.js';
+import {
+    PROMISE_IS_AWAITED_NAME,
+    promiseIsAwaited,
+} from '../../../consumer/rules/promises/promise-is-awaited.js';
 import { FAMILIES, FINDINGS, printedFindingIds } from '../findings.js';
 
 describe('findings', () => {
@@ -60,6 +64,7 @@ describe('findings', () => {
             [COMMENT_STATES_ITS_KIND_NAME]: commentStatesItsKind.meta,
             [DATA_MODULE_HOLDS_DATA_NAME]: dataModuleHoldsData.meta,
             [ERROR_FAMILY_SHARES_ITS_BASE_NAME]: errorFamilySharesItsBase.meta,
+            [PROMISE_IS_AWAITED_NAME]: promiseIsAwaited.meta,
         };
         expect(Object.keys(rules).toSorted()).toStrictEqual(Object.keys(plugin.rules).toSorted());
         const taught = Object.entries(rules).map(([name, { docs, type }]) => {

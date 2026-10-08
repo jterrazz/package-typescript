@@ -1,6 +1,6 @@
 import { allOn, fragment, off } from '../../kit/compiler/decision.js';
 
-// outside: the estate writes `await`: two rules describing a well-behaved `.then()` chain cannot hold beside `prefer-await-to-then`.
+// outside: the estate writes `await`: two rules describing a well-behaved `.then()` chain cannot hold beside `jterrazz-typescript/promise-is-awaited`.
 export default fragment({
     id: 'promise',
     audience: 'consumer',
@@ -15,7 +15,6 @@ export default fragment({
                 'no-promise-in-callback',
                 'no-return-wrap',
                 'param-names',
-                'prefer-await-to-then',
                 'prefer-catch',
                 'spec-only',
                 'valid-params',
@@ -36,12 +35,19 @@ export default fragment({
             },
             '11.0.0',
         ),
+        'promise/prefer-await-to-then': off(
+            {
+                by: 'jterrazz-typescript/promise-is-awaited — it reads the name `.catch`, never the type, so a zod schema’s `.catch(fallback)` failed it (the signews-mobile pilot, 2026-10-07, rewrote its schemas into `safeParse` to pass; signews-web’s response schemas hold the same shape); the plugin’s rule awaits every chain the same way and reads a value given to `.catch()` as no promise',
+                kind: 'covered',
+            },
+            '11.0.0',
+        ),
         'promise/always-return': off({
-            by: 'promise/prefer-await-to-then — it describes a .then() chain the estate does not write',
+            by: 'jterrazz-typescript/promise-is-awaited — it describes a .then() chain the estate does not write',
             kind: 'exclusive',
         }),
         'promise/catch-or-return': off({
-            by: 'promise/prefer-await-to-then — it describes a .then() chain the estate does not write',
+            by: 'jterrazz-typescript/promise-is-awaited — it describes a .then() chain the estate does not write',
             kind: 'exclusive',
         }),
     },

@@ -14,6 +14,7 @@ import {
     ERROR_FAMILY_SHARES_ITS_BASE_NAME,
     errorFamilySharesItsBase,
 } from './modules/error-family-shares-its-base.js';
+import { PROMISE_IS_AWAITED_NAME, promiseIsAwaited } from './promises/promise-is-awaited.js';
 
 const plugin: { meta: { name: string }; rules: Readonly<Record<string, object>> } = {
     meta: { name: 'jterrazz-typescript' },
@@ -22,6 +23,7 @@ const plugin: { meta: { name: string }; rules: Readonly<Record<string, object>> 
         [COMMENT_STATES_ITS_KIND_NAME]: commentStatesItsKind,
         [DATA_MODULE_HOLDS_DATA_NAME]: dataModuleHoldsData,
         [ERROR_FAMILY_SHARES_ITS_BASE_NAME]: errorFamilySharesItsBase,
+        [PROMISE_IS_AWAITED_NAME]: promiseIsAwaited,
     },
 };
 

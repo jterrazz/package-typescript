@@ -311,7 +311,7 @@ promise/no-promise-in-callback
 promise/no-return-wrap
 promise/param-names
 - promise/prefer-await-to-callbacks
-promise/prefer-await-to-then
+- promise/prefer-await-to-then
 promise/prefer-catch
 promise/spec-only
 promise/valid-params
@@ -647,7 +647,7 @@ unicorn/prefer-string-slice
 unicorn/prefer-string-trim-start-end
 unicorn/prefer-structured-clone
 unicorn/prefer-ternary
-unicorn/prefer-top-level-await
+- unicorn/prefer-top-level-await
 unicorn/prefer-type-error
 unicorn/relative-url-style
 unicorn/require-array-join-separator

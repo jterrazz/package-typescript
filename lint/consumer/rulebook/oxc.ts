@@ -47,7 +47,7 @@ export default fragment({
         ),
 
         'oxc/no-async-await': off({
-            by: 'promise/prefer-await-to-then — one rule demands await, the other forbids it',
+            by: 'jterrazz-typescript/promise-is-awaited — one rule demands await, the other forbids it',
             kind: 'exclusive',
         }),
         'oxc/no-map-spread': off(

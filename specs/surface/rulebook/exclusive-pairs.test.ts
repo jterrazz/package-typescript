@@ -11,22 +11,22 @@ const PAIRS = Object.freeze([
     ['no-continue', 'max-depth', '`continue` is what keeps a loop body flat'],
     [
         'node/no-top-level-await',
-        'unicorn/prefer-top-level-await',
+        'jterrazz-typescript/promise-is-awaited',
         'one forbids top-level await, the other demands it',
     ],
     [
         'oxc/no-async-await',
-        'promise/prefer-await-to-then',
+        'jterrazz-typescript/promise-is-awaited',
         'one forbids `await`, the other demands it',
     ],
     [
         'promise/always-return',
-        'promise/prefer-await-to-then',
+        'jterrazz-typescript/promise-is-awaited',
         'one describes a `.then()` chain the other refuses to have',
     ],
     [
         'promise/catch-or-return',
-        'promise/prefer-await-to-then',
+        'jterrazz-typescript/promise-is-awaited',
         'one describes a `.then()` chain the other refuses to have',
     ],
     [

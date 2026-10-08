@@ -24,3 +24,10 @@ export function Card(): React.JSX.Element {
 }
 
 const styles = { card: { padding: 4 } };
+
+const z = {
+    string: (): { catch: (fallback: string) => string } => ({ catch: (fallback) => fallback }),
+};
+
+// outside: a zod schema's `.catch()` takes its fallback as a value, which no promise takes.
+export const language = z.string().catch('en');

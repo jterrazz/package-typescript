@@ -10,5 +10,6 @@ export default fragment({
         'jterrazz-typescript/comment-states-its-kind': on(),
         'jterrazz-typescript/data-module-holds-data': on(),
         'jterrazz-typescript/error-family-shares-its-base': on(),
+        'jterrazz-typescript/promise-is-awaited': on(),
     },
 });

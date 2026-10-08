@@ -82,3 +82,10 @@ const built = (): number => 1;
 // outside: no-inline-comments ignores what a bundler or an editor reads where it stands.
 export const lazy = /* @__PURE__ */ built();
 export const query = /* sql */ `select 1`;
+
+const z = {
+    string: (): { catch: (fallback: string) => string } => ({ catch: (fallback) => fallback }),
+};
+
+// outside: a zod schema's `.catch()` takes its fallback as a value, which no promise takes.
+export const language = z.string().catch('en');

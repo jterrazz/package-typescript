@@ -790,6 +790,18 @@ One rule of the rulebook's own oxlint plugin judges what a module holds, so its 
 
 <!-- /GENERATED:findings modules -->
 
+## Promises
+
+One rule of the rulebook's own oxlint plugin judges how a promise is read, so its findings are the Oxlint pass's: a promise is awaited, and a `.catch()` given a value — a schema's fallback — is no promise ([Lint presets](lint-presets.md#a-promise-is-awaited)).
+
+<!-- GENERATED:findings promises -->
+
+| Rule                                     | Requirement                                                                                                                                                                                                                                                          |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jterrazz-typescript/promise-is-awaited` | A promise is awaited, never threaded through a `.then()`, `.catch()` or `.finally()` chain nor wrapped in an async function called at the module's top level — and a `.catch()` given a value, which no promise takes, is a schema's fallback the rule leaves alone. |
+
+<!-- /GENERATED:findings promises -->
+
 ## Comments
 
 Two rules of the rulebook's own oxlint plugin judge the comments of code, so their findings are the Oxlint pass's and their debt, like any rule's, is `.jterrazz/oxlint-suppressions.json`'s. What each one holds, and the four kinds a comment may state, are [Lint presets](lint-presets.md#a-comment-states-its-kind)'s.
