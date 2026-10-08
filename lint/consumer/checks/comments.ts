@@ -54,7 +54,9 @@ function languageOf(path: string): Language | undefined {
         return undefined;
     }
 
-    return STYLE_COMMENTED.test(path) ? (text) => commentsOfStyles(text, path) : commentsOfHashes;
+    return STYLE_COMMENTED.test(path)
+        ? (text) => commentsOfStyles(text, path)
+        : (text) => commentsOfHashes(text, path);
 }
 
 function isStructure(run: Run): boolean {

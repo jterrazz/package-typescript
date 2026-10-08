@@ -1,11 +1,20 @@
 import { describe, expect, test } from 'vitest';
 
 import { commentsOfHashes } from '../comments.hashes.js';
+import {
+    DIALECT_READS,
+    lines,
+    MAKEFILES,
+    PROBES,
+    SCRIPT_LINES,
+    YAML_LINES,
+} from './comments.hashes.fixtures.js';
 
-const lines = (...text: string[]): string => text.join('\n');
+const openingsOf = (text: string, path = 'scripts/run.sh'): string[] =>
+    commentsOfHashes(text, path).map(({ end, opening, start }) => `${opening} @${start}-${end}`);
 
-const openingsOf = (text: string): string[] =>
-    commentsOfHashes(text).map(({ end, opening, start }) => `${opening} @${start}-${end}`);
+const readOf = (text: string, path = 'scripts/run.sh'): string[] =>
+    commentsOfHashes(text, path).map(({ opening }) => opening);
 
 describe('commentsOfHashes', () => {
     test('reads each run of `#` lines once, from its first line to the end of its last', () => {
@@ -41,7 +50,7 @@ describe('commentsOfHashes', () => {
         const text = lines('run: |', '    make', '# after', '    # deeper');
 
         // Then - one run of both, the scalar closed for good
-        expect(openingsOf(text)).toStrictEqual(['after @16-36']);
+        expect(openingsOf(text, 'workflow.yaml')).toStrictEqual(['after @16-36']);
     });
 
     test('reads a line of hashes alone as a comment with no text', () => {
@@ -86,7 +95,7 @@ describe('commentsOfHashes', () => {
         );
 
         // Then - the comments at the indentation the scalars closed on
-        expect(openingsOf(text)).toStrictEqual([
+        expect(openingsOf(text, 'workflow.yaml')).toStrictEqual([
             'after the script @66-84',
             'after the note @112-128',
         ]);
@@ -105,7 +114,7 @@ describe('commentsOfHashes', () => {
         const text = lines(opener, '      # carried', '# after');
 
         // Then - the comment after alone
-        expect(openingsOf(text)).toStrictEqual([
+        expect(openingsOf(text, 'workflow.yaml')).toStrictEqual([
             `after @${String(opener.length + 17)}-${String(opener.length + 24)}`,
         ]);
     });
@@ -119,7 +128,7 @@ describe('commentsOfHashes', () => {
         const text = lines(line, '    # read');
 
         // Then - the comment is read
-        expect(openingsOf(text)).toStrictEqual([
+        expect(openingsOf(text, 'workflow.yaml')).toStrictEqual([
             `read @${String(line.length + 5)}-${String(line.length + 11)}`,
         ]);
     });
@@ -129,6 +138,144 @@ describe('commentsOfHashes', () => {
         const text = lines('jobs:', '    # the job', '    name: a | b', '    # the name');
 
         // Then - both comments
-        expect(openingsOf(text)).toStrictEqual(['the job @10-19', 'the name @40-50']);
+        expect(openingsOf(text, 'workflow.yaml')).toStrictEqual([
+            'the job @10-19',
+            'the name @40-50',
+        ]);
+    });
+
+    test('leaves out the lines a quoted string of a script carries, until its quote closes', () => {
+        // Given - a double-quoted string over three lines, a single-quoted one, an escaped quote, and a comment after each
+        const text = lines(
+            'NOTES="first line',
+            '# the heading of the notes',
+            '"',
+            '# after the double',
+            "echo 'one",
+            '# carried',
+            "two'",
+            '# after the single',
+            String.raw`echo "a \" b`,
+            '# carried too',
+            '"',
+            '# after the escape',
+        );
+
+        // Then - only the comments outside the strings
+        expect(openingsOf(text).map((run) => run.split(' @')[0])).toStrictEqual([
+            'after the double',
+            'after the single',
+            'after the escape',
+        ]);
+    });
+
+    test.each([
+        ['a trailing comment', "echo hi # don't"],
+        ['a quote inside the other', `echo "it's" 'say "hi"'`],
+        ['a hash inside a word', "echo a#'b'"],
+    ])('opens no string on %s, so the comment below is read', (_case, line) => {
+        // Given - the line, then a comment
+        const text = lines(line, '# read');
+
+        // Then - the comment is read
+        expect(openingsOf(text).map((run) => run.split(' @')[0])).toStrictEqual(['read']);
+    });
+
+    test("leaves out a make `define`'s body, nested ones included, and reads a recipe's quotes", () => {
+        // Given - a define holding a nested define and a `#` line, then a recipe whose string spans a line
+        const text = lines(
+            'define SCRIPT',
+            '# carried',
+            'override define INNER',
+            '# carried too',
+            'endef',
+            '# still carried',
+            'endef',
+            '# after the define',
+            'run:',
+            '\techo "one \\',
+            '# carried by the quote',
+            '\ttwo"',
+            '# after the recipe',
+            "NAME = don't",
+            '# after the assignment',
+        );
+
+        // Then - only the comments outside the define and the string; an assignment quotes nothing
+        expect(readOf(text, 'Makefile')).toStrictEqual([
+            'after the define',
+            'after the recipe',
+            'after the assignment',
+        ]);
+    });
+
+    test('reads every `#` line of a Dockerfile, a quote open on a RUN line or not', () => {
+        // Given - a RUN line opening a quote its continuation closes, a `#` line between
+        const text = lines('RUN echo "one \\', '# dropped by docker', '    two"');
+
+        // Then - the line is a comment, as docker reads it
+        expect(
+            openingsOf(text, 'deploy/Dockerfile').map((run) => run.split(' @')[0]),
+        ).toStrictEqual(['dropped by docker']);
+    });
+
+    test('leaves out the lines a quoted YAML scalar carries, and opens none on a plain one', () => {
+        // Given - a double-quoted value over lines, a single-quoted one with a doubled quote, a plain value holding an apostrophe
+        const text = lines(
+            'steps:',
+            '    - run: "echo one',
+            '          # carried',
+            '          two"',
+            '    # after the double',
+            "    - name: 'it''s",
+            '          # carried too',
+            "          done'",
+            '    # after the single',
+            "    - name: don't",
+            '    # after the plain',
+        );
+
+        // Then - only the comments outside the quoted scalars
+        expect(openingsOf(text, 'workflow.yaml').map((run) => run.split(' @')[0])).toStrictEqual([
+            'after the double',
+            'after the single',
+            'after the plain',
+        ]);
+    });
+
+    test.each(DIALECT_READS)('reads %s in its own dialect', (path, read) => {
+        // Given - a probe each dialect reads apart
+        // Then - the shell, recipe, define and value probes read as the dialect does
+        expect(
+            [PROBES.shell, PROBES.define, PROBES.recipe, PROBES.value].map((text) =>
+                readOf(text, path),
+            ),
+        ).toStrictEqual(read);
+    });
+
+    test.each(SCRIPT_LINES)('reads a script across %s', (_case, line, read) => {
+        // Given - the line, then a comment
+        // Then - the comment is read only when no quote stays open
+        expect(readOf(lines(line, '# x'))).toStrictEqual(read);
+    });
+
+    test.each(YAML_LINES)('reads a YAML file across %s', (_case, line, read) => {
+        // Given - the line, then a comment
+        // Then - the comment is read only when no quote stays open
+        expect(readOf(lines(line, '# x'), 'workflow.yaml')).toStrictEqual(read);
+    });
+
+    test('keeps a YAML scalar open across its plain lines, until one closes it', () => {
+        // Given - a quoted value over a plain line, a `#` line and its closing line
+        const text = lines('run: "a', '  b', '  # inside', '  c"', '# after');
+
+        // Then - the comment after alone
+        expect(readOf(text, 'workflow.yaml')).toStrictEqual(['after']);
+    });
+
+    test.each(MAKEFILES)('reads a Makefile across %s', (_case, text, read) => {
+        // Given - the Makefile
+        // Then - the comments outside every define
+        expect(readOf(text, 'Makefile')).toStrictEqual(read);
     });
 });

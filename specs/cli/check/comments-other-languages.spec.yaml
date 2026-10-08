@@ -45,6 +45,11 @@ runs:
 
                   build:
                   	npm run build
+
+                  define SCRIPT
+                  # kept: the variable's own line
+                  echo one
+                  endef
           deploy/Dockerfile:
               equals: |
                   # syntax=docker/dockerfile:1
@@ -64,6 +69,9 @@ runs:
                               - run: |
                                     # not a comment of the file: the script's own line
                                     make check
+                              - run: "echo one
+                                    # inside the quoted scalar
+                                    two"
           scripts/release.sh:
               equals: |
                   #!/bin/sh
@@ -75,6 +83,9 @@ runs:
                   cat <<NOTES
                   # not a comment: the heading of the notes
                   NOTES
+                  NOTES="first line
+                  # Heading of the release notes
+                  "
           src/page.astro:
               equals: |
                   ---

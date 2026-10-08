@@ -8,3 +8,6 @@ npm version patch
 cat <<NOTES
 # not a comment: the heading of the notes
 NOTES
+NOTES="first line
+# Heading of the release notes
+"

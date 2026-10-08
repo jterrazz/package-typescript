@@ -9,3 +9,6 @@ jobs:
             - run: |
                   # not a comment of the file: the script's own line
                   make check
+            - run: "echo one
+                  # inside the quoted scalar
+                  two"
