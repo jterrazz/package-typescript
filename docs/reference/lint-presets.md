@@ -60,7 +60,7 @@ Two conditions make those rules real, and both fail silently when they are not m
 
 ### `import/extensions` — the one rule two platforms answer differently
 
-Node ESM resolves a specifier literally and needs the `.js`; a bundler resolves it and refuses one. `node` and `bun` carry `always`; `next`, `astro`, `expo` and `react` carry `never`. Asset specifiers keep their extension everywhere, because a bundler resolves them BY it, and `astro` keeps `.astro` for the same reason: Astro's `resolve.extensions` does not carry it, so a layout imported without it fails the build. Both are `error` — a profile changes the convention, never the level.
+Node ESM resolves a specifier literally and needs the `.js`; a bundler resolves it and refuses one. `node` and `bun` carry `always`; `next`, `astro`, `expo` and `react` carry `never`. Asset specifiers keep their extension everywhere, because a bundler resolves them BY it, and `astro` keeps `.astro` for the same reason: Astro's `resolve.extensions` does not carry it, so a layout imported without it fails the build. A package's subpath is left to the package under `never` as it is under `always`: a package with no `exports` map resolves a subpath only by its file name — `expo/metro-config.js` in an ESM `metro.config.js` — so the spelling is the package's, and the rule judges the project's own specifiers alone. Both are `error` — a profile changes the convention, never the level.
 
 ## How the config is merged
 

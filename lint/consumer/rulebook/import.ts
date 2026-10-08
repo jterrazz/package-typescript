@@ -28,7 +28,13 @@ export const IMPORT_SIDE_EFFECT_MODULES: readonly string[] = Object.freeze([
 // Stryker restore ArrayDeclaration,StringLiteral
 
 const IMPORT_EXTENSIONS_ALWAYS = on(['always', { ignorePackages: true, ...IMPORT_ASSETS }]);
-export const IMPORT_EXTENSIONS_NEVER = on(['never', IMPORT_ASSETS]);
+// outside: a package with no `exports` map resolves a subpath only by its file name (`expo/metro-config.js`), so how a package's subpath is spelled is the package's, never the project's.
+const PACKAGE_SUBPATH = '{[a-z]*,@[a-z]*/*}/**';
+
+export const IMPORT_EXTENSIONS_NEVER = on([
+    'never',
+    { ...IMPORT_ASSETS, pathGroupOverrides: [{ action: 'ignore', pattern: PACKAGE_SUBPATH }] },
+]);
 
 export default fragment({
     id: 'import',

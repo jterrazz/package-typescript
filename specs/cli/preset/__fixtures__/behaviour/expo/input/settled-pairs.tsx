@@ -3,6 +3,11 @@
  * without a reason to: the report stays silent on it.
  */
 
+// outside: import/extensions spares a package subpath: `expo` maps no exports, so its subpath resolves only by its file name.
+import { getDefaultConfig } from 'expo/metro-config.js';
+
+export const metro: unknown = getDefaultConfig;
+
 const Gesture = {
     Pan: (): { enabled: boolean } => ({ enabled: true }),
 };
