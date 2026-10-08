@@ -127,6 +127,7 @@ describe('comments', () => {
             'endregion',
             'cspell:disable',
             'codespell:ignore',
+            'checker-disable-next-line pinned-value-from-the-input -- the stub clock pins it',
             'invariant: a kind',
             'the prose, which names shellcheck mid-text',
         ];
@@ -150,7 +151,7 @@ describe('comments', () => {
 
         // Then - the prose alone, once in each file
         expect(result.findings?.map(({ line, path }) => `${path}:${String(line)}`)).toStrictEqual([
-            'run.sh:49',
+            'run.sh:51',
             'theme.css:17',
         ]);
     });
