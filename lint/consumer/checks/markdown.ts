@@ -1,9 +1,8 @@
-import { dirname, join, matchesGlob, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
+import { filesKeptByteForByte } from '../../kit/checker/kept-files.js';
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
-import { keptByteForByte } from '../../kit/project/byte-for-byte.js';
 import { isGitIgnored, readText } from '../../kit/project/project-files.js';
-import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import { brokenLinks, rumdl } from './markdown.rumdl.js';
 
 type Found = { message: string; rule: string };
@@ -231,32 +230,11 @@ function auditPage(context: Context, path: string, markdown: string): Found[] {
     return found;
 }
 
-// invariant: the pass judges the manual, never content: a page the formatter keeps byte for byte — a content tree such as assets/, a script's output, a test's ground — is a page the pass neither judges nor rewrites, in the root and in every workspace member.
-async function keptOf(context: Context): Promise<string[]> {
-    const units = ['', ...workspaceMembers(context.root).map((member) => `${member}/`)];
-    const kept = await Promise.all(
-        units.map(async (prefix) => {
-            const { resolved } = await context.config(join(context.root, prefix));
-
-            return keptByteForByte(resolved.sections.typescript).map(
-                (pattern) => `${prefix}${pattern}`,
-            );
-        }),
-    );
-
-    return kept.flat();
-}
-
 export const markdown: Pass = Object.freeze({
     async check(context) {
         const findings: Finding[] = [];
-        const kept = await keptOf(context);
-        const pages = context
-            .files()
-            .filter(
-                (file) =>
-                    file.endsWith('.md') && !kept.some((pattern) => matchesGlob(file, pattern)),
-            );
+        const isKept = await filesKeptByteForByte(context);
+        const pages = context.files().filter((file) => file.endsWith('.md') && !isKept(file));
         for (const path of pages) {
             const text = readText(context.root, path);
             // Stryker disable next-line ConditionalExpression: a page the tree lists is a file on disk, which reads

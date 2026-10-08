@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 
 import { defineCheck, rowNamed } from '../../kit/catalogue/rule.js';
+import { filesKeptByteForByte } from '../../kit/checker/kept-files.js';
 import type { Finding, Pass } from '../../kit/checker/pass.js';
 import {
     commentDeletion,
@@ -75,12 +76,13 @@ function positionOf(text: string, offset: number): { column: number; line: numbe
 }
 
 export const comments: Pass = Object.freeze({
-    check(context) {
+    async check(context) {
         const findings: Finding[] = [];
         const writes: { path: string; text: string }[] = [];
         const rewritten: string[] = [];
+        const isKept = await filesKeptByteForByte(context);
         const read = context.files().flatMap((path) => {
-            const language = languageOf(path);
+            const language = isKept(path) ? undefined : languageOf(path);
 
             return language === undefined ? [] : [{ language, path }];
         });
