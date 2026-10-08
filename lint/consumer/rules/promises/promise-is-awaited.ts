@@ -13,10 +13,15 @@ type Node = {
     end: number;
     expression?: Node;
     kind?: string;
+    local?: Node;
     name?: string;
+    object?: Node;
     property?: Node;
+    source?: Node;
+    specifiers?: Node[];
     start: number;
     type: string;
+    value?: unknown;
 };
 
 type RuleContext = {
@@ -43,6 +48,14 @@ const VALUES: ReadonlySet<string> = new Set([
     'UnaryExpression',
 ]);
 
+// outside: zod's import, whose schemas take a fallback in `.catch()` — a value, or a function returning one.
+const SCHEMA_SOURCE = /^zod(?:\/|$)/u;
+
+// invariant: a constant is named in capitals — `DEFAULT_LANGUAGE`, an enum's `Language.En` — and a function never is.
+const CONSTANT_NAME = /^[A-Z][A-Z\d_]*$/u;
+
+const MEMBER_CONSTANT_NAME = /^[A-Z]/u;
+
 const WRAPPERS: ReadonlySet<string> = new Set([
     'ParenthesizedExpression',
     'TSAsExpression',
@@ -54,13 +67,15 @@ const WRAPPERS: ReadonlySet<string> = new Set([
 const FUNCTIONS: ReadonlySet<string> = new Set(['ArrowFunctionExpression', 'FunctionExpression']);
 
 const WHY_FIX = {
-    fix: 'await the promise, inside a `try`/`catch` for its failure; a call that only shares the name — a zod schema’s `.catch(fallback)` — takes its fallback as a value, a literal or a `const` naming one, which the rule reads as no promise',
+    fix: 'await the promise, inside a `try`/`catch` for its failure; a call that only shares the name — a zod schema’s `.catch(fallback)` — is read as no promise when the schema is built from zod’s import in the file, or when its fallback is a value: a literal, a constant named in capitals (`DEFAULT_LANGUAGE`, `Language.En`), or a `const` naming one',
     why: 'the estate writes `await`: a promise read top to bottom, its failure caught where a `try` says so, never a chain of callbacks threading the value through',
 };
 
 type Chain = { awaited: boolean; call: Node; method: string; parent: Node };
 
 type Constants = Map<string | undefined, Node | null>;
+
+type Read = { constants: Constants; schemas: ReadonlySet<string> };
 
 const isNode = (value: unknown): value is Node =>
     typeof value === 'object' && value !== null && 'type' in value;
@@ -110,6 +125,21 @@ function recordConstants(node: Node, constants: Constants): void {
     }
 }
 
+// Stryker disable OptionalChaining,ArrayDeclaration: a program holds its body, an import its source and its specifiers, each its local name
+function schemaImportsOf(program: Node): Set<string> {
+    return new Set(
+        (program.body ?? [])
+            .filter(
+                (statement) =>
+                    statement.type === 'ImportDeclaration' &&
+                    SCHEMA_SOURCE.test(String(statement.source?.value)),
+            )
+            .flatMap((statement) => statement.specifiers ?? [])
+            .map((specifier) => String(specifier.local?.name)),
+    );
+}
+// Stryker restore OptionalChaining,ArrayDeclaration
+
 function readOf(program: Node): { chains: Chain[]; constants: Constants } {
     const chains: Chain[] = [];
     const constants: Constants = new Map();
@@ -128,9 +158,19 @@ function readOf(program: Node): { chains: Chain[]; constants: Constants } {
     return { chains, constants };
 }
 
+// invariant: of the expressions a fallback is, an identifier alone holds a `name`.
+function isNamedConstant(value: Node): boolean {
+    if (value.type === 'MemberExpression') {
+        // Stryker disable next-line OptionalChaining: a member holds its property
+        return value.computed !== true && MEMBER_CONSTANT_NAME.test(String(value.property?.name));
+    }
+
+    return CONSTANT_NAME.test(String(value.name));
+}
+
 function isValue(node: Node, constants: Constants, seen: ReadonlySet<string>): boolean {
     const value = unwrapped(node);
-    if (VALUES.has(value.type) || value.name === 'undefined') {
+    if (VALUES.has(value.type) || value.name === 'undefined' || isNamedConstant(value)) {
         return true;
     }
     // Stryker disable next-line ConditionalExpression,StringLiteral: a node that is no identifier names no constant, under whatever key it is looked up
@@ -140,13 +180,31 @@ function isValue(node: Node, constants: Constants, seen: ReadonlySet<string>): b
     return !seen.has(name) && init !== null && isValue(init, constants, new Set([...seen, name]));
 }
 
-function isChainReported({ awaited, call, method, parent }: Chain, constants: Constants): boolean {
+function rootOf(node: Node): Node {
+    const inner = unwrapped(node);
+    const next = inner.type === 'CallExpression' ? inner.callee : inner.object;
+
+    return next === undefined ? inner : rootOf(next);
+}
+
+// invariant: a receiver rooted in zod's import — `z.string()`, or a `const` holding a schema built from it — is a schema, never a promise.
+function isSchema(node: Node, read: Read, seen: ReadonlySet<string>): boolean {
+    const name = String(rootOf(node).name);
+    if (read.schemas.has(name)) {
+        return true;
+    }
+    const init = read.constants.get(name) ?? null;
+
+    return !seen.has(name) && init !== null && isSchema(init, read, new Set([...seen, name]));
+}
+
+function isChainReported({ awaited, call, method, parent }: Chain, read: Read): boolean {
     const [fallback, ...rest] = call.arguments ?? [];
     const isNoPromise =
         method === 'catch' &&
         fallback !== undefined &&
         rest.length === 0 &&
-        isValue(fallback, constants, new Set());
+        (isValue(fallback, read.constants, new Set()) || isSchema(call, read, new Set()));
 
     return !isNoPromise && !awaited && !HANDED_ON.has(parent.type);
 }
@@ -182,7 +240,8 @@ export const promiseIsAwaited = defineRule(
             return {
                 Program(program: Node): void {
                     const { chains, constants } = readOf(program);
-                    for (const chain of chains.filter((one) => isChainReported(one, constants))) {
+                    const read = { constants, schemas: schemaImportsOf(program) };
+                    for (const chain of chains.filter((one) => isChainReported(one, read))) {
                         context.report({
                             data: { method: chain.method },
                             messageId: 'chained',

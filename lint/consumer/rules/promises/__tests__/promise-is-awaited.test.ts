@@ -100,6 +100,51 @@ ruleTester().run('promise-is-awaited', promiseIsAwaited, {
             filename: '/nowhere/src/count.ts',
         },
         {
+            code: 'export const done = read().catch(console.error);',
+            errors: [{ column: 20, data: { method: 'catch' }, line: 1, messageId: 'chained' }],
+        },
+        {
+            code: 'export const done = read().catch(handlers[Fallback]);',
+            errors: [{ column: 20, data: { method: 'catch' }, line: 1, messageId: 'chained' }],
+        },
+        {
+            code: lines(
+                "import { z } from './z.js';",
+                "export const done = z.read().catch(() => 'en');",
+            ),
+            errors: [{ column: 20, data: { method: 'catch' }, line: 2, messageId: 'chained' }],
+        },
+        {
+            code: lines(
+                "export { z } from 'zod';",
+                "import { y } from 'not-zod';",
+                "export const done = z.read().catch(() => 'en');",
+                "export const both = y.read().catch(() => 'en');",
+            ),
+            errors: [
+                { column: 20, data: { method: 'catch' }, line: 3, messageId: 'chained' },
+                { column: 20, data: { method: 'catch' }, line: 4, messageId: 'chained' },
+            ],
+        },
+        {
+            code: lines(
+                'export const done = read().catch(handleERR);',
+                'export const both = read().catch(handlers.onError);',
+            ),
+            errors: [
+                { column: 20, data: { method: 'catch' }, line: 1, messageId: 'chained' },
+                { column: 20, data: { method: 'catch' }, line: 2, messageId: 'chained' },
+            ],
+        },
+        {
+            code: lines(
+                'const first = second.read();',
+                'const second = first.read();',
+                "export const done = first.catch(() => 'en');",
+            ),
+            errors: [{ column: 20, data: { method: 'catch' }, line: 3, messageId: 'chained' }],
+        },
+        {
             code: 'export const done = (async () => 1)().then(String);',
             errors: [{ column: 20, data: { method: 'then' }, line: 1, messageId: 'chained' }],
         },
@@ -177,6 +222,22 @@ ruleTester().run('promise-is-awaited', promiseIsAwaited, {
             '}',
         ),
         'export const value = schema.catch(undefined);',
+        'export const language = LanguageSchema.catch(Language.En);',
+        lines(
+            'const fallback = Language.En;',
+            'export const language = LanguageSchema.catch(fallback);',
+        ),
+        lines(
+            "import { DEFAULT_LANGUAGE } from './language.js';",
+            'export const language = LanguageSchema.catch(DEFAULT_LANGUAGE);',
+        ),
+        lines("import { z } from 'zod';", "export const language = z.string().catch(() => 'en');"),
+        lines(
+            "import * as zod from 'zod/v4';",
+            "const Language = zod.enum(['en', 'fr']);",
+            'const Fallen = Language;',
+            "export const language = Fallen.optional().catch(() => 'en');",
+        ),
         "export const value = schema.catch(('x'));",
         'export const value = map.get(key);',
         lines('export async function start() {', '    await main();', '}', 'await start();'),
