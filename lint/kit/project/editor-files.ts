@@ -1,4 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
+
+import { PACKAGE_ROOT } from './package-root.js';
 
 export type EditorFileScope = 'repository' | 'unit';
 
@@ -40,15 +44,46 @@ export function tsconfigAdditionsOf(section: unknown): TsconfigAdditions {
             problem: 'sets `typescript.tsconfig` with no `reason`',
         };
     }
-    const { compilerOptions, include } = written;
+    const { compilerOptions, files, include } = written;
 
     return {
         additions: {
             ...(isRecord(compilerOptions) ? { compilerOptions } : {}),
+            ...(Array.isArray(files) ? { files } : {}),
             ...(Array.isArray(include) ? { include } : {}),
         },
         problem: null,
     };
+}
+
+const PRESET = /^@jterrazz\/typescript\/tsconfig\/(?<name>[a-z]+)$/u;
+
+// invariant: a tsconfig's `include` replaces the one it extends, so what a project adds is written beside its preset's, never in its place.
+function presetIncludeOf(extended: unknown): unknown[] {
+    // Stryker disable next-line ConditionalExpression,OptionalChaining: a value that is no string spells no preset, nor does an unmatched one; either names a file no preset is
+    const name = typeof extended === 'string' ? PRESET.exec(extended)?.groups?.name : undefined;
+    try {
+        // invariant: a name no preset holds is a file that does not read, which reads as no globs.
+        const file = join(PACKAGE_ROOT, 'src/presets/tsconfig', `${String(name)}.json`);
+        const preset: unknown = JSON.parse(readFileSync(file).toString());
+
+        return isRecord(preset) && Array.isArray(preset.include) ? preset.include : [];
+    } catch {
+        return [];
+    }
+}
+
+function joined(
+    json: Readonly<Record<string, unknown>>,
+    additions: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+    const { include } = additions;
+    if (!Array.isArray(include)) {
+        return { ...json, ...additions };
+    }
+    const added: readonly unknown[] = include;
+
+    return { ...json, ...additions, include: [...presetIncludeOf(json.extends), ...added] };
 }
 
 export function derivedEditorFiles(
@@ -68,7 +103,7 @@ export function derivedEditorFiles(
             Object.entries(files).filter(([name]) => name !== 'tsconfig.json'),
         );
     }
-    files['tsconfig.json'] = { ...tsconfig, json: { ...tsconfig.json, ...additions } };
+    files['tsconfig.json'] = { ...tsconfig, json: joined(tsconfig.json, additions) };
 
     return files;
 }

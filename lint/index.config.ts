@@ -53,6 +53,9 @@ export type TypescriptSettings = {
     /** What the project's tsconfig.json adds to its platform's preset, and why. */
     tsconfig?: {
         compilerOptions?: Readonly<Record<string, unknown>>;
+        /** Single files the type check reads although no glob reaches them — an ambient `.d.ts` under node_modules. */
+        files?: readonly string[];
+        /** Globs written beside the preset's, never in their place. */
         include?: readonly string[];
         reason: string;
     };
