@@ -33,6 +33,13 @@ const ROUTER_ROOT = 'app';
 
 const unmarked = (name: string): string => name.replace(/^_/u, '').toLowerCase();
 
+// invariant: under a specs tree a `_shared/` is @jterrazz/test's closed-list rule's, whose fix names the special folders it became.
+const IN_SPECS = /(?:^|\/)specs\//u;
+
+// invariant: `shared` names a property a plain folder may hold, but behind the `_` it restates the mark — what the row shares — and says nothing of what.
+const restatesTheMark = (path: string, name: string): boolean =>
+    name.startsWith('_') && unmarked(name) === 'shared' && !IN_SPECS.test(path);
+
 // invariant: a name is read segment by segment, split on the hyphen; the `_` marker excuses none.
 const isShortcut = (name: string, { shortcuts }: Universal): boolean =>
     unmarked(name)
@@ -71,7 +78,14 @@ export function findingsOf(files: readonly string[], universal: Universal): Find
     const findings: Finding[] = [];
 
     for (const [path, { fileName, name }] of namesOf(files)) {
-        if (universal.grabBag.has(unmarked(name))) {
+        if (restatesTheMark(path, name)) {
+            findings.push(
+                namesFinding('names/no-grab-bag-name', path, {
+                    fix: 'name it for what its files share (`_taxonomy/`, never `_shared/`), or move a lone file beside the code that uses it',
+                    found: `\`${name}\` names no subject — its \`_\` already says the row shares it, and the word says it again`,
+                }),
+            );
+        } else if (universal.grabBag.has(unmarked(name))) {
             findings.push(
                 namesFinding('names/no-grab-bag-name', path, {
                     fix: 'name it for the subject it holds, or move what it holds beside the code that uses it',
