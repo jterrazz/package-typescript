@@ -1,9 +1,10 @@
 import { dirname, join, matchesGlob, resolve } from 'node:path';
 
-import type { Context, Finding, Pass, Tool } from '../../kit/checker/pass.js';
+import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import { keptByteForByte } from '../../kit/project/byte-for-byte.js';
 import { isGitIgnored, readText } from '../../kit/project/project-files.js';
 import { workspaceMembers } from '../../kit/project/workspace-members.js';
+import { brokenLinks, rumdl } from './markdown.rumdl.js';
 
 type Found = { message: string; rule: string };
 
@@ -17,8 +18,6 @@ const SECTION_PROSE_LIMIT = 30;
 const PAGE = /(?<![\w/.-])docs\/(?<page>(?:start|guides|concepts|reference)\/[a-z\d-]+\.md)/gu;
 
 const SKILL_PAGE = /^(?<root>(?:.*\/)?)skills\/[^/]+\/.+\.md$/u;
-
-const OWN_RUMDL_CONFIGS = ['.rumdl.toml', 'rumdl.toml'];
 
 // invariant: the opening segments are closed on purpose, or every `a/b` in a sentence would read as a
 // coordinate; `docs/` and `src/` are absent because a page teaching a convention names the reader's tree.
@@ -170,8 +169,11 @@ function flatSections(markdown: string): string[] {
 
 const DECISION_RECORD = /(?:^|\/)docs\/decisions\/[^/]+\.md$/u;
 
+// invariant: a numbered record under any `decisions/` folder is frozen like the manual's own — its body names the paths of its day.
+const NUMBERED_RECORD = /(?:^|\/)decisions\/\d{3}-[^/]+\.md$/u;
+
 function missingPaths({ exists, root }: Context, path: string, cited: string): Found[] {
-    if (DECISION_RECORD.test(path)) {
+    if (DECISION_RECORD.test(path) || NUMBERED_RECORD.test(path)) {
         return [];
     }
     const found: Found[] = [];
@@ -229,28 +231,6 @@ function auditPage(context: Context, path: string, markdown: string): Found[] {
     return found;
 }
 
-function rumdl(context: Context, pages: readonly string[]): Tool[] {
-    if (pages.length === 0) {
-        return [];
-    }
-    const own = OWN_RUMDL_CONFIGS.some((name) => context.exists(join(context.root, name)));
-
-    return [
-        {
-            args: [
-                'check',
-                '--no-cache',
-                '--quiet',
-                ...(own ? [] : ['--config', context.value('--rumdl-config', '')]),
-                ...(context.fix ? ['--fix'] : []),
-                ...pages,
-            ],
-            flag: '--rumdl',
-            name: 'rumdl',
-        },
-    ];
-}
-
 // invariant: the pass judges the manual, never content: a page the formatter keeps byte for byte — a content tree such as assets/, a script's output, a test's ground — is a page the pass neither judges nor rewrites, in the root and in every workspace member.
 async function keptOf(context: Context): Promise<string[]> {
     const units = ['', ...workspaceMembers(context.root).map((member) => `${member}/`)];
@@ -290,6 +270,8 @@ export const markdown: Pass = Object.freeze({
                 );
             }
         }
+
+        findings.push(...brokenLinks(context, pages));
 
         return { findings, tools: rumdl(context, pages) };
     },

@@ -543,9 +543,9 @@ The pass judges the manual, never content: a page the formatter keeps byte for b
 
 ### What rumdl judges
 
-rumdl is the Markdown linter; the pass hands it the pages and prints its own lines, each at its position — `README.md:5:24: [MD057] Relative link 'notes/design.md' does not exist`. A relative link to a missing file is its MD057, a link to a heading the page does not have its MD051, a fence with no language its MD040. It runs on `src/presets/rumdl/rumdl.toml` unless the project keeps a `.rumdl.toml` of its own, and that preset turns off the rules that judge layout — list indents and markers, line width — because oxfmt writes the layout of a page and two owners of one line would fight. Inline HTML is a form the chapters use (`<details>`), so MD033 is off too. `typescript fix` runs rumdl's own fixes; what it cannot fix stays a finding.
+rumdl is the Markdown linter; the pass hands it the pages and prints its own lines, each at its position — `README.md:5:80: [MD051] Link anchor '#usage' does not exist in document headings`. A link to a heading the page does not have is its MD051, a fence with no language its MD040. A relative link to a missing file is its MD057, which the pass runs apart and reports as `markdown/link-resolves` (below), so that git can be asked about the target. A page whose frontmatter names it — `name:` on an agent or a skill page, `title:` elsewhere — is titled by it, so MD041 asks no `#` heading of it. It runs on `src/presets/rumdl/rumdl.toml` unless the project keeps a `.rumdl.toml` of its own, and that preset turns off the rules that judge layout — list indents and markers, line width — because oxfmt writes the layout of a page and two owners of one line would fight. Inline HTML is a form the chapters use (`<details>`), so MD033 is off too. `typescript fix` runs rumdl's own fixes; what it cannot fix stays a finding.
 
-rumdl reads the disk and nothing else, so the check never touches the network. A remote link is not judged here: lychee, the dead-link checker, would need the network, which `make check` never uses, and it ships no npm package to install it with — rumdl's MD057 and MD051 are the offline check of every local link and anchor. A repository that wants its remote links read runs lychee itself, opt-in, where the machine has it: this one's `make check-links` ([Develop](../guides/develop.md#the-loop)). A link to a file git ignores — a build artefact under `.artifacts/` or `dist/`, a generated reference — is judged like any other: where the file is absent it is refused, which the gate rumdl replaced let through on purpose. That is accepted: the page is read in a clone, and a clone holds no ignored file, so the link is broken for every reader but the one who built it.
+rumdl reads the disk and nothing else, so the check never touches the network. A remote link is not judged here: lychee, the dead-link checker, would need the network, which `make check` never uses, and it ships no npm package to install it with — rumdl's MD057 and MD051 are the offline check of every local link and anchor. A repository that wants its remote links read runs lychee itself, opt-in, where the machine has it: this one's `make check-links` ([Develop](../guides/develop.md#the-loop)). A link into a tree git ignores — a clone on the workstation's bench, a build product under `dist/` — is forgiven, exactly as a backticked path there is: the two rules judge one fact, and a verdict that turns on what a machine happens to hold (green in the checkout that built the tree, red in a worktree or in CI) is no verdict. A link to nothing, ignored or not, is still refused.
 
 ### What the prose gate adds
 
@@ -553,15 +553,18 @@ The prose gate reads what no Markdown linter knows: whether a backticked coordin
 
 <!-- GENERATED:findings markdown -->
 
-| Rule                                    | Requirement                                                                                                                     |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `markdown/path-resolves`                | Every backticked repository path of a page names something on disk, but in a decision record, which names the paths of its day. |
-| `markdown/page-reference-resolves`      | Every page a skill names is one its package ships.                                                                              |
-| `markdown/prose-block-is-short`         | A paragraph or a list item runs twelve lines at most.                                                                           |
-| `markdown/fenced-run-is-short`          | A fenced block breathes within fifteen lines.                                                                                   |
-| `markdown/long-section-has-subheadings` | A section over thirty prose lines is broken by a subheading or a list.                                                          |
+| Rule                                    | Requirement                                                                                                                                              |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `markdown/path-resolves`                | Every backticked repository path of a page names something on disk or in a tree git ignores, but in a decision record, which names the paths of its day. |
+| `markdown/link-resolves`                | Every relative link of a page reaches a file on disk or a tree git ignores.                                                                              |
+| `markdown/page-reference-resolves`      | Every page a skill names is one its package ships.                                                                                                       |
+| `markdown/prose-block-is-short`         | A paragraph or a list item runs twelve lines at most.                                                                                                    |
+| `markdown/fenced-run-is-short`          | A fenced block breathes within fifteen lines.                                                                                                            |
+| `markdown/long-section-has-subheadings` | A section over thirty prose lines is broken by a subheading or a list.                                                                                   |
 
 <!-- /GENERATED:findings markdown -->
+
+A decision record is `docs/decisions/` of the manual, or a numbered `decisions/NNN-<title>.md` anywhere — a brand's seat keeps its own, frozen the same way.
 
 A skill is read from the install, where nothing can correct it, so one more rule reads a page under `skills/` alone: `markdown/page-reference-resolves` refuses a `docs/<section>/<page>.md` it names that its package does not ship. The page is resolved beside the skill's own `skills/` folder, the package root it is published from.
 

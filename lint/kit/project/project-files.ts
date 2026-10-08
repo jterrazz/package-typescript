@@ -37,6 +37,7 @@ function gitSweep(root: string): null | string[] {
 
 // outside: `dist/` in .gitignore matches the directory form only, so each path is asked in both spellings; outside a git tree nothing is ignored.
 export function ignoredPaths(root: string, paths: readonly string[]): ReadonlySet<string> {
+    // Stryker disable next-line ConditionalExpression,BlockStatement: git asked of no path answers none; the guard spares the process
     if (paths.length === 0) {
         return new Set();
     }

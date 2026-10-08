@@ -29,7 +29,7 @@ runs:
            RUN  Markdown (prose)
 
           README.md:1:1: error markdown(path-resolves): `lib/greeter.js` names nothing on disk
-          README.md:5:24: [MD057] Relative link 'notes/design.md' does not exist
+          README.md:5:24: error markdown(link-resolves): Relative link 'notes/design.md' does not exist
           README.md:5:80: [MD051] Link anchor '#usage' does not exist in document headings
           ✗ Failed with exit code 1
 

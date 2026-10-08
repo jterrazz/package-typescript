@@ -1,2 +1,6 @@
 [global]
 disable = ["MD007", "MD013", "MD030", "MD033", "MD076", "MD077"]
+
+# outside: a prompt page (an agent, a skill) titles itself with a frontmatter `name:`, as Claude Code reads it.
+[MD041]
+front-matter-title-pattern = '^\s*(name|title)\s*[:=]'

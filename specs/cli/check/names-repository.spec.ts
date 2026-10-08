@@ -77,7 +77,7 @@ describe('names-repository', () => {
 
              RUN  Markdown (prose)
 
-            data/NOTES.md:3:16: [MD057] Relative link './missing.md' does not exist
+            data/NOTES.md:3:16: error markdown(link-resolves): Relative link './missing.md' does not exist
             ✗ Failed with exit code 1
 
              RUN  Names (tree)
