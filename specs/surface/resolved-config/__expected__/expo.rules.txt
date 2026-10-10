@@ -387,7 +387,7 @@ react/no-will-update-set-state
 react/prefer-es6-class
 react/prefer-function-component
 react/preserve-manual-memoization
-react/purity
+- react/purity
 - react/react-in-jsx-scope
 react/refs
 react/rule-suppression

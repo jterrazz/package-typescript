@@ -1,9 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
 /*
- * outside: a module test past 300 lines is refused: the size override that lifts `max-lines`
- * reaches `*.spec.ts` alone, the one suffix `@jterrazz/test`'s `spec-file-within-line-limit` judges. The
- * group below spans more than sixty lines and only the file's length is reported.
+ * outside: a module test holds 400 lines, as a spec does. The group below spans more than sixty lines
+ * and nothing is reported: a test file's one describe is as long as the file.
  */
 
 describe('a module test past the file cap', () => {

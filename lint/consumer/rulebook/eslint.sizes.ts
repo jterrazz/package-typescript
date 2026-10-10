@@ -1,4 +1,4 @@
-import { off, scoped } from '../../kit/compiler/decision.js';
+import { off, on, scoped } from '../../kit/compiler/decision.js';
 import type { Scoped } from '../../kit/compiler/decision.js';
 
 export const SIZE_SINCE = '11.0.0';
@@ -14,6 +14,12 @@ export const ESLINT_SIZES_OVERRIDES: readonly Scoped[] = [
                 kind: 'covered',
             }),
         },
+        since: SIZE_SINCE,
+    }),
+    // invariant: a module test is held to the spec cap: its table tests list the cases of one module, and they ran 314 to 376 lines where the source's 300 gave them no seam.
+    scoped({
+        files: ['**/*.test.ts', '**/*.test.tsx'],
+        rules: { 'max-lines': on([{ max: 400 }]) },
         since: SIZE_SINCE,
     }),
     // invariant: a test file's one `describe` (`one-describe-per-file`) is a function as long as the file; `test-body-within-line-limit` caps a test body instead.
