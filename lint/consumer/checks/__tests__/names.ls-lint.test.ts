@@ -91,6 +91,26 @@ describe('names.ls-lint', () => {
         ]);
     });
 
+    test('admits the references of a skill, and refuses a folder or a file of another kind inside them', () => {
+        // Given - the failures ls-lint reports for a skill's references: a folder, a text file, and (kept clean) a page and the folder itself
+        const failures = {
+            'skills/shop/references/drafts': { '.dir': ['exists:0'] },
+            'skills/shop/references/notes.txt': { '.*': ['exists:0'] },
+        };
+        const swept = [
+            'skills/shop/SKILL.md',
+            'skills/shop/references/drafts/outline.md',
+            'skills/shop/references/notes.txt',
+            'skills/shop/references/rules.md',
+        ];
+
+        // Then - the folder and the text file are refused where they stand, the page and `references/` itself are not named
+        expect(findingsOf(swept, { failures })).toStrictEqual([
+            'names/skill-holds-only-skill-md  skills/shop/references/drafts/',
+            'names/skill-holds-only-skill-md  skills/shop/references/notes.txt',
+        ]);
+    });
+
     test('judges a file in a closed folder of a workspace member by its own place, and leaves what ls-lint sees to ls-lint', () => {
         // Given - a member's unseen file, an entry and a skill page ls-lint judges, and an unseen file in an open folder
         const swept = [
