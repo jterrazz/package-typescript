@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { keptByteForByte } from '../byte-for-byte.js';
 
-describe('keptByteForByte', () => {
+describe('byte-for-byte', () => {
     test('keeps the content trees, the ground, the paths handed the formatter and the roots declared verbatim, each folder as its whole tree and each file as itself', () => {
         // Given - a section handing the formatter a folder, a glob and a file, and declaring three roots, two of them verbatim
         const section = {

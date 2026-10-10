@@ -189,6 +189,28 @@ async function membersMeasured(
 const blankAsUnset = (value: string | undefined): string | undefined =>
     value === undefined || value.trim() === '' ? undefined : value;
 
+function refusedSince(named: string): number {
+    print(
+        `${RED}${refusal({
+            fix: 'name a commit this clone holds — fetch it — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the change not yet committed, or, on a clean tree, the branch since its merge-base with the default branch',
+            found: `git names no commit ${named}`,
+            read: 'docs/reference/quality-checks.md#mutation',
+            why: 'the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing',
+        })}${RESET}\n`,
+    );
+
+    return 1;
+}
+
+// invariant: a project with no test project has nothing to run a mutant against; Stryker would stop on a missing config, and the run says what it measured instead.
+function measuredNothing(project: string): number {
+    print(
+        `${badge('TYPESCRIPT')} measured nothing: ${project} has no vitest.config.ts, so no test project to run a mutant against.\n`,
+    );
+
+    return 0;
+}
+
 export async function mutation(args: readonly string[]): Promise<number> {
     const project = process.cwd();
     const commandLine = readCommandLine(args, ['--mutate', '--since']);
@@ -196,28 +218,14 @@ export async function mutation(args: readonly string[]): Promise<number> {
     const named =
         commandLine.value('--since') ?? blankAsUnset(process.env.TYPESCRIPT_MUTATION_SINCE);
     if (named !== undefined && !namesACommit(project, named)) {
-        print(
-            `${RED}${refusal({
-                fix: 'name a commit this clone holds — fetch it — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the change not yet committed, or, on a clean tree, the branch since its merge-base with the default branch',
-                found: `git names no commit ${named}`,
-                read: 'docs/reference/quality-checks.md#mutation',
-                why: 'the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing',
-            })}${RESET}\n`,
-        );
-
-        return 1;
+        return refusedSince(named);
     }
     const members = workspaceMembers(project);
     if (members.length > 0) {
         return await membersMeasured(project, members, { ranges, since: named });
     }
-    // invariant: a project with no test project has nothing to run a mutant against; Stryker would stop on a missing config, and the run says what it measured instead.
     if (!existsSync(join(project, 'vitest.config.ts'))) {
-        print(
-            `${badge('TYPESCRIPT')} measured nothing: ${project} has no vitest.config.ts, so no test project to run a mutant against.\n`,
-        );
-
-        return 0;
+        return measuredNothing(project);
     }
     const since: Base =
         named === undefined

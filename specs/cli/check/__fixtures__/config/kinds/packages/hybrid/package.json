@@ -1,9 +1,9 @@
 {
     "name": "fixture-kinds-hybrid",
     "private": true,
-    "main": "src/index.ts",
     "workspaces": [
         "parts/*"
     ],
-    "type": "module"
+    "type": "module",
+    "main": "src/index.ts"
 }

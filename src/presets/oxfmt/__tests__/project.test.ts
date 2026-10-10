@@ -34,7 +34,9 @@ describe('oxfmtConfigAt', () => {
         const { ignorePatterns = [] } = await oxfmtConfigAt(root);
 
         // Then - the root's own folder as its tree, the member's file as the file it is and its verbatim root as a tree, each under apps/site/
-        expect(ignorePatterns.filter((pattern) => !/^(?:apps\/site\/)?\*\*\//u.test(pattern))).toStrictEqual([
+        expect(
+            ignorePatterns.filter((pattern) => !/^(?:apps\/site\/)?\*\*\//u.test(pattern)),
+        ).toStrictEqual([
             'dist/**',
             'assets/**',
             'public/**',

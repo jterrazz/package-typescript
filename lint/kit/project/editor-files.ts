@@ -93,9 +93,10 @@ function joined(
 ): Record<string, unknown> {
     const lists: Record<string, unknown[]> = {};
     for (const key of ['exclude', 'include'] as const) {
-        const added = additions[key];
+        const added: unknown = additions[key];
         if (Array.isArray(added)) {
-            lists[key] = [...presetListOf(json.extends, key), ...added];
+            const own: readonly unknown[] = added;
+            lists[key] = [...presetListOf(json.extends, key), ...own];
         }
     }
 

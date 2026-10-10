@@ -44,7 +44,7 @@ export type Removal = { directory: string; line: string };
 export type Pass = {
     check: (context: Context) => PassResult | Promise<PassResult>;
     namespace?: string;
-    prepare?: (context: Context) => { removals?: Removal[] } | Promise<{ removals?: Removal[] }>;
+    prepare?: (context: Context) => Promise<{ removals?: Removal[] }> | { removals?: Removal[] };
     valued?: readonly string[];
 };
 

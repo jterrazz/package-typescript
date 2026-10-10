@@ -163,7 +163,8 @@ async function runPass(
     const commandLine = readCommandLine(args, pass.valued);
     const context = contextOf(commandLine, checker.base);
     if (context.fix && pass.prepare !== undefined) {
-        removeAll(context, (await pass.prepare(context)).removals ?? []);
+        const prepared = await pass.prepare(context);
+        removeAll(context, prepared.removals ?? []);
     }
 
     const result = await pass.check(context);
