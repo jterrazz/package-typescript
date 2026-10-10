@@ -68,7 +68,7 @@ jobs:
 
 ### In a workspace
 
-When the `package.json` at the cwd declares `workspaces`, the per-package passes run once per member that qualifies — `apps/*/specs`, `packages/*/package.json` and the rest are gates of their own, not files the root happens to contain. A member is a directory a workspace glob matches that holds a `package.json`; the pass reports one line and prints the log of any run that failed.
+When the `package.json` at the cwd declares `workspaces` — or, for a pnpm workspace, which keeps no such field, when `pnpm-workspace.yaml` lists `packages` — the per-package passes run once per member that qualifies — `apps/*/specs`, `packages/*/package.json` and the rest are gates of their own, not files the root happens to contain. A member is a directory a workspace glob matches that holds a `package.json`; the pass reports one line and prints the log of any run that failed. The root's formatter and linter configs carry what each member keeps as written, under the member's folder, and a member's own overrides carry the member's plugins and come before the root's, which win.
 
 The Docs (layout) pass measures from neither: its unit is the repository, and the section below says why.
 

@@ -1,6 +1,6 @@
 // outside: a member is a directory matching a glob AND holding a package.json, as the package managers rule.
 
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 
@@ -18,11 +18,39 @@ function toPattern(glob: string): RegExp {
     return new RegExp(`^${escaped}$`, 'u');
 }
 
+// outside: pnpm declares its members in `pnpm-workspace.yaml`, a `packages:` list of globs, and keeps no `workspaces` field in the manifest.
+function pnpmPatterns(root: string): string[] {
+    let text: string;
+    try {
+        text = readFileSync(join(root, 'pnpm-workspace.yaml'), 'utf8');
+    } catch {
+        return [];
+    }
+    const lines = text.split('\n');
+    const start = lines.findIndex((line) => /^packages:\s*(?:#.*)?$/u.test(line));
+    if (start === -1) {
+        return [];
+    }
+    const listed: string[] = [];
+    for (const line of lines.slice(start + 1)) {
+        const item = /^\s+-\s+(?<quote>['"]?)(?<glob>.+?)\k<quote>\s*(?:#.*)?$/u.exec(line)?.groups
+            ?.glob;
+        if (item !== undefined) {
+            listed.push(item);
+        } else if (/^\S/u.test(line)) {
+            break;
+        }
+    }
+
+    return listed;
+}
+
 // invariant: empty for a single-package project, which every caller reads as "the root is the unit".
 export function workspaceMembers(root = '.'): string[] {
     const absolute = resolve(root);
     const manifest = readManifest(absolute);
-    const patterns = (manifest === null ? [] : workspacePatterns(manifest))
+    const declared = manifest === null ? [] : workspacePatterns(manifest);
+    const patterns = (declared.length > 0 ? declared : pnpmPatterns(absolute))
         .filter((glob) => !glob.startsWith('!'))
         .map((glob) => toPattern(glob.replace(/\/+$/u, '')));
 
