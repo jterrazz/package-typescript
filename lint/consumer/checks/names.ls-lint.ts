@@ -95,7 +95,12 @@ function skillRules(prefix: string): Record<string, Rules> {
             '.dir': `regex:${KEBAB}`,
             '.md': 'regex:SKILL',
         },
-        [`${prefix}skills/*/*`]: { '.*': 'exists:0', '.dir': 'exists:0' },
+        [`${prefix}skills/*/*`]: { '.*': 'exists:0', '.dir': 'regex:references' },
+        [`${prefix}skills/*/references`]: {
+            '.*': 'exists:0',
+            '.dir': 'exists:0',
+            '.md': `regex:${KEBAB}`,
+        },
     };
 }
 

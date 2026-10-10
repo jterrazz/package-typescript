@@ -10,6 +10,11 @@ describe('vague', () => {
 
         // Then - each finding at its position, with its lesson
         expect(result.report).toMatch(`
+            specs/cli/auth/cfg.spec.ts:1:1  names(no-abbreviated-word)
+                found: \`cfg\` is a word written in half
+                why: Every word of a name is spelled whole.
+                fix: spell every word of it whole
+                read: docs/reference/quality-checks.md#the-names-tree-pass
             specs/orders/__setup__/utils:1:1  names(no-grab-bag-name)
                 found: \`utils\` names no subject — it holds whatever nobody placed
                 why: A directory or file is named for the subject it holds, never a grab-bag word.

@@ -94,8 +94,8 @@ function skillFinding(path: string): Finding {
     return {
         message: [
             `found: \`${path}\` sits beside a skill's \`SKILL.md\``,
-            'why: a skill is one `skills/<skill>/SKILL.md`, the one page an agent loads, and a file beside it is one no agent reads',
-            'fix: fold what it says into the `SKILL.md` or into the chapter the skill routes to, and delete it',
+            'why: a skill is one `skills/<skill>/SKILL.md`, the page an agent loads, and the `references/*.md` pages it links for what a long skill discloses in steps; any other file beside it is one no agent reads',
+            'fix: fold what it says into the `SKILL.md`, move a long part under `references/<topic>.md` and link it, or delete it',
             'read: docs/reference/quality-checks.md#the-names-tree-pass',
         ].join(' · '),
         path,
@@ -146,7 +146,8 @@ function directoryFinding(path: string): Finding {
     };
 }
 
-const SKILL_PAGE = /^skills\/[^/]+\/SKILL\.md$/u;
+// invariant: a skill's pages are its `SKILL.md` and the `references/*.md` it discloses progressively, which the SKILL.md links one by one; nothing else sits beside it.
+const SKILL_PAGE = /^skills\/[^/]+\/(?:SKILL\.md|references(?:\/[^/]+\.md)?)$/u;
 
 export type Failed = { isDirectory: boolean; path: string };
 

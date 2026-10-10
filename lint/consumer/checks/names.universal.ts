@@ -28,6 +28,17 @@ const SWEPT: ReadonlySet<string> = new Set([
     'tests',
 ]);
 
+// outside: @jterrazz/test files a spec under `specs/<specification>/<subject>/`, the subject being the command, the route or the page the spec proves: a name the product chose (`auth`, `db`), never one the tree did.
+const SPECIFICATIONS: ReadonlySet<string> = new Set([
+    'api',
+    'cli',
+    'component',
+    'integration',
+    'job',
+    'mobile',
+    'website',
+]);
+
 // outside: below `app/`, a Next.js directory is a URL the product serves, not a name the tree chose.
 const ROUTER_ROOT = 'app';
 
@@ -61,8 +72,14 @@ function namesOf(files: readonly string[]): [string, Named][] {
         }
 
         const routerRoot = segments.indexOf(ROUTER_ROOT, 1);
+        const subjects =
+            segments[0] === 'specs' && SPECIFICATIONS.has(segments[1] ?? '') ? 2 : undefined;
         const lastJudged = routerRoot === -1 ? segments.length - 1 : routerRoot + 1;
-        for (let index = 1; index < Math.min(lastJudged, segments.length - 1); index += 1) {
+        for (
+            let index = 1;
+            index < Math.min(lastJudged, subjects ?? Infinity, segments.length - 1);
+            index += 1
+        ) {
             const path = segments.slice(0, index + 1).join('/');
             named.set(path, { name: segments[index] ?? '' });
         }

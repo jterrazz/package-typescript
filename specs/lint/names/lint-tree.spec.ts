@@ -112,18 +112,18 @@ describe('lint-tree', () => {
                 read: docs/reference/quality-checks.md#the-lint-tree
             skills/x/LICENSE:1:1  names(skill-holds-only-skill-md)
                 found: \`skills/x/LICENSE\` sits beside a skill's \`SKILL.md\`
-                why: a skill is one \`skills/<skill>/SKILL.md\`, the one page an agent loads, and a file beside it is one no agent reads
-                fix: fold what it says into the \`SKILL.md\` or into the chapter the skill routes to, and delete it
+                why: a skill is one \`skills/<skill>/SKILL.md\`, the page an agent loads, and the \`references/*.md\` pages it links for what a long skill discloses in steps; any other file beside it is one no agent reads
+                fix: fold what it says into the \`SKILL.md\`, move a long part under \`references/<topic>.md\` and link it, or delete it
                 read: docs/reference/quality-checks.md#the-names-tree-pass
             skills/x/SKILL.md.bak:1:1  names(skill-holds-only-skill-md)
                 found: \`skills/x/SKILL.md.bak\` sits beside a skill's \`SKILL.md\`
-                why: a skill is one \`skills/<skill>/SKILL.md\`, the one page an agent loads, and a file beside it is one no agent reads
-                fix: fold what it says into the \`SKILL.md\` or into the chapter the skill routes to, and delete it
+                why: a skill is one \`skills/<skill>/SKILL.md\`, the page an agent loads, and the \`references/*.md\` pages it links for what a long skill discloses in steps; any other file beside it is one no agent reads
+                fix: fold what it says into the \`SKILL.md\`, move a long part under \`references/<topic>.md\` and link it, or delete it
                 read: docs/reference/quality-checks.md#the-names-tree-pass
             skills/x/SKILL.txt:1:1  names(skill-holds-only-skill-md)
                 found: \`skills/x/SKILL.txt\` sits beside a skill's \`SKILL.md\`
-                why: a skill is one \`skills/<skill>/SKILL.md\`, the one page an agent loads, and a file beside it is one no agent reads
-                fix: fold what it says into the \`SKILL.md\` or into the chapter the skill routes to, and delete it
+                why: a skill is one \`skills/<skill>/SKILL.md\`, the page an agent loads, and the \`references/*.md\` pages it links for what a long skill discloses in steps; any other file beside it is one no agent reads
+                fix: fold what it says into the \`SKILL.md\`, move a long part under \`references/<topic>.md\` and link it, or delete it
                 read: docs/reference/quality-checks.md#the-names-tree-pass
         `);
     });

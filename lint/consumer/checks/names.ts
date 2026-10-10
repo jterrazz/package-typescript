@@ -75,6 +75,9 @@ function settingsOf({ problem, resolved }: Resolution): Settings {
     return { ...declaredRootsOf(section), universal };
 }
 
+// outside: the doctrine's water line: a product's vision lives in its brand's wiki and a repository's manual in docs/, never in a root of its own.
+const DOCTRINE_ROOTS: ReadonlySet<string> = new Set(['blueprint', 'manual', 'roadmap', 'vision']);
+
 function foreignRoot(root: string, prefix: string): Finding {
     const manifestPath = `${prefix}package.json`;
 
@@ -87,7 +90,7 @@ function foreignRoot(root: string, prefix: string): Finding {
                   found: `\`${prefix}lint/\` holds the lint rules a package ships, and neither ${manifestPath} nor its build publishes it`,
               }
             : {
-                  fix: `move it under src/, or declare it in ${prefix}${SETTINGS_FILE}'s \`typescript.roots\` with its reason`,
+                  fix: `${DOCTRINE_ROOTS.has(root) ? 'a product vision belongs in the brand wiki and a repository manual in docs/; ' : ''}move it under src/, or declare it in ${prefix}${SETTINGS_FILE}'s \`typescript.roots\` with its reason`,
                   found: `\`${prefix}${root}/\` is a root outside the spine`,
               },
     );

@@ -668,7 +668,7 @@ The **root spine** is the folders a repository root holds, the same in every rep
 | `names/declared-root-states-its-reason`  | A root declared in typescript.roots states why the repository keeps it.                                                                               |
 | `names/declared-root-holds-files`        | A root declared in typescript.roots holds a file git does not ignore.                                                                                 |
 | `names/jterrazz-config-loads`            | The settings file jterrazz.config.ts loads, and its typescript section has the declared shape.                                                        |
-| `names/skill-holds-only-skill-md`        | A skill is one skills/<skill>/SKILL.md and nothing beside it.                                                                                         |
+| `names/skill-holds-only-skill-md`        | A skill is one skills/<skill>/SKILL.md and the references/*.md pages it links, and nothing else beside it.                                                                                         |
 | `names/repository-has-makefile`          | Every repository root carries a Makefile.                                                                                                             |
 | `names/makefile-answers-every-gesture`   | The Makefile writes a rule for each of the six gestures.                                                                                              |
 | `names/no-empty-directory`               | No directory of the working copy is empty.                                                                                                            |
@@ -682,7 +682,7 @@ The **root spine** is the folders a repository root holds, the same in every rep
 
 <!-- /GENERATED:findings tree -->
 
-A skill is hand-written and read from the install, so anything beside its page — a file or a folder — is a second copy of a page or a projection of something the package already owns. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
+A skill is hand-written and read from the install, so anything beside its page — a file or a folder — is a second copy of a page or a projection of something the package already owns, bar one: a long skill discloses its detail in steps, and the `references/<topic>.md` pages its `SKILL.md` links are part of it, an agent loading each when it needs it. A `.md` page is all `references/` holds. A dot-folder (`.github/`, `.vscode/`) is the tools', never the spine's, and is not judged.
 
 `lint/` stands on the spine only where the package SHIPS it, and it ships it one of two ways. Directly: an entry of its `package.json`'s `files`, or a target of its `exports`, reaches into `lint/`. Or through its build: a target the build compiles from a `lint/` source ([Building](building.md#the-entries)) is published by an `exports`, `bin` or `main` target, or by a `files` entry no later `!` entry takes back. A package that ships its rules as `dist/oxlint.js`, built from its `./oxlint` entry under `lint/` ([the entry grammar](#the-entry-grammar)), is the case the second way exists for.
 

@@ -137,7 +137,7 @@
     {
         "family": "tree",
         "id": "names/skill-holds-only-skill-md",
-        "sentence": "A skill is one skills/<skill>/SKILL.md and nothing beside it."
+        "sentence": "A skill is one skills/<skill>/SKILL.md and the references/*.md pages it links, and nothing else beside it."
     },
     {
         "family": "tree",
