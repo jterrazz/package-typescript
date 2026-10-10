@@ -3,6 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-10-08
 **Accepted:** 2026-10-08 — the owner's word on the pilots' list ("résoud tout les pbs qu'on a observé").
+**Amended by:** the amendment below — the clean-tree base.
 **Amends:** [ADR-020](020-mutation-measures-the-whole-suite-over-a-change.md) — the commit a run measures from when none is named.
 
 ## Context
@@ -40,3 +41,23 @@ them green unmeasured.
   whole change is measured by naming its base with `--since`, as CI names
   the commit a push or a pull request started from.
 - A clean clone's gate measures its last commit, never nothing in silence.
+
+## Amendment (2026-10-10): a clean branch is measured since its merge-base
+
+**Accepted:** 2026-10-10 — the architect's decision of round 1 of the convergence loop, on the wave's seven repositories.
+
+The last commit was not enough. A branch whose last commit changes docs
+read "0 detected", green, while the commits before it held sources no gate
+had measured (jterrazz-design, package-manifest, hoverfly-lsp, package-analytics,
+jterrazz-studio, jterrazz-web). The clean-tree base is now the merge-base with
+the default branch: `merge-base..HEAD` for a branch that holds commits of its
+own, the last commit only on the default branch. The default branch is
+`origin/HEAD`'s, else `main`, else `master`.
+
+The verdict prints its scope, `measured 137 mutants over 56df803..HEAD`, and a
+run that mutated nothing says `measured nothing over <range>: <why>` where it
+used to print `every mutant a test runs is detected — 0 detected`. The cost the
+first decision weighed (a long branch hands the suite its whole change on one
+gate) is accepted: the incremental report keeps the next run to what changed,
+and a gate that measured one commit of 682 was the false green. A Makefile
+needs no `--since` to be honest any more.

@@ -15,6 +15,11 @@ const LESSON =
 
 const NONE_RAN: ReadonlySet<string> = new Set();
 
+const MEASURE = {
+    nothingBecause: 'no changed TypeScript source ran a mutant',
+    range: 'a1b2c3d4..HEAD',
+};
+
 describe('verdictOf', () => {
     test('a run whose every covered mutant is detected passes, counting apart what no change has brought to the suite and what the verdict cannot read', () => {
         // Given - two detected mutants and a static one the tests loading its module detect, three no module test runs, a static one they let live and one no test could be credited with, one that did not compile, one that errored and one declared, a file Stryker found nothing to mutate in, beside a file an earlier run measured
@@ -44,9 +49,9 @@ describe('verdictOf', () => {
         });
 
         // Then - the gate passes, and says what waits for a change to reach it — two sources with no module test among it — and what it did not judge
-        expect(verdictOf(judged, 2)).toStrictEqual({
+        expect(verdictOf(judged, 2, MEASURE)).toStrictEqual({
             lines: [
-                'every mutant a test runs is detected — 3 detected',
+                'measured 3 mutants over a1b2c3d4..HEAD — every mutant a test runs is detected',
                 '0 mutant(s) no test runs',
                 '5 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does',
                 '2 source(s) with no module test — the whole suite measures the lines a change reaches there; what no change reaches no count holds',
@@ -54,6 +59,33 @@ describe('verdictOf', () => {
             ],
             status: 0,
         });
+    });
+
+    test('a run that mutated nothing says it measured nothing and why, never that every mutant was detected', () => {
+        // Given - a report holding no mutant, for a project with TypeScript sources and for one declaring none
+        const judged = judgedRuns({ measured: new Set(), ranByTests: NONE_RAN, report: {} });
+        const goOnly = {
+            nothingBecause: 'the project declares no TypeScript source to mutate',
+            range: 'HEAD..working tree',
+        };
+
+        // Then - each verdict passes, and names its range and its reason
+        expect([verdictOf(judged, 0, MEASURE), verdictOf(judged, 0, goOnly)]).toStrictEqual([
+            {
+                lines: [
+                    'measured nothing over a1b2c3d4..HEAD: no changed TypeScript source ran a mutant',
+                    '0 mutant(s) no test runs',
+                ],
+                status: 0,
+            },
+            {
+                lines: [
+                    'measured nothing over HEAD..working tree: the project declares no TypeScript source to mutate',
+                    '0 mutant(s) no test runs',
+                ],
+                status: 0,
+            },
+        ]);
     });
 
     test('a survivor fails the run, each named at its place, in file and line order, before the lesson', () => {
@@ -84,7 +116,7 @@ describe('verdictOf', () => {
         });
 
         // Then - each survivor on one line, the static one a test ran among them, then the four parts, then the counts, and no line for what there is none of
-        expect(verdictOf(judged, 0)).toStrictEqual({
+        expect(verdictOf(judged, 0, MEASURE)).toStrictEqual({
             lines: [
                 'src/a.ts:3:9  ConditionalExpression → true',
                 'src/a.ts:3:24   → ',
@@ -120,7 +152,7 @@ describe('verdictOf', () => {
         });
 
         // Then - the four parts name every unjudged status, and the run fails
-        expect(verdictOf(judged, 0)).toStrictEqual({
+        expect(verdictOf(judged, 0, MEASURE)).toStrictEqual({
             lines: [
                 'found: 4 mutant(s) the run never judged — no status 1, Pending 2, Skipped 1 · why: a mutant no test was run against says nothing of the line it mutates, so passing it would pass a run that judged nothing there · fix: run `typescript mutation` again to its end — a run stopped midway leaves its mutants Pending, and the next one runs them · read: docs/reference/quality-checks.md#mutation',
                 '0 mutant(s) no test runs',
@@ -154,8 +186,8 @@ describe('verdictOf', () => {
         );
 
         // Then - the total, then each file with its count
-        expect(verdictOf(judged, 0).lines).toStrictEqual([
-            'every mutant a test runs is detected — 0 detected',
+        expect(verdictOf(judged, 0, MEASURE).lines).toStrictEqual([
+            'measured nothing over a1b2c3d4..HEAD: no changed TypeScript source ran a mutant',
             '5 mutant(s) no test runs',
             '  src/m.ts  3',
             '  src/a.ts  1',

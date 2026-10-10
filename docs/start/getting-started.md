@@ -125,7 +125,7 @@ mutation:
 check: lint test mutation
 ```
 
-`check` ends on `mutation`, the verdict over the module tests and the whole suite ([Quality checks § Mutation](../reference/quality-checks.md#mutation)): it measures the change not yet committed, or the last commit on a clean tree. `mutation` is no seventh gesture: it is a helper target `check` runs, written so a session can run the verdict alone, and `names/makefile-answers-every-gesture` asks for none. Two kinds add a line:
+`check` ends on `mutation`, the verdict over the module tests and the whole suite ([Quality checks § Mutation](../reference/quality-checks.md#mutation)): it measures the change not yet committed, or, on a clean tree, the branch since its merge-base with the default branch (the last commit, on the default branch itself), and prints that range in its verdict. `mutation` is no seventh gesture: it is a helper target `check` runs, written so a session can run the verdict alone, and `names/makefile-answers-every-gesture` asks for none. Two kinds add a line:
 
 - **A library** reads its build in both other gates — the Publish pass judges what `dist/` would ship, and a spec of the published package packs it — so its `Makefile` adds `lint test: build`, which builds first whatever the order the gestures run in.
 - **A mobile app** is bundled by its framework, so its `build` is `npx expo export`, never `typescript build`, which builds nothing for that kind ([Building](../reference/building.md#the-entries)).

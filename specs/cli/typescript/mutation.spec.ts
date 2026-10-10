@@ -41,7 +41,7 @@ describe('mutation', () => {
             {{any}}
              TYPESCRIPT  Measuring the whole suite against what the module tests let live, and the changed lines they do not run...
             {{any}}
-            every mutant a test runs is detected — 7 detected
+            measured 7 mutants over HEAD..working tree — every mutant a test runs is detected
             2 mutant(s) the module tests let live, detected by the whole suite
             0 mutant(s) no test runs
             2 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does
@@ -62,7 +62,7 @@ describe('mutation', () => {
         expect([named.exitCode, named.stdout.text]).toStrictEqual([1, result.stdout.text]);
         expect(result.exitCode).toBe(1);
         expect(result.stdout).toMatch(`
-            found: git names no commit main · why: the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing · fix: name a commit this clone holds — fetch it, or name the merge-base with the default branch — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the change not yet committed, or the last commit on a clean tree · read: docs/reference/quality-checks.md#mutation
+            found: git names no commit main · why: the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing · fix: name a commit this clone holds — fetch it — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the change not yet committed, or, on a clean tree, the branch since its merge-base with the default branch · read: docs/reference/quality-checks.md#mutation
         `);
         expect(result.stdout.text).not.toContain('Measuring');
     });
@@ -100,7 +100,7 @@ describe('mutation', () => {
             {{any}}
              TYPESCRIPT  git names no commit HEAD: the whole suite measures nothing of this change.
 
-            every mutant a test runs is detected — 9 detected
+            measured 9 mutants over HEAD..working tree — every mutant a test runs is detected
             0 mutant(s) no test runs
         `);
         expect(result.stdout.text).not.toContain('Measuring the whole suite');
@@ -121,7 +121,7 @@ describe('mutation', () => {
             {{any}}
              TYPESCRIPT  git names no commit HEAD: the whole suite measures nothing of this change.
 
-            every mutant a test runs is detected — 9 detected
+            measured 9 mutants over HEAD..working tree — every mutant a test runs is detected
             0 mutant(s) no test runs
             1 source(s) with no module test — the whole suite measures the lines a change reaches there; what no change reaches no count holds
         `);
@@ -169,7 +169,7 @@ describe('mutation', () => {
             {{any}}
              TYPESCRIPT  git names no commit HEAD: the whole suite measures nothing of this change.
 
-            every mutant a test runs is detected — 12 detected
+            measured 12 mutants over HEAD..working tree — every mutant a test runs is detected
             0 mutant(s) no test runs
         `);
     });
@@ -217,7 +217,7 @@ describe('mutation', () => {
             {{any}}
              TYPESCRIPT  The working tree equals HEAD: no line changed, so the whole suite measures no change — name the commit the work started from with --since to measure one.
 
-            every mutant a test runs is detected — 9 detected
+            measured 9 mutants over HEAD..working tree — every mutant a test runs is detected
             0 mutant(s) no test runs
         `);
     });

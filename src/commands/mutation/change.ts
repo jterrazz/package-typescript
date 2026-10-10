@@ -27,22 +27,64 @@ export function hunksOf(diff: string): Map<string, [number, number][]> {
 export const namesACommit = (project: string, ref: string): boolean =>
     git(project, ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) !== undefined;
 
-/** The commit a run measures the working tree against when none is named, and how the verdict names it. */
-export type Base = { commit: string; names: string };
+/** The commit a run measures the working tree against when none is named, how the verdict names it, and the range it prints as the scope of the measure. */
+export type Base = { commit: string; names: string; range: string };
 
-/** The change a run measures when no commit is named: the uncommitted one against HEAD, or, the working tree being clean, the last commit — so a gate run after the commit still measures it; HEAD alone where there is no commit before it. */
+const short = (commit: string): string => commit.slice(0, 8);
+
+// invariant: the default branch is the one `origin/HEAD` names, else `main`, else `master`; a clone that has none of them has no default branch to measure from.
+function defaultBranchOf(project: string): string | undefined {
+    const remote = git(project, ['symbolic-ref', '--quiet', '--short', 'refs/remotes/origin/HEAD'])
+        ?.trim()
+        .replace(/^origin\//u, '');
+
+    return [remote, 'main', 'master'].find(
+        (branch) => branch !== undefined && namesACommit(project, `refs/heads/${branch}`),
+    );
+}
+
+function branchBaseOf(project: string): undefined | { base: string; branch: string } {
+    const branch = defaultBranchOf(project);
+    const current = git(project, ['rev-parse', '--abbrev-ref', 'HEAD'])?.trim();
+    if (branch === undefined || current === branch) {
+        return undefined;
+    }
+    const base = git(project, ['merge-base', branch, 'HEAD'])?.trim();
+    const head = git(project, ['rev-parse', 'HEAD'])?.trim();
+
+    return base === undefined || base === head ? undefined : { base, branch };
+}
+
+/** The change a run measures when no commit is named: the uncommitted one against HEAD; on a clean tree, everything the branch holds beyond the default branch, or the last commit where HEAD is on the default branch; HEAD alone where there is no commit before it. */
 export function defaultBaseOf(project: string): Base {
     const status = git(project, ['status', '--porcelain', '--untracked-files=all', '--', '.']);
     if (status !== '') {
-        return { commit: 'HEAD', names: 'HEAD — the change not yet committed' };
+        return {
+            commit: 'HEAD',
+            names: 'HEAD — the change not yet committed',
+            range: 'HEAD..working tree',
+        };
+    }
+    const branch = branchBaseOf(project);
+    if (branch !== undefined) {
+        return {
+            commit: branch.base,
+            names: `the merge-base with ${branch.branch} (${short(branch.base)}) — the working tree is clean, so the branch's own commits are the change`,
+            range: `${short(branch.base)}..HEAD`,
+        };
     }
     const previous = git(project, ['rev-parse', '--verify', '--quiet', 'HEAD~1^{commit}'])?.trim();
 
     return previous === undefined
-        ? { commit: 'HEAD', names: 'HEAD — the first commit, with no commit before it' }
+        ? {
+              commit: 'HEAD',
+              names: 'HEAD — the first commit, with no commit before it',
+              range: 'HEAD..HEAD',
+          }
         : {
               commit: previous,
-              names: `the commit before HEAD (${previous.slice(0, 8)}) — the working tree is clean, so the last commit is the change`,
+              names: `the commit before HEAD (${short(previous)}) — the working tree is clean, so the last commit is the change`,
+              range: `${short(previous)}..HEAD`,
           };
 }
 

@@ -20,6 +20,7 @@ import type { MutationScope } from './scope.js';
 import { handedToTheSuite, judgedRuns } from './survivors.js';
 import type { Judged, ModuleRun } from './survivors.js';
 import { verdictOf } from './verdict.js';
+import type { Measure } from './verdict.js';
 
 const extensionGlob = (extensions: readonly string[]): string =>
     extensions.length === 1 ? (extensions[0] ?? 'ts') : `{${extensions.join(',')}}`;
@@ -97,8 +98,8 @@ async function afterStage(
     return await next(outcome ?? NOTHING_MEASURED);
 }
 
-function printed(judged: Judged, untestedSources: number): number {
-    const verdict = verdictOf(judged, untestedSources);
+function printed(judged: Judged, untestedSources: number, measure: Measure): number {
+    const verdict = verdictOf(judged, untestedSources, measure);
     print(`\n${verdict.lines.join('\n')}\n`);
 
     return verdict.status;
@@ -120,9 +121,16 @@ async function judgedAfterTheSuite({
     untested: readonly string[];
 }): Promise<number> {
     const modulesAlone = judgedRuns(modulesRun);
+    const measure: Measure = {
+        nothingBecause:
+            scope.mutated.length === 0
+                ? 'the project declares no TypeScript source to mutate'
+                : 'no changed TypeScript source ran a mutant',
+        range: since.range,
+    };
     // Stryker disable next-line ConditionalExpression: a mutant the run never judged fails the verdict whether or not the suite runs after it; the gate only spares the suite's minutes
     if (Object.keys(modulesAlone.unrun).length > 0) {
-        return printed(modulesAlone, untested.length);
+        return printed(modulesAlone, untested.length, measure);
     }
     const { changed, note } = changeOf(project, { ranges, since });
     if (note !== undefined) {
@@ -133,7 +141,7 @@ async function judgedAfterTheSuite({
     );
     const handed = [...reached, ...handedToTheSuite(modulesRun, changed)];
     if (handed.length === 0) {
-        return printed(modulesAlone, untested.length);
+        return printed(modulesAlone, untested.length, measure);
     }
     return await afterStage(
         await measured(scope, { mutate: handed, name: 'suite' }, project),
@@ -141,6 +149,7 @@ async function judgedAfterTheSuite({
             printed(
                 judgedRuns(modulesRun, { changed, report, untested: reached }),
                 untested.length,
+                measure,
             ),
     );
 }
@@ -189,7 +198,7 @@ export async function mutation(args: readonly string[]): Promise<number> {
     if (named !== undefined && !namesACommit(project, named)) {
         print(
             `${RED}${refusal({
-                fix: 'name a commit this clone holds — fetch it, or name the merge-base with the default branch — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the change not yet committed, or the last commit on a clean tree',
+                fix: 'name a commit this clone holds — fetch it — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the change not yet committed, or, on a clean tree, the branch since its merge-base with the default branch',
                 found: `git names no commit ${named}`,
                 read: 'docs/reference/quality-checks.md#mutation',
                 why: 'the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing',
@@ -203,7 +212,9 @@ export async function mutation(args: readonly string[]): Promise<number> {
         return await membersMeasured(project, members, { ranges, since: named });
     }
     const since: Base =
-        named === undefined ? defaultBaseOf(project) : { commit: named, names: named };
+        named === undefined
+            ? defaultBaseOf(project)
+            : { commit: named, names: named, range: `${named}..working tree` };
     const scope = await mutationScopeOf(project);
     const { tested, untested } = sourcesOf(project, scope);
     const unreached = unreachedRange(ranges ?? [], new Set([...tested, ...untested]));

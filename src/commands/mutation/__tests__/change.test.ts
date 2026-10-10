@@ -29,7 +29,7 @@ function committedRepository(files: Record<string, string>): string {
     const git = (...args: string[]): void => {
         execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...args], { cwd: root });
     };
-    git('init', '--quiet');
+    git('init', '--quiet', '--initial-branch=main');
     git('add', '--all');
     git('commit', '--quiet', '--message', 'first');
 
@@ -97,7 +97,7 @@ describe('change', () => {
         const root = committedRepository({ 'a.ts': 'one\n' });
         writeFileSync(join(root, 'a.ts'), '1\n');
         const clean = committedRepository({ 'a.ts': 'one\n' });
-        const head = { commit: 'HEAD', names: 'the base' };
+        const head = { commit: 'HEAD', names: 'the base', range: 'HEAD..working tree' };
 
         // Then - the named files, the rewritten line, and nothing but a note naming the commit git could not find
         expect([
@@ -115,7 +115,10 @@ describe('change', () => {
             }),
             changeOf(root, { ranges: undefined, since: head }),
             changeOf(clean, { ranges: undefined, since: head }),
-            changeOf(tmpdir(), { ranges: undefined, since: { commit: 'main', names: 'main' } }),
+            changeOf(tmpdir(), {
+                ranges: undefined,
+                since: { commit: 'main', names: 'main', range: 'main..working tree' },
+            }),
         ]).toStrictEqual([
             {
                 changed: new Map<string, [number, number][] | true>([
@@ -160,13 +163,74 @@ describe('change', () => {
 
         // Then - HEAD for the edit, the commit before HEAD for the clean tree, HEAD for the lone commit
         expect([dirty, clean, only].map((root) => defaultBaseOf(root))).toStrictEqual([
-            { commit: 'HEAD', names: 'HEAD — the change not yet committed' },
+            {
+                commit: 'HEAD',
+                names: 'HEAD — the change not yet committed',
+                range: 'HEAD..working tree',
+            },
             {
                 commit: first,
                 names: `the commit before HEAD (${first.slice(0, 8)}) — the working tree is clean, so the last commit is the change`,
+                range: `${first.slice(0, 8)}..HEAD`,
             },
-            { commit: 'HEAD', names: 'HEAD — the first commit, with no commit before it' },
+            {
+                commit: 'HEAD',
+                names: 'HEAD — the first commit, with no commit before it',
+                range: 'HEAD..HEAD',
+            },
         ]);
+    });
+
+    test.each([
+        ['main', ['main']],
+        ['master', ['master']],
+        ['trunk', ['trunk', 'origin-head']],
+    ])(
+        'on a clean branch of its own, a run measures every commit since the merge-base with %s, not the last one alone',
+        (name, [branch, remote]) => {
+            // Given - a repository whose default branch is named, a branch cut from it with a docs commit last, and a clean tree
+            const root = committedRepository({ 'a.ts': 'one\n' });
+            gitIn(root, 'branch', '--move', branch ?? 'main');
+            if (remote !== undefined) {
+                gitIn(
+                    root,
+                    'symbolic-ref',
+                    'refs/remotes/origin/HEAD',
+                    `refs/remotes/origin/${name}`,
+                );
+            }
+            const base = gitIn(root, 'rev-parse', 'HEAD');
+            gitIn(root, 'switch', '--quiet', '--create', 'work');
+            writeFileSync(join(root, 'a.ts'), 'two\n');
+            gitIn(root, 'commit', '--quiet', '--all', '--message', 'source');
+            writeFileSync(join(root, 'README.md'), 'docs\n');
+            gitIn(root, 'add', '--all');
+            gitIn(root, 'commit', '--quiet', '--message', 'docs');
+
+            // Then - the branch is measured since where it left the default branch, and the verdict names that range
+            expect(defaultBaseOf(root)).toStrictEqual({
+                commit: base,
+                names: `the merge-base with ${name} (${base.slice(0, 8)}) — the working tree is clean, so the branch's own commits are the change`,
+                range: `${base.slice(0, 8)}..HEAD`,
+            });
+        },
+    );
+
+    test('a branch with no commit of its own, and a clone with no default branch, measure the last commit', () => {
+        // Given - a branch cut from main and left there, and a clone whose only branch has another name
+        const fresh = committedRepository({ 'a.ts': 'one\n' });
+        writeFileSync(join(fresh, 'a.ts'), 'two\n');
+        gitIn(fresh, 'commit', '--quiet', '--all', '--message', 'second');
+        gitIn(fresh, 'switch', '--quiet', '--create', 'work');
+        const nameless = committedRepository({ 'a.ts': 'one\n' });
+        gitIn(nameless, 'branch', '--move', 'develop');
+        writeFileSync(join(nameless, 'a.ts'), 'two\n');
+        gitIn(nameless, 'commit', '--quiet', '--all', '--message', 'second');
+
+        // Then - both name the commit before HEAD
+        expect(
+            [fresh, nameless].map((root) => defaultBaseOf(root).names.slice(0, 22)),
+        ).toStrictEqual(['the commit before HEAD', 'the commit before HEAD']);
     });
 
     test('git names a commit the clone holds, and neither the zero commit a first push carries, a ref it lacks, nor anything outside a repository', () => {

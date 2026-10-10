@@ -75,18 +75,28 @@ function unrunLines({ unrun }: Judged): string[] {
     ];
 }
 
+/** What a verdict names of its measure: the range of commits it covers, and why it may have found nothing to mutate. */
+export type Measure = { nothingBecause: string; range: string };
+
+// invariant: a run that mutated nothing never reads as a run whose mutants were all detected; it says what it measured, or that it measured nothing and why.
+function passedLine({ detected, survivors }: Judged, { nothingBecause, range }: Measure): string {
+    const measured = detected + survivors.length;
+
+    return measured === 0
+        ? `measured nothing over ${range}: ${nothingBecause}`
+        : `measured ${measured} mutants over ${range} — every mutant a test runs is detected`;
+}
+
 /** The verdict's lines and status, counting apart the sources with no module test, which no run mutates until a change reaches them. */
 export function verdictOf(
     judged: Judged,
     untestedSources: number,
+    measure: Measure,
 ): { lines: string[]; status: number } {
     const refused = [...survivorLines(judged), ...unrunLines(judged)];
     if (refused.length === 0) {
         return {
-            lines: [
-                `every mutant a test runs is detected — ${judged.detected} detected`,
-                ...countLines(judged, untestedSources),
-            ],
+            lines: [passedLine(judged, measure), ...countLines(judged, untestedSources)],
             status: 0,
         };
     }

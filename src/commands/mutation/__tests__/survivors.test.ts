@@ -16,6 +16,11 @@ const LESSON =
 
 const NONE_RAN: ReadonlySet<string> = new Set();
 
+const MEASURE = {
+    nothingBecause: 'no changed TypeScript source ran a mutant',
+    range: 'a1b2c3d4..HEAD',
+};
+
 const MODULE_RUN_LEAVING_THREE = {
     measured: new Set(['src/a.ts']),
     ranByTests: NONE_RAN,
@@ -169,7 +174,7 @@ describe('survivors', () => {
         );
 
         // Then - two detected by the suite and counted so, the two it did not detect named as survivors, the one it never reported never judged
-        expect(verdictOf(judged, 0)).toStrictEqual({
+        expect(verdictOf(judged, 0, MEASURE)).toStrictEqual({
             lines: [
                 'src/a.ts:3:9  ConditionalExpression → true',
                 'src/a.ts:4:9  ConditionalExpression → true',
@@ -194,7 +199,7 @@ describe('survivors', () => {
         );
 
         // Then - named as never judged, never counted as left, and the run fails
-        expect([judged.left, judged.unrun, verdictOf(judged, 0).status]).toStrictEqual([
+        expect([judged.left, judged.unrun, verdictOf(judged, 0, MEASURE).status]).toStrictEqual([
             0,
             { 'absent from the suite report': 1 },
             1,
