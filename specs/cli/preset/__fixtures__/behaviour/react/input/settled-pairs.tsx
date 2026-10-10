@@ -53,26 +53,6 @@ export function Canvas(): React.JSX.Element {
     return <canvas />;
 }
 
-type Rail = { onDayChange: (day: number) => void };
-
-function Days({ onDayChange }: Rail): React.JSX.Element {
-    return (
-        <button
-            onClick={() => {
-                onDayChange(1);
-            }}
-            type="button"
-        >
-            day
-        </button>
-    );
-}
-
-// outside: react/jsx-handler-names takes an `on*` member forwarded to the prop of its name.
-export function Calendar({ rail }: { rail: Rail }): React.JSX.Element {
-    return <Days onDayChange={rail.onDayChange} />;
-}
-
 // outside: a scrollable region reached by the keyboard: no-noninteractive-tabindex refused its tabIndex, prefer-tag-over-role its role.
 export function Listing({ code }: { code: string }): React.JSX.Element {
     return (

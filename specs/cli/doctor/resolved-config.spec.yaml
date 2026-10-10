@@ -406,7 +406,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-curly-brace-presence = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-filename-extension = ["error",{"extensions":[".jsx",".tsx"]}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-fragments = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-handler-names = ["error",{"eventHandlerPrefix":"handle|on"}]
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-handler-names = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-key = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-max-depth = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.react/jsx-no-comment-textnodes = "error"

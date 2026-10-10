@@ -87,11 +87,10 @@ export default fragment({
             { namedComponents: 'function-declaration', unnamedComponents: 'arrow-function' },
         ]),
         'react/jsx-filename-extension': on([{ extensions: ['.jsx', '.tsx'] }]),
-        // invariant: `on` beside `handle`: a binding a hook returns for a component's `on*` prop is forwarded under that prop's name (`rail.onDayChange`).
-        'react/jsx-handler-names': {
-            ...on([{ eventHandlerPrefix: 'handle|on' }]),
-            since: '11.0.0',
-        },
+        'react/jsx-handler-names': off({
+            by: 'style only — 0 defects in 44 reports on the migration wave, 33 of them false (every Material colour role `colors.on*`), and widening its prefix to `on` only traded one false positive for another',
+            kind: 'evidence',
+        }),
 
         'react-perf/jsx-no-jsx-as-prop': off({
             by: 'react/static-components, react/use-memo — the React Compiler rules decide memoisation, and an inline prop is the idiom they are written for',
