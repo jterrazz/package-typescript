@@ -4,7 +4,12 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { declaredDependencies, declaredSubpaths, readManifest } from '../manifest.js';
+import {
+    declaredDependencies,
+    declaredSubpaths,
+    readManifest,
+    workspacePatterns,
+} from '../manifest.js';
 
 function manifestAt(dir: string, manifest: unknown): void {
     mkdirSync(dir, { recursive: true });
@@ -107,5 +112,22 @@ describe('manifest', () => {
             [...declaredDependencies(root)],
             [...declaredDependencies(resolve(root, 'none'))],
         ]).toStrictEqual([['@prisma/client', 'vitest'], []]);
+    });
+
+    test.each([
+        ['an array of globs', { workspaces: ['apps/*', 'libs/*'] }, ['apps/*', 'libs/*']],
+        ['the packages of the object form', { workspaces: { packages: ['apps/*'] } }, ['apps/*']],
+        [
+            'only the globs of a list that holds other things',
+            { workspaces: ['apps/*', 3, null, 'libs/*'] },
+            ['apps/*', 'libs/*'],
+        ],
+        ['no workspaces', { name: 'x' }, []],
+        ['a workspaces key that is neither', { workspaces: 'apps/*' }, []],
+        ['an object with no packages', { workspaces: { nohoist: ['x'] } }, []],
+    ])('workspacePatterns — the globs a manifest declares — %s', (_case, manifest, expected) => {
+        // Given - a manifest of that shape
+        // Then - the globs it declares, and no other value
+        expect(workspacePatterns(manifest)).toStrictEqual(expected);
     });
 });

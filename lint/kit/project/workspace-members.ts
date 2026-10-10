@@ -19,7 +19,7 @@ function toPattern(glob: string): RegExp {
 }
 
 // outside: pnpm declares its members in `pnpm-workspace.yaml`, a `packages:` list of globs, and keeps no `workspaces` field in the manifest.
-function pnpmPatterns(root: string): string[] {
+export function pnpmWorkspacePatterns(root: string): string[] {
     let text: string;
     try {
         text = readFileSync(join(root, 'pnpm-workspace.yaml'), 'utf8');
@@ -50,7 +50,7 @@ export function workspaceMembers(root = '.'): string[] {
     const absolute = resolve(root);
     const manifest = readManifest(absolute);
     const declared = manifest === null ? [] : workspacePatterns(manifest);
-    const patterns = (declared.length > 0 ? declared : pnpmPatterns(absolute))
+    const patterns = (declared.length > 0 ? declared : pnpmWorkspacePatterns(absolute))
         .filter((glob) => !glob.startsWith('!'))
         .map((glob) => toPattern(glob.replace(/\/+$/u, '')));
 
@@ -91,5 +91,5 @@ export function workspaceMembers(root = '.'): string[] {
 
     walk(absolute, 0);
 
-    return [...members].toSorted((left, right) => (left < right ? -1 : 1));
+    return [...members].toSorted();
 }

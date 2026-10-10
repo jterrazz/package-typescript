@@ -39,4 +39,26 @@ describe('byte-for-byte', () => {
             'research/**',
         ]);
     });
+
+    test('widens a folder whose name holds a dot to its tree, and keeps as itself only a path whose last name carries an extension', () => {
+        // Given - paths with a dot in a folder's name, in the middle of the path, and an extension on the last name
+        const section = {
+            oxfmt: {
+                ignore: {
+                    'docs/api.v2/notes': 'a folder under a dotted one',
+                    'research.v2': 'a name that ends like an extension',
+                    'v1.2-archive': 'a dot, then more than an extension',
+                    'docs/api.v2/upstream.md': 'a file under a dotted folder',
+                },
+            },
+        };
+
+        // Then - the two folders as trees, the name that ends like an extension and the file as themselves
+        expect(keptByteForByte(section).slice(-4)).toStrictEqual([
+            'docs/api.v2/notes/**',
+            'research.v2',
+            'v1.2-archive/**',
+            'docs/api.v2/upstream.md',
+        ]);
+    });
 });

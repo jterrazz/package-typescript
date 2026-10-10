@@ -2,6 +2,8 @@ import { describe, expect, test } from 'vitest';
 
 import { derivedEditorFiles, tsconfigAdditionsOf } from '../editor-files.js';
 
+const inConfigDir = (path: string): string => `\${configDir}/${path}`;
+
 const NODE_GLOBS = ['ts', 'tsx', 'js'].map((extension) => `\${configDir}/**/*.${extension}`);
 
 const tsconfigOf = (extended: string, section: unknown): unknown => {
@@ -100,5 +102,58 @@ describe('editor-files', () => {
             { 'oxlint.config.ts': oxlint },
             { 'tsconfig.json': { scope: 'unit', text: '{}' } },
         ]);
+    });
+
+    test('tsconfigAdditionsOf — the roots declared verbatim — are excluded from the compiler beside the preset’s own exclusions, with or without a tsconfig section', () => {
+        // Given - roots of every shape: verbatim, declared but not verbatim, bare reasons, and a verbatim flag that is no boolean true
+        const roots = {
+            bare: 'a bare reason',
+            kept: { reason: 'quoted text', verbatim: true },
+            loose: { reason: 'laid out as any other', verbatim: false },
+            quoted: { reason: 'upstream', verbatim: true },
+            text: { reason: 'flag as text', verbatim: 'true' },
+        };
+        const preset = '@jterrazz/typescript/tsconfig/node';
+        const withSection = tsconfigOf(preset, {
+            roots,
+            tsconfig: { include: ['scripts/**/*.mts'], reason: 'r' },
+        });
+        const alone = tsconfigOf(preset, { roots });
+
+        // Then - the preset's exclusions first, then the verbatim roots in the order declared, in both; the section's include beside them
+        const excluded = [
+            inConfigDir('node_modules'),
+            inConfigDir('dist'),
+            inConfigDir('.artifacts'),
+            inConfigDir('**/__expected__'),
+            inConfigDir('**/__fixtures__'),
+            inConfigDir('**/__requests__'),
+            inConfigDir('**/__seeds__'),
+            inConfigDir('kept'),
+            inConfigDir('quoted'),
+        ];
+        expect([withSection, alone]).toStrictEqual([
+            {
+                exclude: excluded,
+                extends: preset,
+                include: [...NODE_GLOBS, 'scripts/**/*.mts'],
+            },
+            { exclude: excluded, extends: preset },
+        ]);
+    });
+
+    test('tsconfigAdditionsOf — a section with no verbatim root, or whose roots are no record — adds no exclusion', () => {
+        // Given - roots of no verbatim declaration, a list of roots, and a section with none
+        const additions = [
+            { roots: { loose: { reason: 'r' } } },
+            { roots: ['kept'] },
+            { roots: 'kept' },
+            {},
+        ].map((section) => tsconfigAdditionsOf(section));
+
+        // Then - nothing to exclude
+        expect(additions).toStrictEqual(
+            Array.from({ length: 4 }, () => ({ additions: {}, problem: null })),
+        );
     });
 });
