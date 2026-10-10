@@ -49,7 +49,7 @@ export const noSleep = defineRule(
 
 The result is a `DefinedRule`: the body, and a `RuleMeta` whose `docs` is the row and each message its lesson, a `{{data}}` placeholder left for oxlint to fill. `lessonsAt(row, messages, chapter)` is the same composition for a rule that states its `meta` itself, its read the row's anchor in the chapter.
 
-A refusal a package's own code throws is the same four parts. `defineInvariant({ package, bugOf, notOf })` — an `InvariantOwner` — gives a package its `invariant()`, the error only the package itself can cause, whose message says so.
+A refusal a package's own code throws is the same four parts. The law is the format, not an import: a refusal says what was found, why it matters, what to do and where to read it. The toolchain's own commands import `refusal()`; a published binary implements the format locally (a `src/cli/refusal.ts` of about 25 lines), and a runtime library's errors stay plain `Error`s naming what exists. No runtime package is published for 25 lines in two binaries. `defineInvariant({ package, bugOf, notOf })` — an `InvariantOwner` — gives a package its `invariant()`, the error only the package itself can cause, whose message says so.
 
 ## A cross-file check
 
