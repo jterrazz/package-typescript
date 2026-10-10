@@ -58,6 +58,13 @@ The matrix is generated from the declaration the toolchain reads, and its last t
 
 An `api`, a `website` and a `mobile` app owe the same — an application nobody installs — and on purpose the kind derives only one thing more between them, the mobile specs a mutation run leaves out ([The standard](#the-standard)): what differs is their platform's, which already picks the profile, the tsconfig preset and the framework's roots. The kind names what the project is, so a reader and a per-kind proof can tell them apart.
 
+The kind table names toolchain shapes, never products, and a product that fits none of them declares the nearest, not a new kind:
+
+- `api` is any private application process, a service or a one-shot job alike.
+- A private `library` is a module a host loads by `main`: an editor extension or a browser plugin. Its manifest names `exports` or `main`.
+- A repository whose product is written in another language declares the kind of its TypeScript harness, `private`: a Go product tested by a TypeScript suite is a private `cli`.
+- A renderer (a Remotion video) declares the kind whose tooling it uses, a `website` for a scene built with React.
+
 A `workspace` declares no platform: its root `oxlint.config.ts` lints each member by the platform that member declares, the member's own profile and presets scoped to its folder, so one config serves a React website and a Node api side by side. A member keeps no `oxlint.config.ts` or `oxfmt.config.ts` of its own — a nested one would replace the root's in its subtree — and keeps its own `tsconfig.json`, derived from its platform.
 
 A unit runs on one platform, and a folder of it may run on another: an api on `bun` that serves its own React UI from `web/`. `typescript.platforms` names that folder, from the unit, with the platform it runs on and why, and the unit's `oxlint.config.ts` lints it by that platform's profile — its plugins, its rules, the unit's presets and own rules on top — while the rest of the unit keeps its own:
@@ -208,6 +215,8 @@ A project with nothing of its own to say keeps no section at all.
 Every preset scopes its `include` and `exclude` to `${configDir}`, the directory of the `tsconfig.json` that extends it, so a project inherits the right file set without restating one. Every preset checks and never emits, compiles incrementally into `.artifacts/tsc/`, and allows an import that names a `.ts` file: Node runs a module that way, and the check reads it as Node does. The declarations a library publishes are emitted by the build, never by `tsc`, so a library and a service on one platform share one preset ([Building](building.md)).
 
 The `browser` preset is `react`'s without its JSX transform: the DOM's libraries and bundler resolution, for a page or an extension that runs plain DOM code — a `.tsx` component test included, which renders without JSX.
+
+No preset declares a `paths` alias. An import is relative (`../domain/order.js`) on every platform, `next` and `astro` included: the `@/*` alias of their starter templates is one more resolution every tool of the chain must be taught — the bundler, the test runner, the dead-code reader — for a shorter line. Two repositories dropped it and rewrote 218 imports without losing a line of behaviour.
 
 The `node` preset reads `.tsx` too, with React's automatic JSX transform: a Node package rendering components — its server, or its component tests under `@jterrazz/test` — needs no option of its own for them.
 
