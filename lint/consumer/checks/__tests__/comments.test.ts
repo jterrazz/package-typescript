@@ -9,7 +9,7 @@ import { basePresetsOf } from '../../catalogue/preset.js';
 import { comments } from '../comments.js';
 
 const LESSON =
-    'found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:`; `typescript fix` deletes it, and the diff gives back a line worth its kind · read: docs/reference/lint-presets.md#a-comment-states-its-kind';
+    'found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind';
 
 const TREE: Readonly<Record<string, string>> = {
     Makefile: '# The build\nbuild:\n\tnpm run build\n',
@@ -47,7 +47,6 @@ describe('comments', () => {
             findings: [
                 {
                     column: 1,
-                    fixed: true,
                     line: 1,
                     message: LESSON,
                     path: 'Makefile',
@@ -55,7 +54,6 @@ describe('comments', () => {
                 },
                 {
                     column: 5,
-                    fixed: true,
                     line: 5,
                     message: LESSON,
                     path: 'src/theme.css',
@@ -63,7 +61,6 @@ describe('comments', () => {
                 },
                 {
                     column: 1,
-                    fixed: true,
                     line: 8,
                     message: LESSON,
                     path: 'src/theme.css',
@@ -74,30 +71,19 @@ describe('comments', () => {
         });
     });
 
-    test('writes each file without the comments that state no kind, and names it', async () => {
+    test('deletes no comment in fix mode, and reports the same findings', async () => {
         // Given - the same tree
         const root = tree();
 
         // When - the pass runs in fix mode
-        const result = await comments.check(
+        const fixed = await comments.check(
             contextOf(readCommandLine([root, '--fix']), basePresetsOf),
         );
+        const read = await comments.check(contextOf(readCommandLine([root]), basePresetsOf));
         rmSync(root, { force: true, recursive: true });
 
-        // Then - two files rewritten, every other comment kept
-        expect([result.after, result.writes]).toStrictEqual([
-            [
-                'Makefile rewritten — the comments that stated no kind are deleted',
-                'src/theme.css rewritten — the comments that stated no kind are deleted',
-            ],
-            [
-                { path: join(root, 'Makefile'), text: 'build:\n\tnpm run build\n' },
-                {
-                    path: join(root, 'src/theme.css'),
-                    text: '/*! kept by minifiers */\n/* stylelint-disable */\n/** invariant: one grid */\na {\n    color: red;\n}\n',
-                },
-            ],
-        ]);
+        // Then - nothing is written, and an agent still gets each comment's line to keep or delete
+        expect([fixed.after, fixed.writes, fixed.findings]).toStrictEqual([[], [], read.findings]);
     });
 
     test('reads every directive another tool reads as no prose', async () => {

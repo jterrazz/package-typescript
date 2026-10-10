@@ -5,8 +5,6 @@ export type AstNode = {
     type: string;
 };
 
-export type Span = readonly [number, number];
-
 const DECLARATIONS: ReadonlySet<string> = new Set([
     'ClassDeclaration',
     'FunctionDeclaration',
@@ -116,20 +114,9 @@ function addMembers(targets: Set<number>, node: AstNode): void {
     }
 }
 
-// invariant: an empty JSX expression sits between the braces of its container, one byte inside each.
-function addEmpties(empties: Span[], node: AstNode): void {
-    if (node.type === 'JSXEmptyExpression') {
-        empties.push([node.start - 1, node.end + 1]);
-    }
-    for (const child of childrenOf(node)) {
-        addEmpties(empties, child);
-    }
-}
-
-/** Where a one-line hover may sit — an exported declaration and its members — and every empty JSX container `{}`. */
-export function hoversOf(program: AstNode): { empties: Span[]; targets: Set<number> } {
+/** Where a hover may sit: an exported declaration and its members. */
+export function hoversOf(program: AstNode): { targets: Set<number> } {
     const targets = new Set<number>();
-    const empties: Span[] = [];
     const body = nodesAt(program, 'body');
     const exported = exportedLocalNamesOf(body);
     for (const statement of body) {
@@ -149,8 +136,7 @@ export function hoversOf(program: AstNode): { empties: Span[]; targets: Set<numb
             addWithDecorators(targets, published);
             addMembers(targets, published);
         }
-        addEmpties(empties, statement);
     }
 
-    return { empties, targets };
+    return { targets };
 }

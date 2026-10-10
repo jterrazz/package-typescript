@@ -1,13 +1,7 @@
-import { join } from 'node:path';
-
 import { defineCheck, rowNamed } from '../../kit/catalogue/rule.js';
 import { filesKeptByteForByte } from '../../kit/checker/kept-files.js';
 import type { Finding, Pass } from '../../kit/checker/pass.js';
-import {
-    commentDeletion,
-    isCommentedElsewhere,
-    STYLE_COMMENTED,
-} from '../../kit/project/comments.js';
+import { isCommentedElsewhere, STYLE_COMMENTED } from '../../kit/project/comments.js';
 import { readText } from '../../kit/project/project-files.js';
 import { COMMENT_KIND_OPENING } from '../catalogue/comment-kinds.js';
 import FINDINGS from '../catalogue/findings.json' with { type: 'json' };
@@ -37,7 +31,7 @@ const CHECK = defineCheck({
 });
 
 const TEACHING = {
-    fix: 'delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:`; `typescript fix` deletes it, and the diff gives back a line worth its kind',
+    fix: 'delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:`',
     found: 'a comment that states no kind',
 };
 
@@ -80,8 +74,6 @@ function positionOf(text: string, offset: number): { column: number; line: numbe
 export const comments: Pass = Object.freeze({
     async check(context) {
         const findings: Finding[] = [];
-        const writes: { path: string; text: string }[] = [];
-        const rewritten: string[] = [];
         const isKept = await filesKeptByteForByte(context);
         const read = context.files().flatMap((path) => {
             const language = isKept(path) ? undefined : languageOf(path);
@@ -93,31 +85,11 @@ export const comments: Pass = Object.freeze({
             if (text.split('\n', GENERATED_HEAD_LINES).some((line) => GENERATED.test(line))) {
                 continue;
             }
-            const unstated = language(text).filter((run) => !isStructure(run));
-            for (const run of unstated) {
-                findings.push({
-                    ...CHECK.finding({ path, ...positionOf(text, run.start) }, TEACHING),
-                    fixed: true,
-                });
-            }
-            if (context.fix && unstated.length > 0) {
-                let kept = text;
-                for (const [start, end] of unstated
-                    .map((run) => commentDeletion(text, [run.start, run.end]))
-                    .toReversed()) {
-                    kept = `${kept.slice(0, start)}${kept.slice(end)}`;
-                }
-                rewritten.push(path);
-                writes.push({ path: join(context.root, path), text: kept });
+            for (const run of language(text).filter((one) => !isStructure(one))) {
+                findings.push(CHECK.finding({ path, ...positionOf(text, run.start) }, TEACHING));
             }
         }
 
-        return {
-            after: rewritten.map(
-                (path) => `${path} rewritten — the comments that stated no kind are deleted`,
-            ),
-            findings,
-            writes,
-        };
+        return { after: [], findings, writes: [] };
     },
 });

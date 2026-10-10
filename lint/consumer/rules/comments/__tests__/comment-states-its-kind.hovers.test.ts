@@ -11,38 +11,28 @@ type ProbeContext = {
 
 const lines = (...text: string[]): string => text.join('\n');
 
-// invariant: a probe reports each offset hoversOf hands back, so a case reads as the places a hover may sit and the empty containers.
+// invariant: a probe reports each offset hoversOf hands back, so a case reads as the places a hover may sit.
 const probe = {
     create(context: ProbeContext): Record<string, (program: AstNode) => void> {
         return {
             Program(program: AstNode): void {
-                const { empties, targets } = hoversOf(program);
+                const { targets } = hoversOf(program);
                 for (const target of [...targets].toSorted((left, right) => left - right)) {
                     context.report({
                         messageId: 'target',
                         node: { end: target + 1, range: [target, target + 1], start: target },
                     });
                 }
-                for (const [start, end] of empties) {
-                    context.report({
-                        messageId: 'empty',
-                        node: { end, range: [start, end], start },
-                    });
-                }
             },
         };
     },
-    meta: { messages: { empty: 'empty', target: 'target' }, type: 'problem' },
+    meta: { messages: { target: 'target' }, type: 'problem' },
 };
 
-const at = (
-    line: number,
-    column: number,
-    messageId = 'target',
-): { column: number; line: number; messageId: string } => ({
+const at = (line: number, column: number): { column: number; line: number; messageId: string } => ({
     column,
     line,
-    messageId,
+    messageId: 'target',
 });
 
 ruleTester().run('comment-states-its-kind.hovers', probe, {
@@ -198,11 +188,6 @@ ruleTester().run('comment-states-its-kind.hovers', probe, {
             code: lines('declare module "x" { const a: number; }', 'export = {};'),
             errors: [at(1, 0), at(2, 0)],
             filename: 'module.d.ts',
-        },
-        {
-            code: lines('export const View = () => <main>{/* note */}</main>;'),
-            errors: [at(1, 0), at(1, 7), at(1, 32, 'empty')],
-            filename: 'view.tsx',
         },
     ],
     valid: [

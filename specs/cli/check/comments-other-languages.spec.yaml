@@ -1,4 +1,4 @@
-description: refuses a kindless comment of a style sheet, script or workflow, and fix deletes it
+description: refuses a kindless comment of a style sheet or script, and fix deletes none
 fixture: ./__fixtures__/comments/other-languages/
 env: TYPESCRIPT_CHECK_PASSES=comments
 runs:
@@ -9,40 +9,41 @@ runs:
 
            RUN  Comments (styles, scripts, YAML)
 
-          Makefile:3:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:`; `typescript fix` deletes it, and the diff gives back a line worth its kind · read: docs/reference/lint-presets.md#a-comment-states-its-kind
-          deploy/Dockerfile:5:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:`; `typescript fix` deletes it, and the diff gives back a line worth its kind · read: docs/reference/lint-presets.md#a-comment-states-its-kind
-          deploy/workflow.yaml:6:9: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:`; `typescript fix` deletes it, and the diff gives back a line worth its kind · read: docs/reference/lint-presets.md#a-comment-states-its-kind
-          scripts/release.sh:6:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:`; `typescript fix` deletes it, and the diff gives back a line worth its kind · read: docs/reference/lint-presets.md#a-comment-states-its-kind
-          src/page.astro:9:9: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:`; `typescript fix` deletes it, and the diff gives back a line worth its kind · read: docs/reference/lint-presets.md#a-comment-states-its-kind
-          src/theme.css:3:5: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:`; `typescript fix` deletes it, and the diff gives back a line worth its kind · read: docs/reference/lint-presets.md#a-comment-states-its-kind
+          Makefile:3:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
+          deploy/Dockerfile:5:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
+          deploy/workflow.yaml:6:9: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
+          scripts/release.sh:6:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
+          src/page.astro:9:9: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
+          src/theme.css:3:5: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
           ✗ Failed with exit code 1
 
            END  Finalizing quality checks
 
           ✗ Some checks failed
     - command: fix
-      exit: 0
+      exit: 1
       stdout: |4
            START  Running quality fixes
 
            RUN  Comments (styles, scripts, YAML)
 
-          Makefile rewritten — the comments that stated no kind are deleted
-          deploy/Dockerfile rewritten — the comments that stated no kind are deleted
-          deploy/workflow.yaml rewritten — the comments that stated no kind are deleted
-          scripts/release.sh rewritten — the comments that stated no kind are deleted
-          src/page.astro rewritten — the comments that stated no kind are deleted
-          src/theme.css rewritten — the comments that stated no kind are deleted
-          ✓ Passed
+          Makefile:3:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
+          deploy/Dockerfile:5:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
+          deploy/workflow.yaml:6:9: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
+          scripts/release.sh:6:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
+          src/page.astro:9:9: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
+          src/theme.css:3:5: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
+          ✗ Failed with exit code 1
 
            END  Finalizing quality fixes
 
-          ✓ All checks passed
+          ✗ Some checks failed
       files:
           Makefile:
               equals: |
                   .PHONY: build
 
+                  # The build target compiles the sources
                   build:
                   	npm run build
 
@@ -50,59 +51,11 @@ runs:
                   # kept: the variable's own line
                   echo one
                   endef
-          deploy/Dockerfile:
-              equals: |
-                  # syntax=docker/dockerfile:1
-                  FROM node:24-slim
-                  # outside: the registry mirror refuses an image without a digest
-                  COPY . .
-                  RUN npm ci
-          deploy/workflow.yaml:
-              equals: |
-                  # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
-                  name: validate
-                  on: push
-                  jobs:
-                      validate:
-                          runs-on: ubuntu-latest
-                          steps:
-                              - run: |
-                                    # not a comment of the file: the script's own line
-                                    make check
-                              - run: "echo one
-                                    # inside the quoted scalar
-                                    two"
-          scripts/release.sh:
-              equals: |
-                  #!/bin/sh
-                  # shellcheck disable=SC2086
-                  # hazard: the tag is pushed before the package, so a failed publish leaves a tag to delete
-                  # by hand before the next run
-                  set -eu
-                  npm version patch
-                  cat <<NOTES
-                  # not a comment: the heading of the notes
-                  NOTES
-                  NOTES="first line
-                  # Heading of the release notes
-                  "
-          src/page.astro:
-              equals: |
-                  ---
-                  export const title = 'Home';
-                  ---
-
-                  <h1>{title}</h1>
-
-                  <style>
-                      h1 {
-                          margin: 0;
-                      }
-                  </style>
           src/theme.css:
               equals: |
                   /*! license: kept by every minifier */
                   :root {
+                      /* Accepted Crescendo: the ramp the review settled on */
                       --ramp: 1.25;
                       /* value: 4px is the grid every spacing token divides */
                       --grid: 4px;

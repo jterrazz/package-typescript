@@ -233,25 +233,3 @@ export const STYLE_COMMENTED = /\.(?:css|scss|astro|svelte|vue)$/u;
 
 export const isCommentedElsewhere = (path: string): boolean =>
     (HASH_COMMENTED.test(path) && !path.endsWith('-lock.yaml')) || STYLE_COMMENTED.test(path);
-
-// invariant: a comment alone on its lines takes them whole; one beside code takes its span and the blanks on one side, so the code around it stays spaced as it was.
-export function commentDeletion(
-    text: string,
-    [start, end]: readonly [number, number],
-): [number, number] {
-    const lineStart = text.lastIndexOf('\n', start - 1) + 1;
-    const newline = text.indexOf('\n', end);
-    const lineEnd = newline === -1 ? text.length : newline;
-    const before = text.slice(lineStart, start);
-    const after = text.slice(end, lineEnd);
-    if (before.trim() === '' && after.trim() === '') {
-        return [lineStart, newline === -1 ? lineEnd : newline + 1];
-    }
-    if (after.trim() === '') {
-        return [lineStart + before.trimEnd().length, lineEnd];
-    }
-
-    const following = after.length - after.trimStart().length;
-
-    return following > 0 ? [start, end + following] : [lineStart + before.trimEnd().length, end];
-}

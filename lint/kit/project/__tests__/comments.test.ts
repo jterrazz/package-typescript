@@ -1,12 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import {
-    blankComments,
-    commentDeletion,
-    commentSpansOf,
-    isCommentedElsewhere,
-    quotedMask,
-} from '../comments.js';
+import { blankComments, commentSpansOf, isCommentedElsewhere, quotedMask } from '../comments.js';
 
 const SOURCE_TEXT = `const a = 'x // y'; // note
 /* opened
@@ -137,31 +131,6 @@ describe('comments', () => {
             ],
             [false, true, true, true, false],
         ]);
-    });
-
-    test.each([
-        [
-            'a comment alone on its line, indented and followed by blanks',
-            'a\n    // x   \nb',
-            '// x',
-            'a\nb',
-        ],
-        ['a comment alone on the last line', 'a\n// x', '// x', 'a\n'],
-        ['a bare `#` line', 'a\n#\nb', '#', 'a\nb'],
-        ['a comment alone on a Windows line', 'a\r\n// x\r\nb', '// x', 'a\r\nb'],
-        ['a comment trailing code', 'a = 1;   // x  \nb', '// x', 'a = 1;\nb'],
-        ['a block before code', '/* x */ a = 1;', '/* x */', 'a = 1;'],
-        ['a block closed by code', 'f(/* x */)', '/* x */', 'f()'],
-        ['a block after another, closed by a brace', '{/* k */ /* x */}', '/* x */', '{/* k */}'],
-    ])('deletes %s with the bytes it takes along', (_case, text, comment, kept) => {
-        // Given - a text and one comment in it
-        const start = text.indexOf(comment);
-
-        // When - the comment is deleted
-        const [from, to] = commentDeletion(text, [start, start + comment.length]);
-
-        // Then - what stays is the text without it, spaced as it was
-        expect(`${text.slice(0, from)}${text.slice(to)}`).toBe(kept);
     });
 
     test('reads the comments of style sheets, scripts, Makefiles, Dockerfiles and YAML, a lockfile and code aside', () => {

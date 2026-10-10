@@ -47,7 +47,6 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 'const helper = () => 1;',
             ),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'const helper = () => 1;',
         },
         {
             code: lines(
@@ -108,27 +107,22 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 '});',
             ),
             errors: [{ column: 4, line: 2, messageId: 'unstated' }],
-            output: lines('export const handler = (value) => ({', '    key: value,', '});'),
         },
         {
             code: lines("test('adds', () => {", '    // Given - two numbers', '});'),
             errors: [{ column: 4, line: 2, messageId: 'unstated' }],
-            output: lines("test('adds', () => {", '});'),
         },
         {
             code: lines('// adds the two values', 'const sum = 1 + 2;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'const sum = 1 + 2;',
         },
         {
             code: lines('const sum = 1 + 2; // the sum'),
             errors: [{ column: 19, line: 1, messageId: 'unstated' }],
-            output: 'const sum = 1 + 2;',
         },
         {
             code: lines('const sum = /* the sum */ 1 + 2;'),
             errors: [{ column: 12, line: 1, messageId: 'unstated' }],
-            output: 'const sum = 1 + 2;',
         },
         {
             code: lines(
@@ -159,26 +153,18 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 'const two = 2;',
             ),
             errors: [{ column: 0, line: 3, messageId: 'unstated' }],
-            output: lines(
-                '// hazard: the first run states its kind',
-                'const one = 1;',
-                'const two = 2;',
-            ),
         },
         {
             code: lines('/* a block of prose */', 'const one = 1;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'const one = 1;',
         },
         {
             code: lines('// Invariant: the kind is lower case', 'const one = 1;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'const one = 1;',
         },
         {
             code: lines('//* a line comment dressed as a hover', 'export const one = 1;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'export const one = 1;',
         },
         {
             code: lines(
@@ -189,32 +175,26 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 { column: 0, line: 1, messageId: 'unstated' },
                 { column: 22, line: 2, messageId: 'unstated' },
             ],
-            output: lines('export const sum = 1;', 'export const end = 2;'),
         },
         {
             code: lines('/* A block that is no doc block. */', 'export const one = 1;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'export const one = 1;',
         },
         {
             code: lines('// prose followed by blanks   ', 'const one = 1;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'const one = 1;',
         },
         {
             code: lines('const one = 1; // prose followed by blanks   ', 'const two = 2;'),
             errors: [{ column: 15, line: 1, messageId: 'unstated' }],
-            output: lines('const one = 1;', 'const two = 2;'),
         },
         {
             code: lines('const query =', '    // sql', '    `select 1`;'),
             errors: [{ column: 4, line: 2, messageId: 'unstated' }],
-            output: lines('const query =', '    `select 1`;'),
         },
         {
             code: lines('/** A private helper is no hover. */', 'const helper = () => 1;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'const helper = () => 1;',
         },
         {
             code: lines(
@@ -223,7 +203,6 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 'export const at = join;',
             ),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: lines("import { join } from 'node:path';", 'export const at = join;'),
         },
         {
             code: lines(
@@ -233,7 +212,6 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 '}',
             ),
             errors: [{ column: 4, line: 2, messageId: 'unstated' }],
-            output: lines('export function run() {', '    return 1;', '}'),
         },
         {
             code: lines(
@@ -259,22 +237,18 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 'const rounded = (value) => Math.round(value);',
             ),
             errors: [{ column: 0, line: 2, messageId: 'unstated' }],
-            output: 'const rounded = (value) => Math.round(value);',
         },
         {
             code: lines('/* hazard: a block opens the run */', '// a line after it starts its own'),
             errors: [{ column: 0, line: 2, messageId: 'unstated' }],
-            output: '/* hazard: a block opens the run */\n',
         },
         {
             code: lines('// hazard: a line opens the run', '/* a block after it starts its own */'),
             errors: [{ column: 0, line: 2, messageId: 'unstated' }],
-            output: '// hazard: a line opens the run\n',
         },
         {
             code: lines('// value/: a slash is no part of the kind', 'const one = 1;'),
             errors: [{ column: 0, line: 1, messageId: 'unstated' }],
-            output: 'const one = 1;',
         },
         {
             code: lines(
@@ -287,17 +261,14 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 'export {};',
             ),
             errors: [{ column: 0, line: 6, messageId: 'unstated' }],
-            output: lines('', '', '', '', '', 'export {};'),
         },
         {
             code: lines('const query = /* sql */ run(`select 1`);'),
             errors: [{ column: 14, line: 1, messageId: 'unstated' }],
-            output: 'const query = run(`select 1`);',
         },
         {
             code: lines('const query = /* sql */ "select 1";'),
             errors: [{ column: 14, line: 1, messageId: 'unstated' }],
-            output: 'const query = "select 1";',
         },
         {
             code: lines(
@@ -310,13 +281,6 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
             ),
             errors: [{ column: 9, line: 3, messageId: 'unstated' }],
             languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
-            output: lines(
-                'export const View = () => (',
-                '    <main>',
-                '        <ul />',
-                '    </main>',
-                ');',
-            ),
         },
         {
             code: lines(
@@ -330,21 +294,11 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
             ),
             errors: [{ column: 50, line: 3, messageId: 'unstated' }],
             languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
-            output: lines(
-                'export const View = () => (',
-                '    <main>',
-                '        {/* invariant: the list is never empty */}',
-                '        {/* invariant: the footer stays */}',
-                '        <ul />',
-                '    </main>',
-                ');',
-            ),
         },
         {
             code: lines('export const View = () => <main>{ /* spaced prose */ }</main>;'),
             errors: [{ column: 34, line: 1, messageId: 'unstated' }],
             languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
-            output: 'export const View = () => <main></main>;',
         },
         {
             code: lines(
@@ -357,14 +311,6 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
             ),
             errors: [{ column: 3, line: 6, messageId: 'unstated' }],
             languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
-            output: lines(
-                'export const View = () => (',
-                '    <main>',
-                '        {/* invariant: the footer stays */}',
-                '        <ul />',
-                '    </main>',
-                ');',
-            ),
         },
         {
             code: lines(

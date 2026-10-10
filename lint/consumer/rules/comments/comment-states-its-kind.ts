@@ -1,5 +1,4 @@
 import { defineRule } from '../../../kit/catalogue/rule.js';
-import { commentDeletion } from '../../../kit/project/comments.js';
 import {
     COMMENT_KIND_OPENING,
     COMMENT_KINDS,
@@ -7,7 +6,7 @@ import {
 } from '../../catalogue/comment-kinds.js';
 import FINDINGS from '../../catalogue/findings.json' with { type: 'json' };
 import { hoversOf } from './comment-states-its-kind.hovers.js';
-import type { AstNode, Span } from './comment-states-its-kind.hovers.js';
+import type { AstNode } from './comment-states-its-kind.hovers.js';
 
 type Comment = {
     end: number;
@@ -27,7 +26,7 @@ type Options = { openings: readonly string[] };
 
 type RuleContext = {
     options: readonly [Options];
-    report: (report: { fix: (fixer: Fixer) => unknown; messageId: string; node: Comment }) => void;
+    report: (report: { fix?: (fixer: Fixer) => unknown; messageId: string; node: Comment }) => void;
     sourceCode: SourceCode;
 };
 
@@ -177,24 +176,6 @@ function startOf(run: Run, text: string, comments: readonly Comment[]): number {
     return run.first.start;
 }
 
-const isBlank = (text: string): boolean => text.trim() === '';
-
-// invariant: an empty JSX container holding the run alone goes with it, so no `{}` is left among the children.
-function spanOf(
-    run: Run,
-    text: string,
-    empties: readonly Span[],
-    comments: readonly Comment[],
-): Span {
-    const span: Span = [startOf(run, text, comments), run.last.end];
-    const container = empties.find(
-        ([start, end]) =>
-            isBlank(text.slice(start + 1, span[0])) && isBlank(text.slice(span[1], end - 1)),
-    );
-
-    return container ?? span;
-}
-
 export const commentStatesItsKind = defineRule(
     {
         defaultOptions: [{ openings: [] }],
@@ -219,7 +200,7 @@ export const commentStatesItsKind = defineRule(
                 found: 'a tool instruction whose reason states a kind',
             },
             unstated: {
-                fix: `${WHY_FIX.fix}; \`typescript fix\` deletes it, and the diff gives back a line worth its kind`,
+                fix: WHY_FIX.fix,
                 found: 'a comment that states no kind',
             },
         },
@@ -249,7 +230,7 @@ export const commentStatesItsKind = defineRule(
                     if (head.some((line) => GENERATED.test(line))) {
                         return;
                     }
-                    const { empties, targets } = hoversOf(program);
+                    const { targets } = hoversOf(program);
                     const comments = sourceCode
                         .getAllComments()
                         .filter((comment) => comment.type !== 'Shebang');
@@ -278,15 +259,7 @@ export const commentStatesItsKind = defineRule(
                                 });
                             }
                         } else if (!isLanguageTag(comment, text)) {
-                            const deleted = commentDeletion(
-                                text,
-                                spanOf(run, text, empties, comments),
-                            );
-                            context.report({
-                                fix: (fixer) => fixer.removeRange(deleted),
-                                messageId: 'unstated',
-                                node: comment,
-                            });
+                            context.report({ messageId: 'unstated', node: comment });
                         }
                     }
                 },
