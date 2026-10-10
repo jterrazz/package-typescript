@@ -112,3 +112,9 @@ export const held: Kept | undefined = undefined;
 
 // outside: a type read through an import: consistent-type-imports allows `typeof import(...)` where the module is a type position.
 export type Loaded = typeof import('./settled-pairs-source.js');
+
+// outside: a name with a leading underscore is unused on purpose: no-unused-vars reads the underscore as the author's word, for a type parameter and a parameter.
+export type Phantom<_Brand> = { readonly id: string };
+export function ignoring(_unused: string): string {
+    return 'ignored';
+}

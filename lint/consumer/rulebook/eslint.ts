@@ -182,7 +182,19 @@ export default fragment({
             ...on([{ classes: true, functions: false, variables: false }]),
             since: RULE_REVIEW_SINCE,
         },
-        'no-unused-vars': { ...on([{ ignoreUsingDeclarations: true }]), since: '11.0.0' },
+        // invariant: an option object replaces the defaults, so the leading underscore the rule ignores by default is written out again.
+        'no-unused-vars': {
+            ...on([
+                {
+                    argsIgnorePattern: '^_',
+                    caughtErrorsIgnorePattern: '^_',
+                    destructuredArrayIgnorePattern: '^_',
+                    ignoreUsingDeclarations: true,
+                    varsIgnorePattern: '^_',
+                },
+            ]),
+            since: '11.0.0',
+        },
         'no-unused-expressions': on([
             { allowShortCircuit: true, allowTaggedTemplates: true, allowTernary: true },
         ]),

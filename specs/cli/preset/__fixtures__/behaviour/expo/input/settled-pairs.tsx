@@ -31,3 +31,9 @@ const z = {
 
 // outside: a zod schema's `.catch()` takes its fallback as a value, which no promise takes.
 export const language = z.string().catch('en');
+
+// outside: a name with a leading underscore is unused on purpose: no-unused-vars reads the underscore as the author's word, for a type parameter and a parameter.
+export type Phantom<_Brand> = { readonly id: string };
+export function ignoring(_unused: string): string {
+    return 'ignored';
+}
