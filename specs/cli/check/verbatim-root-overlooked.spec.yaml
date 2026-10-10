@@ -1,0 +1,92 @@
+description: keeps a root declared verbatim as written through check and fix
+fixture: ./__fixtures__/verbatim-root/
+env: TYPESCRIPT_CHECK_PASSES=typescript,oxlint,oxfmt,suppressions,markdown,names,comments,secrets
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           RUN  Oxfmt Check
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Comments (styles, scripts, YAML)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed
+    - command: fix
+      exit: 0
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Fix
+
+          ✓ Passed
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed
+
+           RUN  Comments (styles, scripts, YAML)
+
+          ✓ Passed
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✓ All checks passed
+      files:
+          notes/rebuild.sh:
+              equals: |
+                  #!/bin/sh
+                  # scratch: rebuild the notes
+                  make build
+          notes/utils/scratch.ts:
+              equals: |
+                  // eslint-disable-next-line no-unused-vars
+                  export function stop(): void {
+                      debugger;
+                  }

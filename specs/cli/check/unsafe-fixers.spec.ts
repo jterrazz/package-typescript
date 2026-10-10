@@ -21,8 +21,8 @@ describe('unsafe-fixers', () => {
 
         // Then - the argument is still there, and fix reports what it left
         expect(fixed.exitCode).toBe(1);
-        expect(fixed.stdout.text).toContain('no-useless-undefined');
-        expect(fixed.file('index.ts').content).toContain('take(undefined)');
+        expect(fixed.stdout.text).toContain('promise-function-async');
+        expect(fixed.file('index.ts').content).toContain('Promise.resolve(1)');
     });
 
     test('keeps a recorded diagnostic of an unsafe fixer held across fix, though the wrapper disarms its rule', async () => {
@@ -34,7 +34,7 @@ describe('unsafe-fixers', () => {
         expect(fixed.exitCode).toBe(0);
         const held: unknown = JSON.parse(fixed.file('.jterrazz/oxlint-suppressions.json').content);
         expect(held).toStrictEqual({
-            'index.ts': { 'unicorn/no-useless-undefined': { count: 1 } },
+            'index.ts': { 'typescript/promise-function-async': { count: 1 } },
         });
     });
 
@@ -45,7 +45,7 @@ describe('unsafe-fixers', () => {
 
         // Then - the check names the rule the fixer was not allowed to settle
         expect(checked.exitCode).toBe(1);
-        expect(checked.stdout.text).toContain('no-useless-undefined');
+        expect(checked.stdout.text).toContain('promise-function-async');
     });
 
     test('keeps a directive that names an unsafe fixer used, so fix stays green', async () => {
@@ -65,7 +65,7 @@ describe('unsafe-fixers', () => {
         const fixed = await caseOf('directive-beside-a-diagnostic').exec('fix');
 
         // Then - the log names that call, and never the live directive above it
-        expect(fixed.stdout.text).toContain('no-useless-undefined');
+        expect(fixed.stdout.text).toContain('promise-function-async');
         expect(fixed.stdout.text).not.toContain('Unused oxlint-disable directive');
     });
 
@@ -76,7 +76,7 @@ describe('unsafe-fixers', () => {
 
         // Then - the argument survives the rewrite, and the wrapper left no trace
         expect(fixed.exitCode).toBe(1);
-        expect(fixed.file('index.ts').content).toContain('take(undefined)');
+        expect(fixed.file('index.ts').content).toContain('Promise.resolve(1)');
         expect(fixed.file('oxlint.fix.config.mjs').exists).toBe(false);
     });
 
@@ -87,7 +87,7 @@ describe('unsafe-fixers', () => {
         const fixed = await caseOf('wrapper-rules').exec('fix');
 
         // Then - it names the tree's diagnostic, and never the leftover wrapper
-        expect(fixed.stdout.text).toContain('no-useless-undefined');
+        expect(fixed.stdout.text).toContain('promise-function-async');
         expect(fixed.stdout.text).not.toContain('oxlint.fix.config');
     });
 
@@ -125,9 +125,9 @@ describe('unsafe-fixers', () => {
         const fixed = await caseOf('nested').exec('fix');
 
         // Then - the argument survives, the rule is still reported, and the subtree's wrapper is gone
-        expect(fixed.file('sub/index.ts').content).toContain('take(undefined)');
+        expect(fixed.file('sub/index.ts').content).toContain('Promise.resolve(1)');
         expect(fixed.exitCode).toBe(1);
-        expect(fixed.stdout.text).toContain('no-useless-undefined');
+        expect(fixed.stdout.text).toContain('promise-function-async');
         expect(fixed.file('sub/oxlint.fix.config.mjs').exists).toBe(false);
     });
 

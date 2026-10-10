@@ -1,7 +1,7 @@
 export default {
-    plugins: ['import', 'unicorn'],
+    plugins: ['import', 'typescript', 'unicorn'],
     rules: {
         'import/no-absolute-path': 'error',
-        'unicorn/no-useless-undefined': 'error',
+        'typescript/promise-function-async': 'error',
     },
 };

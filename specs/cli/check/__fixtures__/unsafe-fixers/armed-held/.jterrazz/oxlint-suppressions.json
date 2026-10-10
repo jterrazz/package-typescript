@@ -1,6 +1,6 @@
 {
     "index.ts": {
-        "unicorn/no-useless-undefined": {
+        "typescript/promise-function-async": {
             "count": 1
         }
     }

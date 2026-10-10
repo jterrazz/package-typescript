@@ -1,8 +1,8 @@
 export default {
-    plugins: ['unicorn'],
+    plugins: ['typescript', 'unicorn'],
     rules: {
         'prefer-const': 'off',
-        'unicorn/no-useless-undefined': 'error',
+        'typescript/promise-function-async': 'error',
         'unicorn/prefer-node-protocol': 'error',
     },
 };

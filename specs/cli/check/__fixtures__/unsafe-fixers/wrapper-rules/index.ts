@@ -1,5 +1,1 @@
-export function take(value: string | undefined): string {
-    return value ?? 'none';
-}
-
-export const taken = take(undefined);
+export const taken = (): Promise<number> => Promise.resolve(1);
