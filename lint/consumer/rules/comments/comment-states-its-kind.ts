@@ -17,7 +17,6 @@ type Comment = {
 
 type Fixer = {
     removeRange: (range: readonly [number, number]) => unknown;
-    replaceTextRange: (range: readonly [number, number], text: string) => unknown;
 };
 
 type SourceCode = { getAllComments: () => Comment[]; text: string };
@@ -56,11 +55,8 @@ const HOVER_LINE_MARGIN = /^\s*\*?\s?/u;
 
 const BLOCK_TAG = /^@[a-zA-Z]+\b/u;
 
-const WRAPPED_HOVER_FIX =
-    "join its prose onto one line above its block tags — an exported symbol's hover is one line of what it is, and the tags after it stay; `typescript fix` joins it, and keeps every tag";
-
 const WHY_FIX = {
-    fix: `delete it, or rename what needed it; a comment that states what the code cannot opens with its kind — ${COMMENT_KINDS.map((kind) => `\`${kind}:\``).join(', ')} — and an exported symbol's editor hover is one \`/** … */\` line above it, its block tags — \`@param\`, \`@example\` — on the lines after it`,
+    fix: `delete it, or rename what needed it; a comment that states what the code cannot opens with its kind — ${COMMENT_KINDS.map((kind) => `\`${kind}:\``).join(', ')} — and an exported symbol's editor hover is one \`/** … */\` paragraph above it, its block tags — \`@param\`, \`@example\` — on the lines after it`,
     why: 'the default is no comment — the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one',
 };
 
@@ -86,37 +82,14 @@ function nextTokenAt(text: string, from: number, comments: readonly Comment[]): 
 
 const proseOf = (line: string): string => line.replace(HOVER_LINE_MARGIN, '').trim();
 
-// invariant: a hover's prose is one line; what follows it from its first block tag on — `@param`, `@returns`, `@example` and its code — is the tags' own, an editor and typedoc render as the published symbol's documentation.
-function isHoverShape(value: string): boolean {
-    if (!value.includes('\n')) {
-        return true;
-    }
-    const firstTag = value
-        .split('\n')
-        .map((line) => proseOf(line))
-        .filter((line) => line !== '')
-        .findIndex((line) => BLOCK_TAG.test(line));
+// invariant: a hover's prose is one paragraph, wrapped as the formatter's width asks; what follows it from its first block tag on — `@param`, `@returns`, `@example` and its code — is the tags' own, an editor and typedoc render as the published symbol's documentation.
+function isOneParagraph(value: string): boolean {
+    const lines = value.split('\n').map((line) => proseOf(line));
+    const firstTag = lines.findIndex((line) => BLOCK_TAG.test(line));
+    const prose = (firstTag === -1 ? lines : lines.slice(0, firstTag)).join('\n').trim();
 
-    return firstTag === 0 || firstTag === 1;
+    return !prose.includes('\n\n');
 }
-
-// invariant: the prose joins onto one line and every line from the first block tag on stays as written, so the hover keeps what it documents.
-function hoverOf(comment: Comment, indent: string): string {
-    const lines = comment.value.split('\n');
-    const firstTag = lines.findIndex((line) => BLOCK_TAG.test(proseOf(line)));
-    const prose = lines
-        .slice(0, firstTag === -1 ? lines.length : firstTag)
-        .map((line) => proseOf(line))
-        .filter((line) => line !== '')
-        .join(' ');
-
-    return firstTag === -1
-        ? `/** ${prose} */`
-        : `/**\n${indent} * ${prose}\n${lines.slice(firstTag).join('\n')}*/`;
-}
-
-const indentBefore = (text: string, at: number): string =>
-    text.slice(text.lastIndexOf('\n', at) + 1, at);
 
 function isHoverPlace(
     comment: Comment,
@@ -159,23 +132,6 @@ function runsOf(comments: readonly Comment[], text: string): Run[] {
     return runs;
 }
 
-// invariant: a directive that silences only a comment rule on the line below goes with the comment it silenced.
-const COMMENT_RULE_DIRECTIVE =
-    /^\s*oxlint-disable-next-line\s+jterrazz-typescript\/comment-[\w-]+(?:\s*,\s*jterrazz-typescript\/comment-[\w-]+)*\s*(?:--|$)/u;
-
-function startOf(run: Run, text: string, comments: readonly Comment[]): number {
-    const above = comments[comments.indexOf(run.first) - 1];
-    if (
-        above?.type === 'Line' &&
-        COMMENT_RULE_DIRECTIVE.test(above.value) &&
-        LINE_BREAK_THEN_INDENT.test(text.slice(above.end, run.first.start))
-    ) {
-        return above.start;
-    }
-
-    return run.first.start;
-}
-
 export const commentStatesItsKind = defineRule(
     {
         defaultOptions: [{ openings: [] }],
@@ -191,9 +147,9 @@ export const commentStatesItsKind = defineRule(
         },
         fixable: 'code',
         messages: {
-            wrappedHover: {
-                fix: WRAPPED_HOVER_FIX,
-                found: "an exported symbol's hover whose prose runs past one line",
+            paragraphedHover: {
+                fix: "keep one paragraph in the hover — an exported symbol's hover says what it is, wrapped at the formatter's width with no blank line, and its block tags follow on lines of their own; the rest is a `docs/` page",
+                found: "an exported symbol's hover of several paragraphs",
             },
             kindedInstruction: {
                 fix: 'drop the kind: a tool instruction is its own kind, and its reason follows it bare — `typescript fix` drops it',
@@ -248,15 +204,8 @@ export const commentStatesItsKind = defineRule(
                         } else if (isStructure(opening) || COMMENT_KIND_OPENING.test(opening)) {
                             // invariant: a structure or a kinded opening is no prose, and is not judged.
                         } else if (isHoverPlace(comment, text, targets, comments)) {
-                            if (!isHoverShape(comment.value)) {
-                                const start = startOf(run, text, comments);
-                                const hover = hoverOf(comment, indentBefore(text, start));
-                                context.report({
-                                    fix: (fixer) =>
-                                        fixer.replaceTextRange([start, comment.end], hover),
-                                    messageId: 'wrappedHover',
-                                    node: comment,
-                                });
+                            if (!isOneParagraph(comment.value)) {
+                                context.report({ messageId: 'paragraphedHover', node: comment });
                             }
                         } else if (!isLanguageTag(comment, text)) {
                             context.report({ messageId: 'unstated', node: comment });
