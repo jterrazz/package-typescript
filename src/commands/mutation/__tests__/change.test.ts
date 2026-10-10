@@ -233,6 +233,22 @@ describe('change', () => {
         ).toStrictEqual(['the commit before HEAD', 'the commit before HEAD']);
     });
 
+    test('a branch sharing no history with the default branch has no merge-base to measure from, and reads as the commits it holds', () => {
+        // Given - a repository whose main holds a commit, and an orphan branch holding one of its own, the working tree clean
+        const root = committedRepository({ 'a.ts': 'one\n' });
+        gitIn(root, 'switch', '--quiet', '--orphan', 'unrelated');
+        writeFileSync(join(root, 'b.ts'), 'two\n');
+        gitIn(root, 'add', '--all');
+        gitIn(root, 'commit', '--quiet', '--message', 'unrelated');
+
+        // Then - no merge-base: the branch's lone commit is the first, measured against HEAD alone
+        expect(defaultBaseOf(root)).toStrictEqual({
+            commit: 'HEAD',
+            names: 'HEAD — the first commit, with no commit before it',
+            range: 'HEAD..HEAD',
+        });
+    });
+
     test('git names a commit the clone holds, and neither the zero commit a first push carries, a ref it lacks, nor anything outside a repository', () => {
         // Given - a repository of one commit, and a folder outside any repository
         const root = committedRepository({ 'a.ts': 'one\n' });

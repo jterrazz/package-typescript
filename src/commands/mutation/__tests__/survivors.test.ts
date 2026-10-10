@@ -16,10 +16,7 @@ const LESSON =
 
 const NONE_RAN: ReadonlySet<string> = new Set();
 
-const MEASURE = {
-    nothingBecause: 'no changed TypeScript source ran a mutant',
-    range: 'a1b2c3d4..HEAD',
-};
+const MEASURE = { range: 'a1b2c3d4..HEAD' };
 
 const MODULE_RUN_LEAVING_THREE = {
     measured: new Set(['src/a.ts']),

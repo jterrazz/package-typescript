@@ -75,16 +75,14 @@ function unrunLines({ unrun }: Judged): string[] {
     ];
 }
 
-/** What a verdict names of its measure: the range of commits it covers, and why it may have found nothing to mutate. */
-export type Measure = { nothingBecause: string; range: string };
+/** What a verdict names of its measure: the range of commits it covers. */
+export type Measure = { range: string };
 
 // invariant: a run that mutated nothing never reads as a run whose mutants were all detected; it says what it measured, or that it measured nothing and why.
-function passedLine({ detected, survivors }: Judged, { nothingBecause, range }: Measure): string {
-    const measured = detected + survivors.length;
-
-    return measured === 0
-        ? `measured nothing over ${range}: ${nothingBecause}`
-        : `measured ${measured} mutants over ${range} — every mutant a test runs is detected`;
+function passedLine({ detected }: Judged, { range }: Measure): string {
+    return detected === 0
+        ? `measured nothing over ${range}: no changed TypeScript source ran a mutant, or the project has none to mutate`
+        : `measured ${detected} mutants over ${range} — every mutant a test runs is detected`;
 }
 
 /** The verdict's lines and status, counting apart the sources with no module test, which no run mutates until a change reaches them. */

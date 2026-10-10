@@ -121,13 +121,7 @@ async function judgedAfterTheSuite({
     untested: readonly string[];
 }): Promise<number> {
     const modulesAlone = judgedRuns(modulesRun);
-    const measure: Measure = {
-        nothingBecause:
-            scope.mutated.length === 0
-                ? 'the project declares no TypeScript source to mutate'
-                : 'no changed TypeScript source ran a mutant',
-        range: since.range,
-    };
+    const measure: Measure = { range: since.range };
     // Stryker disable next-line ConditionalExpression: a mutant the run never judged fails the verdict whether or not the suite runs after it; the gate only spares the suite's minutes
     if (Object.keys(modulesAlone.unrun).length > 0) {
         return printed(modulesAlone, untested.length, measure);

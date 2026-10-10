@@ -15,10 +15,7 @@ const LESSON =
 
 const NONE_RAN: ReadonlySet<string> = new Set();
 
-const MEASURE = {
-    nothingBecause: 'no changed TypeScript source ran a mutant',
-    range: 'a1b2c3d4..HEAD',
-};
+const MEASURE = { range: 'a1b2c3d4..HEAD' };
 
 describe('verdictOf', () => {
     test('a run whose every covered mutant is detected passes, counting apart what no change has brought to the suite and what the verdict cannot read', () => {
@@ -61,31 +58,18 @@ describe('verdictOf', () => {
         });
     });
 
-    test('a run that mutated nothing says it measured nothing and why, never that every mutant was detected', () => {
-        // Given - a report holding no mutant, for a project with TypeScript sources and for one declaring none
+    test('a run that mutated nothing says it measured nothing over its range, never that every mutant was detected', () => {
+        // Given - a report holding no mutant
         const judged = judgedRuns({ measured: new Set(), ranByTests: NONE_RAN, report: {} });
-        const goOnly = {
-            nothingBecause: 'the project declares no TypeScript source to mutate',
-            range: 'HEAD..working tree',
-        };
 
-        // Then - each verdict passes, and names its range and its reason
-        expect([verdictOf(judged, 0, MEASURE), verdictOf(judged, 0, goOnly)]).toStrictEqual([
-            {
-                lines: [
-                    'measured nothing over a1b2c3d4..HEAD: no changed TypeScript source ran a mutant',
-                    '0 mutant(s) no test runs',
-                ],
-                status: 0,
-            },
-            {
-                lines: [
-                    'measured nothing over HEAD..working tree: the project declares no TypeScript source to mutate',
-                    '0 mutant(s) no test runs',
-                ],
-                status: 0,
-            },
-        ]);
+        // Then - the verdict passes, and names its range and that nothing was measured
+        expect(verdictOf(judged, 0, MEASURE)).toStrictEqual({
+            lines: [
+                'measured nothing over a1b2c3d4..HEAD: no changed TypeScript source ran a mutant, or the project has none to mutate',
+                '0 mutant(s) no test runs',
+            ],
+            status: 0,
+        });
     });
 
     test('a survivor fails the run, each named at its place, in file and line order, before the lesson', () => {
@@ -187,7 +171,7 @@ describe('verdictOf', () => {
 
         // Then - the total, then each file with its count
         expect(verdictOf(judged, 0, MEASURE).lines).toStrictEqual([
-            'measured nothing over a1b2c3d4..HEAD: no changed TypeScript source ran a mutant',
+            'measured nothing over a1b2c3d4..HEAD: no changed TypeScript source ran a mutant, or the project has none to mutate',
             '5 mutant(s) no test runs',
             '  src/m.ts  3',
             '  src/a.ts  1',

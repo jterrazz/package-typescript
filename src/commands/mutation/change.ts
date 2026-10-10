@@ -34,22 +34,28 @@ const short = (commit: string): string => commit.slice(0, 8);
 
 // invariant: the default branch is the one `origin/HEAD` names, else `main`, else `master`; a clone that has none of them has no default branch to measure from.
 function defaultBranchOf(project: string): string | undefined {
-    const remote = git(project, ['symbolic-ref', '--quiet', '--short', 'refs/remotes/origin/HEAD'])
-        ?.trim()
-        .replace(/^origin\//u, '');
+    const remote = git(project, [
+        'symbolic-ref',
+        '--quiet',
+        '--short',
+        'refs/remotes/origin/HEAD',
+    ])?.trim();
+    // Stryker disable next-line Regex: the name printed opens on the remote's, so anchoring the strip changes nothing a branch name could show
+    const named = remote?.replace(/^origin\//u, '');
 
-    return [remote, 'main', 'master'].find(
-        (branch) => branch !== undefined && namesACommit(project, `refs/heads/${branch}`),
+    return [...(named === undefined ? [] : [named]), 'main', 'master'].find((branch) =>
+        namesACommit(project, `refs/heads/${branch}`),
     );
 }
 
+// invariant: on the default branch itself the merge-base is HEAD, so the branch reads as having no commit of its own and the last commit is the change.
 function branchBaseOf(project: string): undefined | { base: string; branch: string } {
     const branch = defaultBranchOf(project);
-    const current = git(project, ['rev-parse', '--abbrev-ref', 'HEAD'])?.trim();
-    if (branch === undefined || current === branch) {
+    if (branch === undefined) {
         return undefined;
     }
     const base = git(project, ['merge-base', branch, 'HEAD'])?.trim();
+    // Stryker disable next-line OptionalChaining: a repository whose status answered resolves HEAD
     const head = git(project, ['rev-parse', 'HEAD'])?.trim();
 
     return base === undefined || base === head ? undefined : { base, branch };
