@@ -239,8 +239,30 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                 'console.log(a);',
             ),
         },
+        {
+            name: 'A line of nothing but a margin and blanks is a blank line, whatever it carries.',
+            code: lines(
+                '/**',
+                ' * The entries.',
+                ' *    ',
+                ' * Oldest first.',
+                ' */',
+                'export const entries = [];',
+            ),
+            errors: [{ column: 0, line: 1, messageId: 'paragraphedHover' }],
+        },
     ],
     valid: [
+        lines(
+            '/**',
+            ' * Doubles a value.',
+            ' * @example',
+            ' * double(2);',
+            ' *',
+            ' * double(3);',
+            ' */',
+            'export const double = (value) => value * 2;',
+        ),
         lines(
             '/**',
             ' * Parses an amount written in a ledger, rounding half away',
