@@ -24,6 +24,12 @@ function publishedGap(
     kind: ProjectKind,
     manifest: Readonly<Record<string, unknown>>,
 ): null | { fix: string; owes: string } {
+    if (kind !== 'workspace' && manifest.workspaces !== undefined) {
+        return {
+            fix: 'move the members under `apps/` or `packages/` of a repository declared a `workspace`, so each is measured on its own, or drop `workspaces`',
+            owes: 'declares `workspaces`, which only a workspace has: its own sources would be read as a member of itself',
+        };
+    }
     if (kind === 'library' && manifest.exports === undefined && manifest.main === undefined) {
         return {
             fix: 'publish what the library offers in `exports`, or declare the kind the project is',

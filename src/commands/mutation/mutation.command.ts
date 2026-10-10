@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
 
@@ -210,6 +210,14 @@ export async function mutation(args: readonly string[]): Promise<number> {
     const members = workspaceMembers(project);
     if (members.length > 0) {
         return await membersMeasured(project, members, { ranges, since: named });
+    }
+    // invariant: a project with no test project has nothing to run a mutant against; Stryker would stop on a missing config, and the run says what it measured instead.
+    if (!existsSync(join(project, 'vitest.config.ts'))) {
+        print(
+            `${badge('TYPESCRIPT')} measured nothing: ${project} has no vitest.config.ts, so no test project to run a mutant against.\n`,
+        );
+
+        return 0;
     }
     const since: Base =
         named === undefined
