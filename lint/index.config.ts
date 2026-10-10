@@ -60,9 +60,7 @@ export type TypescriptSettings = {
         reason: string;
     };
     /** The root folders kept beside the spine, each mapped to the reason it is kept. */
-    roots?: Reasoned;
-    /** The root folders a script writes, each mapped to its reason: kept beside the spine as a root is, and left alone by the formatter. */
-    generated?: Reasoned;
+    roots?: Readonly<Record<string, string | { reason: string; verbatim?: boolean }>>;
 };
 
 export type ProjectConfig = JterrazzConfig & ProjectDeclaration;
