@@ -695,6 +695,8 @@ A workspace member is a spine of its own, judged the same way from its own folde
 
 Every repository answers the same six at its root, whatever the language under it: `make install`, `make build`, `make lint`, `make fix`, `make test` and `make check`. The flows speak only these, so a session that has never opened the repository still knows how to install, prove and repair it. What each recipe runs is the repository's, save how `fix` meets a failure; that the rule exists is the contract. A target beyond the six — the `mutation` that [Getting started](../start/getting-started.md#4-answer-the-six-gestures-in-a-makefile)'s `check` runs — is a helper of a recipe, and no gesture.
 
+`make install` installs the checkout's dependencies and touches nothing outside it: no global tool, no shared cache write, no other clone. A gate that runs in the same checkout at the same time reads a `node_modules` that install would empty, so a repository that runs gates in parallel guards the two with one lock under `.artifacts/`.
+
 The contract is asked where a REPOSITORY is — a `.git` beside the project, as for [the Docs (layout) pass](#the-docs-layout-pass) — and an ignored `Makefile` counts for none, like every path a tree gate skips. A workspace member owes nothing: the repository's root answers for every member, and a member linted on its own is never asked.
 
 A target counts when the `Makefile`'s own text writes a rule for it — `lint:`, `install build:`, `test::` — and an assignment (`LINT := …`) or a comment is no rule. A file the `Makefile` `include`s is not read, so the six stay written where a reader opens first.
