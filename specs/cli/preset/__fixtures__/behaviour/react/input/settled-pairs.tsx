@@ -61,3 +61,12 @@ export function Listing({ code }: { code: string }): React.JSX.Element {
         </section>
     );
 }
+
+// outside: an accessible SVG: the rule that asked for an `<img>` in place of `role="img"` is off.
+export function Mark(): React.JSX.Element {
+    return (
+        <svg aria-label="Mark" role="img">
+            <title>Mark</title>
+        </svg>
+    );
+}

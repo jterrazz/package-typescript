@@ -88,7 +88,6 @@ export default fragment({
                 'prefer-dom-node-dataset',
                 'prefer-dom-node-remove',
                 'prefer-dom-node-text-content',
-                'prefer-export-from',
                 'prefer-global-this',
                 'prefer-keyboard-event-key',
                 'prefer-logical-operator-over-ternary',
@@ -146,9 +145,10 @@ export default fragment({
 
         // invariant: a callback that does nothing on purpose is `() => undefined`: `() => {}` is no-empty-function's, which owns the empty body.
         'unicorn/no-useless-undefined': unsafeFix(
-            { ...on([{ checkArrowFunctionBody: false }]), since: '11.0.0' },
+            { ...on([{ checkArguments: false, checkArrowFunctionBody: false }]), since: '11.0.0' },
             'strips a REQUIRED argument, `mockReturnValue(undefined)` included (TS2554)',
         ),
+        'unicorn/prefer-export-from': { ...on([{ checkUsedVariables: false }]), since: '11.0.0' },
         'unicorn/prefer-import-meta-properties': unsafeFix(
             on(),
             "rewrites `fileURLToPath(new URL('.', import.meta.url))` into `import.meta.dirname`, which carries no trailing slash",

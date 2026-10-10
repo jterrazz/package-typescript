@@ -89,7 +89,6 @@ export default fragment({
             [
                 'await-thenable',
                 'consistent-type-exports',
-                'dot-notation',
                 'no-array-delete',
                 'no-base-to-string',
                 'no-deprecated',
@@ -175,11 +174,16 @@ export default fragment({
         // hazard: for `import/consistent-type-specifier-style`'s reason: an inline type specifier survives as an empty import.
         'typescript/consistent-type-imports': on([
             {
-                disallowTypeAnnotations: true,
+                disallowTypeAnnotations: false,
                 fixStyle: 'separate-type-imports',
                 prefer: 'type-imports',
             },
         ]),
+        // hazard: a name that starts with `_` is read by bracket, since no-underscore-dangle refuses the dot form and dot-notation would ask for it.
+        'typescript/dot-notation': {
+            ...typeAware([{ allowPattern: '^_' }]),
+            since: '11.0.0',
+        },
         'typescript/no-import-type-side-effects': on(),
         'typescript/explicit-member-accessibility': on([{ accessibility: 'no-public' }]),
         // hazard: booleans excepted: `false ?? x` is `false` and `false || x` is `x`.

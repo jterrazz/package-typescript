@@ -120,7 +120,6 @@ export default fragment({
             'no-unsafe-optional-chaining',
             'no-unused-labels',
             'no-unused-private-class-members',
-            'no-unused-vars',
             'no-useless-backreference',
             'no-useless-call',
             'no-useless-catch',
@@ -183,6 +182,7 @@ export default fragment({
             ...on([{ classes: true, functions: false, variables: false }]),
             since: RULE_REVIEW_SINCE,
         },
+        'no-unused-vars': { ...on([{ ignoreUsingDeclarations: true }]), since: '11.0.0' },
         'no-unused-expressions': on([
             { allowShortCircuit: true, allowTaggedTemplates: true, allowTernary: true },
         ]),

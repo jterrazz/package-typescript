@@ -139,7 +139,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jsx-a11y/no-noninteractive-tabindex = ["error",{"roles":["tabpanel","region"],"tags":["section"]}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jsx-a11y/no-redundant-roles = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jsx-a11y/no-static-element-interactions = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.jsx-a11y/prefer-tag-over-role = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.jsx-a11y/prefer-tag-over-role = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jsx-a11y/role-has-required-aria-props = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jsx-a11y/role-supports-aria-props = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.jsx-a11y/scope = "error"
@@ -286,7 +286,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-expressions = ["error",{"allowShortCircuit":true,"allowTaggedTemplates":true,"allowTernary":true}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-labels = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-private-class-members = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-vars = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-vars = ["error",{"ignoreUsingDeclarations":true}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-use-before-define = ["error",{"classes":true,"functions":false,"variables":false}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-useless-backreference = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-useless-call = "error"
@@ -487,8 +487,8 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/consistent-type-assertions = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/consistent-type-definitions = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/consistent-type-exports = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/consistent-type-imports = ["error",{"disallowTypeAnnotations":true,"fixStyle":"separate-type-imports","prefer":"type-imports"}]
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/dot-notation = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/consistent-type-imports = ["error",{"disallowTypeAnnotations":false,"fixStyle":"separate-type-imports","prefer":"type-imports"}]
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/dot-notation = ["error",{"allowPattern":"^_"}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/explicit-function-return-type = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/explicit-member-accessibility = ["error",{"accessibility":"no-public"}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/explicit-module-boundary-types = "off"
@@ -653,7 +653,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/no-useless-promise-resolve-reject = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/no-useless-spread = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/no-useless-switch-case = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/no-useless-undefined = ["error",{"checkArrowFunctionBody":false}]
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/no-useless-undefined = ["error",{"checkArguments":false,"checkArrowFunctionBody":false}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/no-zero-fractions = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/number-literal-case = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/numeric-separators-style = "error"
@@ -676,7 +676,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/prefer-dom-node-remove = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/prefer-dom-node-text-content = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/prefer-event-target = "off"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/prefer-export-from = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/prefer-export-from = ["error",{"checkUsedVariables":false}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/prefer-global-this = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/prefer-import-meta-properties = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.unicorn/prefer-includes = "off"

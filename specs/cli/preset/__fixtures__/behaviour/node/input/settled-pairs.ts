@@ -4,6 +4,8 @@
  * and `--fix` leaves the file byte for byte as it is.
  */
 
+import type { Disposable as Kept } from './settled-pairs-source.js';
+
 export type Shape = 'circle' | 'square';
 
 // outside: typescript/consistent-return off for noImplicitReturns, default-case off for switch-exhaustiveness-check.
@@ -89,3 +91,24 @@ const z = {
 
 // outside: a zod schema's `.catch()` takes its fallback as a value, which no promise takes.
 export const language = z.string().catch('en');
+
+// outside: an ambient global named with a leading underscore is read by bracket: dot-notation allows it where no-underscore-dangle refuses the dot form.
+export const tauri: unknown = (globalThis as Record<string, unknown>)['__TAURI__'];
+
+// outside: a disposable held only for its scope is not unused: no-unused-vars leaves a `using` declaration to the disposal it stands for.
+export function scoped(open: () => Disposable): void {
+    using held = open();
+}
+
+// outside: the argument TypeScript demands of a parameter typed `undefined`: no-useless-undefined reads arrow bodies only.
+export function fire(argument: undefined): undefined {
+    return argument;
+}
+fire(undefined);
+
+// outside: a type used in the module and re-exported from it: prefer-export-from leaves an import that is also read.
+export type { Kept };
+export const held: Kept | undefined = undefined;
+
+// outside: a type read through an import: consistent-type-imports allows `typeof import(...)` where the module is a type position.
+export type Loaded = typeof import('./settled-pairs-source.js');

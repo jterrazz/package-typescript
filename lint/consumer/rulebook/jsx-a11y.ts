@@ -1,6 +1,6 @@
-import { allOn, fragment, on } from '../../kit/compiler/decision.js';
+import { allOn, fragment, off, on } from '../../kit/compiler/decision.js';
 
-// invariant: no off here: an accessibility rule describes what a person using the product can reach.
+// invariant: an accessibility rule describes what a person using the product can reach, so an off here cites the measured false positive it ends.
 export default fragment({
     id: 'jsx-a11y',
     audience: 'consumer',
@@ -38,12 +38,18 @@ export default fragment({
                 'no-noninteractive-element-to-interactive-role',
                 'no-redundant-roles',
                 'no-static-element-interactions',
-                'prefer-tag-over-role',
                 'role-has-required-aria-props',
                 'role-supports-aria-props',
                 'scope',
                 'tabindex-no-positive',
             ].map((rule) => `jsx-a11y/${rule}`),
+        ),
+        'jsx-a11y/prefer-tag-over-role': off(
+            {
+                by: 'an accessible SVG is `<svg role="img">` with a title, which the rule reads as a request for an `<img>` it cannot be, and the rule takes no option; no-redundant-roles, role-supports-aria-props and no-static-element-interactions still hold the roles a tag already carries (signews-web, 2026-10-10)',
+                kind: 'evidence',
+            },
+            '11.0.0',
         ),
         // outside: a scrollable region must be reachable by the keyboard (WCAG 2.1.1, axe scrollable-region-focusable): a `<section>` — the tag prefer-tag-over-role asks for a region — takes `tabIndex={0}`, and jterrazz-typescript/focusable-section-is-labelled holds it to the label that makes it one.
         'jsx-a11y/no-noninteractive-tabindex': {
