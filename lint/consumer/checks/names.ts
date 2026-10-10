@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import { emptyDirectories } from '../../kit/project/empty-directories.js';
@@ -119,7 +119,10 @@ function spineOf(
     }
 
     const { lint, memberRoots, spine, toolRoots } = settings.universal;
+    // invariant: a workspace member named `specs` is the specs tree itself: its first-level folders are specifications and special folders, which @jterrazz/test names, never roots beside a spine.
+    const holdsSpecs = prefix !== '' && basename(unit) === 'specs';
     const isCodified = (root: string): boolean =>
+        holdsSpecs ||
         (spine.has(root) && (root !== LINT_ROOT || shipsLint(disk, manifest, unit))) ||
         memberRoots.has(root) ||
         Object.hasOwn(toolRoots, root) ||

@@ -691,6 +691,8 @@ A `lint/` nothing publishes holds rules no consumer receives — `src/` under an
 
 A workspace member is a spine of its own, judged the same way from its own folder: its first-level folders owe the spine, its `lint/` answers to its own `files`, `exports` and build, and it declares the roots it keeps beyond the spine in its own `jterrazz.config.ts`. The `Makefile` stays the repository root's.
 
+The member named `specs` is the exception: it is the specs tree itself, a suite no kind owns, and its first-level folders are specifications and special folders that `@jterrazz/test` names, so none of them is a root beside the spine.
+
 #### The six gestures
 
 Every repository answers the same six at its root, whatever the language under it: `make install`, `make build`, `make lint`, `make fix`, `make test` and `make check`. The flows speak only these, so a session that has never opened the repository still knows how to install, prove and repair it. What each recipe runs is the repository's, save how `fix` meets a failure; that the rule exists is the contract. A target beyond the six — the `mutation` that [Getting started](../start/getting-started.md#4-answer-the-six-gestures-in-a-makefile)'s `check` runs — is a helper of a recipe, and no gesture.
