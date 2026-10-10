@@ -65,10 +65,13 @@ const stemOf = (name: string): string => name.split('.')[0] ?? '';
 // invariant: the folders of a path are judged down to the first level below a specification folder, whose subjects are the product's own words; a router root ends the walk one level in.
 function judgedDepth(segments: readonly string[]): number {
     const routerRoot = segments.indexOf(ROUTER_ROOT, 1);
-    const lastJudged = routerRoot === -1 ? segments.length - 1 : routerRoot + 1;
     const underSpecification = segments[0] === 'specs' && SPECIFICATIONS.has(segments[1] ?? '');
 
-    return Math.min(lastJudged, underSpecification ? 2 : Infinity, segments.length - 1);
+    return Math.min(
+        routerRoot === -1 ? Infinity : routerRoot + 1,
+        underSpecification ? 2 : Infinity,
+        segments.length - 1,
+    );
 }
 
 function namesOf(files: readonly string[]): [string, Named][] {
