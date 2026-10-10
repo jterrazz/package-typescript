@@ -122,12 +122,12 @@
     {
         "family": "tree",
         "id": "names/declared-root-states-its-reason",
-        "sentence": "A root declared in typescript.roots or typescript.generated states why the repository keeps it."
+        "sentence": "A root declared in typescript.roots states why the repository keeps it."
     },
     {
         "family": "tree",
         "id": "names/declared-root-holds-files",
-        "sentence": "A root declared in typescript.roots or typescript.generated holds a file git does not ignore."
+        "sentence": "A root declared in typescript.roots holds a file git does not ignore."
     },
     {
         "family": "tree",

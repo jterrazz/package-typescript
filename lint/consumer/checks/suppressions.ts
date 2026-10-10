@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import { join, matchesGlob } from 'node:path';
 
 import type { Finding, Pass } from '../../kit/checker/pass.js';
 import {
@@ -214,10 +214,17 @@ function auditSource(
 const SPELLING = 'suppressions/spelled-for-this-toolchain';
 
 export const suppressions: Pass = Object.freeze({
-    check(context) {
+    async check(context) {
         const oxlint = context.value('--oxlint', 'oxlint');
         const handed = context.value('-c');
-        const sources = context.files().filter((path) => SOURCE.test(path));
+        const verbatim = await context.verbatim();
+        // invariant: a root declared verbatim is kept as its author wrote it: no directive in it is spelled for this toolchain.
+        const sources = context
+            .files()
+            .filter(
+                (path) =>
+                    SOURCE.test(path) && !verbatim.some((pattern) => matchesGlob(path, pattern)),
+            );
 
         let config: null | Resolved | undefined;
         const configOf = (): null | Resolved =>

@@ -18,7 +18,7 @@ export type Context = {
     files: () => string[];
     fix: boolean;
     has: CommandLine['has'];
-    ignorePatterns: string[];
+    verbatim: () => Promise<string[]>;
     list: (directory: string) => null | string[];
     positionals: readonly string[];
     read: (path: string) => null | string;
@@ -44,7 +44,7 @@ export type Removal = { directory: string; line: string };
 export type Pass = {
     check: (context: Context) => PassResult | Promise<PassResult>;
     namespace?: string;
-    prepare?: (context: Context) => { removals?: Removal[] };
+    prepare?: (context: Context) => { removals?: Removal[] } | Promise<{ removals?: Removal[] }>;
     valued?: readonly string[];
 };
 

@@ -3,53 +3,53 @@ import { describe, expect, test } from 'vitest';
 import { declaredRootsFindings, declaredRootsOf, isDeclaredRoot } from '../names.roots.js';
 
 const MESSAGES = [
-    "found: `apps/api/old/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` and holds no file · why: A root declared in typescript.roots or typescript.generated holds a file git does not ignore. · fix: delete the entry · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
-    "found: `apps/api/tmp/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` with no reason · why: A root declared in typescript.roots or typescript.generated states why the repository keeps it. · fix: say why the repository keeps it · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
-    "found: `apps/api/gone/` is declared in apps/api/jterrazz.config.ts's `typescript.generated` and holds no file · why: A root declared in typescript.roots or typescript.generated holds a file git does not ignore. · fix: delete the entry · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
-    "found: `apps/api/sql/` is declared in apps/api/jterrazz.config.ts's `typescript.generated` with no reason · why: A root declared in typescript.roots or typescript.generated states why the repository keeps it. · fix: say why the repository keeps it · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
+    "found: `apps/api/old/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` and holds no file · why: A root declared in typescript.roots holds a file git does not ignore. · fix: delete the entry · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
+    "found: `apps/api/tmp/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` with no reason · why: A root declared in typescript.roots states why the repository keeps it. · fix: say why the repository keeps it · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
+    "found: `apps/api/gone/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` and holds no file · why: A root declared in typescript.roots holds a file git does not ignore. · fix: delete the entry · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
+    "found: `apps/api/sql/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` with no reason · why: A root declared in typescript.roots states why the repository keeps it. · fix: say why the repository keeps it · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
 ];
 
 describe('names.roots', () => {
-    test('declaredRootsOf — reads the roots and the generated roots a section declares, refusing a declaration that is no record', () => {
-        // Given - a section declaring one of each, one declaring none, and two each writing one declaration as a list
+    test('declaredRootsOf — reads the roots a section declares, bare or verbatim, refusing a declaration that is no record', () => {
+        // Given - a section declaring one root of each shape, one declaring none, and one writing its declaration as a list
         const sections = [
             {
-                generated: { schema: 'written by the docs script' },
-                roots: { bruno: 'the collection' },
+                roots: {
+                    bruno: 'the collection',
+                    schema: { reason: 'written by the docs script', verbatim: true },
+                },
             },
             {},
             { roots: ['bruno'] },
-            { generated: ['schema'] },
         ];
 
-        // Then - each declaration read apart, the first that is no record refused by its key
+        // Then - each declaration read as written, the one that is no record refused by its key
         expect(sections.map((section) => declaredRootsOf(section))).toStrictEqual([
             {
                 problem: null,
                 roots: {
-                    generated: { schema: 'written by the docs script' },
-                    roots: { bruno: 'the collection' },
+                    bruno: 'the collection',
+                    schema: { reason: 'written by the docs script', verbatim: true },
                 },
             },
-            { problem: null, roots: { generated: {}, roots: {} } },
+            { problem: null, roots: {} },
             {
                 problem:
                     'holds a `typescript.roots` that is not an object mapping each folder to its reason',
-                roots: { generated: {}, roots: {} },
-            },
-            {
-                problem:
-                    'holds a `typescript.generated` that is not an object mapping each folder to its reason',
-                roots: { generated: {}, roots: {} },
+                roots: {},
             },
         ]);
     });
 
-    test('declaredRootsFindings — names a root of either declaration that states no reason or holds no file, under its own key, in the order of its name', () => {
-        // Given - each declaration holding a kept root, a reasonless one and an empty one, out of order, one reason no string
+    test('declaredRootsFindings — names a root that states no reason, in either shape, or holds no file, in the order of its name', () => {
+        // Given - roots holding a kept one, a reasonless one, an empty one and a verbatim one with a blank reason, out of order
         const declared = {
-            generated: { sql: '  ', schema: 'written by a script', gone: 'written by a script' },
-            roots: { tmp: 42, old: 'kept once', bruno: 'the collection' },
+            sql: { reason: '  ', verbatim: true },
+            schema: { reason: 'written by a script', verbatim: true },
+            gone: { reason: 'written by a script', verbatim: true },
+            tmp: 42,
+            old: 'kept once',
+            bruno: 'the collection',
         };
 
         // When - the tree holds bruno/, schema/, sql/ and tmp/
@@ -58,16 +58,21 @@ describe('names.roots', () => {
             roots: new Set(['bruno', 'schema', 'sql', 'tmp']),
         });
 
-        // Then - each declared root is codified, and each finding is filed under its declaration, its lesson whole
+        // Then - each declared root is codified, and each finding is filed under the key, its lesson whole
         expect([isDeclaredRoot(declared, 'schema'), isDeclaredRoot(declared, 'src')]).toStrictEqual(
             [true, false],
         );
         expect(findings).toMatchObject([
-            { path: 'apps/api/old/', rule: 'names/declared-root-holds-files' },
-            { path: 'apps/api/tmp/', rule: 'names/declared-root-states-its-reason' },
             { path: 'apps/api/gone/', rule: 'names/declared-root-holds-files' },
+            { path: 'apps/api/old/', rule: 'names/declared-root-holds-files' },
             { path: 'apps/api/sql/', rule: 'names/declared-root-states-its-reason' },
+            { path: 'apps/api/tmp/', rule: 'names/declared-root-states-its-reason' },
         ]);
-        expect(findings.map(({ message }) => message)).toStrictEqual(MESSAGES);
+        expect(findings.map(({ message }) => message)).toStrictEqual([
+            MESSAGES[2],
+            MESSAGES[0],
+            MESSAGES[3],
+            MESSAGES[1],
+        ]);
     });
 });

@@ -9,7 +9,7 @@ import {
     SETTINGS_FILE,
 } from '../../../../lint/kit/project/jterrazz-config.js';
 import { readManifest } from '../../../../lint/kit/project/manifest.js';
-import { ignorePatternsOf, projectFiles } from '../../../../lint/kit/project/project-files.js';
+import { projectFiles } from '../../../../lint/kit/project/project-files.js';
 import { publishes } from '../../../../lint/kit/project/project-kind.js';
 import { checker } from '../../../drivers/checker/checker.js';
 import { RUMDL_CONFIG } from '../../../drivers/rumdl/rumdl.js';
@@ -63,7 +63,6 @@ export function suppressionsPass(check: Check): Launched | undefined {
         check.tools.oxlint,
         ...check.configs.oxlint.args,
         ...(check.fix ? ['--fix'] : []),
-        ...check.lintArgs,
     ];
 
     return { log, status: checker('suppressions', args, { path: log }) };
@@ -76,10 +75,7 @@ export function commentsPass(check: Check): Launched | undefined {
     }
     let read: boolean;
     try {
-        // Stryker disable next-line ObjectLiteral: the packed command, which no mutant reaches, runs it; specs/cli/check/ignore-pattern-forwarded proves the patterns
-        read = projectFiles('.', { ignorePatterns: ignorePatternsOf(check.lintArgs) }).some(
-            (path) => isCommentedElsewhere(path),
-        );
+        read = projectFiles('.').some((path) => isCommentedElsewhere(path));
     } catch {
         read = true;
     }
@@ -88,7 +84,7 @@ export function commentsPass(check: Check): Launched | undefined {
     }
     const log = check.logs.at('comments.log');
     // Stryker disable next-line StringLiteral,ArrayDeclaration: the packed command, which no mutant reaches, runs it; specs/cli/check/comments-other-languages proves both modes
-    const args = ['.', ...(check.fix ? ['--fix'] : []), ...check.lintArgs];
+    const args = ['.', ...(check.fix ? ['--fix'] : [])];
 
     return { log, status: checker('comments', args, { path: log }) };
 }
@@ -105,7 +101,6 @@ export function markdownPass(check: Check): Launched | undefined {
         '--rumdl-config',
         RUMDL_CONFIG,
         ...(check.fix ? ['--fix'] : []),
-        ...check.lintArgs,
     ];
 
     return { log, status: checker('markdown', args, { path: log }) };
@@ -117,7 +112,7 @@ export function secretsPass(check: Check): Launched | undefined {
     }
     const log = check.logs.at('secrets.log');
 
-    return { log, status: checker('secrets', ['.', ...check.lintArgs], { path: log }) };
+    return { log, status: checker('secrets', ['.'], { path: log }) };
 }
 
 export function namesPass(check: Check): Launched | undefined {
@@ -131,7 +126,7 @@ export function namesPass(check: Check): Launched | undefined {
         log,
         status: checker(
             'names',
-            ['.', '--ls-lint', check.tools.lsLint, ...check.lintArgs, ...mode],
+            ['.', '--ls-lint', check.tools.lsLint, ...mode],
             { path: log },
             { typeless: true },
         ),

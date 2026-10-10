@@ -122,10 +122,16 @@ function refusedOf(
 export function declaredNamesFindings(
     context: Context,
     {
+        ignorePatterns,
         rules,
         swept,
         units,
-    }: { rules: readonly NamesRule[]; swept: readonly string[]; units: readonly string[] },
+    }: {
+        ignorePatterns: readonly string[];
+        rules: readonly NamesRule[];
+        swept: readonly string[];
+        units: readonly string[];
+    },
 ): { findings: Finding[]; problems: string[] } {
     const held = new Set(swept);
     const reported = new Map<string, Finding>();
@@ -134,7 +140,7 @@ export function declaredNamesFindings(
         const { failures, problem } = runLsLint(
             context.value('--ls-lint', 'ls-lint'),
             context.root,
-            configOf(rule, { ignorePatterns: context.ignorePatterns, units }),
+            configOf(rule, { ignorePatterns, units }),
         );
         if (problem !== null) {
             problems.push(problem);

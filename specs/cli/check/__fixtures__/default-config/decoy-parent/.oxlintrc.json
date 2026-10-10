@@ -1,4 +1,4 @@
 {
-    "categories": { "correctness": "off" },
-    "rules": { "no-debugger": "off" }
+	"categories": { "correctness": "off" },
+	"rules": { "no-debugger": "off" }
 }

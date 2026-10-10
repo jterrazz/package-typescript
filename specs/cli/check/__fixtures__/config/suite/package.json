@@ -2,6 +2,9 @@
     "name": "suite",
     "version": "1.0.0",
     "private": true,
-    "type": "module",
-    "workspaces": ["packages/*", "specs"]
+    "workspaces": [
+        "packages/*",
+        "specs"
+    ],
+    "type": "module"
 }

@@ -1,0 +1,34 @@
+description: refuses the retired --ignore-pattern, naming the declaration that replaces it
+fixture: ./__fixtures__/verbatim-root/
+runs:
+    - command: check --ignore-pattern 'notes/**'
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          found: `typescript check` has no flag --ignore-pattern, which is retired · why: a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository · fix: declare the folder in jterrazz.config.ts, where every gate reads it alike: `typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }` · read: docs/reference/quality-checks.md#a-root-beside-the-spine
+
+          Usage: typescript check [--json]
+
+          Check types, lint, formatting, and unused code
+
+          Flags:
+            --json      Print the drift report as one JSON object for a machine
+            -h, --help  Print this help and run nothing
+
+          Read: docs/reference/quality-checks.md#flags-and-exit-codes
+    - command: fix --ignore-pattern=notes/**
+      exit: 1
+      stdout: |4
+           TYPESCRIPT  TypeScript toolchain
+
+          found: `typescript fix` has no flag --ignore-pattern, which is retired · why: a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository · fix: declare the folder in jterrazz.config.ts, where every gate reads it alike: `typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }` · read: docs/reference/quality-checks.md#a-root-beside-the-spine
+
+          Usage: typescript fix
+
+          Auto-fix lint and formatting issues
+
+          Flags:
+            -h, --help  Print this help and run nothing
+
+          Read: docs/reference/quality-checks.md#flags-and-exit-codes

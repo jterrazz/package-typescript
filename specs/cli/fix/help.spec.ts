@@ -18,13 +18,12 @@ describe('help', () => {
         expect(result.stdout).toMatch(`
              TYPESCRIPT  TypeScript toolchain
 
-            Usage: typescript fix [--ignore-pattern <glob>]...
+            Usage: typescript fix
 
             Auto-fix lint and formatting issues
 
             Flags:
-              --ignore-pattern <glob>  Leave a path out of every gate, as many times as needed
-              -h, --help               Print this help and run nothing
+              -h, --help  Print this help and run nothing
 
             Read: docs/reference/quality-checks.md#flags-and-exit-codes
         `);

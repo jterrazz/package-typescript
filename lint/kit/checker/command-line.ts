@@ -1,4 +1,4 @@
-const VALUED_BY_EVERY_PASS = ['--format', '--ignore-pattern'];
+const VALUED_BY_EVERY_PASS = ['--format'];
 
 export type CommandLine = {
     has: (flag: string) => boolean;

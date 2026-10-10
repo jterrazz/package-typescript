@@ -21,6 +21,7 @@ async function declaredNames(context: Context): Promise<PresetChecks> {
         return { findings: [], problems: [declared.problem] };
     }
     const { findings, problems } = declaredNamesFindings(context, {
+        ignorePatterns: await context.verbatim(),
         rules: declared.rules,
         swept: context.files(),
         units: ['', ...workspaceMembers(context.root).map((member) => `${member}/`)],

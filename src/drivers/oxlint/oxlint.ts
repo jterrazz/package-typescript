@@ -49,11 +49,10 @@ export async function fixedUnder(
 export async function suppressionsRecorded(
     binary: string,
     config: readonly string[],
-    args: readonly string[],
     targets: readonly string[],
 ): Promise<void> {
     for (const recording of ['--suppress-all', '--prune-suppressions']) {
-        await run(binary, [...config, '--type-aware', recording, ...args, ...targets], {
+        await run(binary, [...config, '--type-aware', recording, ...targets], {
             stderr: 'ignore',
             stdout: 'ignore',
         });

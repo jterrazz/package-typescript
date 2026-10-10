@@ -2,7 +2,11 @@ import { directory, file } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
 import { onlyPasses } from '../__setup__/check-passes.js';
-import { emptyDirectories, OVERLOOKED } from '../__setup__/names-empty-directory.js';
+import {
+    emptyDirectories,
+    OVERLOOKED,
+    verbatimDrafts,
+} from '../__setup__/names-empty-directory.js';
 import { cli } from '../cli.specification.js';
 
 // outside: git tracks no directory, so a fixture can carry no empty one.
@@ -22,26 +26,15 @@ describe('names-empty-directory', () => {
         expect(result.stdout).toMatch(file('../__expected__/names-empty-directory/named.txt'));
     });
 
-    test('names no empty directory an --ignore-pattern glob names', async () => {
-        // Given - the same repository, with an empty folder under drafts/, which git does not ignore
-        // When - the quality checks run with a glob naming drafts/
+    test('names no empty directory under a root declared verbatim', async () => {
+        // Given - the same repository, with an empty folder under drafts/, a root its settings declare verbatim
+        // When - the quality checks run
         const result = await names
+            .prepare(verbatimDrafts())
             .prepare(emptyDirectories(OVERLOOKED))
-            .exec("check --ignore-pattern 'drafts/**'");
+            .exec('check');
 
         // Then - the two empty trees are named, and drafts/ is not
-        expect(result.exitCode).toBe(1);
-        expect(result.stdout).toMatch(file('../__expected__/names-empty-directory/named.txt'));
-    });
-
-    test('names the empty directories when a glob leaves git none to ignore', async () => {
-        // Given - the same repository, with the one folder git ignores named by a glob
-        // When - the quality checks run with that glob
-        const result = await names
-            .prepare(emptyDirectories())
-            .exec("check --ignore-pattern 'local/**'");
-
-        // Then - the two empty trees are named all the same
         expect(result.exitCode).toBe(1);
         expect(result.stdout).toMatch(file('../__expected__/names-empty-directory/named.txt'));
     });

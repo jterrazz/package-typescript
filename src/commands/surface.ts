@@ -2,7 +2,6 @@ import type { ChapterAnchor } from '../../lint/kit/catalogue/lesson.js';
 
 export type Flag = {
     name: `--${string}`;
-    repeats?: true;
     says: string;
     value?: `<${string}>`;
 };
@@ -18,13 +17,6 @@ export type Surface = {
 };
 
 export const FORWARD_ALL = '--';
-
-const IGNORE_PATTERN: Flag = {
-    name: '--ignore-pattern',
-    repeats: true,
-    says: 'Leave a path out of every gate, as many times as needed',
-    value: '<glob>',
-};
 
 const QUALITY: ChapterAnchor = 'docs/reference/quality-checks.md#flags-and-exit-codes';
 
@@ -66,7 +58,6 @@ export const SURFACES = {
         says: 'Measure the suite against mutants of the sources (--mutate <ranges> narrows it)',
     },
     baseline: {
-        flags: [IGNORE_PATTERN],
         read: GESTURES,
         says: "Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json",
     },
@@ -78,13 +69,12 @@ export const SURFACES = {
     },
     check: {
         flags: [
-            IGNORE_PATTERN,
             { name: '--json', says: 'Print the drift report as one JSON object for a machine' },
         ],
         read: QUALITY,
         says: 'Check types, lint, formatting, and unused code',
     },
-    fix: { flags: [IGNORE_PATTERN], read: QUALITY, says: 'Auto-fix lint and formatting issues' },
+    fix: { read: QUALITY, says: 'Auto-fix lint and formatting issues' },
     clean: {
         read: 'docs/start/getting-started.md#where-a-tools-output-goes',
         says: "Remove .artifacts/ — dist/ stays, it is the build's product",
@@ -95,8 +85,7 @@ export type CommandName = keyof typeof SURFACES;
 
 function synopsisOf(name: string, surface: Surface): string {
     const flags = (surface.flags ?? []).map(
-        ({ name: flag, repeats, value }) =>
-            `[${flag}${value === undefined ? '' : ` ${value}`}]${repeats === true ? '...' : ''}`,
+        ({ name: flag, value }) => `[${flag}${value === undefined ? '' : ` ${value}`}]`,
     );
     const operand =
         surface.forwards === 'after-help'

@@ -10,6 +10,7 @@ import { orRefused, projectFiles } from '../project/project-files.js';
 import { readCommandLine } from './command-line.js';
 import type { CommandLine } from './command-line.js';
 import { heldSummary, judgeHeld } from './held.js';
+import { verbatimGlobsOf } from './kept-files.js';
 import type {
     Checker,
     Context,
@@ -43,27 +44,28 @@ function listAt(directory: string): null | string[] {
 
 export function contextOf(commandLine: CommandLine, base: BasePresets): Context {
     const root = resolve(commandLine.positionals[0] ?? '.');
-    const ignorePatterns = commandLine.values('--ignore-pattern');
     const configs = new Map<string, Promise<Resolution>>();
     let files: string[] | undefined;
+    let verbatim: Promise<string[]> | undefined;
+    const config = async (unit = root): Promise<Resolution> => {
+        const known = configs.get(unit) ?? readConfig(unit, base);
+        configs.set(unit, known);
+
+        return await known;
+    };
 
     return {
-        config: async (unit = root) => {
-            const known = configs.get(unit) ?? readConfig(unit, base);
-            configs.set(unit, known);
-
-            return await known;
-        },
+        config,
         exists: existsSync,
-        files: () => (files ??= orRefused(() => projectFiles(root, { ignorePatterns }))),
+        files: () => (files ??= orRefused(() => projectFiles(root))),
         fix: commandLine.has('--fix'),
         has: commandLine.has,
-        ignorePatterns,
         list: listAt,
         positionals: commandLine.positionals,
         read: readAt,
         root,
         value: commandLine.value,
+        verbatim: async () => await (verbatim ??= verbatimGlobsOf({ config, root })),
     };
 }
 
@@ -161,7 +163,7 @@ async function runPass(
     const commandLine = readCommandLine(args, pass.valued);
     const context = contextOf(commandLine, checker.base);
     if (context.fix && pass.prepare !== undefined) {
-        removeAll(context, pass.prepare(context).removals ?? []);
+        removeAll(context, (await pass.prepare(context)).removals ?? []);
     }
 
     const result = await pass.check(context);

@@ -21,7 +21,20 @@ function readsList(name: string, surface: Surface): string {
         : `it reads ${flags.map(written).join(', ')}`;
 }
 
+// invariant: the flag every gate once took to leave a path out for one run is refused with the declaration that replaced it, since a bare "no such flag" would send its author to look for another spelling of the same exception.
+const RETIRED_IGNORE =
+    'a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository';
+
 function unknownFlag(name: string, flag: string, surface: Surface): string {
+    if (flag === '--ignore-pattern') {
+        return refusal({
+            fix: 'declare the folder in jterrazz.config.ts, where every gate reads it alike: `typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }`',
+            found: `\`typescript ${name}\` has no flag --ignore-pattern, which is retired`,
+            read: 'docs/reference/quality-checks.md#a-root-beside-the-spine',
+            why: RETIRED_IGNORE,
+        });
+    }
+
     return refusal({
         fix: `drop it — ${readsList(name, surface)}`,
         found: `\`typescript ${name}\` has no flag ${flag}`,
@@ -92,7 +105,7 @@ function flagRead(
     { inline, next }: { inline: string | undefined; next: string | undefined },
     parsing: Parsing,
 ): string | undefined {
-    if (parsing.seen.has(flag.name) && flag.repeats !== true) {
+    if (parsing.seen.has(flag.name)) {
         return repeatedFlag(flag);
     }
     parsing.seen.add(flag.name);

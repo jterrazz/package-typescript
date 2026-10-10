@@ -2,7 +2,13 @@ import { directory, file } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
 import { onlyPasses } from '../__setup__/check-passes.js';
-import { EMPTY, emptyDirectories, KEPT, OVERLOOKED } from '../__setup__/names-empty-directory.js';
+import {
+    EMPTY,
+    emptyDirectories,
+    KEPT,
+    OVERLOOKED,
+    verbatimDrafts,
+} from '../__setup__/names-empty-directory.js';
 import { cli } from '../cli.specification.js';
 
 // outside: git tracks no directory, so a fixture can carry no empty one.
@@ -24,12 +30,13 @@ describe('names-empty-directory', () => {
         ).toStrictEqual([false, false, true, ...KEPT.map(() => true)]);
     });
 
-    test('removes no empty directory an --ignore-pattern glob names', async () => {
-        // Given - that repository, with an empty folder under drafts/, which git does not ignore
-        // When - the quality fixes run with a glob naming drafts/
+    test('removes no empty directory under a root declared verbatim', async () => {
+        // Given - that repository, with an empty folder under drafts/, a root its settings declare verbatim
+        // When - the quality fixes run
         const result = await names
+            .prepare(verbatimDrafts())
             .prepare(emptyDirectories(OVERLOOKED))
-            .exec("fix --ignore-pattern 'drafts/**'");
+            .exec('fix');
 
         // Then - the two empty trees are removed, and drafts/wip stands
         expect(result.stdout).toMatch(file('../__expected__/names-empty-directory/removed.txt'));

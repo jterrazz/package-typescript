@@ -1,4 +1,4 @@
-import { basename, join } from 'node:path';
+import { basename, join, matchesGlob } from 'node:path';
 
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import { emptyDirectories } from '../../kit/project/empty-directories.js';
@@ -219,6 +219,7 @@ async function memberToolRootsOf(
 async function laidOut(
     context: Context,
     swept: readonly string[],
+    verbatim: readonly string[],
 ): Promise<{ findings: Finding[]; problems: string[] }> {
     const units = ['', ...workspaceMembers(context.root).map((member) => `${member}/`)];
     const trees = await lintTreesOf(context, units);
@@ -226,10 +227,15 @@ async function laidOut(
     const { failures, problem } = runLsLint(
         context.value('--ls-lint', 'ls-lint'),
         context.root,
-        lsLintConfig({ ignorePatterns: context.ignorePatterns, toolRoots, trees, units }),
+        lsLintConfig({ ignorePatterns: verbatim, toolRoots, trees, units }),
     );
     const declared = declaredNamesRules(await context.config());
-    const own = declaredNamesFindings(context, { rules: declared.rules, swept, units });
+    const own = declaredNamesFindings(context, {
+        ignorePatterns: verbatim,
+        rules: declared.rules,
+        swept,
+        units,
+    });
 
     return {
         findings: [
@@ -243,27 +249,32 @@ async function laidOut(
 
 export const names: Pass = Object.freeze({
     async check(context) {
+        const verbatim = await context.verbatim();
         const files = context.files();
+        // invariant: a root declared verbatim is kept as its author wrote it: no name in it is judged, though the root still holds the files its declaration owes.
+        const judged = files.filter(
+            (file) => !verbatim.some((pattern) => matchesGlob(file, pattern)),
+        );
         const settings = settingsOf(await context.config());
-        const layout = await laidOut(context, files);
+        const layout = await laidOut(context, judged, verbatim);
 
         return {
             ...(layout.problems.length === 0 ? {} : { failed: true, lines: layout.problems }),
             findings: [
-                ...findingsOf(files, settings.universal),
+                ...findingsOf(judged, settings.universal),
                 ...layout.findings,
                 ...(await spinesOf(context, { files, settings })),
-                ...makefileOf(context, files),
-                ...emptyDirectories(context.root, { ignorePatterns: context.ignorePatterns }).map(
-                    (path) => emptyDirectoryFinding(path),
+                ...makefileOf(context, judged),
+                ...emptyDirectories(context.root, { ignorePatterns: verbatim }).map((path) =>
+                    emptyDirectoryFinding(path),
                 ),
             ],
         };
     },
-    prepare: (context) => ({
-        removals: emptyDirectories(context.root, { ignorePatterns: context.ignorePatterns }).map(
-            (directory) => ({ directory, line: `removed  ${directory}/  an empty directory` }),
-        ),
+    prepare: async (context) => ({
+        removals: emptyDirectories(context.root, {
+            ignorePatterns: await context.verbatim(),
+        }).map((directory) => ({ directory, line: `removed  ${directory}/  an empty directory` })),
     }),
     valued: ['--ls-lint'],
 });

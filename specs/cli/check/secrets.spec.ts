@@ -53,8 +53,8 @@ describe('secrets', () => {
     });
 
     test('hands gitleaks every file git does not ignore that a tree gate judges, and nothing beside them', async () => {
-        // Given - a repository with tracked notes, a tracked spec ground, a tracked folder the run is told to overlook, an untracked scratch file and an ignored one
-        // When - the quality checks run with a recording gitleaks, kept in a folder git ignores, first on PATH, told to overlook notes/
+        // Given - a repository with tracked notes, a tracked spec ground, a tracked folder of notes, an untracked scratch file and an ignored one
+        // When - the quality checks run with a recording gitleaks, kept in a folder git ignores, first on PATH
         const result = await cli
             .with({
                 env: {
@@ -70,9 +70,9 @@ describe('secrets', () => {
                 writeFileSync(join(workdir, 'data/scratch.md'), '# Never staged\n');
                 writeFileSync(join(workdir, 'data/local.md'), '# Ignored\n');
             })
-            .exec("check --ignore-pattern 'notes/**'");
+            .exec('check');
 
-        // Then - gitleaks scans a folder beside the repository holding exactly the non-ignored, ground-free, not-overlooked files
+        // Then - gitleaks scans a folder beside the repository holding exactly the non-ignored, ground-free files, the notes among them: no declaration keeps a secret out of the scan
         expect(result.file('tools/record.txt').content).toBe(
             [
                 'argv dir . --no-banner --redact --exit-code 1',
@@ -81,6 +81,7 @@ describe('secrets', () => {
                 './NOTES.md',
                 './data/scratch.md',
                 './index.ts',
+                './notes/draft.md',
                 './package.json',
                 './tsconfig.json',
                 '',

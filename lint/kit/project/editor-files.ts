@@ -33,10 +33,21 @@ export type TsconfigAdditions =
     | { additions: null; problem: string }
     | { additions: Readonly<Record<string, unknown>>; problem: null };
 
+// invariant: a root declared verbatim is no source of the project: the compiler never reads it.
+function verbatimExclusions(section: unknown): Record<string, unknown> {
+    const roots = isRecord(section) && isRecord(section.roots) ? section.roots : {};
+    const excluded = Object.entries(roots)
+        .filter(([, declaration]) => isRecord(declaration) && declaration.verbatim === true)
+        .map(([root]) => `\${configDir}/${root}`);
+
+    return excluded.length === 0 ? {} : { exclude: excluded };
+}
+
 export function tsconfigAdditionsOf(section: unknown): TsconfigAdditions {
     const written = isRecord(section) ? section.tsconfig : undefined;
+    const verbatim = verbatimExclusions(section);
     if (written === undefined) {
-        return { additions: {}, problem: null };
+        return { additions: verbatim, problem: null };
     }
     if (!isRecord(written) || typeof written.reason !== 'string' || written.reason.trim() === '') {
         return {
@@ -51,6 +62,7 @@ export function tsconfigAdditionsOf(section: unknown): TsconfigAdditions {
             ...(isRecord(compilerOptions) ? { compilerOptions } : {}),
             ...(Array.isArray(files) ? { files } : {}),
             ...(Array.isArray(include) ? { include } : {}),
+            ...verbatim,
         },
         problem: null,
     };
@@ -58,8 +70,8 @@ export function tsconfigAdditionsOf(section: unknown): TsconfigAdditions {
 
 const PRESET = /^@jterrazz\/typescript\/tsconfig\/(?<name>[a-z]+)$/u;
 
-// invariant: a tsconfig's `include` replaces the one it extends, so what a project adds is written beside its preset's, never in its place.
-function presetIncludeOf(extended: unknown): unknown[] {
+// invariant: a tsconfig's `include` and `exclude` replace the ones it extends, so what a project adds is written beside its preset's, never in their place.
+function presetListOf(extended: unknown, key: 'exclude' | 'include'): unknown[] {
     // Stryker disable next-line ConditionalExpression,OptionalChaining: a value that is no string spells no preset, nor does an unmatched one; either names a file no preset is
     const name = typeof extended === 'string' ? PRESET.exec(extended)?.groups?.name : undefined;
     try {
@@ -67,7 +79,9 @@ function presetIncludeOf(extended: unknown): unknown[] {
         const file = join(PACKAGE_ROOT, 'src/presets/tsconfig', `${String(name)}.json`);
         const preset: unknown = JSON.parse(readFileSync(file).toString());
 
-        return isRecord(preset) && Array.isArray(preset.include) ? preset.include : [];
+        const list = isRecord(preset) ? preset[key] : undefined;
+
+        return Array.isArray(list) ? list : [];
     } catch {
         return [];
     }
@@ -77,13 +91,15 @@ function joined(
     json: Readonly<Record<string, unknown>>,
     additions: Readonly<Record<string, unknown>>,
 ): Record<string, unknown> {
-    const { include } = additions;
-    if (!Array.isArray(include)) {
-        return { ...json, ...additions };
+    const lists: Record<string, unknown[]> = {};
+    for (const key of ['exclude', 'include'] as const) {
+        const added = additions[key];
+        if (Array.isArray(added)) {
+            lists[key] = [...presetListOf(json.extends, key), ...added];
+        }
     }
-    const added: readonly unknown[] = include;
 
-    return { ...json, ...additions, include: [...presetIncludeOf(json.extends), ...added] };
+    return { ...json, ...additions, ...lists };
 }
 
 export function derivedEditorFiles(

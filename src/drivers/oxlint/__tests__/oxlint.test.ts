@@ -52,21 +52,16 @@ describe('oxlint', () => {
     });
 
     test('recording the suppressions suppresses every report, then prunes the ones no report needs, silently', async () => {
-        // Given - the config's arguments, the caller's and the targets
+        // Given - the config's arguments and the targets
         const tool = recordingTool();
 
         // When - the suppressions are recorded
-        await suppressionsRecorded(
-            tool.binary,
-            ['-c', 'oxlint.config.ts'],
-            ['--quiet'],
-            ['src/a.ts'],
-        );
+        await suppressionsRecorded(tool.binary, ['-c', 'oxlint.config.ts'], ['src/a.ts']);
 
         // Then - two runs, in that order, printing nothing
         expect(tool.calls()).toStrictEqual(
             ['--suppress-all', '--prune-suppressions'].map((recording) => ({
-                args: ['-c', 'oxlint.config.ts', '--type-aware', recording, '--quiet', 'src/a.ts'],
+                args: ['-c', 'oxlint.config.ts', '--type-aware', recording, 'src/a.ts'],
                 silent: true,
             })),
         );

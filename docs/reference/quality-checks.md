@@ -14,9 +14,8 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 
 ### Flags and exit codes
 
-`check` and `fix` run whole, every pass that applies over the whole project: no flag runs one pass or one file. They take two flags:
+`check` and `fix` run whole, every pass that applies over the whole project: no flag runs one pass or one file. `check` takes one flag, and `fix` none:
 
-- `--ignore-pattern <glob>`, as many times as needed, leaves a path out ([below](#leaving-a-path-out)).
 - `--json`, on `check`, prints [the drift report](#the-drift-report) as one JSON object for a machine; every pass above it still prints for a person.
 
 Any other flag, or `--json` given twice, is refused before a pass starts, and `--help` prints the command's usage and runs nothing ([Commands § Flags and help](commands.md#flags-and-help)).
@@ -79,10 +78,11 @@ Discovery never leaves the workspace. A candidate is dropped when git ignores it
 
 ### Leaving a path out
 
-Three doors, each narrower than the one before it:
+Four doors, each narrower than the one before it. There is no flag: `--ignore-pattern`, which once left a path out of one run, is retired, since each gate read it differently — the formatter, the Markdown pass and the linter disagreed on what it covered, and one run rewrote 85 goldens — and it is refused with the declaration below as its fix.
+
 
 - **`.gitignore`.** The linter, the formatter and every tree gate read the same sweep, the files git does not ignore, so a path git ignores is out of all of them: generated output, a local data folder.
-- **`--ignore-pattern <glob>`** on `check` and `fix`, written into the `package.json` scripts so every run passes it: a tracked path left out of the linter, the formatter and the tree gates — Suppressions, Markdown, Names and Secrets.
+- **`typescript.roots.<folder> = { reason, verbatim: true }`** in `jterrazz.config.ts`: a tracked folder kept as its author wrote it — quoted upstream text, signed articles, a script's output. One declaration reaches every gate alike: the formatter and the Markdown and Comments passes leave it as written, the Names pass judges no name in it, oxlint lints nothing of it, the derived `tsconfig.json` excludes it, and Suppressions reads no directive of it. Secrets reads it all the same: a credential is a credential in quoted text. The platforms' tool roots served verbatim (`public/`, `assets/` on expo and astro) are verbatim without a declaration.
 - **`typescript.oxlint.overrides`** or **`typescript.oxfmt.ignore`** in `jterrazz.config.ts`, each with its reason: the rules a set of files is judged by, or the files the formatter leaves as written ([Configuration § The lint rules](configuration.md#the-lint-rules)).
 
 tsc reads the files its tsconfig preset includes, and knip what its preset and the project's `typescript.knip` name ([Lint presets](lint-presets.md#unused-code-knip)): neither reads the sweep.
@@ -244,7 +244,7 @@ A `DocsTree` is a plain description of one repository: the paths under `docs/`, 
 
 `--type-aware` is passed explicitly and unconditionally. The rules it unlocks are the ones no syntactic linter can express, and a flag that is only sometimes passed is a rule set that is only sometimes enforced. Those rules run in `tsgolint`, a separate binary oxlint looks up on PATH; `oxlint-tsgolint` is a dependency of this package, and the command puts the directory holding it in front of PATH for its own children, so a consumer never installs or configures anything.
 
-The linter is handed the project's files it parses rather than the directory, the same sweep every tree gate reads: every file git does not ignore — tracked, or new and not yet added — and nothing git ignores. A new module is linted before anyone runs `git add`, and a local data folder the gates must not read belongs in `.gitignore`, so the CLI, CI, the baseline and the editor judge one tree. Outside a git checkout the sweep walks the disk. `--ignore-pattern` and the profiles' own ignores still apply on top. A sweep that refused an answer hands the linter the directory instead, so a gate never goes silent on a read it did not make, and the linter is handed the `--ignore-pattern` globs itself, in `check` and in both runs of `fix`: without them, the directory's walk would lint and fix what the operator said to overlook.
+The linter is handed the project's files it parses rather than the directory, the same sweep every tree gate reads: every file git does not ignore — tracked, or new and not yet added — and nothing git ignores. A new module is linted before anyone runs `git add`, and a local data folder the gates must not read belongs in `.gitignore`, so the CLI, CI, the baseline and the editor judge one tree. Outside a git checkout the sweep walks the disk. The profiles' own ignores and the roots declared verbatim still apply on top. A sweep that refused an answer hands the linter the directory instead, so a gate never goes silent on a read it did not make, and the derived oxlint config carries the roots declared verbatim as its own ignores, in `check` and in both runs of `fix`: without them, the directory's walk would lint and fix what the repository declared kept as written.
 
 ### The config it runs with
 
@@ -542,7 +542,7 @@ It never invents a reason, and it never deletes a directive: both are the author
 
 Every `*.md` git does not ignore, outside the ground a test stands on — a `__fixtures__/`, `__expected__/`, `__seeds__/` or `__requests__/` folder wherever it sits, another project's tree — is read twice: by [rumdl](https://rumdl.dev), for what Markdown itself defines, and by the prose gate, for what the estate adds.
 
-The pass judges the manual, never content: a page the formatter keeps byte for byte is a page the pass neither judges nor rewrites. That is a content tree — `assets/`, `public/`, `dist/`, `.next/`, `.expo/` — whose pages a site serves or signs as written, a root a script writes (`typescript.generated`), and a path the settings hand the formatter to leave alone (`typescript.oxfmt.ignore`), in the root and in every workspace member alike. One `typescript fix` once reformatted 36 signed articles under a website's `assets/`, and every proof of them broke with the bytes; a page there reads as its author wrote it, whatever rumdl would say of it.
+The pass judges the manual, never content: a page the formatter keeps byte for byte is a page the pass neither judges nor rewrites. That is a content tree — `assets/`, `public/`, `dist/`, `.next/`, `.expo/` — whose pages a site serves or signs as written, a root declared verbatim (`typescript.roots`), and a path the settings hand the formatter to leave alone (`typescript.oxfmt.ignore`), in the root and in every workspace member alike. One `typescript fix` once reformatted 36 signed articles under a website's `assets/`, and every proof of them broke with the bytes; a page there reads as its author wrote it, whatever rumdl would say of it.
 
 ### What rumdl judges
 
@@ -615,7 +615,7 @@ A package of the family states one more convention, which the gate does not read
 
 ### What ls-lint judges, and what stays the gate's
 
-Where a name sits is declarative, so [ls-lint](https://ls-lint.org) judges it: the pass writes an ls-lint config from the tree this page describes, runs it over the disk, and prints each failure as the rule below that owns it — every directory under a named root in kebab-case (`names/directory-in-kebab-case`), the closed folder lists and root files of [the lint tree](#the-lint-tree), and a skill holding nothing beside its `SKILL.md`. A `__<word>__` name is a special folder, and the list is closed: under `specs/`, `__setup__/` and the four ground folders; in a code root, `__tests__/` alone — any other is refused with the list in its message. A route segment keeps its framework's grammar — `[id]`, `[[...slug]]`, `(group)`, `@slot` — so a Next.js or Astro tree passes as written. The ground a test stands on — under a specs tree, or in a `__tests__/` —, `node_modules/`, `dist/` and every dot-folder are left out, and so is what an `--ignore-pattern` names. ls-lint reads the disk, so its failures are read against the sweep the other rules judge: a path git ignores is never named, and a directory it refuses is named only when it holds a file git sees. A file ls-lint never looks at — one with no extension, such as a `README` or a `LICENSE`, or a dot-file — is judged by the gate itself wherever a folder is closed, at the root of `lint/`, of an audience folder, of `skills/` and of a skill, under the same rule ids.
+Where a name sits is declarative, so [ls-lint](https://ls-lint.org) judges it: the pass writes an ls-lint config from the tree this page describes, runs it over the disk, and prints each failure as the rule below that owns it — every directory under a named root in kebab-case (`names/directory-in-kebab-case`), the closed folder lists and root files of [the lint tree](#the-lint-tree), and a skill holding nothing beside its `SKILL.md`. A `__<word>__` name is a special folder, and the list is closed: under `specs/`, `__setup__/` and the four ground folders; in a code root, `__tests__/` alone — any other is refused with the list in its message. A route segment keeps its framework's grammar — `[id]`, `[[...slug]]`, `(group)`, `@slot` — so a Next.js or Astro tree passes as written. The ground a test stands on — under a specs tree, or in a `__tests__/` —, `node_modules/`, `dist/` and every dot-folder are left out, and so is a root declared verbatim. ls-lint reads the disk, so its failures are read against the sweep the other rules judge: a path git ignores is never named, and a directory it refuses is named only when it holds a file git sees. A file ls-lint never looks at — one with no extension, such as a `README` or a `LICENSE`, or a dot-file — is judged by the gate itself wherever a folder is closed, at the root of `lint/`, of an audience folder, of `skills/` and of a skill, under the same rule ids.
 
 What ls-lint cannot express stays the gate's, in its own code:
 
@@ -666,8 +666,8 @@ The **root spine** is the folders a repository root holds, the same in every rep
 | Rule                                     | Requirement                                                                                                                                           |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `names/no-undeclared-root-folder`        | Every root folder is on the root spine, imposed by a tool, or declared with its reason.                                                               |
-| `names/declared-root-states-its-reason`  | A root declared in typescript.roots or typescript.generated states why the repository keeps it.                                                       |
-| `names/declared-root-holds-files`        | A root declared in typescript.roots or typescript.generated holds a file git does not ignore.                                                         |
+| `names/declared-root-states-its-reason`  | A root declared in typescript.roots states why the repository keeps it.                                                       |
+| `names/declared-root-holds-files`        | A root declared in typescript.roots holds a file git does not ignore.                                                         |
 | `names/jterrazz-config-loads`            | The settings file jterrazz.config.ts loads, and its typescript section has the declared shape.                                                        |
 | `names/skill-holds-only-skill-md`        | A skill is one skills/<skill>/SKILL.md and nothing beside it.                                                                                         |
 | `names/repository-has-makefile`          | Every repository root carries a Makefile.                                                                                                             |
@@ -739,7 +739,7 @@ A root beside the spine stands on one of two codified grounds, and every other r
 
 The list is the base preset's, and closed and short on purpose. `scripts/`, `docker/` or `migrations/` are conventions, not impositions: every tool that reads one takes its path as an argument, so the repository chose the folder and says why.
 
-The second ground is that saying: the repository declares the root in its settings file, `jterrazz.config.ts`, under `typescript.roots`, each with its reason ([Configuration](configuration.md#the-typescript-section)). A root a script writes — a schema a generator emits — is declared under `typescript.generated` instead, which keeps it beside the spine the same way and leaves it to its script: the formatter never rewrites it.
+The second ground is that saying: the repository declares the root in its settings file, `jterrazz.config.ts`, under `typescript.roots`, each with its reason ([Configuration](configuration.md#the-typescript-section)). A root kept as written — quoted upstream text, a schema a generator emits, signed articles — is declared `{ reason, verbatim: true }` in the same place, which keeps it beside the spine the same way and leaves it to its author: no pass rewrites it, and `--ignore-pattern`, which once did that for one run, is retired.
 
 ```ts
 import { defineConfig } from '@jterrazz/typescript/config';
@@ -825,7 +825,7 @@ Two rules of the rulebook's own oxlint plugin judge the comments of code, so the
 
 ### The Comments (styles, scripts, YAML) pass
 
-oxlint reads code alone, so the comments of every other file the repository writes are this pass's: the `/* … */` of a `.css` and a `.scss` — a Sass `//` line too — and of the `<style>` block of an `.astro`, `.svelte` or `.vue` file, and the `#` lines of a shell script (`.sh`, `.bash`, `.zsh`), a Makefile (`Makefile`, `GNUmakefile`, `.mk`), a Dockerfile and a YAML file, a lockfile aside. It reads every file git does not ignore, the ground a test stands on and `--ignore-pattern` left out, and runs only where the tree holds one of them. Like [the Markdown pass](#the-markdown-prose-pass), it never reads what the formatter keeps byte for byte — a content tree, a root a script writes, a path handed to the formatter to leave alone, in the root and in every workspace member: a style sheet or a YAML file a site signs keeps its comments as written.
+oxlint reads code alone, so the comments of every other file the repository writes are this pass's: the `/* … */` of a `.css` and a `.scss` — a Sass `//` line too — and of the `<style>` block of an `.astro`, `.svelte` or `.vue` file, and the `#` lines of a shell script (`.sh`, `.bash`, `.zsh`), a Makefile (`Makefile`, `GNUmakefile`, `.mk`), a Dockerfile and a YAML file, a lockfile aside. It reads every file git does not ignore, the ground a test stands on and what is kept as written left out, and runs only where the tree holds one of them. Like [the Markdown pass](#the-markdown-prose-pass), it never reads what the formatter keeps byte for byte — a content tree, a root a script writes, a path handed to the formatter to leave alone, in the root and in every workspace member: a style sheet or a YAML file a site signs keeps its comments as written.
 
 A `#` comment is a line that opens with `#`, and a run of them states its kind once, on its first line, as a run of `//` lines does; a comment trailing a command is the command's text, which only its interpreter could tell apart. A shebang, the lines a heredoc carries and the lines of a YAML block scalar (`run: |`) are text, never a comment of the file. A directive another tool reads states no kind: `# shellcheck …`, `# yamllint …`, `# hadolint …`, `# yaml-language-server: …`, a Dockerfile's `# syntax=`, `# escape=` and `# check=`, `# renovate: …`, `@jterrazz/test`'s `# checker-disable-next-line …` in a spec document, and in a style sheet `/*! … */`, which every minifier keeps, `/* stylelint-disable … */` and `/* prettier-ignore */`; so does every comment of a file whose first five lines carry `@generated`.
 
@@ -843,7 +843,7 @@ A `#` comment is a line that opens with `#`, and a run of them states its kind o
 
 ## The Secrets (credentials) pass
 
-No file the project would commit carries a live-looking credential. Two scanners answer that one question, over the same files — every one git does not ignore, the ground a test stands on and `--ignore-pattern` left out, as for every tree gate. Where `gitleaks` is on PATH it runs as `gitleaks dir . --no-banner --redact` over a copy of exactly those files, so a finding names the file and never reprints the secret; where it is not, ten patterns over their text answer well enough to stop the leak that actually happens — a token pasted into a note and committed with it.
+No file the project would commit carries a live-looking credential. Two scanners answer that one question, over the same files — every one git does not ignore, the ground a test stands on left out, as for every tree gate, and a root declared verbatim included: a credential is one wherever it is quoted. Where `gitleaks` is on PATH it runs as `gitleaks dir . --no-banner --redact` over a copy of exactly those files, so a finding names the file and never reprints the secret; where it is not, ten patterns over their text answer well enough to stop the leak that actually happens — a token pasted into a note and committed with it.
 
 Which scanner runs is decided inside the gate rather than by the command, because the gate applies either way. The command decides whether a pass applies; this one always does, and what changes is only who answers.
 

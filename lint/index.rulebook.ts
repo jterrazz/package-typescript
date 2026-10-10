@@ -8,6 +8,7 @@ import { PROFILES } from './consumer/rulebook/profiles.js';
 import { unsafeFixers } from './kit/catalogue/decisions.js';
 import { refusal } from './kit/catalogue/lesson.js';
 import { merge, profile } from './kit/compiler/compile.js';
+import { verbatimTreesOf } from './kit/project/byte-for-byte.js';
 import { folderPlatformsOf } from './kit/project/folder-platforms.js';
 import { objectOf } from './kit/project/json.js';
 import { readConfig, SETTINGS_FILE } from './kit/project/jterrazz-config.js';
@@ -59,17 +60,27 @@ function oxlintConfigOf({ problem, resolved }: Resolution): OxlintConfig {
         ...resolved.presets.flatMap((preset) =>
             preset.oxlint === undefined ? [] : [preset.oxlint],
         ),
-        { overrides, rules: own.rules },
+        {
+            ignorePatterns: verbatimTreesOf(resolved.sections.typescript),
+            overrides,
+            rules: own.rules,
+        },
     );
 }
 
 const within = (member: string, globs: readonly string[]): string[] =>
     globs.map((glob) => `${member}/${glob}`);
 
-function scopedTo(member: string, override: OxlintOverride): OxlintOverride {
+// invariant: an override of a member carries the plugins of its member, so a `react/*` rule written in it is read as the member's own config reads it, never ignored for want of its plugin.
+function scopedTo(
+    member: string,
+    override: OxlintOverride,
+    plugins: OxlintConfig['plugins'],
+): OxlintOverride {
     const { excludeFiles, files, ...rest } = override;
 
     return {
+        ...(plugins === undefined ? {} : { plugins }),
         ...rest,
         ...(excludeFiles === undefined ? {} : { excludeFiles: within(member, excludeFiles) }),
         files: within(member, files),
@@ -92,7 +103,7 @@ function memberScoped(member: string, root: OxlintConfig, own: OxlintConfig): Ox
             ...(own.plugins === undefined ? {} : { plugins: own.plugins }),
             rules: { ...unset, ...own.rules },
         },
-        ...(own.overrides ?? []).map((override) => scopedTo(member, override)),
+        ...(own.overrides ?? []).map((override) => scopedTo(member, override, own.plugins)),
     ];
 }
 
@@ -155,6 +166,7 @@ export async function oxlintConfigAt(unit: string): Promise<OxlintConfig> {
             ...(root.ignorePatterns ?? []),
             ...scoped.flatMap(({ ignores }) => ignores),
         ],
-        overrides: [...(root.overrides ?? []), ...scoped.flatMap(({ overrides }) => overrides)],
+        // invariant: the root's own overrides come last, so what the repository writes at its root wins over the profile a member's platform brings.
+        overrides: [...scoped.flatMap(({ overrides }) => overrides), ...(root.overrides ?? [])],
     };
 }

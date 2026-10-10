@@ -33,8 +33,8 @@ Each command reads only the flags it declares, and refuses any other line before
 
 | Command                           | Reads                                                                        |
 | --------------------------------- | ---------------------------------------------------------------------------- |
-| `check`                           | `--ignore-pattern <glob>`, as many times as needed; `--json`, once           |
-| `fix`, `baseline`                 | `--ignore-pattern <glob>`, as many times as needed                           |
+| `check`                           | `--json`, once                                                               |
+| `fix`, `baseline`                 | no flag                                                                      |
 | `mutation`                        | `--mutate <ranges>` and `--since <ref>`, each once                           |
 | `docs-layout`                     | one `<root>`, the working directory when none is named                       |
 | `build`, `dev`, `doctor`, `clean` | nothing                                                                      |

@@ -1,6 +1,6 @@
 {
     "name": "app-held",
     "version": "1.0.0",
-    "type": "module",
-    "private": true
+    "private": true,
+    "type": "module"
 }

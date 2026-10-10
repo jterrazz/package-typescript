@@ -85,7 +85,7 @@ export async function lintCheck(check: Check): Promise<number> {
     const log = check.logs.at('lint.log');
     writeFileSync(log, '');
 
-    return await oxlint(check, ['--type-aware', '--deny-warnings', ...check.lintArgs], log);
+    return await oxlint(check, ['--type-aware', '--deny-warnings'], log);
 }
 
 async function pruned(check: Check): Promise<number> {
@@ -95,7 +95,7 @@ async function pruned(check: Check): Promise<number> {
 
     const status = await oxlint(
         check,
-        ['--type-aware', '--prune-suppressions', ...check.lintArgs],
+        ['--type-aware', '--prune-suppressions'],
         check.logs.at('prune.log'),
     );
     removeWhenEmpty('.');
@@ -133,12 +133,7 @@ async function fixedScopes(check: Check, scopes: readonly FixScope[]): Promise<n
     const log = check.logs.at('fix-scopes.log');
     let status = 0;
     for (const { files, wrapper } of scopes) {
-        const fixed = await fixedUnder(
-            check.tools.oxlint,
-            wrapper,
-            [...check.lintArgs, ...files],
-            log,
-        );
+        const fixed = await fixedUnder(check.tools.oxlint, wrapper, files, log);
         status = fixed > COULD_NOT_RUN ? fixed : status;
         rmSync(wrapper, { force: true });
     }

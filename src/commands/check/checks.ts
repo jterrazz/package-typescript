@@ -75,15 +75,15 @@ async function withDerivedConfigs(prepared: Check, config: Launched | undefined)
 }
 
 async function withTargets(prepared: Check): Promise<Check> {
-    const { configs, lintArgs } = prepared;
+    const { configs } = prepared;
 
     return {
         ...prepared,
         formatTargets: prepared.selected('oxfmt')
-            ? await targetsOf(lintArgs, { every: true, ignoresOf: configs.oxfmt.ignoresOf })
+            ? await targetsOf({ every: true, ignoresOf: configs.oxfmt.ignoresOf })
             : prepared.formatTargets,
         lintTargets: prepared.selected('oxlint')
-            ? await targetsOf(lintArgs, { every: false, ignoresOf: configs.oxlint.ignoresOf })
+            ? await targetsOf({ every: false, ignoresOf: configs.oxlint.ignoresOf })
             : prepared.lintTargets,
     };
 }
@@ -159,7 +159,7 @@ async function drift(run: Check): Promise<number> {
     }
     print(`\n${badge('DRIFT')} Deviations from the profile\n\n`);
 
-    return await checker('drift', ['.', ...run.lintArgs, ...run.driftArgs], 'inherit');
+    return await checker('drift', ['.', ...run.driftArgs], 'inherit');
 }
 
 function concluded(fix: boolean, passed: boolean): number {

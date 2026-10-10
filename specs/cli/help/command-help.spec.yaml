@@ -57,13 +57,12 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          Usage: typescript baseline [--ignore-pattern <glob>]...
+          Usage: typescript baseline
 
           Record the debt: oxlint's in .jterrazz/oxlint-suppressions.json, the rest in .jterrazz/baseline.json
 
           Flags:
-            --ignore-pattern <glob>  Leave a path out of every gate, as many times as needed
-            -h, --help               Print this help and run nothing
+            -h, --help  Print this help and run nothing
 
           Read: docs/guides/adopt-a-stricter-release.md#the-two-gestures
     - command: docs-layout --help
@@ -84,13 +83,12 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          Usage: typescript check [--ignore-pattern <glob>]... [--json]
+          Usage: typescript check [--json]
 
           Check types, lint, formatting, and unused code
 
           Flags:
-            --ignore-pattern <glob>  Leave a path out of every gate, as many times as needed
-            --json                   Print the drift report as one JSON object for a machine
-            -h, --help               Print this help and run nothing
+            --json      Print the drift report as one JSON object for a machine
+            -h, --help  Print this help and run nothing
 
           Read: docs/reference/quality-checks.md#flags-and-exit-codes

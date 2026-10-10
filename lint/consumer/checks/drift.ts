@@ -140,7 +140,8 @@ export const drift: Pass = Object.freeze({
         const { declaration, optOuts, own } = resolved;
         const off = offOf(objectOf(own.typescript).oxlint);
         const exceptions = exceptionsIn(own);
-        const suppressions = orRefused(() => countSuppressions(root, context.ignorePatterns));
+        const verbatim = await context.verbatim();
+        const suppressions = orRefused(() => countSuppressions(root, verbatim));
         const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
         const { others, totalOf } = baselineReader(root);
 

@@ -6,16 +6,11 @@ import { SURFACES } from '../surface.js';
 const READ = 'read: docs/reference/commands.md#flags-and-help';
 
 describe('readArguments', () => {
-    test('hands a command its flags each spelled apart from its value, a joined value split, a repeating flag kept every time', () => {
-        // Given - check, fix and mutation lines using both spellings of a value
+    test('hands a command its flags each spelled apart from its value, and a joined value split', () => {
+        // Given - check and mutation lines using both spellings of a value
         // When - each is read against its surface
         const read = [
-            readArguments('check', SURFACES.check, [
-                '--ignore-pattern=dist/**',
-                '--json',
-                '--ignore-pattern',
-                'assets/**',
-            ]),
+            readArguments('check', SURFACES.check, ['--json']),
             readArguments('mutation', SURFACES.mutation, [
                 '--since=main',
                 '--mutate',
@@ -27,10 +22,7 @@ describe('readArguments', () => {
 
         // Then - the arguments the command runs on, in the order given
         expect(read).toStrictEqual([
-            {
-                args: ['--ignore-pattern', 'dist/**', '--json', '--ignore-pattern', 'assets/**'],
-                kind: 'run',
-            },
+            { args: ['--json'], kind: 'run' },
             { args: ['--since', 'main', '--mutate', 'src/a.ts:1-2'], kind: 'run' },
             { args: ['docs'], kind: 'run' },
             { args: [], kind: 'run' },
@@ -70,7 +62,7 @@ describe('readArguments', () => {
     });
 
     test('refuses in four parts a repeated flag, a value missing or joined to a flag that takes none, and a word the command does not read', () => {
-        // Given - eleven lines no command runs
+        // Given - fourteen lines no command runs
         // When - each is read, and its lesson kept
         const lessons = [
             readArguments('mutation', SURFACES.mutation, ['--mutate', 'a:1-2', '--mutate=b:1-2']),
@@ -84,6 +76,9 @@ describe('readArguments', () => {
             readArguments('build', SURFACES.build, ['--watch']),
             readArguments('check', SURFACES.check, ['--watch=all']),
             readArguments('check', SURFACES.check, ['-j=1']),
+            readArguments('check', SURFACES.check, ['--ignore-pattern', 'notes/**']),
+            readArguments('fix', SURFACES.fix, ['--ignore-pattern=notes/**']),
+            readArguments('baseline', SURFACES.baseline, ['--ignore-pattern']),
         ].map((reading) => (reading.kind === 'refused' ? reading.lesson : reading.kind));
 
         // Then - each lesson names what it found and how to write the line instead
@@ -97,8 +92,12 @@ describe('readArguments', () => {
             `found: \`typescript build\` was given dist, an argument it does not read · why: an argument the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — \`typescript build\` takes no argument · ${READ}`,
             `found: \`typescript docs-layout\` was given extra, a second <root> · why: an argument the command does not read would be ignored, and the run would not be the one asked for · fix: name one <root>, or none · ${READ}`,
             `found: \`typescript build\` has no flag --watch · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — \`typescript build\` reads no flag · ${READ}`,
-            `found: \`typescript check\` has no flag --watch · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — it reads --ignore-pattern <glob>, --json · ${READ}`,
-            `found: \`typescript check\` has no flag -j=1 · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — it reads --ignore-pattern <glob>, --json · ${READ}`,
+            `found: \`typescript check\` has no flag --watch · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — it reads --json · ${READ}`,
+            `found: \`typescript check\` has no flag -j=1 · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — it reads --json · ${READ}`,
+            ...['check', 'fix', 'baseline'].map(
+                (command) =>
+                    `found: \`typescript ${command}\` has no flag --ignore-pattern, which is retired · why: a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository · fix: declare the folder in jterrazz.config.ts, where every gate reads it alike: \`typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }\` · read: docs/reference/quality-checks.md#a-root-beside-the-spine`,
+            ),
         ]);
     });
 });

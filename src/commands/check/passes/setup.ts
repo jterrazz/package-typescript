@@ -1,5 +1,6 @@
+import { readSettings } from '../../../../lint/index.rules.js';
+import { verbatimGlobsOf } from '../../../../lint/kit/checker/kept-files.js';
 import { lintTargets } from '../../../../lint/kit/project/lint-targets.js';
-import { ignorePatternsOf } from '../../../../lint/kit/project/project-files.js';
 import type { ProjectIdentity } from '../../../../lint/kit/project/project-kind.js';
 import { workspaceMembers } from '../../../../lint/kit/project/workspace-members.js';
 import { attwBinary } from '../../../drivers/attw/attw.js';
@@ -40,7 +41,6 @@ export type Check = {
     driftArgs: string[];
     fix: boolean;
     formatTargets: Targets;
-    lintArgs: string[];
     lintTargets: Targets;
     logs: Logs;
     members: string[];
@@ -68,31 +68,28 @@ export function toolsOf(): Tools {
     };
 }
 
-export function argumentsOf(args: readonly string[]): { driftArgs: string[]; lintArgs: string[] } {
-    const lintArgs: string[] = [];
-    const driftArgs: string[] = [];
-    for (let index = 0; index < args.length; index += 1) {
-        const argument = args[index];
-        const pattern = args[index + 1];
-        if (argument === '--ignore-pattern' && pattern !== undefined) {
-            lintArgs.push(argument, pattern);
-            index += 1;
-        } else if (argument === '--json') {
-            driftArgs.push(argument);
-        }
-    }
-
-    return { driftArgs, lintArgs };
+export function argumentsOf(args: readonly string[]): { driftArgs: string[] } {
+    return { driftArgs: args.filter((argument) => argument === '--json') };
 }
 
-export async function targetsOf(
-    lintArgs: readonly string[],
-    { every, ignoresOf }: { every: boolean; ignoresOf: string | undefined },
-): Promise<Targets> {
+/** The trees the project declares verbatim, at its root and in every member, which no gate reads or rewrites. */
+export const verbatimHere = async (): Promise<string[]> =>
+    await verbatimGlobsOf({
+        config: async (unit) => await readSettings(unit ?? '.'),
+        root: process.cwd(),
+    });
+
+export async function targetsOf({
+    every,
+    ignoresOf,
+}: {
+    every: boolean;
+    ignoresOf: string | undefined;
+}): Promise<Targets> {
     try {
         const paths = await lintTargets('.', {
             every,
-            ignorePatterns: ignorePatternsOf(lintArgs),
+            ignorePatterns: await verbatimHere(),
             ignoresOf,
         });
 

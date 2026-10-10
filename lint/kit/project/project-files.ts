@@ -188,18 +188,6 @@ export function readText(root: string, path: string): null | string {
     }
 }
 
-export function ignorePatternsOf(argv: readonly string[]): string[] {
-    const patterns: string[] = [];
-    for (const [index, argument] of argv.entries()) {
-        const pattern = argv[index + 1];
-        if (argument === '--ignore-pattern' && pattern !== undefined) {
-            patterns.push(pattern);
-        }
-    }
-
-    return patterns;
-}
-
 export const PRUNED: ReadonlySet<string> = new Set(['.git', 'dist', 'node_modules']);
 
 export function filesUnder(dir: string): string[] {
