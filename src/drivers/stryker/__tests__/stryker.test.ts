@@ -12,6 +12,22 @@ const RUNNER = createRequire(import.meta.url).resolve('@stryker-mutator/vitest-r
 const SCOPE = { generated: [], mutated: ['src/**/*.ts', 'src/**/*.tsx', 'lint/*.ts'] };
 
 describe('stryker', () => {
+    test('hands Stryker a dynamic-route file as a path, not as a glob', () => {
+        // Given - an Astro route whose folder and file are named in brackets, whole and by lines
+        const config = strykerConfig(SCOPE, {
+            mutate: ['src/pages/[locale]/[key].png.ts', 'src/pages/[locale]/[key].png.ts:15-18'],
+            name: 'suite',
+        });
+
+        // Then - the brackets are escaped and the line range left as it was
+        expect(config).toMatchObject({
+            mutate: [
+                String.raw`src/pages/\[locale\]/\[key\].png.ts`,
+                String.raw`src/pages/\[locale\]/\[key\].png.ts:15-18`,
+            ],
+        });
+    });
+
     test('derives the module run and the suite run their own config, reports and incremental file', () => {
         // Given - one source mutated whole by the module run, and a range by the suite's
         const modules = strykerConfig(SCOPE, { mutate: ['src/a.ts'], name: 'modules' });

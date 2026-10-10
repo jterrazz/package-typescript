@@ -23,6 +23,10 @@ const oneGlob = (globs: readonly string[]): string =>
 const typeCheckedGlob = (mutated: readonly string[]): string =>
     oneGlob(mutated.map((glob) => glob.replace('*.', '!(*.test-d).')));
 
+// outside: Stryker reads each mutate entry as a glob, so a route file such as `[locale]/[key].png.ts` matches nothing, or fails beside a line range, unless its brackets are escaped.
+const literalMutateEntry = (entry: string): string =>
+    entry.replace(/^[^:]*/u, (file) => file.replaceAll(/[[\]{}()!]/gu, String.raw`\$&`));
+
 export type Stage = {
     mutate: readonly string[];
     name: 'modules' | 'suite';
@@ -81,7 +85,7 @@ export function strykerConfig(
         incremental: true,
         incrementalFile: `${MUTATION_OUTPUT}/${files.incremental}.json`,
         jsonReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.json` },
-        mutate,
+        mutate: mutate.map((entry) => literalMutateEntry(entry)),
         plugins: [createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner')],
         reporters: ['clear-text', 'html', 'json', 'progress'],
         tempDirName: `${MUTATION_OUTPUT}/tmp`,
