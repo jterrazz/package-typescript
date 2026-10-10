@@ -202,10 +202,10 @@ function refusedSince(named: string): number {
     return 1;
 }
 
-// invariant: a project with no test project has nothing to run a mutant against; Stryker would stop on a missing config, and the run says what it measured instead.
+// invariant: a project with no module test and no `specs/` has nothing to run a mutant against; Stryker would stop on a missing test project, and the run says what it measured instead.
 function measuredNothing(project: string): number {
     print(
-        `${badge('TYPESCRIPT')} measured nothing: ${project} has no vitest.config.ts, so no test project to run a mutant against.\n`,
+        `${badge('TYPESCRIPT')} measured nothing: ${project} holds no module test and no specs/, so no test project to run a mutant against.\n`,
     );
 
     return 0;
@@ -224,15 +224,15 @@ export async function mutation(args: readonly string[]): Promise<number> {
     if (members.length > 0) {
         return await membersMeasured(project, members, { ranges, since: named });
     }
-    if (!existsSync(join(project, 'vitest.config.ts'))) {
-        return measuredNothing(project);
-    }
     const since: Base =
         named === undefined
             ? defaultBaseOf(project)
             : { commit: named, names: named, range: `${named}..working tree` };
     const scope = await mutationScopeOf(project);
     const { tested, untested } = sourcesOf(project, scope);
+    if (tested.length === 0 && !existsSync(join(project, 'specs'))) {
+        return measuredNothing(project);
+    }
     const unreached = unreachedRange(ranges ?? [], new Set([...tested, ...untested]));
     if (unreached !== undefined) {
         return refusedRange(unreached, 'a source the run mutates');

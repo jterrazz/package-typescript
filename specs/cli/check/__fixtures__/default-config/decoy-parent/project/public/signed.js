@@ -1,1 +1,1 @@
-export const signature = "held byte for byte";
+export const signature   =   "held byte for byte"

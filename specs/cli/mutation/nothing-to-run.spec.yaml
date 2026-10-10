@@ -4,4 +4,4 @@ runs:
     - command: mutation
       exit: 0
       stdout: |4
-           TYPESCRIPT  measured nothing: {{workdir}} has no vitest.config.ts, so no test project to run a mutant against.
+           TYPESCRIPT  measured nothing: {{workdir}} holds no module test and no specs/, so no test project to run a mutant against.

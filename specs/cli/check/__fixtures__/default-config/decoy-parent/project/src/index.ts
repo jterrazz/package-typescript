@@ -1,4 +1,4 @@
 export function answer(): number {
-	debugger;
-	return 42;
+    debugger;
+    return 42;
 }
