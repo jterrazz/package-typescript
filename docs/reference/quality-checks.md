@@ -668,7 +668,7 @@ The **root spine** is the folders a repository root holds, the same in every rep
 | `names/declared-root-states-its-reason`  | A root declared in typescript.roots states why the repository keeps it.                                                                               |
 | `names/declared-root-holds-files`        | A root declared in typescript.roots holds a file git does not ignore.                                                                                 |
 | `names/jterrazz-config-loads`            | The settings file jterrazz.config.ts loads, and its typescript section has the declared shape.                                                        |
-| `names/skill-holds-only-skill-md`        | A skill is one skills/<skill>/SKILL.md and the references/*.md pages it links, and nothing else beside it.                                                                                         |
+| `names/skill-holds-only-skill-md`        | A skill is one skills/<skill>/SKILL.md and the references/*.md pages it links, and nothing else beside it.                                            |
 | `names/repository-has-makefile`          | Every repository root carries a Makefile.                                                                                                             |
 | `names/makefile-answers-every-gesture`   | The Makefile writes a rule for each of the six gestures.                                                                                              |
 | `names/no-empty-directory`               | No directory of the working copy is empty.                                                                                                            |
