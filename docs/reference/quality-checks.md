@@ -931,6 +931,17 @@ The suite credits a mutant to a test only where a process the run started ran it
 
 A mutant no run can credit reads as run by no test, in the count file by file; a source no module test reaches is counted apart until a change brings it to the suite. Moving the logic a page or a screen only renders into a module its tests can call is what brings it under the verdict.
 
+### Writing what a mutant can tell from the original
+
+Two shapes breed mutants no test can kill, because the mutant behaves as the original does; each has a form that holds none.
+
+- **A field omitted when it is undefined.** `...(value === undefined ? {} : { value })` mutates its condition and its two branches into code that returns the same record for every input the tests can name. Write the field itself, `{ value }`, with the type `value?: T | undefined`, or destructure what the caller passes: the record has one shape, and there is no branch left to mutate.
+- **A named group read with a default.** Under `noUncheckedIndexedAccess` a group a pattern always fills is typed `string | undefined`, and `?? ''` is a branch no input reaches. `groupsOf(match, ['name', 'version'])`, exported by `@jterrazz/typescript/rules`, returns each group as a string and throws when one is missing, which a pattern that always fills it never does.
+
+`--mutate <file>` applies the default run's policy to the file it names: a static mutant — a module-level table, a pattern, a message — a module test detects is detected, and one only loading the module ran is left to the suite, so the report of a file named alone is the report the file has in the default run.
+
+A workspace member's specs run in the sandbox beside the roots the repository declares (`typescript.roots`), laid next to the member's copy: a spec that climbs a fixed number of folders to read a file of the repository root finds it where it climbs to.
+
 ## Pitfalls
 
 - **A nested `oxlint.config.*` is loaded only on the path of a file oxlint is handed.** `check` hands it the sweep, which never holds the ground a test stands on, so a config committed under `__fixtures__/` is never read, armed or broken. Handed a directory instead — the fallback when the sweep could not answer — oxlint discovers every config beneath it and loads them all before it lints anything, and one that cannot load fails the run.
