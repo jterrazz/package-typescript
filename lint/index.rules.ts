@@ -75,6 +75,7 @@ export type {
 } from './kit/checker/pass.js';
 export { exitCodeOf, stop } from './kit/checker/stop.js';
 export { holdsDirectives, suppressionDirectives } from './kit/project/directives.js';
+export { groupsOf } from './kit/project/groups.js';
 export type { Directive, SuppressionDirectives } from './kit/project/directives.js';
 export {
     folderChanged,
