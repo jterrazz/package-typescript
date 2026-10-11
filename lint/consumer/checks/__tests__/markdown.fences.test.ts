@@ -7,11 +7,14 @@ const rows = (count: number, text = 'line'): string[] =>
 
 const fenced = (body: readonly string[], fence = '```'): string[] => [fence, ...body, fence];
 
+const at = (body: readonly string[], fence?: string): string[] =>
+    airlessFences(['# Title', '', ...fenced(body, fence)].join('\n'));
+
+const named = (body: readonly string[]): string[] => airlessFences(fenced(body).join('\n'));
+
 describe('markdown.fences', () => {
     test('airlessFences — a fenced run past fifteen lines is named with its opening line, and fifteen is the limit', () => {
         // Given - a fence of fifteen lines, one of sixteen opening on line 3, and a tilde fence indented, of sixteen
-        const at = (body: readonly string[], fence?: string): string[] =>
-            airlessFences(['# Title', '', ...fenced(body, fence)].join('\n'));
 
         // Then - only the longer runs are named, each at the line its fence opens on, with the break that survives the formatter
         expect([at(rows(15)), at(rows(16)), at(rows(16), '  ~~~')]).toStrictEqual([
@@ -61,7 +64,6 @@ describe('markdown.fences', () => {
         both[8] = '})';
         const all = rows(16).map((row) => `${row} {`);
         const lastOne = rows(16).map((row, index) => (index < 15 ? `${row} (` : row));
-        const named = (body: readonly string[]): string[] => airlessFences(fenced(body).join('\n'));
 
         // Then - the 7th line when the 8th opens (7 and 9 are as near, the earlier wins), the 9th when the 7th opens and the 9th closes (so the 8th break is lost to the closer), and none when no break is left
         expect([named(opens), named(both), named(all), named(lastOne)]).toStrictEqual([
@@ -91,7 +93,7 @@ describe('markdown.fences', () => {
         ]);
     });
 
-    test('FENCE — a fence of backticks or tildes opens a line, indented or not, and one later on a line does not', () => {
+    test('fence — a fence of backticks or tildes opens a line, indented or not, and one later on a line does not', () => {
         // Given - the openings and lines that only carry the marks
         // Then - the openings match, the others do not
         expect(

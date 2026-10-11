@@ -30,9 +30,9 @@ ruleTester().run('no-named-groups-in-match-all', noNamedGroupsInMatchAll, {
         },
         {
             code: [
-                'const PAIR = /(?<key>\\w+)=(\\w+)/gu;',
+                String.raw`const PAIR = /(?<key>\w+)=(\w+)/gu;`,
                 'export const inner = (text: string) => {',
-                '    const PAIR = /(\\w+)=(\\w+)/gu;',
+                String.raw`    const PAIR = /(\w+)=(\w+)/gu;`,
                 '    return [...text.matchAll(PAIR)];',
                 '};',
             ].join('\n'),

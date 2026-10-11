@@ -15,8 +15,11 @@ function projectWith(manifest: object): string {
     return root;
 }
 
-describe('shapeOf', () => {
-    test('names as external the host modules whose types a manifest holds in any dependency field, scoped names unfolded, and not those whose package it holds too', () => {
+const dts = (root: string, kind?: 'api' | 'cli' | 'library'): boolean =>
+    shapeOf(root, kind === undefined ? null : { kind, platform: 'node' }).dts;
+
+describe('build-steps', () => {
+    test('shapeOf — names as external the host modules whose types a manifest holds in any dependency field, scoped names unfolded, and not those whose package it holds too', () => {
         // Given - the types of four host modules, one in each field, a scoped one, and the types of a package the manifest also holds
         const root = projectWith({
             dependencies: { '@types/zed': '1' },
@@ -39,8 +42,6 @@ describe('shapeOf', () => {
         // Given - a private and a public manifest read as each kind, and as none
         const privately = projectWith({ private: true });
         const publicly = projectWith({ name: 'x' });
-        const dts = (root: string, kind?: 'api' | 'cli' | 'library'): boolean =>
-            shapeOf(root, kind === undefined ? null : { kind, platform: 'node' }).dts;
 
         // Then - only a private library or cli drops its declarations
         expect([

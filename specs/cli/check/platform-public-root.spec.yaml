@@ -1,4 +1,4 @@
-description: leaves a react website's public folder to the tool that serves it, unread by the type check and the linter
+description: leaves a react website's public folder unread by the type check and the linter
 fixture: ./__fixtures__/platform-public-root/
 env: TYPESCRIPT_CHECK_PASSES=typescript,oxlint
 runs:

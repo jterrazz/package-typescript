@@ -85,10 +85,10 @@ describe('config.manifest', () => {
         const odd = { $schema: 1, _note: 1, depedencies: 1, name: 'x', trailing_: 1, scriptz: 1 };
 
         // Then - none of the first is named, and the typos of the second are, the comments not
-        expect([unknownManifestKeys(known, new Set(KNOWN)), unknownManifestKeys(odd, new Set(KNOWN))]).toStrictEqual([
-            [],
-            ['depedencies', 'trailing_', 'scriptz'],
-        ]);
+        expect([
+            unknownManifestKeys(known, new Set(KNOWN)),
+            unknownManifestKeys(odd, new Set(KNOWN)),
+        ]).toStrictEqual([[], ['depedencies', 'trailing_', 'scriptz']]);
     });
 
     test('unknownManifestKeys — a key the standard of a host adds is known, and a typo of it is named', () => {
@@ -97,7 +97,10 @@ describe('config.manifest', () => {
 
         // Then - the added keys pass and their typo is named
         expect(
-            unknownManifestKeys({ contributes: {}, name: 'x', publisher: 'p', publishers: 'p' }, known),
+            unknownManifestKeys(
+                { contributes: {}, name: 'x', publisher: 'p', publishers: 'p' },
+                known,
+            ),
         ).toStrictEqual(['publishers']);
     });
 

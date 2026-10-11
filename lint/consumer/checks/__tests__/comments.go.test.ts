@@ -7,6 +7,8 @@ const lines = (...text: string[]): string => text.join('\n');
 const openingsOf = (text: string): string[] =>
     commentsOfGo(text).map(({ opening }) => opening.trim());
 
+const above = (line: string): string[] => openingsOf(lines('// note', line));
+
 describe('comments.go', () => {
     test('leaves the documentation of the package and of each exported name, and reads the rest', () => {
         // Given - a package comment, the doc of an exported func, a method, a type and a var, then comments above unexported names and a trailing one
@@ -90,7 +92,7 @@ describe('comments.go', () => {
         expect(openingsOf(text)).toStrictEqual(['trailing']);
     });
 
-    test('GO_INSTRUCTION — a comment the go tool reads opens with one of its words, whole, from its first character', () => {
+    test('instruction words — a comment the go tool reads opens with one of its words, whole, from its first character', () => {
         // Given - the nine openings, each with a word it only starts, and each led by a character
         const read = [
             'go:build linux',
@@ -150,7 +152,6 @@ describe('comments.go', () => {
             'Limit = 1',
             'x type Kind struct{}',
         ];
-        const above = (line: string): string[] => openingsOf(lines('// note', line));
 
         // Then - the first are the comment's own page, the others leave it to the pass
         expect([
@@ -162,7 +163,7 @@ describe('comments.go', () => {
     test('reads a string with an escaped quote whole, a rune of a quote, and counts the lines a raw string and a block cover', () => {
         // Given - an escaped quote before a marker, a rune holding a double quote, a raw string over three lines, then documentation below each
         const text = lines(
-            'var a = "say \\" // not a comment"',
+            String.raw`var a = "say \" // not a comment"`,
             "var b = '\"'",
             'var c = `one',
             'two // still raw',

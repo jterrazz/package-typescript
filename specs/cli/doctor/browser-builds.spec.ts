@@ -5,6 +5,8 @@ import { describe, expect, test } from 'vitest';
 
 import { cli } from '../cli.specification.js';
 
+const doctor = cli.with({ env: { PLAYWRIGHT_BROWSERS_PATH: '$WORKDIR/cache' } });
+
 // invariant: the project resolves a Playwright of its own, laid in the working directory, whose browsers file wants two Chromium builds.
 function resolvingPlaywright(workdir: string): void {
     const core = join(workdir, 'node_modules/playwright-core');
@@ -48,11 +50,10 @@ function laidCache(...builds: string[]): (workdir: string) => void {
 describe('browser-builds', () => {
     test('fails naming the Chromium builds the machine lacks', async () => {
         // Given - a project resolving a Playwright, and a cache holding the full build alone
-        const result = await cli
+        const result = await doctor
             .fixture(directory('./__fixtures__/browser-pin/matched/'))
             .prepare(resolvingPlaywright)
             .prepare(laidCache('chromium-1200'))
-            .env({ PLAYWRIGHT_BROWSERS_PATH: '$WORKDIR/cache' })
             .exec('doctor');
 
         // Then - one row per build, the headless shell missing, and the run refused with the fix
@@ -71,11 +72,10 @@ describe('browser-builds', () => {
 
     test('passes once every build is on the machine', async () => {
         // Given - the same project and a cache holding both builds
-        const result = await cli
+        const result = await doctor
             .fixture(directory('./__fixtures__/browser-pin/matched/'))
             .prepare(resolvingPlaywright)
             .prepare(laidCache('chromium-1200', 'chromium_headless_shell-1201'))
-            .env({ PLAYWRIGHT_BROWSERS_PATH: '$WORKDIR/cache' })
             .exec('doctor');
 
         // Then - both rows installed, and nothing owed
