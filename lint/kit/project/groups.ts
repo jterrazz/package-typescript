@@ -1,3 +1,5 @@
+import { invariant } from '../catalogue/lesson.js';
+
 /**
  * The named groups of a match, each one present.
  * A group a pattern always fills is typed `string | undefined` under `noUncheckedIndexedAccess`, and a default written for the type is a branch no input reaches — a mutant no test can kill. This throws on a group that is missing instead, which a pattern that always fills it never does.
@@ -15,7 +17,7 @@ export function groupsOf<Name extends string>(
     for (const name of names) {
         const value = groups?.[name];
         if (value === undefined) {
-            throw new Error(`the match holds no group named ${name}`);
+            throw invariant(`the match holds no group named ${name}`);
         }
         found[name] = value;
     }

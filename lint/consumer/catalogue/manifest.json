@@ -166,6 +166,14 @@
     },
     {
         "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
+        "id": "groups-of-missing-group",
+        "message": "the match holds no group named",
+        "module": "lint/kit/project/groups.ts"
+    },
+    {
+        "audience": "consumer",
         "by": "exit",
         "channel": "runtime",
         "id": "empty-sweep-exit",
