@@ -81,7 +81,7 @@ describe('CHILD_COVERAGE_SOURCE', () => {
         );
 
         // When - it ends
-        const ended = await new Promise<[null | number, null | NodeJS.Signals]>((resolve) => {
+        const ended = await new Promise<[null | number, NodeJS.Signals | null]>((resolve) => {
             child.once('exit', (code, by) => {
                 resolve([code, by]);
             });
