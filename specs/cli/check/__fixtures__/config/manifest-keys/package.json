@@ -4,6 +4,6 @@
     "private": true,
     "main": "src/index.ts",
     "scripts": {},
-    "depedencies": {},
-    "$comment": "a comment key is kept"
+    "$comment": "a comment key is kept",
+    "depedencies": {}
 }
