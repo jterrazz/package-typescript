@@ -141,23 +141,35 @@ async function fixedScopes(check: Check, scopes: readonly FixScope[]): Promise<n
     return status;
 }
 
-export async function lintFix(check: Check): Promise<number> {
+export type Fixed = { judged: boolean; status: number };
+
+/** Applies the lint fixes; judging what is left waits until the formatter has laid the code out. */
+export async function lintFix(check: Check): Promise<Fixed> {
     let scopes: FixScope[];
     try {
         scopes = await fixScopes(check);
     } catch (error) {
         writeFileSync(check.logs.at('fix-wrapper.log'), `${messageOf(error)}\n`);
 
-        return 1;
+        return { judged: true, status: 1 };
     }
-    const fixed = await keptAcross('.', async () => await fixedScopes(check, scopes));
+    const status = await keptAcross('.', async () => await fixedScopes(check, scopes));
     await pruned(check);
-    const judged = await lintCheck(check);
-    if (fixed !== 0) {
+
+    return { judged: false, status };
+}
+
+// invariant: a size cap is measured on the layout the formatter writes: a line the formatter breaks in three counts as three.
+export async function lintJudged(check: Check, { judged, status }: Fixed): Promise<number> {
+    if (judged) {
+        return status;
+    }
+    const remaining = await lintCheck(check);
+    if (status !== 0) {
         appendFileSync(check.logs.at('lint.log'), readFileSync(check.logs.at('fix-scopes.log')));
     }
 
-    return fixed === 0 ? judged : fixed;
+    return status === 0 ? remaining : status;
 }
 
 export function formatCheck(check: Check): Launched | undefined {

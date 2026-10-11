@@ -12,12 +12,14 @@ import {
 import type { Launched } from './launched.js';
 import { oxfmt } from './runners.js';
 import type { Check } from './setup.js';
+import type { Fixed } from './tool-passes.js';
 import {
     astroPass,
     formatCheck,
     knipPass,
     lintCheck,
     lintFix,
+    lintJudged,
     typescriptPass,
 } from './tool-passes.js';
 
@@ -39,28 +41,39 @@ export type Started = {
     typescript: Launched | undefined;
 };
 
-async function lintStarted(
+async function lintChecked(
     check: Check,
 ): Promise<{ format: Launched | undefined; lint: Promise<number> }> {
-    if (!check.fix) {
-        return {
-            format: formatCheck(check),
-            lint: check.selected('oxlint') ? lintCheck(check) : Promise.resolve(0),
-        };
-    }
-    const fixed = check.selected('oxlint') && !check.lintTargets.nothing ? await lintFix(check) : 0;
-    if (!check.selected('oxfmt')) {
-        return { format: undefined, lint: Promise.resolve(fixed) };
-    }
-    const log = check.logs.at('format.log');
-    const formatted = await oxfmt(check, [], log);
+    return {
+        format: formatCheck(check),
+        lint: check.selected('oxlint') ? lintCheck(check) : Promise.resolve(0),
+    };
+}
 
-    return { format: { log, status: Promise.resolve(formatted) }, lint: Promise.resolve(fixed) };
+// invariant: the formatter writes last: every other writer of a fix has laid its text down, and a size cap is judged on the layout the formatter leaves.
+async function formattedLast(
+    check: Check,
+    fixed: Fixed | undefined,
+    writers: readonly (Launched | undefined)[],
+): Promise<{ format: Launched | undefined; lint: Promise<number> }> {
+    await Promise.allSettled(writers.map(async (writer) => await writer?.status));
+    let formatting: Launched | undefined;
+    if (check.selected('oxfmt')) {
+        const log = check.logs.at('format.log');
+        formatting = { log, status: Promise.resolve(await oxfmt(check, [], log)) };
+    }
+    const lint = fixed === undefined ? Promise.resolve(0) : lintJudged(check, fixed);
+
+    return { format: formatting, lint };
 }
 
 export async function started(check: Check, config: Launched | undefined): Promise<Started> {
     const typescript = typescriptPass(check);
-    const { format, lint } = await lintStarted(check);
+    const fixed =
+        check.fix && check.selected('oxlint') && !check.lintTargets.nothing
+            ? await lintFix(check)
+            : undefined;
+    const checked = check.fix ? undefined : await lintChecked(check);
     const knip = knipPass(check);
     const gitignore = await gitignorePass(check);
     const docs = docsPass(check);
@@ -72,6 +85,18 @@ export async function started(check: Check, config: Launched | undefined): Promi
     const astro = astroPass(check);
     const architecture = architecturePass(check);
     const publish = publishPasses(check);
+    const { format, lint } =
+        checked ??
+        (await formattedLast(check, fixed, [
+            architecture,
+            astro,
+            comments,
+            config,
+            gitignore,
+            markdown,
+            names,
+            suppressions,
+        ]));
 
     return {
         architecture,

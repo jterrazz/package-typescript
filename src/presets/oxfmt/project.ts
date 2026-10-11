@@ -22,6 +22,9 @@ async function keptBy(unit: string): Promise<string[]> {
     return [...keptByteForByte(resolved.sections.typescript), ...members.flat()];
 }
 
+// outside: a spec document is laid out by @jterrazz/test's document formatter, whose block scalars and streams oxfmt rewrites into a layout it then refuses (`fix` exits 0, `check` fails for good).
+const SPEC_DOCUMENTS = '**/*.spec.yaml';
+
 export async function oxfmtConfigAt(unit: string): Promise<OxfmtConfig> {
-    return { ...style, ignorePatterns: await keptBy(unit) };
+    return { ...style, ignorePatterns: [...(await keptBy(unit)), SPEC_DOCUMENTS] };
 }

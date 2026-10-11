@@ -64,7 +64,7 @@ jobs:
 | Names (tree)                     | ls-lint + the naming gate   | always (check and fix — `--fix` deletes an empty directory)                                                                  |
 | Secrets (credentials)            | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                                                                     |
 
-`typescript fix` runs the config gate, tsc, oxlint (`--fix`), oxfmt, the artefact gate, the suppression gate, the comment gate, dependency-cruiser (`--fix` re-records a fall), rumdl (`--fix`) with the prose gate, and the naming gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers).
+`typescript fix` runs the config gate, tsc, oxlint (`--fix`), the artefact gate, the suppression gate, the comment gate, dependency-cruiser (`--fix` re-records a fall), rumdl (`--fix`) with the prose gate, and the naming gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers). The formatter writes last: every other writer of the run has laid its text down before oxfmt lays it out, so no writer rewrites what the formatter settled and no run leaves a tree its own check refuses. Oxlint judges what is left after the formatter, since a file crosses `max-lines` or a function `max-lines-per-function` only on the layout oxfmt writes, and a `*.spec.yaml` is laid out by the test package's document formatter alone, which oxfmt is told to leave.
 
 ### In a workspace
 

@@ -52,4 +52,18 @@ describe('oxfmtConfigAt', () => {
             'apps/site/notes/**',
         ]);
     });
+
+    test('leaves a spec document to the document formatter of the test package', async () => {
+        // Given - a plain project
+        const root = tree({
+            'jterrazz.config.ts': "export default { kind: 'library', platform: 'node' };\n",
+            'package.json': '{ "name": "plain", "version": "1.0.0" }\n',
+        });
+
+        // When - the formatter config is derived
+        const { ignorePatterns = [] } = await oxfmtConfigAt(root);
+
+        // Then - the spec documents of any folder are ignored
+        expect(ignorePatterns).toContain('**/*.spec.yaml');
+    });
 });

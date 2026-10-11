@@ -1,0 +1,21 @@
+description: fix judges a file's size on the layout the formatter leaves
+fixture: ./__fixtures__/fix-size-after-format/
+env: TYPESCRIPT_CHECK_PASSES=oxlint,oxfmt
+runs:
+    - command: fix
+      exit: 1
+      stdout: |4
+           START  Running quality fixes
+
+           RUN  Oxlint Fix
+
+          src/index.ts:400:3: error eslint(max-lines): File has too many lines (400). help: Maximum allowed is 300.
+          ✗ Failed with exit code 1
+
+           RUN  Oxfmt Format
+
+          ✓ Passed
+
+           END  Finalizing quality fixes
+
+          ✗ Some checks failed
