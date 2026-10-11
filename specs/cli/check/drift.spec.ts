@@ -85,6 +85,38 @@ describe('drift', () => {
         expect(drift).toContain('tool versions                         knip 0.0.1 old\n');
     });
 
+    test('counts the browser-side mutants the last run left unclaimed, in the report and for a machine', () => {
+        // Given - a project whose last module report holds two unclaimed mutants of an island, one of a server source, and one detected island mutant
+        const toolchain = toolchainWith({});
+        const project = suppressingProject(toolchain);
+        mkdirSync(join(project, '.artifacts/stryker'), { recursive: true });
+        const mutant = (status: string): object => ({ status });
+        writeFileSync(
+            join(project, '.artifacts/stryker/report.json'),
+            JSON.stringify({
+                files: {
+                    'src/island.tsx': {
+                        mutants: [mutant('NoCoverage'), mutant('NoCoverage'), mutant('Killed')],
+                    },
+                    'src/server.ts': { mutants: [mutant('NoCoverage')] },
+                },
+            }),
+        );
+
+        // When - the quality checks run there, then again for a machine
+        const run = (...flags: string[]): string =>
+            spawnSync('node', [join(toolchain, 'dist/typescript.js'), 'check', ...flags], {
+                cwd: project,
+                encoding: 'utf8',
+            }).stdout;
+        const human = run();
+        const machine = run('--json');
+
+        // Then - the row counts the two island mutants, never the server one, and the JSON carries the same number
+        expect(human).toContain('unmeasured                            2 mutants (browser-side)\n');
+        expect(machine).toContain('"unmeasuredMutants": 2');
+    });
+
     test('prints the same reading for a machine under check --json', () => {
         // Given - the same project, on the same toolchain
         const toolchain = toolchainWith({ knip: '0.0.1' });
@@ -115,6 +147,8 @@ describe('drift', () => {
             rulesOff: [],
             sections: {},
             suppressions: 1,
+            unmeasuredByMember: {},
+            unmeasuredMutants: 0,
             tools: [
                 {
                     installed: '0.0.1',

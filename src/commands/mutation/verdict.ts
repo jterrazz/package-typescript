@@ -1,4 +1,5 @@
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
+import { isBrowserSide } from '../../../lint/kit/project/browser-side.js';
 import type { Judged } from './survivors.js';
 
 function countsOf(byStatus: Record<string, number>): { statuses: string; total: number } {
@@ -8,9 +9,6 @@ function countsOf(byStatus: Record<string, number>): { statuses: string; total: 
         total: sorted.reduce((sum, [, count]) => sum + count, 0),
     };
 }
-
-// outside: a component, an island or a template runs in the browser, where the mutation run starts no project: no test of it is credited with a mutant there.
-const BROWSER_SIDE = /\.(?:astro|jsx|svelte|tsx|vue)$/u;
 
 const byMostFirst = ([a, left]: [string, number], [b, right]: [string, number]): number =>
     right - left || a.localeCompare(b);
@@ -26,8 +24,8 @@ function countLines(
     untestedSources: number,
 ): string[] {
     const sorted = Object.entries(uncoveredByFile).toSorted(byMostFirst);
-    const browser = sorted.filter(([file]) => BROWSER_SIDE.test(file));
-    const uncovered = sorted.filter(([file]) => !BROWSER_SIDE.test(file));
+    const browser = sorted.filter(([file]) => isBrowserSide(file));
+    const uncovered = sorted.filter(([file]) => !isBrowserSide(file));
     const outside = countsOf(outsideVerdict);
     return [
         ...(detectedBySuite === 0

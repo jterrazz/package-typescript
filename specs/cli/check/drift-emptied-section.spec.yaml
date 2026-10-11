@@ -21,6 +21,8 @@ runs:
             "oxlintSuppressions": null,
             "rulesOff": [],
             "suppressions": 0,
+            "unmeasuredByMember": {},
+            "unmeasuredMutants": 0,
             "sections": {},
             "tools": []
           }

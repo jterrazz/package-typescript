@@ -4,6 +4,7 @@ import { labelOf, readBaseline, sectionOf } from '../../kit/baseline/baseline-fi
 import type { Counts } from '../../kit/baseline/baseline-file.js';
 import { suppressedCount, SUPPRESSIONS_LEDGER } from '../../kit/baseline/oxlint-suppressions.js';
 import type { Pass } from '../../kit/checker/pass.js';
+import { unmeasuredBrowserMutants } from '../../kit/project/browser-side.js';
 import { countStrykerDirectives, countSuppressions } from '../../kit/project/comments.js';
 import { exceptionsIn } from '../../kit/project/exceptions.js';
 import { objectOf } from '../../kit/project/json.js';
@@ -95,6 +96,20 @@ const suppressionsLine = (suppressions: number, mutants: number): number | strin
         ? suppressions
         : `${String(suppressions)} + ${String(mutants)} mutation directives`;
 
+function unmeasuredRows({ members, root }: ReturnType<typeof unmeasuredOf>): Row[] {
+    const total = root + sum(members);
+    if (total === 0) {
+        return [];
+    }
+
+    return [
+        ['unmeasured', `${String(total)} mutants (browser-side)`],
+        ...Object.entries(members)
+            .filter(([, held]) => held > 0)
+            .map(([member, held]): Row => [`  ${member}`, `${String(held)} unmeasured mutants`]),
+    ];
+}
+
 async function membersExceptions(
     root: string,
     config: (unit?: string) => Promise<{ resolved: { own: unknown } }>,
@@ -108,6 +123,19 @@ async function membersExceptions(
     );
 
     return Object.fromEntries(held);
+}
+
+// invariant: a unit that ran no mutation holds no count, and a count of nothing is no row: the line appears only where the last run left browser-side mutants unclaimed.
+function unmeasuredOf(
+    root: string,
+    members: readonly string[],
+): { members: Record<string, number>; root: number } {
+    const held = (unit: string): number => unmeasuredBrowserMutants(unit) ?? 0;
+
+    return {
+        members: Object.fromEntries(members.map((member) => [member, held(join(root, member))])),
+        root: held(root),
+    };
 }
 
 function declaredOf(declaration: null | ProjectIdentity): Row[] {
@@ -127,6 +155,7 @@ function rowsOf(
         off,
         optOuts,
         suppressions,
+        unmeasured,
     }: {
         behind: readonly ToolVersion[];
         declaration: null | ProjectIdentity;
@@ -136,6 +165,7 @@ function rowsOf(
         off: readonly string[];
         optOuts: readonly OptOut[];
         suppressions: number;
+        unmeasured: ReturnType<typeof unmeasuredOf>;
     },
 ): string[] {
     const { heldOf, others } = baselineReader(root);
@@ -157,6 +187,7 @@ function rowsOf(
                       ] satisfies Row,
                   ]),
             ['suppressions', suppressionsLine(suppressions, mutants)],
+            ...unmeasuredRows(unmeasured),
             [SUPPRESSIONS_LEDGER, suppressedCount(root) ?? 'nothing held'],
             ...[SECTION, ...others].map((section): Row => [labelOf(section), heldOf(section)]),
             ['tool versions', toolsLine(behind)],
@@ -175,6 +206,7 @@ export const drift: Pass = Object.freeze({
         const suppressions = orRefused(() => countSuppressions(root, verbatim));
         const mutants = orRefused(() => countStrykerDirectives(root, verbatim));
         const members = await membersExceptions(root, context.config);
+        const unmeasured = unmeasuredOf(root, workspaceMembers(root));
         const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
         const { others, totalOf } = baselineReader(root);
 
@@ -189,6 +221,10 @@ export const drift: Pass = Object.freeze({
                 oxlintSuppressions: suppressedCount(root),
                 rulesOff: off,
                 suppressions,
+                unmeasuredByMember: Object.fromEntries(
+                    Object.entries(unmeasured.members).filter(([, held]) => held > 0),
+                ),
+                unmeasuredMutants: unmeasured.root + sum(unmeasured.members),
                 sections: Object.fromEntries(others.map((section) => [section, totalOf(section)])),
                 tools: behind,
             },
@@ -201,6 +237,7 @@ export const drift: Pass = Object.freeze({
                 off,
                 optOuts,
                 suppressions,
+                unmeasured,
             }),
         };
     },
