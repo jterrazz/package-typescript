@@ -100,10 +100,11 @@ async function membersExceptions(
     config: (unit?: string) => Promise<{ resolved: { own: unknown } }>,
 ): Promise<Record<string, number>> {
     const held = await Promise.all(
-        workspaceMembers(root).map(
-            async (member) =>
-                [member, exceptionsIn((await config(join(root, member))).resolved.own)] as const,
-        ),
+        workspaceMembers(root).map(async (member) => {
+            const { resolved } = await config(join(root, member));
+
+            return [member, exceptionsIn(resolved.own)] as const;
+        }),
     );
 
     return Object.fromEntries(held);

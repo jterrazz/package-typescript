@@ -7,7 +7,7 @@ const lines = (...text: string[]): string => text.join('\n');
 const openingsOf = (text: string): string[] =>
     commentsOfGo(text).map(({ opening }) => opening.trim());
 
-describe('commentsOfGo', () => {
+describe('comments.go', () => {
     test('leaves the documentation of the package and of each exported name, and reads the rest', () => {
         // Given - a package comment, the doc of an exported func, a method, a type and a var, then comments above unexported names and a trailing one
         const text = lines(

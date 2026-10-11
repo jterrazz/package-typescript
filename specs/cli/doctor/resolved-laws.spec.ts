@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 
 import { cli } from '../cli.specification.js';
 
-describe('doctor', () => {
+describe('resolved-laws', () => {
     test('names the layer laws that apply to the tree, not the ones of a lint/ tree it does not hold', async () => {
         // Given - a library with a src/ and no lint/ tree
         const result = await cli

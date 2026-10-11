@@ -1,7 +1,7 @@
 import { defineCheck, rowNamed } from '../../kit/catalogue/rule.js';
 import { filesKeptByteForByte } from '../../kit/checker/kept-files.js';
 import type { Finding, Pass } from '../../kit/checker/pass.js';
-import { GO_COMMENTED, isCommentedElsewhere, STYLE_COMMENTED } from '../../kit/project/comments.js';
+import { isCommentedElsewhere, isGoFile, STYLE_COMMENTED } from '../../kit/project/comments.js';
 import { readText } from '../../kit/project/project-files.js';
 import { COMMENT_KIND_OPENING } from '../catalogue/comment-kinds.js';
 import FINDINGS from '../catalogue/findings.json' with { type: 'json' };
@@ -48,7 +48,7 @@ function languageOf(path: string): Language | undefined {
     if (!isCommentedElsewhere(path)) {
         return undefined;
     }
-    if (GO_COMMENTED.test(path)) {
+    if (isGoFile(path)) {
         return commentsOfGo;
     }
 

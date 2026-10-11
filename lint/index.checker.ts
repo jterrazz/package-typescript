@@ -44,11 +44,9 @@ const PASSES: Passes = Object.freeze({
                 const members = await Promise.all(
                     workspaceMembers(root).map(async (member) => {
                         const unit = join(root, member);
+                        const { resolved: own } = await config(unit);
 
-                        return publishes(
-                            (await config(unit)).resolved.declaration,
-                            readManifest(unit) ?? {},
-                        );
+                        return publishes(own.declaration, readManifest(unit) ?? {});
                     }),
                 );
                 // invariant: a repository ships a package when its root does or any of its members does: a workspace's root declares none of its own.

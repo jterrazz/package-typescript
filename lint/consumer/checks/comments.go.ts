@@ -8,18 +8,15 @@ export const GO_INSTRUCTION =
 const DOCUMENTED =
     /^(?:package\s|(?:func\s+(?:\([^)]*\)\s*)?|type\s+|var\s+|const\s+)\p{Lu}|\s+\p{Lu}\w*(?:\s|=|,|$))/u;
 
-type Piece = { first: number; isBlock: boolean; isOwnLine: boolean } & Run;
+type Piece = Run & { first: number; isBlock: boolean; isOwnLine: boolean };
 
 const linesIn = (text: string): number => (text.match(/\n/gu) ?? []).length;
 
 // invariant: a string, a raw string and a rune are read whole first, so a comment marker inside one opens nothing.
 function skipQuoted(text: string, from: number, quote: string): number {
+    const stops = quote === '`' ? quote : `${quote}\n`;
     let at = from + 1;
-    while (
-        at < text.length &&
-        text.charAt(at) !== quote &&
-        (quote === '`' || text.charAt(at) !== '\n')
-    ) {
+    while (at < text.length && !stops.includes(text.charAt(at))) {
         at += text.charAt(at) === '\\' && quote !== '`' ? 2 : 1;
     }
 

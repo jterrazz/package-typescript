@@ -10,6 +10,7 @@ export function groupsOf<Name extends string>(
     names: readonly Name[],
 ): Record<Name, string> {
     const groups = match?.groups;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the loop below fills every name or throws, which the empty record cannot say
     const found = {} as Record<Name, string>;
     for (const name of names) {
         const value = groups?.[name];
