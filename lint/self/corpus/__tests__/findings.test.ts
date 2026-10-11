@@ -30,6 +30,10 @@ import {
     PROMISE_IS_AWAITED_NAME,
     promiseIsAwaited,
 } from '../../../consumer/rules/promises/promise-is-awaited.js';
+import {
+    NO_NAMED_GROUPS_IN_MATCH_ALL_NAME,
+    noNamedGroupsInMatchAll,
+} from '../../../consumer/rules/runtime/no-named-groups-in-match-all.js';
 import { FAMILIES, FINDINGS, printedFindingIds } from '../findings.js';
 
 describe('findings', () => {
@@ -74,6 +78,7 @@ describe('findings', () => {
             [DATA_MODULE_HOLDS_DATA_NAME]: dataModuleHoldsData.meta,
             [ERROR_FAMILY_SHARES_ITS_BASE_NAME]: errorFamilySharesItsBase.meta,
             [FOCUSABLE_SECTION_IS_LABELLED_NAME]: focusableSectionIsLabelled.meta,
+            [NO_NAMED_GROUPS_IN_MATCH_ALL_NAME]: noNamedGroupsInMatchAll.meta,
             [PROMISE_IS_AWAITED_NAME]: promiseIsAwaited.meta,
         };
         expect(Object.keys(rules).toSorted()).toStrictEqual(Object.keys(plugin.rules).toSorted());

@@ -23,6 +23,10 @@ import {
     errorFamilySharesItsBase,
 } from './modules/error-family-shares-its-base.js';
 import { PROMISE_IS_AWAITED_NAME, promiseIsAwaited } from './promises/promise-is-awaited.js';
+import {
+    NO_NAMED_GROUPS_IN_MATCH_ALL_NAME,
+    noNamedGroupsInMatchAll,
+} from './runtime/no-named-groups-in-match-all.js';
 
 const plugin: { meta: { name: string }; rules: Readonly<Record<string, object>> } = {
     meta: { name: 'jterrazz-typescript' },
@@ -33,6 +37,7 @@ const plugin: { meta: { name: string }; rules: Readonly<Record<string, object>> 
         [DATA_MODULE_HOLDS_DATA_NAME]: dataModuleHoldsData,
         [ERROR_FAMILY_SHARES_ITS_BASE_NAME]: errorFamilySharesItsBase,
         [FOCUSABLE_SECTION_IS_LABELLED_NAME]: focusableSectionIsLabelled,
+        [NO_NAMED_GROUPS_IN_MATCH_ALL_NAME]: noNamedGroupsInMatchAll,
         [PROMISE_IS_AWAITED_NAME]: promiseIsAwaited,
     },
 };

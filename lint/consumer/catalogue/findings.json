@@ -85,6 +85,11 @@
         "sentence": "A promise is awaited, never threaded through a `.then()`, `.catch()` or `.finally()` chain nor wrapped in an async function called at the module's top level — and a `.catch()` given a value, which no promise takes, is a schema's fallback the rule leaves alone."
     },
     {
+        "family": "runtime",
+        "id": "jterrazz-typescript/no-named-groups-in-match-all",
+        "sentence": "`matchAll` is not given a pattern with a named group on Hermes, whose iterator leaves `match.groups` undefined."
+    },
+    {
         "family": "comments",
         "id": "comments/comment-states-its-kind",
         "sentence": "A comment of a style sheet, a shell script, a Makefile, a Dockerfile or a YAML file opens with its kind, as a comment of code does — unless it is a directive another tool reads."

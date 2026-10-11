@@ -8,6 +8,7 @@
     "names",
     "promises",
     "publish",
+    "runtime",
     "secrets",
     "suppressions",
     "tree"

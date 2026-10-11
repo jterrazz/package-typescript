@@ -822,6 +822,18 @@ One rule of the rulebook's own oxlint plugin judges how a promise is read, so it
 
 <!-- /GENERATED:findings promises -->
 
+## Runtime
+
+One rule of the rulebook's own oxlint plugin judges what an engine does differently from the type check: on a platform whose engine is Hermes, `matchAll` is not given a pattern with a named group ([Lint presets](lint-presets.md#matchall-keeps-no-named-group-on-hermes)).
+
+<!-- GENERATED:findings runtime -->
+
+| Rule                                               | Requirement                                                                                                     |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `jterrazz-typescript/no-named-groups-in-match-all` | `matchAll` is not given a pattern with a named group on Hermes, whose iterator leaves `match.groups` undefined. |
+
+<!-- /GENERATED:findings runtime -->
+
 ## Comments
 
 Two rules of the rulebook's own oxlint plugin judge the comments of code, so their findings are the Oxlint pass's and their debt, like any rule's, is `.jterrazz/oxlint-suppressions.json`'s. What each one holds, and the four kinds a comment may state, are [Lint presets](lint-presets.md#a-comment-states-its-kind)'s.

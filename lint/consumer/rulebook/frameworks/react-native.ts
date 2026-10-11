@@ -31,6 +31,7 @@ export default fragment({
             },
             '11.0.0',
         ),
+        'jterrazz-typescript/no-named-groups-in-match-all': on(),
         'no-restricted-imports': on([
             {
                 patterns: [
