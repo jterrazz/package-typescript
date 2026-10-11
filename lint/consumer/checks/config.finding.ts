@@ -25,3 +25,7 @@ export function configFinding(
         ...(fixed ? { fixed } : {}),
     };
 }
+
+/** A file of a unit, named from the repository's root. */
+export const prefixed = (unit: string, file: string): string =>
+    unit === '.' ? file : `${unit}/${file}`;

@@ -1,6 +1,11 @@
-import { isJsonObject } from '../../kit/project/json.js';
+import { join } from 'node:path';
+
+import type { Context, Finding } from '../../kit/checker/pass.js';
+import { isJsonObject, parsedObject } from '../../kit/project/json.js';
+import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { PUBLICATION } from '../../kit/project/project-kind.js';
 import type { ProjectKind } from '../../kit/project/project-kind.js';
+import { configFinding as finding, prefixed } from './config.finding.js';
 
 export const NAMED: Readonly<Record<ProjectKind, string>> = {
     api: 'an api',
@@ -122,4 +127,50 @@ export function unknownManifestKeys(manifest: Readonly<Record<string, unknown>>)
     return Object.keys(manifest).filter(
         (key) => !KNOWN_KEYS.has(key) && !key.startsWith('$') && !key.startsWith('_'),
     );
+}
+
+function manifestOf(context: Context, unit: string): Readonly<Record<string, unknown>> {
+    try {
+        return parsedObject(context.read(join(context.root, unit, 'package.json')) ?? '{}');
+    } catch {
+        return {};
+    }
+}
+
+export function manifestFindings(
+    context: Context,
+    unit: string,
+    kind: null | ProjectKind,
+): Finding[] {
+    const manifest = manifestOf(context, unit);
+    const gap = manifestGap(kind, manifest);
+    const path = prefixed(unit, 'package.json');
+    const strays = unknownManifestKeys(manifest);
+
+    return [
+        ...(gap === null
+            ? []
+            : [
+                  finding('config/kind-matches-manifest', path, {
+                      fix: gap.fix,
+                      found: `${prefixed(unit, SETTINGS_FILE)} declares ${kind === null ? 'no kind, a suite' : NAMED[kind]}, and ${path} ${gap.owes}`,
+                  }),
+              ]),
+        ...(manifest.type === 'module'
+            ? []
+            : [
+                  finding('config/manifest-is-a-module', path, {
+                      fix: 'set `"type": "module"`',
+                      found: `${path} does not set \`"type": "module"\`, and the vitest config the toolchain derives and the names its build gives the files are ESM's`,
+                  }),
+              ]),
+        ...(strays.length === 0
+            ? []
+            : [
+                  finding('config/manifest-keys-known', path, {
+                      fix: "fix the key if it is a typo of one npm reads, move a tool's settings to `jterrazz.config.ts`, or delete it",
+                      found: `${path} holds ${strays.map((key) => `\`${key}\``).join(', ')}, which npm and the tools of the family read nowhere`,
+                  }),
+              ]),
+    ];
 }

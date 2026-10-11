@@ -26,8 +26,8 @@ import {
 } from '../../kit/project/project-kind.js';
 import type { ProjectIdentity, ProjectKind } from '../../kit/project/project-kind.js';
 import { workspaceMembers } from '../../kit/project/workspace-members.js';
-import { configFinding as finding } from './config.finding.js';
-import { manifestGap, NAMED, unknownManifestKeys } from './config.manifest.js';
+import { configFinding as finding, prefixed } from './config.finding.js';
+import { manifestFindings } from './config.manifest.js';
 import { standardLogic } from './config.standard.js';
 import { synchronousLoad } from './config.synchronous.js';
 
@@ -69,16 +69,6 @@ type Unit = {
     tsconfigProblem: null | string;
 };
 
-const prefixed = (unit: string, file: string): string => (unit === '.' ? file : `${unit}/${file}`);
-
-function manifestOf(context: Context, unit: string): Readonly<Record<string, unknown>> {
-    try {
-        return parsedObject(context.read(join(context.root, unit, 'package.json')) ?? '{}');
-    } catch {
-        return {};
-    }
-}
-
 function declarationFindings(context: Context, unit: Unit): Finding[] {
     const settings = prefixed(unit.path, SETTINGS_FILE);
     const { declaration } = unit;
@@ -115,40 +105,6 @@ function tsconfigFindings(unit: Unit): Finding[] {
             fix: `state why under \`typescript.tsconfig.reason\` in ${settings}, or move the option into the platform's preset`,
             found: `${settings} ${unit.tsconfigProblem}, so no tsconfig.json is derived from it`,
         }),
-    ];
-}
-
-function manifestFindings(context: Context, unit: string, kind: null | ProjectKind): Finding[] {
-    const manifest = manifestOf(context, unit);
-    const gap = manifestGap(kind, manifest);
-    const path = prefixed(unit, 'package.json');
-    const strays = unknownManifestKeys(manifest);
-
-    return [
-        ...(gap === null
-            ? []
-            : [
-                  finding('config/kind-matches-manifest', path, {
-                      fix: gap.fix,
-                      found: `${prefixed(unit, SETTINGS_FILE)} declares ${kind === null ? 'no kind, a suite' : NAMED[kind]}, and ${path} ${gap.owes}`,
-                  }),
-              ]),
-        ...(manifest.type === 'module'
-            ? []
-            : [
-                  finding('config/manifest-is-a-module', path, {
-                      fix: 'set `"type": "module"`',
-                      found: `${path} does not set \`"type": "module"\`, and the vitest config the toolchain derives and the names its build gives the files are ESM's`,
-                  }),
-              ]),
-        ...(strays.length === 0
-            ? []
-            : [
-                  finding('config/manifest-keys-known', path, {
-                      fix: "fix the key if it is a typo of one npm reads, move a tool's settings to `jterrazz.config.ts`, or delete it",
-                      found: `${path} holds ${strays.map((key) => `\`${key}\``).join(', ')}, which npm and the tools of the family read nowhere`,
-                  }),
-              ]),
     ];
 }
 
