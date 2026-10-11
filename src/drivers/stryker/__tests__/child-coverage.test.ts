@@ -21,10 +21,17 @@ function laid(): { into: string; reporter: string } {
     return { into, reporter };
 }
 
+// invariant: a run of this suite under the mutation run inherits the reporter in NODE_OPTIONS; the child here carries the one under test alone, or two reporters would hand back each mutant twice.
+function reporting(into: string): NodeJS.ProcessEnv {
+    const { NODE_OPTIONS: _inherited, ...rest } = process.env;
+
+    return { ...rest, __STRYKER_CHILD_COVERAGE__: into };
+}
+
 async function killed(program: string, signal: NodeJS.Signals): Promise<Ended> {
     const { into, reporter } = laid();
     const child = spawn(process.execPath, ['--require', reporter, '--eval', program], {
-        env: { ...process.env, __STRYKER_CHILD_COVERAGE__: into },
+        env: reporting(into),
         stdio: ['ignore', 'pipe', 'inherit'],
     });
     await new Promise<void>((resolve) => {
@@ -77,7 +84,7 @@ describe('CHILD_COVERAGE_SOURCE', () => {
         const child = spawn(
             process.execPath,
             ['--require', reporter, '--eval', SENDS_ITSELF_SIGTERM],
-            { env: { ...process.env, __STRYKER_CHILD_COVERAGE__: into }, stdio: 'ignore' },
+            { env: reporting(into), stdio: 'ignore' },
         );
 
         // When - it ends
@@ -109,7 +116,7 @@ describe('CHILD_COVERAGE_SOURCE', () => {
         // Given - a child that ran mutant 7 and keeps running
         const { into, reporter } = laid();
         const child = spawn(process.execPath, ['--require', reporter, '--eval', RAN_MUTANT_SEVEN], {
-            env: { ...process.env, __STRYKER_CHILD_COVERAGE__: into },
+            env: reporting(into),
             stdio: ['ignore', 'pipe', 'inherit'],
         });
         await new Promise<void>((resolve) => {
