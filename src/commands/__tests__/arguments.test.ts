@@ -73,7 +73,7 @@ describe('readArguments', () => {
             readArguments('check', SURFACES.check, ['--json=1']),
             readArguments('build', SURFACES.build, ['dist']),
             readArguments('docs-layout', SURFACES['docs-layout'], ['docs', 'extra']),
-            readArguments('build', SURFACES.build, ['--watch']),
+            readArguments('build', SURFACES.build, ['--json']),
             readArguments('check', SURFACES.check, ['--watch=all']),
             readArguments('check', SURFACES.check, ['-j=1']),
             readArguments('check', SURFACES.check, ['--ignore-pattern', 'notes/**']),
@@ -91,7 +91,7 @@ describe('readArguments', () => {
             `found: --json takes no value · why: a value the command does not read would be ignored, and the run would not be the one asked for · fix: write it --json, alone · ${READ}`,
             `found: \`typescript build\` was given dist, an argument it does not read · why: an argument the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — \`typescript build\` takes no argument · ${READ}`,
             `found: \`typescript docs-layout\` was given extra, a second <root> · why: an argument the command does not read would be ignored, and the run would not be the one asked for · fix: name one <root>, or none · ${READ}`,
-            `found: \`typescript build\` has no flag --watch · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — \`typescript build\` reads no flag · ${READ}`,
+            `found: \`typescript build\` has no flag --json · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — it reads --watch · ${READ}`,
             `found: \`typescript check\` has no flag --watch · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — it reads --json · ${READ}`,
             `found: \`typescript check\` has no flag -j=1 · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — it reads --json · ${READ}`,
             ...['check', 'fix', 'baseline'].map(
