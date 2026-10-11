@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 

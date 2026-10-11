@@ -30,8 +30,8 @@ afterEach(() => {
     }
 });
 
-describe('incremental', () => {
-    test('keeps the report while the ground its tests read is the one it was written on, and drops it when a fixture changes', () => {
+describe('incrementalKeptWhileGroundHolds', () => {
+    test('incremental — keeps the report while the ground its tests read is the one it was written on, and drops it when a fixture changes', () => {
         // Given - a report written on one fixture
         const root = projectWith({
             'specs/a.spec.ts': 'test',
@@ -54,7 +54,7 @@ describe('incremental', () => {
         expect(existsSync(incrementalOf(root))).toBe(false);
     });
 
-    test('drops a report no ground was recorded for', () => {
+    test('incremental — drops a report no ground was recorded for', () => {
         // Given - a report left by a run that recorded no ground
         const root = projectWith({ 'specs/__expected__/out.txt': 'one' });
         writeFileSync(incrementalOf(root), '{}');
@@ -71,7 +71,7 @@ describe('incremental', () => {
         ['a setup file', 'specs/__setup__/seed.ts', 'export const x = 1;'],
         ['a request', 'specs/__requests__/call.http', 'GET /changed'],
         ['a seed', 'specs/__seeds__/rows.json', '[2]'],
-    ])('drops the report when %s changes under it', (_kind, path, changed) => {
+    ])('incremental — drops the report when %s changes under it', (_kind, path, changed) => {
         // Given - a report written on the ground as it stands
         const root = projectWith({
             'specs/__expected__/out.txt': 'one',
@@ -90,7 +90,7 @@ describe('incremental', () => {
         expect(existsSync(incrementalOf(root))).toBe(false);
     });
 
-    test('keeps the report when only code outside the ground changes', () => {
+    test('incremental — keeps the report when only code outside the ground changes', () => {
         // Given - a report and a source
         const root = projectWith({ 'src/a.ts': 'one', 'specs/__fixtures__/f.txt': 'f' });
         incrementalKeptWhileGroundHolds(root, 'suite-incremental');

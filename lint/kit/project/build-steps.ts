@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { parsedObject, objectOf } from './json.js';
+import { objectOf, parsedObject } from './json.js';
 import type { JsonObject } from './json.js';
 import type { ProjectIdentity } from './project-kind.js';
 
@@ -38,7 +38,7 @@ export const stepOf = (
         format = ['esm'],
         outDir = DIST,
         platform,
-    }: Partial<BuildStep> & { banner?: string; external?: string[] } & Pick<BuildStep, 'platform'>,
+    }: Partial<BuildStep> & Pick<BuildStep, 'platform'> & { banner?: string; external?: string[] },
 ): BuildStep => ({
     clean,
     dts,

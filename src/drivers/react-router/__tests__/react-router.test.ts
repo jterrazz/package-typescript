@@ -14,8 +14,8 @@ afterAll(() => {
     }
 });
 
-describe('react-router', () => {
-    test("reactRouterTyped — runs the unit's own react-router typegen in the unit, its report appended to the log", async () => {
+describe('reactRouterTyped', () => {
+    test("react-router — reactRouterTyped — runs the unit's own react-router typegen in the unit, its report appended to the log", async () => {
         // Given - a unit whose react-router records where it is run and what it is asked, and fails with status 4
         const root = mkdtempSync(join(tmpdir(), 'react-router-typegen-'));
         created.push(root);

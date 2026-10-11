@@ -234,10 +234,10 @@ describe('preset', () => {
         ]).toStrictEqual([
             {
                 compilerOptions: {
-                    rootDirs: ['${configDir}', '${configDir}/.react-router/types'],
+                    rootDirs: [`\${configDir}`, `\${configDir}/.react-router/types`],
                     types: ['node', 'vite/client'],
                 },
-                include: ['${configDir}/.react-router/types/**/*'],
+                include: [`\${configDir}/.react-router/types/**/*`],
                 reason: "a Vite-bundled React tree imports stylesheets and assets whose module types are vite/client's (`import './globals.css'` is TS2882 without them), and its config files read Node's",
             },
             undefined,

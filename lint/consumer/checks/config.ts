@@ -15,7 +15,6 @@ import {
     holdsEditorFile,
     tsconfigAdditionsOf,
 } from '../../kit/project/editor-files.js';
-import { parsedObject } from '../../kit/project/json.js';
 import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import {
     KINDS,
@@ -24,7 +23,7 @@ import {
     SUITE_FOLDER,
     SUITE_PLATFORMS,
 } from '../../kit/project/project-kind.js';
-import type { ProjectIdentity, ProjectKind } from '../../kit/project/project-kind.js';
+import type { ProjectIdentity } from '../../kit/project/project-kind.js';
 import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import { configFinding as finding, prefixed } from './config.finding.js';
 import { manifestFindings } from './config.manifest.js';

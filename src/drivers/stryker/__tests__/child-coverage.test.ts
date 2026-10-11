@@ -56,9 +56,9 @@ console.log('ran');
 process.on('SIGTERM', () => process.exit(0));
 setInterval(() => {}, 1000);`;
 
-describe('child-coverage', () => {
+describe('CHILD_COVERAGE_SOURCE', () => {
     test.each(['SIGTERM', 'SIGINT'] as const)(
-        'hands back what the process ran when it is sent %s, and dies of that signal',
+        'child-coverage — hands back what the process ran when it is sent %s, and dies of that signal',
         async (signal) => {
             // Given - a child that ran mutant 7 and says so, killed within the reporter's first tenth of a second
             const ended = await killed(RAN_MUTANT_SEVEN, signal);
@@ -68,7 +68,7 @@ describe('child-coverage', () => {
         },
     );
 
-    test('leaves the shutdown to a handler the process holds, and reports at its exit', async () => {
+    test('child-coverage — leaves the shutdown to a handler the process holds, and reports at its exit', async () => {
         // Given - a child that ran mutant 7 and stops itself on SIGTERM
         // When - it is sent SIGTERM
         const ended = await killed(STOPS_ITSELF, 'SIGTERM');
@@ -77,7 +77,7 @@ describe('child-coverage', () => {
         expect(ended).toStrictEqual({ handed: [{ 7: 1 }], signal: null });
     });
 
-    test('answers a request to flush with what is new and its sequence number, and withdraws its mark when it ends', async () => {
+    test('child-coverage — answers a request to flush with what is new and its sequence number, and withdraws its mark when it ends', async () => {
         // Given - a child that ran mutant 7 and keeps running
         const { into, reporter } = laid();
         const child = spawn(process.execPath, ['--require', reporter, '--eval', RAN_MUTANT_SEVEN], {

@@ -14,7 +14,7 @@ ruleTester().run('no-named-groups-in-match-all', noNamedGroupsInMatchAll, {
         },
         {
             code: [
-                'const PAIR = /(?<key>\\w+)=(\\w+)/gu;',
+                String.raw`const PAIR = /(?<key>\w+)=(\w+)/gu;`,
                 'export const all = (text: string) => [...text.matchAll(PAIR)];',
             ].join('\n'),
             errors: [{ column: 41, line: 2, messageId: 'named' }],
@@ -35,7 +35,7 @@ ruleTester().run('no-named-groups-in-match-all', noNamedGroupsInMatchAll, {
         },
         {
             code: [
-                'const PAIR = /(?<key>\\w+)=(\\w+)/gu;',
+                String.raw`const PAIR = /(?<key>\w+)=(\w+)/gu;`,
                 'export const first = (text: string) => PAIR.exec(text)?.groups?.key;',
             ].join('\n'),
             filename: FILENAME,

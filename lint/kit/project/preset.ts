@@ -12,20 +12,13 @@ import { readProjectKind } from './project-kind.js';
 import type { ProjectIdentity } from './project-kind.js';
 import { mergeSettings } from './settings-merge.js';
 
-export type ArchitectureRule = Pick<IRegularForbiddenRuleType, 'from' | 'to'> & {
-    fix: string;
-    name: string;
-    read: ChapterAnchor;
-    why: string;
-};
+type Taught = { fix: string; name: string; read: ChapterAnchor; why: string };
 
-export type NamesRule = {
-    fix: string;
+export type ArchitectureRule = Pick<IRegularForbiddenRuleType, 'from' | 'to'> & Taught;
+
+export type NamesRule = Taught & {
     ignore?: readonly string[];
     ls: Readonly<Record<string, Readonly<Record<string, string>>>>;
-    name: string;
-    read: ChapterAnchor;
-    why: string;
 };
 
 export const isChapterAnchor = (value: unknown): value is ChapterAnchor =>
