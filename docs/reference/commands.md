@@ -3,7 +3,7 @@
 Every command of the `typescript` binary. `check` and `fix` are the two a project runs every day; the rest build, run, measure, or adopt a release.
 
 ```bash
-npx typescript build           # Build what the manifest publishes (ESM, CJS where it names one, types)
+npx typescript build           # Build what the manifest publishes (ESM, CJS where it names one, types); --watch rebuilds on change and runs nothing
 npx typescript start           # Run the built application
 npx typescript dev             # Build, run, and rebuild on changes
 npx typescript check           # Every quality pass, in parallel, ending on a drift report

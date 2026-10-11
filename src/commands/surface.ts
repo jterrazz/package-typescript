@@ -26,6 +26,7 @@ const GESTURES: ChapterAnchor = 'docs/guides/adopt-a-stricter-release.md#the-two
 
 export const SURFACES = {
     build: {
+        flags: [{ name: '--watch', says: 'Rebuild on every change, and run nothing' }],
         read: BUILDING,
         says: 'Build the entries the manifest publishes, as its conditions ask',
     },

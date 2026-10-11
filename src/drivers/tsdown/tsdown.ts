@@ -24,8 +24,12 @@ export async function builtFrom(steps: readonly BuildStep[], project: string): P
     );
 }
 
-/** Builds, runs the built application, and does both again on every change, until the process ends. */
-export async function watched(steps: readonly BuildStep[], project: string): Promise<number> {
+/** Builds, and builds again on every change, until the process ends; the built application is run too when `run` is true. */
+export async function watched(
+    steps: readonly BuildStep[],
+    project: string,
+    { run: runs }: { run: boolean },
+): Promise<number> {
     return await inScratch(
         async (scratch) =>
             await handOver(
@@ -36,8 +40,7 @@ export async function watched(steps: readonly BuildStep[], project: string): Pro
                     '--cwd',
                     project,
                     '--watch',
-                    '--on-success',
-                    'node --enable-source-maps dist/index.js',
+                    ...(runs ? ['--on-success', 'node --enable-source-maps dist/index.js'] : []),
                 ],
                 project,
             ),

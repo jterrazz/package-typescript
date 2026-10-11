@@ -15,5 +15,5 @@ export async function dev(): Promise<number> {
         return 1;
     }
 
-    return await watched(steps, project);
+    return await watched(steps, project, { run: true });
 }

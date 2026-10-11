@@ -5,11 +5,12 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          Usage: typescript build
+          Usage: typescript build [--watch]
 
           Build the entries the manifest publishes, as its conditions ask
 
           Flags:
+            --watch     Rebuild on every change, and run nothing
             -h, --help  Print this help and run nothing
 
           Read: docs/reference/building.md#the-entries
