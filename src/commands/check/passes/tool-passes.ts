@@ -207,7 +207,7 @@ async function knipUnit(unit: string): Promise<KnipUnit> {
     const loaded: string[] = [];
     for (const { entries, name } of resolved.presets) {
         if (entries !== undefined) {
-            loaded.push(...entries(resolved.sections[name] ?? {}));
+            loaded.push(...entries(resolved.sections[name] ?? {}, unit));
         }
     }
 

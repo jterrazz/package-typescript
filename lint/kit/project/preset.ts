@@ -42,7 +42,7 @@ export type Preset = {
     /** What it derives for its section from a unit's tree, which `typescript doctor` prints beside what the files declare. */
     derive?: (root: string) => Readonly<Record<string, unknown>>;
     /** The paths it loads by name, read from its resolved section: knip takes each as an entry, so no project declares them. */
-    entries?: (section: Readonly<Record<string, unknown>>) => readonly string[];
+    entries?: (section: Readonly<Record<string, unknown>>, root: string) => readonly string[];
     files?: Readonly<Record<string, EditorFile>>;
     lawSettings?: readonly string[];
     /** The packages it loads by name for a unit, read off the unit's tree: a project that declares one imports it nowhere, and knip would read it as unused. */
