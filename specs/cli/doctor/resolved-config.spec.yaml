@@ -56,7 +56,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.import/consistent-type-specifier-style = ["error","prefer-top-level"]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.import/default = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.import/exports-last = "off"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.import/extensions = ["error","never",{"avif":"always","css":"always","gif":"always","jpeg":"always","jpg":"always","json":"always","less":"always","png":"always","sass":"always","scss":"always","svg":"always","webp":"always","pathGroupOverrides":[{"action":"ignore","pattern":"{[a-z]*,@[a-z]*/*}/**"}]}]
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.import/extensions = ["error","never",{"avif":"always","css":"always","eot":"always","gif":"always","jpeg":"always","jpg":"always","json":"always","less":"always","otf":"always","png":"always","sass":"always","scss":"always","svg":"always","ttf":"always","webp":"always","woff":"always","woff2":"always","pathGroupOverrides":[{"action":"ignore","pattern":"{[a-z]*,@[a-z]*/*}/**"}]}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.import/first = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.import/group-exports = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.import/max-dependencies = "off"
