@@ -108,6 +108,8 @@ describe('drift', () => {
             baseline: null,
             declaration: null,
             exceptions: 0,
+            members: {},
+            mutationDirectives: 0,
             optOuts: [],
             oxlintSuppressions: null,
             rulesOff: [],

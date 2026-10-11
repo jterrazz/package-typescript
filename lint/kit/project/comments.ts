@@ -225,6 +225,28 @@ export function countSuppressions(root: string, ignorePatterns: readonly string[
     return found;
 }
 
+/** The `Stryker disable` directives of the project: each one declares mutants no test can tell from the original. */
+export function countStrykerDirectives(
+    root: string,
+    ignorePatterns: readonly string[] = [],
+): number {
+    let found = 0;
+
+    for (const path of projectFiles(root, { ignorePatterns }).filter((file) => SOURCE.test(file))) {
+        const text = readText(root, path);
+        if (text === null) {
+            continue;
+        }
+        for (const { comments, line } of lexed(text)) {
+            for (const comment of commentsOf(line, comments)) {
+                found += [...comment.matchAll(STRYKER_DISABLE)].length;
+            }
+        }
+    }
+
+    return found;
+}
+
 // invariant: the files whose comments the Comments pass reads, a `#` at the head of a line or a style sheet's block; code is the rulebook's.
 const HASH_COMMENTED =
     /(?:^|\/)(?:Makefile|GNUmakefile|Dockerfile(?:\.[\w.-]+)?|[^/]+\.(?:mk|sh|bash|zsh|ya?ml|dockerfile))$/u;

@@ -1,8 +1,10 @@
+import { join } from 'node:path';
+
 import { labelOf, readBaseline, sectionOf } from '../../kit/baseline/baseline-file.js';
 import type { Counts } from '../../kit/baseline/baseline-file.js';
 import { suppressedCount, SUPPRESSIONS_LEDGER } from '../../kit/baseline/oxlint-suppressions.js';
 import type { Pass } from '../../kit/checker/pass.js';
-import { countSuppressions } from '../../kit/project/comments.js';
+import { countStrykerDirectives, countSuppressions } from '../../kit/project/comments.js';
 import { exceptionsIn } from '../../kit/project/exceptions.js';
 import { objectOf } from '../../kit/project/json.js';
 import type { OptOut } from '../../kit/project/opt-outs.js';
@@ -12,6 +14,7 @@ import type { ProjectIdentity } from '../../kit/project/project-kind.js';
 import { levelOf, projectOxlintOf } from '../../kit/project/project-oxlint.js';
 import { toolVersions } from '../../kit/project/tool-versions.js';
 import type { ToolVersion } from '../../kit/project/tool-versions.js';
+import { workspaceMembers } from '../../kit/project/workspace-members.js';
 import { BASELINE_SECTION as SECTION } from '../catalogue/preset.js';
 
 const OFF: ReadonlySet<unknown> = new Set(['allow', 'off', 0]);
@@ -86,6 +89,26 @@ function baselineReader(root: string): {
 const rulesOffOf = (off: readonly string[]): string =>
     off.length === 0 ? 'none' : `${off.length} (${off.join(', ')})`;
 
+// invariant: a Stryker directive declares mutants, not a lint rule off: it is counted beside the suppressions, never into them, and the row reads as before where a project holds none.
+const suppressionsLine = (suppressions: number, mutants: number): number | string =>
+    mutants === 0
+        ? suppressions
+        : `${String(suppressions)} + ${String(mutants)} mutation directives`;
+
+async function membersExceptions(
+    root: string,
+    config: (unit?: string) => Promise<{ resolved: { own: unknown } }>,
+): Promise<Record<string, number>> {
+    const held = await Promise.all(
+        workspaceMembers(root).map(
+            async (member) =>
+                [member, exceptionsIn((await config(join(root, member))).resolved.own)] as const,
+        ),
+    );
+
+    return Object.fromEntries(held);
+}
+
 function declaredOf(declaration: null | ProjectIdentity): Row[] {
     return declaration === null
         ? [['declared', 'nothing — node, the default']]
@@ -98,6 +121,8 @@ function rowsOf(
         behind,
         declaration,
         exceptions,
+        members,
+        mutants,
         off,
         optOuts,
         suppressions,
@@ -105,6 +130,8 @@ function rowsOf(
         behind: readonly ToolVersion[];
         declaration: null | ProjectIdentity;
         exceptions: number;
+        members: Readonly<Record<string, number>>;
+        mutants: number;
         off: readonly string[];
         optOuts: readonly OptOut[];
         suppressions: number;
@@ -115,7 +142,11 @@ function rowsOf(
     return [
         ...rowsAligned([
             ...declaredOf(declaration),
-            ['exceptions', exceptions],
+            ['exceptions', exceptions + sum(members)],
+            ...Object.entries(members).map(([member, held]): Row => [
+                `  ${member}`,
+                `${String(held)} exceptions`,
+            ]),
             ['rules off vs profile', rulesOffOf(off)],
             ...(optOuts.length === 0
                 ? []
@@ -125,7 +156,7 @@ function rowsOf(
                           `${String(optOuts.length)} (${optOuts.map(({ law }) => law).join(', ')})`,
                       ] satisfies Row,
                   ]),
-            ['suppressions', suppressions],
+            ['suppressions', suppressionsLine(suppressions, mutants)],
             [SUPPRESSIONS_LEDGER, suppressedCount(root) ?? 'nothing held'],
             ...[SECTION, ...others].map((section): Row => [labelOf(section), heldOf(section)]),
             ['tool versions', toolsLine(behind)],
@@ -142,6 +173,8 @@ export const drift: Pass = Object.freeze({
         const exceptions = exceptionsIn(own);
         const verbatim = await context.verbatim();
         const suppressions = orRefused(() => countSuppressions(root, verbatim));
+        const mutants = orRefused(() => countStrykerDirectives(root, verbatim));
+        const members = await membersExceptions(root, context.config);
         const behind = toolVersions().filter(({ verdict }) => verdict !== 'ok');
         const { others, totalOf } = baselineReader(root);
 
@@ -149,7 +182,9 @@ export const drift: Pass = Object.freeze({
             json: {
                 baseline: totalOf(SECTION),
                 declaration,
-                exceptions,
+                exceptions: exceptions + sum(members),
+                members,
+                mutationDirectives: mutants,
                 optOuts,
                 oxlintSuppressions: suppressedCount(root),
                 rulesOff: off,
@@ -157,7 +192,16 @@ export const drift: Pass = Object.freeze({
                 sections: Object.fromEntries(others.map((section) => [section, totalOf(section)])),
                 tools: behind,
             },
-            lines: rowsOf(root, { behind, declaration, exceptions, off, optOuts, suppressions }),
+            lines: rowsOf(root, {
+                behind,
+                declaration,
+                exceptions,
+                members,
+                mutants,
+                off,
+                optOuts,
+                suppressions,
+            }),
         };
     },
 });

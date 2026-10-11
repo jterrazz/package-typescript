@@ -1,0 +1,23 @@
+description: sums a workspace root's rows over its members and counts the mutation directives
+fixture: ./__fixtures__/drift/workspace-members/
+env: TYPESCRIPT_CHECK_PASSES=drift
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           DRIFT  Deviations from the profile
+
+            declared                              workspace on its members' platforms
+            exceptions                            2
+              packages/clock                      2 exceptions
+            rules off vs profile                  none
+            suppressions                          1 + 2 mutation directives
+            .jterrazz/oxlint-suppressions.json    nothing held
+            .jterrazz/baseline.json › typescript  nothing held
+            tool versions                         in range
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed
