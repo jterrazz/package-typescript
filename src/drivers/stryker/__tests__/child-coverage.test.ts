@@ -51,6 +51,9 @@ const RAN_MUTANT_SEVEN = `globalThis.__stryker__ = { mutantCoverage: { perTest: 
 console.log('ran');
 setInterval(() => {}, 1000);`;
 
+const SENDS_ITSELF_SIGTERM = `globalThis.__stryker__ = { mutantCoverage: { perTest: {}, static: { 7: 1 } } };
+process.kill(process.pid, 'SIGTERM');`;
+
 const STOPS_ITSELF = `globalThis.__stryker__ = { mutantCoverage: { perTest: {}, static: { 7: 1 } } };
 console.log('ran');
 process.on('SIGTERM', () => process.exit(0));
@@ -67,6 +70,31 @@ describe('CHILD_COVERAGE_SOURCE', () => {
             expect(ended).toStrictEqual({ handed: [{ 7: 1 }], signal });
         },
     );
+
+    test('child-coverage — dies at once of a signal it sends itself, with what it ran handed back', async () => {
+        // Given - a child that ran mutant 7 and sends itself SIGTERM as its script ends
+        const { into, reporter } = laid();
+        const child = spawn(
+            process.execPath,
+            ['--require', reporter, '--eval', SENDS_ITSELF_SIGTERM],
+            { env: { ...process.env, __STRYKER_CHILD_COVERAGE__: into }, stdio: 'ignore' },
+        );
+
+        // When - it ends
+        const ended = await new Promise<[null | number, null | NodeJS.Signals]>((resolve) => {
+            child.once('exit', (code, by) => {
+                resolve([code, by]);
+            });
+        });
+
+        // Then - it died of the signal, not of its own exit, and its mutant reached the parent
+        expect([
+            ended,
+            readdirSync(into)
+                .filter((name) => name.endsWith('.json'))
+                .map((name): unknown => JSON.parse(readFileSync(join(into, name), 'utf8'))),
+        ]).toStrictEqual([[null, 'SIGTERM'], [{ 7: 1 }]]);
+    });
 
     test('child-coverage — leaves the shutdown to a handler the process holds, and reports at its exit', async () => {
         // Given - a child that ran mutant 7 and stops itself on SIGTERM
