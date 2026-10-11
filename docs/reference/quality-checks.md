@@ -919,7 +919,7 @@ A test that loads a module has not read what the module defines: a table survive
 
 ### What each kind leaves unmeasured
 
-The suite credits a mutant to a test only where a process the run started ran it — the test's own, or one it spawned, which imports the reporter. What runs anywhere else is run by no test the run can credit, and is counted, never judged:
+The suite credits a mutant to a test only where a process the run started ran it — the test's own, or one it spawned, which imports the reporter. At the end of each test the run asks every process that test spawned and that still runs to hand back what it ran, and waits for each to answer, one second at most, so what a server ran during a test is credited to it and not to the next one; a process ended by `SIGTERM` or `SIGINT` hands back before it dies. What runs anywhere else is run by no test the run can credit, and is counted, never judged:
 
 | Kind      | What the suite measures                                                                            | What no run can credit                                                                                                                 |
 | --------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |

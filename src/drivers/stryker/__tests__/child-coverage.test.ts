@@ -40,9 +40,9 @@ async function killed(program: string, signal: NodeJS.Signals): Promise<Ended> {
     });
 
     return {
-        handed: readdirSync(into).map((name): unknown =>
-            JSON.parse(readFileSync(join(into, name), 'utf8')),
-        ),
+        handed: readdirSync(into)
+            .filter((name) => name.endsWith('.json'))
+            .map((name): unknown => JSON.parse(readFileSync(join(into, name), 'utf8'))),
         signal: ended,
     };
 }
@@ -75,5 +75,41 @@ describe('child-coverage', () => {
 
         // Then - it ended by its own exit, and its mutant was handed back once
         expect(ended).toStrictEqual({ handed: [{ 7: 1 }], signal: null });
+    });
+
+    test('answers a request to flush with what is new and its sequence number, and withdraws its mark when it ends', async () => {
+        // Given - a child that ran mutant 7 and keeps running
+        const { into, reporter } = laid();
+        const child = spawn(process.execPath, ['--require', reporter, '--eval', RAN_MUTANT_SEVEN], {
+            env: { ...process.env, __STRYKER_CHILD_COVERAGE__: into },
+            stdio: ['ignore', 'pipe', 'inherit'],
+        });
+        await new Promise<void>((resolve) => {
+            child.stdout.once('data', () => {
+                resolve();
+            });
+        });
+        const marks = (suffix: string): string[] =>
+            readdirSync(into).filter((name) => name.endsWith(suffix));
+
+        // When - the parent asks for a flush at a test's end, and the child answers
+        writeFileSync(join(into, 'flush'), '4');
+        await expect
+            .poll(() => marks('.ack').map((name) => readFileSync(join(into, name), 'utf8')))
+            .toStrictEqual(['4']);
+        const living = marks('.alive').length;
+        child.kill('SIGKILL');
+        await new Promise<void>((resolve) => {
+            child.once('exit', () => {
+                resolve();
+            });
+        });
+
+        // Then - one live mark while it ran, the pid of the process at its head, its coverage handed back, and the mark of a process that could not withdraw it still standing
+        expect([
+            living,
+            marks('.alive')[0]?.startsWith(`${String(child.pid)}-`),
+            marks('.json').length,
+        ]).toStrictEqual([1, true, 1]);
     });
 });

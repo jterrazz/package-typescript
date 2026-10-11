@@ -1,13 +1,15 @@
 // invariant: every process a test spawns runs the instrumented build with this module imported first: it reports the mutants it ran — the parent credits them to the test that spawned it.
-// hazard: no handler catches SIGKILL, so the reporter also hands back what is new every tenth of a second, and a process killed that way loses only its last tenth.
+// hazard: no handler catches SIGKILL, so the reporter also hands back what is new every 25 milliseconds, and a process killed that way loses only its last 25.
+// invariant: a test's end asks every live reporter to flush: the parent writes a sequence number to `flush` in the folder, each reporter hands back what is new and answers with `<name>.ack`, and the parent reads the test's coverage once every live one has — so what a child ran during a test is credited to it, not to the next one. A reporter is live while its `<name>.alive` stands, and the pid at the head of its name tells a killed one from one that is still running.
 // invariant: a SIGTERM or a SIGINT flushes before the process dies — `child.kill()` ends a spawned process before its next tick — and the signal is raised again once the reporter's own handler is gone, so the process dies of the signal it was sent, as it would have without the reporter; another handler of the process keeps the shutdown, which its exit then reports.
-export const CHILD_COVERAGE_SOURCE = `const { renameSync, writeFileSync } = require('node:fs');
+export const CHILD_COVERAGE_SOURCE = `const { readFileSync, renameSync, unlinkSync, writeFileSync } = require('node:fs');
 const { join } = require('node:path');
 
 const into = process.env.__STRYKER_CHILD_COVERAGE__;
 const name = \`\${process.pid}-\${Date.now()}-\${Math.random().toString(36).slice(2)}\`;
 const sent = {};
 let written = 0;
+let acknowledged;
 
 function report() {
     const coverage = globalThis.__stryker__?.mutantCoverage;
@@ -38,8 +40,35 @@ function report() {
     renameSync(\`\${path}.partial\`, path);
 }
 
-process.on('exit', report);
-setInterval(report, 100).unref();
+function acknowledge() {
+    let asked;
+    try {
+        asked = readFileSync(join(into, 'flush'), 'utf8');
+    } catch {
+        return;
+    }
+    if (asked !== acknowledged) {
+        report();
+        writeFileSync(join(into, \`\${name}.ack\`), asked);
+        acknowledged = asked;
+    }
+}
+
+if (into !== undefined) {
+    writeFileSync(join(into, \`\${name}.alive\`), '');
+}
+process.on('exit', () => {
+    report();
+    try {
+        unlinkSync(join(into, \`\${name}.alive\`));
+    } catch {}
+});
+setInterval(() => {
+    report();
+    if (into !== undefined) {
+        acknowledge();
+    }
+}, 25).unref();
 for (const signal of ['SIGINT', 'SIGTERM']) {
     process.once(signal, () => {
         report();

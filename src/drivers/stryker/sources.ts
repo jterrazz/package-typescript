@@ -51,8 +51,9 @@ const OWN_PROCESSES_PLUGIN_SOURCE = `const ownProcesses = {
 export const RAN_BY_TESTS_VARIABLE = '__TYPESCRIPT_MUTATION_RAN_BY_TESTS__';
 
 // invariant: first of every project's setup files — a mutant is live before the test file loads, and a static mutant is credited to every test of each file whose loading ran it; the mutants a test ran in its own process, beyond loading its file, are written where RAN_BY_TESTS_VARIABLE names; what a process it spawned ran stays apart, since a child's loading and its calls cannot be told apart.
-export const MUTANT_SETUP_SOURCE = `import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+export const MUTANT_SETUP_SOURCE = `import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { setTimeout as pause } from 'node:timers/promises';
 import { threadId } from 'node:worker_threads';
 import { afterAll, afterEach, beforeEach, inject } from 'vitest';
 
@@ -93,6 +94,31 @@ if (inject('mode') === 'mutant') {
         }
         return hits;
     };
+    const alive = (name) => {
+        try {
+            process.kill(Number(name.split('-')[0]), 0);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+    let asked = 0;
+    const flushed = async () => {
+        asked += 1;
+        writeFileSync(join(children, 'flush'), String(asked));
+        const deadline = Date.now() + 1000;
+        while (Date.now() < deadline) {
+            const living = readdirSync(children)
+                .filter((name) => name.endsWith('.alive'))
+                .map((name) => name.slice(0, -'.alive'.length))
+                .filter((name) => alive(name));
+            const answered = (name) => existsSync(join(children, \`\${name}.ack\`)) && readFileSync(join(children, \`\${name}.ack\`), 'utf8') === String(asked);
+            if (living.every((name) => answered(name))) {
+                return;
+            }
+            await pause(10);
+        }
+    };
     const nameOf = (task) => {
         const parts = [task.name];
         for (let suite = task.suite; suite; suite = suite.suite) {
@@ -108,7 +134,8 @@ if (inject('mode') === 'mutant') {
         tests.add(current);
     });
 
-    afterEach(() => {
+    afterEach(async () => {
+        await flushed();
         const perTest = coverage().perTest;
         for (const id of Object.keys(perTest[current] ?? {})) {
             ranByTests.add(id);
