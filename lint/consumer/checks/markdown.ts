@@ -3,13 +3,12 @@ import { dirname, join, resolve } from 'node:path';
 import { filesKeptByteForByte } from '../../kit/checker/kept-files.js';
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import { isGitIgnored, readText } from '../../kit/project/project-files.js';
+import { airlessFences, FENCE, linesWithFrontmatterBlanked } from './markdown.fences.js';
 import { brokenLinks, rumdl } from './markdown.rumdl.js';
 
 type Found = { message: string; rule: string };
 
 const PROSE_BLOCK_LIMIT = 12;
-
-const FENCE_RUN_LIMIT = 15;
 
 const SECTION_PROSE_LIMIT = 30;
 
@@ -34,15 +33,9 @@ const withoutGenerated = (markdown: string): string =>
 // invariant: a page named by a code span qualified with another repository's name (`package-typescript` `docs/reference/x.md`) is that repository's to resolve.
 const QUALIFIED_BY_REPOSITORY = /`@?[\w.-]+(?:\/[\w.-]+)?`\s+`$/u;
 
-const FRONTMATTER = /^---\n.*?\n---\n/su;
-const FENCE = /^\s*(?:```|~~~)/u;
 const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s/u;
 const TABLE_ROW = /^\s*\|/u;
 const HEADING = /^(?<hashes>#{1,6})\s/u;
-
-function linesWithFrontmatterBlanked(markdown: string): string[] {
-    return markdown.replace(FRONTMATTER, (block) => block.replaceAll(/[^\n]/gu, '')).split('\n');
-}
 
 function longProseBlocks(markdown: string): string[] {
     let inFence = false;
@@ -78,69 +71,6 @@ function longProseBlocks(markdown: string): string[] {
             start = index + 1;
         }
         length += 1;
-    }
-    close();
-
-    return found;
-}
-
-type FenceLine = { line: number; text: string };
-
-const OPENS_A_BLOCK = /[([{]\s*$/u;
-
-const CLOSES_A_BLOCK = /^\s*[)\]}]/u;
-
-// invariant: the formatter drops a blank line that follows an opener or precedes a closer inside a fenced code block and keeps every other one; the break named is the middle one of those that stay.
-function survivingBreak(run: readonly FenceLine[]): number | undefined {
-    const middle = run.length / 2;
-    let best: number | undefined;
-    for (const [index, { text }] of run.entries()) {
-        const next = run[index + 1];
-        if (next === undefined || OPENS_A_BLOCK.test(text) || CLOSES_A_BLOCK.test(next.text)) {
-            continue;
-        }
-        if (best === undefined || Math.abs(index + 1 - middle) < Math.abs(best - middle)) {
-            best = index + 1;
-        }
-    }
-
-    return best === undefined ? undefined : run[best - 1]?.line;
-}
-
-function airlessFences(markdown: string): string[] {
-    let inFence = false;
-    let fenceStart = 0;
-    let run: FenceLine[] = [];
-    const found: string[] = [];
-    const close = (): void => {
-        if (run.length > FENCE_RUN_LIMIT) {
-            const at = survivingBreak(run);
-            found.push(
-                `a fenced block at line ${fenceStart} runs ${run.length} lines unbroken — the limit is ${FENCE_RUN_LIMIT}${at === undefined ? '' : `; a blank line after line ${at} survives the formatter`}`,
-            );
-        }
-        run = [];
-    };
-
-    for (const [index, line] of linesWithFrontmatterBlanked(markdown).entries()) {
-        if (FENCE.test(line)) {
-            if (inFence) {
-                close();
-            } else {
-                fenceStart = index + 1;
-                run = [];
-            }
-            inFence = !inFence;
-            continue;
-        }
-        if (!inFence) {
-            continue;
-        }
-        if (line.trim() === '') {
-            close();
-            continue;
-        }
-        run.push({ line: index + 1, text: line });
     }
     close();
 
@@ -314,8 +244,8 @@ export const markdown: Pass = Object.freeze({
 
         findings.push(
             ...unlinkedReferences(context.files(), (path) => readText(context.root, path)),
+            ...brokenLinks(context, pages),
         );
-        findings.push(...brokenLinks(context, pages));
 
         return { findings, tools: rumdl(context, pages) };
     },
