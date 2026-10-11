@@ -1,0 +1,18 @@
+description: asks a manifest for its module type and refuses a key nothing reads
+fixture: ./__fixtures__/config/manifest-keys/
+env: TYPESCRIPT_CHECK_PASSES=config
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Config (one file)
+
+          package.json:1:1: error config(manifest-is-a-module): found: package.json does not set `"type": "module"`, and the vitest config the toolchain derives and the names its build gives the files are ESM's · why: A project is an ES module, its manifest setting "type": "module": the vitest config the toolchain derives and the names its build gives the files are ESM's, and a package without it fails in both without saying why. · fix: set `"type": "module"` · read: docs/reference/quality-checks.md#the-config-one-file-pass
+          package.json:1:1: error config(manifest-keys-known): found: package.json holds `depedencies`, which npm and the tools of the family read nowhere · why: A manifest holds the top-level keys npm and the family's tools read: a key beyond them reads nothing, and a typo of one fails without a word. · fix: fix the key if it is a typo of one npm reads, move a tool's settings to `jterrazz.config.ts`, or delete it · read: docs/reference/quality-checks.md#the-config-one-file-pass
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

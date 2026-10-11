@@ -1,0 +1,21 @@
+description: builds a private extension without declarations, leaves the host's module out and opens a bin on its interpreter
+fixture: ./__fixtures__/private-extension/
+runs:
+    - command: build
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Building the entries the manifest publishes...
+
+          ℹ tsdown v{{semver}} powered by rolldown v{{semver}}
+          ℹ config file: {{path}} 
+          ℹ entry: src/index.ts
+          ℹ tsconfig: tsconfig.json
+          ℹ entry: src/tool.bin.ts
+          ℹ tsconfig: tsconfig.json
+          ℹ Build start
+          {{any}}
+          Build completed
+      files:
+          dist/index.js: { contains: 'from "vscode"' }
+          dist/index.d.ts: absent
+          dist/tool.js: { contains: '#!/usr/bin/env node' }

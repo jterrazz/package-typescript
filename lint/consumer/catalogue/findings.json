@@ -31,6 +31,16 @@
     },
     {
         "family": "config",
+        "id": "config/manifest-is-a-module",
+        "sentence": "A project is an ES module, its manifest setting \"type\": \"module\": the vitest config the toolchain derives and the names its build gives the files are ESM's, and a package without it fails in both without saying why."
+    },
+    {
+        "family": "config",
+        "id": "config/manifest-keys-known",
+        "sentence": "A manifest holds the top-level keys npm and the family's tools read: a key beyond them reads nothing, and a typo of one fails without a word."
+    },
+    {
+        "family": "config",
         "id": "config/tsconfig-addition-reasoned",
         "sentence": "What typescript.tsconfig adds to the derived tsconfig.json carries its reason, since every setting maps to why it is set."
     },

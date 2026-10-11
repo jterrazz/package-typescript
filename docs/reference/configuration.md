@@ -64,6 +64,7 @@ The kind table names toolchain shapes, never products, and a product that fits n
 - A private `library` is a module a host loads by `main`: an editor extension or a browser plugin. Its manifest names `exports` or `main`.
 - A repository whose product is written in another language declares the kind of its TypeScript harness, `private`: a Go product tested by a TypeScript suite is a private `cli`.
 - A renderer (a Remotion video) declares the kind whose tooling it uses, a `website` for a scene built with React.
+- A project sets `"type": "module"`, which `config/manifest-is-a-module` asks of every manifest: the vitest config the toolchain derives and the names its build gives the files are ESM's, and a package without it fails in both with no word of why. Another top-level key than the ones npm and the family's tools read is refused by `config/manifest-keys-known`, since a typo of a real key reads nothing.
 - A project that holds sources and `workspaces` at once is refused by `config/kind-matches-manifest`: its own sources would be read as a member of itself. Its members go under `apps/` of a repository declared a `workspace`.
 
 A `workspace` declares no platform: its root `oxlint.config.ts` lints each member by the platform that member declares, the member's own profile and presets scoped to its folder, so one config serves a React website and a Node api side by side. A member keeps no `oxlint.config.ts` or `oxfmt.config.ts` of its own — a nested one would replace the root's in its subtree — and keeps its own `tsconfig.json`, derived from its platform.

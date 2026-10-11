@@ -78,6 +78,7 @@ const declaredOf = (manifest: JsonObject): Published[] => [
     ...exportedOf(manifest.exports, '.', false),
     ...importedOf(manifest.imports),
     ...exportedOf(manifest.main, '.', false),
+    ...exportedOf(manifest.module, '.', false),
     ...binsOf(manifest.bin, manifest.name),
 ];
 

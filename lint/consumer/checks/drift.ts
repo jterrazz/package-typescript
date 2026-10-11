@@ -143,10 +143,9 @@ function rowsOf(
         ...rowsAligned([
             ...declaredOf(declaration),
             ['exceptions', exceptions + sum(members)],
-            ...Object.entries(members).map(([member, held]): Row => [
-                `  ${member}`,
-                `${String(held)} exceptions`,
-            ]),
+            ...Object.entries(members)
+                .filter(([, held]) => held > 0)
+                .map(([member, held]): Row => [`  ${member}`, `${String(held)} exceptions`]),
             ['rules off vs profile', rulesOffOf(off)],
             ...(optOuts.length === 0
                 ? []

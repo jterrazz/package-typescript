@@ -1,0 +1,9 @@
+{
+    "name": "private-extension",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "dist/index.js",
+    "bin": { "tool": "dist/tool.js" },
+    "devDependencies": { "@types/vscode": "^1.90.0" }
+}

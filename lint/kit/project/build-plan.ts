@@ -10,7 +10,7 @@ import {
     outputOf,
     publishedOf,
 } from './entry-points.js';
-import { parsedObject } from './json.js';
+import { objectOf, parsedObject } from './json.js';
 import type { JsonObject } from './json.js';
 import { SETTINGS_FILE } from './jterrazz-config.js';
 import { withoutDotSlash } from './packed-files.js';
@@ -27,11 +27,12 @@ export type BuildStep = {
     clean: boolean;
     dts: boolean;
     entry: Readonly<Record<string, string>>;
+    deps?: { neverBundle: string[] };
     fixedExtension: false;
     format: ('cjs' | 'esm')[];
     hash: false;
     outDir: string;
-    outputOptions: { chunkFileNames: string; exports?: 'named' };
+    outputOptions: { banner?: string; chunkFileNames: string; exports?: 'named' };
     platform: 'browser' | 'node';
     sourcemap: true;
 };
@@ -127,7 +128,7 @@ export function conventionsOf(root: string): { problem: null | string; settings:
         : { problem: null, settings: { dev: devEntries, entries } };
 }
 
-type Planned = { browser: boolean; cjs: boolean; source: string };
+type Planned = { browser: boolean; cjs: boolean; esm: boolean; source: string };
 
 const manifestAt = (root: string): JsonObject => {
     const path = join(root, 'package.json');
@@ -156,8 +157,18 @@ function plannedOf(root: string): Map<string, Planned> {
             continue;
         }
         const output = outputOf(one.target, DIST);
-        const known = planned.get(output) ?? { browser: one.browser, cjs: false, source };
-        planned.set(output, { ...known, cjs: known.cjs || one.target.endsWith('.cjs') });
+        const known = planned.get(output) ?? {
+            browser: one.browser,
+            cjs: false,
+            esm: false,
+            source,
+        };
+        const isCjs = one.target.endsWith('.cjs');
+        planned.set(output, {
+            ...known,
+            cjs: known.cjs || isCjs,
+            esm: known.esm || !isCjs,
+        });
     }
 
     return planned;
@@ -166,21 +177,25 @@ function plannedOf(root: string): Map<string, Planned> {
 const stepOf = (
     entry: Readonly<Record<string, string>>,
     {
+        banner,
         clean = false,
         dts = true,
+        external = [],
         format = ['esm'],
         outDir = DIST,
         platform,
-    }: Partial<BuildStep> & Pick<BuildStep, 'platform'>,
+    }: Partial<BuildStep> & { banner?: string; external?: string[] } & Pick<BuildStep, 'platform'>,
 ): BuildStep => ({
     clean,
     dts,
     entry,
+    ...(external.length === 0 ? {} : { deps: { neverBundle: external } }),
     fixedExtension: false,
     format,
     hash: false,
     outDir,
     outputOptions: {
+        ...(banner === undefined ? {} : { banner }),
         chunkFileNames: 'shared-[name].js',
         ...(format.includes('cjs') ? { exports: 'named' as const } : {}),
     },
@@ -191,28 +206,102 @@ const stepOf = (
 const entryRecord = (outputs: readonly [string, Planned][]): Record<string, string> =>
     Object.fromEntries(outputs.map(([output, { source }]) => [output, source]));
 
+type Shape = { dts: boolean; external: string[] };
+
+const HASHBANG = '#!/usr/bin/env node';
+
+const DEPENDENCY_FIELDS = [
+    'dependencies',
+    'devDependencies',
+    'optionalDependencies',
+    'peerDependencies',
+];
+
+// outside: a host program (an editor, a browser) ships its API as `@types/<name>` and exists only inside the process that loads the extension; the bundler finds no package to resolve, and the build is not told to look for one.
+function hostModulesOf(manifest: JsonObject): string[] {
+    const declared = DEPENDENCY_FIELDS.flatMap((field) => Object.keys(objectOf(manifest[field])));
+    const held = new Set(declared);
+
+    return declared
+        .filter((name) => name.startsWith('@types/'))
+        .map((name) => {
+            const typed = name.slice('@types/'.length);
+
+            return typed.includes('__') ? `@${typed.replace('__', '/')}` : typed;
+        })
+        .filter((name) => !held.has(name))
+        .toSorted();
+}
+
+// invariant: a library or a cli that is private is installed by its own repository, which reads no declaration of it: emitting them only fails on a module the host provides.
+function shapeOf(root: string, declaration: null | ProjectIdentity): Shape {
+    const manifest = manifestAt(root);
+    const unread =
+        manifest.private === true && ['cli', 'library'].includes(declaration?.kind ?? '');
+
+    return { dts: !unread, external: hostModulesOf(manifest) };
+}
+
+const lacksHashbang = (root: string, source: string): boolean => {
+    try {
+        return !readFileSync(join(root, source), 'utf8').startsWith('#!');
+    } catch {
+        return false;
+    }
+};
+
+// invariant: the command a `bin` names is run by its path, so the file opens on the interpreter line the source may omit; a source that holds one keeps it.
+function nodeEntries(
+    entries: Readonly<Record<string, string>>,
+    root: string,
+    shape: Shape,
+    platform: BuildStep['platform'],
+): BuildStep[] {
+    const withBin = Object.entries(entries).filter(
+        ([, source]) => source.endsWith('.bin.ts') && lacksHashbang(root, source),
+    );
+    const bins = Object.fromEntries(withBin);
+    const others = Object.fromEntries(
+        Object.entries(entries).filter(([output]) => !(output in bins)),
+    );
+
+    return [
+        ...(Object.keys(others).length === 0 ? [] : [stepOf(others, { ...shape, platform })]),
+        ...(withBin.length === 0 ? [] : [stepOf(bins, { ...shape, banner: HASHBANG, platform })]),
+    ];
+}
+
 function publishedSteps(
     planned: readonly [string, Planned][],
     shipped: Readonly<Record<string, string>>,
     own: BuildStep['platform'],
-    root: string,
+    [root, shape]: [string, Shape],
 ): BuildStep[] {
-    const dual = planned.filter(([, one]) => !one.browser && one.cjs);
+    const dual = planned.filter(([, one]) => !one.browser && one.cjs && one.esm);
+    const required = planned.filter(([, one]) => !one.browser && one.cjs && !one.esm);
     const browser = planned.filter(([, one]) => one.browser);
     const defaulted =
         planned.length === 0 &&
         (Object.keys(shipped).length === 0 || existsSync(join(root, DEFAULT_SOURCE)));
     const entries = { ...(defaulted ? DEFAULT_ENTRY : {}), ...shipped };
-    const first = Object.keys(entries).length > 0 ? entries : null;
 
     return [
-        ...(first === null ? [] : [stepOf(first, { platform: own })]),
+        ...nodeEntries(entries, root, shape, own),
         ...(dual.length === 0
             ? []
-            : [stepOf(entryRecord(dual), { format: ['esm', 'cjs'], platform: own })]),
+            : [stepOf(entryRecord(dual), { ...shape, format: ['esm', 'cjs'], platform: own })]),
+        ...(required.length === 0
+            ? []
+            : [stepOf(entryRecord(required), { ...shape, format: ['cjs'], platform: own })]),
         ...(browser.length === 0
             ? []
-            : [stepOf(entryRecord(browser), { dts: false, platform: 'browser' })]),
+            : [
+                  stepOf(entryRecord(browser), {
+                      dts: false,
+                      external: shape.external,
+                      platform: 'browser',
+                  }),
+              ]),
     ];
 }
 
@@ -223,6 +312,7 @@ export function buildPlanOf(
     const planned = [...plannedOf(root)];
     const main = planned.filter(([, one]) => !one.browser && !one.cjs);
     const platform = declaration?.platform;
+    const shape = shapeOf(root, declaration);
     const own = [...BROWSER_PLATFORMS].some((one) => one === platform);
     // invariant: a mobile app is bundled by its framework — Metro, through `expo export` — and publishes nothing a package build compiles: its `main` names the router's entry, never a module of dist/.
     const steps =
@@ -232,7 +322,7 @@ export function buildPlanOf(
                   planned,
                   { ...entryRecord(main), ...settings.entries },
                   own ? 'browser' : 'node',
-                  root,
+                  [root, shape],
               );
     const [leading] = steps;
     if (leading !== undefined) {
@@ -242,7 +332,15 @@ export function buildPlanOf(
 
     return Object.keys(dev).length === 0
         ? steps
-        : [...steps, stepOf(dev, { clean: true, outDir: DEV_OUTPUT, platform: 'node' })];
+        : [
+              ...steps,
+              stepOf(dev, {
+                  clean: true,
+                  external: shape.external,
+                  outDir: DEV_OUTPUT,
+                  platform: 'node',
+              }),
+          ];
 }
 
 /** The build a project's manifest, its tree and its declaration derive, or the refusal of a declaration that does not read; a setting the build does not read is the check's to refuse. */

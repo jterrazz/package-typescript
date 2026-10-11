@@ -260,6 +260,93 @@ describe('build-plan', () => {
         ]);
     });
 
+    test('buildPlanOf — a private library or cli emits no declarations, a published one does', () => {
+        // Given - the same index, once private and once published
+        const files = ['src/index.ts'];
+        const privateRoot = tree(files, { main: './dist/index.js', name: 'kit', private: true });
+        const publishedRoot = tree(files, { main: './dist/index.js', name: 'kit' });
+        const dtsOf = (root: string, kind: 'api' | 'cli' | 'library'): boolean[] =>
+            buildPlanOf(root, {
+                declaration: { kind, platform: 'node' },
+                settings: conventionsOf(root).settings,
+            }).map(({ dts }) => dts);
+
+        // Then - nothing reads the declarations of a private library or cli, and a published library ships them
+        expect([
+            dtsOf(privateRoot, 'library'),
+            dtsOf(privateRoot, 'cli'),
+            dtsOf(publishedRoot, 'library'),
+            dtsOf(privateRoot, 'api'),
+        ]).toStrictEqual([[false], [false], [true], [true]]);
+    });
+
+    test('buildPlanOf — a target builds only the formats the manifest names', () => {
+        // Given - a main that names a CommonJS file alone, and an export naming both
+        const required = tree(['src/index.ts'], { main: './dist/index.cjs', name: 'only-cjs' });
+        const both = tree(['src/index.ts'], {
+            exports: { import: './dist/index.js', require: './dist/index.cjs' },
+            name: 'both',
+        });
+        const formatsOf = (root: string): string[][] =>
+            buildPlanOf(root, {
+                declaration: { kind: 'library', platform: 'node' },
+                settings: conventionsOf(root).settings,
+            }).map(({ format }) => format);
+
+        // Then - the CommonJS-only target builds no ESM beside it, the dual one builds both
+        expect([formatsOf(required), formatsOf(both)]).toStrictEqual([[['cjs']], [['esm', 'cjs']]]);
+    });
+
+    test('buildPlanOf — a module only the host provides is left to it, named by its types package', () => {
+        // Given - an extension typed by @types/vscode with no vscode package, a scoped host, and a package whose types come with it
+        const root = tree(['src/index.ts'], {
+            devDependencies: {
+                '@types/node': '^24.0.0',
+                '@types/vscode': '^1.90.0',
+                '@types/webpack__env': '^1.0.0',
+                node: '^24.0.0',
+            },
+            main: './dist/index.js',
+            name: 'extension',
+        });
+
+        // Then - every step leaves the two hosts out of the bundle and resolves the real package
+        expect(
+            buildPlanOf(root, {
+                declaration: { kind: 'library', platform: 'node' },
+                settings: conventionsOf(root).settings,
+            }).map(({ deps }) => deps?.neverBundle),
+        ).toStrictEqual([['@webpack/env', 'vscode']]);
+    });
+
+    test('buildPlanOf — a bin whose source opens on no interpreter line gets one, and a source that holds it keeps its own', () => {
+        // Given - two commands, one source with a hashbang
+        const root = tree(['src/tool.bin.ts', 'src/other.bin.ts', 'src/index.ts'], {
+            bin: { other: './dist/other.js', tool: './dist/tool.js' },
+            main: './dist/index.js',
+            name: 'tools',
+        });
+        writeFileSync(join(root, 'src/other.bin.ts'), '#!/usr/bin/env node\nexport {};\n');
+        writeFileSync(join(root, 'src/tool.bin.ts'), 'export {};\n');
+
+        // When - the plan is derived
+        const steps = buildPlanOf(root, {
+            declaration: { kind: 'cli', platform: 'node' },
+            settings: conventionsOf(root).settings,
+        });
+
+        // Then - the command lacking one is built apart under the interpreter line, the others without a banner
+        expect(
+            steps.map(({ entry, outputOptions }) => [
+                Object.keys(entry),
+                outputOptions.banner ?? null,
+            ]),
+        ).toStrictEqual([
+            [['index', 'other'], null],
+            [['tool'], '#!/usr/bin/env node'],
+        ]);
+    });
+
     test('planOf — refuses a declaration that does not read and two modules built to one name before anything else, then every unsourced target in one line, and plans the rest', () => {
         // Given - a settings file that does not resolve, two workers of one name, a manifest whose two targets have no entry, and a clean application
         const unsourced = tree([], { bin: { a: './dist/a.js', b: './dist/b.js' }, name: 'two' });

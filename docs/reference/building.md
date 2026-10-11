@@ -29,9 +29,11 @@ A `mobile` app builds nothing here: Metro bundles it, through `npx expo export`,
 Each target decides its output by its extension and its condition:
 
 - a `.js` target is ESM, with its declarations and source map;
-- a `.cjs` target adds a CommonJS output beside the ESM one, for a package loaded by `require`;
+- a `.cjs` target adds a CommonJS output beside the ESM one, for a package loaded by `require`; a manifest that names `.cjs` alone (a `main` with no `module` or `import` beside it) builds CommonJS alone;
 - a `browser` condition is built apart, for the browser platform, with no declarations — its `types` are the node build's;
 - the rest is built for the platform the project declares: the browser for `react`, `next`, `astro` and `expo`, Node otherwise.
+
+Three more things follow from the manifest. A `library` or a `cli` that is `private` is installed by its own repository and read by no consumer, so its build emits no declarations (an ambient module of its host failed the build of an editor extension). A host module typed by `@types/<name>` with no `<name>` package of its own (`vscode` is the case) exists only in the process that loads the extension, so it is left out of the bundle and stays an import. And a `bin` built from `src/<name>.bin.ts` opens on `#!/usr/bin/env node`, which the build adds when the source holds none and leaves where it does.
 
 A module two entries share is written once, as `dist/shared-<name>.js`. A `library` emits its declarations with the type-checker, so an export with no annotation is published with the type the checker infers for it. [ADR-018](../decisions/018-a-project-declares-what-it-is-and-every-config-follows.md#consequences) records why they are not built file by file with `isolatedDeclarations`.
 
