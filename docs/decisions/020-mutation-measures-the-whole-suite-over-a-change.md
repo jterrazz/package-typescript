@@ -42,8 +42,9 @@ Stryker estimated sixty hours for the 11,200 the module tests left.
 - Every process a test spawns imports a reporter first. The parent hands it
   the active mutant; it hands back the mutants it ran — what is new every
   tenth of a second, the rest on exit — which the parent credits to the test
-  that spawned it. A process a signal kills loses only its last tenth of a
-  second, and one still running after its test file's last test hands back
+  that spawned it. A process sent SIGTERM or SIGINT hands back what it ran
+  and dies of that signal; one killed by SIGKILL loses only its last tenth
+  of a second, and one still running after its test file's last test hands back
   nothing more: what only it ran reads as run by no test.
 - A mutant activates before the test file loads, so module-level code runs
   mutated. A static mutant is credited to every test of each file whose

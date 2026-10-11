@@ -49,7 +49,8 @@ const OWN_PROCESSES_PLUGIN_SOURCE = `const ownProcesses = {
 `;
 
 // invariant: every process a test spawns runs the instrumented build with this module imported first: it reports the mutants it ran — the parent credits them to the test that spawned it.
-// hazard: no handler catches SIGKILL, and one for SIGTERM would swallow a signal a process sends itself as it ends; the reporter hands back what is new every tenth of a second instead, so a killed process loses only its last tenth, and one still running after its test file's last test hands back nothing more.
+// hazard: no handler catches SIGKILL, so the reporter also hands back what is new every tenth of a second, and a process killed that way loses only its last tenth.
+// invariant: a SIGTERM or a SIGINT flushes before the process dies — `child.kill()` ends a spawned process before its next tick — and the signal is raised again once the reporter's own handler is gone, so the process dies of the signal it was sent, as it would have without the reporter; another handler of the process keeps the shutdown, which its exit then reports.
 export const CHILD_COVERAGE_SOURCE = `const { renameSync, writeFileSync } = require('node:fs');
 const { join } = require('node:path');
 
@@ -89,6 +90,14 @@ function report() {
 
 process.on('exit', report);
 setInterval(report, 100).unref();
+for (const signal of ['SIGINT', 'SIGTERM']) {
+    process.once(signal, () => {
+        report();
+        if (process.listenerCount(signal) === 0) {
+            process.kill(process.pid, signal);
+        }
+    });
+}
 `;
 
 export const RAN_BY_TESTS_VARIABLE = '__TYPESCRIPT_MUTATION_RAN_BY_TESTS__';
