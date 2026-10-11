@@ -202,4 +202,18 @@ describe('preset', () => {
             { extensions: ['ts', 'tsx'], roots: ['src'] },
         ]);
     });
+
+    test('typescriptPreset — a Remotion project brings the two files its CLI loads by name to knip', () => {
+        // Given - a website declaring remotion
+        const preset = typescriptPreset(
+            { kind: 'website', platform: 'react' },
+            new Set(['remotion']),
+        );
+
+        // Then - the config and the root are entries, each with the reason it is one
+        expect(objectOf(objectOf(preset.settings).knip).entry).toStrictEqual({
+            'remotion.config.ts': 'the Remotion CLI loads its config file by this name',
+            'src/index.ts': "the Remotion CLI bundles the project's root from this file by name",
+        });
+    });
 });

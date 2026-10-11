@@ -3,6 +3,7 @@ import ASTRO_CHECK from '../../../src/standard/dependencies/astro-check.js';
 import ASTRO_REACT from '../../../src/standard/dependencies/astro-react.js';
 import PATCH_PACKAGE from '../../../src/standard/dependencies/patch-package.js';
 import PRISMA from '../../../src/standard/dependencies/prisma.js';
+import REMOTION from '../../../src/standard/dependencies/remotion.js';
 import API from '../../../src/standard/kinds/api.js';
 import CLI from '../../../src/standard/kinds/cli.js';
 import LIBRARY from '../../../src/standard/kinds/library.js';
@@ -52,6 +53,7 @@ const DEPENDENCY_STANDARDS: Readonly<Record<string, { name: string; standard: St
     '@prisma/client': { name: 'prisma', standard: PRISMA },
     'appium-xcuitest-driver': { name: 'appium-xcuitest-driver', standard: APPIUM_XCUITEST_DRIVER },
     'patch-package': { name: 'patch-package', standard: PATCH_PACKAGE },
+    remotion: { name: 'remotion', standard: REMOTION },
 };
 
 export const BASELINE_SECTION = 'typescript';

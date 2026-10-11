@@ -7,16 +7,21 @@ import { allOn, fragment, off, on } from '../../kit/compiler/decision.js';
 export const IMPORT_ASSETS = {
     avif: 'always',
     css: 'always',
+    eot: 'always',
     gif: 'always',
     jpeg: 'always',
     jpg: 'always',
     json: 'always',
     less: 'always',
+    otf: 'always',
     png: 'always',
     sass: 'always',
     scss: 'always',
     svg: 'always',
+    ttf: 'always',
     webp: 'always',
+    woff: 'always',
+    woff2: 'always',
 };
 
 // outside: a module imported for what loading it does is named so by its package: `<package>/register` registers a hook, `dotenv/config` loads a .env file.
