@@ -286,7 +286,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-expressions = ["error",{"allowShortCircuit":true,"allowTaggedTemplates":true,"allowTernary":true}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-labels = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-private-class-members = "error"
-            @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-vars = ["error",{"ignoreUsingDeclarations":true}]
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-unused-vars = ["error",{"argsIgnorePattern":"^_","caughtErrorsIgnorePattern":"^_","destructuredArrayIgnorePattern":"^_","ignoreUsingDeclarations":true,"varsIgnorePattern":"^_"}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-use-before-define = ["error",{"classes":true,"functions":false,"variables":false}]
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-useless-backreference = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.no-useless-call = "error"
