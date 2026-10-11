@@ -254,4 +254,37 @@ describe('preset', () => {
             undefined,
         ]);
     });
+
+    test.each([
+        ['@astrojs/check', 'astro-check', 'astro'],
+        ['@astrojs/react', 'astro-react', 'astro'],
+        ['@prisma/client', 'prisma', 'node'],
+        ['@react-router/dev', 'react-router-dev', 'react'],
+        ['@types/vscode', 'types-vscode', 'node'],
+        ['appium-xcuitest-driver', 'appium-xcuitest-driver', 'node'],
+        ['patch-package', 'patch-package', 'node'],
+        ['remotion', 'remotion', 'node'],
+        ['vite', 'vite', 'react'],
+    ] as const)(
+        'typescriptPreset — a unit declaring %s takes the standard %s as its last origin',
+        (dependency, name, platform) => {
+            // Given - a library on the platform, with the dependency declared
+            const preset = typescriptPreset({ kind: 'library', platform }, new Set([dependency]));
+
+            // Then - the last origin is the dependency's own file, named for it
+            expect(preset.origins?.at(-1)?.file).toBe(`src/standard/dependencies/${name}.ts`);
+        },
+    );
+
+    test('typescriptPreset — vite brings its standard to a react unit alone', () => {
+        // Given - the same declaration on react and on node
+        const react = typescriptPreset({ kind: 'library', platform: 'react' }, new Set(['vite']));
+        const node = typescriptPreset({ kind: 'library', platform: 'node' }, new Set(['vite']));
+
+        // Then - only the react unit reads it
+        expect([react.origins?.at(-1)?.file, node.origins?.at(-1)?.file]).toStrictEqual([
+            'src/standard/dependencies/vite.ts',
+            'src/standard/platforms/node.ts',
+        ]);
+    });
 });

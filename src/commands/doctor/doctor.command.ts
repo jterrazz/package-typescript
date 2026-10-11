@@ -10,7 +10,7 @@ import type { Resolved } from '../../../lint/kit/project/preset.js';
 import { toolVersions } from '../../../lint/kit/project/tool-versions.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { badge, print } from '../check/report/terminal.js';
-import { reportBrowsers } from './browsers.js';
+import { reportBrowsers } from './browser-report.js';
 import { derivedOf } from './derived.js';
 import { reportPinnedPair } from './pinned-pair.js';
 

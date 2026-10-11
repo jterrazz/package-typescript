@@ -1,6 +1,15 @@
-import { describe, expect, test } from 'vitest';
+import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { blankComments, commentSpansOf, isCommentedElsewhere, quotedMask } from '../comments.js';
+import {
+    blankComments,
+    commentSpansOf,
+    countStrykerDirectives,
+    isCommentedElsewhere,
+    quotedMask,
+} from '../comments.js';
 
 const SOURCE_TEXT = `const a = 'x // y'; // note
 /* opened
@@ -164,5 +173,34 @@ describe('comments', () => {
         expect(paths.filter((path) => isCommentedElsewhere(path))).toStrictEqual(
             paths.slice(0, 16),
         );
+    });
+
+    test('countStrykerDirectives — counts the directives of the source files the project holds, those left out by its ignore patterns and those of other files not', () => {
+        // Given - two directives in a source, one in a folder the project ignores, one in a markdown page, and a source nobody can read
+        const root = mkdtempSync(join(tmpdir(), 'stryker-directives-'));
+        onTestFinished(() => {
+            rmSync(root, { force: true, recursive: true });
+        });
+        const files: Record<string, string> = {
+            'notes/page.md': '// Stryker disable next-line all: prose\n',
+            'quoted/b.ts': '// Stryker disable next-line all: quoted upstream\n',
+            'src/a.ts':
+                '// Stryker disable next-line all: one\nconst a = 1; // Stryker disable next-line all: two\n',
+        };
+        for (const [path, text] of Object.entries(files)) {
+            mkdirSync(dirname(join(root, path)), { recursive: true });
+            writeFileSync(join(root, path), text);
+        }
+        writeFileSync(
+            join(root, 'src/locked.ts'),
+            '// Stryker disable next-line all: unreadable\n',
+        );
+        chmodSync(join(root, 'src/locked.ts'), 0o000);
+
+        // Then - all but the page, and all but the ignored folder once it is named
+        expect([
+            countStrykerDirectives(root),
+            countStrykerDirectives(root, ['quoted/**']),
+        ]).toStrictEqual([3, 2]);
     });
 });

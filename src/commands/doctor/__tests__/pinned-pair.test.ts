@@ -32,6 +32,25 @@ function projectWith(files: Record<string, string>): string {
 
 const npmLock = (packages: Record<string, unknown>): string => JSON.stringify({ packages });
 
+const lock = (provider: string[], runner: string[]): string =>
+    npmLock({
+        ...Object.fromEntries(
+            provider.map((version, index) => [
+                `${'node_modules/x/'.repeat(index)}node_modules/${PROVIDER}`,
+                { version },
+            ]),
+        ),
+        ...Object.fromEntries(
+            runner.map((version, index) => [
+                `${'node_modules/y/'.repeat(index)}node_modules/vitest`,
+                { version },
+            ]),
+        ),
+    });
+
+const pairOf = (provider: string[], runner: string[]): unknown =>
+    pinnedPair(projectWith({ 'package-lock.json': lock(provider, runner) }));
+
 const DECLARES = JSON.stringify({ devDependencies: { [PROVIDER]: '^4' } });
 
 function printed(work: () => unknown): { result: unknown; text: string } {
@@ -45,7 +64,7 @@ function printed(work: () => unknown): { result: unknown; text: string } {
     return { result, text: chunks.join('') };
 }
 
-describe('pinned-pair', () => {
+describe('pinnedPair', () => {
     test('npmVersions — reads the version of every copy of a package, nested ones too, and of no package whose path only ends alike', () => {
         // Given - the package at the top, nested under another, a package with the name as a prefix, a path with the name past a slash only, an entry with no version
         const text = npmLock({
@@ -131,23 +150,6 @@ describe('pinned-pair', () => {
 
     test('pinnedPair — a runner the lock lacks, a provider with two versions, a runner with two, and a patch apart are each skewed', () => {
         // Given - the four skews
-        const lock = (provider: string[], runner: string[]): string =>
-            npmLock({
-                ...Object.fromEntries(
-                    provider.map((version, index) => [
-                        `${'node_modules/x/'.repeat(index)}node_modules/${PROVIDER}`,
-                        { version },
-                    ]),
-                ),
-                ...Object.fromEntries(
-                    runner.map((version, index) => [
-                        `${'node_modules/y/'.repeat(index)}node_modules/vitest`,
-                        { version },
-                    ]),
-                ),
-            });
-        const pairOf = (provider: string[], runner: string[]): unknown =>
-            pinnedPair(projectWith({ 'package-lock.json': lock(provider, runner) }));
 
         // Then - each verdict is skewed, the lists as the lock holds them sorted
         expect([
@@ -211,8 +213,8 @@ describe('pinned-pair', () => {
         ]);
     });
 
-    test('reportPinnedPair — prints nothing without a pair, the pair when it holds, the pair and its refusal when it is skewed, and says a lock is unread', () => {
-        // Given - a project with no lock, an agreeing one, a skewed one and a yarn one
+    test('reportPinnedPair — prints nothing without a pair, and the pair when it holds', () => {
+        // Given - a project with no lock, and an agreeing one
         const none = projectWith({ 'package.json': '{}' });
         const ok = projectWith({
             'package-lock.json': npmLock({
@@ -220,26 +222,45 @@ describe('pinned-pair', () => {
                 'node_modules/vitest': { version: '4.1.10' },
             }),
         });
+
+        // Then - nothing for the first; for the second the pair, aligned, and a verdict that fails nothing
+        expect([
+            printed(() => reportPinnedPair(none)),
+            printed(() => reportPinnedPair(ok)),
+        ]).toStrictEqual([
+            { result: false, text: '' },
+            {
+                result: false,
+                text: `\nPinned together\n\n  vitest                      4.1.10\n  ${PROVIDER}  4.1.10      ok\n\n`,
+            },
+        ]);
+    });
+
+    test('reportPinnedPair — prints the pair and its refusal when it is skewed, and answers that it failed', () => {
+        // Given - a lock whose provider is a patch behind
         const skewed = projectWith({
             'package-lock.json': npmLock({
                 [`node_modules/${PROVIDER}`]: { version: '4.1.9' },
                 'node_modules/vitest': { version: '4.1.10' },
             }),
         });
-        const yarn = projectWith({ 'package.json': DECLARES, 'yarn.lock': '' });
 
-        // Then - each prints what it must and answers whether it failed
-        expect(printed(() => reportPinnedPair(none))).toStrictEqual({ result: false, text: '' });
-        expect(printed(() => reportPinnedPair(ok))).toStrictEqual({
-            result: false,
-            text: `\nPinned together\n\n  vitest                      4.1.10\n  ${PROVIDER}  4.1.10      ok\n\n`,
-        });
+        // When - it is reported
         const skew = printed(() => reportPinnedPair(skewed));
+
+        // Then - the verdict failed, the pair stands aligned, and the refusal names both versions
         expect(skew.result).toBe(true);
         expect(skew.text).toContain(
             `  vitest                      4.1.10\n  ${PROVIDER}  4.1.9       skewed\n\n`,
         );
         expect(skew.text).toContain(`found: ${PROVIDER} 4.1.9 is not vitest 4.1.10`);
+    });
+
+    test('reportPinnedPair — says a lock the toolchain does not parse leaves the pin unchecked, and fails nothing', () => {
+        // Given - a yarn lock beside a manifest declaring the provider
+        const yarn = projectWith({ 'package.json': DECLARES, 'yarn.lock': '' });
+
+        // Then - the lock is named as unread
         expect(printed(() => reportPinnedPair(yarn))).toStrictEqual({
             result: false,
             text: `\nPinned together\n\n  ${PROVIDER}  yarn.lock is not parsed here — the pin is unchecked\n\n`,

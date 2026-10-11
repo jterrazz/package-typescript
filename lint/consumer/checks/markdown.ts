@@ -4,6 +4,7 @@ import { filesKeptByteForByte } from '../../kit/checker/kept-files.js';
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import { isGitIgnored, readText } from '../../kit/project/project-files.js';
 import { airlessFences, FENCE, linesWithFrontmatterBlanked } from './markdown.fences.js';
+import { QUALIFIED_BY_REPOSITORY, unlinkedReferences, withoutGenerated } from './markdown.parts.js';
 import { brokenLinks, rumdl } from './markdown.rumdl.js';
 
 type Found = { message: string; rule: string };
@@ -23,15 +24,6 @@ const BACKTICK_PATH =
     /`(?<path>(?:apps|bin|lib|lint|packages|presets|specs|tests)\/[a-zA-Z\d._/-]+)`/gu;
 
 const withoutFences = (markdown: string): string => markdown.replaceAll(/^```.*?^```/gmsu, '');
-
-// outside: a generated region is written between markers by the program that owns it (`<!-- GENERATED:name -->` … `<!-- /GENERATED:name -->`): its text is that program's, and a page-level rule would only ask the page to fight it.
-const GENERATED_REGION = /<!-- GENERATED:(?<name>\S+)[^>]*-->.*?<!-- \/GENERATED:\k<name> -->/gsu;
-
-const withoutGenerated = (markdown: string): string =>
-    markdown.replaceAll(GENERATED_REGION, (region) => region.replaceAll(/[^\n]/gu, ''));
-
-// invariant: a page named by a code span qualified with another repository's name (`package-typescript` `docs/reference/x.md`) is that repository's to resolve.
-const QUALIFIED_BY_REPOSITORY = /`@?[\w.-]+(?:\/[\w.-]+)?`\s+`$/u;
 
 const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s/u;
 const TABLE_ROW = /^\s*\|/u;
@@ -195,32 +187,6 @@ function auditPage(context: Context, path: string, written: string): Found[] {
     }
 
     return found;
-}
-
-const SKILL_REFERENCE = /^(?<skill>skills\/[^/]+)\/references\/(?<page>[^/]+\.md)$/u;
-
-// invariant: a reference is disclosed step by step, and an agent opens one only where the SKILL.md points to it; a page nothing links is a page no one reads.
-function unlinkedReferences(
-    files: readonly string[],
-    read: (path: string) => null | string,
-): Finding[] {
-    return files.flatMap((path) => {
-        const { page, skill } = SKILL_REFERENCE.exec(path)?.groups ?? {};
-        if (skill === undefined || page === undefined) {
-            return [];
-        }
-        const entry = `${skill}/SKILL.md`;
-
-        return (read(entry) ?? '').includes(`references/${page}`)
-            ? []
-            : [
-                  {
-                      message: `${path} is linked from no line of ${entry}`,
-                      path: entry,
-                      rule: 'markdown/skill-links-its-references',
-                  },
-              ];
-    });
 }
 
 export const markdown: Pass = Object.freeze({

@@ -130,4 +130,23 @@ describe('manifest', () => {
         // Then - the globs it declares, and no other value
         expect(workspacePatterns(manifest)).toStrictEqual(expected);
     });
+
+    test('readManifest — a manifest that is no JSON, or holds no object, reads as none', () => {
+        // Given - a manifest cut short, one holding a list, one holding an object, and a folder with none
+        const broken = mkdtempSync(resolve(tmpdir(), 'pkg-manifest-'));
+        writeFileSync(resolve(broken, 'package.json'), '{"name":');
+        const listed = mkdtempSync(resolve(tmpdir(), 'pkg-manifest-'));
+        writeFileSync(resolve(listed, 'package.json'), '[1]');
+        const sound = mkdtempSync(resolve(tmpdir(), 'pkg-manifest-'));
+        manifestAt(sound, { name: 'sound' });
+        const bare = mkdtempSync(resolve(tmpdir(), 'pkg-manifest-'));
+
+        // Then - null for the three that hold none, the object for the sound one
+        expect([broken, listed, bare].map((dir) => readManifest(dir))).toStrictEqual([
+            null,
+            null,
+            null,
+        ]);
+        expect(readManifest(sound)).toStrictEqual({ name: 'sound' });
+    });
 });

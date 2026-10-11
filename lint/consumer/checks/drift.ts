@@ -125,16 +125,18 @@ async function membersExceptions(
     return Object.fromEntries(held);
 }
 
+const unmeasuredIn = (unit: string): number => unmeasuredBrowserMutants(unit) ?? 0;
+
 // invariant: a unit that ran no mutation holds no count, and a count of nothing is no row: the line appears only where the last run left browser-side mutants unclaimed.
 function unmeasuredOf(
     root: string,
     members: readonly string[],
 ): { members: Record<string, number>; root: number } {
-    const held = (unit: string): number => unmeasuredBrowserMutants(unit) ?? 0;
-
     return {
-        members: Object.fromEntries(members.map((member) => [member, held(join(root, member))])),
-        root: held(root),
+        members: Object.fromEntries(
+            members.map((member) => [member, unmeasuredIn(join(root, member))]),
+        ),
+        root: unmeasuredIn(root),
     };
 }
 

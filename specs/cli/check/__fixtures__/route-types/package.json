@@ -1,0 +1,10 @@
+{
+    "name": "fixture-route-types",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "src/index.ts",
+    "devDependencies": {
+        "@react-router/dev": "^8.0.0"
+    }
+}

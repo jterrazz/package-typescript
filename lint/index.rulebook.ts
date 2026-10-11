@@ -13,7 +13,7 @@ import { folderPlatformsOf } from './kit/project/folder-platforms.js';
 import { objectOf } from './kit/project/json.js';
 import { readConfig, SETTINGS_FILE } from './kit/project/jterrazz-config.js';
 import { presetLesson } from './kit/project/preset.js';
-import type { Resolution } from './kit/project/preset.js';
+import type { Preset, Resolution } from './kit/project/preset.js';
 import type { Platform } from './kit/project/project-kind.js';
 import { projectOxlintOf } from './kit/project/project-oxlint.js';
 import { workspaceMembers } from './kit/project/workspace-members.js';
@@ -45,6 +45,13 @@ const settingsRefusal = (problem: string): Error =>
         }),
     );
 
+// Stryker disable next-line ConditionalExpression,ArrayDeclaration: the merge reads a value that is no object as nothing, so a preset with no oxlint section merges alike whether it is dropped here or not
+const oxlintOf = ({ oxlint }: Preset): OxlintConfig[] => (oxlint === undefined ? [] : [oxlint]);
+
+// invariant: a key left undefined is still a key: a value that is absent leaves no key in the override it would have been part of.
+const optional = (key: string, value: unknown): Record<string, unknown> =>
+    value === undefined ? {} : { [key]: value };
+
 function oxlintConfigOf({ problem, resolved }: Resolution): OxlintConfig {
     if (problem !== null) {
         throw settingsRefusal(problem);
@@ -57,9 +64,7 @@ function oxlintConfigOf({ problem, resolved }: Resolution): OxlintConfig {
 
     return merge(
         PROFILE_CONFIGS[resolved.declaration?.platform ?? 'node'],
-        ...resolved.presets.flatMap((preset) =>
-            preset.oxlint === undefined ? [] : [preset.oxlint],
-        ),
+        ...resolved.presets.flatMap(oxlintOf),
         {
             ignorePatterns: verbatimTreesOf(resolved.sections.typescript),
             overrides,
@@ -80,9 +85,12 @@ function scopedTo(
     const { excludeFiles, files, ...rest } = override;
 
     return {
-        ...(plugins === undefined ? {} : { plugins }),
+        ...optional('plugins', plugins),
         ...rest,
-        ...(excludeFiles === undefined ? {} : { excludeFiles: within(member, excludeFiles) }),
+        ...optional(
+            'excludeFiles',
+            excludeFiles === undefined ? undefined : within(member, excludeFiles),
+        ),
         files: within(member, files),
     };
 }
@@ -96,11 +104,11 @@ function memberScoped(member: string, root: OxlintConfig, own: OxlintConfig): Ox
 
     return [
         {
-            ...(own.env === undefined ? {} : { env: own.env }),
+            ...optional('env', own.env),
             files: [`${member}/**`],
-            ...(own.globals === undefined ? {} : { globals: own.globals }),
-            ...(own.jsPlugins === undefined ? {} : { jsPlugins: own.jsPlugins }),
-            ...(own.plugins === undefined ? {} : { plugins: own.plugins }),
+            ...optional('globals', own.globals),
+            ...optional('jsPlugins', own.jsPlugins),
+            ...optional('plugins', own.plugins),
             rules: { ...unset, ...own.rules },
         },
         ...(own.overrides ?? []).map((override) => scopedTo(member, override, own.plugins)),

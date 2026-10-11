@@ -59,6 +59,7 @@ const SPEC_FILE = /\.spec\.(?:tsx?|ya?ml)$/u;
 function judgedDepth(segments: readonly string[]): number {
     const routerRoot = segments.indexOf(ROUTER_ROOT, 1);
 
+    // Stryker disable next-line ArithmeticOperator: the walk below stops at the file, so a depth one past it judges the file as a folder, which its own entry overwrites
     return Math.min(routerRoot === -1 ? Infinity : routerRoot + 1, segments.length - 1);
 }
 
@@ -78,7 +79,9 @@ function subjectFolders(
         ) {
             continue;
         }
+        // Stryker disable next-line EqualityOperator,ArithmeticOperator: the walk reaching the file adds its own path to the subjects, which the file's own entry in the sweep never reads
         for (let index = 2; index < segments.length - 1; index += 1) {
+            // Stryker disable next-line OptionalChaining: the index stays inside the path
             if (segments[index]?.startsWith('__') === true) {
                 break;
             }
@@ -109,6 +112,7 @@ function namesOf(files: readonly string[], specifications: ReadonlySet<string>):
         named.set(file, { fileName, name: stemOf(fileName) });
     }
 
+    // Stryker disable next-line EqualityOperator: the paths are the keys of a map, so the comparator is never asked to rank a path against itself
     return [...named].toSorted(([left], [right]) => (left < right ? -1 : 1));
 }
 

@@ -380,4 +380,14 @@ describe('build-plan', () => {
             ],
         ]);
     });
+
+    test('buildPlanOf — a browser build that is a CommonJS file is built for the browser alone, never again as a required CommonJS entry', () => {
+        // Given - a library whose browser condition publishes a .cjs beside an ES default
+        const root = tree(['src/index.ts', 'src/index.browser.ts'], {
+            exports: { '.': { browser: './dist/index.browser.cjs', default: './dist/index.js' } },
+        });
+
+        // Then - the unit's own step and the browser step, and no third for the CommonJS file
+        expect(formatsOf(root)).toHaveLength(2);
+    });
 });

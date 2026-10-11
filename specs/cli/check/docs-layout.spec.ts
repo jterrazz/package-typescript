@@ -57,4 +57,18 @@ describe('docs-layout', () => {
             ✗ Some checks failed
         `);
     });
+
+    test('asks no release guide of a workspace whose only library member is private', async () => {
+        // Given - the same workspace, its library member marked private
+        const result = await cli
+            .with({ env: onlyPasses('docs') })
+            .fixture(directory('./__fixtures__/docs/workspace-member-private/'))
+            .prepare((workdir) => {
+                git(workdir, 'init', '--quiet');
+            })
+            .exec('check');
+
+        // Then - nothing is published, so the guide is not asked for
+        expect(result.exitCode).toBe(0);
+    });
 });

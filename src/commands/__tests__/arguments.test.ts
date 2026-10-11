@@ -100,4 +100,20 @@ describe('readArguments', () => {
             ),
         ]);
     });
+
+    test('names, on a flag it does not read, the flags it reads joined by a comma, or says it reads none', () => {
+        // Given - an unknown flag on a command with flags and on one with none
+        const withFlags = readArguments('mutation', SURFACES.mutation, ['--bogus']);
+        const without = readArguments('fix', SURFACES.fix, ['--bogus']);
+
+        const lessons = [withFlags, without].map((read) =>
+            read.kind === 'refused' ? read.lesson : 'not refused',
+        );
+
+        // Then - the first lists every flag, comma and space between, the second says it reads no flag
+        expect(lessons[0]).toContain(
+            'fix: drop it — it reads --cold, --mutate <ranges>, --since <ref>',
+        );
+        expect(lessons[1]).toContain('fix: drop it — `typescript fix` reads no flag');
+    });
 });

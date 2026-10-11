@@ -12,6 +12,33 @@ import { cli } from '../cli.specification.js';
 
 const driftPass = cli.with({ env: onlyPasses('drift') });
 
+const reportsLaid = (workdir: string): void => {
+    for (const [folder, report] of [
+        ['', island('NoCoverage', 1)],
+        ['packages/clock', island('NoCoverage', 3)],
+        ['packages/quiet', island('Killed', 2)],
+    ] as const) {
+        const base = join(workdir, folder, '.artifacts/stryker');
+        mkdirSync(base, { recursive: true });
+        writeFileSync(join(base, 'report.json'), report);
+    }
+    writeFileSync(
+        join(workdir, 'packages/quiet/package.json'),
+        '{ "name": "quiet", "private": true, "type": "module" }\n',
+    );
+    writeFileSync(
+        join(workdir, 'packages/quiet/jterrazz.config.ts'),
+        "export default { kind: 'library', platform: 'node' };\n",
+    );
+};
+
+const mutant = (status: string): object => ({ status });
+
+const island = (status: string, count: number): string =>
+    JSON.stringify({
+        files: { 'src/island.tsx': { mutants: Array.from({ length: count }, () => ({ status })) } },
+    });
+
 function suppressingProject(toolchain: string): string {
     const project = temporaryDirectory('spec-drift-rows-');
     writeFileSync(
@@ -90,7 +117,6 @@ describe('drift', () => {
         const toolchain = toolchainWith({});
         const project = suppressingProject(toolchain);
         mkdirSync(join(project, '.artifacts/stryker'), { recursive: true });
-        const mutant = (status: string): object => ({ status });
         writeFileSync(
             join(project, '.artifacts/stryker/report.json'),
             JSON.stringify({
@@ -115,6 +141,31 @@ describe('drift', () => {
         // Then - the row counts the two island mutants, never the server one, and the JSON carries the same number
         expect(human).toContain('unmeasured                            2 mutants (browser-side)\n');
         expect(machine).toContain('"unmeasuredMutants": 2');
+    });
+
+    test('sums the unmeasured browser-side mutants over the members of a workspace, each member that holds some on a line of its own', async () => {
+        // Given - a workspace root and two members with reports, one of them holding only detected mutants, and a member with none
+        const workspace = driftPass
+            .fixture(directory('./__fixtures__/drift/workspace-members/'))
+            .prepare(reportsLaid);
+
+        // When - the drift is read as the human block and as the machine's object
+        const human = await workspace.exec('check');
+        const machine = await workspace.exec('check --json');
+        const reading = machine.stdout.text.slice(
+            machine.stdout.text.indexOf('{'),
+            machine.stdout.text.lastIndexOf('}') + 1,
+        );
+
+        // Then - the row sums root and members, names the member that holds some, and the machine carries the same numbers beside the exceptions' sum
+        expect(human.stdout.text).toContain(
+            'unmeasured                            4 mutants (browser-side)\n    packages/clock                      3 unmeasured mutants\n',
+        );
+        expect(JSON.parse(reading)).toMatchObject({
+            exceptions: 2,
+            unmeasuredByMember: { 'packages/clock': 3 },
+            unmeasuredMutants: 4,
+        });
     });
 
     test('prints the same reading for a machine under check --json', () => {

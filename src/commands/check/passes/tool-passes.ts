@@ -1,4 +1,4 @@
-import { appendFileSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, rmSync, writeFileSync } from 'node:fs';
 import process from 'node:process';
 
 import { readSettings } from '../../../../lint/index.rules.js';
@@ -23,6 +23,7 @@ import type { FixScope } from '../../../drivers/oxlint/unsafe-fixers.js';
 import { astroFormatted } from '../../../drivers/prettier/prettier.js';
 import { typeChecked } from '../../../drivers/tsc/tsc.js';
 import type { Launched } from './launched.js';
+import { fixReportCarried, lintOutcome } from './lint-outcome.js';
 import { routeTypesGenerated } from './route-types.js';
 import { oxfmt, oxlint } from './runners.js';
 import type { Check } from './setup.js';
@@ -161,6 +162,7 @@ export async function lintFix(check: Check): Promise<Fixed> {
 
         return { judged: true, status: 1 };
     }
+    // Stryker disable next-line StringLiteral: the root and an empty name resolve to the working directory alike
     const status = await keptAcross('.', async () => await fixedScopes(check, scopes));
     await pruned(check);
 
@@ -173,11 +175,9 @@ export async function lintJudged(check: Check, { judged, status }: Fixed): Promi
         return status;
     }
     const remaining = await lintCheck(check);
-    if (status !== 0) {
-        appendFileSync(check.logs.at('lint.log'), readFileSync(check.logs.at('fix-scopes.log')));
-    }
+    fixReportCarried(check, status);
 
-    return status === 0 ? remaining : status;
+    return lintOutcome(status, remaining);
 }
 
 export function formatCheck(check: Check): Launched | undefined {
@@ -203,6 +203,7 @@ async function knipUnit(unit: string): Promise<KnipUnit> {
         }
     }
 
+    // Stryker disable next-line ArrayDeclaration: a stand-in package name is one no manifest holds, which knip reads as an ignored dependency nothing declares
     const packages = resolved.presets.flatMap(({ loadedPackages }) => loadedPackages?.(unit) ?? []);
 
     return {

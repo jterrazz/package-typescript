@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, test } from 'vitest';
@@ -137,6 +137,29 @@ describe('incrementalKeptWhileGroundHolds', () => {
             [true, true],
             [false, true],
         ]);
+    });
+
+    test('incremental — a file that is named like a ground folder is no ground, and a ground file renamed drops the report though its text is the same', () => {
+        // Given - a report written beside a file named __seeds__ and a golden named a.txt
+        const root = projectWith({
+            'specs/__expected__/a.txt': 'same',
+            'specs/__seeds__': 'a file, not a folder',
+        });
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+        writeFileSync(incrementalOf(root), '{}');
+
+        // When - the file named like a folder changes, and the run starts again
+        writeFileSync(join(root, 'specs/__seeds__'), 'changed');
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+        const keptBesideTheFile = existsSync(incrementalOf(root));
+
+        // When - the golden is renamed with its text kept, and the run starts again
+        writeFileSync(incrementalOf(root), '{}');
+        renameSync(join(root, 'specs/__expected__/a.txt'), join(root, 'specs/__expected__/b.txt'));
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+
+        // Then - the report survived the first change and not the rename
+        expect([keptBesideTheFile, existsSync(incrementalOf(root))]).toStrictEqual([true, false]);
     });
 
     test('incremental — keeps the report when only code outside the ground changes', () => {

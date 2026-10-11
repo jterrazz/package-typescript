@@ -86,6 +86,7 @@ const proseOf = (line: string): string => line.replace(HOVER_LINE_MARGIN, '').tr
 function isOneParagraph(value: string): boolean {
     const lines = value.split('\n').map((line) => proseOf(line));
     const firstTag = lines.findIndex((line) => BLOCK_TAG.test(line));
+    // Stryker disable next-line ConditionalExpression,UnaryOperator: the last line of a hover's value is the blank before its closing, which a trimmed prose never counts, so dropping it where no tag stands changes nothing
     const prose = (firstTag === -1 ? lines : lines.slice(0, firstTag)).join('\n').trim();
 
     return !prose.includes('\n\n');

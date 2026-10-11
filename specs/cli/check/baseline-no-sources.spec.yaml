@@ -1,0 +1,9 @@
+description: records nothing for a project that holds no source to lint
+fixture: ./__fixtures__/baseline/no-sources/
+runs:
+    - command: baseline
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Recording the baseline...
+
+          .jterrazz/baseline.json › typescript written — 0 finding(s) across 0 rule(s)

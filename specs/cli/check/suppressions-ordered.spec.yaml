@@ -1,0 +1,18 @@
+description: lists the refusals of a file by their line, whichever audit found them
+fixture: ./__fixtures__/suppressions/ordered/
+env: TYPESCRIPT_CHECK_PASSES=suppressions
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Suppressions (directives)
+
+          index.ts:4:1: error suppressions(stryker-attaches-to-a-mutant): line 4 places a Stryker directive above a line led by `}`, where no mutant starts — move it to the line of the block's opening, or wrap the block in a `// Stryker disable <mutator>: <why>` … `// Stryker restore <mutator>` range
+          index.ts:10:1: error suppressions(spelled-for-this-toolchain): line 10 spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

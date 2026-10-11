@@ -34,12 +34,13 @@ export const verbatimTreesOf = (typescript: unknown): string[] =>
 export function keptByteForByte(typescript: unknown): string[] {
     const { oxfmt } = objectOf(typescript);
 
-    return [
-        ...new Set([
-            ...CONTENT_TREES,
-            ...GROUND_GLOBS,
-            ...Object.keys(objectOf(objectOf(oxfmt).ignore)).map(asTree),
-            ...verbatimTreesOf(typescript),
-        ]),
+    const handedToTheFormatter = Object.keys(objectOf(objectOf(oxfmt).ignore));
+    const kept = [
+        ...CONTENT_TREES,
+        ...GROUND_GLOBS,
+        ...handedToTheFormatter.map(asTree),
+        ...verbatimTreesOf(typescript),
     ];
+
+    return [...new Set(kept)];
 }

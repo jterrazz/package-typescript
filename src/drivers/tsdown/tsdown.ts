@@ -24,6 +24,16 @@ export async function builtFrom(steps: readonly BuildStep[], project: string): P
     );
 }
 
+/** The arguments tsdown watches with: the config, the project, and the command that starts the built application where `runs` says so. */
+export const watchArguments = (config: string, project: string, runs: boolean): string[] => [
+    '--config',
+    config,
+    '--cwd',
+    project,
+    '--watch',
+    ...(runs ? ['--on-success', 'node --enable-source-maps dist/index.js'] : []),
+];
+
 /** Builds, and builds again on every change, until the process ends; the built application is run too when `run` is true. */
 export async function watched(
     steps: readonly BuildStep[],
@@ -34,14 +44,7 @@ export async function watched(
         async (scratch) =>
             await handOver(
                 tsdown(project),
-                [
-                    '--config',
-                    written(scratch, steps),
-                    '--cwd',
-                    project,
-                    '--watch',
-                    ...(runs ? ['--on-success', 'node --enable-source-maps dist/index.js'] : []),
-                ],
+                watchArguments(written(scratch, steps), project, runs),
                 project,
             ),
     );

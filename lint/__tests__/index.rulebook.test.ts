@@ -42,7 +42,7 @@ function rulesSeen(config: Config) {
         jsPlugins: (base('apps/api')?.jsPlugins ?? []).length > 0,
         own: base('apps/api')?.rules?.['no-console'],
         scoped: [scoped?.rules, scoped?.plugins === base('apps/web')?.plugins],
-        unset: base('apps/api')?.rules?.['no-plusplus'],
+        unset: base('apps/api')?.rules?.['no-undef-init'],
     };
 }
 
@@ -108,7 +108,7 @@ describe('index.rulebook', () => {
                 "export default { kind: 'website', platform: 'react', typescript: { oxlint: { overrides: [{ files: ['src/**'], reason: 'r', rules: { 'react/jsx-no-useless-fragment': 'off' } }] } } };\n",
             'apps/web/package.json': '{ "name": "web", "private": true }\n',
             'jterrazz.config.ts':
-                "export default { kind: 'workspace', typescript: { oxlint: { rules: { 'no-plusplus': { level: 'error', reason: 'r' } } } } };\n",
+                "export default { kind: 'workspace', typescript: { oxlint: { rules: { 'no-undef-init': { level: 'error', reason: 'r' } } } } };\n",
             'package.json': '{ "name": "ws", "private": true, "workspaces": ["apps/*"] }\n',
         });
 
@@ -136,4 +136,94 @@ describe('index.rulebook', () => {
         );
         expect(config.ignorePatterns).not.toContain('apps/legacy/dist/**');
     });
+
+    test('oxlintConfigAt — a settings file that does not resolve, a rule set apart with no reason and a folder platform nobody knows are each refused, naming the file', async () => {
+        // Given - a unit declaring a kind that does not exist, one whose rule carries no reason, and one placing a folder on an unknown platform
+        const unknownKind = workspace({
+            'jterrazz.config.ts': "export default { kind: 'bogus', platform: 'node' };\n",
+            'package.json': '{ "name": "x", "private": true }\n',
+        });
+        const silentRule = workspace({
+            'jterrazz.config.ts':
+                "export default { kind: 'api', platform: 'node', typescript: { oxlint: { rules: { 'no-debugger': 'off' } } } };\n",
+            'package.json': '{ "name": "x", "private": true }\n',
+        });
+        const unknownPlatform = workspace({
+            'jterrazz.config.ts':
+                "export default { kind: 'api', platform: 'node', typescript: { platforms: { scripts: { platform: 'cobol', reason: 'r' } } } };\n",
+            'package.json': '{ "name": "x", "private": true }\n',
+        });
+
+        // When - each is derived
+        const outcomes = await Promise.allSettled(
+            [unknownKind, silentRule, unknownPlatform].map(
+                async (root) => await oxlintConfigAt(root),
+            ),
+        );
+
+        // Then - each is refused with the settings file named
+        expect(
+            outcomes.map(
+                (outcome) =>
+                    outcome.status === 'rejected' &&
+                    String(outcome.reason).includes('jterrazz.config.ts'),
+            ),
+        ).toStrictEqual([true, true, true]);
+    });
+
+    test('oxlintConfigAt — a unit that is no workspace reads no member, though its manifest lists some', async () => {
+        // Given - an api whose manifest lists a member that declares a platform of its own
+        const root = workspace({
+            'apps/web/jterrazz.config.ts':
+                "export default { kind: 'website', platform: 'react' };\n",
+            'apps/web/package.json': '{ "name": "web", "private": true }\n',
+            'jterrazz.config.ts': "export default { kind: 'api', platform: 'node' };\n",
+            'package.json': '{ "name": "ws", "private": true, "workspaces": ["apps/*"] }\n',
+        });
+
+        // When - its config is derived
+        const config = await oxlintConfigAt(root);
+
+        // Then - no override is scoped to the member
+        expect((config.overrides ?? []).some(({ files }) => files.includes('apps/web/**'))).toBe(
+            false,
+        );
+    });
+
+    test('oxlintConfigAt — a member’s override keeps the files it excludes, under the member’s folder, and a member sets no globals the profile does not', async () => {
+        // Given - a workspace whose api member brings a preset overriding a rule except in a generated folder
+        const root = workspace({
+            'apps/api/jterrazz.config.ts':
+                "export default { kind: 'api', platform: 'node', presets: [{ name: 'gen', package: 'gen', oxlint: { overrides: [{ files: ['src/**'], excludeFiles: ['src/generated/**'], rules: { 'no-console': 'off' } }] } }] };\n",
+            'apps/api/package.json': '{ "name": "api", "private": true }\n',
+            'jterrazz.config.ts': "export default { kind: 'workspace' };\n",
+            'package.json': '{ "name": "ws", "private": true, "workspaces": ["apps/*"] }\n',
+        });
+
+        // When - the workspace config is built
+        const config = await oxlintConfigAt(root);
+        const scoped = (config.overrides ?? []).find(({ files }) =>
+            files.includes('apps/api/src/**'),
+        );
+        const base = (config.overrides ?? []).find(
+            ({ files }) => files.length === 1 && files[0] === 'apps/api/**',
+        );
+
+        // Then - the exclusion follows the files, and the node member's base override names no globals
+        expect([scoped?.excludeFiles, Object.keys(base ?? {}).includes('globals')]).toStrictEqual([
+            ['apps/api/src/generated/**'],
+            false,
+        ]);
+    });
+
+    test.each(Object.entries(PROFILE_CONFIGS))(
+        'the %s profile names its env, its JS plugins and its plugins',
+        (_name, profile) => {
+            // Given - a profile a member can be linted by
+            // Then - each of the three a member's override carries is stated, so none is ever read as absent
+            expect(
+                [profile.env, profile.jsPlugins, profile.plugins].map((one) => one !== undefined),
+            ).toStrictEqual([true, true, true]);
+        },
+    );
 });

@@ -50,16 +50,47 @@ async function lintChecked(
     };
 }
 
+/** The passes that write files in a fix, in the order they are launched: the formatter waits for each of them. */
+export const writersOf = (
+    passes: Pick<
+        Started,
+        | 'architecture'
+        | 'astro'
+        | 'comments'
+        | 'config'
+        | 'gitignore'
+        | 'markdown'
+        | 'names'
+        | 'suppressions'
+    >,
+): (Launched | undefined)[] => [
+    passes.architecture,
+    passes.astro,
+    passes.comments,
+    passes.config,
+    passes.gitignore,
+    passes.markdown,
+    passes.names,
+    passes.suppressions,
+];
+
+/** Resolves once every writer has ended, whatever its status: a writer that failed has laid down what it could. */
+export async function writersDone(writers: readonly (Launched | undefined)[]): Promise<void> {
+    // Stryker disable next-line OptionalChaining: a launch that is missing throws inside the async arrow, and `allSettled` takes that rejection as the end of that writer all the same
+    await Promise.allSettled(writers.map(async (writer) => await writer?.status));
+}
+
 // invariant: the formatter writes last: every other writer of a fix has laid its text down, and a size cap is judged on the layout the formatter leaves.
 async function formattedLast(
     check: Check,
     fixed: Fixed | undefined,
     writers: readonly (Launched | undefined)[],
 ): Promise<{ format: Launched | undefined; lint: Promise<number> }> {
-    await Promise.allSettled(writers.map(async (writer) => await writer?.status));
+    await writersDone(writers);
     let formatting: Launched | undefined;
     if (check.selected('oxfmt')) {
         const log = check.logs.at('format.log');
+        // Stryker disable next-line ArrayDeclaration: oxfmt reads a stand-in argument as one more path to format, and a path that names no file is skipped
         formatting = { log, status: Promise.resolve(await oxfmt(check, [], log)) };
     }
     const lint = fixed === undefined ? Promise.resolve(0) : lintJudged(check, fixed);
@@ -87,16 +118,20 @@ export async function started(check: Check, config: Launched | undefined): Promi
     const publish = publishPasses(check);
     const { format, lint } =
         checked ??
-        (await formattedLast(check, fixed, [
-            architecture,
-            astro,
-            comments,
-            config,
-            gitignore,
-            markdown,
-            names,
-            suppressions,
-        ]));
+        (await formattedLast(
+            check,
+            fixed,
+            writersOf({
+                architecture,
+                astro,
+                comments,
+                config,
+                gitignore,
+                markdown,
+                names,
+                suppressions,
+            }),
+        ));
 
     return {
         architecture,

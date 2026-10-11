@@ -20,7 +20,7 @@ function repositoryWith(manifests: Record<string, string>): string {
 
 const WORKSPACE = '{"name":"root","workspaces":["packages/*"]}';
 
-describe('declared', () => {
+describe('declaredAnywhere', () => {
     test('declaredAnywhere — a package is declared when the root or a member holds it among its dependencies, dev dependencies or peers', () => {
         // Given - a root declaring one package three ways, and a member declaring another
         const root = repositoryWith({

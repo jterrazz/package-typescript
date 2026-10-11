@@ -94,4 +94,49 @@ describe('findingsOf', () => {
             'names/no-language-construct-name src/types',
         ]);
     });
+
+    test('a name loses a leading underscore only, and a construct is named by a suffix that sits between the stem and the extension', () => {
+        // Given - a grab-bag word split by an inner underscore, and a file named for the suffix alone, with no construct on the roster
+        const bare: Universal = { ...UNIVERSAL, constructs: new Set() };
+
+        // Then - `to_ols` is not `tools`, and `types.ts` holds no suffix before its extension
+        expect([judged('src/to_ols/a.ts'), findingsOf(['src/types.ts'], bare)]).toStrictEqual([
+            [],
+            [],
+        ]);
+    });
+
+    test('a spec file is a .spec.ts, .spec.tsx, .spec.yaml or .spec.yml and ends there; a router root ends the walk one level in wherever it stands', () => {
+        // Given - the four spec extensions and a look-alike under a command folder, and a router root below a grab-bag folder
+        const found = judged(
+            'specs/cli/auth/a.spec.ts',
+            'specs/cli/auth/b.spec.tsx',
+            'specs/cli/auth/c.spec.yaml',
+            'specs/cli/auth/d.spec.yml',
+            'specs/cli/cfg/e.spec.tsx.old',
+            'src/tools/app/orders/page.ts',
+        );
+
+        // Then - only the look-alike's folder and the folder above the router root are judged
+        expect(found).toStrictEqual([
+            'names/no-abbreviated-word specs/cli/cfg',
+            'names/no-grab-bag-name src/tools',
+        ]);
+    });
+
+    test('a specification folder is read at the root of specs/ alone, a __ folder ends the subjects, and a root file or a folder outside the swept roots is no subject', () => {
+        // Given - a specification name under src/, a folder opening on two underscores below a specification, a file named for a swept root, and a docs folder
+        const found = judged(
+            'src/cli/auth/login.spec.ts',
+            'specs/cli/__setup/auth/login.spec.ts',
+            'lib',
+            'docs/utils/page.md',
+        );
+
+        // Then - the folder under src/ and the one below the __ folder are judged; the lone file and the docs folder are no business of the sweep
+        expect(found).toStrictEqual([
+            'names/no-abbreviated-word specs/cli/__setup/auth',
+            'names/no-abbreviated-word src/cli/auth',
+        ]);
+    });
 });

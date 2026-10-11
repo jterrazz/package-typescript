@@ -62,7 +62,7 @@ ruleTester().run('no-named-groups-in-match-all', noNamedGroupsInMatchAll, {
         {
             code: [
                 "const matchAll = 'matchAll';",
-                'export const all = (text: string) => text[matchAll](/(?<key>\\w+)/gu);',
+                String.raw`export const all = (text: string) => text[matchAll](/(?<key>\w+)/gu);`,
             ].join('\n'),
             filename: FILENAME,
             name: 'a member read through a variable is no matchAll, whatever the variable is called',

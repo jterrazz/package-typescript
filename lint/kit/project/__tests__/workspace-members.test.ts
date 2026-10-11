@@ -72,6 +72,12 @@ describe('workspaceMembers', () => {
         ],
         ['a packages key with a value on its line', 'packages: apps/*\n  - libs/*\n', []],
         ['a file with no packages key', 'onlyBuiltDependencies:\n  - esbuild\n', []],
+        ['an indented list before any key', '  - esbuild\n  - sharp\n', []],
+        [
+            'a comment line holding a dash, in the list',
+            'packages:\n  - apps/*\n  # a - b\n  - libs/*\n',
+            ['apps/*', 'libs/*'],
+        ],
         ['an item that is a key', 'packages:\n  - apps/*\n  name: value\n', ['apps/*']],
     ])('reads the packages of a pnpm file: %s', (_case, yaml, expected) => {
         // Given - a root holding that pnpm-workspace.yaml
@@ -172,5 +178,40 @@ describe('workspaceMembers', () => {
 
         // Then - only the member at the depth the walk reaches
         expect(workspaceMembers(root)).toStrictEqual([deepest]);
+    });
+
+    test('reads the members of a pnpm workspace whose root holds no manifest, and a glob closed by several slashes', () => {
+        // Given - a root with a pnpm file and no package.json, and a manifest whose glob ends in two slashes
+        const bare = tree({
+            'apps/api/package.json': PACKAGE,
+            'pnpm-workspace.yaml': 'packages:\n  - apps/*\n',
+        });
+        const slashed = tree({
+            'apps/api/package.json': PACKAGE,
+            'package.json': workspaces('apps/*//'),
+        });
+
+        // Then - both find the member
+        expect([workspaceMembers(bare), workspaceMembers(slashed)]).toStrictEqual([
+            ['apps/api'],
+            ['apps/api'],
+        ]);
+    });
+
+    test('reads no member past MEMBER_DEPTH folders, whichever folder the walk goes through', () => {
+        // Given - a member eight folders down, beside a member seven down in another branch
+        const deep = Array.from({ length: MEMBER_DEPTH + 2 }, (_, index) => `e${String(index)}`);
+        const reachable = Array.from(
+            { length: MEMBER_DEPTH + 1 },
+            (_, index) => `f${String(index)}`,
+        );
+        const root = tree({
+            [`${deep.join('/')}/package.json`]: PACKAGE,
+            [`${reachable.join('/')}/package.json`]: PACKAGE,
+            'package.json': workspaces('**'),
+        });
+
+        // Then - only the one the walk reaches
+        expect(workspaceMembers(root)).toStrictEqual([reachable.join('/')]);
     });
 });

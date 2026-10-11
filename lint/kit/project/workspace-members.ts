@@ -15,6 +15,7 @@ function toPattern(glob: string): RegExp {
         .replaceAll('*', '[^/]*')
         .replaceAll(' ', '.*');
 
+    // Stryker disable next-line StringLiteral: every character the pattern holds that the unicode flag reads otherwise is escaped, and a path is ASCII
     return new RegExp(`^${escaped}$`, 'u');
 }
 
@@ -33,6 +34,7 @@ export function pnpmWorkspacePatterns(root: string): string[] {
     }
     const listed: string[] = [];
     for (const line of lines.slice(start + 1)) {
+        // Stryker disable next-line OptionalChaining: a chain whose first link is null stops there, so the second link is never asked
         const item = /^\s+-\s+(?<quote>['"]?)(?<glob>.+?)\k<quote>\s*(?:#.*)?$/u.exec(line)?.groups
             ?.glob;
         if (item !== undefined) {
@@ -50,10 +52,12 @@ export function workspaceMembers(root = '.'): string[] {
     const absolute = resolve(root);
     const manifest = readManifest(absolute);
     const declared = manifest === null ? [] : workspacePatterns(manifest);
-    const patterns = (declared.length > 0 ? declared : pnpmWorkspacePatterns(absolute))
-        .filter((glob) => !glob.startsWith('!'))
-        .map((glob) => toPattern(glob.replace(/\/+$/u, '')));
+    const listed = declared.length > 0 ? declared : pnpmWorkspacePatterns(absolute);
+    // Stryker disable next-line MethodExpression: a negated glob read as a pattern opens on `!`, which no path does, so it matches nothing whether it is dropped or kept
+    const included = listed.filter((glob) => !glob.startsWith('!'));
+    const patterns = included.map((glob) => toPattern(glob.replace(/\/+$/u, '')));
 
+    // Stryker disable next-line ConditionalExpression,BlockStatement: with no pattern no folder matches, so the walk finds none; the guard only spares reading the tree
     if (patterns.length === 0) {
         return [];
     }

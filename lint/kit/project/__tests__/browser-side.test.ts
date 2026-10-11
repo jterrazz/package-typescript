@@ -7,6 +7,8 @@ import { isBrowserSide, unmeasuredBrowserMutants } from '../browser-side.js';
 
 const units: string[] = [];
 
+const mutant = (status: string): object => ({ status });
+
 function unitWith(report: string | undefined): string {
     const unit = mkdtempSync(join(tmpdir(), 'browser-side-'));
     units.push(unit);
@@ -39,7 +41,6 @@ describe('browser-side', () => {
 
     test('unmeasuredBrowserMutants — counts the mutants of browser-side files no test ran, and none of a detected one or a server file', () => {
         // Given - a report with two unclaimed mutants of an island, a killed one, an unclaimed one of a module, and a file with no mutants listed
-        const mutant = (status: string): object => ({ status });
         const unit = unitWith(
             JSON.stringify({
                 files: {

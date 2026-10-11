@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { isSpecialFolderName, moduleStemOfTest, moduleTestOf } from '../ground.js';
+import { GO_TEST_FILE, isSpecialFolderName, moduleStemOfTest, moduleTestOf } from '../ground.js';
 
 describe('ground', () => {
     test('isSpecialFolderName — a word closed by two underscores on each side, and nothing else', () => {
@@ -70,5 +70,13 @@ describe('ground', () => {
             null,
             null,
         ]);
+    });
+
+    test('goTestFile — a file whose name ends on _test.go, and no other that only holds the text', () => {
+        // Given - a test file, a file with a suffix after it and one with it mid-name
+        // Then - only the first is a Go test file
+        expect(
+            ['a_test.go', 'a_test.go.bak', 'a_test.gone'].map((name) => GO_TEST_FILE.test(name)),
+        ).toStrictEqual([true, false, false]);
     });
 });

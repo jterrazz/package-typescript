@@ -309,4 +309,32 @@ describe('names.ls-lint', () => {
             missing.problem?.endsWith('#the-passes'),
         ]).toStrictEqual([true, true]);
     });
+
+    test('lsLintConfig — a skill holds references of its own, kebab-named markdown pages and no folder, in every unit', () => {
+        // Given - the config of a root unit and of a member
+        const config = parsedObject(
+            lsLintConfig({
+                ignorePatterns: [],
+                trees: treesOf(['', 'apps/api/']),
+                units: ['', 'apps/api/'],
+            }),
+        );
+        const rules = objectOf(config.ls);
+
+        // Then - the references folder of each unit refuses anything but pages named like a skill folder
+        const references = [
+            rules['skills/*/references'],
+            rules['apps/api/skills/*/references'],
+        ].map((one) => objectOf(one));
+        expect(
+            references.map((one) => [
+                one['.*'],
+                one['.dir'],
+                String(one['.md']).startsWith('regex:'),
+            ]),
+        ).toStrictEqual([
+            ['exists:0', 'exists:0', true],
+            ['exists:0', 'exists:0', true],
+        ]);
+    });
 });

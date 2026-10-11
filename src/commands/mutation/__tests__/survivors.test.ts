@@ -222,10 +222,15 @@ describe('survivors', () => {
         const named: Changed = new Map([['src/a.ts', true as const]]);
         const tree: Changed = new Map([['src/a.ts', [[9, 9] as const]]]);
 
-        // Then - the function line is handed to the suite on the named lines, the table line only where the tree changed it: here it stays left
+        // Then - the function line is handed to the suite on the named lines, the table line only where the tree changed it: here it stays left; and a tree that changed nothing leaves the function line to the named lines alone
         expect([
             handedToTheSuite(modules, { changed: named, statics: tree }),
             handedToTheSuite(modules, { changed: named }),
-        ]).toStrictEqual([['src/a.ts:9:8-9:19'], ['src/a.ts:2:8-2:19', 'src/a.ts:9:8-9:19']]);
+            handedToTheSuite(modules, { changed: named, statics: new Map() }),
+        ]).toStrictEqual([
+            ['src/a.ts:9:8-9:19'],
+            ['src/a.ts:2:8-2:19', 'src/a.ts:9:8-9:19'],
+            ['src/a.ts:9:8-9:19'],
+        ]);
     });
 });

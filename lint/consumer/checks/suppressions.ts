@@ -208,6 +208,7 @@ function auditSource(
     }
 
     for (const { line, ...placement } of placementOf(text.split('\n'), spans)) {
+        // Stryker disable next-line BooleanLiteral: the fix rewrites a violation that is rewritable and of the spelling rule alone, and a placement is never of that rule
         violations.push({ ...placement, line, rewritable: false });
     }
     violations.sort((left, right) => left.line - right.line);

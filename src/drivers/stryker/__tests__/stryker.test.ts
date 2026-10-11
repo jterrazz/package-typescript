@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { besideOf, generatedRoots, reportKept, startsCold, strykerConfig } from '../stryker.js';
+import { besideOf, generatedRoots, startsCold, strykerConfig } from '../stryker.js';
 
 const RUNNER = createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner');
 

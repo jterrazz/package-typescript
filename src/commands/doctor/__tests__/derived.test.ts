@@ -32,7 +32,7 @@ const DERIVING: Preset = {
 
 const PLAIN: Preset = { name: 'plain', package: '@acme/plain' };
 
-describe('derived', () => {
+describe('derivedOf', () => {
     test('derivedOf — names the build entries and the dev scripts the tree holds, each section only where it holds some', () => {
         // Given - a unit with a worker module and a command script, one with a worker alone, one with a script alone, and one with neither
         const both = unitWith('src/digest.worker.ts', 'lint/release.cli.ts');
