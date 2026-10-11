@@ -35,9 +35,11 @@ export function keptByteForByte(typescript: unknown): string[] {
     const { oxfmt } = objectOf(typescript);
 
     return [
-        ...CONTENT_TREES,
-        ...GROUND_GLOBS,
-        ...Object.keys(objectOf(objectOf(oxfmt).ignore)).map(asTree),
-        ...verbatimTreesOf(typescript),
+        ...new Set([
+            ...CONTENT_TREES,
+            ...GROUND_GLOBS,
+            ...Object.keys(objectOf(objectOf(oxfmt).ignore)).map(asTree),
+            ...verbatimTreesOf(typescript),
+        ]),
     ];
 }

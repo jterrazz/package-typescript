@@ -60,6 +60,22 @@ describe('byte-for-byte', () => {
         ]);
     });
 
+    test('keeps a tree once, however many of the sources name it', () => {
+        // Given - a platform whose public folder is a content tree and a verbatim tool root, and a root declared verbatim twice over
+        const section = {
+            oxfmt: { ignore: { 'research/': 'quoted' } },
+            roots: { research: { reason: 'quoted', verbatim: true } },
+            verbatimToolRoots: ['public'],
+        };
+
+        // Then - public/** and research/** each stand once
+        const kept = keptByteForByte(section);
+        expect([
+            kept.filter((glob) => glob === 'public/**').length,
+            kept.filter((glob) => glob === 'research/**').length,
+        ]).toStrictEqual([1, 1]);
+    });
+
     test('widens a folder whose name holds a dot to its tree, and keeps as itself only a path whose last name carries an extension', () => {
         // Given - paths with a dot in a folder's name, in the middle of the path, and an extension on the last name
         const section = {
