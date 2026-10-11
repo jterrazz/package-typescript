@@ -102,4 +102,42 @@ describe('markdown.fences', () => {
             ),
         ).toStrictEqual([true, true, true, true, true, false, false, false]);
     });
+
+    test('airlessFences — an opener is a bracket that ends its line, trailing spaces allowed, and a closer is a bracket that opens its line, indented or not', () => {
+        // Given - sixteen lines whose 8th holds a bracket mid-line, whose 8th ends on a bracket and a space, whose 9th holds one mid-line, and whose 9th opens on an indented bracket
+        const midOpen = rows(16);
+        midOpen[7] = 'call(arg);';
+        const spacedOpen = rows(16);
+        spacedOpen[7] = 'call( ';
+        const midClose = rows(16);
+        midClose[8] = 'call(arg);';
+        const indentedClose = rows(16);
+        indentedClose[8] = '    })';
+
+        // Then - the middle break stays when the bracket is mid-line, moves one line up off an opener ending on a space, stays when the next line only holds a bracket mid-line, and moves up off an indented closer
+        expect(
+            [midOpen, spacedOpen, midClose, indentedClose].map((body) => named(body)),
+        ).toStrictEqual([
+            [
+                'a fenced block at line 1 runs 16 lines unbroken — the limit is 15; a blank line after line 9 survives the formatter',
+            ],
+            [
+                'a fenced block at line 1 runs 16 lines unbroken — the limit is 15; a blank line after line 8 survives the formatter',
+            ],
+            [
+                'a fenced block at line 1 runs 16 lines unbroken — the limit is 15; a blank line after line 9 survives the formatter',
+            ],
+            [
+                'a fenced block at line 1 runs 16 lines unbroken — the limit is 15; a blank line after line 8 survives the formatter',
+            ],
+        ]);
+    });
+
+    test('airlessFences — a run is counted from its own first line: a blank line starts the next one empty', () => {
+        // Given - fifteen lines, a blank line, fifteen more
+        const text = [...fenced([...rows(15), '', ...rows(15)])].join('\n');
+
+        // Then - neither half passes the limit
+        expect(airlessFences(text)).toStrictEqual([]);
+    });
 });

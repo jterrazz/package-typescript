@@ -141,4 +141,33 @@ describe('config.manifest', () => {
             },
         ]);
     });
+
+    test('manifestFindings — a cli whose bin is an empty object and two keys nothing reads are each named whole', () => {
+        // Given - a public cli naming `bin: {}`, and a manifest with two typos
+        const known = new Set(KNOWN);
+        const cli = manifestFindings(
+            contextOver({ bin: {}, name: 'tool', type: 'module' }),
+            '.',
+            'cli',
+            known,
+        );
+        const typos = manifestFindings(
+            contextOver({ depedencies: {}, name: 'x', scriptz: {}, type: 'module' }),
+            '.',
+            'library',
+            known,
+        );
+
+        // Then - the empty bin is no bin, and both typos are listed in order
+        expect(cli.map(({ message }) => message.split(' · ')[0])).toStrictEqual([
+            'found: jterrazz.config.ts declares a cli, and package.json names no `bin`',
+        ]);
+        expect(
+            typos
+                .filter(({ rule }) => rule === 'config/manifest-keys-known')
+                .map(({ message }) => message.split(' · ')[0]),
+        ).toStrictEqual([
+            'found: package.json holds `depedencies`, `scriptz`, which npm and the tools of the family read nowhere',
+        ]);
+    });
 });

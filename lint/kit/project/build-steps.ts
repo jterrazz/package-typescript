@@ -87,6 +87,7 @@ function hostModulesOf(manifest: JsonObject): string[] {
 // invariant: a library or a cli that is private is installed by its own repository, which reads no declaration of it: emitting them only fails on a module the host provides.
 export function shapeOf(root: string, declaration: null | ProjectIdentity): Shape {
     const manifest = manifestAt(root);
+    // Stryker disable next-line StringLiteral: no declaration is no kind of the list, whatever text stands in for it
     const unread =
         manifest.private === true && ['cli', 'library'].includes(declaration?.kind ?? '');
 

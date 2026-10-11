@@ -47,6 +47,7 @@ function patternsOf(program: Node): Map<string, boolean> {
     const patterns = new Map<string, boolean>();
     const walk = (parent: Node): void => {
         for (const node of childrenOf(parent)) {
+            // Stryker disable next-line ConditionalExpression,OptionalChaining: a declarator always has an id, and one with no name (a destructuring) set apart or kept sets a key no identifier reads
             if (node.type === 'VariableDeclarator' && node.id?.name !== undefined) {
                 patterns.set(
                     node.id.name,
@@ -64,7 +65,9 @@ function patternsOf(program: Node): Map<string, boolean> {
 function isMatchAll(node: Node): boolean {
     return (
         node.type === 'CallExpression' &&
+        // Stryker disable next-line OptionalChaining: a call has a callee
         node.callee?.computed !== true &&
+        // Stryker disable next-line OptionalChaining: a call has a callee
         node.callee?.property?.name === 'matchAll'
     );
 }
@@ -99,10 +102,12 @@ export const noNamedGroupsInMatchAll = defineRule(
                     const patterns = patternsOf(program);
                     const walk = (parent: Node): void => {
                         for (const node of childrenOf(parent)) {
+                            // Stryker disable next-line ArrayDeclaration: a call always has its arguments
                             const [pattern] = isMatchAll(node) ? (node.arguments ?? []) : [];
                             if (
                                 pattern !== undefined &&
                                 (isNamed(pattern) ||
+                                    // Stryker disable next-line ConditionalExpression: only an identifier has a name to look up, and any other argument reads the name `undefined`, which no declaration holds
                                     (pattern.type === 'Identifier' &&
                                         patterns.get(String(pattern.name)) === true))
                             ) {

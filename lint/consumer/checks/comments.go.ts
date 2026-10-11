@@ -16,6 +16,7 @@ const linesIn = (text: string): number => (text.match(/\n/gu) ?? []).length;
 function skipQuoted(text: string, from: number, quote: string): number {
     const stops = quote === '`' ? quote : `${quote}\n`;
     let at = from + 1;
+    // Stryker disable next-line EqualityOperator,ConditionalExpression: a position past the end reads the empty string, which every stop list contains, so the loop ends there all the same
     while (at < text.length && !stops.includes(text.charAt(at))) {
         at += text.charAt(at) === '\\' && quote !== '`' ? 2 : 1;
     }
@@ -28,6 +29,7 @@ function piecesOf(text: string): Piece[] {
     let at = 0;
     let line = 0;
     let lineStart = 0;
+    // Stryker disable next-line EqualityOperator: a position past the end reads the empty string, which opens nothing and moves on, so the loop ends there all the same
     while (at < text.length) {
         const char = text.charAt(at);
         const pair = text.slice(at, at + 2);
@@ -89,7 +91,10 @@ function joinedRuns(text: string): Joined[] {
 export function commentsOfGo(text: string): Run[] {
     const lines = text.split('\n');
 
-    return joinedRuns(text)
-        .filter(({ isOwnLine, last }) => !(isOwnLine && DOCUMENTED.test(lines[last + 1] ?? '')))
-        .map(({ end, opening, start }) => ({ end, opening, start }));
+    return (
+        joinedRuns(text)
+            // Stryker disable next-line StringLiteral: past the last line nothing is declared, whatever text stands in for the missing line
+            .filter(({ isOwnLine, last }) => !(isOwnLine && DOCUMENTED.test(lines[last + 1] ?? '')))
+            .map(({ end, opening, start }) => ({ end, opening, start }))
+    );
 }

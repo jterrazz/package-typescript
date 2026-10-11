@@ -130,6 +130,8 @@ describe('comments.go', () => {
             'package kinds',
             'func Run() {}',
             'func (r Runtime) Run() {}',
+            'func (r Runtime)Run() {}',
+            'func  Run() {}',
             'type  Kind struct{}',
             'var  Total = 0',
             'const  Limit = 1',
@@ -219,5 +221,50 @@ describe('comments.go', () => {
             '/* seven */',
             '// eight',
         ]);
+    });
+
+    test('a string ends at its closing quote or at the end of its line, an escape skips one character of it alone, and a raw string knows no escape', () => {
+        // Given - a comment after strings of an even and an odd length, after an unterminated string, after a raw string ending in a backslash and after a rune of a quote
+        const text = lines(
+            'var a = "ab" // after even',
+            'var b = "abc" // after odd',
+            'var c = "unterminated',
+            '// after unterminated',
+            'var d = `C:\\` // after raw',
+            "var e = '\"' // after rune",
+        );
+
+        // Then - every comment is read where it stands
+        expect(openingsOf(text)).toStrictEqual([
+            'after even',
+            'after odd',
+            'after unterminated',
+            'after raw',
+            'after rune',
+        ]);
+    });
+
+    test('a block comment ends at the first closing mark after its opening, never at one before it or inside the opening', () => {
+        // Given - a block opening on `/*/`, whose slash is no closing mark
+        const text = lines('/*/ still inside */', 'var x = 1');
+
+        // Then - the whole line is the one block
+        expect(openingsOf(text)).toStrictEqual(['/ still inside */']);
+    });
+
+    test('a comment after code on its line documents nothing, and the line count survives a block over several lines', () => {
+        // Given - a trailing comment before an exported name, then a block over two lines before a name, then a comment before an unexported one
+        const text = lines(
+            'var a = 1 // trailing',
+            'var Total = 2',
+            '/* Block',
+            '   over lines */',
+            'var Other = 3',
+            '// note',
+            'var other = 4',
+        );
+
+        // Then - the trailing comment and the note are read; the block documents Other
+        expect(openingsOf(text)).toStrictEqual(['trailing', 'note']);
     });
 });

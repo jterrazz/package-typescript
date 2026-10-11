@@ -21,8 +21,44 @@ ruleTester().run('no-named-groups-in-match-all', noNamedGroupsInMatchAll, {
             filename: FILENAME,
             name: 'a const holding the pattern',
         },
+        {
+            code: [
+                String.raw`const PAIR = /(?<key>\w+)=(\w+)/gu;`,
+                'export const inner = (text: string) => {',
+                '    class PAIR {}',
+                '    return [new PAIR(), ...text.matchAll(PAIR)];',
+                '};',
+            ].join('\n'),
+            errors: [{ column: 27, line: 4, messageId: 'named' }],
+            filename: FILENAME,
+            name: 'a class of the name beside the const declares no pattern, and the const stays the pattern',
+        },
     ],
     valid: [
+        {
+            code: [
+                String.raw`const PAIR = /(\w+)=(\w+)/gu;`,
+                'export const inner = (text: string) => {',
+                String.raw`    const PAIR = /(\w+)/gu;`,
+                '    return [...text.matchAll(PAIR)];',
+                '};',
+            ].join('\n'),
+            filename: FILENAME,
+            name: 'a name declared in two scopes with no named group stays unnamed',
+        },
+        {
+            code: 'export const built = (text: string) => new text.matchAll(/(?<key>\\w+)/gu);',
+            filename: FILENAME,
+            name: 'a construction is no call of matchAll',
+        },
+        {
+            code: [
+                "const matchAll = 'matchAll';",
+                'export const all = (text: string) => text[matchAll](/(?<key>\\w+)/gu);',
+            ].join('\n'),
+            filename: FILENAME,
+            name: 'a member read through a variable is no matchAll, whatever the variable is called',
+        },
         {
             code: 'export const all = (text: string, pattern: RegExp) => [...text.matchAll(pattern)];',
             filename: FILENAME,

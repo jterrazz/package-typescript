@@ -13,6 +13,7 @@ export const NAMED: Readonly<Record<ProjectKind, string>> = {
     library: 'a library',
     mobile: 'a mobile app',
     website: 'a website',
+    // Stryker disable next-line StringLiteral: a workspace owes its manifest nothing a finding could name it for, so the entry completes the table and is read by no message
     workspace: 'a workspace',
 };
 

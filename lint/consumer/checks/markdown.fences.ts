@@ -28,12 +28,14 @@ function survivingBreak(run: readonly FenceLine[]): number | undefined {
         }
     }
 
+    // Stryker disable next-line ConditionalExpression,OptionalChaining: a break found is always the index of a line that has a next one, and with none found the index read is NaN, which no line holds
     return best === undefined ? undefined : run[best - 1]?.line;
 }
 
 export function airlessFences(markdown: string): string[] {
     let inFence = false;
     let fenceStart = 0;
+    // Stryker disable next-line ArrayDeclaration: the first fence opening empties the run before any line joins it, so what it starts with is never counted
     let run: FenceLine[] = [];
     const found: string[] = [];
     const close = (): void => {
