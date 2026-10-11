@@ -69,63 +69,13 @@ export function manifestGap(
     return manifest.private === true ? null : SUITE_GAP;
 }
 
-// outside: the top-level fields npm, the package managers and the tools of the family read from a manifest; a key beyond them reads nothing, and a typo of one fails silently.
-const KNOWN_KEYS: ReadonlySet<string> = new Set([
-    'author',
-    'browser',
-    'browserslist',
-    'bugs',
-    'bin',
-    'bundleDependencies',
-    'bundledDependencies',
-    'config',
-    'contributors',
-    'cpu',
-    'dependencies',
-    'description',
-    'devDependencies',
-    'devEngines',
-    'directories',
-    'engines',
-    'exports',
-    'files',
-    'funding',
-    'homepage',
-    'imports',
-    'keywords',
-    'libc',
-    'license',
-    'main',
-    'man',
-    'module',
-    'name',
-    'optionalDependencies',
-    'os',
-    'overrides',
-    'packageManager',
-    'patchedDependencies',
-    'peerDependencies',
-    'peerDependenciesMeta',
-    'pnpm',
-    'private',
-    'publishConfig',
-    'repository',
-    'resolutions',
-    'scripts',
-    'sideEffects',
-    'trustedDependencies',
-    'type',
-    'types',
-    'typings',
-    'version',
-    'volta',
-    'workspaces',
-]);
-
-/** The top-level keys of a manifest that nothing reads: `$`-keys and `_`-keys are comments by convention. */
-export function unknownManifestKeys(manifest: Readonly<Record<string, unknown>>): string[] {
+/** The top-level keys of a manifest that nothing the standard names reads: `$`-keys and `_`-keys are comments by convention. */
+export function unknownManifestKeys(
+    manifest: Readonly<Record<string, unknown>>,
+    known: ReadonlySet<string>,
+): string[] {
     return Object.keys(manifest).filter(
-        (key) => !KNOWN_KEYS.has(key) && !key.startsWith('$') && !key.startsWith('_'),
+        (key) => !known.has(key) && !key.startsWith('$') && !key.startsWith('_'),
     );
 }
 
@@ -141,11 +91,12 @@ export function manifestFindings(
     context: Context,
     unit: string,
     kind: null | ProjectKind,
+    known: ReadonlySet<string>,
 ): Finding[] {
     const manifest = manifestOf(context, unit);
     const gap = manifestGap(kind, manifest);
     const path = prefixed(unit, 'package.json');
-    const strays = unknownManifestKeys(manifest);
+    const strays = unknownManifestKeys(manifest, known);
 
     return [
         ...(gap === null

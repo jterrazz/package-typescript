@@ -1,0 +1,15 @@
+{
+    "name": "manifest-keys-vscode",
+    "displayName": "Manifest keys",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "src/index.ts",
+    "publisher": "someone",
+    "activationEvents": [],
+    "contributes": {},
+    "contributez": {},
+    "devDependencies": {
+        "@types/vscode": "^1.91.0"
+    }
+}

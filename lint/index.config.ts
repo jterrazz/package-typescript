@@ -68,6 +68,8 @@ export type ProjectConfig = JterrazzConfig & ProjectDeclaration;
 /** The settings of the `typescript` section no project writes: the laws of the tree, and what the platform's code is. */
 export type TypescriptLaws = {
     lint?: Readonly<Record<string, readonly string[]>>;
+    /** The top-level keys a manifest may hold: the ones npm reads, and the ones a host or a dependency reads. */
+    manifestKeys?: readonly string[];
     memberRoots?: readonly string[];
     /** The folders the platform's code sits in, and its file extensions. */
     sources?: { extensions: readonly string[]; roots: readonly string[] };

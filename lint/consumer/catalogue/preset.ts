@@ -5,6 +5,7 @@ import PATCH_PACKAGE from '../../../src/standard/dependencies/patch-package.js';
 import PRISMA from '../../../src/standard/dependencies/prisma.js';
 import REACT_ROUTER_DEV from '../../../src/standard/dependencies/react-router-dev.js';
 import REMOTION from '../../../src/standard/dependencies/remotion.js';
+import TYPES_VSCODE from '../../../src/standard/dependencies/types-vscode.js';
 import VITE from '../../../src/standard/dependencies/vite.js';
 import API from '../../../src/standard/kinds/api.js';
 import CLI from '../../../src/standard/kinds/cli.js';
@@ -55,6 +56,7 @@ const DEPENDENCY_STANDARDS: Readonly<
     '@astrojs/check': { name: 'astro-check', standard: ASTRO_CHECK },
     '@astrojs/react': { name: 'astro-react', standard: ASTRO_REACT },
     '@prisma/client': { name: 'prisma', standard: PRISMA },
+    '@types/vscode': { name: 'types-vscode', standard: TYPES_VSCODE },
     '@react-router/dev': { name: 'react-router-dev', standard: REACT_ROUTER_DEV },
     'appium-xcuitest-driver': { name: 'appium-xcuitest-driver', standard: APPIUM_XCUITEST_DRIVER },
     'patch-package': { name: 'patch-package', standard: PATCH_PACKAGE },
@@ -139,6 +141,7 @@ export function typescriptPreset(
         files: editorFilesOf(settings.tsconfigPreset),
         lawSettings: [
             'lint',
+            'manifestKeys',
             'memberRoots',
             'sources',
             'spine',

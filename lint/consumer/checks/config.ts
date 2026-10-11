@@ -15,6 +15,7 @@ import {
     holdsEditorFile,
     tsconfigAdditionsOf,
 } from '../../kit/project/editor-files.js';
+import { stringsOf } from '../../kit/project/json.js';
 import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import {
     KINDS,
@@ -64,6 +65,7 @@ type Unit = {
     suite: boolean;
     files: Readonly<Record<string, EditorFile>>;
     path: string;
+    manifestKeys: ReadonlySet<string>;
     problem: null | string;
     tsconfigProblem: null | string;
 };
@@ -90,7 +92,7 @@ function declarationFindings(context: Context, unit: Unit): Finding[] {
         ];
     }
 
-    return manifestFindings(context, unit.path, declaration.kind);
+    return manifestFindings(context, unit.path, declaration.kind, unit.manifestKeys);
 }
 
 function tsconfigFindings(unit: Unit): Finding[] {
@@ -223,6 +225,7 @@ async function unitsOf(context: Context): Promise<{ findings: Finding[]; units: 
             return {
                 declaration: problem === null ? resolved.declaration : null,
                 files,
+                manifestKeys: new Set(stringsOf(resolved.sections.typescript?.manifestKeys)),
                 path,
                 problem,
                 suite: workspace && path === SUITE_FOLDER,

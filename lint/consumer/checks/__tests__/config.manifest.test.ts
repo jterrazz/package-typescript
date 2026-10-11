@@ -85,10 +85,20 @@ describe('config.manifest', () => {
         const odd = { $schema: 1, _note: 1, depedencies: 1, name: 'x', trailing_: 1, scriptz: 1 };
 
         // Then - none of the first is named, and the typos of the second are, the comments not
-        expect([unknownManifestKeys(known), unknownManifestKeys(odd)]).toStrictEqual([
+        expect([unknownManifestKeys(known, new Set(KNOWN)), unknownManifestKeys(odd, new Set(KNOWN))]).toStrictEqual([
             [],
             ['depedencies', 'trailing_', 'scriptz'],
         ]);
+    });
+
+    test('unknownManifestKeys — a key the standard of a host adds is known, and a typo of it is named', () => {
+        // Given - the keys a VS Code extension adds to the known ones
+        const known = new Set([...KNOWN, 'contributes', 'publisher']);
+
+        // Then - the added keys pass and their typo is named
+        expect(
+            unknownManifestKeys({ contributes: {}, name: 'x', publisher: 'p', publishers: 'p' }, known),
+        ).toStrictEqual(['publishers']);
     });
 
     test('manifestFindings — a suite that is public, a manifest that is no module and a key nothing reads are each a finding with its lesson', () => {
@@ -97,6 +107,7 @@ describe('config.manifest', () => {
             contextOver({ depedencies: {}, name: 'suite', private: false }),
             '.',
             null,
+            new Set(KNOWN),
         );
 
         // Then - the three findings, each at the manifest, in this order
