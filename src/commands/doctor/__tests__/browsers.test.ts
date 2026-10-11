@@ -78,4 +78,41 @@ describe('browsers', () => {
             undefined,
         ]);
     });
+
+    test('chromiumBuilds — reads only well-formed Chromium entries of a manifest: a browsers list that is no list, a name or a revision that is no string, and a browser of another family name none', () => {
+        // Given - a Playwright whose browsers file lists a Chromium by number, a nameless entry, a WebKit, and one well-formed headless shell; and one whose browsers is a word
+        const root = mkdtempSync(join(tmpdir(), 'doctor-browsers-odd-'));
+        onTestFinished(() => {
+            rmSync(root, { force: true, recursive: true });
+        });
+        const writeProject = (name: string, browsers: unknown): string => {
+            const project = join(root, name);
+            const core = join(project, 'node_modules/playwright-core');
+            mkdirSync(core, { recursive: true });
+            writeFileSync(join(project, 'package.json'), '{}');
+            writeFileSync(
+                join(core, 'package.json'),
+                '{"name":"playwright-core","version":"1.0.0"}',
+            );
+            writeFileSync(join(core, 'browsers.json'), JSON.stringify({ browsers }));
+
+            return project;
+        };
+        vi.stubEnv('PLAYWRIGHT_BROWSERS_PATH', join(root, 'cache'));
+        const odd = writeProject('odd', [
+            { name: 'chromium', revision: 1200 },
+            { revision: '1' },
+            { name: 'chromium' },
+            { name: 'webkit', revision: '2000' },
+            { name: 'chromium-headless-shell', revision: '1201' },
+            'chromium',
+        ]);
+        const word = writeProject('word', 'chromium');
+
+        // Then - the one well-formed entry alone is read, and a browsers file that holds no list names nothing
+        expect([chromiumBuilds(odd)?.map(({ name }) => name), chromiumBuilds(word)]).toStrictEqual([
+            ['chromium-headless-shell'],
+            [],
+        ]);
+    });
 });

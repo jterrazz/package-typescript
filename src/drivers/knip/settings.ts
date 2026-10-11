@@ -32,12 +32,10 @@ export function withLoadedPackages(
     settings: KnipSettings,
     packages: readonly string[],
 ): KnipSettings {
-    return packages.length === 0
-        ? settings
-        : {
-              ...settings,
-              ignoreDependencies: [...new Set([...settings.ignoreDependencies, ...packages])],
-          };
+    return {
+        ...settings,
+        ignoreDependencies: [...new Set([...settings.ignoreDependencies, ...packages])],
+    };
 }
 
 /** A unit holding a `go.mod` shells out to `go`, which no manifest lists: knip reads the binary as unlisted unless told. */

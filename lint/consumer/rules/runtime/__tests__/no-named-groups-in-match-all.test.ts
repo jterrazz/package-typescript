@@ -24,6 +24,52 @@ ruleTester().run('no-named-groups-in-match-all', noNamedGroupsInMatchAll, {
     ],
     valid: [
         {
+            code: 'export const all = (text: string, pattern: RegExp) => [...text.matchAll(pattern)];',
+            filename: FILENAME,
+            name: 'a pattern handed in as a parameter is unknown, and so left alone',
+        },
+        {
+            code: [
+                'const PAIR = /(?<key>\\w+)=(\\w+)/gu;',
+                'export const inner = (text: string) => {',
+                '    const PAIR = /(\\w+)=(\\w+)/gu;',
+                '    return [...text.matchAll(PAIR)];',
+                '};',
+            ].join('\n'),
+            filename: FILENAME,
+            name: 'a name declared in two scopes is no pattern the rule can tell',
+        },
+        {
+            code: "export const all = (text: string) => [...text['matchAll'](/(?<key>\\w+)/gu)];",
+            filename: FILENAME,
+            name: 'a computed member is no matchAll',
+        },
+        {
+            code: 'export const all = (text: string) => text.replaceAll(/(?<key>\\w+)/gu, "x");',
+            filename: FILENAME,
+            name: 'another method given a named group is no business of this rule',
+        },
+        {
+            code: 'declare function matchAll(pattern: RegExp): void; matchAll(/(?<key>\\w+)/gu);',
+            filename: FILENAME,
+            name: 'a bare function named matchAll is no method',
+        },
+        {
+            code: 'export const none = (text: string) => [...text.matchAll()];',
+            filename: FILENAME,
+            name: 'a call with no pattern',
+        },
+        {
+            code: [
+                'let PAIR: RegExp | undefined;',
+                'const { other } = { other: 1 };',
+                'export const all = (text: string) => [...text.matchAll(PAIR as RegExp)];',
+                'export default other;',
+            ].join('\n'),
+            filename: FILENAME,
+            name: 'a declaration holding nothing, and a destructuring naming none',
+        },
+        {
             code: 'export const all = (text: string) => [...text.matchAll(/(\\w+)=(\\w+)/gu)];',
             filename: FILENAME,
             name: 'a pattern with positional groups',

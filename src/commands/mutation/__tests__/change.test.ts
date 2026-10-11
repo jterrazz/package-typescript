@@ -4,7 +4,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
-import { changeOf, changeSince, defaultBaseOf, hunksOf, namesACommit } from '../change.js';
+import {
+    changeOf,
+    changeSince,
+    defaultBaseOf,
+    hunksOf,
+    namesACommit,
+    treeChangeFor,
+} from '../change.js';
 
 const created: string[] = [];
 
@@ -260,5 +267,21 @@ describe('change', () => {
             namesACommit(root, 'main-that-was-force-pushed'),
             namesACommit(tmpdir(), 'HEAD'),
         ]).toStrictEqual([true, false, false, false]);
+    });
+
+    test('treeChangeFor — a static mutant is reached by the tree’s own change, whatever --mutate names, and by the stated change when it names nothing', () => {
+        // Given - a repository whose working tree rewrote line 2 of a.ts, a change that names a whole file, and a base git does not know
+        const root = committedRepository({ 'a.ts': 'one\ntwo\n', 'b.ts': 'x\n' });
+        writeFileSync(join(root, 'a.ts'), 'one\nTWO\n');
+        const named = new Map<string, true>([['b.ts', true]]);
+        const head = { commit: 'HEAD', names: 'HEAD', range: 'HEAD..working tree' };
+        const unknown = { commit: 'no-such-commit', names: 'it', range: 'it..working tree' };
+
+        // Then - the tree's rewrite replaces what is named; the stated change stands when nothing is named; an unknown base reaches nothing
+        expect([
+            treeChangeFor(root, { ranges: ['b.ts'], since: head }, named),
+            treeChangeFor(root, { ranges: undefined, since: head }, named),
+            treeChangeFor(root, { ranges: ['b.ts'], since: unknown }, named),
+        ]).toStrictEqual([new Map([['a.ts', [[2, 2]]]]), named, new Map()]);
     });
 });

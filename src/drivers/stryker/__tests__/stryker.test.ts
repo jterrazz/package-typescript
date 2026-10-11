@@ -3,9 +3,9 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { generatedRoots, strykerConfig } from '../stryker.js';
+import { besideOf, generatedRoots, strykerConfig } from '../stryker.js';
 
 const RUNNER = createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner');
 
@@ -113,5 +113,33 @@ describe('stryker', () => {
                 '!/.artifacts/dev/**',
             ],
         });
+    });
+
+    test('besideOf — a member of a repository is placed by its depth, with the visible entries of the repository to lay beside its copy, and a repository itself or a folder outside any is not', () => {
+        // Given - a repository holding a member two folders down, a hidden folder, node_modules and visible entries; and a folder in no repository
+        const root = mkdtempSync(join(tmpdir(), 'beside-'));
+        onTestFinished(() => {
+            rmSync(root, { force: true, recursive: true });
+        });
+        mkdirSync(join(root, '.git'));
+        mkdirSync(join(root, 'node_modules'));
+        mkdirSync(join(root, 'testdata'));
+        mkdirSync(join(root, 'docs'));
+        mkdirSync(join(root, 'packages/server'), { recursive: true });
+        const outside = mkdtempSync(join(tmpdir(), 'beside-none-'));
+        onTestFinished(() => {
+            rmSync(outside, { force: true, recursive: true });
+        });
+
+        // Then - the member is two levels down with docs, packages and testdata beside it; the repository root and the loose folder place nothing
+        expect([
+            besideOf(join(root, 'packages/server')),
+            besideOf(root),
+            besideOf(outside),
+        ]).toStrictEqual([
+            { levels: 2, names: ['docs', 'packages', 'testdata'], root },
+            undefined,
+            undefined,
+        ]);
     });
 });

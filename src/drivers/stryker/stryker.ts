@@ -112,7 +112,7 @@ export function strykerPrepared(project: string): void {
 }
 
 // invariant: a workspace member is mutated from its own folder, and its specs may climb out of it to the repository's files; a project that is the repository's own root has nothing above it to lay.
-function besideOf(project: string): Beside | undefined {
+export function besideOf(project: string): Beside | undefined {
     const root = isRepositoryRoot(resolve(project))
         ? undefined
         : nearestRoot(dirname(resolve(project)), isRepositoryRoot);
@@ -122,7 +122,9 @@ function besideOf(project: string): Beside | undefined {
 
     return {
         levels: relative(root, resolve(project)).split(sep).length,
-        names: readdirSync(root).filter((name) => !name.startsWith('.') && name !== 'node_modules'),
+        names: readdirSync(root)
+            .filter((name) => !name.startsWith('.') && name !== 'node_modules')
+            .toSorted(),
         root,
     };
 }

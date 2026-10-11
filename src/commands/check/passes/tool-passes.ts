@@ -10,7 +10,6 @@ import {
 import { messageOf, refusal } from '../../../../lint/kit/catalogue/lesson.js';
 import { buildPlanOf, conventionsOf } from '../../../../lint/kit/project/build-plan.js';
 import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
-import { declaredDependencies } from '../../../../lint/kit/project/manifest.js';
 import { astroChecked, astroEntrypointsOf, astroSynced } from '../../../drivers/astro/astro.js';
 import { knip } from '../../../drivers/knip/knip.js';
 import type { KnipProject, KnipUnit } from '../../../drivers/knip/knip.js';
@@ -22,9 +21,9 @@ import {
 import { fixedUnder } from '../../../drivers/oxlint/oxlint.js';
 import type { FixScope } from '../../../drivers/oxlint/unsafe-fixers.js';
 import { astroFormatted } from '../../../drivers/prettier/prettier.js';
-import { reactRouterTyped } from '../../../drivers/react-router/react-router.js';
 import { typeChecked } from '../../../drivers/tsc/tsc.js';
 import type { Launched } from './launched.js';
+import { routeTypesGenerated } from './route-types.js';
 import { oxfmt, oxlint } from './runners.js';
 import type { Check } from './setup.js';
 
@@ -54,13 +53,6 @@ async function astroSyncedOnce(check: Check, unit: string, log: string): Promise
 
 const isAstro = (check: Check, unit: string): boolean =>
     check.declarations.get(unit)?.platform === 'astro';
-
-// invariant: `react-router typegen` writes the route types the unit's tsconfig reads through `rootDirs`, and a fresh clone holds none: the type check starts from them, and prints a failure of the generator in its place.
-async function routeTypesGenerated(unit: string, log: string): Promise<number> {
-    return declaredDependencies(unit).has('@react-router/dev')
-        ? await reactRouterTyped(unit, log)
-        : 0;
-}
 
 async function typeCheckedUnit(check: Check, unit: string, log: string): Promise<number> {
     if (isAstro(check, unit) && (await astroSyncedOnce(check, unit, log)) !== 0) {

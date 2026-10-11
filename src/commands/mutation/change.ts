@@ -160,3 +160,12 @@ export function changeOf(
                 : `The change: the working tree against ${since.names}.`,
     };
 }
+
+/** The change that brings a static mutant to the suite: the tree's own, whatever lines `--mutate` names — a named file whole does not make its tables the suite's to judge; `changed` itself where nothing is named. */
+export function treeChangeFor(
+    project: string,
+    { ranges, since }: { ranges: readonly string[] | undefined; since: Base },
+    changed: Changed,
+): Changed {
+    return ranges === undefined ? changed : (changeSince(project, since.commit) ?? new Map());
+}
