@@ -11,7 +11,17 @@ runs:
           oxfmt.config.ts:1:1: error config(editor-file-derived): found: oxfmt.config.ts is missing · why: Each config file an editor discovers is the file jterrazz.config.ts derives, so the editor and the check judge alike. · fix: run `typescript fix`, which writes it: import { oxfmtConfig } from '@jterrazz/typescript/oxfmt'; export default await oxfmtConfig(import.meta.url); · read: docs/reference/quality-checks.md#the-config-one-file-pass
           oxlint.config.ts:1:1: error config(editor-file-derived): found: oxlint.config.ts is missing · why: Each config file an editor discovers is the file jterrazz.config.ts derives, so the editor and the check judge alike. · fix: run `typescript fix`, which writes it: import { oxlintConfig } from '@jterrazz/typescript/oxlint'; export default await oxlintConfig(import.meta.url); · read: docs/reference/quality-checks.md#the-config-one-file-pass
           tsconfig.json:1:1: error config(editor-file-derived): found: tsconfig.json says something other than the file jterrazz.config.ts derives · why: Each config file an editor discovers is the file jterrazz.config.ts derives, so the editor and the check judge alike. · fix: run `typescript fix`, which writes it: {
-              "extends": "@jterrazz/typescript/tsconfig/react"
+              "extends": "@jterrazz/typescript/tsconfig/react",
+              "exclude": [
+                  "${configDir}/node_modules",
+                  "${configDir}/dist",
+                  "${configDir}/.artifacts",
+                  "${configDir}/**/__expected__",
+                  "${configDir}/**/__fixtures__",
+                  "${configDir}/**/__requests__",
+                  "${configDir}/**/__seeds__",
+                  "${configDir}/public"
+              ]
           } · read: docs/reference/quality-checks.md#the-config-one-file-pass
           ✗ Failed with exit code 1
 
