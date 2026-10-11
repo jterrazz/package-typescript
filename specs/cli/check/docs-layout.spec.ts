@@ -31,4 +31,30 @@ describe('docs-layout', () => {
             ✗ Some checks failed
         `);
     });
+
+    test('asks a workspace for its release guide when one of its members is published', async () => {
+        // Given - a workspace root that publishes nothing itself, one member a library npm publishes, and a manual with no release guide
+        const result = await cli
+            .with({ env: onlyPasses('docs') })
+            .fixture(directory('./__fixtures__/docs/workspace-member-published/'))
+            .prepare((workdir) => {
+                git(workdir, 'init', '--quiet');
+            })
+            .exec('check');
+
+        // Then - the member's publication is the reason the guide is asked for
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+             START  Running quality checks
+
+             RUN  Docs (layout)
+
+            docs/guides/release.md:1:1: error docs(release-guide-present-when-shipping): guides/release.md is missing — this repository ships a published package (it declares a library or a cli)
+            ✗ Failed with exit code 1
+
+             END  Finalizing quality checks
+
+            ✗ Some checks failed
+        `);
+    });
 });

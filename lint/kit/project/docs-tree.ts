@@ -1,5 +1,5 @@
 // invariant: the Dockerfile and `.infrastructure/` clauses are read at every member's root too; the publishable
-// clause stays on the root's declared kind.
+// clause is the caller's, from the root's declared kind and every member's.
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';

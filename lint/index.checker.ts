@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
@@ -23,18 +24,37 @@ const PASSES: Passes = Object.freeze({
         return architecture;
     },
     async docs() {
-        const [{ auditDocs, HEAD_LINES }, { readDocsTree }, { readManifest }, { publishes }] =
-            await Promise.all([
-                import('./consumer/checks/docs.js'),
-                import('./kit/project/docs-tree.js'),
-                import('./kit/project/manifest.js'),
-                import('./kit/project/project-kind.js'),
-            ]);
+        const [
+            { auditDocs, HEAD_LINES },
+            { readDocsTree },
+            { readManifest },
+            { publishes },
+            { workspaceMembers },
+        ] = await Promise.all([
+            import('./consumer/checks/docs.js'),
+            import('./kit/project/docs-tree.js'),
+            import('./kit/project/manifest.js'),
+            import('./kit/project/project-kind.js'),
+            import('./kit/project/workspace-members.js'),
+        ]);
 
         return {
             async check({ config, root }) {
                 const { resolved } = await config();
-                const publishable = publishes(resolved.declaration, readManifest(root) ?? {});
+                const members = await Promise.all(
+                    workspaceMembers(root).map(async (member) => {
+                        const unit = join(root, member);
+
+                        return publishes(
+                            (await config(unit)).resolved.declaration,
+                            readManifest(unit) ?? {},
+                        );
+                    }),
+                );
+                // invariant: a repository ships a package when its root does or any of its members does: a workspace's root declares none of its own.
+                const publishable =
+                    publishes(resolved.declaration, readManifest(root) ?? {}) ||
+                    members.some(Boolean);
                 const tree = readDocsTree(root, { headLines: HEAD_LINES, publishable });
 
                 return { findings: [...auditDocs(tree)] };

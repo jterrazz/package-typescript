@@ -25,6 +25,15 @@ const BACKTICK_PATH =
 
 const withoutFences = (markdown: string): string => markdown.replaceAll(/^```.*?^```/gmsu, '');
 
+// outside: a generated region is written between markers by the program that owns it (`<!-- GENERATED:name -->` … `<!-- /GENERATED:name -->`): its text is that program's, and a page-level rule would only ask the page to fight it.
+const GENERATED_REGION = /<!-- GENERATED:(?<name>\S+)[^>]*-->.*?<!-- \/GENERATED:\k<name> -->/gsu;
+
+const withoutGenerated = (markdown: string): string =>
+    markdown.replaceAll(GENERATED_REGION, (region) => region.replaceAll(/[^\n]/gu, ''));
+
+// invariant: a page named by a code span qualified with another repository's name (`package-typescript` `docs/reference/x.md`) is that repository's to resolve.
+const QUALIFIED_BY_REPOSITORY = /`@?[\w.-]+(?:\/[\w.-]+)?`\s+`$/u;
+
 const FRONTMATTER = /^---\n.*?\n---\n/su;
 const FENCE = /^\s*(?:```|~~~)/u;
 const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s/u;
@@ -202,6 +211,9 @@ function missingPages({ exists, root }: Context, path: string, cited: string): F
     const found: Found[] = [];
     for (const match of cited.matchAll(PAGE)) {
         const page = match.groups?.page ?? '';
+        if (QUALIFIED_BY_REPOSITORY.test(cited.slice(0, match.index))) {
+            continue;
+        }
         if (!exists(join(root, skill.groups?.root ?? '', 'docs', page))) {
             found.push({
                 message: `docs/${page} is no page this package ships`,
@@ -213,7 +225,8 @@ function missingPages({ exists, root }: Context, path: string, cited: string): F
     return found;
 }
 
-function auditPage(context: Context, path: string, markdown: string): Found[] {
+function auditPage(context: Context, path: string, written: string): Found[] {
+    const markdown = withoutGenerated(written);
     const cited = withoutFences(markdown);
     const found = [...missingPaths(context, path, cited), ...missingPages(context, path, cited)];
 

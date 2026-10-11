@@ -168,7 +168,7 @@ A preset's checks judge their own passes and nothing of oxlint's: a plugin's `jt
 
 Every repository carries the same shape of manual — a map at `docs/README.md` and its pages cut into four sections, `start/`, `guides/`, `concepts/` and `reference/`, beside `decisions/` and `_assets/` — and this pass refuses a tree that breaks it.
 
-Three pages are required of every manual: `concepts/architecture.md`, `guides/develop.md` and `guides/test.md`; a repository that ships an image or a package also holds `guides/release.md`. A page is named for its subject in kebab case, with no number, and sits directly in its section: the map gives the order. This shape is not [the root spine](#the-root-spine), the folders a repository root may hold, which the Names pass judges. `decisions/` is optional: a manual with none owes neither a record nor a template.
+Three pages are required of every manual: `concepts/architecture.md`, `guides/develop.md` and `guides/test.md`; a repository that ships an image or a package also holds `guides/release.md` — a workspace ships a package when any of its members does, not only when its own root does. A page is named for its subject in kebab case, with no number, and sits directly in its section: the map gives the order. This shape is not [the root spine](#the-root-spine), the folders a repository root may hold, which the Names pass judges. `decisions/` is optional: a manual with none owes neither a record nor a template.
 
 Its unit is the **repository**, not the package: a manual answers for a whole tree, and only its root carries the `AGENTS.md` that routes into it. So the pass asks its question exactly where a repository is — a `.git` beside the project, a file in a worktree and a directory in a clone — and nowhere else. A fixture directory is not a repository, and neither is a workspace member linted on its own.
 
@@ -554,7 +554,7 @@ rumdl reads the disk and nothing else, so the check never touches the network. A
 
 ### What the prose gate adds
 
-The prose gate reads what no Markdown linter knows: whether a backticked coordinate resolves, whether a skill names a page its package ships, and whether a page's blocks breathe.
+The prose gate reads what no Markdown linter knows: whether a backticked coordinate resolves, whether a skill names a page its package ships, and whether a page's blocks breathe. It leaves two things to their owners: a region between `<!-- GENERATED:name -->` and `<!-- /GENERATED:name -->` is written by the program that owns it, and a page named by a code span qualified with another repository's name (`` `package-typescript` `docs/reference/quality-checks.md` ``) is that repository's to resolve.
 
 <!-- GENERATED:findings markdown -->
 

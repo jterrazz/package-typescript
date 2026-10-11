@@ -1,0 +1,16 @@
+description: leaves a generated region and another repository's page to their owners
+fixture: ./__fixtures__/markdown/generated-and-qualified/
+env: TYPESCRIPT_CHECK_PASSES=markdown
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Markdown (prose)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed
