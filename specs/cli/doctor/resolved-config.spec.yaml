@@ -22,7 +22,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.env.browser = true
             @jterrazz/typescript rulebook                             typescript.oxlint.env.builtin = true
             @jterrazz/typescript rulebook                             typescript.oxlint.env.node = true
-            @jterrazz/typescript rulebook                             typescript.oxlint.ignorePatterns = [".next/**", "next-env.d.ts", "assets/**", "public/**", "dist/**", "node_modules/**", "**/__expected__/**", "**/__fixtures__/**", "**/__requests__/**", "**/__seeds__/**"]
+            @jterrazz/typescript rulebook                             typescript.oxlint.ignorePatterns = [".next/**", "next-env.d.ts", "assets/**", "public/**", "dist/**", "node_modules/**", "**/__expected__/**", "**/__fixtures__/**", "**/__requests__/**", "**/__seeds__/**", "**/testdata/**", "**/*_test.go"]
             @jterrazz/typescript rulebook                             typescript.oxlint.jsPlugins = ["jterrazz-typescript", "eslint-plugin-perfectionist/dist/index.js"]
             @jterrazz/typescript rulebook                             typescript.oxlint.options.reportUnusedDisableDirectives = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.options.typeAware = true

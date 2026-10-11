@@ -1,10 +1,11 @@
 import { defineCheck, rowNamed } from '../../kit/catalogue/rule.js';
 import { filesKeptByteForByte } from '../../kit/checker/kept-files.js';
 import type { Finding, Pass } from '../../kit/checker/pass.js';
-import { isCommentedElsewhere, STYLE_COMMENTED } from '../../kit/project/comments.js';
+import { GO_COMMENTED, isCommentedElsewhere, STYLE_COMMENTED } from '../../kit/project/comments.js';
 import { readText } from '../../kit/project/project-files.js';
 import { COMMENT_KIND_OPENING } from '../catalogue/comment-kinds.js';
 import FINDINGS from '../catalogue/findings.json' with { type: 'json' };
+import { commentsOfGo, GO_INSTRUCTION } from './comments.go.js';
 import { commentsOfHashes } from './comments.hashes.js';
 import { commentsOfStyles } from './comments.styles.js';
 
@@ -35,7 +36,7 @@ const TEACHING = {
     found: 'a comment that states no kind',
 };
 
-const GENERATED = /@generated\b/u;
+const GENERATED = /@generated\b|Code generated .* DO NOT EDIT/u;
 
 const GENERATED_HEAD_LINES = 5;
 
@@ -47,6 +48,9 @@ function languageOf(path: string): Language | undefined {
     if (!isCommentedElsewhere(path)) {
         return undefined;
     }
+    if (GO_COMMENTED.test(path)) {
+        return commentsOfGo;
+    }
 
     return STYLE_COMMENTED.test(path)
         ? (text) => commentsOfStyles(text, path)
@@ -56,6 +60,7 @@ function languageOf(path: string): Language | undefined {
 function isStructure(run: Run): boolean {
     return (
         COMMENT_KIND_OPENING.test(run.opening) ||
+        GO_INSTRUCTION.test(run.opening) ||
         HASH_INSTRUCTION.test(run.opening) ||
         run.opening.startsWith('!') ||
         /^(?:stylelint-(?:disable|enable)|biome-ignore|purgecss |rtl:|autoprefixer:|webpackIgnore:)/u.test(

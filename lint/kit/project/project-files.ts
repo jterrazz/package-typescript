@@ -8,7 +8,7 @@ import { refusal } from '../catalogue/lesson.js';
 import { ARTIFACTS } from './build-plan.js';
 import { listNotIgnored } from './git-tree.js';
 import { git } from './git.js';
-import { isGroundFolder, TESTS_FOLDER } from './ground.js';
+import { GO_GROUND_FOLDER, GO_TEST_FILE, isGroundFolder, TESTS_FOLDER } from './ground.js';
 
 export const UNSWEPT: ReadonlySet<string> = new Set([
     ARTIFACTS,
@@ -99,9 +99,12 @@ function holdsSomething(root: string): boolean {
 // Stryker disable next-line EqualityOperator: a sweep lists each path once, so no two compare equal
 const byPath = (left: string, right: string): number => (left < right ? -1 : 1);
 
-// invariant: ground is a test's own under a specs tree or a module's tests folder; anywhere else it is a folder like any, which the Names pass judges.
+// invariant: ground is a test's own under a specs tree or a module's tests folder, or the go tool's own wherever it stands (`testdata/`, `*_test.go`); anywhere else it is a folder like any, which the Names pass judges.
 function isGround(path: string): boolean {
     const folders = path.split('/').slice(0, -1);
+    if (folders.includes(GO_GROUND_FOLDER) || GO_TEST_FILE.test(path)) {
+        return true;
+    }
 
     return folders.some(
         (folder, at) =>

@@ -13,7 +13,7 @@ import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
 import { astroChecked, astroEntrypointsOf, astroSynced } from '../../../drivers/astro/astro.js';
 import { knip } from '../../../drivers/knip/knip.js';
 import type { KnipProject, KnipUnit } from '../../../drivers/knip/knip.js';
-import { knipSettingsOf } from '../../../drivers/knip/settings.js';
+import { knipSettingsOf, withGoToolchain } from '../../../drivers/knip/settings.js';
 import { fixedUnder } from '../../../drivers/oxlint/oxlint.js';
 import type { FixScope } from '../../../drivers/oxlint/unsafe-fixers.js';
 import { astroFormatted } from '../../../drivers/prettier/prettier.js';
@@ -201,7 +201,7 @@ async function knipUnit(unit: string): Promise<KnipUnit> {
             ...loaded,
             ...astroEntrypointsOf(unit),
         ],
-        settings: knipSettingsOf(resolved.sections.typescript),
+        settings: withGoToolchain(unit, knipSettingsOf(resolved.sections.typescript)),
     };
 }
 

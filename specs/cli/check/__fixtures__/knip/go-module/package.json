@@ -1,0 +1,6 @@
+{
+    "name": "fixture-go-module",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": { "test": "go test ./..." }
+}

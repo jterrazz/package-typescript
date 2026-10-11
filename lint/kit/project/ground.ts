@@ -10,9 +10,20 @@ export const GROUND_FOLDERS: readonly string[] = Object.freeze([
     GROUND_SEEDS,
 ]);
 
-export const GROUND_GLOBS: readonly string[] = Object.freeze(
-    GROUND_FOLDERS.map((folder) => `**/${folder}/**`),
-);
+// outside: the go tool reads a module's `testdata/` and its `*_test.go` files by name, in any folder; a polyglot repository's goldens sit there, and no pass of this toolchain judges or rewrites them.
+export const GO_GROUND_FOLDER = 'testdata';
+
+export const GO_TEST_FILE = /_test\.go$/u;
+
+export const GO_GROUND_GLOBS: readonly string[] = Object.freeze([
+    `**/${GO_GROUND_FOLDER}/**`,
+    '**/*_test.go',
+]);
+
+export const GROUND_GLOBS: readonly string[] = Object.freeze([
+    ...GROUND_FOLDERS.map((folder) => `**/${folder}/**`),
+    ...GO_GROUND_GLOBS,
+]);
 
 export const GROUND_GLOB = `**/{${GROUND_FOLDERS.join(',')}}/**`;
 

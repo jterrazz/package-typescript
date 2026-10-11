@@ -1,3 +1,6 @@
+import { join } from 'node:path';
+
+import { isFileOnDisk } from '../../../lint/kit/project/fs-cache.js';
 import { objectOf } from '../../../lint/kit/project/json.js';
 
 export type KnipSettings = {
@@ -22,4 +25,11 @@ export function knipSettingsOf(section: unknown): KnipSettings {
         ignoreBinaries: named('ignoreBinaries'),
         ignoreDependencies: named('ignoreDependencies'),
     };
+}
+
+/** A unit holding a `go.mod` shells out to `go`, which no manifest lists: knip reads the binary as unlisted unless told. */
+export function withGoToolchain(unit: string, settings: KnipSettings): KnipSettings {
+    return isFileOnDisk(join(unit, 'go.mod'))
+        ? { ...settings, ignoreBinaries: [...new Set([...settings.ignoreBinaries, 'go'])] }
+        : settings;
 }

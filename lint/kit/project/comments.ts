@@ -253,5 +253,9 @@ const HASH_COMMENTED =
 
 export const STYLE_COMMENTED = /\.(?:css|scss|astro|svelte|vue)$/u;
 
+export const GO_COMMENTED = /\.go$/u;
+
 export const isCommentedElsewhere = (path: string): boolean =>
-    (HASH_COMMENTED.test(path) && !path.endsWith('-lock.yaml')) || STYLE_COMMENTED.test(path);
+    (HASH_COMMENTED.test(path) && !path.endsWith('-lock.yaml')) ||
+    STYLE_COMMENTED.test(path) ||
+    GO_COMMENTED.test(path);

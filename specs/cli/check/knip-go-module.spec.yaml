@@ -1,0 +1,16 @@
+description: reads the go binary of a Go module as shipped by the machine, not as unlisted
+fixture: ./__fixtures__/knip/go-module/
+env: TYPESCRIPT_CHECK_PASSES=knip
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

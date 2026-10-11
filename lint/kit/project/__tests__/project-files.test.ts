@@ -108,6 +108,25 @@ describe('projectFiles', () => {
         ]);
     });
 
+    test("leaves out the go tool's own ground wherever it stands: testdata/ and *_test.go", () => {
+        // Given - a Go module beside a TypeScript harness, its goldens in testdata/ at two depths and its tests beside its sources
+        const root = folderHolding([
+            'cmd/main.go',
+            'cmd/main_test.go',
+            'packages/runtimes/testdata/output_claude_code/settings.json',
+            'testdata/golden.md',
+            'src/index.ts',
+            'src/testdata.ts',
+        ]);
+
+        // Then - the sources stay, and nothing the go tool reads by name is swept
+        expect(projectFiles(root)).toStrictEqual([
+            'cmd/main.go',
+            'src/index.ts',
+            'src/testdata.ts',
+        ]);
+    });
+
     test('refuses a tree that holds something yet sweeps nothing, and passes an empty one', () => {
         // Given - a repository ignoring every file, a folder holding only an empty folder, and an empty folder
         const ignored = repositoryTracking([]);

@@ -32,6 +32,8 @@ describe('byte-for-byte', () => {
             '**/__fixtures__/**',
             '**/__requests__/**',
             '**/__seeds__/**',
+            '**/testdata/**',
+            '**/*_test.go',
             'docs/upstream.md',
             'src/legacy/*.ts',
             'vendor/**',
