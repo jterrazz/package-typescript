@@ -9,9 +9,9 @@ import { ARTIFACTS, DEV_OUTPUT, MUTATION_OUTPUT } from '../../../lint/kit/projec
 import { objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { handOver } from '../run.js';
+import { CHILD_COVERAGE_SOURCE } from './child-coverage.js';
 import { incrementalKeptWhileGroundHolds } from './incremental.js';
 import {
-    CHILD_COVERAGE_SOURCE,
     MUTANT_SETUP_SOURCE,
     RAN_BY_TESTS_VARIABLE,
     sandboxScriptSource,

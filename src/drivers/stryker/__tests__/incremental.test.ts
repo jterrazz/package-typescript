@@ -30,7 +30,7 @@ afterEach(() => {
     }
 });
 
-describe('incrementalKeptWhileGroundHolds', () => {
+describe('incremental', () => {
     test('keeps the report while the ground its tests read is the one it was written on, and drops it when a fixture changes', () => {
         // Given - a report written on one fixture
         const root = projectWith({
@@ -54,12 +54,9 @@ describe('incrementalKeptWhileGroundHolds', () => {
         expect(existsSync(incrementalOf(root))).toBe(false);
     });
 
-    test('drops a report no ground was recorded for, and one a golden or a setup file moved under', () => {
-        // Given - a report left by a run that recorded none
-        const root = projectWith({
-            'specs/__expected__/out.txt': 'one',
-            'specs/__setup__/seed.ts': 'export {}',
-        });
+    test('drops a report no ground was recorded for', () => {
+        // Given - a report left by a run that recorded no ground
+        const root = projectWith({ 'specs/__expected__/out.txt': 'one' });
         writeFileSync(incrementalOf(root), '{}');
 
         // When - a run starts
@@ -67,21 +64,30 @@ describe('incrementalKeptWhileGroundHolds', () => {
 
         // Then - it starts from nothing
         expect(existsSync(incrementalOf(root))).toBe(false);
+    });
 
-        // When - the golden then the setup file change under a new report
-        for (const [path, text] of [
-            ['specs/__expected__/out.txt', 'two'],
-            ['specs/__setup__/seed.ts', 'export const x = 1;'],
-        ] as const) {
-            writeFileSync(incrementalOf(root), '{}');
-            incrementalKeptWhileGroundHolds(root, 'suite-incremental');
-            expect(existsSync(incrementalOf(root))).toBe(true);
-            writeFileSync(join(root, path), text);
-            incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+    test.each([
+        ['a golden', 'specs/__expected__/out.txt', 'two'],
+        ['a setup file', 'specs/__setup__/seed.ts', 'export const x = 1;'],
+        ['a request', 'specs/__requests__/call.http', 'GET /changed'],
+        ['a seed', 'specs/__seeds__/rows.json', '[2]'],
+    ])('drops the report when %s changes under it', (_kind, path, changed) => {
+        // Given - a report written on the ground as it stands
+        const root = projectWith({
+            'specs/__expected__/out.txt': 'one',
+            'specs/__requests__/call.http': 'GET /call',
+            'specs/__seeds__/rows.json': '[1]',
+            'specs/__setup__/seed.ts': 'export {}',
+        });
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+        writeFileSync(incrementalOf(root), '{}');
 
-            // Then - each change drops it
-            expect(existsSync(incrementalOf(root))).toBe(false);
-        }
+        // When - that file changes and the run starts again
+        writeFileSync(join(root, path), changed);
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+
+        // Then - the report is gone
+        expect(existsSync(incrementalOf(root))).toBe(false);
     });
 
     test('keeps the report when only code outside the ground changes', () => {
