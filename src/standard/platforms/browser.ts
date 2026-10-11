@@ -5,5 +5,6 @@ export default defineStandard({
     typescript: {
         toolRoots: { public: PUBLIC_ROOT },
         tsconfigPreset: 'browser',
+        verbatimToolRoots: ['public'],
     },
 });

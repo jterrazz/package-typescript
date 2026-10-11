@@ -10,5 +10,6 @@ export default defineStandard({
             public: PUBLIC_ROOT,
         },
         tsconfigPreset: 'next',
+        verbatimToolRoots: ['public'],
     },
 });

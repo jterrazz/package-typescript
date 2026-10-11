@@ -6,5 +6,6 @@ export default defineStandard({
         sources: { extensions: ['tsx'], roots: [] },
         toolRoots: { public: PUBLIC_ROOT },
         tsconfigPreset: 'react',
+        verbatimToolRoots: ['public'],
     },
 });

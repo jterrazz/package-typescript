@@ -77,6 +77,8 @@ export type TypescriptLaws = {
     toolRoots?: Readonly<Record<string, string>>;
     /** The tsconfig preset of the platform, `@jterrazz/typescript/tsconfig/<name>`. */
     tsconfigPreset?: string;
+    /** The tool roots the platform's tool serves or reads as they are: no pass compiles, lints or rewrites them. */
+    verbatimToolRoots?: readonly string[];
     words?: Readonly<Record<string, readonly string[]>>;
 };
 

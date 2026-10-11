@@ -147,6 +147,7 @@ export function typescriptPreset(
             'spine',
             'toolRoots',
             'tsconfigPreset',
+            'verbatimToolRoots',
             'words',
         ],
         layers: standards.flatMap(({ standard }) => standard.laws?.layers ?? []),

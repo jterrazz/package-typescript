@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 
+import { verbatimRootsOf } from './byte-for-byte.js';
 import { PACKAGE_ROOT } from './package-root.js';
 
 export type EditorFileScope = 'repository' | 'unit';
@@ -35,10 +36,7 @@ export type TsconfigAdditions =
 
 // invariant: a root declared verbatim is no source of the project: the compiler never reads it.
 function verbatimExclusions(section: unknown): Record<string, unknown> {
-    const roots = isRecord(section) && isRecord(section.roots) ? section.roots : {};
-    const excluded = Object.entries(roots)
-        .filter(([, declaration]) => isRecord(declaration) && declaration.verbatim === true)
-        .map(([root]) => `\${configDir}/${root}`);
+    const excluded = verbatimRootsOf(section).map((root) => `\${configDir}/${root}`);
 
     return excluded.length === 0 ? {} : { exclude: excluded };
 }

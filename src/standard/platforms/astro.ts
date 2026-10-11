@@ -5,5 +5,6 @@ export default defineStandard({
     typescript: {
         toolRoots: { assets: ASSETS_ROOT, public: PUBLIC_ROOT },
         tsconfigPreset: 'astro',
+        verbatimToolRoots: ['assets', 'public'],
     },
 });

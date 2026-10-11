@@ -1,0 +1,20 @@
+description: leaves a react website's public folder to the tool that serves it, unread by the type check and the linter
+fixture: ./__fixtures__/platform-public-root/
+env: TYPESCRIPT_CHECK_PASSES=typescript,oxlint
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed
+
+           RUN  Oxlint Check
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

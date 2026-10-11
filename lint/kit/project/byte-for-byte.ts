@@ -1,5 +1,5 @@
 import { GROUND_GLOBS } from './ground.js';
-import { objectOf } from './json.js';
+import { objectOf, stringsOf } from './json.js';
 
 // hazard: a content tree can hold signed bytes — jterrazz-web's attested articles under assets/ — that one rewrite would invalidate.
 const CONTENT_TREES: readonly string[] = Object.freeze([
@@ -16,12 +16,19 @@ const asTree = (path: string): string =>
         ? path
         : `${path}/**`;
 
-/** The folders `typescript.roots` declares `verbatim`: kept as written by every pass that reads or rewrites a file, quoted upstream text, signed articles, a script's output. */
-export function verbatimTreesOf(typescript: unknown): string[] {
-    return Object.entries(objectOf(objectOf(typescript).roots))
+/** The root folders kept as written: the ones `typescript.roots` declares `verbatim`, then the platform's tool roots its standard names verbatim (`public/`, an app's `assets/`). */
+export function verbatimRootsOf(typescript: unknown): string[] {
+    const { roots, verbatimToolRoots } = objectOf(typescript);
+    const declared = Object.entries(objectOf(roots))
         .filter(([, declaration]) => objectOf(declaration).verbatim === true)
-        .map(([root]) => asTree(root));
+        .map(([root]) => root);
+
+    return [...new Set([...declared, ...stringsOf(verbatimToolRoots)])];
 }
+
+/** The trees of those roots: kept as written by every pass that reads or rewrites a file, quoted upstream text, signed articles, a script's output, the files a platform's tool serves. */
+export const verbatimTreesOf = (typescript: unknown): string[] =>
+    verbatimRootsOf(typescript).map(asTree);
 
 /** The paths no gesture of `fix` rewrites in a unit, given its resolved `typescript` section: the content trees, the ground of its tests, what it hands the formatter to leave alone, and the roots declared verbatim. */
 export function keptByteForByte(typescript: unknown): string[] {

@@ -20,5 +20,6 @@ export default defineStandard({
             ios: 'React Native and Expo — the native iOS project',
         },
         tsconfigPreset: 'expo',
+        verbatimToolRoots: ['assets'],
     },
 });

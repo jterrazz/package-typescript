@@ -31,7 +31,17 @@ describe('preset', () => {
             'typescript',
             '@jterrazz/typescript',
             ['typescript'],
-            ['lint', 'memberRoots', 'sources', 'spine', 'toolRoots', 'tsconfigPreset', 'words'],
+            [
+                'lint',
+                'manifestKeys',
+                'memberRoots',
+                'sources',
+                'spine',
+                'toolRoots',
+                'tsconfigPreset',
+                'verbatimToolRoots',
+                'words',
+            ],
         ]);
     });
 

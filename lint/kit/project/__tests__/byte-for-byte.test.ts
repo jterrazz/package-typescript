@@ -1,8 +1,26 @@
 import { describe, expect, test } from 'vitest';
 
-import { keptByteForByte } from '../byte-for-byte.js';
+import { keptByteForByte, verbatimRootsOf, verbatimTreesOf } from '../byte-for-byte.js';
 
 describe('byte-for-byte', () => {
+    test('verbatimRootsOf — the roots declared verbatim come first, then the platform’s verbatim tool roots, none twice, and a tree is a folder widened', () => {
+        // Given - a section declaring a verbatim root, a root that is not, and a platform naming two tool roots, one of them declared too
+        const section = {
+            roots: {
+                notes: { reason: 'quoted', verbatim: true },
+                public: { reason: 'declared again', verbatim: true },
+                scratch: { reason: 'laid out', verbatim: false },
+            },
+            verbatimToolRoots: ['public', 'assets'],
+        };
+
+        // Then - the declared roots, then the tool root not already there, as folders and as trees
+        expect([verbatimRootsOf(section), verbatimTreesOf(section)]).toStrictEqual([
+            ['notes', 'public', 'assets'],
+            ['notes/**', 'public/**', 'assets/**'],
+        ]);
+    });
+
     test('keeps the content trees, the ground, the paths handed the formatter and the roots declared verbatim, each folder as its whole tree and each file as itself', () => {
         // Given - a section handing the formatter a folder, a glob and a file, and declaring three roots, two of them verbatim
         const section = {
