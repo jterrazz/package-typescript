@@ -1,13 +1,14 @@
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { delimiter, join } from 'node:path';
+import { delimiter, dirname, join, relative, resolve, sep } from 'node:path';
 import process from 'node:process';
 
 import { readSettings } from '../../../lint/index.rules.js';
 import { ARTIFACTS, DEV_OUTPUT, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
+import { isRepositoryRoot, nearestRoot } from '../../../lint/kit/project/repository-root.js';
 import { handOver } from '../run.js';
 import { CHILD_COVERAGE_SOURCE } from './child-coverage.js';
 import { incrementalKeptWhileGroundHolds } from './incremental.js';
@@ -17,6 +18,7 @@ import {
     sandboxScriptSource,
     vitestConfigSource,
 } from './sources.js';
+import type { Beside } from './sources.js';
 
 const oneGlob = (globs: readonly string[]): string =>
     globs.length === 1 ? String(globs) : `{${globs.join(',')}}`;
@@ -109,6 +111,22 @@ export function strykerPrepared(project: string): void {
     process.env.PATH = `${join(project, 'node_modules', '.bin')}${delimiter}${process.env.PATH ?? ''}`;
 }
 
+// invariant: a workspace member is mutated from its own folder, and its specs may climb out of it to the repository's files; a project that is the repository's own root has nothing above it to lay.
+function besideOf(project: string): Beside | undefined {
+    const root = isRepositoryRoot(resolve(project))
+        ? undefined
+        : nearestRoot(dirname(resolve(project)), isRepositoryRoot);
+    if (root === undefined) {
+        return undefined;
+    }
+
+    return {
+        levels: relative(root, resolve(project)).split(sep).length,
+        names: readdirSync(root).filter((name) => !name.startsWith('.') && name !== 'node_modules'),
+        root,
+    };
+}
+
 export type Measured = { ranByTests: ReadonlySet<string>; report: unknown };
 
 /** A stage's report, or Stryker's status when it failed: a failed run leaves no report this one could be judged by. */
@@ -125,7 +143,7 @@ export async function strykerRun(
     writeFileSync(join(MUTATION_OUTPUT, files.vitest), vitestConfigSource(scope.exclude, suite));
     writeFileSync(
         join(MUTATION_OUTPUT, files.sandbox),
-        sandboxScriptSource(suite && buildsFirst, project),
+        sandboxScriptSource(suite && buildsFirst, project, besideOf(project)),
     );
     writeFileSync(
         join(MUTATION_OUTPUT, files.config),

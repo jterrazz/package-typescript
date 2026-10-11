@@ -138,9 +138,27 @@ if (inject('mode') === 'mutant') {
 }
 `;
 
+/** The folders of the repository a member's specs reach by climbing out of it: where the sandbox's copy stands, and the names to lay beside it. */
+export type Beside = { levels: number; names: readonly string[]; root: string };
+
+// invariant: the sandbox lies four folders below its member (`.artifacts/stryker/tmp/sandbox-*`), so a spec that climbs `levels` folders out of a member lands `levels` folders above the copy; the repository's top-level entries are linked there, for the climbs that land inside `.artifacts/`.
+const besideScript = ({ levels, names, root }: Beside): string =>
+    `import { existsSync as present, symlinkSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+
+const beside = resolve(process.cwd(), ${JSON.stringify('../'.repeat(levels))});
+for (const name of ${JSON.stringify(names)}) {
+    if (!present(join(beside, name))) {
+        symlinkSync(join(${JSON.stringify(root)}, name), join(beside, name));
+    }
+}
+`;
+
+const SANDBOX_DEPTH = 4;
+
 // outside: the checks a test runs read the git tree, and the sandbox lies in the ignored .artifacts/, where git sees none.
 // invariant: the build the suite runs against holds the declarations of the project's own build: a mutant changes what the code does, never the types it declares, and a declaration emitted from instrumented code infers wider types than the code states.
-export const sandboxScriptSource = (build: boolean, project: string): string =>
+export const sandboxScriptSource = (build: boolean, project: string, beside?: Beside): string =>
     `import { execFileSync } from 'node:child_process';
 ${build ? "import { cpSync, existsSync, statSync } from 'node:fs';\n" : ''}
 execFileSync('git', ['init', '--quiet']);
@@ -157,7 +175,7 @@ if (existsSync(declarations)) {
 }
 `
         : ''
-}`;
+}${beside !== undefined && beside.levels > 0 && beside.levels < SANDBOX_DEPTH ? `\n${besideScript(beside)}` : ''}`;
 
 export function vitestConfigSource(exclude: readonly string[], suite: boolean): string {
     const kept = suite

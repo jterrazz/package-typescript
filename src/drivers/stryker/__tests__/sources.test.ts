@@ -51,4 +51,49 @@ describe('sources', () => {
             "import { execFileSync } from 'node:child_process';\n\nexecFileSync('git', ['init', '--quiet']);\nexecFileSync('git', ['add', '--all']);\n",
         );
     });
+
+    test('sandboxScriptSource — a member’s sandbox holds the repository’s top-level entries where its specs climb to', () => {
+        // Given - a repository with a testdata/ folder and a member two folders down, and the sandbox of that member four folders below it
+        const repository = mkdtempSync(join(tmpdir(), 'mutation-repository-'));
+        onTestFinished(() => {
+            rmSync(repository, { force: true, recursive: true });
+        });
+        const sandbox = join(repository, 'packages/server/.artifacts/stryker/tmp/sandbox-1');
+        laid(repository, { 'testdata/golden.json': '{}', 'packages/server/package.json': '{}' });
+        mkdirSync(sandbox, { recursive: true });
+        writeFileSync(
+            join(sandbox, 'sandbox.mjs'),
+            sandboxScriptSource(false, join(repository, 'packages/server'), {
+                levels: 2,
+                names: ['testdata'],
+                root: repository,
+            }),
+        );
+
+        // When - the sandbox script runs
+        execFileSync(process.execPath, ['sandbox.mjs'], { cwd: sandbox, stdio: 'ignore' });
+
+        // Then - a spec of the copy that climbs two folders out of it reads the repository's file, at the place the real tree would have it
+        expect(readFileSync(join(sandbox, '../../testdata/golden.json'), 'utf8')).toBe('{}');
+    });
+
+    test('sandboxScriptSource — no entry is laid for a project that is the repository, nor for a climb that leaves the sandbox’s own folders', () => {
+        // Given - a root project (no folder to climb), and a member four folders down
+        const root = sandboxScriptSource(false, '/project', {
+            levels: 0,
+            names: ['docs'],
+            root: '/r',
+        });
+        const deep = sandboxScriptSource(false, '/project', {
+            levels: 4,
+            names: ['docs'],
+            root: '/r',
+        });
+
+        // Then - the script only lays the git tree in both
+        expect([root, deep]).toStrictEqual([
+            sandboxScriptSource(false, '/project'),
+            sandboxScriptSource(false, '/project'),
+        ]);
+    });
 });
