@@ -8,6 +8,8 @@ export type Universal = {
     lint: LintTree;
     memberRoots: ReadonlySet<string>;
     shortcuts: ReadonlySet<string>;
+    /** The folders of `specs/` that hold specifications, read from the `test` section a package of the family declares; none when the project declares none. */
+    specifications: ReadonlySet<string>;
     spine: ReadonlySet<string>;
     toolRoots: Readonly<Record<string, string>>;
 };
@@ -26,17 +28,6 @@ const SWEPT: ReadonlySet<string> = new Set([
     'specs',
     'src',
     'tests',
-]);
-
-// outside: @jterrazz/test files a spec under `specs/<specification>/<subject>/`, the subject being the command, the route or the page the spec proves: a name the product chose (`auth`, `db`), never one the tree did.
-const SPECIFICATIONS: ReadonlySet<string> = new Set([
-    'api',
-    'cli',
-    'component',
-    'integration',
-    'job',
-    'mobile',
-    'website',
 ]);
 
 // outside: below `app/`, a Next.js directory is a URL the product serves, not a name the tree chose.
@@ -62,20 +53,45 @@ const hasConstructSuffix = (fileName: string): boolean =>
 
 const stemOf = (name: string): string => name.split('.')[0] ?? '';
 
-// invariant: the folders of a path are judged down to the first level below a specification folder, whose subjects are the product's own words; a router root ends the walk one level in.
+const SPEC_FILE = /\.spec\.(?:tsx?|ya?ml)$/u;
+
+// invariant: a router root ends the walk one level in.
 function judgedDepth(segments: readonly string[]): number {
     const routerRoot = segments.indexOf(ROUTER_ROOT, 1);
-    const underSpecification = segments[0] === 'specs' && SPECIFICATIONS.has(segments[1] ?? '');
 
-    return Math.min(
-        routerRoot === -1 ? Infinity : routerRoot + 1,
-        underSpecification ? 2 : Infinity,
-        segments.length - 1,
-    );
+    return Math.min(routerRoot === -1 ? Infinity : routerRoot + 1, segments.length - 1);
 }
 
-function namesOf(files: readonly string[]): [string, Named][] {
+// outside: @jterrazz/test files a spec under `specs/<specification>/<subject>/`, the subject being the command, the route or the page the spec proves: a name the product chose (`auth`, `db`), never one the tree did. Whether the folder IS the spec's subject is that package's `spec-in-subject-folder`; here a folder is a subject's only on the path of a spec file, below the specification, outside the `__` folders (`__setup__/`, `__fixtures__/`) that hold no subject.
+function subjectFolders(
+    files: readonly string[],
+    specifications: ReadonlySet<string>,
+): Set<string> {
+    const subjects = new Set<string>();
+
+    for (const file of files) {
+        const segments = file.split('/');
+        if (
+            segments[0] !== 'specs' ||
+            !specifications.has(segments[1] ?? '') ||
+            !SPEC_FILE.test(segments.at(-1) ?? '')
+        ) {
+            continue;
+        }
+        for (let index = 2; index < segments.length - 1; index += 1) {
+            if (segments[index]?.startsWith('__') === true) {
+                break;
+            }
+            subjects.add(segments.slice(0, index + 1).join('/'));
+        }
+    }
+
+    return subjects;
+}
+
+function namesOf(files: readonly string[], specifications: ReadonlySet<string>): [string, Named][] {
     const named = new Map<string, Named>();
+    const subjects = subjectFolders(files, specifications);
 
     for (const file of files) {
         const segments = file.split('/');
@@ -85,7 +101,9 @@ function namesOf(files: readonly string[]): [string, Named][] {
 
         for (let index = 1; index < judgedDepth(segments); index += 1) {
             const path = segments.slice(0, index + 1).join('/');
-            named.set(path, { name: segments[index] ?? '' });
+            if (!subjects.has(path)) {
+                named.set(path, { name: segments[index] ?? '' });
+            }
         }
         const fileName = segments.at(-1) ?? '';
         named.set(file, { fileName, name: stemOf(fileName) });
@@ -98,7 +116,7 @@ function namesOf(files: readonly string[]): [string, Named][] {
 export function findingsOf(files: readonly string[], universal: Universal): Finding[] {
     const findings: Finding[] = [];
 
-    for (const [path, { fileName, name }] of namesOf(files)) {
+    for (const [path, { fileName, name }] of namesOf(files, universal.specifications)) {
         if (restatesTheMark(path, name)) {
             findings.push(
                 namesFinding('names/no-grab-bag-name', path, {

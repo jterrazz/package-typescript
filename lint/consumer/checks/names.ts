@@ -51,7 +51,10 @@ function manifestOf(disk: Disk, unit: string): Manifest {
 
 const set = (value: unknown): ReadonlySet<string> => new Set(stringsOf(value));
 
-function universalOf(section: Readonly<Record<string, unknown>>): Universal {
+function universalOf(
+    section: Readonly<Record<string, unknown>>,
+    tests: Readonly<Record<string, unknown>>,
+): Universal {
     const words = objectOf(section.words);
 
     return {
@@ -60,6 +63,7 @@ function universalOf(section: Readonly<Record<string, unknown>>): Universal {
         lint: lintFoldersOf(section.lint),
         memberRoots: set(section.memberRoots),
         shortcuts: set(words.shortcuts),
+        specifications: set(tests.specifications),
         spine: set(section.spine),
         toolRoots: stringRecordOf(section.toolRoots),
     };
@@ -67,7 +71,7 @@ function universalOf(section: Readonly<Record<string, unknown>>): Universal {
 
 function settingsOf({ problem, resolved }: Resolution): Settings {
     const section = resolved.sections.typescript ?? {};
-    const universal = universalOf(section);
+    const universal = universalOf(section, resolved.sections.test ?? {});
     if (problem !== null) {
         return { problem, roots: NO_DECLARED_ROOTS, universal };
     }

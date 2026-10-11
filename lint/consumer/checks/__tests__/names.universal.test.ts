@@ -9,6 +9,7 @@ const UNIVERSAL: Universal = {
     lint: { consumer: [], kit: [], self: [] },
     memberRoots: new Set(),
     shortcuts: new Set(['auth', 'cfg']),
+    specifications: new Set(['cli', 'website']),
     spine: new Set(),
     toolRoots: {},
 };
@@ -38,9 +39,9 @@ describe('findingsOf', () => {
         ]);
     });
 
-    test('leaves the folders below a specification to the product’s own words, and judges their files and every other specs folder', () => {
-        // Given - a specification folder with a command folder, and the same names under other specs folders
-        // Then - `auth` under specs/cli/ is a command, but a file of it is judged, and the same folder under another specs folder is judged
+    test('leaves the folders on the path of a spec to the product’s own words, and judges their files and every other folder', () => {
+        // Given - a specification folder with command folders holding specs, and the same names under another specs folder
+        // Then - `auth` and `tools` on the path of a spec under specs/cli/ are a command's, a file of them is judged, and the same folders under another specs folder are judged
         expect(
             judged(
                 'specs/cli/auth/login.spec.ts',
@@ -52,6 +53,37 @@ describe('findingsOf', () => {
             'names/no-abbreviated-word specs/cli/auth/cfg.spec.ts',
             'names/no-abbreviated-word specs/orders/auth',
         ]);
+    });
+
+    test('judges what no spec stands on below a specification: helper folders, and everything below a double-underscore folder', () => {
+        // Given - a folder holding only helpers, a setup folder with a grab-bag folder, a fixtures folder, and a subject folder beside them holding a spec
+        // Then - the helper folder, the folder under __setup__ and the one under the website's __fixtures__ are judged; the subject folder of the spec is not
+        expect(
+            judged(
+                'specs/cli/tools/helper.ts',
+                'specs/cli/__setup__/tools/seed.ts',
+                'specs/website/__fixtures__/tools/page.ts',
+                'specs/cli/auth/login.spec.ts',
+                'specs/website/auth/login.spec.ts',
+                'specs/website/auth/__fixtures__/tools/page.ts',
+            ),
+        ).toStrictEqual([
+            'names/no-grab-bag-name specs/cli/__setup__/tools',
+            'names/no-grab-bag-name specs/cli/tools',
+            'names/no-grab-bag-name specs/website/__fixtures__/tools',
+            'names/no-grab-bag-name specs/website/auth/__fixtures__/tools',
+        ]);
+    });
+
+    test('exempts no specs folder when the project declares no specification', () => {
+        // Given - a project whose test section names no specification
+        const none = findingsOf(['specs/cli/auth/login.spec.ts'], {
+            ...UNIVERSAL,
+            specifications: new Set(),
+        }).map(({ path, rule }) => `${rule} ${path}`);
+
+        // Then - the folder is judged like any other
+        expect(none).toStrictEqual(['names/no-abbreviated-word specs/cli/auth']);
     });
 
     test('names a construct by its folder or by the suffix of its file', () => {
