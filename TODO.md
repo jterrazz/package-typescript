@@ -22,9 +22,3 @@ delivered leaves this file.
   once in the OS pilot, never reproduced. If it recurs, keep both logs and whether
   `tsgolint` exited early; a warning when its worker ends before the last file is the first
   gate to add.
-- **`typescript doctor` lists a library's `lint/` laws where it holds no `lint/`.** The six
-  layer laws of `src/standard/kinds/library.ts` (`kit-knows-no-declaration`, …) describe the
-  tree a package shipping lint rules keeps; the Architecture pass already drops a law whose
-  folders the project does not hold (`isInert`), so they cost nothing, but the doctor prints
-  them to package-telemetry as its own. The doctor should read the same predicate, or the
-  laws move to a standard a `lint/` tree brings.

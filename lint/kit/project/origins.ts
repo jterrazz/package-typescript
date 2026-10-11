@@ -1,5 +1,6 @@
 import type { OxlintConfig } from 'oxlint';
 
+import { isInert } from './inert-laws.js';
 import { isJsonObject } from './json.js';
 import { SETTINGS_FILE } from './jterrazz-config.js';
 import type { Preset, Resolved } from './preset.js';
@@ -146,7 +147,11 @@ function filled(entries: ReadonlyMap<string, Entry>): Entry[] {
 /** Each setting of the resolved sections — of the rulebook's profile and of what the tree derives — then each law and each one set aside, beside the file it comes from. */
 export function originLines(
     resolved: Resolved,
-    { derived = {}, rulebook = {} }: { derived?: Derived; rulebook?: OxlintConfig } = {},
+    {
+        derived = {},
+        holds = () => true,
+        rulebook = {},
+    }: { derived?: Derived; holds?: (folder: string) => boolean; rulebook?: OxlintConfig } = {},
 ): OriginLine[] {
     const sections = [...new Set([...Object.keys(derived), ...Object.keys(resolved.sections)])];
     const settings = sections.flatMap((section) => {
@@ -168,8 +173,12 @@ export function originLines(
             return { origin, setting: `${path} = ${list ? `[${shownValues}]` : shownValues}` };
         });
     });
+    // invariant: a layer law whose folders the project does not hold refuses no import, so it is no law of this project's: the doctor names the ones that apply.
     const laws = resolved.presets.flatMap((preset) =>
-        [...(preset.layers ?? []), ...(preset.names ?? [])].map(({ name }) => ({
+        [
+            ...(preset.layers ?? []).filter((layer) => !isInert(layer, holds)),
+            ...(preset.names ?? []),
+        ].map(({ name }) => ({
             origin: presetOrigin(
                 preset,
                 preset.origins?.find((origin) => origin.laws?.includes(name) === true)?.file,

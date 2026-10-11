@@ -9,6 +9,7 @@ import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import { runTool } from '../../kit/checker/tool-run.js';
 import type { ToolRun } from '../../kit/checker/tool-run.js';
 import { GROUND_FOLDERS } from '../../kit/project/ground.js';
+import { isInert } from '../../kit/project/inert-laws.js';
 import { objectOf, stringOf } from '../../kit/project/json.js';
 import { DEPENDENCY_CRUISER_CONFIGS, SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { isChapterAnchor, presetLesson } from '../../kit/project/preset.js';
@@ -51,28 +52,6 @@ const MALFORMED_LAYERS = refusal({
     read: 'docs/reference/quality-checks.md#the-architecture-layer-map-pass',
     why: 'a layer is a dependency-cruiser rule and the lesson its refusal prints, and a layer missing a part can be neither judged nor taught',
 });
-
-const pathsOf = (path: unknown): string[] =>
-    typeof path === 'string'
-        ? [path]
-        : Array.isArray(path)
-          ? path.filter((one) => typeof one === 'string')
-          : [];
-
-const LEADING_FOLDER = /^\^(?<folder>[\w.-]+)\//u;
-
-// invariant: a side whose every path opens on a folder the project does not hold can match no module, so the rule refuses no import: an always-on law costs a project without its tree no cruise.
-function isInert(rule: ArchitectureRule, holds: (folder: string) => boolean): boolean {
-    const absent = (side: unknown): boolean => {
-        const folders = pathsOf(side).map((path) => LEADING_FOLDER.exec(path)?.groups?.folder);
-
-        return (
-            folders.length > 0 && folders.every((folder) => folder !== undefined && !holds(folder))
-        );
-    };
-
-    return absent(rule.from.path) || absent(rule.to.path);
-}
 
 async function declaredRules(context: Context): Promise<Declared> {
     const { problem, resolved } = await context.config();

@@ -205,6 +205,7 @@ async function reportConfig(root: string): Promise<void> {
         }
         const lines = originLines(resolved, {
             derived: derivedOf(join(root, unit), resolved),
+            holds: (folder) => existsSync(join(root, unit, folder)),
             rulebook: await shownProfile(resolved),
         });
         const width = Math.max(...lines.map(({ origin }) => origin.length)) + 2;
