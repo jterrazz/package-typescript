@@ -3,7 +3,9 @@ import ASTRO_CHECK from '../../../src/standard/dependencies/astro-check.js';
 import ASTRO_REACT from '../../../src/standard/dependencies/astro-react.js';
 import PATCH_PACKAGE from '../../../src/standard/dependencies/patch-package.js';
 import PRISMA from '../../../src/standard/dependencies/prisma.js';
+import REACT_ROUTER_DEV from '../../../src/standard/dependencies/react-router-dev.js';
 import REMOTION from '../../../src/standard/dependencies/remotion.js';
+import VITE from '../../../src/standard/dependencies/vite.js';
 import API from '../../../src/standard/kinds/api.js';
 import CLI from '../../../src/standard/kinds/cli.js';
 import LIBRARY from '../../../src/standard/kinds/library.js';
@@ -46,14 +48,18 @@ const PLATFORM_STANDARDS: Readonly<Record<Platform, Standard>> = {
     react: REACT,
 };
 
-// invariant: a package keyed here brings its standard to every unit whose manifest declares it, named for the package.
-const DEPENDENCY_STANDARDS: Readonly<Record<string, { name: string; standard: Standard }>> = {
+// invariant: a package keyed here brings its standard to every unit whose manifest declares it, named for the package, on the platforms it lists when it lists any.
+const DEPENDENCY_STANDARDS: Readonly<
+    Record<string, { name: string; platforms?: readonly Platform[]; standard: Standard }>
+> = {
     '@astrojs/check': { name: 'astro-check', standard: ASTRO_CHECK },
     '@astrojs/react': { name: 'astro-react', standard: ASTRO_REACT },
     '@prisma/client': { name: 'prisma', standard: PRISMA },
+    '@react-router/dev': { name: 'react-router-dev', standard: REACT_ROUTER_DEV },
     'appium-xcuitest-driver': { name: 'appium-xcuitest-driver', standard: APPIUM_XCUITEST_DRIVER },
     'patch-package': { name: 'patch-package', standard: PATCH_PACKAGE },
     remotion: { name: 'remotion', standard: REMOTION },
+    vite: { name: 'vite', platforms: ['react'], standard: VITE },
 };
 
 export const BASELINE_SECTION = 'typescript';
@@ -91,7 +97,10 @@ function standardsOf(
               ]),
         { file: `src/standard/platforms/${platform}.ts`, standard: PLATFORM_STANDARDS[platform] },
         ...Object.entries(DEPENDENCY_STANDARDS)
-            .filter(([dependency]) => dependencies.has(dependency))
+            .filter(
+                ([dependency, { platforms: only }]) =>
+                    dependencies.has(dependency) && (only?.includes(platform) ?? true),
+            )
             .map(([, { name, standard }]) => ({
                 file: `src/standard/dependencies/${name}.ts`,
                 standard,

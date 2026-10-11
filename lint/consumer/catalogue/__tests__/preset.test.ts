@@ -216,4 +216,32 @@ describe('preset', () => {
             'src/index.ts': "the Remotion CLI bundles the project's root from this file by name",
         });
     });
+
+    test('typescriptPreset — React Router brings its route types to the tsconfig, and Vite its client types to a React tree alone', () => {
+        // Given - a React website declaring both, a React website declaring neither, and a Node api declaring Vite
+        const routed = typescriptPreset(
+            { kind: 'website', platform: 'react' },
+            new Set(['@react-router/dev', 'vite']),
+        );
+        const plain = typescriptPreset({ kind: 'website', platform: 'react' }, new Set());
+        const api = typescriptPreset({ kind: 'api', platform: 'node' }, new Set(['vite']));
+
+        // Then - the route types resolve beside the routes, the client types join the compiler's, and nothing of either appears elsewhere
+        expect([
+            objectOf(objectOf(routed.settings).tsconfig),
+            objectOf(plain.settings).tsconfig,
+            objectOf(api.settings).tsconfig,
+        ]).toStrictEqual([
+            {
+                compilerOptions: {
+                    rootDirs: ['${configDir}', '${configDir}/.react-router/types'],
+                    types: ['node', 'vite/client'],
+                },
+                include: ['${configDir}/.react-router/types/**/*'],
+                reason: "a Vite-bundled React tree imports stylesheets and assets whose module types are vite/client's (`import './globals.css'` is TS2882 without them), and its config files read Node's",
+            },
+            undefined,
+            undefined,
+        ]);
+    });
 });
