@@ -9,6 +9,7 @@ import { ARTIFACTS, DEV_OUTPUT, MUTATION_OUTPUT } from '../../../lint/kit/projec
 import { objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { handOver } from '../run.js';
+import { incrementalKeptWhileGroundHolds } from './incremental.js';
 import {
     CHILD_COVERAGE_SOURCE,
     MUTANT_SETUP_SOURCE,
@@ -133,6 +134,7 @@ export async function strykerRun(
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
+    incrementalKeptWhileGroundHolds(project, files.incremental);
     const status = await handOver(
         projectBinary('stryker'),
         ['run', join(MUTATION_OUTPUT, files.config)],

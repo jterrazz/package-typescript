@@ -1,0 +1,100 @@
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, expect, test } from 'vitest';
+
+import { incrementalKeptWhileGroundHolds } from '../incremental.js';
+
+const roots: string[] = [];
+
+function projectWith(files: Record<string, string>): string {
+    const root = mkdtempSync(join(tmpdir(), 'incremental-'));
+    roots.push(root);
+    execFileSync('git', ['init', '--quiet'], { cwd: root });
+    for (const [path, text] of Object.entries(files)) {
+        mkdirSync(join(root, path, '..'), { recursive: true });
+        writeFileSync(join(root, path), text);
+    }
+    mkdirSync(join(root, '.artifacts/stryker'), { recursive: true });
+
+    return root;
+}
+
+const incrementalOf = (root: string): string =>
+    join(root, '.artifacts/stryker/suite-incremental.json');
+
+afterEach(() => {
+    for (const root of roots.splice(0)) {
+        rmSync(root, { force: true, recursive: true });
+    }
+});
+
+describe('incrementalKeptWhileGroundHolds', () => {
+    test('keeps the report while the ground its tests read is the one it was written on, and drops it when a fixture changes', () => {
+        // Given - a report written on one fixture
+        const root = projectWith({
+            'specs/a.spec.ts': 'test',
+            'specs/__fixtures__/input.json': '{"a":1}',
+        });
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+        writeFileSync(incrementalOf(root), '{}');
+
+        // When - the run starts again on the same ground
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+
+        // Then - the report is kept
+        expect(existsSync(incrementalOf(root))).toBe(true);
+
+        // When - the fixture changes and the test file does not
+        writeFileSync(join(root, 'specs/__fixtures__/input.json'), '{"a":2}');
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+
+        // Then - the report is gone, so no verdict of it is reused
+        expect(existsSync(incrementalOf(root))).toBe(false);
+    });
+
+    test('drops a report no ground was recorded for, and one a golden or a setup file moved under', () => {
+        // Given - a report left by a run that recorded none
+        const root = projectWith({
+            'specs/__expected__/out.txt': 'one',
+            'specs/__setup__/seed.ts': 'export {}',
+        });
+        writeFileSync(incrementalOf(root), '{}');
+
+        // When - a run starts
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+
+        // Then - it starts from nothing
+        expect(existsSync(incrementalOf(root))).toBe(false);
+
+        // When - the golden then the setup file change under a new report
+        for (const [path, text] of [
+            ['specs/__expected__/out.txt', 'two'],
+            ['specs/__setup__/seed.ts', 'export const x = 1;'],
+        ] as const) {
+            writeFileSync(incrementalOf(root), '{}');
+            incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+            expect(existsSync(incrementalOf(root))).toBe(true);
+            writeFileSync(join(root, path), text);
+            incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+
+            // Then - each change drops it
+            expect(existsSync(incrementalOf(root))).toBe(false);
+        }
+    });
+
+    test('keeps the report when only code outside the ground changes', () => {
+        // Given - a report and a source
+        const root = projectWith({ 'src/a.ts': 'one', 'specs/__fixtures__/f.txt': 'f' });
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+        writeFileSync(incrementalOf(root), '{}');
+
+        // When - the source changes
+        writeFileSync(join(root, 'src/a.ts'), 'two');
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+
+        // Then - Stryker's own source key decides, and the report stays
+        expect(existsSync(incrementalOf(root))).toBe(true);
+    });
+});
