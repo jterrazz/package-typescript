@@ -178,4 +178,41 @@ describe('verdictOf', () => {
             '  src/z.ts  1',
         ]);
     });
+
+    test('what only a browser could run is unmeasured, apart from what no test runs', () => {
+        // Given - the suite ran nothing of a server module's two mutants, a component's three and a template's one
+        const files = ['src/server.ts', 'src/Card.tsx', 'src/page.astro'];
+        const judged = judgedRuns(
+            { measured: new Set(), ranByTests: NONE_RAN, report: {} },
+            {
+                changed: new Map(files.map((file) => [file, true as const])),
+                report: {
+                    files: {
+                        'src/server.ts': {
+                            mutants: [mutant('NoCoverage', 1), mutant('NoCoverage', 2)],
+                        },
+                        'src/Card.tsx': {
+                            mutants: [
+                                mutant('NoCoverage', 1),
+                                mutant('NoCoverage', 2),
+                                mutant('NoCoverage', 3),
+                            ],
+                        },
+                        'src/page.astro': { mutants: [mutant('NoCoverage', 1)] },
+                    },
+                },
+                untested: files,
+            },
+        );
+
+        // Then - the server's count stands alone, and the browser side is named unmeasured, file by file
+        expect(verdictOf(judged, 0, MEASURE).lines).toStrictEqual([
+            'measured nothing over a1b2c3d4..HEAD: no changed TypeScript source ran a mutant, or the project has none to mutate',
+            '2 mutant(s) no test runs',
+            '  src/server.ts  2',
+            'unmeasured: 4 mutant(s) of browser-side sources — the mutation run starts no browser project, so no count claims them detected',
+            '  src/Card.tsx  3',
+            '  src/page.astro  1',
+        ]);
+    });
 });

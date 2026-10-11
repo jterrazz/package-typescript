@@ -9,14 +9,25 @@ function countsOf(byStatus: Record<string, number>): { statuses: string; total: 
     };
 }
 
+// outside: a component, an island or a template runs in the browser, where the mutation run starts no project: no test of it is credited with a mutant there.
+const BROWSER_SIDE = /\.(?:astro|jsx|svelte|tsx|vue)$/u;
+
+const byMostFirst = ([a, left]: [string, number], [b, right]: [string, number]): number =>
+    right - left || a.localeCompare(b);
+
+const withFiles = (entries: readonly [string, number][]): string[] =>
+    entries.map(([file, count]) => `  ${file}  ${count}`);
+
+const totalOf = (entries: readonly [string, number][]): number =>
+    entries.reduce((sum, [, count]) => sum + count, 0);
+
 function countLines(
     { detectedBySuite, left: leftCount, outsideVerdict, uncoveredByFile }: Judged,
     untestedSources: number,
 ): string[] {
-    const uncovered = Object.entries(uncoveredByFile).toSorted(
-        ([a, left], [b, right]) => right - left || a.localeCompare(b),
-    );
-    const total = uncovered.reduce((sum, [, count]) => sum + count, 0);
+    const sorted = Object.entries(uncoveredByFile).toSorted(byMostFirst);
+    const browser = sorted.filter(([file]) => BROWSER_SIDE.test(file));
+    const uncovered = sorted.filter(([file]) => !BROWSER_SIDE.test(file));
     const outside = countsOf(outsideVerdict);
     return [
         ...(detectedBySuite === 0
@@ -24,8 +35,14 @@ function countLines(
             : [
                   `${detectedBySuite} mutant(s) the module tests let live, detected by the whole suite`,
               ]),
-        `${total} mutant(s) no test runs`,
-        ...uncovered.map(([file, count]) => `  ${file}  ${count}`),
+        `${totalOf(uncovered)} mutant(s) no test runs`,
+        ...withFiles(uncovered),
+        ...(browser.length === 0
+            ? []
+            : [
+                  `unmeasured: ${totalOf(browser)} mutant(s) of browser-side sources — the mutation run starts no browser project, so no count claims them detected`,
+                  ...withFiles(browser),
+              ]),
         ...(leftCount === 0
             ? []
             : [

@@ -187,4 +187,19 @@ describe('preset', () => {
             ['@astrojs/check', 'appium-xcuitest-driver'],
         ]);
     });
+
+    test('typescriptPreset — an Astro site with React islands mutates its .tsx beside its .ts', () => {
+        // Given - an Astro site declaring the React integration, and one that does not
+        const plain = typescriptPreset({ kind: 'website', platform: 'astro' }, new Set());
+        const islands = typescriptPreset(
+            { kind: 'website', platform: 'astro' },
+            new Set(['@astrojs/react']),
+        );
+
+        // Then - the islands' extension joins the sources only where the integration is declared
+        expect([plain.sources, islands.sources]).toStrictEqual([
+            { extensions: ['ts'], roots: ['src'] },
+            { extensions: ['ts', 'tsx'], roots: ['src'] },
+        ]);
+    });
 });
