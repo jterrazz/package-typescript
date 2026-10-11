@@ -129,13 +129,16 @@ export function besideOf(project: string): Beside | undefined {
     };
 }
 
+// invariant: only the suite stage starts cold: it answers for what the module tests let live, and a stale kill there would pass a gate on a verdict an earlier tree earned.
+export const startsCold = (stage: Stage, cold: boolean): boolean => cold && stage.name === 'suite';
+
 export type Measured = { ranByTests: ReadonlySet<string>; report: unknown };
 
 /** A stage's report, or Stryker's status when it failed: a failed run leaves no report this one could be judged by. */
 export async function strykerRun(
     scope: { readonly exclude: readonly string[]; readonly mutated: readonly string[] },
     stage: Stage,
-    { buildsFirst, project }: { buildsFirst: boolean; project: string },
+    { buildsFirst, cold, project }: { buildsFirst: boolean; cold: boolean; project: string },
 ): Promise<Measured | { status: number }> {
     const files = FILES[stage.name];
     const suite = stage.name === 'suite';
@@ -154,7 +157,7 @@ export async function strykerRun(
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
-    incrementalKeptWhileGroundHolds(project, files.incremental);
+    incrementalKeptWhileGroundHolds(project, files.incremental, { cold: startsCold(stage, cold) });
     const status = await handOver(
         projectBinary('stryker'),
         ['run', join(MUTATION_OUTPUT, files.config)],

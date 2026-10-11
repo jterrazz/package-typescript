@@ -35,7 +35,7 @@ Each command reads only the flags it declares, and refuses any other line before
 | --------------------------------- | ---------------------------------------------------------------------------- |
 | `check`                           | `--json`, once                                                               |
 | `fix`, `baseline`                 | no flag                                                                      |
-| `mutation`                        | `--mutate <ranges>` and `--since <ref>`, each once                           |
+| `mutation`                        | `--cold`, `--mutate <ranges>` and `--since <ref>`, each once                 |
 | `docs-layout`                     | one `<root>`, the working directory when none is named                       |
 | `build`, `dev`, `doctor`, `clean` | nothing                                                                      |
 | `start`                           | every argument, handed to the application; after `--`, `-h` and `--help` too |

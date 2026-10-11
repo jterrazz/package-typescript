@@ -90,6 +90,22 @@ describe('incrementalKeptWhileGroundHolds', () => {
         expect(existsSync(incrementalOf(root))).toBe(false);
     });
 
+    test('incremental — a cold start drops the report although the ground held, and records the ground again', () => {
+        // Given - a report written on the ground as it stands
+        const root = projectWith({ 'specs/__fixtures__/f.txt': 'f' });
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental');
+        writeFileSync(incrementalOf(root), '{}');
+
+        // When - a gate starts the run cold, then a run that is not cold follows on the same ground
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental', { cold: true });
+        const droppedCold = !existsSync(incrementalOf(root));
+        writeFileSync(incrementalOf(root), '{}');
+        incrementalKeptWhileGroundHolds(root, 'suite-incremental', { cold: false });
+
+        // Then - the cold start dropped the report, and the stamp it wrote lets the next report stand
+        expect([droppedCold, existsSync(incrementalOf(root))]).toStrictEqual([true, true]);
+    });
+
     test('incremental — keeps the report when only code outside the ground changes', () => {
         // Given - a report and a source
         const root = projectWith({ 'src/a.ts': 'one', 'specs/__fixtures__/f.txt': 'f' });

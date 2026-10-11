@@ -75,13 +75,13 @@ function buildsOf(project: string): boolean {
 async function measured(
     scope: MutationScope,
     stage: Stage,
-    project: string,
+    { cold, project }: { cold: boolean; project: string },
 ): Promise<Measured | { status: number }> {
     print(
         `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'Measuring the whole suite against what the module tests let live, and the changed lines they do not run' : 'Measuring the module tests against mutants of the sources they test'}...\n\n`,
     );
 
-    return await strykerRun(scope, stage, { buildsFirst: buildsOf(project), project });
+    return await strykerRun(scope, stage, { buildsFirst: buildsOf(project), cold, project });
 }
 
 const NOTHING_MEASURED: Measured = { ranByTests: new Set(), report: undefined };
@@ -106,6 +106,7 @@ function printed(judged: Judged, untestedSources: number, measure: Measure): num
 }
 
 async function judgedAfterTheSuite({
+    cold,
     modulesRun,
     project,
     ranges,
@@ -113,6 +114,7 @@ async function judgedAfterTheSuite({
     since,
     untested,
 }: {
+    cold: boolean;
     modulesRun: ModuleRun;
     project: string;
     ranges: readonly string[] | undefined;
@@ -141,7 +143,7 @@ async function judgedAfterTheSuite({
         return printed(modulesAlone, untested.length, measure);
     }
     return await afterStage(
-        await measured(scope, { mutate: handed, name: 'suite' }, project),
+        await measured(scope, { mutate: handed, name: 'suite' }, { cold, project }),
         ({ report }) =>
             printed(
                 judgedRuns(modulesRun, { ...reach, report, untested: reached }),
@@ -168,7 +170,11 @@ function refusedRange(range: string, where: string): number {
 async function membersMeasured(
     project: string,
     members: readonly string[],
-    asked: { ranges: readonly string[] | undefined; since: string | undefined },
+    asked: {
+        cold: boolean;
+        ranges: readonly string[] | undefined;
+        since: string | undefined;
+    },
 ): Promise<number> {
     const unowned = unownedRange(members, asked.ranges ?? []);
     if (unowned !== undefined) {
@@ -208,18 +214,33 @@ function measuredNothing(project: string): number {
     return 0;
 }
 
+type Asked = {
+    cold: boolean;
+    named: string | undefined;
+    ranges: readonly string[] | undefined;
+};
+
+function askedOf(args: readonly string[]): Asked {
+    const commandLine = readCommandLine(args, ['--mutate', '--since']);
+
+    return {
+        cold:
+            commandLine.has('--cold') ||
+            blankAsUnset(process.env.TYPESCRIPT_MUTATION_COLD) !== undefined,
+        named: commandLine.value('--since') ?? blankAsUnset(process.env.TYPESCRIPT_MUTATION_SINCE),
+        ranges: commandLine.value('--mutate')?.split(','),
+    };
+}
+
 export async function mutation(args: readonly string[]): Promise<number> {
     const project = process.cwd();
-    const commandLine = readCommandLine(args, ['--mutate', '--since']);
-    const ranges = commandLine.value('--mutate')?.split(',');
-    const named =
-        commandLine.value('--since') ?? blankAsUnset(process.env.TYPESCRIPT_MUTATION_SINCE);
+    const { cold, named, ranges } = askedOf(args);
     if (named !== undefined && !namesACommit(project, named)) {
         return refusedSince(named);
     }
     const members = workspaceMembers(project);
     if (members.length > 0) {
-        return await membersMeasured(project, members, { ranges, since: named });
+        return await membersMeasured(project, members, { cold, ranges, since: named });
     }
     const since: Base =
         named === undefined
@@ -240,12 +261,13 @@ export async function mutation(args: readonly string[]): Promise<number> {
     const first =
         modules.length === 0
             ? undefined
-            : await measured(scope, { mutate: modules, name: 'modules' }, project);
+            : await measured(scope, { mutate: modules, name: 'modules' }, { cold, project });
 
     return await afterStage(first, async ({ ranByTests, report }) => {
         const measuredFiles = new Set(modules.map((range) => fileOf(range)));
 
         return await judgedAfterTheSuite({
+            cold,
             modulesRun: { measured: measuredFiles, ranByTests, report },
             project,
             ranges,

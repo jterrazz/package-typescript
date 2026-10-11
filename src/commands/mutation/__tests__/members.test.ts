@@ -5,8 +5,12 @@ import { memberRuns, unownedRange } from '../members.js';
 describe('members', () => {
     test("memberRuns — measures every member with the root's --since, and none when the root names none", () => {
         // Given - two members, measured since a commit, then against HEAD
-        const since = memberRuns(['apps/api', 'apps/kit'], { ranges: undefined, since: 'main' });
-        const head = memberRuns(['apps/api'], { ranges: undefined, since: undefined });
+        const since = memberRuns(['apps/api', 'apps/kit'], {
+            cold: false,
+            ranges: undefined,
+            since: 'main',
+        });
+        const head = memberRuns(['apps/api'], { cold: false, ranges: undefined, since: undefined });
 
         // Then - each member runs, carrying the commit when one was named
         expect([since, head]).toStrictEqual([
@@ -21,6 +25,7 @@ describe('members', () => {
     test('memberRuns — hands each member the ranges that sit in it, named from its folder, and skips a member none names', () => {
         // Given - three ranges in one member, one in a member whose name another extends
         const runs = memberRuns(['apps/api', 'apps/api-gateway', 'apps/kit'], {
+            cold: false,
             ranges: ['apps/api/src/a.ts:1-3', 'apps/api-gateway/src/b.ts', 'apps/api/src/c.ts:5-9'],
             since: 'main',
         });
@@ -33,6 +38,14 @@ describe('members', () => {
             },
             { args: ['--since', 'main', '--mutate', 'src/b.ts'], member: 'apps/api-gateway' },
         ]);
+    });
+
+    test('memberRuns — hands a cold start to every member, after the commit', () => {
+        // Given - one member, measured cold since a commit
+        const runs = memberRuns(['apps/api'], { cold: true, ranges: undefined, since: 'main' });
+
+        // Then - the member is told both
+        expect(runs).toStrictEqual([{ args: ['--since', 'main', '--cold'], member: 'apps/api' }]);
     });
 
     test('unownedRange — names the first range no member holds, and none when each sits in one', () => {

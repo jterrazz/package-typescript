@@ -1,11 +1,18 @@
 export type MemberRun = { args: string[]; member: string };
 
-/** Each member a run measures, and the command line it is measured with: the root's `--since`, and the `--mutate` ranges that sit in it, named from its folder — a member no range names is not run. */
+/** Each member a run measures, and the command line it is measured with: the root's `--since` and `--cold`, and the `--mutate` ranges that sit in it, named from its folder — a member no range names is not run. */
 export function memberRuns(
     members: readonly string[],
-    { ranges, since }: { ranges: readonly string[] | undefined; since: string | undefined },
+    {
+        cold,
+        ranges,
+        since,
+    }: { cold: boolean; ranges: readonly string[] | undefined; since: string | undefined },
 ): MemberRun[] {
-    const sinceArgs = since === undefined ? [] : ['--since', since];
+    const sinceArgs = [
+        ...(since === undefined ? [] : ['--since', since]),
+        ...(cold ? ['--cold'] : []),
+    ];
 
     return members.flatMap((member): MemberRun[] => {
         if (ranges === undefined) {

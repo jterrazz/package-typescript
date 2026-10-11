@@ -31,12 +31,17 @@ function groundHashOf(project: string): string {
 /**
  * Drops a stage's incremental report when the ground its tests read moved since it was written.
  * Stryker keys a test by its file's text, and cannot see a fixture, a golden or a setup file the test reads: a changed one left killed mutants reported as survivors, and the reverse kept a stale kill.
+ * A cold start drops it whatever the ground did: a verdict a gate stands on is never inherited from an earlier run.
  */
-export function incrementalKeptWhileGroundHolds(project: string, incremental: string): void {
+export function incrementalKeptWhileGroundHolds(
+    project: string,
+    incremental: string,
+    { cold = false }: { cold?: boolean } = {},
+): void {
     const stamp = join(project, MUTATION_OUTPUT, `${incremental}.ground`);
     const file = join(project, MUTATION_OUTPUT, `${incremental}.json`);
     const current = groundHashOf(project);
-    const held = existsSync(stamp) && String(readFileSync(stamp)) === current;
+    const held = !cold && existsSync(stamp) && String(readFileSync(stamp)) === current;
     if (!held) {
         rmSync(file, { force: true });
         writeFileSync(stamp, current);

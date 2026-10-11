@@ -45,6 +45,10 @@ export const SURFACES = {
     mutation: {
         flags: [
             {
+                name: '--cold',
+                says: "Start the whole suite's run from no incremental report, as a gate does: a verdict is never inherited (TYPESCRIPT_MUTATION_COLD=1 says the same)",
+            },
+            {
                 name: '--mutate',
                 says: 'Point both runs at these lines, every range in one comma-separated value: src/a.ts:10-20,src/b.ts:1-5',
                 value: '<ranges>',

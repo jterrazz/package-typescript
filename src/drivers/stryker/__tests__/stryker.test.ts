@@ -5,13 +5,27 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { besideOf, generatedRoots, strykerConfig } from '../stryker.js';
+import { besideOf, generatedRoots, startsCold, strykerConfig } from '../stryker.js';
 
 const RUNNER = createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner');
 
 const SCOPE = { generated: [], mutated: ['src/**/*.ts', 'src/**/*.tsx', 'lint/*.ts'] };
 
 describe('stryker', () => {
+    test('startsCold — only the whole suite starts from no report, and only when the run asked for it', () => {
+        // Given - both stages, asked cold and not
+        const modules = { mutate: [], name: 'modules' } as const;
+        const suite = { mutate: [], name: 'suite' } as const;
+
+        // Then - the suite alone, and only cold
+        expect([
+            startsCold(suite, true),
+            startsCold(suite, false),
+            startsCold(modules, true),
+            startsCold(modules, false),
+        ]).toStrictEqual([true, false, false, false]);
+    });
+
     test('hands Stryker a dynamic-route file as a path, not as a glob', () => {
         // Given - an Astro route whose folder and file are named in brackets, whole and by lines
         const config = strykerConfig(SCOPE, {
