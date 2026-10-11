@@ -56,12 +56,16 @@ export function chromiumBuilds(root: string): BrowserBuild[] | undefined {
     } catch {
         return undefined;
     }
+    // Stryker disable next-line StringLiteral: a buffer parses as its text, so the encoding changes nothing the parse could show
     const { browsers } = parsedObject(readFileSync(manifest, 'utf8'));
     const cache = browsersCache(process.env, process.platform, homedir(), dirname(manifest));
 
+    // Stryker disable next-line ArrayDeclaration: a stand-in entry is a string, which has no name, so it names no build whatever text it holds
     return (Array.isArray(browsers) ? browsers : []).flatMap((entry): BrowserBuild[] => {
         const { name, revision } = objectOf(entry);
+        // Stryker disable next-line ConditionalExpression: a name that is no string keys no folder, so the lookup answers undefined either way
         const folder = typeof name === 'string' ? FOLDERS[name] : undefined;
+        // Stryker disable next-line ConditionalExpression: a folder was found only for a string name; the check is the narrowing the type asks for
         if (folder === undefined || typeof name !== 'string' || typeof revision !== 'string') {
             return [];
         }

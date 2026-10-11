@@ -6,6 +6,7 @@ import type { Measured } from '../../drivers/stryker/stryker.js';
 
 export function buildsOf(project: string): boolean {
     try {
+        // Stryker disable next-line StringLiteral: a buffer parses as its text, so the encoding changes nothing the parse could show
         const { scripts } = parsedObject(readFileSync(join(project, 'package.json'), 'utf8'));
 
         return objectOf(scripts).build !== undefined;

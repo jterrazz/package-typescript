@@ -90,11 +90,10 @@ function joinedRuns(text: string): Joined[] {
 /** The comments of a Go file that godoc reads as no documentation: a `//` run or a block that does not stand directly above the package clause or an exported declaration. */
 export function commentsOfGo(text: string): Run[] {
     const lines = text.split('\n');
+    // Stryker disable next-line StringLiteral: past the last line nothing is declared, whatever text stands in for the missing line
+    const documentsNext = (last: number): boolean => DOCUMENTED.test(lines[last + 1] ?? '');
 
-    return (
-        joinedRuns(text)
-            // Stryker disable next-line StringLiteral: past the last line nothing is declared, whatever text stands in for the missing line
-            .filter(({ isOwnLine, last }) => !(isOwnLine && DOCUMENTED.test(lines[last + 1] ?? '')))
-            .map(({ end, opening, start }) => ({ end, opening, start }))
-    );
+    return joinedRuns(text)
+        .filter(({ isOwnLine, last }) => !(isOwnLine && documentsNext(last)))
+        .map(({ end, opening, start }) => ({ end, opening, start }));
 }

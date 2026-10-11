@@ -1,4 +1,6 @@
 import { directory } from '@jterrazz/test';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { cli } from '../cli.specification.js';
@@ -75,5 +77,20 @@ describe('scope', () => {
         expect(result.file('apps/mobile/.artifacts/stryker/vitest.config.mjs').content).toContain(
             'exclude: ["specs/mobile/**"]',
         );
+    });
+
+    test('drops an incremental report whose ground was never recorded before it hands the module run to Stryker', async () => {
+        // Given - a project with a module test, and a report left in .artifacts/stryker/ by a run that recorded no ground
+        const result = await cli
+            .fixture(directory('./__fixtures__/workspace/apps/api/'))
+            .prepare((workdir) => {
+                mkdirSync(join(workdir, '.artifacts/stryker'), { recursive: true });
+                writeFileSync(join(workdir, '.artifacts/stryker/incremental.json'), '{}');
+            })
+            .exec('mutation');
+
+        // Then - Stryker, which the fixture installs no runner for, fails the run, and the stale report is already gone
+        expect(result.exitCode).toBe(1);
+        expect(result.file('.artifacts/stryker/incremental.json').exists).toBe(false);
     });
 });

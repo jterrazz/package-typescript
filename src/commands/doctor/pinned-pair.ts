@@ -59,11 +59,12 @@ const READ_LOCKFILES: readonly (readonly [string, Read])[] = [
 
 const UNREAD_LOCKFILES = ['bun.lockb', 'pnpm-lock.yaml', 'yarn.lock'];
 
+// Stryker disable next-line EqualityOperator: a set holds no version twice, so the comparator is never asked to rank a version against itself
+const ascending = (left: string, right: string): number => (left < right ? -1 : 1);
+
 function lockedVersions(path: string, read: Read, name: string): null | string[] {
     try {
-        return [...read(readFileSync(path, 'utf8'), name)].toSorted((left, right) =>
-            left < right ? -1 : 1,
-        );
+        return [...read(readFileSync(path, 'utf8'), name)].toSorted(ascending);
     } catch {
         return null;
     }

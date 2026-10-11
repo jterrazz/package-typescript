@@ -88,8 +88,8 @@ function hostModulesOf(manifest: JsonObject): string[] {
 export function shapeOf(root: string, declaration: null | ProjectIdentity): Shape {
     const manifest = manifestAt(root);
     // Stryker disable next-line StringLiteral: no declaration is no kind of the list, whatever text stands in for it
-    const unread =
-        manifest.private === true && ['cli', 'library'].includes(declaration?.kind ?? '');
+    const kind = declaration?.kind ?? '';
+    const unread = manifest.private === true && ['cli', 'library'].includes(kind);
 
     return { dts: !unread, external: hostModulesOf(manifest) };
 }

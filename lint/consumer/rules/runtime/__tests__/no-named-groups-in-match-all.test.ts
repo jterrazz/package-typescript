@@ -38,6 +38,14 @@ ruleTester().run('no-named-groups-in-match-all', noNamedGroupsInMatchAll, {
         {
             code: [
                 String.raw`const PAIR = /(\w+)=(\w+)/gu;`,
+                'export const all = (text: string) => [...text.matchAll(PAIR)];',
+            ].join('\n'),
+            filename: FILENAME,
+            name: 'a const holding a pattern with no named group is no named pattern',
+        },
+        {
+            code: [
+                String.raw`const PAIR = /(\w+)=(\w+)/gu;`,
                 'export const inner = (text: string) => {',
                 String.raw`    const PAIR = /(\w+)/gu;`,
                 '    return [...text.matchAll(PAIR)];',
