@@ -243,6 +243,32 @@ function auditPage(context: Context, path: string, written: string): Found[] {
     return found;
 }
 
+const SKILL_REFERENCE = /^(?<skill>skills\/[^/]+)\/references\/(?<page>[^/]+\.md)$/u;
+
+// invariant: a reference is disclosed step by step, and an agent opens one only where the SKILL.md points to it; a page nothing links is a page no one reads.
+function unlinkedReferences(
+    files: readonly string[],
+    read: (path: string) => null | string,
+): Finding[] {
+    return files.flatMap((path) => {
+        const { page, skill } = SKILL_REFERENCE.exec(path)?.groups ?? {};
+        if (skill === undefined || page === undefined) {
+            return [];
+        }
+        const entry = `${skill}/SKILL.md`;
+
+        return (read(entry) ?? '').includes(`references/${page}`)
+            ? []
+            : [
+                  {
+                      message: `${path} is linked from no line of ${entry}`,
+                      path: entry,
+                      rule: 'markdown/skill-links-its-references',
+                  },
+              ];
+    });
+}
+
 export const markdown: Pass = Object.freeze({
     async check(context) {
         const findings: Finding[] = [];
@@ -262,6 +288,9 @@ export const markdown: Pass = Object.freeze({
             }
         }
 
+        findings.push(
+            ...unlinkedReferences(context.files(), (path) => readText(context.root, path)),
+        );
         findings.push(...brokenLinks(context, pages));
 
         return { findings, tools: rumdl(context, pages) };

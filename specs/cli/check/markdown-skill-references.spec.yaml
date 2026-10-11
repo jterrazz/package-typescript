@@ -1,0 +1,21 @@
+description: refuses a reference page its skill never links
+fixture: ./__fixtures__/markdown/skill-references/
+env: TYPESCRIPT_CHECK_PASSES=markdown,names
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Markdown (prose)
+
+          skills/shop/SKILL.md:1:1: error markdown(skill-links-its-references): skills/shop/references/returns.md is linked from no line of skills/shop/SKILL.md
+          ✗ Failed with exit code 1
+
+           RUN  Names (tree)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

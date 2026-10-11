@@ -562,6 +562,7 @@ The prose gate reads what no Markdown linter knows: whether a backticked coordin
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `markdown/path-resolves`                | Every backticked repository path of a page names something on disk or in a tree git ignores, but in a decision record, which names the paths of its day. |
 | `markdown/link-resolves`                | Every relative link of a page reaches a file on disk or a tree git ignores.                                                                              |
+| `markdown/skill-links-its-references`   | A skill's SKILL.md links every page of its references/ folder, since a reference nothing points to is one no agent opens.                                |
 | `markdown/page-reference-resolves`      | Every page a skill names is one its package ships.                                                                                                       |
 | `markdown/prose-block-is-short`         | A paragraph or a list item runs twelve lines at most.                                                                                                    |
 | `markdown/fenced-run-is-short`          | A fenced block breathes within fifteen lines.                                                                                                            |
@@ -571,7 +572,7 @@ The prose gate reads what no Markdown linter knows: whether a backticked coordin
 
 A decision record is `docs/decisions/` of the manual, or a numbered `decisions/NNN-<title>.md` anywhere — a brand's seat keeps its own, frozen the same way.
 
-A skill is read from the install, where nothing can correct it, so one more rule reads a page under `skills/` alone: `markdown/page-reference-resolves` refuses a `docs/<section>/<page>.md` it names that its package does not ship. The page is resolved beside the skill's own `skills/` folder, the package root it is published from.
+A skill is read from the install, where nothing can correct it, so one more rule reads a page under `skills/` alone: `markdown/page-reference-resolves` refuses a `docs/<section>/<page>.md` it names that its package does not ship. The page is resolved beside the skill's own `skills/` folder, the package root it is published from. A skill's `references/*.md` are disclosed step by step, and `markdown/skill-links-its-references` refuses one its `SKILL.md` links from no line: an agent opens a reference only where the skill points to it.
 
 The three numbers are the readability floor of the shared doctrine, not the craft it asks for: the gap between them is a reader's pass, not a red gate. They are named constants at the top of the gate, and no page keeps a second copy of them.
 
