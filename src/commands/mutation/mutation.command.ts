@@ -2,75 +2,24 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
 
-import { readSettings } from '../../../lint/index.rules.js';
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
-import { readCommandLine } from '../../../lint/kit/checker/command-line.js';
-import { objectOf, parsedObject } from '../../../lint/kit/project/json.js';
-import type { Resolution } from '../../../lint/kit/project/preset.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { toolchainIn } from '../../drivers/node/node.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
 import { badge, print, RED, RESET } from '../check/report/terminal.js';
+import { askedOf } from './asked.js';
 import { changeOf, defaultBaseOf, namesACommit, treeChangeFor } from './change.js';
 import type { Base } from './change.js';
 import { memberRuns, unownedRange } from './members.js';
+import { mutationScopeOf } from './scope-globs.js';
 import { changedRanges, fileOf, narrowed, sourcesOf, unreachedRange } from './scope.js';
 import type { MutationScope } from './scope.js';
+import { afterStage, buildsOf } from './stages.js';
 import { handedToTheSuite, judgedRuns } from './survivors.js';
 import type { Judged, ModuleRun } from './survivors.js';
 import { verdictOf } from './verdict.js';
 import type { Measure } from './verdict.js';
-
-const extensionGlob = (extensions: readonly string[]): string =>
-    extensions.length === 1 ? (extensions[0] ?? 'ts') : `{${extensions.join(',')}}`;
-
-const prefixOf = (unit: string): string => (unit === '.' ? '' : `${unit}/`);
-
-function sourceGlobsOf(unit: string, { resolved }: Resolution): string[] {
-    return resolved.presets.flatMap(({ sources }) =>
-        sources === undefined
-            ? []
-            : sources.roots.map(
-                  (root) => `${prefixOf(unit)}${root}/**/*.${extensionGlob(sources.extensions)}`,
-              ),
-    );
-}
-
-// invariant: a unit's `typescript.mutation` globs are its standard's and its settings file's, read from the repository root.
-function declaredOf(unit: string, { resolved }: Resolution): MutationScope {
-    const declared = objectOf(objectOf(resolved.sections.typescript).mutation);
-    const globs = (key: string): string[] =>
-        Object.keys(objectOf(declared[key])).map((glob) => `${prefixOf(unit)}${glob}`);
-
-    return { exclude: globs('exclude'), ignore: globs('ignore'), mutated: globs('mutate') };
-}
-
-async function mutationScopeOf(project: string): Promise<MutationScope> {
-    const units = [['.', await readSettings(project)] satisfies [string, Resolution]];
-    const declared = units.map(([unit, resolution]) => declaredOf(unit, resolution));
-
-    return {
-        exclude: declared.flatMap(({ exclude }) => exclude),
-        ignore: declared.flatMap(({ ignore }) => ignore),
-        mutated: [
-            ...new Set([
-                ...units.flatMap(([unit, resolution]) => sourceGlobsOf(unit, resolution)),
-                ...declared.flatMap(({ mutated }) => mutated),
-            ]),
-        ],
-    };
-}
-
-function buildsOf(project: string): boolean {
-    try {
-        const { scripts } = parsedObject(readFileSync(join(project, 'package.json'), 'utf8'));
-
-        return objectOf(scripts).build !== undefined;
-    } catch {
-        return false;
-    }
-}
 
 async function measured(
     scope: MutationScope,
@@ -82,20 +31,6 @@ async function measured(
     );
 
     return await strykerRun(scope, stage, { buildsFirst: buildsOf(project), cold, project });
-}
-
-const NOTHING_MEASURED: Measured = { ranByTests: new Set(), report: undefined };
-
-// invariant: a stage that measured nothing says nothing next; a failed one says Stryker's status.
-async function afterStage(
-    outcome: Measured | undefined | { status: number },
-    next: (measured: Measured) => number | Promise<number>,
-): Promise<number> {
-    if (outcome !== undefined && 'status' in outcome) {
-        return outcome.status;
-    }
-
-    return await next(outcome ?? NOTHING_MEASURED);
 }
 
 function printed(judged: Judged, untestedSources: number, measure: Measure): number {
@@ -128,7 +63,8 @@ async function judgedAfterTheSuite({
     if (Object.keys(modulesAlone.unrun).length > 0) {
         return printed(modulesAlone, untested.length, measure);
     }
-    const { changed, note } = changeOf(project, { ranges, since });
+    const request = { ranges, since };
+    const { changed, note } = changeOf(project, request);
     if (note !== undefined) {
         print(`${badge('TYPESCRIPT')} ${note}\n`);
     }
@@ -136,7 +72,7 @@ async function judgedAfterTheSuite({
         String(readFileSync(join(project, file))),
     );
     // invariant: `--mutate` names the lines to measure and the default run's policy for a static mutant stands: the module tests leave it to the suite only where the tree's own change reaches it.
-    const statics = treeChangeFor(project, { ranges, since }, changed);
+    const statics = treeChangeFor(project, request, changed);
     const reach = { changed, statics };
     const handed = [...reached, ...handedToTheSuite(modulesRun, reach)];
     if (handed.length === 0) {
@@ -189,9 +125,6 @@ async function membersMeasured(
     return status;
 }
 
-const blankAsUnset = (value: string | undefined): string | undefined =>
-    value === undefined || value.trim() === '' ? undefined : value;
-
 function refusedSince(named: string): number {
     print(
         `${RED}${refusal({
@@ -212,24 +145,6 @@ function measuredNothing(project: string): number {
     );
 
     return 0;
-}
-
-type Asked = {
-    cold: boolean;
-    named: string | undefined;
-    ranges: readonly string[] | undefined;
-};
-
-function askedOf(args: readonly string[]): Asked {
-    const commandLine = readCommandLine(args, ['--mutate', '--since']);
-
-    return {
-        cold:
-            commandLine.has('--cold') ||
-            blankAsUnset(process.env.TYPESCRIPT_MUTATION_COLD) !== undefined,
-        named: commandLine.value('--since') ?? blankAsUnset(process.env.TYPESCRIPT_MUTATION_SINCE),
-        ranges: commandLine.value('--mutate')?.split(','),
-    };
 }
 
 export async function mutation(args: readonly string[]): Promise<number> {

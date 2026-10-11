@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, test } from 'vitest';
 
 import { incrementalKeptWhileGroundHolds } from '../incremental.js';
+import { reportKept } from '../stryker.js';
 
 const roots: string[] = [];
 
@@ -104,6 +105,38 @@ describe('incrementalKeptWhileGroundHolds', () => {
 
         // Then - the cold start dropped the report, and the stamp it wrote lets the next report stand
         expect([droppedCold, existsSync(incrementalOf(root))]).toStrictEqual([true, true]);
+    });
+
+    test('reportKept — a cold start drops the whole suite’s report whatever the ground did, and the modules’ never', () => {
+        // Given - both stages' reports written on the ground as it stands
+        const root = projectWith({ 'specs/__fixtures__/f.txt': 'f' });
+        const suiteReport = join(root, '.artifacts/stryker/suite-incremental.json');
+        const modulesReport = join(root, '.artifacts/stryker/incremental.json');
+        const both = { mutate: [], name: 'suite' } as const;
+        const modules = { mutate: [], name: 'modules' } as const;
+        reportKept(root, both, false);
+        reportKept(root, modules, false);
+        writeFileSync(suiteReport, '{}');
+        writeFileSync(modulesReport, '{}');
+
+        // When - a warm start of each, then a cold one of each
+        reportKept(root, both, false);
+        reportKept(root, modules, false);
+        const warm = [existsSync(suiteReport), existsSync(modulesReport)];
+        reportKept(root, modules, true);
+        const afterModules = [existsSync(suiteReport), existsSync(modulesReport)];
+        reportKept(root, both, true);
+
+        // Then - warm keeps both, a cold modules start keeps both, a cold suite start drops the suite's alone
+        expect([
+            warm,
+            afterModules,
+            [existsSync(suiteReport), existsSync(modulesReport)],
+        ]).toStrictEqual([
+            [true, true],
+            [true, true],
+            [false, true],
+        ]);
     });
 
     test('incremental — keeps the report when only code outside the ground changes', () => {

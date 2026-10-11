@@ -43,6 +43,7 @@ function defaultBranchOf(project: string): string | undefined {
     // Stryker disable next-line Regex: the name printed opens on the remote's, so anchoring the strip changes nothing a branch name could show
     const named = remote?.replace(/^origin\//u, '');
 
+    // Stryker disable next-line ConditionalExpression,ArrayDeclaration: a name git did not print adds no candidate, and any text standing in for it names no branch the clone holds, so the search reaches main and master as it would have
     return [...(named === undefined ? [] : [named]), 'main', 'master'].find((branch) =>
         namesACommit(project, `refs/heads/${branch}`),
     );
@@ -51,6 +52,7 @@ function defaultBranchOf(project: string): string | undefined {
 // invariant: on the default branch itself the merge-base is HEAD, so the branch reads as having no commit of its own and the last commit is the change.
 function branchBaseOf(project: string): undefined | { base: string; branch: string } {
     const branch = defaultBranchOf(project);
+    // Stryker disable next-line ConditionalExpression,BlockStatement: a clone with no default branch asks git for a merge-base with the word `undefined`, which names no commit, and the answer is the same absent base
     if (branch === undefined) {
         return undefined;
     }

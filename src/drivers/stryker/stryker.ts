@@ -28,6 +28,7 @@ const typeCheckedGlob = (mutated: readonly string[]): string =>
 
 // outside: Stryker reads each mutate entry as a glob, so a route file such as `[locale]/[key].png.ts` matches nothing, or fails beside a line range, unless its brackets are escaped.
 const literalMutateEntry = (entry: string): string =>
+    // Stryker disable next-line Regex: the first match of the unanchored pattern starts at 0 too, so anchoring it changes nothing an entry could show
     entry.replace(/^[^:]*/u, (file) => file.replaceAll(/[[\]{}()!]/gu, String.raw`\$&`));
 
 export type Stage = {
@@ -132,6 +133,13 @@ export function besideOf(project: string): Beside | undefined {
 // invariant: only the suite stage starts cold: it answers for what the module tests let live, and a stale kill there would pass a gate on a verdict an earlier tree earned.
 export const startsCold = (stage: Stage, cold: boolean): boolean => cold && stage.name === 'suite';
 
+/** Drops the stage's incremental report when the ground moved, and the suite's whenever the run starts cold. */
+export function reportKept(project: string, stage: Stage, cold: boolean): void {
+    incrementalKeptWhileGroundHolds(project, FILES[stage.name].incremental, {
+        cold: startsCold(stage, cold),
+    });
+}
+
 export type Measured = { ranByTests: ReadonlySet<string>; report: unknown };
 
 /** A stage's report, or Stryker's status when it failed: a failed run leaves no report this one could be judged by. */
@@ -157,7 +165,7 @@ export async function strykerRun(
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
-    incrementalKeptWhileGroundHolds(project, files.incremental, { cold: startsCold(stage, cold) });
+    reportKept(project, stage, cold);
     const status = await handOver(
         projectBinary('stryker'),
         ['run', join(MUTATION_OUTPUT, files.config)],
