@@ -1,9 +1,7 @@
 {
-    "name": "formatting",
     "version": "1.0.0",
-    "private": true,
     "type": "module",
-    "devDependencies": {
-        "@jterrazz/typescript": "11.0.0"
-    }
+    "name": "formatting",
+    "private": true,
+    "devDependencies": { "@jterrazz/typescript": "11.0.0" }
 }
