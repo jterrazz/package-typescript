@@ -95,6 +95,11 @@
         "sentence": "A Stryker disable directive names the mutators it declares equivalent, never all of them."
     },
     {
+        "family": "suppressions",
+        "id": "suppressions/stryker-attaches-to-a-mutant",
+        "sentence": "A Stryker next-line directive stands where a mutant starts on the next line: never above a line led by a closing brace, never in a JSX comment container."
+    },
+    {
         "family": "names",
         "id": "names/no-grab-bag-name",
         "sentence": "A directory or file is named for the subject it holds, never a grab-bag word."

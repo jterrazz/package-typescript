@@ -502,15 +502,16 @@ The versions line reports only what deviates. The full table is `typescript doct
 
 ## The Suppressions (directives) pass
 
-Every place the project told a checker to look away. A suppression is a decision, and a decision the next reader cannot re-derive is a defect waiting to be re-introduced, so three rules hold what oxlint and Stryker do not.
+Every place the project told a checker to look away. A suppression is a decision, and a decision the next reader cannot re-derive is a defect waiting to be re-introduced, so four rules hold what oxlint and Stryker do not.
 
 <!-- GENERATED:findings suppressions -->
 
-| Rule                                      | Requirement                                                                                                        |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `suppressions/spelled-for-this-toolchain` | A suppression is spelled for the linter this toolchain runs: oxlint-disable, never eslint-disable or biome-ignore. |
-| `suppressions/states-its-reason`          | Every oxlint-disable and Stryker disable directive states the reason it exists.                                    |
-| `suppressions/stryker-names-its-mutators` | A Stryker disable directive names the mutators it declares equivalent, never all of them.                          |
+| Rule                                        | Requirement                                                                                                                                               |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `suppressions/spelled-for-this-toolchain`   | A suppression is spelled for the linter this toolchain runs: oxlint-disable, never eslint-disable or biome-ignore.                                        |
+| `suppressions/states-its-reason`            | Every oxlint-disable and Stryker disable directive states the reason it exists.                                                                           |
+| `suppressions/stryker-names-its-mutators`   | A Stryker disable directive names the mutators it declares equivalent, never all of them.                                                                 |
+| `suppressions/stryker-attaches-to-a-mutant` | A Stryker next-line directive stands where a mutant starts on the next line: never above a line led by a closing brace, never in a JSX comment container. |
 
 <!-- /GENERATED:findings suppressions -->
 

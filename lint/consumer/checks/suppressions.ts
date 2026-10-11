@@ -12,6 +12,7 @@ import {
 import { configAt, resolveConfig } from '../../kit/project/oxlint-config.js';
 import type { Applied, Resolved } from '../../kit/project/oxlint-config.js';
 import { readText } from '../../kit/project/project-files.js';
+import { placementOf } from './suppressions.stryker.js';
 
 type Found = { message: string; rule: string };
 
@@ -205,6 +206,11 @@ function auditSource(
             violations.push({ ...violation, line: index + 1, rewritable: fixed !== line });
         }
     }
+
+    for (const { line, ...placement } of placementOf(text.split('\n'), spans)) {
+        violations.push({ ...placement, line, rewritable: false });
+    }
+    violations.sort((left, right) => left.line - right.line);
 
     const rewritten = kept.join('\n');
 
