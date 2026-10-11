@@ -103,14 +103,19 @@ export function reaches(changed: Changed, file: string, line: number): boolean {
 const survivedTheModules = (mutant: Mutant, ranByTests: ReadonlySet<string>): boolean =>
     mutant.status === 'Survived' && !leftByTheModules(mutant, ranByTests);
 
+/** The lines that reach a mutant of the run: the change, and for a static mutant `statics`, the tree's own change — `--mutate` names lines to measure, and never makes a table the module tests only load the suite's to judge. */
+export type Reach = { changed: Changed; statics?: Changed };
+
+const reachedBy = ({ changed, statics = changed }: Reach, file: string, mutant: Mutant): boolean =>
+    reaches(mutant.static === true ? statics : changed, file, lineOf(mutant));
+
 /** What the module tests hand the whole suite in `measured`, as the `--mutate` range of exactly each node, once: every mutant they let live, and what they could not measure on the lines the change reaches. */
-export function handedToTheSuite(modules: ModuleRun, changed: Changed): string[] {
+export function handedToTheSuite(modules: ModuleRun, reach: Reach): string[] {
     const ranges = mutantsOf(modules.report, modules.measured)
         .filter(
             ([file, mutant]) =>
                 survivedTheModules(mutant, modules.ranByTests) ||
-                (leftByTheModules(mutant, modules.ranByTests) &&
-                    reaches(changed, file, lineOf(mutant))),
+                (leftByTheModules(mutant, modules.ranByTests) && reachedBy(reach, file, mutant)),
         )
         .map(([file, mutant]) => {
             const { end, start } = objectOf(mutant.location);
@@ -182,7 +187,7 @@ function suiteAnswer(
 /** One verdict over both runs: a mutant the module tests let live is the suite's to answer, and survives only where the suite lets it live too; what they left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant handed to the suite that its report does not carry was judged by nothing; of a source with no module test, the suite's report counts only what this run's ranges held — an earlier run's results it carries beyond them count for nothing. */
 export function judgedRuns(
     modules: ModuleRun,
-    suite?: { changed: Changed; report: unknown; untested: readonly string[] },
+    suite?: Reach & { report: unknown; untested: readonly string[] },
 ): Judged {
     const answering: Answering = {
         answered: new Map(),
@@ -204,7 +209,7 @@ export function judgedRuns(
             answered.set(keyOf(file, mutant), survivorOf(file, mutant));
         } else if (!leftByTheModules(mutant, modules.ranByTests)) {
             tally(judged, file, mutant);
-        } else if (suite !== undefined && reaches(suite.changed, file, lineOf(mutant))) {
+        } else if (suite !== undefined && reachedBy(suite, file, mutant)) {
             forwarded.add(keyOf(file, mutant));
         } else {
             judged.left += 1;

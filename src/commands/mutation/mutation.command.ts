@@ -12,7 +12,7 @@ import { toolchainIn } from '../../drivers/node/node.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
 import { badge, print, RED, RESET } from '../check/report/terminal.js';
-import { changeOf, defaultBaseOf, namesACommit } from './change.js';
+import { changeOf, changeSince, defaultBaseOf, namesACommit } from './change.js';
 import type { Base } from './change.js';
 import { memberRuns, unownedRange } from './members.js';
 import { changedRanges, fileOf, narrowed, sourcesOf, unreachedRange } from './scope.js';
@@ -133,7 +133,11 @@ async function judgedAfterTheSuite({
     const reached = changedRanges(untested, changed, (file) =>
         String(readFileSync(join(project, file))),
     );
-    const handed = [...reached, ...handedToTheSuite(modulesRun, changed)];
+    // invariant: `--mutate` names the lines to measure and the default run's policy for a static mutant stands: the module tests leave it to the suite only where the tree's own change reaches it.
+    const statics =
+        ranges === undefined ? changed : (changeSince(project, since.commit) ?? new Map());
+    const reach = { changed, statics };
+    const handed = [...reached, ...handedToTheSuite(modulesRun, reach)];
     if (handed.length === 0) {
         return printed(modulesAlone, untested.length, measure);
     }
@@ -141,7 +145,7 @@ async function judgedAfterTheSuite({
         await measured(scope, { mutate: handed, name: 'suite' }, project),
         ({ report }) =>
             printed(
-                judgedRuns(modulesRun, { changed, report, untested: reached }),
+                judgedRuns(modulesRun, { ...reach, report, untested: reached }),
                 untested.length,
                 measure,
             ),

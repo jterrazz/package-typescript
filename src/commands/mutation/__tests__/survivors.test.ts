@@ -76,7 +76,7 @@ describe('survivors', () => {
                     ranByTests: NONE_RAN,
                     report,
                 },
-                changed,
+                { changed },
             ),
         ).toStrictEqual([
             'src/a.ts:5:8-5:19',
@@ -201,5 +201,31 @@ describe('survivors', () => {
             { 'absent from the suite report': 1 },
             1,
         ]);
+    });
+
+    test('--mutate names the lines to measure and leaves a static mutant to the suite only where the tree’s own change reaches it', () => {
+        // Given - a file whose module-level table line 2 and function line 9 no module test runs, the run pointed at the whole file by --mutate, and a tree whose own change touches line 9 alone
+        const modules = {
+            measured: new Set(['src/a.ts']),
+            ranByTests: NONE_RAN,
+            report: {
+                files: {
+                    'src/a.ts': {
+                        mutants: [
+                            { ...mutant('Ignored', 2), static: true },
+                            mutant('NoCoverage', 9),
+                        ],
+                    },
+                },
+            },
+        };
+        const named: Changed = new Map([['src/a.ts', true as const]]);
+        const tree: Changed = new Map([['src/a.ts', [[9, 9] as const]]]);
+
+        // Then - the function line is handed to the suite on the named lines, the table line only where the tree changed it: here it stays left
+        expect([
+            handedToTheSuite(modules, { changed: named, statics: tree }),
+            handedToTheSuite(modules, { changed: named }),
+        ]).toStrictEqual([['src/a.ts:9:8-9:19'], ['src/a.ts:2:8-2:19', 'src/a.ts:9:8-9:19']]);
     });
 });
