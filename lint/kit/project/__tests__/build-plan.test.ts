@@ -41,6 +41,18 @@ const resolution = (problem: null | string, declared = true): Resolution => ({
     },
 });
 
+const dtsOf = (root: string, kind: 'api' | 'cli' | 'library'): boolean[] =>
+    buildPlanOf(root, {
+        declaration: { kind, platform: 'node' },
+        settings: conventionsOf(root).settings,
+    }).map(({ dts }) => dts);
+
+const formatsOf = (root: string): string[][] =>
+    buildPlanOf(root, {
+        declaration: { kind: 'library', platform: 'node' },
+        settings: conventionsOf(root).settings,
+    }).map(({ format }) => format);
+
 describe('build-plan', () => {
     test('conventionsOf — builds each module named for how it is loaded, and the repository’s own commands and self entries apart', () => {
         // Given - the three shipped names, two commands, the root modules of lint/self/, files that are no module, and the same names where none is read
@@ -265,11 +277,6 @@ describe('build-plan', () => {
         const files = ['src/index.ts'];
         const privateRoot = tree(files, { main: './dist/index.js', name: 'kit', private: true });
         const publishedRoot = tree(files, { main: './dist/index.js', name: 'kit' });
-        const dtsOf = (root: string, kind: 'api' | 'cli' | 'library'): boolean[] =>
-            buildPlanOf(root, {
-                declaration: { kind, platform: 'node' },
-                settings: conventionsOf(root).settings,
-            }).map(({ dts }) => dts);
 
         // Then - nothing reads the declarations of a private library or cli, and a published library ships them
         expect([
@@ -287,11 +294,6 @@ describe('build-plan', () => {
             exports: { import: './dist/index.js', require: './dist/index.cjs' },
             name: 'both',
         });
-        const formatsOf = (root: string): string[][] =>
-            buildPlanOf(root, {
-                declaration: { kind: 'library', platform: 'node' },
-                settings: conventionsOf(root).settings,
-            }).map(({ format }) => format);
 
         // Then - the CommonJS-only target builds no ESM beside it, the dual one builds both
         expect([formatsOf(required), formatsOf(both)]).toStrictEqual([[['cjs']], [['esm', 'cjs']]]);

@@ -5,7 +5,7 @@ import { cli } from '../cli.specification.js';
 
 // outside: the watch stream is cut wherever its waitFor marker lands, so there is no byte-exact stdout to state.
 
-describe('build --watch', () => {
+describe('watch', () => {
     test('rebuilds on change and runs nothing', async () => {
         // Given - a sample app that prints a line when it runs, built in watch mode and resolved once the first build completes
         const result = await cli

@@ -1,4 +1,4 @@
-description: builds a private extension without declarations, leaves the host's module out and opens a bin on its interpreter
+description: builds a private extension with no declarations, a host module left out and a bin opened
 fixture: ./__fixtures__/private-extension/
 runs:
     - command: build
