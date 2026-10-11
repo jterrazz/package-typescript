@@ -45,6 +45,8 @@ export type Preset = {
     entries?: (section: Readonly<Record<string, unknown>>) => readonly string[];
     files?: Readonly<Record<string, EditorFile>>;
     lawSettings?: readonly string[];
+    /** The packages it loads by name for a unit, read off the unit's tree: a project that declares one imports it nowhere, and knip would read it as unused. */
+    loadedPackages?: (root: string) => readonly string[];
     layers?: readonly ArchitectureRule[];
     name: string;
     names?: readonly NamesRule[];

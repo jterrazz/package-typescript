@@ -1,0 +1,10 @@
+{
+  "name": "fixture-preset-packages",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.ts",
+  "devDependencies": {
+    "@jterrazz/typescript": "^9.1.0",
+    "playwright": "^1.63.0"
+  }
+}

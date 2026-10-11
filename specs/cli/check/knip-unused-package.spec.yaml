@@ -1,0 +1,18 @@
+description: reads a package no file imports as unused, the browser peer of a test project included, until a preset names it loaded
+fixture: ./__fixtures__/knip/unused-package/
+env: TYPESCRIPT_CHECK_PASSES=knip
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Knip (unused code)
+
+          Unused devDependencies (1)
+          playwright  package.json:8:6
+          ✗ Failed with exit code 1
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed

@@ -1,0 +1,16 @@
+description: keeps a package a declared preset loads by name out of knip's unused dependencies
+fixture: ./__fixtures__/knip/preset-packages/
+env: TYPESCRIPT_CHECK_PASSES=knip
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Knip (unused code)
+
+          ✓ Passed
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed
