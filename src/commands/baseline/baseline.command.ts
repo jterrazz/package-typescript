@@ -32,13 +32,13 @@ async function listedTargets(ignoresOf: string | undefined): Promise<null | stri
     }
 }
 
-async function recordLinter(projectBin: string): Promise<void> {
+async function recordLinter(): Promise<void> {
     const oxlint = oxlintConfig();
     const targets = await listedTargets(oxlint.ignoresOf);
     if (targets === null || targets.length === 0) {
         return;
     }
-    await suppressionsRecorded(oxlintBinary(projectBin), oxlint.args, targets);
+    await suppressionsRecorded(oxlintBinary(), oxlint.args, targets);
     removeWhenEmpty('.');
 }
 
@@ -82,8 +82,8 @@ async function recordedPresets(): Promise<number> {
 
 export async function baseline(): Promise<number> {
     const project = process.cwd();
-    const projectBin = join(project, 'node_modules/.bin');
-    withTsgolintOnPath(projectBin);
+    // invariant: the tools are found as `check` finds them — beside this package, then hoisted beside the workspace root — so the gesture the adopt flow prescribes reads the same oxlint in a member.
+    withTsgolintOnPath();
 
     return await withStagedSuppressions(
         project,
@@ -94,7 +94,7 @@ export async function baseline(): Promise<number> {
                     names: join(scratch, 'names.json'),
                 };
                 print(`${badge('TYPESCRIPT')} Recording the baseline...\n\n`);
-                await recordLinter(projectBin);
+                await recordLinter();
                 await recordPass('architecture', reports.architecture, [
                     '--depcruise',
                     depcruiseBinary(),
@@ -104,7 +104,7 @@ export async function baseline(): Promise<number> {
                     return 1;
                 }
                 await filesFormatted(
-                    oxfmtBinary(projectBin),
+                    oxfmtBinary(),
                     oxfmtConfig().args,
                     BASELINE,
                     OXLINT_SUPPRESSIONS,
