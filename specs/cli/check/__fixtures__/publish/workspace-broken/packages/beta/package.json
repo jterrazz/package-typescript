@@ -1,0 +1,13 @@
+{
+    "name": "fixture-publish-workspace-beta",
+    "version": "1.0.0",
+    "files": [
+        "index.js"
+    ],
+    "type": "module",
+    "main": "index.js",
+    "exports": {
+        ".": "./index.js",
+        "./extra": "./missing.js"
+    }
+}

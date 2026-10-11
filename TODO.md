@@ -6,16 +6,6 @@ delivered leaves this file.
 
 ---
 
-- **`typescript baseline` resolves oxlint apart from `check`.** `check` asks
-  `projectBinary` (the member's `node_modules/.bin`, then the `.bin` hoisted beside this
-  package); `baseline` asks `binaryIn('oxlint', <member>/node_modules/.bin)`, which never looks
-  beside the package. In an npm-hoisted workspace member the command the adopt flow prescribes
-  falls back to whatever `oxlint` the `PATH` holds. One resolver for both, with a hoisted
-  member among the specs' fixtures.
-- **A Publish finding in a workspace does not name its member.** The three `package.json`
-  findings carry the member-relative path `package.json`, so a workspace of two publishable
-  packages prints two lines a reader cannot tell apart; only the nothing-to-judge note says
-  `in <member>`.
 - **No gate finds an unused class member, nor code only a test reads.** knip 6 dropped the
   `classMembers` issue type, so a getter or method nobody calls survives every pass
   (signews-mobile's entity and repository members); and knip counts a test's import as a use,

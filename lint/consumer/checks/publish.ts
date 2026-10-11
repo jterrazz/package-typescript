@@ -41,6 +41,9 @@ function resolvesOnDisk({ exists, list, root }: Context, target: string): boolea
     );
 }
 
+// invariant: a finding names its manifest from the directory the run started in, so two members of a workspace print two different lines.
+const manifestPathOf = (root: string): string => relative(cwd(), join(root, 'package.json'));
+
 async function chunksOrFinding(
     root: string,
     build: Build,
@@ -59,7 +62,7 @@ async function chunksOrFinding(
             chunks: null,
             finding: {
                 message: `found: the build failed — ${reason} · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — \`typescript build\` names what failed · read: @jterrazz/typescript's docs/reference/quality-checks.md#the-build-guard`,
-                path: 'package.json',
+                path: manifestPathOf(root),
                 rule: 'publish/build-succeeds',
             },
         };
@@ -83,13 +86,13 @@ function exportFindings(
         if (!resolvesOnDisk(context, target)) {
             findings.push({
                 message: `${target} resolves to nothing on disk`,
-                path: 'package.json',
+                path: manifestPathOf(context.root),
                 rule: 'publish/export-target-exists',
             });
         } else if (!isPacked(manifest.files ?? [], target)) {
             findings.push({
                 message: `${target} is outside "files" — it resolves here and 404s in a consumer`,
-                path: 'package.json',
+                path: manifestPathOf(context.root),
                 rule: 'publish/export-covered-by-files',
             });
         }
