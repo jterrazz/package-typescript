@@ -36,7 +36,7 @@ describe('roots-declared', () => {
                 fix: move it under src/, or declare it in jterrazz.config.ts's \`typescript.roots\` with its reason
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
             migrations/:1:1  names(declared-root-holds-files)
-                found: \`migrations/\` is declared in jterrazz.config.ts's \`typescript.roots\` and holds no file
+                found: \`migrations/\` is declared in jterrazz.config.ts's \`typescript.roots\` and holds no swept file — the sweep drops what git ignores, a Go module's \`testdata/\` and the ground of a test
                 why: A root declared in typescript.roots holds a file git does not ignore.
                 fix: delete the entry
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
