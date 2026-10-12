@@ -35,6 +35,7 @@ async function listedTargets(ignoresOf: string | undefined): Promise<null | stri
 async function recordLinter(): Promise<void> {
     const oxlint = oxlintConfig();
     const targets = await listedTargets(oxlint.ignoresOf);
+    // Stryker disable next-line ConditionalExpression: with no target the recorder lints nothing and removes the ledger it did not write, which is what an early return leaves alike
     if (targets === null || targets.length === 0) {
         return;
     }
