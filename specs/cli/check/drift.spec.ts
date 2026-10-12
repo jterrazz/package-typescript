@@ -161,7 +161,9 @@ describe('drift', () => {
         expect(human.stdout.text).toContain(
             'unmeasured                            4 mutants (browser-side)\n    packages/clock                      3 unmeasured mutants\n  .jterrazz/oxlint-suppressions.json',
         );
-        expect(reading.replaceAll(/\s+/gu, '')).toContain('"unmeasuredByMember":{"packages/clock":3}');
+        expect(reading.replaceAll(/\s+/gu, '')).toContain(
+            '"unmeasuredByMember":{"packages/clock":3}',
+        );
         expect(JSON.parse(reading)).toMatchObject({
             exceptions: 2,
             unmeasuredByMember: { 'packages/clock': 3 },

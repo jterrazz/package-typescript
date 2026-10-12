@@ -20,7 +20,7 @@ const holds =
     (folder: string): boolean =>
         folders.includes(folder);
 
-describe('isInert', () => {
+describe('inert-laws', () => {
     test('isInert — a rule is inert when every path of one side opens on a folder the project does not hold', () => {
         // Given - a project holding src/, and rules over lint/
         const held = holds('src');
