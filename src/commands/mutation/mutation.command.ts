@@ -3,23 +3,23 @@ import { join } from 'node:path';
 import process from 'node:process';
 
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
-import { clientOnlySources, reportWithUnmeasured } from '../../../lint/kit/project/browser-side.js';
+import { clientOnlySources } from '../../../lint/kit/project/browser-side.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { toolchainIn } from '../../drivers/node/node.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
 import { badge, print, RED, RESET } from '../check/report/terminal.js';
 import { askedOf } from './asked.js';
-import { changeOf, defaultBaseOf, namesACommit, treeChangeFor, unmeasuredBy } from './change.js';
+import { baseFor, changeOf, namesACommit, treeChangeFor } from './change.js';
 import type { Base } from './change.js';
 import { memberRuns, unownedRange } from './members.js';
 import { mutationScopeOf } from './scope-globs.js';
 import { changedRanges, fileOf, narrowed, sourcesOf, unreachedRange } from './scope.js';
 import type { MutationScope } from './scope.js';
-import { afterStage, buildsOf } from './stages.js';
+import { afterStage, buildsOf, withClientOnlyUnmeasured } from './stages.js';
 import { handedToTheSuite, judgedRuns } from './survivors.js';
 import type { Judged, ModuleRun } from './survivors.js';
-import { verdictOf } from './verdict.js';
+import { measureOf, verdictOf } from './verdict.js';
 import type { Measure } from './verdict.js';
 
 async function measured(
@@ -31,12 +31,10 @@ async function measured(
         `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'Measuring the whole suite against what the module tests let live, and the changed lines they do not run' : 'Measuring the module tests against mutants of the sources they test'}...\n\n`,
     );
 
-    const run = await strykerRun(scope, stage, { buildsFirst: buildsOf(project), cold, project });
-
-    // invariant: a `client:only` component is loaded by the server and rendered by none, so what no test judged there is unmeasured, never a survivor.
-    return 'report' in run
-        ? { ...run, report: reportWithUnmeasured(run.report, clientOnlySources(project)) }
-        : run;
+    return withClientOnlyUnmeasured(
+        await strykerRun(scope, stage, { buildsFirst: buildsOf(project), cold, project }),
+        clientOnlySources(project),
+    );
 }
 
 function printed(judged: Judged, untestedSources: number, measure: Measure): number {
@@ -64,7 +62,7 @@ async function judgedAfterTheSuite({
     untested: readonly string[];
 }): Promise<number> {
     const modulesAlone = judgedRuns(modulesRun);
-    const measure: Measure = { range: since.range, unmeasured: since.unmeasured };
+    const measure = measureOf(since);
     // Stryker disable next-line ConditionalExpression: a mutant the run never judged fails the verdict whether or not the suite runs after it; the gate only spares the suite's minutes
     if (Object.keys(modulesAlone.unrun).length > 0) {
         return printed(modulesAlone, untested.length, measure);
@@ -163,11 +161,7 @@ export async function mutation(args: readonly string[]): Promise<number> {
     if (members.length > 0) {
         return await membersMeasured(project, members, { cold, ranges, since: named });
     }
-    const base: Base =
-        named === undefined
-            ? defaultBaseOf(project)
-            : { commit: named, names: named, range: `${named}..working tree` };
-    const since: Base = { ...base, unmeasured: unmeasuredBy(project, base) };
+    const since = baseFor(project, named);
     const scope = await mutationScopeOf(project);
     const { tested, untested } = sourcesOf(project, scope);
     if (tested.length === 0 && !existsSync(join(project, 'specs'))) {

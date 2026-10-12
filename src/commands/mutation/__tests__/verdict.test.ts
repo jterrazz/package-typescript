@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { judgedRuns } from '../survivors.js';
-import { verdictOf } from '../verdict.js';
+import { measureOf, verdictOf } from '../verdict.js';
 
 const mutant = (status: string, line: number, replacement = 'true', endLine = line) => ({
     location: { end: { column: 20, line: endLine }, start: { column: 9, line } },
@@ -17,8 +17,8 @@ const NONE_RAN: ReadonlySet<string> = new Set();
 
 const MEASURE = { range: 'a1b2c3d4..HEAD' };
 
-describe('verdictOf', () => {
-    test('a run whose every covered mutant is detected passes, counting apart what no change has brought to the suite and what the verdict cannot read', () => {
+describe('verdict', () => {
+    test('verdictOf — a run whose every covered mutant is detected passes, counting apart what no change has brought to the suite and what the verdict cannot read', () => {
         // Given - two detected mutants and a static one the tests loading its module detect, three no module test runs, a static one they let live and one no test could be credited with, one that did not compile, one that errored and one declared, a file Stryker found nothing to mutate in, beside a file an earlier run measured
         const judged = judgedRuns({
             measured: new Set(['src/a.ts', 'src/b.ts', 'src/c.ts']),
@@ -58,7 +58,7 @@ describe('verdictOf', () => {
         });
     });
 
-    test('a run that mutated nothing says it measured nothing over its range, never that every mutant was detected', () => {
+    test('verdictOf — a run that mutated nothing says it measured nothing over its range, never that every mutant was detected', () => {
         // Given - a report holding no mutant
         const judged = judgedRuns({ measured: new Set(), ranByTests: NONE_RAN, report: {} });
 
@@ -72,7 +72,7 @@ describe('verdictOf', () => {
         });
     });
 
-    test('a survivor fails the run, each named at its place, in file and line order, before the lesson', () => {
+    test('verdictOf — a survivor fails the run, each named at its place, in file and line order, before the lesson', () => {
         // Given - survivors in two files, out of order, two on one line, one replacing a block over several lines, one whose report names neither its mutator nor its replacement, and two static ones, the first a test also ran, the second only loading ran
         const judged = judgedRuns({
             measured: new Set(['src/a.ts', 'src/b.ts']),
@@ -115,7 +115,7 @@ describe('verdictOf', () => {
         });
     });
 
-    test('a mutant the run never judged fails it, counted by status, an unknown or missing one included — a stopped run passes nothing', () => {
+    test('verdictOf — a mutant the run never judged fails it, counted by status, an unknown or missing one included — a stopped run passes nothing', () => {
         // Given - a detected mutant, two a stopped run left pending, one of a status no verdict knows, one with none
         const judged = judgedRuns({
             measured: new Set(['src/a.ts']),
@@ -145,7 +145,7 @@ describe('verdictOf', () => {
         });
     });
 
-    test('what no test runs is counted file by file, most first, a tie in name order', () => {
+    test('verdictOf — what no test runs is counted file by file, most first, a tie in name order', () => {
         // Given - the suite ran nothing of three mutants in one file, and of one in each of two others
         const files = ['src/a.ts', 'src/m.ts', 'src/z.ts'];
         const judged = judgedRuns(
@@ -179,7 +179,7 @@ describe('verdictOf', () => {
         ]);
     });
 
-    test('what only a browser could run is unmeasured, apart from what no test runs', () => {
+    test('verdictOf — what only a browser could run is unmeasured, apart from what no test runs', () => {
         // Given - the suite ran nothing of a server module's two mutants, a component's three and a template's one
         const files = ['src/server.ts', 'src/Card.tsx', 'src/page.astro'];
         const judged = judgedRuns(
@@ -216,7 +216,7 @@ describe('verdictOf', () => {
         ]);
     });
 
-    test('a verdict narrower than the branch names the commits it did not measure, once, after the verdict and before the counts, whatever it concludes', () => {
+    test('verdictOf — a verdict narrower than the branch names the commits it did not measure, once, after the verdict and before the counts, whatever it concludes', () => {
         // Given - a run that mutated one detected mutant, one that left a survivor, both over a scope that leaves the branch's own commits out
         const narrower = { range: 'HEAD..working tree', unmeasured: 'a1b2c3d4..HEAD' };
         const passed = judgedRuns({
@@ -248,5 +248,21 @@ describe('verdictOf', () => {
             'measured 1 mutants over a1b2c3d4..HEAD — every mutant a test runs is detected',
             '0 mutant(s) no test runs',
         ]);
+    });
+
+    test('verdictOf — measureOf — keeps the range of a base and the commits it leaves out, and nothing else of it', () => {
+        // Given - a base naming its commit, how it is named, its range and what it leaves out
+        const base = {
+            commit: 'a1b2c3d4',
+            names: 'the commit before HEAD',
+            range: 'a1b2c3d4..HEAD',
+            unmeasured: 'e5f6a7b8..a1b2c3d4',
+        };
+
+        // Then - the range and the unmeasured commits alone
+        expect(measureOf(base)).toStrictEqual({
+            range: 'a1b2c3d4..HEAD',
+            unmeasured: 'e5f6a7b8..a1b2c3d4',
+        });
     });
 });

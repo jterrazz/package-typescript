@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
 import type { Measured } from '../../../drivers/stryker/stryker.js';
-import { afterStage, buildsOf, NOTHING_MEASURED } from '../stages.js';
+import { afterStage, buildsOf, NOTHING_MEASURED, withClientOnlyUnmeasured } from '../stages.js';
 
 function projectWith(manifest: string | undefined): string {
     const root = mkdtempSync(join(tmpdir(), 'mutation-stages-'));
@@ -59,5 +59,31 @@ describe('stages', () => {
             [ran, { ranByTests: new Set(), report: undefined }],
         ]);
         expect(NOTHING_MEASURED).toStrictEqual({ ranByTests: new Set(), report: undefined });
+    });
+
+    test('withClientOnlyUnmeasured — reads a survivor of a client-only source as one no test ran in a stage that measured, and hands a failed stage on as it is', () => {
+        // Given - a measured stage holding a survivor of a client-only source and one of another, and a stage that failed
+        const measured: Measured = {
+            ranByTests: new Set(['one']),
+            report: {
+                files: {
+                    'src/island.tsx': { mutants: [{ status: 'Survived' }] },
+                    'src/page.tsx': { mutants: [{ status: 'Survived' }] },
+                },
+            },
+        };
+        const failed = { status: 3 };
+
+        // Then - only the client-only survivor changes, the tests that ran stay, and the failed stage is the same object
+        expect(withClientOnlyUnmeasured(measured, new Set(['src/island.tsx']))).toStrictEqual({
+            ranByTests: new Set(['one']),
+            report: {
+                files: {
+                    'src/island.tsx': { mutants: [{ status: 'NoCoverage' }] },
+                    'src/page.tsx': { mutants: [{ status: 'Survived' }] },
+                },
+            },
+        });
+        expect(withClientOnlyUnmeasured(failed, new Set(['src/island.tsx']))).toBe(failed);
     });
 });

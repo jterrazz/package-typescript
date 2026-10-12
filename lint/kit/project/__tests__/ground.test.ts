@@ -95,6 +95,8 @@ describe('ground', () => {
             'apps/api/.artifacts/stryker/tmp/a.ts',
             'src/artifacts/a.ts',
             'src/not.artifacts/a.ts',
+            'src/xartifacts/a.ts',
+            'src/xx__fixtures__/a.ts',
             'src/fixtures/a.ts',
         ];
 
@@ -104,6 +106,8 @@ describe('ground', () => {
             true,
             true,
             true,
+            false,
+            false,
             false,
             false,
             false,

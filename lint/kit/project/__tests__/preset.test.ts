@@ -146,6 +146,29 @@ describe('preset', () => {
         expect(resolved.laws).toStrictEqual(['typescript/base-law']);
     });
 
+    test('a section stays open until a preset of its name lists what a project may write, and then holds a law it restates', () => {
+        // Given - a preset naming the keys a project may write and no law, another naming none, and a project writing a listed key, a key of the open one and the spine the base states
+        const closed: Preset = { name: 'web', package: '@acme/web', writableSettings: ['wrap'] };
+        const open: Preset = { name: 'docs', package: '@acme/docs' };
+
+        // When - each is resolved with a key it lists, and with one it does not
+        const listed = resolveConfig(
+            { presets: [closed, open], web: { wrap: 'src' }, docs: { any: 1 } },
+            BASE_OF,
+        );
+        const unlisted = resolveConfig(
+            { presets: [closed], web: { wrap: 'src', unwrap: 'src' } },
+            BASE_OF,
+        );
+        const restated = resolveConfig({ typescript: { spine: ['src'] } }, BASE_OF);
+
+        // Then - the listed and the open keys stand, the law restated stands, and the unlisted key is refused naming what the preset reads
+        expect([listed.problem, restated.problem]).toStrictEqual([null, null]);
+        expect(unlisted.problem).toBe(
+            'writes `web.unwrap`, a setting the web preset does not read — it reads `wrap`; a key a release removed is named in its adoption guide',
+        );
+    });
+
     test('follows the presets a listed copy of the base includes, and reads no layer or name that is not a list', () => {
         // Given - the base listed with a preset of its own, and a repository writing its layers and names as single values
         const { problem, resolved } = resolveConfig(

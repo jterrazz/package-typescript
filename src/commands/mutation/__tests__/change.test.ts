@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
 import {
+    baseFor,
     changeOf,
     changeSince,
     defaultBaseOf,
@@ -308,6 +309,29 @@ describe('change', () => {
             undefined,
             undefined,
         ]);
+    });
+
+    test('baseFor — the commit named or the default of the clone, with the branch commits it leaves out, and none outside a branch', () => {
+        // Given - a branch holding two commits of its own beside main, the tree clean, and a repository of one commit
+        const root = committedRepository({ 'a.ts': 'one\n' });
+        const trunk = gitIn(root, 'rev-parse', 'HEAD');
+        gitIn(root, 'switch', '--quiet', '--create', 'work');
+        writeFileSync(join(root, 'a.ts'), 'two\n');
+        gitIn(root, 'commit', '--quiet', '--all', '--message', 'second');
+        const middle = gitIn(root, 'rev-parse', 'HEAD');
+        writeFileSync(join(root, 'a.ts'), 'three\n');
+        gitIn(root, 'commit', '--quiet', '--all', '--message', 'third');
+        const alone = committedRepository({ 'a.ts': 'one\n' });
+
+        // Then - the default reaches the merge-base and leaves nothing out; a newer commit named leaves the first commit of the branch out; nothing is left out of a repository with no branch
+        expect(baseFor(root, undefined)).toMatchObject({ commit: trunk, unmeasured: undefined });
+        expect(baseFor(root, middle)).toStrictEqual({
+            commit: middle,
+            names: middle,
+            range: `${middle}..working tree`,
+            unmeasured: `${trunk.slice(0, 8)}..${middle}`,
+        });
+        expect(baseFor(alone, undefined)).toMatchObject({ commit: 'HEAD', unmeasured: undefined });
     });
 
     test('git names a commit the clone holds, and neither the zero commit a first push carries, a ref it lacks, nor anything outside a repository', () => {

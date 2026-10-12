@@ -1,5 +1,6 @@
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { isBrowserSide } from '../../../lint/kit/project/browser-side.js';
+import type { Base } from './change.js';
 import type { Judged } from './survivors.js';
 
 function countsOf(byStatus: Record<string, number>): { statuses: string; total: number } {
@@ -92,6 +93,12 @@ function unrunLines({ unrun }: Judged): string[] {
 
 /** What a verdict names of its measure: the range of commits it covers. */
 export type Measure = { range: string; unmeasured?: string | undefined };
+
+/** What a verdict names of the base it was measured from. */
+export const measureOf = ({ range, unmeasured }: Pick<Base, 'range' | 'unmeasured'>): Measure => ({
+    range,
+    unmeasured,
+});
 
 // invariant: a verdict whose scope is narrower than `merge-base..HEAD` of the branch says which commits it did not measure, so a green over a dirty tree is never read as a green over the branch.
 const unmeasuredLines = ({ unmeasured }: Measure): string[] =>

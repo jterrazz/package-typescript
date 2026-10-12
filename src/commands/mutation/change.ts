@@ -113,6 +113,16 @@ export function unmeasuredBy(project: string, since: Base): string | undefined {
     return reaches ? undefined : `${short(branch.base)}..${since.commit}`;
 }
 
+/** The commit a run measures from: the one named, else the default of the clone, with the commits of the branch that base leaves out. */
+export function baseFor(project: string, named: string | undefined): Base {
+    const base: Base =
+        named === undefined
+            ? defaultBaseOf(project)
+            : { commit: named, names: named, range: `${named}..working tree` };
+
+    return { ...base, unmeasured: unmeasuredBy(project, base) };
+}
+
 /** What the working tree changed since `since`, untracked files whole, a file moved or renamed by its content — only the lines it changed beyond the move; `undefined` where git cannot say. */
 export function changeSince(project: string, since: string): Changed | undefined {
     const diff = git(project, [

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { reportWithUnmeasured } from '../../../lint/kit/project/browser-side.js';
 import { objectOf, parsedObject } from '../../../lint/kit/project/json.js';
 import type { Measured } from '../../drivers/stryker/stryker.js';
 
@@ -27,4 +28,14 @@ export async function afterStage(
     }
 
     return await next(outcome ?? NOTHING_MEASURED);
+}
+
+// invariant: a `client:only` component is loaded by the server and rendered by none, so what no test judged there is unmeasured, never a survivor; a failed stage has no report to read.
+export function withClientOnlyUnmeasured(
+    outcome: Measured | { status: number },
+    sources: ReadonlySet<string>,
+): Measured | { status: number } {
+    return 'report' in outcome
+        ? { ...outcome, report: reportWithUnmeasured(outcome.report, sources) }
+        : outcome;
 }

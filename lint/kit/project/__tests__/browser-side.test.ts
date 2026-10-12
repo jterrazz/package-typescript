@@ -102,6 +102,48 @@ describe('browser-side', () => {
         expect([...clientOnlySources(unit)]).toStrictEqual(['src/components/Particles.tsx']);
     });
 
+    test('clientOnlySources — resolves a component of any framework by its extension, from the page’s folder, however its attributes are ordered, and reads no tag that only starts like client:only', () => {
+        // Given - pages in two folders loading a jsx, a vue, a svelte and a shared component, one of them with attributes before client:only, and a tag whose directive only starts like it
+        const unit = mkdtempSync(join(tmpdir(), 'client-only-'));
+        units.push(unit);
+        mkdirSync(join(unit, 'src/pages'), { recursive: true });
+        mkdirSync(join(unit, 'src/shared'), { recursive: true });
+        for (const path of [
+            'src/pages/Wave.jsx',
+            'src/pages/Card.vue',
+            'src/pages/Orb.svelte',
+            'src/shared/Deep.tsx',
+            'src/pages/Later.tsx',
+        ]) {
+            writeFileSync(join(unit, path), 'export default null;\n');
+        }
+        writeFileSync(
+            join(unit, 'src/pages/index.astro'),
+            [
+                '---',
+                "import Wave from './Wave';",
+                "import Card from './Card';",
+                "import Orb from './Orb';",
+                "import Deep from '../shared/Deep';",
+                "import Later from './Later';",
+                '---',
+                '<Wave client:only="react" />',
+                '<Card id="a" class="b" client:only="vue" />',
+                '<Orb client:only />',
+                '<Deep client:only="react" />',
+                '<Later client:onlyish />',
+            ].join('\n'),
+        );
+
+        // Then - the four that load client-only, in the order the page names them, and not the fifth
+        expect([...clientOnlySources(unit)]).toStrictEqual([
+            'src/pages/Wave.jsx',
+            'src/pages/Card.vue',
+            'src/pages/Orb.svelte',
+            'src/shared/Deep.tsx',
+        ]);
+    });
+
     test('reportWithUnmeasured — reads a survivor of a named source as a mutant no test ran, and leaves every other mutant and file as they are', () => {
         // Given - a report with a survivor and a killed mutant in the named source, a survivor in another, and a file with no mutant list
         const report = {
