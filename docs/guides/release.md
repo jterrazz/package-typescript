@@ -40,6 +40,7 @@ One line decides it, and it is the consumer's side of the wire: **breaking means
 - a `knip.json` into `typescript.knip`, and a `tsdown.config.ts` into the manifest's targets or a module named for how it is loaded: `typescript bundle` is gone, and `typescript build` derives what it compiles ([Building](../reference/building.md#the-entries));
 - `jterrazz.baseline.json` and `oxlint-suppressions.json` into `.jterrazz/`, where `typescript baseline` writes them again;
 - a Makefile chaining `@jterrazz/test`'s own check bin into `presets: [test()]`, run by `typescript check`, `fix` and `baseline`;
+- a `typescript.generated` key, which 11.0.0 removed, into `typescript.roots.<folder>` written `{ reason, verbatim: true }`; the file now fails at load on a key no release reads ([Adopt a stricter release](adopt-a-stricter-release.md#what-a-major-newly-judges-said-once));
 - each published entry's source onto [the entry grammar](../reference/quality-checks.md#the-entry-grammar), `index[.<subpath>].ts` and `<name>.bin.ts`.
 
 The GitHub Release of each version is where its notes live; this section keeps only what makes a version major.
