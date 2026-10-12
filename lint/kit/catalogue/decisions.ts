@@ -40,7 +40,10 @@ function resolve(definition: Profile): Map<string, Resolved> {
     for (const fragment of definition.fragments) {
         absorb(resolved, fragment, fragment.decisions);
         for (const override of fragment.overrides) {
-            absorb(resolved, fragment, override.decisions, override.files);
+            absorb(resolved, fragment, override.decisions, [
+                ...override.files,
+                ...override.exclude.map((glob) => `!${glob}`),
+            ]);
         }
     }
 

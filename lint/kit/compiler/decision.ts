@@ -34,6 +34,8 @@ export type Decision = Stated & {
 export type Scoped = {
     /** What it says there. */
     readonly decisions: Readonly<Record<string, Decision>>;
+    /** The globs it does not apply to, although `files` names them. */
+    readonly exclude: readonly string[];
     /** The globs it applies to. */
     readonly files: readonly string[];
 };
@@ -159,10 +161,12 @@ export function fragment(definition: FragmentDefinition): Fragment {
 
 // invariant: an override's rule options replace the base entry, never merge: a block states every option.
 export function scoped({
+    exclude = [],
     files,
     rules,
     since = RULEBOOK_BIRTH_VERSION,
 }: {
+    exclude?: readonly string[];
     files: readonly string[];
     rules: Readonly<Record<string, Stated>>;
     since?: string;
@@ -171,7 +175,11 @@ export function scoped({
     for (const [rule, decision] of Object.entries(rules)) {
         decisions[rule] = decisionFor(rule, decision, since);
     }
-    return Object.freeze({ decisions: Object.freeze(decisions), files: Object.freeze([...files]) });
+    return Object.freeze({
+        decisions: Object.freeze(decisions),
+        exclude: Object.freeze([...exclude]),
+        files: Object.freeze([...files]),
+    });
 }
 
 function decisionFor(rule: string, decision: Stated, since: string): Decision {

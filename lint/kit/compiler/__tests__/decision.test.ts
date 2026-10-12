@@ -91,7 +91,7 @@ describe('decision', () => {
             ignorePatterns: ['dist/**'],
             jsPlugins: ['./plugin.mjs'],
             options: undefined,
-            overrides: [{ decisions: {}, files: ['*.js'] }],
+            overrides: [{ decisions: {}, exclude: [], files: ['*.js'] }],
             plugins: [],
             settings: undefined,
             since: '10.0.0',

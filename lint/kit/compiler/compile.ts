@@ -43,6 +43,7 @@ export function compile(
     }
     if (fragment.overrides.length > 0) {
         config.overrides = fragment.overrides.map((override) => ({
+            ...(override.exclude.length > 0 ? { excludeFiles: [...override.exclude] } : {}),
             files: [...override.files],
             rules: rulesOf(override.decisions),
         }));

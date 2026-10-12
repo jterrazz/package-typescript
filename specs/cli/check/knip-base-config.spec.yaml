@@ -1,4 +1,4 @@
-description: passes with no knip.json, the base config covering dependencies and commands, and no cache
+description: passes with no knip.json, the base config covering dependencies, commands and a jest-expo render test no import reaches, and no cache
 fixture: ./__fixtures__/knip/no-config/
 runs:
     - command: check

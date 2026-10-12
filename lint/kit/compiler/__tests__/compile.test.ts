@@ -115,6 +115,32 @@ describe('compile', () => {
         });
     });
 
+    test('compiles the globs an override leaves out as excludeFiles, and writes none when it leaves out nothing', () => {
+        // Given - one override excluding a suffix, one excluding nothing
+        const probe = fragment({
+            audience: 'consumer',
+            id: 'probe',
+            overrides: [
+                scoped({
+                    exclude: ['**/*.render.tsx'],
+                    files: ['**/__tests__/**'],
+                    rules: { curly: on() },
+                }),
+                scoped({ files: ['*.js'], rules: { curly: on() } }),
+            ],
+        });
+
+        // Then - the first carries excludeFiles, the second has no such key
+        expect(compile(probe).overrides).toStrictEqual([
+            {
+                excludeFiles: ['**/*.render.tsx'],
+                files: ['**/__tests__/**'],
+                rules: { curly: 'error' },
+            },
+            { files: ['*.js'], rules: { curly: 'error' } },
+        ]);
+    });
+
     test('ignores null and undefined configs', () => {
         // Given - a composition with holes (a conditional fragment)
         const merged = merge(

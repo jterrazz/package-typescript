@@ -23,5 +23,8 @@ export const KNIP_PRESET: Readonly<Record<string, unknown>> = {
         // invariant: a `*.cli.ts` is a command run by its path, which no import reaches.
         // Stryker disable next-line StringLiteral: the knip pass reads this preset in a command the specs spawn, beyond what a mutant of this module reaches; specs/cli/check/knip-base-config.spec.yaml proves the entry
         '**/*.cli.ts',
+        // invariant: a `*.render.tsx` is a jest-expo test, which jest collects by its name and no import reaches.
+        // Stryker disable next-line StringLiteral: the knip pass reads this preset in a command the specs spawn, beyond what a mutant of this module reaches; specs/cli/check/knip-base-config.spec.yaml proves the entry
+        '**/*.render.tsx',
     ],
 };

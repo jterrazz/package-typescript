@@ -2,7 +2,7 @@ import { allOn, fragment, off, on, scoped, unsafeFix } from '../../kit/compiler/
 
 // invariant: four offs are one half of an exclusive pair; `exclusive-pairs.test.ts` proves no profile arms both.
 
-// invariant: a file another runner owns takes that runner's suffix (`*.e2e.ts`, `*.render.tsx`), which no glob here names.
+// invariant: a file another runner owns takes that runner's suffix (`*.e2e.ts`, `*.render.tsx`): the first is named by no glob here, the second sits under `__tests__/` and is excluded from the override.
 const TEST_FILES = Object.freeze([
     '**/*.{test,spec,test-d,spec-d}.{ts,tsx,js,jsx}',
     '**/specs/**/*.{ts,tsx}',
@@ -97,6 +97,7 @@ export default fragment({
     plugins: ['vitest'],
     overrides: [
         scoped({
+            exclude: ['**/*.render.tsx'],
             files: [...TEST_FILES],
             rules: {
                 ...allOn(ON_IN_TESTS),
