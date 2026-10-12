@@ -24,3 +24,18 @@ export function groupsOf<Name extends string>(
 
     return found;
 }
+
+/**
+ * A value an index read or a lookup returns as `T | undefined` though nothing can make it miss, handed back as `T`.
+ * Under `noUncheckedIndexedAccess` a guard written for the type is a branch no input reaches — a mutant no test can kill. This owns the one narrowing, and throws on `undefined` as an invariant instead.
+ *
+ * @example
+ * const first = present(words.at(0));
+ */
+export function present<Value>(value: undefined | Value): Value {
+    if (value === undefined) {
+        throw invariant('a value that cannot be missing is missing');
+    }
+
+    return value;
+}

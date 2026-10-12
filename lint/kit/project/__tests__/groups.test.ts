@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { groupsOf } from '../groups.js';
+import { groupsOf, present } from '../groups.js';
 
 describe('groupsOf', () => {
     test('hands back each named group of a match as the string it captured', () => {
@@ -29,5 +29,17 @@ describe('groupsOf', () => {
         // Then - each says which group was asked for
         expect(() => groupsOf(skipped, ['two'])).toThrow('the match holds no group named two');
         expect(() => groupsOf(null, ['one'])).toThrow('the match holds no group named one');
+    });
+
+    test('present — hands a value back whole, a falsy one and a null included, and throws on undefined', () => {
+        // Given - values a truthiness guard would drop
+        // Then - each comes back as it is, and only undefined throws
+        expect([present(0), present(''), present(false), present(null)]).toStrictEqual([
+            0,
+            '',
+            false,
+            null,
+        ]);
+        expect(() => present(['a'].at(1))).toThrow('a value that cannot be missing is missing');
     });
 });
