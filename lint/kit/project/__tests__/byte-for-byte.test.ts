@@ -1,3 +1,6 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { keptByteForByte, verbatimRootsOf, verbatimTreesOf } from '../byte-for-byte.js';
@@ -96,5 +99,54 @@ describe('byte-for-byte', () => {
             'v1.2-archive/**',
             'docs/api.v2/upstream.md',
         ]);
+    });
+
+    test('lets the disk decide what a path names — a dot-folder or a versioned folder is widened, an extensionless file stands as itself', () => {
+        // Given - a unit holding dot-folders, a versioned folder, an extensionless file and a file with an extension
+        const unit = mkdtempSync(join(tmpdir(), 'byte-for-byte-'));
+        try {
+            mkdirSync(join(unit, '.claude'));
+            mkdirSync(join(unit, 'docs/v1.2'), { recursive: true });
+            writeFileSync(join(unit, 'Makefile'), '');
+            writeFileSync(join(unit, 'LICENSE'), '');
+            writeFileSync(join(unit, 'notes.md'), '');
+            const section = {
+                oxfmt: {
+                    ignore: {
+                        '.claude': 'a dot-folder',
+                        'docs/v1.2': 'a versioned folder',
+                        LICENSE: 'a file with no extension',
+                        'generated/*': 'a glob with no extension',
+                        Makefile: 'a file with no extension',
+                        'notes.md': 'a file',
+                    },
+                },
+            };
+
+            // Then - the folders as trees, the files as themselves
+            expect(keptByteForByte(section, unit).slice(-6)).toStrictEqual([
+                '.claude/**',
+                'docs/v1.2/**',
+                'LICENSE',
+                'generated/*',
+                'Makefile',
+                'notes.md',
+            ]);
+        } finally {
+            rmSync(unit, { force: true, recursive: true });
+        }
+    });
+
+    test('widens every root declared verbatim to its tree, whatever its name ends in', () => {
+        // Given - roots declared verbatim named like a file
+        const section = {
+            roots: {
+                '.storybook': { reason: 'tool output', verbatim: true },
+                'docs/v1.2': { reason: 'frozen', verbatim: true },
+            },
+        };
+
+        // Then - both are trees
+        expect(verbatimTreesOf(section)).toStrictEqual(['.storybook/**', 'docs/v1.2/**']);
     });
 });

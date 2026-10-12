@@ -13,13 +13,13 @@ async function keptBy(unit: string): Promise<string[]> {
         workspaceMembers(unit).map(async (member) => {
             const { resolved: own } = await readSettings(join(unit, member));
 
-            return keptByteForByte(own.sections.typescript).map(
+            return keptByteForByte(own.sections.typescript, join(unit, member)).map(
                 (pattern) => `${member}/${pattern}`,
             );
         }),
     );
 
-    return [...keptByteForByte(resolved.sections.typescript), ...members.flat()];
+    return [...keptByteForByte(resolved.sections.typescript, unit), ...members.flat()];
 }
 
 // outside: a spec document is laid out by @jterrazz/test's document formatter, whose block scalars and streams oxfmt rewrites into a layout it then refuses (`fix` exits 0, `check` fails for good).

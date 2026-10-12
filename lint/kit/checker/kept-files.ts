@@ -8,14 +8,17 @@ type Configured = Pick<Context, 'config' | 'root'>;
 
 async function perUnit(
     context: Configured,
-    globsOf: (typescript: unknown) => string[],
+    globsOf: (typescript: unknown, unitRoot: string) => string[],
 ): Promise<string[]> {
     const units = ['', ...workspaceMembers(context.root).map((member) => `${member}/`)];
     const found = await Promise.all(
         units.map(async (prefix) => {
-            const { resolved } = await context.config(join(context.root, prefix));
+            const unitRoot = join(context.root, prefix);
+            const { resolved } = await context.config(unitRoot);
 
-            return globsOf(resolved.sections.typescript).map((pattern) => `${prefix}${pattern}`);
+            return globsOf(resolved.sections.typescript, unitRoot).map(
+                (pattern) => `${prefix}${pattern}`,
+            );
         }),
     );
 
