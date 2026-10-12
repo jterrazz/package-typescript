@@ -39,6 +39,16 @@ const rows = ['lint/consumer/catalogue/manifest.json', 'lint/self/catalogue/mani
     },
 );
 
+function scopeOf(block: Record<string, unknown>): string {
+    const globs = (key: string): string[] => {
+        const listed: unknown = block[key];
+
+        return Array.isArray(listed) ? listed.map(String) : [];
+    };
+
+    return [...globs('files'), ...globs('excludeFiles').map((glob) => `!${glob}`)].join(',');
+}
+
 function statedRules(config: unknown): { rule: string; scope: string; value: unknown }[] {
     const top = isRecord(config) && isRecord(config.rules) ? config.rules : {};
     const overrides: unknown[] =
@@ -49,12 +59,7 @@ function statedRules(config: unknown): { rule: string; scope: string; value: unk
             .filter((block) => isRecord(block))
             .map((block) => ({
                 rules: isRecord(block.rules) ? block.rules : {},
-                scope: [
-                    ...(Array.isArray(block.files) ? block.files : []),
-                    ...(Array.isArray(block.excludeFiles)
-                        ? block.excludeFiles.map((glob) => `!${String(glob)}`)
-                        : []),
-                ].join(','),
+                scope: scopeOf(block),
             })),
     ];
 
