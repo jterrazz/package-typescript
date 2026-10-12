@@ -30,16 +30,36 @@ function reasonOf(declaration: unknown): unknown {
     return isJsonObject(declaration) ? declaration.reason : declaration;
 }
 
-/** Each declared root that states no reason, or that holds no file. */
+/** Each declared root that is no first-level folder, that is a spine folder, that states no reason, or that holds no file. */
 export function declaredRootsFindings(
     declared: DeclaredRoots,
-    { prefix, roots }: { prefix: string; roots: ReadonlySet<string> },
+    {
+        prefix,
+        roots,
+        spine,
+    }: { prefix: string; roots: ReadonlySet<string>; spine: ReadonlySet<string> },
 ): Finding[] {
     const where = `${prefix}${SETTINGS_FILE}'s \`typescript.roots\``;
 
     return Object.keys(declared)
         .toSorted()
         .flatMap((root): Finding[] => {
+            if (root.includes('/')) {
+                return [
+                    namesFinding('names/declared-root-is-first-level', `${prefix}${root}/`, {
+                        fix: `declare the first-level folder, \`${root.split('/')[0]}\`, or delete the entry`,
+                        found: `\`${prefix}${root}/\` is declared in ${where}, and a root is a first-level folder`,
+                    }),
+                ];
+            }
+            if (spine.has(root)) {
+                return [
+                    namesFinding('names/declared-root-is-first-level', `${prefix}${root}/`, {
+                        fix: 'delete the entry: a folder of the spine is already codified, and it cannot be a root too',
+                        found: `\`${prefix}${root}/\` is declared in ${where}, and it is a folder of the spine`,
+                    }),
+                ];
+            }
             const reason = reasonOf(declared[root]);
             if (typeof reason !== 'string' || reason.trim() === '') {
                 return [
@@ -55,7 +75,7 @@ export function declaredRootsFindings(
                 : [
                       namesFinding('names/declared-root-holds-files', `${prefix}${root}/`, {
                           fix: 'delete the entry',
-                          found: `\`${prefix}${root}/\` is declared in ${where} and holds no file`,
+                          found: `\`${prefix}${root}/\` is declared in ${where} and holds no swept file — the sweep drops what git ignores, a Go module's \`testdata/\` and the ground of a test`,
                       }),
                   ];
         });

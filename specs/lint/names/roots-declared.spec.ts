@@ -15,6 +15,11 @@ describe('roots-declared', () => {
                 why: Every root folder is on the root spine, imposed by a tool, or declared with its reason.
                 fix: move it under src/, or declare it in jterrazz.config.ts's \`typescript.roots\` with its reason
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
+            apps/playground/:1:1  names(declared-root-is-first-level)
+                found: \`apps/playground/\` is declared in jterrazz.config.ts's \`typescript.roots\`, and a root is a first-level folder
+                why: A root declared in typescript.roots is a first-level folder that is no folder of the spine.
+                fix: declare the first-level folder, \`apps\`, or delete the entry
+                read: docs/reference/quality-checks.md#a-root-beside-the-spine
             deploy/:1:1  names(no-undeclared-root-folder)
                 found: \`deploy/\` is a root outside the spine
                 why: Every root folder is on the root spine, imposed by a tool, or declared with its reason.
@@ -34,6 +39,11 @@ describe('roots-declared', () => {
                 found: \`migrations/\` is declared in jterrazz.config.ts's \`typescript.roots\` and holds no file
                 why: A root declared in typescript.roots holds a file git does not ignore.
                 fix: delete the entry
+                read: docs/reference/quality-checks.md#a-root-beside-the-spine
+            src/:1:1  names(declared-root-is-first-level)
+                found: \`src/\` is declared in jterrazz.config.ts's \`typescript.roots\`, and it is a folder of the spine
+                why: A root declared in typescript.roots is a first-level folder that is no folder of the spine.
+                fix: delete the entry: a folder of the spine is already codified, and it cannot be a root too
                 read: docs/reference/quality-checks.md#a-root-beside-the-spine
         `);
     });

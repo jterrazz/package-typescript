@@ -143,7 +143,11 @@ function spineOf(
             .toSorted((left, right) => (left < right ? -1 : 1))
             .filter((root) => !isCodified(root))
             .map((root) => foreignRoot(root, prefix)),
-        ...declaredRootsFindings(declared, { prefix, roots }),
+        ...declaredRootsFindings(declared, {
+            prefix,
+            roots,
+            spine: new Set([...spine, ...memberRoots]),
+        }),
     ];
 }
 

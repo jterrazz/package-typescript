@@ -146,6 +146,11 @@
     },
     {
         "family": "tree",
+        "id": "names/declared-root-is-first-level",
+        "sentence": "A root declared in typescript.roots is a first-level folder that is no folder of the spine."
+    },
+    {
+        "family": "tree",
         "id": "names/declared-root-holds-files",
         "sentence": "A root declared in typescript.roots holds a file git does not ignore."
     },

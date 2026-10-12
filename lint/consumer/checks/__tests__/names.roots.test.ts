@@ -3,9 +3,9 @@ import { describe, expect, test } from 'vitest';
 import { declaredRootsFindings, declaredRootsOf, isDeclaredRoot } from '../names.roots.js';
 
 const MESSAGES = [
-    "found: `apps/api/old/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` and holds no file · why: A root declared in typescript.roots holds a file git does not ignore. · fix: delete the entry · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
+    "found: `apps/api/old/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` and holds no swept file — the sweep drops what git ignores, a Go module's `testdata/` and the ground of a test · why: A root declared in typescript.roots holds a file git does not ignore. · fix: delete the entry · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
     "found: `apps/api/tmp/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` with no reason · why: A root declared in typescript.roots states why the repository keeps it. · fix: say why the repository keeps it · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
-    "found: `apps/api/gone/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` and holds no file · why: A root declared in typescript.roots holds a file git does not ignore. · fix: delete the entry · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
+    "found: `apps/api/gone/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` and holds no swept file — the sweep drops what git ignores, a Go module's `testdata/` and the ground of a test · why: A root declared in typescript.roots holds a file git does not ignore. · fix: delete the entry · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
     "found: `apps/api/sql/` is declared in apps/api/jterrazz.config.ts's `typescript.roots` with no reason · why: A root declared in typescript.roots states why the repository keeps it. · fix: say why the repository keeps it · read: docs/reference/quality-checks.md#a-root-beside-the-spine",
 ];
 
@@ -56,6 +56,7 @@ describe('names.roots', () => {
         const findings = declaredRootsFindings(declared, {
             prefix: 'apps/api/',
             roots: new Set(['bruno', 'schema', 'sql', 'tmp']),
+            spine: new Set(['src']),
         });
 
         // Then - each declared root is codified, and each finding is filed under the key, its lesson whole
@@ -73,6 +74,36 @@ describe('names.roots', () => {
             MESSAGES[0],
             MESSAGES[3],
             MESSAGES[1],
+        ]);
+    });
+
+    test('declaredRootsFindings — refuses a nested key and a folder of the spine as no root, each with the folder to declare or the entry to delete', () => {
+        // Given - a nested key, a spine folder and a first-level root, the tree holding all three
+        const declared = {
+            'apps/playground': 'an Expo app',
+            packages: 'the packages',
+            tools: 'the tools',
+        };
+
+        // When - the spine holds packages
+        const findings = declaredRootsFindings(declared, {
+            prefix: '',
+            roots: new Set(['apps', 'packages', 'tools']),
+            spine: new Set(['packages']),
+        });
+
+        // Then - the nested key and the spine folder are refused by their own rule, the root stands
+        expect(findings.map(({ path, rule }) => [path, rule])).toStrictEqual([
+            ['apps/playground/', 'names/declared-root-is-first-level'],
+            ['packages/', 'names/declared-root-is-first-level'],
+        ]);
+        expect(findings.map(({ message }) => message.split(' · ')[0])).toStrictEqual([
+            "found: `apps/playground/` is declared in jterrazz.config.ts's `typescript.roots`, and a root is a first-level folder",
+            "found: `packages/` is declared in jterrazz.config.ts's `typescript.roots`, and it is a folder of the spine",
+        ]);
+        expect(findings.map(({ message }) => message.split(' · ')[2])).toStrictEqual([
+            'fix: declare the first-level folder, `apps`, or delete the entry',
+            'fix: delete the entry: a folder of the spine is already codified, and it cannot be a root too',
         ]);
     });
 });
