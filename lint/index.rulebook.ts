@@ -52,7 +52,7 @@ const oxlintOf = ({ oxlint }: Preset): OxlintConfig[] => (oxlint === undefined ?
 const optional = (key: string, value: unknown): Record<string, unknown> =>
     value === undefined ? {} : { [key]: value };
 
-function oxlintConfigOf({ problem, resolved }: Resolution): OxlintConfig {
+function projectOxlint({ problem, resolved }: Resolution): ReturnType<typeof projectOxlintOf> {
     if (problem !== null) {
         throw settingsRefusal(problem);
     }
@@ -60,15 +60,23 @@ function oxlintConfigOf({ problem, resolved }: Resolution): OxlintConfig {
     if (own.problem !== null) {
         throw settingsRefusal(own.problem);
     }
-    const overrides: OxlintOverride[] = own.overrides.map(({ files, rules }) => ({ files, rules }));
+
+    return own;
+}
+
+const projectOverridesOf = (resolution: Resolution): OxlintOverride[] =>
+    projectOxlint(resolution).overrides.map(({ files, rules }) => ({ files, rules }));
+
+function oxlintConfigOf(resolution: Resolution, { withOverrides = true } = {}): OxlintConfig {
+    const { resolved } = resolution;
 
     return merge(
         PROFILE_CONFIGS[resolved.declaration?.platform ?? 'node'],
         ...resolved.presets.flatMap(oxlintOf),
         {
             ignorePatterns: verbatimTreesOf(resolved.sections.typescript),
-            overrides,
-            rules: own.rules,
+            overrides: withOverrides ? projectOverridesOf(resolution) : [],
+            rules: projectOxlint(resolution).rules,
         },
     );
 }
@@ -152,6 +160,10 @@ export async function oxlintConfigAt(unit: string): Promise<OxlintConfig> {
     if (resolution.resolved.declaration?.kind !== 'workspace') {
         return root;
     }
+    const rulebook = withFolderPlatforms(
+        resolution,
+        oxlintConfigOf(resolution, { withOverrides: false }),
+    );
     const members = workspaceMembers(unit).filter((member) =>
         existsSync(join(unit, member, SETTINGS_FILE)),
     );
@@ -173,7 +185,11 @@ export async function oxlintConfigAt(unit: string): Promise<OxlintConfig> {
             ...(root.ignorePatterns ?? []),
             ...scoped.flatMap(({ ignores }) => ignores),
         ],
-        // invariant: the root's own overrides come last, so what the repository writes at its root wins over the profile a member's platform brings.
-        overrides: [...scoped.flatMap(({ overrides }) => overrides), ...(root.overrides ?? [])],
+        // invariant: the rulebook's overrides come first, then each member's, then the ones the root's own settings write: a member's overrides follow the rulebook's as the root's do, and what the repository writes at its root wins over the profile a member's platform brings.
+        overrides: [
+            ...(rulebook.overrides ?? []),
+            ...scoped.flatMap(({ overrides }) => overrides),
+            ...projectOverridesOf(resolution),
+        ],
     };
 }

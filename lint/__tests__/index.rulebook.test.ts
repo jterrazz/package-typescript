@@ -95,6 +95,31 @@ describe('index.rulebook', () => {
         expect([ofRoot === overrides.length - 1, ofMember < ofRoot]).toStrictEqual([true, true]);
     });
 
+    test('oxlintConfigAt — a workspace — a member’s override on its test files follows the rulebook’s override of every test file, so it wins', async () => {
+        // Given - a workspace whose react member relaxes a vitest rule on its own test files
+        const root = workspace({
+            'apps/web/jterrazz.config.ts':
+                "export default { kind: 'website', platform: 'react', typescript: { oxlint: { overrides: [{ files: ['src/**/__tests__/**'], reason: 'the member decides', rules: { 'vitest/max-expects': 'off' } }] } } };\n",
+            'apps/web/package.json': '{ "name": "web", "private": true }\n',
+            'jterrazz.config.ts': "export default { kind: 'workspace' };\n",
+            'package.json': '{ "name": "ws", "private": true, "workspaces": ["apps/*"] }\n',
+        });
+
+        // When - the config is derived
+        const overrides = (await oxlintConfigAt(root)).overrides ?? [];
+        const ofRulebook = overrides.findLastIndex(
+            ({ files, rules }) =>
+                files.some((glob) => glob.startsWith('**/__tests__/')) &&
+                rules?.['vitest/max-expects'] !== undefined,
+        );
+        const ofMember = overrides.findIndex(({ files }) =>
+            files.includes('apps/web/src/**/__tests__/**'),
+        );
+
+        // Then - the rulebook’s override of the test files comes first, the member’s after it
+        expect([ofRulebook >= 0, ofRulebook < ofMember]).toStrictEqual([true, true]);
+    });
+
     test('oxlintConfigAt — a workspace — each configured member is linted by its own profile inside its folder, a member without config is left to the root', async () => {
         // Given - a workspace with a node member, a member without config, an expo member and a react member
         const root = workspace({
