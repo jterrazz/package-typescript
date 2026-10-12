@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
@@ -51,5 +51,23 @@ describe('build-steps', () => {
             dts(privately),
             dts(publicly, 'library'),
         ]).toStrictEqual([false, false, true, true, true]);
+    });
+
+    test('shapeOf — a private library emits its declarations when a sibling member of its workspace depends on it, and none when no sibling does', () => {
+        // Given - a workspace of three members: a private library, a sibling that depends on it, and a sibling that does not
+        const workspace = projectWith({ private: true, workspaces: ['packages/*'] });
+        const member = (name: string, manifest: object): string => {
+            const dir = join(workspace, 'packages', name);
+            mkdirSync(dir, { recursive: true });
+            writeFileSync(join(dir, 'package.json'), JSON.stringify(manifest));
+
+            return dir;
+        };
+        const read = member('read', { name: '@w/read', private: true });
+        const unread = member('unread', { name: '@w/unread', private: true });
+        member('server', { devDependencies: { '@w/read': '*' }, name: '@w/server' });
+
+        // Then - only the library a sibling depends on keeps its declarations
+        expect([dts(read, 'library'), dts(unread, 'library')]).toStrictEqual([true, false]);
     });
 });

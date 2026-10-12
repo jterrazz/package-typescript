@@ -1,9 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 
 import { objectOf, parsedObject } from './json.js';
 import type { JsonObject } from './json.js';
+import { declaredDependencies } from './manifest.js';
 import type { ProjectIdentity } from './project-kind.js';
+import { workspaceMembers } from './workspace-members.js';
 
 export const DIST = 'dist';
 
@@ -84,12 +86,34 @@ function hostModulesOf(manifest: JsonObject): string[] {
         .toSorted();
 }
 
-// invariant: a library or a cli that is private is installed by its own repository, which reads no declaration of it: emitting them only fails on a module the host provides.
+function dependsOnAny(workspace: string, members: readonly string[], name: string): boolean {
+    return members.some((member) => declaredDependencies(join(workspace, member)).has(name));
+}
+
+// invariant: a member of a workspace is read by the members that depend on it, whether it is published or not; the walk stops at the first ancestor whose workspace holds the project, and a manifest with no name reads as "undefined", which no member declares.
+function isReadBySibling(root: string, name: unknown): boolean {
+    const absolute = resolve(root);
+    let ancestor = dirname(absolute);
+    while (ancestor !== dirname(ancestor)) {
+        const members = workspaceMembers(ancestor);
+        if (members.includes(relative(ancestor, absolute).split(sep).join('/'))) {
+            return dependsOnAny(ancestor, members, String(name));
+        }
+        ancestor = dirname(ancestor);
+    }
+
+    return false;
+}
+
+// invariant: a library or a cli that is private is installed by its own repository, which reads no declaration of it unless a sibling member of its workspace depends on it: emitting them otherwise only fails on a module the host provides.
 export function shapeOf(root: string, declaration: null | ProjectIdentity): Shape {
     const manifest = manifestAt(root);
     // Stryker disable next-line StringLiteral: no declaration is no kind of the list, whatever text stands in for it
     const kind = declaration?.kind ?? '';
-    const unread = manifest.private === true && ['cli', 'library'].includes(kind);
+    const unread =
+        manifest.private === true &&
+        ['cli', 'library'].includes(kind) &&
+        !isReadBySibling(root, manifest.name);
 
     return { dts: !unread, external: hostModulesOf(manifest) };
 }
