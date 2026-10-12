@@ -6,6 +6,7 @@ const HERMES =
 
 export default defineStandard({
     typescript: {
+        manifestKeys: ['expo'],
         oxlint: {
             rules: {
                 'unicorn/no-array-reverse': { level: 'off', reason: HERMES },

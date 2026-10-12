@@ -11,6 +11,7 @@ export const ASSETS_ROOT =
 export default defineStandard({
     typescript: {
         manifestKeys: [
+            'allowScripts',
             'author',
             'browser',
             'browserslist',
