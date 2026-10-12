@@ -1,11 +1,17 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { besideOf, generatedRoots, startsCold, strykerConfig } from '../stryker.js';
+import {
+    besideLinksDropped,
+    besideOf,
+    generatedRoots,
+    startsCold,
+    strykerConfig,
+} from '../stryker.js';
 
 const RUNNER = createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner');
 
@@ -155,5 +161,31 @@ describe('stryker', () => {
             undefined,
             undefined,
         ]);
+    });
+
+    test("besideLinksDropped — the links laid in the member's artifacts folder go, a real entry of the same name and a depth that lands elsewhere stay", () => {
+        // Given - a member whose artifacts folder holds a link to a repository folder and a real folder of a name also asked for
+        const project = mkdtempSync(join(tmpdir(), 'beside-links-'));
+        onTestFinished(() => {
+            rmSync(project, { force: true, recursive: true });
+        });
+        mkdirSync(join(project, '.artifacts/real'), { recursive: true });
+        mkdirSync(join(project, 'target'));
+        symlinkSync(join(project, 'target'), join(project, '.artifacts/apps'));
+        symlinkSync(join(project, 'target'), join(project, '.artifacts/stray'));
+        const root = join(project, 'target');
+
+        // When - three folders out of the copy are dropped, and a depth of four is
+        besideLinksDropped(project, { levels: 4, names: ['apps'], root });
+        const kept = existsSync(join(project, '.artifacts/apps'));
+        besideLinksDropped(project, { levels: 3, names: ['apps', 'real'], root });
+
+        // Then - the four-deep call left the link, the three-deep one took it, and neither touched the real folder or the name not asked for
+        expect([
+            kept,
+            existsSync(join(project, '.artifacts/apps')),
+            existsSync(join(project, '.artifacts/real')),
+            existsSync(join(project, '.artifacts/stray')),
+        ]).toStrictEqual([true, false, true, true]);
     });
 });

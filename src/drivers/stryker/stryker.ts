@@ -1,5 +1,13 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    lstatSync,
+    mkdirSync,
+    mkdtempSync,
+    readdirSync,
+    readFileSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { delimiter, dirname, join, relative, resolve, sep } from 'node:path';
 import process from 'node:process';
@@ -17,6 +25,7 @@ import type { StageName } from './reports.js';
 import {
     MUTANT_SETUP_SOURCE,
     RAN_BY_TESTS_VARIABLE,
+    SANDBOX_DEPTH,
     sandboxScriptSource,
     vitestConfigSource,
 } from './sources.js';
@@ -132,6 +141,20 @@ export function besideOf(project: string): Beside | undefined {
     };
 }
 
+// invariant: the links a sandbox lays beside its copy outlive the run when they land in the member's own `.artifacts/`, and each points at a repository folder holding that `.artifacts/` again; a walker that follows links — ls-lint, in the Names pass — loops on them for ever, so the run takes them away when it ends, and before it starts, for those a killed run left.
+export function besideLinksDropped(project: string, beside: Beside | undefined): void {
+    if (beside === undefined || beside.levels < 1 || beside.levels >= SANDBOX_DEPTH) {
+        return;
+    }
+    const laid = resolve(project, MUTATION_OUTPUT, 'tmp', 'sandbox', '../'.repeat(beside.levels));
+    for (const name of beside.names) {
+        const link = join(laid, name);
+        if (lstatSync(link, { throwIfNoEntry: false })?.isSymbolicLink() === true) {
+            rmSync(link);
+        }
+    }
+}
+
 // invariant: only the suite stage starts cold: it answers for what the module tests let live, and a stale kill there would pass a gate on a verdict an earlier tree earned.
 export const startsCold = (stage: Stage, cold: boolean): boolean => cold && stage.name === 'suite';
 
@@ -168,11 +191,14 @@ export async function strykerRun(
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
     reportKept(project, stage, cold);
+    const beside = besideOf(project);
+    besideLinksDropped(project, beside);
     const status = await handOver(
         projectBinary('stryker'),
         ['run', join(MUTATION_OUTPUT, files.config)],
         project,
     );
+    besideLinksDropped(project, beside);
     const ranByTests = new Set(
         readdirSync(ranInto).flatMap((name) =>
             String(readFileSync(join(ranInto, name))).split('\n'),

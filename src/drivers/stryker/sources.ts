@@ -181,7 +181,7 @@ for (const name of ${JSON.stringify(names)}) {
 }
 `;
 
-const SANDBOX_DEPTH = 4;
+export const SANDBOX_DEPTH = 4;
 
 // outside: the checks a test runs read the git tree, and the sandbox lies in the ignored .artifacts/, where git sees none.
 // invariant: the build the suite runs against holds the declarations of the project's own build: a mutant changes what the code does, never the types it declares, and a declaration emitted from instrumented code infers wider types than the code states.
