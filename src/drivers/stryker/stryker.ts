@@ -12,6 +12,8 @@ import { isRepositoryRoot, nearestRoot } from '../../../lint/kit/project/reposit
 import { handOver } from '../run.js';
 import { CHILD_COVERAGE_SOURCE } from './child-coverage.js';
 import { incrementalKeptWhileGroundHolds } from './incremental.js';
+import { REPORT_NAMES } from './reports.js';
+import type { StageName } from './reports.js';
 import {
     MUTANT_SETUP_SOURCE,
     RAN_BY_TESTS_VARIABLE,
@@ -33,21 +35,21 @@ const literalMutateEntry = (entry: string): string =>
 
 export type Stage = {
     mutate: readonly string[];
-    name: 'modules' | 'suite';
+    name: StageName;
 };
 
 const FILES = {
     modules: {
         config: 'stryker.config.json',
         incremental: 'incremental',
-        report: 'report',
+        report: REPORT_NAMES.modules,
         sandbox: 'sandbox.mjs',
         vitest: 'vitest.config.mjs',
     },
     suite: {
         config: 'stryker.suite.config.json',
         incremental: 'suite-incremental',
-        report: 'suite-report',
+        report: REPORT_NAMES.suite,
         sandbox: 'sandbox.suite.mjs',
         vitest: 'vitest.suite.config.mjs',
     },
@@ -91,7 +93,7 @@ export function strykerConfig(
         jsonReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.json` },
         mutate: mutate.map((entry) => literalMutateEntry(entry)),
         plugins: [createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner')],
-        reporters: ['clear-text', 'html', 'json', 'progress'],
+        reporters: ['html', 'json', 'progress'],
         tempDirName: `${MUTATION_OUTPUT}/tmp`,
         testRunner: 'vitest',
         timeoutMS: suite ? 60_000 : 30_000,

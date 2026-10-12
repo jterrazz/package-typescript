@@ -62,7 +62,7 @@ describe('stryker', () => {
             ignoreStatic: true,
             incremental: true,
             plugins: [RUNNER],
-            reporters: ['clear-text', 'html', 'json', 'progress'],
+            reporters: ['html', 'json', 'progress'],
             tempDirName: '.artifacts/stryker/tmp',
             testRunner: 'vitest',
         };

@@ -102,11 +102,11 @@ describe('verdictOf', () => {
         // Then - each survivor on one line, the static one a test ran among them, then the four parts, then the counts, and no line for what there is none of
         expect(verdictOf(judged, 0, MEASURE)).toStrictEqual({
             lines: [
-                'src/a.ts:3:9  ConditionalExpression → true',
-                'src/a.ts:3:24   → ',
-                'src/a.ts:7:9  ConditionalExpression → true',
-                'src/a.ts:9:9  ConditionalExpression → true',
-                'src/b.ts:2:9  ConditionalExpression → {}',
+                'src/a.ts:3:9  ConditionalExpression → true  (.artifacts/stryker/report.json)',
+                'src/a.ts:3:24   →   (.artifacts/stryker/report.json)',
+                'src/a.ts:7:9  ConditionalExpression → true  (.artifacts/stryker/report.json)',
+                'src/a.ts:9:9  ConditionalExpression → true  (.artifacts/stryker/report.json)',
+                'src/b.ts:2:9  ConditionalExpression → {}  (.artifacts/stryker/report.json)',
                 `found: 5 mutant(s) a test runs and none detects · ${LESSON}`,
                 '0 mutant(s) no test runs',
                 '1 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does',
@@ -213,6 +213,40 @@ describe('verdictOf', () => {
             'unmeasured: 4 mutant(s) of browser-side sources — the mutation run starts no browser project, so no count claims them detected',
             '  src/Card.tsx  3',
             '  src/page.astro  1',
+        ]);
+    });
+
+    test('a verdict narrower than the branch names the commits it did not measure, once, after the verdict and before the counts, whatever it concludes', () => {
+        // Given - a run that mutated one detected mutant, one that left a survivor, both over a scope that leaves the branch's own commits out
+        const narrower = { range: 'HEAD..working tree', unmeasured: 'a1b2c3d4..HEAD' };
+        const passed = judgedRuns({
+            measured: new Set(['src/a.ts']),
+            ranByTests: NONE_RAN,
+            report: { files: { 'src/a.ts': { mutants: [mutant('Killed', 3)] } } },
+        });
+        const failed = judgedRuns({
+            measured: new Set(['src/a.ts']),
+            ranByTests: NONE_RAN,
+            report: { files: { 'src/a.ts': { mutants: [mutant('Survived', 3)] } } },
+        });
+        const WARNING =
+            'warning: this verdict is narrower than the branch — a1b2c3d4..HEAD is not measured; commit the work and run again, or name the base with --since to measure the branch';
+
+        // Then - the warning follows the verdict line and the lesson, and a scope that leaves nothing out prints none
+        expect(verdictOf(passed, 0, narrower).lines).toStrictEqual([
+            'measured 1 mutants over HEAD..working tree — every mutant a test runs is detected',
+            WARNING,
+            '0 mutant(s) no test runs',
+        ]);
+        expect(verdictOf(failed, 0, narrower).lines).toStrictEqual([
+            'src/a.ts:3:9  ConditionalExpression → true  (.artifacts/stryker/report.json)',
+            `found: 1 mutant(s) a test runs and none detects · ${LESSON}`,
+            WARNING,
+            '0 mutant(s) no test runs',
+        ]);
+        expect(verdictOf(passed, 0, MEASURE).lines).toStrictEqual([
+            'measured 1 mutants over a1b2c3d4..HEAD — every mutant a test runs is detected',
+            '0 mutant(s) no test runs',
         ]);
     });
 });

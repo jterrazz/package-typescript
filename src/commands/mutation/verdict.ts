@@ -63,8 +63,8 @@ function survivorLines({ survivors }: Judged): string[] {
     }
     return [
         ...survivors.map(
-            ({ column, file, line, mutator, replacement }) =>
-                `${file}:${line}:${column}  ${mutator} → ${String(replacement.split('\n', 1))}`,
+            ({ column, file, line, mutator, replacement, report }) =>
+                `${file}:${line}:${column}  ${mutator} → ${String(replacement.split('\n', 1))}  (${report})`,
         ),
         refusal({
             fix: 'assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent>',
@@ -91,7 +91,15 @@ function unrunLines({ unrun }: Judged): string[] {
 }
 
 /** What a verdict names of its measure: the range of commits it covers. */
-export type Measure = { range: string };
+export type Measure = { range: string; unmeasured?: string | undefined };
+
+// invariant: a verdict whose scope is narrower than `merge-base..HEAD` of the branch says which commits it did not measure, so a green over a dirty tree is never read as a green over the branch.
+const unmeasuredLines = ({ unmeasured }: Measure): string[] =>
+    unmeasured === undefined
+        ? []
+        : [
+              `warning: this verdict is narrower than the branch — ${unmeasured} is not measured; commit the work and run again, or name the base with --since to measure the branch`,
+          ];
 
 // invariant: a run that mutated nothing never reads as a run whose mutants were all detected; it says what it measured, or that it measured nothing and why.
 function passedLine({ detected }: Judged, { range }: Measure): string {
@@ -109,9 +117,16 @@ export function verdictOf(
     const refused = [...survivorLines(judged), ...unrunLines(judged)];
     if (refused.length === 0) {
         return {
-            lines: [passedLine(judged, measure), ...countLines(judged, untestedSources)],
+            lines: [
+                passedLine(judged, measure),
+                ...unmeasuredLines(measure),
+                ...countLines(judged, untestedSources),
+            ],
             status: 0,
         };
     }
-    return { lines: [...refused, ...countLines(judged, untestedSources)], status: 1 };
+    return {
+        lines: [...refused, ...unmeasuredLines(measure), ...countLines(judged, untestedSources)],
+        status: 1,
+    };
 }

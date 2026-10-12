@@ -3,7 +3,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, test } from 'vitest';
 
-import { isBrowserSide, unmeasuredBrowserMutants } from '../browser-side.js';
+import {
+    clientOnlySources,
+    isBrowserSide,
+    reportWithUnmeasured,
+    unmeasuredBrowserMutants,
+} from '../browser-side.js';
 
 const units: string[] = [];
 
@@ -64,5 +69,62 @@ describe('browser-side', () => {
             unmeasuredBrowserMutants(unitWith(undefined)),
             unmeasuredBrowserMutants(unitWith('{"files":')),
         ]).toStrictEqual([null, null]);
+    });
+
+    test('clientOnlySources — names the component an Astro page loads with client:only, by a relative import with or without its extension, and no other', () => {
+        // Given - a page loading three components, one with client:only over several lines, one hydrated by client:load, one by client:only but imported by a package, and a page naming a component it never imports
+        const unit = mkdtempSync(join(tmpdir(), 'client-only-'));
+        units.push(unit);
+        mkdirSync(join(unit, 'src/components'), { recursive: true });
+        for (const name of ['Particles.tsx', 'Menu.tsx', 'Chart.tsx']) {
+            writeFileSync(join(unit, 'src/components', name), 'export default null;\n');
+        }
+        writeFileSync(
+            join(unit, 'src/page.astro'),
+            [
+                "---",
+                "import Particles from './components/Particles';",
+                "import Menu from './components/Menu.tsx';",
+                "import Chart from 'chart-package';",
+                "import Missing from './components/Missing';",
+                "---",
+                "<Particles",
+                "    client:only=\"react\"",
+                "/>",
+                '<Menu client:load />',
+                '<Chart client:only="react" />',
+                '<Ghost client:only="react" />',
+                '<Missing client:only="react" />',
+            ].join('\n'),
+        );
+
+        // Then - only Particles
+        expect([...clientOnlySources(unit)]).toStrictEqual(['src/components/Particles.tsx']);
+    });
+
+    test('reportWithUnmeasured — reads a survivor of a named source as a mutant no test ran, and leaves every other mutant and file as they are', () => {
+        // Given - a report with a survivor and a killed mutant in the named source, a survivor in another, and a file with no mutant list
+        const report = {
+            files: {
+                'src/a.tsx': { language: 'typescript', mutants: [mutant('Survived'), mutant('Killed')] },
+                'src/b.tsx': { mutants: [mutant('Survived')] },
+                'src/c.tsx': { mutants: 'none' },
+            },
+            schemaVersion: '2',
+        };
+
+        // Then - only the named source's survivor changes status, a named source set empty changes nothing
+        expect(reportWithUnmeasured(report, new Set(['src/a.tsx', 'src/c.tsx']))).toStrictEqual({
+            files: {
+                'src/a.tsx': {
+                    language: 'typescript',
+                    mutants: [mutant('NoCoverage'), mutant('Killed')],
+                },
+                'src/b.tsx': { mutants: [mutant('Survived')] },
+                'src/c.tsx': { mutants: 'none' },
+            },
+            schemaVersion: '2',
+        });
+        expect(reportWithUnmeasured(report, new Set())).toBe(report);
     });
 });

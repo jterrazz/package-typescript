@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
@@ -11,6 +11,7 @@ import {
     hunksOf,
     namesACommit,
     treeChangeFor,
+    unmeasuredBy,
 } from '../change.js';
 
 const created: string[] = [];
@@ -97,6 +98,29 @@ describe('change', () => {
         );
         expect(changeSince(root, '0000000000000000000000000000000000000000')).toBeUndefined();
         expect(changeSince(tmpdir(), 'HEAD')).toBeUndefined();
+    });
+
+    test('reads a file moved by its content, so a pure move brings no line and a move with an edit only the edited line', () => {
+        // Given - a repository that does not detect renames of its own, a file committed, then moved to another folder and moved again with one line rewritten
+        const lines = Array.from({ length: 12 }, (_, at) => `line ${String(at)}\n`).join('');
+        const root = committedRepository({ 'a.ts': lines });
+        gitIn(root, 'config', 'diff.renames', 'false');
+        const first = gitIn(root, 'rev-parse', 'HEAD');
+        mkdirSync(join(root, 'moved'));
+        gitIn(root, 'mv', 'a.ts', 'moved/a.ts');
+        gitIn(root, 'commit', '--quiet', '--message', 'move');
+        const moved = gitIn(root, 'rev-parse', 'HEAD');
+        const pure = changeSince(root, first);
+        writeFileSync(join(root, 'moved/a.ts'), lines.replace('line 3\n', 'changed\n'));
+
+        // Then - the pure move holds no changed line, and the edit after it only its own
+        expect(pure).toStrictEqual(new Map());
+        expect(changeSince(root, first)).toStrictEqual(
+            new Map<string, [number, number][] | true>([['moved/a.ts', [[4, 4]]]]),
+        );
+        expect(changeSince(root, moved)).toStrictEqual(
+            new Map<string, [number, number][] | true>([['moved/a.ts', [[4, 4]]]]),
+        );
     });
 
     test('the suite measures the lines --mutate names, a file named alone whole, else the change since the base, which it names, and says when git cannot answer or nothing changed', () => {
@@ -254,6 +278,35 @@ describe('change', () => {
             names: 'HEAD — the first commit, with no commit before it',
             range: 'HEAD..HEAD',
         });
+    });
+
+    test('unmeasuredBy — a base that stops short of the merge-base with the default branch names the commits it leaves out, and any base reaching it names none', () => {
+        // Given - a branch cut from main holding two commits of its own, an edit not yet committed, and a repository with no commit beyond its default branch
+        const root = committedRepository({ 'a.ts': 'one\n' });
+        const before = gitIn(root, 'rev-parse', 'HEAD');
+        gitIn(root, 'switch', '--quiet', '--create', 'work');
+        writeFileSync(join(root, 'a.ts'), 'two\n');
+        gitIn(root, 'commit', '--quiet', '--all', '--message', 'second');
+        const middle = gitIn(root, 'rev-parse', 'HEAD');
+        writeFileSync(join(root, 'a.ts'), 'three\n');
+        gitIn(root, 'commit', '--quiet', '--all', '--message', 'third');
+        const base = (commit: string) => ({ commit, names: commit, range: commit });
+        const alone = committedRepository({ 'a.ts': 'one\n' });
+
+        // Then - the uncommitted change and a newer commit leave the branch's commits out; the merge-base, an older commit and a branch with none of its own leave nothing
+        expect([
+            unmeasuredBy(root, base('HEAD')),
+            unmeasuredBy(root, base(middle)),
+            unmeasuredBy(root, base(before)),
+            unmeasuredBy(root, base('main')),
+            unmeasuredBy(alone, base('HEAD')),
+        ]).toStrictEqual([
+            `${before.slice(0, 8)}..HEAD`,
+            `${before.slice(0, 8)}..${middle}`,
+            undefined,
+            undefined,
+            undefined,
+        ]);
     });
 
     test('git names a commit the clone holds, and neither the zero commit a first push carries, a ref it lacks, nor anything outside a repository', () => {

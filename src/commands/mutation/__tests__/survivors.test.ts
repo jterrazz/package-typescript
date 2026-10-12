@@ -131,6 +131,7 @@ describe('survivors', () => {
                     line: 3,
                     mutator: 'ConditionalExpression',
                     replacement: 'true',
+                    report: '.artifacts/stryker/suite-report.json',
                 },
             ],
             uncoveredByFile: { 'src/specs-only.ts': 1 },
@@ -173,8 +174,8 @@ describe('survivors', () => {
         // Then - two detected by the suite and counted so, the two it did not detect named as survivors, the one it never reported never judged
         expect(verdictOf(judged, 0, MEASURE)).toStrictEqual({
             lines: [
-                'src/a.ts:3:9  ConditionalExpression → true',
-                'src/a.ts:4:9  ConditionalExpression → true',
+                'src/a.ts:3:9  ConditionalExpression → true  (.artifacts/stryker/suite-report.json)',
+                'src/a.ts:4:9  ConditionalExpression → true  (.artifacts/stryker/suite-report.json)',
                 `found: 2 mutant(s) a test runs and none detects · ${LESSON}`,
                 'found: 1 mutant(s) the run never judged — absent from the suite report 1 · why: a mutant no test was run against says nothing of the line it mutates, so passing it would pass a run that judged nothing there · fix: run `typescript mutation` again to its end — a run stopped midway leaves its mutants Pending, and the next one runs them · read: docs/reference/quality-checks.md#mutation',
                 '2 mutant(s) the module tests let live, detected by the whole suite',

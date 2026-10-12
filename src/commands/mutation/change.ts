@@ -28,7 +28,7 @@ export const namesACommit = (project: string, ref: string): boolean =>
     git(project, ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) !== undefined;
 
 /** The commit a run measures the working tree against when none is named, how the verdict names it, and the range it prints as the scope of the measure. */
-export type Base = { commit: string; names: string; range: string };
+export type Base = { commit: string; names: string; range: string; unmeasured?: string | undefined };
 
 const short = (commit: string): string => commit.slice(0, 8);
 
@@ -96,13 +96,26 @@ export function defaultBaseOf(project: string): Base {
           };
 }
 
-/** What the working tree changed since `since`, untracked files whole; `undefined` where git cannot say. */
+/** The commits of the branch a base leaves out, `<merge-base>..<base>`, or `undefined` where the base reaches back to the merge-base with the default branch or the branch holds no commit of its own — so a verdict narrower than `merge-base..HEAD` can say what it did not measure. */
+export function unmeasuredBy(project: string, since: Base): string | undefined {
+    const branch = branchBaseOf(project);
+    if (branch === undefined) {
+        return undefined;
+    }
+    const reaches =
+        git(project, ['merge-base', '--is-ancestor', since.commit, branch.base]) !== undefined;
+
+    return reaches ? undefined : `${short(branch.base)}..${since.commit}`;
+}
+
+/** What the working tree changed since `since`, untracked files whole, a file moved or renamed by its content — only the lines it changed beyond the move; `undefined` where git cannot say. */
 export function changeSince(project: string, since: string): Changed | undefined {
     const diff = git(project, [
         'diff',
         '--unified=0',
         '--no-color',
         '--no-ext-diff',
+        '-M',
         '--relative',
         since,
         '--',

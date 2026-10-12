@@ -1,10 +1,14 @@
 import { isList, objectOf, stringOf } from '../../../lint/kit/project/json.js';
+import { reportPathOf } from '../../drivers/stryker/reports.js';
+import type { StageName } from '../../drivers/stryker/reports.js';
 
 export type Survivor = {
     column: number;
     file: string;
     line: number;
     mutator: string;
+    /** The report file the survivor is read from: the module run's, or the suite's that answered for it. */
+    report: string;
     replacement: string;
 };
 
@@ -23,23 +27,24 @@ const OUTSIDE_VERDICT: ReadonlySet<unknown> = new Set(['CompileError', 'Ignored'
 
 const ABSENT = 'absent from the suite report';
 
-function survivorOf(file: string, mutant: Mutant): Survivor {
+function survivorOf(file: string, mutant: Mutant, stage: StageName): Survivor {
     const start = objectOf(objectOf(mutant.location).start);
     return {
         column: Number(start.column),
         file,
         line: Number(start.line),
         mutator: stringOf(mutant.mutatorName) ?? '',
+        report: reportPathOf(stage),
         replacement: stringOf(mutant.replacement) ?? '',
     };
 }
 
-function tally(judged: Judged, file: string, mutant: Mutant): void {
+function tally(judged: Judged, file: string, mutant: Mutant, stage: StageName): void {
     const status = stringOf(mutant.status) ?? 'no status';
     if (DETECTED.has(status)) {
         judged.detected += 1;
     } else if (status === 'Survived') {
-        judged.survivors.push(survivorOf(file, mutant));
+        judged.survivors.push(survivorOf(file, mutant, stage));
     } else if (status === 'NoCoverage') {
         judged.uncoveredByFile[file] = (judged.uncoveredByFile[file] ?? 0) + 1;
     } else if (OUTSIDE_VERDICT.has(status)) {
@@ -172,14 +177,14 @@ function suiteAnswer(
                 judged.detected += 1;
                 judged.detectedBySuite += 1;
             } else {
-                judged.survivors.push(survivor);
+                judged.survivors.push({ ...survivor, report: reportPathOf('suite') });
             }
         } else if (
             modules.measured.has(file)
                 ? forwarded.delete(key)
                 : heldBy(suite.untested, file, mutant)
         ) {
-            tally(judged, file, mutant);
+            tally(judged, file, mutant, 'suite');
         }
     }
 }
@@ -206,9 +211,9 @@ export function judgedRuns(
     const { answered, forwarded, judged } = answering;
     for (const [file, mutant] of mutantsOf(modules.report, modules.measured)) {
         if (suite !== undefined && survivedTheModules(mutant, modules.ranByTests)) {
-            answered.set(keyOf(file, mutant), survivorOf(file, mutant));
+            answered.set(keyOf(file, mutant), survivorOf(file, mutant, 'modules'));
         } else if (!leftByTheModules(mutant, modules.ranByTests)) {
-            tally(judged, file, mutant);
+            tally(judged, file, mutant, 'modules');
         } else if (suite !== undefined && reachedBy(suite, file, mutant)) {
             forwarded.add(keyOf(file, mutant));
         } else {
