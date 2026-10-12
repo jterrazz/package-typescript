@@ -36,7 +36,7 @@ describe('placementOf', () => {
             '<div>{ /* Stryker disable next-line Foo: r */}</div>',
             '<div>{/* Stryker disable next-line Foo: r */ }</div>',
         ];
-        const quoted = [`const note = 'Stryker disable next-line Foo: r'; // plain`];
+        const quoted = [`const note = 'Stryker disable next-line Foo: r'; // plain`, '}'];
 
         // Then - each container is refused at its line; the string is no directive
         expect(placed(...spaced)).toStrictEqual([

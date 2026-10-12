@@ -166,7 +166,10 @@ describe('index.rulebook', () => {
             outcomes.map(
                 (outcome) =>
                     outcome.status === 'rejected' &&
-                    String(outcome.reason).includes('jterrazz.config.ts'),
+                    String(outcome.reason).includes('jterrazz.config.ts') &&
+                    String(outcome.reason).includes(
+                        'docs/reference/configuration.md#the-merge-order',
+                    ),
             ),
         ).toStrictEqual([true, true, true]);
     });

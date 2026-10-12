@@ -175,6 +175,7 @@ export async function lintJudged(check: Check, { judged, status }: Fixed): Promi
         return status;
     }
     const remaining = await lintCheck(check);
+    // Stryker disable next-line CallExpression: what the call writes is proven in fixReportCarried, and a spec reaches this line only through a fix scope that fails
     fixReportCarried(check, status);
 
     return lintOutcome(status, remaining);

@@ -225,6 +225,7 @@ async function unitsOf(context: Context): Promise<{ findings: Finding[]; units: 
             return {
                 declaration: problem === null ? resolved.declaration : null,
                 files,
+                // Stryker disable next-line OptionalChaining: the resolved sections always hold the typescript section, the base laws standing even for a settings file that cannot be read
                 manifestKeys: new Set(stringsOf(resolved.sections.typescript?.manifestKeys)),
                 path,
                 problem,

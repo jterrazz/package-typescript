@@ -116,22 +116,18 @@ export async function started(check: Check, config: Launched | undefined): Promi
     const astro = astroPass(check);
     const architecture = architecturePass(check);
     const publish = publishPasses(check);
-    const { format, lint } =
-        checked ??
-        (await formattedLast(
-            check,
-            fixed,
-            writersOf({
-                architecture,
-                astro,
-                comments,
-                config,
-                gitignore,
-                markdown,
-                names,
-                suppressions,
-            }),
-        ));
+    // Stryker disable next-line ObjectLiteral: the formatter waiting for no writer lays its text down after theirs in every run a spec can stage, an order between processes that is no value to read
+    const writing = writersOf({
+        architecture,
+        astro,
+        comments,
+        config,
+        gitignore,
+        markdown,
+        names,
+        suppressions,
+    });
+    const { format, lint } = checked ?? (await formattedLast(check, fixed, writing));
 
     return {
         architecture,

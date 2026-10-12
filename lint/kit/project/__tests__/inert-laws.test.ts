@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { isInert } from '../inert-laws.js';
+import { isInert, pathsOf } from '../inert-laws.js';
 import type { ArchitectureRule } from '../preset.js';
 
 const side = (path?: string | string[]): { path?: string | string[] } =>
@@ -45,5 +45,16 @@ describe('isInert', () => {
             isInert(rule(undefined, '^src/'), held),
             isInert(rule([], '^src/'), held),
         ]).toStrictEqual([false, false, false, false, false]);
+    });
+
+    test('pathsOf — a string is its one path, a list is its strings alone, anything else has none', () => {
+        // Given - a string, a list mixing strings with other values, a number and nothing
+        // Then - the strings, in order
+        expect([
+            pathsOf('^src/'),
+            pathsOf(['^lint/', 7, '^lib/', null]),
+            pathsOf(42),
+            pathsOf(undefined),
+        ]).toStrictEqual([['^src/'], ['^lint/', '^lib/'], [], []]);
     });
 });

@@ -159,8 +159,9 @@ describe('drift', () => {
 
         // Then - the row sums root and members, names the member that holds some, and the machine carries the same numbers beside the exceptions' sum
         expect(human.stdout.text).toContain(
-            'unmeasured                            4 mutants (browser-side)\n    packages/clock                      3 unmeasured mutants\n',
+            'unmeasured                            4 mutants (browser-side)\n    packages/clock                      3 unmeasured mutants\n  .jterrazz/oxlint-suppressions.json',
         );
+        expect(reading.replaceAll(/\s+/gu, '')).toContain('"unmeasuredByMember":{"packages/clock":3}');
         expect(JSON.parse(reading)).toMatchObject({
             exceptions: 2,
             unmeasuredByMember: { 'packages/clock': 3 },

@@ -107,19 +107,26 @@ describe('findingsOf', () => {
     });
 
     test('a spec file is a .spec.ts, .spec.tsx, .spec.yaml or .spec.yml and ends there; a router root ends the walk one level in wherever it stands', () => {
-        // Given - the four spec extensions and a look-alike under a command folder, and a router root below a grab-bag folder
-        const found = judged(
-            'specs/cli/auth/a.spec.ts',
-            'specs/cli/auth/b.spec.tsx',
-            'specs/cli/auth/c.spec.yaml',
-            'specs/cli/auth/d.spec.yml',
-            'specs/cli/cfg/e.spec.tsx.old',
-            'src/tools/app/orders/page.ts',
-        );
+        // Given - a command folder of each spec extension, and a look-alike, with each folder's name a shortcut; and a router root below a grab-bag folder
+        const universal: Universal = {
+            ...UNIVERSAL,
+            shortcuts: new Set(['aa', 'bb', 'cc', 'dd', 'ee']),
+        };
+        const found = findingsOf(
+            [
+                'specs/cli/aa/a.spec.ts',
+                'specs/cli/bb/b.spec.tsx',
+                'specs/cli/cc/c.spec.yaml',
+                'specs/cli/dd/d.spec.yml',
+                'specs/cli/ee/e.spec.tsx.old',
+                'src/tools/app/orders/page.ts',
+            ],
+            universal,
+        ).map(({ path, rule }) => `${rule} ${path}`);
 
         // Then - only the look-alike's folder and the folder above the router root are judged
         expect(found).toStrictEqual([
-            'names/no-abbreviated-word specs/cli/cfg',
+            'names/no-abbreviated-word specs/cli/ee',
             'names/no-grab-bag-name src/tools',
         ]);
     });
@@ -129,14 +136,24 @@ describe('findingsOf', () => {
         const found = judged(
             'src/cli/auth/login.spec.ts',
             'specs/cli/__setup/auth/login.spec.ts',
-            'lib',
-            'docs/utils/page.md',
+            'docs/tools/page.md',
         );
 
-        // Then - the folder under src/ and the one below the __ folder are judged; the lone file and the docs folder are no business of the sweep
+        // Then - the folder under src/ and the one below the __ folder are judged; the docs folder is no business of the sweep
         expect(found).toStrictEqual([
             'names/no-abbreviated-word specs/cli/__setup/auth',
             'names/no-abbreviated-word src/cli/auth',
         ]);
+    });
+
+    test('a file named for a swept root, alone at the root of the project, is not swept', () => {
+        // Given - a roster holding a swept root's name
+        const universal: Universal = { ...UNIVERSAL, grabBag: new Set(['lib']) };
+
+        // Then - the file `lib` is no folder, and a folder of that name below the root is
+        expect([
+            findingsOf(['lib'], universal).length,
+            findingsOf(['src/lib/a.ts'], universal).length,
+        ]).toStrictEqual([0, 1]);
     });
 });

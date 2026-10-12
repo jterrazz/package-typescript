@@ -96,10 +96,9 @@ function scopedTo(
 }
 
 function memberScoped(member: string, root: OxlintConfig, own: OxlintConfig): OxlintOverride[] {
+    // invariant: every rule the root sets is off in the member's folder, and the member's own then stand over it: the member is judged by its rules alone.
     const unset = Object.fromEntries(
-        Object.keys(root.rules ?? {})
-            .filter((rule) => own.rules?.[rule] === undefined)
-            .map((rule) => [rule, 'off' as const]),
+        Object.keys(root.rules ?? {}).map((rule) => [rule, 'off' as const]),
     );
 
     return [

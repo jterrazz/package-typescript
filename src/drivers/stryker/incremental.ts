@@ -14,15 +14,17 @@ const isReadByTests = (path: string): boolean =>
         .slice(0, -1)
         .some((folder) => READ_BY_TESTS.has(folder));
 
+function isGroundFile(project: string, path: string): boolean {
+    // Stryker disable next-line ConditionalExpression,StringLiteral: an empty path has no folder, so it is no ground whether it is dropped here or by the check after it
+    return path !== '' && isReadByTests(path) && existsSync(join(project, path));
+}
+
 function groundHashOf(project: string): string {
     const hash = createHash('sha256');
     // outside: the sweep that lists a project's files leaves a test's ground to its scenario, so the tree is asked of git directly.
     // Stryker disable next-line ArrayDeclaration: a name git did not list is no file on disk, so a stand-in entry is filtered out below whatever it holds
     const listed = listNotIgnored(project) ?? [];
-    for (const path of listed
-        // Stryker disable next-line ConditionalExpression,StringLiteral: an empty path has no folder, so it is no ground whether it is dropped here or by the check after it
-        .filter((one) => one !== '' && isReadByTests(one) && existsSync(join(project, one)))
-        .toSorted()) {
+    for (const path of listed.filter((one) => isGroundFile(project, one)).toSorted()) {
         hash.update(`${path}\0`);
         hash.update(readFileSync(join(project, path)));
     }

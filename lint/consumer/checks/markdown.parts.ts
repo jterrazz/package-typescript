@@ -24,6 +24,7 @@ export function unlinkedReferences(
         }
         const entry = `${skill}/SKILL.md`;
 
+        // Stryker disable next-line StringLiteral: a SKILL.md that is absent names no page, whatever text stands in for it
         return (read(entry) ?? '').includes(`references/${page}`)
             ? []
             : [

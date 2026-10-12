@@ -3,7 +3,7 @@ import type { ArchitectureRule } from './preset.js';
 // Stryker disable next-line ArrayDeclaration: a path of no shape opens on no folder, whatever stands in for the list, and a side without one is live
 const NO_PATHS: string[] = [];
 
-const pathsOf = (path: unknown): string[] =>
+export const pathsOf = (path: unknown): string[] =>
     typeof path === 'string'
         ? [path]
         : Array.isArray(path)
