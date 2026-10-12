@@ -93,7 +93,7 @@ describe('lint-tree', () => {
             lint/self/reading/:1:1  names(self-folder-is-known)
                 found: \`lint/self/reading/\` is not a folder of self/
                 why: self/ holds the declarations only this repository is held to — its catalogue, its rules by family, its checks, the meta-tests of its corpus, so its folders are catalogue, rules, checks, corpus, beside the modules that compose them with kit/
-                fix: move its files into the folder its nature names — catalogue/, rules/, checks/, corpus/
+                fix: move its files into the folder its nature names — catalogue/, rules/, checks/, corpus/; a program at the self root composes, and the parts it tests live in corpus/, tested there
                 read: docs/reference/quality-checks.md#the-lint-tree
             lint/self/rules/imports/specification-is-a-composition.js:1:1  names(rule-file-in-its-family-folder)
                 found: \`lint/self/rules/imports/specification-is-a-composition.js\` sits under \`rules/imports/\`, and its catalogue row gives it the family \`architecture\`
@@ -103,7 +103,7 @@ describe('lint-tree', () => {
             lint/self/test-coverage/:1:1  names(self-folder-is-known)
                 found: \`lint/self/test-coverage/\` is not a folder of self/
                 why: self/ holds the declarations only this repository is held to — its catalogue, its rules by family, its checks, the meta-tests of its corpus, so its folders are catalogue, rules, checks, corpus, beside the modules that compose them with kit/
-                fix: move its files into the folder its nature names — catalogue/, rules/, checks/, corpus/
+                fix: move its files into the folder its nature names — catalogue/, rules/, checks/, corpus/; a program at the self root composes, and the parts it tests live in corpus/, tested there
                 read: docs/reference/quality-checks.md#the-lint-tree
             packages/tool/lint/scripts/:1:1  names(lint-folder-is-known)
                 found: \`packages/tool/lint/scripts/\` is not a folder of the lint tree

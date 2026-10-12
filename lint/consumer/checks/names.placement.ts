@@ -37,7 +37,7 @@ function audienceFinding(
     return lintFinding(`${prefix}${LINT_ROOT}/${top}/${rest}`, FOLDER_RULES[top], [
         `found: ${found}`,
         `why: ${top}/ holds ${HOLDS[top]}, so its folders are ${folders.join(', ')}${top === 'self' ? ', beside the modules that compose them with kit/' : ''}`,
-        `fix: move ${rest === '' ? 'the file' : 'its files'} into the folder its nature names — ${folders.map((folder) => `${folder}/`).join(', ')}`,
+        `fix: move ${rest === '' ? 'the file' : 'its files'} into the folder its nature names — ${folders.map((folder) => `${folder}/`).join(', ')}${top === 'self' ? '; a program at the self root composes, and the parts it tests live in corpus/, tested there' : ''}`,
     ]);
 }
 

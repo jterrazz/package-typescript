@@ -763,7 +763,7 @@ The file holds one section per package of the family, each package reading only 
 - `names/lint-root-holds-only-entries` refuses a file at the root of `lint/` that is not an entry — a `README`, a `.json`, a page, a module not named `index[.<name>]`.
 - `names/lint-folder-is-known` refuses a folder of `lint/` outside the three.
 - `names/consumer-folder-is-known` refuses a folder of `consumer/` outside `catalogue/`, `rulebook/`, `rules/` and `checks/`, and a file at its root.
-- `names/self-folder-is-known` refuses a folder of `self/` outside `catalogue/`, `rules/`, `checks/` and `corpus/`, and a file at its root but a module composing the self declarations with the kit.
+- `names/self-folder-is-known` refuses a folder of `self/` outside `catalogue/`, `rules/`, `checks/` and `corpus/`, and a file at its root but a module composing the self declarations with the kit. A program at the self root composes; the parts it tests live in `corpus/`, tested there, so a `__tests__/` folder at the self root is refused.
 - `names/kit-folder-is-known` refuses a folder of `kit/` outside `project/`, `baseline/`, `checker/`, `catalogue/`, `compiler/` and `testing/`, and a file at its root.
 - `names/audience-holds-only-declarations` refuses a module of `consumer/` or `self/` that runs as a program, or that hands another module a function or a value named for something other than its file.
 - `names/rule-file-in-its-family-folder` refuses a rule file of `consumer/rules/` or `self/rules/` filed at the root of `rules/`, or under a folder its catalogue row does not name.
