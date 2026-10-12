@@ -40,6 +40,8 @@ npm install
 
 Under pnpm and bun the lockfile is not JSON: delete it when it carries an older toolchain, and `pnpm install` / `bun install` writes it again; bun caches a `file:` tarball by its path, so a tarball packed again under the same name is not extracted again — clear the cache first (`bun pm cache rm`).
 
+A `file:` package packed again under the same name changes no line of the lockfile, so the Makefile's install stamp must depend on `.artifacts/packages/*.tgz` beside the lockfile (`node_modules/.install: package-lock.json $(wildcard .artifacts/packages/*.tgz)`), or a gate runs for hours against yesterday's build; `make -B install` forces it once.
+
 The tarball holds exactly what a consumer of the release gets, so the project resolves one copy of vitest's types, never two.
 
 ## The packages themselves

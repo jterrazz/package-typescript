@@ -1,7 +1,8 @@
 .PHONY: install build install-self lint fix test check check-links mutation
 
+# invariant: the stamp depends on the packed toolchain tarballs as well as the lockfile, so a package packed again under the same name is installed again, never run against yesterday's build.
 # invariant: an install replaces the dependencies a running gate reads; `check` holds `.artifacts/gate.lock` with its own pid, and every path that installs — `install`, and any target that depends on `node_modules/.install` — is refused while that process lives.
-node_modules/.install: package-lock.json
+node_modules/.install: package-lock.json $(wildcard .artifacts/packages/*.tgz)
 	@if [ -f .artifacts/gate.lock ] && kill -0 "$$(cat .artifacts/gate.lock)" 2> /dev/null; then echo "install: the gate of pid $$(cat .artifacts/gate.lock) holds this checkout - wait for it to end, or install in a worktree of its own"; exit 1; fi
 	npm ci
 	@touch node_modules/.install
