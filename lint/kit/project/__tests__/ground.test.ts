@@ -86,7 +86,7 @@ describe('ground', () => {
         ).toStrictEqual([true, false, false]);
     });
 
-    test('UNCRUISED_PATHS — leaves out the ground of a test and the output of a run, at the root and below it, and no folder that merely resembles them', () => {
+    test('uncruisedPaths — leaves out the ground of a test and the output of a run, at the root and below it, and no folder that merely resembles them', () => {
         // Given - paths of the ground folders, of `.artifacts/` at the root and in a member, and look-alikes
         const paths = [
             'specs/cli/__fixtures__/a/b.ts',

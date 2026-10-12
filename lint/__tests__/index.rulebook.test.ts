@@ -106,7 +106,8 @@ describe('index.rulebook', () => {
         });
 
         // When - the config is derived
-        const overrides = (await oxlintConfigAt(root)).overrides ?? [];
+        const derived = await oxlintConfigAt(root);
+        const overrides = derived.overrides ?? [];
         const ofRulebook = overrides.findLastIndex(
             ({ files, rules }) =>
                 files.some((glob) => glob.startsWith('**/__tests__/')) &&

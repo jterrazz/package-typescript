@@ -4,7 +4,7 @@ import type { OxlintConfig } from 'oxlint';
 import type { ChapterAnchor, Unread } from '../catalogue/lesson.js';
 import type { EditorFile } from './editor-files.js';
 import { isJsonObject, objectOf } from './json.js';
-import { lawSettingRefused, writtenLawSetting } from './law-settings.js';
+import { lawSettingRefused, unknownSetting, writtenLawSetting } from './law-settings.js';
 import { optOutsOf } from './opt-outs.js';
 import type { OptOut } from './opt-outs.js';
 import type { SettingsOrigin } from './origins.js';
@@ -50,7 +50,6 @@ export type Preset = {
     presets?: readonly Preset[];
     settings?: Readonly<Record<string, unknown>>;
     sources?: { extensions: readonly string[]; roots: readonly string[] };
-    /** The keys a project may write in its section, the laws apart: any other key is refused when the file loads, so a key a release removed fails before a pass runs. */
     writableSettings?: readonly string[];
 };
 
@@ -173,21 +172,6 @@ function orderedPresets(listed: readonly unknown[], base: readonly Preset[]): Pr
     return flattened(chosen, ordered) ?? [...ordered.values()];
 }
 
-// invariant: a section is closed once a preset of its name lists the keys a project may write; a key outside that list and outside the laws is one a release removed or never had.
-function unknownSetting(
-    name: string,
-    named: readonly Preset[],
-    own: Readonly<Record<string, unknown>>,
-): string | undefined {
-    const writable = named.flatMap((preset) => preset.writableSettings ?? []);
-    const known = new Set([...writable, ...named.flatMap((preset) => preset.lawSettings ?? [])]);
-    const key = Object.keys(own).find((one) => !known.has(one));
-
-    return writable.length === 0 || key === undefined
-        ? undefined
-        : `writes \`${name}.${key}\`, a setting the ${name} preset does not read — it reads ${writable.map((one) => `\`${one}\``).join(', ')}; a key a release removed is named in its adoption guide`;
-}
-
 type Sections = {
     own: Record<string, Readonly<Record<string, unknown>>>;
     problem: null | string;
@@ -217,15 +201,14 @@ function sectionsOf(
             );
         }
         let section: unknown = {};
-        const named = presets.filter((one) => one.name === name);
-        for (const preset of named) {
+        for (const preset of presets.filter((one) => one.name === name)) {
             section = mergeSettings(section, preset.settings, name).value;
             const law = writtenLawSetting(preset, objectOf(section), own);
             if (law !== undefined) {
                 return sectionRefused(lawSettingRefused(name, law));
             }
         }
-        const unknown = own === undefined ? undefined : unknownSetting(name, named, own);
+        const unknown = unknownSetting(name, presets, own);
         if (unknown !== undefined) {
             return sectionRefused(unknown);
         }

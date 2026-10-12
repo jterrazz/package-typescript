@@ -14,6 +14,8 @@ import {
     unmeasuredBy,
 } from '../change.js';
 
+const baseNamed = (commit: string) => ({ commit, names: commit, range: commit });
+
 const created: string[] = [];
 
 afterAll(() => {
@@ -290,16 +292,15 @@ describe('change', () => {
         const middle = gitIn(root, 'rev-parse', 'HEAD');
         writeFileSync(join(root, 'a.ts'), 'three\n');
         gitIn(root, 'commit', '--quiet', '--all', '--message', 'third');
-        const base = (commit: string) => ({ commit, names: commit, range: commit });
         const alone = committedRepository({ 'a.ts': 'one\n' });
 
         // Then - the uncommitted change and a newer commit leave the branch's commits out; the merge-base, an older commit and a branch with none of its own leave nothing
         expect([
-            unmeasuredBy(root, base('HEAD')),
-            unmeasuredBy(root, base(middle)),
-            unmeasuredBy(root, base(before)),
-            unmeasuredBy(root, base('main')),
-            unmeasuredBy(alone, base('HEAD')),
+            unmeasuredBy(root, baseNamed('HEAD')),
+            unmeasuredBy(root, baseNamed(middle)),
+            unmeasuredBy(root, baseNamed(before)),
+            unmeasuredBy(root, baseNamed('main')),
+            unmeasuredBy(alone, baseNamed('HEAD')),
         ]).toStrictEqual([
             `${before.slice(0, 8)}..HEAD`,
             `${before.slice(0, 8)}..${middle}`,

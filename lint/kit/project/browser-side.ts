@@ -81,30 +81,30 @@ export function clientOnlySources(unit: string): ReadonlySet<string> {
     return sources;
 }
 
+const unmeasured = (mutant: unknown): unknown =>
+    isJsonObject(mutant) && mutant.status === 'Survived'
+        ? { ...mutant, status: 'NoCoverage' }
+        : mutant;
+
+function entryUnmeasured(entry: unknown): unknown {
+    const { mutants } = objectOf(entry);
+
+    return Array.isArray(mutants)
+        ? { ...objectOf(entry), mutants: mutants.map((mutant) => unmeasured(mutant)) }
+        : entry;
+}
+
 /** A report where every mutant of a source in `sources` that no test judged — one that survived, or none ran — reads as one no test ran, so the verdict counts it unmeasured instead of failing on a line no test could judge. */
 export function reportWithUnmeasured(report: unknown, sources: ReadonlySet<string>): unknown {
     if (sources.size === 0) {
         return report;
     }
-    const files = Object.fromEntries(
-        Object.entries(objectOf(objectOf(report).files)).map(([file, entry]) => {
-            const { mutants } = objectOf(entry);
-
-            return [
-                file,
-                sources.has(file) && Array.isArray(mutants)
-                    ? {
-                          ...objectOf(entry),
-                          mutants: mutants.map((mutant) =>
-                              isJsonObject(mutant) && mutant.status === 'Survived'
-                                  ? { ...mutant, status: 'NoCoverage' }
-                                  : mutant,
-                          ),
-                      }
-                    : entry,
-            ];
-        }),
+    const files = Object.entries(objectOf(objectOf(report).files)).map(
+        ([file, entry]): [string, unknown] => [
+            file,
+            sources.has(file) ? entryUnmeasured(entry) : entry,
+        ],
     );
 
-    return { ...objectOf(report), files };
+    return { ...objectOf(report), files: Object.fromEntries(files) };
 }

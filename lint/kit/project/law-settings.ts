@@ -19,3 +19,19 @@ export function writtenLawSetting(
                 JSON.stringify(settings[key]),
     );
 }
+
+// invariant: a section is closed once a preset of its name lists the keys a project may write; a key outside that list and outside the laws is one a release removed or never had.
+export function unknownSetting(
+    name: string,
+    presets: readonly Preset[],
+    own: Readonly<Record<string, unknown>> | undefined,
+): string | undefined {
+    const named = presets.filter((preset) => preset.name === name);
+    const writable = named.flatMap((preset) => preset.writableSettings ?? []);
+    const known = new Set([...writable, ...named.flatMap((preset) => preset.lawSettings ?? [])]);
+    const key = Object.keys(own ?? {}).find((one) => !known.has(one));
+
+    return writable.length === 0 || key === undefined
+        ? undefined
+        : `writes \`${name}.${key}\`, a setting the ${name} preset does not read — it reads ${writable.map((one) => `\`${one}\``).join(', ')}; a key a release removed is named in its adoption guide`;
+}
