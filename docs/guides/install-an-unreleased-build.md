@@ -38,7 +38,7 @@ fs.writeFileSync(file, JSON.stringify(lock, null, indent) + '\n');
 npm install
 ```
 
-Under pnpm and bun the lockfile is not JSON: delete it when it carries an older toolchain, and `pnpm install` / `bun install` writes it again; bun caches a `file:` tarball by its path, so a tarball packed again under the same name is not extracted again — clear the cache first (`bun pm cache rm`).
+Under bun the lockfile is not JSON: delete it when it carries an older toolchain, and `bun install` writes it again; under pnpm, never delete it: a non-frozen `pnpm install` re-resolves every unrelated range (500 lines on one project), so the lockfile is updated in its two `@jterrazz/*` entries alone — the tarball paths, and the `integrity` each tarball's `npm pack --json` prints — and `pnpm install --frozen-lockfile` then proves the file is whole; bun caches a `file:` tarball by its path, so a tarball packed again under the same name is not extracted again — clear the cache first (`bun pm cache rm`).
 
 A `file:` package packed again under the same name changes no line of the lockfile, so the Makefile's install stamp must depend on `.artifacts/packages/*.tgz` beside the lockfile (`node_modules/.install: package-lock.json $(wildcard .artifacts/packages/*.tgz)`), or a gate runs for hours against yesterday's build; `make -B install` forces it once.
 
@@ -50,7 +50,7 @@ The tarball holds exactly what a consumer of the release gets, so the project re
 
 ## Taking a new build
 
-A change to a package reaches a project in three steps: rebuild and gate the package, pack it again, then repeat the recipe and run the project's `make check`. Never install while a gate runs in the same checkout: `npm ci` empties `node_modules` under the running check, which then fails on modules it can no longer find, and a peer's install deleting `node_modules/@jterrazz/typescript/rules` in the middle of a mutation run fails it the same way. A package is gated once, from its own detached worktree, and the project takes the tarball of that run.
+A change to a package reaches a project in three steps: rebuild and gate the package, pack it again, then repeat the recipe and run the project's `make check`. Never install while a gate runs in the same checkout: `npm ci` empties `node_modules` under the running check, which then fails on modules it can no longer find, and a peer's install deleting `node_modules/@jterrazz/typescript/rules` in the middle of a mutation run fails it the same way. A package is gated once, from its own detached worktree, and the project takes the tarball of that run. `@jterrazz/test` is packed from a clean `HEAD` too: its link to the toolchain's tarball is committed on its branch as a `build(toolchain)` commit of its own, and reverted to the range at the release, as every consumer's is.
 
 ## The order of a wave
 

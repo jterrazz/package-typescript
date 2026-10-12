@@ -29,6 +29,19 @@ Last, `doctor` prints the settings `jterrazz.config.ts` resolves to — of the r
 
 `baseline` is the second, and it is needed only where the bump lands red. It records the lint debt in oxlint's `.jterrazz/oxlint-suppressions.json` and the Architecture and Names passes' in the `typescript` section of `.jterrazz/baseline.json`, and from then on each owner refuses any count going up, a rule nobody recorded, and an entry that fell or reached zero — so both files only ever shrink. [Quality checks](../reference/quality-checks.md) owns the rules; what belongs here is when to reach for it: on the adoption pull request, in the same commit as the bump, never as a follow-up.
 
+## What a major newly judges, said once
+
+A bump to 11 reads more than 10 did, and a project lands red on the first run. Said once here, so no project finds it by failing:
+
+- **Astro islands are mutated.** The `.tsx` of a hydrated island belongs to the verdict; move its logic into `.ts` modules under module tests, and compare the markup whole by a spec ([Quality checks § What each kind leaves unmeasured](../reference/quality-checks.md#what-each-kind-leaves-unmeasured)).
+- **Go comments are read and reported.** The Comments pass reads `.go` files with Go's shapes; `fix` deletes none, so sort the reported ones by script, as a migration sorts the `.ts` ones.
+- **Manifest keys are known.** A key neither npm nor the family reads is refused; a credit or a fork's origin moves to the README.
+- **Settings keys are known.** `typescript.generated` is gone, and a key a release removed now fails the file at load, before any pass runs, in four parts. Its replacement is `typescript.roots.<folder>` written `{ reason, verbatim: true }`.
+
+## After the bump
+
+`check` reports each `Unused oxlint-disable directive` a rule a release turned off leaves behind (`jsx-a11y/prefer-tag-over-role` was one): delete the directive, and never arm the rule again for it.
+
 ## Related
 
 - [Install an unreleased build](install-an-unreleased-build.md) — taking a release from a local checkout, before it is published.
