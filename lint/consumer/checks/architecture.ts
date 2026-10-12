@@ -18,7 +18,8 @@ import { hexagonalMapOf } from './architecture.hexagonal.js';
 
 const SOURCE = /\.[cm]?[jt]sx?$/u;
 
-const GROUND = `(^|/)(${GROUND_FOLDERS.join('|')})/`;
+// invariant: the ground of a test and the output of a run are no source of the project: a run rewrites `.artifacts/` while the pass cruises, and a module that vanishes between two reads is an ENOENT, not a finding.
+const EXCLUDED = `(^|/)(${GROUND_FOLDERS.join('|')})/|(^|/)\\.artifacts/`;
 
 const TSCONFIG = 'tsconfig.json';
 
@@ -82,7 +83,10 @@ async function declaredRules(context: Context): Promise<Declared> {
     };
 }
 
-function cruiseConfig(rules: readonly ArchitectureRule[], context: Context): unknown {
+export function cruiseConfig(
+    rules: readonly ArchitectureRule[],
+    context: Pick<Context, 'exists' | 'root'>,
+): unknown {
     const own = DEPENDENCY_CRUISER_CONFIGS.find((name) => context.exists(join(context.root, name)));
 
     return {
@@ -90,7 +94,7 @@ function cruiseConfig(rules: readonly ArchitectureRule[], context: Context): unk
         forbidden: rules.map(({ from, name, to }) => ({ from, name, severity: 'error', to })),
         options: {
             doNotFollow: { path: 'node_modules' },
-            exclude: { path: GROUND },
+            exclude: { path: EXCLUDED },
             enhancedResolveOptions: {
                 conditionNames: ['import', 'require', 'node', 'default', 'types'],
                 exportsFields: ['exports'],

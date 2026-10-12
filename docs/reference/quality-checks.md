@@ -467,6 +467,8 @@ Why the two `composition/` boundaries hold, and how the entry and a runner build
 
 `dependency-cruiser` declares a `typescript <7` peer, and this tree satisfies it: the ordinary `typescript` dependency here is the ^6 JavaScript compiler API that perfectionist already needs ([Architecture](../concepts/architecture.md)). That is also why the TS7 Go compiler stays out of `node_modules` under the name `typescript`.
 
+The cruise leaves out the ground a test stands on and `.artifacts/`, the output of a run: a `make check` writes there while the pass reads, and a module that vanishes between two reads would be an ENOENT, never a finding.
+
 ## The Astro (check + format) pass
 
 `.astro` is the one file shape oxfmt does not parse, and `astro check` is the only checker that reads a template's frontmatter. So in every unit that declares the `astro` platform — the root, or a workspace member — the pass runs both there: the unit's own `astro check`, and `prettier` over every `.astro` file under it.
