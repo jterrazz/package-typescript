@@ -156,7 +156,7 @@ export async function strykerRun(
     writeFileSync(join(MUTATION_OUTPUT, files.vitest), vitestConfigSource(scope.exclude, suite));
     writeFileSync(
         join(MUTATION_OUTPUT, files.sandbox),
-        sandboxScriptSource(suite && buildsFirst, project, besideOf(project)),
+        sandboxScriptSource(buildsFirst, project, besideOf(project)),
     );
     writeFileSync(
         join(MUTATION_OUTPUT, files.config),
