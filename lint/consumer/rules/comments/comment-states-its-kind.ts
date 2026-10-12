@@ -56,7 +56,7 @@ const HOVER_LINE_MARGIN = /^\s*\*?\s?/u;
 const BLOCK_TAG = /^@[a-zA-Z]+\b/u;
 
 const WHY_FIX = {
-    fix: `delete it, or rename what needed it; a comment that states what the code cannot opens with its kind — ${COMMENT_KINDS.map((kind) => `\`${kind}:\``).join(', ')} — and an exported symbol's editor hover is one \`/** … */\` paragraph above it, its block tags — \`@param\`, \`@example\` — on the lines after it`,
+    fix: `delete it, rename what needed it, or — when it annotates a literal — name the value with a constant; a comment that states what the code cannot opens with its kind — ${COMMENT_KINDS.map((kind) => `\`${kind}:\``).join(', ')} — and an exported symbol's editor hover is one \`/** … */\` paragraph above it, its block tags — \`@param\`, \`@example\` — on the lines after it`,
     why: 'the default is no comment — the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one',
 };
 
