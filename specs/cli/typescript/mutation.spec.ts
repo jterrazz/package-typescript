@@ -18,8 +18,8 @@ describe('mutation', () => {
             {{any}}
              TYPESCRIPT  Measuring the whole suite against what the module tests let live, and the changed lines they do not run...
             {{any}}
-            src/discount.ts:2:9  ConditionalExpression → false
-            src/discount.ts:2:9  EqualityOperator → rate >= 0.5
+            src/discount.ts:2:9  ConditionalExpression → false  (.artifacts/stryker/suite-report.json)
+            src/discount.ts:2:9  EqualityOperator → rate >= 0.5  (.artifacts/stryker/suite-report.json)
             found: 2 mutant(s) a test runs and none detects · why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/reference/quality-checks.md#mutation
             0 mutant(s) no test runs
             2 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does
@@ -106,7 +106,7 @@ describe('mutation', () => {
         expect(result.stdout.text).not.toContain('Measuring the whole suite');
     });
 
-    test('typescript mutation — a source no module test reaches waits for a change, and the module run builds nothing', async () => {
+    test('typescript mutation — a source no module test reaches waits for a change, and the module run builds like the suite', async () => {
         // Given - the same consumer with its built, spec-proven source, outside any repository, so no change reaches it
         const result = await cli
             .fixture(directory('./__fixtures__/mutation-consumer/'))
@@ -114,7 +114,7 @@ describe('mutation', () => {
             .fixture(directory('./__fixtures__/mutation-spec-proven/'))
             .exec('typescript mutation');
 
-        // Then - the module tests' verdict alone, the source waiting for a change counted apart, and a module sandbox that never ran the build
+        // Then - the module tests' verdict alone, the source waiting for a change counted apart, and a module sandbox that runs the project's build, as the suite's does
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toMatch(`
              TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
@@ -126,7 +126,7 @@ describe('mutation', () => {
             1 source(s) with no module test — the whole suite measures the lines a change reaches there; what no change reaches no count holds
         `);
         expect(result.stdout.text).not.toContain('Measuring the whole suite');
-        expect(result.file('.artifacts/stryker/sandbox.mjs').content).not.toContain('npm');
+        expect(result.file('.artifacts/stryker/sandbox.mjs').content).toContain('npm');
     });
 
     test('typescript mutation — the whole suite judges what only a spec proves, through the processes it spawns', async () => {
@@ -145,8 +145,8 @@ describe('mutation', () => {
         expect(result.stdout).toMatch(`
              TYPESCRIPT  Measuring the whole suite against what the module tests let live, and the changed lines they do not run...
             {{any}}
-            src/greeting.ts:3:22  ConditionalExpression → false
-            src/greeting.ts:3:31  StringLiteral → "Stryker was here!"
+            src/greeting.ts:3:22  ConditionalExpression → false  (.artifacts/stryker/suite-report.json)
+            src/greeting.ts:3:31  StringLiteral → "Stryker was here!"  (.artifacts/stryker/suite-report.json)
             found: 2 mutant(s) a test runs and none detects · why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/reference/quality-checks.md#mutation
             2 mutant(s) no test runs
               src/greeting.ts  2
@@ -187,7 +187,7 @@ describe('mutation', () => {
         expect(result.stdout).toMatch(`
              TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
             {{any}}
-            src/doubled.ts:2:12  ArithmeticOperator → value / 2
+            src/doubled.ts:2:12  ArithmeticOperator → value / 2  (.artifacts/stryker/suite-report.json)
             found: 1 mutant(s) a test runs and none detects{{any}}
         `);
     });

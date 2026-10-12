@@ -49,7 +49,12 @@ function statedRules(config: unknown): { rule: string; scope: string; value: unk
             .filter((block) => isRecord(block))
             .map((block) => ({
                 rules: isRecord(block.rules) ? block.rules : {},
-                scope: Array.isArray(block.files) ? block.files.join(',') : '',
+                scope: [
+                    ...(Array.isArray(block.files) ? block.files : []),
+                    ...(Array.isArray(block.excludeFiles)
+                        ? block.excludeFiles.map((glob) => `!${String(glob)}`)
+                        : []),
+                ].join(','),
             })),
     ];
 
