@@ -159,6 +159,17 @@ export function typescriptPreset(
         baseline: [BASELINE_SECTION],
         derive: (unit) => (laidOutHexagonally(unit) ? { architecture: { hexagonal: true } } : {}),
         sources: sourcesOf(settings),
+        writableSettings: [
+            'architecture',
+            'knip',
+            'mutation',
+            'names',
+            'oxfmt',
+            'oxlint',
+            'platforms',
+            'roots',
+            'tsconfig',
+        ],
     };
 }
 

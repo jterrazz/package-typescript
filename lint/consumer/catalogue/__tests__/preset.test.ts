@@ -45,6 +45,24 @@ describe('preset', () => {
         ]);
     });
 
+    test('typescriptPreset — lists the sections a project may write, the keys of the typed settings', () => {
+        // Given - the preset of a library on node
+        const preset = typescriptPreset({ kind: 'library', platform: 'node' });
+
+        // Then - nine sections, the laws apart
+        expect(preset.writableSettings).toStrictEqual([
+            'architecture',
+            'knip',
+            'mutation',
+            'names',
+            'oxfmt',
+            'oxlint',
+            'platforms',
+            'roots',
+            'tsconfig',
+        ]);
+    });
+
     test('typescriptPreset — derives the platform’s code, its editor files and its roots from the merged standard', () => {
         // Given - a library on next
         const preset = typescriptPreset({ kind: 'library', platform: 'next' });

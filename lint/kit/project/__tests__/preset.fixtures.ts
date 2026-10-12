@@ -15,6 +15,7 @@ export const BASE: Preset = {
     name: 'typescript',
     package: '@jterrazz/typescript',
     settings: { profile: 'node', spine: ['src'] },
+    writableSettings: ['architecture', 'names', 'roots'],
 };
 
 export const BASE_OF = (): readonly Preset[] => [BASE];
@@ -96,6 +97,11 @@ export const REFUSED: [string, Record<string, unknown>, string][] = [
         'a section that is no object',
         { typescript: 'x' },
         'holds a `typescript` section that is not an object',
+    ],
+    [
+        'a setting the preset does not read',
+        { typescript: { generated: { 'src/cobra': 'pages written by a script' } } },
+        'writes `typescript.generated`, a setting the typescript preset does not read — it reads `architecture`, `names`, `roots`; a key a release removed is named in its adoption guide',
     ],
     [
         'a kind outside the vocabulary',
