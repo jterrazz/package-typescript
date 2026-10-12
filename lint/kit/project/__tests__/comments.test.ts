@@ -185,7 +185,7 @@ describe('comments', () => {
             'notes/page.md': '// Stryker disable next-line all: prose\n',
             'quoted/b.ts': '// Stryker disable next-line all: quoted upstream\n',
             'src/a.ts':
-                "// Stryker disable next-line all: one\nconst a = 1; // Stryker disable next-line all: two\nconst b = 'Stryker disable next-line all: in a string'; // plain\n",
+                "// Stryker disable next-line all: one\nconst a = 1; // Stryker disable next-line all: two\nconst b = '// Stryker disable next-line all: in a string'; // plain\n",
         };
         for (const [path, text] of Object.entries(files)) {
             mkdirSync(dirname(join(root, path)), { recursive: true });

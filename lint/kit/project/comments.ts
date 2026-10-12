@@ -225,10 +225,10 @@ export function countSuppressions(root: string, ignorePatterns: readonly string[
     return found;
 }
 
-/** The `Stryker disable` directives of the project: each one declares mutants no test can tell from the original. */
 // Stryker disable next-line ArrayDeclaration: a stand-in pattern names no file, so a project left unfiltered reads the same as one filtered by it
 const NO_PATTERNS: readonly string[] = [];
 
+/** The `Stryker disable` directives of the project: each one declares mutants no test can tell from the original. */
 export function countStrykerDirectives(
     root: string,
     ignorePatterns: readonly string[] = NO_PATTERNS,
