@@ -8,7 +8,7 @@ import { defineCheck } from '../../kit/catalogue/rule.js';
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
 import { runTool } from '../../kit/checker/tool-run.js';
 import type { ToolRun } from '../../kit/checker/tool-run.js';
-import { GROUND_FOLDERS } from '../../kit/project/ground.js';
+import { UNCRUISED_PATHS } from '../../kit/project/ground.js';
 import { isInert } from '../../kit/project/inert-laws.js';
 import { objectOf, stringOf } from '../../kit/project/json.js';
 import { DEPENDENCY_CRUISER_CONFIGS, SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
@@ -17,9 +17,6 @@ import type { ArchitectureRule } from '../../kit/project/preset.js';
 import { hexagonalMapOf } from './architecture.hexagonal.js';
 
 const SOURCE = /\.[cm]?[jt]sx?$/u;
-
-// invariant: the ground of a test and the output of a run are no source of the project: a run rewrites `.artifacts/` while the pass cruises, and a module that vanishes between two reads is an ENOENT, not a finding.
-const EXCLUDED = `(^|/)(${GROUND_FOLDERS.join('|')})/|(^|/)\\.artifacts/`;
 
 const TSCONFIG = 'tsconfig.json';
 
@@ -83,10 +80,7 @@ async function declaredRules(context: Context): Promise<Declared> {
     };
 }
 
-export function cruiseConfig(
-    rules: readonly ArchitectureRule[],
-    context: Pick<Context, 'exists' | 'root'>,
-): unknown {
+function cruiseConfig(rules: readonly ArchitectureRule[], context: Context): unknown {
     const own = DEPENDENCY_CRUISER_CONFIGS.find((name) => context.exists(join(context.root, name)));
 
     return {
@@ -94,7 +88,7 @@ export function cruiseConfig(
         forbidden: rules.map(({ from, name, to }) => ({ from, name, severity: 'error', to })),
         options: {
             doNotFollow: { path: 'node_modules' },
-            exclude: { path: EXCLUDED },
+            exclude: { path: UNCRUISED_PATHS },
             enhancedResolveOptions: {
                 conditionNames: ['import', 'require', 'node', 'default', 'types'],
                 exportsFields: ['exports'],

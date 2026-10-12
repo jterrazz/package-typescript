@@ -82,15 +82,15 @@ describe('browser-side', () => {
         writeFileSync(
             join(unit, 'src/page.astro'),
             [
-                "---",
+                '---',
                 "import Particles from './components/Particles';",
                 "import Menu from './components/Menu.tsx';",
                 "import Chart from 'chart-package';",
                 "import Missing from './components/Missing';",
-                "---",
-                "<Particles",
-                "    client:only=\"react\"",
-                "/>",
+                '---',
+                '<Particles',
+                '    client:only="react"',
+                '/>',
                 '<Menu client:load />',
                 '<Chart client:only="react" />',
                 '<Ghost client:only="react" />',
@@ -106,7 +106,10 @@ describe('browser-side', () => {
         // Given - a report with a survivor and a killed mutant in the named source, a survivor in another, and a file with no mutant list
         const report = {
             files: {
-                'src/a.tsx': { language: 'typescript', mutants: [mutant('Survived'), mutant('Killed')] },
+                'src/a.tsx': {
+                    language: 'typescript',
+                    mutants: [mutant('Survived'), mutant('Killed')],
+                },
                 'src/b.tsx': { mutants: [mutant('Survived')] },
                 'src/c.tsx': { mutants: 'none' },
             },

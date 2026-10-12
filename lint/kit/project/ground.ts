@@ -25,6 +25,9 @@ export const GROUND_GLOBS: readonly string[] = Object.freeze([
     ...GO_GROUND_GLOBS,
 ]);
 
+// invariant: the ground of a test and the output of a run are no source of the project: a run rewrites `.artifacts/` while the architecture pass cruises, and a module that vanishes between two reads is an ENOENT, not a finding.
+export const UNCRUISED_PATHS = `(^|/)(${GROUND_FOLDERS.join('|')})/|(^|/)\\.artifacts/`;
+
 export const GROUND_GLOB = `**/{${GROUND_FOLDERS.join(',')}}/**`;
 
 export const SETUP_FOLDER = '__setup__';

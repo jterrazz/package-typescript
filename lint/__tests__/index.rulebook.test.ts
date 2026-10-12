@@ -117,7 +117,7 @@ describe('index.rulebook', () => {
         );
 
         // Then - the rulebook’s override of the test files comes first, the member’s after it
-        expect([ofRulebook >= 0, ofRulebook < ofMember]).toStrictEqual([true, true]);
+        expect([ofRulebook !== -1, ofRulebook < ofMember]).toStrictEqual([true, true]);
     });
 
     test('oxlintConfigAt — a workspace — each configured member is linted by its own profile inside its folder, a member without config is left to the root', async () => {

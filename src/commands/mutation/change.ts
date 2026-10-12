@@ -28,7 +28,12 @@ export const namesACommit = (project: string, ref: string): boolean =>
     git(project, ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) !== undefined;
 
 /** The commit a run measures the working tree against when none is named, how the verdict names it, and the range it prints as the scope of the measure. */
-export type Base = { commit: string; names: string; range: string; unmeasured?: string | undefined };
+export type Base = {
+    commit: string;
+    names: string;
+    range: string;
+    unmeasured?: string | undefined;
+};
 
 const short = (commit: string): string => commit.slice(0, 8);
 

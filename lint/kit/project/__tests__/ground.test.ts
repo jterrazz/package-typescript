@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'vitest';
 
-import { GO_TEST_FILE, isSpecialFolderName, moduleStemOfTest, moduleTestOf } from '../ground.js';
+import {
+    GO_TEST_FILE,
+    isSpecialFolderName,
+    moduleStemOfTest,
+    moduleTestOf,
+    UNCRUISED_PATHS,
+} from '../ground.js';
 
 describe('ground', () => {
     test('isSpecialFolderName — a word closed by two underscores on each side, and nothing else', () => {
@@ -78,5 +84,29 @@ describe('ground', () => {
         expect(
             ['a_test.go', 'a_test.go.bak', 'a_test.gone'].map((name) => GO_TEST_FILE.test(name)),
         ).toStrictEqual([true, false, false]);
+    });
+
+    test('UNCRUISED_PATHS — leaves out the ground of a test and the output of a run, at the root and below it, and no folder that merely resembles them', () => {
+        // Given - paths of the ground folders, of `.artifacts/` at the root and in a member, and look-alikes
+        const paths = [
+            'specs/cli/__fixtures__/a/b.ts',
+            'src/__expected__/out.ts',
+            '.artifacts/vitest/deps-chunk.js',
+            'apps/api/.artifacts/stryker/tmp/a.ts',
+            'src/artifacts/a.ts',
+            'src/not.artifacts/a.ts',
+            'src/fixtures/a.ts',
+        ];
+
+        // Then - the first four are left out of the cruise, the look-alikes are cruised
+        expect(paths.map((path) => new RegExp(UNCRUISED_PATHS, 'u').test(path))).toStrictEqual([
+            true,
+            true,
+            true,
+            true,
+            false,
+            false,
+            false,
+        ]);
     });
 });

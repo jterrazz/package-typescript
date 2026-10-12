@@ -3,10 +3,7 @@ import { join } from 'node:path';
 import process from 'node:process';
 
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
-import {
-    clientOnlySources,
-    reportWithUnmeasured,
-} from '../../../lint/kit/project/browser-side.js';
+import { clientOnlySources, reportWithUnmeasured } from '../../../lint/kit/project/browser-side.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { toolchainIn } from '../../drivers/node/node.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
