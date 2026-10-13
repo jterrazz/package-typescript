@@ -1,9 +1,16 @@
-import { readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { describe, expect, test } from 'vitest';
+import { chmodSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { delimiter, dirname, join } from 'node:path';
+import { describe, expect, test, vi } from 'vitest';
 
+import { binaryIn, HOISTED_BESIDE_PACKAGE } from '../../../../lint/kit/project/package-root.js';
 import { recordingTool } from '../../__tests__/recording-tool.fixtures.js';
-import { fixedUnder, linted, suppressionsRecorded } from '../oxlint.js';
+import {
+    fixedUnder,
+    linted,
+    pathWithTsgolint,
+    suppressionsRecorded,
+    withTsgolintOnPath,
+} from '../oxlint.js';
 
 describe('oxlint', () => {
     test('a lint appends both streams of oxlint to the log another run already wrote', async () => {
@@ -65,5 +72,38 @@ describe('oxlint', () => {
                 silent: true,
             })),
         );
+    });
+
+    test('pathWithTsgolint — puts the folder of an installed tsgolint first, and leaves the path alone for a bare name or a file nobody holds', () => {
+        // Given - an installed binary, a bare name, and a path that holds no file
+        const tool = recordingTool();
+        const installed = join(tool.directory, 'tsgolint');
+        writeFileSync(installed, '#!/bin/sh\n');
+        chmodSync(installed, 0o755);
+
+        // Then - the folder leads where a file is, and nothing is added otherwise
+        expect([
+            pathWithTsgolint(installed, '/usr/bin'),
+            pathWithTsgolint(installed, undefined),
+            pathWithTsgolint('tsgolint', '/usr/bin'),
+            pathWithTsgolint(join(tool.directory, 'absent/tsgolint'), '/usr/bin'),
+        ]).toStrictEqual([
+            `${realpathSync(tool.directory)}${delimiter}/usr/bin`,
+            `${realpathSync(tool.directory)}${delimiter}`,
+            '/usr/bin',
+            '/usr/bin',
+        ]);
+    });
+
+    test('withTsgolintOnPath — puts the folder of the tsgolint it finds first on the PATH', () => {
+        // Given - the PATH, and the folder of the tsgolint beside this package
+        const folder = realpathSync(dirname(binaryIn('tsgolint', HOISTED_BESIDE_PACKAGE)));
+        vi.stubEnv('PATH', '/usr/bin');
+
+        // When - the tsgolint is put on it
+        withTsgolintOnPath();
+
+        // Then - its folder leads
+        expect(process.env.PATH).toBe(`${folder}${delimiter}/usr/bin`);
     });
 });

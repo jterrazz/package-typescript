@@ -14,12 +14,16 @@ export const oxlintBinary = (fallbackBin = HOISTED_BESIDE_PACKAGE): string =>
 export const oxlintConfig = (): ToolConfig =>
     editorConfigOf(OXLINT_CONFIG_NAMES, 'dist/oxlint-standin.js');
 
+/** `path` with the folder of `tsgolint` first, where oxlint looks for the type-aware linter: unchanged where `tsgolint` is a bare name or a path no file holds. */
+export function pathWithTsgolint(tsgolint: string, path: string | undefined): string | undefined {
+    return tsgolint.includes('/') && existsSync(tsgolint)
+        ? `${realpathSync(dirname(tsgolint))}${delimiter}${path ?? ''}`
+        : path;
+}
+
 /** Puts the tsgolint oxlint's type-aware rules spawn first on the PATH, where oxlint looks for it. */
 export function withTsgolintOnPath(fallbackBin = HOISTED_BESIDE_PACKAGE): void {
-    const tsgolint = binaryIn('tsgolint', fallbackBin);
-    if (tsgolint.includes('/') && existsSync(tsgolint)) {
-        process.env.PATH = `${realpathSync(dirname(tsgolint))}${delimiter}${process.env.PATH ?? ''}`;
-    }
+    process.env.PATH = pathWithTsgolint(binaryIn('tsgolint', fallbackBin), process.env.PATH);
 }
 
 /** Lints with `args`, the config's arguments, the caller's and the targets, its report appended to `log`. */
