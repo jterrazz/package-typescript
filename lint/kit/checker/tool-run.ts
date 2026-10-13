@@ -27,7 +27,7 @@ export function runTool(
     }
 
     return {
-        output: `${run.stdout ?? ''}${run.stderr ?? ''}`,
+        output: `${run.stdout}${run.stderr}`,
         ran: true,
         status: run.status ?? 1,
     };
@@ -42,6 +42,7 @@ export function toolOutput(binary: string, args: readonly string[], root: string
 
 // outside: gitleaks reads a directory, so the judged files are copied into one, each at the project's own path.
 function stageFiles(root: string, files: readonly string[]): string {
+    // Stryker disable next-line StringLiteral: the prefix only names the scratch folder
     const staged = mkdtempSync(join(tmpdir(), 'typescript-secrets-'));
     for (const path of files) {
         const source = join(root, path);
@@ -68,6 +69,7 @@ export function runGitleaks(root: string, files: readonly string[]): null | Tool
 
     const staged = stageFiles(root, files);
     try {
+        // Stryker disable next-line StringLiteral: the name only words the refusal of a binary that failed to start after its probe started it
         return runTool(
             'gitleaks',
             'gitleaks',
@@ -75,6 +77,7 @@ export function runGitleaks(root: string, files: readonly string[]): null | Tool
             staged,
         );
     } finally {
+        // Stryker disable next-line BooleanLiteral: the folder was made above and is still there, which `force` only forgives the absence of
         rmSync(staged, { force: true, recursive: true });
     }
 }
