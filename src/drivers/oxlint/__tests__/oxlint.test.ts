@@ -86,10 +86,12 @@ describe('oxlint', () => {
             pathWithTsgolint(installed, '/usr/bin'),
             pathWithTsgolint(installed, undefined),
             pathWithTsgolint('tsgolint', '/usr/bin'),
+            pathWithTsgolint('package.json', '/usr/bin'),
             pathWithTsgolint(join(tool.directory, 'absent/tsgolint'), '/usr/bin'),
         ]).toStrictEqual([
             `${realpathSync(tool.directory)}${delimiter}/usr/bin`,
             `${realpathSync(tool.directory)}${delimiter}`,
+            '/usr/bin',
             '/usr/bin',
             '/usr/bin',
         ]);

@@ -205,7 +205,13 @@ export function quotedMask(text: string): boolean[] {
 const commentsOf = (line: string, spans: readonly Span[]): string[] =>
     spans.map(([start, end]) => line.slice(start, end));
 
-export function countSuppressions(root: string, ignorePatterns: readonly string[] = []): number {
+// Stryker disable next-line ArrayDeclaration: a stand-in pattern names no file, so a project left unfiltered reads the same as one filtered by it
+const NO_PATTERNS: readonly string[] = [];
+
+export function countSuppressions(
+    root: string,
+    ignorePatterns: readonly string[] = NO_PATTERNS,
+): number {
     let found = 0;
 
     for (const path of projectFiles(root, { ignorePatterns }).filter((file) => SOURCE.test(file))) {
@@ -225,9 +231,6 @@ export function countSuppressions(root: string, ignorePatterns: readonly string[
 
     return found;
 }
-
-// Stryker disable next-line ArrayDeclaration: a stand-in pattern names no file, so a project left unfiltered reads the same as one filtered by it
-const NO_PATTERNS: readonly string[] = [];
 
 /** The `Stryker disable` directives of the project: each one declares mutants no test can tell from the original. */
 export function countStrykerDirectives(

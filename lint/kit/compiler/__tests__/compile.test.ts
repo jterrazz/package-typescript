@@ -105,11 +105,12 @@ describe('compile', () => {
         });
 
         // Then - the keys appear only when given
-        expect([Object.keys(bare).toSorted(), full.env, full.globals]).toStrictEqual([
-            ['ignorePatterns', 'options'],
-            { node: true },
-            { vi: 'readonly' },
-        ]);
+        expect([
+            Object.keys(bare).toSorted(),
+            bare.ignorePatterns,
+            full.env,
+            full.globals,
+        ]).toStrictEqual([['ignorePatterns', 'options'], [], { node: true }, { vi: 'readonly' }]);
     });
 
     test('takes a key the merge tables do not name from the last config that sets it, whole', () => {
