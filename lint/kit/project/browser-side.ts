@@ -61,17 +61,20 @@ function resolvedImport(unit: string, from: string): string | undefined {
 export function clientOnlySources(unit: string): ReadonlySet<string> {
     const sources = new Set<string>();
     for (const page of projectFiles(unit).filter((file) => file.endsWith('.astro'))) {
-        const text = readText(unit, page) ?? '';
+        const text = readText(unit, page);
+        if (text === null) {
+            continue;
+        }
         const imported = new Map(
-            // Stryker disable OptionalChaining: a match of a pattern holding named groups always carries its groups
+            // Stryker disable OptionalChaining,StringLiteral: a match of a pattern holding named groups always carries its groups
             [...text.matchAll(IMPORT)].map((match) => [
                 match.groups?.name ?? '',
                 match.groups?.from ?? '',
             ]),
-            // Stryker restore OptionalChaining
+            // Stryker restore OptionalChaining,StringLiteral
         );
         for (const tag of text.matchAll(CLIENT_ONLY_TAG)) {
-            // Stryker disable next-line OptionalChaining: a match of a pattern holding named groups always carries its groups
+            // Stryker disable next-line OptionalChaining,StringLiteral: a match of a pattern holding named groups always carries its groups
             const from = imported.get(tag.groups?.name ?? '');
             const found =
                 from === undefined

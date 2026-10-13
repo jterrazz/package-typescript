@@ -73,6 +73,7 @@ function locate(dir: string): null | { index: string; top: string } {
     }
     // outside: `--show-cdup` prints an empty line at the top level: the two answers are
     // read by position, never trimmed together.
+    // Stryker disable next-line StringLiteral: git prints both answers, so the defaults only satisfy the index type
     const [cdup = '', index = ''] = located.split('\n');
 
     return { index: resolve(dir, index), top: resolve(dir, cdup) };

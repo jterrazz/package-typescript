@@ -1,10 +1,19 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import process from 'node:process';
+import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
-import { filesUnder, projectFiles, PRUNED, readText, trackedFiles } from '../project-files.js';
+import {
+    EmptySweepError,
+    filesUnder,
+    orRefused,
+    projectFiles,
+    PRUNED,
+    readText,
+    trackedFiles,
+} from '../project-files.js';
 
 function folderHolding(paths: readonly string[]): string {
     const root = mkdtempSync(join(tmpdir(), 'project-files-'));
@@ -17,6 +26,14 @@ function folderHolding(paths: readonly string[]): string {
     }
 
     return root;
+}
+
+function notASweep(): never {
+    throw new TypeError('not a sweep');
+}
+
+function emptySweep(): never {
+    throw new EmptySweepError('nothing to read');
 }
 
 function refusalOf(root: string): undefined | { message: string; name: string } {
@@ -79,6 +96,41 @@ describe('projectFiles', () => {
 
         // Then - the files alone, sorted
         expect(projectFiles(root)).toStrictEqual(['src/a.ts', 'src/b.ts']);
+    });
+
+    test('walks past a folder it cannot read, and sweeps nothing from a root that does not exist', () => {
+        // Given - a folder git knows nothing of, holding a file and a folder closed to its reader, and a path nothing was made at
+        const root = folderHolding(['open.ts']);
+        mkdirSync(join(root, 'closed'));
+        chmodSync(join(root, 'closed'), 0o000);
+        onTestFinished(() => {
+            chmodSync(join(root, 'closed'), 0o755);
+        });
+
+        // Then - the file alone; and no file, no refusal, for the path that is not there
+        expect(projectFiles(root)).toStrictEqual(['open.ts']);
+        expect(projectFiles(join(root, 'nowhere'))).toStrictEqual([]);
+    });
+
+    test('orRefused — is the value of the read, and lets any error but the empty sweep through', () => {
+        // Given - a read that answers, and one that fails for a reason of its own
+        // Then - the answer, then the error as it was thrown
+        expect(orRefused(() => 3)).toBe(3);
+        expect(() => orRefused(notASweep)).toThrow(TypeError);
+        expect(() => orRefused(notASweep)).toThrow('not a sweep');
+    });
+
+    test('orRefused — prints an empty sweep to stderr and ends the process with 1', () => {
+        // Given - a read that finds an empty sweep
+
+        const written = vi.spyOn(process.stderr, 'write').mockReturnValue(true);
+        onTestFinished(() => {
+            written.mockRestore();
+        });
+
+        // Then - the message is printed whole, and the process is told to end with 1 (the runner turns that call into a throw)
+        expect(() => orRefused(emptySweep)).toThrow('process.exit unexpectedly called with "1"');
+        expect(written).toHaveBeenCalledWith('nothing to read\n');
     });
 
     test('leaves out the ground of a specs tree or a tests folder at any depth, and what the project ignores by pattern', () => {

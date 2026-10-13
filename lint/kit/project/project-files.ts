@@ -89,11 +89,13 @@ function walkSweep(root: string): string[] {
 }
 
 function holdsSomething(root: string): boolean {
+    // Stryker disable BlockStatement: an answer left undefined is as false as one given
     try {
         return readdirSync(root).some((name) => !UNSWEPT.has(name));
     } catch {
         return false;
     }
+    // Stryker restore BlockStatement
 }
 
 // Stryker disable next-line EqualityOperator: a sweep lists each path once, so no two compare equal
@@ -121,7 +123,7 @@ export class EmptySweepError extends Error {
 }
 
 export function projectFiles(
-    root = '.',
+    root: string,
     // Stryker disable next-line ArrayDeclaration: a pattern no path matches ignores what no pattern does
     { ignorePatterns = [] }: { ignorePatterns?: readonly string[] } = {},
 ): string[] {

@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
@@ -213,5 +213,21 @@ describe('workspaceMembers', () => {
 
         // Then - only the one the walk reaches
         expect(workspaceMembers(root)).toStrictEqual([reachable.join('/')]);
+    });
+
+    test('walks past a folder it cannot read', () => {
+        // Given - a workspace of every folder, one of them closed to its reader, beside a member
+        const root = tree({
+            'closed/.keep': '',
+            'member/package.json': PACKAGE,
+            'package.json': workspaces('*'),
+        });
+        chmodSync(join(root, 'closed'), 0o000);
+        onTestFinished(() => {
+            chmodSync(join(root, 'closed'), 0o755);
+        });
+
+        // Then - the member, and no throw
+        expect(workspaceMembers(root)).toStrictEqual(['member']);
     });
 });

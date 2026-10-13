@@ -102,6 +102,21 @@ describe('browser-side', () => {
         expect([...clientOnlySources(unit)]).toStrictEqual(['src/components/Particles.tsx']);
     });
 
+    test('clientOnlySources — reads nothing of a page it cannot read as text', () => {
+        // Given - a page holding NUL, which names a client-only component
+        const unit = mkdtempSync(join(tmpdir(), 'client-only-'));
+        units.push(unit);
+        mkdirSync(join(unit, 'src'), { recursive: true });
+        writeFileSync(join(unit, 'src/Orb.tsx'), 'export default null;\n');
+        writeFileSync(
+            join(unit, 'src/page.astro'),
+            "import Orb from './Orb';\n<Orb client:only />\0",
+        );
+
+        // Then - the page names no source
+        expect([...clientOnlySources(unit)]).toStrictEqual([]);
+    });
+
     test('clientOnlySources — reads an import spread over spaces and lines, and only in an Astro page', () => {
         // Given - a page importing with runs of whitespace between the words, and a markdown file and a component quoting the same lines
         const unit = mkdtempSync(join(tmpdir(), 'client-only-'));
