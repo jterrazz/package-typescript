@@ -211,6 +211,7 @@ export function judgedRuns(
     const { answered, forwarded, judged } = answering;
     for (const [file, mutant] of mutantsOf(modules.report, modules.measured)) {
         if (suite !== undefined && survivedTheModules(mutant, modules.ranByTests)) {
+            // Stryker disable next-line StringLiteral: the report of an answered survivor is replaced by the suite's when the suite judges it
             answered.set(keyOf(file, mutant), survivorOf(file, mutant, 'modules'));
         } else if (!leftByTheModules(mutant, modules.ranByTests)) {
             tally(judged, file, mutant, 'modules');

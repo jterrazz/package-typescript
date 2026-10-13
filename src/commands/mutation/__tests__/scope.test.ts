@@ -34,7 +34,7 @@ function treeOf(files: readonly string[]): string {
 
 describe('scope', () => {
     test('splits the sources the declaration names by whether a module test sits in their folder’s __tests__/, leaving out tests, fixtures and what it ignores', () => {
-        // Given - a source with its test, one with a .tsx test, one with none, a fixture, an expected file, a type test, a helper of the tests, a generated source the project ignores, a source with its test in a folder whose name holds .ts, and a lint entry
+        // Given - a source with its test, one with a .tsx test, one with none, a fixture, an expected file, a type test, a helper of the tests, tests, a type test and fixtures that sit beside their module, a generated source the project ignores, a source with its test in a folder whose name holds .ts, and a lint entry
         const root = treeOf([
             'src/a.ts',
             'src/__tests__/a.test.ts',
@@ -45,6 +45,10 @@ describe('scope', () => {
             'src/__tests__/e.fixtures.ts',
             'src/generated/f.ts',
             'src/__tests__/g.test-d.ts',
+            'src/beside.test.ts',
+            'src/beside.test.tsx',
+            'src/beside.test-d.ts',
+            'src/beside.fixtures.ts',
             'src/__tests__/stub.ts',
             'src/__expected__/h.ts',
             'src/legacy.ts.d/i.ts',
@@ -79,7 +83,7 @@ describe('scope', () => {
     });
 
     test('the suite measures each hunk of code the change made in a source with no module test, and an added source whole', () => {
-        // Given - a change of six hunks in one untested source — two of code, one of an import and a blank line, one of comments, one opening an import over several lines, one of an import with code after it on its line —, one added, and one in a source left out
+        // Given - a change of seven hunks in one untested source — two of code, one of an import and a blank line, one of comments, one opening an import over several lines, one of an import with code after it on its line, one of a doc comment with an empty line —, one added, and one in a source left out
         const source = [
             "import { a } from './a.js';",
             '',
@@ -93,6 +97,9 @@ describe('scope', () => {
             'import {',
             '    b,',
             "import { c } from './c.js'; export const d = c;",
+            '/**',
+            ' *',
+            ' */',
         ].join('\n');
         const changed = new Map<string, (readonly [number, number])[] | true>([
             [
@@ -104,6 +111,7 @@ describe('scope', () => {
                     [9, 9],
                     [10, 11],
                     [12, 12],
+                    [13, 15],
                 ],
             ],
             ['src/new.ts', true],
