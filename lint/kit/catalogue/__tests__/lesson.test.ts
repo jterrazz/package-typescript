@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
     defineInvariant,
     firstSentence,
+    invariant,
     lessonParts,
     missingParts,
     refusal,
@@ -134,6 +135,14 @@ describe('lesson', () => {
         // Then - the error says the bug is the package's
         expect(broken('a chain ran twice').message).toBe(
             '@acme/run broke one of its own invariants — a bug of the runner, not of the spec: a chain ran twice',
+        );
+    });
+
+    test('the invariant of this package says the bug is the toolchain’s, not the project’s', () => {
+        // Given - a break of this package's own invariant
+        // Then - the error names the package, the toolchain and what broke
+        expect(invariant('a pass ran twice').message).toBe(
+            '@jterrazz/typescript broke one of its own invariants — a bug of the toolchain, not of the project: a pass ran twice',
         );
     });
 });

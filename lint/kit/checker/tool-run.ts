@@ -69,8 +69,8 @@ export function runGitleaks(root: string, files: readonly string[]): null | Tool
 
     const staged = stageFiles(root, files);
     try {
-        // Stryker disable next-line StringLiteral: the name only words the refusal of a binary that failed to start after its probe started it
         return runTool(
+            // Stryker disable next-line StringLiteral: the name only words the refusal of a binary that failed to start after its probe started it
             'gitleaks',
             'gitleaks',
             ['dir', '.', '--no-banner', '--redact', '--exit-code', '1'],
