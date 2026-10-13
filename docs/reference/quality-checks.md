@@ -950,7 +950,7 @@ Five shapes breed mutants no test can kill, because the mutant behaves as the or
 
 `--mutate <file>` applies the default run's policy to the file it names: a static mutant — a module-level table, a pattern, a message — a module test detects is detected, and one only loading the module ran is left to the suite, so the report of a file named alone is the report the file has in the default run.
 
-A workspace member's specs run in the sandbox beside the roots the repository declares (`typescript.roots`), laid next to the member's copy: a spec that climbs a fixed number of folders to read a file of the repository root finds it where it climbs to.
+A workspace member's specs run in the sandbox beside the roots the repository declares (`typescript.roots`), laid next to the member's copy: a spec that climbs a fixed number of folders to read a file of the repository root finds it where it climbs to. A member below the repository root gets the root's top-level entries linked into its own `.artifacts/` for those specs; the run removes them when it ends, and the next run removes those a killed run left. They loop back on themselves, and the Names pass never meets one: it hands ls-lint the paths git tracks, laid out as empty files, not the disk.
 
 ## Pitfalls
 
