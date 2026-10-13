@@ -33,6 +33,7 @@ const SHIPPING_REASONS: readonly (readonly [keyof DocsTree['ships'], string])[] 
     ['publishable', 'a published package (it declares a library or a cli)'],
 ];
 
+// Stryker disable next-line StringLiteral: the flag only selects unicode mode, which this pattern reads the same
 const IN_SECTION = new RegExp(`^docs/(${SECTIONS.join('|')}).`, 'u');
 
 /** Every entry under the four sections, a nested folder and what it holds included. */

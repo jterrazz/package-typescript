@@ -145,4 +145,38 @@ describe('docs.pages', () => {
             "docs/concepts/design-exploration.md names a journal, not a subject — exploration; the record is an ADR, the history is git's",
         );
     });
+
+    test.each([
+        'draft',
+        'exploration',
+        'legacy',
+        'misc',
+        'notes',
+        'old',
+        'proposal',
+        'review',
+        'todo',
+        'wip',
+    ])('auditPages — names a page carrying the journal word %s', (word) => {
+        // Given - a concept page named after the word, beside a hyphenated one
+        const tree = withPage(`docs/concepts/${word}.md`);
+
+        // Then - the word is named
+        expect(messageOf(tree, 'docs/page-names-a-subject')).toBe(
+            `docs/concepts/${word}.md names a journal, not a subject — ${word}; the record is an ADR, the history is git's`,
+        );
+    });
+
+    test.each(['docs/guides/lint.md.bak', 'docs/guides/lint-Presets.md', 'docs/guides/lint-9.md'])(
+        'auditPages — judges the name %s whole',
+        (path) => {
+            // Given - a page whose name breaks the mold at its end, or in a later word
+            const tree = withPage(path);
+
+            // Then - only the page named in kebab-case passes, a digit-led word apart
+            expect(rulesBrokenBy(tree)).toStrictEqual(
+                path.endsWith('9.md') ? [] : ['docs/page-named-in-kebab-case'],
+            );
+        },
+    );
 });

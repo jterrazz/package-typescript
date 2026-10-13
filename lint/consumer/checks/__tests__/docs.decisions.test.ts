@@ -285,4 +285,81 @@ describe('docs.decisions', () => {
             path: 'docs/decisions/_template.md',
         });
     });
+
+    test.each([
+        ['Deprecated', []],
+        ['Proposed', []],
+        ['Superseded by [ADR-014](014-the-later-call.md) in time', ['docs/decision-status-known']],
+        ['Not Superseded by [ADR-014](014-the-later-call.md)', ['docs/decision-status-known']],
+        ['Superseded by ADR-014 in time', ['docs/decision-status-known']],
+        ['Was Superseded by ADR-014', ['docs/decision-status-known']],
+    ])('auditDecisions — reads the status %s whole', (status, broken) => {
+        // Given - a record declaring the status, alone on its line
+        const tree = withDecisions({
+            heads: {
+                'docs/decisions/001-the-first-call.md': [
+                    '# ADR-001: The first call',
+                    '',
+                    `**Status:** ${status}`,
+                ],
+            },
+        });
+
+        // Then - a status from the vocabulary passes, and one carrying words before or after a successor is none of it
+        expect(rulesBrokenBy(tree)).toStrictEqual(broken);
+        expect(
+            messageOf(tree, 'docs/decision-status-known')?.includes('names a successor'),
+        ).not.toBe(true);
+    });
+
+    test.each([
+        '001-the-first-call.md.bak',
+        '001-The-first-call.md',
+        '001-the-First-call.md',
+        '001-the-first-Call.md',
+        '1001-the-first-call.md',
+    ])('auditDecisions — refuses the record name %s', (name) => {
+        // Given - a file whose name is NNN-kebab.md but for one detail
+        const tree = withDecisions({ files: [...withDecisions().files, `docs/decisions/${name}`] });
+
+        // Then - the name is refused as no record of the mold
+        expect(violationOf(tree, 'docs/decision-named-by-number-and-subject')?.path).toBe(
+            `docs/decisions/${name}`,
+        );
+    });
+
+    test('auditDecisions — reads a heading and a status line only from the start of their line', () => {
+        // Given - a record whose heading and status are quoted after other words
+        const tree = withDecisions({
+            heads: {
+                'docs/decisions/001-the-first-call.md': [
+                    'Note # ADR-001: The first call',
+                    '',
+                    'See **Status:** Accepted',
+                ],
+            },
+        });
+
+        // Then - neither is the line the mold asks for
+        expect(rulesBrokenBy(tree)).toStrictEqual([
+            'docs/decision-heading-carries-its-number',
+            'docs/decision-status-known',
+        ]);
+    });
+
+    test('auditDecisions — reads a status written against its marker', () => {
+        // Given - **Status:** with no space before the word
+        const tree = withDecisions({
+            heads: {
+                'docs/decisions/001-the-first-call.md': [
+                    '# ADR-001: The first call',
+                    '',
+                    '**Status:**Accepted',
+                ],
+            },
+        });
+
+        // Then - the word is the status, and it is known
+        expect(rulesBrokenBy(tree)).toStrictEqual([]);
+    });
 });
