@@ -1,7 +1,7 @@
-import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { chmodSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
 import { objectOf, parsedObject } from '../../../kit/project/json.js';
 import { ignoredOf, lsLintConfig, lsLintFindings, runLsLint } from '../names.ls-lint.js';
@@ -173,13 +173,13 @@ describe('names.ls-lint', () => {
     test('runs ls-lint over a tree, reading its failures, and leaves no scratch folder', () => {
         // Given - a tree with one refused folder, and one with none
         const config = lsLintConfig({ ignorePatterns: [], trees: treesOf(['']), units: [''] });
-        const refused = onDisk(['src/Api_Client/client.ts']);
-        const clean = onDisk(['src/api-client/client.ts']);
+        const refused = ['src/Api_Client/client.ts'];
+        const clean = ['src/api-client/client.ts'];
         const scratch = mkdtempSync(join(tmpdir(), 'names-ls-lint-scratch-'));
         vi.stubEnv('TMPDIR', scratch);
 
         // When - ls-lint runs over each
-        const runs = [runLsLint(LS_LINT, refused, config), runLsLint(LS_LINT, clean, config)];
+        const runs = [runLsLint(LS_LINT, config, refused), runLsLint(LS_LINT, config, clean)];
         vi.unstubAllEnvs();
 
         // Then - the refused folder is named, the clean tree has nothing, and the scratch folders are gone
@@ -196,7 +196,7 @@ describe('names.ls-lint', () => {
     test('allows the special folders of each root, and no other spelt alike', () => {
         // Given - the specs root's __setup__ beside an unknown special folder, a stray __setup__ and stray ground in a code root, a folder off kebab-case under tests/, folders off kebab-case under specs/, the lint tree's tests and the ground of a spec or a module test, and one in a folder no rule names
         const config = lsLintConfig({ ignorePatterns: [], trees: treesOf(['']), units: [''] });
-        const root = onDisk([
+        const paths = [
             'docs/Notes_Dir/a.md',
             'lint/__tests__/Bad_Dir/a.ts',
             'specs/Bad_Dir/a.ts',
@@ -208,11 +208,10 @@ describe('names.ls-lint', () => {
             'src/__tests__/a.test.ts',
             'src/x/__tests__/__fixtures__/Odd_Name/a.json',
             'tests/Bad_Dir/a.ts',
-        ]);
+        ];
 
         // When - ls-lint runs over it
-        const { failures } = runLsLint(LS_LINT, root, config);
-        rmSync(root, { force: true, recursive: true });
+        const { failures } = runLsLint(LS_LINT, config, paths);
 
         // Then - the folders off their root's list, and nothing the lists hold or no rule names
         expect(Object.keys(failures).toSorted()).toStrictEqual([
@@ -233,7 +232,7 @@ describe('names.ls-lint', () => {
             trees: treesOf(['', 'packages/m/']),
             units: ['', 'packages/m/'],
         });
-        const root = onDisk([
+        const paths = [
             'lint/index.ts',
             'lint/stray.ts',
             'lint/consumer/loose.ts',
@@ -255,10 +254,10 @@ describe('names.ls-lint', () => {
             'packages/m/src/Bad_Dir/x.ts',
             'packages/m/bin/Bad_Dir/x.ts',
             'packages/m/prisma/migrations/20260902230946_init/migration.sql',
-        ]);
+        ];
 
         // When - ls-lint runs over it
-        const { failures } = runLsLint(LS_LINT, root, config);
+        const { failures } = runLsLint(LS_LINT, config, paths);
 
         // Then - each broken rule names its path, and nothing allowed is named
         expect(Object.keys(failures).toSorted()).toStrictEqual([
@@ -279,13 +278,33 @@ describe('names.ls-lint', () => {
         ]);
     });
 
+    test('hands ls-lint a tree of empty files laid out from the paths alone, whatever the disk holds', () => {
+        // Given - a binary that reports every file of the tree it is run in, and the paths of a sweep, one under a dot folder
+        const scratch = mkdtempSync(join(tmpdir(), 'names-ls-lint-binary-'));
+        onTestFinished(() => {
+            rmSync(scratch, { force: true, recursive: true });
+        });
+        const binary = join(scratch, 'ls-lint');
+        writeFileSync(
+            binary,
+            '#!/bin/sh\nprintf \'{"tree":{"files":["%s"]}}\' "$(find . -type f -size 0 | sort | tr \'\\n\' \' \')"\nexit 1\n',
+        );
+        chmodSync(binary, 0o755);
+
+        // When - it runs over the paths
+        const { failures } = runLsLint(binary, '', ['src/a.ts', '.cache/b/c.ts']);
+
+        // Then - the tree held those paths, each an empty file, and nothing else
+        expect(failures).toStrictEqual({ tree: { files: ['./.cache/b/c.ts ./src/a.ts '] } });
+    });
+
     test('names a run that leaves no report, and a binary that is not there', () => {
         // Given - a config ls-lint cannot read
-        const root = onDisk(['src/a.ts']);
+        const paths = ['src/a.ts'];
 
         // When - it runs with it, then a binary nowhere on disk runs
-        const unread = runLsLint(LS_LINT, root, 'ls: [not a map\n');
-        const missing = runLsLint(join(root, 'no-ls-lint'), root, '');
+        const unread = runLsLint(LS_LINT, 'ls: [not a map\n', paths);
+        const missing = runLsLint(join(tmpdir(), 'no-ls-lint'), '', paths);
 
         // Then - each problem says what stopped the pass, ls-lint's own words set apart
         const said = /(?<=— ).*?(?= · why)/u;

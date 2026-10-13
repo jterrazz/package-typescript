@@ -237,8 +237,8 @@ async function laidOut(
     const toolRoots = await memberToolRootsOf(context, units);
     const { failures, problem } = runLsLint(
         context.value('--ls-lint', 'ls-lint'),
-        context.root,
         lsLintConfig({ ignorePatterns: verbatim, toolRoots, trees, units }),
+        swept,
     );
     const declared = declaredNamesRules(await context.config());
     const own = declaredNamesFindings(context, {

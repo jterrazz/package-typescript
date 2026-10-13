@@ -139,8 +139,8 @@ export function declaredNamesFindings(
     for (const rule of rules) {
         const { failures, problem } = runLsLint(
             context.value('--ls-lint', 'ls-lint'),
-            context.root,
             configOf(rule, { ignorePatterns, units }),
+            swept,
         );
         if (problem !== null) {
             problems.push(problem);

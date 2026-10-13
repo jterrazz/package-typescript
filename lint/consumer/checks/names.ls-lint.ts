@@ -1,7 +1,7 @@
-import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
 import { refusal } from '../../kit/catalogue/lesson.js';
 import type { Finding } from '../../kit/checker/pass.js';
@@ -246,21 +246,34 @@ function failuresOf(parsed: unknown): Failures {
     );
 }
 
+// invariant: a name is judged from its path alone, so ls-lint walks a tree of empty files laid out from the swept paths — a link a run left on the disk, under an ignored dot folder or elsewhere, is never entered.
+function stagePaths(scratch: string, paths: readonly string[]): string {
+    const staged = join(scratch, 'tree');
+    mkdirSync(staged);
+    for (const path of paths) {
+        mkdirSync(join(staged, dirname(path)), { recursive: true });
+        writeFileSync(join(staged, path), '');
+    }
+
+    return staged;
+}
+
 export function runLsLint(
     binary: string,
-    root: string,
     config: string,
+    paths: readonly string[],
 ): { failures: Failures; problem: null | string } {
     // Stryker disable next-line StringLiteral: the prefix only names the scratch folder for whoever finds it left behind
     const scratch = mkdtempSync(join(tmpdir(), 'typescript-ls-lint-'));
     try {
         const path = join(scratch, 'ls-lint.yml');
         writeFileSync(path, config);
+        const staged = stagePaths(scratch, paths);
         const { output, ran, status } = runTool(
             'ls-lint',
             binary,
             ['-config', path, '-error-output-format', 'json'],
-            root,
+            staged,
         );
         if (status === 0) {
             return { failures: {}, problem: null };
