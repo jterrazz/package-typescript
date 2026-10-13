@@ -22,7 +22,7 @@ export const LAYER = {
     fix: 'import it through the port',
     from: { path: 'domain' },
     name: 'domain-stays-pure',
-    read: 'docs/guides/develop.md#layers',
+    read: 'docs/reference/quality-checks.md#mutation',
     to: { path: 'infrastructure' },
     why: 'A domain module never reaches for infrastructure.',
 };
