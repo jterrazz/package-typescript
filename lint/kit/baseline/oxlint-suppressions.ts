@@ -62,11 +62,13 @@ export function removeWhenEmpty(root: string): void {
 
 export function vanishedEntries(root: string): string[] {
     let parsed: unknown;
+    // Stryker disable StringLiteral,BlockStatement: JSON.parse reads a Buffer as its text, and an unreadable file leaves parsed undefined, which objectOf reads as no entries, the empty list either way
     try {
         parsed = JSON.parse(readFileSync(join(root, OXLINT_SUPPRESSIONS), 'utf8'));
     } catch {
         return [];
     }
+    // Stryker restore StringLiteral,BlockStatement
 
     return Object.keys(objectOf(parsed)).filter((path) => !existsSync(join(root, path)));
 }
@@ -74,6 +76,7 @@ export function vanishedEntries(root: string): string[] {
 export function suppressedCount(root: string): null | number {
     let parsed: unknown;
     try {
+        // Stryker disable next-line StringLiteral: JSON.parse reads a Buffer as its text
         parsed = JSON.parse(readFileSync(join(root, OXLINT_SUPPRESSIONS), 'utf8'));
     } catch {
         return null;

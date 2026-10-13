@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { suppressionDirectives } from '../directives.js';
+import { holdsDirectives, suppressionDirectives } from '../directives.js';
 
 const { directivesIn, suppressedLines } = suppressionDirectives('checker');
 
@@ -62,6 +62,48 @@ describe('directives', () => {
             },
             { ids: ['seeds-are-sql'], line: 4, rest: 'seeds-are-sql */' },
             { ids: [], line: 5, rest: '-- a reason, and no pass named' },
+        ]);
+    });
+
+    test.each([
+        ['a.ts', true],
+        ['a.tsx', true],
+        ['a.js', true],
+        ['a.jsx', true],
+        ['a.cjs', true],
+        ['a.mts', true],
+        ['a.yml', true],
+        ['a.yaml', true],
+        ['a.json', true],
+        ['a.md', true],
+        ['a.sql', true],
+        ['a.http', true],
+        ['a.txt', true],
+        ['a.ts.snap', false],
+        ['a.png', false],
+        ['a.tsa', false],
+        ['a.xs', false],
+    ])('holdsDirectives — reads the file %s: %s', (path, holds) => {
+        // Given - a path
+        // Then - only the whole extension of a source or a text file holds directives
+        expect(holdsDirectives(path)).toBe(holds);
+    });
+
+    test('directivesIn — reads a directive only where a comment mark ends the text before it', () => {
+        // Given - the marker glued to the directive, after code, in a block comment, glued to a word, and quoted in prose
+        const text = [
+            '//checker-disable-line a',
+            'x//  checker-disable-line b',
+            '// the checker-disable-line c',
+            'run(); // checker-disable-line d',
+            '/* checker-disable-next-line e */',
+        ].join('\n');
+
+        // Then - the first, fourth and fifth only
+        expect(directivesIn(text).map(({ ids, line }) => [line, ids])).toStrictEqual([
+            [1, ['a']],
+            [4, ['d']],
+            [5, ['e']],
         ]);
     });
 

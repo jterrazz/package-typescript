@@ -21,6 +21,7 @@ export const STRYKER_DISABLE = new RegExp(
 );
 
 // outside: no project of this toolchain runs Biome.
+// Stryker disable next-line StringLiteral: the flag only selects unicode mode, which this pattern reads the same
 export const BIOME = new RegExp(`${COMMENT}biome-ignore\\b`, 'u');
 
 const QUOTES: ReadonlySet<string> = new Set(['"', "'"]);

@@ -28,6 +28,7 @@ export function unknownSetting(
 ): string | undefined {
     const named = presets.filter((preset) => preset.name === name);
     const writable = named.flatMap((preset) => preset.writableSettings ?? []);
+    // Stryker disable next-line ArrayDeclaration: a stand-in key names no setting a project writes
     const known = new Set([...writable, ...named.flatMap((preset) => preset.lawSettings ?? [])]);
     const key = Object.keys(own ?? {}).find((one) => !known.has(one));
 

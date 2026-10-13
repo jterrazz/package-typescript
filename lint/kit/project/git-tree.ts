@@ -17,6 +17,7 @@ type WorkTree = {
     top: string;
 };
 
+// Stryker disable next-line ArrayDeclaration: a stand-in entry holds no top, and a directory is under no top that reads undefined
 const trees: WorkTree[] = [];
 const outsideWorkTrees = new Set<string>();
 

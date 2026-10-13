@@ -28,7 +28,15 @@ describe('packed-files', () => {
 
     test('no `files` packs every path, and npm packs the manifest and the readme whatever `files` says', () => {
         // Given - a manifest with no `files`, and one shipping `dist` alone
-        const targets = ['dist/index.js', 'src/index.ts', 'package.json', 'README.md', 'LICENSE'];
+        const targets = [
+            'dist/index.js',
+            'src/index.ts',
+            'package.json',
+            'README.md',
+            'LICENSE',
+            'CHANGELOG.md',
+            'src/changelog.ts',
+        ];
 
         // Then - the first packs everything; the second packs `dist`, the manifest, the readme and the license
         expect(
@@ -39,6 +47,8 @@ describe('packed-files', () => {
             ['package.json', true, true],
             ['README.md', true, true],
             ['LICENSE', true, true],
+            ['CHANGELOG.md', true, true],
+            ['src/changelog.ts', true, false],
         ]);
     });
 

@@ -106,6 +106,31 @@ describe('preset', () => {
         expect(unknown.resolved.layers).toHaveLength(1);
     });
 
+    test('leaves nothing standing where even the base cannot be resolved', () => {
+        // Given - a base that holds two presets of one name from two packages
+        // When - an empty file is resolved against it
+        const { problem, resolved } = resolveConfig({}, () => [
+            BASE,
+            { ...BASE, package: 'other' },
+        ]);
+
+        // Then - the collision is named, and nothing of any law stands
+        expect([problem, resolved]).toStrictEqual([
+            'holds two presets named `typescript`, from @jterrazz/typescript and other',
+            {
+                baseline: [],
+                declaration: null,
+                laws: [],
+                layers: [],
+                names: [],
+                optOuts: [],
+                own: {},
+                presets: [],
+                sections: {},
+            },
+        ]);
+    });
+
     test('refuses two presets of one name from two packages', () => {
         // Given - two presets named alike by two packages
         const { problem } = resolveConfig(

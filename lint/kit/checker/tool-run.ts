@@ -60,6 +60,7 @@ function stageFiles(root: string, files: readonly string[]): string {
 }
 
 export function runGitleaks(root: string, files: readonly string[]): null | ToolRun {
+    // Stryker disable next-line ArrayDeclaration,StringLiteral,ObjectLiteral: the probe only asks whether the binary starts; its argument and its stdio change nothing it reads
     const probe = spawnSync('gitleaks', ['version'], { stdio: 'ignore' });
     if (probe.error !== undefined) {
         return null;

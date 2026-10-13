@@ -102,6 +102,31 @@ describe('browser-side', () => {
         expect([...clientOnlySources(unit)]).toStrictEqual(['src/components/Particles.tsx']);
     });
 
+    test('clientOnlySources — reads an import spread over spaces and lines, and only in an Astro page', () => {
+        // Given - a page importing with runs of whitespace between the words, and a markdown file and a component quoting the same lines
+        const unit = mkdtempSync(join(tmpdir(), 'client-only-'));
+        units.push(unit);
+        mkdirSync(join(unit, 'src'), { recursive: true });
+        writeFileSync(join(unit, 'src/Spread.tsx'), 'export default null;\n');
+        writeFileSync(join(unit, 'src/Quoted.tsx'), 'export default null;\n');
+        const lines = ['<Quoted client:only="react" />'];
+        writeFileSync(
+            join(unit, 'src/page.astro'),
+            ["import   Spread   from   './Spread';", '<Spread client:only="react" />'].join('\n'),
+        );
+        writeFileSync(
+            join(unit, 'src/notes.md'),
+            ["import Quoted from './Quoted';", ...lines].join('\n'),
+        );
+        writeFileSync(
+            join(unit, 'src/quoting.tsx'),
+            ["import Quoted from './Quoted';", ...lines].join('\n'),
+        );
+
+        // Then - the spread import resolves, and the quoting files name nothing
+        expect([...clientOnlySources(unit)]).toStrictEqual(['src/Spread.tsx']);
+    });
+
     test('clientOnlySources — resolves a component of any framework by its extension, from the page’s folder, however its attributes are ordered, and reads no tag that only starts like client:only', () => {
         // Given - pages in two folders loading a jsx, a vue, a svelte and a shared component, one of them with attributes before client:only, and a tag whose directive only starts like it
         const unit = mkdtempSync(join(tmpdir(), 'client-only-'));

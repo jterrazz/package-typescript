@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { filesUnder, projectFiles, readText, trackedFiles } from '../project-files.js';
+import { filesUnder, projectFiles, PRUNED, readText, trackedFiles } from '../project-files.js';
 
 function folderHolding(paths: readonly string[]): string {
     const root = mkdtempSync(join(tmpdir(), 'project-files-'));
@@ -149,6 +149,18 @@ describe('projectFiles', () => {
         ]);
     });
 
+    test('passes a folder holding only the repository folder of a tool, and names the folders a walk prunes', () => {
+        // Given - a folder whose only entry is a .git folder
+        const root = folderHolding([]);
+        mkdirSync(join(root, '.git'));
+
+        // Then - it holds nothing to read, and the pruned folders are the three a walk never enters
+        expect([projectFiles(root), [...PRUNED]]).toStrictEqual([
+            [],
+            ['.git', 'dist', 'node_modules'],
+        ]);
+    });
+
     test('lists every file at any depth, relative and sorted, and no directory', () => {
         // Given - a tree with a nested file, a file at the top and an empty folder
         const root = mkdtempSync(join(tmpdir(), 'files-under-'));
@@ -177,6 +189,8 @@ describe('projectFiles', () => {
         writeFileSync(join(root, 'edge.txt'), 'x'.repeat(1_000_000));
         writeFileSync(join(root, 'large.txt'), 'x'.repeat(1_000_001));
         writeFileSync(join(root, 'nul.txt'), 'a\0b');
+        writeFileSync(join(root, 'font.woff'), 'not really a font\n');
+        writeFileSync(join(root, 'archive.zip.txt'), 'about a zip\n');
 
         // Then - the text alone, a file of exactly a million bytes still read
         const read = [
@@ -187,12 +201,14 @@ describe('projectFiles', () => {
             'large.txt',
             'nul.txt',
             'gone.ts',
+            'font.woff',
+            'archive.zip.txt',
         ].map((path) => {
             const text = readText(root, path);
 
             return text === null ? null : text.length;
         });
-        expect(read).toStrictEqual([5, null, null, 1_000_000, null, null, null]);
+        expect(read).toStrictEqual([5, null, null, 1_000_000, null, null, null, null, 12]);
     });
 
     test("trackedFiles — is the repository's index, file by file, and nothing outside a repository", () => {

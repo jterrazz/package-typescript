@@ -48,6 +48,7 @@ export function pnpmWorkspacePatterns(root: string): string[] {
 }
 
 // invariant: empty for a single-package project, which every caller reads as "the root is the unit".
+// Stryker disable next-line StringLiteral: resolve reads an empty root as the working folder, as it reads a dot
 export function workspaceMembers(root = '.'): string[] {
     const absolute = resolve(root);
     const manifest = readManifest(absolute);

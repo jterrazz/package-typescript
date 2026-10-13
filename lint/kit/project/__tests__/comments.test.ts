@@ -7,6 +7,7 @@ import {
     blankComments,
     commentSpansOf,
     countStrykerDirectives,
+    countSuppressions,
     isCommentedElsewhere,
     quotedMask,
 } from '../comments.js';
@@ -202,5 +203,37 @@ describe('comments', () => {
             countStrykerDirectives(root),
             countStrykerDirectives(root, ['quoted/**']),
         ]).toStrictEqual([3, 2]);
+    });
+
+    test('countSuppressions — counts the lint, type and biome directives that open a comment of the source files, not prose about one, nor files of other kinds, nor ignored ones', () => {
+        // Given - sources of each extension holding one directive, prose naming a directive, a snapshot and a page holding directives, and an ignored folder
+        const root = mkdtempSync(join(tmpdir(), 'suppressions-'));
+        onTestFinished(() => {
+            rmSync(root, { force: true, recursive: true });
+        });
+        const files: Record<string, string> = {
+            'a.astro': '// eslint-disable-next-line x\n',
+            'b.cjs': '// @ts-expect-error: x\n',
+            'c.mts': '/* oxlint-disable x */\n',
+            'd.svelte': '// biome-ignore lint: x\n',
+            'e.tsx': '// @ts-ignore: x\n',
+            'f.vue': '// eslint-disable-line x\n',
+            'g.jsx': '// the eslint-disable family and the @ts-ignore one are prose\n',
+            'ignored/h.ts': '// eslint-disable-next-line x\n',
+            'notes.md': '// eslint-disable-next-line x\n',
+            'snap.ts.snap': '// eslint-disable-next-line x\n',
+            'types.d.mts.map': '// eslint-disable-next-line x\n',
+        };
+        for (const [path, text] of Object.entries(files)) {
+            mkdirSync(dirname(join(root, path)), { recursive: true });
+            writeFileSync(join(root, path), text);
+        }
+        writeFileSync(join(root, 'locked.ts'), '// eslint-disable-next-line x\n');
+        chmodSync(join(root, 'locked.ts'), 0o000);
+
+        // Then - the six sources count, and the ignored folder once it is named is one more left out
+        expect([countSuppressions(root), countSuppressions(root, ['ignored/**'])]).toStrictEqual([
+            7, 6,
+        ]);
     });
 });

@@ -40,11 +40,13 @@ const IMPORT = /import\s+(?<name>\w+)\s+from\s+['"](?<from>\.[^'"]*)['"]/gu;
 const CLIENT_ONLY_TAG = /<(?<name>\w+)\b[^>]*\bclient:only\b/gu;
 
 function holdsFile(unit: string, path: string): boolean {
+    // Stryker disable BlockStatement: find reads an undefined and a false the same
     try {
         return statSync(join(unit, path)).isFile();
     } catch {
         return false;
     }
+    // Stryker restore BlockStatement
 }
 
 function resolvedImport(unit: string, from: string): string | undefined {
@@ -61,12 +63,15 @@ export function clientOnlySources(unit: string): ReadonlySet<string> {
     for (const page of projectFiles(unit).filter((file) => file.endsWith('.astro'))) {
         const text = readText(unit, page) ?? '';
         const imported = new Map(
+            // Stryker disable OptionalChaining: a match of a pattern holding named groups always carries its groups
             [...text.matchAll(IMPORT)].map((match) => [
                 match.groups?.name ?? '',
                 match.groups?.from ?? '',
             ]),
+            // Stryker restore OptionalChaining
         );
         for (const tag of text.matchAll(CLIENT_ONLY_TAG)) {
+            // Stryker disable next-line OptionalChaining: a match of a pattern holding named groups always carries its groups
             const from = imported.get(tag.groups?.name ?? '');
             const found =
                 from === undefined
