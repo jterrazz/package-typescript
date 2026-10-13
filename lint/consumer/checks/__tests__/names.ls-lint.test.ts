@@ -278,8 +278,8 @@ describe('names.ls-lint', () => {
         ]);
     });
 
-    test('hands ls-lint a tree of empty files laid out from the paths alone, whatever the disk holds', () => {
-        // Given - a binary that reports every file of the tree it is run in, and the paths of a sweep, one under a dot folder
+    test('hands ls-lint a tree laid out from the paths alone, whatever the disk holds', () => {
+        // Given - a binary that reports every file of the tree it is run in with its size, and the paths of a sweep, one under a dot folder and one a manifest
         const scratch = mkdtempSync(join(tmpdir(), 'names-ls-lint-binary-'));
         onTestFinished(() => {
             rmSync(scratch, { force: true, recursive: true });
@@ -287,21 +287,23 @@ describe('names.ls-lint', () => {
         const binary = join(scratch, 'ls-lint');
         writeFileSync(
             binary,
-            '#!/bin/sh\nprintf \'{"tree":{"files":["%s"]}}\' "$(find . -type f -size -4c | sort | tr \'\\n\' \' \')"\nexit 1\n',
+            '#!/bin/sh\nprintf \'{"tree":{"files":["%s"]}}\' "$(find . -type f | sort | while read -r file; do printf \'%s:%s \' "$file" "$(wc -c < "$file" | tr -d \' \')"; done)"\nexit 1\n',
         );
         chmodSync(binary, 0o755);
 
-        // When - it runs over the paths
+        // When - it runs over the paths, and over none
         const { failures } = runLsLint(binary, '', [
             'src/a.ts',
             '.cache/b/c.ts',
             'packages/m/package.json',
         ]);
+        const bare = runLsLint(binary, '', []);
 
-        // Then - the tree held those paths, each an empty file or an empty manifest, and nothing else
-        expect(failures).toStrictEqual({
-            tree: { files: ['./.cache/b/c.ts ./packages/m/package.json ./src/a.ts '] },
-        });
+        // Then - the tree held those paths, each an empty file but the manifest, and an empty sweep still gives the tool a tree to run in
+        expect([failures, bare]).toStrictEqual([
+            { tree: { files: ['./.cache/b/c.ts:0 ./packages/m/package.json:3 ./src/a.ts:0 '] } },
+            { failures: { tree: { files: [''] } }, problem: null },
+        ]);
     });
 
     test('names a run that leaves no report, and a binary that is not there', () => {
