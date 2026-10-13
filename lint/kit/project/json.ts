@@ -8,6 +8,10 @@ export function isList(value: unknown): value is readonly unknown[] {
     return Array.isArray(value);
 }
 
+export function listOf(value: unknown): readonly unknown[] {
+    return Array.isArray(value) ? value : [];
+}
+
 export function objectOf(value: unknown): JsonObject {
     return isJsonObject(value) ? value : {};
 }
@@ -24,6 +28,10 @@ export function stringRecordOf(value: unknown): Record<string, string> {
             (entry): entry is [string, string] => typeof entry[1] === 'string',
         ),
     );
+}
+
+export function textOf(value: unknown): string {
+    return typeof value === 'string' ? value : '';
 }
 
 export function stringOf(value: unknown): null | string {

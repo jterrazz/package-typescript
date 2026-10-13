@@ -10,7 +10,7 @@ import { runTool } from '../../kit/checker/tool-run.js';
 import type { ToolRun } from '../../kit/checker/tool-run.js';
 import { UNCRUISED_PATHS } from '../../kit/project/ground.js';
 import { isInert } from '../../kit/project/inert-laws.js';
-import { objectOf, stringOf } from '../../kit/project/json.js';
+import { isJsonObject, listOf, objectOf, textOf } from '../../kit/project/json.js';
 import { DEPENDENCY_CRUISER_CONFIGS, SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { isChapterAnchor, presetLesson } from '../../kit/project/preset.js';
 import type { ArchitectureRule } from '../../kit/project/preset.js';
@@ -25,22 +25,19 @@ const OWN_FIX =
 
 const OWN_READ: ChapterAnchor = 'docs/reference/quality-checks.md#the-architecture-layer-map-pass';
 
-type Declared = { problem: null | string; rules: ArchitectureRule[] };
+type Declared = { problem: null; rules: ArchitectureRule[] } | { problem: string };
 
 type Violation = { from: string; rule: string; to: string };
 
 type Lesson = Pick<ArchitectureRule, 'fix' | 'read' | 'why'>;
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-    value !== null && typeof value === 'object' && !Array.isArray(value);
-
 function isRule(value: unknown): value is ArchitectureRule {
     return (
-        isRecord(value) &&
+        isJsonObject(value) &&
         ['fix', 'name', 'why'].every((key) => typeof value[key] === 'string') &&
         isChapterAnchor(value.read) &&
-        isRecord(value.from) &&
-        isRecord(value.to)
+        isJsonObject(value.from) &&
+        isJsonObject(value.to)
     );
 }
 
@@ -59,11 +56,10 @@ async function declaredRules(context: Context): Promise<Declared> {
                 ...presetLesson(problem, SETTINGS_FILE),
                 read: 'docs/reference/configuration.md#the-merge-order',
             }),
-            rules: [],
         };
     }
     if (!resolved.layers.every((layer) => isRule(layer))) {
-        return { problem: MALFORMED_LAYERS, rules: [] };
+        return { problem: MALFORMED_LAYERS };
     }
     const architecture = objectOf(objectOf(resolved.sections.typescript).architecture);
     const holds = (folder: string): boolean => context.exists(join(context.root, folder));
@@ -126,41 +122,34 @@ type Cruise = {
 
 function violationsOf(report: unknown): Cruise {
     const specifiers = new Map<string, string>();
-    const { modules } = objectOf(report);
-    for (const module of Array.isArray(modules) ? modules : []) {
+    for (const module of listOf(objectOf(report).modules)) {
         const { dependencies, source } = objectOf(module);
-        for (const dependency of Array.isArray(dependencies) ? dependencies : []) {
+        for (const dependency of listOf(dependencies)) {
             const { module: specifier, resolved } = objectOf(dependency);
-            specifiers.set(
-                `${stringOf(source) ?? ''} ${stringOf(resolved) ?? ''}`,
-                stringOf(specifier) ?? '',
-            );
+            specifiers.set(`${textOf(source)} ${textOf(resolved)}`, textOf(specifier));
         }
     }
     const summary = objectOf(objectOf(report).summary);
-    const used = objectOf(summary.ruleSetUsed).forbidden;
     const comments = new Map(
-        (Array.isArray(used) ? used : []).map((rule) => {
+        listOf(objectOf(summary.ruleSetUsed).forbidden).map((rule) => {
             const { comment, name } = objectOf(rule);
 
-            return [stringOf(name) ?? '', stringOf(comment) ?? ''];
+            return [textOf(name), textOf(comment)];
         }),
     );
-    const listed = summary.violations;
-    const violations = (Array.isArray(listed) ? listed : []).map((entry) => {
+    const violations = listOf(summary.violations).map((entry) => {
         const { from, rule, to } = objectOf(entry);
 
-        return {
-            from: stringOf(from) ?? '',
-            rule: stringOf(objectOf(rule).name) ?? '',
-            to: stringOf(to) ?? '',
-        };
+        return { from: textOf(from), rule: textOf(objectOf(rule).name), to: textOf(to) };
     });
 
     return { comments, specifiers, violations };
 }
 
-function positionOf(text: string, specifier: string): { column: number; line: number } {
+function positionOf(text: string, specifier: string | undefined): { column: number; line: number } {
+    if (specifier === undefined) {
+        return { column: 1, line: 1 };
+    }
     const at = ["'", '"', '`']
         .map((quote) => text.indexOf(`${quote}${specifier}${quote}`))
         .filter((index) => index !== -1)
@@ -168,15 +157,18 @@ function positionOf(text: string, specifier: string): { column: number; line: nu
     if (at === undefined) {
         return { column: 1, line: 1 };
     }
-    const before = text.slice(0, at + 1).split('\n');
+    const before = text.slice(0, at + 1);
 
-    return { column: (before.at(-1) ?? '').length, line: before.length };
+    return {
+        column: before.length - (before.lastIndexOf('\n') + 1),
+        line: before.split('\n').length,
+    };
 }
 
 function findingOf(
     context: Context,
     { from, rule, to }: Violation,
-    { lesson, specifier }: { lesson: Lesson | undefined; specifier: string },
+    { lesson, specifier }: { lesson: Lesson | undefined; specifier: string | undefined },
 ): Finding {
     const why = lesson?.why ?? "the project's dependency-cruiser config forbids it";
     const check = defineCheck({
@@ -184,6 +176,7 @@ function findingOf(
         namespace: 'architecture',
         read: lesson?.read ?? OWN_READ,
     });
+    // Stryker disable next-line StringLiteral: a text that names no specifier puts the finding at the top of the file, as no text does
     const text = context.read(join(context.root, from)) ?? '';
 
     return check.finding(
@@ -228,6 +221,7 @@ function cruised(
         );
         let report: unknown;
         try {
+            // Stryker disable next-line StringLiteral: JSON.parse reads a buffer as its text
             report = JSON.parse(readFileSync(cruise, 'utf8'));
         } catch {
             return { findings: [], problem: unreportedOf(run) };
@@ -244,22 +238,24 @@ function cruised(
             findings: violations.map((violation) =>
                 findingOf(context, violation, {
                     lesson: lessons.get(violation.rule),
-                    specifier: specifiers.get(`${violation.from} ${violation.to}`) ?? '',
+                    specifier: specifiers.get(`${violation.from} ${violation.to}`),
                 }),
             ),
             problem: null,
         };
     } finally {
+        // Stryker disable next-line BooleanLiteral: the scratch folder was made above and is still there, which `force` only forgives the absence of
         rmSync(scratch, { force: true, recursive: true });
     }
 }
 
 export const architecture: Pass = Object.freeze({
     async check(context) {
-        const { problem, rules } = await declaredRules(context);
-        if (problem !== null) {
-            return { failed: true, lines: [problem] };
+        const declared = await declaredRules(context);
+        if (declared.problem !== null) {
+            return { failed: true, lines: [declared.problem] };
         }
+        const { rules } = declared;
         const own = DEPENDENCY_CRUISER_CONFIGS.some((name) =>
             context.exists(join(context.root, name)),
         );
