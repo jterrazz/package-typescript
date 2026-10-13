@@ -155,6 +155,19 @@ export function besideLinksDropped(project: string, beside: Beside | undefined):
     }
 }
 
+/** Runs `run` with the links of the sandbox gone before it starts, for those a killed run left, and after it ends. */
+export async function withoutBesideLinks<T>(
+    project: string,
+    beside: Beside | undefined,
+    run: () => Promise<T>,
+): Promise<T> {
+    besideLinksDropped(project, beside);
+    const result = await run();
+    besideLinksDropped(project, beside);
+
+    return result;
+}
+
 // invariant: only the suite stage starts cold: it answers for what the module tests let live, and a stale kill there would pass a gate on a verdict an earlier tree earned.
 export const startsCold = (stage: Stage, cold: boolean): boolean => cold && stage.name === 'suite';
 
@@ -191,14 +204,16 @@ export async function strykerRun(
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
     reportKept(project, stage, cold);
-    const beside = besideOf(project);
-    besideLinksDropped(project, beside);
-    const status = await handOver(
-        projectBinary('stryker'),
-        ['run', join(MUTATION_OUTPUT, files.config)],
+    const status = await withoutBesideLinks(
         project,
+        besideOf(project),
+        async () =>
+            await handOver(
+                projectBinary('stryker'),
+                ['run', join(MUTATION_OUTPUT, files.config)],
+                project,
+            ),
     );
-    besideLinksDropped(project, beside);
     const ranByTests = new Set(
         readdirSync(ranInto).flatMap((name) =>
             String(readFileSync(join(ranInto, name))).split('\n'),

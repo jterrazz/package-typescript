@@ -11,6 +11,7 @@ import {
     generatedRoots,
     startsCold,
     strykerConfig,
+    withoutBesideLinks,
 } from '../stryker.js';
 
 const RUNNER = createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner');
@@ -170,22 +171,69 @@ describe('stryker', () => {
             rmSync(project, { force: true, recursive: true });
         });
         mkdirSync(join(project, '.artifacts/real'), { recursive: true });
+        mkdirSync(join(project, '.artifacts/stryker/tmp/sandbox'), { recursive: true });
         mkdirSync(join(project, 'target'));
         symlinkSync(join(project, 'target'), join(project, '.artifacts/apps'));
         symlinkSync(join(project, 'target'), join(project, '.artifacts/stray'));
+        symlinkSync(join(project, 'target'), join(project, 'apps'));
+        symlinkSync(join(project, 'target'), join(project, '.artifacts/stryker/tmp/apps'));
+        symlinkSync(join(project, 'target'), join(project, '.artifacts/stryker/tmp/sandbox/apps'));
         const root = join(project, 'target');
+        const links = (): boolean[] =>
+            ['apps', '.artifacts/stryker/tmp/apps', '.artifacts/stryker/tmp/sandbox/apps'].map(
+                (path) => existsSync(join(project, path)),
+            );
 
-        // When - three folders out of the copy are dropped, and a depth of four is
+        // When - a depth of four, of none and of one are dropped, then three folders out of the copy, naming an entry that does not exist
         besideLinksDropped(project, { levels: 4, names: ['apps'], root });
+        besideLinksDropped(project, { levels: 0, names: ['apps'], root });
+        const beforeOne = links();
+        besideLinksDropped(project, { levels: 1, names: ['apps'], root });
+        const afterOne = links();
         const kept = existsSync(join(project, '.artifacts/apps'));
-        besideLinksDropped(project, { levels: 3, names: ['apps', 'real'], root });
+        besideLinksDropped(project, { levels: 3, names: ['apps', 'real', 'missing'], root });
 
-        // Then - the four-deep call left the link, the three-deep one took it, and neither touched the real folder or the name not asked for
+        // Then - the links of depth four and none stay, the one-deep call takes the link a folder above the copy's folder, the three-deep one the link in the artifacts folder, and none touched the real folder or the name not asked for
         expect([
+            beforeOne,
+            afterOne,
             kept,
             existsSync(join(project, '.artifacts/apps')),
             existsSync(join(project, '.artifacts/real')),
             existsSync(join(project, '.artifacts/stray')),
-        ]).toStrictEqual([true, false, true, true]);
+        ]).toStrictEqual([[true, true, true], [true, false, true], true, false, true, true]);
+    });
+
+    test('withoutBesideLinks — takes the links a killed run left before the run starts, and those the run laid when it ends', async () => {
+        // Given - a member whose artifacts folder holds a link a killed run left, and a run that lays another
+        const project = mkdtempSync(join(tmpdir(), 'beside-run-'));
+        onTestFinished(() => {
+            rmSync(project, { force: true, recursive: true });
+        });
+        mkdirSync(join(project, '.artifacts'));
+        mkdirSync(join(project, 'target'));
+        const root = join(project, 'target');
+        symlinkSync(root, join(project, '.artifacts/apps'));
+        const seen: boolean[] = [];
+
+        // When - the run goes between the two drops
+        const result = await withoutBesideLinks(
+            project,
+            { levels: 3, names: ['apps', 'docs'], root },
+            async () => {
+                seen.push(existsSync(join(project, '.artifacts/apps')));
+                symlinkSync(root, join(project, '.artifacts/docs'));
+                seen.push(existsSync(join(project, '.artifacts/docs')));
+
+                return 'ran';
+            },
+        );
+
+        // Then - the run met no left link and laid its own, which went, and its answer comes back
+        expect([seen, existsSync(join(project, '.artifacts/docs')), result]).toStrictEqual([
+            [false, true],
+            false,
+            'ran',
+        ]);
     });
 });
