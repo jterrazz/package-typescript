@@ -246,13 +246,13 @@ function failuresOf(parsed: unknown): Failures {
     );
 }
 
-// invariant: a name is judged from its path alone, so ls-lint walks a tree of empty files laid out from the swept paths — a link a run left on the disk, under an ignored dot folder or elsewhere, is never entered.
+// invariant: a name is judged from its path alone, so ls-lint walks a tree of empty files laid out from the swept paths — a link a run left on the disk, under an ignored dot folder or elsewhere, is never entered; a manifest holds an empty object, since node, which runs the tool's launcher in the tree, refuses an empty one.
 function stagePaths(scratch: string, paths: readonly string[]): string {
     const staged = join(scratch, 'tree');
     mkdirSync(staged);
     for (const path of paths) {
         mkdirSync(join(staged, dirname(path)), { recursive: true });
-        writeFileSync(join(staged, path), '');
+        writeFileSync(join(staged, path), basename(path) === 'package.json' ? '{}\n' : '');
     }
 
     return staged;

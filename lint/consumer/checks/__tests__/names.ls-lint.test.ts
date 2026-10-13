@@ -287,15 +287,21 @@ describe('names.ls-lint', () => {
         const binary = join(scratch, 'ls-lint');
         writeFileSync(
             binary,
-            '#!/bin/sh\nprintf \'{"tree":{"files":["%s"]}}\' "$(find . -type f -size 0 | sort | tr \'\\n\' \' \')"\nexit 1\n',
+            '#!/bin/sh\nprintf \'{"tree":{"files":["%s"]}}\' "$(find . -type f -size -4c | sort | tr \'\\n\' \' \')"\nexit 1\n',
         );
         chmodSync(binary, 0o755);
 
         // When - it runs over the paths
-        const { failures } = runLsLint(binary, '', ['src/a.ts', '.cache/b/c.ts']);
+        const { failures } = runLsLint(binary, '', [
+            'src/a.ts',
+            '.cache/b/c.ts',
+            'packages/m/package.json',
+        ]);
 
-        // Then - the tree held those paths, each an empty file, and nothing else
-        expect(failures).toStrictEqual({ tree: { files: ['./.cache/b/c.ts ./src/a.ts '] } });
+        // Then - the tree held those paths, each an empty file or an empty manifest, and nothing else
+        expect(failures).toStrictEqual({
+            tree: { files: ['./.cache/b/c.ts ./packages/m/package.json ./src/a.ts '] },
+        });
     });
 
     test('names a run that leaves no report, and a binary that is not there', () => {
