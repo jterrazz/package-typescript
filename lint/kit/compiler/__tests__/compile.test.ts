@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { compile, merge } from '../compile.js';
+import { compile, merge, profile } from '../compile.js';
 import { fragment, off, on, scoped } from '../decision.js';
 
 describe('compile', () => {
@@ -53,6 +53,62 @@ describe('compile', () => {
             'dist/**',
             'node_modules/**',
             '**/__fixtures__/**',
+        ]);
+    });
+
+    test('concatenates and dedupes extends', () => {
+        // Given - two configs extending a shared preset
+        const [first, shared, last] = [
+            { ignorePatterns: ['a'] },
+            { ignorePatterns: ['b'] },
+            { ignorePatterns: ['c'] },
+        ];
+        const merged = merge({ extends: [first, shared] }, { extends: [shared, last] });
+
+        // Then - one entry each, in order
+        expect(merged.extends).toStrictEqual([first, shared, last]);
+    });
+
+    test('shallow-merges env, globals, options and settings with the last config winning', () => {
+        // Given - two configs each setting the four tables, one key apart and one in common
+        const merged = merge(
+            {
+                env: { browser: true, node: false },
+                globals: { a: 'readonly' },
+                options: { typeAware: false },
+                settings: { first: 1, shared: 1 },
+            },
+            {
+                env: { node: true },
+                globals: { b: 'writable' },
+                options: { reportUnusedDisableDirectives: 'error' },
+                settings: { shared: 2 },
+            },
+        );
+
+        // Then - each table holds both configs' keys, the later value on a shared one
+        expect([merged.env, merged.globals, merged.options, merged.settings]).toStrictEqual([
+            { browser: true, node: true },
+            { a: 'readonly', b: 'writable' },
+            { reportUnusedDisableDirectives: 'error', typeAware: false },
+            { first: 1, shared: 2 },
+        ]);
+    });
+
+    test('profile — carries the env and the globals it is given, and none it is not', () => {
+        // Given - a profile with neither, and one with both
+        const bare = profile({ fragments: [] });
+        const full = profile({
+            env: { node: true },
+            fragments: [],
+            globals: { vi: 'readonly' },
+        });
+
+        // Then - the keys appear only when given
+        expect([Object.keys(bare).toSorted(), full.env, full.globals]).toStrictEqual([
+            ['ignorePatterns', 'options'],
+            { node: true },
+            { vi: 'readonly' },
         ]);
     });
 
