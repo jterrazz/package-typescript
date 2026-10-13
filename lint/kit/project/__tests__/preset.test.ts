@@ -2,10 +2,31 @@ import { describe, expect, test } from 'vitest';
 
 import { objectOf } from '../json.js';
 import type { Preset } from '../preset.js';
-import { resolveConfig } from '../preset.js';
+import { isChapterAnchor, resolveConfig } from '../preset.js';
 import { BASE, BASE_OF, layer, REFUSED } from './preset.fixtures.js';
 
 describe('preset', () => {
+    test('isChapterAnchor — is a string naming a heading of a page of docs/, whole', () => {
+        // Given - anchors, and values that are not one: a list that prints as one, a line before it, a line after it, a missing heading, a missing page
+        const anchors = ['docs/reference/quality-checks.md#mutation', 'docs/a.md#b'];
+        const others = [
+            ['docs/a.md#b'],
+            'see docs/a.md#b',
+            'docs/a.md#b\nmore',
+            'docs/a.md#',
+            'docs/.md#b',
+            'docs/a.txt#b',
+            undefined,
+            7,
+        ];
+
+        // Then - the first are anchors, the others not
+        expect([anchors.map(isChapterAnchor), others.map(isChapterAnchor)]).toStrictEqual([
+            anchors.map(() => true),
+            others.map(() => false),
+        ]);
+    });
+
     test('orders the base first, then each preset after the presets it includes, then the repository', () => {
         // Given - a preset including another, and the repository's own layer
         const included: Preset = {

@@ -16,6 +16,15 @@ describe('compile', () => {
         expect(merged.plugins).toStrictEqual(['typescript', 'import']);
     });
 
+    test('takes a list key written as a lone value for a list of one', () => {
+        // Given - a config written in JSON, whose ignorePatterns names one glob as a string
+        // @ts-expect-error - the type holds a list, and a file may hold a lone value
+        const merged = merge({ ignorePatterns: 'shared' }, { ignorePatterns: ['last'] });
+
+        // Then - it joins the list of the next
+        expect(merged.ignorePatterns).toStrictEqual(['shared', 'last']);
+    });
+
     test('shallow-merges rules with the last config winning', () => {
         // Given - two configs disagreeing on one rule
         const merged = merge(

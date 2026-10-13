@@ -118,6 +118,7 @@ function memberScoped(member: string, root: OxlintConfig, own: OxlintConfig): Ox
             ...optional('plugins', own.plugins),
             rules: { ...unset, ...own.rules },
         },
+        // Stryker disable next-line ArrayDeclaration: the config a member's folder merges always carries its overrides; the fallback satisfies the optional type
         ...(own.overrides ?? []).map((override) => scopedTo(member, override, own.plugins)),
     ];
 }
@@ -173,6 +174,7 @@ export async function oxlintConfigAt(unit: string): Promise<OxlintConfig> {
             const own = withFolderPlatforms(read, oxlintConfigOf(read));
 
             return {
+                // Stryker disable next-line ArrayDeclaration: the config a member's folder merges always carries its ignore patterns; the fallback satisfies the optional type
                 ignores: within(member, own.ignorePatterns ?? []),
                 overrides: memberScoped(member, root, own),
             };
@@ -182,11 +184,13 @@ export async function oxlintConfigAt(unit: string): Promise<OxlintConfig> {
     return {
         ...root,
         ignorePatterns: [
+            // Stryker disable next-line ArrayDeclaration: the root's merged config always carries its ignore patterns; the fallback satisfies the optional type
             ...(root.ignorePatterns ?? []),
             ...scoped.flatMap(({ ignores }) => ignores),
         ],
         // invariant: the rulebook's overrides come first, then each member's, then the ones the root's own settings write: a member's overrides follow the rulebook's as the root's do, and what the repository writes at its root wins over the profile a member's platform brings.
         overrides: [
+            // Stryker disable next-line ArrayDeclaration: the rulebook's config always carries its overrides; the fallback satisfies the optional type
             ...(rulebook.overrides ?? []),
             ...scoped.flatMap(({ overrides }) => overrides),
             ...projectOverridesOf(resolution),

@@ -107,6 +107,23 @@ describe('directives', () => {
         ]);
     });
 
+    test('reads the stem in any case, the formatter capitalizing a comment’s lead', () => {
+        // Given - the three markers written in capitals
+        const text = [
+            '// CHECKER-DISABLE-NEXT-LINE a',
+            'one();',
+            'two(); // Checker-Disable-Line b',
+        ].join('\n');
+
+        // Then - each is read, and each claims its line
+        expect(directivesIn(text).map(({ ids, line }) => [line, ids])).toStrictEqual([
+            [1, ['a']],
+            [3, ['b']],
+        ]);
+        expect(suppressedLines(text, 'a')).toStrictEqual(new Set([2]));
+        expect(suppressedLines(text, 'b')).toStrictEqual(new Set([3]));
+    });
+
     test('disable-line suppresses its OWN line', () => {
         // Given - a same-line directive
         const text = [

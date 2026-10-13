@@ -12,6 +12,7 @@ export function writtenLawSetting(
 ): string | undefined {
     const own = objectOf(written);
 
+    // Stryker disable next-line ArrayDeclaration: a list of one key nobody writes finds, as an empty one does, no key
     return (preset.lawSettings ?? []).find(
         (key) =>
             Object.hasOwn(own, key) &&
