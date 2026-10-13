@@ -37,12 +37,8 @@ export async function withStagedSuppressions<T>(root: string, run: () => Promise
 
 export async function keptAcross<T>(root: string, run: () => Promise<T>): Promise<T> {
     const path = join(root, OXLINT_SUPPRESSIONS);
-    let held: null | string = null;
-    try {
-        held = readFileSync(path, 'utf8');
-    } catch {
-        held = null;
-    }
+    // Stryker disable next-line StringLiteral: the file is written back as read, and a buffer writes the same bytes as its text
+    const held = existsSync(path) ? readFileSync(path, 'utf8') : null;
     try {
         return await run();
     } finally {
@@ -56,6 +52,7 @@ export async function keptAcross<T>(root: string, run: () => Promise<T>): Promis
 
 export function removeWhenEmpty(root: string): void {
     if (suppressedCount(root) === 0) {
+        // Stryker disable next-line ObjectLiteral,BooleanLiteral: a count of zero is read from a file that exists, which `force` is only there to forgive the absence of
         rmSync(join(root, OXLINT_SUPPRESSIONS), { force: true });
     }
 }
