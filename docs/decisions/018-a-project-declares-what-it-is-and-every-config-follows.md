@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-03
-**Amended by:** [ADR-021](021-a-package-standard-is-data-and-the-settings-file-holds-its-exceptions.md) — the defaults are each package's standard, and `typescript.build` is gone.
+**Amended by:** [ADR-021](021-a-package-standard-is-data-and-the-settings-file-holds-its-exceptions.md) — the defaults are each package's standard, and `typescript.build` is gone; [ADR-024](024-a-monorepo-is-the-repositorys-shape-read-from-workspaces-never-a-kind.md) — `workspace` is no kind, and a monorepo is read from `workspaces`.
 
 ## Context
 
@@ -96,3 +96,14 @@ beside both.
 - Every repository moves in the release that carries this record: no bridge
   reads `typescript()`, `fromPresets`, a `knip.json` or a
   `tsdown.config.ts`.
+
+## Amendment (2026-10-15): a monorepo is no kind
+
+**Accepted:** 2026-10-15 — the owner's word, recorded in [ADR-024](024-a-monorepo-is-the-repositorys-shape-read-from-workspaces-never-a-kind.md).
+
+`kind` is `library`, `api`, `cli`, `website` or `mobile`: `workspace` left
+the union. A monorepo is read from the root manifest's `workspaces`, and its
+root declares no kind and no platform, its config holding the repository's
+settings alone. The bullet above on a workspace's root `oxlint.config.ts`
+stands for the root of a monorepo: it still scopes each member's own
+derived config to the member's folder.
