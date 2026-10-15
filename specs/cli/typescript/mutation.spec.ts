@@ -257,6 +257,24 @@ describe('mutation', () => {
         `);
     });
 
+    test('typescript mutation — a change to a source no test loads keeps every result of the report', async () => {
+        // Given - the consumer, its test judging everything, beside a source nothing imports, measured once, then that source changed
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .prepare((workdir) => {
+                writeFileSync(join(workdir, 'src/unrelated.ts'), 'export const UNRELATED = 1;\n');
+                measuredOnce(workdir);
+                writeFileSync(join(workdir, 'src/unrelated.ts'), 'export const UNRELATED = 2;\n');
+            })
+            .env(OUTSIDE_CI)
+            .exec('typescript mutation');
+
+        // Then - the module test, seen spawning nothing and importing only the discount, keeps every result
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout.text).toContain('9 of 9 mutant result(s) are reused.');
+    });
+
     test('typescript mutation — a change in a covering test measures again the mutants it covered', async () => {
         // Given - the consumer, its test judging everything, measured once, then its test of the boundary dropped
         const result = await cli

@@ -41,13 +41,13 @@ export function observedFrom(records: readonly ObservedTest[], inputs?: Inputs):
 }
 
 /** What the record says a test's processes ran, or `undefined` where it cannot say. */
-export function ranBy(observed: Observed | undefined): (test: string) => Ran | undefined {
-    const sets = (observed?.sets ?? []).map((sources) => new Set(sources));
+export function ranBy(observed: Observed): (test: string) => Ran | undefined {
+    const sets = observed.sets.map((sources) => new Set(sources));
 
     return (test) => {
-        const [ran, loaded] = observed?.tests[test] ?? [];
-        const ranSet = ran === undefined ? undefined : sets[ran];
-        const loadedSet = loaded === undefined ? undefined : sets[loaded];
+        const pair = observed.tests[test];
+        const ranSet = pair && sets[pair[0]];
+        const loadedSet = pair && sets[pair[1]];
 
         return ranSet === undefined || loadedSet === undefined
             ? undefined
@@ -58,10 +58,7 @@ export function ranBy(observed: Observed | undefined): (test: string) => Ran | u
 const numbersOf = (value: unknown): number[] => (isList(value) ? value.map(Number) : []);
 
 // invariant: on disk every source is named once, in `names`, and a set lists its indices there — the sets of a large suite name the same few hundred sources thousands of times.
-export function observedOf(value: unknown): Observed | undefined {
-    if (value === undefined) {
-        return undefined;
-    }
+export function observedOf(value: unknown): Observed {
     const { names, sets, tests } = objectOf(value);
     const named = isList(names) ? names.map(String) : [];
 

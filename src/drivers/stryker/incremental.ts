@@ -1,9 +1,10 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
-import { objectOf, parsedObject, stringOf } from '../../../lint/kit/project/json.js';
-import { changesOnlyFunctions } from './change-shape.js';
+import { parsedObject, stringOf, stringRecordOf } from '../../../lint/kit/project/json.js';
+import { changesOnlyFunctions, linesChangedIn } from './change-shape.js';
 import { changedBetween, inputsOf, reachOf, roleOf } from './inputs.js';
 import type { Inputs } from './inputs.js';
 import { observedOf, observedOnDisk, ranBy } from './observed.js';
@@ -16,22 +17,25 @@ export type Recorded = { inputs: Inputs; observed?: Observed | undefined };
 const recordPathOf = (project: string, incremental: string): string =>
     join(project, MUTATION_OUTPUT, `${incremental}.inputs.json`);
 
-function recordedOf(project: string, incremental: string): Recorded | undefined {
+function jsonAt(path: string): Record<string, unknown> | undefined {
+    // Stryker disable BlockStatement: a catch that returns nothing returns undefined, as its body does
     try {
-        const recorded = parsedObject(readFileSync(recordPathOf(project, incremental), 'utf8'));
-
-        return {
-            inputs: Object.fromEntries(
-                Object.entries(objectOf(recorded.inputs)).map(([path, hash]) => [
-                    path,
-                    String(hash),
-                ]),
-            ),
-            observed: observedOf(recorded.observed),
-        };
+        return parsedObject(String(readFileSync(path)));
     } catch {
         return undefined;
     }
+    // Stryker restore BlockStatement
+}
+
+function recordedOf(
+    project: string,
+    incremental: string,
+): undefined | { inputs: Inputs; observed: Observed } {
+    const recorded = jsonAt(recordPathOf(project, incremental));
+
+    return recorded === undefined
+        ? undefined
+        : { inputs: stringRecordOf(recorded.inputs), observed: observedOf(recorded.observed) };
 }
 
 /** Writes what a run stands on beside its report: at its start, the inputs alone, so a run that never ends leaves no test it could follow; at its end, what its tests ran. */
@@ -45,15 +49,8 @@ export function recordInputs(
     writeFileSync(recordPathOf(project, incremental), `${JSON.stringify(onDisk)}\n`);
 }
 
-function packageNameOf(project: string): string | undefined {
-    try {
-        const manifest = parsedObject(readFileSync(join(project, 'package.json'), 'utf8'));
-
-        return stringOf(manifest.name) ?? undefined;
-    } catch {
-        return undefined;
-    }
-}
+const packageNameOf = (project: string): string | undefined =>
+    stringOf(jsonAt(join(project, 'package.json'))?.name) ?? undefined;
 
 // invariant: the text of every source a run started on is kept under its hash beside the record, so the next run can tell a change of what a function does from a change of what loading the module does; a text no longer recorded is pruned.
 const textsOf = (project: string, incremental: string): string =>
@@ -62,19 +59,16 @@ const textsOf = (project: string, incremental: string): string =>
 function keptTexts(
     project: string,
     incremental: string,
-    texts: ReadonlyMap<string, string>,
-    inputs: Inputs,
+    { inputs, texts }: { inputs: Inputs; texts: ReadonlyMap<string, string> },
 ): void {
     const folder = textsOf(project, incremental);
     mkdirSync(folder, { recursive: true });
     const wanted = new Set<string>();
     for (const [path, text] of texts) {
-        const hash = inputs[path];
-        if (hash !== undefined && roleOf(path).kind === 'source') {
+        if (roleOf(path).kind === 'source') {
+            const hash = String(inputs[path]);
             wanted.add(hash);
-            if (!existsSync(join(folder, hash))) {
-                writeFileSync(join(folder, hash), text);
-            }
+            writeFileSync(join(folder, hash), text);
         }
     }
     for (const name of readdirSync(folder)) {
@@ -84,20 +78,34 @@ function keptTexts(
     }
 }
 
+// invariant: a change whose lines git's diff cannot name — the earlier text never kept, the source deleted — reads as one that reaches what loading the module does.
 function onlyFunctionsIn(
     project: string,
     incremental: string,
     { before, now }: { before: Inputs; now: ReadonlyMap<string, string> },
 ): (source: string) => boolean {
     return (source) => {
-        const hash = before[source];
-        const after = now.get(source);
-        const kept = hash === undefined ? undefined : join(textsOf(project, incremental), hash);
-        if (after === undefined || kept === undefined || !existsSync(kept)) {
-            return false;
-        }
+        const kept = join(textsOf(project, incremental), String(before[source]));
+        const diff = spawnSync('git', [
+            'diff',
+            '--no-index',
+            '--no-ext-diff',
+            '--no-color',
+            '--unified=0',
+            '--',
+            kept,
+            join(project, source),
+        ]);
+        const changed = linesChangedIn(String(diff.stdout));
 
-        return changesOnlyFunctions(source, String(readFileSync(kept)), after);
+        return (
+            changed.added.length + changed.removed.length > 0 &&
+            changesOnlyFunctions(
+                source,
+                { after: String(now.get(source)), before: String(readFileSync(kept)) },
+                changed,
+            )
+        );
     };
 }
 
@@ -107,14 +115,6 @@ function codeTextsIn(project: string, inputs: Inputs): Map<string, string> {
     );
 
     return new Map(code.map((path) => [path, String(readFileSync(join(project, path)))]));
-}
-
-function reportIn(file: string): Record<string, unknown> | undefined {
-    try {
-        return parsedObject(readFileSync(file, 'utf8'));
-    } catch {
-        return undefined;
-    }
 }
 
 /**
@@ -128,11 +128,17 @@ export function incrementalKeptWhileInputsHold(
 ): Inputs | undefined {
     const file = join(project, MUTATION_OUTPUT, `${incremental}.json`);
     const inputs = inputsOf(project);
-    const recorded = cold || inputs === undefined ? undefined : recordedOf(project, incremental);
-    const report = recorded === undefined ? undefined : reportIn(file);
-    const texts = inputs === undefined ? new Map<string, string>() : codeTextsIn(project, inputs);
+    if (inputs === undefined) {
+        rmSync(file, { force: true });
+        rmSync(recordPathOf(project, incremental), { force: true });
+
+        return undefined;
+    }
+    const recorded = cold ? undefined : recordedOf(project, incremental);
+    const report = jsonAt(file);
+    const texts = codeTextsIn(project, inputs);
     const kept =
-        report === undefined || recorded === undefined || inputs === undefined
+        report === undefined || recorded === undefined
             ? undefined
             : reportAfter(report, changedBetween(recorded.inputs, inputs), {
                   onlyFunctions: onlyFunctionsIn(project, incremental, {
@@ -147,12 +153,8 @@ export function incrementalKeptWhileInputsHold(
     } else {
         writeFileSync(file, JSON.stringify(kept));
     }
-    if (inputs === undefined) {
-        rmSync(recordPathOf(project, incremental), { force: true });
-    } else {
-        recordInputs(project, incremental, { inputs });
-        keptTexts(project, incremental, texts, inputs);
-    }
+    recordInputs(project, incremental, { inputs });
+    keptTexts(project, incremental, { inputs, texts });
 
     return inputs;
 }

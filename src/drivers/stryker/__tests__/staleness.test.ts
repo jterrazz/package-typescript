@@ -213,4 +213,36 @@ describe('reportAfter', () => {
         // Then - the report stands
         expect(report).toStrictEqual(bare);
     });
+
+    test('reportAfter — a changed test file is no changed source: a test the run could not follow keeps its mutants', () => {
+        // Given - the report of a run, its spec not followed into its processes
+        // When - a's module test changes
+        const kept = keptIds(['src/__tests__/a.test.ts']);
+
+        // Then - the mutant a's test covered goes; the spec's other mutant stays
+        expect(kept).toStrictEqual({ 'src/a.ts': ['2'], 'src/b.ts': ['3'] });
+    });
+
+    test('reportAfter — a test is stale when any one of the changed sources reaches it', () => {
+        // Given - the report of a run, no test seen spawning
+        // When - h.ts, which b's test loads, and a new source nothing loads change together
+        const kept = keptIds(['src/h.ts', 'src/new.ts'], SPEC_QUIET);
+
+        // Then - b's mutant goes
+        expect(kept).toStrictEqual({ 'src/a.ts': ['1', '2'], 'src/b.ts': [] });
+    });
+
+    test('reportAfter — a mutant a stale test killed goes, though the report lists that test only as its killer', () => {
+        // Given - a report whose mutant names the spec as its killer and covers nothing
+        const report = {
+            files: { 'src/c.ts': { mutants: [mutant('9', [], ['1'])] } },
+            testFiles: REPORT.testFiles,
+        };
+
+        // When - the spec changes
+        const kept = reportAfter(report, ['specs/a.spec.ts'], staleness(MODULE_TESTS));
+
+        // Then - the mutant is measured again
+        expect(idsByFile(kept)).toStrictEqual({ 'src/c.ts': [] });
+    });
 });

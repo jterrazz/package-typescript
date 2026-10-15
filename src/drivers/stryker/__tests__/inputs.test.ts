@@ -44,6 +44,11 @@ describe('inputs', () => {
         ['specs/cli/check/names.spec.yaml', { kind: 'test' }],
         ['src/kit/__tests__/kit.test.ts', { kind: 'test' }],
         ['src/kit/__tests__/kit.test-d.ts', { kind: 'test' }],
+        ['src/kit/__tests__/kit.test.mts', { kind: 'test' }],
+        ['specs/cli/check/names.spec.yml', { kind: 'test' }],
+        ['specs/cli/check/names.spec.yaml.orig', { kind: 'everything' }],
+        ['src/kit/__tests__/kit.test.ts.snap', { kind: 'everything' }],
+        ['src/kit/kit.mts', { kind: 'source' }],
         ['specs/cli/__setup__/run-temp-root.ts', { kind: 'everything' }],
         ['vitest.config.ts', { kind: 'everything' }],
         ['package-lock.json', { kind: 'everything' }],
@@ -77,22 +82,36 @@ const c = await import("./c.js");
 vi.mock(\`../d.jsx\`);
 import e from './e';
 const fixture = '../__fixtures__/f.ts';
-const missing = './gone.js';`;
+const missing = './gone.js';
+import f from './f';
+import g from './g.mjs';
+import h from './h.cjs';
+import i from './i.js';
+import j from './j.mjs';`;
         const known = new Set([
             'src/a.ts',
             'src/x/b.ts',
             'src/x/c.ts',
             'src/d.tsx',
             'src/x/e/index.ts',
+            'src/x/f.tsx',
+            'src/x/g.mts',
+            'src/x/h.cts',
+            'src/x/i.tsx',
+            'src/x/j.tsx',
         ]);
 
-        // Then - each known module once in the order named, the fixture and the missing file left out
+        // Then - each known module once in the order named, each built extension for its own source's, the fixture, the missing file and a `.mjs` with no `.mts` left out
         expect(namedBy('src/x/a.test.ts', text, known)).toStrictEqual([
             'src/a.ts',
             'src/x/b.ts',
             'src/x/c.ts',
             'src/d.tsx',
             'src/x/e/index.ts',
+            'src/x/f.tsx',
+            'src/x/g.mts',
+            'src/x/h.cts',
+            'src/x/i.tsx',
         ]);
     });
 
@@ -141,6 +160,10 @@ const missing = './gone.js';`;
             files: new Set(['src/d.ts']),
         });
         expect(reach('src/__tests__/a.test.ts')).toBe(reach('src/__tests__/a.test.ts'));
+        expect(reach('src/__tests__/unknown.test.ts')).toStrictEqual({
+            everything: false,
+            files: new Set(),
+        });
     });
 
     test('changedBetween — a file whose bytes differ, one added and one removed', () => {
@@ -173,6 +196,19 @@ const missing = './gone.js';`;
         expect([inputs['src/a.ts'], inputs['node_modules/.package-lock.json']]).toStrictEqual([
             'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb',
             'absent',
+        ]);
+    });
+
+    test('inputsOf — a file git still tracks that the tree no longer holds is no input', () => {
+        // Given - two tracked sources, one then deleted from the disk
+        const root = projectWith({ 'src/a.ts': 'a', 'src/gone.ts': 'gone' });
+        execFileSync('git', ['add', '--all'], { cwd: root });
+        rmSync(join(root, 'src/gone.ts'));
+
+        // Then - the deleted one is no input
+        expect(Object.keys(inputsOf(root) ?? {}).toSorted()).toStrictEqual([
+            'node_modules/.package-lock.json',
+            'src/a.ts',
         ]);
     });
 

@@ -196,9 +196,6 @@ function observedIn(folder: string): ObservedTest[] {
     });
 }
 
-const linesIn = (folder: string): string[] =>
-    readdirSync(folder).flatMap((name) => String(readFileSync(join(folder, name))).split('\n'));
-
 export type Measured = { ranByTests: ReadonlySet<string>; report: unknown };
 
 /** A stage's report, or Stryker's status when it failed: a failed run leaves no report this one could be judged by. */
@@ -238,7 +235,11 @@ export async function strykerRun(
                 project,
             ),
     );
-    const ranByTests = new Set(linesIn(ranInto));
+    const ranByTests = new Set(
+        readdirSync(ranInto).flatMap((name) =>
+            String(readFileSync(join(ranInto, name))).split('\n'),
+        ),
+    );
     const observed = observedFrom(observedIn(observedInto), inputs);
     rmSync(ranInto, { recursive: true });
     rmSync(observedInto, { recursive: true });

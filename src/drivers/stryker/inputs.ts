@@ -76,7 +76,7 @@ export function roleOf(path: string): Role {
 export const isUnder = (file: string, root: string): boolean =>
     root === '' || file.startsWith(`${root}/`);
 
-const RELATIVE = /(?<quote>['"`])(?<specifier>\.{1,2}\/[^'"`\s]+)\k<quote>/gu;
+const RELATIVE = /(?<quote>['"`])\.{1,2}\/[^'"`\s]+\k<quote>/gu;
 
 const BUILT_TO_SOURCE: readonly (readonly [string, readonly string[]])[] = [
     ['.js', ['.ts', '.tsx']],
@@ -95,10 +95,8 @@ function candidatesOf(target: string): string[] {
 
 /** The files of `known` a module names by a relative path — an import, an export, a dynamic import, a mock, any quoted `./` or `../` — so the reach errs wide, never narrow. */
 export function namedBy(file: string, text: string, known: ReadonlySet<string>): string[] {
-    return [...text.matchAll(RELATIVE)].flatMap((match) => {
-        const target = posix.normalize(
-            posix.join(posix.dirname(file), match.groups?.specifier ?? ''),
-        );
+    return [...text.matchAll(RELATIVE)].flatMap(([quoted]) => {
+        const target = posix.normalize(posix.join(posix.dirname(file), quoted.slice(1, -1)));
         const found = candidatesOf(target).find((candidate) => known.has(candidate));
 
         return found === undefined ? [] : [found];
@@ -137,7 +135,10 @@ export function reachOf(
         let everything = false;
         const pending = [file];
         for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
-            const text = sources.get(next) ?? '';
+            const text = sources.get(next);
+            if (text === undefined) {
+                continue;
+            }
             everything ||= namesItsOwnBuild(text, packageName);
             for (const named of namedBy(next, text, known)) {
                 if (!files.has(named)) {

@@ -1,6 +1,6 @@
 import { isList, objectOf, stringOf } from '../../../lint/kit/project/json.js';
 import { isUnder, roleOf } from './inputs.js';
-import type { Reach } from './inputs.js';
+import type { Reach, Role } from './inputs.js';
 import type { Ran } from './observed.js';
 
 type Mutant = Record<string, unknown>;
@@ -26,24 +26,28 @@ function testsOf(report: Record<string, unknown>): Map<string, ReportTest> {
     return tests;
 }
 
-type Change = { everything: boolean; grounds: string[]; sources: Set<string>; tests: Set<string> };
+type Change = {
+    everything: boolean;
+    grounds: readonly string[];
+    sources: ReadonlySet<string>;
+    tests: ReadonlySet<string>;
+};
 
 function changeOf(changed: readonly string[]): Change {
-    const change: Change = { everything: false, grounds: [], sources: new Set(), tests: new Set() };
-    for (const path of changed) {
-        const role = roleOf(path);
-        if (role.kind === 'everything') {
-            change.everything = true;
-        } else if (role.kind === 'ground') {
-            change.grounds.push(role.root);
-        } else if (role.kind === 'source') {
-            change.sources.add(path);
-        } else {
-            change.tests.add(path);
-        }
-    }
+    const roles = changed.map((path) => ({ path, role: roleOf(path) }));
+    const pathsOf = (kind: Role['kind']): Set<string> =>
+        new Set(roles.filter(({ role }) => role.kind === kind).map(({ path }) => path));
 
-    return change;
+    return {
+        everything: roles.some(({ role }) => role.kind === 'everything'),
+        grounds: roles
+            .map(({ role }) => role)
+            // Stryker disable next-line ConditionalExpression,MethodExpression: a role other than ground holds no root, and no test stands under an undefined folder
+            .filter((role): role is Extract<Role, { kind: 'ground' }> => role.kind === 'ground')
+            .map(({ root }) => root),
+        sources: pathsOf('source'),
+        tests: pathsOf('test'),
+    };
 }
 
 /** How a run reads a test's reach: the modules its own process loads, what the processes it spawned ran and loaded, and whether a changed source changed only what its functions do. */

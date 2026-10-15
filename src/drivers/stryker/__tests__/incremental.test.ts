@@ -70,6 +70,8 @@ const MODULE_TESTS = [
     quiet('src/__tests__/b.test.ts#b test'),
 ];
 
+const SPEC_QUIET = [...MODULE_TESTS, quiet('specs/a.spec.ts#a spec')];
+
 const SPEC_RAN_A = [
     ...MODULE_TESTS,
     {
@@ -113,8 +115,11 @@ const FILES = {
     'src/h.ts': 'export const H = 1;\n\nexport function h(): number {\n    return H;\n}\n',
 };
 
-function ranOnce(observed: readonly ObservedTest[] = MODULE_TESTS): string {
-    const root = projectWith(FILES);
+function ranOnce(
+    observed: readonly ObservedTest[] = MODULE_TESTS,
+    files: Record<string, string> = FILES,
+): string {
+    const root = projectWith(files);
     const inputs = incrementalKeptWhileInputsHold(root, 'suite-incremental') ?? {};
     writeFileSync(reportOf(root), JSON.stringify(REPORT));
     recordInputs(root, 'suite-incremental', { inputs, observed: observedFrom(observed) });
@@ -295,6 +300,62 @@ describe('incremental', () => {
             [true, true],
             [true, false],
             [false, false],
+        ]);
+    });
+
+    test.each([
+        [
+            'a module test importing the package by its name reads every source',
+            FILES,
+            { 'src/a.ts': ['2'], 'src/b.ts': [] },
+        ],
+        [
+            'a project with no manifest names no package of its own',
+            { ...FILES, 'package.json': undefined },
+            { 'src/a.ts': ['1', '2'], 'src/b.ts': [] },
+        ],
+    ])('incrementalKeptWhileInputsHold — %s', (_case, files, kept) => {
+        // Given - a run that ended, every test seen spawning nothing, a's module test importing the package by its name
+        const laid = Object.fromEntries(
+            Object.entries({
+                ...files,
+                'src/__tests__/a.test.ts': "import { a } from '@scope/package';",
+            }).filter((entry): entry is [string, string] => entry[1] !== undefined),
+        );
+        const root = ranOnce(SPEC_QUIET, laid);
+
+        // When - h.ts, which a's test never imports by path, changes
+        writeFileSync(join(root, 'src/h.ts'), 'changed');
+        incrementalKeptWhileInputsHold(root, 'suite-incremental');
+
+        // Then - a's mutant goes only where the package's name reaches every source
+        expect(keptIn(root)).toStrictEqual(kept);
+    });
+
+    test('incrementalKeptWhileInputsHold — a source a spawned process loaded and the change deleted measures the spec’s mutants again', () => {
+        // Given - a run that ended, its spec's processes seen loading h.ts
+        const root = ranOnce(SPEC_RAN_A);
+
+        // When - h.ts is deleted, and a run starts
+        rmSync(join(root, 'src/h.ts'));
+        incrementalKeptWhileInputsHold(root, 'suite-incremental');
+
+        // Then - the spec's mutants go; b's test, which no longer finds h, keeps its own
+        expect(keptIn(root)).toStrictEqual({ 'src/a.ts': [], 'src/b.ts': ['3'] });
+    });
+
+    test('incrementalKeptWhileInputsHold — a project git cannot list, run for the first time, starts from nothing', () => {
+        // Given - a folder that is no repository, and no report nor record in it
+        const root = mkdtempSync(join(tmpdir(), 'incremental-'));
+        roots.push(root);
+
+        // When - a run starts
+        const inputs = incrementalKeptWhileInputsHold(root, 'suite-incremental');
+
+        // Then - no inputs, nothing written
+        expect([inputs, existsSync(join(root, '.artifacts/stryker'))]).toStrictEqual([
+            undefined,
+            false,
         ]);
     });
 });
