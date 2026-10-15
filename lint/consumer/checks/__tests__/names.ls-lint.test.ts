@@ -50,7 +50,7 @@ describe('names.ls-lint', () => {
     });
 
     test('judges a file ls-lint never looks at wherever a folder is closed', () => {
-        // Given - files with no extension and a dot-file in closed folders, and one in an open folder
+        // Given - files with no extension and a dot-file in closed folders, and ones in open folders: deeper than a closed place, or under a folder of the same name below another root
         const swept = [
             'lint/NOTES',
             'lint/consumer/.notes',
@@ -58,6 +58,13 @@ describe('names.ls-lint', () => {
             'lint/consumer/checks/README',
             'skills/a/LICENSE',
             'skills/a/SKILL.md',
+            'skills/ab/LICENSE',
+            'skills/ab/references/NOTES',
+            'skills/NOTES',
+            'docs/lint/NOTES',
+            'docs/lint/consumer/NOTES',
+            'docs/skills/NOTES',
+            'docs/skills/ab/NOTES',
         ];
 
         // When - ls-lint reported nothing
@@ -68,12 +75,14 @@ describe('names.ls-lint', () => {
             units: [''],
         });
 
-        // Then - each file in a closed folder is refused under the rule of its place
+        // Then - each file in a closed folder is refused under the rule of its place, the others left
         expect(findings.map(({ path, rule }) => `${rule}  ${path}`)).toStrictEqual([
             'names/lint-root-holds-only-entries  lint/NOTES',
             'names/consumer-folder-is-known  lint/consumer/.notes',
             'names/consumer-folder-is-known  lint/consumer/README',
+            'names/skill-holds-only-skill-md  skills/NOTES',
             'names/skill-holds-only-skill-md  skills/a/LICENSE',
+            'names/skill-holds-only-skill-md  skills/ab/LICENSE',
         ]);
     });
 
@@ -363,5 +372,20 @@ describe('names.ls-lint', () => {
             ['exists:0', 'exists:0', true],
             ['exists:0', 'exists:0', true],
         ]);
+    });
+
+    test('lsLintConfig — a module at the root of self/ is named in kebab-case and an entry at the root of lint/ is an index, whatever the module extension', () => {
+        // Given - a kebab-case module and an index of each module extension, beside a page, a name off kebab-case and an entry that is no index
+        const config = lsLintConfig({ ignorePatterns: [], trees: treesOf(['']), units: [''] });
+        const refused = ['lint/reading.ts', 'lint/self/Reading_Order.ts', 'lint/self/notes.md'];
+        const allowed = ['.cjs', '.cts', '.js', '.jsx', '.mjs', '.mts', '.ts', '.tsx'].flatMap(
+            (extension) => [`lint/self/reading-order${extension}`, `lint/index${extension}`],
+        );
+
+        // When - ls-lint runs over them
+        const { failures } = runLsLint(LS_LINT, config, [...allowed, ...refused]);
+
+        // Then - the refused ones alone
+        expect(Object.keys(failures).toSorted()).toStrictEqual(refused);
     });
 });

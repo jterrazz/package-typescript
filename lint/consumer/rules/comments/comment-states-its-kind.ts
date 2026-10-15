@@ -36,8 +36,10 @@ export const COMMENT_STATES_ITS_KIND_NAME = 'comment-states-its-kind';
 const TOOL_INSTRUCTION =
     /^(?:(?:es|ox)lint-(?:disable|enable)|@ts-|biome-ignore|(?:oxfmt|prettier|dprint)-ignore\b|(?:v8|c8|istanbul|node:coverage) ignore\b|@vite-ignore\b|webpack[A-Z]|Stryker (?:disable|restore)\b|[#@]__PURE__|@__NO_SIDE_EFFECTS__|@jsx|@vitest-environment\b|type-coverage:|<reference )/u;
 
+// Stryker disable next-line StringLiteral: the tags are ASCII words, so the unicode flag changes nothing the pattern matches
 const LANGUAGE_TAG = new RegExp(`^\\s*(?:${LANGUAGE_TAGS.join('|')})\\s*$`, 'u');
 
+// Stryker disable next-line StringLiteral: the kinds are ASCII words, so the unicode flag changes nothing the pattern matches
 const KIND_IN_INSTRUCTION = new RegExp(`(?<=(?::|--) )(?:${COMMENT_KINDS.join('|')}): `, 'u');
 
 const GENERATED = /@generated\b/u;

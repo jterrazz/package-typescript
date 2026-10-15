@@ -156,4 +156,103 @@ describe('findingsOf', () => {
             findingsOf(['src/lib/a.ts'], universal).length,
         ]).toStrictEqual([0, 1]);
     });
+
+    test('findingsOf — each finding carries its whole lesson, at the first line of its path', () => {
+        // Given - a marked folder restating its mark, a grab-bag folder, a construct file and folder, and an abbreviated file
+        const found = findingsOf(
+            [
+                'src/_Shared/a.ts',
+                'src/tools/x.ts',
+                'src/order.types.ts',
+                'src/types/y.ts',
+                'src/cfg.ts',
+            ],
+            UNIVERSAL,
+        );
+
+        // Then - each rule's found, why, fix and read, the construct file named by its whole file name
+        const read = 'read: docs/reference/quality-checks.md#the-names-tree-pass';
+        const grabBag =
+            'why: A directory or file is named for the subject it holds, never a grab-bag word.';
+        const construct =
+            'why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds';
+        expect(found).toStrictEqual([
+            {
+                column: 1,
+                line: 1,
+                message: `found: \`_Shared\` names no subject — its \`_\` already says the row shares it, and the word says it again · ${grabBag} · fix: name it for what its files share (\`_taxonomy/\`, never \`_shared/\`), or move a lone file beside the code that uses it · ${read}`,
+                path: 'src/_Shared',
+                rule: 'names/no-grab-bag-name',
+            },
+            {
+                column: 1,
+                line: 1,
+                message: `found: \`cfg\` is a word written in half · why: Every word of a name is spelled whole. · fix: spell every word of it whole · ${read}`,
+                path: 'src/cfg.ts',
+                rule: 'names/no-abbreviated-word',
+            },
+            {
+                column: 1,
+                line: 1,
+                message: `found: \`order.types.ts\` names a construct of the language · ${construct} · ${read}`,
+                path: 'src/order.types.ts',
+                rule: 'names/no-language-construct-name',
+            },
+            {
+                column: 1,
+                line: 1,
+                message: `found: \`tools\` names no subject — it holds whatever nobody placed · ${grabBag} · fix: name it for the subject it holds, or move what it holds beside the code that uses it · ${read}`,
+                path: 'src/tools',
+                rule: 'names/no-grab-bag-name',
+            },
+            {
+                column: 1,
+                line: 1,
+                message: `found: \`types\` names a construct of the language · ${construct} · ${read}`,
+                path: 'src/types',
+                rule: 'names/no-language-construct-name',
+            },
+        ]);
+    });
+
+    test('findingsOf — a folder marked `_` that says `shared` restates its mark outside a specs tree only, and a plain `shared` is a word like any', () => {
+        // Given - marked and plain `shared` folders in a source root and under specs
+        // Then - the marked one in src/ alone, its case aside
+        expect(
+            judged(
+                'src/_shared/a.ts',
+                'src/_SHARED/b.ts',
+                'src/shared/c.ts',
+                'src/x_shared/d.ts',
+                'specs/_shared/e.ts',
+                'src/_taxonomy/f.ts',
+            ),
+        ).toStrictEqual([
+            'names/no-grab-bag-name src/_SHARED',
+            'names/no-grab-bag-name src/_shared',
+        ]);
+    });
+
+    test('findingsOf — a name is abbreviated when any one of its hyphenated words is', () => {
+        // Given - a folder whose second word is a shortcut, and one with none
+        // Then - the first alone
+        expect(judged('src/order-cfg/a.ts', 'src/order-config/b.ts')).toStrictEqual([
+            'names/no-abbreviated-word src/order-cfg',
+        ]);
+    });
+
+    test.each(['apps', 'bin', 'lib', 'lint', 'packages', 'specs', 'src', 'tests'])(
+        'findingsOf — %s/ is swept, its own name never judged',
+        (root) => {
+            // Given - a grab-bag folder below the root, and a roster that would refuse the root's own name
+            const universal: Universal = { ...UNIVERSAL, grabBag: new Set(['tools', root]) };
+
+            // Then - the folder below it alone
+            expect(
+                findingsOf([`${root}/tools/a.ts`], universal).map(
+                    ({ path, rule }) => `${rule} ${path}`,
+                ),
+            ).toStrictEqual([`names/no-grab-bag-name ${root}/tools`]);
+        },
+    );
 });

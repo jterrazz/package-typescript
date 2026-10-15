@@ -51,6 +51,23 @@ ruleTester().run('comment-no-longer-than-its-function', commentNoLongerThanItsFu
                 '// by dividing it by two.',
                 'const halved = (value: number) => value / 2;',
             ].join('\n'),
+            errors: [
+                {
+                    column: 0,
+                    line: 1,
+                    message:
+                        'found: a comment of 2 lines on a function whose body holds 1 · why: the default is no comment — the code speaks through its names, and a comment longer than the code it sits on restates it, argues it or tells its history · fix: say it through the names — rename what needed the comment, and keep at most the one line the code cannot say (an invariant, a hazard, why a value is this one); if documenting context that lives outside the codebase is truly necessary (a policy, a ticket, a decision maker, an external system’s constraint), disable it explicitly on that line — `// oxlint-disable-next-line jterrazz-typescript/comment-no-longer-than-its-function -- <the external context>` — the reason is required · read: docs/reference/lint-presets.md#a-comment-no-longer-than-its-function',
+                },
+            ],
+            filename: PRIVATE_MODULE,
+        },
+        {
+            name: 'A tool name in the middle of a sentence is prose, and counts.',
+            code: [
+                '// Halves a value,',
+                '// see eslint-disable for the reason.',
+                'const halved = (value: number) => value / 2;',
+            ].join('\n'),
             errors: [{ column: 0, data: { body: 1, lines: 2 }, line: 1, messageId: 'longer' }],
             filename: PRIVATE_MODULE,
         },
@@ -170,6 +187,24 @@ ruleTester().run('comment-no-longer-than-its-function', commentNoLongerThanItsFu
         },
     ],
     valid: [
+        {
+            name: 'A directive in a block opened by a star is a directive, and counts for nothing.',
+            code: [
+                '/** @ts-expect-error the value arrives untyped */',
+                '// Halves a value.',
+                'const halved = (value: number) => value / 2;',
+            ].join('\n'),
+            filename: PRIVATE_MODULE,
+        },
+        {
+            name: 'A directive written flush against its slashes is a directive, and counts for nothing.',
+            code: [
+                '//eslint-disable-next-line no-console',
+                '// Halves a value.',
+                'const halved = (value: number) => value / 2;',
+            ].join('\n'),
+            filename: PRIVATE_MODULE,
+        },
         {
             code: lines(
                 ...TWO_LINES,
