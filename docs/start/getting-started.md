@@ -124,10 +124,10 @@ mutation:
 	npx typescript mutation $(MUTATION_ARGS)
 
 check:
-	$(MAKE) lint test mutation MUTATION_ARGS=--cold
+	$(MAKE) lint test mutation
 ```
 
-`check` ends on `mutation`, run `--cold` so the suite's phase starts from no incremental report and a gate never stands on a "killed" verdict an earlier tree earned; the verdict over the module tests and the whole suite ([Quality checks § Mutation](../reference/quality-checks.md#mutation)): it measures the change not yet committed, or, on a clean tree, the branch since its merge-base with the default branch (the last commit, on the default branch itself), and prints that range in its verdict. `mutation` is no seventh gesture: it is a helper target `check` runs, written so a session can run the verdict alone, and `names/makefile-answers-every-gesture` asks for none. Three cases add a line:
+`check` ends on `mutation`, which reuses of its last report only what the change since leaves standing, and runs cold in CI ([Quality checks § What a report keeps](../reference/quality-checks.md#what-a-report-keeps)); the verdict over the module tests and the whole suite ([Quality checks § Mutation](../reference/quality-checks.md#mutation)): it measures the change not yet committed, or, on a clean tree, the branch since its merge-base with the default branch (the last commit, on the default branch itself), and prints that range in its verdict. `mutation` is no seventh gesture: it is a helper target `check` runs, written so a session can run the verdict alone, and `names/makefile-answers-every-gesture` asks for none. Three cases add a line:
 
 - **A library** reads its build in both other gates — the Publish pass judges what `dist/` would ship, and a spec of the published package packs it — so its `Makefile` adds `lint test: build`, which builds first whatever the order the gestures run in.
 - **Any kind whose specs run `dist/`** — an application's built entry driven from a `specs/cli/` tree, a website's built server — adds `test: build`, so the gate builds before its specs spawn what they read; a spec that rebuilds the output itself pays the build once per file.
