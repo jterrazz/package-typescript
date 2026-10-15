@@ -16,7 +16,7 @@ import { presetLesson } from './kit/project/preset.js';
 import type { Preset, Resolution } from './kit/project/preset.js';
 import type { Platform } from './kit/project/project-kind.js';
 import { projectOxlintOf } from './kit/project/project-oxlint.js';
-import { workspaceMembers } from './kit/project/workspace-members.js';
+import { isMonorepoRoot, workspaceMembers } from './kit/project/workspace-members.js';
 
 const PLUGIN_PATHS: Readonly<Record<string, string>> = Object.freeze({
     'jterrazz-typescript': createRequire(import.meta.url).resolve('#plugin'),
@@ -158,7 +158,8 @@ function withFolderPlatforms(resolution: Resolution, unit: OxlintConfig): Oxlint
 export async function oxlintConfigAt(unit: string): Promise<OxlintConfig> {
     const resolution = await readConfig(unit, basePresetsOf);
     const root = withFolderPlatforms(resolution, oxlintConfigOf(resolution));
-    if (resolution.resolved.declaration?.kind !== 'workspace') {
+    // Stryker disable next-line BlockStatement,ConditionalExpression: a unit with no members merges the rulebook's overrides then its own, the order its config already holds, so taking either path for it yields the same config — the early return only spares a second derivation
+    if (!isMonorepoRoot(unit)) {
         return root;
     }
     const rulebook = withFolderPlatforms(

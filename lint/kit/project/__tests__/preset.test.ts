@@ -284,18 +284,18 @@ describe('preset', () => {
     });
 
     test('keeps what a refused file declares itself to be', () => {
-        // Given - a library on node and a workspace, whose presets are no list
+        // Given - a library on node and a monorepo root, whose presets are no list
         const { problem, resolved } = resolveConfig(
             { kind: 'library', platform: 'node', presets: 'test' },
             BASE_OF,
         );
 
-        const workspace = resolveConfig({ kind: 'workspace', presets: 'test' }, BASE_OF);
+        const monorepo = resolveConfig({ presets: 'test' }, BASE_OF);
 
-        // Then - the file is refused, and its declaration still reads, a workspace's with no platform
+        // Then - the file is refused, and its declaration still reads, a monorepo root's none
         expect(problem).toBe('holds a `presets` that is not a list');
         expect(resolved.declaration).toStrictEqual({ kind: 'library', platform: 'node' });
-        expect(workspace.resolved.declaration).toStrictEqual({ kind: 'workspace', platform: null });
+        expect(monorepo.resolved.declaration).toBeNull();
     });
 
     test('resolves a base that refuses itself to nothing', () => {

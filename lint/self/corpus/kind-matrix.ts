@@ -61,7 +61,7 @@ function cellsOf(kind: ProjectKind, specimen: null | Specimen): string[] {
 
     return [
         `\`${kind}\``,
-        kind === 'workspace' ? 'none — each member its own' : coded(PLATFORMS_OF[kind]),
+        coded(PLATFORMS_OF[kind]),
         PUBLICATION[kind] === 'published' ? 'published, unless `private`' : PUBLICATION[kind],
         gap === null ? '—' : gap.owes,
         PUBLICATION[kind] === 'published' ? 'judged, unless `private`' : '—',

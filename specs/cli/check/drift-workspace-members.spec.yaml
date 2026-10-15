@@ -9,7 +9,7 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              workspace on its members' platforms
+            declared                              nothing — a monorepo, each member its own
             exceptions                            2
               packages/clock                      2 exceptions
             rules off vs profile                  none

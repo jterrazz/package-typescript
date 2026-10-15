@@ -30,29 +30,28 @@ export default defineConfig({
 });
 ```
 
-Node loads the file itself, its types stripped, so it needs no build. A file that is missing, does not load, or declares no kind is the Config pass's finding `config/project-declared`, and every other pass reads it as no settings at all, the `node` profile and the base preset alone. A workspace member keeps its own beside its `package.json`, declaring its own kind and platform.
+Node loads the file itself, its types stripped, so it needs no build. A project's file that is missing, does not load, or declares no kind is the Config pass's finding `config/project-declared`, and every other pass reads it as no settings at all, the `node` profile and the base preset alone. In a monorepo — a root whose `package.json` lists `workspaces` — the root's file holds the repository's settings and no kind, and may be absent; each member keeps its own beside its `package.json`, declaring its own kind and platform ([A monorepo](#a-monorepo)).
 
 ### Kind and platform
 
 The two closed lists, and which platforms each kind runs on, are [Getting started](../start/getting-started.md#1-declare-what-the-project-is)'s table. What follows from them:
 
-| Follows from | What                                                                                                                                                                                                                                                         |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| the platform | the oxlint profile ([Lint presets](lint-presets.md#the-profiles)), the tsconfig preset, the roots its framework imposes, the Astro pass — at the root and in each workspace member that declares `astro`                                                     |
-| the kind     | the rows of the matrix below; beside them, whether its manual owes the release guide of a published package (a library or a cli whose manifest is not `private`); for a `workspace`, that each member declares its own and the root keeps no `tsconfig.json` |
+| Follows from | What                                                                                                                                                                                                     |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| the platform | the oxlint profile ([Lint presets](lint-presets.md#the-profiles)), the tsconfig preset, the roots its framework imposes, the Astro pass — at the root and in each workspace member that declares `astro` |
+| the kind     | the rows of the matrix below; beside them, whether its manual owes the release guide of a published package (a library or a cli whose manifest is not `private`)                                         |
 
 The matrix is generated from the declaration the toolchain reads, and its last two columns from the specs: each kind is proven by a specimen under `specs/kinds/<kind>/`, a small project written as a person writes one, into which the cli specs install both packed packages — `@jterrazz/typescript` and `@jterrazz/test` — and run the gestures it names. A kind declared without its specimen fails the self corpus.
 
 <!-- GENERATED:kinds -->
 
-| Kind        | Platforms                                                  | Publication                 | Config refuses a manifest that                         | Publish pass             | Specimen                           | Gestures it proves                                                       |
-| ----------- | ---------------------------------------------------------- | --------------------------- | ------------------------------------------------------ | ------------------------ | ---------------------------------- | ------------------------------------------------------------------------ |
-| `library`   | `node`, `bun`, `react`, `next`, `astro`, `expo`, `browser` | published, unless `private` | publishes no `exports`                                 | judged, unless `private` | `specs/kinds/library/` on `node`   | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
-| `api`       | `node`, `bun`                                              | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/api/` on `node`       | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
-| `cli`       | `node`, `bun`                                              | published, unless `private` | names no `bin`                                         | judged, unless `private` | `specs/kinds/cli/` on `node`       | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
-| `website`   | `react`, `next`, `astro`, `browser`                        | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/website/` on `react`  | `typescript fix`, `typescript check`, `vitest --run`                     |
-| `mobile`    | `expo`                                                     | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/mobile/` on `expo`    | `typescript build`, `typescript fix`, `typescript check`, `vitest --run` |
-| `workspace` | none — each member its own                                 | members                     | —                                                      | —                        | `specs/kinds/workspace/` on `node` | `typescript fix`, `npm run build`, `typescript check`, `npm test`        |
+| Kind      | Platforms                                                  | Publication                 | Config refuses a manifest that                         | Publish pass             | Specimen                          | Gestures it proves                                                       |
+| --------- | ---------------------------------------------------------- | --------------------------- | ------------------------------------------------------ | ------------------------ | --------------------------------- | ------------------------------------------------------------------------ |
+| `library` | `node`, `bun`, `react`, `next`, `astro`, `expo`, `browser` | published, unless `private` | publishes no `exports`                                 | judged, unless `private` | `specs/kinds/library/` on `node`  | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
+| `api`     | `node`, `bun`                                              | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/api/` on `node`      | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
+| `cli`     | `node`, `bun`                                              | published, unless `private` | names no `bin`                                         | judged, unless `private` | `specs/kinds/cli/` on `node`      | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
+| `website` | `react`, `next`, `astro`, `browser`                        | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/website/` on `react` | `typescript fix`, `typescript check`, `vitest --run`                     |
+| `mobile`  | `expo`                                                     | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/mobile/` on `expo`   | `typescript build`, `typescript fix`, `typescript check`, `vitest --run` |
 
 <!-- /GENERATED:kinds -->
 
@@ -65,9 +64,7 @@ The kind table names toolchain shapes, never products, and a product that fits n
 - A repository whose product is written in another language declares the kind of its TypeScript harness, `private`: a Go product tested by a TypeScript suite is a private `cli`.
 - A renderer (a Remotion video) declares the kind whose tooling it uses, a `website` for a scene built with React.
 - A project sets `"type": "module"`, which `config/manifest-is-a-module` asks of every manifest: the vitest config the toolchain derives and the names its build gives the files are ESM's, and a package without it fails in both with no word of why. Another top-level key than the ones npm and the family's tools read is refused by `config/manifest-keys-known`, since a typo of a real key reads nothing.
-- A project that holds sources and `workspaces` at once is refused by `config/kind-matches-manifest`: its own sources would be read as a member of itself. Its members go under `apps/` of a repository declared a `workspace`.
-
-A `workspace` declares no platform: its root `oxlint.config.ts` lints each member by the platform that member declares, the member's own profile and presets scoped to its folder, so one config serves a React website and a Node api side by side. A member keeps no `oxlint.config.ts` or `oxfmt.config.ts` of its own — a nested one would replace the root's in its subtree — and keeps its own `tsconfig.json`, derived from its platform.
+- A project that declares a kind and lists `workspaces` at once is refused by `config/kind-matches-manifest`: its own sources would be read as a member of itself. Its members go under `apps/` or `packages/` of a monorepo whose root declares no kind.
 
 A unit runs on one platform, and a folder of it may run on another: an api on `bun` that serves its own React UI from `web/`. `typescript.platforms` names that folder, from the unit, with the platform it runs on and why, and the unit's `oxlint.config.ts` lints it by that platform's profile — its plugins, its rules, the unit's presets and own rules on top — while the rest of the unit keeps its own:
 
@@ -91,9 +88,15 @@ export default defineConfig({
 
 The folder still compiles under the unit's `tsconfig.json`, so how it spells an import — `import/extensions`, which module resolution decides — stays the unit's. A path that is no folder of the unit (a glob, `..`), a platform outside the list and a folder with no reason are refused where the settings are read.
 
-A `library` or a `cli` whose manifest says `"private": true` is not published: a workspace's internal package its siblings import through `workspace:*`, or a binary its repository compiles and installs itself. The Publish pass leaves it, its manual owes no release guide, and a private `cli` owes no `bin`; a private `library` still names its `exports`, which is how its siblings import it.
+A `library` or a `cli` whose manifest says `"private": true` is not published: a monorepo's internal package its siblings import through `workspace:*`, or a binary its repository compiles and installs itself. The Publish pass leaves it, its manual owes no release guide, and a private `cli` owes no `bin`; a private `library` still names its `exports`, which is how its siblings import it.
 
-A workspace's own suite — the tests of the whole repository, owned by no member — is the member at `specs/`, and it is the one unit that declares no kind: `defineConfig({ platform: 'node', presets: [...] })`, on `node` or `bun`, its manifest `private`. It is no product, so no kind's standard applies to it; its platform derives its `tsconfig.json` and its profile, and its presets the rest. A declaration with a platform and no kind anywhere else is `config/project-declared`.
+### A monorepo
+
+A monorepo is the repository's shape, never a kind ([ADR-024](../decisions/024-a-monorepo-is-the-repositorys-shape-read-from-workspaces-never-a-kind.md)). It is read from the root `package.json`'s `workspaces` — or `pnpm-workspace.yaml`'s `packages` — and nothing declares it again. Its root is a container: it declares no kind and no platform, its manifest is `"private": true`, and its `jterrazz.config.ts` holds the repository's settings alone — roots, oxfmt and oxlint ignores and overrides, knip entries, docs, presets —, absent when there are none. The Config pass refuses a kind or a platform at the root, and a root npm would publish, both as `config/kind-matches-manifest`, and a member that declares no kind as `config/project-declared`. One `typescript check` at the root judges each member by its own kind and platform. The shape is proven by a specimen of its own, `specs/shapes/monorepo/`, whose root keeps no `jterrazz.config.ts`.
+
+The root's `oxlint.config.ts` lints each member by the platform that member declares, the member's own profile and presets scoped to its folder, so one config serves a React website and a Node api side by side. A member keeps no `oxlint.config.ts` or `oxfmt.config.ts` of its own — a nested one would replace the root's in its subtree — and keeps its own `tsconfig.json`, derived from its platform.
+
+A monorepo's own suite — the tests of the whole repository, owned by no member — is the member at `specs/`, and it is the one member that declares no kind: `defineConfig({ platform: 'node', presets: [...] })`, on `node` or `bun`, its manifest `private`. It is no product, so no kind's standard applies to it; its platform derives its `tsconfig.json` and its profile, and its presets the rest. A declaration with a platform and no kind anywhere else is `config/project-declared`.
 
 ## Presets
 
@@ -131,7 +134,7 @@ A preset is an object carrying its `name` (the section of `jterrazz.config.ts` i
 
 ### The standard
 
-The toolchain's own preset is always on, and nobody names it: it is this package's standard, the data under `src/standard/` — `standard.ts` for every project, `kinds/<kind>.ts` for its kind, `platforms/<platform>.ts` for its platform, `dependencies/<package>.ts` for each package its `package.json` declares that the toolchain knows a property of — merged in that order for the project's declaration. A workspace, and a project that declares nothing, read the `node` platform's. What the standard holds:
+The toolchain's own preset is always on, and nobody names it: it is this package's standard, the data under `src/standard/` — `standard.ts` for every project, `kinds/<kind>.ts` for its kind, `platforms/<platform>.ts` for its platform, `dependencies/<package>.ts` for each package its `package.json` declares that the toolchain knows a property of — merged in that order for the project's declaration. The root of a monorepo, and a project that declares nothing, read the `node` platform's. What the standard holds:
 
 - the root spine, the member roots, the roots a tool imposes and the three word rosters of the Names pass ([Quality checks](quality-checks.md#the-names-tree-pass)), with what the platform's code is — its source roots, its extensions, its tsconfig preset, its framework's roots;
 - what a platform's runtime imposes: an `expo` app runs on Hermes, which implements no `Array#toSorted` nor `toReversed`, so `unicorn/no-array-sort` and `unicorn/no-array-reverse` are off there — their fixes would write a call that throws at launch — and its tsconfig preset stops `lib` at ES2022, so the type check refuses those calls; a `bun` unit's preset types `Bun` beside Node; `assets/` is a tool root on `expo` and `astro`, the images and authored pages the app imports or serves by path; the `expo` manifest key, where `expo install` reads the packages it leaves unpinned, is known to `config/manifest-keys-known` on an `expo` app;

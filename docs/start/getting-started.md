@@ -25,14 +25,15 @@ import { defineConfig } from '@jterrazz/typescript/config';
 export default defineConfig({ kind: 'api', platform: 'node' });
 ```
 
-| Kind        | What it is                                  | Its platforms                                         |
-| ----------- | ------------------------------------------- | ----------------------------------------------------- |
-| `library`   | a package others import, its `exports` kept | any                                                   |
-| `api`       | a service answering requests                | `node`, `bun`                                         |
-| `cli`       | a command, named in `bin`                   | `node`, `bun`                                         |
-| `website`   | a site or web application                   | `react`, `next`, `astro`, `browser`                   |
-| `mobile`    | a mobile application                        | `expo`                                                |
-| `workspace` | the root of a monorepo                      | none — each member declares its own kind and platform |
+| Kind      | What it is                                  | Its platforms                       |
+| --------- | ------------------------------------------- | ----------------------------------- |
+| `library` | a package others import, its `exports` kept | any                                 |
+| `api`     | a service answering requests                | `node`, `bun`                       |
+| `cli`     | a command, named in `bin`                   | `node`, `bun`                       |
+| `website` | a site or web application                   | `react`, `next`, `astro`, `browser` |
+| `mobile`  | a mobile application                        | `expo`                              |
+
+A kind describes a project. A monorepo is no kind: it is the repository's shape, read from the `workspaces` of its root `package.json`, and its root declares none ([In a monorepo](#in-a-monorepo)).
 
 Both are closed lists, typed: an editor refuses `{ kind: 'api', platform: 'react' }` as you write it, and the [Config (one file) pass](../reference/quality-checks.md#the-config-one-file-pass) refuses it in `check`. The platform picks the lint profile and the tsconfig preset; the kind picks what the manifest must hold — a library its `exports`, a cli its `bin`, an application (`api`, `website`, `mobile`) `"private": true`. What each profile adds to the rulebook is [Lint presets](../reference/lint-presets.md#the-profiles)'s; what each tsconfig preset settles is [Configuration](../reference/configuration.md#the-tsconfig-presets)'s.
 
@@ -64,7 +65,7 @@ export default await oxfmtConfig(import.meta.url);
 { "extends": "@jterrazz/typescript/tsconfig/node" }
 ```
 
-The `tsconfig.json` names the preset of the platform — `node` for `bun`, the platform's own for the others — and a `workspace` keeps none at its root, its members each keeping theirs. `typescript fix` writes all three, and `check` refuses one that says anything else (`config/editor-file-derived`): the content is the toolchain's, so a project changes its lint rules, its format or its build through `jterrazz.config.ts`, where every setting carries its reason ([Configuration](../reference/configuration.md)). Each config passes its own directory, so the `jterrazz.config.ts` beside it is the one read wherever the tool starts — a terminal in `src/` included; an editor is opened on the project itself, since oxlint refuses a type-aware config it finds nested below the folder it starts in ([Quality checks § The derived files](../reference/quality-checks.md#the-derived-files)).
+The `tsconfig.json` names the preset of the platform — `node` for `bun`, the platform's own for the others — and the root of a monorepo keeps none, its members each keeping theirs. `typescript fix` writes all three, and `check` refuses one that says anything else (`config/editor-file-derived`): the content is the toolchain's, so a project changes its lint rules, its format or its build through `jterrazz.config.ts`, where every setting carries its reason ([Configuration](../reference/configuration.md)). Each config passes its own directory, so the `jterrazz.config.ts` beside it is the one read wherever the tool starts — a terminal in `src/` included; an editor is opened on the project itself, since oxlint refuses a type-aware config it finds nested below the folder it starts in ([Quality checks § The derived files](../reference/quality-checks.md#the-derived-files)).
 
 No other tool config belongs at the root: knip, the build and mutation testing are configured by the command that runs them, from the same file, and a `knip.json`, a `tsdown.config.ts` or a `stryker.config.json` is refused (`config/no-tool-config`).
 
@@ -192,7 +193,7 @@ That is the whole contract, and it is meant to stay that size:
 - **One devDependency**, `@jterrazz/typescript`.
 - **Two commands**, `typescript check` and `typescript fix`. Every gate sits behind them, so a script calling a tool underneath skips the passes the command orchestrates.
 - **One file of settings**, `jterrazz.config.ts`: the kind, the platform, the presets, and every setting with its reason.
-- **Three derived files**, `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json`, each written by `fix` and refused by `check` when it says anything else. In a workspace the `tsconfig.json` is one per member: the toolchain measures from the package, not the repository.
+- **Three derived files**, `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json`, each written by `fix` and refused by `check` when it says anything else. In a monorepo the `tsconfig.json` is one per member: the toolchain measures from the package, not the repository.
 - **Two tracked ledgers at most**, under `.jterrazz/`: the debt the ratchet holds, gone when it is paid ([the ratchet](../reference/quality-checks.md#the-ratchet)).
 - **Six gestures**, the `Makefile` above, and **a manual**, `AGENTS.md` and `docs/`: both required at a repository root.
 
@@ -220,15 +221,17 @@ Open the editor on the project folder, a workspace on its root, never on a folde
 - **Types.** `check` type-checks with the TypeScript 7 compiler this package installs, at `node_modules/@typescript/typescript-<os>-<arch>/lib/tsc`, whose language server is `tsc --lsp --stdio`. Point the editor's TypeScript at it. `node_modules/typescript` is TypeScript 6, kept for two tools that read its JavaScript API ([Architecture](../concepts/architecture.md#two-typescript-compilers-on-purpose)); an editor told to use the workspace version picks that one, and can then disagree with `check`, which stays the verdict.
 - **After an edit of `jterrazz.config.ts`**, save `oxlint.config.ts` or restart the oxlint server: it watches its own config, not the declaration.
 
-## In a workspace
+## In a monorepo
 
-A monorepo declares `kind: 'workspace'` at its root, with no platform, and each member declares its own kind and platform beside its `package.json`:
+A repository is a monorepo when its root `package.json` lists `workspaces` — npm owns that fact, and nothing declares it again. The root is a container, never a project: its manifest is `"private": true`, and it declares no kind and no platform. Each member declares its own beside its `package.json`. The root's `jterrazz.config.ts`, when it has one, holds the repository's settings alone — its roots, its oxfmt and oxlint ignores and overrides, its knip entries, its presets — and a root with none of those keeps no file:
 
 ```ts
-// jterrazz.config.ts, at the root
+// jterrazz.config.ts, at the root — only when the repository has settings of its own
 import { defineConfig } from '@jterrazz/typescript/config';
 
-export default defineConfig({ kind: 'workspace' });
+export default defineConfig({
+    typescript: { roots: { scripts: 'the release scripts the CI workflow runs' } },
+});
 ```
 
 ```ts
@@ -240,7 +243,7 @@ export default defineConfig({ kind: 'library', platform: 'node' });
 
 ```text
 package.json            # "private": true, "workspaces": ["packages/*"]
-jterrazz.config.ts      # { kind: 'workspace' }
+jterrazz.config.ts      # the repository's settings, no kind — or no file at all
 oxlint.config.ts        # derived; lints each member by its own declaration
 oxfmt.config.ts         # derived
 Makefile                # the six gestures, once for the repository
@@ -253,7 +256,7 @@ packages/greeting/
   src/
 ```
 
-The root keeps no `tsconfig.json`, and a member keeps no `oxlint.config.ts`, `oxfmt.config.ts` or `Makefile`. `typescript check` and `fix` run at the root: which passes run once per member and which once for the tree is [Quality checks § In a workspace](../reference/quality-checks.md#in-a-workspace), and a member's knip paths carry its folder ([Lint presets § Workspaces](../reference/lint-presets.md#workspaces)).
+A kind at the root, or a root npm would publish, is refused by `config/kind-matches-manifest`. The root keeps no `tsconfig.json`, and a member keeps no `oxlint.config.ts`, `oxfmt.config.ts` or `Makefile`. `typescript check` and `fix` run at the root: which passes run once per member and which once for the tree is [Quality checks § In a monorepo](../reference/quality-checks.md#in-a-monorepo), and a member's knip paths carry its folder ([Lint presets § Workspaces](../reference/lint-presets.md#workspaces)).
 
 ## On an existing project
 

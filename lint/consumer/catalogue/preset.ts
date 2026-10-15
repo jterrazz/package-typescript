@@ -12,7 +12,6 @@ import CLI from '../../../src/standard/kinds/cli.js';
 import LIBRARY from '../../../src/standard/kinds/library.js';
 import MOBILE from '../../../src/standard/kinds/mobile.js';
 import WEBSITE from '../../../src/standard/kinds/website.js';
-import WORKSPACE from '../../../src/standard/kinds/workspace.js';
 import ASTRO from '../../../src/standard/platforms/astro.js';
 import BROWSER from '../../../src/standard/platforms/browser.js';
 import BUN from '../../../src/standard/platforms/bun.js';
@@ -36,7 +35,6 @@ const KIND_STANDARDS: Readonly<Record<ProjectKind, Standard>> = {
     library: LIBRARY,
     mobile: MOBILE,
     website: WEBSITE,
-    workspace: WORKSPACE,
 };
 
 const PLATFORM_STANDARDS: Readonly<Record<Platform, Standard>> = {
@@ -80,7 +78,7 @@ const editorFilesOf = (tsconfigPreset: unknown): Readonly<Record<string, EditorF
     },
 });
 
-// invariant: the merge order of the standard: the package's, then the kind's, then the platform's, then each declared dependency's — a workspace and an undeclared project read the node platform's.
+// invariant: the merge order of the standard: the package's, then the kind's, then the platform's, then each declared dependency's — a monorepo root and an undeclared project read the node platform's.
 function standardsOf(
     declaration: null | ProjectIdentity,
     dependencies: ReadonlySet<string>,

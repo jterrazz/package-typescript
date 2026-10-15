@@ -140,10 +140,17 @@ function unmeasuredOf(
     };
 }
 
-function declaredOf(declaration: null | ProjectIdentity): Row[] {
-    return declaration === null
-        ? [['declared', 'nothing — node, the default']]
-        : [['declared', declaredAs(declaration)]];
+function declaredOf(declaration: null | ProjectIdentity, monorepo: boolean): Row[] {
+    if (declaration !== null) {
+        return [['declared', declaredAs(declaration)]];
+    }
+
+    return [
+        [
+            'declared',
+            monorepo ? 'nothing — a monorepo, each member its own' : 'nothing — node, the default',
+        ],
+    ];
 }
 
 function rowsOf(
@@ -174,7 +181,7 @@ function rowsOf(
 
     return [
         ...rowsAligned([
-            ...declaredOf(declaration),
+            ...declaredOf(declaration, Object.keys(members).length > 0),
             ['exceptions', exceptions + sum(members)],
             ...Object.entries(members)
                 .filter(([, held]) => held > 0)

@@ -1,1 +1,0 @@
-export default { kind: 'workspace' };

@@ -8,8 +8,12 @@ export default defineConfig({
     test: {
         projects: {
             cli: {
-                include: ['specs/cli/**/*.spec.ts', 'specs/kinds/**/*.spec.ts'],
-                reason: 'the specimens of specs/kinds/ run the packed command as the cli specs do; a run lays its fixtures under /tmp and packs the package once, and a packed install outlives the 30 s budget, and a specimen of specs/kinds/ installs a whole project of its kind and runs its gates, which on a loaded machine outlives 120 s',
+                include: [
+                    'specs/cli/**/*.spec.ts',
+                    'specs/kinds/**/*.spec.ts',
+                    'specs/shapes/**/*.spec.ts',
+                ],
+                reason: 'the specimens of specs/kinds/ and specs/shapes/ run the packed command as the cli specs do; a run lays its fixtures under /tmp and packs the package once, and a packed install outlives the 30 s budget, and a specimen of specs/kinds/ installs a whole project of its kind and runs its gates, which on a loaded machine outlives 120 s',
                 setup: [
                     'specs/cli/__setup__/run-temp-root.ts',
                     'specs/cli/__setup__/packed/per-run.ts',

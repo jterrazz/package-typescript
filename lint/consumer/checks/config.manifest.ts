@@ -13,9 +13,10 @@ export const NAMED: Readonly<Record<ProjectKind, string>> = {
     library: 'a library',
     mobile: 'a mobile app',
     website: 'a website',
-    // Stryker disable next-line StringLiteral: a workspace owes its manifest nothing a finding could name it for, so the entry completes the table and is read by no message
-    workspace: 'a workspace',
 };
+
+/** What a unit is to its manifest: a project of its kind, a monorepo's own suite, or the root of a monorepo, which declares no kind. */
+export type Role = 'monorepo' | 'suite' | ProjectKind;
 
 const isEmpty = (value: unknown): boolean =>
     value === undefined || (isJsonObject(value) && Object.keys(value).length === 0);
@@ -25,15 +26,20 @@ const SUITE_GAP = {
     owes: 'is not `private`, so npm would publish the suite',
 };
 
+const MONOREPO_GAP = {
+    fix: 'set `"private": true`, and publish what the repository ships from a member of its own under `packages/`',
+    owes: 'is not `private`, so npm would publish the root of a monorepo, which is a container, never a project',
+};
+
 // invariant: a private cli is a binary its repository builds and installs itself, compiled or not: it owes no `bin`.
 function publishedGap(
     kind: ProjectKind,
     manifest: Readonly<Record<string, unknown>>,
 ): null | { fix: string; owes: string } {
-    if (kind !== 'workspace' && manifest.workspaces !== undefined) {
+    if (manifest.workspaces !== undefined) {
         return {
-            fix: 'move the members under `apps/` or `packages/` of a repository declared a `workspace`, so each is measured on its own, or drop `workspaces`',
-            owes: 'declares `workspaces`, which only a workspace has: its own sources would be read as a member of itself',
+            fix: `drop \`kind\` and \`platform\` from its ${SETTINGS_FILE} and move its sources into a member under \`apps/\` or \`packages/\` that declares its own, or drop \`workspaces\` when the repository is one project`,
+            owes: 'declares `workspaces`, so it is the root of a monorepo, a container that declares no kind: its own sources would be read as a member of itself',
         };
     }
     if (kind === 'library' && manifest.exports === undefined && manifest.main === undefined) {
@@ -58,16 +64,29 @@ function publishedGap(
     return null;
 }
 
-/** `null` is a workspace's own suite, which declares no kind and is never published. */
+/** A suite and the root of a monorepo declare no kind, and neither is ever published. */
 export function manifestGap(
-    kind: null | ProjectKind,
+    role: Role,
     manifest: Readonly<Record<string, unknown>>,
 ): null | { fix: string; owes: string } {
-    if (kind !== null) {
-        return publishedGap(kind, manifest);
+    if (role === 'suite' || role === 'monorepo') {
+        if (manifest.private === true) {
+            return null;
+        }
+
+        return role === 'suite' ? SUITE_GAP : MONOREPO_GAP;
     }
 
-    return manifest.private === true ? null : SUITE_GAP;
+    return publishedGap(role, manifest);
+}
+
+function gapFound(role: Role, unit: string, owes: string): string {
+    const path = prefixed(unit, 'package.json');
+    if (role === 'monorepo') {
+        return `${path} lists \`workspaces\` and ${owes}`;
+    }
+
+    return `${prefixed(unit, SETTINGS_FILE)} declares ${role === 'suite' ? 'no kind, a suite' : NAMED[role]}, and ${path} ${owes}`;
 }
 
 /** The top-level keys of a manifest that nothing the standard names reads: `$`-keys and `_`-keys are comments by convention. */
@@ -91,11 +110,11 @@ function manifestOf(context: Context, unit: string): Readonly<Record<string, unk
 export function manifestFindings(
     context: Context,
     unit: string,
-    kind: null | ProjectKind,
+    role: Role,
     known: ReadonlySet<string>,
 ): Finding[] {
     const manifest = manifestOf(context, unit);
-    const gap = manifestGap(kind, manifest);
+    const gap = manifestGap(role, manifest);
     const path = prefixed(unit, 'package.json');
     const strays = unknownManifestKeys(manifest, known);
 
@@ -105,7 +124,7 @@ export function manifestFindings(
             : [
                   finding('config/kind-matches-manifest', path, {
                       fix: gap.fix,
-                      found: `${prefixed(unit, SETTINGS_FILE)} declares ${kind === null ? 'no kind, a suite' : NAMED[kind]}, and ${path} ${gap.owes}`,
+                      found: gapFound(role, unit, gap.owes),
                   }),
               ]),
         ...(manifest.type === 'module'

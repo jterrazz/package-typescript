@@ -108,9 +108,6 @@ const lawOf = (preset: Preset, rule: { name: string }): PresetLaw => `${preset.n
 
 const EMPTY_DECLARATION = Object.freeze({});
 
-const identityOf = ({ kind, platform }: ProjectIdentity): object =>
-    platform === null ? { kind } : { kind, platform };
-
 const EMPTY: Resolved = {
     baseline: [],
     declaration: null,
@@ -252,7 +249,7 @@ export function resolveConfig(declaredSettings: object, baseOf: BasePresets): Re
         return refusedWith(undeclared);
     }
     const refused = (problem: string): Resolution =>
-        refusedWith(problem, declaration === null ? EMPTY_DECLARATION : identityOf(declaration));
+        refusedWith(problem, declaration ?? EMPTY_DECLARATION);
     if (!Array.isArray(listed)) {
         return refused('holds a `presets` that is not a list');
     }

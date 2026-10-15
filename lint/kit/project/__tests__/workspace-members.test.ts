@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
 import { MEMBER_DEPTH } from '../manifest.js';
-import { pnpmWorkspacePatterns, workspaceMembers } from '../workspace-members.js';
+import { isMonorepoRoot, pnpmWorkspacePatterns, workspaceMembers } from '../workspace-members.js';
 
 function tree(files: Readonly<Record<string, string>>): string {
     const root = mkdtempSync(join(tmpdir(), 'workspace-members-'));
@@ -229,5 +229,25 @@ describe('workspaceMembers', () => {
 
         // Then - the member, and no throw
         expect(workspaceMembers(root)).toStrictEqual(['member']);
+    });
+
+    test('isMonorepoRoot — a root whose manifest or pnpm file lists member globs is a monorepo, before any member exists; one that lists none, or holds no manifest, is not', () => {
+        // Given - roots listing globs in the manifest, in pnpm's file, an empty list, and none at all
+        const roots = [
+            tree({ 'package.json': workspaces('apps/*') }),
+            tree({ 'pnpm-workspace.yaml': 'packages:\n  - apps/*\n' }),
+            tree({ 'package.json': workspaces() }),
+            tree({ 'package.json': PACKAGE }),
+            tree({}),
+        ];
+
+        // Then - only the two that list globs are monorepos
+        expect(roots.map((root) => isMonorepoRoot(root))).toStrictEqual([
+            true,
+            true,
+            false,
+            false,
+            false,
+        ]);
     });
 });

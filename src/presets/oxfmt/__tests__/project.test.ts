@@ -26,7 +26,7 @@ describe('oxfmtConfigAt', () => {
                 "export default { kind: 'website', platform: 'react', typescript: { oxfmt: { ignore: { 'docs/upstream.md': 'quoted' } }, roots: { notes: { reason: 'scratch', verbatim: true } } } };\n",
             'apps/site/package.json': '{ "name": "site", "private": true }\n',
             'jterrazz.config.ts':
-                "export default { kind: 'workspace', typescript: { oxfmt: { ignore: { vendor: 'shipped' } } } };\n",
+                "export default { typescript: { oxfmt: { ignore: { vendor: 'shipped' } } } };\n",
             'package.json': '{ "name": "ws", "private": true, "workspaces": ["apps/*"] }\n',
         });
 

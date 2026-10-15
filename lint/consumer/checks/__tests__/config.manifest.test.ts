@@ -78,6 +78,12 @@ function contextOver(manifest: object): Context {
     };
 }
 
+const opening = (found: readonly { message: string }[]): string[] =>
+    found.map(({ message }) => message.split(' · ')[0] ?? '');
+
+const fixOf = (found: readonly { message: string }[]): string[] =>
+    found.map(({ message }) => message.split(' · fix: ')[1]?.split(' · ')[0] ?? '');
+
 describe('config.manifest', () => {
     test('unknownManifestKeys — every field npm and the tools of the family read is known, a comment key is none, and any other key is named', () => {
         // Given - a manifest writing every known field, one writing comments and typos
@@ -109,7 +115,7 @@ describe('config.manifest', () => {
         const found = manifestFindings(
             contextOver({ depedencies: {}, name: 'suite', private: false }),
             '.',
-            null,
+            'suite',
             new Set(KNOWN),
         );
 
@@ -119,7 +125,7 @@ describe('config.manifest', () => {
                 column: 1,
                 line: 1,
                 message:
-                    'found: jterrazz.config.ts declares no kind, a suite, and package.json is not `private`, so npm would publish the suite · why: A library publishes its exports, a published cli names its bin, and an application — an api, a website, a mobile app — is private, never published, as is a workspace\'s own suite. · fix: set `"private": true`: a suite is never published · read: docs/reference/quality-checks.md#the-config-one-file-pass',
+                    'found: jterrazz.config.ts declares no kind, a suite, and package.json is not `private`, so npm would publish the suite · why: A library publishes its exports, a published cli names its bin, and an application — an api, a website, a mobile app — is private, never published, as are a monorepo\'s own suite and its root, a container that declares no kind. · fix: set `"private": true`: a suite is never published · read: docs/reference/quality-checks.md#the-config-one-file-pass',
                 path: 'package.json',
                 rule: 'config/kind-matches-manifest',
             },
@@ -168,6 +174,44 @@ describe('config.manifest', () => {
                 .map(({ message }) => message.split(' · ')[0]),
         ).toStrictEqual([
             'found: package.json holds `depedencies`, `scriptz`, which npm and the tools of the family read nowhere',
+        ]);
+    });
+
+    test('manifestFindings — the root of a monorepo that npm would publish, and a project that lists `workspaces`, are each refused with what to do; a private root is not', () => {
+        // Given - a public monorepo root, a private one, and an api whose manifest lists members
+        const known = new Set(KNOWN);
+        const published = manifestFindings(
+            contextOver({ name: 'estate', type: 'module', workspaces: ['apps/*'] }),
+            '.',
+            'monorepo',
+            known,
+        );
+        const container = manifestFindings(
+            contextOver({ name: 'estate', private: true, type: 'module', workspaces: ['apps/*'] }),
+            '.',
+            'monorepo',
+            known,
+        );
+        const project = manifestFindings(
+            contextOver({ name: 'api', private: true, type: 'module', workspaces: ['apps/*'] }),
+            'apps/api',
+            'api',
+            known,
+        );
+
+        // Then - the public root and the api are refused, the private root passes
+        expect(opening(published)).toStrictEqual([
+            'found: package.json lists `workspaces` and is not `private`, so npm would publish the root of a monorepo, which is a container, never a project',
+        ]);
+        expect(fixOf(published)).toStrictEqual([
+            'set `"private": true`, and publish what the repository ships from a member of its own under `packages/`',
+        ]);
+        expect(container).toStrictEqual([]);
+        expect(opening(project)).toStrictEqual([
+            'found: apps/api/jterrazz.config.ts declares an api, and apps/api/package.json declares `workspaces`, so it is the root of a monorepo, a container that declares no kind: its own sources would be read as a member of itself',
+        ]);
+        expect(fixOf(project)).toStrictEqual([
+            'drop `kind` and `platform` from its jterrazz.config.ts and move its sources into a member under `apps/` or `packages/` that declares its own, or drop `workspaces` when the repository is one project',
         ]);
     });
 });

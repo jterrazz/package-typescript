@@ -63,14 +63,14 @@ describe('index.rulebook', () => {
         },
     );
 
-    test('oxlintConfigAt — a workspace — the root overrides come after the members’, each member override carries its member’s plugins', async () => {
-        // Given - a workspace whose root overrides a rule for a member’s files, and a react member overriding a react rule of its own
+    test('oxlintConfigAt — a monorepo — the root overrides come after the members’, each member override carries its member’s plugins', async () => {
+        // Given - a monorepo whose root overrides a rule for a member’s files, and a react member overriding a react rule of its own
         const root = workspace({
             'apps/web/jterrazz.config.ts':
                 "export default { kind: 'website', platform: 'react', typescript: { oxlint: { overrides: [{ files: ['src/**'], reason: 'the member decides', rules: { 'react/jsx-no-useless-fragment': 'off' } }] } } };\n",
             'apps/web/package.json': '{ "name": "web", "private": true }\n',
             'jterrazz.config.ts':
-                "export default { kind: 'workspace', typescript: { oxlint: { overrides: [{ files: ['apps/web/src/**'], reason: 'the root decides', rules: { 'no-console': 'off' } }] } } };\n",
+                "export default { typescript: { oxlint: { overrides: [{ files: ['apps/web/src/**'], reason: 'the root decides', rules: { 'no-console': 'off' } }] } } };\n",
             'package.json': '{ "name": "ws", "private": true, "workspaces": ["apps/*"] }\n',
         });
 
@@ -95,13 +95,12 @@ describe('index.rulebook', () => {
         expect([ofRoot === overrides.length - 1, ofMember < ofRoot]).toStrictEqual([true, true]);
     });
 
-    test('oxlintConfigAt — a workspace — a member’s override on its test files follows the rulebook’s override of every test file, so it wins', async () => {
-        // Given - a workspace whose react member relaxes a vitest rule on its own test files
+    test('oxlintConfigAt — a monorepo — a member’s override on its test files follows the rulebook’s override of every test file, so it wins', async () => {
+        // Given - a monorepo whose react member relaxes a vitest rule on its own test files
         const root = workspace({
             'apps/web/jterrazz.config.ts':
                 "export default { kind: 'website', platform: 'react', typescript: { oxlint: { overrides: [{ files: ['src/**/__tests__/**'], reason: 'the member decides', rules: { 'vitest/max-expects': 'off' } }] } } };\n",
             'apps/web/package.json': '{ "name": "web", "private": true }\n',
-            'jterrazz.config.ts': "export default { kind: 'workspace' };\n",
             'package.json': '{ "name": "ws", "private": true, "workspaces": ["apps/*"] }\n',
         });
 
@@ -121,8 +120,8 @@ describe('index.rulebook', () => {
         expect([ofRulebook !== -1, ofRulebook < ofMember]).toStrictEqual([true, true]);
     });
 
-    test('oxlintConfigAt — a workspace — each configured member is linted by its own profile inside its folder, a member without config is left to the root', async () => {
-        // Given - a workspace with a node member, a member without config, an expo member and a react member
+    test('oxlintConfigAt — a monorepo — each configured member is linted by its own profile inside its folder, a member without config is left to the root', async () => {
+        // Given - a monorepo with a node member, a member without config, an expo member and a react member
         const root = workspace({
             'apps/api/jterrazz.config.ts': "export default { kind: 'api', platform: 'node' };\n",
             'apps/api/package.json': '{ "name": "api", "private": true }\n',
@@ -134,7 +133,7 @@ describe('index.rulebook', () => {
                 "export default { kind: 'website', platform: 'react', typescript: { oxlint: { overrides: [{ files: ['src/**'], reason: 'r', rules: { 'react/jsx-no-useless-fragment': 'off' } }] } } };\n",
             'apps/web/package.json': '{ "name": "web", "private": true }\n',
             'jterrazz.config.ts':
-                "export default { kind: 'workspace', typescript: { oxlint: { rules: { 'no-undef-init': { level: 'error', reason: 'r' } } } } };\n",
+                "export default { typescript: { oxlint: { rules: { 'no-undef-init': { level: 'error', reason: 'r' } } } } };\n",
             'package.json': '{ "name": "ws", "private": true, "workspaces": ["apps/*"] }\n',
         });
 
@@ -200,14 +199,14 @@ describe('index.rulebook', () => {
         ).toStrictEqual([true, true, true]);
     });
 
-    test('oxlintConfigAt — a unit that is no workspace reads no member, though its manifest lists some', async () => {
-        // Given - an api whose manifest lists a member that declares a platform of its own
+    test('oxlintConfigAt — a unit whose manifest lists no member reads none, though a folder of it declares a platform of its own', async () => {
+        // Given - an api whose manifest lists no `workspaces`, and a folder under apps/ that declares a website
         const root = workspace({
             'apps/web/jterrazz.config.ts':
                 "export default { kind: 'website', platform: 'react' };\n",
             'apps/web/package.json': '{ "name": "web", "private": true }\n',
             'jterrazz.config.ts': "export default { kind: 'api', platform: 'node' };\n",
-            'package.json': '{ "name": "ws", "private": true, "workspaces": ["apps/*"] }\n',
+            'package.json': '{ "name": "ws", "private": true }\n',
         });
 
         // When - its config is derived
@@ -220,12 +219,11 @@ describe('index.rulebook', () => {
     });
 
     test('oxlintConfigAt — a member’s override keeps the files it excludes, under the member’s folder, and a member sets no globals the profile does not', async () => {
-        // Given - a workspace whose api member brings a preset overriding a rule except in a generated folder
+        // Given - a monorepo whose api member brings a preset overriding a rule except in a generated folder
         const root = workspace({
             'apps/api/jterrazz.config.ts':
                 "export default { kind: 'api', platform: 'node', presets: [{ name: 'gen', package: 'gen', oxlint: { overrides: [{ files: ['src/**'], excludeFiles: ['src/generated/**'], rules: { 'no-console': 'off' } }] } }] };\n",
             'apps/api/package.json': '{ "name": "api", "private": true }\n',
-            'jterrazz.config.ts': "export default { kind: 'workspace' };\n",
             'package.json': '{ "name": "ws", "private": true, "workspaces": ["apps/*"] }\n',
         });
 

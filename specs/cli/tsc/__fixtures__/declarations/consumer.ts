@@ -20,16 +20,18 @@ export const settings: JterrazzConfig = defineConfig({
     typescript: { roots: { scripts: 'the release scripts the CI workflow runs' } },
 });
 
-export const workspace = defineConfig({ kind: 'workspace' });
+export const monorepoRoot = defineConfig({
+    typescript: { roots: { scripts: 'the release scripts the CI workflow runs' } },
+});
 
-// @ts-expect-error — a project declares what it is
-export const undeclared = defineConfig({});
+// @ts-expect-error — a kind runs on a platform it names
+export const kindAlone = defineConfig({ kind: 'library' });
 
 // @ts-expect-error — an api runs on node or bun, never in a browser
 export const apiInABrowser = defineConfig({ kind: 'api', platform: 'react' });
 
-// @ts-expect-error — a workspace's members each declare their own platform
-export const platformedWorkspace = defineConfig({ kind: 'workspace', platform: 'node' });
+// @ts-expect-error — a monorepo is the repository's shape, never a kind
+export const workspaceKind = defineConfig({ kind: 'workspace' });
 
 // @ts-expect-error — a root maps to the reason the repository keeps it
 export const rootWithNoReason = defineConfig({ kind: 'library', platform: 'node', typescript: { roots: { scripts: true } } });

@@ -106,6 +106,6 @@ export const REFUSED: [string, Record<string, unknown>, string][] = [
     [
         'a kind outside the vocabulary',
         { kind: 'nonsense' },
-        'declares the kind `nonsense`, which is none of `library`, `api`, `cli`, `website`, `mobile`, `workspace`',
+        'declares the kind `nonsense`, which is none of `library`, `api`, `cli`, `website`, `mobile`',
     ],
 ];

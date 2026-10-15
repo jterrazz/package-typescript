@@ -47,13 +47,21 @@ export function pnpmWorkspacePatterns(root: string): string[] {
     return listed;
 }
 
+function memberGlobs(absolute: string): string[] {
+    const manifest = readManifest(absolute);
+    const declared = manifest === null ? [] : workspacePatterns(manifest);
+
+    return declared.length > 0 ? declared : pnpmWorkspacePatterns(absolute);
+}
+
+/** A monorepo is the repository's shape, never a kind: its package manager's member globs say so, and its root is a container that declares none. */
+export const isMonorepoRoot = (root: string): boolean => memberGlobs(resolve(root)).length > 0;
+
 // invariant: empty for a single-package project, which every caller reads as "the root is the unit".
 // Stryker disable next-line StringLiteral: resolve reads an empty root as the working folder, as it reads a dot
 export function workspaceMembers(root = '.'): string[] {
     const absolute = resolve(root);
-    const manifest = readManifest(absolute);
-    const declared = manifest === null ? [] : workspacePatterns(manifest);
-    const listed = declared.length > 0 ? declared : pnpmWorkspacePatterns(absolute);
+    const listed = memberGlobs(absolute);
     // Stryker disable next-line MethodExpression: a negated glob read as a pattern opens on `!`, which no path does, so it matches nothing whether it is dropped or kept
     const included = listed.filter((glob) => !glob.startsWith('!'));
     const patterns = included.map((glob) => toPattern(glob.replace(/\/+$/u, '')));

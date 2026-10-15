@@ -152,7 +152,7 @@ The ordinary `typescript` dependency stays on ^6 because two consumers need the 
 
 ## The unit is the workspace package
 
-Every per-package gate measures from the nearest `package.json`, never from the repository: a workspace root runs those gates once per member, and a single-package project is the one run it always was. `lint/kit/project/workspace-members.ts` answers what the members are, and every caller asks it rather than guessing.
+Every per-package gate measures from the nearest `package.json`, never from the repository: a workspace root runs those gates once per member, and a single-package project is the one run it always was. `lint/kit/project/workspace-members.ts` answers whether the root is a monorepo — `isMonorepoRoot`, read from the `workspaces` npm owns, never from a declared kind — and what its members are, and every caller asks it rather than guessing.
 
 The one gate that measures from the repository instead is the manual's, because a manual answers for a whole tree ([Quality checks](../reference/quality-checks.md)).
 

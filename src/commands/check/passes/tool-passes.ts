@@ -85,7 +85,7 @@ export function typescriptPass(check: Check): Launched | undefined {
         return undefined;
     }
     const log = check.logs.at('type.log');
-    const units = check.declarations.get('.')?.kind === 'workspace' ? check.members : ['.'];
+    const units = check.members.length > 0 ? check.members : ['.'];
 
     return { log, status: typescriptRuns(check, units, log) };
 }

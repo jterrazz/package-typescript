@@ -184,13 +184,13 @@ describe('build-plan', () => {
         ]);
     });
 
-    test('buildPlanOf — a package loaded by require builds both formats, cleaning dist/ first, for node when it declares no platform', () => {
-        // Given - a kind-less suite whose manifest publishes its index as ESM and CommonJS
+    test('buildPlanOf — a package loaded by require builds both formats, cleaning dist/ first, for node when it declares nothing', () => {
+        // Given - an undeclared package whose manifest publishes its index as ESM and CommonJS
         const root = tree(['src/index.ts'], {
             exports: { import: './dist/index.js', require: './dist/index.cjs' },
             name: 'dual',
         });
-        const declaration = { kind: null, platform: null };
+        const declaration = null;
 
         // Then - one step, both formats, the CommonJS exports named
         expect(

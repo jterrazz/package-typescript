@@ -2,7 +2,7 @@
     {
         "family": "config",
         "id": "config/project-declared",
-        "sentence": "A repository, and each member of a workspace, declares what it is once — its kind and its platform — in jterrazz.config.ts."
+        "sentence": "A project — a single-project repository, or each member of a monorepo — declares what it is once, its kind and its platform, in jterrazz.config.ts."
     },
     {
         "family": "config",
@@ -17,7 +17,7 @@
     {
         "family": "config",
         "id": "config/editor-file-in-its-unit",
-        "sentence": "An editor file sits in the unit it is derived for: the oxlint and oxfmt configs at the repository root alone, a tsconfig.json — or a preset's file such as vitest.config.ts — in each declared project, and never at a workspace root, which declares no platform."
+        "sentence": "An editor file sits in the unit it is derived for: the oxlint and oxfmt configs at the repository root alone, a tsconfig.json — or a preset's file such as vitest.config.ts — in each declared project, and never at the root of a monorepo, which declares no platform."
     },
     {
         "family": "config",
@@ -27,7 +27,7 @@
     {
         "family": "config",
         "id": "config/kind-matches-manifest",
-        "sentence": "A library publishes its exports, a published cli names its bin, and an application — an api, a website, a mobile app — is private, never published, as is a workspace's own suite."
+        "sentence": "A library publishes its exports, a published cli names its bin, and an application — an api, a website, a mobile app — is private, never published, as are a monorepo's own suite and its root, a container that declares no kind."
     },
     {
         "family": "config",

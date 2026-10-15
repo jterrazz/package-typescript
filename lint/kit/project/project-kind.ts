@@ -1,6 +1,6 @@
 import { isJsonObject } from './json.js';
 
-export const KINDS = ['library', 'api', 'cli', 'website', 'mobile', 'workspace'] as const;
+export const KINDS = ['library', 'api', 'cli', 'website', 'mobile'] as const;
 
 export const PLATFORMS = ['node', 'bun', 'react', 'next', 'astro', 'expo', 'browser'] as const;
 
@@ -14,11 +14,10 @@ export type ProjectDeclaration =
     | { kind: 'library'; platform: Platform }
     | { kind: 'mobile'; platform: 'expo' }
     | { kind: 'website'; platform: 'astro' | 'browser' | 'next' | 'react' }
-    | { kind: 'workspace' }
-    | { kind?: undefined; platform: 'bun' | 'node' };
+    | { kind?: undefined; platform?: 'bun' | 'node' };
 
 type PlatformsOf = {
-    readonly [Kind in Exclude<ProjectKind, 'workspace'>]: readonly Extract<
+    readonly [Kind in ProjectKind]: readonly Extract<
         ProjectDeclaration,
         { kind: Kind }
     >['platform'][];
@@ -32,16 +31,16 @@ export const PLATFORMS_OF: PlatformsOf = {
     website: ['react', 'next', 'astro', 'browser'],
 };
 
-/** `kind: null` is a workspace's own suite: a member of tests alone, which is no product and so declares no kind. */
-export type ProjectIdentity = { kind: null | ProjectKind; platform: null | Platform };
+/** `kind: null` is a monorepo's own suite: a member of tests alone, which is no product and so declares no kind. */
+export type ProjectIdentity = { kind: null | ProjectKind; platform: Platform };
 
 /** The platforms a suite's tests run on. */
 export const SUITE_PLATFORMS: readonly Platform[] = ['node', 'bun'];
 
-/** The one folder a kind-less member may be: the workspace root's own `specs/`. */
+/** The one folder a kind-less member may be: the monorepo root's own `specs/`. */
 export const SUITE_FOLDER = 'specs';
 
-export type Publication = 'members' | 'private' | 'published';
+export type Publication = 'private' | 'published';
 
 export const PUBLICATION: Readonly<Record<ProjectKind, Publication>> = Object.freeze({
     api: 'private',
@@ -49,22 +48,21 @@ export const PUBLICATION: Readonly<Record<ProjectKind, Publication>> = Object.fr
     library: 'published',
     mobile: 'private',
     website: 'private',
-    workspace: 'members',
 });
 
 const PUBLISHED_KINDS: ReadonlySet<unknown> = new Set(
     KINDS.filter((kind) => PUBLICATION[kind] === 'published'),
 );
 
-/** A kind that publishes is published unless its manifest says `"private": true`: a workspace's internal library, a binary compiled and installed by hand. */
+/** A kind that publishes is published unless its manifest says `"private": true`: a monorepo's internal library, a binary compiled and installed by hand. */
 export const publishes = (
     identity: null | ProjectIdentity | undefined,
     manifest: Readonly<Record<string, unknown>>,
 ): boolean => PUBLISHED_KINDS.has(identity?.kind) && manifest.private !== true;
 
-/** A declaration as a sentence reads it: `library on node`, `a suite on bun`, `workspace on its members' platforms`. */
+/** A declaration as a sentence reads it: `library on node`, `a suite on bun`. */
 export const declaredAs = ({ kind, platform }: ProjectIdentity): string =>
-    `${kind ?? 'a suite'} on ${platform ?? "its members' platforms"}`;
+    `${kind ?? 'a suite'} on ${platform}`;
 
 const isKind = (value: unknown): value is ProjectKind =>
     (KINDS as readonly unknown[]).includes(value);
@@ -90,15 +88,6 @@ export function readProjectKind(declared: object): ProjectKindRead {
             declaration: null,
             problem: `declares the kind \`${String(kind)}\`, which is none of ${listed(KINDS)}`,
         };
-    }
-    if (kind === 'workspace') {
-        return platform === undefined
-            ? { declaration: { kind, platform: null }, problem: null }
-            : {
-                  declaration: null,
-                  problem:
-                      'declares a `platform` for a workspace, whose members each declare their own',
-              };
     }
     const allowed: readonly Platform[] = PLATFORMS_OF[kind];
     if (!runsOn(allowed, platform)) {

@@ -25,9 +25,10 @@ import {
     SUITE_PLATFORMS,
 } from '../../kit/project/project-kind.js';
 import type { ProjectIdentity } from '../../kit/project/project-kind.js';
-import { workspaceMembers } from '../../kit/project/workspace-members.js';
+import { isMonorepoRoot, workspaceMembers } from '../../kit/project/workspace-members.js';
 import { configFinding as finding, prefixed } from './config.finding.js';
 import { manifestFindings } from './config.manifest.js';
+import { monorepoRootFindings } from './config.monorepo.js';
 import { standardLogic } from './config.standard.js';
 import { synchronousLoad } from './config.synchronous.js';
 
@@ -61,7 +62,9 @@ const TOOL_CONFIGS: Readonly<Record<string, readonly string[]>> = Object.freeze(
 
 type Unit = {
     declaration: null | ProjectIdentity;
-    // invariant: true for the workspace root's own `specs/`, the one member that may declare no kind.
+    // invariant: true for the root of a repository whose manifest lists members — a container that declares no kind.
+    monorepo: boolean;
+    // invariant: true for the monorepo root's own `specs/`, the one member that may declare platform alone.
     suite: boolean;
     files: Readonly<Record<string, EditorFile>>;
     path: string;
@@ -71,12 +74,15 @@ type Unit = {
 };
 
 function declarationFindings(context: Context, unit: Unit): Finding[] {
+    if (unit.monorepo) {
+        return monorepoRootFindings(context, unit);
+    }
     const settings = prefixed(unit.path, SETTINGS_FILE);
     const { declaration } = unit;
     if (declaration === null) {
         return [
             finding('config/project-declared', settings, {
-                fix: `write \`export default defineConfig({ kind, platform })\` from \`@jterrazz/typescript/config\` in ${settings} — the kind one of ${listed(KINDS)}, the platform one of ${listed(PLATFORMS)}; a workspace's own suite at \`${SUITE_FOLDER}/\` declares its platform alone, one of ${listed(SUITE_PLATFORMS)}`,
+                fix: `write \`export default defineConfig({ kind, platform })\` from \`@jterrazz/typescript/config\` in ${settings} — the kind one of ${listed(KINDS)}, the platform one of ${listed(PLATFORMS)}; a monorepo's own suite at \`${SUITE_FOLDER}/\` declares its platform alone, one of ${listed(SUITE_PLATFORMS)}, and the root of a monorepo — a package.json listing \`workspaces\` — declares no kind`,
                 found: context.exists(join(context.root, settings))
                     ? `${settings} ${unit.problem ?? 'declares no `kind`'}`
                     : `${settings} is missing`,
@@ -86,13 +92,13 @@ function declarationFindings(context: Context, unit: Unit): Finding[] {
     if (declaration.kind === null && !unit.suite) {
         return [
             finding('config/project-declared', settings, {
-                fix: `declare its kind in ${settings} — one of ${listed(KINDS)} — or, for tests of the whole repository, keep them in the workspace member at \`${SUITE_FOLDER}/\``,
-                found: `${settings} declares a platform and no kind, which only a workspace's own suite at \`${SUITE_FOLDER}/\` may`,
+                fix: `declare its kind in ${settings} — one of ${listed(KINDS)} — or, for tests of the whole repository, keep them in the monorepo's member at \`${SUITE_FOLDER}/\``,
+                found: `${settings} declares a platform and no kind, which only a monorepo's own suite at \`${SUITE_FOLDER}/\` may`,
             }),
         ];
     }
 
-    return manifestFindings(context, unit.path, declaration.kind, unit.manifestKeys);
+    return manifestFindings(context, unit.path, declaration.kind ?? 'suite', unit.manifestKeys);
 }
 
 function tsconfigFindings(unit: Unit): Finding[] {
@@ -112,13 +118,17 @@ function tsconfigFindings(unit: Unit): Finding[] {
 const shownOf = (file: EditorFile, text: string): string =>
     'text' in file ? text.trim().replaceAll(/\n+/gu, ' ') : text.trim();
 
-const workspaceRootFindings = (path: string, name: string, written: null | string): Finding[] =>
+const monorepoRootEditorFindings = (
+    path: string,
+    name: string,
+    written: null | string,
+): Finding[] =>
     written === null
         ? []
         : [
               finding('config/editor-file-in-its-unit', path, {
                   fix: `delete it: each member keeps its own ${name}, derived from its own ${SETTINGS_FILE}`,
-                  found: `${path} sits at a workspace root, which declares no platform to derive it from`,
+                  found: `${path} sits at the root of a monorepo, which declares no platform to derive it from`,
               }),
           ];
 
@@ -144,8 +154,8 @@ function editorFindings(
             }
             continue;
         }
-        if (expected.scope === 'unit' && unit.declaration?.kind === 'workspace') {
-            findings.push(...workspaceRootFindings(path, name, written));
+        if (expected.scope === 'unit' && unit.monorepo) {
+            findings.push(...monorepoRootEditorFindings(path, name, written));
             continue;
         }
         if (written !== null && holdsEditorFile(written, expected)) {
@@ -208,8 +218,8 @@ async function unitsOf(context: Context): Promise<{ findings: Finding[]; units: 
     const declaring = members.filter((member) =>
         context.exists(join(context.root, member, SETTINGS_FILE)),
     );
-    const workspace = root.resolved.declaration?.kind === 'workspace';
-    const undeclared = workspace ? members.filter((member) => !declaring.includes(member)) : [];
+    const monorepo = isMonorepoRoot(context.root);
+    const undeclared = members.filter((member) => !declaring.includes(member));
     const units = await Promise.all(
         ['.', ...declaring].map(async (path): Promise<Unit> => {
             const { problem, resolved } =
@@ -227,9 +237,10 @@ async function unitsOf(context: Context): Promise<{ findings: Finding[]; units: 
                 files,
                 // Stryker disable next-line OptionalChaining: the resolved sections always hold the typescript section, the base laws standing even for a settings file that cannot be read
                 manifestKeys: new Set(stringsOf(resolved.sections.typescript?.manifestKeys)),
+                monorepo: monorepo && path === '.',
                 path,
                 problem,
-                suite: workspace && path === SUITE_FOLDER,
+                suite: monorepo && path === SUITE_FOLDER,
                 tsconfigProblem: tsconfig.problem,
             };
         }),
@@ -239,7 +250,7 @@ async function unitsOf(context: Context): Promise<{ findings: Finding[]; units: 
         findings: undeclared.map((member) =>
             finding('config/project-declared', prefixed(member, SETTINGS_FILE), {
                 fix: `write ${prefixed(member, SETTINGS_FILE)} declaring the member's own kind and platform`,
-                found: `${member} is a member of a workspace, and declares no kind of its own`,
+                found: `${member} is a member of a monorepo, and declares no kind of its own`,
             }),
         ),
         units,
@@ -253,7 +264,7 @@ export const config: Pass = Object.freeze({
         const writes: { path: string; text: string }[] = [];
         for (const unit of units) {
             const editor =
-                unit.declaration === null
+                unit.declaration === null && !unit.monorepo
                     ? { findings: [], writes: [] }
                     : editorFindings(context, unit);
             const synchronous = await synchronousLoad(context, unit);
