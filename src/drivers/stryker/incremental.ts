@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { parsedObject, stringOf, stringRecordOf } from '../../../lint/kit/project/json.js';
-import { changedBetween, inputsOf, reachOf, roleOf } from './inputs.js';
+import { changedBetween, inputsOf, isLoadable, reachOf, roleOf } from './inputs.js';
 import type { Inputs } from './inputs.js';
 import { observedOf, observedOnDisk, ranBy } from './observed.js';
 import type { Observed } from './observed.js';
@@ -115,9 +115,7 @@ function onlyFunctionsIn(
 }
 
 function codeTextsIn(project: string, inputs: Inputs): Map<string, string> {
-    const code = Object.keys(inputs).filter((path) =>
-        ['source', 'test'].includes(roleOf(path).kind),
-    );
+    const code = Object.keys(inputs).filter((path) => isLoadable(path));
 
     return new Map(code.map((path) => [path, String(readFileSync(join(project, path)))]));
 }

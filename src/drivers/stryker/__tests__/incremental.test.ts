@@ -200,6 +200,22 @@ describe('incremental', () => {
         expect(keptIn(root)).toStrictEqual({ 'src/a.ts': [], 'src/b.ts': [] });
     });
 
+    test('incrementalKeptWhileInputsHold — a source a test loads through a setup helper reaches the test', () => {
+        // Given - a run that ended, every test seen spawning nothing, b's module test loading b through a helper of specs/__setup__/
+        const root = ranOnce(SPEC_QUIET, {
+            ...FILES,
+            'specs/__setup__/helper.ts': "export { b } from '../../src/b.js';",
+            'src/__tests__/b.test.ts': "import { b } from '../../specs/__setup__/helper.js';",
+        });
+
+        // When - h.ts, which b imports, changes, and a run starts
+        writeFileSync(join(root, 'src/h.ts'), 'changed');
+        startedIn(root);
+
+        // Then - b's mutant is measured again, a's stay
+        expect(keptIn(root)).toStrictEqual({ 'src/a.ts': ['1', '2'], 'src/b.ts': [] });
+    });
+
     test('incrementalKeptWhileInputsHold — a run after one that never ended follows no test', () => {
         // Given - a run that started on the tree and never ended
         const root = ranOnce();

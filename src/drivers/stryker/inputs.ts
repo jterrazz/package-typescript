@@ -54,6 +54,10 @@ const TEST_FILE = /\.(?:test|test-d|spec)\.[cm]?[jt]sx?$|\.spec\.ya?ml$/u;
 
 const CODE_FILE = /\.(?:[cm]?[jt]sx?|astro|svelte|vue)$/u;
 
+/** Whether a file is code a test may load: a module of the project outside the ground its tests read — a `__setup__/` helper and a root config included, since a test loads sources through them. */
+export const isLoadable = (path: string): boolean =>
+    CODE_FILE.test(path) && roleOf(path).kind !== 'ground';
+
 // invariant: a test reads the ground of its own folder and of the folders above it — `../__fixtures__/`, never a sibling's — so a ground file is read by the tests under the folder that holds its ground folder.
 // invariant: a `__setup__/` file is loaded by a project's config as well as imported, a root file configures the run itself, and a data file is read by code no import names: each reaches every test.
 export function roleOf(path: string): Role {

@@ -7,6 +7,7 @@ import { afterEach, describe, expect, test } from 'vitest';
 import {
     changedBetween,
     inputsOf,
+    isLoadable,
     isUnder,
     namedBy,
     namesItsOwnBuild,
@@ -222,5 +223,25 @@ import j from './j.mjs';`;
         expect(inputsOf(root)?.['node_modules/.package-lock.json']).toBe(
             'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb',
         );
+    });
+
+    test('isLoadable — every module a test may load, a setup helper and a root config included, ground and data aside', () => {
+        // Given - a source, a test, a setup helper, a root config, a fixture module and a data file
+        const paths = [
+            'src/a.ts',
+            'src/__tests__/a.test.ts',
+            'specs/__setup__/rulebook.ts',
+            'vitest.config.ts',
+            'specs/__fixtures__/app/src/a.ts',
+            'src/catalogue.json',
+        ];
+
+        // Then - the four modules a test may load
+        expect(paths.filter((path) => isLoadable(path))).toStrictEqual([
+            'src/a.ts',
+            'src/__tests__/a.test.ts',
+            'specs/__setup__/rulebook.ts',
+            'vitest.config.ts',
+        ]);
     });
 });
