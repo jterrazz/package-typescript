@@ -19,7 +19,9 @@ describe('asked', () => {
     });
 
     test('askedOf — reads the ranges as a list and the commit to measure since, the flag before the variable', () => {
-        // Given - no variable, the commit and the ranges as flags, and a variable under a flag
+        // Given - no variable, the commit and the ranges as flags, and a variable under a flag, outside CI
+        vi.stubEnv('CI', '');
+        vi.stubEnv('TYPESCRIPT_MUTATION_COLD', '');
         vi.stubEnv('TYPESCRIPT_MUTATION_SINCE', '');
         const flags = askedOf(['--mutate', 'a.ts:1-2,b.ts', '--since', 'main']);
         vi.stubEnv('TYPESCRIPT_MUTATION_SINCE', 'v1');
@@ -37,8 +39,9 @@ describe('asked', () => {
         ]);
     });
 
-    test('askedOf — a run is cold when the flag says so or the variable holds any text, and not when the variable is blank or absent', () => {
-        // Given - each way a run is asked
+    test('askedOf — a run is cold when the flag says so, the variable holds any text, or CI is set, and not when either is blank or absent', () => {
+        // Given - each way a run is asked, outside CI first
+        vi.stubEnv('CI', '');
         vi.stubEnv('TYPESCRIPT_MUTATION_COLD', '');
         const none = askedOf([]).cold;
         const flag = askedOf(['--cold']).cold;
@@ -46,8 +49,19 @@ describe('asked', () => {
         const variable = askedOf([]).cold;
         vi.stubEnv('TYPESCRIPT_MUTATION_COLD', '   ');
         const blank = askedOf([]).cold;
+        vi.stubEnv('CI', 'true');
+        const ci = askedOf([]).cold;
+        vi.stubEnv('CI', ' ');
+        const blankCi = askedOf([]).cold;
 
-        // Then - cold by flag or by variable, never by a blank one
-        expect([none, flag, variable, blank]).toStrictEqual([false, true, true, false]);
+        // Then - cold by flag, by variable or in CI, never by a blank one
+        expect([none, flag, variable, blank, ci, blankCi]).toStrictEqual([
+            false,
+            true,
+            true,
+            false,
+            true,
+            false,
+        ]);
     });
 });
