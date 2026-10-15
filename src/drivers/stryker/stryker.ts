@@ -14,23 +14,23 @@ import process from 'node:process';
 
 import { readSettings } from '../../../lint/index.rules.js';
 import { ARTIFACTS, DEV_OUTPUT, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
-import { objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
+import { isList, objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { isRepositoryRoot, nearestRoot } from '../../../lint/kit/project/repository-root.js';
 import { handOver } from '../run.js';
 import { CHILD_COVERAGE_SOURCE } from './child-coverage.js';
 import { incrementalKeptWhileInputsHold, recordInputs } from './incremental.js';
-import type { Inputs } from './incremental.js';
-import { REPORT_NAMES } from './reports.js';
-import type { StageName } from './reports.js';
+import type { Inputs } from './inputs.js';
 import {
     MUTANT_SETUP_SOURCE,
-    QUIET_TESTS_VARIABLE,
+    OBSERVED_TESTS_VARIABLE,
     RAN_BY_TESTS_VARIABLE,
-    SANDBOX_DEPTH,
-    sandboxScriptSource,
-    vitestConfigSource,
-} from './sources.js';
+} from './mutant-setup.js';
+import { observedFrom } from './observed.js';
+import type { ObservedTest } from './observed.js';
+import { REPORT_NAMES } from './reports.js';
+import type { StageName } from './reports.js';
+import { SANDBOX_DEPTH, sandboxScriptSource, vitestConfigSource } from './sources.js';
 import type { Beside } from './sources.js';
 
 const oneGlob = (globs: readonly string[]): string =>
@@ -174,6 +174,28 @@ export async function withoutBesideLinks<T>(
 export const reportKept = (project: string, stage: Stage, cold: boolean): Inputs | undefined =>
     incrementalKeptWhileInputsHold(project, FILES[stage.name].incremental, { cold });
 
+const sourcesListed = (sources: unknown): string[] | undefined =>
+    isList(sources) ? sources.map(String) : undefined;
+
+function observedTestOf(value: unknown): ObservedTest {
+    const { loaded, ran, test } = objectOf(value);
+    const loadedSources = sourcesListed(loaded);
+    const ranSources = sourcesListed(ran);
+
+    return loadedSources === undefined || ranSources === undefined
+        ? { test: String(test) }
+        : { loaded: loadedSources, ran: ranSources, test: String(test) };
+}
+
+function observedIn(folder: string): ObservedTest[] {
+    return readdirSync(folder).flatMap((name) => {
+        const text = String(readFileSync(join(folder, name)));
+        const records: unknown = JSON.parse(text);
+
+        return isList(records) ? records.map(observedTestOf) : [];
+    });
+}
+
 const linesIn = (folder: string): string[] =>
     readdirSync(folder).flatMap((name) => String(readFileSync(join(folder, name))).split('\n'));
 
@@ -202,9 +224,9 @@ export async function strykerRun(
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
-    const quietInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'quiet-tests-'));
+    const observedInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'observed-tests-'));
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
-    process.env[QUIET_TESTS_VARIABLE] = quietInto;
+    process.env[OBSERVED_TESTS_VARIABLE] = observedInto;
     const inputs = reportKept(project, stage, cold);
     const status = await withoutBesideLinks(
         project,
@@ -217,15 +239,15 @@ export async function strykerRun(
             ),
     );
     const ranByTests = new Set(linesIn(ranInto));
-    const quiet = linesIn(quietInto).filter((line) => line !== '');
+    const observed = observedFrom(observedIn(observedInto), inputs);
     rmSync(ranInto, { recursive: true });
-    rmSync(quietInto, { recursive: true });
+    rmSync(observedInto, { recursive: true });
 
     if (status !== 0) {
         return { status };
     }
     if (inputs !== undefined) {
-        recordInputs(project, files.incremental, { inputs, quiet });
+        recordInputs(project, files.incremental, { inputs, observed });
     }
     const report = String(readFileSync(join(MUTATION_OUTPUT, `${files.report}.json`)));
 

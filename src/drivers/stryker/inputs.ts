@@ -1,6 +1,47 @@
-import { posix } from 'node:path';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { join, posix } from 'node:path';
 
+import { ARTIFACTS } from '../../../lint/kit/project/build-plan.js';
+import { listNotIgnored } from '../../../lint/kit/project/git-tree.js';
 import { GROUND_FOLDERS, SETUP_FOLDER } from '../../../lint/kit/project/ground.js';
+
+/** Every file a run's tests may read, by its hash; the install stands for the toolchain git does not list. */
+export type Inputs = Readonly<Record<string, string>>;
+
+const INSTALL = 'node_modules/.package-lock.json';
+
+const hashOf = (bytes: Buffer | string): string => createHash('sha256').update(bytes).digest('hex');
+
+/** The hash of every file git lists in the project, ignored files and the output of runs aside, and of the install; `undefined` where git cannot list the tree, so no change could be told. */
+export function inputsOf(project: string): Record<string, string> | undefined {
+    // outside: the sweep that lists a project's files leaves a test's ground to its scenario, so the tree is asked of git directly.
+    const listed = listNotIgnored(project);
+    if (listed === null) {
+        return undefined;
+    }
+    const inputs: Record<string, string> = {};
+    for (const path of listed) {
+        const file = join(project, path);
+        if (
+            !path.startsWith(`${ARTIFACTS}/`) &&
+            statSync(file, { throwIfNoEntry: false })?.isFile() === true
+        ) {
+            inputs[path] = hashOf(readFileSync(file));
+        }
+    }
+    const install = join(project, INSTALL);
+    inputs[INSTALL] = existsSync(install) ? hashOf(readFileSync(install)) : 'absent';
+
+    return inputs;
+}
+
+/** The paths whose bytes differ between two records of the inputs, a file added or removed included. */
+export function changedBetween(before: Inputs, after: Inputs): string[] {
+    return [...new Set([...Object.keys(before), ...Object.keys(after)])].filter(
+        (path) => before[path] !== after[path],
+    );
+}
 
 /** What a file is to the tests of a run: a test, the ground of the folder above it, a module code loads, or what every test stands on. */
 export type Role =

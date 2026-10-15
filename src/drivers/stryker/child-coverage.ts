@@ -1,4 +1,5 @@
 // invariant: every process a test spawns runs the instrumented build with this module imported first: it reports the mutants it ran — the parent credits them to the test that spawned it — and leaves `<name>.started` the moment it starts, so the parent knows the test spawned a process even when it ran no mutant.
+// invariant: it also hands back, as `<name>-<n>.functions`, the start of every function each script of the process ran since its last report, read from V8's precise coverage, so the parent can name the sources a test's processes ran and loaded; a process V8 will not profile leaves `<name>.blind`, and the parent reads its test as one that may have run any source.
 // hazard: no handler catches SIGKILL, so the reporter also hands back what is new every 25 milliseconds, and a process killed that way loses only its last 25.
 // invariant: a test's end asks every live reporter to flush: the parent writes a sequence number to `flush` in the folder, each reporter hands back what is new and answers with `<name>.ack`, and the parent reads the test's coverage once every live one has — so what a child ran during a test is credited to it, not to the next one. A reporter is live while its `<name>.alive` stands, and the pid at the head of its name tells a killed one from one that is still running.
 // hazard: a signal a process sends itself would be delivered after the script ended, and the process would exit 0 instead of dying of it: `process.kill` on the process's own pid flushes and takes the handler off first, so the operating system's default acts at once.
@@ -12,9 +13,66 @@ const sent = {};
 let written = 0;
 let acknowledged;
 
+function handed(suffix, value) {
+    written += 1;
+    const path = join(into, \`\${name}-\${written}.\${suffix}\`);
+    writeFileSync(\`\${path}.partial\`, JSON.stringify(value));
+    renameSync(\`\${path}.partial\`, path);
+}
+
+const functionsRan = (() => {
+    if (into === undefined) {
+        return () => [];
+    }
+    try {
+        const { Session } = require('node:inspector');
+        const session = new Session();
+        session.connect();
+        session.post('Profiler.enable');
+        session.post('Profiler.startPreciseCoverage', { callCount: true, detailed: false });
+        return () => {
+            let taken = [];
+            session.post('Profiler.takePreciseCoverage', (error, coverage) => {
+                taken = error ? undefined : coverage.result;
+            });
+            if (taken === undefined) {
+                writeFileSync(join(into, \`\${name}.blind\`), '');
+                return [];
+            }
+            return taken;
+        };
+    } catch {
+        writeFileSync(join(into, \`\${name}.blind\`), '');
+        return () => [];
+    }
+})();
+
+const ownUrl = require('node:url').pathToFileURL(__filename).href;
+
+function reportFunctions() {
+    const fresh = {};
+    let any = false;
+    for (const script of functionsRan()) {
+        const offsets = script.url.startsWith('file:') && script.url !== ownUrl
+            ? script.functions.filter((ran) => ran.ranges[0].count > 0).map((ran) => ran.ranges[0].startOffset)
+            : [];
+        if (offsets.length > 0) {
+            fresh[script.url] = offsets;
+            any = true;
+        }
+    }
+    if (any) {
+        handed('functions', fresh);
+    }
+}
+
 function report() {
+    if (into === undefined) {
+        return;
+    }
+    reportFunctions();
     const coverage = globalThis.__stryker__?.mutantCoverage;
-    if (into === undefined || coverage === undefined) {
+    if (coverage === undefined) {
         return;
     }
     const hits = { ...coverage.static };
@@ -32,13 +90,9 @@ function report() {
             any = true;
         }
     }
-    if (!any) {
-        return;
+    if (any) {
+        handed('json', fresh);
     }
-    written += 1;
-    const path = join(into, \`\${name}-\${written}.json\`);
-    writeFileSync(\`\${path}.partial\`, JSON.stringify(fresh));
-    renameSync(\`\${path}.partial\`, path);
 }
 
 function acknowledge() {

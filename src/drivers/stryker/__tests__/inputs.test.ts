@@ -1,6 +1,39 @@
-import { describe, expect, test } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, expect, test } from 'vitest';
 
-import { isUnder, namedBy, namesItsOwnBuild, reachOf, roleOf } from '../inputs.js';
+import {
+    changedBetween,
+    inputsOf,
+    isUnder,
+    namedBy,
+    namesItsOwnBuild,
+    reachOf,
+    roleOf,
+} from '../inputs.js';
+
+const roots: string[] = [];
+
+function projectWith(files: Record<string, string>): string {
+    const root = mkdtempSync(join(tmpdir(), 'incremental-'));
+    roots.push(root);
+    execFileSync('git', ['init', '--quiet'], { cwd: root });
+    for (const [path, text] of Object.entries(files)) {
+        mkdirSync(join(root, path, '..'), { recursive: true });
+        writeFileSync(join(root, path), text);
+    }
+    mkdirSync(join(root, '.artifacts/stryker'), { recursive: true });
+
+    return root;
+}
+
+afterEach(() => {
+    for (const root of roots.splice(0)) {
+        rmSync(root, { force: true, recursive: true });
+    }
+});
 
 describe('inputs', () => {
     test.each([
@@ -108,5 +141,50 @@ const missing = './gone.js';`;
             files: new Set(['src/d.ts']),
         });
         expect(reach('src/__tests__/a.test.ts')).toBe(reach('src/__tests__/a.test.ts'));
+    });
+
+    test('changedBetween — a file whose bytes differ, one added and one removed', () => {
+        // Given - two records of the inputs
+        const before = { a: '1', b: '2', c: '3' };
+        const after = { a: '1', b: '9', d: '4' };
+
+        // Then - each change once, the unchanged file left out
+        expect(changedBetween(before, after).toSorted()).toStrictEqual(['b', 'c', 'd']);
+    });
+
+    test('inputsOf — hashes every file git lists, the ignored ones, folders and the run’s own output aside, and stands for an absent install', () => {
+        // Given - a source, an ignored file, and a report of the run git would list
+        const root = projectWith({
+            '.artifacts/stryker/report.json': '{}',
+            '.gitignore': 'ignored.ts\n',
+            'ignored.ts': 'x',
+            'src/a.ts': 'a',
+        });
+
+        // When - the inputs are read
+        const inputs = inputsOf(root) ?? {};
+
+        // Then - every listed file by its hash, the install as absent
+        expect(Object.keys(inputs).toSorted()).toStrictEqual([
+            '.gitignore',
+            'node_modules/.package-lock.json',
+            'src/a.ts',
+        ]);
+        expect([inputs['src/a.ts'], inputs['node_modules/.package-lock.json']]).toStrictEqual([
+            'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb',
+            'absent',
+        ]);
+    });
+
+    test('inputsOf — the install is read by its hash once there is one', () => {
+        // Given - an install
+        const root = projectWith({ 'src/a.ts': 'a' });
+        mkdirSync(join(root, 'node_modules'));
+        writeFileSync(join(root, 'node_modules/.package-lock.json'), 'a');
+
+        // Then - its bytes' hash
+        expect(inputsOf(root)?.['node_modules/.package-lock.json']).toBe(
+            'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb',
+        );
     });
 });

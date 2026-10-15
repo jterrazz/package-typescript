@@ -1,9 +1,19 @@
 import { spawn } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    mkdirSync,
+    mkdtempSync,
+    readdirSync,
+    readFileSync,
+    realpathSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
+import { isList, objectOf } from '../../../../lint/kit/project/json.js';
 import { CHILD_COVERAGE_SOURCE } from '../child-coverage.js';
 
 type Ended = { handed: unknown[]; signal: NodeJS.Signals | null };
@@ -77,6 +87,38 @@ describe('CHILD_COVERAGE_SOURCE', () => {
             expect(ended).toStrictEqual({ handed: [{ 7: 1 }], signal });
         },
     );
+
+    test('child-coverage — hands back where each function it ran starts, script by script, and nothing of a script it did not load from a file', async () => {
+        // Given - a child running a script of its own that calls one of its two functions
+        const { into, reporter } = laid();
+        const script = join(into, '..', 'work.cjs');
+        const text = 'function unused() {}\nfunction work() { return 1; }\nwork();\n';
+        writeFileSync(script, text);
+        const child = spawn(process.execPath, ['--require', reporter, script], {
+            env: reporting(into),
+            stdio: 'ignore',
+        });
+
+        // When - it ends
+        await new Promise<void>((resolve) => {
+            child.once('exit', () => {
+                resolve();
+            });
+        });
+
+        // Then - the script's own body and the function it called, at their offsets, under its file URL alone
+        const ran = new Map<string, number[]>();
+        for (const name of readdirSync(into).filter((one) => one.endsWith('.functions'))) {
+            const handed: unknown = JSON.parse(readFileSync(join(into, name), 'utf8'));
+            for (const [url, offsets] of Object.entries(objectOf(handed))) {
+                const listed = isList(offsets) ? offsets.map(Number) : [];
+                ran.set(url, [...(ran.get(url) ?? []), ...listed]);
+            }
+        }
+        const own = ran.get(pathToFileURL(realpathSync(script)).href) ?? [];
+        expect([...ran.keys()].filter((url) => !url.startsWith('file:'))).toStrictEqual([]);
+        expect(own.toSorted((a, b) => a - b)).toStrictEqual([0, text.indexOf('function work')]);
+    });
 
     test('child-coverage — dies at once of a signal it sends itself, with what it ran handed back', async () => {
         // Given - a child that ran mutant 7 and sends itself SIGTERM as its script ends
