@@ -257,6 +257,27 @@ describe('mutation', () => {
         `);
     });
 
+    test.each([
+        ['asked with --cold', 'typescript mutation --cold', OUTSIDE_CI],
+        ['run in CI', 'typescript mutation', { CI: 'true' }],
+    ])(
+        'typescript mutation — a run %s measures every mutant again, whatever its report holds',
+        async (_how, command, env) => {
+            // Given - the consumer, its test judging everything, measured once
+            const result = await cli
+                .fixture(directory('./__fixtures__/mutation-consumer/'))
+                .fixture(directory('./__fixtures__/mutation-killing/'))
+                .prepare(measuredOnce)
+                .env(env)
+                .exec(command);
+
+            // Then - the report is gone before Stryker starts, and the verdict is measured whole
+            expect(result.exitCode).toBe(0);
+            expect(result.stdout.text).toContain('No incremental result file found');
+            expect(result.stdout.text).not.toContain('are reused');
+        },
+    );
+
     test('typescript mutation — a change to a source no test loads keeps every result of the report', async () => {
         // Given - the consumer, its test judging everything, beside a source nothing imports, measured once, then that source changed
         const result = await cli

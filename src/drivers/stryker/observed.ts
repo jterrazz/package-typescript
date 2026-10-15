@@ -5,7 +5,11 @@ import type { Inputs } from './inputs.js';
 export type Ran = { loaded: ReadonlySet<string>; ran: ReadonlySet<string> };
 
 /** One test as the dry run saw it, by its key; a test with neither list is one the run could not follow into every process it spawned. */
-export type ObservedTest = { loaded?: readonly string[]; ran?: readonly string[]; test: string };
+export type ObservedTest = {
+    loaded?: readonly string[] | undefined;
+    ran?: readonly string[] | undefined;
+    test: string;
+};
 
 /** The tests of the last dry run, each set of sources written once: a test names the set its processes ran and the set they loaded. */
 export type Observed = {

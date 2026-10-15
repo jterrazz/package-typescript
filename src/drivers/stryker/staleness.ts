@@ -33,6 +33,9 @@ type Change = {
     tests: ReadonlySet<string>;
 };
 
+// Stryker disable next-line ConditionalExpression: a role other than ground holds no root, and no test stands under an undefined folder
+const isGround = (role: Role): role is Extract<Role, { kind: 'ground' }> => role.kind === 'ground';
+
 function changeOf(changed: readonly string[]): Change {
     const roles = changed.map((path) => ({ path, role: roleOf(path) }));
     const pathsOf = (kind: Role['kind']): Set<string> =>
@@ -40,10 +43,10 @@ function changeOf(changed: readonly string[]): Change {
 
     return {
         everything: roles.some(({ role }) => role.kind === 'everything'),
+        // Stryker disable next-line MethodExpression: a role other than ground holds no root, and no test stands under an undefined folder
         grounds: roles
             .map(({ role }) => role)
-            // Stryker disable next-line ConditionalExpression,MethodExpression: a role other than ground holds no root, and no test stands under an undefined folder
-            .filter((role): role is Extract<Role, { kind: 'ground' }> => role.kind === 'ground')
+            .filter(isGround)
             .map(({ root }) => root),
         sources: pathsOf('source'),
         tests: pathsOf('test'),

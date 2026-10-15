@@ -184,12 +184,8 @@ const sourcesListed = (sources: unknown): string[] | undefined =>
 
 function observedTestOf(value: unknown): ObservedTest {
     const { loaded, ran, test } = objectOf(value);
-    const loadedSources = sourcesListed(loaded);
-    const ranSources = sourcesListed(ran);
 
-    return loadedSources === undefined || ranSources === undefined
-        ? { test: String(test) }
-        : { loaded: loadedSources, ran: ranSources, test: String(test) };
+    return { loaded: sourcesListed(loaded), ran: sourcesListed(ran), test: String(test) };
 }
 
 function observedIn(folder: string): ObservedTest[] {
@@ -257,9 +253,7 @@ export async function strykerRun(
     if (status !== 0) {
         return { status };
     }
-    if (inputs !== undefined) {
-        recordInputs(project, files.incremental, { inputs, observed });
-    }
+    recordInputs(project, files.incremental, { inputs: inputs ?? {}, observed });
     const report = String(readFileSync(join(MUTATION_OUTPUT, `${files.report}.json`)));
 
     return { ranByTests, report: JSON.parse(report) };
