@@ -38,14 +38,6 @@ export type Chapter = `docs/${string}.md`;
 export const readAt = (row: { name: string }, chapter: Chapter): ChapterAnchor =>
     `${chapter}#${row.name}`;
 
-export function lessonsAt(
-    docs: Taught & { name: string },
-    messages: Readonly<Record<string, Teaching>>,
-    chapter: Chapter,
-): Record<string, string> {
-    return lessonsOf(docs, readAt(docs, chapter), messages);
-}
-
 export type RuleOptions = {
     defaultOptions?: readonly unknown[];
     fixable?: 'code' | 'whitespace';

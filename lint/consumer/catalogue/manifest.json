@@ -166,22 +166,6 @@
     },
     {
         "audience": "consumer",
-        "by": "throw",
-        "channel": "runtime",
-        "id": "groups-of-missing-group",
-        "message": "the match holds no group named",
-        "module": "lint/kit/project/groups.ts"
-    },
-    {
-        "audience": "consumer",
-        "by": "throw",
-        "channel": "runtime",
-        "id": "present-missing-value",
-        "message": "a value that cannot be missing is missing",
-        "module": "lint/kit/project/groups.ts"
-    },
-    {
-        "audience": "consumer",
         "by": "exit",
         "channel": "runtime",
         "id": "empty-sweep-exit",
@@ -203,14 +187,6 @@
         "id": "catalogue-row-unnamed",
         "message": "no catalogue row is named",
         "module": "lint/kit/catalogue/rule.ts"
-    },
-    {
-        "audience": "consumer",
-        "by": "throw",
-        "channel": "runtime",
-        "id": "checker-stopped",
-        "message": "stopped with ${String(code)} outside exitCodeOf",
-        "module": "lint/kit/checker/stop.ts"
     },
     {
         "audience": "consumer",

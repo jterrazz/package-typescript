@@ -9,17 +9,9 @@ export {
     refusalBlock,
     whyOf,
 } from './kit/catalogue/lesson.js';
-export {
-    byName,
-    defineCheck,
-    defineRule,
-    lessonsAt,
-    readAt,
-    rowNamed,
-} from './kit/catalogue/rule.js';
+export { byName, defineCheck, defineRule, readAt, rowNamed } from './kit/catalogue/rule.js';
 export { anchor, cell, markdownTable } from './kit/catalogue/table.js';
 export {
-    CODE_SPECIAL_FOLDERS,
     GROUND_EXPECTED,
     GROUND_FIXTURES,
     GROUND_FOLDERS,
@@ -28,8 +20,6 @@ export {
     GROUND_SEEDS,
     isGroundFolder,
     isSpecialFolder,
-    isSpecialFolderName,
-    moduleStemOfTest,
     moduleTestOf,
     RENAMED_FOLDERS,
     RETIRED_SHARED_FOLDERS,

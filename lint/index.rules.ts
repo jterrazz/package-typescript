@@ -24,14 +24,7 @@ export type {
     Teaching,
     Unread,
 } from './kit/catalogue/lesson.js';
-export {
-    byName,
-    defineCheck,
-    defineRule,
-    lessonsAt,
-    readAt,
-    rowNamed,
-} from './kit/catalogue/rule.js';
+export { byName, defineCheck, defineRule, readAt, rowNamed } from './kit/catalogue/rule.js';
 export type {
     Audience,
     Chapter,
@@ -73,9 +66,7 @@ export type {
     Passes,
     PassResult,
 } from './kit/checker/pass.js';
-export { exitCodeOf, stop } from './kit/checker/stop.js';
 export { holdsDirectives, suppressionDirectives } from './kit/project/directives.js';
-export { groupsOf, present } from './kit/project/groups.js';
 export type { Directive, SuppressionDirectives } from './kit/project/directives.js';
 export {
     folderChanged,
@@ -93,7 +84,6 @@ export {
 } from './kit/project/git-tree.js';
 export type { TreeEntry } from './kit/project/git-tree.js';
 export {
-    CODE_SPECIAL_FOLDERS,
     GROUND_EXPECTED,
     GROUND_FIXTURES,
     GROUND_FOLDERS,
@@ -102,8 +92,6 @@ export {
     GROUND_SEEDS,
     isGroundFolder,
     isSpecialFolder,
-    isSpecialFolderName,
-    moduleStemOfTest,
     moduleTestOf,
     RENAMED_FOLDERS,
     RETIRED_SHARED_FOLDERS,
