@@ -1,4 +1,4 @@
-// invariant: every process a test spawns runs the instrumented build with this module imported first: it reports the mutants it ran — the parent credits them to the test that spawned it.
+// invariant: every process a test spawns runs the instrumented build with this module imported first: it reports the mutants it ran — the parent credits them to the test that spawned it — and leaves `<name>.started` the moment it starts, so the parent knows the test spawned a process even when it ran no mutant.
 // hazard: no handler catches SIGKILL, so the reporter also hands back what is new every 25 milliseconds, and a process killed that way loses only its last 25.
 // invariant: a test's end asks every live reporter to flush: the parent writes a sequence number to `flush` in the folder, each reporter hands back what is new and answers with `<name>.ack`, and the parent reads the test's coverage once every live one has — so what a child ran during a test is credited to it, not to the next one. A reporter is live while its `<name>.alive` stands, and the pid at the head of its name tells a killed one from one that is still running.
 // hazard: a signal a process sends itself would be delivered after the script ended, and the process would exit 0 instead of dying of it: `process.kill` on the process's own pid flushes and takes the handler off first, so the operating system's default acts at once.
@@ -57,6 +57,7 @@ function acknowledge() {
 
 if (into !== undefined) {
     writeFileSync(join(into, \`\${name}.alive\`), '');
+    writeFileSync(join(into, \`\${name}.started\`), '');
 }
 process.on('exit', () => {
     report();

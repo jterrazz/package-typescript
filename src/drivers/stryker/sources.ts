@@ -50,9 +50,12 @@ const OWN_PROCESSES_PLUGIN_SOURCE = `const ownProcesses = {
 
 export const RAN_BY_TESTS_VARIABLE = '__TYPESCRIPT_MUTATION_RAN_BY_TESTS__';
 
+export const QUIET_TESTS_VARIABLE = '__TYPESCRIPT_MUTATION_QUIET_TESTS__';
+
 // invariant: first of every project's setup files — a mutant is live before the test file loads, and a static mutant is credited to every test of each file whose loading ran it; the mutants a test ran in its own process, beyond loading its file, are written where RAN_BY_TESTS_VARIABLE names; what a process it spawned ran stays apart, since a child's loading and its calls cannot be told apart.
+// invariant: a test is quiet when no process started while it ran, nor while its file loaded or between its tests; the quiet tests are written where QUIET_TESTS_VARIABLE names, and a test left off the list reads as one whose process may load any source.
 export const MUTANT_SETUP_SOURCE = `import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { setTimeout as pause } from 'node:timers/promises';
 import { threadId } from 'node:worker_threads';
 import { afterAll, afterEach, beforeEach, inject } from 'vitest';
@@ -84,15 +87,21 @@ if (inject('mode') === 'mutant') {
             into[id] = (into[id] ?? 0) + count;
         }
     };
+    let fileSpawned = false;
+    const spawning = new Set();
     const drained = () => {
         const hits = {};
+        let spawned = false;
         for (const name of readdirSync(children)) {
             if (name.endsWith('.json')) {
                 add(hits, JSON.parse(readFileSync(join(children, name), 'utf8')));
                 rmSync(join(children, name));
+            } else if (name.endsWith('.started')) {
+                spawned = true;
+                rmSync(join(children, name));
             }
         }
-        return hits;
+        return { hits, spawned };
     };
     const alive = (name) => {
         try {
@@ -126,10 +135,15 @@ if (inject('mode') === 'mutant') {
         }
         return \`\${task.file?.filepath ?? 'unknown.js'}#\${parts.join(' ').trim()}\`;
     };
+    const between = () => {
+        const { hits, spawned } = drained();
+        add(fileWide, hits);
+        fileSpawned ||= spawned;
+    };
     const fileWide = {};
 
     beforeEach(({ task }) => {
-        add(fileWide, drained());
+        between();
         current = nameOf(task);
         tests.add(current);
     });
@@ -140,16 +154,29 @@ if (inject('mode') === 'mutant') {
         for (const id of Object.keys(perTest[current] ?? {})) {
             ranByTests.add(id);
         }
-        add(perTest[current] ?? (perTest[current] = {}), drained());
+        const { hits, spawned } = drained();
+        add(perTest[current] ?? (perTest[current] = {}), hits);
+        if (spawned) {
+            spawning.add(current);
+        }
     });
 
     afterAll(({}, suite) => {
-        add(fileWide, drained());
+        between();
         const { perTest, static: statics } = coverage();
         const ranInto = process.env.${RAN_BY_TESTS_VARIABLE};
         if (ranInto !== undefined) {
             mkdirSync(ranInto, { recursive: true });
             writeFileSync(join(ranInto, \`\${process.pid}-\${threadId}-\${Math.random().toString(36).slice(2)}.txt\`), [...ranByTests].join('\\n'));
+        }
+        const quietInto = process.env.${QUIET_TESTS_VARIABLE};
+        if (quietInto !== undefined && !fileSpawned) {
+            const quiet = [...tests].filter((test) => !spawning.has(test)).map((test) => {
+                const [file, ...name] = test.split('#');
+                return \`\${relative(process.cwd(), file)}#\${name.join('#')}\`;
+            });
+            mkdirSync(quietInto, { recursive: true });
+            writeFileSync(join(quietInto, \`\${process.pid}-\${threadId}-\${Math.random().toString(36).slice(2)}.txt\`), quiet.join('\\n'));
         }
         for (const [id, count] of Object.entries(statics)) {
             const before = loaded[id] ?? 0;

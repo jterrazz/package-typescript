@@ -19,11 +19,13 @@ import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { isRepositoryRoot, nearestRoot } from '../../../lint/kit/project/repository-root.js';
 import { handOver } from '../run.js';
 import { CHILD_COVERAGE_SOURCE } from './child-coverage.js';
-import { incrementalKeptWhileGroundHolds } from './incremental.js';
+import { incrementalKeptWhileInputsHold, recordInputs } from './incremental.js';
+import type { Inputs } from './incremental.js';
 import { REPORT_NAMES } from './reports.js';
 import type { StageName } from './reports.js';
 import {
     MUTANT_SETUP_SOURCE,
+    QUIET_TESTS_VARIABLE,
     RAN_BY_TESTS_VARIABLE,
     SANDBOX_DEPTH,
     sandboxScriptSource,
@@ -168,15 +170,12 @@ export async function withoutBesideLinks<T>(
     return result;
 }
 
-// invariant: only the suite stage starts cold: it answers for what the module tests let live, and a stale kill there would pass a gate on a verdict an earlier tree earned.
-export const startsCold = (stage: Stage, cold: boolean): boolean => cold && stage.name === 'suite';
+/** Keeps of the stage's incremental report what the change since its run leaves standing, none of it when the run starts cold, and returns the inputs the stage starts on. */
+export const reportKept = (project: string, stage: Stage, cold: boolean): Inputs | undefined =>
+    incrementalKeptWhileInputsHold(project, FILES[stage.name].incremental, { cold });
 
-/** Drops the stage's incremental report when the ground moved, and the suite's whenever the run starts cold. */
-export function reportKept(project: string, stage: Stage, cold: boolean): void {
-    incrementalKeptWhileGroundHolds(project, FILES[stage.name].incremental, {
-        cold: startsCold(stage, cold),
-    });
-}
+const linesIn = (folder: string): string[] =>
+    readdirSync(folder).flatMap((name) => String(readFileSync(join(folder, name))).split('\n'));
 
 export type Measured = { ranByTests: ReadonlySet<string>; report: unknown };
 
@@ -202,8 +201,11 @@ export async function strykerRun(
     );
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
+    // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
+    const quietInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'quiet-tests-'));
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
-    reportKept(project, stage, cold);
+    process.env[QUIET_TESTS_VARIABLE] = quietInto;
+    const inputs = reportKept(project, stage, cold);
     const status = await withoutBesideLinks(
         project,
         besideOf(project),
@@ -214,15 +216,16 @@ export async function strykerRun(
                 project,
             ),
     );
-    const ranByTests = new Set(
-        readdirSync(ranInto).flatMap((name) =>
-            String(readFileSync(join(ranInto, name))).split('\n'),
-        ),
-    );
+    const ranByTests = new Set(linesIn(ranInto));
+    const quiet = linesIn(quietInto).filter((line) => line !== '');
     rmSync(ranInto, { recursive: true });
+    rmSync(quietInto, { recursive: true });
 
     if (status !== 0) {
         return { status };
+    }
+    if (inputs !== undefined) {
+        recordInputs(project, files.incremental, { inputs, quiet });
     }
     const report = String(readFileSync(join(MUTATION_OUTPUT, `${files.report}.json`)));
 
