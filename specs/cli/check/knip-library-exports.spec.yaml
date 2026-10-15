@@ -1,4 +1,4 @@
-description: a library's entry exports are its public surface, and a dead export beneath them is reported
+description: a dead export, type or file beneath a library's entries is reported
 fixture: ./__fixtures__/knip/library-exports/
 runs:
     - command: check
@@ -24,8 +24,12 @@ runs:
 
            RUN  Knip (unused code)
 
+          Unused files (1)
+          orphan.ts
           Unused exports (1)
           unread  label.ts:2:14
+          Unused exported types (1)
+          UnreadShape  type  label.ts:3:13
           ✗ Failed with exit code 1
 
            RUN  Publish (packaging)
