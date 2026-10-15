@@ -72,13 +72,6 @@ export function argumentsOf(args: readonly string[]): { driftArgs: string[] } {
     return { driftArgs: args.filter((argument) => argument === '--json') };
 }
 
-/** Whether the working directory declares itself `content`: a repository with no code, which only the content passes judge. */
-export async function holdsContentOnly(unit = '.'): Promise<boolean> {
-    const { resolved } = await readSettings(unit);
-
-    return resolved.declaration?.kind === 'content';
-}
-
 /** The trees the project declares verbatim, at its root and in every member, which no gate reads or rewrites. */
 export const verbatimHere = async (): Promise<string[]> =>
     await verbatimGlobsOf({

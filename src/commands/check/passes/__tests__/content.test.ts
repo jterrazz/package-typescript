@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { holdsContentOnly } from '../setup.js';
+import { holdsContentOnly } from '../content.js';
 
 function unitDeclaring(settings: null | string): string {
     const unit = mkdtempSync(join(tmpdir(), 'setup-'));
@@ -17,8 +17,8 @@ function unitDeclaring(settings: null | string): string {
     return unit;
 }
 
-describe('setup', () => {
-    test('holdsContentOnly — is true for a unit that declares content, and false for a project and a unit that declares nothing', async () => {
+describe('holdsContentOnly', () => {
+    test('is true for a unit that declares content, and false for a project and a unit that declares nothing', async () => {
         // Given - a content repository, a library and a folder with no settings file
         const content = unitDeclaring("export default { kind: 'content' };\n");
         const library = unitDeclaring("export default { kind: 'library', platform: 'node' };\n");
