@@ -50,17 +50,16 @@ export const SUITE_FOLDER = 'specs';
 
 export type Publication = 'private' | 'published';
 
-export const PUBLICATION: Readonly<Record<ProjectKind, Publication>> = Object.freeze({
+export const PUBLICATION: Readonly<Record<CodeKind, Publication>> = Object.freeze({
     api: 'private',
     cli: 'published',
-    content: 'private',
     library: 'published',
     mobile: 'private',
     website: 'private',
 });
 
 const PUBLISHED_KINDS: ReadonlySet<unknown> = new Set(
-    KINDS.filter((kind) => PUBLICATION[kind] === 'published'),
+    CODE_KINDS.filter((kind) => PUBLICATION[kind] === 'published'),
 );
 
 /** A kind that publishes is published unless its manifest says `"private": true`: a monorepo's internal library, a binary compiled and installed by hand. */

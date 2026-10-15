@@ -1,4 +1,6 @@
 import { directory } from '@jterrazz/test';
+import { mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { repository } from '../__setup__/repository.js';
@@ -47,6 +49,56 @@ describe('content', () => {
              END  Finalizing quality checks
 
             ✓ All checks passed
+        `);
+    });
+
+    test('names the folders a content repository leaves empty, and judges it by no spine of roots', async () => {
+        // Given - the same repository with a folder git does not track, since it holds no file
+        const result = await clean
+            .prepare(repository)
+            .prepare((workdir) => {
+                mkdirSync(join(workdir, 'drafts'));
+            })
+            .exec('check');
+
+        // Then - the empty folder is the only finding of the Names pass: charts/ and scripts/ stand outside any spine
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+             START  Running quality checks
+
+             RUN  Config (one file)
+
+            ✓ Passed
+
+             RUN  Gitignore (artefacts)
+
+            ✓ Passed
+
+             RUN  Docs (layout)
+
+            ✓ Passed
+
+             RUN  Comments (styles, scripts, YAML)
+
+            ✓ Passed
+
+             RUN  Markdown (prose)
+
+            ✓ Passed
+
+             RUN  Names (tree)
+
+            drafts/:1:1: error names(no-empty-directory): found: \`drafts/\` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it — \`typescript fix\` does — or put the file it was made for in it · read: docs/reference/quality-checks.md#an-empty-directory
+            found: every finding above, and .jterrazz/baseline.json records no \`names/\` entry in its \`typescript\` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
+            ✗ Failed with exit code 1
+
+             RUN  Secrets (credentials)
+
+            ✓ Passed
+
+             END  Finalizing quality checks
+
+            ✗ Some checks failed
         `);
     });
 

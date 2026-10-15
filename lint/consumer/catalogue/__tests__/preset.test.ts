@@ -45,6 +45,21 @@ describe('preset', () => {
         ]);
     });
 
+    test('typescriptPreset — reads a content repository by the standard and its kind alone, and derives it no editor file', () => {
+        // Given - a content repository that declares a dependency the standard knows
+        const preset = typescriptPreset(
+            { kind: 'content', platform: 'node' },
+            new Set(['remotion']),
+        );
+
+        // Then - no platform and no dependency is merged, and nothing reads a config file that would be derived
+        expect(preset.origins?.map(({ file }) => file)).toStrictEqual([
+            'src/standard/standard.ts',
+            'src/standard/kinds/content.ts',
+        ]);
+        expect(preset.files).toStrictEqual({});
+    });
+
     test('typescriptPreset — lists the sections a project may write, the keys of the typed settings', () => {
         // Given - the preset of a library on node
         const preset = typescriptPreset({ kind: 'library', platform: 'node' });

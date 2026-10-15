@@ -192,6 +192,17 @@ describe('preset', () => {
         expect(resolved.laws).toStrictEqual(['typescript/base-law']);
     });
 
+    test('a content repository refused for its platform stays content, and a refused kind declares none', () => {
+        // Given - a content declaration holding a platform, and a kind outside the vocabulary
+        const content = resolveConfig({ kind: 'content', platform: 'node' }, BASE_OF);
+        const nonsense = resolveConfig({ kind: 'nonsense' }, BASE_OF);
+
+        // Then - the first is refused yet read as content, so only the passes of content run on it; the second declares nothing
+        expect(content.problem).not.toBeNull();
+        expect(content.resolved.declaration?.kind).toBe('content');
+        expect(nonsense.resolved.declaration).toBeNull();
+    });
+
     test('a section stays open until a preset of its name lists what a project may write, and then holds a law it restates', () => {
         // Given - a preset naming the keys a project may write and no law, another naming none, and a project writing a listed key, a key of the open one and the spine the base states
         const closed: Preset = { name: 'web', package: '@acme/web', writableSettings: ['wrap'] };

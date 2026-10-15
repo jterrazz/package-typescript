@@ -54,6 +54,9 @@ describe('project-kind', () => {
             problem: null,
         });
         expect(withPlatform.declaration?.kind).toBe('content');
+        expect(readProjectKind({ kind: 'content', platform: 3 }).problem).toBe(
+            'declares a `content` repository on the platform `of no name`, which runs no code and so declares none',
+        );
         expect(withPlatform.problem).toBe(
             'declares a `content` repository on the platform `node`, which runs no code and so declares none',
         );

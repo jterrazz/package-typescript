@@ -4,20 +4,19 @@ import type { Context, Finding } from '../../kit/checker/pass.js';
 import { isJsonObject, parsedObject } from '../../kit/project/json.js';
 import { SETTINGS_FILE } from '../../kit/project/jterrazz-config.js';
 import { PUBLICATION } from '../../kit/project/project-kind.js';
-import type { ProjectKind } from '../../kit/project/project-kind.js';
+import type { CodeKind } from '../../kit/project/project-kind.js';
 import { configFinding as finding, prefixed } from './config.finding.js';
 
-export const NAMED: Readonly<Record<ProjectKind, string>> = {
+export const NAMED: Readonly<Record<CodeKind, string>> = {
     api: 'an api',
     cli: 'a cli',
-    content: 'a content repository',
     library: 'a library',
     mobile: 'a mobile app',
     website: 'a website',
 };
 
 /** What a unit is to its manifest: a project of its kind, a monorepo's own suite, or the root of a monorepo, which declares no kind. */
-export type Role = 'monorepo' | 'suite' | ProjectKind;
+export type Role = 'monorepo' | 'suite' | CodeKind;
 
 const isEmpty = (value: unknown): boolean =>
     value === undefined || (isJsonObject(value) && Object.keys(value).length === 0);
@@ -34,7 +33,7 @@ const MONOREPO_GAP = {
 
 // invariant: a private cli is a binary its repository builds and installs itself, compiled or not: it owes no `bin`.
 function publishedGap(
-    kind: ProjectKind,
+    kind: CodeKind,
     manifest: Readonly<Record<string, unknown>>,
 ): null | { fix: string; owes: string } {
     if (manifest.workspaces !== undefined) {
