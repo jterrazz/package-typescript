@@ -73,8 +73,8 @@ export function argumentsOf(args: readonly string[]): { driftArgs: string[] } {
 }
 
 /** Whether the working directory declares itself `content`: a repository with no code, which only the content passes judge. */
-export async function holdsContentOnly(): Promise<boolean> {
-    const { resolved } = await readSettings('.');
+export async function holdsContentOnly(unit = '.'): Promise<boolean> {
+    const { resolved } = await readSettings(unit);
 
     return resolved.declaration?.kind === 'content';
 }
