@@ -26,6 +26,7 @@ import {
 } from '../../kit/project/project-kind.js';
 import type { ProjectIdentity } from '../../kit/project/project-kind.js';
 import { isMonorepoRoot, workspaceMembers } from '../../kit/project/workspace-members.js';
+import { contentFindings } from './config.content.js';
 import { configFinding as finding, prefixed } from './config.finding.js';
 import { manifestFindings } from './config.manifest.js';
 import { monorepoRootFindings } from './config.monorepo.js';
@@ -82,12 +83,15 @@ function declarationFindings(context: Context, unit: Unit): Finding[] {
     if (declaration === null) {
         return [
             finding('config/project-declared', settings, {
-                fix: `write \`export default defineConfig({ kind, platform })\` from \`@jterrazz/typescript/config\` in ${settings} — the kind one of ${listed(KINDS)}, the platform one of ${listed(PLATFORMS)}; a monorepo's own suite at \`${SUITE_FOLDER}/\` declares its platform alone, one of ${listed(SUITE_PLATFORMS)}, and the root of a monorepo — a package.json listing \`workspaces\` — declares no kind`,
+                fix: `write \`export default defineConfig({ kind, platform })\` from \`@jterrazz/typescript/config\` in ${settings} — the kind one of ${listed(KINDS)}, the platform one of ${listed(PLATFORMS)}; a monorepo's own suite at \`${SUITE_FOLDER}/\` declares its platform alone, one of ${listed(SUITE_PLATFORMS)}, and the root of a monorepo — a package.json listing \`workspaces\` — declares no kind; \`content\`, a repository with no code, declares no platform`,
                 found: context.exists(join(context.root, settings))
                     ? `${settings} ${unit.problem ?? 'declares no `kind`'}`
                     : `${settings} is missing`,
             }),
         ];
+    }
+    if (declaration.kind === 'content') {
+        return contentFindings(context, unit.path);
     }
     if (declaration.kind === null && !unit.suite) {
         return [

@@ -21,7 +21,7 @@ import {
     suppressionsRecorded,
     withTsgolintOnPath,
 } from '../../drivers/oxlint/oxlint.js';
-import { verbatimHere } from '../check/passes/setup.js';
+import { holdsContentOnly, verbatimHere } from '../check/passes/setup.js';
 import { badge, print } from '../check/report/terminal.js';
 
 async function listedTargets(ignoresOf: string | undefined): Promise<null | string[]> {
@@ -97,7 +97,10 @@ export async function baseline(): Promise<number> {
                     names: join(scratch, 'names.json'),
                 };
                 print(`${badge('TYPESCRIPT')} Recording the baseline...\n\n`);
-                await recordLinter();
+                // invariant: a content repository holds no code, so no linter has a suppression to record: the linter would read the scripts it carries as code.
+                if (!(await holdsContentOnly())) {
+                    await recordLinter();
+                }
                 await recordPass('architecture', reports.architecture, [
                     '--depcruise',
                     depcruiseBinary(),

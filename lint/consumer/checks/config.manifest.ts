@@ -10,6 +10,7 @@ import { configFinding as finding, prefixed } from './config.finding.js';
 export const NAMED: Readonly<Record<ProjectKind, string>> = {
     api: 'an api',
     cli: 'a cli',
+    content: 'a content repository',
     library: 'a library',
     mobile: 'a mobile app',
     website: 'a website',

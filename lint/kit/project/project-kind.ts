@@ -1,26 +1,31 @@
 import { isJsonObject } from './json.js';
 
-export const KINDS = ['library', 'api', 'cli', 'website', 'mobile'] as const;
+export const KINDS = ['library', 'api', 'cli', 'website', 'mobile', 'content'] as const;
 
 export const PLATFORMS = ['node', 'bun', 'react', 'next', 'astro', 'expo', 'browser'] as const;
 
 export type ProjectKind = (typeof KINDS)[number];
+
+/** The kinds that run code: every kind but `content`, a repository holding no code to build, type or lint. */
+export type CodeKind = Exclude<ProjectKind, 'content'>;
+
+export const CODE_KINDS: readonly CodeKind[] = KINDS.filter(
+    (kind): kind is CodeKind => kind !== 'content',
+);
 
 export type Platform = (typeof PLATFORMS)[number];
 
 export type ProjectDeclaration =
     | { kind: 'api'; platform: 'bun' | 'node' }
     | { kind: 'cli'; platform: 'bun' | 'node' }
+    | { kind: 'content'; platform?: undefined }
     | { kind: 'library'; platform: Platform }
     | { kind: 'mobile'; platform: 'expo' }
     | { kind: 'website'; platform: 'astro' | 'browser' | 'next' | 'react' }
     | { kind?: undefined; platform?: 'bun' | 'node' };
 
 type PlatformsOf = {
-    readonly [Kind in ProjectKind]: readonly Extract<
-        ProjectDeclaration,
-        { kind: Kind }
-    >['platform'][];
+    readonly [Kind in CodeKind]: readonly Extract<ProjectDeclaration, { kind: Kind }>['platform'][];
 };
 
 export const PLATFORMS_OF: PlatformsOf = {
@@ -30,6 +35,9 @@ export const PLATFORMS_OF: PlatformsOf = {
     mobile: ['expo'],
     website: ['react', 'next', 'astro', 'browser'],
 };
+
+/** The platform a content repository is read on, where a pass needs one: it declares none, and runs no JS pass that would use it. */
+export const CONTENT_PLATFORM: Platform = 'node';
 
 /** `kind: null` is a monorepo's own suite: a member of tests alone, which is no product and so declares no kind. */
 export type ProjectIdentity = { kind: null | ProjectKind; platform: Platform };
@@ -45,6 +53,7 @@ export type Publication = 'private' | 'published';
 export const PUBLICATION: Readonly<Record<ProjectKind, Publication>> = Object.freeze({
     api: 'private',
     cli: 'published',
+    content: 'private',
     library: 'published',
     mobile: 'private',
     website: 'private',
@@ -62,7 +71,7 @@ export const publishes = (
 
 /** A declaration as a sentence reads it: `library on node`, `a suite on bun`. */
 export const declaredAs = ({ kind, platform }: ProjectIdentity): string =>
-    `${kind ?? 'a suite'} on ${platform}`;
+    kind === 'content' ? 'content' : `${kind ?? 'a suite'} on ${platform}`;
 
 const isKind = (value: unknown): value is ProjectKind =>
     (KINDS as readonly unknown[]).includes(value);
@@ -73,6 +82,10 @@ const runsOn = (allowed: readonly Platform[], value: unknown): value is Platform
 export const listed = (values: readonly string[]): string =>
     values.map((one) => `\`${one}\``).join(', ');
 
+/** The declaration a content repository keeps when its settings are refused: it stays content, and the passes that run stay the content ones. */
+export const CONTENT_DECLARED = Object.freeze({ kind: 'content' });
+
+/** A content declaration is read even when it holds a platform: the problem is named, and the passes that run stay the content ones. */
 export type ProjectKindRead = { declaration: null | ProjectIdentity; problem: null | string };
 
 export function readProjectKind(declared: object): ProjectKindRead {
@@ -88,6 +101,16 @@ export function readProjectKind(declared: object): ProjectKindRead {
             declaration: null,
             problem: `declares the kind \`${String(kind)}\`, which is none of ${listed(KINDS)}`,
         };
+    }
+    if (kind === 'content') {
+        const declaration = { kind, platform: CONTENT_PLATFORM };
+
+        return platform === undefined
+            ? { declaration, problem: null }
+            : {
+                  declaration,
+                  problem: `declares a \`content\` repository on the platform \`${typeof platform === 'string' ? platform : 'of no name'}\`, which runs no code and so declares none`,
+              };
     }
     const allowed: readonly Platform[] = PLATFORMS_OF[kind];
     if (!runsOn(allowed, platform)) {

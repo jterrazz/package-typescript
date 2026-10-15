@@ -266,20 +266,26 @@ export const names: Pass = Object.freeze({
         const judged = files.filter(
             (file) => !verbatim.some((pattern) => matchesGlob(file, pattern)),
         );
-        const settings = settingsOf(await context.config());
+        const resolution = await context.config();
+        const settings = settingsOf(resolution);
         const layout = await laidOut(context, judged, verbatim);
+        const empty = emptyDirectories(context.root, { ignorePatterns: verbatim }).map((path) =>
+            emptyDirectoryFinding(path),
+        );
+        // invariant: a content repository has no spine, no code roots and no gestures to answer: the tree is judged by the names it declares itself and by the folders it leaves empty.
+        const codeless = resolution.resolved.declaration?.kind === 'content';
 
         return {
             ...(layout.problems.length === 0 ? {} : { failed: true, lines: layout.problems }),
-            findings: [
-                ...findingsOf(judged, settings.universal),
-                ...layout.findings,
-                ...(await spinesOf(context, { files, settings })),
-                ...makefileOf(context, judged),
-                ...emptyDirectories(context.root, { ignorePatterns: verbatim }).map((path) =>
-                    emptyDirectoryFinding(path),
-                ),
-            ],
+            findings: codeless
+                ? [...layout.findings, ...empty]
+                : [
+                      ...findingsOf(judged, settings.universal),
+                      ...layout.findings,
+                      ...(await spinesOf(context, { files, settings })),
+                      ...makefileOf(context, judged),
+                      ...empty,
+                  ],
         };
     },
     prepare: async (context) => ({

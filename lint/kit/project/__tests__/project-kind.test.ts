@@ -34,13 +34,29 @@ describe('project-kind', () => {
 
         // Then - each names what it declared and what the union allows
         expect(refused).toStrictEqual([
-            'declares the kind `service`, which is none of `library`, `api`, `cli`, `website`, `mobile`',
-            'declares the kind `undefined`, which is none of `library`, `api`, `cli`, `website`, `mobile`',
+            'declares the kind `service`, which is none of `library`, `api`, `cli`, `website`, `mobile`, `content`',
+            'declares the kind `undefined`, which is none of `library`, `api`, `cli`, `website`, `mobile`, `content`',
             'declares a `website` on the platform `node`, where a website runs on `react`, `next`, `astro`, `browser`',
             'declares a `website` on the platform `vue`, where a website runs on `react`, `next`, `astro`, `browser`',
             'declares a `mobile` on the platform `undefined`, where a mobile runs on `expo`',
-            'declares the kind `workspace`, which is none of `library`, `api`, `cli`, `website`, `mobile`',
+            'declares the kind `workspace`, which is none of `library`, `api`, `cli`, `website`, `mobile`, `content`',
         ]);
+    });
+
+    test('readProjectKind — reads a content repository without a platform, and keeps it content while refusing a platform beside it', () => {
+        // Given - a content declaration, bare and with a platform
+        const bare = readProjectKind({ kind: 'content' });
+        const withPlatform = readProjectKind({ kind: 'content', platform: 'node' });
+
+        // Then - the bare one is read whole; the other is still content, and names the platform it refuses
+        expect(bare).toStrictEqual({
+            declaration: { kind: 'content', platform: 'node' },
+            problem: null,
+        });
+        expect(withPlatform.declaration?.kind).toBe('content');
+        expect(withPlatform.problem).toBe(
+            'declares a `content` repository on the platform `node`, which runs no code and so declares none',
+        );
     });
 
     test('publishes — publishes a library or a cli unless its manifest is private, and nothing else', () => {
@@ -69,17 +85,19 @@ describe('project-kind', () => {
         ]);
     });
 
-    test('declaredAs — reads a kind on its platform, and a suite by name', () => {
+    test('declaredAs — reads a kind on its platform, a suite by name, and content without a platform', () => {
         // Given - a kind and a suite
         const read = [
             { kind: 'library', platform: 'react' },
             { kind: null, platform: 'bun' },
+            { kind: 'content', platform: 'node' },
         ] as const;
 
         // Then - each reads as the drift report's declared row says it
         expect(read.map((identity) => declaredAs(identity))).toStrictEqual([
             'library on react',
             'a suite on bun',
+            'content',
         ]);
     });
 });

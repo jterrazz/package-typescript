@@ -7,6 +7,7 @@ import type { ProjectIdentity } from '../../../lint/kit/project/project-kind.js'
 import { checker } from '../../drivers/checker/checker.js';
 import { configPass } from './passes/checker-passes.js';
 import type { Launched } from './passes/launched.js';
+import { CONTENT_PASSES } from './passes/passes.js';
 import type { Selected } from './passes/passes.js';
 import { presetRuns } from './passes/presets.js';
 import type { PresetRun } from './passes/presets.js';
@@ -50,17 +51,19 @@ async function preparedCheck(
 ): Promise<Check> {
     const empty = { nothing: false, paths: [] };
     const members = membersOf();
+    const declarations = await declarationsOf(['.', ...members]);
+    const content = declarations.get('.')?.kind === 'content';
 
     return {
         configs: toolConfigs(),
-        declarations: await declarationsOf(['.', ...members]),
+        declarations,
         ...argumentsOf(args),
         fix,
         formatTargets: empty,
         lintTargets: empty,
         logs: logsIn(scratch),
         members,
-        selected,
+        selected: content ? (pass) => CONTENT_PASSES.has(pass) && selected(pass) : selected,
         tools: toolsOf(),
     };
 }

@@ -3,8 +3,8 @@ import { join } from 'node:path';
 
 import { manifestGap } from '../../consumer/checks/config.manifest.js';
 import { markdownTable } from '../../kit/catalogue/table.js';
-import { KINDS, PLATFORMS_OF, PUBLICATION } from '../../kit/project/project-kind.js';
-import type { ProjectKind } from '../../kit/project/project-kind.js';
+import { CODE_KINDS, PLATFORMS_OF, PUBLICATION } from '../../kit/project/project-kind.js';
+import type { CodeKind } from '../../kit/project/project-kind.js';
 
 type Specimen = { gestures: string[]; platforms: string[] };
 
@@ -27,7 +27,7 @@ function settingsUnder(folder: string): string[] {
         .map((entry) => readFileSync(join(entry.parentPath, entry.name), 'utf8'));
 }
 
-function specimenOf(kinds: string, kind: ProjectKind): null | Specimen {
+function specimenOf(kinds: string, kind: CodeKind): null | Specimen {
     const spec = join(kinds, kind, `${kind}.spec.ts`);
     const project = join(kinds, kind, '__fixtures__', kind);
     const settings = settingsUnder(project);
@@ -56,7 +56,7 @@ function specimenOf(kinds: string, kind: ProjectKind): null | Specimen {
 const coded = (values: readonly string[]): string =>
     values.length === 0 ? '—' : values.map((value) => `\`${value}\``).join(', ');
 
-function cellsOf(kind: ProjectKind, specimen: null | Specimen): string[] {
+function cellsOf(kind: CodeKind, specimen: null | Specimen): string[] {
     const gap = manifestGap(kind, {});
 
     return [
@@ -71,12 +71,12 @@ function cellsOf(kind: ProjectKind, specimen: null | Specimen): string[] {
 }
 
 export function kindMatrix(kinds: string): { refused: string[]; table: string } {
-    const specimens = KINDS.map((kind) => [kind, specimenOf(kinds, kind)] as const);
+    const specimens = CODE_KINDS.map((kind) => [kind, specimenOf(kinds, kind)] as const);
     const stray = existsSync(kinds)
         ? readdirSync(kinds, { withFileTypes: true })
               .filter((entry) => entry.isDirectory() && !entry.name.startsWith('_'))
               .map((entry) => entry.name)
-              .filter((name) => !new Set<string>(KINDS).has(name))
+              .filter((name) => !new Set<string>(CODE_KINDS).has(name))
         : [];
 
     return {

@@ -8,7 +8,7 @@ import { lawSettingRefused, unknownSetting, writtenLawSetting } from './law-sett
 import { optOutsOf } from './opt-outs.js';
 import type { OptOut } from './opt-outs.js';
 import type { SettingsOrigin } from './origins.js';
-import { readProjectKind } from './project-kind.js';
+import { CONTENT_DECLARED, readProjectKind } from './project-kind.js';
 import type { ProjectIdentity } from './project-kind.js';
 import { mergeSettings } from './settings-merge.js';
 
@@ -246,7 +246,10 @@ export function resolveConfig(declaredSettings: object, baseOf: BasePresets): Re
     });
     const { declaration, problem: undeclared } = readProjectKind(declared);
     if (undeclared !== null) {
-        return refusedWith(undeclared);
+        return refusedWith(
+            undeclared,
+            declaration?.kind === 'content' ? CONTENT_DECLARED : EMPTY_DECLARATION,
+        );
     }
     const refused = (problem: string): Resolution =>
         refusedWith(problem, declaration ?? EMPTY_DECLARATION);

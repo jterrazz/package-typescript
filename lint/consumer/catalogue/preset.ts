@@ -9,6 +9,7 @@ import TYPES_VSCODE from '../../../src/standard/dependencies/types-vscode.js';
 import VITE from '../../../src/standard/dependencies/vite.js';
 import API from '../../../src/standard/kinds/api.js';
 import CLI from '../../../src/standard/kinds/cli.js';
+import CONTENT from '../../../src/standard/kinds/content.js';
 import LIBRARY from '../../../src/standard/kinds/library.js';
 import MOBILE from '../../../src/standard/kinds/mobile.js';
 import WEBSITE from '../../../src/standard/kinds/website.js';
@@ -32,6 +33,7 @@ import { mergeSettings } from '../../kit/project/settings-merge.js';
 const KIND_STANDARDS: Readonly<Record<ProjectKind, Standard>> = {
     api: API,
     cli: CLI,
+    content: CONTENT,
     library: LIBRARY,
     mobile: MOBILE,
     website: WEBSITE,
@@ -78,23 +80,23 @@ const editorFilesOf = (tsconfigPreset: unknown): Readonly<Record<string, EditorF
     },
 });
 
-// invariant: the merge order of the standard: the package's, then the kind's, then the platform's, then each declared dependency's — a monorepo root and an undeclared project read the node platform's.
+// invariant: the merge order of the standard: the package's, then the kind's, then the platform's, then each declared dependency's — a monorepo root and an undeclared project read the node platform's; a content repository reads the package's and its kind's alone, since it runs no code for a platform or a dependency to describe.
 function standardsOf(
     declaration: null | ProjectIdentity,
     dependencies: ReadonlySet<string>,
 ): StandardOrigin[] {
     const platform = declaration?.platform ?? 'node';
+    const kind = declaration?.kind ?? undefined;
+    const base = [{ file: 'src/standard/standard.ts', standard: STANDARD }];
+    if (kind === 'content') {
+        return [...base, { file: 'src/standard/kinds/content.ts', standard: CONTENT }];
+    }
 
     return [
-        { file: 'src/standard/standard.ts', standard: STANDARD },
-        ...(declaration?.kind === null || declaration?.kind === undefined
+        ...base,
+        ...(kind === undefined
             ? []
-            : [
-                  {
-                      file: `src/standard/kinds/${declaration.kind}.ts`,
-                      standard: KIND_STANDARDS[declaration.kind],
-                  },
-              ]),
+            : [{ file: `src/standard/kinds/${kind}.ts`, standard: KIND_STANDARDS[kind] }]),
         { file: `src/standard/platforms/${platform}.ts`, standard: PLATFORM_STANDARDS[platform] },
         ...Object.entries(DEPENDENCY_STANDARDS)
             .filter(
@@ -136,7 +138,7 @@ export function typescriptPreset(
     const settings = objectOf(merged);
 
     return {
-        files: editorFilesOf(settings.tsconfigPreset),
+        files: declaration?.kind === 'content' ? {} : editorFilesOf(settings.tsconfigPreset),
         lawSettings: [
             'lint',
             'manifestKeys',
