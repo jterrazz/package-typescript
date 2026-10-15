@@ -41,7 +41,7 @@ The two closed lists, and which platforms each kind runs on, are [Getting starte
 | the platform | the oxlint profile ([Lint presets](lint-presets.md#the-profiles)), the tsconfig preset, the roots its framework imposes, the Astro pass — at the root and in each workspace member that declares `astro` |
 | the kind     | the rows of the matrix below; beside them, whether its manual owes the release guide of a published package (a library or a cli whose manifest is not `private`)                                         |
 
-The matrix is generated from the declaration the toolchain reads, and its last two columns from the specs: each kind is proven by a specimen under `specs/kinds/<kind>/`, a small project written as a person writes one, into which the cli specs install both packed packages — `@jterrazz/typescript` and `@jterrazz/test` — and run the gestures it names. A kind declared without its specimen fails the self corpus.
+The matrix is generated from the declaration the toolchain reads, and its last two columns from the specs: each kind is proven by a specimen under `specs/kinds/<kind>/`, a small project written as a person writes one, into which the cli specs install both packed packages — `@jterrazz/typescript` and `@jterrazz/test` — and run the gestures it names. A kind declared without its specimen fails the self corpus. The matrix lists the kinds that run code; `content`, the kind of a repository with no code, takes no platform and no manifest, and its specs are `specs/cli/check/content*` ([Quality checks § A repository with no code](quality-checks.md#a-repository-with-no-code)).
 
 <!-- GENERATED:kinds -->
 

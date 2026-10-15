@@ -20,22 +20,23 @@ The toolchain that builds, checks, lints and formats a project from one devDepen
 
 A smaller task is one section of a reference page:
 
-| To…                                            | Read                                                                                            |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| leave a path out of the gates                  | [Quality checks § Leaving a path out](reference/quality-checks.md#leaving-a-path-out)           |
-| silence one line, with its reason              | [Quality checks § Suppressions](reference/quality-checks.md#the-suppressions-directives-pass)   |
-| turn a lint rule off for the project           | [Configuration § The lint rules](reference/configuration.md#the-lint-rules)                     |
-| keep a root folder off the root spine          | [Quality checks § A root beside the spine](reference/quality-checks.md#a-root-beside-the-spine) |
-| understand a finding                           | its `read:`, a heading of this manual                                                           |
-| run it in CI, or read its result from a script | [Quality checks § Flags and exit codes](reference/quality-checks.md#flags-and-exit-codes)       |
-| hold imports to a layer map                    | [Quality checks § Architecture](reference/quality-checks.md#the-architecture-layer-map-pass)    |
-| add a compiler option                          | [Configuration § The `typescript` section](reference/configuration.md#the-typescript-section)   |
-| quiet knip on a dependency or a path           | [Lint presets § Unused code](reference/lint-presets.md#unused-code-knip)                        |
-| set a preset's law aside                       | [Configuration § Setting a law aside](reference/configuration.md#setting-a-law-aside)           |
-| look up why a rule is on or off                | [Lint presets § The catalogue](reference/lint-presets.md#the-catalogue)                         |
-| see what a major release asks of a project     | [Release § Which number moves](guides/release.md#which-number-moves)                            |
-| set the editor up                              | [Getting started § Your editor](start/getting-started.md#your-editor)                           |
-| lay out a monorepo                             | [Getting started § In a monorepo](start/getting-started.md#in-a-monorepo)                       |
+| To…                                            | Read                                                                                                |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| leave a path out of the gates                  | [Quality checks § Leaving a path out](reference/quality-checks.md#leaving-a-path-out)               |
+| silence one line, with its reason              | [Quality checks § Suppressions](reference/quality-checks.md#the-suppressions-directives-pass)       |
+| turn a lint rule off for the project           | [Configuration § The lint rules](reference/configuration.md#the-lint-rules)                         |
+| keep a root folder off the root spine          | [Quality checks § A root beside the spine](reference/quality-checks.md#a-root-beside-the-spine)     |
+| understand a finding                           | its `read:`, a heading of this manual                                                               |
+| run it in CI, or read its result from a script | [Quality checks § Flags and exit codes](reference/quality-checks.md#flags-and-exit-codes)           |
+| hold imports to a layer map                    | [Quality checks § Architecture](reference/quality-checks.md#the-architecture-layer-map-pass)        |
+| add a compiler option                          | [Configuration § The `typescript` section](reference/configuration.md#the-typescript-section)       |
+| quiet knip on a dependency or a path           | [Lint presets § Unused code](reference/lint-presets.md#unused-code-knip)                            |
+| set a preset's law aside                       | [Configuration § Setting a law aside](reference/configuration.md#setting-a-law-aside)               |
+| look up why a rule is on or off                | [Lint presets § The catalogue](reference/lint-presets.md#the-catalogue)                             |
+| see what a major release asks of a project     | [Release § Which number moves](guides/release.md#which-number-moves)                                |
+| set the editor up                              | [Getting started § Your editor](start/getting-started.md#your-editor)                               |
+| check a repository with no code                | [Quality checks § A repository with no code](reference/quality-checks.md#a-repository-with-no-code) |
+| lay out a monorepo                             | [Getting started § In a monorepo](start/getting-started.md#in-a-monorepo)                           |
 
 ## Concepts
 

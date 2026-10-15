@@ -258,6 +258,17 @@ packages/greeting/
 
 A kind at the root, or a root npm would publish, is refused by `config/kind-matches-manifest`. The root keeps no `tsconfig.json`, and a member keeps no `oxlint.config.ts`, `oxfmt.config.ts` or `Makefile`. `typescript check` and `fix` run at the root: which passes run once per member and which once for the tree is [Quality checks § In a monorepo](../reference/quality-checks.md#in-a-monorepo), and a member's knip paths carry its folder ([Lint presets § Workspaces](../reference/lint-presets.md#workspaces)).
 
+## A repository with no code
+
+A repository with no code of the toolchain's — YAML, Markdown, an infrastructure, a vault of articles, an application in another language — declares itself in a `jterrazz.config.ts` and keeps no `package.json`:
+
+```ts
+// jterrazz.config.ts
+export default { kind: 'content' };
+```
+
+The file imports nothing: it is a plain object, so nothing needs installing for it to load. `typescript check` then judges what means something there — the declaration, the `.artifacts/` ignore, the manual's layout, the comments, the Markdown, the names it declares and its empty folders, and the secrets — and runs no TypeScript, linter, formatter or unused-code pass. Which passes, and why each, is [Quality checks § A repository with no code](../reference/quality-checks.md#a-repository-with-no-code). Run it with `npx --yes --package=@jterrazz/typescript -- typescript check`, from a `make lint` or a workflow.
+
 ## On an existing project
 
 A project that already has code usually lands red on its first `check`. Two commands make that day short: `typescript doctor` compares the installed tools with what this release expects, and `typescript baseline` records today's findings so that each count may only fall from then on. When to reach for each is [Adopt a stricter release](../guides/adopt-a-stricter-release.md#the-two-gestures).

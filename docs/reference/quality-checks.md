@@ -43,7 +43,7 @@ jobs:
 
 ## The passes
 
-`typescript check` runs up to sixteen passes, one per row below. The Config pass runs first, three spawn a tool on every invocation (tsc, oxlint, oxfmt), knip and five tree gates (Gitignore, Suppressions, Markdown, Names, Secrets) run on every `check`, and the other six are opt-in — a preset's checks, Docs, Publish, Architecture, Astro and Comments appear only when the project qualifies. [Mutation](#mutation) is a command of its own, not a pass of `check`.
+`typescript check` runs up to sixteen passes, one per row below; a repository with no code runs seven of them ([A repository with no code](#a-repository-with-no-code)). The Config pass runs first, three spawn a tool on every invocation (tsc, oxlint, oxfmt), knip and five tree gates (Gitignore, Suppressions, Markdown, Names, Secrets) run on every `check`, and the other six are opt-in — a preset's checks, Docs, Publish, Architecture, Astro and Comments appear only when the project qualifies. [Mutation](#mutation) is a command of its own, not a pass of `check`.
 
 | Pass                             | Tool                        | When it runs                                                                                                                 |
 | -------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
@@ -65,6 +65,32 @@ jobs:
 | Secrets (credentials)            | gitleaks, else the patterns | always (check only — a leak is rotated, not reformatted)                                                                     |
 
 `typescript fix` runs the config gate, tsc, oxlint (`--fix`), the artefact gate, the suppression gate, the comment gate, dependency-cruiser (`--fix` re-records a fall), rumdl (`--fix`) with the prose gate, and the naming gate — knip, the conventions checker, the Docs (layout) pass and the remaining tree gates are check-only (they are read-only gates, not fixers). The formatter writes last: every other writer of the run has laid its text down before oxfmt lays it out, so no writer rewrites what the formatter settled and no run leaves a tree its own check refuses. Oxlint judges what is left after the formatter, since a file crosses `max-lines` or a function `max-lines-per-function` only on the layout oxfmt writes, and a `*.spec.yaml` is laid out by the test package's document formatter alone, which oxfmt is told to leave.
+
+### A repository with no code
+
+A repository that holds no code to build, type or lint — a Helm and Ansible infrastructure, a vault of articles, a Dockerfile and its YAML, a Rust or a Swift application whose own toolchain judges its code — declares `export default { kind: 'content' };` in a `jterrazz.config.ts` and keeps no `package.json` ([ADR-025](../decisions/025-a-repository-with-no-code-declares-content-and-keeps-the-passes-that-mean-something.md)). The file is a plain object, so it imports nothing and needs no install. `typescript check` and `typescript fix` then run seven passes and no other, in every mode:
+
+| Pass                             | Content | Why                                                                                                                                                                                     |
+| -------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Config (one file)                | runs    | it reads the declaration, refuses a platform and a `package.json` beside it, and derives no editor file: nothing reads one                                                              |
+| TypeScript Check                 | skipped | there is no TypeScript                                                                                                                                                                  |
+| Oxlint Check                     | skipped | it lints scripts of a language the repository does not own                                                                                                                              |
+| Oxfmt Check                      | skipped | it enumerates every YAML and JSON file, including what a tool owns and rewrites (a Helm template, an Xcode catalog, a vault's own settings), and fails on files that are not its syntax |
+| Gitignore (artefacts)            | runs    | the toolchain writes its logs under `.artifacts/`, and a repository must ignore where its gates write                                                                                   |
+| Knip (unused code)               | skipped | it needs a `package.json` and finds no code                                                                                                                                             |
+| a preset's label                 | skipped | a preset's checks belong to the code a preset describes                                                                                                                                 |
+| Docs (layout)                    | runs    | every repository carries a manual in the same cut                                                                                                                                       |
+| Publish (packaging)              | skipped | nothing is published to npm                                                                                                                                                             |
+| Architecture (layer map)         | skipped | there is no import graph                                                                                                                                                                |
+| Astro (check + format)           | skipped | there is no site                                                                                                                                                                        |
+| Suppressions (directives)        | skipped | there are no lint directives                                                                                                                                                            |
+| Comments (styles, scripts, YAML) | runs    | its scripts, workflows and values files are the files where comments live; a comment states its kind or goes                                                                            |
+| Markdown (prose)                 | runs    | the manual and the README are most of what it holds, and rumdl owns their layout where oxfmt does not run                                                                               |
+| Names (tree)                     | runs    | for the names the repository declares and for the empty folders; not for the spine of roots or the six gestures, which describe a code project                                          |
+| Secrets (credentials)            | runs    | a credential is a credential in a manifest, a values file or a note                                                                                                                     |
+| the drift report                 | skipped | it compares a project with a profile, and a content repository has none                                                                                                                 |
+
+A folder of signed or quoted text is declared `typescript.roots.<folder> = { reason, verbatim: true }` as in any repository, and the passes that run leave it as written. `typescript baseline` records the names debt and runs no linter. `typescript docs-layout .` stays the door for a tree that declares nothing: it is the Docs (layout) pass alone.
 
 ### In a monorepo
 
@@ -220,7 +246,7 @@ npx --yes --package=@jterrazz/typescript -- typescript docs-layout .
 
 The `--package` flag and the bin name are both spelled out on purpose: the shorter `npx @jterrazz/typescript docs-layout .` lets npm infer the command from the package name, and that inferred name — `typescript` — collides with the `typescript` package this one depends on, which crashes npm's resolution of the ephemeral install tree on some npm/Node combinations even though the short form works on others.
 
-The same gate, on any tree: a Go, Rust or Ansible repository wires that line into its own `make lint`. It needs nothing installed, takes the repository root as its argument, and prints one line per violation as `<rule>  <path>  <message>`. Unlike the pass it never asks whether the tree is a repository — the operator already said so by running it. It is `docs-layout` because the pass it runs is Docs (layout): one name for the gate, whichever door reaches it.
+The same gate, on any tree: a Go, Rust or Ansible repository that declares nothing wires that line into its own `make lint`; one that wants the prose, comment, name and secret gates as well declares itself [a repository with no code](#a-repository-with-no-code) and wires `npx typescript check`. It needs nothing installed, takes the repository root as its argument, and prints one line per violation as `<rule>  <path>  <message>`. Unlike the pass it never asks whether the tree is a repository — the operator already said so by running it. It is `docs-layout` because the pass it runs is Docs (layout): one name for the gate, whichever door reaches it.
 
 ### Reusing the rules
 
