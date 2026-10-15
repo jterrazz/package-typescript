@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { sandboxScriptSource } from '../sources.js';
+import { objectOf } from '../../../../lint/kit/project/json.js';
+import { FASTEST_FIRST_SOURCE, sandboxScriptSource } from '../sources.js';
 
 const WIDE = 'export declare const kind: string;\n';
 
@@ -17,7 +18,73 @@ function laid(root: string, files: Readonly<Record<string, string>>): void {
     }
 }
 
+type Spec = { moduleId: string; project: { name: string } };
+
+type Sequencer = { sort: (files: Spec[]) => Promise<Spec[]> };
+
+type SequencerClass = new (ctx: unknown) => Sequencer;
+
+const isClass = (value: unknown): value is SequencerClass => typeof value === 'function';
+
+const specOf = (project: string, path: string): Spec => ({
+    moduleId: `/project/${path}`,
+    project: { name: project },
+});
+
+async function sortedBy(
+    durations: Readonly<Record<string, number>>,
+    specs: Spec[],
+): Promise<string[]> {
+    const module = `import { relative } from 'node:path';
+class BaseSequencer {
+    constructor(ctx) {
+        this.ctx = ctx;
+    }
+}
+${FASTEST_FIRST_SOURCE}
+export { FastestFirst };
+`;
+    const imported: unknown = await import(`data:text/javascript,${encodeURIComponent(module)}`);
+    const { FastestFirst } = objectOf(imported);
+    if (!isClass(FastestFirst)) {
+        return [];
+    }
+    const sequencer = new FastestFirst({
+        cache: {
+            getFileTestResults: (key: string) =>
+                key in durations ? { duration: durations[key] } : undefined,
+        },
+        config: { root: '/project' },
+    });
+    const sorted: Spec[] = await Reflect.apply(sequencer.sort, sequencer, [specs]);
+
+    return sorted.map(({ moduleId }) => moduleId);
+}
+
 describe('sources', () => {
+    test('sequencer — a mutant’s tests run quickest file first, whatever its project, a file no run timed last', async () => {
+        // Given - a slow spec, a quick module test of another project, a file never timed, and a second quick one
+
+        // When - the files are sorted on the last run's times
+        const order = await sortedBy(
+            { 'cli:specs/slow.spec.ts': 9000, 'unit:src/a.test.ts': 12, 'unit:src/b.test.ts': 40 },
+            [
+                specOf('cli', 'specs/slow.spec.ts'),
+                specOf('unit', 'src/new.test.ts'),
+                specOf('unit', 'src/b.test.ts'),
+                specOf('unit', 'src/a.test.ts'),
+            ],
+        );
+
+        // Then - quickest first, the untimed file last
+        expect(order).toStrictEqual([
+            '/project/src/a.test.ts',
+            '/project/src/b.test.ts',
+            '/project/specs/slow.spec.ts',
+            '/project/src/new.test.ts',
+        ]);
+    });
+
     test('sandboxScriptSource — the suite runs against the instrumented build carrying the project’s own declarations', () => {
         // Given - a project built from its sources, and a sandbox whose build infers its declarations wider
         const project = mkdtempSync(join(tmpdir(), 'mutation-project-'));

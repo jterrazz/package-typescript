@@ -18,6 +18,14 @@ const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
     name: 'stryker-test-names',
 };`;
 
+// outside: Vitest runs the slowest file first, and Stryker stops a mutant's run at the first test that fails; the file the last run took least time over runs first, so a mutant a quick test detects never waits on a slow one.
+export const FASTEST_FIRST_SOURCE = `class FastestFirst extends BaseSequencer {
+    async sort(files) {
+        const took = (file) => this.ctx.cache.getFileTestResults(\`\${file.project.name}:\${relative(this.ctx.config.root, file.moduleId)}\`)?.duration ?? Number.POSITIVE_INFINITY;
+        return [...files].sort((a, b) => took(a) - took(b) || 0);
+    }
+}`;
+
 // hazard: Stryker reads the tests of each file, and a file a mutant stops from loading holds none, so the mutant would read as survived; the file's failure is handed over as a failed test.
 const LOAD_FAILURES_REPORTER_SOURCE = `const loadFailures = {
     onTestRunEnd(testModules) {
@@ -236,15 +244,18 @@ export function vitestConfigSource(exclude: readonly string[], suite: boolean): 
         ? 'projects.filter((project) => project.test?.browser?.enabled !== true)'
         : "projects.filter((project) => project.test?.name === 'unit')";
 
-    return `import { resolve } from 'node:path';
+    return `import { relative, resolve } from 'node:path';
 
 import { mergeConfig } from 'vitest/config';
+import { BaseSequencer } from 'vitest/node';
 
 import declared from '../../vitest.config.ts';
 
 const project = typeof declared === 'function' ? await declared({ command: 'serve', mode: 'test' }) : await declared;
 
 ${TEST_NAME_PLUGIN_SOURCE}
+
+${FASTEST_FIRST_SOURCE}
 
 ${LOAD_FAILURES_REPORTER_SOURCE}
 ${suite ? OWN_PROCESSES_PLUGIN_SOURCE : ''}
@@ -260,6 +271,7 @@ export default {
         ...project.test,
         coverage: { enabled: false },
         reporters: [loadFailures],
+        sequence: { ...project.test?.sequence, sequencer: FastestFirst },
         projects: ${kept}.map((one) =>
             mergeConfig(
                 { ...one, test: { ...one.test, setupFiles: [setup, ...listed(one.test?.setupFiles)] } },
