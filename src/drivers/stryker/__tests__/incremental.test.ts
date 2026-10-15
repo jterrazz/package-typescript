@@ -364,8 +364,14 @@ describe('incremental', () => {
         const modules = { mutate: [], name: 'modules' } as const;
         const suiteReport = join(root, '.artifacts/stryker/suite-incremental.json');
         const modulesReport = join(root, '.artifacts/stryker/incremental.json');
-        recordInputs(root, 'suite-incremental', { inputs: reportKept(root, suite, false) ?? {}, quiet: [] });
-        recordInputs(root, 'incremental', { inputs: reportKept(root, modules, false) ?? {}, quiet: [] });
+        recordInputs(root, 'suite-incremental', {
+            inputs: reportKept(root, suite, false) ?? {},
+            quiet: [],
+        });
+        recordInputs(root, 'incremental', {
+            inputs: reportKept(root, modules, false) ?? {},
+            quiet: [],
+        });
         writeFileSync(suiteReport, '{}');
         writeFileSync(modulesReport, '{}');
 
