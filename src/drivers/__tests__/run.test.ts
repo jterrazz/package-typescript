@@ -198,10 +198,17 @@ describe('run', () => {
             const ready = join(scratch(), 'ready');
             const status = handOver(process.execPath, [
                 '--eval',
-                `process.on('${signal}', () => process.exit(7)); require('node:fs').writeFileSync(${JSON.stringify(ready)}, ''); setInterval(() => {}, 1000);`,
+                `process.on('${signal}', () => process.exit(7)); require('node:fs').writeFileSync(${JSON.stringify(ready)}, String(process.pid)); setInterval(() => {}, 1000);`,
             ]);
             await vi.waitFor(() => {
                 expect(existsSync(ready)).toBe(true);
+            });
+            // hazard: a command that never got the signal would outlive the test, holding the streams of whoever runs it — a mutation run waits on them for ever.
+            onTestFinished(() => {
+                const pid = Number(readFileSync(ready, 'utf8'));
+                if (pid > 0) {
+                    spawnSync('kill', ['-KILL', String(pid)]);
+                }
             });
 
             // When - the parent receives the signal
