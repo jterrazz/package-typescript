@@ -4,8 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { changesOnlyFunctions, linesChangedIn } from '../change-shape.js';
-import type { LinesChanged } from '../change-shape.js';
+import { diffStaysInFunctions, linesChangedIn } from '../change-shape.js';
 
 const MODULE = `import { a } from './a.js';
 import type { B } from './b.js';
@@ -42,7 +41,7 @@ type Shape = { side: number };
 export const table = { name: 'table', size: () => 3 };
 `;
 
-function diffed(before: string, after: string): LinesChanged {
+function diffed(before: string, after: string): string {
     const folder = mkdtempSync(join(tmpdir(), 'change-shape-'));
     onTestFinished(() => {
         rmSync(folder, { force: true, recursive: true });
@@ -57,11 +56,15 @@ function diffed(before: string, after: string): LinesChanged {
         },
     );
 
-    return linesChangedIn(String(diff.stdout));
+    return String(diff.stdout);
 }
 
+const unread = (): string => {
+    throw new Error('the earlier text is not read');
+};
+
 const shapeOf = (before: string, after: string): boolean =>
-    changesOnlyFunctions('module.ts', { after, before }, diffed(before, after));
+    diffStaysInFunctions('module.ts', { after, before: () => before }, diffed(before, after));
 
 describe('change-shape', () => {
     test('linesChangedIn — the lines each hunk removes and adds, a hunk stating no count holding one line, a hunk of none holding none', () => {
@@ -178,5 +181,13 @@ describe('change-shape', () => {
 
         // Then - the change stays inside the function
         expect(shapeOf(before, after)).toBe(true);
+    });
+
+    test('diffStaysInFunctions — a diff that names no line reaches what loads, and the earlier text is never read for it', () => {
+        // Given - a diff of nothing, as git prints when the earlier text is gone
+        // Then - read as reaching what loading does
+        expect(diffStaysInFunctions('m.ts', { after: 'export {};', before: unread }, '')).toBe(
+            false,
+        );
     });
 });

@@ -20,6 +20,7 @@ import { isRepositoryRoot, nearestRoot } from '../../../lint/kit/project/reposit
 import { handOver } from '../run.js';
 import { CHILD_COVERAGE_SOURCE } from './child-coverage.js';
 import { incrementalKeptWhileInputsHold, recordInputs } from './incremental.js';
+import type { StaysInFunctions } from './incremental.js';
 import type { Inputs } from './inputs.js';
 import {
     MUTANT_SETUP_SOURCE,
@@ -171,8 +172,12 @@ export async function withoutBesideLinks<T>(
 }
 
 /** Keeps of the stage's incremental report what the change since its run leaves standing, none of it when the run starts cold, and returns the inputs the stage starts on. */
-export const reportKept = (project: string, stage: Stage, cold: boolean): Inputs | undefined =>
-    incrementalKeptWhileInputsHold(project, FILES[stage.name].incremental, { cold });
+export const reportKept = (
+    project: string,
+    stage: Stage,
+    kept: { cold: boolean; staysInFunctions: StaysInFunctions },
+): Inputs | undefined =>
+    incrementalKeptWhileInputsHold(project, FILES[stage.name].incremental, kept);
 
 const sourcesListed = (sources: unknown): string[] | undefined =>
     isList(sources) ? sources.map(String) : undefined;
@@ -202,7 +207,12 @@ export type Measured = { ranByTests: ReadonlySet<string>; report: unknown };
 export async function strykerRun(
     scope: { readonly exclude: readonly string[]; readonly mutated: readonly string[] },
     stage: Stage,
-    { buildsFirst, cold, project }: { buildsFirst: boolean; cold: boolean; project: string },
+    {
+        buildsFirst,
+        cold,
+        project,
+        staysInFunctions,
+    }: { buildsFirst: boolean; cold: boolean; project: string; staysInFunctions: StaysInFunctions },
 ): Promise<Measured | { status: number }> {
     const files = FILES[stage.name];
     const suite = stage.name === 'suite';
@@ -224,7 +234,7 @@ export async function strykerRun(
     const observedInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'observed-tests-'));
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
     process.env[OBSERVED_TESTS_VARIABLE] = observedInto;
-    const inputs = reportKept(project, stage, cold);
+    const inputs = reportKept(project, stage, { cold, staysInFunctions });
     const status = await withoutBesideLinks(
         project,
         besideOf(project),

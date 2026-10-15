@@ -8,6 +8,7 @@ import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js
 import { toolchainIn } from '../../drivers/node/node.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
+import { diffStaysInFunctions } from '../../drivers/tsc/change-shape.js';
 import { badge, print, RED, RESET } from '../check/report/terminal.js';
 import { askedOf } from './asked.js';
 import { baseFor, changeOf, namesACommit, treeChangeFor } from './change.js';
@@ -32,7 +33,12 @@ async function measured(
     );
 
     return withClientOnlyUnmeasured(
-        await strykerRun(scope, stage, { buildsFirst: buildsOf(project), cold, project }),
+        await strykerRun(scope, stage, {
+            buildsFirst: buildsOf(project),
+            cold,
+            project,
+            staysInFunctions: diffStaysInFunctions,
+        }),
         clientOnlySources(project),
     );
 }

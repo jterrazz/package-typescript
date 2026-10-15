@@ -13,10 +13,17 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, test } from 'vitest';
 
 import { isList, objectOf, parsedObject } from '../../../../lint/kit/project/json.js';
+import { diffStaysInFunctions } from '../../tsc/change-shape.js';
 import { incrementalKeptWhileInputsHold, recordInputs } from '../incremental.js';
 import { observedFrom } from '../observed.js';
 import type { ObservedTest } from '../observed.js';
 import { reportKept } from '../stryker.js';
+
+const startedIn = (root: string, cold = false) =>
+    incrementalKeptWhileInputsHold(root, 'suite-incremental', {
+        cold,
+        staysInFunctions: diffStaysInFunctions,
+    });
 
 const roots: string[] = [];
 
@@ -120,7 +127,7 @@ function ranOnce(
     files: Record<string, string> = FILES,
 ): string {
     const root = projectWith(files);
-    const inputs = incrementalKeptWhileInputsHold(root, 'suite-incremental') ?? {};
+    const inputs = startedIn(root) ?? {};
     writeFileSync(reportOf(root), JSON.stringify(REPORT));
     recordInputs(root, 'suite-incremental', { inputs, observed: observedFrom(observed) });
 
@@ -133,7 +140,7 @@ describe('incremental', () => {
         const root = ranOnce();
 
         // When - a run starts on the same tree
-        incrementalKeptWhileInputsHold(root, 'suite-incremental');
+        startedIn(root);
 
         // Then - the report stands, and the record follows no test until this run ends
         expect(parsedAt(reportOf(root))).toStrictEqual(REPORT);
@@ -147,7 +154,7 @@ describe('incremental', () => {
 
         // When - the helper changes and a run starts
         writeFileSync(join(root, 'src/h.ts'), 'changed');
-        incrementalKeptWhileInputsHold(root, 'suite-incremental');
+        startedIn(root);
 
         // Then - b's mutant is measured again, a's go with the spec the run never followed
         expect(keptIn(root)).toStrictEqual({ 'src/a.ts': [], 'src/b.ts': [] });
@@ -164,8 +171,8 @@ describe('incremental', () => {
             FILES['src/h.ts'].replace('return H;', 'return H + 1;'),
         );
         writeFileSync(join(loading, 'src/h.ts'), FILES['src/h.ts'].replace('H = 1', 'H = 2'));
-        incrementalKeptWhileInputsHold(body, 'suite-incremental');
-        incrementalKeptWhileInputsHold(loading, 'suite-incremental');
+        startedIn(body);
+        startedIn(loading);
 
         // Then - the function's change measures again b's mutant alone, the constant's the spec's too; the texts kept are this run's
         expect([keptIn(body), keptIn(loading)]).toStrictEqual([
@@ -187,7 +194,7 @@ describe('incremental', () => {
             join(root, 'src/h.ts'),
             FILES['src/h.ts'].replace('return H;', 'return H + 1;'),
         );
-        incrementalKeptWhileInputsHold(root, 'suite-incremental');
+        startedIn(root);
 
         // Then - the spec's mutants are measured again with b's
         expect(keptIn(root)).toStrictEqual({ 'src/a.ts': [], 'src/b.ts': [] });
@@ -196,11 +203,11 @@ describe('incremental', () => {
     test('incrementalKeptWhileInputsHold — a run after one that never ended follows no test', () => {
         // Given - a run that started on the tree and never ended
         const root = ranOnce();
-        incrementalKeptWhileInputsHold(root, 'suite-incremental');
+        startedIn(root);
 
         // When - a source no test imports appears, and a run starts
         writeFileSync(join(root, 'src/c.ts'), 'new');
-        incrementalKeptWhileInputsHold(root, 'suite-incremental');
+        startedIn(root);
 
         // Then - every covered mutant is measured again
         expect(keptIn(root)).toStrictEqual({ 'src/a.ts': [], 'src/b.ts': [] });
@@ -227,9 +234,7 @@ describe('incremental', () => {
             }
 
             // When - a run starts
-            incrementalKeptWhileInputsHold(root, 'suite-incremental', {
-                cold: broken.cold === true,
-            });
+            startedIn(root, broken.cold === true);
 
             // Then - no report, and the inputs recorded for the next run
             expect(existsSync(reportOf(root))).toBe(false);
@@ -243,7 +248,7 @@ describe('incremental', () => {
         rmSync(join(root, '.git'), { force: true, recursive: true });
 
         // When - a run starts
-        const inputs = incrementalKeptWhileInputsHold(root, 'suite-incremental');
+        const inputs = startedIn(root);
 
         // Then - no inputs, no report, no record
         expect([
@@ -259,7 +264,7 @@ describe('incremental', () => {
 
         // When - the package's manifest changes
         writeFileSync(join(root, 'package.json'), '{"name":"@scope/renamed"}');
-        incrementalKeptWhileInputsHold(root, 'suite-incremental');
+        startedIn(root);
 
         // Then - the report is gone
         expect(existsSync(reportOf(root))).toBe(false);
@@ -273,23 +278,29 @@ describe('incremental', () => {
         const suiteReport = join(root, '.artifacts/stryker/suite-incremental.json');
         const modulesReport = join(root, '.artifacts/stryker/incremental.json');
         recordInputs(root, 'suite-incremental', {
-            inputs: reportKept(root, suite, false) ?? {},
+            inputs:
+                reportKept(root, suite, { cold: false, staysInFunctions: diffStaysInFunctions }) ??
+                {},
             observed: observedFrom([]),
         });
         recordInputs(root, 'incremental', {
-            inputs: reportKept(root, modules, false) ?? {},
+            inputs:
+                reportKept(root, modules, {
+                    cold: false,
+                    staysInFunctions: diffStaysInFunctions,
+                }) ?? {},
             observed: observedFrom([]),
         });
         writeFileSync(suiteReport, '{}');
         writeFileSync(modulesReport, '{}');
 
         // When - a warm start of each, then a cold one of each
-        reportKept(root, suite, false);
-        reportKept(root, modules, false);
+        reportKept(root, suite, { cold: false, staysInFunctions: diffStaysInFunctions });
+        reportKept(root, modules, { cold: false, staysInFunctions: diffStaysInFunctions });
         const warm = [existsSync(suiteReport), existsSync(modulesReport)];
-        reportKept(root, modules, true);
+        reportKept(root, modules, { cold: true, staysInFunctions: diffStaysInFunctions });
         const afterModules = [existsSync(suiteReport), existsSync(modulesReport)];
-        reportKept(root, suite, true);
+        reportKept(root, suite, { cold: true, staysInFunctions: diffStaysInFunctions });
 
         // Then - warm keeps both, each cold start drops its own stage's
         expect([
@@ -326,7 +337,7 @@ describe('incremental', () => {
 
         // When - h.ts, which a's test never imports by path, changes
         writeFileSync(join(root, 'src/h.ts'), 'changed');
-        incrementalKeptWhileInputsHold(root, 'suite-incremental');
+        startedIn(root);
 
         // Then - a's mutant goes only where the package's name reaches every source
         expect(keptIn(root)).toStrictEqual(kept);
@@ -338,7 +349,7 @@ describe('incremental', () => {
 
         // When - h.ts is deleted, and a run starts
         rmSync(join(root, 'src/h.ts'));
-        incrementalKeptWhileInputsHold(root, 'suite-incremental');
+        startedIn(root);
 
         // Then - the spec's mutants go; b's test, which no longer finds h, keeps its own
         expect(keptIn(root)).toStrictEqual({ 'src/a.ts': [], 'src/b.ts': ['3'] });
@@ -350,7 +361,7 @@ describe('incremental', () => {
         roots.push(root);
 
         // When - a run starts
-        const inputs = incrementalKeptWhileInputsHold(root, 'suite-incremental');
+        const inputs = startedIn(root);
 
         // Then - no inputs, nothing written
         expect([inputs, existsSync(join(root, '.artifacts/stryker'))]).toStrictEqual([

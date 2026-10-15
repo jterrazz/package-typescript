@@ -4,12 +4,18 @@ import { join } from 'node:path';
 
 import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { parsedObject, stringOf, stringRecordOf } from '../../../lint/kit/project/json.js';
-import { changesOnlyFunctions, linesChangedIn } from './change-shape.js';
 import { changedBetween, inputsOf, reachOf, roleOf } from './inputs.js';
 import type { Inputs } from './inputs.js';
 import { observedOf, observedOnDisk, ranBy } from './observed.js';
 import type { Observed } from './observed.js';
 import { reportAfter } from './staleness.js';
+
+/** Whether a change of a source, as git's diff names its lines between the source's two texts, reaches only what its functions do: the syntax is the TypeScript driver's to read. */
+export type StaysInFunctions = (
+    file: string,
+    texts: { after: string; before: () => string },
+    diff: string,
+) => boolean;
 
 /** What the last run recorded beside its report: the inputs it ran on, and, once it ended, what its tests ran. */
 export type Recorded = { inputs: Inputs; observed?: Observed | undefined };
@@ -78,11 +84,14 @@ function keptTexts(
     }
 }
 
-// invariant: a change whose lines git's diff cannot name — the earlier text never kept, the source deleted — reads as one that reaches what loading the module does.
 function onlyFunctionsIn(
     project: string,
     incremental: string,
-    { before, now }: { before: Inputs; now: ReadonlyMap<string, string> },
+    {
+        before,
+        now,
+        staysInFunctions,
+    }: { before: Inputs; now: ReadonlyMap<string, string>; staysInFunctions: StaysInFunctions },
 ): (source: string) => boolean {
     return (source) => {
         const kept = join(textsOf(project, incremental), String(before[source]));
@@ -96,15 +105,11 @@ function onlyFunctionsIn(
             kept,
             join(project, source),
         ]);
-        const changed = linesChangedIn(String(diff.stdout));
 
-        return (
-            changed.added.length + changed.removed.length > 0 &&
-            changesOnlyFunctions(
-                source,
-                { after: String(now.get(source)), before: String(readFileSync(kept)) },
-                changed,
-            )
+        return staysInFunctions(
+            source,
+            { after: String(now.get(source)), before: () => String(readFileSync(kept)) },
+            String(diff.stdout),
         );
     };
 }
@@ -124,7 +129,7 @@ function codeTextsIn(project: string, inputs: Inputs): Map<string, string> {
 export function incrementalKeptWhileInputsHold(
     project: string,
     incremental: string,
-    { cold = false }: { cold?: boolean } = {},
+    { cold, staysInFunctions }: { cold: boolean; staysInFunctions: StaysInFunctions },
 ): Inputs | undefined {
     const file = join(project, MUTATION_OUTPUT, `${incremental}.json`);
     const inputs = inputsOf(project);
@@ -144,6 +149,7 @@ export function incrementalKeptWhileInputsHold(
                   onlyFunctions: onlyFunctionsIn(project, incremental, {
                       before: recorded.inputs,
                       now: texts,
+                      staysInFunctions,
                   }),
                   ranBy: ranBy(recorded.observed),
                   reach: reachOf(texts, packageNameOf(project)),

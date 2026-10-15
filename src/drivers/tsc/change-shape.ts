@@ -94,3 +94,17 @@ export function changesOnlyFunctions(
         removed.every((line) => wasInFunction(line)) && added.every((line) => isInFunction(line))
     );
 }
+
+/** Whether a change, as `git diff --unified=0` names its lines between the module's two texts, reaches only what its functions do; a diff that names no line — the earlier text never kept, the module deleted — reads as one that reaches what loading does. */
+export function diffStaysInFunctions(
+    file: string,
+    texts: { after: string; before: () => string },
+    diff: string,
+): boolean {
+    const changed = linesChangedIn(diff);
+
+    return (
+        changed.added.length + changed.removed.length > 0 &&
+        changesOnlyFunctions(file, { after: texts.after, before: texts.before() }, changed)
+    );
+}
