@@ -1,5 +1,24 @@
 // invariant: a script with a source map is read through it — the copy of the package a spec installs carries none, so it is read through the map of the sandbox's own build when its text is that build's; a script of the sandbox with no map is a source run as it is; one of the package that no map reads makes the test read as one that may have run any source; any other script is a dependency, which the install stands for.
+// invariant: a script with no map whose every line imports or re-exports, and that git does not list — a facade the bundler leaves for an entry, which it writes no map for — runs no code of its own: the modules it names are scripts of their own, each read for itself, so it names no source and blinds no test. A listed one is a source whose change may re-route what loads, and where git cannot list the tree every facade is read as listed.
 export const SOURCES_RAN_SOURCE = `const scripts = new Map();
+
+const FACADE_LINE = /^(?:import\\s[^;]*\\bfrom\\s*(["'])[^"']+\\1|import\\s*(["'])[^"']+\\2|export\\s*\\{[^}]*\\}(?:\\s*from\\s*(["'])[^"']+\\3)?|export\\s*\\*(?:\\s+as\\s+[\\w$]+)?\\s*from\\s*(["'])[^"']+\\4);$/u;
+
+const isFacade = (text) => text.split('\\n').every((line) => line.trim() === '' || FACADE_LINE.test(line.trim()));
+
+const listedIn = new Map();
+
+function isListed(root, file) {
+    if (!listedIn.has(root)) {
+        try {
+            listedIn.set(root, new Set(execFileSync('git', ['ls-files', '-z'], { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] }).toString().split('\\0')));
+        } catch {
+            listedIn.set(root, null);
+        }
+    }
+    const listed = listedIn.get(root);
+    return listed === null || listed.has(file);
+}
 
 function scriptAt(path, root, own) {
     const inside = path.startsWith(root + sep) && !path.slice(root.length + 1).split(sep).includes('node_modules');
@@ -22,6 +41,10 @@ function scriptAt(path, root, own) {
         }
     }
     if (!existsSync(mapPath)) {
+        const file = inside ? relative(root, path) : path.slice(ownAt + marker.length).split(sep).join('/');
+        if (isFacade(text) && !isListed(root, file)) {
+            return { kind: 'dependency' };
+        }
         return inside ? { file: relative(root, path), kind: 'source' } : { kind: 'blind' };
     }
     const payload = JSON.parse(readFileSync(mapPath, 'utf8'));

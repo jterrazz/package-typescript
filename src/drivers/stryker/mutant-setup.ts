@@ -7,7 +7,8 @@ export const OBSERVED_TESTS_VARIABLE = '__TYPESCRIPT_MUTATION_OBSERVED_TESTS__';
 
 // invariant: first of every project's setup files — a mutant is live before the test file loads, and a static mutant is credited to every test of each file whose loading ran it; the mutants a test ran in its own process, beyond loading its file, are written where RAN_BY_TESTS_VARIABLE names; what a process it spawned ran stays apart, since a child's loading and its calls cannot be told apart.
 // invariant: what each test's processes ran is written where OBSERVED_TESTS_VARIABLE names: the sources whose functions they ran and the sources of every script they loaded — none for a test no process started for, while it ran, while its file loaded or between its tests, and no record of either for a test one of whose processes V8 would not profile or died before it could hand back what it ran.
-export const MUTANT_SETUP_SOURCE = `import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+export const MUTANT_SETUP_SOURCE = `import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { SourceMap } from 'node:module';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { setTimeout as pause } from 'node:timers/promises';

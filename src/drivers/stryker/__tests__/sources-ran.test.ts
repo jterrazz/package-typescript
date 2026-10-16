@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -23,7 +24,8 @@ type SourcesRan = (
 const isSourcesRan = (value: unknown): value is SourcesRan => typeof value === 'function';
 
 async function sourcesRanIn(): Promise<SourcesRan | undefined> {
-    const module = `import { existsSync, readFileSync } from 'node:fs';
+    const module = `import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import { SourceMap } from 'node:module';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -85,6 +87,47 @@ describe('SOURCES_RAN_SOURCE', () => {
             { loaded: [], ran: [] },
             { loaded: ['src/run.ts'], ran: ['src/run.ts'] },
             undefined,
+        ]);
+    });
+
+    test('sources-ran — sourcesRan — a facade git does not list names nothing, wherever it was installed, and a listed one is a source', async () => {
+        // Given - a sandbox git lists, whose build leaves an entry that only re-exports a mapped chunk, beside a listed source that only re-exports, and the package installed elsewhere with that entry
+        const root = mkdtempSync(join(tmpdir(), 'sources-ran-'));
+        onTestFinished(() => {
+            rmSync(root, { force: true, recursive: true });
+        });
+        const sandbox = join(root, 'sandbox');
+        const FACADE =
+            'import { a as one } from "./x.js";\nexport { one };\nexport * from "./x.js";\n';
+        laid(root, {
+            'consumer/node_modules/@scope/package/dist/entry.js': FACADE,
+            'sandbox/.gitignore': 'dist/\n',
+            'sandbox/dist/entry.js': FACADE,
+            'sandbox/dist/x.js': BUILT,
+            'sandbox/dist/x.js.map': MAP,
+            'sandbox/src/index.js': "export { a } from './a.js';\nimport './b.js';\n",
+        });
+        execFileSync('git', ['init', '--quiet'], { cwd: sandbox });
+        execFileSync('git', ['add', '--all'], { cwd: sandbox });
+        const sourcesRan = await sourcesRanIn();
+
+        // When - each process is read for the facade it loaded, and for the chunk's second function
+        const read = (paths: readonly string[]) =>
+            sourcesRan?.(
+                new Map(paths.map((path, index) => [url(path), [index === 0 ? 0 : 15]])),
+                sandbox,
+                '@scope/package',
+            );
+
+        // Then - the entry and its installed copy add nothing to what the chunk names; the listed re-export names itself
+        expect([
+            read([join(sandbox, 'dist/entry.js'), join(sandbox, 'dist/x.js')]),
+            read([join(root, 'consumer/node_modules/@scope/package/dist/entry.js')]),
+            read([join(sandbox, 'src/index.js')]),
+        ]).toStrictEqual([
+            { loaded: ['src/a.ts', 'src/b.ts'], ran: ['src/b.ts'] },
+            { loaded: [], ran: [] },
+            { loaded: ['src/index.js'], ran: ['src/index.js'] },
         ]);
     });
 });
