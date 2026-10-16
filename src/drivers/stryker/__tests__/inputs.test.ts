@@ -145,12 +145,21 @@ import j from './j.mjs';`;
         ["const c = await import('#checke#checker');", false],
         ["import type { T } from '#types';", false],
         ["import type { CheckPass } from '#checker';", false],
+        ["import  type { CheckPass } from '#checker';", false],
+        ["import type { CheckPass } from'#checker';", false],
+        ["import { a } from '#checker'; // the checker", true],
+        ['const t = `#checker\n`;', false],
+        ['const d = await import(`@jterrazz/typescript/ru`);', false],
         ["import type {\n    A,\n    B,\n} from '@jterrazz/typescript/rules';", false],
         ["export type { C } from '#checker';", false],
         ["import { type D } from '#checker';", true],
         ["import type { E } from './e.js';\nimport { F } from '#checker';", true],
         [`const d = await import(\`@jterrazz/typescript/${placeholder('tool')}\`);`, true],
         [`const d = await import(\`@jterrazz/typescript/presets/${placeholder('name')}\`);`, true],
+        [
+            `const d = await import(\`@jterrazz/typescript/presets/deep/${placeholder('name')}\`);`,
+            true,
+        ],
         [`const d = await import(\`@jterrazz/typescript/ru${placeholder('rest')}\`);`, true],
         [
             `const d = await import(\`@jterrazz/typescript/tsconfig/${placeholder('name')}\`);`,
@@ -206,6 +215,31 @@ import j from './j.mjs';`;
 
         // Then - not even a specifier spelling the missing name
         expect(namesItsOwnBuild("import a from 'undefined';", build)).toBe(false);
+    });
+
+    test('ownBuildOf — a key opens code unless every target of it, through its conditions, is JSON or a declaration', () => {
+        // Given - keys whose targets are code, data, declarations of each extension, and conditions of either
+        const build = ownBuildOf({
+            exports: {
+                './code': './dist/code.js',
+                './conditions-code': { default: './dist/x.js', types: './dist/x.d.ts' },
+                './conditions-data': { default: './x.json', types: './x.d.ts' },
+                './cts': './x.d.cts',
+                './json': './x.json',
+                './json-js': './x.json.js',
+                './mts': './x.d.mts',
+                './dts': './x.d.ts',
+            },
+            imports: { '#code': './a.js', '#data': { node: './a.json' } },
+            name: '@scope/a',
+        });
+
+        // Then - only the keys a target of which is code
+        expect(build).toStrictEqual({
+            exports: ['./code', './conditions-code', './json-js'],
+            imports: ['#code'],
+            name: '@scope/a',
+        });
     });
 
     test('ownBuildOf — no manifest opens no import and every subpath of no name', () => {

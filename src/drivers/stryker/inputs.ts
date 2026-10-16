@@ -140,11 +140,11 @@ export function ownBuildOf(manifest: Record<string, unknown> | undefined): OwnBu
     };
 }
 
-const literalHead = (key: string): string => key.split('*', 1).join('');
+const literalHead = (key: string): string => String(key.split('*')[0]);
 
 // invariant: a key holds at most one `*`, which stands for any text; a template resolves to what its parts become at run time, so it resolves wherever the text before its first `${` and a key's text before its `*` could open the same specifier.
 function resolves(specifier: string, keys: readonly string[], template: boolean): boolean {
-    const head = specifier.split('${', 1).join('');
+    const head = String(specifier.split('${')[0]);
 
     return keys.some((key) => {
         if (template && specifier.includes('${')) {
@@ -171,6 +171,7 @@ export function namesItsOwnBuild(text: string, build: OwnBuild): boolean {
         .split('\n')
         .filter((line) => !COMMENT_LINE.test(line))
         .join('\n')
+        // Stryker disable next-line StringLiteral: what replaces a type-only statement holds no quote, so it names no specifier whatever its text
         .replaceAll(TYPE_ONLY, '');
 
     return [...code.matchAll(QUOTED)].some((match) => {
