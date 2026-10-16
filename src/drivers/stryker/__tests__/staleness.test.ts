@@ -16,7 +16,7 @@ const mutant = (id: string, coveredBy: string[], killedBy: string[] = []) => ({
     status: killedBy.length > 0 ? 'Killed' : 'Survived',
 });
 
-const A_MUTANTS = [mutant('1', ['0', '1'], ['0']), mutant('2', ['1'], ['1'])];
+const A_MUTANTS = [mutant('1', ['0', '1']), mutant('2', ['1'], ['1'])];
 
 const REPORT = {
     files: {
@@ -91,12 +91,12 @@ function keptIds(
 }
 
 describe('reportAfter', () => {
-    test('staleness — reportAfter — a change in a covering test re-measures every mutant it covered or killed, and no other', () => {
+    test('staleness — reportAfter — a change in a covering test re-measures the survivor it covered and the kill it made, and no other', () => {
         // Given - the report of a run
         // When - the spec changes
         const kept = keptIds(['specs/a.spec.ts']);
 
-        // Then - both mutants it covers go, b's stays
+        // Then - the survivor it covers and the mutant it killed go, b's stays
         expect(kept).toStrictEqual({ 'src/a.ts': [], 'src/b.ts': ['3'] });
     });
 
@@ -244,5 +244,34 @@ describe('reportAfter', () => {
 
         // Then - the mutant is measured again
         expect(idsByFile(kept)).toStrictEqual({ 'src/c.ts': [] });
+    });
+
+    test.each([
+        [
+            'a kill by a test that stands stays, whatever covered it besides',
+            mutant('9', ['0', '1'], ['0']),
+            ['9'],
+        ],
+        ['a kill by any stale test goes', mutant('9', ['0', '1'], ['0', '1']), []],
+        [
+            'a timeout no test is named the killer of goes with a stale covering test',
+            { ...mutant('9', ['0', '1']), status: 'Timeout' },
+            [],
+        ],
+        [
+            'a kill no test is named for goes with a stale covering test',
+            { ...mutant('9', ['0', '1']), status: 'Killed' },
+            [],
+        ],
+        ['a survivor goes with a stale covering test', mutant('9', ['0', '1']), []],
+    ])('reportAfter — %s', (_case, one, kept) => {
+        // Given - a report of one mutant the module test and the spec cover
+        const report = { files: { 'src/c.ts': { mutants: [one] } }, testFiles: REPORT.testFiles };
+
+        // When - the spec changes
+        const after = reportAfter(report, ['specs/a.spec.ts'], staleness(MODULE_TESTS));
+
+        // Then - Stryker stopped at the killer, so only a kill whose every killer stands is kept
+        expect(idsByFile(after)).toStrictEqual({ 'src/c.ts': kept });
     });
 });

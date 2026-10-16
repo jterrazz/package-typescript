@@ -32,7 +32,9 @@ kills in milliseconds waited on a spec that installs a whole project.
 - A stage's report is kept only for what the change since its run leaves
   standing. The run records the hash of every file git lists beside the
   report and, at the next start, takes out every mutant of a changed
-  source and every mutant a stale test covered or killed. A test is stale
+  source, every kill a stale test made, and every other result a stale
+  test covered — Stryker stops at the first test that detects a mutant,
+  so a kill stands while its killer does. A test is stale
   when its file changed, when ground under a folder above it changed,
   when a source its own process loads changed, and when a process it
   spawned ran a function of a changed source — or loaded it and the

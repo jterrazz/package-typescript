@@ -83,8 +83,19 @@ function isStale(test: ReportTest, change: Change, staleness: Staleness): boolea
     );
 }
 
+// invariant: Stryker stops a mutant's run at the first test that fails under it, so a kill stands while every test that killed it stands, whatever became of the others that cover it; any other result — a survivor, a timeout — stands only while every test that covered it does, since any of them may now detect it.
+function standsAfter(mutant: Mutant, staleTests: ReadonlySet<string>): boolean {
+    const killers = idsOf(mutant, 'killedBy');
+    const judges =
+        mutant.status === 'Killed' && killers.length > 0
+            ? killers
+            : [...idsOf(mutant, 'coveredBy'), ...killers];
+
+    return judges.every((id) => !staleTests.has(id));
+}
+
 /**
- * The report with every result the change could have moved taken out, so Stryker measures it again: each mutant of a source that changed, and each mutant a stale test covered or killed; `undefined` where a file every test reads changed, so nothing of the report holds.
+ * The report with every result the change could have moved taken out, so Stryker measures it again: each mutant of a source that changed, each kill a stale test made, and each other result a stale test covered; `undefined` where a file every test reads changed, so nothing of the report holds.
  * Stryker keys a mutant by the text around it and a test by its own lines, so alone it would keep a kill a changed helper, fixture or setup file has outlived.
  */
 export function reportAfter(
@@ -109,12 +120,7 @@ export function reportAfter(
             ...objectOf(entry),
             mutants: (isList(mutants) ? mutants : [])
                 .map(objectOf)
-                .filter(
-                    (mutant) =>
-                        ![...idsOf(mutant, 'coveredBy'), ...idsOf(mutant, 'killedBy')].some((id) =>
-                            staleTests.has(id),
-                        ),
-                ),
+                .filter((mutant) => standsAfter(mutant, staleTests)),
         };
     }
 

@@ -55,7 +55,7 @@ const mutant = (id: string, coveredBy: string[], killedBy: string[] = []) => ({
     status: killedBy.length > 0 ? 'Killed' : 'Survived',
 });
 
-const A_MUTANTS = [mutant('1', ['0', '1'], ['0']), mutant('2', ['1'], ['1'])];
+const A_MUTANTS = [mutant('1', ['0', '1']), mutant('2', ['1'], ['1'])];
 
 const REPORT = {
     files: {
