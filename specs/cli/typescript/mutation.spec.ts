@@ -8,9 +8,9 @@ import { cli } from '../packed-cli.specification.js';
 
 const CONSUMER = resolve(import.meta.dirname, '../__setup__/packed/consumer.ts');
 
-const OUTSIDE_CI = { CI: '' };
+const OUTSIDE_CI = { CI: '', TYPESCRIPT_MUTATION_COLD: '' };
 
-// invariant: the first run of a pair is the packed command the second one runs, in a repository git can list, outside CI, so the second inherits its report.
+// invariant: the first run of a pair is the packed command the second one runs, in a repository git can list, outside CI and with no cold run asked — a gate run cold sets both for itself — so the second inherits its report.
 function measuredOnce(workdir: string): void {
     execFileSync('git', ['init', '--quiet'], { cwd: workdir });
     execFileSync('node', [CONSUMER, 'typescript', 'mutation'], {
