@@ -108,61 +108,86 @@ export function namedBy(file: string, text: string, known: ReadonlySet<string>):
     });
 }
 
-/** What of the package's own build a module may load by a bare specifier: its name with the subpaths its `exports` opens — any, where it declares none — and the keys of its `imports`. */
+/** What of the package's own build a module may load by a bare specifier: its name with the subpaths its `exports` opens — any, where it declares none — and the keys of its `imports`, each a key whose target holds code. */
 export type OwnBuild = {
     exports: readonly string[] | undefined;
     imports: readonly string[];
     name: string | undefined;
 };
 
-const keysOf = (value: unknown): string[] => Object.keys(objectOf(value));
+const DATA_TARGET = /\.(?:json|d\.[cm]?ts)$/u;
+
+const leavesOf = (target: unknown): string[] =>
+    typeof target === 'string'
+        ? [target]
+        : Object.values(objectOf(target)).flatMap((value) => leavesOf(value));
+
+// invariant: a key whose every target is a JSON file or a declaration loads no code a source is built into — a JSON target is data, and a change to data drops a report whole.
+const codeKeysOf = (map: unknown): string[] =>
+    Object.entries(objectOf(map))
+        .filter(([, target]) => leavesOf(target).some((leaf) => !DATA_TARGET.test(leaf)))
+        .map(([key]) => key);
 
 /** The specifiers a package's manifest resolves to its own build; a manifest whose `exports` is a string or holds conditions alone opens the bare name only. */
 export function ownBuildOf(manifest: Record<string, unknown> | undefined): OwnBuild {
     const exported = manifest?.exports;
-    const subpaths = keysOf(exported).filter((key) => key.startsWith('.'));
+    const opensSubpaths = Object.keys(objectOf(exported)).some((key) => key.startsWith('.'));
 
     return {
-        exports: exported === undefined ? undefined : subpaths.length === 0 ? ['.'] : subpaths,
-        imports: keysOf(manifest?.imports),
+        exports: exported === undefined ? undefined : opensSubpaths ? codeKeysOf(exported) : ['.'],
+        imports: codeKeysOf(manifest?.imports),
         name: stringOf(manifest?.name) ?? undefined,
     };
 }
 
-// invariant: a key holds at most one `*`, which stands for any text; a specifier built from a template resolves to what its parts become at run time, so one holding `${` is read as resolving.
-function resolves(specifier: string, keys: readonly string[]): boolean {
-    return (
-        specifier.includes('${') ||
-        keys.some((key) => {
-            const star = key.indexOf('*');
+const literalHead = (key: string): string => key.split('*', 1).join('');
 
-            return star === -1
-                ? specifier === key
-                : specifier.startsWith(key.slice(0, star)) &&
-                      specifier.endsWith(key.slice(star + 1));
-        })
-    );
+// invariant: a key holds at most one `*`, which stands for any text; a template resolves to what its parts become at run time, so it resolves wherever the text before its first `${` and a key's text before its `*` could open the same specifier.
+function resolves(specifier: string, keys: readonly string[], template: boolean): boolean {
+    const head = specifier.split('${', 1).join('');
+
+    return keys.some((key) => {
+        if (template && specifier.includes('${')) {
+            return head.startsWith(literalHead(key)) || key.startsWith(head);
+        }
+        const star = key.indexOf('*');
+
+        return star === -1
+            ? specifier === key
+            : specifier.startsWith(key.slice(0, star)) && specifier.endsWith(key.slice(star + 1));
+    });
 }
 
 const QUOTED = /(?<quote>['"`])(?<specifier>[^'"`\s]+)\k<quote>/gu;
 
-/** Whether a module names a specifier the package resolves to its own build: a `#` import its manifest declares, or its name with a subpath its `exports` opens — a `#!` line, a heading or the name held as data loads nothing. */
-export function namesItsOwnBuild(text: string, build: OwnBuild): boolean {
-    return [...text.matchAll(QUOTED)]
-        .map((match) => String(match[2]))
-        .some((specifier) => {
-            if (specifier.startsWith('#')) {
-                return resolves(specifier, build.imports);
-            }
-            if (build.name === undefined || !`${specifier}/`.startsWith(`${build.name}/`)) {
-                return false;
-            }
+const COMMENT_LINE = /^\s*(?:\/\/|\/\*|\*)/u;
 
-            return (
-                build.exports === undefined ||
-                resolves(`.${specifier.slice(build.name.length)}`, build.exports)
-            );
-        });
+// invariant: an `import type` or `export type` statement is erased before the module runs, so the specifier it names loads nothing.
+const TYPE_ONLY = /\b(?:import|export)\s+type\s[^;]*?\bfrom\s*(?<quote>['"])[^'"]*\k<quote>/gu;
+
+/** Whether a module names a specifier the package resolves to its own build: a `#` import its manifest declares, or its name with a subpath its `exports` opens — a `#!` line, a heading, a comment, a type-only import or the name held as data loads nothing. */
+export function namesItsOwnBuild(text: string, build: OwnBuild): boolean {
+    const code = text
+        .split('\n')
+        .filter((line) => !COMMENT_LINE.test(line))
+        .join('\n')
+        .replaceAll(TYPE_ONLY, '');
+
+    return [...code.matchAll(QUOTED)].some((match) => {
+        const specifier = String(match[2]);
+        const template = match[1] === '`';
+        if (specifier.startsWith('#')) {
+            return resolves(specifier, build.imports, template);
+        }
+        if (build.name === undefined || !`${specifier}/`.startsWith(`${build.name}/`)) {
+            return false;
+        }
+
+        return (
+            build.exports === undefined ||
+            resolves(`.${specifier.slice(build.name.length)}`, build.exports, template)
+        );
+    });
 }
 
 /** What a test file can load in its own process: the modules its imports reach, or every source where one of them loads the package's build. */

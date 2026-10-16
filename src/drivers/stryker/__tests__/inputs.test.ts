@@ -21,8 +21,16 @@ const roots: string[] = [];
 const placeholder = (name: string): string => ['$', '{', name, '}'].join('');
 
 const OWN_BUILD = ownBuildOf({
-    exports: { './rules': './dist/rules.js', './tsconfig/*': './tsconfig/*.json' },
-    imports: { '#checker': './dist/checker.js', '#internal/*.js': './dist/internal/*.js' },
+    exports: {
+        './presets/*': { default: './dist/presets/*.js', types: './dist/presets/*.d.ts' },
+        './rules': './dist/rules.js',
+        './tsconfig/*': './src/tsconfig/*.json',
+    },
+    imports: {
+        '#checker': './dist/checker.js',
+        '#internal/*.js': './dist/internal/*.js',
+        '#types': './dist/types.d.ts',
+    },
     name: '@jterrazz/typescript',
 });
 
@@ -127,15 +135,33 @@ import j from './j.mjs';`;
 
     test.each([
         ["import { a } from '@jterrazz/typescript/rules';", true],
-        ["const t = require.resolve('@jterrazz/typescript/tsconfig/node');", true],
+        ["const p = require.resolve('@jterrazz/typescript/presets/node');", true],
+        ["const t = require.resolve('@jterrazz/typescript/tsconfig/node');", false],
         ["const b = await import('#checker');", true],
         ["const c = await import('#internal/walk.js');", true],
         ["const c = await import('#internal/walk.ts');", false],
         ["const c = await import('#external/walk.js');", false],
         ["const c = await import('#checkers');", false],
         ["const c = await import('#checke#checker');", false],
+        ["import type { T } from '#types';", false],
+        ["import type { CheckPass } from '#checker';", false],
+        ["import type {\n    A,\n    B,\n} from '@jterrazz/typescript/rules';", false],
+        ["export type { C } from '#checker';", false],
+        ["import { type D } from '#checker';", true],
+        ["import type { E } from './e.js';\nimport { F } from '#checker';", true],
         [`const d = await import(\`@jterrazz/typescript/${placeholder('tool')}\`);`, true],
+        [`const d = await import(\`@jterrazz/typescript/presets/${placeholder('name')}\`);`, true],
+        [`const d = await import(\`@jterrazz/typescript/ru${placeholder('rest')}\`);`, true],
+        [
+            `const d = await import(\`@jterrazz/typescript/tsconfig/${placeholder('name')}\`);`,
+            false,
+        ],
         [`const e = await import(\`#${placeholder('name')}\`);`, true],
+        [`const e = await import(\`#ex${placeholder('name')}\`);`, false],
+        [`const text = \`import x from '@jterrazz/typescript/${placeholder('tool')}';\`;`, false],
+        ["// import { a } from '@jterrazz/typescript/rules';", false],
+        ['/** Reads `@jterrazz/typescript/rules`. */', false],
+        [' * the `#checker` entry', false],
         ['import a from "@jterrazz/typescript";', false],
         ["import { f } from '@jterrazz/typescript/unexported';", false],
         ["const shebang = '#!/usr/bin/env node';", false],
@@ -144,8 +170,8 @@ import j from './j.mjs';`;
         ["import { g } from '@jterrazz/typescript-extra';", false],
         ["import { h } from '@jterrazz/test';", false],
     ])('namesItsOwnBuild — %s', (text, named) => {
-        // Given - a module of a package whose manifest opens two subpaths and two imports
-        // Then - only a specifier the manifest resolves loads its build, a template one read as resolving; the bare name it does not export, a shebang, a heading, the name held as data and a neighbour of the same prefix do not
+        // Given - a module of a package whose manifest opens two code subpaths and a JSON one, two code imports and a declaration
+        // Then - only a specifier the manifest resolves to code loads its build, a template wherever its head could open one; a JSON or declaration target, a quoted `${` held as text, a comment, a type-only statement, the bare name it does not export, a shebang, a heading, the name held as data and a neighbour of the same prefix do not
         expect(namesItsOwnBuild(text, OWN_BUILD)).toBe(named);
     });
 
