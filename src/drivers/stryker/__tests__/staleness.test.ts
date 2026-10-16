@@ -264,6 +264,11 @@ describe('reportAfter', () => {
             [],
         ],
         ['a survivor goes with a stale covering test', mutant('9', ['0', '1']), []],
+        [
+            'a timeout goes with a stale covering test, though the test it timed out stands',
+            { ...mutant('9', ['0', '1'], ['0']), status: 'Timeout' },
+            [],
+        ],
     ])('reportAfter — %s', (_case, one, kept) => {
         // Given - a report of one mutant the module test and the spec cover
         const report = { files: { 'src/c.ts': { mutants: [one] } }, testFiles: REPORT.testFiles };
