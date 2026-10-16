@@ -88,11 +88,13 @@ describe('CHILD_COVERAGE_SOURCE', () => {
         },
     );
 
-    test('child-coverage — hands back where each function it ran starts, script by script, and nothing of a script it did not load from a file', async () => {
-        // Given - a child running a script of its own that calls one of its two functions
+    test('child-coverage — hands back where each function it ran starts, script by script, its body and Stryker’s helpers aside, and nothing of a script it did not load from a file', async () => {
+        // Given - a child running a script of its own that calls one of its two functions and a helper Stryker instruments a module with, and loading a second script that runs no function
         const { into, reporter } = laid();
         const script = join(into, '..', 'work.cjs');
-        const text = 'function unused() {}\nfunction work() { return 1; }\nwork();\n';
+        const loadedOnly = join(into, '..', 'loaded.cjs');
+        writeFileSync(loadedOnly, 'module.exports = 1;\n');
+        const text = `function stryNS_9fa48$2() { function retrieveNS() { return 1; } return retrieveNS(); }\nstryNS_9fa48$2();\nfunction unused() {}\nfunction work() { return 1; }\nwork();\nrequire('./loaded.cjs');\n`;
         writeFileSync(script, text);
         const child = spawn(process.execPath, ['--require', reporter, script], {
             env: reporting(into),
@@ -106,7 +108,7 @@ describe('CHILD_COVERAGE_SOURCE', () => {
             });
         });
 
-        // Then - the script's own body and the function it called, at their offsets, under its file URL alone
+        // Then - the function it called, at its offset, under its file URL; the script it only loaded with no function; nothing else
         const ran = new Map<string, number[]>();
         for (const name of readdirSync(into).filter((one) => one.endsWith('.functions'))) {
             const handed: unknown = JSON.parse(readFileSync(join(into, name), 'utf8'));
@@ -117,7 +119,9 @@ describe('CHILD_COVERAGE_SOURCE', () => {
         }
         const own = ran.get(pathToFileURL(realpathSync(script)).href) ?? [];
         expect([...ran.keys()].filter((url) => !url.startsWith('file:'))).toStrictEqual([]);
-        expect(own.toSorted((a, b) => a - b)).toStrictEqual([0, text.indexOf('function work')]);
+        expect(own.toSorted((a, b) => a - b)).toStrictEqual([text.indexOf('function work')]);
+        const loadedUrl = pathToFileURL(realpathSync(loadedOnly)).href;
+        expect(ran.get(loadedUrl)).toStrictEqual([]);
     });
 
     test('child-coverage — dies at once of a signal it sends itself, with what it ran handed back', async () => {

@@ -85,8 +85,10 @@ function sourcesRan(functions, root, own) {
             return undefined;
         }
         if (script.kind === 'source') {
-            ran.add(script.file);
             loaded.add(script.file);
+            if ([...offsets].length > 0) {
+                ran.add(script.file);
+            }
         }
         if (script.kind === 'mapped') {
             for (const source of script.sources) {

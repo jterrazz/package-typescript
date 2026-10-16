@@ -73,7 +73,7 @@ describe('SOURCES_RAN_SOURCE', () => {
         const read = (path: string, offset: number) =>
             sourcesRan?.(new Map([[url(path), [offset]]]), sandbox, '@scope/package');
 
-        // Then - the build's own script and the installed copy read the same; a dependency adds nothing; a source run as it is names itself; a copy of other text names nothing it could be trusted for
+        // Then - the build's own script and the installed copy read the same; a dependency adds nothing; a source run as it is names itself, as ran only where a function of it ran; a copy of other text names nothing it could be trusted for
         const mapped = { loaded: ['src/a.ts', 'src/b.ts'], ran: ['src/b.ts'] };
         expect([
             read(join(sandbox, 'dist/x.js'), 15),
@@ -88,6 +88,11 @@ describe('SOURCES_RAN_SOURCE', () => {
             { loaded: ['src/run.ts'], ran: ['src/run.ts'] },
             undefined,
         ]);
+        const bodyOnly = new Map([[url(join(sandbox, 'src/run.ts')), []]]);
+        expect(sourcesRan?.(bodyOnly, sandbox, '@scope/package')).toStrictEqual({
+            loaded: ['src/run.ts'],
+            ran: [],
+        });
     });
 
     test('sources-ran — sourcesRan — a facade git does not list names nothing, wherever it was installed, and a listed one is a source', async () => {
