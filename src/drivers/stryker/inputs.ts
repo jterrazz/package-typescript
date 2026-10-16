@@ -167,12 +167,12 @@ const TYPE_ONLY = /\b(?:import|export)\s+type\s[^;]*?\bfrom\s*(?<quote>['"])[^'"
 
 /** Whether a module names a specifier the package resolves to its own build: a `#` import its manifest declares, or its name with a subpath its `exports` opens — a `#!` line, a heading, a comment, a type-only import or the name held as data loads nothing. */
 export function namesItsOwnBuild(text: string, build: OwnBuild): boolean {
-    const code = text
+    const uncommented = text
         .split('\n')
         .filter((line) => !COMMENT_LINE.test(line))
-        .join('\n')
-        // Stryker disable next-line StringLiteral: what replaces a type-only statement holds no quote, so it names no specifier whatever its text
-        .replaceAll(TYPE_ONLY, '');
+        .join('\n');
+    // Stryker disable next-line StringLiteral: what replaces a type-only statement holds no quote, so it names no specifier whatever its text
+    const code = uncommented.replaceAll(TYPE_ONLY, '');
 
     return [...code.matchAll(QUOTED)].some((match) => {
         const specifier = String(match[2]);
