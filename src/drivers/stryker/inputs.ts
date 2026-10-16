@@ -5,6 +5,7 @@ import { join, posix } from 'node:path';
 import { ARTIFACTS } from '../../../lint/kit/project/build-plan.js';
 import { listNotIgnored } from '../../../lint/kit/project/git-tree.js';
 import { GROUND_FOLDERS, SETUP_FOLDER } from '../../../lint/kit/project/ground.js';
+import { objectOf, stringOf } from '../../../lint/kit/project/json.js';
 
 /** Every file a run's tests may read, by its hash; the install stands for the toolchain git does not list. */
 export type Inputs = Readonly<Record<string, string>>;
@@ -107,16 +108,61 @@ export function namedBy(file: string, text: string, known: ReadonlySet<string>):
     });
 }
 
-/** Whether a module names the package by its own name, or by one of its `#` imports: either loads the package's build, which holds every source. */
-export function namesItsOwnBuild(text: string, packageName: string | undefined): boolean {
+/** What of the package's own build a module may load by a bare specifier: its name with the subpaths its `exports` opens — any, where it declares none — and the keys of its `imports`. */
+export type OwnBuild = {
+    exports: readonly string[] | undefined;
+    imports: readonly string[];
+    name: string | undefined;
+};
+
+const keysOf = (value: unknown): string[] => Object.keys(objectOf(value));
+
+/** The specifiers a package's manifest resolves to its own build; a manifest whose `exports` is a string or holds conditions alone opens the bare name only. */
+export function ownBuildOf(manifest: Record<string, unknown> | undefined): OwnBuild {
+    const exported = manifest?.exports;
+    const subpaths = keysOf(exported).filter((key) => key.startsWith('.'));
+
+    return {
+        exports: exported === undefined ? undefined : subpaths.length === 0 ? ['.'] : subpaths,
+        imports: keysOf(manifest?.imports),
+        name: stringOf(manifest?.name) ?? undefined,
+    };
+}
+
+// invariant: a key holds at most one `*`, which stands for any text; a specifier built from a template resolves to what its parts become at run time, so one holding `${` is read as resolving.
+function resolves(specifier: string, keys: readonly string[]): boolean {
     return (
-        /(?<quote>['"])#[^'"]+\k<quote>/u.test(text) ||
-        (packageName !== undefined &&
-            (text.includes(`'${packageName}'`) ||
-                text.includes(`"${packageName}"`) ||
-                text.includes(`'${packageName}/`) ||
-                text.includes(`"${packageName}/`)))
+        specifier.includes('${') ||
+        keys.some((key) => {
+            const star = key.indexOf('*');
+
+            return star === -1
+                ? specifier === key
+                : specifier.startsWith(key.slice(0, star)) &&
+                      specifier.endsWith(key.slice(star + 1));
+        })
     );
+}
+
+const QUOTED = /(?<quote>['"`])(?<specifier>[^'"`\s]+)\k<quote>/gu;
+
+/** Whether a module names a specifier the package resolves to its own build: a `#` import its manifest declares, or its name with a subpath its `exports` opens — a `#!` line, a heading or the name held as data loads nothing. */
+export function namesItsOwnBuild(text: string, build: OwnBuild): boolean {
+    return [...text.matchAll(QUOTED)]
+        .map((match) => String(match[2]))
+        .some((specifier) => {
+            if (specifier.startsWith('#')) {
+                return resolves(specifier, build.imports);
+            }
+            if (build.name === undefined || !`${specifier}/`.startsWith(`${build.name}/`)) {
+                return false;
+            }
+
+            return (
+                build.exports === undefined ||
+                resolves(`.${specifier.slice(build.name.length)}`, build.exports)
+            );
+        });
 }
 
 /** What a test file can load in its own process: the modules its imports reach, or every source where one of them loads the package's build. */
@@ -125,7 +171,7 @@ export type Reach = { everything: boolean; files: ReadonlySet<string> };
 /** The reach of each file, walked once: what a module names, what those name, to the end. */
 export function reachOf(
     sources: ReadonlyMap<string, string>,
-    packageName: string | undefined,
+    build: OwnBuild,
 ): (file: string) => Reach {
     const known = new Set(sources.keys());
     const memo = new Map<string, Reach>();
@@ -143,7 +189,7 @@ export function reachOf(
             if (text === undefined) {
                 continue;
             }
-            everything ||= namesItsOwnBuild(text, packageName);
+            everything ||= namesItsOwnBuild(text, build);
             for (const named of namedBy(next, text, known)) {
                 if (!files.has(named)) {
                     files.add(named);

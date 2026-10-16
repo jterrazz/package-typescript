@@ -11,11 +11,20 @@ import {
     isUnder,
     namedBy,
     namesItsOwnBuild,
+    ownBuildOf,
     reachOf,
     roleOf,
 } from '../inputs.js';
 
 const roots: string[] = [];
+
+const placeholder = (name: string): string => ['$', '{', name, '}'].join('');
+
+const OWN_BUILD = ownBuildOf({
+    exports: { './rules': './dist/rules.js', './tsconfig/*': './tsconfig/*.json' },
+    imports: { '#checker': './dist/checker.js', '#internal/*.js': './dist/internal/*.js' },
+    name: '@jterrazz/typescript',
+});
 
 function projectWith(files: Record<string, string>): string {
     const root = mkdtempSync(join(tmpdir(), 'incremental-'));
@@ -118,23 +127,69 @@ import j from './j.mjs';`;
 
     test.each([
         ["import { a } from '@jterrazz/typescript/rules';", true],
-        ['import a from "@jterrazz/typescript";', true],
+        ["const t = require.resolve('@jterrazz/typescript/tsconfig/node');", true],
         ["const b = await import('#checker');", true],
-        ["import { c } from '@jterrazz/typescript-extra';", false],
-        ["import { d } from '@jterrazz/test';", false],
+        ["const c = await import('#internal/walk.js');", true],
+        ["const c = await import('#internal/walk.ts');", false],
+        ["const c = await import('#external/walk.js');", false],
+        ["const c = await import('#checkers');", false],
+        ["const c = await import('#checke#checker');", false],
+        [`const d = await import(\`@jterrazz/typescript/${placeholder('tool')}\`);`, true],
+        [`const e = await import(\`#${placeholder('name')}\`);`, true],
+        ['import a from "@jterrazz/typescript";', false],
+        ["import { f } from '@jterrazz/typescript/unexported';", false],
+        ["const shebang = '#!/usr/bin/env node';", false],
+        ['const heading = "# ADR-1: Title";', false],
+        ["const owner = { package: '@jterrazz/typescript' };", false],
+        ["import { g } from '@jterrazz/typescript-extra';", false],
+        ["import { h } from '@jterrazz/test';", false],
     ])('namesItsOwnBuild — %s', (text, named) => {
-        // Given - a module of @jterrazz/typescript
-        // Then - the package by its name or a `#` import loads its build, a neighbour of the same prefix does not
-        expect(namesItsOwnBuild(text, '@jterrazz/typescript')).toBe(named);
+        // Given - a module of a package whose manifest opens two subpaths and two imports
+        // Then - only a specifier the manifest resolves loads its build, a template one read as resolving; the bare name it does not export, a shebang, a heading, the name held as data and a neighbour of the same prefix do not
+        expect(namesItsOwnBuild(text, OWN_BUILD)).toBe(named);
     });
 
-    test('namesItsOwnBuild — a package with no name is reached by its `#` imports alone', () => {
-        // Given - a package.json with no name
-        // Then - no name matches nothing
+    test.each([
+        ['no exports, so every subpath', { name: '@scope/a' }, [true, true, false]],
+        [
+            'a string export, the bare name alone',
+            { exports: './x.js', name: '@scope/a' },
+            [true, false, false],
+        ],
+        [
+            'conditions alone, the bare name alone',
+            { exports: { import: './x.js' }, name: '@scope/a' },
+            [true, false, false],
+        ],
+        ['no name, its imports alone', { imports: { '#a': './a.js' } }, [false, false, true]],
+    ])('ownBuildOf — a manifest with %s', (_case, manifest, named) => {
+        // Given - a manifest
+        const build = ownBuildOf(manifest);
+
+        // Then - the bare name, a subpath and a `#` import load the build as the manifest opens them
         expect([
-            namesItsOwnBuild("import a from 'undefined';", undefined),
-            namesItsOwnBuild("import a from '#a';", undefined),
-        ]).toStrictEqual([false, true]);
+            namesItsOwnBuild("import a from '@scope/a';", build),
+            namesItsOwnBuild("import a from '@scope/a/deep';", build),
+            namesItsOwnBuild("import a from '#a';", build),
+        ]).toStrictEqual(named);
+    });
+
+    test('namesItsOwnBuild — a package with no name loads nothing by a bare specifier', () => {
+        // Given - a manifest with no name and no exports
+        const build = ownBuildOf({});
+
+        // Then - not even a specifier spelling the missing name
+        expect(namesItsOwnBuild("import a from 'undefined';", build)).toBe(false);
+    });
+
+    test('ownBuildOf — no manifest opens no import and every subpath of no name', () => {
+        // Given - no package.json to read
+        // Then - nothing named, nothing exported nor imported
+        expect(ownBuildOf(undefined)).toStrictEqual({
+            exports: undefined,
+            imports: [],
+            name: undefined,
+        });
     });
 
     test('reachOf — what a file loads to the end of its imports, a cycle walked once, and whether any of them loads the build', () => {
@@ -148,7 +203,7 @@ import j from './j.mjs';`;
                 ['src/d.ts', "import x from '@jterrazz/typescript';"],
                 ['src/__tests__/d.test.ts', "import { d } from '../d.js';"],
             ]),
-            '@jterrazz/typescript',
+            ownBuildOf({ name: '@jterrazz/typescript' }),
         );
 
         // Then - the cycle once, c out of reach; the build reached through d

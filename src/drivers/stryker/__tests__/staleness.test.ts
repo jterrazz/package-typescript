@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { isList, objectOf } from '../../../../lint/kit/project/json.js';
-import { reachOf } from '../inputs.js';
+import { ownBuildOf, reachOf } from '../inputs.js';
 import { observedFrom, ranBy } from '../observed.js';
 import type { ObservedTest } from '../observed.js';
 import { reportAfter } from '../staleness.js';
@@ -63,7 +63,7 @@ const staleness = (
 ): Staleness => ({
     onlyFunctions: (source) => onlyFunctions.includes(source),
     ranBy: ranBy(observedFrom(observed)),
-    reach: reachOf(SOURCES, '@scope/package'),
+    reach: reachOf(SOURCES, ownBuildOf({ name: '@scope/package' })),
 });
 
 const idOf = (one: unknown): string => String(objectOf(one).id);

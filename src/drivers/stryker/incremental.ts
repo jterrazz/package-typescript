@@ -3,8 +3,8 @@ import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { join } from 'node:path';
 
 import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
-import { parsedObject, stringOf, stringRecordOf } from '../../../lint/kit/project/json.js';
-import { changedBetween, inputsOf, isLoadable, reachOf, roleOf } from './inputs.js';
+import { parsedObject, stringRecordOf } from '../../../lint/kit/project/json.js';
+import { changedBetween, inputsOf, isLoadable, ownBuildOf, reachOf, roleOf } from './inputs.js';
 import type { Inputs } from './inputs.js';
 import { observedOf, observedOnDisk, ranBy } from './observed.js';
 import type { Observed } from './observed.js';
@@ -54,9 +54,6 @@ export function recordInputs(
         observed === undefined ? { inputs } : { inputs, observed: observedOnDisk(observed) };
     writeFileSync(recordPathOf(project, incremental), `${JSON.stringify(onDisk)}\n`);
 }
-
-const packageNameOf = (project: string): string | undefined =>
-    stringOf(jsonAt(join(project, 'package.json'))?.name) ?? undefined;
 
 // invariant: the text of every source a run started on is kept under its hash beside the record, so the next run can tell a change of what a function does from a change of what loading the module does; a text no longer recorded is pruned.
 const textsOf = (project: string, incremental: string): string =>
@@ -140,6 +137,7 @@ export function incrementalKeptWhileInputsHold(
     const recorded = cold ? undefined : recordedOf(project, incremental);
     const report = jsonAt(file);
     const texts = codeTextsIn(project, inputs);
+    const ownBuild = ownBuildOf(jsonAt(join(project, 'package.json')));
     const kept =
         report === undefined || recorded === undefined
             ? undefined
@@ -150,7 +148,7 @@ export function incrementalKeptWhileInputsHold(
                       staysInFunctions,
                   }),
                   ranBy: ranBy(recorded.observed),
-                  reach: reachOf(texts, packageNameOf(project)),
+                  reach: reachOf(texts, ownBuild),
               });
     if (kept === undefined) {
         rmSync(file, { force: true });
