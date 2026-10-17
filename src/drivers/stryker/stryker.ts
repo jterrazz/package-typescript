@@ -27,6 +27,7 @@ import {
     OBSERVED_TESTS_VARIABLE,
     RAN_BY_TESTS_VARIABLE,
 } from './mutant-setup.js';
+import { heldReport, strykerMutate } from './mutate-entries.js';
 import { observedFrom } from './observed.js';
 import type { ObservedTest } from './observed.js';
 import { REPORT_NAMES } from './reports.js';
@@ -39,11 +40,6 @@ const oneGlob = (globs: readonly string[]): string =>
 
 const typeCheckedGlob = (mutated: readonly string[]): string =>
     oneGlob(mutated.map((glob) => glob.replace('*.', '!(*.test-d).')));
-
-// outside: Stryker reads each mutate entry as a glob, so a route file such as `[locale]/[key].png.ts` matches nothing, or fails beside a line range, unless its brackets are escaped.
-const literalMutateEntry = (entry: string): string =>
-    // Stryker disable next-line Regex: the first match of the unanchored pattern starts at 0 too, so anchoring it changes nothing an entry could show
-    entry.replace(/^[^:]*/u, (file) => file.replaceAll(/[[\]{}()!]/gu, String.raw`\$&`));
 
 export type Stage = {
     mutate: readonly string[];
@@ -103,7 +99,7 @@ export function strykerConfig(
         incremental: true,
         incrementalFile: `${MUTATION_OUTPUT}/${files.incremental}.json`,
         jsonReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.json` },
-        mutate: mutate.map((entry) => literalMutateEntry(entry)),
+        mutate: strykerMutate(mutate),
         plugins: [createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner')],
         reporters: ['html', 'json', 'progress'],
         tempDirName: `${MUTATION_OUTPUT}/tmp`,
@@ -256,5 +252,5 @@ export async function strykerRun(
     recordInputs(project, files.incremental, { inputs: inputs ?? {}, observed });
     const report = String(readFileSync(join(MUTATION_OUTPUT, `${files.report}.json`)));
 
-    return { ranByTests, report: JSON.parse(report) };
+    return { ranByTests, report: heldReport(JSON.parse(report), stage.mutate) };
 }

@@ -25,11 +25,11 @@ describe('stryker', () => {
             name: 'suite',
         });
 
-        // Then - the brackets are escaped and the line range left as it was
+        // Then - each bracket is a class of its own, and the line range left as it was
         expect(config).toMatchObject({
             mutate: [
-                String.raw`src/pages/\[locale\]/\[key\].png.ts`,
-                String.raw`src/pages/\[locale\]/\[key\].png.ts:15-18`,
+                'src/pages/[[]locale[]]/[[]key[]].png.ts',
+                'src/pages/[[]locale[]]/[[]key[]].png.ts:15-18',
             ],
         });
     });
