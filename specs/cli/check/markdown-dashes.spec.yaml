@@ -1,0 +1,59 @@
+description: fails a dash that punctuates prose where the settings refuse it, and keeps a range and code
+fixture: ./__fixtures__/markdown/dashes/
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed ({{duration}})
+
+           RUN  Oxlint Check
+
+          ✓ Passed ({{duration}})
+
+           RUN  Oxfmt Check
+
+          ✓ Passed ({{duration}})
+
+           RUN  Knip (unused code)
+
+          ✓ Passed ({{duration}})
+
+           RUN  Architecture (layer map)
+
+          ✓ Passed ({{duration}})
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed ({{duration}})
+
+           RUN  Markdown (prose)
+
+          README.md:3:24: error markdown(prose-has-no-dash): an em dash punctuates the prose at line 3: rewrite the sentence with a comma, a colon, a semicolon, parentheses or a full stop, as a writer does by hand
+          README.md:5:61: error markdown(prose-has-no-dash): an en dash punctuates the prose at line 5: rewrite the sentence with a comma, a colon, a semicolon, parentheses or a full stop, as a writer does by hand
+          ✗ Failed with exit code 1 ({{duration}})
+
+           RUN  Names (tree)
+
+          ✓ Passed ({{duration}})
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed ({{duration}})
+
+           DRIFT  Deviations from the profile
+
+            declared                              nothing: node, the default
+            exceptions                            0
+            rules off vs profile                  none
+            suppressions                          0
+            .jterrazz/oxlint-suppressions.json    nothing held
+            .jterrazz/baseline.json › typescript  nothing held
+            tool versions                         in range
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed, first Markdown (prose): README.md:3:24: error markdown(prose-has-no-dash): an em dash punctuates the prose at line 3: rewrite the sentence with a comma, a colon, a semicolon, parentheses or a full stop, as a writer does by hand

@@ -38,6 +38,8 @@ export type TypescriptSettings = {
         ignoreBinaries?: Reasoned;
         ignoreDependencies?: Reasoned;
     };
+    /** What the Markdown pass holds a page's prose to beyond the floor: `refusesDashes` fails an em dash, and an en dash used as punctuation. */
+    markdown?: { refusesDashes?: boolean };
     /** What `typescript mutation` measures beyond the platform's sources, and what it leaves out: tests that read the sources as text, sources no test can judge. */
     mutation?: { exclude?: Reasoned; ignore?: Reasoned; mutate?: Reasoned };
     names?: readonly NamesRule[];

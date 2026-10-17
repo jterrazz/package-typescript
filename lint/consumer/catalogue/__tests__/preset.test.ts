@@ -68,6 +68,7 @@ describe('preset', () => {
         expect(preset.writableSettings).toStrictEqual([
             'architecture',
             'knip',
+            'markdown',
             'mutation',
             'names',
             'oxfmt',

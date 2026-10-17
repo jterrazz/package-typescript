@@ -1,0 +1,53 @@
+description: passes a page's dashes where the settings keep the standard's default
+fixture: ./__fixtures__/markdown/dashes-allowed/
+runs:
+    - command: check
+      exit: 0
+      stdout: |4
+           START  Running quality checks
+
+           RUN  TypeScript Check
+
+          ✓ Passed ({{duration}})
+
+           RUN  Oxlint Check
+
+          ✓ Passed ({{duration}})
+
+           RUN  Oxfmt Check
+
+          ✓ Passed ({{duration}})
+
+           RUN  Knip (unused code)
+
+          ✓ Passed ({{duration}})
+
+           RUN  Suppressions (directives)
+
+          ✓ Passed ({{duration}})
+
+           RUN  Markdown (prose)
+
+          ✓ Passed ({{duration}})
+
+           RUN  Names (tree)
+
+          ✓ Passed ({{duration}})
+
+           RUN  Secrets (credentials)
+
+          ✓ Passed ({{duration}})
+
+           DRIFT  Deviations from the profile
+
+            declared                              nothing: node, the default
+            exceptions                            0
+            rules off vs profile                  none
+            suppressions                          0
+            .jterrazz/oxlint-suppressions.json    nothing held
+            .jterrazz/baseline.json › typescript  nothing held
+            tool versions                         in range
+
+           END  Finalizing quality checks
+
+          ✓ All checks passed

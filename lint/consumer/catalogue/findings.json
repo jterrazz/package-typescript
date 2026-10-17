@@ -236,6 +236,11 @@
         "sentence": "A section over thirty prose lines is broken by a subheading or a list."
     },
     {
+        "family": "markdown",
+        "id": "markdown/prose-has-no-dash",
+        "sentence": "Where the settings refuse dashes, a page's prose punctuates with commas, colons, semicolons, parentheses and full stops, never an em dash nor an en dash between words; a code span, a fence, a quote and a numeric range keep theirs."
+    },
+    {
         "family": "secrets",
         "id": "secrets/no-private-key",
         "sentence": "No committed file carries a private key block."

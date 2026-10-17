@@ -61,6 +61,8 @@ export default defineStandard({
             'volta',
             'workspaces',
         ],
+        // value: off until the estate's manuals are rewritten without dashes, when the standard refuses them for every repository; a project refuses them before that by writing it.
+        markdown: { refusesDashes: false },
         memberRoots: ['apps', 'packages'],
         sources: { extensions: ['ts'], roots: ['src'] },
         spine: ['docs', 'lint', 'skills', 'specs', 'src'],

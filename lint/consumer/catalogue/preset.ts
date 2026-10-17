@@ -162,6 +162,7 @@ export function typescriptPreset(
         writableSettings: [
             'architecture',
             'knip',
+            'markdown',
             'mutation',
             'names',
             'oxfmt',

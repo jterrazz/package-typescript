@@ -629,8 +629,11 @@ The prose gate reads what no Markdown linter knows: whether a backticked coordin
 | `markdown/prose-block-is-short`         | A paragraph or a list item runs twelve lines at most.                                                                                                                                                                                  |
 | `markdown/fenced-run-is-short`          | A fenced block breathes within fifteen lines.                                                                                                                                                                                          |
 | `markdown/long-section-has-subheadings` | A section over thirty prose lines is broken by a subheading or a list.                                                                                                                                                                 |
+| `markdown/prose-has-no-dash`            | Where the settings refuse dashes, a page's prose punctuates with commas, colons, semicolons, parentheses and full stops, never an em dash nor an en dash between words; a code span, a fence, a quote and a numeric range keep theirs. |
 
 <!-- /GENERATED:findings markdown -->
+
+`markdown/prose-has-no-dash` reads a page only where `typescript.markdown.refusesDashes` is `true` ([Configuration](configuration.md#the-typescript-section)). The standard leaves it `false` until the estate's manuals are written without dashes, and a project refuses them before that by writing it. It names each em dash of the prose, and each en dash with a space or a line's edge beside it, at its line and column: a code span, a fence, a quote, an HTML comment and the frontmatter are not prose, and an en dash between two characters is a range, such as `3–5`, that stays. The fix is the sentence a writer punctuates by hand: a comma, a colon, a semicolon, parentheses or a full stop.
 
 A decision record is `docs/decisions/` of the manual, or a numbered `decisions/NNN-<title>.md` anywhere; a brand's seat keeps its own, frozen the same way.
 

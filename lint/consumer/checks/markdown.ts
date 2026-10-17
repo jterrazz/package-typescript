@@ -2,12 +2,14 @@ import { dirname, join, resolve } from 'node:path';
 
 import { filesKeptByteForByte } from '../../kit/checker/kept-files.js';
 import type { Context, Finding, Pass } from '../../kit/checker/pass.js';
+import { objectOf } from '../../kit/project/json.js';
 import { isGitIgnored, readText } from '../../kit/project/project-files.js';
+import { proseDashes } from './markdown.dashes.js';
 import { airlessFences, FENCE, linesWithFrontmatterBlanked } from './markdown.fences.js';
 import { QUALIFIED_BY_REPOSITORY, unlinkedReferences, withoutGenerated } from './markdown.parts.js';
 import { brokenLinks, rumdl } from './markdown.rumdl.js';
 
-type Found = { message: string; rule: string };
+type Found = { column?: number; line?: number; message: string; rule: string };
 
 const PROSE_BLOCK_LIMIT = 12;
 
@@ -171,7 +173,12 @@ function missingPages({ exists, root }: Context, path: string, cited: string): F
     return found;
 }
 
-function auditPage(context: Context, path: string, written: string): Found[] {
+function auditPage(
+    context: Context,
+    path: string,
+    written: string,
+    refusesDashes: boolean,
+): Found[] {
     const markdown = withoutGenerated(written);
     const cited = withoutFences(markdown);
     const found = [...missingPaths(context, path, cited), ...missingPages(context, path, cited)];
@@ -185,6 +192,11 @@ function auditPage(context: Context, path: string, written: string): Found[] {
     for (const reason of flatSections(markdown)) {
         found.push({ message: reason, rule: 'markdown/long-section-has-subheadings' });
     }
+    if (refusesDashes) {
+        for (const dash of proseDashes(markdown)) {
+            found.push({ ...dash, rule: 'markdown/prose-has-no-dash' });
+        }
+    }
 
     return found;
 }
@@ -194,15 +206,17 @@ export const markdown: Pass = Object.freeze({
         const findings: Finding[] = [];
         const isKept = await filesKeptByteForByte(context);
         const pages = context.files().filter((file) => file.endsWith('.md') && !isKept(file));
+        const { resolved } = await context.config();
+        const refusesDashes =
+            objectOf(resolved.sections.typescript?.markdown).refusesDashes === true;
         for (const path of pages) {
             const text = readText(context.root, path);
             // Stryker disable next-line ConditionalExpression: a page the tree lists is a file on disk, which reads
             if (text !== null) {
                 findings.push(
-                    ...auditPage(context, path, text).map(({ message, rule }) => ({
-                        message,
+                    ...auditPage(context, path, text, refusesDashes).map((found) => ({
+                        ...found,
                         path,
-                        rule,
                     })),
                 );
             }
