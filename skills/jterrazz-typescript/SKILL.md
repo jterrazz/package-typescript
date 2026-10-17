@@ -77,6 +77,7 @@ The drift report closes the run, and refuses nothing: a rule set apart already c
 | a lint rule, a profile, how the config merges, knip                                                                              | `docs/reference/lint-presets.md`                          |
 | `build`, `start`, `dev`, `tsc`, an entry the manifest does not name                                                              | `docs/reference/building.md`                              |
 | a bump landed red                                                                                                                | `docs/guides/adopt-a-stricter-release.md`                 |
+| proving a release on a project before it is published: the tarball install, no `install-links`                                   | `docs/guides/install-an-unreleased-build.md`              |
 | which number moves on a release                                                                                                  | `docs/guides/release.md`                                  |
 | writing a rule, a check or its page with the kit                                                                                 | `docs/reference/rules-kit.md`                             |
 | changing the toolchain itself: its layers, its loop                                                                              | `docs/concepts/architecture.md`, `docs/guides/develop.md` |
