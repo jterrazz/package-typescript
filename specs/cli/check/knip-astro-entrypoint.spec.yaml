@@ -17,4 +17,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Knip (unused code): Unused files (1)

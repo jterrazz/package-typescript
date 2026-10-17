@@ -15,7 +15,7 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Architecture (layer map): src/domain/user.ts:1:22: error architecture(domain-stays-pure): found: `src/domain/user.ts` imports `src/infrastructure/store.ts` · why: A domain module never reaches for infrastructure. · fix: reach it through a layer the map allows, or change the map where the boundary moved · read: docs/reference/quality-checks.md#the-architecture-layer-map-pass
     - command: fix
       exit: 0
       stdout: |4

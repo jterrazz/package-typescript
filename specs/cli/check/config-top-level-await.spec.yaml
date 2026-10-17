@@ -14,4 +14,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Config (one file): jterrazz.config.ts:1:1: error config(settings-load-synchronously): found: jterrazz.config.ts does not load synchronously, as the oxlint rules load it, so they would judge on its defaults: require() cannot be used on an ESM graph with top-level await. Use import() instead. To see where the top-level await comes from, use --experimental-print-required-tla. · why: A settings file loads synchronously too, since the oxlint rules read jterrazz.config.ts so, and one they cannot load would leave them judging on defaults. · fix: drop what keeps jterrazz.config.ts from loading synchronously — a top-level `await` most often: `ownPresets` and every preset are synchronous · read: docs/reference/quality-checks.md#the-config-one-file-pass

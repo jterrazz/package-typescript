@@ -12,6 +12,32 @@ A finding the toolchain writes is one line in the compiler's convention, `path:l
 
 The toolchain measures from the nearest `package.json`: a workspace root runs each per-package pass once per member, and a single-package project is the same run it always was.
 
+### The verdict file
+
+`check`, `fix` and `mutation` each end on one line that names the verdict, and leave it as JSON in `.artifacts/gate/verdict.json`, so a reader — a person, an agent, a script — never searches a log for it. The line is the run's last: `✓ All checks passed`, or `✗ Some checks failed — first <pass>: <its first finding>`; for mutation, `✓ Mutation passed — 9 detected, 0 surviving, 0 never judged, over HEAD..working tree`, or `✗ Mutation failed — first survivor src/discount.ts:2 ConditionalExpression; …` — the verdict's own numbers, never a count Stryker printed on the way.
+
+```json
+{
+    "command": "check",
+    "head": "9f18589c…",
+    "mutation": null,
+    "passes": [
+        { "firstError": null, "label": "TypeScript Check", "seconds": 4.2, "status": 0 },
+        {
+            "firstError": "src/a.ts:1:1: error …",
+            "label": "Oxlint Check",
+            "seconds": 3.1,
+            "status": 1
+        }
+    ],
+    "status": 1
+}
+```
+
+- `command` is the command that wrote it, and `head` the commit the checkout stood on — `null` outside a repository. Each run replaces the file, so it holds the last gate run there: a `make check` whose tests failed after a green `check` still holds that check's verdict, and its exit code is the one to read.
+- `passes` lists every pass that ran, with its label, status and seconds; `firstError` is the first line of a failing pass's log, and `null` for one that passed. The drift report is a pass of its own, `Drift (profile)`.
+- `mutation` is `null` for `check` and `fix`. For `mutation`, `passes` lists its stages — `Mutation (module tests)`, `Mutation (whole suite)`, or one per workspace member — and `mutation` holds `detected`, `survivors` (each `file`, `line`, `mutator`), `unrun` — the mutants the run never judged — and `range`; a run that judged nothing, refused or measured nothing, holds `null` there and says why on its last line.
+
 ### Flags and exit codes
 
 `check` and `fix` run whole, every pass that applies over the whole project: no flag runs one pass or one file. `check` takes one flag, and `fix` none:
@@ -938,7 +964,7 @@ A mutant never touches the checkout. Stryker copies the project into a sandbox u
 
 ### What a run prints
 
-Each stage prints Stryker's own log under its `TYPESCRIPT` header, then the seconds the stage took, `The module tests ran in 33.4s`. Inside it, `dry run: 12.0s` is the initial run of the tests over the unmutated sandbox. On a terminal Stryker draws its progress bar; read through a pipe — a log file, CI, an agent — the run prints one `progress:` line per tenth of the mutants it runs instead of Stryker's tick every ten seconds, and each says `no verdict yet`: the survivors it counts so far are mutants the next stage may still detect, and only the verdict below says what failed.
+Each stage prints Stryker's own log under its `TYPESCRIPT` header, then the seconds the stage took, `The module tests ran in 33.4s`. Inside it, `dry run: 12.0s` is the initial run of the tests over the unmutated sandbox. On a terminal Stryker draws its progress bar; read through a pipe — a log file, CI, an agent — the run prints one `progress:` line per tenth of the mutants it runs instead of Stryker's tick every ten seconds, and each says `no verdict yet`: the survivors it counts so far are mutants the next stage may still detect, and only the verdict below says what failed. The run's last line and `.artifacts/gate/verdict.json` carry that verdict ([The verdict file](#the-verdict-file)).
 
 ### Every mutant a test runs is detected
 

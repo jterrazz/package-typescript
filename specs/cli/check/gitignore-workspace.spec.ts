@@ -50,7 +50,7 @@ describe('gitignore-workspace', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Gitignore (artefacts): Artefacts belong under .artifacts/<tool>/ at the project root:
         `);
     });
 
@@ -75,7 +75,7 @@ describe('gitignore-workspace', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Gitignore (artefacts): Artefacts belong under .artifacts/<tool>/ at the project root:
         `);
     });
 });

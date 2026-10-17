@@ -53,4 +53,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Markdown (prose): README.md:1:1: error markdown(prose-block-is-short): a block of 13 lines at line 5 — the limit is 12

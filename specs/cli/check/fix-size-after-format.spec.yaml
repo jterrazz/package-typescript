@@ -18,4 +18,4 @@ runs:
 
            END  Finalizing quality fixes
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Oxlint Fix: src/index.ts:400:3: error eslint(max-lines): File has too many lines (400). help: Maximum allowed is 300.

@@ -93,7 +93,7 @@ describe('names-repository', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Oxlint Check: data/scratch.ts:2:5: error eslint(no-debugger): \`debugger\` statement is not allowed help: Remove the debugger statement
         `);
     });
 
@@ -219,7 +219,7 @@ describe('names-repository', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Suppressions (directives): found: nothing to read under {{workdir}}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
         `);
     });
 
@@ -259,7 +259,7 @@ describe('names-repository', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Suppressions (directives): found: nothing to read under {{workdir}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
         `);
     });
 
@@ -302,7 +302,7 @@ describe('names-repository', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Names (tree): Makefile:1:1: error names(makefile-answers-every-gesture): found: \`make fix\` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule — every repository answers \`make\` install, build, lint, fix, test and check · read: docs/reference/quality-checks.md#the-six-gestures
         `);
     });
 

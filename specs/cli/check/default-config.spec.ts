@@ -35,7 +35,7 @@ describe('default-config', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Oxlint Check: src/index.ts:2:5: error eslint(no-debugger): \`debugger\` statement is not allowed help: Remove the debugger statement
         `);
     });
 

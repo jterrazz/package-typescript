@@ -16,7 +16,7 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Gitignore (artefacts): Artefacts belong under .artifacts/<tool>/ at the project root:
     - command: fix
       exit: 0
       stdout: |4

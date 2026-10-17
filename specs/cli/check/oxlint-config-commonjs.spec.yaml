@@ -14,4 +14,4 @@ runs:
 
           {{any}}
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Oxlint Check: {{any}}

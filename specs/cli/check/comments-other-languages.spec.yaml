@@ -19,7 +19,7 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Comments (styles, scripts, YAML): Makefile:3:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
     - command: fix
       exit: 1
       stdout: |4
@@ -37,7 +37,7 @@ runs:
 
            END  Finalizing quality fixes
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Comments (styles, scripts, YAML): Makefile:3:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
       files:
           Makefile:
               equals: |

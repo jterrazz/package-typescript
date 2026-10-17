@@ -15,4 +15,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Config (one file): packages/stray/jterrazz.config.ts:1:1: error config(project-declared): found: packages/stray is a member of a monorepo, and declares no kind of its own · why: A project — a single-project repository, or each member of a monorepo — declares what it is once, its kind and its platform, in jterrazz.config.ts. · fix: write packages/stray/jterrazz.config.ts declaring the member's own kind and platform · read: docs/reference/quality-checks.md#the-config-one-file-pass

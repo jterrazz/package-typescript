@@ -52,6 +52,6 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first TypeScript Check: {{any}}
       files:
           node_modules/.cache/knip: absent

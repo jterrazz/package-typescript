@@ -98,7 +98,7 @@ describe('content', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Names (tree): drafts/:1:1: error names(no-empty-directory): found: \`drafts/\` holds no file · why: git tracks no directory, so an empty one exists only on this machine and names a part of the tree that is not there · fix: delete it — \`typescript fix\` does — or put the file it was made for in it · read: docs/reference/quality-checks.md#an-empty-directory
         `);
     });
 

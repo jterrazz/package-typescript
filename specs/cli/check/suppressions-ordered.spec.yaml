@@ -15,4 +15,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Suppressions (directives): index.ts:4:1: error suppressions(stryker-attaches-to-a-mutant): line 4 places a Stryker directive above a line led by `}`, where no mutant starts — move it to the line of the block's opening, or wrap the block in a `// Stryker disable <mutator>: <why>` … `// Stryker restore <mutator>` range

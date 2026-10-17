@@ -53,4 +53,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Oxlint Check: : error: There are suppressions that do not occur anymore. help: Run `oxlint --prune-suppressions` to remove unused suppressions.

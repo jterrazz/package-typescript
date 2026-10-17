@@ -55,7 +55,7 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Oxlint Check: {{any}}
     - command: fix
       exit: 0
       stdout: |4

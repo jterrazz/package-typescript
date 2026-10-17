@@ -21,4 +21,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Publish (packaging): package.json:1:1: error publish(export-target-exists): ./farewell.js resolves to nothing on disk

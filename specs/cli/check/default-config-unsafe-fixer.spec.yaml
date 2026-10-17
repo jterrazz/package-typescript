@@ -32,7 +32,7 @@ runs:
 
            END  Finalizing quality fixes
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Oxlint Fix: {{any}}
       files:
           index.ts:
               equals: |

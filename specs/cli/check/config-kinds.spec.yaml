@@ -20,4 +20,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Config (one file): packages/api/package.json:1:1: error config(kind-matches-manifest): found: packages/api/jterrazz.config.ts declares an api, and packages/api/package.json is not `private`, so npm would publish the application · why: A library publishes its exports, a published cli names its bin, and an application — an api, a website, a mobile app — is private, never published, as are a monorepo's own suite and its root, a container that declares no kind. · fix: set `"private": true`, or declare the kind the project is · read: docs/reference/quality-checks.md#the-config-one-file-pass

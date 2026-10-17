@@ -51,7 +51,7 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Oxlint Check: found: .jterrazz/oxlint-suppressions.json holds entries for files that are gone: src/moved.ts · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/reference/quality-checks.md#the-ratchet
     - command: fix
       exit: 0
       stdout: |4

@@ -53,4 +53,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Knip (unused code): ERROR: Unable to find package.json

@@ -8,4 +8,4 @@ found: every finding above, and .jterrazz/baseline.json records no `names/` entr
 
  END  Finalizing quality checks
 
-✗ Some checks failed
+✗ Some checks failed — first Names (tree): Makefile:1:1: error names(repository-has-makefile): found: the repository has no Makefile · why: Every repository root carries a Makefile. · fix: write a Makefile whose rules answer `make` install, build, lint, fix, test and check · read: docs/reference/quality-checks.md#the-six-gestures

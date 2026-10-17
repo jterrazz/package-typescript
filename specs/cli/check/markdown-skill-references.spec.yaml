@@ -18,4 +18,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Markdown (prose): skills/shop/SKILL.md:1:1: error markdown(skill-links-its-references): skills/shop/references/returns.md is linked from no line of skills/shop/SKILL.md

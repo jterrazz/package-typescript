@@ -37,7 +37,7 @@ describe('oxlint-config-unparsed', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Oxlint Check: Failed to parse oxlint configuration file.{{any}}
         `);
     });
 
@@ -60,7 +60,7 @@ describe('oxlint-config-unparsed', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Oxlint Check: No files found to lint. Please check your paths and ignore patterns.
         `);
     });
 });

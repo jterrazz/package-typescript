@@ -15,4 +15,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Publish (packaging): publish/no-test-code-in-production: nothing to judge — no @jterrazz/test resolves from this package, and what test material is is its to say

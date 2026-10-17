@@ -160,7 +160,7 @@ describe('presets-member', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Stub Conventions: root repository pass
         `);
     });
 
@@ -209,7 +209,7 @@ describe('presets-member', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Stub Conventions: root repository pass
         `);
     });
 

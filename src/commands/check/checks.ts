@@ -7,6 +7,7 @@ import type { ProjectIdentity } from '../../../lint/kit/project/project-kind.js'
 import { checker } from '../../drivers/checker/checker.js';
 import { configPass } from './passes/checker-passes.js';
 import type { Launched } from './passes/launched.js';
+import { secondsSince } from './passes/launched.js';
 import { CONTENT_PASSES } from './passes/passes.js';
 import type { Selected } from './passes/passes.js';
 import { presetRuns } from './passes/presets.js';
@@ -15,7 +16,10 @@ import { argumentsOf, membersOf, targetsOf, toolConfigs, toolsOf } from './passe
 import type { Check } from './passes/setup.js';
 import { started } from './passes/started.js';
 import type { Started } from './passes/started.js';
+import { checkSummaryOf, firstFindingOf, headOf, verdictWritten } from './report/gate-verdict.js';
+import type { GateVerdict, PassVerdict } from './report/gate-verdict.js';
 import { logsIn } from './report/logs.js';
+import type { Logs } from './report/logs.js';
 import { reportPass } from './report/report.js';
 import { badge, GREEN, print, RED, RESET } from './report/terminal.js';
 import {
@@ -156,24 +160,47 @@ async function reported(
     ];
 }
 
-async function drift(run: Check): Promise<number> {
+async function drift(run: Check): Promise<PassVerdict[]> {
     if (run.fix || !run.selected('drift')) {
-        return 0;
+        return [];
     }
     print(`\n${badge('DRIFT')} Deviations from the profile\n\n`);
+    const from = performance.now();
+    const status = await checker('drift', ['.', ...run.driftArgs], 'inherit');
 
-    return await checker('drift', ['.', ...run.driftArgs], 'inherit');
+    return [
+        {
+            firstError: status === 0 ? null : 'the drift report refused — its report is above',
+            label: 'Drift (profile)',
+            seconds: secondsSince(from),
+            status,
+        },
+    ];
 }
 
-function concluded(fix: boolean, passed: boolean): number {
+const passVerdictOf = (logs: Logs, { label, log, seconds, status }: Reported): PassVerdict => ({
+    firstError: status === 0 ? null : firstFindingOf(logs.read(log)),
+    label,
+    seconds,
+    status,
+});
+
+function concluded(fix: boolean, passes: readonly PassVerdict[]): number {
+    const status = passes.every((pass) => pass.status === 0) ? 0 : 1;
+    const verdict: GateVerdict = {
+        command: fix ? 'fix' : 'check',
+        head: headOf('.'),
+        mutation: null,
+        passes: [...passes],
+        status,
+    };
+    verdictWritten('.', verdict);
     print(
         `\n${badge('END')} ${fix ? 'Finalizing quality fixes' : 'Finalizing quality checks'}\n\n`,
     );
-    print(
-        passed ? `${GREEN}✓ All checks passed${RESET}\n` : `${RED}✗ Some checks failed${RESET}\n`,
-    );
+    print(`${status === 0 ? GREEN : RED}${checkSummaryOf(verdict)}${RESET}\n`);
 
-    return passed ? 0 : 1;
+    return status;
 }
 
 export async function runChecks(
@@ -199,10 +226,10 @@ export async function runChecks(
                 }
                 const drifted = await drift(run);
 
-                return concluded(
-                    fix,
-                    drifted === 0 && verdicts.every(({ status }) => status === 0),
-                );
+                return concluded(fix, [
+                    ...verdicts.map((verdict) => passVerdictOf(run.logs, verdict)),
+                    ...drifted,
+                ]);
             }),
     );
 }

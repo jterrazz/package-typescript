@@ -54,4 +54,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Names (tree): src/repo-client.ts:1:1: error names(no-abbreviated-word): found: `repo-client` is a word written in half · why: Every word of a name is spelled whole. · fix: spell every word of it whole · read: docs/reference/quality-checks.md#the-names-tree-pass

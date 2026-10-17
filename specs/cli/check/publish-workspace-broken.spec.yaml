@@ -25,4 +25,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Publish (packaging): packages/alpha/package.json:1:1: error publish(export-target-exists): ./gone.js resolves to nothing on disk

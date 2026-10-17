@@ -22,4 +22,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Architecture (layer map): src/__tests__/widget.test.ts:1:23: error architecture(no-test-to-test-import): found: `src/__tests__/widget.test.ts` imports `src/__tests__/other.test.ts` · why: a test importing a test couples two files that each prove one thing · fix: move what both tests read into a module neither of them is · read: docs/testing.md#sharing

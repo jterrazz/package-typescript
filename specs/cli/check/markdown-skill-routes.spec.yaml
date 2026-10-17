@@ -51,4 +51,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Markdown (prose): skills/shop/SKILL.md:1:1: error markdown(page-reference-resolves): docs/reference/quality-checks.md is no page this package ships

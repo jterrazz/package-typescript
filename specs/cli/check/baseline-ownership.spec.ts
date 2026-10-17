@@ -151,12 +151,12 @@ describe('baseline-ownership', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Oxlint Check: {{any}}
         `);
         expect(
             result.stdout.text
                 .split('\n')
-                .filter((line) => line.includes('flags-every-file'))
+                .filter((line) => line.includes('flags-every-file') && !line.startsWith('✗'))
                 .toSorted(),
         ).toStrictEqual([
             'index.ts:1:1: error jterrazz(flags-every-file): reported by the stub plugin',
@@ -189,7 +189,7 @@ describe('baseline-ownership', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Test Conventions (stub): [error] specs/x.spec.ts:1: a finding the stub always reports (no-unused-ground)
         `);
     });
 
@@ -224,7 +224,7 @@ describe('baseline-ownership', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Test Conventions (stub): conventions checker: 1 error(s) found
         `);
     });
 
@@ -331,7 +331,7 @@ describe('baseline-ownership', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Oxlint Check: {{any}}
         `);
     });
 });

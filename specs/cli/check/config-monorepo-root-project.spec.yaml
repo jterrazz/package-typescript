@@ -15,4 +15,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Config (one file): jterrazz.config.ts:1:1: error config(kind-matches-manifest): found: jterrazz.config.ts declares library on node, and package.json lists `workspaces`: the root of a monorepo is a container, never a project · why: A library publishes its exports, a published cli names its bin, and an application — an api, a website, a mobile app — is private, never published, as are a monorepo's own suite and its root, a container that declares no kind. · fix: drop `kind` and `platform` from jterrazz.config.ts and keep there the repository's settings alone: each member under `apps/` or `packages/` declares its own, and tests of the whole repository go to the member at `specs/` · read: docs/reference/quality-checks.md#the-config-one-file-pass

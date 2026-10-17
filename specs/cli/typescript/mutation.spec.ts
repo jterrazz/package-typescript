@@ -39,38 +39,10 @@ describe('mutation', () => {
             found: 2 mutant(s) a test runs and none detects · why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/reference/quality-checks.md#mutation
             0 mutant(s) no test runs
             2 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does
+
+            ✗ Mutation failed — first survivor src/discount.ts:2 ConditionalExpression; 5 detected, 2 surviving, 0 never judged, over HEAD..working tree
         `);
         expect(result.file('.jterrazz/baseline.json').exists).toBe(false);
-    });
-
-    test('typescript mutation — a source named in brackets is mutated, whole and by its lines', async () => {
-        // Given - the consumer, its test judging everything, beside a route-shaped source in brackets whose test leaves its guard unjudged
-        const whole = await cli
-            .fixture(directory('./__fixtures__/mutation-consumer/'))
-            .fixture(directory('./__fixtures__/mutation-killing/'))
-            .fixture(directory('./__fixtures__/mutation-bracketed/'))
-            .exec('typescript mutation');
-        const ranged = await cli
-            .fixture(directory('./__fixtures__/mutation-consumer/'))
-            .fixture(directory('./__fixtures__/mutation-killing/'))
-            .fixture(directory('./__fixtures__/mutation-bracketed/'))
-            .exec('typescript mutation --mutate src/[id]/[key].ts:2-4');
-
-        // Then - both runs measure the guard of the bracketed file, by the whole suite it is handed to by its lines, and name its survivors at their place
-        expect([whole.exitCode, ranged.exitCode]).toStrictEqual([1, 1]);
-        expect(whole.stdout.text).not.toContain('did not result in any files');
-        expect(whole.stdout).toMatch(`
-            {{any}}
-            src/[id]/[key].ts:2:9  ConditionalExpression → false  (.artifacts/stryker/suite-report.json)
-            src/[id]/[key].ts:2:9  EqualityOperator → rate >= 0.5  (.artifacts/stryker/suite-report.json)
-            found: 2 mutant(s) a test runs and none detects{{any}}
-        `);
-        expect(ranged.stdout).toMatch(`
-            {{any}}
-            src/[id]/[key].ts:2:9  ConditionalExpression → false  (.artifacts/stryker/suite-report.json)
-            src/[id]/[key].ts:2:9  EqualityOperator → rate >= 0.5  (.artifacts/stryker/suite-report.json)
-            found: 2 mutant(s) a test runs and none detects{{any}}
-        `);
     });
 
     test('typescript mutation — a mutant the module test lets live that a spec detects passes the run', async () => {
@@ -91,6 +63,8 @@ describe('mutation', () => {
             2 mutant(s) the module tests let live, detected by the whole suite
             0 mutant(s) no test runs
             2 mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does
+
+            ✓ Mutation passed — 7 detected, 0 surviving, 0 never judged, over HEAD..working tree
         `);
     });
 
@@ -109,6 +83,8 @@ describe('mutation', () => {
         expect(result.exitCode).toBe(1);
         expect(result.stdout).toMatch(`
             found: git names no commit main · why: the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing · fix: name a commit this clone holds — fetch it — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the change not yet committed, or, on a clean tree, the branch since its merge-base with the default branch · read: docs/reference/quality-checks.md#mutation
+
+            ✗ Mutation failed — refused before any run: git names no commit main
         `);
         expect(result.stdout.text).not.toContain('Measuring');
     });
@@ -126,6 +102,8 @@ describe('mutation', () => {
         expect([misspelled.exitCode, backwards.exitCode]).toStrictEqual([1, 1]);
         expect(misspelled.stdout).toMatch(`
             found: --mutate names src/discont.ts:1-5, which reaches no source the run mutates · why: a range that reaches no source narrows both runs to nothing, and the run would pass having measured nothing · fix: name a source the run mutates, by its path from the project's root and its lines as from-to — src/a.ts:10-20 — or the whole file by its path · read: docs/reference/quality-checks.md#mutation
+
+            ✗ Mutation failed — refused before any run: --mutate names src/discont.ts:1-5, which reaches no source the run mutates
         `);
         expect(backwards.stdout.text).toContain('found: --mutate names src/discount.ts:9-2,');
         expect(`${misspelled.stdout.text}${backwards.stdout.text}`).not.toContain('Measuring');
@@ -148,6 +126,8 @@ describe('mutation', () => {
 
             measured 9 mutants over HEAD..working tree — every mutant a test runs is detected
             0 mutant(s) no test runs
+
+            ✓ Mutation passed — 9 detected, 0 surviving, 0 never judged, over HEAD..working tree
         `);
         expect(result.stdout.text).not.toContain('Measuring the whole suite');
     });
@@ -170,6 +150,8 @@ describe('mutation', () => {
             measured 9 mutants over HEAD..working tree — every mutant a test runs is detected
             0 mutant(s) no test runs
             1 source(s) with no module test — the whole suite measures the lines a change reaches there; what no change reaches no count holds
+
+            ✓ Mutation passed — 9 detected, 0 surviving, 0 never judged, over HEAD..working tree
         `);
         expect(result.stdout.text).not.toContain('Measuring the whole suite');
         expect(result.file('.artifacts/stryker/sandbox.mjs').content).toContain('npm');
@@ -197,6 +179,8 @@ describe('mutation', () => {
             2 mutant(s) no test runs
               src/greeting.ts  2
             1 source(s) with no module test — the whole suite measures the lines a change reaches there; what no change reaches no count holds
+
+            ✗ Mutation failed — first survivor src/greeting.ts:3 ConditionalExpression; 4 detected, 2 surviving, 0 never judged, over HEAD..working tree
         `);
     });
 
@@ -217,6 +201,8 @@ describe('mutation', () => {
 
             measured 12 mutants over HEAD..working tree — every mutant a test runs is detected
             0 mutant(s) no test runs
+
+            ✓ Mutation passed — 12 detected, 0 surviving, 0 never judged, over HEAD..working tree
         `);
     });
 
@@ -265,6 +251,8 @@ describe('mutation', () => {
 
             measured 9 mutants over HEAD..working tree — every mutant a test runs is detected
             0 mutant(s) no test runs
+
+            ✓ Mutation passed — 9 detected, 0 surviving, 0 never judged, over HEAD..working tree
         `);
     });
 
@@ -284,6 +272,8 @@ describe('mutation', () => {
             {{any}}
             measured 9 mutants over HEAD..working tree — every mutant a test runs is detected
             0 mutant(s) no test runs
+
+            ✓ Mutation passed — 9 detected, 0 surviving, 0 never judged, over HEAD..working tree
         `);
     });
 

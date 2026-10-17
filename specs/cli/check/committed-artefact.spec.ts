@@ -33,7 +33,7 @@ describe('committed-artefact', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Gitignore (artefacts): Artefacts must never be committed:
         `);
     });
 
@@ -63,7 +63,7 @@ describe('committed-artefact', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed
+            ✗ Some checks failed — first Gitignore (artefacts): Artefacts must never be committed:
         `);
     });
 });

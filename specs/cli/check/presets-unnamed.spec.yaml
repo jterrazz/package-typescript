@@ -20,4 +20,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed
+          ✗ Some checks failed — first Architecture (layer map): found: jterrazz.config.ts holds a `presets` entry that is not a preset — an object carrying its `name` and its `package` · why: every law a project is held to is resolved from that file, and a file that cannot be resolved judges nothing · fix: correct jterrazz.config.ts until it loads and each preset and section has its declared shape, then run again · read: docs/reference/configuration.md#the-merge-order
