@@ -242,7 +242,7 @@ describe('git-tree', () => {
         // When - a new file is written there
         writeFileSync(join(root, 'src', 'new.ts'), 'new\n');
 
-        // Then - the stamp moves — the listing itself would answer differently now
+        // Then - the stamp moves: the listing itself would answer differently now
         expect(treeStamp(join(root, 'src'))).not.toBe(before);
     });
 
@@ -254,7 +254,7 @@ describe('git-tree', () => {
         // When - git stops tracking it, the file itself left on disk
         execFileSync('git', ['rm', '--cached', '--quiet', 'src/a.ts'], { cwd: root });
 
-        // Then - the stamp moves — what the tree lists there changed too
+        // Then - the stamp moves: what the tree lists there changed too
         expect(treeStamp(join(root, 'src'))).not.toBe(before);
     });
 

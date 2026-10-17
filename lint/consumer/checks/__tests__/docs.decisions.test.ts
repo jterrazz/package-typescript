@@ -219,7 +219,7 @@ describe('docs.decisions', () => {
     });
 
     test('auditDecisions — lets a duplicated number pass the sequence check on its own', () => {
-        // Given - two records claiming 001, and none other — the set is just {001}
+        // Given - two records claiming 001, and none other, so the set is just {001}
         const tree = withDecisions({
             files: [...withDecisions().files, 'docs/decisions/001-the-same-call.md'],
             heads: {

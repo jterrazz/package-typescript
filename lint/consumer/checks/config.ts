@@ -63,7 +63,7 @@ const TOOL_CONFIGS: Readonly<Record<string, readonly string[]>> = Object.freeze(
 
 type Unit = {
     declaration: null | ProjectIdentity;
-    // invariant: true for the root of a repository whose manifest lists members — a container that declares no kind.
+    // invariant: true for the root of a repository whose manifest lists members, a container that declares no kind.
     monorepo: boolean;
     // invariant: true for the monorepo root's own `specs/`, the one member that may declare platform alone.
     suite: boolean;

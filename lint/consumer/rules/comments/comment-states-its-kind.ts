@@ -84,7 +84,7 @@ function nextTokenAt(text: string, from: number, comments: readonly Comment[]): 
 
 const proseOf = (line: string): string => line.replace(HOVER_LINE_MARGIN, '').trim();
 
-// invariant: a hover's prose is one paragraph, wrapped as the formatter's width asks; what follows it from its first block tag on — `@param`, `@returns`, `@example` and its code — is the tags' own, an editor and typedoc render as the published symbol's documentation.
+// invariant: a hover's prose is one paragraph, wrapped as the formatter's width asks; what follows it from its first block tag on (`@param`, `@returns`, `@example` and its code) is the tags' own, an editor and typedoc render as the published symbol's documentation.
 function isOneParagraph(value: string): boolean {
     const lines = value.split('\n').map((line) => proseOf(line));
     const firstTag = lines.findIndex((line) => BLOCK_TAG.test(line));

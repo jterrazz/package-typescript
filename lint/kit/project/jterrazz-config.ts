@@ -114,7 +114,7 @@ export function readConfigSync(unit: string, unbound: BasePresets): Resolution {
     return config;
 }
 
-/** The error the unit's settings file raises when loaded synchronously, as the oxlint rules load it — `null` when it loads, or when there is none. */
+/** The error the unit's settings file raises when loaded synchronously, as the oxlint rules load it; `null` when it loads, or when there is none. */
 export async function synchronousLoadProblem(unit: string): Promise<null | string> {
     const path = join(unit, SETTINGS_FILE);
     if (!existsSync(path)) {

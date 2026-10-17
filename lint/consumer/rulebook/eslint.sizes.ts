@@ -37,7 +37,7 @@ export const ESLINT_SIZES_OVERRIDES: readonly Scoped[] = [
         },
         since: SIZE_SINCE,
     }),
-    // invariant: a data module's length counts its rows, never its logic — `data-module-holds-data` keeps logic out of it.
+    // invariant: a data module's length counts its rows, never its logic; `data-module-holds-data` keeps logic out of it.
     scoped({
         files: ['**/*.data.ts', '**/*.data.tsx'],
         rules: {
@@ -48,7 +48,7 @@ export const ESLINT_SIZES_OVERRIDES: readonly Scoped[] = [
         },
         since: SIZE_SINCE,
     }),
-    // invariant: an errors module is one vocabulary — a base and its subclasses — read together; `error-family-shares-its-base` keeps any other class out.
+    // invariant: an errors module is one vocabulary (a base and its subclasses) read together; `error-family-shares-its-base` keeps any other class out.
     scoped({
         files: ['**/errors.ts', '**/*.errors.ts'],
         rules: {

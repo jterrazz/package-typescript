@@ -1,6 +1,6 @@
 export const lines = (...text: string[]): string => text.join('\n');
 
-// invariant: each probe reads apart in one dialect — a shell quote, a recipe's quote, a make define, a YAML value's quote.
+// invariant: each probe reads apart in one dialect: a shell quote, a recipe's quote, a make define, a YAML value's quote.
 export const PROBES = {
     define: lines('define X', '# x', 'endef', '# y'),
     recipe: lines('\techo "a', '# x', '"', '# y'),

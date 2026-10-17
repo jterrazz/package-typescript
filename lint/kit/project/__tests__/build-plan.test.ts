@@ -131,7 +131,7 @@ describe('build-plan', () => {
     });
 
     test('unsourcedOf — names each published code target whose entry is on no disk, and neither a declaration, a pattern nor a target outside dist/', () => {
-        // Given - a library publishing its index, a subpath whose module is off the entry grammar, a CommonJS one with none, a bin with no command module, declarations — one named like JSON —, an `.mjs` the build does not write, a pattern and a target beside dist/
+        // Given - a library publishing its index, a subpath whose module is off the entry grammar, a CommonJS one with none, a bin with no command module, declarations (one named like JSON), an `.mjs` the build does not write, a pattern and a target beside dist/
         const root = tree(['src/index.ts', 'src/register.ts'], {
             bin: { greet: './dist/greet.js' },
             exports: {

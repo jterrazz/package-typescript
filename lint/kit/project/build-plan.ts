@@ -117,7 +117,7 @@ export function conventionsOf(root: string): { problem: null | string; settings:
 
 type Planned = { browser: boolean; cjs: boolean; esm: boolean; source: string };
 
-/** The code targets the manifest publishes under `dist/` whose entry, by the entry grammar, is on no disk — each said in one line. */
+/** The code targets the manifest publishes under `dist/` whose entry, by the entry grammar, is on no disk, each said in one line. */
 export function unsourcedOf(root: string): string[] {
     return publishedOf(manifestAt(root), DIST)
         .filter(({ target }) => CODE_TARGET.test(target))
@@ -200,7 +200,7 @@ export function buildPlanOf(
     const platform = declaration?.platform;
     const shape = shapeOf(root, declaration);
     const own = [...BROWSER_PLATFORMS].some((one) => one === platform);
-    // invariant: a mobile app is bundled by its framework — Metro, through `expo export` — and publishes nothing a package build compiles: its `main` names the router's entry, never a module of dist/.
+    // invariant: a mobile app is bundled by its framework (Metro, through `expo export`) and publishes nothing a package build compiles: its `main` names the router's entry, never a module of dist/.
     const steps =
         declaration?.kind === 'mobile'
             ? []

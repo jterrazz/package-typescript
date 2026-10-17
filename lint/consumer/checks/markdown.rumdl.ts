@@ -11,7 +11,7 @@ type RumdlWarning = { column: number; file: string; line: number; message: strin
 const isWarning = (value: unknown): value is RumdlWarning =>
     typeof value === 'object' && value !== null && 'file' in value && 'message' in value;
 
-// invariant: what is no JSON report — a crash, a refusal — reports no link here: the pass's own rumdl run prints it.
+// invariant: what is no JSON report (a crash, a refusal) reports no link here: the pass's own rumdl run prints it.
 function warningsOf(output: string): RumdlWarning[] {
     try {
         const parsed: unknown = JSON.parse(output);
@@ -27,7 +27,7 @@ const LINK_TARGET = /^Relative link '(?<target>[^']+)'/u;
 
 const RELATIVE_LINKS = 'MD057';
 
-// invariant: a link into a tree git ignores (a clone on the bench, a build product) is forgiven as `markdown/path-resolves` forgives a backticked path there — rumdl's MD057 cannot ask git, so the pass runs it apart and asks.
+// invariant: a link into a tree git ignores (a clone on the bench, a build product) is forgiven as `markdown/path-resolves` forgives a backticked path there; rumdl's MD057 cannot ask git, so the pass runs it apart and asks.
 export function brokenLinks(context: Context, pages: readonly string[]): Finding[] {
     if (pages.length === 0) {
         return [];

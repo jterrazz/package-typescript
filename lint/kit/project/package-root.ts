@@ -28,7 +28,7 @@ export function binaryIn(name: string, fallbackBin: string): string {
 
 export const HOISTED_BESIDE_PACKAGE = join(PACKAGE_ROOT, '../../.bin');
 
-/** The project's own binary — the unit's, then the root's — else the one installed beside this package. */
+/** The project's own binary (the unit's, then the root's), else the one installed beside this package. */
 export function projectBinary(name: string, unit = '.'): string {
     const local = [join(process.cwd(), unit), process.cwd()]
         .map((dir) => join(dir, 'node_modules/.bin', name))

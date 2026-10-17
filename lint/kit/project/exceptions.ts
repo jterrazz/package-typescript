@@ -3,7 +3,7 @@ import { isJsonObject } from './json.js';
 const isReasoned = (record: Readonly<Record<string, unknown>>): boolean =>
     Object.values(record).every((value) => typeof value === 'string');
 
-/** The settings a project writes with their reason — a `reason` beside one, or a name mapped to one — counted. */
+/** The settings a project writes with their reason (a `reason` beside one, or a name mapped to one), counted. */
 export function exceptionsIn(written: unknown): number {
     if (Array.isArray(written)) {
         return written.reduce<number>((total, one) => total + exceptionsIn(one), 0);

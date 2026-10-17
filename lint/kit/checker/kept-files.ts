@@ -29,7 +29,7 @@ async function perUnit(
 export const verbatimGlobsOf = async (context: Configured): Promise<string[]> =>
     await perUnit(context, verbatimTreesOf);
 
-/** The files of the tree a pass neither judges nor rewrites: what the formatter keeps byte for byte — a content tree such as assets/, a script's output, a test's ground — in the root and in every workspace member. */
+/** The files of the tree a pass neither judges nor rewrites: what the formatter keeps byte for byte (a content tree such as assets/, a script's output, a test's ground), in the root and in every workspace member. */
 export async function filesKeptByteForByte(context: Context): Promise<(file: string) => boolean> {
     const patterns = await perUnit(context, keptByteForByte);
 

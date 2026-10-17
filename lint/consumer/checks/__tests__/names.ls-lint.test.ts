@@ -234,7 +234,7 @@ describe('names.ls-lint', () => {
     });
 
     test("refuses through ls-lint every place the lint tree, the skills and the named roots close, and leaves a member's tool roots to their tool", () => {
-        // Given - one tree breaking each rule, in the root and in a workspace member, beside what each rule allows — the member's Prisma migrations, timestamped by Prisma, among it, and its bin/, a code root as well as a tool root
+        // Given - one tree breaking each rule, in the root and in a workspace member, beside what each rule allows (the member's Prisma migrations, timestamped by Prisma, among it, and its bin/, a code root as well as a tool root)
         const config = lsLintConfig({
             ignorePatterns: ['vendor/**'],
             toolRoots: { 'packages/m/': ['bin', 'prisma'] },

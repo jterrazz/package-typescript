@@ -1,4 +1,4 @@
-// invariant: one vocabulary for every comment the toolchain judges — code, style sheets, scripts, workflows.
+// invariant: one vocabulary for every comment the toolchain judges: code, style sheets, scripts, workflows.
 export const COMMENT_KINDS: readonly string[] = Object.freeze([
     'invariant',
     'hazard',

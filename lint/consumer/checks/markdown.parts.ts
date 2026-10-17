@@ -1,6 +1,6 @@
 import type { Finding } from '../../kit/checker/pass.js';
 
-// outside: a generated region is written between markers by the program that owns it (`<!-- GENERATED:name -->` … `<!-- /GENERATED:name -->`): its text is that program's, and a page-level rule would only ask the page to fight it.
+// outside: a generated region is written between markers by the program that owns it (`<!-- GENERATED:name -->` ... `<!-- /GENERATED:name -->`): its text is that program's, and a page-level rule would only ask the page to fight it.
 const GENERATED_REGION = /<!-- GENERATED:(?<name>\S+)[^>]*-->.*?<!-- \/GENERATED:\k<name> -->/gsu;
 
 export const withoutGenerated = (markdown: string): string =>

@@ -20,7 +20,7 @@ export interface JterrazzConfig {
 
 /** The layer map the Architecture pass holds the import graph to. */
 export type ArchitectureSettings = {
-    /** The hexagonal map this package ships; derived from the tree when unwritten — on where `src/` holds `domain/`, `application/` and `infrastructure/`. */
+    /** The hexagonal map this package ships; derived from the tree when unwritten, on where `src/` holds `domain/`, `application/` and `infrastructure/`. */
     hexagonal?: boolean;
     /** The project's own boundaries, each in dependency-cruiser's `from`/`to` vocabulary. */
     layers?: readonly ArchitectureRule[];
@@ -53,7 +53,7 @@ export type TypescriptSettings = {
     /** What the project's tsconfig.json adds to its platform's preset, and why. */
     tsconfig?: {
         compilerOptions?: Readonly<Record<string, unknown>>;
-        /** Single files the type check reads although no glob reaches them — an ambient `.d.ts` under node_modules. */
+        /** Single files the type check reads although no glob reaches them, such as an ambient `.d.ts` under node_modules. */
         files?: readonly string[];
         /** Globs written beside the preset's, never in their place. */
         include?: readonly string[];
@@ -82,7 +82,7 @@ export type TypescriptLaws = {
     words?: Readonly<Record<string, readonly string[]>>;
 };
 
-/** A package's standard: the defaults of the sections `jterrazz.config.ts` writes, and the laws it holds every project to — data only. */
+/** A package's standard: the defaults of the sections `jterrazz.config.ts` writes, and the laws it holds every project to, as data only. */
 export type Standard = Omit<JterrazzConfig, 'optOuts' | 'presets' | 'typescript'> & {
     /** The laws a project sets aside by name, as `<preset>/<law>`, under `optOuts`. */
     laws?: { layers?: readonly ArchitectureRule[]; names?: readonly NamesRule[] };

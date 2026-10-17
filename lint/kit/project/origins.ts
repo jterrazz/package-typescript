@@ -32,7 +32,7 @@ const isEmpty = (value: unknown): boolean =>
         ? value.length === 0
         : isJsonObject(value) && Object.keys(value).length === 0;
 
-// invariant: the oxlint keys merged key by key whose entries are no single value, as the compiler merges them: a later layer replaces each entry whole — a rule's `[level, options]` tuple is one value; env, globals and options hold single values, shown whole anyway.
+// invariant: the oxlint keys merged key by key whose entries are no single value, as the compiler merges them: a later layer replaces each entry whole, since a rule's `[level, options]` tuple is one value; env, globals and options hold single values, shown whole anyway.
 const WHOLE_ENTRIES: ReadonlySet<string> = new Set([
     'typescript.oxlint.rules',
     'typescript.oxlint.settings',
@@ -144,7 +144,7 @@ function filled(entries: ReadonlyMap<string, Entry>): Entry[] {
     );
 }
 
-/** Each setting of the resolved sections — of the rulebook's profile and of what the tree derives — then each law and each one set aside, beside the file it comes from. */
+/** Each setting of the resolved sections (of the rulebook's profile and of what the tree derives), then each law and each one set aside, beside the file it comes from. */
 export function originLines(
     resolved: Resolved,
     {

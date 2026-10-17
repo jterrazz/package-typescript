@@ -21,7 +21,7 @@ const PRESETS = 'src/presets';
 
 const DISPATCHER = `${COMMANDS}/main.ts`;
 
-// invariant: every module that spawns a process for its caller — node's own, the drivers' runner, the checker program's.
+// invariant: every module that spawns a process for its caller: node's own, the drivers' runner, the checker program's.
 const SPAWNERS: ReadonlySet<string> = new Set([
     'child_process',
     'node:child_process',

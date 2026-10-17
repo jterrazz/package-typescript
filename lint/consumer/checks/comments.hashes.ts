@@ -21,7 +21,7 @@ const DEFINE = /^\s*(?:(?:export|override|private)\s+)*define\s+\S/u;
 
 const ENDEF = /^\s*endef\b/u;
 
-// outside: a YAML quoted scalar opens only where a value starts — the line's indentation, a list item's `- `, a key's `: `; every part is optional, so the lead matches at the line's start.
+// outside: a YAML quoted scalar opens only where a value starts (the line's indentation, a list item's `- `, a key's `: `); every part is optional, so the lead matches at the line's start.
 const YAML_LEAD = / *(?:- +)*(?:[^#\s'"][^#]*?: +)?/u;
 
 const WORD_END = /(?:^|\s)$/u;

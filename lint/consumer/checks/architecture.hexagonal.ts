@@ -100,14 +100,14 @@ const ARCHITECTURE_HEXAGONAL: readonly ArchitectureRule[] = Object.freeze([
     },
 ]);
 
-/** The hexagonal map, its composition root entered where the declared platform enters an app — `src/index` when none is declared. */
+/** The hexagonal map, its composition root entered where the declared platform enters an app (`src/index` when none is declared). */
 export function hexagonalRules(platform: null | Platform): readonly ArchitectureRule[] {
     const pathNot = [`${ANY_DEPTH}composition/`, ...compositionEntriesOf(platform), SPEC_RUNNER];
 
     return [...ARCHITECTURE_HEXAGONAL, { ...COMPOSITION_IS_THE_ROOT, from: { pathNot } }];
 }
 
-/** The paths of the modules a platform enters the app by, at any depth — `src/index` when none is declared. */
+/** The paths of the modules a platform enters the app by, at any depth (`src/index` when none is declared). */
 export function compositionEntriesOf(platform: null | Platform): string[] {
     return (platform === null ? [PROCESS_ENTRY] : COMPOSITION_ENTRIES[platform]).map(
         (entry) => `${ANY_DEPTH}${entry}${SOURCE}`,

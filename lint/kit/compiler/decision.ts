@@ -87,15 +87,15 @@ export const AUDIENCES: readonly Audience[] = Object.freeze(['consumer', 'self']
 
 /** The five reasons an `off` may carry, and no other. */
 export const REASON_KINDS: readonly string[] = Object.freeze([
-    // invariant: fights oxfmt — proved by the fixpoint suite.
+    // invariant: fights oxfmt, as the fixpoint suite proves.
     'formatter',
-    // invariant: mutually exclusive with a rule that is on — the rule is named.
+    // invariant: mutually exclusive with a rule that is on, and the rule is named.
     'exclusive',
-    // invariant: refuses a convention the estate holds — the page is named.
+    // invariant: refuses a convention the estate holds, and the page is named.
     'convention',
-    // invariant: a measured false-positive rate on real estate code — the measurement is cited.
+    // invariant: a measured false-positive rate on real estate code, and the measurement is cited.
     'evidence',
-    // invariant: covered by TypeScript itself, or by a stronger rule that is on — it is named.
+    // invariant: covered by TypeScript itself, or by a stronger rule that is on, and it is named.
     'covered',
 ]);
 

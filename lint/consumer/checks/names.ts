@@ -212,7 +212,7 @@ async function lintTreesOf(context: Context, units: readonly string[]): Promise<
     return Object.fromEntries(trees.filter(([, tree]) => keepsTree(tree)));
 }
 
-// invariant: a member's tool roots sit under the root's code roots (`apps/`, `packages/`), whose names the kebab law judges; each unit's own standard exempts them — at the root, where no code root reaches them, to no effect.
+// invariant: a member's tool roots sit under the root's code roots (`apps/`, `packages/`), whose names the kebab law judges; each unit's own standard exempts them, at the root to no effect, since no code root reaches them there.
 async function memberToolRootsOf(
     context: Context,
     units: readonly string[],

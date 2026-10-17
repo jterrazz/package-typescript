@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { GROUND_GLOBS } from './ground.js';
 import { objectOf, stringsOf } from './json.js';
 
-// hazard: a content tree can hold signed bytes — jterrazz-web's attested articles under assets/ — that one rewrite would invalidate.
+// hazard: a content tree can hold signed bytes (jterrazz-web's attested articles under assets/) that one rewrite would invalidate.
 const CONTENT_TREES: readonly string[] = Object.freeze([
     'dist/**',
     'assets/**',
@@ -19,7 +19,7 @@ const GLOB = /[*?[{]/u;
 // invariant: a glob stands as written; a root is always a folder, widened to its whole tree, whatever its name ends in.
 const treeOf = (path: string): string => (GLOB.test(path) ? path : `${path}/**`);
 
-// invariant: the disk decides what a path names, never its spelling — a file stands as written, a folder is widened to its tree, so `.claude` and `docs/v1.2` are folders and `Makefile` is a file; only a path the disk does not hold (or a read with no unit to look in) is guessed, a last name carrying an extension being a file.
+// invariant: the disk decides what a path names, never its spelling: a file stands as written, a folder is widened to its tree, so `.claude` and `docs/v1.2` are folders and `Makefile` is a file; only a path the disk does not hold (or a read with no unit to look in) is guessed, a last name carrying an extension being a file.
 function asTree(path: string, unitRoot: string | undefined): string {
     if (GLOB.test(path)) {
         return path;

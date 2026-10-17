@@ -64,7 +64,7 @@ describe('index.rulebook', () => {
     );
 
     test('oxlintConfigAt — a monorepo — the root overrides come after the members’, each member override carries its member’s plugins', async () => {
-        // Given - a monorepo whose root overrides a rule for a member’s files, and a react member overriding a react rule of its own
+        // Given - a monorepo whose root overrides a rule for a member's files, and a react member overriding a react rule of its own
         const root = workspace({
             'apps/web/jterrazz.config.ts':
                 "export default { kind: 'website', platform: 'react', typescript: { oxlint: { overrides: [{ files: ['src/**'], reason: 'the member decides', rules: { 'react/jsx-no-useless-fragment': 'off' } }] } } };\n",
@@ -116,7 +116,7 @@ describe('index.rulebook', () => {
             files.includes('apps/web/src/**/__tests__/**'),
         );
 
-        // Then - the rulebook’s override of the test files comes first, the member’s after it
+        // Then - the rulebook's override of the test files comes first, the member's after it
         expect([ofRulebook !== -1, ofRulebook < ofMember]).toStrictEqual([true, true]);
     });
 

@@ -14,7 +14,7 @@ const isPlatform = (value: unknown): value is Platform =>
 
 const refused = (problem: string): FolderPlatforms => ({ folders: [], problem });
 
-/** `typescript.platforms`: a folder of the unit judged by another platform than the unit's — the React UI an api on bun serves. */
+/** `typescript.platforms`: a folder of the unit judged by another platform than the unit's, such as the React UI an api on bun serves. */
 export function folderPlatformsOf(written: unknown): FolderPlatforms {
     if (written === undefined) {
         return { folders: [], problem: null };

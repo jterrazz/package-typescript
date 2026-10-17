@@ -31,7 +31,7 @@ export function readManifest(dir: string): Manifest | null {
     }
 }
 
-/** The packages a unit's manifest declares, as dependencies or devDependencies — none when it has no manifest. */
+/** The packages a unit's manifest declares, as dependencies or devDependencies; none when it has no manifest. */
 export function declaredDependencies(dir: string): ReadonlySet<string> {
     const manifest = readManifest(dir);
 

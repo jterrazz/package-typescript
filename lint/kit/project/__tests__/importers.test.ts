@@ -37,7 +37,7 @@ describe('importers', () => {
         };
         const unit = unitWith(tree);
 
-        // Then - the three readers are named with what each takes — every name for a dynamic import — and a fixture reads nothing
+        // Then - the three readers are named with what each takes (every name for a dynamic import), and a fixture reads nothing
         const importers = importersOf(unit, Object.keys(tree));
         expect(importers.get('lint/kit/tree.ts')).toStrictEqual(
             new Map([

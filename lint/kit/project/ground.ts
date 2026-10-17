@@ -37,7 +37,7 @@ export const TESTS_FOLDER = '__tests__';
 /** The special folders a `specs/` tree may hold: code in `__setup__/`, data in the four ground folders. */
 export const SPECIAL_FOLDERS: readonly string[] = Object.freeze([SETUP_FOLDER, ...GROUND_FOLDERS]);
 
-/** The special folders a code root (`src/`, `lint/`…) may hold: its module tests alone; inside one, the ground its tests read. */
+/** The special folders a code root (`src/`, `lint/`...) may hold: its module tests alone; inside one, the ground its tests read. */
 export const CODE_SPECIAL_FOLDERS: readonly string[] = Object.freeze([TESTS_FOLDER]);
 
 /** A name spelt like a special folder, `__<word>__`, whether or not the list holds it. */
@@ -75,7 +75,7 @@ const parted = (path: string): { folder: string; name: string } => {
     return { folder: path.slice(0, slash + 1), name: path.slice(slash + 1) };
 };
 
-/** `dir/foo.ts` → `dir/__tests__/foo.test.ts`: where a module's test sits. */
+/** Where a module's test sits: `dir/foo.ts` is tested by `dir/__tests__/foo.test.ts`. */
 export function moduleTestOf(module: string, suffix = '.test'): string {
     const { folder, name } = parted(module);
     const extension = SOURCE_EXTENSION.exec(name)?.[0] ?? '';
@@ -83,7 +83,7 @@ export function moduleTestOf(module: string, suffix = '.test'): string {
     return `${folder}${TESTS_FOLDER}/${name.slice(0, name.length - extension.length)}${suffix}${extension}`;
 }
 
-/** `dir/__tests__/foo.test.ts` → `dir/foo` (no extension): the module a test names, or `null` for a test outside a `__tests__/`. */
+/** The module a test names, with no extension (`dir/__tests__/foo.test.ts` names `dir/foo`), or `null` for a test outside a `__tests__/`. */
 export function moduleStemOfTest(test: string): null | string {
     const { folder, name } = parted(test);
     const parent = folder.slice(0, folder.length - TESTS_FOLDER.length - 1);

@@ -102,7 +102,7 @@ function entryUnmeasured(entry: unknown): unknown {
         : entry;
 }
 
-/** A report where every mutant of a source in `sources` that no test judged — one that survived, or none ran — reads as one no test ran, so the verdict counts it unmeasured instead of failing on a line no test could judge. */
+/** A report where every mutant of a source in `sources` that no test judged (one that survived, or none ran) reads as one no test ran, so the verdict counts it unmeasured instead of failing on a line no test could judge. */
 export function reportWithUnmeasured(report: unknown, sources: ReadonlySet<string>): unknown {
     if (sources.size === 0) {
         return report;

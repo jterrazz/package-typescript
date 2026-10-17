@@ -35,7 +35,7 @@ const CHAIN_METHODS: ReadonlySet<string> = new Set(['catch', 'finally', 'then'])
 // invariant: the call's value is handed on whole, so the chain is the caller's.
 const HANDED_ON: ReadonlySet<string> = new Set(['ArrowFunctionExpression', 'ReturnStatement']);
 
-// invariant: a chain anywhere inside an awaited or yielded expression of its own function is read by that `await` — `await Promise.all([task.catch(…)])`.
+// invariant: a chain anywhere inside an awaited or yielded expression of its own function is read by that `await`: `await Promise.all([task.catch(...)])`.
 const AWAITING: ReadonlySet<string> = new Set(['AwaitExpression', 'YieldExpression']);
 
 const VALUES: ReadonlySet<string> = new Set([
@@ -48,10 +48,10 @@ const VALUES: ReadonlySet<string> = new Set([
     'UnaryExpression',
 ]);
 
-// outside: zod's import, whose schemas take a fallback in `.catch()` — a value, or a function returning one.
+// outside: zod's import, whose schemas take a fallback in `.catch()`: a value, or a function returning one.
 const SCHEMA_SOURCE = /^zod(?:\/|$)/u;
 
-// invariant: a constant is named in capitals — `DEFAULT_LANGUAGE`, an enum's `Language.En` — and a function never is.
+// invariant: a constant is named in capitals (`DEFAULT_LANGUAGE`, an enum's `Language.En`), and a function never is.
 const CONSTANT_NAME = /^[A-Z][A-Z\d_]*$/u;
 
 const MEMBER_CONSTANT_NAME = /^[A-Z]/u;
@@ -120,7 +120,7 @@ function recordConstants(node: Node, constants: Constants): void {
         return;
     }
     for (const { id, init } of node.declarations ?? []) {
-        // invariant: a name declared twice — in two scopes — is no value the rule can tell; a pattern binds no one name.
+        // invariant: a name declared twice, in two scopes, is no value the rule can tell; a pattern binds no one name.
         constants.set(id.name, constants.has(id.name) ? null : init);
     }
 }
@@ -187,7 +187,7 @@ function rootOf(node: Node): Node {
     return next === undefined ? inner : rootOf(next);
 }
 
-// invariant: a receiver rooted in zod's import — `z.string()`, or a `const` holding a schema built from it — is a schema, never a promise.
+// invariant: a receiver rooted in zod's import (`z.string()`, or a `const` holding a schema built from it) is a schema, never a promise.
 function isSchema(node: Node, read: Read, seen: ReadonlySet<string>): boolean {
     const name = String(rootOf(node).name);
     if (read.schemas.has(name)) {

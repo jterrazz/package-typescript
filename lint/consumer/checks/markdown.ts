@@ -123,7 +123,7 @@ function flatSections(markdown: string): string[] {
 
 const DECISION_RECORD = /(?:^|\/)docs\/decisions\/[^/]+\.md$/u;
 
-// invariant: a numbered record under any `decisions/` folder is frozen like the manual's own — its body names the paths of its day.
+// invariant: a numbered record under any `decisions/` folder is frozen like the manual's own: its body names the paths of its day.
 const NUMBERED_RECORD = /(?:^|\/)decisions\/\d{3}-[^/]+\.md$/u;
 
 function missingPaths({ exists, root }: Context, path: string, cited: string): Found[] {

@@ -80,7 +80,7 @@ const editorFilesOf = (tsconfigPreset: unknown): Readonly<Record<string, EditorF
     },
 });
 
-// invariant: the merge order of the standard: the package's, then the kind's, then the platform's, then each declared dependency's — a monorepo root and an undeclared project read the node platform's; a content repository reads the package's and its kind's alone, since it runs no code for a platform or a dependency to describe.
+// invariant: the merge order of the standard: the package's, then the kind's, then the platform's, then each declared dependency's. A monorepo root and an undeclared project read the node platform's; a content repository reads the package's and its kind's alone, since it runs no code for a platform or a dependency to describe.
 function standardsOf(
     declaration: null | ProjectIdentity,
     dependencies: ReadonlySet<string>,

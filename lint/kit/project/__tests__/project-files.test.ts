@@ -134,7 +134,7 @@ describe('projectFiles', () => {
     });
 
     test('leaves out the ground of a specs tree or a tests folder at any depth, and what the project ignores by pattern', () => {
-        // Given - ground under specs/ at two depths and in a tests folder, ground outside both — a specs folder below it included — a file merely named like ground, and a folder ignored by pattern
+        // Given - ground under specs/ at two depths and in a tests folder, ground outside both (a specs folder below it included), a file merely named like ground, and a folder ignored by pattern
         const root = repositoryTracking([
             '__fixtures__/top.ts',
             'apps/api/specs/__seeds__/rows.sql',

@@ -158,7 +158,7 @@ function withFolderPlatforms(resolution: Resolution, unit: OxlintConfig): Oxlint
 export async function oxlintConfigAt(unit: string): Promise<OxlintConfig> {
     const resolution = await readConfig(unit, basePresetsOf);
     const root = withFolderPlatforms(resolution, oxlintConfigOf(resolution));
-    // Stryker disable next-line BlockStatement,ConditionalExpression: a unit with no members merges the rulebook's overrides then its own, the order its config already holds, so taking either path for it yields the same config — the early return only spares a second derivation
+    // Stryker disable next-line BlockStatement,ConditionalExpression: a unit with no members merges the rulebook's overrides then its own, the order its config already holds, so taking either path for it yields the same config; the early return only spares a second derivation
     if (!isMonorepoRoot(unit)) {
         return root;
     }

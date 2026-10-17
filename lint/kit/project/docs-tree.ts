@@ -10,7 +10,7 @@ import { workspaceMembers } from './workspace-members.js';
 export type DocsTree = {
     /** The root `AGENTS.md`, its whole text, or `null` when the repository has none. */
     readonly agents: null | string;
-    /** Every path under `docs/`, sorted, a directory with its trailing slash — `docs/` itself included. */
+    /** Every path under `docs/`, sorted, a directory with its trailing slash, `docs/` itself included. */
     readonly files: readonly string[];
     /** The first `HEAD_LINES` of every markdown file under `docs/`; no rule reads further down. */
     readonly heads: Readonly<Record<string, readonly string[]>>;
@@ -22,7 +22,7 @@ export type DocsTree = {
         readonly dockerfile: boolean;
         /** An `.infrastructure/` directory at either. */
         readonly infrastructure: boolean;
-        /** A root that declares a kind npm publishes — a library or a cli. */
+        /** A root that declares a kind npm publishes: a library or a cli. */
         readonly publishable: boolean;
     };
 };
@@ -31,7 +31,7 @@ const LINK = /!?\[[^\]]*\]\(\s*(?<target>[^\s)]+)/gu;
 
 const INFRASTRUCTURE = '.infrastructure';
 
-// invariant: `docs/` itself is the first entry when it exists — its absence is the whole verdict.
+// invariant: `docs/` itself is the first entry when it exists; its absence is the whole verdict.
 function listDocs(root: string): string[] {
     const paths: string[] = [];
 

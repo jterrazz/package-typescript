@@ -40,7 +40,7 @@ const GENERATED = /@generated\b|Code generated .* DO NOT EDIT/u;
 
 const GENERATED_HEAD_LINES = 5;
 
-// outside: what another tool reads in a `#` line — a linter's switch, a schema hint, a Dockerfile parser directive, @jterrazz/test's checker directive in a spec document.
+// outside: what another tool reads in a `#` line: a linter's switch, a schema hint, a Dockerfile parser directive, @jterrazz/test's checker directive in a spec document.
 const HASH_INSTRUCTION =
     /^(?:shellcheck |yamllint |hadolint |(?:oxfmt|prettier|dprint)-ignore\b|zizmor:|checkov:|nosec\b|noqa\b|renovate:|gitleaks:allow|trunk-ignore|syntax=|escape=|check=|yaml-language-server:|@schema\b|\$schema\b|(?:end)?region\b|cspell:|codespell:|checker-disable(?:-next-line|-line)?\b)/u;
 

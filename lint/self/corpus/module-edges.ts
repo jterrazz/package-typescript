@@ -28,7 +28,7 @@ const isRequire = (node: ts.Expression): boolean =>
         ts.isIdentifier(node.expression) &&
         node.expression.text === 'createRequire');
 
-// invariant: `require(…)` and `require.resolve(…)` reach a package as an import does, through `createRequire(…)` as well.
+// invariant: `require(...)` and `require.resolve(...)` reach a package as an import does, through `createRequire(...)` as well.
 const reachesAPackage = (callee: ts.Expression): boolean =>
     callee.kind === ts.SyntaxKind.ImportKeyword ||
     isRequire(callee) ||

@@ -22,7 +22,7 @@ describe('standard-logic', () => {
     });
 
     test('names each thing a standard computes, by its line', () => {
-        // Given - a function, a branch, calls, operations — unary ones and typeof, void and delete among them — a computed string, a variable, updates, assignments, tagged templates, a negative bigint, which is data, and another operator on a number, which is not
+        // Given - a function, a branch, calls, operations (unary ones and typeof, void and delete among them), a computed string, a variable, updates, assignments, tagged templates, a negative bigint, which is data, and another operator on a number, which is not
         const text = lines(
             'const pick = (value) => value;',
             "const kind = process.env.KIND === 'api' ? 'api' : 'cli';",

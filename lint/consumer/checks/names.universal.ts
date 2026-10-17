@@ -38,7 +38,7 @@ const unmarked = (name: string): string => name.replace(/^_/u, '').toLowerCase()
 // invariant: under a specs tree a `_shared/` is @jterrazz/test's closed-list rule's, whose fix names the special folders it became.
 const IN_SPECS = /(?:^|\/)specs\//u;
 
-// invariant: `shared` names a property a plain folder may hold, but behind the `_` it restates the mark — what the row shares — and says nothing of what.
+// invariant: `shared` names a property a plain folder may hold, but behind the `_` it restates the mark (what the row shares) and says nothing of what.
 const restatesTheMark = (path: string, name: string): boolean =>
     name.startsWith('_') && unmarked(name) === 'shared' && !IN_SPECS.test(path);
 

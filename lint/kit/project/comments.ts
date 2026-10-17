@@ -132,7 +132,7 @@ const READERS: Readonly<Record<string, Reader>> = {
 
 type LexedLine = { comments: Span[]; line: string; strings: Span[] };
 
-// invariant: a regular-expression literal is read as code, and a template's `${…}` as code again.
+// invariant: a regular-expression literal is read as code, and a template's `${...}` as code again.
 function lexed(text: string): LexedLine[] {
     const reading: Reading = {
         blockStart: 0,

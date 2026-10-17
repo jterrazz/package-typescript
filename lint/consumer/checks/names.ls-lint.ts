@@ -42,7 +42,7 @@ const IGNORED = [
     '**/node_modules',
     'dist',
     '**/.*',
-    // invariant: the ground a test stands on is its own — under a specs tree, or in a module's tests folder; anywhere else it is a folder like any.
+    // invariant: the ground a test stands on is its own, under a specs tree or in a module's tests folder; anywhere else it is a folder like any.
     ...GROUND_FOLDERS.flatMap((folder) => [
         `**/specs/**/${folder}`,
         `**/${TESTS_FOLDER}/**/${folder}`,
@@ -108,10 +108,10 @@ export function ignoredOf(ignorePatterns: readonly string[]): string[] {
     return [...IGNORED, ...ignorePatterns.map((pattern) => pattern.replace(/\/\*\*$/u, ''))];
 }
 
-/** The lint tree of each unit that keeps one, keyed by the unit's prefix — a unit whose kind ships no lint rules has none. */
+/** The lint tree of each unit that keeps one, keyed by the unit's prefix; a unit whose kind ships no lint rules has none. */
 export type LintTrees = Readonly<Record<string, LintTree>>;
 
-/** The tool roots of each workspace member, keyed by the member's prefix: a folder a tool reads by its own grammar — Prisma's timestamped migrations — that the root's code roots would otherwise reach. */
+/** The tool roots of each workspace member, keyed by the member's prefix: a folder a tool reads by its own grammar (Prisma's timestamped migrations) that the root's code roots would otherwise reach. */
 export type MemberToolRoots = Readonly<Record<string, readonly string[]>>;
 
 function toolRootRules(toolRoots: MemberToolRoots): Record<string, Rules> {
@@ -246,7 +246,7 @@ function failuresOf(parsed: unknown): Failures {
     );
 }
 
-// invariant: a name is judged from its path alone, so ls-lint walks a tree of empty files laid out from the swept paths — a link a run left on the disk, under an ignored dot folder or elsewhere, is never entered; a manifest holds an empty object, since node, which runs the tool's launcher in the tree, refuses an empty one.
+// invariant: a name is judged from its path alone, so ls-lint walks a tree of empty files laid out from the swept paths, and a link a run left on the disk, under an ignored dot folder or elsewhere, is never entered; a manifest holds an empty object, since node, which runs the tool's launcher in the tree, refuses an empty one.
 function stagePaths(scratch: string, paths: readonly string[]): string {
     const staged = join(scratch, 'tree');
     mkdirSync(staged);
