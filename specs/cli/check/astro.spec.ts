@@ -37,6 +37,26 @@ describe('astro', () => {
         `);
     });
 
+    test('a check after the fixes has nothing left to say about the template', async () => {
+        // Given - the same website, its fixes run first
+        // When - the quality checks run again
+        const result = await site.exec(['fix', 'check']);
+
+        // Then - the pass no longer reports
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(`
+             START  Running quality checks
+
+             RUN  Astro (check + format)
+
+            ✓ Passed ({{duration}})
+
+             END  Finalizing quality checks
+
+            ✓ All checks passed
+        `);
+    });
+
     test('runs in the workspace member that declares astro, though the root declares no platform', async () => {
         // Given - a workspace whose one member is a website on astro, with a badly shaped template, astro hoisted to the root
         // When - the Astro pass runs at the workspace root
