@@ -6,10 +6,11 @@ import {
     headOf,
     mutationSummaryOf,
     VERDICT_FILE,
+    verdictLineOf,
     verdictWritten,
 } from '../check/report/gate-verdict.js';
 import type { MutationVerdict, PassVerdict } from '../check/report/gate-verdict.js';
-import { GREEN, print, RED, RESET } from '../check/report/terminal.js';
+import { print } from '../check/report/terminal.js';
 import type { Judged } from './survivors.js';
 import type { Measure } from './verdict.js';
 
@@ -123,7 +124,7 @@ export function concluded(project: string, recorded: Recorded, status: number): 
         status,
     });
     print(
-        `\n${status === 0 ? GREEN : RED}${mutationSummaryOf(status, recorded.mutation ?? recorded.reason)}${RESET}\n`,
+        `\n${verdictLineOf(status, mutationSummaryOf(status, recorded.mutation ?? recorded.reason))}`,
     );
 
     return status;

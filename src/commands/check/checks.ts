@@ -22,12 +22,13 @@ import {
     checkVerdictOf,
     driftPassOf,
     passVerdictOf,
+    verdictLineOf,
     verdictWritten,
 } from './report/gate-verdict.js';
 import type { PassVerdict } from './report/gate-verdict.js';
 import { logsIn } from './report/logs.js';
 import { reportPass } from './report/report.js';
-import { badge, GREEN, print, RED, RESET } from './report/terminal.js';
+import { badge, print } from './report/terminal.js';
 import {
     lintVerdictOf,
     presetVerdicts,
@@ -183,7 +184,7 @@ function concluded(fix: boolean, passes: readonly PassVerdict[]): number {
     print(
         `\n${badge('END')} ${fix ? 'Finalizing quality fixes' : 'Finalizing quality checks'}\n\n`,
     );
-    print(`${verdict.status === 0 ? GREEN : RED}${checkSummaryOf(verdict)}${RESET}\n`);
+    print(verdictLineOf(verdict.status, checkSummaryOf(verdict)));
 
     return verdict.status;
 }

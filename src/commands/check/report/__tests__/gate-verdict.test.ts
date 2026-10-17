@@ -13,6 +13,7 @@ import {
     mutationSummaryOf,
     passVerdictOf,
     VERDICT_FILE,
+    verdictLineOf,
     verdictWritten,
 } from '../gate-verdict.js';
 
@@ -193,6 +194,17 @@ describe('gate-verdict', () => {
         ]).toStrictEqual([
             { command: 'check', head: null, mutation: null, passes: green, status: 0 },
             { command: 'fix', head: null, mutation: null, passes: red, status: 1 },
+        ]);
+    });
+
+    test('verdictLineOf — a line in green for a verdict that passed, in red for one that did not', () => {
+        // Given - the same text over a green and a red status
+        const lines = [0, 2].map((status) => verdictLineOf(status, 'the verdict'));
+
+        // Then - each in its colour, ended
+        expect(lines).toStrictEqual([
+            '\u001B[0;32mthe verdict\u001B[0m\n',
+            '\u001B[0;31mthe verdict\u001B[0m\n',
         ]);
     });
 });

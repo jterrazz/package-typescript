@@ -65,8 +65,13 @@ async function presetVerdict(
     log: string,
     runs: readonly PresetRun[],
 ): Promise<Verdict> {
-    const settledRuns = await Promise.all(runs.map(async (launched) => await settled(launched)));
-    const outcomes = settledRuns.filter((outcome) => outcome !== undefined);
+    const outcomes = await Promise.all(
+        runs.map(async ({ log: part, seconds, status }) => ({
+            log: part,
+            seconds: await seconds,
+            status: await status,
+        })),
+    );
     const failed = outcomes.flatMap((outcome) => (outcome.status === 0 ? [] : [outcome.log]));
     joined(check.logs, log, failed);
     const summary = await heldSummaryOf();

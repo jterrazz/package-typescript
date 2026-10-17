@@ -4,6 +4,7 @@ import { stripVTControlCharacters } from 'node:util';
 
 import { ARTIFACTS } from '../../../../lint/kit/project/build-plan.js';
 import { git } from '../../../../lint/kit/project/git.js';
+import { GREEN, RED, RESET } from './terminal.js';
 
 /** Where every gate command leaves its verdict, from the project's root. */
 export const VERDICT_FILE = `${ARTIFACTS}/gate/verdict.json`;
@@ -87,6 +88,10 @@ export function checkVerdictOf(
         status: passes.every((pass) => pass.status === 0) ? 0 : 1,
     };
 }
+
+/** A verdict's line, green when it passed and red when it did not. */
+export const verdictLineOf = (status: number, text: string): string =>
+    `${status === 0 ? GREEN : RED}${text}${RESET}\n`;
 
 /** The run's last line: the first failing pass and its first finding, or that every pass passed. */
 export function checkSummaryOf({ passes, status }: Pick<GateVerdict, 'passes' | 'status'>): string {

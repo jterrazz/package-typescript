@@ -46,4 +46,19 @@ describe('gate-lock', () => {
         );
         expect(stale.stdout.text).toBe(free.stdout.text);
     });
+
+    test('passes a checkout its own gate holds, the one its caller names', async () => {
+        // Given - a checkout this test's own process holds, named as the gate the command is a step of
+        const result = await cli
+            .fixture(directory('../__fixtures__/sample-app/'))
+            .prepare(lockedBy(process.pid))
+            .env({ TYPESCRIPT_GATE: `${String(process.pid)}:$WORKDIR` })
+            .exec('gate-lock');
+
+        // Then - it passes, naming its own gate
+        expect([result.exitCode, result.stdout.text]).toStrictEqual([
+            0,
+            ` TYPESCRIPT  This checkout is held by pid ${String(process.pid)}, the gate this process is a step of\n`,
+        ]);
+    });
 });
