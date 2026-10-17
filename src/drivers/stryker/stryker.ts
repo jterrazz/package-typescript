@@ -30,6 +30,7 @@ import {
 import { heldReport, strykerMutate } from './mutate-entries.js';
 import { observedFrom } from './observed.js';
 import type { ObservedTest } from './observed.js';
+import { PROGRESS_REPORTER, PROGRESS_REPORTER_SOURCE } from './progress-reporter.js';
 import { REPORT_NAMES } from './reports.js';
 import type { StageName } from './reports.js';
 import { SANDBOX_DEPTH, sandboxScriptSource, vitestConfigSource } from './sources.js';
@@ -72,9 +73,12 @@ export function generatedRoots(project: string, toolRoots: readonly string[]): s
     );
 }
 
+const REPORTER_FILE = `${MUTATION_OUTPUT}/progress-reporter.mjs`;
+
 export function strykerConfig(
     scope: { readonly generated: readonly string[]; readonly mutated: readonly string[] },
     { mutate, name }: Stage,
+    { terminal = process.stdout.isTTY }: { terminal?: boolean } = {},
 ): object {
     const files = FILES[name];
     const suite = name === 'suite';
@@ -100,8 +104,11 @@ export function strykerConfig(
         incrementalFile: `${MUTATION_OUTPUT}/${files.incremental}.json`,
         jsonReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.json` },
         mutate: strykerMutate(mutate),
-        plugins: [createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner')],
-        reporters: ['html', 'json', 'progress'],
+        plugins: [
+            createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner'),
+            `./${REPORTER_FILE}`,
+        ],
+        reporters: ['html', 'json', ...(terminal ? ['progress'] : []), PROGRESS_REPORTER],
         tempDirName: `${MUTATION_OUTPUT}/tmp`,
         testRunner: 'vitest',
         timeoutMS: suite ? 60_000 : 30_000,
@@ -117,6 +124,7 @@ export function strykerPrepared(project: string): void {
     mkdirSync(MUTATION_OUTPUT, { recursive: true });
     writeFileSync(join(MUTATION_OUTPUT, 'mutant-setup.mjs'), MUTANT_SETUP_SOURCE);
     writeFileSync(join(MUTATION_OUTPUT, 'child-coverage.cjs'), CHILD_COVERAGE_SOURCE);
+    writeFileSync(REPORTER_FILE, PROGRESS_REPORTER_SOURCE);
     // outside: the suite runs as `npm test` runs it, its tools found on the PATH npm gives a script — a spec that spawns oxlint type-aware leaves it to find tsgolint there.
     // Stryker disable next-line StringLiteral: a spec runs this command with the project's node_modules/.bin already first on the PATH, as npm does, so no spec can tell the folders apart
     process.env.PATH = `${join(project, 'node_modules', '.bin')}${delimiter}${process.env.PATH ?? ''}`;

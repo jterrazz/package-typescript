@@ -9,7 +9,8 @@ import { toolchainIn } from '../../drivers/node/node.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
 import { diffStaysInFunctions } from '../../drivers/tsc/change-shape.js';
-import { badge, print, RED, RESET } from '../check/report/terminal.js';
+import { secondsSince } from '../check/passes/launched.js';
+import { badge, print, RED, RESET, secondsOf } from '../check/report/terminal.js';
 import { askedOf } from './asked.js';
 import { baseFor, changeOf, namesACommit, treeChangeFor } from './change.js';
 import type { Base } from './change.js';
@@ -32,15 +33,18 @@ async function measured(
         `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'Measuring the whole suite against what the module tests let live, and the changed lines they do not run' : 'Measuring the module tests against mutants of the sources they test'}...\n\n`,
     );
 
-    return withClientOnlyUnmeasured(
-        await strykerRun(scope, stage, {
-            buildsFirst: buildsOf(project),
-            cold,
-            project,
-            staysInFunctions: diffStaysInFunctions,
-        }),
-        clientOnlySources(project),
+    const from = performance.now();
+    const outcome = await strykerRun(scope, stage, {
+        buildsFirst: buildsOf(project),
+        cold,
+        project,
+        staysInFunctions: diffStaysInFunctions,
+    });
+    print(
+        `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'The whole suite' : 'The module tests'} ran in ${secondsOf(secondsSince(from))}\n`,
     );
+
+    return withClientOnlyUnmeasured(outcome, clientOnlySources(project));
 }
 
 function printed(judged: Judged, untestedSources: number, measure: Measure): number {

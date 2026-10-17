@@ -36,8 +36,16 @@ describe('stryker', () => {
 
     test('derives the module run and the suite run their own config, reports and incremental file', () => {
         // Given - one source mutated whole by the module run, and a range by the suite's
-        const modules = strykerConfig(SCOPE, { mutate: ['src/a.ts'], name: 'modules' });
-        const suite = strykerConfig(SCOPE, { mutate: ['src/c.ts:3-4'], name: 'suite' });
+        const modules = strykerConfig(
+            SCOPE,
+            { mutate: ['src/a.ts'], name: 'modules' },
+            { terminal: false },
+        );
+        const suite = strykerConfig(
+            SCOPE,
+            { mutate: ['src/c.ts:3-4'], name: 'suite' },
+            { terminal: false },
+        );
 
         // Then - the module run fast and in its unit project, the suite slower, unrelated and given an hour to start
         const shared = {
@@ -53,8 +61,8 @@ describe('stryker', () => {
             ],
             ignoreStatic: true,
             incremental: true,
-            plugins: [RUNNER],
-            reporters: ['html', 'json', 'progress'],
+            plugins: [RUNNER, './.artifacts/stryker/progress-reporter.mjs'],
+            reporters: ['html', 'json', 'typescript-progress'],
             tempDirName: '.artifacts/stryker/tmp',
             testRunner: 'vitest',
         };
@@ -80,6 +88,20 @@ describe('stryker', () => {
             mutate: ['src/c.ts:3-4'],
             timeoutMS: 60_000,
             vitest: { configFile: '.artifacts/stryker/vitest.suite.config.mjs', related: false },
+        });
+    });
+
+    test("a terminal keeps Stryker's own progress bar beside the run's reporter", () => {
+        // Given - a run whose output is a terminal
+        const config = strykerConfig(
+            SCOPE,
+            { mutate: ['src/a.ts'], name: 'modules' },
+            { terminal: true },
+        );
+
+        // Then - Stryker draws its bar, and the run's reporter still says how long the dry run took
+        expect(config).toMatchObject({
+            reporters: ['html', 'json', 'progress', 'typescript-progress'],
         });
     });
 
