@@ -2,9 +2,9 @@
 
 **Status:** Accepted
 **Date:** 2026-10-08
-**Accepted:** 2026-10-08 — the owner's word on the pilots' list ("résoud tout les pbs qu'on a observé").
-**Amended by:** the amendment below — the clean-tree base.
-**Amends:** [ADR-020](020-mutation-measures-the-whole-suite-over-a-change.md) — the commit a run measures from when none is named.
+**Accepted:** 2026-10-08: the owner's word on the pilots' list ("résoud tout les pbs qu'on a observé").
+**Amended by:** the amendment below, for the clean-tree base.
+**Amends:** [ADR-020](020-mutation-measures-the-whole-suite-over-a-change.md), for the commit a run measures from when none is named.
 
 ## Context
 
@@ -28,8 +28,8 @@ them green unmeasured.
 - The run prints the commit it measured against, and says so when nothing
   changed since it, naming `--since` to measure a wider change.
 - The merge-base with the default branch was weighed and set aside: on a
-  long local branch — vision 17's package-typescript holds 682 commits and
-  29,000 changed lines over main — it hands the suite the whole branch on
+  long local branch (vision 17's package-typescript holds 682 commits and
+  29,000 changed lines over main), it hands the suite the whole branch on
   every gate, days of mutants, where one commit at a time is what a commit
   by unit of meaning brings.
 
@@ -44,7 +44,7 @@ them green unmeasured.
 
 ## Amendment (2026-10-10): a clean branch is measured since its merge-base
 
-**Accepted:** 2026-10-10 — the architect's decision of round 1 of the convergence loop, on the wave's seven repositories.
+**Accepted:** 2026-10-10: the architect's decision of round 1 of the convergence loop, on the wave's seven repositories.
 
 The last commit was not enough. A branch whose last commit changes docs
 read "0 detected", green, while the commits before it held sources no gate

@@ -1,8 +1,8 @@
-# ADR-003: The rulebook is explicit — every rule decided, no categories
+# ADR-003: The rulebook is explicit (every rule decided, no categories)
 
 **Status:** Accepted
 **Date:** 2026-09-15
-**Superseded in part by:** [ADR-011](011-only-consumer-rules-ship.md) — the "at load time" clause: the rulebook's invariants are audited by this package's own suite.
+**Superseded in part by:** [ADR-011](011-only-consumer-rules-ship.md), for the "at load time" clause: the rulebook's invariants are audited by this package's own suite.
 
 ## Context
 
@@ -19,8 +19,8 @@ Nothing recorded the effective set, so an oxlint bump could add or remove dozens
 of rules with every test still green.
 
 And a category arms rules of plugins the config never names. They are inert
-until a framework config activates the plugin, and then they fire unannounced —
-the regression Ultracite hit (#660) and now has a test forbidding.
+until a framework config activates the plugin, and then they fire unannounced.
+That is the regression Ultracite hit (#660) and now has a test forbidding.
 
 ## Decision
 
@@ -28,7 +28,7 @@ the regression Ultracite hit (#660) and now has a test forbidding.
 plugin decided by name, at `error` or at `off`. `categories` appears in no
 config this package ships, and a test refuses one. There is no `warn` tier.
 
-An `off` carries exactly one of five recorded reasons — it fights the formatter,
+An `off` carries exactly one of five recorded reasons: it fights the formatter,
 it is exclusive with a rule that is on, it refuses a named estate convention, it
 has a cited false-positive measurement, or a stronger named rule already covers
 the defect. "Too strict" is not a reason. `rules/_contract.js` refuses a

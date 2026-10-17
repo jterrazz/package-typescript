@@ -2,11 +2,11 @@
 
 **Status:** Accepted
 **Date:** 2026-10-03
-**Amended by:** [ADR-021](021-a-package-standard-is-data-and-the-settings-file-holds-its-exceptions.md) — the defaults are each package's standard, and `typescript.build` is gone; [ADR-024](024-a-monorepo-is-the-repositorys-shape-read-from-workspaces-never-a-kind.md) — `workspace` is no kind, and a monorepo is read from `workspaces`.
+**Amended by:** [ADR-021](021-a-package-standard-is-data-and-the-settings-file-holds-its-exceptions.md), for the defaults: they are each package's standard, and `typescript.build` is gone; [ADR-024](024-a-monorepo-is-the-repositorys-shape-read-from-workspaces-never-a-kind.md), for the kinds: `workspace` is no kind, and a monorepo is read from `workspaces`.
 
 ## Context
 
-A project chose a profile — `typescript({ profile })` — and then wrote the
+A project chose a profile (`typescript({ profile })`) and then wrote the
 same choice again in every file a tool reads: the `extends` of its
 `tsconfig.json`, an `oxlint.config.ts` composing `fromPresets`, an
 `oxfmt.config.ts`, a `knip.json` of JSONC reasons, a `tsdown.config.ts`
@@ -31,16 +31,16 @@ beside both.
   `oxlint.config.ts` and `oxfmt.config.ts` hand their own
   `import.meta.url` to the `oxlintConfig` and `oxfmtConfig` of the
   `./oxlint` and `./oxfmt` entries, which derive the config from the
-  `jterrazz.config.ts` of the module's directory — the `url`, since a
+  `jterrazz.config.ts` of the module's directory. They hand the `url`, since a
   browser platform's types declare no `dirname`, and jiti, which knip
   loads configs with, rewrites `import.meta.url` to the file's own but
   hands the bare `import.meta` over as its wrapper's. The Config (one
   file) pass refuses any other content, and `fix` writes them.
 - `tsconfig.json` extends the platform's preset, with what
   `typescript.tsconfig` adds and why; and a project on `@jterrazz/test`'s
-  preset keeps the `vitest.config.ts` it derives, of the same shape —
-  `export default await vitestConfig(import.meta.url)` from
-  `@jterrazz/test/vitest` — which vitest and knip's loader, jiti's async
+  preset keeps the `vitest.config.ts` it derives, of the same shape
+  (`export default await vitestConfig(import.meta.url)` from
+  `@jterrazz/test/vitest`), which vitest and knip's loader, jiti's async
   import, both read.
 - The config files name their directory because nothing else can: a bare
   re-export derived from the directory the tool runs in, so oxlint started
@@ -57,11 +57,11 @@ beside both.
   from the config's own directory.
 - The oxlint language server watches its own config names, never
   `jterrazz.config.ts`, so an edit of the declaration reaches it when it
-  reloads — on a save of `oxlint.config.ts` or a restart. The reader
+  reloads, on a save of `oxlint.config.ts` or a restart. The reader
   imports the declaration afresh whenever its mtime changes, since Node
   would hand a reload the first import; a rule that reads settings while
   it lints keeps its first read until the server restarts.
-- Started on a folder above the project, oxlint — CLI and language server alike — finds
+- Started on a folder above the project, oxlint (CLI and language server alike) finds
   the project's config as a nested one, refuses the `options.typeAware` the
   config sets, and lints with its own defaults: an editor is opened on the
   project. knip skips a config that only re-exports from a package, which
@@ -99,7 +99,7 @@ beside both.
 
 ## Amendment (2026-10-15): a monorepo is no kind
 
-**Accepted:** 2026-10-15 — the owner's word, recorded in [ADR-024](024-a-monorepo-is-the-repositorys-shape-read-from-workspaces-never-a-kind.md).
+**Accepted:** 2026-10-15: the owner's word, recorded in [ADR-024](024-a-monorepo-is-the-repositorys-shape-read-from-workspaces-never-a-kind.md).
 
 `kind` is `library`, `api`, `cli`, `website` or `mobile`: `workspace` left
 the union. A monorepo is read from the root manifest's `workspaces`, and its

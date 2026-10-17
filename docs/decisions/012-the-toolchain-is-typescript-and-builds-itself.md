@@ -2,14 +2,14 @@
 
 **Status:** Accepted
 **Date:** 2026-09-27
-**Moved since (2026-10-05):** the command's `src/command/` is now `src/commands/<name>/`, one folder per subcommand, and the tools it runs are driven from `src/drivers/<tool>/` — [Architecture § Commands and drivers](../concepts/architecture.md#commands-and-drivers).
+**Moved since (2026-10-05):** the command's `src/command/` is now `src/commands/<name>/`, one folder per subcommand, and the tools it runs are driven from `src/drivers/<tool>/` ([Architecture § Commands and drivers](../concepts/architecture.md#commands-and-drivers)).
 
 The owner delegated the decision ("go tout faire") on 2026-09-27; this record
 states the decision taken within that delegation.
 
 ## Context
 
-The package shipped JavaScript as it was written: `files` named `bin`, `lint` and `src`, every `.d.ts` was written by hand beside its `.js`, and a suite held the two value surfaces together. The command was bash — `typescript.sh`, and `check.sh` for the fifteen passes — with a node script per question the bash could not answer.
+The package shipped JavaScript as it was written: `files` named `bin`, `lint` and `src`, every `.d.ts` was written by hand beside its `.js`, and a suite held the two value surfaces together. The command was bash (`typescript.sh`, and `check.sh` for the fifteen passes), with a node script per question the bash could not answer.
 
 Three costs grew with it. The sources were never type-checked, since the presets compile `.js` with `checkJs` off; a declaration was a second copy of each entry's surface; and the check, the part of the package every consumer runs, was 776 lines no unit test could reach, whose selection seam for the specs was a rewrite of its text. `@jterrazz/test` already builds with tsdown into `dist/` and runs its checker from there.
 

@@ -15,8 +15,8 @@ a package contributed still arrived by four roads: its oxlint fragment
 composed in `oxlint.config.ts`, its layers and name rules in
 `typescript.presets`, its settings in a section it read with defaults kept
 in its own code, and its debt in a file of its own. The laws every
-repository keeps — the direction of `lint/`, the spine, the rosters of the
-Names pass — were not a package's contribution at all: each repository
+repository keeps (the direction of `lint/`, the spine, the rosters of the
+Names pass) were not a package's contribution at all: each repository
 copied the six `lint/` layers into its own `jterrazz.config.ts`, and could
 drop one by deleting a line.
 

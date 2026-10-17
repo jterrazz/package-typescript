@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-09-15
-**Superseded in part by:** [ADR-013](013-adopt-the-tool-before-building-the-check.md) — the TypeScript directives are oxlint's (`typescript/ban-ts-comment` refuses `@ts-ignore` and an undescribed `@ts-expect-error`); the pass keeps the `oxlint-disable` spelling and reason, and the fix rewrite.
+**Superseded in part by:** [ADR-013](013-adopt-the-tool-before-building-the-check.md): the TypeScript directives are oxlint's (`typescript/ban-ts-comment` refuses `@ts-ignore` and an undescribed `@ts-expect-error`); the pass keeps the `oxlint-disable` spelling and reason, and the fix rewrite.
 
 Written at decision time, as part of v10. The evidence is the audit of the
 ecosystem's twenty-eight repositories, read on 2026-09-15.
@@ -17,7 +17,7 @@ directive named had been off in the resolved config all along.
 
 A suppression is the one place a project overrules its own rulebook. Leaving
 it unpoliced makes the rulebook advisory in exactly the spots where somebody
-already decided it should not apply — and those spots are invisible, because
+already decided it should not apply, and those spots are invisible, because
 a suppression is a comment.
 
 The alternative was to forbid suppressions outright. That was rejected: a
@@ -37,7 +37,7 @@ A suppression is allowed, and it is held to three things, as a pass of
 - **Carrying its reason.** An `oxlint-disable*` needs `-- reason` after it;
   a `@ts-expect-error` needs a description. `fix` never invents either.
 - **Naming a live rule.** A directive naming a rule the resolved config does
-  not have on is dead text, and dead text is reported — by oxlint itself since
+  not have on is dead text, and dead text is reported, by oxlint itself since
   [ADR-013](013-adopt-the-tool-before-building-the-check.md).
 
 The count of suppressions is one of the four numbers the drift report prints,
@@ -54,7 +54,7 @@ to the two scales at which a project overrules its rulebook.
 - A directive that suppresses nothing is oxlint's own `reportUnusedDisableDirectives`
   to refuse, not the gate's ([ADR-013](013-adopt-the-tool-before-building-the-check.md)).
 - A file DISCUSSING a suppression is not one. The gate reads a directive only
-  at the opening of a comment, which is where a checker reads one — its own
+  at the opening of a comment, which is where a checker reads one: its own
   source, full of the spellings it refuses, passes it.
 - Repositories adopting v10 will find existing directives failing the pass.
   That debt is not covered by the oxlint baseline, which counts oxlint's

@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-05
-**Accepted:** 2026-10-04 — the owner's word on the programme ("standardiser un maximum, attention aux exceptions"), and on where the standard lives.
+**Accepted:** 2026-10-04: the owner's word on the programme ("standardiser un maximum, attention aux exceptions"), and on where the standard lives.
 
 ## Context
 
@@ -10,7 +10,7 @@
 `jterrazz.config.ts` the one settings file, and every section of it a name
 mapped to its reason. Two years of defaults then landed there instead of in
 the toolchain. This package's own file declared the `lint/` it ships as
-mutation targets — what every library shipping rules declares the same way;
+mutation targets, which every library shipping rules declares the same way;
 `@jterrazz/test`'s listed nine projects it could read off its `specs/`, ten
 build entries a file name could say, a rule the rulebook already decided, and
 25 lines of imperative code importing its own build; signews-api's declared
@@ -29,9 +29,9 @@ value a kind or a platform adds, nor where a resolved setting came from.
 Each package of the family keeps its standard under `src/standard/`, typed by
 `defineStandard` as the settings file it defaults: this package's
 `standard.ts`, `kinds/<kind>.ts` and `platforms/<platform>.ts`;
-`@jterrazz/test`'s `standard.ts`. A standard is data only — the Config pass
-refuses a function, a branch, a call, a variable there
-(`config/standard-is-data`) — and the code applying it lives elsewhere. One
+`@jterrazz/test`'s `standard.ts`. A standard is data only (the Config pass
+refuses a function, a branch, a call, a variable there:
+`config/standard-is-data`), and the code applying it lives elsewhere. One
 merge order: the standard, the kind's, the platform's, the other packages'
 presets in the order listed, the project's file. `typescript doctor` prints
 the resolved settings, each line beside the file it comes from.

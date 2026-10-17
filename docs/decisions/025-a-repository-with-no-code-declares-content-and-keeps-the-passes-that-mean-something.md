@@ -2,8 +2,8 @@
 
 **Status:** Accepted
 **Date:** 2026-10-15
-**Accepted:** 2026-10-15 — the owner's decision, question 12 of the vision 17 review: `typescript check` gets a door for a repository without `package.json`, a `kind: 'content'` project that runs only the passes that mean something there.
-**Amends:** [ADR-018](018-a-project-declares-what-it-is-and-every-config-follows.md) — `content` joins the kinds.
+**Accepted:** 2026-10-15: the owner's decision, question 12 of the vision 17 review: `typescript check` gets a door for a repository without `package.json`, a `kind: 'content'` project that runs only the passes that mean something there.
+**Amends:** [ADR-018](018-a-project-declares-what-it-is-and-every-config-follows.md): `content` joins the kinds.
 
 ## Context
 
@@ -20,7 +20,7 @@ that has nothing to install or build. The only gate reachable was
 
 Forcing a `package.json` and a `jterrazz.config.ts` to silence them was
 refused by all six: it invents a JavaScript project. The two other doors
-proposed — one command per tree pass, or a skip list — put the knowledge of
+proposed (one command per tree pass, or a skip list) put the knowledge of
 what a repository without code owes in each caller.
 
 ## Decision
@@ -28,7 +28,7 @@ what a repository without code owes in each caller.
 - `content` is a kind: a repository whose product is not built, typed or
   linted by this toolchain. Its declaration is the least ceremony the
   toolchain can read: a `jterrazz.config.ts` with no `package.json`, which
-  needs no import, since the file is a plain object —
+  needs no import, since the file is a plain object:
   `export default { kind: 'content' };`.
 - It declares no platform: it runs no code, so a platform beside it is
   refused. A `package.json` beside it is refused as

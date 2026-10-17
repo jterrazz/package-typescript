@@ -13,9 +13,9 @@ Two caps on one file would disagree. A spec between 301 and 400 lines would pass
 
 ## Decision
 
-`max-lines` is off for `*.spec.ts`, kind `covered`, naming `spec-file-within-line-limit` as the rule that judges it. The scope is the suffix `spec-file-within-line-limit` reads, its role `spec`, and nothing wider: every other file under `specs/` — a module test, a `*.specification.ts`, a helper — is code, and holds 300.
+`max-lines` is off for `*.spec.ts`, kind `covered`, naming `spec-file-within-line-limit` as the rule that judges it. The scope is the suffix `spec-file-within-line-limit` reads, its role `spec`, and nothing wider: every other file under `specs/` (a module test, a `*.specification.ts`, a helper) is code, and holds 300.
 
-`max-lines-per-function` is off under the three suffixes that declare tests — `*.test.ts`, `*.test.tsx`, `*.spec.ts` — kind `covered`, naming `test-body-within-line-limit`. A test file holds one `describe` (`one-describe-per-file`), a function as long as the file, so the cap refused every test file past 60 lines — thirteen in this repository alone, the day `one-describe-per-file` landed. `test-body-within-line-limit` caps what the function cap would have caught there, a test body, at the same 60 lines. Every other file, a `*.specification.ts` included, holds its functions to 60.
+`max-lines-per-function` is off under the three suffixes that declare tests (`*.test.ts`, `*.test.tsx`, `*.spec.ts`), kind `covered`, naming `test-body-within-line-limit`. A test file holds one `describe` (`one-describe-per-file`), a function as long as the file, so the cap refused every test file past 60 lines: thirteen in this repository alone, the day `one-describe-per-file` landed. `test-body-within-line-limit` caps what the function cap would have caught there, a test body, at the same 60 lines. Every other file, a `*.specification.ts` included, holds its functions to 60.
 
 ## Consequences
 

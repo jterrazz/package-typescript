@@ -4,7 +4,7 @@
 **Date:** 2026-09-27
 
 The owner delegated the choice of each tool and its scope ("dependency-cruiser,
-ls-lint, rumdl, lychee, oxlint — go, do it all"); this record states the
+ls-lint, rumdl, lychee, oxlint: go, do it all"); this record states the
 decisions taken within that delegation.
 
 ## Context
@@ -53,17 +53,17 @@ no configuration, and keeps its own code only for what the tool cannot express.
 - **oxlint's own output** is what the Oxlint pass prints; the renderer goes.
 - **oxlint's `reportUnusedDisableDirectives`**, which every profile compiles at
   `error`, refuses a directive that suppresses nothing. `suppressions/no-dead-suppression`
-  goes: it reported the same directive a second time, and it saw less — never
+  goes: it reported the same directive a second time, and it saw less: never
   a live rule that stopped firing, never a JS plugin's rule. The Suppressions
   pass keeps a directive's spelling and its reason, which oxlint does not judge.
 - **oxlint's `typescript/ban-ts-comment`**, armed with `ts-ignore` banned and
   `ts-expect-error` allowed with a description, refuses a bare `@ts-ignore` and
   an undescribed `@ts-expect-error`. The Suppressions pass reports neither: it
   would be the same directive reported a second time. It keeps only the
-  `@ts-ignore` → `@ts-expect-error` rewrite in `fix`.
+  rewrite of `@ts-ignore` into `@ts-expect-error` in `fix`.
 - **oxlint's bulk suppressions** hold the lint debt: `oxlint-suppressions.json`,
   exact per file and rule, both ways. `jterrazz.baseline.json` keeps only what
-  no linter judges — the Architecture, Names and Comments passes, and `@jterrazz/test`'s
+  no linter judges: the Architecture, Names and Comments passes, and `@jterrazz/test`'s
   checker passes. It requires every rule to error: oxlint holds errors alone, so
   the warn tier goes, here and in `@jterrazz/test`. Supersedes, in part,
   [ADR-006](006-a-ratchet-not-a-big-bang.md): the ratchet stays, oxlint holds it.
@@ -79,7 +79,7 @@ no configuration, and keeps its own code only for what the tool cannot express.
 - oxlint's suppression flags are not in its `--help` yet: the version is pinned,
   specs run each flag, and an oxlint bump is a decision rather than a range.
 - oxlint rewrites the suppressions file on every `--fix` run for the rules that
-  run armed, so every narrowed fix run — the unsafe-fixer wrapper, the plugin's
-  own fixes — keeps the file across itself.
+  run armed, so every narrowed fix run (the unsafe-fixer wrapper, the plugin's
+  own fixes) keeps the file across itself.
 - dependency-cruiser gives no editor feedback where the oxlint override did;
   a boundary is judged by `check`, not in the editor.

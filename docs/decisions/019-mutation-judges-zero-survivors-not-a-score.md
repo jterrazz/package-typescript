@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-04
-**Amended by:** [ADR-020](020-mutation-measures-the-whole-suite-over-a-change.md) — what the verdict reaches: the whole suite over a change, and the module-level code a module test loads.
+**Amended by:** [ADR-020](020-mutation-measures-the-whole-suite-over-a-change.md), for what the verdict reaches: the whole suite over a change, and the module-level code a module test loads.
 
 Written 2026-10-04 from commits 7e2c711f and 0654950b, which took the
 decision on 2026-10-03, and from the reading of the specs' mutants that
@@ -25,8 +25,8 @@ The specs themselves were measured once, in October 2026, on the
 instrumented build, each mutant driven through its own `vitest run` with
 the active mutant handed to every process the specs spawn: the suite killed
 2,929 of 10,251 mutants, against 2,932 before the module tests that restated
-a spec were deleted. No committed tool reproduces that reading — a run of
-that size takes hours — and `--specs --mutate <ranges>` is what measures
+a spec were deleted. No committed tool reproduces that reading (a run of
+that size takes hours), and `--specs --mutate <ranges>` is what measures
 the specs now, by hand.
 
 ## Decision
@@ -53,7 +53,7 @@ the specs now, by hand.
   fix is an assertion or a declared equivalence, never a number to chase.
 - The doctrine measures a suite's value by mutation, and most of this
   package is proven by its specs: that part of the suite has no gate. The
-  owner's word is asked on it — a scheduled `--specs` run over chosen
+  owner's word is asked on it: a scheduled `--specs` run over chosen
   ranges, a NoCoverage line in a module-tested file made a failure, or the
   gap accepted as written in `docs/reference/quality-checks.md#what-no-verdict-measures`.
 - A module-level table is never mutation-judged by the default run; the

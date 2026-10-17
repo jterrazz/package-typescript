@@ -10,8 +10,8 @@ Architecture boundaries were a hand-written oxlint JS plugin,
 the import specifier. It carried its own rule file, its own schema, and its own
 fixer-less report, and it paid the JS-plugin toll on every invocation.
 
-oxlint's native `no-restricted-imports` expresses the same claim — `patterns`
-with gitignore-style `group` globs, scoped per directory through `overrides` —
+oxlint's native `no-restricted-imports` expresses the same claim (`patterns`
+with gitignore-style `group` globs, scoped per directory through `overrides`)
 at no cost, and `import/no-cycle` rides along for +0.05s.
 
 ## Decision
@@ -23,14 +23,14 @@ plugin enforced.
 
 Three properties of oxlint shape the generated config:
 
-1. An override's rule **options REPLACE** the base entry — they never merge
+1. An override's rule **options REPLACE** the base entry; they never merge
    (oxc#17527). Each layer's override therefore carries that layer's complete
    pattern list, and nothing about layering is left in the base config. A map
    whose layers share a `files` glob is refused at build time rather than
    shipped, because the second override would silently erase the first.
 2. The `regex` matcher is **Rust regex, which has no lookahead**. The one
-   exception in the hexagonal map — features may not import features, except
-   `features/common` — is two globs: the deny glob, then the same glob negated
+   exception in the hexagonal map (features may not import features, except
+   `features/common`) is two globs: the deny glob, then the same glob negated
    with `!`.
 3. `no-restricted-imports` matches the **specifier string**, never a resolved
    path.
@@ -38,8 +38,8 @@ Three properties of oxlint shape the generated config:
 ## Consequences
 
 - The JS plugin is deleted. With `import/extensions` covering the two extension
-  rules as well — including the dotted module name (`./entities/user.entity`)
-  that the hand-written rule needed a 28-entry allowlist for — nothing is left
+  rules as well, including the dotted module name (`./entities/user.entity`)
+  that the hand-written rule needed a 28-entry allowlist for, nothing is left
   in it, and this package ships no oxlint rules of its own.
 - A boundary is now declared where it is read, in the map, and a second map is a
   data literal rather than a second plugin.

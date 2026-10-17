@@ -9,7 +9,7 @@ Written at decision time, while building the 10.2 asks.
 
 `@jterrazz/test`'s [ADR-002](https://github.com/jterrazz/package-test/blob/main/docs/decisions/002-the-statique-channel-holds-only-what-upstream-does-not.md)
 settles who owns a convention an upstream rule already enforces: the rule. The estate's test framework, `@jterrazz/test`, is growing a lint
-fragment of its own — `testing` — that will set options on three vitest rules
+fragment of its own, `testing`, that will set options on three vitest rules
 this rulebook currently arms without options:
 
 | Rule                              | What the fragment will set        |
@@ -23,8 +23,8 @@ same rule is a rule whose configuration depends on composition order. One of
 them has to let go, and it is this one: the fragment knows what a spec of that
 framework may say, and the rulebook does not.
 
-The mechanism for letting go already exists — `off({ kind: 'covered', by:
-'@jterrazz/test testing' })` — and the question is only WHEN it fires. The
+The mechanism for letting go already exists (`off({ kind: 'covered', by:
+'@jterrazz/test testing' })`), and the question is only WHEN it fires. The
 fragment ships in `@jterrazz/test` 16.0, which is not released. Every consumer
 today is on 15.x.
 
@@ -36,7 +36,7 @@ release that follows `@jterrazz/test` 16.0, gated on nothing else.
 
 `covered` is a claim about the present: it says another owner is enforcing
 this, and the drift report prints it as a rule deliberately off. Marking a rule
-covered by a fragment nobody can install would be false on both counts — the
+covered by a fragment nobody can install would be false on both counts: the
 rule would simply be gone for every 15.x consumer, and the page would say it
 was not.
 

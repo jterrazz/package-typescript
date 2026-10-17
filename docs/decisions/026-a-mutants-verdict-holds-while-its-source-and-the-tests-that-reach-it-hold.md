@@ -11,8 +11,8 @@ record proposes.
 
 ## Context
 
-A cold `typescript mutation` of this package took about an hour — the
-module stage nine minutes, the whole suite fifty — and every local
+A cold `typescript mutation` of this package took about an hour (the
+module stage nine minutes, the whole suite fifty), and every local
 `make check` paid the suite stage in full, since `check` passed `--cold`.
 `--cold` existed because the incremental report could not be trusted:
 Stryker keys a mutant by the text around it and a test by its own lines,
@@ -24,7 +24,7 @@ stage, and a change to a helper module was not seen at all.
 A spec spawns the packed command, so until now the run could not say
 which sources a spec's processes ran: any source change could move any
 spec. And Vitest runs the slowest test file first, while Stryker stops a
-mutant's run at the first test that detects it — a mutant a module test
+mutant's run at the first test that detects it: a mutant a module test
 kills in milliseconds waited on a spec that installs a whole project.
 
 ## Decision
@@ -33,11 +33,11 @@ kills in milliseconds waited on a spec that installs a whole project.
   standing. The run records the hash of every file git lists beside the
   report and, at the next start, takes out every mutant of a changed
   source, every kill a stale test made, and every other result a stale
-  test covered — Stryker stops at the first test that detects a mutant,
+  test covered, since Stryker stops at the first test that detects a mutant,
   so a kill stands while its killer does. A test is stale
   when its file changed, when ground under a folder above it changed,
   when a source its own process loads changed, and when a process it
-  spawned ran a function of a changed source — or loaded it and the
+  spawned ran a function of a changed source, or loaded it and the
   change reaches what loading the module does. A change to a file every
   test may read drops the report whole; a test the run could not follow
   into every process it spawned is stale on any source change.
@@ -53,15 +53,15 @@ kills in milliseconds waited on a spec that installs a whole project.
   both stages' reports.
 - A mutant's tests run quickest file first, by the time the last run took
   over each.
-- The lint's pure algorithms — the comment rules, the names pass, the
-  drift report's rows — are proved by module tests that compare their
+- The lint's pure algorithms (the comment rules, the names pass, the
+  drift report's rows) are proved by module tests that compare their
   outcome whole, so the module stage kills what a spec killed in seconds.
 
 ## Consequences
 
 - An incremental verdict is never greener than the cold one for what the
   run can see: a change in a covering test, its ground, a helper it
-  imports or a source its processes ran measures its mutants again — the
+  imports or a source its processes ran measures its mutants again. The
   `typescript mutation` specs prove it on a packed consumer, and the old
   reuse fails the helper case. What no record can see stays a stated
   limit: a test that reads a file outside its own folder's ground, and a
@@ -75,5 +75,5 @@ kills in milliseconds waited on a spec that installs a whole project.
   it, not every spec; a constant, an import or any statement run at load
   still re-measures every spec that loaded the build.
 - Supersedes nothing; [ADR-020](020-mutation-measures-the-whole-suite-over-a-change.md)'s
-  scope — the whole suite over a change — stands, and its cost is what
+  scope (the whole suite over a change) stands, and its cost is what
   this record cuts.

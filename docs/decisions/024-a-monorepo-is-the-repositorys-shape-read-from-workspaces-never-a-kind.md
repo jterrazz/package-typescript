@@ -2,8 +2,8 @@
 
 **Status:** Accepted
 **Date:** 2026-10-15
-**Accepted:** 2026-10-15 — the owner's word: "a monorepo is the repository's shape, never a kind".
-**Amends:** [ADR-018](018-a-project-declares-what-it-is-and-every-config-follows.md) — `workspace` leaves the kinds.
+**Accepted:** 2026-10-15: the owner's word, "a monorepo is the repository's shape, never a kind".
+**Amends:** [ADR-018](018-a-project-declares-what-it-is-and-every-config-follows.md): `workspace` leaves the kinds.
 
 ## Context
 

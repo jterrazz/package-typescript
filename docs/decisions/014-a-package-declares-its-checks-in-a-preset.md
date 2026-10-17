@@ -11,7 +11,7 @@ decision taken within that delegation.
 [ADR-013](013-adopt-the-tool-before-building-the-check.md) moved import
 boundaries to dependency-cruiser and where a name sits to ls-lint. Both
 passes read only what the toolchain ships and what the project declares, so
-a sibling package — `@jterrazz/test` — could not hand them a rule for every
+a sibling package, `@jterrazz/test`, could not hand them a rule for every
 consumer. Its import and naming rules stayed code of its own, reading an
 import's text or walking the tree, because the tool that expresses them had
 no entry a package could write into.

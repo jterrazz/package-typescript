@@ -2,9 +2,9 @@
 
 **Status:** Accepted
 **Date:** 2026-09-15
-**Superseded in part by:** [Quality checks](../reference/quality-checks.md#the-ratchet) — a fallen count is a fourth refusal — and [ADR-013](013-adopt-the-tool-before-building-the-check.md): oxlint's `oxlint-suppressions.json` holds the lint debt.
+**Superseded in part by:** [Quality checks](../reference/quality-checks.md#the-ratchet) (a fallen count is a fourth refusal) and [ADR-013](013-adopt-the-tool-before-building-the-check.md): oxlint's `oxlint-suppressions.json` holds the lint debt.
 
-Written at decision time, as part of v10 — the release that turns type-aware
+Written at decision time, as part of v10, the release that turns type-aware
 linting on and takes the rule count from roughly three hundred decided rules
 to every rule of every loaded plugin.
 
@@ -14,7 +14,7 @@ v10 makes the rulebook strictly stronger, and twenty-eight repositories
 consume it through a caret range. The audit measured what that means in
 practice: one repository turns twenty-nine rules off, another is pinned to a
 linter version two dozen releases behind its own config, and the type-aware
-rules — fifty-nine of them — were configured and never ran at all. A bump
+rules (fifty-nine of them) were configured and never ran at all. A bump
 that demands a clean tree before it can be green is a bump nobody takes.
 
 Three shapes were available.
@@ -24,7 +24,7 @@ Three shapes were available.
   in any config this package ships.
 - **A big bang per repository.** Burn every diagnostic down in the adoption
   pull request. Honest, and it makes the adoption of a fifty-rule release a
-  multi-week task held by one person — which is how a fleet ends up pinned.
+  multi-week task held by one person, which is how a fleet ends up pinned.
 - **A ratchet.** Record what a repository owes on the day it adopts, and
   refuse any count going up from there.
 
@@ -36,7 +36,7 @@ by oxlint's exit code; where it does not, one diagnostic fails, as before.
 
 Three things fail a run that has a baseline: a count above its entry, a rule
 with diagnostics and no entry, and an entry whose count has reached zero. The
-third is what makes the file a ratchet rather than an amnesty — it can only
+third is what makes the file a ratchet rather than an amnesty: it can only
 shrink, and reaching zero on a rule is an event the gate announces.
 
 `typescript baseline` writes it. It is a command of its own rather than a
@@ -54,7 +54,7 @@ zero is an entry the third rule above removes.
   debt down on its own clock. The bump is never the blocker.
 - The debt is VISIBLE: it is a tracked file, it appears in review, and the
   drift report prints its total on every run.
-- A baseline can be abused — a team can record everything and never burn it
+- A baseline can be abused: a team can record everything and never burn it
   down. Nothing here prevents that, and nothing should: the drift report is
   what makes it legible, and legibility is the mechanism.
 - A stricter rule stays a MINOR version. The consumer is not required to

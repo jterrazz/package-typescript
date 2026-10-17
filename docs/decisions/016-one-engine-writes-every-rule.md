@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-09-27
-**Amended by:** [ADR-019](019-mutation-judges-zero-survivors-not-a-score.md) — the floor judge: the kit judges exact debt alone.
+**Amended by:** [ADR-019](019-mutation-judges-zero-survivors-not-a-score.md), for the floor judge: the kit judges exact debt alone.
 
 The owner approved the plan this records ("ok pour tout", 2026-09-27); this
 record states the decision taken within that approval.
@@ -12,7 +12,7 @@ record states the decision taken within that approval.
 Two packages of the family judge their consumers with code of their own:
 this toolchain, and `@jterrazz/test`. Each grew an engine under
 `lint/engine/`, and the two engines had converged on the same parts written
-twice — the four-part lesson and its `refusal()`, the section of
+twice: the four-part lesson and its `refusal()`, the section of
 `jterrazz.baseline.json` and its exact ratchet, the git-aware walk, the
 workspace members, the reserved ground folders (two `ground.ts`), the
 suppression directives, the generated catalogue tables. Two copies of one
@@ -24,17 +24,17 @@ had to be kept "the same list" by a comment.
 This package exports the engine it judges itself with as
 `@jterrazz/typescript/rules`, and a sibling writes its rules with it:
 
-- a rule is a catalogue row — `name`, `family`, `audience`, `sentence`,
-  `fix` — and `defineRule` / `defineCheck` write its four-part message from
+- a rule is a catalogue row (`name`, `family`, `audience`, `sentence`,
+  `fix`), and `defineRule` / `defineCheck` write its four-part message from
   the row and the finding;
 - the catalogue renders into its chapter between markers, padded as the
   formatter pads it;
-- the check plumbing — the command line, the positioned finding, `stop()`
+- the check plumbing: the command line, the positioned finding, `stop()`
   and `exitCodeOf()`, the checker of a set of passes;
 - the baseline file, section by section, with two judges: exact debt and a
   floor that only rises; a judge returns what broke without a read, and its
   caller writes the chapter it reads in place;
-- the readers of a project — the git tree, the workspace, the manifest and
+- the readers of a project: the git tree, the workspace, the manifest and
   its exports, ONE list of ground folders, the suppression directives, the
   settings file resolved through its presets.
 

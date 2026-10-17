@@ -13,12 +13,12 @@ At oxlint 1.83 two of the 59 type-aware rules are nursery: `typescript/no-unnece
 
 ## Decision
 
-Every rule `oxlint --rules` marks `type_aware` is in the catalogue, decided by name as `on` or `off` with a reason — nursery or not. The rule-surface suite fails when the installed oxlint forwards a type-aware rule the rulebook does not decide, and its failure message names the rule.
+Every rule `oxlint --rules` marks `type_aware` is in the catalogue, decided by name as `on` or `off` with a reason, nursery or not. The rule-surface suite fails when the installed oxlint forwards a type-aware rule the rulebook does not decide, and its failure message names the rule.
 
 The two nursery rules were decided on measurement, over this package, in 11.0.0:
 
 - `typescript/prefer-optional-chain` is on: 0 reports, and `fix` writes the chain it asks for.
-- `typescript/no-unnecessary-condition` is off, kind `evidence`: 8 reports, none a defect — a `while (true)` loop, a flag read off parsed JSON, and `?? ''` guards on `spawnSync` streams that @types/node types as non-null and Node leaves null when the spawn fails.
+- `typescript/no-unnecessary-condition` is off, kind `evidence`: 8 reports, none a defect: a `while (true)` loop, a flag read off parsed JSON, and `?? ''` guards on `spawnSync` streams that @types/node types as non-null and Node leaves null when the spawn fails.
 
 Nursery rules oxlint runs itself stay off wholesale, as ADR-003 says.
 
