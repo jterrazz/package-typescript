@@ -10,15 +10,22 @@ const configOf = (content: string): unknown => JSON.parse(content);
 describe('scope', () => {
     test("measures each member in its own folder, its tested sources by its platform and its kind's standard", async () => {
         // Given - a workspace of an expo app, a node api and a library shipping lint rules, none naming anything to mutate, each source with its module test in its folder's __tests__/
-        const result = await cli.fixture(directory('./__fixtures__/workspace/')).exec('mutation');
+        const result = await cli
+            .fixture(directory('./__fixtures__/workspace/'))
+            .env({ TYPESCRIPT_JOBS: '3' })
+            .exec('mutation');
 
-        // Then - each member hands Stryker its own config, under its own .artifacts/: the tested sources of its src/, the expo routes and their .tsx, the library's lint rules its standard names; the sandbox builds nothing the member does not
+        // Then - each member hands Stryker its own config, on the test runners TYPESCRIPT_JOBS asks for, under its own .artifacts/: the tested sources of its src/, the expo routes and their .tsx, the library's lint rules its standard names; the sandbox builds nothing the member does not
         expect(
             ['apps/api', 'apps/kit', 'apps/mobile'].map((member) =>
                 configOf(result.file(`${member}/.artifacts/stryker/stryker.config.json`).content),
             ),
         ).toMatchObject([
-            { disableTypeChecks: 'src/**/!(*.test-d).ts', mutate: ['src/handler.ts'] },
+            {
+                concurrency: 3,
+                disableTypeChecks: 'src/**/!(*.test-d).ts',
+                mutate: ['src/handler.ts'],
+            },
             {
                 disableTypeChecks:
                     '{src/**/!(*.test-d).ts,lint/!(*.test-d).ts,lint/consumer/**/!(*.test-d).ts,lint/kit/**/!(*.test-d).ts}',
@@ -103,8 +110,19 @@ describe('scope', () => {
             })
             .exec('mutation');
 
-        // Then - Stryker, which the fixture installs no runner for, fails the run, and the stale report is already gone
+        // Then - Stryker, which the fixture installs no runner for, fails the run, and the stale report is already gone; the verdict holds the module stage Stryker stopped
         expect(result.exitCode).toBe(1);
         expect(result.file('.artifacts/stryker/incremental.json').exists).toBe(false);
+        expect(configOf(result.file('.artifacts/gate/verdict.json').content)).toMatchObject({
+            mutation: null,
+            passes: [
+                {
+                    firstError: 'Stryker exited 1 — its log is above',
+                    label: 'Mutation (module tests)',
+                    status: 1,
+                },
+            ],
+            status: 1,
+        });
     });
 });

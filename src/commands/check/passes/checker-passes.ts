@@ -13,7 +13,6 @@ import { projectFiles } from '../../../../lint/kit/project/project-files.js';
 import { publishes } from '../../../../lint/kit/project/project-kind.js';
 import { checker } from '../../../drivers/checker/checker.js';
 import { RUMDL_CONFIG } from '../../../drivers/rumdl/rumdl.js';
-import { launched } from './launched.js';
 import type { Launched } from './launched.js';
 import type { Check } from './setup.js';
 
@@ -29,7 +28,7 @@ export async function gitignorePass(check: Check): Promise<Launched | undefined>
     }
     const log = check.logs.at('gitignore.log');
 
-    return launched(log, checker('gitignore', check.fix ? ['--fix'] : [], { path: log }));
+    return { log, status: checker('gitignore', check.fix ? ['--fix'] : [], { path: log }) };
 }
 
 export function configPass(check: Check): Launched | undefined {
@@ -38,7 +37,10 @@ export function configPass(check: Check): Launched | undefined {
     }
     const log = check.logs.at('config.log');
 
-    return launched(log, checker('config', ['.', ...(check.fix ? ['--fix'] : [])], { path: log }));
+    return {
+        log,
+        status: checker('config', ['.', ...(check.fix ? ['--fix'] : [])], { path: log }),
+    };
 }
 
 export function docsPass(check: Check): Launched | undefined {
@@ -47,7 +49,7 @@ export function docsPass(check: Check): Launched | undefined {
     }
     const log = check.logs.at('docs-layout.log');
 
-    return launched(log, checker('docs', [], { path: log }));
+    return { log, status: checker('docs', [], { path: log }) };
 }
 
 export function suppressionsPass(check: Check): Launched | undefined {
@@ -63,7 +65,7 @@ export function suppressionsPass(check: Check): Launched | undefined {
         ...(check.fix ? ['--fix'] : []),
     ];
 
-    return launched(log, checker('suppressions', args, { path: log }));
+    return { log, status: checker('suppressions', args, { path: log }) };
 }
 
 // invariant: launched only where the tree holds a file whose comments it reads, so a tree of code alone prints no pass for it.
@@ -84,7 +86,7 @@ export function commentsPass(check: Check): Launched | undefined {
     // Stryker disable next-line StringLiteral,ArrayDeclaration: the packed command, which no mutant reaches, runs it; specs/cli/check/comments-other-languages proves both modes
     const args = ['.', ...(check.fix ? ['--fix'] : [])];
 
-    return launched(log, checker('comments', args, { path: log }));
+    return { log, status: checker('comments', args, { path: log }) };
 }
 
 export function markdownPass(check: Check): Launched | undefined {
@@ -101,7 +103,7 @@ export function markdownPass(check: Check): Launched | undefined {
         ...(check.fix ? ['--fix'] : []),
     ];
 
-    return launched(log, checker('markdown', args, { path: log }));
+    return { log, status: checker('markdown', args, { path: log }) };
 }
 
 export function secretsPass(check: Check): Launched | undefined {
@@ -110,7 +112,7 @@ export function secretsPass(check: Check): Launched | undefined {
     }
     const log = check.logs.at('secrets.log');
 
-    return launched(log, checker('secrets', ['.'], { path: log }));
+    return { log, status: checker('secrets', ['.'], { path: log }) };
 }
 
 export function namesPass(check: Check): Launched | undefined {
@@ -120,15 +122,15 @@ export function namesPass(check: Check): Launched | undefined {
     const log = check.logs.at('names.log');
     const mode = check.fix ? ['--fix'] : [];
 
-    return launched(
+    return {
         log,
-        checker(
+        status: checker(
             'names',
             ['.', '--ls-lint', check.tools.lsLint, ...mode],
             { path: log },
             { typeless: true },
         ),
-    );
+    };
 }
 
 export function architecturePass(check: Check): Launched | undefined {
@@ -144,15 +146,15 @@ export function architecturePass(check: Check): Launched | undefined {
     }
     const log = check.logs.at('architecture.log');
 
-    return launched(
+    return {
         log,
-        checker(
+        status: checker(
             'architecture',
             ['.', '--depcruise', check.tools.depcruise, ...(check.fix ? ['--fix'] : [])],
             { path: log },
             { typeless: true },
         ),
-    );
+    };
 }
 
 export function publishPasses(check: Check): Launched[] {
@@ -166,6 +168,6 @@ export function publishPasses(check: Check): Launched[] {
             const log = check.logs.at(`publish-${String(index)}.log`);
             const args = [root, '--publint', check.tools.publint, '--attw', check.tools.attw];
 
-            return launched(log, checker('publish', args, { path: log }));
+            return { log, status: checker('publish', args, { path: log }) };
         });
 }

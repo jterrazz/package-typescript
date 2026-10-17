@@ -1,6 +1,14 @@
 import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
-import { launched, secondsAdded, secondsSince, slowestOf, timed } from '../launched.js';
+import {
+    launched,
+    secondsAdded,
+    secondsSince,
+    slowestOf,
+    timed,
+    timedLaunch,
+    timedLaunches,
+} from '../launched.js';
 
 function clockAt(...moments: number[]): void {
     const now = vi.spyOn(performance, 'now');
@@ -66,6 +74,40 @@ describe('launched', () => {
         // Then - 1.6 s in a row, 2.5 s side by side, 0 s for no run
         expect([secondsAdded(1.26, 0.33), slowestOf(parallel), slowestOf([])]).toStrictEqual([
             1.6, 2.5, 0,
+        ]);
+    });
+
+    test('timedLaunch and timedLaunches — a pass keeps what it carries and is timed from the moment named, or from now; an absent pass stays absent', async () => {
+        // Given - a clock read at 4 000 ms when each verdict is in, a pass launched at 1 000 ms, two runs counted from 2 000 ms, and a pass timed from now at 3 000 ms
+        clockAt(3000, 4000, 4000, 4000, 4000);
+        const fromNow = timedLaunch({ label: 'one', log: 'a.log', status: Promise.resolve(0) });
+        const named = timedLaunch({ log: 'b.log', status: Promise.resolve(1) }, 1000);
+        const runs = timedLaunches(
+            [
+                { log: 'c.log', status: Promise.resolve(0) },
+                { log: 'd.log', status: Promise.resolve(2) },
+            ],
+            2000,
+        );
+
+        // Then - each its own seconds, its fields kept, and nothing for a pass that did not apply
+        expect([
+            fromNow?.label,
+            await fromNow?.seconds,
+            named?.log,
+            await named?.seconds,
+            await Promise.all(runs.map(async ({ log, seconds }) => [log, await seconds])),
+            timedLaunch(undefined),
+        ]).toStrictEqual([
+            'one',
+            1,
+            'b.log',
+            3,
+            [
+                ['c.log', 2],
+                ['d.log', 2],
+            ],
+            undefined,
         ]);
     });
 });

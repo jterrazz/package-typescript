@@ -9,8 +9,8 @@ import {
     secretsPass,
     suppressionsPass,
 } from './checker-passes.js';
-import { launched, timed } from './launched.js';
-import type { Launched, Timed } from './launched.js';
+import { launched, timed, timedLaunch, timedLaunches } from './launched.js';
+import type { Launched, Timed, TimedLaunch } from './launched.js';
 import { oxfmt } from './runners.js';
 import type { Check } from './setup.js';
 import type { Fixed } from './tool-passes.js';
@@ -25,26 +25,28 @@ import {
 } from './tool-passes.js';
 
 export type Started = {
-    architecture: Launched | undefined;
-    astro: Launched | undefined;
-    comments: Launched | undefined;
-    config: Launched | undefined;
-    docs: Launched | undefined;
-    format: Launched | undefined;
-    gitignore: Launched | undefined;
-    knip: Launched | undefined;
+    architecture: TimedLaunch | undefined;
+    astro: TimedLaunch | undefined;
+    comments: TimedLaunch | undefined;
+    config: TimedLaunch | undefined;
+    docs: TimedLaunch | undefined;
+    format: TimedLaunch | undefined;
+    gitignore: TimedLaunch | undefined;
+    knip: TimedLaunch | undefined;
     lint: Timed;
-    markdown: Launched | undefined;
-    names: Launched | undefined;
-    publish: Launched[];
-    secrets: Launched | undefined;
-    suppressions: Launched | undefined;
-    typescript: Launched | undefined;
+    markdown: TimedLaunch | undefined;
+    names: TimedLaunch | undefined;
+    publish: TimedLaunch[];
+    secrets: TimedLaunch | undefined;
+    suppressions: TimedLaunch | undefined;
+    typescript: TimedLaunch | undefined;
 };
 
-async function lintChecked(check: Check): Promise<{ format: Launched | undefined; lint: Timed }> {
+async function lintChecked(
+    check: Check,
+): Promise<{ format: TimedLaunch | undefined; lint: Timed }> {
     return {
-        format: formatCheck(check),
+        format: timedLaunch(formatCheck(check)),
         lint: timed(check.selected('oxlint') ? lintCheck(check) : Promise.resolve(0)),
     };
 }
@@ -62,7 +64,7 @@ export const writersOf = (
         | 'names'
         | 'suppressions'
     >,
-): (Launched | undefined)[] => [
+): (TimedLaunch | undefined)[] => [
     passes.architecture,
     passes.astro,
     passes.comments,
@@ -83,11 +85,11 @@ export async function writersDone(writers: readonly (Launched | undefined)[]): P
 async function formattedLast(
     check: Check,
     fixed: Fixed | undefined,
-    writers: readonly (Launched | undefined)[],
+    writers: readonly (TimedLaunch | undefined)[],
     from: number,
-): Promise<{ format: Launched | undefined; lint: Timed }> {
+): Promise<{ format: TimedLaunch | undefined; lint: Timed }> {
     await writersDone(writers);
-    let formatting: Launched | undefined;
+    let formatting: TimedLaunch | undefined;
     if (check.selected('oxfmt')) {
         const log = check.logs.at('format.log');
         // Stryker disable next-line ArrayDeclaration: oxfmt reads a stand-in argument as one more path to format, and a path that names no file is skipped
@@ -99,25 +101,25 @@ async function formattedLast(
     return { format: formatting, lint };
 }
 
-export async function started(check: Check, config: Launched | undefined): Promise<Started> {
+export async function started(check: Check, config: TimedLaunch | undefined): Promise<Started> {
     const from = performance.now();
-    const typescript = typescriptPass(check);
+    const typescript = timedLaunch(typescriptPass(check));
     const fixed =
         check.fix && check.selected('oxlint') && !check.lintTargets.nothing
             ? await lintFix(check)
             : undefined;
     const checked = check.fix ? undefined : await lintChecked(check);
-    const knip = knipPass(check);
-    const gitignore = await gitignorePass(check);
-    const docs = docsPass(check);
-    const suppressions = suppressionsPass(check);
-    const comments = commentsPass(check);
-    const markdown = markdownPass(check);
-    const names = namesPass(check);
-    const secrets = secretsPass(check);
-    const astro = astroPass(check);
-    const architecture = architecturePass(check);
-    const publish = publishPasses(check);
+    const knip = timedLaunch(knipPass(check));
+    const gitignore = timedLaunch(await gitignorePass(check));
+    const docs = timedLaunch(docsPass(check));
+    const suppressions = timedLaunch(suppressionsPass(check));
+    const comments = timedLaunch(commentsPass(check));
+    const markdown = timedLaunch(markdownPass(check));
+    const names = timedLaunch(namesPass(check));
+    const secrets = timedLaunch(secretsPass(check));
+    const astro = timedLaunch(astroPass(check));
+    const architecture = timedLaunch(architecturePass(check));
+    const publish = timedLaunches(publishPasses(check));
     // Stryker disable next-line ObjectLiteral: the formatter waiting for no writer lays its text down after theirs in every run a spec can stage, an order between processes that is no value to read
     const writing = writersOf({
         architecture,

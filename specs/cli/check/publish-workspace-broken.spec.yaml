@@ -1,4 +1,4 @@
-description: names the member whose manifest a publish finding is about
+description: names the member a publish finding is about, failing the pass when one member fails
 fixture: ./__fixtures__/publish/workspace-broken/
 env: TYPESCRIPT_CHECK_PASSES=publish
 runs:
@@ -15,12 +15,6 @@ runs:
           Linting...
           Errors:
           1. pkg.exports["./extra"] is ./gone.js but the file does not exist.
-          packages/beta/package.json:1:1: error publish(export-target-exists): ./missing.js resolves to nothing on disk
-          Running publint v0.3.24 for fixture-publish-workspace-beta...
-          Packing files with `npm pack`...
-          Linting...
-          Errors:
-          1. pkg.exports["./extra"] is ./missing.js but the file does not exist.
           ✗ Failed with exit code 1 ({{duration}})
 
            END  Finalizing quality checks

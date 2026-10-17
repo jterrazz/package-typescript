@@ -3,6 +3,9 @@ import { describe, expect, test } from 'vitest';
 
 import { cli } from '../packed-cli.specification.js';
 
+const STAGES_IN_ORDER =
+    /^ TYPESCRIPT {2}The module tests ran in \d+\.\ds on [1-9]\d* test runner\(s\)$[\s\S]*^ TYPESCRIPT {2}Measuring the whole suite[\s\S]*^ TYPESCRIPT {2}The whole suite ran in \d+\.\ds on [1-9]\d* test runner\(s\)$/mu;
+
 describe('mutation-paths', () => {
     test('typescript mutation — a source named in brackets is mutated, whole and by its lines', async () => {
         // Given - the consumer, its test judging everything, beside a route-shaped source in brackets whose test leaves its guard unjudged
@@ -23,12 +26,9 @@ describe('mutation-paths', () => {
             whole.exitCode,
             ranged.exitCode,
             whole.stdout.text.includes('did not result in any files'),
-            /The module tests ran in \d+\.\ds on [1-9]\d* test runner\(s\)/u.test(
-                whole.stdout.text,
-            ),
-            /The whole suite ran in \d+\.\ds on [1-9]\d* test runner\(s\)/u.test(whole.stdout.text),
+            STAGES_IN_ORDER.test(whole.stdout.text),
             /The module tests ran in \d+\.\ds on 1 test runner\(s\)/u.test(ranged.stdout.text),
-        ]).toStrictEqual([1, 1, false, true, true, true]);
+        ]).toStrictEqual([1, 1, false, true, true]);
         expect(whole.stdout).toMatch(`
             {{any}}
             src/[id]/[key].ts:2:9  ConditionalExpression → false  (.artifacts/stryker/suite-report.json)

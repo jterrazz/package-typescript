@@ -1,6 +1,8 @@
+export type Launched = { log: string; status: Promise<number> };
+
 export type Timed = { seconds: Promise<number>; status: Promise<number> };
 
-export type Launched = Timed & { log: string };
+export type TimedLaunch = Launched & Timed;
 
 export const secondsSince = (from: number): number =>
     Math.round((performance.now() - from) / 100) / 10;
@@ -18,10 +20,23 @@ export const timed = (status: Promise<number>, from = performance.now()): Timed 
 });
 
 /** A pass launched now, its log beside its timed verdict. */
-export const launched = (log: string, status: Promise<number>): Launched => ({
+export const launched = (log: string, status: Promise<number>): TimedLaunch => ({
     log,
     ...timed(status),
 });
+
+/** A pass that was launched, timed from now, or from `from`, to its verdict; a pass that did not apply stays absent. */
+export const timedLaunch = <T extends Launched>(
+    pass: T | undefined,
+    from = performance.now(),
+): (T & Timed) | undefined =>
+    pass === undefined ? undefined : { ...pass, ...timed(pass.status, from) };
+
+/** Every run of a list, each timed from `from` to its verdict. */
+export const timedLaunches = <T extends Launched>(
+    passes: readonly T[],
+    from = performance.now(),
+): (T & Timed)[] => passes.map((pass) => ({ ...pass, ...timed(pass.status, from) }));
 
 /** The seconds of two runs one after the other, to the tenth. */
 export const secondsAdded = (first: number, second: number): number =>

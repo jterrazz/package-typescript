@@ -22,7 +22,6 @@ import { fixedUnder } from '../../../drivers/oxlint/oxlint.js';
 import type { FixScope } from '../../../drivers/oxlint/unsafe-fixers.js';
 import { astroFormatted } from '../../../drivers/prettier/prettier.js';
 import { typeChecked } from '../../../drivers/tsc/tsc.js';
-import { launched } from './launched.js';
 import type { Launched } from './launched.js';
 import { fixReportCarried, lintOutcome } from './lint-outcome.js';
 import { routeTypesGenerated } from './route-types.js';
@@ -88,7 +87,7 @@ export function typescriptPass(check: Check): Launched | undefined {
     const log = check.logs.at('type.log');
     const units = check.members.length > 0 ? check.members : ['.'];
 
-    return launched(log, typescriptRuns(check, units, log));
+    return { log, status: typescriptRuns(check, units, log) };
 }
 
 export async function lintCheck(check: Check): Promise<number> {
@@ -188,7 +187,7 @@ export function formatCheck(check: Check): Launched | undefined {
     }
     const log = check.logs.at('format.log');
 
-    return launched(log, oxfmt(check, ['--check'], log));
+    return { log, status: oxfmt(check, ['--check'], log) };
 }
 
 // invariant: a unit hands knip its build's entries, the paths its presets load by name, and its settings'.
@@ -253,7 +252,7 @@ export function knipPass(check: Check): Launched | undefined {
     }
     const log = check.logs.at('knip.log');
 
-    return launched(log, knipRun(check, log));
+    return { log, status: knipRun(check, log) };
 }
 
 async function astroRun(check: Check, unit: string, log: string): Promise<number> {
@@ -289,5 +288,5 @@ export function astroPass(check: Check): Launched | undefined {
     }
     const log = check.logs.at('astro.log');
 
-    return launched(log, astroRuns(check, units, log));
+    return { log, status: astroRuns(check, units, log) };
 }

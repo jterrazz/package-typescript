@@ -5,7 +5,6 @@ import { readSettings } from '../../../../lint/index.rules.js';
 import { SETTINGS_FILE } from '../../../../lint/kit/project/jterrazz-config.js';
 import type { PresetChecker } from '../../../../lint/kit/project/preset.js';
 import { presetChecker } from '../../../drivers/checker/checker.js';
-import { launched } from './launched.js';
 import type { Launched } from './launched.js';
 import type { Check } from './setup.js';
 
@@ -41,9 +40,8 @@ async function fixed(check: Check, runs: readonly Planned[]): Promise<PresetRun[
     const done: PresetRun[] = [];
     for (const [index, { args, checker, root }] of runs.entries()) {
         const log = check.logs.at(`preset-${String(index)}.log`);
-        const run = launched(log, presetChecker(checker, args, { path: log }));
-        await run.status;
-        done.push({ ...run, label: checker.label, root });
+        const status = await presetChecker(checker, args, { path: log });
+        done.push({ label: checker.label, log, root, status: Promise.resolve(status) });
     }
 
     return done;
@@ -62,9 +60,10 @@ export async function presetRuns(check: Check): Promise<PresetRun[]> {
         const log = check.logs.at(`preset-${String(index)}.log`);
 
         return {
-            ...launched(log, presetChecker(checker, args, { path: log })),
             label: checker.label,
+            log,
             root,
+            status: presetChecker(checker, args, { path: log }),
         };
     });
 }

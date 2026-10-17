@@ -7,8 +7,8 @@ import type { ProjectIdentity } from '../../../lint/kit/project/project-kind.js'
 import { checker } from '../../drivers/checker/checker.js';
 import { withGateLock } from '../gate-lock/lock.js';
 import { configPass } from './passes/checker-passes.js';
-import type { Launched } from './passes/launched.js';
-import { secondsSince } from './passes/launched.js';
+import type { Launched, Timed } from './passes/launched.js';
+import { secondsSince, timedLaunch, timedLaunches } from './passes/launched.js';
 import { CONTENT_PASSES } from './passes/passes.js';
 import type { Selected } from './passes/passes.js';
 import { presetRuns } from './passes/presets.js';
@@ -111,7 +111,7 @@ function labelled(label: string, verdict: undefined | Verdict, writes?: boolean)
 async function reported(
     run: Check,
     passes: Started,
-    presets: readonly PresetRun[],
+    presets: readonly (PresetRun & Timed)[],
 ): Promise<Reported[]> {
     const config = await settled(passes.config);
     const typescript = await settled(passes.typescript);
@@ -173,6 +173,7 @@ async function drift(run: Check): Promise<PassVerdict[]> {
     }
     print(`\n${badge('DRIFT')} Deviations from the profile\n\n`);
     const from = performance.now();
+    // Stryker disable next-line StringLiteral: the checker resolves an empty root to the working directory, which '.' names
     const status = await checker('drift', ['.', ...run.driftArgs], 'inherit');
 
     return [driftPassOf(status, secondsSince(from))];
@@ -210,9 +211,10 @@ async function checksRun(
                     `${badge('START')} ${fix ? 'Running quality fixes' : 'Running quality checks'}\n`,
                 );
                 const prepared = await preparedCheck(args, fix, selected, scratch);
-                const config = configPass(prepared);
+                const config = timedLaunch(configPass(prepared));
                 const derived = await withDerivedConfigs(prepared, config);
-                const presets = await presetRuns(derived);
+                const presetsFrom = performance.now();
+                const presets = timedLaunches(await presetRuns(derived), presetsFrom);
                 const run = await withTargets(derived);
                 const passes = await started(run, config);
                 const verdicts = await reported(run, passes, presets);

@@ -49,8 +49,9 @@ describe('started', () => {
             ended.push('done');
         };
         const waiting = afterWriters();
-        await Promise.resolve();
-        await Promise.resolve();
+        await new Promise((resolve) => {
+            setImmediate(resolve);
+        });
         const whileRunning = [...ended];
         slow.release();
         await waiting;

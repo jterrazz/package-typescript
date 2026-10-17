@@ -4,7 +4,7 @@ import { readSettings } from '../../../../lint/index.rules.js';
 import { labelOf } from '../../../../lint/kit/baseline/baseline-file.js';
 import { checker } from '../../../drivers/checker/checker.js';
 import { secondsAdded, secondsSince, slowestOf } from '../passes/launched.js';
-import type { Launched } from '../passes/launched.js';
+import type { Timed, TimedLaunch } from '../passes/launched.js';
 import type { PresetRun } from '../passes/presets.js';
 import type { Check } from '../passes/setup.js';
 import type { Started } from '../passes/started.js';
@@ -37,7 +37,7 @@ async function heldSummaryOf(): Promise<null | RegExp> {
           );
 }
 
-export async function settled(launched: Launched | undefined): Promise<Passed> {
+export async function settled(launched: TimedLaunch | undefined): Promise<Passed> {
     return launched === undefined
         ? undefined
         : { log: launched.log, seconds: await launched.seconds, status: await launched.status };
@@ -47,11 +47,14 @@ export type Linted = { seconds: number; status: number };
 
 export async function settledLint(check: Check, passes: Started): Promise<Linted> {
     const linted = await passes.lint.status;
+    // Stryker disable ConditionalExpression,BlockStatement,ObjectLiteral: a run that did not select the linter prints no lint verdict, so whether its baseline runs, and what this hands back, changes nothing the run reports
     if (!check.selected('oxlint')) {
         return { seconds: await passes.lint.seconds, status: linted };
     }
+    // Stryker restore ConditionalExpression,BlockStatement,ObjectLiteral
     const from = performance.now();
     const log = check.logs.at('baseline.log');
+    // Stryker disable next-line ArrayDeclaration,StringLiteral: the baseline checker resolves a missing or an empty root to the working directory, which '.' names
     const held = await checker('baseline', ['.'], { path: log });
     appendFileSync(check.logs.at('lint.log'), readFileSync(log));
     const lintSeconds = await passes.lint.seconds;
@@ -63,7 +66,7 @@ export async function settledLint(check: Check, passes: Started): Promise<Linted
 async function presetVerdict(
     check: Check,
     log: string,
-    runs: readonly PresetRun[],
+    runs: readonly (PresetRun & Timed)[],
 ): Promise<Verdict> {
     const outcomes = await Promise.all(
         runs.map(async ({ log: part, seconds, status }) => ({
@@ -91,13 +94,14 @@ async function presetVerdict(
         log,
         seconds: slowestOf(outcomes),
         status: failed.length === 0 ? 0 : 1,
+        // Stryker disable next-line ConditionalExpression,EqualityOperator: a passing preset's log holds only the summaries appended to it, so one printed with none is empty and prints nothing
         writes: summaries.length > 0,
     };
 }
 
 export async function presetVerdicts(
     check: Check,
-    runs: readonly PresetRun[],
+    runs: readonly (PresetRun & Timed)[],
 ): Promise<(Verdict & { label: string })[]> {
     const labels = [...new Set(runs.map(({ label }) => label))];
 
@@ -114,7 +118,7 @@ export async function presetVerdicts(
     );
 }
 
-export async function publishVerdict(check: Check, runs: readonly Launched[]): Promise<Passed> {
+export async function publishVerdict(check: Check, runs: readonly TimedLaunch[]): Promise<Passed> {
     if (runs.length === 0) {
         return undefined;
     }
@@ -140,6 +144,9 @@ export async function publishVerdict(check: Check, runs: readonly Launched[]): P
     };
 }
 
-export function lintVerdictOf(check: Check, linted: Linted): LintVerdict | undefined {
-    return check.selected('oxlint') ? lintVerdict(check, linted) : undefined;
+export function lintVerdictOf(
+    check: Check,
+    { seconds, status }: Linted,
+): (LintVerdict & { seconds: number }) | undefined {
+    return check.selected('oxlint') ? { ...lintVerdict(check, status), seconds } : undefined;
 }
