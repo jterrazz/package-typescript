@@ -11,6 +11,7 @@ import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
 import { diffStaysInFunctions } from '../../drivers/tsc/change-shape.js';
 import { secondsSince } from '../check/passes/launched.js';
 import { badge, print, RED, RESET, secondsOf } from '../check/report/terminal.js';
+import { withGateLock } from '../gate-lock/lock.js';
 import { askedOf } from './asked.js';
 import { baseFor, changeOf, namesACommit, treeChangeFor } from './change.js';
 import type { Base } from './change.js';
@@ -238,5 +239,7 @@ export async function mutation(args: readonly string[]): Promise<number> {
     const project = process.cwd();
     const recorded = recorder();
 
-    return concluded(project, recorded, await measuredRun(project, args, recorded));
+    return await withGateLock(project, async () =>
+        concluded(project, recorded, await measuredRun(project, args, recorded)),
+    );
 }

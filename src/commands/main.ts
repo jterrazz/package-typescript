@@ -13,6 +13,7 @@ import { dev } from './dev/dev.command.js';
 import { docsLayout } from './docs-layout/docs-layout.command.js';
 import { doctor } from './doctor/doctor.command.js';
 import { fix } from './fix/fix.command.js';
+import { gateLock } from './gate-lock/gate-lock.command.js';
 import { mutation } from './mutation/mutation.command.js';
 import { start } from './start/start.command.js';
 import { helpOf, SURFACES } from './surface.js';
@@ -77,6 +78,7 @@ const COMMANDS: Readonly<Record<CommandName, Command>> = {
     'docs-layout': docsLayout,
     doctor: async () => await doctor(process.cwd()),
     fix,
+    'gate-lock': gateLock,
     mutation,
     start,
     tsc,

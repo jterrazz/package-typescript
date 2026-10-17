@@ -5,6 +5,7 @@ import { withStagedSuppressions } from '../../../lint/kit/baseline/oxlint-suppre
 import { inScratch } from '../../../lint/kit/checker/ending.js';
 import type { ProjectIdentity } from '../../../lint/kit/project/project-kind.js';
 import { checker } from '../../drivers/checker/checker.js';
+import { withGateLock } from '../gate-lock/lock.js';
 import { configPass } from './passes/checker-passes.js';
 import type { Launched } from './passes/launched.js';
 import { secondsSince } from './passes/launched.js';
@@ -204,6 +205,15 @@ function concluded(fix: boolean, passes: readonly PassVerdict[]): number {
 }
 
 export async function runChecks(
+    args: readonly string[],
+    { fix, selected }: { fix: boolean; selected: Selected },
+): Promise<number> {
+    return fix
+        ? await checksRun(args, { fix, selected })
+        : await withGateLock(process.cwd(), async () => await checksRun(args, { fix, selected }));
+}
+
+async function checksRun(
     args: readonly string[],
     { fix, selected }: { fix: boolean; selected: Selected },
 ): Promise<number> {

@@ -12,6 +12,7 @@ npx typescript doctor          # Installed tool versions against the declared ra
 npx typescript baseline        # Record today's debt so that it may only fall
 npx typescript mutation        # The module tests, then the whole suite over the changed lines they leave
 npx typescript docs-layout .   # Check a repository's docs/ against the manual's shape
+npx typescript gate-lock       # Refuse while a running gate holds this checkout, naming its pid
 npx typescript clean           # Remove .artifacts/ (dist/ stays: it is the product)
 npx typescript tsc             # The TypeScript 7 compiler, passed through
 ```
@@ -24,6 +25,7 @@ npx typescript tsc             # The TypeScript 7 compiler, passed through
 | `mutation`                     | [Quality checks § Mutation](quality-checks.md#mutation)                                                     |
 | `docs-layout`                  | [Quality checks § Outside an npm project](quality-checks.md#outside-an-npm-project)                         |
 | `clean`                        | [Getting started § Where a tool's output goes](../start/getting-started.md#where-a-tools-output-goes)       |
+| `gate-lock`                    | [Quality checks § One gate per checkout](quality-checks.md#one-gate-per-checkout)                           |
 
 ## Flags and help
 
@@ -31,14 +33,14 @@ npx typescript tsc             # The TypeScript 7 compiler, passed through
 
 Each command reads only the flags it declares, and refuses any other line before it reads or writes a file, in four parts, above its usage, exiting `1`:
 
-| Command                           | Reads                                                                        |
-| --------------------------------- | ---------------------------------------------------------------------------- |
-| `check`                           | `--json`, once                                                               |
-| `fix`, `baseline`                 | no flag                                                                      |
-| `mutation`                        | `--cold`, `--mutate <ranges>` and `--since <ref>`, each once                 |
-| `docs-layout`                     | one `<root>`, the working directory when none is named                       |
-| `build`, `dev`, `doctor`, `clean` | nothing                                                                      |
-| `start`                           | every argument, handed to the application; after `--`, `-h` and `--help` too |
-| `tsc`                             | every argument, the compiler's own, its `--help` included                    |
+| Command                                        | Reads                                                                        |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| `check`                                        | `--json`, once                                                               |
+| `fix`, `baseline`                              | no flag                                                                      |
+| `mutation`                                     | `--cold`, `--mutate <ranges>` and `--since <ref>`, each once                 |
+| `docs-layout`                                  | one `<root>`, the working directory when none is named                       |
+| `build`, `dev`, `doctor`, `clean`, `gate-lock` | nothing                                                                      |
+| `start`                                        | every argument, handed to the application; after `--`, `-h` and `--help` too |
+| `tsc`                                          | every argument, the compiler's own, its `--help` included                    |
 
 A flag the command does not declare, one given twice that the table does not say repeats, a valued flag with no value, a value written on a flag that takes none (`--json=1`), and a word where the command takes no argument are each refused: a flag the command would ignore, or a second value that would silently replace the first, makes a run that is not the one asked for. A value is written after its flag or joined to it, `--since main` or `--since=main`; several `--mutate` ranges are one comma-separated value, `--mutate src/a.ts:10-20,src/b.ts:1-5`.

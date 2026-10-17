@@ -5,10 +5,17 @@ import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { planOf } from '../../../lint/kit/project/build-plan.js';
 import { builtFrom, watched } from '../../drivers/tsdown/tsdown.js';
 import { badge, GREEN, print, RED, RESET } from '../check/report/terminal.js';
+import { refusedWhileGated } from '../gate-lock/lock.js';
 
 export async function build(args: readonly string[] = []): Promise<number> {
     print(`${badge('TYPESCRIPT')} Building the entries the manifest publishes...\n\n`);
     const project = process.cwd();
+    const gated = refusedWhileGated(project, 'a build');
+    if (gated !== undefined) {
+        print(`${RED}${gated}${RESET}\n`);
+
+        return 1;
+    }
     const steps = planOf(project, await readSettings(project));
     if (typeof steps === 'string') {
         print(`${RED}${steps}${RESET}\n`);

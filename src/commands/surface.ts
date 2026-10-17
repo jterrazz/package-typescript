@@ -80,6 +80,10 @@ export const SURFACES = {
         says: 'Check types, lint, formatting, and unused code',
     },
     fix: { read: QUALITY, says: 'Auto-fix lint and formatting issues' },
+    'gate-lock': {
+        read: 'docs/reference/quality-checks.md#one-gate-per-checkout',
+        says: 'Refuse while a running gate holds this checkout, naming its pid: the guard an install or a pack runs first',
+    },
     clean: {
         read: 'docs/start/getting-started.md#where-a-tools-output-goes',
         says: "Remove .artifacts/ — dist/ stays, it is the build's product",

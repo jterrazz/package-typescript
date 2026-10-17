@@ -20,6 +20,7 @@ runs:
             tsc          Run the TypeScript 7 compiler this package ships (emit, --build)
             check        Check types, lint, formatting, and unused code
             fix          Auto-fix lint and formatting issues
+            gate-lock    Refuse while a running gate holds this checkout, naming its pid: the guard an install or a pack runs first
             clean        Remove .artifacts/ — dist/ stays, it is the build's product
 
           Examples:
@@ -33,6 +34,7 @@ runs:
             typescript tsc --build
             typescript check
             typescript fix
+            typescript gate-lock
             typescript clean
 
           A command's flags: typescript <command> --help

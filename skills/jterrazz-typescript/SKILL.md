@@ -18,6 +18,7 @@ One devDependency that builds, checks, lints and formats a project. The manual i
 | `typescript doctor`      | first read after a bump: installed tools against the declared ranges, then every setting beside the file it comes from                                                                  |
 | `typescript baseline`    | a bump lands red: record today's counts, exact — `fix` lowers one that fell                                                                                                             |
 | `typescript docs-layout` | a repository with no npm project: the manual's shape, alone                                                                                                                             |
+| `typescript gate-lock`   | before an install or a pack: refuses while a running gate holds the checkout, naming its pid                                                                                            |
 
 `typescript <command> --help` prints a command's flags and runs nothing; a flag it does not read, or one given twice, is refused before anything is written (`docs/reference/commands.md`).
 

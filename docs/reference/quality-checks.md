@@ -38,6 +38,12 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 - `passes` lists every pass that ran, with its label, status and seconds; `firstError` is the first line of a failing pass's log, and `null` for one that passed. The drift report is a pass of its own, `Drift (profile)`.
 - `mutation` is `null` for `check` and `fix`. For `mutation`, `passes` lists its stages — `Mutation (module tests)`, `Mutation (whole suite)`, or one per workspace member — and `mutation` holds `detected`, `survivors` (each `file`, `line`, `mutator`), `unrun` — the mutants the run never judged — and `range`; a run that judged nothing, refused or measured nothing, holds `null` there and says why on its last line.
 
+### One gate per checkout
+
+A gate reads what an install and a build replace — `node_modules/`, `dist/`, the package a spec packs — so `check` and `mutation` hold the checkout for as long as they run: each writes its gate's pid to `.artifacts/gate.lock`, and the process that wrote it takes it away when it ends. While a live process holds it, `typescript build` and `typescript gate-lock` refuse, naming that pid in four parts; a repository's `install` asks `gate-lock` before it installs, and runs its gates in parallel only in worktrees of their own. A lock whose pid is dead holds nothing, and the next gate takes it over.
+
+The steps of one `make check` are one gate when the recipe names it: `TYPESCRIPT_GATE=<pid>:<root>` — the recipe's shell, `$$$$:$(CURDIR)` in a `Makefile` — makes `check` and `mutation` hold the checkout in that shell's name, so the lock stands between the steps and over the tests, and the builds the gate runs itself are never refused. A command run in another folder — a spec's run in a fixture — is no step of it and holds its own folder.
+
 ### Flags and exit codes
 
 `check` and `fix` run whole, every pass that applies over the whole project: no flag runs one pass or one file. `check` takes one flag, and `fix` none:
@@ -757,7 +763,7 @@ The member named `specs` is the exception: it is the specs tree itself, a suite 
 
 Every repository answers the same six at its root, whatever the language under it: `make install`, `make build`, `make lint`, `make fix`, `make test` and `make check`. The flows speak only these, so a session that has never opened the repository still knows how to install, prove and repair it. What each recipe runs is the repository's, save how `fix` meets a failure; that the rule exists is the contract. A target beyond the six — the `mutation` that [Getting started](../start/getting-started.md#4-answer-the-six-gestures-in-a-makefile)'s `check` runs — is a helper of a recipe, and no gesture.
 
-`make install` installs the checkout's dependencies and touches nothing outside it: no global tool, no shared cache write, no other clone. A gate that runs in the same checkout at the same time reads a `node_modules` that install would empty, so a repository that runs gates in parallel guards the two with one lock under `.artifacts/`.
+`make install` installs the checkout's dependencies and touches nothing outside it: no global tool, no shared cache write, no other clone. A gate that runs in the same checkout at the same time reads a `node_modules` that install would empty, so the recipe asks `typescript gate-lock` first, which refuses while a gate holds the checkout ([One gate per checkout](#one-gate-per-checkout)).
 
 The contract is asked where a REPOSITORY is — a `.git` beside the project, as for [the Docs (layout) pass](#the-docs-layout-pass) — and an ignored `Makefile` counts for none, like every path a tree gate skips. A workspace member owes nothing: the repository's root answers for every member, and a member linted on its own is never asked.
 
