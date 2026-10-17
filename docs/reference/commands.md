@@ -29,7 +29,7 @@ npx typescript tsc             # The TypeScript 7 compiler, passed through
 
 ## Flags and help
 
-`typescript --help` lists the commands, and `typescript <command> --help` — or `-h` — prints that command's usage, its flags, and the page that owns it, then exits `0` having run nothing: `fix --help` writes no file, `mutation --help` starts no run. Help wins over every other word on the line.
+`typescript --help` lists the commands, and `typescript <command> --help` (or `-h`) prints that command's usage, its flags, and the page that owns it, then exits `0` having run nothing: `fix --help` writes no file, `mutation --help` starts no run. Help wins over every other word on the line.
 
 Each command reads only the flags it declares, and refuses any other line before it reads or writes a file, in four parts, above its usage, exiting `1`:
 
