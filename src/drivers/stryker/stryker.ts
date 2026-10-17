@@ -78,7 +78,7 @@ const REPORTER_FILE = `${MUTATION_OUTPUT}/progress-reporter.mjs`;
 export function strykerConfig(
     scope: { readonly generated: readonly string[]; readonly mutated: readonly string[] },
     { mutate, name }: Stage,
-    { terminal = process.stdout.isTTY }: { terminal?: boolean } = {},
+    { concurrency, terminal = process.stdout.isTTY }: { concurrency: number; terminal?: boolean },
 ): object {
     const files = FILES[name];
     const suite = name === 'suite';
@@ -87,7 +87,7 @@ export function strykerConfig(
         $schema: '../../node_modules/@stryker-mutator/core/schema/stryker-schema.json',
         buildCommand: `node ${MUTATION_OUTPUT}/${files.sandbox}`,
         checkers: [],
-        concurrency: suite ? 6 : 8,
+        concurrency,
         coverageAnalysis: 'perTest',
         disableTypeChecks: typeCheckedGlob(scope.mutated),
         ...(suite ? { dryRunTimeoutMinutes: 60 } : {}),
@@ -203,17 +203,22 @@ function observedIn(folder: string): ObservedTest[] {
 
 export type Measured = { ranByTests: ReadonlySet<string>; report: unknown };
 
+/** How a stage runs: whether the sandbox builds first, from no report, on how many test runners, in which project. */
+export type StageRun = {
+    buildsFirst: boolean;
+    cold: boolean;
+    concurrency: number;
+    project: string;
+    staysInFunctions: StaysInFunctions;
+};
+
 /** A stage's report, or Stryker's status when it failed: a failed run leaves no report this one could be judged by. */
 export async function strykerRun(
     scope: { readonly exclude: readonly string[]; readonly mutated: readonly string[] },
     stage: Stage,
-    {
-        buildsFirst,
-        cold,
-        project,
-        staysInFunctions,
-    }: { buildsFirst: boolean; cold: boolean; project: string; staysInFunctions: StaysInFunctions },
+    run: StageRun,
 ): Promise<Measured | { status: number }> {
+    const { buildsFirst, cold, concurrency, project, staysInFunctions } = run;
     const files = FILES[stage.name];
     const suite = stage.name === 'suite';
     const { resolved } = await readSettings(project);
@@ -226,7 +231,7 @@ export async function strykerRun(
     );
     writeFileSync(
         join(MUTATION_OUTPUT, files.config),
-        `${JSON.stringify(strykerConfig({ ...scope, generated }, stage), null, 4)}\n`,
+        `${JSON.stringify(strykerConfig({ ...scope, generated }, stage, { concurrency }), null, 4)}\n`,
     );
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));

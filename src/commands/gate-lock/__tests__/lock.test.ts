@@ -3,6 +3,7 @@ import {
     existsSync,
     mkdirSync,
     mkdtempSync,
+    readdirSync,
     readFileSync,
     realpathSync,
     rmSync,
@@ -13,10 +14,12 @@ import { join } from 'node:path';
 import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
 import {
+    activeGates,
     foreignHolderOf,
     GATE_LOCK,
     GATE_VARIABLE,
     gateOf,
+    gatesFolder,
     holderOf,
     isAlive,
     refusedWhileGated,
@@ -171,5 +174,54 @@ describe('lock', () => {
             }),
         ).rejects.toThrow('stopped');
         expect(existsSync(join(root, GATE_LOCK))).toBe(false);
+    });
+
+    test('activeGates — counts the live gates registered on the machine, takes away the dead, and counts this one when none is', () => {
+        // Given - a machine whose registry holds a live gate, this one, a dead one and a name that is no pid
+        const machine = project();
+        vi.stubEnv('TMPDIR', machine);
+        onTestFinished(() => {
+            vi.unstubAllEnvs();
+        });
+        const none = activeGates();
+        mkdirSync(gatesFolder(), { recursive: true });
+        for (const name of [
+            String(process.ppid),
+            String(process.pid),
+            String(deadPid()),
+            'stray',
+        ]) {
+            writeFileSync(join(gatesFolder(), name), '/repo\n');
+        }
+
+        // Then - one with no registry, two live ones after, and only they are left
+        expect([none, activeGates(), readdirSync(gatesFolder()).toSorted()]).toStrictEqual([
+            1,
+            2,
+            [String(process.ppid), String(process.pid)].toSorted(),
+        ]);
+    });
+
+    test("withGateLock — a gate registers on the machine while it runs; a run nested in another checkout's gate registers nothing", async () => {
+        // Given - a machine of its own, a checkout run as its own gate, then one run inside the parent's gate of another checkout
+        const machine = project();
+        vi.stubEnv('TMPDIR', machine);
+        gateNamed(undefined);
+        const root = project();
+        const during = await withGateLock(root, async () => {
+            await Promise.resolve();
+
+            return readdirSync(gatesFolder());
+        });
+        const after = readdirSync(gatesFolder());
+        gateNamed(`${String(process.ppid)}:${machine}`);
+        const nested = await withGateLock(project(), async () => {
+            await Promise.resolve();
+
+            return readdirSync(gatesFolder());
+        });
+
+        // Then - this process is registered during its run alone, and the nested run adds nobody
+        expect([during, after, nested]).toStrictEqual([[String(process.pid)], [], []]);
     });
 });

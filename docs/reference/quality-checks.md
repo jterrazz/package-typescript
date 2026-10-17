@@ -970,7 +970,11 @@ A mutant never touches the checkout. Stryker copies the project into a sandbox u
 
 ### What a run prints
 
-Each stage prints Stryker's own log under its `TYPESCRIPT` header, then the seconds the stage took, `The module tests ran in 33.4s`. Inside it, `dry run: 12.0s` is the initial run of the tests over the unmutated sandbox. On a terminal Stryker draws its progress bar; read through a pipe — a log file, CI, an agent — the run prints one `progress:` line per tenth of the mutants it runs instead of Stryker's tick every ten seconds, and each says `no verdict yet`: the survivors it counts so far are mutants the next stage may still detect, and only the verdict below says what failed. The run's last line and `.artifacts/gate/verdict.json` carry that verdict ([The verdict file](#the-verdict-file)).
+Each stage prints Stryker's own log under its `TYPESCRIPT` header, then the seconds the stage took and the test runners it ran on, `The module tests ran in 33.4s on 8 test runner(s)`. Inside it, `dry run: 12.0s` is the initial run of the tests over the unmutated sandbox. On a terminal Stryker draws its progress bar; read through a pipe — a log file, CI, an agent — the run prints one `progress:` line per tenth of the mutants it runs instead of Stryker's tick every ten seconds, and each says `no verdict yet`: the survivors it counts so far are mutants the next stage may still detect, and only the verdict below says what failed. The run's last line and `.artifacts/gate/verdict.json` carry that verdict ([The verdict file](#the-verdict-file)).
+
+### How many test runners
+
+Each stage hands Stryker a number of test runners, printed with its seconds — `The module tests ran in 33.4s on 8 test runner(s)`. `TYPESCRIPT_JOBS`, a positive integer, names it for both stages; anything else is refused before a run starts. Unset, each gate takes its share of the machine: the cores Node counts, divided by the gates running on it — every `check` and `mutation` registers under the system's temp folder while it runs, a gate nested in another checkout's excepted — and the whole suite three quarters of that share, since its specs spawn processes of their own. Two agents gating two worktrees at once each get half the machine instead of both asking for all of it.
 
 ### Every mutant a test runs is detected
 

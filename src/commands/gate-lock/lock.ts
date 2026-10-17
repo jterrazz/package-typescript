@@ -1,4 +1,5 @@
-import { mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
 
@@ -77,8 +78,34 @@ export function foreignHolderOf(project: string): number | undefined {
     return holder === undefined || holder === gateOf(project) ? undefined : holder;
 }
 
-/** Runs `run` as a gate holding `project`: the lock taken where no live gate holds it — a lock whose holder died is taken over —, and dropped at the end by the process that took it; a gate already holding it leaves its hold as it is. */
+/** Every live gate of this machine registers here, so a run sizes its share of the cores by how many run beside it. */
+export const gatesFolder = (): string => join(tmpdir(), 'typescript-gates');
+
+/** How many gates live on this machine, this one included; a registration whose gate died is taken away. */
+export function activeGates(): number {
+    const folder = gatesFolder();
+    let names: string[];
+    try {
+        names = readdirSync(folder);
+    } catch {
+        return 1;
+    }
+    const live = names.filter((name) => {
+        const pid = pidOf(name);
+        if (pid !== undefined && isAlive(pid)) {
+            return true;
+        }
+        rmSync(join(folder, name), { force: true });
+
+        return false;
+    });
+
+    return Math.max(1, live.length);
+}
+
+/** Runs `run` as a gate holding `project`: the lock taken where no live gate holds it — a lock whose holder died is taken over —, and dropped at the end by the process that took it; a gate already holding it leaves its hold as it is. A gate nested in another checkout's — a spec's run in a fixture — registers nothing more on the machine. */
 export async function withGateLock<T>(project: string, run: () => Promise<T>): Promise<T> {
+    const outer = outerOf(process.env);
     const gate = gateOf(project);
     const lock = join(project, GATE_LOCK);
     const held = holderOf(project) !== undefined;
@@ -86,12 +113,21 @@ export async function withGateLock<T>(project: string, run: () => Promise<T>): P
         mkdirSync(dirname(lock), { recursive: true });
         writeFileSync(lock, `${String(gate)}\n`);
     }
+    const registered =
+        outer === undefined || outer.pid === gate ? join(gatesFolder(), String(gate)) : undefined;
+    if (registered !== undefined) {
+        mkdirSync(gatesFolder(), { recursive: true });
+        writeFileSync(registered, `${realOf(project)}\n`);
+    }
     const before = process.env[GATE_VARIABLE];
     process.env[GATE_VARIABLE] = `${String(gate)}:${realOf(project)}`;
     try {
         return await run();
     } finally {
         restored(before);
+        if (gate === process.pid && registered !== undefined) {
+            rmSync(registered, { force: true });
+        }
         if (gate === process.pid && !held && pidOf(readOf(lock)) === gate) {
             rmSync(lock, { force: true });
         }

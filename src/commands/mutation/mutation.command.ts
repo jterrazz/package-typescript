@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
 
@@ -6,12 +7,13 @@ import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { clientOnlySources } from '../../../lint/kit/project/browser-side.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { toolchainIn } from '../../drivers/node/node.js';
+import { concurrencyOf, jobsNamed } from '../../drivers/stryker/concurrency.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
 import { diffStaysInFunctions } from '../../drivers/tsc/change-shape.js';
 import { secondsSince } from '../check/passes/launched.js';
 import { badge, print, RED, RESET, secondsOf } from '../check/report/terminal.js';
-import { withGateLock } from '../gate-lock/lock.js';
+import { activeGates, withGateLock } from '../gate-lock/lock.js';
 import { askedOf } from './asked.js';
 import { baseFor, changeOf, namesACommit, treeChangeFor } from './change.js';
 import type { Base } from './change.js';
@@ -27,27 +29,33 @@ import type { Judged, ModuleRun } from './survivors.js';
 import { measureOf, verdictOf } from './verdict.js';
 import type { Measure } from './verdict.js';
 
-type Run = { cold: boolean; project: string; recorded: Recorded };
+type Run = { cold: boolean; jobs: number | undefined; project: string; recorded: Recorded };
 
 async function measured(
     scope: MutationScope,
     stage: Stage,
-    { cold, project, recorded }: Run,
+    { cold, jobs, project, recorded }: Run,
 ): Promise<Measured | { status: number }> {
     print(
         `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'Measuring the whole suite against what the module tests let live, and the changed lines they do not run' : 'Measuring the module tests against mutants of the sources they test'}...\n\n`,
     );
 
     const from = performance.now();
+    const concurrency = concurrencyOf(stage.name, {
+        cores: availableParallelism(),
+        gates: activeGates(),
+        jobs,
+    });
     const outcome = await strykerRun(scope, stage, {
         buildsFirst: buildsOf(project),
         cold,
+        concurrency,
         project,
         staysInFunctions: diffStaysInFunctions,
     });
     const seconds = secondsSince(from);
     print(
-        `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'The whole suite' : 'The module tests'} ran in ${secondsOf(seconds)}\n`,
+        `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'The whole suite' : 'The module tests'} ran in ${secondsOf(seconds)} on ${String(concurrency)} test runner(s)\n`,
     );
     const status = 'status' in outcome ? outcome.status : 0;
     recorded.passes.push({
@@ -192,10 +200,10 @@ function measuredNothing(project: string, recorded: Recorded): number {
 async function measuredRun(
     project: string,
     args: readonly string[],
-    recorded: Recorded,
+    { jobs, recorded }: { jobs: number | undefined; recorded: Recorded },
 ): Promise<number> {
     const { cold, named, ranges } = askedOf(args);
-    const run: Run = { cold, project, recorded };
+    const run: Run = { cold, jobs, project, recorded };
     if (named !== undefined && !namesACommit(project, named)) {
         return refusedSince(named, recorded);
     }
@@ -235,11 +243,34 @@ async function measuredRun(
     });
 }
 
+function refusedJobs(named: string, recorded: Recorded): number {
+    const found = `TYPESCRIPT_JOBS is ${named}, which counts no test runner`;
+    recorded.reason = `refused before any run: ${found}`;
+    print(
+        `${RED}${refusal({
+            fix: "set it to a positive integer — TYPESCRIPT_JOBS=2 — or leave it unset to take this gate's share of the cores",
+            found,
+            read: 'docs/reference/quality-checks.md#how-many-test-runners',
+            why: 'a count Stryker cannot run would stop the run, or run another one than the one asked for',
+        })}${RESET}\n`,
+    );
+
+    return 1;
+}
+
 export async function mutation(args: readonly string[]): Promise<number> {
     const project = process.cwd();
     const recorded = recorder();
+    const named = process.env.TYPESCRIPT_JOBS;
+    const jobs = jobsNamed(named);
 
     return await withGateLock(project, async () =>
-        concluded(project, recorded, await measuredRun(project, args, recorded)),
+        concluded(
+            project,
+            recorded,
+            Number.isNaN(jobs)
+                ? refusedJobs(String(named), recorded)
+                : await measuredRun(project, args, { jobs, recorded }),
+        ),
     );
 }

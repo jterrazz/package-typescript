@@ -20,10 +20,17 @@ const SCOPE = { generated: [], mutated: ['src/**/*.ts', 'src/**/*.tsx', 'lint/*.
 describe('stryker', () => {
     test('hands Stryker a dynamic-route file as a path, not as a glob', () => {
         // Given - an Astro route whose folder and file are named in brackets, whole and by lines
-        const config = strykerConfig(SCOPE, {
-            mutate: ['src/pages/[locale]/[key].png.ts', 'src/pages/[locale]/[key].png.ts:15-18'],
-            name: 'suite',
-        });
+        const config = strykerConfig(
+            SCOPE,
+            {
+                mutate: [
+                    'src/pages/[locale]/[key].png.ts',
+                    'src/pages/[locale]/[key].png.ts:15-18',
+                ],
+                name: 'suite',
+            },
+            { concurrency: 1 },
+        );
 
         // Then - each bracket is a class of its own, and the line range left as it was
         expect(config).toMatchObject({
@@ -39,12 +46,12 @@ describe('stryker', () => {
         const modules = strykerConfig(
             SCOPE,
             { mutate: ['src/a.ts'], name: 'modules' },
-            { terminal: false },
+            { concurrency: 8, terminal: false },
         );
         const suite = strykerConfig(
             SCOPE,
             { mutate: ['src/c.ts:3-4'], name: 'suite' },
-            { terminal: false },
+            { concurrency: 6, terminal: false },
         );
 
         // Then - the module run fast and in its unit project, the suite slower, unrelated and given an hour to start
@@ -96,7 +103,7 @@ describe('stryker', () => {
         const config = strykerConfig(
             SCOPE,
             { mutate: ['src/a.ts'], name: 'modules' },
-            { terminal: true },
+            { concurrency: 2, terminal: true },
         );
 
         // Then - Stryker draws its bar, and the run's reporter still says how long the dry run took
@@ -110,6 +117,7 @@ describe('stryker', () => {
         const config = strykerConfig(
             { generated: [], mutated: ['src/**/*.ts'] },
             { mutate: [], name: 'modules' },
+            { concurrency: 1 },
         );
 
         // Then - the type checks are disabled on that glob alone
@@ -131,7 +139,11 @@ describe('stryker', () => {
         // Then - ios/ alone is left out of the copy Stryker makes
         expect(generated).toStrictEqual(['ios']);
         expect(
-            strykerConfig({ generated, mutated: ['src/**/*.ts'] }, { mutate: [], name: 'modules' }),
+            strykerConfig(
+                { generated, mutated: ['src/**/*.ts'] },
+                { mutate: [], name: 'modules' },
+                { concurrency: 1 },
+            ),
         ).toMatchObject({
             ignorePatterns: [
                 '/.artifacts/**',
