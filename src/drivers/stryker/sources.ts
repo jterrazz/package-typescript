@@ -47,7 +47,7 @@ const LOAD_FAILURES_REPORTER_SOURCE = `const loadFailures = {
 };
 `;
 
-// hazard: Stryker runs Vitest in worker threads, where a native addon a spec loads — a database driver — can crash the process; the suite runs each test file in a process of its own, as Vitest does by default.
+// hazard: Stryker runs Vitest in worker threads, where a native addon a spec loads (a database driver) can crash the process; the suite runs each test file in a process of its own, as Vitest does by default.
 const OWN_PROCESSES_PLUGIN_SOURCE = `const ownProcesses = {
     configureVitest({ project }) {
         project.config.pool = 'forks';

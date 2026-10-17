@@ -1,6 +1,6 @@
 export const PROGRESS_REPORTER = 'typescript-progress';
 
-// invariant: a run read through a pipe — an agent's log, CI — gets one line per tenth of its mutants and never Stryker's tick every ten seconds, whose running survivor count reads as a verdict; a terminal keeps Stryker's own bar. Both say how long the dry run took.
+// invariant: a run read through a pipe (an agent's log, CI) gets one line per tenth of its mutants and never Stryker's tick every ten seconds, whose running survivor count reads as a verdict; a terminal keeps Stryker's own bar. Both say how long the dry run took.
 export const PROGRESS_REPORTER_SOURCE = `const STEPS = 10;
 
 const secondsSince = (from) => (Math.round((performance.now() - from) / 100) / 10).toFixed(1);

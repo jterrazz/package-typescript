@@ -58,7 +58,7 @@ const ENTRYPOINT = /\bentrypoint\s*:\s*['"`](?<path>\.{0,2}\/?[^'"`]+\.[cm]?[jt]
 // Stryker disable next-line OptionalChaining: a match of the pattern always holds its named group
 const pathOf = (match: RegExpExecArray): string => normalize(match.groups?.path ?? '');
 
-/** The local modules the unit's Astro config loads by an `entrypoint` path, relative to the unit — a package's entrypoint is the package's to trace. */
+/** The local modules the unit's Astro config loads by an `entrypoint` path, relative to the unit; a package's entrypoint is the package's to trace. */
 export function astroEntrypointsOf(unit: string): string[] {
     const config = CONFIGS.find((name) => existsSync(join(unit, name)));
     if (config === undefined) {

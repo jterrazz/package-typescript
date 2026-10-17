@@ -108,7 +108,7 @@ export function reaches(changed: Changed, file: string, line: number): boolean {
 const survivedTheModules = (mutant: Mutant, ranByTests: ReadonlySet<string>): boolean =>
     mutant.status === 'Survived' && !leftByTheModules(mutant, ranByTests);
 
-/** The lines that reach a mutant of the run: the change, and for a static mutant `statics`, the tree's own change — `--mutate` names lines to measure, and never makes a table the module tests only load the suite's to judge. */
+/** The lines that reach a mutant of the run: the change, and for a static mutant `statics`, the tree's own change. `--mutate` names lines to measure, and never makes a table the module tests only load the suite's to judge. */
 export type Reach = { changed: Changed; statics?: Changed };
 
 const reachedBy = ({ changed, statics = changed }: Reach, file: string, mutant: Mutant): boolean =>
@@ -189,7 +189,7 @@ function suiteAnswer(
     }
 }
 
-/** One verdict over both runs: a mutant the module tests let live is the suite's to answer, and survives only where the suite lets it live too; what they left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant handed to the suite that its report does not carry was judged by nothing; of a source with no module test, the suite's report counts only what this run's ranges held — an earlier run's results it carries beyond them count for nothing. */
+/** One verdict over both runs: a mutant the module tests let live is the suite's to answer, and survives only where the suite lets it live too; what they left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant handed to the suite that its report does not carry was judged by nothing; of a source with no module test, the suite's report counts only what this run's ranges held, and an earlier run's results it carries beyond them count for nothing. */
 export function judgedRuns(
     modules: ModuleRun,
     suite?: Reach & { report: unknown; untested: readonly string[] },

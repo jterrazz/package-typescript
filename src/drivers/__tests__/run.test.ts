@@ -203,7 +203,7 @@ describe('run', () => {
             await vi.waitFor(() => {
                 expect(existsSync(ready)).toBe(true);
             });
-            // hazard: a command that never got the signal would outlive the test, holding the streams of whoever runs it — a mutation run waits on them for ever.
+            // hazard: a command that never got the signal would outlive the test, holding the streams of whoever runs it, and a mutation run waits on them for ever.
             onTestFinished(() => {
                 const pid = Number(readFileSync(ready, 'utf8'));
                 if (pid > 0) {

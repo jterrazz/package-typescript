@@ -9,7 +9,7 @@ export function lastLineReader(file: string, text: string): (from: number, to: n
     return (from, to) => {
         let last = to;
         const visit = (node: ts.Node): void => {
-            // Stryker disable next-line ConditionalExpression,EqualityOperator,BlockStatement: a pruning only — a node ending before the lines, and every node within it, starts before them too
+            // Stryker disable next-line ConditionalExpression,EqualityOperator,BlockStatement: a pruning only, since a node ending before the lines, and every node within it, starts before them too
             if (lineAt(node.end) < from) {
                 return;
             }

@@ -45,7 +45,7 @@ const isErased = (node: ts.Node): boolean =>
         node.importClause?.phaseModifier === ts.SyntaxKind.TypeKeyword) ||
     (ts.isExportDeclaration(node) && node.isTypeOnly);
 
-// invariant: per line of a module, from 1, whether a change there reaches only what a function does when it runs — a line of a function, of a type, a comment or a blank; a line is the module's to run as it loads when any token outside a function's own sits on it — `}, 5);` closes a callback and passes a top-level argument on one line, and a change there moves what loading does.
+// invariant: per line of a module, from 1, whether a change there reaches only what a function does when it runs: a line of a function, of a type, a comment or a blank. A line is the module's to run as it loads when any token outside a function's own sits on it: `}, 5);` closes a callback and passes a top-level argument on one line, and a change there moves what loading does.
 function linesInFunctions(file: string, text: string): (line: number) => boolean {
     const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest);
     const lineOf = (position: number): number =>
@@ -80,7 +80,7 @@ function linesInFunctions(file: string, text: string): (line: number) => boolean
 
 /**
  * Whether a change of a module reaches only what its functions do when they run: every line it removed and every line it added sits in a function, a type, a comment or a blank.
- * Such a change moves no test that ran none of the module's functions; any other — a constant, an import, a statement run as the module loads — moves every test that loaded it.
+ * Such a change moves no test that ran none of the module's functions; any other (a constant, an import, a statement run as the module loads) moves every test that loaded it.
  */
 export function changesOnlyFunctions(
     file: string,
@@ -95,7 +95,7 @@ export function changesOnlyFunctions(
     );
 }
 
-/** Whether a change, as `git diff --unified=0` names its lines between the module's two texts, reaches only what its functions do; a diff that names no line — the earlier text never kept, the module deleted — reads as one that reaches what loading does. */
+/** Whether a change, as `git diff --unified=0` names its lines between the module's two texts, reaches only what its functions do; a diff that names no line (the earlier text never kept, the module deleted) reads as one that reaches what loading does. */
 export function diffStaysInFunctions(
     file: string,
     texts: { after: string; before: () => string },

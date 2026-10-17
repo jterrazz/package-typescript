@@ -101,7 +101,7 @@ export function defaultBaseOf(project: string): Base {
           };
 }
 
-/** The commits of the branch a base leaves out, `<merge-base>..<base>`, or `undefined` where the base reaches back to the merge-base with the default branch or the branch holds no commit of its own — so a verdict narrower than `merge-base..HEAD` can say what it did not measure. */
+/** The commits of the branch a base leaves out, `<merge-base>..<base>`, or `undefined` where the base reaches back to the merge-base with the default branch or the branch holds no commit of its own, so a verdict narrower than `merge-base..HEAD` can say what it did not measure. */
 export function unmeasuredBy(project: string, since: Base): string | undefined {
     const branch = branchBaseOf(project);
     if (branch === undefined) {
@@ -123,7 +123,7 @@ export function baseFor(project: string, named: string | undefined): Base {
     return { ...base, unmeasured: unmeasuredBy(project, base) };
 }
 
-/** What the working tree changed since `since`, untracked files whole, a file moved or renamed by its content — only the lines it changed beyond the move; `undefined` where git cannot say. */
+/** What the working tree changed since `since`, untracked files whole, a file moved or renamed by its content (only the lines it changed beyond the move); `undefined` where git cannot say. */
 export function changeSince(project: string, since: string): Changed | undefined {
     const diff = git(project, [
         'diff',
@@ -166,7 +166,7 @@ function linesNamed(ranges: readonly string[]): Changed {
     return named;
 }
 
-/** The change the suite measures: what `--mutate` names, else what the tree changed since the base, with a note naming the base, or saying that git could not answer or that the change is empty — a run that measured nothing says so. */
+/** The change the suite measures: what `--mutate` names, else what the tree changed since the base, with a note naming the base, or saying that git could not answer or that the change is empty, so a run that measured nothing says so. */
 export function changeOf(
     project: string,
     { ranges, since }: { ranges: readonly string[] | undefined; since: Base },
@@ -191,7 +191,7 @@ export function changeOf(
     };
 }
 
-/** The change that brings a static mutant to the suite: the tree's own, whatever lines `--mutate` names — a named file whole does not make its tables the suite's to judge; `changed` itself where nothing is named. */
+/** The change that brings a static mutant to the suite: the tree's own, whatever lines `--mutate` names (a named file whole does not make its tables the suite's to judge); `changed` itself where nothing is named. */
 export function treeChangeFor(
     project: string,
     { ranges, since }: { ranges: readonly string[] | undefined; since: Base },

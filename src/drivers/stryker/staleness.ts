@@ -60,7 +60,7 @@ export type Staleness = {
     reach: (file: string) => Reach;
 };
 
-// invariant: a test is stale when its file changed, when ground under a folder above it changed, when a source its own process loads changed, and when a source changed that a process it spawned ran — or loaded, unless the change reaches only what the source's functions do; a test whose processes the last run could not follow is stale whatever source changed.
+// invariant: a test is stale when its file changed, when ground under a folder above it changed, when a source its own process loads changed, and when a source changed that a process it spawned ran, or loaded, unless the change reaches only what the source's functions do; a test whose processes the last run could not follow is stale whatever source changed.
 function isStale(test: ReportTest, change: Change, staleness: Staleness): boolean {
     if (change.tests.has(test.file) || change.grounds.some((root) => isUnder(test.file, root))) {
         return true;
@@ -83,7 +83,7 @@ function isStale(test: ReportTest, change: Change, staleness: Staleness): boolea
     );
 }
 
-// invariant: Stryker stops a mutant's run at the first test that fails under it, so a kill stands while every test that killed it stands, whatever became of the others that cover it; any other result — a survivor, a timeout — stands only while every test that covered it does, since any of them may now detect it.
+// invariant: Stryker stops a mutant's run at the first test that fails under it, so a kill stands while every test that killed it stands, whatever became of the others that cover it; any other result (a survivor, a timeout) stands only while every test that covered it does, since any of them may now detect it.
 function standsAfter(mutant: Mutant, staleTests: ReadonlySet<string>): boolean {
     const killers = idsOf(mutant, 'killedBy');
     const judges =

@@ -46,7 +46,7 @@ export const fileOf = (range: string): string => range.replace(/:\d+(?::\d+)?-\d
 
 const RANGE = /^(?<file>[^:]+)(?::(?<from>\d+)(?::\d+)?-(?<to>\d+)(?::\d+)?)?$/u;
 
-/** The first `--mutate` range that reaches no source of the run — a path it does not mutate, or lines written other than `from-to` in order — else `undefined`. */
+/** The first `--mutate` range that reaches no source of the run (a path it does not mutate, or lines written other than `from-to` in order), else `undefined`. */
 export function unreachedRange(
     ranges: readonly string[],
     sources: ReadonlySet<string>,

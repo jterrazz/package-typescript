@@ -41,7 +41,7 @@ export function isAlive(pid: number | undefined): pid is number {
 const readOf = (file: string): string | undefined =>
     existsSync(file) ? String(readFileSync(file)) : undefined;
 
-/** The live process holding the checkout, or `undefined` where none does — a lock whose holder died holds nothing. */
+/** The live process holding the checkout, or `undefined` where none does: a lock whose holder died holds nothing. */
 export function holderOf(project: string): number | undefined {
     const pid = pidOf(readOf(join(project, GATE_LOCK)));
 
@@ -106,7 +106,7 @@ export function activeGates(): number {
     return Math.max(1, live.length);
 }
 
-/** Runs `run` as a gate holding `project`: the lock taken where no live gate holds it — a lock whose holder died is taken over —, and dropped at the end by the process that took it; a gate already holding it leaves its hold as it is. A gate nested in another checkout's — a spec's run in a fixture — registers nothing more on the machine. */
+/** Runs `run` as a gate holding `project`: the lock taken where no live gate holds it (a lock whose holder died is taken over), and dropped at the end by the process that took it; a gate already holding it leaves its hold as it is. A gate nested in another checkout's, such as a spec's run in a fixture, registers nothing more on the machine. */
 export async function withGateLock<T>(project: string, run: () => Promise<T>): Promise<T> {
     const outer = outerOf(process.env);
     const gate = gateOf(project);

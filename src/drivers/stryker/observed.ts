@@ -17,7 +17,7 @@ export type Observed = {
     tests: Readonly<Record<string, readonly [number, number]>>;
 };
 
-/** The observed tests, each list of sources written once however many tests share it; a test whose processes ran a file the inputs do not hold — a build with no map back to its sources — is one the run could not follow. */
+/** The observed tests, each list of sources written once however many tests share it; a test whose processes ran a file the inputs do not hold (a build with no map back to its sources) is one the run could not follow. */
 export function observedFrom(records: readonly ObservedTest[], inputs?: Inputs): Observed {
     const sets: string[][] = [];
     const indexOf = new Map<string, number>();
@@ -61,7 +61,7 @@ export function ranBy(observed: Observed): (test: string) => Ran | undefined {
 
 const numbersOf = (value: unknown): number[] => (isList(value) ? value.map(Number) : []);
 
-// invariant: on disk every source is named once, in `names`, and a set lists its indices there — the sets of a large suite name the same few hundred sources thousands of times.
+// invariant: on disk every source is named once, in `names`, and a set lists its indices there, since the sets of a large suite name the same few hundred sources thousands of times.
 export function observedOf(value: unknown): Observed {
     const { names, sets, tests } = objectOf(value);
     const named = isList(names) ? names.map(String) : [];

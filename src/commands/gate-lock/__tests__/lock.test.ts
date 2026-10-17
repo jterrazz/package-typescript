@@ -52,7 +52,7 @@ function gateNamed(value: string | undefined): void {
 
 describe('lock', () => {
     test('isAlive — this process lives, one that exited does not', () => {
-        // Given - this process, init — alive, though this user may not signal it —, a child that has exited, no pid, and one that is no whole number
+        // Given - this process, init (alive, though this user may not signal it), a child that has exited, no pid, and one that is no whole number
         const dead = deadPid();
 
         // Then - this process and init live
@@ -81,7 +81,7 @@ describe('lock', () => {
             return holderOf(root);
         });
 
-        // Then - the parent holds the first alone, and neither the process group nor every process — pids 0 and -1, which a signal reaches — holds anything
+        // Then - the parent holds the first alone, and neither the process group nor every process (pids 0 and -1, which a signal reaches) holds anything
         expect([holderOf(live), holderOf(stale), holderOf(none), holderOf(garbled)]).toStrictEqual([
             process.ppid,
             undefined,

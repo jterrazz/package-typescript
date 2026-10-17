@@ -125,7 +125,7 @@ export function strykerPrepared(project: string): void {
     writeFileSync(join(MUTATION_OUTPUT, 'mutant-setup.mjs'), MUTANT_SETUP_SOURCE);
     writeFileSync(join(MUTATION_OUTPUT, 'child-coverage.cjs'), CHILD_COVERAGE_SOURCE);
     writeFileSync(REPORTER_FILE, PROGRESS_REPORTER_SOURCE);
-    // outside: the suite runs as `npm test` runs it, its tools found on the PATH npm gives a script — a spec that spawns oxlint type-aware leaves it to find tsgolint there.
+    // outside: the suite runs as `npm test` runs it, its tools found on the PATH npm gives a script; a spec that spawns oxlint type-aware leaves it to find tsgolint there.
     // Stryker disable next-line StringLiteral: a spec runs this command with the project's node_modules/.bin already first on the PATH, as npm does, so no spec can tell the folders apart
     process.env.PATH = `${join(project, 'node_modules', '.bin')}${delimiter}${process.env.PATH ?? ''}`;
 }
@@ -148,7 +148,7 @@ export function besideOf(project: string): Beside | undefined {
     };
 }
 
-// invariant: the links a sandbox lays beside its copy outlive the run when they land in the member's own `.artifacts/`, and each points at a repository folder holding that `.artifacts/` again; a walker that follows links — ls-lint, in the Names pass — loops on them for ever, so the run takes them away when it ends, and before it starts, for those a killed run left.
+// invariant: the links a sandbox lays beside its copy outlive the run when they land in the member's own `.artifacts/`, and each points at a repository folder holding that `.artifacts/` again; a walker that follows links (ls-lint, in the Names pass) loops on them for ever, so the run takes them away when it ends, and before it starts, for those a killed run left.
 export function besideLinksDropped(project: string, beside: Beside | undefined): void {
     if (beside === undefined || beside.levels < 1 || beside.levels >= SANDBOX_DEPTH) {
         return;

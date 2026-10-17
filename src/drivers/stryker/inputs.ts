@@ -55,11 +55,11 @@ const TEST_FILE = /\.(?:test|test-d|spec)\.[cm]?[jt]sx?$|\.spec\.ya?ml$/u;
 
 const CODE_FILE = /\.(?:[cm]?[jt]sx?|astro|svelte|vue)$/u;
 
-/** Whether a file is code a test may load: a module of the project outside the ground its tests read — a `__setup__/` helper and a root config included, since a test loads sources through them. */
+/** Whether a file is code a test may load: a module of the project outside the ground its tests read, a `__setup__/` helper and a root config included, since a test loads sources through them. */
 export const isLoadable = (path: string): boolean =>
     CODE_FILE.test(path) && roleOf(path).kind !== 'ground';
 
-// invariant: a test reads the ground of its own folder and of the folders above it — `../__fixtures__/`, never a sibling's — so a ground file is read by the tests under the folder that holds its ground folder.
+// invariant: a test reads the ground of its own folder and of the folders above it (`../__fixtures__/`, never a sibling's), so a ground file is read by the tests under the folder that holds its ground folder.
 // invariant: a `__setup__/` file is loaded by a project's config as well as imported, a root file configures the run itself, and a data file is read by code no import names: each reaches every test.
 export function roleOf(path: string): Role {
     const folders = path.split('/').slice(0, -1);
@@ -98,7 +98,7 @@ function candidatesOf(target: string): string[] {
     return [target, ...swapped, `${target}.ts`, `${target}.tsx`, `${target}/index.ts`];
 }
 
-/** The files of `known` a module names by a relative path — an import, an export, a dynamic import, a mock, any quoted `./` or `../` — so the reach errs wide, never narrow. */
+/** The files of `known` a module names by a relative path (an import, an export, a dynamic import, a mock, any quoted `./` or `../`), so the reach errs wide, never narrow. */
 export function namedBy(file: string, text: string, known: ReadonlySet<string>): string[] {
     return [...text.matchAll(RELATIVE)].flatMap(([quoted]) => {
         const target = posix.normalize(posix.join(posix.dirname(file), quoted.slice(1, -1)));
@@ -108,7 +108,7 @@ export function namedBy(file: string, text: string, known: ReadonlySet<string>):
     });
 }
 
-/** What of the package's own build a module may load by a bare specifier: its name with the subpaths its `exports` opens — any, where it declares none — and the keys of its `imports`, each a key whose target holds code. */
+/** What of the package's own build a module may load by a bare specifier: its name with the subpaths its `exports` opens (any, where it declares none), and the keys of its `imports`, each a key whose target holds code. */
 export type OwnBuild = {
     exports: readonly string[] | undefined;
     imports: readonly string[];
@@ -122,7 +122,7 @@ const leavesOf = (target: unknown): string[] =>
         ? [target]
         : Object.values(objectOf(target)).flatMap((value) => leavesOf(value));
 
-// invariant: a key whose every target is a JSON file or a declaration loads no code a source is built into — a JSON target is data, and a change to data drops a report whole.
+// invariant: a key whose every target is a JSON file or a declaration loads no code a source is built into: a JSON target is data, and a change to data drops a report whole.
 const codeKeysOf = (map: unknown): string[] =>
     Object.entries(objectOf(map))
         .filter(([, target]) => leavesOf(target).some((leaf) => !DATA_TARGET.test(leaf)))
@@ -165,7 +165,7 @@ const COMMENT_LINE = /^\s*(?:\/\/|\/\*|\*)/u;
 // invariant: an `import type` or `export type` statement is erased before the module runs, so the specifier it names loads nothing.
 const TYPE_ONLY = /\b(?:import|export)\s+type\s[^;]*?\bfrom\s*(?<quote>['"])[^'"]*\k<quote>/gu;
 
-/** Whether a module names a specifier the package resolves to its own build: a `#` import its manifest declares, or its name with a subpath its `exports` opens — a `#!` line, a heading, a comment, a type-only import or the name held as data loads nothing. */
+/** Whether a module names a specifier the package resolves to its own build: a `#` import its manifest declares, or its name with a subpath its `exports` opens. A `#!` line, a heading, a comment, a type-only import or the name held as data loads nothing. */
 export function namesItsOwnBuild(text: string, build: OwnBuild): boolean {
     const uncommented = text
         .split('\n')

@@ -37,7 +37,7 @@ const MODULE_RUN_LEAVING_THREE = {
 
 describe('survivors', () => {
     test('the module tests hand the suite exactly the nodes they let live, wherever they stand, and those they could not measure on the lines the change reaches', () => {
-        // Given - a module run that killed one mutant, let two survive — one past the hunk —, ran none of four — one past the hunk —, declared one, let a static one live and could credit no test with another, in a file the change rewrote at line 1 and lines 4 to 6, beside a file it added and one it left alone
+        // Given - a module run that killed one mutant, let two survive (one past the hunk), ran none of four (one past the hunk), declared one, let a static one live and could credit no test with another, in a file the change rewrote at line 1 and lines 4 to 6, beside a file it added and one it left alone
         const report = {
             files: {
                 'src/a.ts': {

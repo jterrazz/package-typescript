@@ -13,7 +13,7 @@ async function secondsTo(status: Promise<number>, from: number): Promise<number>
     return secondsSince(from);
 }
 
-/** A run timed from `from` — its launch, by default — to its verdict, whether it resolves or rejects. */
+/** A run timed from `from` (its launch, by default) to its verdict, whether it resolves or rejects. */
 export const timed = (status: Promise<number>, from = performance.now()): Timed => ({
     seconds: secondsTo(status, from),
     status,

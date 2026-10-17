@@ -83,7 +83,7 @@ describe('scope', () => {
     });
 
     test('the suite measures each hunk of code the change made in a source with no module test, and an added source whole', () => {
-        // Given - a change of seven hunks in one untested source — two of code, one of an import and a blank line, one of comments, one opening an import over several lines, one of an import with code after it on its line, one of a doc comment with an empty line —, one added, and one in a source left out
+        // Given - a change of seven hunks in one untested source (two of code, one of an import and a blank line, one of comments, one opening an import over several lines, one of an import with code after it on its line, one of a doc comment with an empty line), one added, and one in a source left out
         const source = [
             "import { a } from './a.js';",
             '',

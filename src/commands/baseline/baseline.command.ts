@@ -85,7 +85,7 @@ async function recordedPresets(): Promise<number> {
 
 export async function baseline(): Promise<number> {
     const project = process.cwd();
-    // invariant: the tools are found as `check` finds them — beside this package, then hoisted beside the workspace root — so the gesture the adopt flow prescribes reads the same oxlint in a member.
+    // invariant: the tools are found as `check` finds them (beside this package, then hoisted beside the workspace root), so the gesture the adopt flow prescribes reads the same oxlint in a member.
     // Stryker disable next-line CallExpression: the call lays the hoisted tsgolint on the PATH, and where this package installed its own it is found already, which is where every spec of this repository runs
     withTsgolintOnPath();
 

@@ -45,7 +45,7 @@ describe('verdict', () => {
             },
         });
 
-        // Then - the gate passes, and says what waits for a change to reach it — two sources with no module test among it — and what it did not judge
+        // Then - the gate passes, and says what waits for a change to reach it (two sources with no module test among it) and what it did not judge
         expect(verdictOf(judged, 2, MEASURE)).toStrictEqual({
             lines: [
                 'measured 3 mutants over a1b2c3d4..HEAD — every mutant a test runs is detected',

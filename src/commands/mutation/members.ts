@@ -1,6 +1,6 @@
 export type MemberRun = { args: string[]; member: string };
 
-/** Each member a run measures, and the command line it is measured with: the root's `--since` and `--cold`, and the `--mutate` ranges that sit in it, named from its folder — a member no range names is not run. */
+/** Each member a run measures, and the command line it is measured with: the root's `--since` and `--cold`, and the `--mutate` ranges that sit in it, named from its folder. A member no range names is not run. */
 export function memberRuns(
     members: readonly string[],
     {

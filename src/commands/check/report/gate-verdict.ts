@@ -106,7 +106,7 @@ export function checkSummaryOf({ passes, status }: Pick<GateVerdict, 'passes' | 
     return `✗ Some checks failed — first ${failing.label}${failing.firstError === null ? '' : `: ${failing.firstError}`}`;
 }
 
-/** The mutation run's last line: its own numbers, never a count Stryker printed on the way — or, for a run that judged nothing, why. */
+/** The mutation run's last line: its own numbers, never a count Stryker printed on the way, or, for a run that judged nothing, why. */
 export function mutationSummaryOf(status: number, mutation: MutationVerdict | string): string {
     if (typeof mutation === 'string') {
         return `${status === 0 ? '✓ Mutation passed' : '✗ Mutation failed'} — ${mutation}`;
