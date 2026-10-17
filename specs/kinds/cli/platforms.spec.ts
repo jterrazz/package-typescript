@@ -16,4 +16,20 @@ describe('platforms', () => {
             '"extends": "@jterrazz/typescript/tsconfig/bun"',
         );
     });
+
+    test('a private cli whose product is a Go program fixes, builds, checks and runs its cli specs from its declaration alone', async () => {
+        // Given - a Go module built by the Go toolchain and driven by a TypeScript suite, both packed packages installed
+        const result = await cli
+            .fixture(directory('./__fixtures__/cli-go/'))
+            .exec([
+                'typescript fix',
+                'go build -o .artifacts/go/greet ./src/cmd/greet',
+                'typescript check',
+                'vitest --run',
+            ]);
+
+        // Then - every gesture passes, and the Go binary is what the suite drove
+        expect(result.exitCode).toBe(0);
+        expect(result.file('.artifacts/go/greet').exists).toBe(true);
+    });
 });

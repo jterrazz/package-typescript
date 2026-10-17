@@ -1,0 +1,12 @@
+{
+    "name": "specimen-cli-go",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "devDependencies": {
+        "@jterrazz/test": "17.0.0",
+        "@jterrazz/typescript": "11.0.0",
+        "@types/node": "^26.6.2",
+        "vitest": "^5.0.1"
+    }
+}
