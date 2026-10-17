@@ -14,7 +14,7 @@ import { isRecord, parsedJson } from './parsed-json.js';
 import { newDirectory } from './temporary-directory.js';
 
 // hazard: on oxlint 1.83, `--type-aware` walks up for `node_modules/.bin/tsgolint`, or every type-aware rule
-// silently skips; and a symlinked `node_modules` under `oxlint --fix .` rewrites the real dependency tree —
+// silently skips; and a symlinked `node_modules` under `oxlint --fix .` rewrites the real dependency tree,
 // so the sandbox links two entries and every run names its files.
 
 const REPOSITORY = resolve(import.meta.dirname, '../..');

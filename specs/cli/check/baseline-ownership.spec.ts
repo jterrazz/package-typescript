@@ -193,7 +193,7 @@ describe('baseline-ownership', () => {
         `);
     });
 
-    // outside: with no form variable set, oxlint picks the framed form, which closes on `Finished in …` even over nothing.
+    // outside: with no form variable set, oxlint picks the framed form, which closes on `Finished in ...` even over nothing.
     test('draws nothing under a green oxlint pass when no diagnostic stands behind the broken section', async () => {
         // Given - a checker failing, and a config arming no rule, in the framed form's environment
         // When - the checks run

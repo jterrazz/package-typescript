@@ -24,7 +24,7 @@ function levelOf(entry: unknown): string {
     return Array.isArray(entry) ? String(entry[0]) : String(entry);
 }
 
-// hazard: `expect.element(…)` and every async matcher return a promise: a spec that forgets `await` passes by not asserting.
+// hazard: `expect.element(...)` and every async matcher return a promise: a spec that forgets `await` passes by not asserting.
 const UNAWAITED_PROMISE_RULES = [
     'typescript/await-thenable',
     'typescript/no-floating-promises',

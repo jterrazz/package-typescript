@@ -12,7 +12,7 @@ const oxlint = cli.with({ env: { ...formOnly({ AI_AGENT: 'spec' }), ...onlyPasse
 
 describe('oxlint-config-unparsed', () => {
     test('fails the oxlint pass when the config names a JS plugin that is not there', async () => {
-        // Given - a project whose oxlint config loads a plugin module nobody wrote — a config this repository cannot hold, since oxlint loads every config under it
+        // Given - a project whose oxlint config loads a plugin module nobody wrote, a config this repository cannot hold, since oxlint loads every config under it
         // When - the quality checks run there
         const result = await oxlint
             .fixture(directory('./__fixtures__/oxlint-config/plugin-missing/'))

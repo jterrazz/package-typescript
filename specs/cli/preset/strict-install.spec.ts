@@ -7,7 +7,7 @@ describe('strict-install', () => {
         // Given - a pnpm-strict install: nothing the consumer did not declare resolves from its root
         const result = await strictInstallCli.exec();
 
-        // Then - the sandbox is strict, and both configs still load — a config imports the package alone
+        // Then - the sandbox is strict, and both configs still load, since a config imports the package alone
         expect(result.exitCode).toBe(0);
         expect(result.stdout.text).toContain('unreachable from the consumer root: oxlint');
         expect(result.stdout.text).toContain('unreachable from the consumer root: oxfmt');

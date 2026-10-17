@@ -5,7 +5,7 @@ import { astroStub } from '../__setup__/astro.js';
 import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
 
-// outside: the Astro pass runs the consumer's `astro check`, so the project carries a binary where npm would put one — under node_modules/, which no fixture can hold.
+// outside: the Astro pass runs the consumer's `astro check`, so the project carries a binary where npm would put one, under node_modules/, which no fixture can hold.
 
 const site = cli
     .with({ env: onlyPasses('astro') })

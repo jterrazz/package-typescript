@@ -21,7 +21,7 @@ describe('mutation-paths', () => {
             .env({ TYPESCRIPT_JOBS: '1' })
             .exec('typescript mutation --mutate src/[id]/[key].ts:2-4');
 
-        // Then - both runs measure the guard of the bracketed file, by the whole suite it is handed to by its lines, and name its survivors at their place; each stage says how long it took on how many test runners — this gate's share of the cores, or the count asked for
+        // Then - both runs measure the guard of the bracketed file, by the whole suite it is handed to by its lines, and name its survivors at their place; each stage says how long it took on how many test runners (this gate's share of the cores, or the count asked for)
         expect([
             whole.exitCode,
             ranged.exitCode,

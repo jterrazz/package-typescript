@@ -9,7 +9,7 @@ import { cli } from '../cli.specification.js';
 
 describe('gate-held', () => {
     test('holds no lock: one its dead holder left stays as it was', async () => {
-        // Given - an application whose lock a process that has exited left — a lock names a process, so the ground cannot be a fixture
+        // Given - an application whose lock a process that has exited left; a lock names a process, so the ground cannot be a fixture
         const dead = String(spawnSync(process.execPath, ['--eval', '']).pid);
         const result = await cli
             .with({ env: onlyPasses('config') })

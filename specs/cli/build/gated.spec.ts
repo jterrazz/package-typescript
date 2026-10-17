@@ -7,7 +7,7 @@ import { cli } from '../cli.specification.js';
 
 describe('gated', () => {
     test('refuses to build while another live gate holds the checkout, and builds nothing', async () => {
-        // Given - an application whose checkout this test's own process holds, which the build is no step of — a lock names a live process, so the ground cannot be a fixture
+        // Given - an application whose checkout this test's own process holds, which the build is no step of; a lock names a live process, so the ground cannot be a fixture
         const result = await cli
             .fixture(directory('../__fixtures__/sample-app/'))
             .prepare((workdir) => {

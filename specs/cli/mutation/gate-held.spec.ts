@@ -8,7 +8,7 @@ import { cli } from '../cli.specification.js';
 
 describe('gate-held', () => {
     test('takes over a lock its dead holder left, and gives it back when it ends', async () => {
-        // Given - a project with nothing to mutate whose lock a process that has exited left — a lock names a process, so the ground cannot be a fixture
+        // Given - a project with nothing to mutate whose lock a process that has exited left; a lock names a process, so the ground cannot be a fixture
         const result = await cli
             .fixture(directory('../__fixtures__/names/empty-directories/'))
             .prepare((workdir) => {
