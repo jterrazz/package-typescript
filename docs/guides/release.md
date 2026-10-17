@@ -1,10 +1,10 @@
 # Release
 
-This repository ships one thing: the npm package `@jterrazz/typescript`, published to the public registry. There is no service, no image and no infrastructure — releasing it is the whole of shipping it, and this guide is how it is cut and which number it moves. Taking a release into a project is [Adopt a stricter release](adopt-a-stricter-release.md).
+This repository ships one thing: the npm package `@jterrazz/typescript`, published to the public registry. There is no service, no image and no infrastructure. Releasing it is the whole of shipping it, and this guide is how it is cut and which number it moves. Taking a release into a project is [Adopt a stricter release](adopt-a-stricter-release.md).
 
 ## What a merge to `main` does
 
-Nothing that reaches a consumer. `.github/workflows/validate.yaml` runs on every push and pull request to `main` and calls the shared `jterrazz-actions` validation workflow — install, build, lint, test. A green `main` is a publishable tree, not a published one.
+Nothing that reaches a consumer. `.github/workflows/validate.yaml` runs on every push and pull request to `main` and calls the shared `jterrazz-actions` validation workflow: install, build, lint, test. A green `main` is a publishable tree, not a published one.
 
 ## What publishes
 
@@ -13,7 +13,7 @@ Nothing that reaches a consumer. `.github/workflows/validate.yaml` runs on every
 The sequence, in order:
 
 1. the change merges to `main` and validates green;
-2. a `chore(release): X.Y.Z` commit lands on `main`, bumping `version` in `package.json` and the lockfile — nothing else;
+2. a `chore(release): X.Y.Z` commit lands on `main`, bumping `version` in `package.json` and the lockfile, and nothing else;
 3. the owner tags `vX.Y.Z` and creates the GitHub Release;
 4. the workflow runs `make build` and publishes the `dist/` it wrote to npm.
 
@@ -21,7 +21,7 @@ Steps 2 to 4 are the owner's. A contributor never bumps the version inside a fea
 
 ## Which number moves
 
-One line decides it, and it is the consumer's side of the wire: **breaking means the consumer must change HOW IT CONSUMES the package, or the package changes the consumer's runtime.** A stricter rule is neither of those — it changes what the consumer's code is allowed to look like, which is the job.
+One line decides it, and it is the consumer's side of the wire: **breaking means the consumer must change HOW IT CONSUMES the package, or the package changes the consumer's runtime.** A stricter rule is neither of those. It changes what the consumer's code is allowed to look like, which is the job.
 
 | Change                                                   | Number |
 | -------------------------------------------------------- | ------ |
@@ -45,11 +45,11 @@ One line decides it, and it is the consumer's side of the wire: **breaking means
 
 The GitHub Release of each version is where its notes live; this section keeps only what makes a version major.
 
-A new gate turning a consumer's `main` red is not treated as a breaking change, and that is deliberate: the toolchain's job is to say what is wrong, and a repository absorbs it when it bumps. The estate has no legacy mode and no warn-only window — a rule that is worth shipping is worth failing on.
+A new gate turning a consumer's `main` red is not treated as a breaking change, and that is deliberate: the toolchain's job is to say what is wrong, and a repository absorbs it when it bumps. The estate has no legacy mode and no warn-only window: a rule that is worth shipping is worth failing on.
 
 What the ratchet changes is not that rule but the SHAPE of absorbing it: a repository adopting a stricter release records its debt with `typescript baseline` and burns it down on its own clock, instead of holding the bump until the tree is clean.
 
 ## Related
 
-- [Test](https://github.com/jterrazz/package-typescript/blob/main/docs/guides/test.md) — what `validate.yaml` runs.
-- [Adopt a stricter release](adopt-a-stricter-release.md) — the consumer's side of a bump.
+- [Test](https://github.com/jterrazz/package-typescript/blob/main/docs/guides/test.md): what `validate.yaml` runs.
+- [Adopt a stricter release](adopt-a-stricter-release.md): the consumer's side of a bump.

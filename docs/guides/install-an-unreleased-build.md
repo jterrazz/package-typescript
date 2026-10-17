@@ -1,10 +1,10 @@
 # Install an unreleased build
 
-A release is proven on the projects that will take it before it is published: each one installs the toolchain — and `@jterrazz/test` beside it — from the tarball of a gated checkout, runs its own `make check`, and is moved back onto the registry range once the release is out. This guide is that install, one recipe for npm, pnpm and bun, and the order a wave of projects takes it in. Taking a published release is [Adopt a stricter release](adopt-a-stricter-release.md).
+A release is proven on the projects that will take it before it is published. Each one installs the toolchain (and `@jterrazz/test` beside it) from the tarball of a gated checkout, runs its own `make check`, and is moved back onto the registry range once the release is out. This guide is that install, one recipe for npm, pnpm and bun, and the order a wave of projects takes it in. Taking a published release is [Adopt a stricter release](adopt-a-stricter-release.md).
 
 ## The recipe
 
-One tarball per package, packed from a gated `HEAD` into the project's own `.artifacts/packages/` (which git ignores), and named by the project's devDependencies. Nothing depends on where the checkouts sit: no `../` depth, no `.npmrc`, no `install-links` — which packed every `file:` dependency of the project, a design kit included, and kept a stale copy of it.
+One tarball per package, packed from a gated `HEAD` into the project's own `.artifacts/packages/` (which git ignores), and named by the project's devDependencies. Nothing depends on where the checkouts sit: no `../` depth, no `.npmrc`, no `install-links`, which packed every `file:` dependency of the project, a design kit included, and kept a stale copy of it.
 
 ```bash
 # from the project's root; PACKAGES is the folder holding the package checkouts, each on a commit that passed its gate
@@ -23,7 +23,7 @@ npm pkg set \
   "devDependencies.@jterrazz/test=file:.artifacts/packages/jterrazz-test-17.0.0.tgz"
 ```
 
-A workspace member names the same tarballs relative to itself (`file:../../.artifacts/packages/…`). Then drop every lockfile entry under `node_modules/@jterrazz/` — the nested trees of the previous toolchain included, whose transitive entries (`get-tsconfig`, oxlint's bindings) would otherwise stay resolved to the old versions — and write the lockfile back with its own indent, so the diff holds the install and not a re-indentation of 15 000 lines:
+A workspace member names the same tarballs relative to itself (`file:../../.artifacts/packages/...`). Then drop every lockfile entry under `node_modules/@jterrazz/`, the nested trees of the previous toolchain included, whose transitive entries (`get-tsconfig`, oxlint's bindings) would otherwise stay resolved to the old versions. Write the lockfile back with its own indent, so the diff holds the install and not a re-indentation of 15 000 lines:
 
 ```bash
 node -e "
@@ -38,7 +38,7 @@ fs.writeFileSync(file, JSON.stringify(lock, null, indent) + '\n');
 npm install
 ```
 
-Under bun the lockfile is not JSON: delete it when it carries an older toolchain, and `bun install` writes it again; under pnpm, never delete it: a non-frozen `pnpm install` re-resolves every unrelated range (500 lines on one project), so the lockfile is updated in its two `@jterrazz/*` entries alone — the tarball paths, and the `integrity` each tarball's `npm pack --json` prints — and `pnpm install --frozen-lockfile` then proves the file is whole; bun caches a `file:` tarball by its path, so a tarball packed again under the same name is not extracted again — clear the cache first (`bun pm cache rm`).
+Under bun the lockfile is not JSON: delete it when it carries an older toolchain, and `bun install` writes it again. Under pnpm, never delete it: a non-frozen `pnpm install` re-resolves every unrelated range (500 lines on one project), so the lockfile is updated in its two `@jterrazz/*` entries alone (the tarball paths, and the `integrity` each tarball's `npm pack --json` prints), and `pnpm install --frozen-lockfile` then proves the file is whole. bun caches a `file:` tarball by its path, so a tarball packed again under the same name is not extracted again: clear the cache first (`bun pm cache rm`).
 
 A `file:` package packed again under the same name changes no line of the lockfile, so the Makefile's install stamp must depend on `.artifacts/packages/*.tgz` beside the lockfile (`node_modules/.install: package-lock.json $(wildcard .artifacts/packages/*.tgz)`), or a gate runs for hours against yesterday's build; `make -B install` forces it once.
 
@@ -54,7 +54,7 @@ A change to a package reaches a project in three steps: rebuild and gate the pac
 
 ## The order of a wave
 
-A project installs a package only once every package it runs is on the same release. `@jterrazz/typescript` comes first and `@jterrazz/test`, which peers on it, second. After them, a package another project loads in its own gates — a published audit its specs run, a design kit its app bundles — moves to the release before that project does, and widens its peer range to the new major: a project whose specs run a package still written against the last major fails on that package, not on its own code.
+A project installs a package only once every package it runs is on the same release. `@jterrazz/typescript` comes first and `@jterrazz/test`, which peers on it, second. After them, a package another project loads in its own gates (a published audit its specs run, a design kit its app bundles) moves to the release before that project does, and widens its peer range to the new major: a project whose specs run a package still written against the last major fails on that package, not on its own code.
 
 ## Back onto the registry
 
@@ -62,5 +62,5 @@ When the release is published, every project returns to the range: the two devDe
 
 ## Related
 
-- [Adopt a stricter release](adopt-a-stricter-release.md) — `doctor` and `baseline`, once the build is installed.
-- [Release](release.md) — how the release is published.
+- [Adopt a stricter release](adopt-a-stricter-release.md): `doctor` and `baseline`, once the build is installed.
+- [Release](release.md): how the release is published.
