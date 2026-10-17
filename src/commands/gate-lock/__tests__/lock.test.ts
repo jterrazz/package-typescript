@@ -133,7 +133,7 @@ describe('lock', () => {
         expect(own).toStrictEqual([undefined, undefined]);
         expect(foreignHolderOf(root)).toBe(process.ppid);
         expect(refusedWhileGated(root, 'a build')).toBe(
-            `found: the gate of pid ${String(process.ppid)} holds this checkout (.artifacts/gate.lock) · why: a build replaces what a running gate reads — its build, its install — and the gate would judge a tree that changed under it · fix: wait for pid ${String(process.ppid)} to end, or run a build in a worktree of its own · read: docs/reference/quality-checks.md#one-gate-per-checkout`,
+            `found: the gate of pid ${String(process.ppid)} holds this checkout (.artifacts/gate.lock) · why: a build replaces what a running gate reads (its build, its install), and the gate would judge a tree that changed under it · fix: wait for pid ${String(process.ppid)} to end, or run a build in a worktree of its own · read: docs/reference/quality-checks.md#one-gate-per-checkout`,
         );
     });
 

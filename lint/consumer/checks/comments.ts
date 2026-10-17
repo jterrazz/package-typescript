@@ -25,14 +25,14 @@ const ROW = rowNamed(
 const CHECK = defineCheck({
     docs: {
         ...ROW,
-        why: 'the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one',
+        why: 'the default is no comment: a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one',
     },
     namespace: 'comments',
     read: 'docs/reference/lint-presets.md#a-comment-states-its-kind',
 });
 
 const TEACHING = {
-    fix: 'delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:`',
+    fix: 'delete it, or open it with its kind: `invariant:`, `hazard:`, `outside:`, `value:`',
     found: 'a comment that states no kind',
 };
 

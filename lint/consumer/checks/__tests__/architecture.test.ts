@@ -212,7 +212,7 @@ describe('architecture', () => {
             findings: [],
             lines: [
                 expect.stringMatching(
-                    /^found: dependency-cruiser could not be run — spawnSync \S+\/nowhere ENOENT · why: the pass hands the tree to dependency-cruiser, and a tool that never ran judged nothing · fix: run 'npm install' so the dependency-cruiser @jterrazz\/typescript pins is installed beside it, then run again · read: docs\/reference\/quality-checks\.md#the-passes$/u,
+                    /^found: dependency-cruiser could not be run: spawnSync \S+\/nowhere ENOENT · why: the pass hands the tree to dependency-cruiser, and a tool that never ran judged nothing · fix: run 'npm install' so the dependency-cruiser @jterrazz\/typescript pins is installed beside it, then run again · read: docs\/reference\/quality-checks\.md#the-passes$/u,
                 ),
             ],
         });
@@ -220,7 +220,7 @@ describe('architecture', () => {
             failed: true,
             findings: [],
             lines: [
-                `found: dependency-cruiser stopped with no report — bad rule · why: the layer map is judged on the graph dependency-cruiser writes, and with no graph no import is judged · fix: correct what dependency-cruiser printed — a layer whose \`from\` or \`to\` it cannot read, a tsconfig it cannot load — then run again · read: ${READ}`,
+                `found: dependency-cruiser stopped with no report: bad rule · why: the layer map is judged on the graph dependency-cruiser writes, and with no graph no import is judged · fix: correct what dependency-cruiser printed (a layer whose \`from\` or \`to\` it cannot read, a tsconfig it cannot load), then run again · read: ${READ}`,
             ],
         });
         expect(silent.result).toStrictEqual({ findings: [] });

@@ -126,8 +126,8 @@ function isRewritable(named: readonly string[], config: Applied | null): boolean
 function eslintSpelling(number: number, named: readonly string[], settled: boolean): Found {
     return {
         message: settled
-            ? `line ${number} spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it`
-            : `line ${number} spells an eslint directive naming ${named.join(', ') || 'no rule'}, which this project does not run — name an oxlint rule`,
+            ? `line ${number} spells an eslint directive; this toolchain runs oxlint, and 'typescript fix' rewrites it`
+            : `line ${number} spells an eslint directive naming ${named.join(', ') || 'no rule'}, which this project does not run; name an oxlint rule`,
         rule: 'suppressions/spelled-for-this-toolchain',
     };
 }
@@ -154,7 +154,7 @@ function auditStryker(line: string, number: number): Audited {
         const mutators = named.split(',').map((name) => name.trim());
         if (mutators.includes('all')) {
             found.push({
-                message: `line ${number} disables every mutator — name the ones the code cannot be killed by`,
+                message: `line ${number} disables every mutator; name the ones the code cannot be killed by`,
                 rule: 'suppressions/stryker-names-its-mutators',
             });
         }
@@ -261,7 +261,7 @@ export const suppressions: Pass = Object.freeze({
         return {
             after: rewritten.map(
                 ({ path }) =>
-                    `${path} rewritten — the directive now names the checker this project runs`,
+                    `${path} rewritten: the directive now names the checker this project runs`,
             ),
             findings,
             writes: rewritten.map(({ path, text }) => ({ path: join(context.root, path), text })),

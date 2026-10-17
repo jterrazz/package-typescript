@@ -30,14 +30,14 @@ function declaredOf(loaded: unknown): { declared: object; problem: null | string
         : {
               declared: NOTHING_DECLARED,
               problem:
-                  'exports no settings object as its default — write `export default defineConfig({ … })`',
+                  'exports no settings object as its default: write `export default defineConfig({ ... })`',
           };
 }
 
 const messageOf = (error: unknown): string =>
     String(error instanceof Error ? error.message : error).split('\n')[0] ?? '';
 
-const failed = (error: unknown): string => `does not load — ${messageOf(error)}`;
+const failed = (error: unknown): string => `does not load: ${messageOf(error)}`;
 
 function resolvedFrom(
     read: { declared: object; problem: null | string },

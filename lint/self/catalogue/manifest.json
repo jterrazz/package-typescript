@@ -92,6 +92,6 @@
         "home": "lint/self/corpus/src-layout.ts",
         "id": "src-layout",
         "names": ["srcLayoutFindings"],
-        "why": "judges this package's own src/: every subcommand a user types is its folder of src/commands/ with its `<name>.command.ts`, and every external tool the command's process drives — its process spawned, its binary resolved, its package imported or resolved — is driven from its own folder of src/drivers/ alone; the checker program runs the tools of its passes through lint/kit/checker/tool-run.ts, which src/ never calls"
+        "why": "judges this package's own src/: every subcommand a user types is its folder of src/commands/ with its `<name>.command.ts`, and every external tool the command's process drives (its process spawned, its binary resolved, its package imported or resolved) is driven from its own folder of src/drivers/ alone; the checker program runs the tools of its passes through lint/kit/checker/tool-run.ts, which src/ never calls"
     }
 ]

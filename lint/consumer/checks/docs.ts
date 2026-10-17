@@ -48,7 +48,7 @@ function auditMap(
         report(
             'docs/map-present',
             'docs/README.md',
-            'docs/README.md is missing — the map is the one file an outside corpus points at',
+            'docs/README.md is missing: the map is the one file an outside corpus points at',
         );
 
         return;
@@ -107,7 +107,7 @@ function auditFolder(report: Report, { children }: { children: readonly string[]
             report(
                 'docs/no-loose-file',
                 path,
-                `${path} sits outside the sections — move it under start/, guides/, concepts/ or reference/, or under _assets/ if a page embeds it`,
+                `${path} sits outside the sections; move it under start/, guides/, concepts/ or reference/, or under _assets/ if a page embeds it`,
             );
         }
     }
@@ -122,7 +122,7 @@ export function auditDocs(tree: DocsTree): readonly DocsViolation[] {
         return [
             {
                 message:
-                    'docs/ is missing — every repository carries its own manual, starting at docs/README.md',
+                    'docs/ is missing: every repository carries its own manual, starting at docs/README.md',
                 path: 'docs/',
                 rule: 'docs/manual-present',
             },
@@ -148,7 +148,7 @@ export function auditDocs(tree: DocsTree): readonly DocsViolation[] {
         report(
             'docs/agents-route-to-the-map',
             'AGENTS.md',
-            'AGENTS.md does not route to docs/README.md — the brief is a map, not a manual',
+            'AGENTS.md does not route to docs/README.md: the brief is a map, not a manual',
         );
     }
 

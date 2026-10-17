@@ -222,7 +222,7 @@ describe('preset', () => {
         // Then - the listed and the open keys stand, the law restated stands, and the unlisted key is refused naming what the preset reads
         expect([listed.problem, restated.problem]).toStrictEqual([null, null]);
         expect(unlisted.problem).toBe(
-            'writes `web.unwrap`, a setting the web preset does not read — it reads `wrap`; a key a release removed is named in its adoption guide',
+            'writes `web.unwrap`, a setting the web preset does not read (it reads `wrap`); a key a release removed is named in its adoption guide',
         );
     });
 

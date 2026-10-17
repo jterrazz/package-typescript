@@ -87,7 +87,7 @@ export const isPreset = (value: unknown): value is Preset =>
 function flattened(presets: readonly unknown[], into: Map<string, Preset>): null | string {
     for (const preset of presets) {
         if (!isPreset(preset)) {
-            return 'holds a `presets` entry that is not a preset — an object carrying its `name` and its `package`';
+            return 'holds a `presets` entry that is not a preset, an object carrying its `name` and its `package`';
         }
         const nested = flattened(preset.presets ?? [], into);
         if (nested !== null) {
@@ -194,7 +194,7 @@ function sectionsOf(
         }
         if (own !== undefined && Object.hasOwn(own, 'presets')) {
             return sectionRefused(
-                `holds a \`presets\` inside its \`${name}\` section, which no reader reads — list every preset at the top level, \`presets: [...]\``,
+                `holds a \`presets\` inside its \`${name}\` section, which no reader reads; list every preset at the top level, \`presets: [...]\``,
             );
         }
         let section: unknown = {};

@@ -20,10 +20,10 @@ describe('markdown.fences', () => {
         expect([at(rows(15)), at(rows(16)), at(rows(16), '  ~~~')]).toStrictEqual([
             [],
             [
-                'a fenced block at line 3 runs 16 lines unbroken — the limit is 15; a blank line after line 11 survives the formatter',
+                'a fenced block at line 3 runs 16 lines unbroken, over the limit of 15; a blank line after line 11 survives the formatter',
             ],
             [
-                'a fenced block at line 3 runs 16 lines unbroken — the limit is 15; a blank line after line 11 survives the formatter',
+                'a fenced block at line 3 runs 16 lines unbroken, over the limit of 15; a blank line after line 11 survives the formatter',
             ],
         ]);
     });
@@ -39,8 +39,8 @@ describe('markdown.fences', () => {
             [],
             [],
             [
-                'a fenced block at line 1 runs 16 lines unbroken — the limit is 15; a blank line after line 9 survives the formatter',
-                'a fenced block at line 19 runs 16 lines unbroken — the limit is 15; a blank line after line 27 survives the formatter',
+                'a fenced block at line 1 runs 16 lines unbroken, over the limit of 15; a blank line after line 9 survives the formatter',
+                'a fenced block at line 19 runs 16 lines unbroken, over the limit of 15; a blank line after line 27 survives the formatter',
             ],
         ]);
     });
@@ -51,7 +51,7 @@ describe('markdown.fences', () => {
 
         // Then - the run is named all the same
         expect(airlessFences(page)).toStrictEqual([
-            'a fenced block at line 2 runs 16 lines unbroken — the limit is 15; a blank line after line 10 survives the formatter',
+            'a fenced block at line 2 runs 16 lines unbroken, over the limit of 15; a blank line after line 10 survives the formatter',
         ]);
     });
 
@@ -68,13 +68,13 @@ describe('markdown.fences', () => {
         // Then - the 7th line when the 8th opens (7 and 9 are as near, the earlier wins), the 9th when the 7th opens and the 9th closes (so the 8th break is lost to the closer), and none when no break is left
         expect([named(opens), named(both), named(all), named(lastOne)]).toStrictEqual([
             [
-                'a fenced block at line 1 runs 16 lines unbroken — the limit is 15; a blank line after line 8 survives the formatter',
+                'a fenced block at line 1 runs 16 lines unbroken, over the limit of 15; a blank line after line 8 survives the formatter',
             ],
             [
-                'a fenced block at line 1 runs 16 lines unbroken — the limit is 15; a blank line after line 10 survives the formatter',
+                'a fenced block at line 1 runs 16 lines unbroken, over the limit of 15; a blank line after line 10 survives the formatter',
             ],
-            ['a fenced block at line 1 runs 16 lines unbroken — the limit is 15'],
-            ['a fenced block at line 1 runs 16 lines unbroken — the limit is 15'],
+            ['a fenced block at line 1 runs 16 lines unbroken, over the limit of 15'],
+            ['a fenced block at line 1 runs 16 lines unbroken, over the limit of 15'],
         ]);
     });
 
@@ -119,16 +119,16 @@ describe('markdown.fences', () => {
             [midOpen, spacedOpen, midClose, indentedClose].map((body) => named(body)),
         ).toStrictEqual([
             [
-                'a fenced block at line 1 runs 16 lines unbroken — the limit is 15; a blank line after line 9 survives the formatter',
+                'a fenced block at line 1 runs 16 lines unbroken, over the limit of 15; a blank line after line 9 survives the formatter',
             ],
             [
-                'a fenced block at line 1 runs 16 lines unbroken — the limit is 15; a blank line after line 8 survives the formatter',
+                'a fenced block at line 1 runs 16 lines unbroken, over the limit of 15; a blank line after line 8 survives the formatter',
             ],
             [
-                'a fenced block at line 1 runs 16 lines unbroken — the limit is 15; a blank line after line 9 survives the formatter',
+                'a fenced block at line 1 runs 16 lines unbroken, over the limit of 15; a blank line after line 9 survives the formatter',
             ],
             [
-                'a fenced block at line 1 runs 16 lines unbroken — the limit is 15; a blank line after line 8 survives the formatter',
+                'a fenced block at line 1 runs 16 lines unbroken, over the limit of 15; a blank line after line 8 survives the formatter',
             ],
         ]);
     });

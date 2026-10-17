@@ -79,7 +79,7 @@ describe('jterrazz-config', () => {
         expect(readConfigSync(unit, BASE)).toBe(first);
         expect([first.resolved.declaration, readConfigSync(broken, BASE).problem]).toStrictEqual([
             { kind: 'cli', platform: 'node' },
-            'does not load — no settings here',
+            'does not load: no settings here',
         ]);
     });
 
@@ -98,9 +98,9 @@ describe('jterrazz-config', () => {
 
         // Then - each says what the file lacks
         expect(problems).toStrictEqual([
-            'exports no settings object as its default — write `export default defineConfig({ … })`',
+            'exports no settings object as its default: write `export default defineConfig({ ... })`',
             'holds a `presets` that is not a list',
-            'exports no settings object as its default — write `export default defineConfig({ … })`',
+            'exports no settings object as its default: write `export default defineConfig({ ... })`',
             'holds a `presets` that is not a list',
         ]);
     });

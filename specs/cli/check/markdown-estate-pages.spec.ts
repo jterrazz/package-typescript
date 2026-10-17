@@ -26,7 +26,7 @@ describe('markdown-estate-pages', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Markdown (prose): README.md:3:71: error markdown(link-resolves): Relative link 'notes/plan.md' does not exist
+            ✗ Some checks failed, first Markdown (prose): README.md:3:71: error markdown(link-resolves): Relative link 'notes/plan.md' does not exist
         `);
     });
 });

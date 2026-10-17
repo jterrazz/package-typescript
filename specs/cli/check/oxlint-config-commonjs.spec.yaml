@@ -4,7 +4,7 @@ env: TYPESCRIPT_CHECK_PASSES=oxlint
 runs:
     - command: check
       exit: 1
-      stdout: |4
+      stdout: |4-
            START  Running quality checks
 
            RUN  Oxlint Check
@@ -13,5 +13,3 @@ runs:
           ✗ Failed with exit code 1 ({{duration}})
 
           {{any}}
-
-          ✗ Some checks failed — first Oxlint Check: {{any}}

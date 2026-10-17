@@ -47,7 +47,7 @@ runs:
 
           Usage: typescript clean
 
-          Remove .artifacts/ — dist/ stays, it is the build's product
+          Remove .artifacts/; dist/ stays, as the build's product
 
           Flags:
             -h, --help  Print this help and run nothing

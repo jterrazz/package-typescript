@@ -16,7 +16,7 @@ const DATA_SUFFIXES = ['.data.ts', '.data.tsx'];
 
 const WHY_FIX = {
     fix: 'move the logic into a module of its own that imports the table; a `*.data.ts` module keeps its imports, its types and the literals it exports',
-    why: 'a data module is exempt from the file-size cap because rows are not logic — a function, a class or a statement in one is logic the cap no longer reads',
+    why: 'a data module is exempt from the file-size cap because rows are not logic: a function, a class or a statement in one is logic the cap no longer reads',
 };
 
 const DECLARATIONS: ReadonlySet<string> = new Set([

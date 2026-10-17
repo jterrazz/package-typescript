@@ -74,7 +74,7 @@ export function defaultBaseOf(project: string): Base {
     if (status !== '') {
         return {
             commit: 'HEAD',
-            names: 'HEAD — the change not yet committed',
+            names: 'HEAD, the change not yet committed',
             range: 'HEAD..working tree',
         };
     }
@@ -82,7 +82,7 @@ export function defaultBaseOf(project: string): Base {
     if (branch !== undefined) {
         return {
             commit: branch.base,
-            names: `the merge-base with ${branch.branch} (${short(branch.base)}) — the working tree is clean, so the branch's own commits are the change`,
+            names: `the merge-base with ${branch.branch} (${short(branch.base)}): the working tree is clean, so the branch's own commits are the change`,
             range: `${short(branch.base)}..HEAD`,
         };
     }
@@ -91,12 +91,12 @@ export function defaultBaseOf(project: string): Base {
     return previous === undefined
         ? {
               commit: 'HEAD',
-              names: 'HEAD — the first commit, with no commit before it',
+              names: 'HEAD, the first commit, with no commit before it',
               range: 'HEAD..HEAD',
           }
         : {
               commit: previous,
-              names: `the commit before HEAD (${short(previous)}) — the working tree is clean, so the last commit is the change`,
+              names: `the commit before HEAD (${short(previous)}): the working tree is clean, so the last commit is the change`,
               range: `${short(previous)}..HEAD`,
           };
 }
@@ -186,7 +186,7 @@ export function changeOf(
         changed,
         note:
             changed.size === 0
-                ? `The working tree equals ${since.names}: no line changed, so the whole suite measures no change — name the commit the work started from with --since to measure one.`
+                ? `The working tree equals ${since.names}: no line changed, so the whole suite measures no change; name the commit the work started from with --since to measure one.`
                 : `The change: the working tree against ${since.names}.`,
     };
 }

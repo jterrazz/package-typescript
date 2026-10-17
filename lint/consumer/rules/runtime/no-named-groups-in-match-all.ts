@@ -25,7 +25,7 @@ export const NO_NAMED_GROUPS_IN_MATCH_ALL_NAME = 'no-named-groups-in-match-all';
 const NAMED_GROUP = /\(\?<(?![!=])/u;
 
 const WHY_FIX = {
-    fix: 'read the groups of each match with `exec` in a loop on a global pattern, or by position — `match[1]` — where the iterator is wanted; a pattern without a named group is read by `matchAll` as usual',
+    fix: 'read the groups of each match with `exec` in a loop on a global pattern, or by position (`match[1]`) where the iterator is wanted; a pattern without a named group is read by `matchAll` as usual',
     why: 'Hermes, the engine an Expo app runs on, drops the named groups of the matches `String#matchAll` yields: `match.groups` is `undefined` at runtime, and the type check and every test on Node read them as the specification says',
 };
 

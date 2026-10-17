@@ -35,13 +35,13 @@ export function stageRecorded(
     { seconds, status }: { seconds: number; status: number },
 ): void {
     recorded.passes.push({
-        firstError: status === 0 ? null : `Stryker exited ${String(status)} — its log is above`,
+        firstError: status === 0 ? null : `Stryker exited ${String(status)}; its log is above`,
         label: STAGE_LABELS[stage],
         seconds,
         status,
     });
     if (status !== 0) {
-        recorded.reason = `Stryker stopped the ${stage === 'suite' ? 'whole suite' : 'module tests'} with status ${String(status)} — its log is above`;
+        recorded.reason = `Stryker stopped the ${stage === 'suite' ? 'whole suite' : 'module tests'} with status ${String(status)}; its log is above`;
     }
 }
 
@@ -97,7 +97,7 @@ export function memberRecorded(
 ): void {
     const own = memberVerdictOf(project, member);
     recorded.passes.push({
-        firstError: status === 0 ? null : `${member} failed — its verdict is above`,
+        firstError: status === 0 ? null : `${member} failed; its verdict is above`,
         label: member,
         seconds,
         status,

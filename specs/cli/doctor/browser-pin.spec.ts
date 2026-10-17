@@ -103,7 +103,7 @@ describe('browser-pin', () => {
 
             Pinned together
 
-              @vitest/browser-playwright  pnpm-lock.yaml is not parsed here — the pin is unchecked
+              @vitest/browser-playwright  pnpm-lock.yaml is not parsed here, so the pin is unchecked
 
 
             Resolved jterrazz.config.ts
@@ -128,7 +128,7 @@ describe('browser-pin', () => {
 
             Pinned together
 
-              @vitest/browser-playwright  pnpm-lock.yaml is not parsed here — the pin is unchecked
+              @vitest/browser-playwright  pnpm-lock.yaml is not parsed here, so the pin is unchecked
 
 
             Resolved jterrazz.config.ts

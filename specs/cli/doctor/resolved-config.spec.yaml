@@ -15,6 +15,7 @@ runs:
             @jterrazz/typescript src/standard/kinds/library.ts        typescript.lint.kit = ["project", "baseline", "checker", "catalogue", "compiler", "testing"]
             @jterrazz/typescript src/standard/kinds/library.ts        typescript.lint.self = ["catalogue", "rules", "checks", "corpus"]
             @jterrazz/typescript src/standard/standard.ts             typescript.manifestKeys = ["allowScripts", "author", "browser", "browserslist", "bugs", "bin", "bundleDependencies", "bundledDependencies", "config", "contributors", "cpu", "dependencies", "description", "devDependencies", "devEngines", "directories", "engines", "exports", "files", "funding", "homepage", "imports", "keywords", "libc", "license", "main", "man", "module", "name", "optionalDependencies", "os", "overrides", "packageManager", "patchedDependencies", "peerDependencies", "peerDependenciesMeta", "pnpm", "private", "publishConfig", "repository", "resolutions", "scripts", "sideEffects", "trustedDependencies", "type", "types", "typings", "version", "volta", "workspaces"]
+            @jterrazz/typescript src/standard/standard.ts             typescript.markdown.refusesDashes = false
             @jterrazz/typescript src/standard/standard.ts             typescript.memberRoots = ["apps", "packages"]
             @jterrazz/typescript src/standard/kinds/library.ts        typescript.mutation.ignore.src/standard/**/*.ts = "a standard is data the Config pass keeps free of logic: a mutant rewrites a stated value, which the specs of what it configures read, never a decision a test of the module could hold"
             @jterrazz/typescript src/standard/kinds/library.ts        typescript.mutation.mutate.lint/*.ts = "the entries of the lint rules a library ships"
@@ -733,12 +734,12 @@ runs:
             @jterrazz/typescript src/standard/standard.ts             typescript.sources.roots = ["src"]
             @jterrazz/typescript src/standard/platforms/next.ts       typescript.sources.roots = ["app", "pages"]
             @jterrazz/typescript src/standard/standard.ts             typescript.spine = ["docs", "lint", "skills", "specs", "src"]
-            @jterrazz/typescript src/standard/platforms/next.ts       typescript.toolRoots.app = "Next.js App Router and Expo Router — routes are read off this folder"
-            @jterrazz/typescript src/standard/standard.ts             typescript.toolRoots.bin = "npm — the files a package's `bin` entry links as commands"
-            @jterrazz/typescript src/standard/standard.ts             typescript.toolRoots.config = "node-config — the default folder its `require('config')` reads"
-            @jterrazz/typescript src/standard/platforms/next.ts       typescript.toolRoots.pages = "Next.js Pages Router — routes are read off this folder"
-            @jterrazz/typescript src/standard/standard.ts             typescript.toolRoots.prisma = "Prisma — the schema and migrations its CLI reads by default"
-            @jterrazz/typescript src/standard/platforms/next.ts       typescript.toolRoots.public = "Next.js, Astro and Vite — static files served verbatim at the site root"
+            @jterrazz/typescript src/standard/platforms/next.ts       typescript.toolRoots.app = "Next.js App Router and Expo Router: routes are read off this folder"
+            @jterrazz/typescript src/standard/standard.ts             typescript.toolRoots.bin = "npm: the files a package's `bin` entry links as commands"
+            @jterrazz/typescript src/standard/standard.ts             typescript.toolRoots.config = "node-config: the default folder its `require('config')` reads"
+            @jterrazz/typescript src/standard/platforms/next.ts       typescript.toolRoots.pages = "Next.js Pages Router: routes are read off this folder"
+            @jterrazz/typescript src/standard/standard.ts             typescript.toolRoots.prisma = "Prisma: the schema and migrations its CLI reads by default"
+            @jterrazz/typescript src/standard/platforms/next.ts       typescript.toolRoots.public = "Next.js, Astro and Vite: static files served verbatim at the site root"
             @jterrazz/typescript src/standard/platforms/next.ts       typescript.tsconfigPreset = "next"
             @jterrazz/typescript src/standard/platforms/next.ts       typescript.verbatimToolRoots = ["public"]
             @jterrazz/typescript src/standard/standard.ts             typescript.words.constructs = ["constants", "helper", "interfaces", "type", "types", "util"]

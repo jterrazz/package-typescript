@@ -28,8 +28,8 @@ runs:
 
            RUN  Markdown (prose)
 
-          README.md:1:1: error markdown(prose-block-is-short): a block of 13 lines at line 5 — the limit is 12
-          README.md:1:1: error markdown(fenced-run-is-short): a fenced block at line 21 runs 16 lines unbroken — the limit is 15; a blank line after line 29 survives the formatter
+          README.md:1:1: error markdown(prose-block-is-short): a block of 13 lines at line 5, over the limit of 12
+          README.md:1:1: error markdown(fenced-run-is-short): a fenced block at line 21 runs 16 lines unbroken, over the limit of 15; a blank line after line 29 survives the formatter
           README.md:1:1: error markdown(long-section-has-subheadings): "## A section with nothing to break it up" at line 40 runs 31 lines of prose with no ### and no list
           ✗ Failed with exit code 1 ({{duration}})
 
@@ -43,7 +43,7 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing — node, the default
+            declared                              nothing: node, the default
             exceptions                            0
             rules off vs profile                  none
             suppressions                          0
@@ -53,4 +53,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed — first Markdown (prose): README.md:1:1: error markdown(prose-block-is-short): a block of 13 lines at line 5 — the limit is 12
+          ✗ Some checks failed, first Markdown (prose): README.md:1:1: error markdown(prose-block-is-short): a block of 13 lines at line 5, over the limit of 12

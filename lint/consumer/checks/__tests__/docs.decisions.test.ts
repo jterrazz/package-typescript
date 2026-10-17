@@ -53,7 +53,7 @@ describe('docs.decisions', () => {
         );
         expect(violationOf(tree, 'docs/decision-status-known')).toStrictEqual({
             message:
-                'docs/decisions/001-the-first-call.md carries no **Status:** line — the mold is "**Status:** Proposed"',
+                'docs/decisions/001-the-first-call.md carries no **Status:** line; the mold is "**Status:** Proposed"',
             path: 'docs/decisions/001-the-first-call.md',
         });
     });
@@ -122,7 +122,7 @@ describe('docs.decisions', () => {
 
         // Then - the missing link is the whole complaint
         expect(messageOf(tree, 'docs/decision-status-known')).toBe(
-            'docs/decisions/001-the-first-call.md: **Status:** names a successor but no link — write Superseded by [ADR-NNN](file.md)',
+            'docs/decisions/001-the-first-call.md: **Status:** names a successor but no link; write Superseded by [ADR-NNN](file.md)',
         );
     });
 
@@ -171,7 +171,7 @@ describe('docs.decisions', () => {
         // Then - the same rule, from an offset start
         expect(violationOf(tree, 'docs/decisions-numbered-contiguously')).toStrictEqual({
             message:
-                'docs/decisions/ numbers run 006, 008: they run from 001 with no gap — a decision that moved folders takes the next number where it lands',
+                'docs/decisions/ numbers run 006, 008: they run from 001 with no gap, and a decision that moved folders takes the next number where it lands',
             path: 'docs/decisions/',
         });
     });
@@ -267,7 +267,7 @@ describe('docs.decisions', () => {
         expect(rulesBrokenBy(tree)).toStrictEqual(['docs/decision-listed-in-the-map']);
         expect(violationOf(tree, 'docs/decision-listed-in-the-map')).toStrictEqual({
             message:
-                'docs/decisions/README.md is an index — an index is a copy; the queue is derived (terra <brand> decisions)',
+                'docs/decisions/README.md is an index, and an index is a copy; the queue is derived (terra <brand> decisions)',
             path: 'docs/decisions/README.md',
         });
     });
@@ -281,7 +281,7 @@ describe('docs.decisions', () => {
         // Then - the mold sits where the record is written
         expect(violationOf(tree, 'docs/decision-template-present')).toStrictEqual({
             message:
-                'docs/decisions/_template.md is missing — the mold sits where the record is written',
+                'docs/decisions/_template.md is missing: the mold sits where the record is written',
             path: 'docs/decisions/_template.md',
         });
     });

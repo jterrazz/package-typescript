@@ -155,6 +155,6 @@ export function refusedWhileGated(project: string, gesture: string): string | un
               fix: `wait for pid ${String(holder)} to end, or run ${gesture} in a worktree of its own`,
               found: `the gate of pid ${String(holder)} holds this checkout (${GATE_LOCK})`,
               read: 'docs/reference/quality-checks.md#one-gate-per-checkout',
-              why: `${gesture} replaces what a running gate reads — its build, its install — and the gate would judge a tree that changed under it`,
+              why: `${gesture} replaces what a running gate reads (its build, its install), and the gate would judge a tree that changed under it`,
           });
 }

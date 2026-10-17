@@ -92,7 +92,7 @@ function constructions(source: ts.SourceFile, classes: ReadonlySet<string>): Tau
         found.push({
             at: node,
             fix: `a project can cause it: \`new ${name}(refusal({ found, why, fix, read }))\`, its read the heading that explains it; only the toolchain can: \`invariant('<what broke>')\``,
-            found: `\`${ts.isNewExpression(node) ? 'new ' : ''}${name}(…)\` carries a message written by hand`,
+            found: `\`${ts.isNewExpression(node) ? 'new ' : ''}${name}(...)\` carries a message written by hand`,
         });
     });
 

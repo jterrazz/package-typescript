@@ -31,5 +31,5 @@ export const committedLines = (tracked: readonly string[]): string[] =>
         ? []
         : [
               'Artefacts must never be committed:',
-              ...tracked.map((path) => `  ✗ ${path} is tracked — git rm --cached ${path}`),
+              ...tracked.map((path) => `  ✗ ${path} is tracked: git rm --cached ${path}`),
           ];

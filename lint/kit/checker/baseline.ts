@@ -65,7 +65,7 @@ function write(root: string, section: string, reports: readonly PassReport[]): n
     const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
     writeSection(root, section, counts);
     print(
-        `${labelOf(section)} written — ${String(total)} finding(s) across ${String(Object.keys(counts).length)} rule(s)`,
+        `${labelOf(section)} written: ${String(total)} finding(s) across ${String(Object.keys(counts).length)} rule(s)`,
     );
 
     return 0;

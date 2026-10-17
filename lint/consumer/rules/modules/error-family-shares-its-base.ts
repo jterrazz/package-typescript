@@ -25,8 +25,8 @@ export const ERROR_FAMILY_SHARES_ITS_BASE_NAME = 'error-family-shares-its-base';
 const ERROR_MODULES = ['errors.ts', 'errors.tsx'];
 
 const WHY_FIX = {
-    fix: 'derive the class from the family’s base declared in this module, or move it to a module of its own',
-    why: 'an errors module is exempt from max-classes-per-file because its classes are one vocabulary — a base and what derives from it — and a class outside that family is a second subject the cap no longer reads',
+    fix: "derive the class from the family's base declared in this module, or move it to a module of its own",
+    why: 'an errors module is exempt from max-classes-per-file because its classes are one vocabulary (a base and what derives from it), and a class outside that family is a second subject the cap no longer reads',
 };
 
 const classOf = (statement: Node): Node | null => {

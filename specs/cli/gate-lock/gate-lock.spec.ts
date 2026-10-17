@@ -25,7 +25,7 @@ describe('gate-lock', () => {
         // Then - the four parts name the holder, and the lock stays
         expect(result.exitCode).toBe(1);
         expect(result.stdout).toMatch(`
-            found: the gate of pid {{int}} holds this checkout (.artifacts/gate.lock) · why: an install or a pack replaces what a running gate reads — its build, its install — and the gate would judge a tree that changed under it · fix: wait for pid {{int}} to end, or run an install or a pack in a worktree of its own · read: docs/reference/quality-checks.md#one-gate-per-checkout
+            found: the gate of pid {{int}} holds this checkout (.artifacts/gate.lock) · why: an install or a pack replaces what a running gate reads (its build, its install), and the gate would judge a tree that changed under it · fix: wait for pid {{int}} to end, or run an install or a pack in a worktree of its own · read: docs/reference/quality-checks.md#one-gate-per-checkout
         `);
         expect(result.file('.artifacts/gate.lock').content).toBe(`${String(process.pid)}\n`);
     });

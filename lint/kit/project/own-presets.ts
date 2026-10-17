@@ -43,7 +43,7 @@ export function ownPresets(settingsUrl: string, modules: OwnPresets): Preset[] {
                 fix: 'run `npm run build`, then run the command again',
                 found: `this repository's presets are not built: ${missing.join(', ')} missing`,
                 read: 'docs/reference/configuration.md#a-repository-held-to-its-own-presets',
-                why: 'they are this repository’s own build, and a run without them judges none of what they hold, so it would pass on nothing',
+                why: "they are this repository's own build, and a run without them judges none of what they hold, so it would pass on nothing",
             }),
         );
     }

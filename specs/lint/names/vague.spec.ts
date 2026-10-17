@@ -16,12 +16,12 @@ describe('vague', () => {
                 fix: spell every word of it whole
                 read: docs/reference/quality-checks.md#the-names-tree-pass
             specs/orders/__setup__/utils:1:1  names(no-grab-bag-name)
-                found: \`utils\` names no subject — it holds whatever nobody placed
+                found: \`utils\` names no subject: it holds whatever nobody placed
                 why: A directory or file is named for the subject it holds, never a grab-bag word.
                 fix: name it for the subject it holds, or move what it holds beside the code that uses it
                 read: docs/reference/quality-checks.md#the-names-tree-pass
             src/_helpers:1:1  names(no-grab-bag-name)
-                found: \`_helpers\` names no subject — it holds whatever nobody placed
+                found: \`_helpers\` names no subject: it holds whatever nobody placed
                 why: A directory or file is named for the subject it holds, never a grab-bag word.
                 fix: name it for the subject it holds, or move what it holds beside the code that uses it
                 read: docs/reference/quality-checks.md#the-names-tree-pass
@@ -31,12 +31,12 @@ describe('vague', () => {
                 fix: spell every word of it whole
                 read: docs/reference/quality-checks.md#the-names-tree-pass
             src/agents/_shared:1:1  names(no-grab-bag-name)
-                found: \`_shared\` names no subject — its \`_\` already says the row shares it, and the word says it again
+                found: \`_shared\` names no subject: its \`_\` already says the row shares it, and the word says it again
                 why: A directory or file is named for the subject it holds, never a grab-bag word.
                 fix: name it for what its files share (\`_taxonomy/\`, never \`_shared/\`), or move a lone file beside the code that uses it
                 read: docs/reference/quality-checks.md#the-names-tree-pass
             src/common.ts:1:1  names(no-grab-bag-name)
-                found: \`common\` names no subject — it holds whatever nobody placed
+                found: \`common\` names no subject: it holds whatever nobody placed
                 why: A directory or file is named for the subject it holds, never a grab-bag word.
                 fix: name it for the subject it holds, or move what it holds beside the code that uses it
                 read: docs/reference/quality-checks.md#the-names-tree-pass
@@ -46,17 +46,17 @@ describe('vague', () => {
                 fix: spell every word of it whole
                 read: docs/reference/quality-checks.md#the-names-tree-pass
             src/helpers.ts:1:1  names(no-grab-bag-name)
-                found: \`helpers\` names no subject — it holds whatever nobody placed
+                found: \`helpers\` names no subject: it holds whatever nobody placed
                 why: A directory or file is named for the subject it holds, never a grab-bag word.
                 fix: name it for the subject it holds, or move what it holds beside the code that uses it
                 read: docs/reference/quality-checks.md#the-names-tree-pass
             src/misc.ts:1:1  names(no-grab-bag-name)
-                found: \`misc\` names no subject — it holds whatever nobody placed
+                found: \`misc\` names no subject: it holds whatever nobody placed
                 why: A directory or file is named for the subject it holds, never a grab-bag word.
                 fix: name it for the subject it holds, or move what it holds beside the code that uses it
                 read: docs/reference/quality-checks.md#the-names-tree-pass
             src/utils:1:1  names(no-grab-bag-name)
-                found: \`utils\` names no subject — it holds whatever nobody placed
+                found: \`utils\` names no subject: it holds whatever nobody placed
                 why: A directory or file is named for the subject it holds, never a grab-bag word.
                 fix: name it for the subject it holds, or move what it holds beside the code that uses it
                 read: docs/reference/quality-checks.md#the-names-tree-pass

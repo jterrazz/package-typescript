@@ -63,7 +63,7 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                     column: 0,
                     line: 1,
                     message:
-                        "found: a comment that states no kind · why: the default is no comment — the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, rename what needed it, or — when it annotates a literal — name the value with a constant; a comment that states what the code cannot opens with its kind — `invariant:`, `hazard:`, `outside:`, `value:` — and an exported symbol's editor hover is one `/** … */` paragraph above it, its block tags — `@param`, `@example` — on the lines after it · read: docs/reference/lint-presets.md#a-comment-states-its-kind",
+                        "found: a comment that states no kind · why: the default is no comment: the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, rename what needed it, or, when it annotates a literal, name the value with a constant; a comment that states what the code cannot opens with its kind (`invariant:`, `hazard:`, `outside:`, `value:`), and an exported symbol's editor hover is one `/** ... */` paragraph above it, its block tags (`@param`, `@example`) on the lines after it · read: docs/reference/lint-presets.md#a-comment-states-its-kind",
                 },
             ],
         },
@@ -264,7 +264,7 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                     column: 0,
                     line: 1,
                     message:
-                        'found: a tool instruction whose reason states a kind · why: the default is no comment — the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: drop the kind: a tool instruction is its own kind, and its reason follows it bare — `typescript fix` drops it · read: docs/reference/lint-presets.md#a-comment-states-its-kind',
+                        'found: a tool instruction whose reason states a kind · why: the default is no comment: the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: drop the kind: a tool instruction is its own kind, and its reason follows it bare; `typescript fix` drops it · read: docs/reference/lint-presets.md#a-comment-states-its-kind',
                 },
                 { column: 0, line: 3, messageId: 'kindedInstruction' },
             ],
@@ -290,7 +290,7 @@ ruleTester().run('comment-states-its-kind', commentStatesItsKind, {
                     column: 0,
                     line: 1,
                     message:
-                        "found: an exported symbol's hover of several paragraphs · why: the default is no comment — the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: keep one paragraph in the hover — an exported symbol's hover says what it is, wrapped at the formatter's width with no blank line, and its block tags follow on lines of their own; the rest is a `docs/` page · read: docs/reference/lint-presets.md#a-comment-states-its-kind",
+                        "found: an exported symbol's hover of several paragraphs · why: the default is no comment: the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: keep one paragraph in the hover: an exported symbol's hover says what it is, wrapped at the formatter's width with no blank line, and its block tags follow on lines of their own; the rest is a `docs/` page · read: docs/reference/lint-presets.md#a-comment-states-its-kind",
                 },
             ],
         },

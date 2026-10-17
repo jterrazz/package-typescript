@@ -6,7 +6,7 @@ runs:
       stdout: |4
            TYPESCRIPT  measured nothing: {{workdir}} holds no module test and no specs/, so no test project to run a mutant against.
 
-          ✓ Mutation passed — measured nothing: {{workdir}} holds no module test and no specs/, so no test project to run a mutant against
+          ✓ Mutation passed: measured nothing: {{workdir}} holds no module test and no specs/, so no test project to run a mutant against
       files:
           .artifacts/gate/verdict.json:
               equals: |

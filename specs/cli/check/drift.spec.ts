@@ -90,7 +90,7 @@ describe('drift', () => {
 
         // Then - the linter refuses the settings, naming the rule and what it owes
         expect(silent.stdout.text).toContain(
-            'sets `no-debugger` with no `{ level, reason }` — a rule the project sets apart from its profile says why',
+            'sets `no-debugger` with no `{ level, reason }`: a rule the project sets apart from its profile says why',
         );
         expect(silent.exitCode).toBe(1);
     });

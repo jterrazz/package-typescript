@@ -58,8 +58,8 @@ const HOVER_LINE_MARGIN = /^\s*\*?\s?/u;
 const BLOCK_TAG = /^@[a-zA-Z]+\b/u;
 
 const WHY_FIX = {
-    fix: `delete it, rename what needed it, or — when it annotates a literal — name the value with a constant; a comment that states what the code cannot opens with its kind — ${COMMENT_KINDS.map((kind) => `\`${kind}:\``).join(', ')} — and an exported symbol's editor hover is one \`/** … */\` paragraph above it, its block tags — \`@param\`, \`@example\` — on the lines after it`,
-    why: 'the default is no comment — the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one',
+    fix: `delete it, rename what needed it, or, when it annotates a literal, name the value with a constant; a comment that states what the code cannot opens with its kind (${COMMENT_KINDS.map((kind) => `\`${kind}:\``).join(', ')}), and an exported symbol's editor hover is one \`/** ... */\` paragraph above it, its block tags (\`@param\`, \`@example\`) on the lines after it`,
+    why: 'the default is no comment: the code speaks through its names, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one',
 };
 
 const openingOf = (comment: Comment): string => comment.value.replace(/[\s*/]*/u, '');
@@ -151,11 +151,11 @@ export const commentStatesItsKind = defineRule(
         fixable: 'code',
         messages: {
             paragraphedHover: {
-                fix: "keep one paragraph in the hover — an exported symbol's hover says what it is, wrapped at the formatter's width with no blank line, and its block tags follow on lines of their own; the rest is a `docs/` page",
+                fix: "keep one paragraph in the hover: an exported symbol's hover says what it is, wrapped at the formatter's width with no blank line, and its block tags follow on lines of their own; the rest is a `docs/` page",
                 found: "an exported symbol's hover of several paragraphs",
             },
             kindedInstruction: {
-                fix: 'drop the kind: a tool instruction is its own kind, and its reason follows it bare — `typescript fix` drops it',
+                fix: 'drop the kind: a tool instruction is its own kind, and its reason follows it bare; `typescript fix` drops it',
                 found: 'a tool instruction whose reason states a kind',
             },
             unstated: {

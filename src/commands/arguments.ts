@@ -36,7 +36,7 @@ function unknownFlag(name: string, flag: string, surface: Surface): string {
     }
 
     return refusal({
-        fix: `drop it — ${readsList(name, surface)}`,
+        fix: `drop it: ${readsList(name, surface)}`,
         found: `\`typescript ${name}\` has no flag ${flag}`,
         read: 'docs/reference/commands.md#flags-and-help',
         why: 'a flag the command does not read would be ignored, and the run would not be the one asked for',
@@ -80,7 +80,7 @@ function extraOperand(name: string, operand: string, surface: Surface): string {
     return refusal({
         fix:
             surface.operand === undefined
-                ? `drop it — \`typescript ${name}\` takes no argument`
+                ? `drop it: \`typescript ${name}\` takes no argument`
                 : `name one ${surface.operand}, or none`,
         found: `\`typescript ${name}\` was given ${operand}, ${surface.operand === undefined ? 'an argument it does not read' : `a second ${surface.operand}`}`,
         read: 'docs/reference/commands.md#flags-and-help',

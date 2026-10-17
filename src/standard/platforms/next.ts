@@ -6,7 +6,7 @@ export default defineStandard({
         sources: { extensions: ['tsx'], roots: ['app', 'pages'] },
         toolRoots: {
             app: APP_ROOT,
-            pages: 'Next.js Pages Router — routes are read off this folder',
+            pages: 'Next.js Pages Router: routes are read off this folder',
             public: PUBLIC_ROOT,
         },
         tsconfigPreset: 'next',

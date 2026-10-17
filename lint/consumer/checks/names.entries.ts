@@ -46,7 +46,7 @@ function grammarFinding(path: string, { stem, target, what }: Published): Findin
     const variant = stemOf(basename(path)).split('.').includes('node');
 
     return namesFinding('names/entry-follows-its-grammar', path, {
-        fix: `rename it \`${join(dirname(path), stem)}.ts\`, its build entry with it${variant ? ' — `node` is the default runtime and never a variant' : ''}`,
+        fix: `rename it \`${join(dirname(path), stem)}.ts\`, its build entry with it${variant ? ', since `node` is the default runtime and never a variant' : ''}`,
         found: `\`${path}\` builds ${what} (${target}), and is not named \`${stem}.ts\``,
     });
 }

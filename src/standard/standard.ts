@@ -1,12 +1,11 @@
 import { defineStandard } from '../../lint/index.config.js';
 
-export const PUBLIC_ROOT =
-    'Next.js, Astro and Vite — static files served verbatim at the site root';
+export const PUBLIC_ROOT = 'Next.js, Astro and Vite: static files served verbatim at the site root';
 
-export const APP_ROOT = 'Next.js App Router and Expo Router — routes are read off this folder';
+export const APP_ROOT = 'Next.js App Router and Expo Router: routes are read off this folder';
 
 export const ASSETS_ROOT =
-    'Expo and Astro — the images, fonts and authored pages the app imports or serves by path, kept byte for byte';
+    'Expo and Astro: the images, fonts and authored pages the app imports or serves by path, kept byte for byte';
 
 export default defineStandard({
     typescript: {
@@ -66,9 +65,9 @@ export default defineStandard({
         sources: { extensions: ['ts'], roots: ['src'] },
         spine: ['docs', 'lint', 'skills', 'specs', 'src'],
         toolRoots: {
-            bin: "npm — the files a package's `bin` entry links as commands",
-            config: "node-config — the default folder its `require('config')` reads",
-            prisma: 'Prisma — the schema and migrations its CLI reads by default',
+            bin: "npm: the files a package's `bin` entry links as commands",
+            config: "node-config: the default folder its `require('config')` reads",
+            prisma: 'Prisma: the schema and migrations its CLI reads by default',
         },
         tsconfigPreset: 'node',
         words: {

@@ -33,7 +33,7 @@ describe('astro', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Astro (check + format): astro-check-ran
+            ✗ Some checks failed, first Astro (check + format): astro-check-ran
         `);
     });
 
@@ -82,7 +82,7 @@ describe('astro', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Astro (check + format): packages/site
+            ✗ Some checks failed, first Astro (check + format): packages/site
         `);
     });
 
@@ -124,7 +124,7 @@ describe('astro', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first TypeScript Check: astro-sync-failed
+            ✗ Some checks failed, first TypeScript Check: astro-sync-failed
         `);
     });
 });

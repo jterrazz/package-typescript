@@ -285,8 +285,8 @@ export function runLsLint(
                 failures: {},
                 problem: ran
                     ? refusal({
-                          fix: 'correct what ls-lint printed — an `--ignore-pattern` or a declared glob it cannot read, a directory it cannot enter — then run again',
-                          found: `ls-lint stopped with no report — ${output.trim()}`,
+                          fix: 'correct what ls-lint printed (an `--ignore-pattern` or a declared glob it cannot read, a directory it cannot enter), then run again',
+                          found: `ls-lint stopped with no report: ${output.trim()}`,
                           read: 'docs/reference/quality-checks.md#the-names-tree-pass',
                           why: 'where a name sits is judged from the failures ls-lint reports, and with no report no name is judged',
                       })

@@ -27,7 +27,7 @@ export function folderPlatformsOf(written: unknown): FolderPlatforms {
         const { platform, reason } = isJsonObject(declared) ? declared : {};
         if (!FOLDER.test(folder)) {
             return refused(
-                `names \`${folder}\` under \`typescript.platforms\`, which is no folder of the unit — write its path from the unit, with no glob`,
+                `names \`${folder}\` under \`typescript.platforms\`, which is no folder of the unit; write its path from the unit, with no glob`,
             );
         }
         if (!isPlatform(platform)) {
@@ -37,7 +37,7 @@ export function folderPlatformsOf(written: unknown): FolderPlatforms {
         }
         if (typeof reason !== 'string' || reason.trim() === '') {
             return refused(
-                `declares \`${folder}\` on \`${platform}\` with no \`reason\` — say why the folder runs on another platform than the unit`,
+                `declares \`${folder}\` on \`${platform}\` with no \`reason\`; say why the folder runs on another platform than the unit`,
             );
         }
         folders.push({ folder, platform });

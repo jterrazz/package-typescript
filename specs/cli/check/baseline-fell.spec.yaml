@@ -44,7 +44,7 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing — node, the default
+            declared                              nothing: node, the default
             exceptions                            0
             rules off vs profile                  none
             suppressions                          0
@@ -55,7 +55,7 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed — first Oxlint Check: {{any}}
+          ✗ Some checks failed, first Oxlint Check: {{any}}
     - command: fix
       exit: 0
       stdout: |4
@@ -83,7 +83,7 @@ runs:
 
            RUN  Names (tree)
 
-          re-recorded .jterrazz/baseline.json › typescript › names/no-language-construct-name 2 → 1
+          re-recorded .jterrazz/baseline.json › typescript › names/no-language-construct-name from 2 to 1
           ✓ Passed ({{duration}})
 
            END  Finalizing quality fixes
@@ -146,7 +146,7 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing — node, the default
+            declared                              nothing: node, the default
             exceptions                            0
             rules off vs profile                  none
             suppressions                          0

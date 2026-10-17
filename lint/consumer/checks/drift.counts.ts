@@ -64,7 +64,7 @@ function declaredOf(declaration: null | ProjectIdentity, monorepo: boolean): Row
     return [
         [
             'declared',
-            monorepo ? 'nothing — a monorepo, each member its own' : 'nothing — node, the default',
+            monorepo ? 'nothing: a monorepo, each member its own' : 'nothing: node, the default',
         ],
     ];
 }

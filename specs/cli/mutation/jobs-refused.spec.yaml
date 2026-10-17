@@ -5,6 +5,6 @@ runs:
     - command: mutation
       exit: 1
       stdout: |
-          found: TYPESCRIPT_JOBS is many, which counts no test runner · why: a count Stryker cannot run would stop the run, or run another one than the one asked for · fix: set it to a positive integer — TYPESCRIPT_JOBS=2 — or leave it unset to take this gate's share of the cores · read: docs/reference/quality-checks.md#how-many-test-runners
+          found: TYPESCRIPT_JOBS is many, which counts no test runner · why: a count Stryker cannot run would stop the run, or run another one than the one asked for · fix: set it to a positive integer (TYPESCRIPT_JOBS=2), or leave it unset to take this gate's share of the cores · read: docs/reference/quality-checks.md#how-many-test-runners
 
-          ✗ Mutation failed — refused before any run: TYPESCRIPT_JOBS is many, which counts no test runner
+          ✗ Mutation failed: refused before any run: TYPESCRIPT_JOBS is many, which counts no test runner

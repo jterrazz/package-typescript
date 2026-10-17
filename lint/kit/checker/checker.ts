@@ -245,7 +245,7 @@ export async function runChecker(
     const load = checker.passes[name];
     if (load === undefined) {
         stdout.write(
-            `the checker runs no pass named \`${name}\` — it runs ${[...Object.keys(commands), ...Object.keys(checker.passes)].toSorted().join(', ')}\n`,
+            `the checker runs no pass named \`${name}\`; it runs ${[...Object.keys(commands), ...Object.keys(checker.passes)].toSorted().join(', ')}\n`,
         );
         exit(2);
     }

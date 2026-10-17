@@ -33,7 +33,7 @@ const WHY_COMMAND =
     'a subcommand a user types is one folder of src/commands/ and one `<name>.command.ts` in it, so the tree lists the commands the usage prints and what only one of them uses sits beside it';
 
 const WHY_DRIVER =
-    "an external tool the command's process drives is driven from one folder of src/drivers/ alone — its binary resolved, its process spawned, its package imported there, its config beside it in src/presets/ — so a change of the tool lands in one place; the checker program runs its passes' tools through lint/kit/checker/tool-run.ts, never the command";
+    "an external tool the command's process drives is driven from one folder of src/drivers/ alone (its binary resolved, its process spawned, its package imported there, its config beside it in src/presets/), so a change of the tool lands in one place; the checker program runs its passes' tools through lint/kit/checker/tool-run.ts, never the command";
 
 // invariant: every package of a tool a driver drives, by the folder of its driver.
 const TOOL_PACKAGES: Readonly<Record<string, readonly string[]>> = {

@@ -53,7 +53,7 @@ describe('format-sweep', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Oxfmt Check: Checking formatting...
+            ✗ Some checks failed, first Oxfmt Check: Checking formatting...
         `);
     });
 });

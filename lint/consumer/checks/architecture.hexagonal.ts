@@ -40,7 +40,7 @@ const ARCHITECTURE_HEXAGONAL: readonly ArchitectureRule[] = Object.freeze([
         to: {
             path: `${ANY_DEPTH}(application|composition|infrastructure|presentation|config|generated)/`,
         },
-        why: 'the domain layer is pure — it imports no other layer',
+        why: 'the domain layer is pure: it imports no other layer',
     },
     {
         fix: 'depend on the port the implementation satisfies, and let the composition root hand the implementation in',
@@ -56,7 +56,7 @@ const ARCHITECTURE_HEXAGONAL: readonly ArchitectureRule[] = Object.freeze([
         name: 'hexagonal-port-knows-no-implementation',
         read: READ,
         to: { path: `${ANY_DEPTH}(composition|infrastructure|presentation)/` },
-        why: 'a port is an interface — it cannot depend on what implements it',
+        why: 'a port is an interface: it cannot depend on what implements it',
     },
     {
         fix: 'take the outbound adapter as a constructor argument, wired by the composition root',
@@ -85,7 +85,7 @@ const ARCHITECTURE_HEXAGONAL: readonly ArchitectureRule[] = Object.freeze([
         name: 'hexagonal-ui-stays-pure',
         read: READ,
         to: { path: `${ANY_DEPTH}navigation/` },
-        why: 'an atom and a molecule are pure — navigation is a feature concern',
+        why: 'an atom and a molecule are pure, and navigation is a feature concern',
     },
     {
         fix: 'move what two features share into `presentation/features/common/`',
@@ -96,7 +96,7 @@ const ARCHITECTURE_HEXAGONAL: readonly ArchitectureRule[] = Object.freeze([
             path: `${ANY_DEPTH}presentation/features/`,
             pathNot: `${ANY_DEPTH}presentation/features/(common|$2)/`,
         },
-        why: 'a feature is independent — shared code lives in features/common',
+        why: 'a feature is independent: shared code lives in features/common',
     },
 ]);
 

@@ -180,7 +180,7 @@ describe('findingsOf', () => {
             {
                 column: 1,
                 line: 1,
-                message: `found: \`_Shared\` names no subject — its \`_\` already says the row shares it, and the word says it again · ${grabBag} · fix: name it for what its files share (\`_taxonomy/\`, never \`_shared/\`), or move a lone file beside the code that uses it · ${read}`,
+                message: `found: \`_Shared\` names no subject: its \`_\` already says the row shares it, and the word says it again · ${grabBag} · fix: name it for what its files share (\`_taxonomy/\`, never \`_shared/\`), or move a lone file beside the code that uses it · ${read}`,
                 path: 'src/_Shared',
                 rule: 'names/no-grab-bag-name',
             },
@@ -201,7 +201,7 @@ describe('findingsOf', () => {
             {
                 column: 1,
                 line: 1,
-                message: `found: \`tools\` names no subject — it holds whatever nobody placed · ${grabBag} · fix: name it for the subject it holds, or move what it holds beside the code that uses it · ${read}`,
+                message: `found: \`tools\` names no subject: it holds whatever nobody placed · ${grabBag} · fix: name it for the subject it holds, or move what it holds beside the code that uses it · ${read}`,
                 path: 'src/tools',
                 rule: 'names/no-grab-bag-name',
             },

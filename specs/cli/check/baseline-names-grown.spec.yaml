@@ -43,7 +43,7 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing — node, the default
+            declared                              nothing: node, the default
             exceptions                            0
             rules off vs profile                  none
             suppressions                          0
@@ -53,4 +53,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed — first Names (tree): src/constants.ts:1:1: error names(no-language-construct-name): found: `constants.ts` names a construct of the language · why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds · read: docs/reference/quality-checks.md#the-names-tree-pass
+          ✗ Some checks failed, first Names (tree): src/constants.ts:1:1: error names(no-language-construct-name): found: `constants.ts` names a construct of the language · why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds · read: docs/reference/quality-checks.md#the-names-tree-pass

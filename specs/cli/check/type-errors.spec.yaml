@@ -45,7 +45,7 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing — node, the default
+            declared                              nothing: node, the default
             exceptions                            0
             rules off vs profile                  none
             suppressions                          0
@@ -55,4 +55,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed — first TypeScript Check: types.ts(1,7): error TS2322: Type 'number' is not assignable to type 'string'.
+          ✗ Some checks failed, first TypeScript Check: types.ts(1,7): error TS2322: Type 'number' is not assignable to type 'string'.

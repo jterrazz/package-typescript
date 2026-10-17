@@ -138,7 +138,7 @@ describe('presets-member', () => {
         expect(result.stdout).toMatch(`
              TYPESCRIPT  Recording the baseline...
 
-            .jterrazz/baseline.json › typescript written — 0 finding(s) across 0 rule(s)
+            .jterrazz/baseline.json › typescript written: 0 finding(s) across 0 rule(s)
             the stub recorded its section
         `);
     });
@@ -160,7 +160,7 @@ describe('presets-member', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Stub Conventions: root repository pass
+            ✗ Some checks failed, first Stub Conventions: root repository pass
         `);
     });
 
@@ -209,7 +209,7 @@ describe('presets-member', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Stub Conventions: root repository pass
+            ✗ Some checks failed, first Stub Conventions: root repository pass
         `);
     });
 

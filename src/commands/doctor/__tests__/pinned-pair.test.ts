@@ -116,7 +116,7 @@ describe('pinnedPair', () => {
             versionColumn([]),
             versionColumn(['4.1.10']),
             versionColumn(['1', '2']),
-        ]).toStrictEqual(['—', '4.1.10', '1, 2']);
+        ]).toStrictEqual(['none', '4.1.10', '1, 2']);
     });
 
     test('pinnedPair — reads nothing from a project with no lockfile, and from one whose lock names no provider', () => {
@@ -263,7 +263,7 @@ describe('pinnedPair', () => {
         // Then - the lock is named as unread
         expect(printed(() => reportPinnedPair(yarn))).toStrictEqual({
             result: false,
-            text: `\nPinned together\n\n  ${PROVIDER}  yarn.lock is not parsed here — the pin is unchecked\n\n`,
+            text: `\nPinned together\n\n  ${PROVIDER}  yarn.lock is not parsed here, so the pin is unchecked\n\n`,
         });
     });
 });

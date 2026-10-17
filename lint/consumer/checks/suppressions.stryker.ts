@@ -23,7 +23,7 @@ export function placementOf(
         if (/\{\s*\/\*[\s\S]*?\*\/\s*\}/u.test(line)) {
             found.push({
                 line: number,
-                message: `line ${number} puts a Stryker directive in a JSX comment container, which Stryker attaches to nothing — write it as a \`//\` line inside the expression container, or wrap the element in a \`// Stryker disable <mutator>: <why>\` … \`// Stryker restore <mutator>\` range`,
+                message: `line ${number} puts a Stryker directive in a JSX comment container, which Stryker attaches to nothing: write it as a \`//\` line inside the expression container, or wrap the element in a \`// Stryker disable <mutator>: <why>\` ... \`// Stryker restore <mutator>\` range`,
                 rule: ATTACHES,
             });
             continue;
@@ -32,7 +32,7 @@ export function placementOf(
         if (next?.trimStart().startsWith('}') === true) {
             found.push({
                 line: number,
-                message: `line ${number} places a Stryker directive above a line led by \`}\`, where no mutant starts — move it to the line of the block's opening, or wrap the block in a \`// Stryker disable <mutator>: <why>\` … \`// Stryker restore <mutator>\` range`,
+                message: `line ${number} places a Stryker directive above a line led by \`}\`, where no mutant starts: move it to the line of the block's opening, or wrap the block in a \`// Stryker disable <mutator>: <why>\` ... \`// Stryker restore <mutator>\` range`,
                 rule: ATTACHES,
             });
         }

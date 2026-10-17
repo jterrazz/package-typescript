@@ -139,7 +139,7 @@ export function manifestFindings(
             ? []
             : [
                   finding('config/manifest-keys-known', path, {
-                      fix: "fix the key if it is a typo of one npm reads, move a tool's settings to `jterrazz.config.ts`, or delete it; a key that carries information for a reader — a credit, a fork's origin — moves to the README",
+                      fix: "fix the key if it is a typo of one npm reads, move a tool's settings to `jterrazz.config.ts`, or delete it; a key that carries information for a reader (a credit, a fork's origin) moves to the README",
                       found: `${path} holds ${strays.map((key) => `\`${key}\``).join(', ')}, which npm and the tools of the family read nowhere`,
                   }),
               ]),

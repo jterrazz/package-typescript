@@ -29,7 +29,7 @@ describe('mobile', () => {
         expect(result.stdout).toMatch(`
              TYPESCRIPT  Building the entries the manifest publishes...
 
-            Nothing to build: a mobile app is bundled by its framework — \`npx expo export\` — and publishes nothing a package build compiles
+            Nothing to build: a mobile app is bundled by its framework (\`npx expo export\`) and publishes nothing a package build compiles
         `);
         expect(result.file('dist').exists).toBe(false);
     });

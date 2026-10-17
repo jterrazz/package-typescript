@@ -65,7 +65,7 @@ describe('versions', () => {
 
     test.each([
         ['older than its range', { oxlint: '0.0.1' }, /^ {2}oxlint +0\.0\.1 +\S+ +old$/u],
-        ['not installed', { knip: null }, /^ {2}knip +— +\S+ +absent$/u],
+        ['not installed', { knip: null }, /^ {2}knip +none +\S+ +absent$/u],
     ])('fails on a tool %s', (_, forged, row) => {
         // Given - a toolchain with that one tool forged
         const root = toolchainWith(forged);
@@ -76,7 +76,7 @@ describe('versions', () => {
         // Then - the row carries its verdict, and the report fails on it alone
         expect(rows).toContainEqual(expect.stringMatching(row));
         expect(verdict).toBe(
-            'found: a tool is older than its range, or not installed — its row reads `old` or `absent` · why: a gate running an older tool enforces an older rulebook without saying so · fix: install what this release declares, then run `typescript doctor` again · read: docs/guides/adopt-a-stricter-release.md#the-two-gestures',
+            'found: a tool is older than its range, or not installed: its row reads `old` or `absent` · why: a gate running an older tool enforces an older rulebook without saying so · fix: install what this release declares, then run `typescript doctor` again · read: docs/guides/adopt-a-stricter-release.md#the-two-gestures',
         );
         expect(status).toBe(1);
     });

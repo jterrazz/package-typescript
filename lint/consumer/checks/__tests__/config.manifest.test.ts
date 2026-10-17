@@ -125,7 +125,7 @@ describe('config.manifest', () => {
                 column: 1,
                 line: 1,
                 message:
-                    'found: jterrazz.config.ts declares no kind, a suite, and package.json is not `private`, so npm would publish the suite · why: A library publishes its exports, a published cli names its bin, and an application — an api, a website, a mobile app — is private, never published, as are a monorepo\'s own suite and its root, a container that declares no kind. · fix: set `"private": true`: a suite is never published · read: docs/reference/quality-checks.md#the-config-one-file-pass',
+                    'found: jterrazz.config.ts declares no kind, a suite, and package.json is not `private`, so npm would publish the suite · why: A library publishes its exports, a published cli names its bin, and an application (an api, a website, a mobile app) is private, never published, as are a monorepo\'s own suite and its root, a container that declares no kind. · fix: set `"private": true`: a suite is never published · read: docs/reference/quality-checks.md#the-config-one-file-pass',
                 path: 'package.json',
                 rule: 'config/kind-matches-manifest',
             },
@@ -141,7 +141,7 @@ describe('config.manifest', () => {
                 column: 1,
                 line: 1,
                 message:
-                    "found: package.json holds `depedencies`, which npm and the tools of the family read nowhere · why: A manifest holds the top-level keys npm and the family's tools read: a key beyond them reads nothing, and a typo of one fails without a word. · fix: fix the key if it is a typo of one npm reads, move a tool's settings to `jterrazz.config.ts`, or delete it; a key that carries information for a reader — a credit, a fork's origin — moves to the README · read: docs/reference/quality-checks.md#the-config-one-file-pass",
+                    "found: package.json holds `depedencies`, which npm and the tools of the family read nowhere · why: A manifest holds the top-level keys npm and the family's tools read: a key beyond them reads nothing, and a typo of one fails without a word. · fix: fix the key if it is a typo of one npm reads, move a tool's settings to `jterrazz.config.ts`, or delete it; a key that carries information for a reader (a credit, a fork's origin) moves to the README · read: docs/reference/quality-checks.md#the-config-one-file-pass",
                 path: 'package.json',
                 rule: 'config/manifest-keys-known',
             },

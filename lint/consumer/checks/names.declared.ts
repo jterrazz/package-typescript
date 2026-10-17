@@ -41,7 +41,7 @@ export function declaredNamesRules({ problem, resolved }: Resolution): {
     if (!rules.every((rule) => isNamesRule(rule))) {
         return {
             problem:
-                'holds a `names` — its own or a preset’s — whose every entry is not `{ name, ls, why, fix, read }`, the `name` in kebab-case, `ls` mapping each glob to its ls-lint rules, `ignore` a list of globs, `read` a chapter anchor `docs/<chapter>.md#<heading>`',
+                "holds a `names` (its own or a preset's) whose every entry is not `{ name, ls, why, fix, read }`, the `name` in kebab-case, `ls` mapping each glob to its ls-lint rules, `ignore` a list of globs, `read` a chapter anchor `docs/<chapter>.md#<heading>`",
             rules: [],
         };
     }

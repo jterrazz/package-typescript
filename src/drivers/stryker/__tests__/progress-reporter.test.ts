@@ -58,17 +58,17 @@ describe('progress-reporter', () => {
         // Then - the reporter Stryker loads by the config's name, the dry run, then ten steps, each naming what ran and what survives so far
         expect(lines).toStrictEqual([
             `Reporter ${PROGRESS_REPORTER} 0`,
-            'dry run: <s> — the initial run of the tests over the unmutated sandbox',
-            'progress: 10% — 2 of 20 mutants run, 0 surviving so far, no verdict yet (<s>)',
-            'progress: 20% — 4 of 20 mutants run, 1 surviving so far, no verdict yet (<s>)',
-            'progress: 30% — 6 of 20 mutants run, 2 surviving so far, no verdict yet (<s>)',
-            'progress: 40% — 8 of 20 mutants run, 2 surviving so far, no verdict yet (<s>)',
-            'progress: 50% — 10 of 20 mutants run, 3 surviving so far, no verdict yet (<s>)',
-            'progress: 60% — 12 of 20 mutants run, 4 surviving so far, no verdict yet (<s>)',
-            'progress: 70% — 14 of 20 mutants run, 4 surviving so far, no verdict yet (<s>)',
-            'progress: 80% — 16 of 20 mutants run, 5 surviving so far, no verdict yet (<s>)',
-            'progress: 90% — 18 of 20 mutants run, 6 surviving so far, no verdict yet (<s>)',
-            'progress: 100% — 20 of 20 mutants run, 6 surviving so far, no verdict yet (<s>)',
+            'dry run: <s>, the initial run of the tests over the unmutated sandbox',
+            'progress: 10%, 2 of 20 mutants run, 0 surviving so far, no verdict yet (<s>)',
+            'progress: 20%, 4 of 20 mutants run, 1 surviving so far, no verdict yet (<s>)',
+            'progress: 30%, 6 of 20 mutants run, 2 surviving so far, no verdict yet (<s>)',
+            'progress: 40%, 8 of 20 mutants run, 2 surviving so far, no verdict yet (<s>)',
+            'progress: 50%, 10 of 20 mutants run, 3 surviving so far, no verdict yet (<s>)',
+            'progress: 60%, 12 of 20 mutants run, 4 surviving so far, no verdict yet (<s>)',
+            'progress: 70%, 14 of 20 mutants run, 4 surviving so far, no verdict yet (<s>)',
+            'progress: 80%, 16 of 20 mutants run, 5 surviving so far, no verdict yet (<s>)',
+            'progress: 90%, 18 of 20 mutants run, 6 surviving so far, no verdict yet (<s>)',
+            'progress: 100%, 20 of 20 mutants run, 6 surviving so far, no verdict yet (<s>)',
         ]);
     });
 
@@ -78,7 +78,7 @@ describe('progress-reporter', () => {
 
         // Then - the dry run's line, and no step
         expect(lines.slice(1)).toStrictEqual([
-            'dry run: <s> — the initial run of the tests over the unmutated sandbox',
+            'dry run: <s>, the initial run of the tests over the unmutated sandbox',
         ]);
     });
 });

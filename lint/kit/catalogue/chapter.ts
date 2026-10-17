@@ -23,7 +23,7 @@ export function spliceBetween(
         throw new Error(
             refusal({
                 fix: `put \`${markers.start}\` and \`${markers.end}\` back around the generated block, then regenerate`,
-                found: `${page} has lost its markers (${markers.start} … ${markers.end})`,
+                found: `${page} has lost its markers (${markers.start} and ${markers.end})`,
                 read: 'docs/reference/rules-kit.md#a-chapter-carries-its-catalogue',
                 why: 'a generated block is written between its markers, and a page without them has nowhere to receive it',
             }),

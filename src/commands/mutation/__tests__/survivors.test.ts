@@ -12,7 +12,7 @@ const mutant = (status: string, line: number, replacement = 'true', endLine = li
 });
 
 const LESSON =
-    'why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/reference/quality-checks.md#mutation';
+    'why: a test that runs a line and lets a change of it pass proves nothing of that line · fix: assert what the line decides (a value compared whole kills most of them) or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/reference/quality-checks.md#mutation';
 
 const NONE_RAN: ReadonlySet<string> = new Set();
 
@@ -174,10 +174,10 @@ describe('survivors', () => {
         // Then - two detected by the suite and counted so, the two it did not detect named as survivors, the one it never reported never judged
         expect(verdictOf(judged, 0, MEASURE)).toStrictEqual({
             lines: [
-                'src/a.ts:3:9  ConditionalExpression → true  (.artifacts/stryker/suite-report.json)',
-                'src/a.ts:4:9  ConditionalExpression → true  (.artifacts/stryker/suite-report.json)',
+                'src/a.ts:3:9  ConditionalExpression: true  (.artifacts/stryker/suite-report.json)',
+                'src/a.ts:4:9  ConditionalExpression: true  (.artifacts/stryker/suite-report.json)',
                 `found: 2 mutant(s) a test runs and none detects · ${LESSON}`,
-                'found: 1 mutant(s) the run never judged — absent from the suite report 1 · why: a mutant no test was run against says nothing of the line it mutates, so passing it would pass a run that judged nothing there · fix: run `typescript mutation` again to its end — a run stopped midway leaves its mutants Pending, and the next one runs them · read: docs/reference/quality-checks.md#mutation',
+                'found: 1 mutant(s) the run never judged: absent from the suite report 1 · why: a mutant no test was run against says nothing of the line it mutates, so passing it would pass a run that judged nothing there · fix: run `typescript mutation` again to its end: a run stopped midway leaves its mutants Pending, and the next one runs them · read: docs/reference/quality-checks.md#mutation',
                 '2 mutant(s) the module tests let live, detected by the whole suite',
                 '0 mutant(s) no test runs',
             ],

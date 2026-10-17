@@ -88,63 +88,63 @@ export default fragment({
         ]),
         'react/jsx-filename-extension': on([{ extensions: ['.jsx', '.tsx'] }]),
         'react/jsx-handler-names': off({
-            by: 'style only — 0 defects in 44 reports on the migration wave, 33 of them false (every Material colour role `colors.on*`), and widening its prefix to `on` only traded one false positive for another',
+            by: 'style only: 0 defects in 44 reports on the migration wave, 33 of them false (every Material colour role `colors.on*`), and widening its prefix to `on` only traded one false positive for another',
             kind: 'evidence',
         }),
 
         'react-perf/jsx-no-jsx-as-prop': off({
-            by: 'react/static-components, react/use-memo — the React Compiler rules decide memoisation, and an inline prop is the idiom they are written for',
+            by: 'react/static-components, react/use-memo: the React Compiler rules decide memoisation, and an inline prop is the idiom they are written for',
             kind: 'covered',
         }),
         'react-perf/jsx-no-new-array-as-prop': off({
-            by: 'react/static-components, react/use-memo — the React Compiler rules decide memoisation, and an inline prop is the idiom they are written for',
+            by: 'react/static-components, react/use-memo: the React Compiler rules decide memoisation, and an inline prop is the idiom they are written for',
             kind: 'covered',
         }),
         'react-perf/jsx-no-new-function-as-prop': off({
-            by: 'react/static-components, react/use-memo — the React Compiler rules decide memoisation, and an inline prop is the idiom they are written for',
+            by: 'react/static-components, react/use-memo: the React Compiler rules decide memoisation, and an inline prop is the idiom they are written for',
             kind: 'covered',
         }),
         'react-perf/jsx-no-new-object-as-prop': off({
-            by: 'react/static-components, react/use-memo — the React Compiler rules decide memoisation, and an inline prop is the idiom they are written for',
+            by: 'react/static-components, react/use-memo: the React Compiler rules decide memoisation, and an inline prop is the idiom they are written for',
             kind: 'covered',
         }),
         'react/forbid-component-props': off({
-            by: 'docs/reference/lint-presets.md — className is how a component takes its styling, and the rule forbids it by default',
+            by: 'docs/reference/lint-presets.md: className is how a component takes its styling, and the rule forbids it by default',
             kind: 'convention',
         }),
         'react/jsx-max-depth': off({
-            by: 'max-depth (4) — nesting depth is one property, and one rule owns it',
+            by: 'max-depth (4): nesting depth is one property, and one rule owns it',
             kind: 'covered',
         }),
         'react/jsx-no-literals': off({
-            by: 'docs/reference/lint-presets.md — the estate has no translation-extraction convention that would need every string hoisted',
+            by: 'docs/reference/lint-presets.md: the estate has no translation-extraction convention that would need every string hoisted',
             kind: 'convention',
         }),
         'react/jsx-props-no-spreading': off({
-            by: 'docs/reference/lint-presets.md — a wrapper component forwards its props by spread',
+            by: 'docs/reference/lint-presets.md: a wrapper component forwards its props by spread',
             kind: 'convention',
         }),
         'react/no-multi-comp': off({
-            by: 'docs/reference/lint-presets.md — a file holds a component and the small private pieces only it uses',
+            by: 'docs/reference/lint-presets.md: a file holds a component and the small private pieces only it uses',
             kind: 'convention',
         }),
         'react/no-unknown-property': off({
-            by: 'TypeScript — a JSX attribute is checked against the element props type, which knows the framework attributes this rule does not',
+            by: 'TypeScript: a JSX attribute is checked against the element props type, which knows the framework attributes this rule does not',
             kind: 'covered',
         }),
         'react/only-export-components': off({
-            by: 'docs/reference/lint-presets.md — a Next route file exports its metadata beside its component',
+            by: 'docs/reference/lint-presets.md: a Next route file exports its metadata beside its component',
             kind: 'convention',
         }),
         'react/todo': off(
             {
-                by: 'typescript/prefer-nullish-coalescing — it asks a lazy init for the `??=` the React Compiler does not compile yet, and `todo` reports that gap as an error (jterrazz-web pilot, 2026-10-06); a construct the compiler skips leaves a component unoptimised, never wrong',
+                by: 'typescript/prefer-nullish-coalescing: it asks a lazy init for the `??=` the React Compiler does not compile yet, and `todo` reports that gap as an error (jterrazz-web pilot, 2026-10-06); a construct the compiler skips leaves a component unoptimised, never wrong',
                 kind: 'exclusive',
             },
             '11.0.0',
         ),
         'react/react-in-jsx-scope': off({
-            by: 'src/presets/tsconfig/next.json — the automatic JSX runtime (jsx: react-jsx) imports it',
+            by: 'src/presets/tsconfig/next.json: the automatic JSX runtime (jsx: react-jsx) imports it',
             kind: 'covered',
         }),
 

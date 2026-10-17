@@ -43,7 +43,7 @@ export function makefileOf({ read, root }: Context, files: readonly string[]): F
 
     return MAKE_TARGETS.filter((target) => !targets.has(target)).map((target) =>
         namesFinding('names/makefile-answers-every-gesture', MAKEFILE, {
-            fix: `write its rule — every repository answers \`make\` ${gestures}`,
+            fix: `write its rule: every repository answers \`make\` ${gestures}`,
             found: `\`make ${target}\` has no rule`,
         }),
     );

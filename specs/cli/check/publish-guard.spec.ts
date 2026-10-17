@@ -20,7 +20,7 @@ const fixturesFinding = (file: string): string =>
     `${file}:1:1: error publish(no-test-code-in-production): found: ${file} is compiled from src/domain/user.fixtures.ts, a test file · why: a published build never carries test material · fix: cut the production edge no-test-code-in-production names, or take the module out of the entry · read: @jterrazz/test's docs/24-linting.md#no-test-code-in-production`;
 
 const BUILD_FINDING =
-    "package.json:1:1: error publish(build-succeeds): found: the build failed — [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — `typescript build` names what failed · read: @jterrazz/typescript's docs/reference/quality-checks.md#the-build-guard";
+    "package.json:1:1: error publish(build-succeeds): found: the build failed: [UNRESOLVED_ENTRY] Cannot resolve entry module src/index.ts. · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass; `typescript build` names what failed · read: @jterrazz/typescript's docs/reference/quality-checks.md#the-build-guard";
 
 describe('publish-guard', () => {
     test('fails a package whose second export is compiled from a fixtures module, at the chunk the manifest publishes', async () => {
@@ -58,7 +58,7 @@ describe('publish-guard', () => {
 
         // Then - the pass names what the entry threw
         expect(publishPass(result.stdout.text)).toStrictEqual([
-            'publish/no-test-code-in-production: nothing to judge — the @jterrazz/test this package resolves gives no reader of test material — the reader broke',
+            'publish/no-test-code-in-production: nothing to judge: the @jterrazz/test this package resolves gives no reader of test material: the reader broke',
             '✓ Passed',
         ]);
     });
@@ -72,7 +72,7 @@ describe('publish-guard', () => {
 
         // Then - the pass names what the entry lacks, and judges nothing
         expect(publishPass(result.stdout.text)).toStrictEqual([
-            'publish/no-test-code-in-production: nothing to judge — the @jterrazz/test this package resolves gives no reader of test material — its `./oxlint` entry exports no reader of test material',
+            'publish/no-test-code-in-production: nothing to judge: the @jterrazz/test this package resolves gives no reader of test material: its `./oxlint` entry exports no reader of test material',
             '✓ Passed',
         ]);
     });
@@ -153,7 +153,7 @@ describe('publish-guard', () => {
         // Then - the `files` line, the build line, then publint's own report under the same failed verdict
         const pass = publishPass(result.stdout.text);
         expect(pass.slice(0, 2)).toStrictEqual([
-            'package.json:1:1: error publish(export-covered-by-files): ./greeter.js is outside "files" — it resolves here and 404s in a consumer',
+            'package.json:1:1: error publish(export-covered-by-files): ./greeter.js is outside "files": it resolves here and 404s in a consumer',
             BUILD_FINDING,
         ]);
         expect(pass).toContain(

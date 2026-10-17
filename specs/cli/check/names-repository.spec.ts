@@ -93,7 +93,7 @@ describe('names-repository', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Oxlint Check: data/scratch.ts:2:5: error eslint(no-debugger): \`debugger\` statement is not allowed help: Remove the debugger statement
+            ✗ Some checks failed, first Oxlint Check: data/scratch.ts:2:5: error eslint(no-debugger): \`debugger\` statement is not allowed help: Remove the debugger statement
         `);
     });
 
@@ -219,7 +219,7 @@ describe('names-repository', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Suppressions (directives): found: nothing to read under {{workdir}}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
+            ✗ Some checks failed, first Suppressions (directives): found: nothing to read under {{workdir}}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
         `);
     });
 
@@ -259,7 +259,7 @@ describe('names-repository', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Suppressions (directives): found: nothing to read under {{workdir}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
+            ✗ Some checks failed, first Suppressions (directives): found: nothing to read under {{workdir}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
         `);
     });
 
@@ -295,14 +295,14 @@ describe('names-repository', () => {
 
              RUN  Names (tree)
 
-            Makefile:1:1: error names(makefile-answers-every-gesture): found: \`make fix\` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule — every repository answers \`make\` install, build, lint, fix, test and check · read: docs/reference/quality-checks.md#the-six-gestures
-            Makefile:1:1: error names(makefile-answers-every-gesture): found: \`make check\` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule — every repository answers \`make\` install, build, lint, fix, test and check · read: docs/reference/quality-checks.md#the-six-gestures
+            Makefile:1:1: error names(makefile-answers-every-gesture): found: \`make fix\` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule: every repository answers \`make\` install, build, lint, fix, test and check · read: docs/reference/quality-checks.md#the-six-gestures
+            Makefile:1:1: error names(makefile-answers-every-gesture): found: \`make check\` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule: every repository answers \`make\` install, build, lint, fix, test and check · read: docs/reference/quality-checks.md#the-six-gestures
             found: every finding above, and .jterrazz/baseline.json records no \`names/\` entry in its \`typescript\` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
             ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Names (tree): Makefile:1:1: error names(makefile-answers-every-gesture): found: \`make fix\` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule — every repository answers \`make\` install, build, lint, fix, test and check · read: docs/reference/quality-checks.md#the-six-gestures
+            ✗ Some checks failed, first Names (tree): Makefile:1:1: error names(makefile-answers-every-gesture): found: \`make fix\` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule: every repository answers \`make\` install, build, lint, fix, test and check · read: docs/reference/quality-checks.md#the-six-gestures
         `);
     });
 

@@ -103,7 +103,7 @@ describe('problemsOf', () => {
 
         // Then - there is no warn in this rulebook
         expect(problemsOf(probe)).toStrictEqual([
-            'probe: "curly" is "warn" — a rule is error or off',
+            'probe: "curly" is "warn": a rule is error or off',
         ]);
     });
 

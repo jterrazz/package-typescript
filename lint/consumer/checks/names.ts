@@ -182,7 +182,7 @@ async function spinesOf(
 
 function emptyDirectoryFinding(path: string): Finding {
     return namesFinding('names/no-empty-directory', `${path}/`, {
-        fix: 'delete it — `typescript fix` does — or put the file it was made for in it',
+        fix: 'delete it (`typescript fix` does), or put the file it was made for in it',
         found: `\`${path}/\` holds no file`,
     });
 }

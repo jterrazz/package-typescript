@@ -174,7 +174,7 @@ describe('change', () => {
             },
             {
                 changed: new Map(),
-                note: 'The working tree equals the base: no line changed, so the whole suite measures no change — name the commit the work started from with --since to measure one.',
+                note: 'The working tree equals the base: no line changed, so the whole suite measures no change; name the commit the work started from with --since to measure one.',
             },
             {
                 changed: new Map(),
@@ -199,17 +199,17 @@ describe('change', () => {
         expect([dirty, clean, only].map((root) => defaultBaseOf(root))).toStrictEqual([
             {
                 commit: 'HEAD',
-                names: 'HEAD — the change not yet committed',
+                names: 'HEAD, the change not yet committed',
                 range: 'HEAD..working tree',
             },
             {
                 commit: first,
-                names: `the commit before HEAD (${first.slice(0, 8)}) — the working tree is clean, so the last commit is the change`,
+                names: `the commit before HEAD (${first.slice(0, 8)}): the working tree is clean, so the last commit is the change`,
                 range: `${first.slice(0, 8)}..HEAD`,
             },
             {
                 commit: 'HEAD',
-                names: 'HEAD — the first commit, with no commit before it',
+                names: 'HEAD, the first commit, with no commit before it',
                 range: 'HEAD..HEAD',
             },
         ]);
@@ -244,7 +244,7 @@ describe('change', () => {
             // Then - the branch is measured since where it left the default branch, and the verdict names that range
             expect(defaultBaseOf(root)).toStrictEqual({
                 commit: base,
-                names: `the merge-base with ${name} (${base.slice(0, 8)}) — the working tree is clean, so the branch's own commits are the change`,
+                names: `the merge-base with ${name} (${base.slice(0, 8)}): the working tree is clean, so the branch's own commits are the change`,
                 range: `${base.slice(0, 8)}..HEAD`,
             });
         },
@@ -278,7 +278,7 @@ describe('change', () => {
         // Then - no merge-base: the branch's lone commit is the first, measured against HEAD alone
         expect(defaultBaseOf(root)).toStrictEqual({
             commit: 'HEAD',
-            names: 'HEAD — the first commit, with no commit before it',
+            names: 'HEAD, the first commit, with no commit before it',
             range: 'HEAD..HEAD',
         });
     });

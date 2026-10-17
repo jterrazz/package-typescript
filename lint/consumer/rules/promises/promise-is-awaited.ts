@@ -67,7 +67,7 @@ const WRAPPERS: ReadonlySet<string> = new Set([
 const FUNCTIONS: ReadonlySet<string> = new Set(['ArrowFunctionExpression', 'FunctionExpression']);
 
 const WHY_FIX = {
-    fix: 'await the promise, inside a `try`/`catch` for its failure; a call that only shares the name — a zod schema’s `.catch(fallback)` — is read as no promise when the schema is built from zod’s import in the file, or when its fallback is a value: a literal, a constant named in capitals (`DEFAULT_LANGUAGE`, `Language.En`), or a `const` naming one',
+    fix: "await the promise, inside a `try`/`catch` for its failure; a call that only shares the name (a zod schema's `.catch(fallback)`) is read as no promise when the schema is built from zod's import in the file, or when its fallback is a value: a literal, a constant named in capitals (`DEFAULT_LANGUAGE`, `Language.En`), or a `const` naming one",
     why: 'the estate writes `await`: a promise read top to bottom, its failure caught where a `try` says so, never a chain of callbacks threading the value through',
 };
 
@@ -228,8 +228,8 @@ export const promiseIsAwaited = defineRule(
                 found: 'a `.{{method}}()` chain where `await` reads the promise',
             },
             iife: {
-                fix: 'await at the module’s top level: an ES module awaits there, with no function to wrap it',
-                found: 'an async function called where it is declared, at the module’s top level',
+                fix: "await at the module's top level: an ES module awaits there, with no function to wrap it",
+                found: "an async function called where it is declared, at the module's top level",
             },
         },
         read: 'docs/reference/lint-presets.md#a-promise-is-awaited',

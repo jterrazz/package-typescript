@@ -72,7 +72,7 @@ const PAIRS = Object.freeze([
     [
         'default-case',
         'typescript/switch-exhaustiveness-check',
-        'one demands a `default` over a union the other wants every member of, and `case …: default:` is refused',
+        'one demands a `default` over a union the other wants every member of, and `case ...: default:` is refused',
     ],
     [
         'oxc/no-map-spread',

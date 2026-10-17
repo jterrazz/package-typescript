@@ -37,7 +37,7 @@ function longProseBlocks(markdown: string): string[] {
     const close = (): void => {
         if (length > PROSE_BLOCK_LIMIT) {
             found.push(
-                `a block of ${length} lines at line ${start} — the limit is ${PROSE_BLOCK_LIMIT}`,
+                `a block of ${length} lines at line ${start}, over the limit of ${PROSE_BLOCK_LIMIT}`,
             );
         }
         length = 0;

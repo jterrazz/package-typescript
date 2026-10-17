@@ -3,7 +3,7 @@ import { markdownTable } from './table.js';
 
 function scopeOf(entry: Entry): string {
     if (entry.scoped === undefined) {
-        return entry.typeAware === true ? 'type-aware' : '—';
+        return entry.typeAware === true ? 'type-aware' : '';
     }
 
     return `scoped to ${entry.scoped.map((glob) => `\`${glob}\``).join(', ')}`;
@@ -13,7 +13,7 @@ function cellsOf(entry: Entry): string[] {
     const state = entry.level === 'off' ? 'off' : 'on';
     const why =
         entry.level === 'off' && entry.reason !== undefined
-            ? `${entry.reason.kind} — ${entry.reason.by}`
+            ? `${entry.reason.kind}, per ${entry.reason.by}`
             : scopeOf(entry);
 
     return [`\`${entry.rule}\``, entry.profiles.join(', '), state, why, entry.since];
@@ -29,7 +29,7 @@ export function renderDecisions(entries: readonly Entry[]): string {
 export function renderFixers(fixers: readonly { rule: string; why: string }[]): string {
     const lines: string[] = [];
     for (const { rule, why } of fixers) {
-        lines.push(`- \`${rule}\` — ${why}`);
+        lines.push(`- \`${rule}\`: ${why}`);
     }
 
     return lines.join('\n');

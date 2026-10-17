@@ -19,14 +19,14 @@ export default fragment({
         'import/extensions': IMPORT_EXTENSIONS_NEVER,
         'react/capitalized-calls': off(
             {
-                by: 'signews-mobile pilot, 2026-10-06 — 4 reports, 0 a component called as a function: react-native-gesture-handler builds its gestures with capitalised factories (`Gesture.Pan()`, `Tap()`, `Native()`, `Exclusive()`), as React Native names `PlatformColor` and `DynamicColorIOS` — the evidence that turned eslint/new-cap off',
+                by: 'signews-mobile pilot, 2026-10-06: 4 reports, 0 a component called as a function: react-native-gesture-handler builds its gestures with capitalised factories (`Gesture.Pan()`, `Tap()`, `Native()`, `Exclusive()`), as React Native names `PlatformColor` and `DynamicColorIOS`, the evidence that turned eslint/new-cap off',
                 kind: 'evidence',
             },
             '11.0.0',
         ),
         'react/purity': off(
             {
-                by: 'jterrazz-design pilot, 2026-10-10 — a gesture handler written as a reanimated worklet reads and writes shared values that the compiler rule reads as impure calls in render; the worklet runs on the UI thread, outside React render, so the rule has nothing to say there',
+                by: 'jterrazz-design pilot, 2026-10-10: a gesture handler written as a reanimated worklet reads and writes shared values that the compiler rule reads as impure calls in render; the worklet runs on the UI thread, outside React render, so the rule has nothing to say there',
                 kind: 'evidence',
             },
             '11.0.0',
@@ -37,7 +37,7 @@ export default fragment({
                 patterns: [
                     {
                         group: ['react-dom', 'react-dom/*', 'next', 'next/*'],
-                        message: 'this is a React Native tree — the DOM and Next are not on it',
+                        message: 'this is a React Native tree, where neither the DOM nor Next runs',
                     },
                 ],
             },

@@ -43,7 +43,7 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing — node, the default
+            declared                              nothing: node, the default
             exceptions                            0
             rules off vs profile                  none
             suppressions                          0
@@ -53,4 +53,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed — first Knip (unused code): ERROR: Unable to find package.json
+          ✗ Some checks failed, first Knip (unused code): ERROR: Unable to find package.json

@@ -118,7 +118,7 @@ describe('reportAfter', () => {
         expect(kept).toStrictEqual({ 'src/a.ts': ['1', '2'], 'src/b.ts': [] });
     });
 
-    test('staleness — reportAfter — every mutant of a changed source is measured again, whoever covers it', () => {
+    test('staleness — reportAfter: every mutant of a changed source is measured again, whoever covers it', () => {
         // Given - the report of a run, no test seen spawning
         // When - b.ts itself changes
         const kept = keptIds(['src/b.ts'], SPEC_QUIET);

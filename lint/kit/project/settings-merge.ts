@@ -16,7 +16,7 @@ export function mergeSettings(base: unknown, own: unknown, at = 'the section'): 
         shapeOf(base) !== 'a single value'
     ) {
         return {
-            problem: `writes ${shapeOf(own)} at \`${at}\`, where its presets set ${shapeOf(base)} — a setting adds to a default, never replaces its shape`,
+            problem: `writes ${shapeOf(own)} at \`${at}\`, where its presets set ${shapeOf(base)}: a setting adds to a default, never replaces its shape`,
             value: base,
         };
     }

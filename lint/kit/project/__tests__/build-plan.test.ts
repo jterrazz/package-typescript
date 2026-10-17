@@ -106,12 +106,12 @@ describe('build-plan', () => {
         expect([conventionsOf(shipped), conventionsOf(dev), conventionsOf(empty)]).toStrictEqual([
             {
                 problem:
-                    'holds two modules built as `dist/pool.worker.js`: src/a/pool.worker.ts and src/b/pool.worker.ts — rename one',
+                    'holds two modules built as `dist/pool.worker.js`: src/a/pool.worker.ts and src/b/pool.worker.ts; rename one',
                 settings: { dev: {}, entries: {} },
             },
             {
                 problem:
-                    'holds two modules built as `.artifacts/dev/seed.js`: src/a/seed.cli.ts and lint/self/seed.ts — rename one',
+                    'holds two modules built as `.artifacts/dev/seed.js`: src/a/seed.cli.ts and lint/self/seed.ts; rename one',
                 settings: { dev: {}, entries: {} },
             },
             { problem: null, settings: { dev: {}, entries: {} } },
@@ -362,8 +362,8 @@ describe('build-plan', () => {
             planOf(clean, resolution('is ignored once a declaration reads')),
         ]).toStrictEqual([
             'found: jterrazz.config.ts declares the kind `nope` · why: every law a project is held to is resolved from that file, and a file that cannot be resolved judges nothing · fix: correct jterrazz.config.ts until it loads and each preset and section has its declared shape, then run again · read: docs/reference/building.md#the-entries',
-            'found: jterrazz.config.ts holds two modules built as `dist/pool.worker.js`: src/a/pool.worker.ts and src/b/pool.worker.ts — rename one · why: every law a project is held to is resolved from that file, and a file that cannot be resolved judges nothing · fix: correct jterrazz.config.ts until it loads and each preset and section has its declared shape, then run again · read: docs/reference/building.md#the-entries',
-            'found: the bin `a` publishes dist/a.js, but neither src/a.bin.ts nor lint/a.bin.ts exists; the bin `b` publishes dist/b.js, but neither src/b.bin.ts nor lint/b.bin.ts exists · why: a build that skips a published target ships a package whose import of it resolves to nothing · fix: name each entry by the entry grammar — `./register` is built from src/index.register.ts — or drop the target from package.json · read: docs/reference/building.md#the-entries',
+            'found: jterrazz.config.ts holds two modules built as `dist/pool.worker.js`: src/a/pool.worker.ts and src/b/pool.worker.ts; rename one · why: every law a project is held to is resolved from that file, and a file that cannot be resolved judges nothing · fix: correct jterrazz.config.ts until it loads and each preset and section has its declared shape, then run again · read: docs/reference/building.md#the-entries',
+            'found: the bin `a` publishes dist/a.js, but neither src/a.bin.ts nor lint/a.bin.ts exists; the bin `b` publishes dist/b.js, but neither src/b.bin.ts nor lint/b.bin.ts exists · why: a build that skips a published target ships a package whose import of it resolves to nothing · fix: name each entry by the entry grammar (`./register` is built from src/index.register.ts), or drop the target from package.json · read: docs/reference/building.md#the-entries',
             [
                 {
                     clean: true,

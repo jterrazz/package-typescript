@@ -9,7 +9,7 @@ import { basePresetsOf } from '../../catalogue/preset.js';
 import { comments } from '../comments.js';
 
 const LESSON =
-    'found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind';
+    'found: a comment that states no kind · why: the default is no comment: a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind: `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind';
 
 const TREE: Readonly<Record<string, string>> = {
     Makefile: '# The build\nbuild:\n\tnpm run build\n',

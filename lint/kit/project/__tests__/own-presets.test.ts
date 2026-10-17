@@ -49,7 +49,7 @@ describe('ownPresets', () => {
             new Error(
                 [
                     "found: this repository's presets are not built: ./dist/config.js, ./dist/self.js missing",
-                    'why: they are this repository’s own build, and a run without them judges none of what they hold, so it would pass on nothing',
+                    "why: they are this repository's own build, and a run without them judges none of what they hold, so it would pass on nothing",
                     'fix: run `npm run build`, then run the command again',
                     'read: docs/reference/configuration.md#a-repository-held-to-its-own-presets',
                 ].join(' · '),

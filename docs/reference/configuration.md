@@ -48,10 +48,10 @@ The matrix is generated from the declaration the toolchain reads, and its last t
 | Kind      | Platforms                                                  | Publication                 | Config refuses a manifest that                         | Publish pass             | Specimen                                                                             | Gestures it proves                                                       |
 | --------- | ---------------------------------------------------------- | --------------------------- | ------------------------------------------------------ | ------------------------ | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
 | `library` | `node`, `bun`, `react`, `next`, `astro`, `expo`, `browser` | published, unless `private` | publishes no `exports`                                 | judged, unless `private` | `specs/kinds/library/` on `node`, `astro`, `browser`, `bun`, `expo`, `next`, `react` | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
-| `api`     | `node`, `bun`                                              | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/api/` on `node`, `bun`                                                  | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
+| `api`     | `node`, `bun`                                              | private                     | is not `private`, so npm would publish the application | not judged               | `specs/kinds/api/` on `node`, `bun`                                                  | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
 | `cli`     | `node`, `bun`                                              | published, unless `private` | names no `bin`                                         | judged, unless `private` | `specs/kinds/cli/` on `node`, `bun`                                                  | `typescript fix`, `typescript build`, `typescript check`, `vitest --run` |
-| `website` | `react`, `next`, `astro`, `browser`                        | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/website/` on `react`, `astro`, `browser`, `next`                        | `typescript fix`, `typescript check`, `vitest --run`                     |
-| `mobile`  | `expo`                                                     | private                     | is not `private`, so npm would publish the application | —                        | `specs/kinds/mobile/` on `expo`                                                      | `typescript build`, `typescript fix`, `typescript check`, `vitest --run` |
+| `website` | `react`, `next`, `astro`, `browser`                        | private                     | is not `private`, so npm would publish the application | not judged               | `specs/kinds/website/` on `react`, `astro`, `browser`, `next`                        | `typescript fix`, `typescript check`, `vitest --run`                     |
+| `mobile`  | `expo`                                                     | private                     | is not `private`, so npm would publish the application | not judged               | `specs/kinds/mobile/` on `expo`                                                      | `typescript build`, `typescript fix`, `typescript check`, `vitest --run` |
 
 <!-- /GENERATED:kinds -->
 
@@ -108,10 +108,10 @@ A settings file that cannot be resolved, such as a `presets` that is not a list 
 
 ```text
  RUN  Architecture (layer map)
-found: jterrazz.config.ts does not load — ... · why: ... · fix: correct jterrazz.config.ts until it loads ... · read: docs/reference/configuration.md#the-merge-order
+found: jterrazz.config.ts does not load: ... · why: ... · fix: correct jterrazz.config.ts until it loads ... · read: docs/reference/configuration.md#the-merge-order
 
  RUN  Names (tree)
-jterrazz.config.ts:1:1: error names(jterrazz-config-loads): found: `jterrazz.config.ts` does not load — ... · why: ... · fix: ... · read: docs/reference/configuration.md#the-merge-order
+jterrazz.config.ts:1:1: error names(jterrazz-config-loads): found: `jterrazz.config.ts` does not load: ... · why: ... · fix: ... · read: docs/reference/configuration.md#the-merge-order
 ```
 
 A preset is an object carrying its `name` (the section of `jterrazz.config.ts` it reads, and the prefix of its laws), its `package`, and what it adds:

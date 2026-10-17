@@ -52,7 +52,7 @@ describe('scope', () => {
             command: 'mutation',
             mutation: null,
             passes: ['apps/api', 'apps/kit', 'apps/mobile'].map((label) => ({
-                firstError: `${label} failed — its verdict is above`,
+                firstError: `${label} failed; its verdict is above`,
                 label,
                 status: 1,
             })),
@@ -117,7 +117,7 @@ describe('scope', () => {
             mutation: null,
             passes: [
                 {
-                    firstError: 'Stryker exited 1 — its log is above',
+                    firstError: 'Stryker exited 1; its log is above',
                     label: 'Mutation (module tests)',
                     status: 1,
                 },

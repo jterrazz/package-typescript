@@ -18,7 +18,7 @@ describe('docs', () => {
         expect(auditDocs(tree)).toStrictEqual([
             {
                 message:
-                    'docs/ is missing — every repository carries its own manual, starting at docs/README.md',
+                    'docs/ is missing: every repository carries its own manual, starting at docs/README.md',
                 path: 'docs/',
                 rule: 'docs/manual-present',
             },
@@ -36,7 +36,7 @@ describe('docs', () => {
         expect(auditDocs(tree)).toStrictEqual([
             {
                 message:
-                    'docs/README.md is missing — the map is the one file an outside corpus points at',
+                    'docs/README.md is missing: the map is the one file an outside corpus points at',
                 path: 'docs/README.md',
                 rule: 'docs/map-present',
             },
@@ -191,7 +191,7 @@ describe('docs', () => {
         expect(auditDocs(tree)).toStrictEqual([
             {
                 message:
-                    'docs/automations-v2.md sits outside the sections — move it under start/, guides/, concepts/ or reference/, or under _assets/ if a page embeds it',
+                    'docs/automations-v2.md sits outside the sections; move it under start/, guides/, concepts/ or reference/, or under _assets/ if a page embeds it',
                 path: 'docs/automations-v2.md',
                 rule: 'docs/no-loose-file',
             },
@@ -222,7 +222,7 @@ describe('docs', () => {
         expect(auditDocs(tree)).toStrictEqual([
             {
                 message:
-                    'AGENTS.md does not route to docs/README.md — the brief is a map, not a manual',
+                    'AGENTS.md does not route to docs/README.md: the brief is a map, not a manual',
                 path: 'AGENTS.md',
                 rule: 'docs/agents-route-to-the-map',
             },

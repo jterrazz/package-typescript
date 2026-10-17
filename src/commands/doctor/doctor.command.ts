@@ -65,7 +65,7 @@ export async function doctor(root: string): Promise<number> {
     const nameWidth = Math.max(...rows.map(({ name }) => name.length)) + 2;
     for (const { installed, name, range, verdict } of rows) {
         print(
-            `  ${name.padEnd(nameWidth)}${(installed ?? '—').padEnd(12)}${range.padEnd(12)}${verdict}\n`,
+            `  ${name.padEnd(nameWidth)}${(installed ?? 'none').padEnd(12)}${range.padEnd(12)}${verdict}\n`,
         );
     }
 
@@ -76,7 +76,7 @@ export async function doctor(root: string): Promise<number> {
         print(
             `${refusal({
                 fix: 'install what this release declares, then run `typescript doctor` again',
-                found: 'a tool is older than its range, or not installed — its row reads `old` or `absent`',
+                found: 'a tool is older than its range, or not installed: its row reads `old` or `absent`',
                 read: 'docs/guides/adopt-a-stricter-release.md#the-two-gestures',
                 why: 'a gate running an older tool enforces an older rulebook without saying so',
             })}\n`,

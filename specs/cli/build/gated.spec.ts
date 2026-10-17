@@ -21,7 +21,7 @@ describe('gated', () => {
         expect(result.stdout).toMatch(`
              TYPESCRIPT  Building the entries the manifest publishes...
 
-            found: the gate of pid {{int}} holds this checkout (.artifacts/gate.lock) · why: a build replaces what a running gate reads — its build, its install — and the gate would judge a tree that changed under it · fix: wait for pid {{int}} to end, or run a build in a worktree of its own · read: docs/reference/quality-checks.md#one-gate-per-checkout
+            found: the gate of pid {{int}} holds this checkout (.artifacts/gate.lock) · why: a build replaces what a running gate reads (its build, its install), and the gate would judge a tree that changed under it · fix: wait for pid {{int}} to end, or run a build in a worktree of its own · read: docs/reference/quality-checks.md#one-gate-per-checkout
         `);
         expect(result.file('dist/index.js').exists).toBe(false);
     });

@@ -98,7 +98,7 @@ describe('recorded', () => {
             },
             passes: [
                 {
-                    firstError: 'apps/api failed — its verdict is above',
+                    firstError: 'apps/api failed; its verdict is above',
                     label: 'apps/api',
                     seconds: 2,
                     status: 1,
@@ -126,7 +126,7 @@ describe('recorded', () => {
             mutation: undefined,
             passes: [
                 {
-                    firstError: 'apps/broken failed — its verdict is above',
+                    firstError: 'apps/broken failed; its verdict is above',
                     label: 'apps/broken',
                     seconds: 1,
                     status: 1,
@@ -173,8 +173,8 @@ describe('recorded', () => {
         // Then - the status comes back, each line is printed red or green, and the verdict says the same
         expect(concluded(project, recorded, 1)).toBe(1);
         expect(printed).toStrictEqual([
-            '\n\u001B[0;32m✓ Mutation passed — measured nothing\u001B[0m\n',
-            '\n\u001B[0;31m✗ Mutation failed — refused before any run: git names no commit main\u001B[0m\n',
+            '\n\u001B[0;32m✓ Mutation passed: measured nothing\u001B[0m\n',
+            '\n\u001B[0;31m✗ Mutation failed: refused before any run: git names no commit main\u001B[0m\n',
         ]);
         const written = readFileSync(join(project, VERDICT_FILE), 'utf8');
         expect(JSON.parse(written)).toStrictEqual({
@@ -201,18 +201,18 @@ describe('recorded', () => {
                 passes: [
                     { firstError: null, label: 'Mutation (module tests)', seconds: 3, status: 0 },
                     {
-                        firstError: 'Stryker exited 2 — its log is above',
+                        firstError: 'Stryker exited 2; its log is above',
                         label: 'Mutation (whole suite)',
                         seconds: 9,
                         status: 2,
                     },
                 ],
-                reason: 'Stryker stopped the whole suite with status 2 — its log is above',
+                reason: 'Stryker stopped the whole suite with status 2; its log is above',
             },
         ]);
         stageRecorded(recorded, 'modules', { seconds: 1, status: 1 });
         expect(recorded.reason).toBe(
-            'Stryker stopped the module tests with status 1 — its log is above',
+            'Stryker stopped the module tests with status 1; its log is above',
         );
     });
 });

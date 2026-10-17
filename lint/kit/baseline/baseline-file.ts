@@ -37,7 +37,7 @@ export function readBaseline(root: string): ReadBaseline {
         parsed = JSON.parse(readFileSync(path, 'utf8'));
     } catch (error) {
         return {
-            problem: `is not JSON — ${error instanceof Error ? error.message : String(error)}`,
+            problem: `is not JSON: ${error instanceof Error ? error.message : String(error)}`,
             sections: null,
         };
     }

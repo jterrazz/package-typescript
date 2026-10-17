@@ -41,7 +41,7 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing — node, the default
+            declared                              nothing: node, the default
             exceptions                            0
             rules off vs profile                  none
             suppressions                          0
@@ -51,7 +51,7 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed — first Oxlint Check: baseline-unreadable  .jterrazz/baseline.json  found: .jterrazz/baseline.json keys `eslint/no-debugger` to something that is not a section of counts · why: the ratchet reads its counts from that file, and a file it cannot read holds no debt it can judge · fix: correct .jterrazz/baseline.json until it is one JSON object of sections, or delete it and run 'typescript baseline' · read: docs/reference/quality-checks.md#the-ratchet
+          ✗ Some checks failed, first Oxlint Check: baseline-unreadable  .jterrazz/baseline.json  found: .jterrazz/baseline.json keys `eslint/no-debugger` to something that is not a section of counts · why: the ratchet reads its counts from that file, and a file it cannot read holds no debt it can judge · fix: correct .jterrazz/baseline.json until it is one JSON object of sections, or delete it and run 'typescript baseline' · read: docs/reference/quality-checks.md#the-ratchet
     - command: baseline
       exit: 1
       stdout: |4

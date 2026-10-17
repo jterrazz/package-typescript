@@ -41,8 +41,8 @@ type LineOf = (offset: number) => number;
 export const COMMENT_NO_LONGER_THAN_ITS_FUNCTION_NAME = 'comment-no-longer-than-its-function';
 
 const WHY_FIX = {
-    fix: 'say it through the names — rename what needed the comment, and keep at most the one line the code cannot say (an invariant, a hazard, why a value is this one); if documenting context that lives outside the codebase is truly necessary (a policy, a ticket, a decision maker, an external system’s constraint), disable it explicitly on that line — `// oxlint-disable-next-line jterrazz-typescript/comment-no-longer-than-its-function -- <the external context>` — the reason is required',
-    why: 'the default is no comment — the code speaks through its names, and a comment longer than the code it sits on restates it, argues it or tells its history',
+    fix: "say it through the names: rename what needed the comment, and keep at most the one line the code cannot say (an invariant, a hazard, why a value is this one); if documenting context that lives outside the codebase is truly necessary (a policy, a ticket, a decision maker, an external system's constraint), disable it explicitly on that line with `// oxlint-disable-next-line jterrazz-typescript/comment-no-longer-than-its-function -- <the external context>`, the reason required",
+    why: 'the default is no comment: the code speaks through its names, and a comment longer than the code it sits on restates it, argues it or tells its history',
 };
 
 const DIRECTIVE = /^\s*\*?\s*(?:(?:es|ox)lint-(?:disable|enable)|@ts-|biome-ignore)/u;

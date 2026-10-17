@@ -42,7 +42,7 @@ function isRule(value: unknown): value is ArchitectureRule {
 }
 
 const MALFORMED_LAYERS = refusal({
-    fix: "give every entry of `typescript.architecture.layers` — and of each preset's `layers` — a `name`, a `from` and a `to` object, and a `why`, a `fix` and a `read`",
+    fix: "give every entry of `typescript.architecture.layers`, and of each preset's `layers`, a `name`, a `from` and a `to` object, and a `why`, a `fix` and a `read`",
     found: 'jterrazz.config.ts holds a `layers` whose every entry is not `{ name, from, to, why, fix, read }`, `read` a chapter anchor `docs/<chapter>.md#<heading>`',
     read: 'docs/reference/quality-checks.md#the-architecture-layer-map-pass',
     why: 'a layer is a dependency-cruiser rule and the lesson its refusal prints, and a layer missing a part can be neither judged nor taught',
@@ -193,8 +193,8 @@ function unreportedOf({ output, ran, status }: ToolRun): null | string {
     return status === 0
         ? null
         : refusal({
-              fix: 'correct what dependency-cruiser printed — a layer whose `from` or `to` it cannot read, a tsconfig it cannot load — then run again',
-              found: `dependency-cruiser stopped with no report — ${output.trim()}`,
+              fix: 'correct what dependency-cruiser printed (a layer whose `from` or `to` it cannot read, a tsconfig it cannot load), then run again',
+              found: `dependency-cruiser stopped with no report: ${output.trim()}`,
               read: 'docs/reference/quality-checks.md#the-architecture-layer-map-pass',
               why: 'the layer map is judged on the graph dependency-cruiser writes, and with no graph no import is judged',
           });

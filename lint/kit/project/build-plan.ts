@@ -77,7 +77,7 @@ function namedOnce(named: readonly Named[], into: string): Record<string, string
     for (const { output, source } of named) {
         const known = entries[output];
         if (known !== undefined) {
-            return `holds two modules built as \`${into}/${output}.js\`: ${known} and ${source} — rename one`;
+            return `holds two modules built as \`${into}/${output}.js\`: ${known} and ${source}; rename one`;
         }
         entries[output] = source;
     }
@@ -244,7 +244,7 @@ export function planOf(root: string, { problem, resolved }: Resolution): BuildSt
     return unsourced.length === 0
         ? buildPlanOf(root, { declaration: resolved.declaration, settings: derived.settings })
         : refusal({
-              fix: 'name each entry by the entry grammar — `./register` is built from src/index.register.ts — or drop the target from package.json',
+              fix: 'name each entry by the entry grammar (`./register` is built from src/index.register.ts), or drop the target from package.json',
               found: unsourced.join('; '),
               read: 'docs/reference/building.md#the-entries',
               why: 'a build that skips a published target ships a package whose import of it resolves to nothing',

@@ -31,15 +31,23 @@ describe('mutation-paths', () => {
         ]).toStrictEqual([1, 1, false, true, true]);
         expect(whole.stdout).toMatch(`
             {{any}}
-            src/[id]/[key].ts:2:9  ConditionalExpression → false  (.artifacts/stryker/suite-report.json)
-            src/[id]/[key].ts:2:9  EqualityOperator → rate >= 0.5  (.artifacts/stryker/suite-report.json)
+            src/[id]/[key].ts:2:9  ConditionalExpression: false  (.artifacts/stryker/suite-report.json)
+            src/[id]/[key].ts:2:9  EqualityOperator: rate >= 0.5  (.artifacts/stryker/suite-report.json)
             found: 2 mutant(s) a test runs and none detects{{any}}
+            0 mutant(s) no test runs
+            2 mutant(s) the module tests leave to the suite (none of them runs it, or only loading a module does) on lines no change has brought there; the whole suite measures them when one does
+
+            ✗ Mutation failed: first survivor src/[id]/[key].ts:2 ConditionalExpression; 14 detected, 2 surviving, 0 never judged, over HEAD..working tree
         `);
         expect(ranged.stdout).toMatch(`
             {{any}}
-            src/[id]/[key].ts:2:9  ConditionalExpression → false  (.artifacts/stryker/suite-report.json)
-            src/[id]/[key].ts:2:9  EqualityOperator → rate >= 0.5  (.artifacts/stryker/suite-report.json)
+            src/[id]/[key].ts:2:9  ConditionalExpression: false  (.artifacts/stryker/suite-report.json)
+            src/[id]/[key].ts:2:9  EqualityOperator: rate >= 0.5  (.artifacts/stryker/suite-report.json)
             found: 2 mutant(s) a test runs and none detects{{any}}
+            2 mutant(s) no test runs
+              src/[id]/[key].ts  2
+
+            ✗ Mutation failed: first survivor src/[id]/[key].ts:2 ConditionalExpression; 2 detected, 2 surviving, 0 never judged, over HEAD..working tree
         `);
     });
 });

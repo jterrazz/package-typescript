@@ -65,7 +65,7 @@ export const focusableSectionIsLabelled = defineRule(
         messages: {
             unlabelled: {
                 fix: WHY_FIX.fix,
-                found: 'a `<section>` that takes the keyboard’s focus and names no region',
+                found: "a `<section>` that takes the keyboard's focus and names no region",
             },
         },
         read: 'docs/reference/lint-presets.md#a-focusable-section-is-labelled',

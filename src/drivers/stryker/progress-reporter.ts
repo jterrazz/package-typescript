@@ -16,7 +16,7 @@ class Progress {
     mutating = 0;
 
     onDryRunCompleted() {
-        process.stdout.write(\`dry run: \${secondsSince(this.started)}s — the initial run of the tests over the unmutated sandbox\\n\`);
+        process.stdout.write(\`dry run: \${secondsSince(this.started)}s, the initial run of the tests over the unmutated sandbox\\n\`);
     }
 
     onMutationTestingPlanReady({ mutantPlans }) {
@@ -35,7 +35,7 @@ class Progress {
         const step = Math.floor((this.tested * STEPS) / this.planned.size);
         if (step > this.step && !process.stdout.isTTY) {
             this.step = step;
-            process.stdout.write(\`progress: \${step * STEPS}% — \${this.tested} of \${this.planned.size} mutants run, \${this.survived} surviving so far, no verdict yet (\${secondsSince(this.mutating)}s)\\n\`);
+            process.stdout.write(\`progress: \${step * STEPS}%, \${this.tested} of \${this.planned.size} mutants run, \${this.survived} surviving so far, no verdict yet (\${secondsSince(this.mutating)}s)\\n\`);
         }
     }
 }

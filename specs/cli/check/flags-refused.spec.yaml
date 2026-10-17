@@ -6,7 +6,7 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          found: `typescript check` has no flag --watch · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — it reads --json · read: docs/reference/commands.md#flags-and-help
+          found: `typescript check` has no flag --watch · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it: it reads --json · read: docs/reference/commands.md#flags-and-help
 
           Usage: typescript check [--json]
 

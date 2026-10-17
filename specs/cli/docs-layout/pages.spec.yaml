@@ -6,9 +6,9 @@ runs:
       stdout: |
           docs/README.md:1:1: error docs(map-matches-pages): docs/README.md and the pages disagree: guides/deploy.md has no file
           docs/README.md:1:1: error docs(map-matches-pages): docs/README.md and the pages disagree: reference/Operations.md has no row
-          docs/guides/recipes/:1:1: error docs(section-is-flat): docs/guides/recipes/ is a folder inside guides/ — a section holds pages, and a sub-folder is a section hiding inside another
-          docs/reference/Operations.md:1:1: error docs(page-named-in-kebab-case): docs/reference/Operations.md is not kebab-case.md — lowercase words, single hyphens, no number: the map gives the order
-          docs/concepts/design-exploration.md:1:1: error docs(page-names-a-subject): docs/concepts/design-exploration.md names a journal, not a subject — exploration; the record is an ADR, the history is git's
-          docs/guides/notes.md:1:1: error docs(page-names-a-subject): docs/guides/notes.md names a journal, not a subject — notes; the record is an ADR, the history is git's
-          docs/automations.md:1:1: error docs(no-loose-file): docs/automations.md sits outside the sections — move it under start/, guides/, concepts/ or reference/, or under _assets/ if a page embeds it
+          docs/guides/recipes/:1:1: error docs(section-is-flat): docs/guides/recipes/ is a folder inside guides/: a section holds pages, and a sub-folder is a section hiding inside another
+          docs/reference/Operations.md:1:1: error docs(page-named-in-kebab-case): docs/reference/Operations.md is not kebab-case.md (lowercase words, single hyphens, no number, since the map gives the order)
+          docs/concepts/design-exploration.md:1:1: error docs(page-names-a-subject): docs/concepts/design-exploration.md names a journal, not a subject (exploration); the record is an ADR, the history is git's
+          docs/guides/notes.md:1:1: error docs(page-names-a-subject): docs/guides/notes.md names a journal, not a subject (notes); the record is an ADR, the history is git's
+          docs/automations.md:1:1: error docs(no-loose-file): docs/automations.md sits outside the sections; move it under start/, guides/, concepts/ or reference/, or under _assets/ if a page embeds it
           docs/qa/:1:1: error docs(no-unknown-subfolder): docs/qa/ is not one of start/, guides/, concepts/, reference/, decisions/, _assets/

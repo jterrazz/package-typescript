@@ -15,7 +15,7 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed — first Architecture (layer map): src/domain/user.ts:1:22: error architecture(domain-stays-pure): found: `src/domain/user.ts` imports `src/infrastructure/store.ts` · why: A domain module never reaches for infrastructure. · fix: reach it through a layer the map allows, or change the map where the boundary moved · read: docs/reference/quality-checks.md#the-architecture-layer-map-pass
+          ✗ Some checks failed, first Architecture (layer map): src/domain/user.ts:1:22: error architecture(domain-stays-pure): found: `src/domain/user.ts` imports `src/infrastructure/store.ts` · why: A domain module never reaches for infrastructure. · fix: reach it through a layer the map allows, or change the map where the boundary moved · read: docs/reference/quality-checks.md#the-architecture-layer-map-pass
     - command: fix
       exit: 0
       stdout: |4
@@ -23,7 +23,7 @@ runs:
 
            RUN  Architecture (layer map)
 
-          re-recorded .jterrazz/baseline.json › typescript › architecture/domain-stays-pure 2 → 1
+          re-recorded .jterrazz/baseline.json › typescript › architecture/domain-stays-pure from 2 to 1
           ✓ Passed ({{duration}})
 
            END  Finalizing quality fixes

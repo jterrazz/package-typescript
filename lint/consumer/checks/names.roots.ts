@@ -75,7 +75,7 @@ export function declaredRootsFindings(
                 : [
                       namesFinding('names/declared-root-holds-files', `${prefix}${root}/`, {
                           fix: 'delete the entry',
-                          found: `\`${prefix}${root}/\` is declared in ${where} and holds no swept file — the sweep drops what git ignores, a Go module's \`testdata/\` and the ground of a test`,
+                          found: `\`${prefix}${root}/\` is declared in ${where} and holds no swept file; the sweep drops what git ignores, a Go module's \`testdata/\` and the ground of a test`,
                       }),
                   ];
         });

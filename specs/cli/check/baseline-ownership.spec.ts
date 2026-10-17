@@ -151,7 +151,7 @@ describe('baseline-ownership', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Oxlint Check: {{any}}
+            ✗ Some checks failed, first Oxlint Check: {{any}}
         `);
         expect(
             result.stdout.text
@@ -189,7 +189,7 @@ describe('baseline-ownership', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Test Conventions (stub): [error] specs/x.spec.ts:1: a finding the stub always reports (no-unused-ground)
+            ✗ Some checks failed, first Test Conventions (stub): [error] specs/x.spec.ts:1: a finding the stub always reports (no-unused-ground)
         `);
     });
 
@@ -224,7 +224,7 @@ describe('baseline-ownership', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Test Conventions (stub): conventions checker: 1 error(s) found
+            ✗ Some checks failed, first Test Conventions (stub): conventions checker: 1 error(s) found
         `);
     });
 
@@ -331,7 +331,7 @@ describe('baseline-ownership', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Oxlint Check: {{any}}
+            ✗ Some checks failed, first Oxlint Check: {{any}}
         `);
     });
 });

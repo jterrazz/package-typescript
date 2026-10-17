@@ -11,9 +11,9 @@ import type { LintTree, Top } from './names.lint-tree.js';
 
 const HOLDS: Readonly<Record<Top, string>> = Object.freeze({
     consumer:
-        'the declarations every consumer is held to — the catalogue, the rulebook of upstream decisions, our own rules by family, the checks',
-    kit: 'what runs the declarations and knows none of them — how a project is read, the baseline, the checker, the catalogue rendered, the compiler of a rulebook into a config, the test tooling',
-    self: 'the declarations only this repository is held to — its catalogue, its rules by family, its checks, the meta-tests of its corpus',
+        'the declarations every consumer is held to: the catalogue, the rulebook of upstream decisions, our own rules by family, the checks',
+    kit: 'what runs the declarations and knows none of them: how a project is read, the baseline, the checker, the catalogue rendered, the compiler of a rulebook into a config, the test tooling',
+    self: 'the declarations only this repository is held to: its catalogue, its rules by family, its checks, the meta-tests of its corpus',
 });
 
 const FOLDER_RULES: Readonly<Record<Top, string>> = Object.freeze({
@@ -37,7 +37,7 @@ function audienceFinding(
     return lintFinding(`${prefix}${LINT_ROOT}/${top}/${rest}`, FOLDER_RULES[top], [
         `found: ${found}`,
         `why: ${top}/ holds ${HOLDS[top]}, so its folders are ${folders.join(', ')}${top === 'self' ? ', beside the modules that compose them with kit/' : ''}`,
-        `fix: move ${rest === '' ? 'the file' : 'its files'} into the folder its nature names — ${folders.map((folder) => `${folder}/`).join(', ')}${top === 'self' ? '; a program at the self root composes, and the parts it tests live in corpus/, tested there' : ''}`,
+        `fix: move ${rest === '' ? 'the file' : 'its files'} into the folder its nature names, ${folders.map((folder) => `${folder}/`).join(', ')}${top === 'self' ? '; a program at the self root composes, and the parts it tests live in corpus/, tested there' : ''}`,
     ]);
 }
 
@@ -52,15 +52,15 @@ function lintTreeFinding(
     if (!isDirectory && folder === undefined) {
         return lintFinding(`${prefix}${LINT_ROOT}/${top}`, 'names/lint-root-holds-only-entries', [
             `found: \`${prefix}${LINT_ROOT}/${top}\` sits at the root of lint/, and is no entry`,
-            'why: lint/ has one tree in every repository — its root holds the entries alone, each `index[.<name>].ts` built as a subpath the package publishes or a private import, where consumer/ meets kit/, and a folder names the audience of every other file',
-            `fix: move it into the folder its audience names — ${TOPS.join(', ')} — name it \`index.<name>.ts\` and declare it if it is an entry, or move it into docs/ if it explains`,
+            'why: lint/ has one tree in every repository: its root holds the entries alone, each `index[.<name>].ts` built as a subpath the package publishes or a private import, where consumer/ meets kit/, and a folder names the audience of every other file',
+            `fix: move it into the folder its audience names (${TOPS.join(', ')}), name it \`index.<name>.ts\` and declare it if it is an entry, or move it into docs/ if it explains`,
         ]);
     }
     if (!isTop(top)) {
         return lintFinding(`${prefix}${LINT_ROOT}/${top}/`, 'names/lint-folder-is-known', [
             `found: \`${prefix}${LINT_ROOT}/${top}/\` is not a folder of the lint tree`,
-            `why: lint/ has one tree in every repository, split by audience — ${TOPS.join(', ')}`,
-            'fix: move its files where their audience puts them — a declaration every consumer is held to under consumer/, one only this repository is held to under self/, what runs them under kit/',
+            `why: lint/ has one tree in every repository, split by audience: ${TOPS.join(', ')}`,
+            'fix: move its files where their audience puts them: a declaration every consumer is held to under consumer/, one only this repository is held to under self/, what runs them under kit/',
         ]);
     }
     if (folder === undefined || (!isDirectory && deeper.length === 0)) {
@@ -117,7 +117,7 @@ function specialFolderFinding(path: string, name: string): Finding {
             groundOfATest
                 ? `found: \`${path}\` is the ground of a test outside every \`${TESTS_FOLDER}/\``
                 : `found: \`${path}\` is spelt like a special folder, and \`${name}/\` is none`,
-            `why: a \`__<word>__/\` folder is one the toolchain gives a meaning to — ${inSpecs ? 'under specs/' : 'in a code root'} the special folders are ${known}, and every other folder is named for what it holds`,
+            `why: a \`__<word>__/\` folder is one the toolchain gives a meaning to: ${inSpecs ? 'under specs/' : 'in a code root'} the special folders are ${known}, and every other folder is named for what it holds`,
             groundOfATest
                 ? `fix: move it into the \`${TESTS_FOLDER}/\` of its folder, beside the module tests that read it`
                 : `fix: move what it holds into one of ${known}, or rename it in kebab-case for what it holds`,
@@ -138,7 +138,7 @@ function directoryFinding(path: string): Finding {
         message: [
             `found: \`${path}\` is not written in kebab-case`,
             'why: a directory name is part of every path and import that crosses it, and one case for every name reads the same on a disk that folds case and on one that does not',
-            'fix: rename it in lowercase words joined by `-` — a `__<word>__` name is a special folder of the toolchain’s closed list, and a route segment keeps its framework grammar (`[id]`, `(group)`, `@slot`)',
+            "fix: rename it in lowercase words joined by `-`; a `__<word>__` name is a special folder of the toolchain's closed list, and a route segment keeps its framework grammar (`[id]`, `(group)`, `@slot`)",
             'read: docs/reference/quality-checks.md#the-names-tree-pass',
         ].join(' · '),
         path,

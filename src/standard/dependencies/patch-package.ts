@@ -4,7 +4,7 @@ export default defineStandard({
     typescript: {
         toolRoots: {
             patches:
-                'patch-package — the patches its postinstall applies to node_modules, read off this folder',
+                'patch-package: the patches its postinstall applies to node_modules, read off this folder',
         },
     },
 });

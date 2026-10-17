@@ -69,7 +69,7 @@ export const passVerdictOf = (
 
 /** The drift report's entry: its report goes to the terminal, so its finding is named by where to read it. */
 export const driftPassOf = (status: number, seconds: number): PassVerdict => ({
-    firstError: status === 0 ? null : 'the drift report refused — its report is above',
+    firstError: status === 0 ? null : 'the drift report refused; its report is above',
     label: 'Drift (profile)',
     seconds,
     status,
@@ -103,18 +103,18 @@ export function checkSummaryOf({ passes, status }: Pick<GateVerdict, 'passes' | 
         return '✗ Some checks failed';
     }
 
-    return `✗ Some checks failed — first ${failing.label}${failing.firstError === null ? '' : `: ${failing.firstError}`}`;
+    return `✗ Some checks failed, first ${failing.label}${failing.firstError === null ? '' : `: ${failing.firstError}`}`;
 }
 
 /** The mutation run's last line: its own numbers, never a count Stryker printed on the way, or, for a run that judged nothing, why. */
 export function mutationSummaryOf(status: number, mutation: MutationVerdict | string): string {
     if (typeof mutation === 'string') {
-        return `${status === 0 ? '✓ Mutation passed' : '✗ Mutation failed'} — ${mutation}`;
+        return `${status === 0 ? '✓ Mutation passed' : '✗ Mutation failed'}: ${mutation}`;
     }
     const counts = `${String(mutation.detected)} detected, ${String(mutation.survivors.length)} surviving, ${String(mutation.unrun)} never judged, over ${mutation.range}`;
     const [first] = mutation.survivors;
 
     return status === 0
-        ? `✓ Mutation passed — ${counts}`
-        : `✗ Mutation failed — ${first === undefined ? '' : `first survivor ${first.file}:${String(first.line)} ${first.mutator}; `}${counts}`;
+        ? `✓ Mutation passed: ${counts}`
+        : `✗ Mutation failed: ${first === undefined ? '' : `first survivor ${first.file}:${String(first.line)} ${first.mutator}; `}${counts}`;
 }

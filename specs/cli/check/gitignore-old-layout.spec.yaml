@@ -21,10 +21,10 @@ runs:
            RUN  Gitignore (artefacts)
 
           Artefacts belong under .artifacts/<tool>/ at the project root:
-            ✗ .gitignore names coverage/ — its home is .artifacts/vitest/coverage/
-            ✗ .gitignore names *.tsbuildinfo — its home is .artifacts/tsc/
-            ✗ .gitignore does not ignore .artifacts/ — add it
-            · !docs/keep.md — a negation rescues a tracked file, left for you
+            ✗ .gitignore names coverage/, whose home is .artifacts/vitest/coverage/
+            ✗ .gitignore names *.tsbuildinfo, whose home is .artifacts/tsc/
+            ✗ .gitignore does not ignore .artifacts/; add it
+            · !docs/keep.md: a negation rescues a tracked file, left for you
           Run 'typescript fix' to rewrite .gitignore.
           ✗ Failed with exit code 1 ({{duration}})
 
@@ -50,7 +50,7 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing — node, the default
+            declared                              nothing: node, the default
             exceptions                            0
             rules off vs profile                  none
             suppressions                          0
@@ -60,4 +60,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed — first Gitignore (artefacts): Artefacts belong under .artifacts/<tool>/ at the project root:
+          ✗ Some checks failed, first Gitignore (artefacts): Artefacts belong under .artifacts/<tool>/ at the project root:

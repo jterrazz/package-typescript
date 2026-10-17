@@ -12,7 +12,7 @@ export function clean(): number {
         rmSync(artefacts, { force: true, recursive: true });
         print(`${GREEN}Removed ${ARTIFACTS}/${RESET}\n`);
     } else {
-        print(`${GREEN}Nothing to remove — ${ARTIFACTS}/ is already absent${RESET}\n`);
+        print(`${GREEN}Nothing to remove: ${ARTIFACTS}/ is already absent${RESET}\n`);
     }
 
     return 0;

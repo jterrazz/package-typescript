@@ -22,15 +22,15 @@ export default fragment({
         'node/callback-return': { ...on([['callback', 'cb']]), since: '11.0.0' },
 
         'node/no-process-env': off({
-            by: 'docs/reference/lint-presets.md — the estate reads configuration from the environment at the edge and has no config-module to funnel it through',
+            by: 'docs/reference/lint-presets.md: the estate reads configuration from the environment at the edge and has no config-module to funnel it through',
             kind: 'convention',
         }),
         'node/no-sync': off({
-            by: 'docs/reference/lint-presets.md — a one-shot CLI script has no event loop to protect, and the toolchain gates are exactly that',
+            by: 'docs/reference/lint-presets.md: a one-shot CLI script has no event loop to protect, and the toolchain gates are exactly that',
             kind: 'convention',
         }),
         'node/no-top-level-await': off({
-            by: 'jterrazz-typescript/promise-is-awaited — one rule demands it, the other forbids it',
+            by: 'jterrazz-typescript/promise-is-awaited: one rule demands it, the other forbids it',
             kind: 'exclusive',
         }),
     },

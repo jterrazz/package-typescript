@@ -4,4 +4,4 @@ runs:
     - command: docs-layout .
       exit: 1
       stdout: |
-          docs/:1:1: error docs(manual-present): docs/ is missing — every repository carries its own manual, starting at docs/README.md
+          docs/:1:1: error docs(manual-present): docs/ is missing: every repository carries its own manual, starting at docs/README.md

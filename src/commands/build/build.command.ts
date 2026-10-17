@@ -24,7 +24,7 @@ export async function build(args: readonly string[] = []): Promise<number> {
     }
     if (steps.length === 0) {
         print(
-            `Nothing to build: a mobile app is bundled by its framework — \`npx expo export\` — and publishes nothing a package build compiles\n`,
+            `Nothing to build: a mobile app is bundled by its framework (\`npx expo export\`) and publishes nothing a package build compiles\n`,
         );
 
         return 0;
@@ -38,7 +38,7 @@ export async function build(args: readonly string[] = []): Promise<number> {
         print(
             `${RED}${refusal({
                 fix: 'repair what tsdown names above, then run the build again',
-                found: 'tsdown could not build the project — its own report is above',
+                found: 'tsdown could not build the project; its own report is above',
                 read: 'docs/reference/building.md#a-build-that-fails',
                 why: 'dist/ is what `start` runs and what the package publishes, and a build that stopped part-way leaves it stale',
             })}${RESET}\n`,

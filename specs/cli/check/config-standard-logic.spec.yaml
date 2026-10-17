@@ -16,4 +16,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed — first Config (one file): src/standard/kinds/library.ts:1:1: error config(standard-is-data): found: src/standard/kinds/library.ts:1 holds a branch · why: A package's standard under src/standard/ is data: no function, branch, call or variable but the defineStandard each file exports. · fix: state the value it computes, and move the code that applies the standard out of src/standard/ · read: docs/reference/quality-checks.md#the-config-one-file-pass
+          ✗ Some checks failed, first Config (one file): src/standard/kinds/library.ts:1:1: error config(standard-is-data): found: src/standard/kinds/library.ts:1 holds a branch · why: A package's standard under src/standard/ is data: no function, branch, call or variable but the defineStandard each file exports. · fix: state the value it computes, and move the code that applies the standard out of src/standard/ · read: docs/reference/quality-checks.md#the-config-one-file-pass

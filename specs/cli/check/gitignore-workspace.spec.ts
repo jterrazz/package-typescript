@@ -44,13 +44,13 @@ describe('gitignore-workspace', () => {
              RUN  Gitignore (artefacts)
 
             Artefacts belong under .artifacts/<tool>/ at the project root:
-              ✗ ../../.gitignore does not ignore .artifacts/ — add it
+              ✗ ../../.gitignore does not ignore .artifacts/; add it
             Run 'typescript fix' to rewrite .gitignore.
             ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Gitignore (artefacts): Artefacts belong under .artifacts/<tool>/ at the project root:
+            ✗ Some checks failed, first Gitignore (artefacts): Artefacts belong under .artifacts/<tool>/ at the project root:
         `);
     });
 
@@ -69,13 +69,13 @@ describe('gitignore-workspace', () => {
              RUN  Gitignore (artefacts)
 
             Artefacts belong under .artifacts/<tool>/ at the project root:
-              ✗ .gitignore names coverage/ — its home is .artifacts/vitest/coverage/
+              ✗ .gitignore names coverage/, whose home is .artifacts/vitest/coverage/
             Run 'typescript fix' to rewrite .gitignore.
             ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Gitignore (artefacts): Artefacts belong under .artifacts/<tool>/ at the project root:
+            ✗ Some checks failed, first Gitignore (artefacts): Artefacts belong under .artifacts/<tool>/ at the project root:
         `);
     });
 });

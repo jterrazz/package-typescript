@@ -21,7 +21,7 @@ describe('docs.pages', () => {
 
         // Then - the mold is named
         expect(messageOf(tree, 'docs/page-named-in-kebab-case')).toBe(
-            'docs/guides/Lint_presets.md is not kebab-case.md — lowercase words, single hyphens, no number: the map gives the order',
+            'docs/guides/Lint_presets.md is not kebab-case.md (lowercase words, single hyphens, no number, since the map gives the order)',
         );
     });
 
@@ -56,7 +56,7 @@ describe('docs.pages', () => {
         // Then - the folder is named, and what it holds is the folder's
         expect(violationOf(tree, 'docs/section-is-flat')).toStrictEqual({
             message:
-                'docs/guides/recipes/ is a folder inside guides/ — a section holds pages, and a sub-folder is a section hiding inside another',
+                'docs/guides/recipes/ is a folder inside guides/: a section holds pages, and a sub-folder is a section hiding inside another',
             path: 'docs/guides/recipes/',
         });
         expect(rulesBrokenBy(tree)).toStrictEqual(['docs/section-is-flat']);
@@ -76,7 +76,7 @@ describe('docs.pages', () => {
         ]);
         expect(violationOf(tree, 'docs/required-pages-present')).toStrictEqual({
             message:
-                'guides/develop.md is missing — every manual holds concepts/architecture.md, guides/develop.md and guides/test.md',
+                'guides/develop.md is missing: every manual holds concepts/architecture.md, guides/develop.md and guides/test.md',
             path: 'docs/guides/develop.md',
         });
     });
@@ -89,7 +89,8 @@ describe('docs.pages', () => {
 
         // Then - the reason it is asked for is named
         expect(violationOf(tree, 'docs/release-guide-present-when-shipping')).toStrictEqual({
-            message: 'guides/release.md is missing — this repository ships an image (a Dockerfile)',
+            message:
+                'guides/release.md is missing, and this repository ships an image (a Dockerfile)',
             path: 'docs/guides/release.md',
         });
     });
@@ -102,7 +103,7 @@ describe('docs.pages', () => {
 
         // Then - the second clause of the presence test speaks
         expect(messageOf(tree, 'docs/release-guide-present-when-shipping')).toBe(
-            'guides/release.md is missing — this repository ships a deployment (.infrastructure/)',
+            'guides/release.md is missing, and this repository ships a deployment (.infrastructure/)',
         );
     });
 
@@ -114,7 +115,7 @@ describe('docs.pages', () => {
 
         // Then - the third clause of the presence test speaks
         expect(messageOf(tree, 'docs/release-guide-present-when-shipping')).toBe(
-            'guides/release.md is missing — this repository ships a published package (it declares a library or a cli)',
+            'guides/release.md is missing, and this repository ships a published package (it declares a library or a cli)',
         );
     });
 
@@ -142,7 +143,7 @@ describe('docs.pages', () => {
 
         // Then - the word is named, and so is where that content belongs
         expect(messageOf(tree, 'docs/page-names-a-subject')).toBe(
-            "docs/concepts/design-exploration.md names a journal, not a subject — exploration; the record is an ADR, the history is git's",
+            "docs/concepts/design-exploration.md names a journal, not a subject (exploration); the record is an ADR, the history is git's",
         );
     });
 
@@ -163,7 +164,7 @@ describe('docs.pages', () => {
 
         // Then - the word is named
         expect(messageOf(tree, 'docs/page-names-a-subject')).toBe(
-            `docs/concepts/${word}.md names a journal, not a subject — ${word}; the record is an ADR, the history is git's`,
+            `docs/concepts/${word}.md names a journal, not a subject (${word}); the record is an ADR, the history is git's`,
         );
     });
 

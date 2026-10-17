@@ -33,7 +33,7 @@ export default fragment({
                             'next-intl/*',
                             '@jterrazz/manifest/next',
                         ],
-                        message: 'this is an Astro site — the Next runtime is not on it',
+                        message: 'this is an Astro site, where the Next runtime does not run',
                     },
                 ],
             },

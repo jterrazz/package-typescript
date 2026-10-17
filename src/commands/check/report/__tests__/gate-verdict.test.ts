@@ -66,8 +66,8 @@ describe('gate-verdict', () => {
             checkSummaryOf({ passes: [pass('Config (one file)', 0)], status: 1 }),
             checkSummaryOf({ passes: [pass('Config (one file)', 0)], status: 0 }),
         ]).toStrictEqual([
-            '✗ Some checks failed — first Oxlint Check: src/a.ts:1:1: error x(rule)',
-            '✗ Some checks failed — first Drift (profile)',
+            '✗ Some checks failed, first Oxlint Check: src/a.ts:1:1: error x(rule)',
+            '✗ Some checks failed, first Drift (profile)',
             '✗ Some checks failed',
             '✓ All checks passed',
         ]);
@@ -93,11 +93,11 @@ describe('gate-verdict', () => {
             mutationSummaryOf(0, 'measured nothing: no test project'),
             mutationSummaryOf(1, 'refused before any run: git names no commit main'),
         ]).toStrictEqual([
-            '✗ Mutation failed — first survivor src/a.ts:2 ConditionalExpression; 7 detected, 2 surviving, 1 never judged, over abc..HEAD',
-            '✓ Mutation passed — 7 detected, 0 surviving, 0 never judged, over abc..HEAD',
-            '✗ Mutation failed — 7 detected, 0 surviving, 1 never judged, over abc..HEAD',
-            '✓ Mutation passed — measured nothing: no test project',
-            '✗ Mutation failed — refused before any run: git names no commit main',
+            '✗ Mutation failed: first survivor src/a.ts:2 ConditionalExpression; 7 detected, 2 surviving, 1 never judged, over abc..HEAD',
+            '✓ Mutation passed: 7 detected, 0 surviving, 0 never judged, over abc..HEAD',
+            '✗ Mutation failed: 7 detected, 0 surviving, 1 never judged, over abc..HEAD',
+            '✓ Mutation passed: measured nothing: no test project',
+            '✗ Mutation failed: refused before any run: git names no commit main',
         ]);
     });
 
@@ -172,7 +172,7 @@ describe('gate-verdict', () => {
             },
             { firstError: null, label: 'Names (tree)', seconds: 1, status: 0 },
             {
-                firstError: 'the drift report refused — its report is above',
+                firstError: 'the drift report refused; its report is above',
                 label: 'Drift (profile)',
                 seconds: 0.5,
                 status: 1,

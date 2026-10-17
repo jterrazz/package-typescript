@@ -6,6 +6,6 @@ runs:
       stdout: |4
            TYPESCRIPT  Building the entries the manifest publishes...
 
-          found: `./register` publishes dist/register.js, but neither src/index.register.ts nor lint/index.register.ts exists · why: a build that skips a published target ships a package whose import of it resolves to nothing · fix: name each entry by the entry grammar — `./register` is built from src/index.register.ts — or drop the target from package.json · read: docs/reference/building.md#the-entries
+          found: `./register` publishes dist/register.js, but neither src/index.register.ts nor lint/index.register.ts exists · why: a build that skips a published target ships a package whose import of it resolves to nothing · fix: name each entry by the entry grammar (`./register` is built from src/index.register.ts), or drop the target from package.json · read: docs/reference/building.md#the-entries
       files:
           dist: absent

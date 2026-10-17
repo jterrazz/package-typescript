@@ -89,11 +89,11 @@ describe('readArguments', () => {
             `found: --since has no value · why: a flag read without its value would run the command on another value than the one meant · fix: write it --since <ref> · ${READ}`,
             `found: --since has no value · why: a flag read without its value would run the command on another value than the one meant · fix: write it --since <ref> · ${READ}`,
             `found: --json takes no value · why: a value the command does not read would be ignored, and the run would not be the one asked for · fix: write it --json, alone · ${READ}`,
-            `found: \`typescript build\` was given dist, an argument it does not read · why: an argument the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — \`typescript build\` takes no argument · ${READ}`,
+            `found: \`typescript build\` was given dist, an argument it does not read · why: an argument the command does not read would be ignored, and the run would not be the one asked for · fix: drop it: \`typescript build\` takes no argument · ${READ}`,
             `found: \`typescript docs-layout\` was given extra, a second <root> · why: an argument the command does not read would be ignored, and the run would not be the one asked for · fix: name one <root>, or none · ${READ}`,
-            `found: \`typescript build\` has no flag --json · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — it reads --watch · ${READ}`,
-            `found: \`typescript check\` has no flag --watch · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — it reads --json · ${READ}`,
-            `found: \`typescript check\` has no flag -j=1 · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — it reads --json · ${READ}`,
+            `found: \`typescript build\` has no flag --json · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it: it reads --watch · ${READ}`,
+            `found: \`typescript check\` has no flag --watch · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it: it reads --json · ${READ}`,
+            `found: \`typescript check\` has no flag -j=1 · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it: it reads --json · ${READ}`,
             ...['check', 'fix', 'baseline'].map(
                 (command) =>
                     `found: \`typescript ${command}\` has no flag --ignore-pattern, which is retired · why: a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository · fix: declare the folder in jterrazz.config.ts, where every gate reads it alike: \`typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }\` · read: docs/reference/quality-checks.md#a-root-beside-the-spine`,
@@ -112,8 +112,8 @@ describe('readArguments', () => {
 
         // Then - the first lists every flag, comma and space between, the second says it reads no flag
         expect(lessons[0]).toContain(
-            'fix: drop it — it reads --cold, --mutate <ranges>, --since <ref>',
+            'fix: drop it: it reads --cold, --mutate <ranges>, --since <ref>',
         );
-        expect(lessons[1]).toContain('fix: drop it — `typescript fix` reads no flag');
+        expect(lessons[1]).toContain('fix: drop it: `typescript fix` reads no flag');
     });
 });

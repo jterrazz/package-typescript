@@ -14,7 +14,7 @@ import type { Stated } from '../../kit/compiler/decision.js';
 const NURSERY_SINCE = '11.0.0';
 
 const UNTYPED_BY_CONSTRUCTION = {
-    by: 'TypeScript — a .js file has no parameter types, so every value in it is `any` and the rule reports the language, not a defect',
+    by: 'TypeScript: a .js file has no parameter types, so every value in it is `any` and the rule reports the language, not a defect',
     kind: 'covered',
 };
 
@@ -147,14 +147,14 @@ export default fragment({
         ]),
         'typescript/require-await': off(
             {
-                by: "rule review, 2026-10-03 — 11 reports held and 92 `await Promise.resolve()` lines written only to quiet it on package-test and package-typescript: `promise-function-async` makes every promise-returning function async, so a synchronous implementation of an async port has nothing to await; a forgotten await is `no-floating-promises`'s and `await-thenable`'s",
+                by: "rule review, 2026-10-03: 11 reports held and 92 `await Promise.resolve()` lines written only to quiet it on package-test and package-typescript: `promise-function-async` makes every promise-returning function async, so a synchronous implementation of an async port has nothing to await; a forgotten await is `no-floating-promises`'s and `await-thenable`'s",
                 kind: 'evidence',
             },
             '11.0.0',
         ),
         'typescript/consistent-type-definitions': off(
             {
-                by: 'rule review, 2026-10-03 — 0 reports held and 32 suppressions on package-test and package-typescript, every one a place the language needs an interface (a `this`-typed member, a module augmentation, a declaration merge); one spelling prevents no defect',
+                by: 'rule review, 2026-10-03: 0 reports held and 32 suppressions on package-test and package-typescript, every one a place the language needs an interface (a `this`-typed member, a module augmentation, a declaration merge); one spelling prevents no defect',
                 kind: 'evidence',
             },
             '11.0.0',
@@ -165,7 +165,7 @@ export default fragment({
         ),
         'typescript/promise-function-async': unsafeFix(
             typeAware(),
-            'wraps a function that hands out an existing promise in `async … await`, so the caller receives a fresh promise nobody has claimed',
+            'wraps a function that hands out an existing promise in `async ... await`, so the caller receives a fresh promise nobody has claimed',
         ),
         'typescript/no-unnecessary-type-assertion': unsafeFix(
             typeAware(),
@@ -202,45 +202,45 @@ export default fragment({
         },
 
         'typescript/ban-types': off({
-            by: 'typescript/no-empty-object-type, no-unsafe-function-type, no-wrapper-object-types — its three successors',
+            by: 'typescript/no-empty-object-type, no-unsafe-function-type, no-wrapper-object-types: its three successors',
             kind: 'covered',
         }),
         'typescript/consistent-return': off(
             {
-                by: 'TypeScript noImplicitReturns — set in every tsconfig preset, it refuses a path that falls off a function whose other paths return a value, and reads what the rule cannot: an exhaustive switch, and a return type that holds `void`; the rule refused both, and asked a React effect returning its cleanup on one path for the `return undefined` unicorn/no-useless-undefined refuses (jterrazz-web pilot, 2026-10-06)',
+                by: 'TypeScript noImplicitReturns: set in every tsconfig preset, it refuses a path that falls off a function whose other paths return a value, and reads what the rule cannot: an exhaustive switch, and a return type that holds `void`; the rule refused both, and asked a React effect returning its cleanup on one path for the `return undefined` unicorn/no-useless-undefined refuses (jterrazz-web pilot, 2026-10-06)',
                 kind: 'covered',
             },
             '11.0.0',
         ),
         'typescript/explicit-function-return-type': off({
-            by: 'TypeScript — the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS4058)',
+            by: 'TypeScript: the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS4058)',
             kind: 'covered',
         }),
         'typescript/explicit-module-boundary-types': off({
-            by: 'TypeScript — the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS4058)',
+            by: 'TypeScript: the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS4058)',
             kind: 'covered',
         }),
         'typescript/no-empty-interface': off({
-            by: 'typescript/no-empty-object-type — its upstream successor',
+            by: 'typescript/no-empty-object-type: its upstream successor',
             kind: 'covered',
         }),
         'typescript/non-nullable-type-assertion-style': off({
-            by: 'typescript/no-non-null-assertion — its fix is the `!` assertion that rule forbids, so no edit closes both',
+            by: 'typescript/no-non-null-assertion: its fix is the `!` assertion that rule forbids, so no edit closes both',
             kind: 'exclusive',
         }),
         'typescript/no-unnecessary-condition': off(
             {
-                by: 'measured on this package — 8 reports, not one a defect: a `while (true)` loop, a flag read off parsed JSON, and `?? ""` guards on the `spawnSync` streams @types/node types non-null and Node leaves null when the spawn fails',
+                by: 'measured on this package: 8 reports, not one a defect: a `while (true)` loop, a flag read off parsed JSON, and `?? ""` guards on the `spawnSync` streams @types/node types non-null and Node leaves null when the spawn fails',
                 kind: 'evidence',
             },
             NURSERY_SINCE,
         ),
         'typescript/no-var-requires': off({
-            by: 'typescript/no-require-imports — its upstream successor',
+            by: 'typescript/no-require-imports: its upstream successor',
             kind: 'covered',
         }),
         'typescript/prefer-readonly-parameter-types': off({
-            by: 'no-param-reassign, typescript/prefer-readonly — the defect is mutation, and both name it',
+            by: 'no-param-reassign, typescript/prefer-readonly: the defect is mutation, and both name it',
             kind: 'covered',
         }),
     },

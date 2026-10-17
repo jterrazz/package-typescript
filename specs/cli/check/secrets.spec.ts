@@ -48,7 +48,7 @@ describe('secrets', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Secrets (credentials): NOTES.md:3:1: error secrets(no-aws-key): line 3 looks like an aws access key
+            ✗ Some checks failed, first Secrets (credentials): NOTES.md:3:1: error secrets(no-aws-key): line 3 looks like an aws access key
         `);
     });
 

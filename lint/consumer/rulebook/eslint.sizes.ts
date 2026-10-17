@@ -10,7 +10,7 @@ export const ESLINT_SIZES_OVERRIDES: readonly Scoped[] = [
         files: ['**/*.spec.ts'],
         rules: {
             'max-lines': off({
-                by: '@jterrazz/test spec-file-within-line-limit — a spec file holds at most 400 lines, and one cap judges a file',
+                by: '@jterrazz/test spec-file-within-line-limit: a spec file holds at most 400 lines, and one cap judges a file',
                 kind: 'covered',
             }),
         },
@@ -27,11 +27,11 @@ export const ESLINT_SIZES_OVERRIDES: readonly Scoped[] = [
         files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts'],
         rules: {
             'max-lines-per-function': off({
-                by: "@jterrazz/test test-body-within-line-limit — a test body holds at most 60 lines, and a test file's one describe is as long as the file",
+                by: "@jterrazz/test test-body-within-line-limit: a test body holds at most 60 lines, and a test file's one describe is as long as the file",
                 kind: 'covered',
             }),
             'max-statements': off({
-                by: '@jterrazz/test test-body-within-line-limit — a test body holds at most 60 lines, and oxfmt puts one statement per line',
+                by: '@jterrazz/test test-body-within-line-limit: a test body holds at most 60 lines, and oxfmt puts one statement per line',
                 kind: 'covered',
             }),
         },
@@ -42,7 +42,7 @@ export const ESLINT_SIZES_OVERRIDES: readonly Scoped[] = [
         files: ['**/*.data.ts', '**/*.data.tsx'],
         rules: {
             'max-lines': off({
-                by: 'jterrazz-typescript/data-module-holds-data — a `*.data.ts` module holds imports, types and the literals it exports, and no function, class or statement',
+                by: 'jterrazz-typescript/data-module-holds-data: a `*.data.ts` module holds imports, types and the literals it exports, and no function, class or statement',
                 kind: 'covered',
             }),
         },
@@ -53,7 +53,7 @@ export const ESLINT_SIZES_OVERRIDES: readonly Scoped[] = [
         files: ['**/errors.ts', '**/*.errors.ts'],
         rules: {
             'max-classes-per-file': off({
-                by: 'jterrazz-typescript/error-family-shares-its-base — an errors module holds one class family, a base and what derives from it',
+                by: 'jterrazz-typescript/error-family-shares-its-base: an errors module holds one class family, a base and what derives from it',
                 kind: 'covered',
             }),
         },
@@ -64,7 +64,7 @@ export const ESLINT_SIZES_OVERRIDES: readonly Scoped[] = [
         files: ['lint/consumer/rules/**/*.test.ts'],
         rules: {
             'max-lines': off({
-                by: 'docs/reference/rules-kit.md#testing-a-rule — a rule is proven by one RuleTester table of every case it decides',
+                by: 'docs/reference/rules-kit.md#testing-a-rule: a rule is proven by one RuleTester table of every case it decides',
                 kind: 'convention',
             }),
         },

@@ -47,12 +47,12 @@ describe('folderPlatformsOf', () => {
             {
                 folders: [],
                 problem:
-                    'names `web/**` under `typescript.platforms`, which is no folder of the unit — write its path from the unit, with no glob',
+                    'names `web/**` under `typescript.platforms`, which is no folder of the unit; write its path from the unit, with no glob',
             },
             {
                 folders: [],
                 problem:
-                    'names `../web` under `typescript.platforms`, which is no folder of the unit — write its path from the unit, with no glob',
+                    'names `../web` under `typescript.platforms`, which is no folder of the unit; write its path from the unit, with no glob',
             },
             {
                 folders: [],
@@ -62,12 +62,12 @@ describe('folderPlatformsOf', () => {
             {
                 folders: [],
                 problem:
-                    'declares `web` on `react` with no `reason` — say why the folder runs on another platform than the unit',
+                    'declares `web` on `react` with no `reason`; say why the folder runs on another platform than the unit',
             },
             {
                 folders: [],
                 problem:
-                    'declares `web` on `react` with no `reason` — say why the folder runs on another platform than the unit',
+                    'declares `web` on `react` with no `reason`; say why the folder runs on another platform than the unit',
             },
             {
                 folders: [],

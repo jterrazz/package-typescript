@@ -42,7 +42,7 @@ export function airlessFences(markdown: string): string[] {
         if (run.length > FENCE_RUN_LIMIT) {
             const at = survivingBreak(run);
             found.push(
-                `a fenced block at line ${fenceStart} runs ${run.length} lines unbroken — the limit is ${FENCE_RUN_LIMIT}${at === undefined ? '' : `; a blank line after line ${at} survives the formatter`}`,
+                `a fenced block at line ${fenceStart} runs ${run.length} lines unbroken, over the limit of ${FENCE_RUN_LIMIT}${at === undefined ? '' : `; a blank line after line ${at} survives the formatter`}`,
             );
         }
         run = [];

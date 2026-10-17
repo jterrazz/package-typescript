@@ -16,7 +16,7 @@ const OXLINT = resolve(REPOSITORY, 'node_modules/.bin/oxlint');
 const SHAPES = resolve(import.meta.dirname, '__fixtures__/oxlint-report');
 
 const WARNING_LESSON =
-    "found: a warn-severity diagnostic — oxlint lists it above · why: .jterrazz/oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/reference/quality-checks.md#a-warning-is-a-diagnostic\n";
+    "found: a warn-severity diagnostic, which oxlint lists above · why: .jterrazz/oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run · fix: set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it · read: docs/reference/quality-checks.md#a-warning-is-a-diagnostic\n";
 
 function oxlintAlone(form: Record<string, string>): string {
     const project = temporaryDirectory('spec-oxlint-report-');

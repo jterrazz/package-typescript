@@ -155,64 +155,64 @@ export default fragment({
         ),
         'unicorn/no-useless-promise-resolve-reject': unsafeFix(
             on(),
-            'unwraps `Promise.resolve({ … })` in an arrow body into a bare object literal, which is a block',
+            'unwraps `Promise.resolve({ ... })` in an arrow body into a bare object literal, which is a block',
         ),
 
         'unicorn/prefer-top-level-await': off(
             {
-                by: 'jterrazz-typescript/promise-is-awaited — it reads a module-level `.catch()` as a promise chain whatever the type, so every zod schema given a fallback failed it (signews-web’s response schemas, read 2026-10-08); the plugin’s rule refuses a top-level chain and an async function called where it is declared, and reads a value given to `.catch()` as no promise',
+                by: "jterrazz-typescript/promise-is-awaited: it reads a module-level `.catch()` as a promise chain whatever the type, so every zod schema given a fallback failed it (signews-web's response schemas, read 2026-10-08); the plugin's rule refuses a top-level chain and an async function called where it is declared, and reads a value given to `.catch()` as no promise",
                 kind: 'covered',
             },
             '11.0.0',
         ),
         'unicorn/explicit-length-check': off({
-            by: 'typescript/strict-boolean-expressions — it already refuses a length used as a condition',
+            by: 'typescript/strict-boolean-expressions: it already refuses a length used as a condition',
             kind: 'covered',
         }),
         'unicorn/no-array-callback-reference': off({
-            by: 'measured on this package — every report was a correct point-free callback',
+            by: 'measured on this package: every report was a correct point-free callback',
             kind: 'evidence',
         }),
         'unicorn/no-instanceof-array': off({
-            by: 'unicorn/no-instanceof-builtins — its upstream successor',
+            by: 'unicorn/no-instanceof-builtins: its upstream successor',
             kind: 'covered',
         }),
         'unicorn/no-nested-ternary': off({
-            by: 'oxfmt — its fixer parenthesises the inner ternary and the formatter strips the parentheses, so every fix round ping-pongs',
+            by: 'oxfmt: its fixer parenthesises the inner ternary and the formatter strips the parentheses, so every fix round ping-pongs',
             kind: 'formatter',
         }),
         'unicorn/no-null': off({
-            by: 'docs/reference/lint-presets.md — null is what the platform and JSON APIs return, and a codebase that refuses it grows a translation layer at every boundary',
+            by: 'docs/reference/lint-presets.md: null is what the platform and JSON APIs return, and a codebase that refuses it grows a translation layer at every boundary',
             kind: 'convention',
         }),
         'unicorn/prefer-number-coercion': off({
-            by: 'measured on this package — it rewrites `Number.parseInt("01-architecture.md", 10)`, which is 1, into `Math.trunc(Number(...))`, which is NaN; the rule assumes the string holds nothing but digits',
+            by: 'measured on this package: it rewrites `Number.parseInt("01-architecture.md", 10)`, which is 1, into `Math.trunc(Number(...))`, which is NaN; the rule assumes the string holds nothing but digits',
             kind: 'evidence',
         }),
         'unicorn/number-literal-case': off({
-            by: 'oxfmt — oxc#21949: the two disagree on the case of a hex literal and rewrite each other',
+            by: 'oxfmt (oxc#21949): the two disagree on the case of a hex literal and rewrite each other',
             kind: 'formatter',
         }),
         'unicorn/prefer-event-target': off(
             {
-                by: 'rule review, 2026-10-04 — its one report, signews-api’s pipeline event bus, would have changed how a throwing handler fails: EventEmitter throws it to the emitter, Node’s EventTarget raises it as an uncaught exception; the portability it buys is no server’s, and an emitter in browser code is a dependency the bundle already shows',
+                by: "rule review, 2026-10-04: its one report, signews-api's pipeline event bus, would have changed how a throwing handler fails: EventEmitter throws it to the emitter, Node's EventTarget raises it as an uncaught exception; the portability it buys is no server's, and an emitter in browser code is a dependency the bundle already shows",
                 kind: 'evidence',
             },
             '11.0.0',
         ),
         'unicorn/prefer-includes': off({
-            by: 'typescript/prefer-includes — the type-aware rule of the same name',
+            by: 'typescript/prefer-includes: the type-aware rule of the same name',
             kind: 'covered',
         }),
         'unicorn/prefer-spread': off(
             {
-                by: "typescript/no-misused-spread — its fixer turns `Array.from(word)` and `word.split('')` into `[...word]`, the string spread the type-aware rule refuses, and it takes no option to leave strings alone",
+                by: "typescript/no-misused-spread: its fixer turns `Array.from(word)` and `word.split('')` into `[...word]`, the string spread the type-aware rule refuses, and it takes no option to leave strings alone",
                 kind: 'exclusive',
             },
             '11.0.0',
         ),
         'unicorn/prefer-string-starts-ends-with': off({
-            by: 'typescript/prefer-string-starts-ends-with — the type-aware rule of the same name',
+            by: 'typescript/prefer-string-starts-ends-with: the type-aware rule of the same name',
             kind: 'covered',
         }),
     },

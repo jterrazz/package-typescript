@@ -31,7 +31,7 @@ describe('markdown-ignored', () => {
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Markdown (prose): README.md:1:1: error markdown(path-resolves): \`apps/notes/absent.md\` names nothing on disk
+            ✗ Some checks failed, first Markdown (prose): README.md:1:1: error markdown(path-resolves): \`apps/notes/absent.md\` names nothing on disk
         `);
     });
 });

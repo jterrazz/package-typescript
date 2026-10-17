@@ -23,7 +23,7 @@ export default fragment({
         'perfectionist/sort-union-types': on(NATURAL),
 
         'perfectionist/sort-imports': off({
-            by: 'oxfmt sortImports — the formatter reorders import statements, and two tools rewriting the same bytes fight',
+            by: 'oxfmt sortImports: the formatter reorders import statements, and two tools rewriting the same bytes fight',
             kind: 'formatter',
         }),
     },

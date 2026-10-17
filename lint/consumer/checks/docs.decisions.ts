@@ -57,7 +57,7 @@ function auditDecisionNumbers(report: Report, records: readonly Entry[]): void {
         report(
             'docs/decisions-numbered-contiguously',
             'docs/decisions/',
-            `docs/decisions/ numbers run ${numbers.join(', ')}: they run from 001 with no gap — a decision that moved folders takes the next number where it lands`,
+            `docs/decisions/ numbers run ${numbers.join(', ')}: they run from 001 with no gap, and a decision that moved folders takes the next number where it lands`,
         );
     }
 
@@ -102,11 +102,11 @@ function auditRecord(report: Report, record: Entry, heads: DocsTree['heads']): v
         report(
             'docs/decision-status-known',
             record.path,
-            `${record.path} carries no **Status:** line — the mold is "**Status:** Proposed"`,
+            `${record.path} carries no **Status:** line; the mold is "**Status:** Proposed"`,
         );
     } else if (!(STATUSES.has(status) || SUPERSEDED.test(status))) {
         const message = BARE_SUPERSEDED.test(status)
-            ? `${record.path}: **Status:** names a successor but no link — write Superseded by [ADR-NNN](file.md)`
+            ? `${record.path}: **Status:** names a successor but no link; write Superseded by [ADR-NNN](file.md)`
             : `${record.path}: **Status:** is none of Proposed, Accepted, Superseded by [ADR-NNN](file.md), Deprecated`;
         report('docs/decision-status-known', record.path, message);
     }
@@ -144,7 +144,7 @@ export function auditDecisions(
         report(
             'docs/decision-listed-in-the-map',
             'docs/decisions/README.md',
-            'docs/decisions/README.md is an index — an index is a copy; the queue is derived (terra <brand> decisions)',
+            'docs/decisions/README.md is an index, and an index is a copy; the queue is derived (terra <brand> decisions)',
         );
     }
 
@@ -152,7 +152,7 @@ export function auditDecisions(
         report(
             'docs/decision-template-present',
             'docs/decisions/_template.md',
-            'docs/decisions/_template.md is missing — the mold sits where the record is written',
+            'docs/decisions/_template.md is missing: the mold sits where the record is written',
         );
     }
 }

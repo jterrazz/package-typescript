@@ -205,39 +205,39 @@ export default fragment({
         'one-var': on(['never']),
 
         'capitalized-comments': off({
-            by: 'jterrazz-design — 198 of 198 reports were false positives (quality study, 2026-09-15)',
+            by: 'jterrazz-design: 198 of 198 reports were false positives (quality study, 2026-09-15)',
             kind: 'evidence',
         }),
         'default-case': off(
             {
-                by: 'typescript/switch-exhaustiveness-check — set to require a `default` exactly where the cases cannot be listed and to take a `default` as the decision for the rest of a union; beside it, default-case demanded a `default` the exhaustive check does not count, and `case …: default:` is what unicorn/no-useless-switch-case refuses, so an exhaustive switch over a union had no spelling (package-telemetry pilot, 2026-10-06)',
+                by: 'typescript/switch-exhaustiveness-check: set to require a `default` exactly where the cases cannot be listed and to take a `default` as the decision for the rest of a union; beside it, default-case demanded a `default` the exhaustive check does not count, and `case ...: default:` is what unicorn/no-useless-switch-case refuses, so an exhaustive switch over a union had no spelling (package-telemetry pilot, 2026-10-06)',
                 kind: 'covered',
             },
             RULE_REVIEW_SINCE,
         ),
         'id-length': off({
-            by: 'measured on this package — every report was a conventional short binding (k, v, x)',
+            by: 'measured on this package: every report was a conventional short binding (k, v, x)',
             kind: 'evidence',
         }),
         'init-declarations': off({ by: 'no-unassigned-vars, prefer-const', kind: 'covered' }),
         // invariant: oxfmt writes one statement per line, so the per-function line cap bounds statements.
         'max-statements': off(
             {
-                by: 'max-lines-per-function (60) — oxfmt puts one statement per line',
+                by: 'max-lines-per-function (60): oxfmt puts one statement per line',
                 kind: 'covered',
             },
             SIZE_SINCE,
         ),
         'no-await-in-loop': off(
             {
-                by: 'rule review, 2026-10-03 — 51 reports on package-test and package-typescript, about 85% an ordered sequence (a poll, a seed, a pass writing what the next one reads); the rule judges speed, never correctness',
+                by: 'rule review, 2026-10-03: 51 reports on package-test and package-typescript, about 85% an ordered sequence (a poll, a seed, a pass writing what the next one reads); the rule judges speed, never correctness',
                 kind: 'evidence',
             },
             RULE_REVIEW_SINCE,
         ),
         'new-cap': off(
             {
-                by: 'rule review, 2026-10-05 — 37 reports across the estate (jterrazz-design 20, signews-mobile 14, spwn 3), not one a defect: libraries’ factories their authors named in capitals — react-native-gesture-handler’s `Gesture.Pan()`, React Native’s `PlatformColor` and `DynamicColorIOS`, Skia’s `RuntimeEffect.Make`, next/font’s `Geist(…)` — and signews-mobile’s dependency-injection `Injectable(…)`; the defect the rule guards, a class called without `new`, is TS2348 under the type check',
+                by: "rule review, 2026-10-05: 37 reports across the estate (jterrazz-design 20, signews-mobile 14, spwn 3), not one a defect: libraries' factories their authors named in capitals (react-native-gesture-handler's `Gesture.Pan()`, React Native's `PlatformColor` and `DynamicColorIOS`, Skia's `RuntimeEffect.Make`, next/font's `Geist(...)`) and signews-mobile's dependency-injection `Injectable(...)`; the defect the rule guards, a class called without `new`, is TS2348 under the type check",
                 kind: 'evidence',
             },
             RULE_REVIEW_SINCE,
@@ -245,7 +245,7 @@ export default fragment({
         'no-continue': off({ by: 'max-depth (4)', kind: 'exclusive' }),
         'no-useless-return': off(
             {
-                by: 'TypeScript noImplicitReturns — set in every tsconfig preset: a function whose other paths return a value ends on the bare `return;` it asks for, which this rule refuses as useless; a React effect returning its cleanup inside an `if` is the shape (pilot review, 2026-10-08)',
+                by: 'TypeScript noImplicitReturns, set in every tsconfig preset: a function whose other paths return a value ends on the bare `return;` it asks for, which this rule refuses as useless; a React effect returning its cleanup inside an `if` is the shape (pilot review, 2026-10-08)',
                 kind: 'exclusive',
             },
             RULE_REVIEW_SINCE,
@@ -253,7 +253,7 @@ export default fragment({
         'no-implied-eval': off({ by: 'typescript/no-implied-eval', kind: 'covered' }),
         'no-lonely-if': off({ by: 'unicorn/no-lonely-if', kind: 'covered' }),
         'no-magic-numbers': off({
-            by: 'measured on this package — 125 reports, not one of them a defect',
+            by: 'measured on this package: 125 reports, not one of them a defect',
             kind: 'evidence',
         }),
         'no-negated-condition': off({ by: 'unicorn/no-negated-condition', kind: 'covered' }),
@@ -261,14 +261,14 @@ export default fragment({
         'no-ternary': off({ by: 'unicorn/prefer-ternary', kind: 'exclusive' }),
         'no-plusplus': off(
             {
-                by: 'rule review, 2026-09-27 — 34 reports on package-test and signews-api, every one a counter, not one a defect; oxfmt writes the semicolons whose absence it guards',
+                by: 'rule review, 2026-09-27: 34 reports on package-test and signews-api, every one a counter, not one a defect; oxfmt writes the semicolons whose absence it guards',
                 kind: 'evidence',
             },
             RULE_REVIEW_SINCE,
         ),
         'no-throw-literal': off({ by: 'typescript/only-throw-error', kind: 'covered' }),
         'no-undefined': off({
-            by: 'no-shadow-restricted-names, no-global-assign — `undefined` cannot be rebound, which is the hazard this ES3-era rule was written for',
+            by: 'no-shadow-restricted-names, no-global-assign: `undefined` cannot be rebound, which is the hazard this ES3-era rule was written for',
             kind: 'covered',
         }),
         'prefer-promise-reject-errors': off({
@@ -277,14 +277,14 @@ export default fragment({
         }),
         'require-await': off(
             {
-                by: 'rule review, 2026-10-03 — the finding `typescript/require-await` makes, off for the evidence stated there',
+                by: 'rule review, 2026-10-03: the finding `typescript/require-await` makes, off for the evidence stated there',
                 kind: 'evidence',
             },
             RULE_REVIEW_SINCE,
         ),
         'sort-imports': off({ by: 'oxfmt sortImports', kind: 'covered' }),
         'sort-keys': off({
-            by: 'docs/reference/lint-presets.md — an object orders by meaning, and generic inference is order-sensitive',
+            by: 'docs/reference/lint-presets.md: an object orders by meaning, and generic inference is order-sensitive',
             kind: 'convention',
         }),
         'sort-vars': off({ by: 'one-var (never)', kind: 'covered' }),

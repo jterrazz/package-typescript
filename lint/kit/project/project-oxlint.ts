@@ -55,7 +55,7 @@ function overridesOf(written: unknown): ProjectOverride[] | string {
             return 'holds a `typescript.oxlint.overrides` entry naming no `files`';
         }
         if (!isReason(reason)) {
-            return `holds a \`typescript.oxlint.overrides\` entry for ${files.join(', ')} with no \`reason\` — say why those files are judged apart`;
+            return `holds a \`typescript.oxlint.overrides\` entry for ${files.join(', ')} with no \`reason\`; say why those files are judged apart`;
         }
         if (!isJsonObject(rules) || !Object.values(rules).every((one) => isRuleSetting(one))) {
             return `holds a \`typescript.oxlint.overrides\` entry for ${files.join(', ')} whose \`rules\` are not oxlint rule settings`;
@@ -91,7 +91,7 @@ export function projectOxlintOf(section: unknown): ProjectOxlint {
         const { level, reason } = isJsonObject(setting) ? setting : {};
         if (!isRuleSetting(level) || !isReason(reason)) {
             return refused(
-                `sets \`${rule}\` with no \`{ level, reason }\` — a rule the project sets apart from its profile says why`,
+                `sets \`${rule}\` with no \`{ level, reason }\`: a rule the project sets apart from its profile says why`,
             );
         }
         rules[rule] = level;

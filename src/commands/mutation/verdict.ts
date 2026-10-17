@@ -39,22 +39,22 @@ function countLines(
         ...(browser.length === 0
             ? []
             : [
-                  `unmeasured: ${totalOf(browser)} mutant(s) of browser-side sources — the mutation run starts no browser project, so no count claims them detected`,
+                  `unmeasured: ${totalOf(browser)} mutant(s) of browser-side sources: the mutation run starts no browser project, so no count claims them detected`,
                   ...withFiles(browser),
               ]),
         ...(leftCount === 0
             ? []
             : [
-                  `${leftCount} mutant(s) the module tests leave to the suite — none of them runs it, or only loading a module does — on lines no change has brought there; the whole suite measures them when one does`,
+                  `${leftCount} mutant(s) the module tests leave to the suite (none of them runs it, or only loading a module does) on lines no change has brought there; the whole suite measures them when one does`,
               ]),
         ...(untestedSources === 0
             ? []
             : [
-                  `${untestedSources} source(s) with no module test — the whole suite measures the lines a change reaches there; what no change reaches no count holds`,
+                  `${untestedSources} source(s) with no module test: the whole suite measures the lines a change reaches there; what no change reaches no count holds`,
               ]),
         ...(outside.total === 0
             ? []
-            : [`${outside.total} mutant(s) outside the verdict — ${outside.statuses}`]),
+            : [`${outside.total} mutant(s) outside the verdict: ${outside.statuses}`]),
     ];
 }
 
@@ -65,10 +65,10 @@ function survivorLines({ survivors }: Judged): string[] {
     return [
         ...survivors.map(
             ({ column, file, line, mutator, replacement, report }) =>
-                `${file}:${line}:${column}  ${mutator} → ${String(replacement.split('\n', 1))}  (${report})`,
+                `${file}:${line}:${column}  ${mutator}: ${String(replacement.split('\n', 1))}  (${report})`,
         ),
         refusal({
-            fix: 'assert what the line decides — a value compared whole kills most of them — or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent>',
+            fix: 'assert what the line decides (a value compared whole kills most of them) or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent>',
             found: `${survivors.length} mutant(s) a test runs and none detects`,
             read: 'docs/reference/quality-checks.md#mutation',
             why: 'a test that runs a line and lets a change of it pass proves nothing of that line',
@@ -83,8 +83,8 @@ function unrunLines({ unrun }: Judged): string[] {
     }
     return [
         refusal({
-            fix: 'run `typescript mutation` again to its end — a run stopped midway leaves its mutants Pending, and the next one runs them',
-            found: `${total} mutant(s) the run never judged — ${statuses}`,
+            fix: 'run `typescript mutation` again to its end: a run stopped midway leaves its mutants Pending, and the next one runs them',
+            found: `${total} mutant(s) the run never judged: ${statuses}`,
             read: 'docs/reference/quality-checks.md#mutation',
             why: 'a mutant no test was run against says nothing of the line it mutates, so passing it would pass a run that judged nothing there',
         }),
@@ -105,14 +105,14 @@ const unmeasuredLines = ({ unmeasured }: Measure): string[] =>
     unmeasured === undefined
         ? []
         : [
-              `warning: this verdict is narrower than the branch — ${unmeasured} is not measured; commit the work and run again, or name the base with --since to measure the branch`,
+              `warning: this verdict is narrower than the branch: ${unmeasured} is not measured; commit the work and run again, or name the base with --since to measure the branch`,
           ];
 
 // invariant: a run that mutated nothing never reads as a run whose mutants were all detected; it says what it measured, or that it measured nothing and why.
 function passedLine({ detected }: Judged, { range }: Measure): string {
     return detected === 0
         ? `measured nothing over ${range}: no changed TypeScript source ran a mutant, or the project has none to mutate`
-        : `measured ${detected} mutants over ${range} — every mutant a test runs is detected`;
+        : `measured ${detected} mutants over ${range}: every mutant a test runs is detected`;
 }
 
 /** The verdict's lines and status, counting apart the sources with no module test, which no run mutates until a change reaches them. */

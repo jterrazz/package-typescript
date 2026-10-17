@@ -96,7 +96,7 @@ export function pinnedPair(root: string): null | Pair {
 }
 
 export function versionColumn(versions: readonly string[]): string {
-    return versions.length === 0 ? '—' : versions.join(', ');
+    return versions.length === 0 ? 'none' : versions.join(', ');
 }
 
 export function reportPinnedPair(root: string): boolean {
@@ -109,7 +109,7 @@ export function reportPinnedPair(root: string): boolean {
 
     if (pair.verdict === 'unread') {
         print(
-            `  ${PINNED_PAIR.provider.padEnd(28)}${pair.unread} is not parsed here — the pin is unchecked\n\n`,
+            `  ${PINNED_PAIR.provider.padEnd(28)}${pair.unread} is not parsed here, so the pin is unchecked\n\n`,
         );
         return false;
     }

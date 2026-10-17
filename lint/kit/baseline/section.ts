@@ -98,7 +98,7 @@ export function reRecord(
         .filter((rule) => (next[rule] ?? 0) !== held[rule])
         .map(
             (rule) =>
-                `re-recorded ${labelOf(section)} › ${rule} ${String(held[rule] ?? 0)} → ${String(next[rule] ?? 0)}`,
+                `re-recorded ${labelOf(section)} › ${rule} from ${String(held[rule] ?? 0)} to ${String(next[rule] ?? 0)}`,
         );
 
     return { lines, section: next };

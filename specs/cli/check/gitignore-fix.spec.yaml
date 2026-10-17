@@ -24,7 +24,7 @@ runs:
             - coverage/
             - *.tsbuildinfo
             + .artifacts/
-            · !docs/keep.md — a negation rescues a tracked file, kept
+            · !docs/keep.md: a negation rescues a tracked file, kept
           ✓ Passed ({{duration}})
 
            RUN  Suppressions (directives)

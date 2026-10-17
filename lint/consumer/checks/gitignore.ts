@@ -206,7 +206,7 @@ function fixed(sources: readonly Source[]): Judged {
             ...own.misplaced.map((line) => `  - ${line.pattern}`),
             ...(own.isIgnored ? [] : [`  + ${ARTIFACTS}/`]),
             ...own.negations.map(
-                (line) => `  · ${line.pattern} — a negation rescues a tracked file, kept`,
+                (line) => `  · ${line.pattern}: a negation rescues a tracked file, kept`,
             ),
         ],
         writes: [{ path: own.path, text: rewrite(own.lines) }],
@@ -228,12 +228,12 @@ function misplacedLines(sources: readonly Source[]): string[] {
         MISPLACED,
         ...misplaced.map(
             (line) =>
-                `  ✗ ${line.source.label} names ${line.pattern} — its home is ${line.home ?? ''}`,
+                `  ✗ ${line.source.label} names ${line.pattern}, whose home is ${line.home ?? ''}`,
         ),
-        ...(isIgnored ? [] : [`  ✗ ${target?.label ?? ''} does not ignore ${ARTIFACTS}/ — add it`]),
+        ...(isIgnored ? [] : [`  ✗ ${target?.label ?? ''} does not ignore ${ARTIFACTS}/; add it`]),
         ...sources
             .flatMap((source) => source.negations)
-            .map((line) => `  · ${line.pattern} — a negation rescues a tracked file, left for you`),
+            .map((line) => `  · ${line.pattern}: a negation rescues a tracked file, left for you`),
         "Run 'typescript fix' to rewrite .gitignore.",
     ];
 }

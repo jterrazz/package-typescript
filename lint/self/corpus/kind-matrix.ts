@@ -61,7 +61,7 @@ function specimenOf(kinds: string, kind: CodeKind): null | Specimen {
 }
 
 const coded = (values: readonly string[]): string =>
-    values.length === 0 ? '—' : values.map((value) => `\`${value}\``).join(', ');
+    values.length === 0 ? 'none' : values.map((value) => `\`${value}\``).join(', ');
 
 function cellsOf(kind: CodeKind, specimen: null | Specimen): string[] {
     const gap = manifestGap(kind, {});
@@ -70,10 +70,10 @@ function cellsOf(kind: CodeKind, specimen: null | Specimen): string[] {
         `\`${kind}\``,
         coded(PLATFORMS_OF[kind]),
         PUBLICATION[kind] === 'published' ? 'published, unless `private`' : PUBLICATION[kind],
-        gap === null ? '—' : gap.owes,
-        PUBLICATION[kind] === 'published' ? 'judged, unless `private`' : '—',
+        gap === null ? '' : gap.owes,
+        PUBLICATION[kind] === 'published' ? 'judged, unless `private`' : 'not judged',
         specimen === null ? 'none' : `\`specs/kinds/${kind}/\` on ${coded(specimen.platforms)}`,
-        specimen === null ? '—' : coded(specimen.gestures),
+        specimen === null ? 'none' : coded(specimen.gestures),
     ];
 }
 

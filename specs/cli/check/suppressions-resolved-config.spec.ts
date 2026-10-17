@@ -12,7 +12,7 @@ const caseOf = (config: string, name: string) =>
         .fixture(directory(`./__fixtures__/suppressions-resolved-config/${name}/`));
 
 const REWRITTEN =
-    "spells an eslint directive; this toolchain runs oxlint — 'typescript fix' rewrites it";
+    "spells an eslint directive; this toolchain runs oxlint, and 'typescript fix' rewrites it";
 
 describe('suppressions-resolved-config', () => {
     test('rewrites an eslint directive on a JS plugin rule, allow entry or not', async () => {
@@ -34,7 +34,7 @@ describe('suppressions-resolved-config', () => {
 
         // Then - only the core rule's directive is left to its author, and the plugin rule's is rewritten
         expect(result.stdout.text).toContain(
-            'index.ts:1:1: error suppressions(spelled-for-this-toolchain): line 1 spells an eslint directive naming no-console, which this project does not run — name an oxlint rule',
+            'index.ts:1:1: error suppressions(spelled-for-this-toolchain): line 1 spells an eslint directive naming no-console, which this project does not run; name an oxlint rule',
         );
         expect(result.stdout.text).toContain(
             `index.ts:3:1: error suppressions(spelled-for-this-toolchain): line 3 ${REWRITTEN}`,
@@ -61,7 +61,7 @@ describe('suppressions-resolved-config', () => {
 
         // Then - it is left to its author, since no-var is not run there
         expect(result.stdout.text).toContain(
-            'index.ts:1:1: error suppressions(spelled-for-this-toolchain): line 1 spells an eslint directive naming no-var, which this project does not run — name an oxlint rule',
+            'index.ts:1:1: error suppressions(spelled-for-this-toolchain): line 1 spells an eslint directive naming no-var, which this project does not run; name an oxlint rule',
         );
         expect(result.exitCode).toBe(1);
     });

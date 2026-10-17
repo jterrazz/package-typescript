@@ -61,7 +61,7 @@ async function chunksOrFinding(
         return {
             chunks: null,
             finding: {
-                message: `found: the build failed — ${reason} · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass — \`typescript build\` names what failed · read: @jterrazz/typescript's docs/reference/quality-checks.md#the-build-guard`,
+                message: `found: the build failed: ${reason} · why: the build guard reads what the build compiles, and a build that fails leaves nothing to judge · fix: make the build pass; \`typescript build\` names what failed · read: @jterrazz/typescript's docs/reference/quality-checks.md#the-build-guard`,
                 path: manifestPathOf(root),
                 rule: 'publish/build-succeeds',
             },
@@ -73,7 +73,7 @@ const NOTHING_TO_JUDGE = {
     absent: (): string =>
         'no @jterrazz/test resolves from this package, and what test material is is its to say',
     unloadable: ({ error }: { error: string }): string =>
-        `the @jterrazz/test this package resolves gives no reader of test material — ${error}`,
+        `the @jterrazz/test this package resolves gives no reader of test material: ${error}`,
 };
 
 function exportFindings(
@@ -91,7 +91,7 @@ function exportFindings(
             });
         } else if (!isPacked(manifest.files ?? [], target)) {
             findings.push({
-                message: `${target} is outside "files" — it resolves here and 404s in a consumer`,
+                message: `${target} is outside "files": it resolves here and 404s in a consumer`,
                 path: manifestPathOf(context.root),
                 rule: 'publish/export-covered-by-files',
             });
@@ -119,7 +119,7 @@ async function buildFindings(
     const lines =
         reader === null
             ? [
-                  `publish/no-test-code-in-production: nothing to judge${member === '' ? '' : ` in ${member}`} — ${why}`,
+                  `publish/no-test-code-in-production: nothing to judge${member === '' ? '' : ` in ${member}`}: ${why}`,
               ]
             : [];
     const built = await chunksOrFinding(root, build);

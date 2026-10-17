@@ -22,13 +22,13 @@ export function optOutsOf(
         if (typeof reason !== 'string' || reason.trim() === '') {
             return {
                 optOuts: [],
-                problem: `opts out of \`${law}\` with no reason — say why the repository sets the law aside`,
+                problem: `opts out of \`${law}\` with no reason; say why the repository sets the law aside`,
             };
         }
         if (!laws.has(law)) {
             return {
                 optOuts: [],
-                problem: `opts out of \`${law}\`, which no preset declares — name a law as \`<preset>/<name>\``,
+                problem: `opts out of \`${law}\`, which no preset declares; name a law as \`<preset>/<name>\``,
             };
         }
         optOuts.push({ law, reason });

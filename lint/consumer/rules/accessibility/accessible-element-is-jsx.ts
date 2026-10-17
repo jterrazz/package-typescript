@@ -26,7 +26,7 @@ export const ACCESSIBLE_ELEMENT_IS_JSX_NAME = 'accessible-element-is-jsx';
 const ACCESSIBLE_PROP = /^(?:role|tabIndex|aria-[a-z]+)$/u;
 
 const WHY_FIX = {
-    fix: 'write the element in JSX — one branch per tag when it is polymorphic — so jsx-a11y reads its props, and state any exception as a reasoned `oxlint-disable-next-line` the Suppressions pass counts',
+    fix: 'write the element in JSX, one branch per tag when it is polymorphic, so jsx-a11y reads its props, and state any exception as a reasoned `oxlint-disable-next-line` the Suppressions pass counts',
     why: 'jsx-a11y reads the props of a JSX element and never the object handed to `createElement`, so a role, a tab stop or an aria attribute set there escapes every accessibility rule, and an exception to them hides from the Suppressions pass and the drift report',
 };
 

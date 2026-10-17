@@ -29,10 +29,10 @@ function reasonProblem(reason: unknown): string | undefined {
 
 function decisionProblems(decision: unknown): string[] {
     if (!isRecord(decision)) {
-        return ['is not a decision — use on(), typeAware() or off()'];
+        return ['is not a decision: use on(), typeAware() or off()'];
     }
     if (decision.level !== 'error' && decision.level !== 'off') {
-        return [`is "${String(decision.level)}" — a rule is error or off`];
+        return [`is "${String(decision.level)}": a rule is error or off`];
     }
     const unexplained =
         decision.fixer !== undefined &&

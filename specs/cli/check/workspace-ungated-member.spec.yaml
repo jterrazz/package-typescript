@@ -42,7 +42,7 @@ runs:
 
            DRIFT  Deviations from the profile
 
-            declared                              nothing — a monorepo, each member its own
+            declared                              nothing: a monorepo, each member its own
             exceptions                            0
             rules off vs profile                  none
             suppressions                          0
@@ -52,4 +52,4 @@ runs:
 
            END  Finalizing quality checks
 
-          ✗ Some checks failed — first Knip (unused code): Unused files (1)
+          ✗ Some checks failed, first Knip (unused code): Unused files (1)

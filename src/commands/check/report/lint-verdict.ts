@@ -40,8 +40,8 @@ function configRefusals(check: Check, printed: string): string[] {
         ...(printed.includes(UNPARSED)
             ? [
                   `oxlint-config-unparsed  ${own ?? ''}  ${refusal({
-                      fix: 'repair what oxlint names above — usually a `jsPlugins` entry naming a module that is not there',
-                      found: 'oxlint refused this config and linted nothing — its own report is above',
+                      fix: 'repair what oxlint names above, usually a `jsPlugins` entry naming a module that is not there',
+                      found: 'oxlint refused this config and linted nothing; its own report is above',
                       read: 'docs/reference/quality-checks.md#the-two-refusals-that-are-not-diagnostics',
                       why: 'a run over a config oxlint could not parse enforces no rule, and would read as green',
                   })}\n`,
@@ -67,8 +67,8 @@ function ratchetLessons(printed: string, vanished: readonly string[]): string[] 
         ...(printed.includes(NEW_VIOLATIONS)
             ? [
                   `${refusal({
-                      fix: "fix it, or run 'typescript baseline' to record where the project stands — never a bare `oxlint --suppress-all`, which lints with another config",
-                      found: 'a diagnostic .jterrazz/oxlint-suppressions.json does not hold — each one is listed above',
+                      fix: "fix it, or run 'typescript baseline' to record where the project stands, never a bare `oxlint --suppress-all`, which lints with another config",
+                      found: 'a diagnostic .jterrazz/oxlint-suppressions.json does not hold; each one is listed above',
                       read: 'docs/reference/quality-checks.md#the-ratchet',
                       why: 'the file holds the debt the project recorded, file by file, and a diagnostic beyond it is a regression',
                   })}\n`,
@@ -78,7 +78,7 @@ function ratchetLessons(printed: string, vanished: readonly string[]): string[] 
             ? [
                   `${refusal({
                       fix: "set the rule to `error` in the config that arms it, then fix the diagnostic or run 'typescript baseline' to record it",
-                      found: 'a warn-severity diagnostic — oxlint lists it above',
+                      found: 'a warn-severity diagnostic, which oxlint lists above',
                       read: 'docs/reference/quality-checks.md#a-warning-is-a-diagnostic',
                       why: '.jterrazz/oxlint-suppressions.json holds errors alone, so no baseline can hold a warning down and it fails the pass on every run',
                   })}\n`,

@@ -28,12 +28,12 @@ describe('committed-artefact', () => {
              RUN  Gitignore (artefacts)
 
             Artefacts must never be committed:
-              ✗ tsconfig.tsbuildinfo is tracked — git rm --cached tsconfig.tsbuildinfo
+              ✗ tsconfig.tsbuildinfo is tracked: git rm --cached tsconfig.tsbuildinfo
             ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Gitignore (artefacts): Artefacts must never be committed:
+            ✗ Some checks failed, first Gitignore (artefacts): Artefacts must never be committed:
         `);
     });
 
@@ -58,12 +58,12 @@ describe('committed-artefact', () => {
              RUN  Gitignore (artefacts)
 
             Artefacts must never be committed:
-              ✗ .turbo/turbo-build.log is tracked — git rm --cached .turbo/turbo-build.log
+              ✗ .turbo/turbo-build.log is tracked: git rm --cached .turbo/turbo-build.log
             ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Gitignore (artefacts): Artefacts must never be committed:
+            ✗ Some checks failed, first Gitignore (artefacts): Artefacts must never be committed:
         `);
     });
 });

@@ -125,14 +125,14 @@ export function findingsOf(files: readonly string[], universal: Universal): Find
             findings.push(
                 namesFinding('names/no-grab-bag-name', path, {
                     fix: 'name it for what its files share (`_taxonomy/`, never `_shared/`), or move a lone file beside the code that uses it',
-                    found: `\`${name}\` names no subject — its \`_\` already says the row shares it, and the word says it again`,
+                    found: `\`${name}\` names no subject: its \`_\` already says the row shares it, and the word says it again`,
                 }),
             );
         } else if (universal.grabBag.has(unmarked(name))) {
             findings.push(
                 namesFinding('names/no-grab-bag-name', path, {
                     fix: 'name it for the subject it holds, or move what it holds beside the code that uses it',
-                    found: `\`${name}\` names no subject — it holds whatever nobody placed`,
+                    found: `\`${name}\` names no subject: it holds whatever nobody placed`,
                 }),
             );
         } else if (

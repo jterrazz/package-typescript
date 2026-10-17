@@ -130,7 +130,7 @@ function refusedRange(range: string, where: string, recorded: Recorded): number 
     recorded.reason = `refused before any run: ${found}`;
     print(
         `${RED}${refusal({
-            fix: `name ${where}, by its path from the project's root and its lines as from-to — src/a.ts:10-20 — or the whole file by its path`,
+            fix: `name ${where}, by its path from the project's root and its lines as from-to (src/a.ts:10-20), or the whole file by its path`,
             found,
             read: 'docs/reference/quality-checks.md#mutation',
             why: 'a range that reaches no source narrows both runs to nothing, and the run would pass having measured nothing',
@@ -172,7 +172,7 @@ function refusedSince(named: string, recorded: Recorded): number {
     recorded.reason = `refused before any run: ${found}`;
     print(
         `${RED}${refusal({
-            fix: 'name a commit this clone holds — fetch it — or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the change not yet committed, or, on a clean tree, the branch since its merge-base with the default branch',
+            fix: 'name a commit this clone holds (fetch it), or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the change not yet committed, or, on a clean tree, the branch since its merge-base with the default branch',
             found,
             read: 'docs/reference/quality-checks.md#mutation',
             why: 'the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing',
@@ -242,7 +242,7 @@ function refusedJobs(named: string, recorded: Recorded): number {
     recorded.reason = `refused before any run: ${found}`;
     print(
         `${RED}${refusal({
-            fix: "set it to a positive integer — TYPESCRIPT_JOBS=2 — or leave it unset to take this gate's share of the cores",
+            fix: "set it to a positive integer (TYPESCRIPT_JOBS=2), or leave it unset to take this gate's share of the cores",
             found,
             read: 'docs/reference/quality-checks.md#how-many-test-runners',
             why: 'a count Stryker cannot run would stop the run, or run another one than the one asked for',

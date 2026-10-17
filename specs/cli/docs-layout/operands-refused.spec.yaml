@@ -20,7 +20,7 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          found: `typescript build` was given dist, an argument it does not read · why: an argument the command does not read would be ignored, and the run would not be the one asked for · fix: drop it — `typescript build` takes no argument · read: docs/reference/commands.md#flags-and-help
+          found: `typescript build` was given dist, an argument it does not read · why: an argument the command does not read would be ignored, and the run would not be the one asked for · fix: drop it: `typescript build` takes no argument · read: docs/reference/commands.md#flags-and-help
 
           Usage: typescript build [--watch]
 

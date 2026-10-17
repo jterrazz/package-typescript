@@ -56,7 +56,7 @@ function auditRelease(
         report(
             'docs/release-guide-present-when-shipping',
             `docs/${RELEASE}`,
-            `${RELEASE} is missing — this repository ships ${reason}`,
+            `${RELEASE} is missing, and this repository ships ${reason}`,
         );
     }
 }
@@ -70,7 +70,7 @@ export function auditPages(
         report(
             'docs/section-is-flat',
             page.path,
-            `${page.path} is a folder inside ${page.section} — a section holds pages, and a sub-folder is a section hiding inside another`,
+            `${page.path} is a folder inside ${page.section}: a section holds pages, and a sub-folder is a section hiding inside another`,
         );
     }
 
@@ -81,7 +81,7 @@ export function auditPages(
             report(
                 'docs/page-named-in-kebab-case',
                 page.path,
-                `${page.path} is not kebab-case.md — lowercase words, single hyphens, no number: the map gives the order`,
+                `${page.path} is not kebab-case.md (lowercase words, single hyphens, no number, since the map gives the order)`,
             );
         }
     }
@@ -91,7 +91,7 @@ export function auditPages(
             report(
                 'docs/required-pages-present',
                 `docs/${required}`,
-                `${required} is missing — every manual holds concepts/architecture.md, guides/develop.md and guides/test.md`,
+                `${required} is missing: every manual holds concepts/architecture.md, guides/develop.md and guides/test.md`,
             );
         }
     }
@@ -107,7 +107,7 @@ function auditPageWords(report: Report, pages: readonly Page[]): void {
             report(
                 'docs/page-names-a-subject',
                 page.path,
-                `${page.path} names a journal, not a subject — ${word}; the record is an ADR, the history is git's`,
+                `${page.path} names a journal, not a subject (${word}); the record is an ADR, the history is git's`,
             );
         }
     }

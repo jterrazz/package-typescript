@@ -22,7 +22,7 @@ describe('drift.counts', () => {
         // Given - a project with no declaration, no exception, no rule off and nothing held
         // Then - every row says so
         expect(driftLines(NOTHING)).toStrictEqual([
-            '  declared                              nothing — node, the default',
+            '  declared                              nothing: node, the default',
             '  exceptions                            0',
             '  rules off vs profile                  none',
             '  suppressions                          0',
@@ -88,7 +88,7 @@ describe('drift.counts', () => {
 
         // Then - the monorepo's declaration, the member's mutants alone, and the rows aligned on the longest label
         expect(driftLines(counts)).toStrictEqual([
-            '  declared                                       nothing — a monorepo, each member its own',
+            '  declared                                       nothing: a monorepo, each member its own',
             '  exceptions                                     0',
             '  rules off vs profile                           none',
             '  suppressions                                   0',

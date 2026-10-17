@@ -17,7 +17,7 @@ export async function synchronousLoad(
         ? []
         : [
               configFinding('config/settings-load-synchronously', path, {
-                  fix: `drop what keeps ${path} from loading synchronously — a top-level \`await\` most often: \`ownPresets\` and every preset are synchronous`,
+                  fix: `drop what keeps ${path} from loading synchronously, a top-level \`await\` most often: \`ownPresets\` and every preset are synchronous`,
                   found: `${path} does not load synchronously, as the oxlint rules load it, so they would judge on its defaults: ${problem}`,
               }),
           ];

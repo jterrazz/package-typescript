@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest';
 import { lint } from '../names-lint.specification.js';
 
 describe('entries', () => {
-    test('holds a published build to its entry grammar — an entry per subpath named for it, a bin named as one, no other index, no code published from outside the build', async () => {
+    test('holds a published build to its entry grammar (an entry per subpath named for it, a bin named as one, no other index, no code published from outside the build', async () => {
         // Given - a package whose build names its entries otherwise, keeps a specification index and a bin nothing publishes, publishes a subpath it never builds, and a bin and a module from outside its build
         const result = await lint.fixture(directory('./__fixtures__/entries/')).run();
 

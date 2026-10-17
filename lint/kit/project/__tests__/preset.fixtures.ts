@@ -30,22 +30,22 @@ export const REFUSED: [string, Record<string, unknown>, string][] = [
     [
         'a list written away as null',
         { typescript: { spine: null } },
-        'writes a single value at `typescript.spine`, where its presets set a list — a setting adds to a default, never replaces its shape',
+        'writes a single value at `typescript.spine`, where its presets set a list: a setting adds to a default, never replaces its shape',
     ],
     [
         'a list written away through the listed base',
         { presets: [{ ...BASE, settings: { spine: 'src' } }] },
-        'writes a single value at `typescript.spine`, where its presets set a list — a setting adds to a default, never replaces its shape',
+        'writes a single value at `typescript.spine`, where its presets set a list: a setting adds to a default, never replaces its shape',
     ],
     [
         'presets listed inside a section',
         { typescript: { presets: [] } },
-        'holds a `presets` inside its `typescript` section, which no reader reads — list every preset at the top level, `presets: [...]`',
+        'holds a `presets` inside its `typescript` section, which no reader reads; list every preset at the top level, `presets: [...]`',
     ],
     [
         'a law setting extended by the repository',
         { typescript: { spine: ['scripts'] } },
-        'writes `typescript.spine`, a law the typescript preset sets — keep a root beside the spine under `typescript.roots` with its reason, or set a law aside under `optOuts`',
+        'writes `typescript.spine`, a law the typescript preset sets; keep a root beside the spine under `typescript.roots` with its reason, or set a law aside under `optOuts`',
     ],
     [
         'a law setting extended through a nested listing of the base',
@@ -58,32 +58,32 @@ export const REFUSED: [string, Record<string, unknown>, string][] = [
                 },
             ],
         },
-        'writes `typescript.spine`, a law the typescript preset sets — keep a root beside the spine under `typescript.roots` with its reason, or set a law aside under `optOuts`',
+        'writes `typescript.spine`, a law the typescript preset sets; keep a root beside the spine under `typescript.roots` with its reason, or set a law aside under `optOuts`',
     ],
     [
         'an entry that is no object',
         { presets: ['web'] },
-        'holds a `presets` entry that is not a preset — an object carrying its `name` and its `package`',
+        'holds a `presets` entry that is not a preset, an object carrying its `name` and its `package`',
     ],
     [
         'an entry with an empty name',
         { presets: [{ name: '', package: '@acme/web' }] },
-        'holds a `presets` entry that is not a preset — an object carrying its `name` and its `package`',
+        'holds a `presets` entry that is not a preset, an object carrying its `name` and its `package`',
     ],
     [
         'an entry whose name is no string',
         { presets: [{ name: 1, package: '@acme/web' }] },
-        'holds a `presets` entry that is not a preset — an object carrying its `name` and its `package`',
+        'holds a `presets` entry that is not a preset, an object carrying its `name` and its `package`',
     ],
     [
         'an entry with no package',
         { presets: [{ name: 'web' }] },
-        'holds a `presets` entry that is not a preset — an object carrying its `name` and its `package`',
+        'holds a `presets` entry that is not a preset, an object carrying its `name` and its `package`',
     ],
     [
         'an entry that is no preset, nested in one',
         { presets: [{ name: 'web', package: '@acme/web', presets: [{ name: 'core' }] }] },
-        'holds a `presets` entry that is not a preset — an object carrying its `name` and its `package`',
+        'holds a `presets` entry that is not a preset, an object carrying its `name` and its `package`',
     ],
     ['a presets field that is no list', { presets: 'web' }, 'holds a `presets` that is not a list'],
     [
@@ -101,7 +101,7 @@ export const REFUSED: [string, Record<string, unknown>, string][] = [
     [
         'a setting the preset does not read',
         { typescript: { generated: { 'src/cobra': 'pages written by a script' } } },
-        'writes `typescript.generated`, a setting the typescript preset does not read — it reads `architecture`, `names`, `roots`; a key a release removed is named in its adoption guide',
+        'writes `typescript.generated`, a setting the typescript preset does not read (it reads `architecture`, `names`, `roots`); a key a release removed is named in its adoption guide',
     ],
     [
         'a kind outside the vocabulary',

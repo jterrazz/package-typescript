@@ -3,7 +3,7 @@ import type { Preset } from './preset.js';
 import { mergeSettings } from './settings-merge.js';
 
 export const lawSettingRefused = (name: string, key: string): string =>
-    `writes \`${name}.${key}\`, a law the ${name} preset sets — keep a root beside the spine under \`${name}.roots\` with its reason, or set a law aside under \`optOuts\``;
+    `writes \`${name}.${key}\`, a law the ${name} preset sets; keep a root beside the spine under \`${name}.roots\` with its reason, or set a law aside under \`optOuts\``;
 
 export function writtenLawSetting(
     preset: Preset,
@@ -35,5 +35,5 @@ export function unknownSetting(
 
     return writable.length === 0 || key === undefined
         ? undefined
-        : `writes \`${name}.${key}\`, a setting the ${name} preset does not read — it reads ${writable.map((one) => `\`${one}\``).join(', ')}; a key a release removed is named in its adoption guide`;
+        : `writes \`${name}.${key}\`, a setting the ${name} preset does not read (it reads ${writable.map((one) => `\`${one}\``).join(', ')}); a key a release removed is named in its adoption guide`;
 }

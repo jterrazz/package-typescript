@@ -86,7 +86,7 @@ export const SURFACES = {
     },
     clean: {
         read: 'docs/start/getting-started.md#where-a-tools-output-goes',
-        says: "Remove .artifacts/ — dist/ stays, it is the build's product",
+        says: "Remove .artifacts/; dist/ stays, as the build's product",
     },
 } as const satisfies Readonly<Record<string, Surface>>;
 

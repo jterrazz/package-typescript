@@ -120,7 +120,7 @@ export type InvariantOwner = { bugOf: string; notOf: string; package: string };
 export function defineInvariant(owner: InvariantOwner): (broken: string) => Error {
     return (broken) =>
         new Error(
-            `${owner.package} broke one of its own invariants — a bug of ${owner.bugOf}, not of ${owner.notOf}: ${broken}`,
+            `${owner.package} broke one of its own invariants, a bug of ${owner.bugOf}, not of ${owner.notOf}: ${broken}`,
         );
 }
 

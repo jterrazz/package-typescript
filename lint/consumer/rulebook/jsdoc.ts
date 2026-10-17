@@ -2,7 +2,7 @@ import { allOn, fragment, off } from '../../kit/compiler/decision.js';
 
 // invariant: JSDoc is never required (TypeScript carries the types), but a block that is written must be well formed.
 const BY_TYPESCRIPT = {
-    by: 'TypeScript — the signature carries the type, and the types are the API',
+    by: 'TypeScript: the signature carries the type, and the types are the API',
     kind: 'covered',
 };
 
@@ -33,13 +33,13 @@ export default fragment({
         ),
 
         'jsdoc/require-param': off({
-            by: 'TypeScript — a parameter is documented by its type, and a description is optional prose',
+            by: 'TypeScript: a parameter is documented by its type, and a description is optional prose',
             kind: 'covered',
         }),
         'jsdoc/require-param-type': off(BY_TYPESCRIPT),
         'jsdoc/require-property-type': off(BY_TYPESCRIPT),
         'jsdoc/require-returns': off({
-            by: 'TypeScript — a return is documented by its type, and a description is optional prose',
+            by: 'TypeScript: a return is documented by its type, and a description is optional prose',
             kind: 'covered',
         }),
         'jsdoc/require-returns-type': off(BY_TYPESCRIPT),

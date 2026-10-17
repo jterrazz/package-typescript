@@ -23,12 +23,12 @@ describe('docs-layout', () => {
 
              RUN  Docs (layout)
 
-            docs/:1:1: error docs(manual-present): docs/ is missing — every repository carries its own manual, starting at docs/README.md
+            docs/:1:1: error docs(manual-present): docs/ is missing: every repository carries its own manual, starting at docs/README.md
             ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Docs (layout): docs/:1:1: error docs(manual-present): docs/ is missing — every repository carries its own manual, starting at docs/README.md
+            ✗ Some checks failed, first Docs (layout): docs/:1:1: error docs(manual-present): docs/ is missing: every repository carries its own manual, starting at docs/README.md
         `);
     });
 
@@ -49,12 +49,12 @@ describe('docs-layout', () => {
 
              RUN  Docs (layout)
 
-            docs/guides/release.md:1:1: error docs(release-guide-present-when-shipping): guides/release.md is missing — this repository ships a published package (it declares a library or a cli)
+            docs/guides/release.md:1:1: error docs(release-guide-present-when-shipping): guides/release.md is missing, and this repository ships a published package (it declares a library or a cli)
             ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
-            ✗ Some checks failed — first Docs (layout): docs/guides/release.md:1:1: error docs(release-guide-present-when-shipping): guides/release.md is missing — this repository ships a published package (it declares a library or a cli)
+            ✗ Some checks failed, first Docs (layout): docs/guides/release.md:1:1: error docs(release-guide-present-when-shipping): guides/release.md is missing, and this repository ships a published package (it declares a library or a cli)
         `);
     });
 

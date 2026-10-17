@@ -71,7 +71,7 @@ const CONSISTENT_TEST_IT = unsafeFix(
 );
 const PREFER_LOWERCASE_TITLE = unsafeFix(
     on(),
-    'lower-cases the first character blindly: `CLI …` becomes `cLI …`',
+    'lower-cases the first character blindly: `CLI ...` becomes `cLI ...`',
 );
 const PREFER_IMPORT_IN_MOCK = unsafeFix(
     on(),
@@ -79,7 +79,7 @@ const PREFER_IMPORT_IN_MOCK = unsafeFix(
 );
 const PREFER_STRICT_BOOLEAN_MATCHERS = unsafeFix(
     on(),
-    'rewrites `toBeTruthy()` into `toBe(true)` whatever the subject is — an element, a string — which is never `true`',
+    'rewrites `toBeTruthy()` into `toBe(true)` whatever the subject is (an element, a string), which is never `true`',
 );
 const PREFER_CALLED_WITH = unsafeFix(
     on(),
@@ -116,11 +116,11 @@ export default fragment({
                 'vitest/no-restricted-vi-methods': off(COVERED_BY_TESTING, '10.3.0'),
 
                 'vitest/no-conditional-in-test': off({
-                    by: "vitest/no-conditional-expect — the defect is an assertion that may not run, and that rule names it; this one also refuses a golden suite's TEST_UPDATE branch and every comparator",
+                    by: "vitest/no-conditional-expect: the defect is an assertion that may not run, and that rule names it; this one also refuses a golden suite's TEST_UPDATE branch and every comparator",
                     kind: 'covered',
                 }),
                 'vitest/no-hooks': off({
-                    by: 'vitest/prefer-hooks-in-order, vitest/prefer-hooks-on-top — both describe where a hook goes',
+                    by: 'vitest/prefer-hooks-in-order, vitest/prefer-hooks-on-top: both describe where a hook goes',
                     kind: 'exclusive',
                 }),
                 'vitest/no-importing-vitest-globals': off({
@@ -132,36 +132,36 @@ export default fragment({
                     kind: 'exclusive',
                 }),
                 'vitest/prefer-describe-function-title': off({
-                    by: 'vitest/valid-title — a describe of this estate names the behaviour it claims, not the function it calls',
+                    by: 'vitest/valid-title: a describe of this estate names the behaviour it claims, not the function it calls',
                     kind: 'exclusive',
                 }),
                 'vitest/prefer-expect-assertions': off({
-                    by: 'docs/reference/lint-presets.md — a spec states its assertions; counting them is bookkeeping the reader does not need',
+                    by: 'docs/reference/lint-presets.md: a spec states its assertions; counting them is bookkeeping the reader does not need',
                     kind: 'convention',
                 }),
                 'vitest/prefer-to-be-falsy': off({
-                    by: 'vitest/prefer-strict-boolean-matchers — one asks for the strict matcher, the other for the falsy one',
+                    by: 'vitest/prefer-strict-boolean-matchers: one asks for the strict matcher, the other for the falsy one',
                     kind: 'exclusive',
                 }),
                 'vitest/prefer-to-be-truthy': off({
-                    by: 'vitest/prefer-strict-boolean-matchers — one asks for the strict matcher, the other for the truthy one',
+                    by: 'vitest/prefer-strict-boolean-matchers: one asks for the strict matcher, the other for the truthy one',
                     kind: 'exclusive',
                 }),
                 'vitest/require-top-level-describe': off({
-                    by: 'vitest/consistent-test-filename — the file name is the subject, and a describe that repeats it adds a level without adding meaning',
+                    by: 'vitest/consistent-test-filename: the file name is the subject, and a describe that repeats it adds a level without adding meaning',
                     kind: 'covered',
                 }),
                 'vitest/require-hook': off({
-                    by: 'docs/reference/lint-presets.md — the Given narration of a spec is the test body, not a hook',
+                    by: 'docs/reference/lint-presets.md: the Given narration of a spec is the test body, not a hook',
                     kind: 'convention',
                 }),
                 'vitest/require-test-timeout': off({
-                    by: 'docs/reference/lint-presets.md — the vitest config owns the timeout, once, for every suite',
+                    by: 'docs/reference/lint-presets.md: the vitest config owns the timeout, once, for every suite',
                     kind: 'convention',
                 }),
 
                 'no-empty-function': off({
-                    by: 'docs/reference/lint-presets.md — a test double with no behaviour is an empty function',
+                    by: 'docs/reference/lint-presets.md: a test double with no behaviour is an empty function',
                     kind: 'convention',
                 }),
             },
@@ -171,7 +171,7 @@ export default fragment({
             files: ['**/specs/jterrazz.config.ts'],
             rules: {
                 'vitest/prefer-importing-vitest-globals': off({
-                    by: "jterrazz-os pilot, 2026-10-07 — its fix wrote `import { test } from 'vitest'` over the settings file's `test` preset import, and every reader of the file then judged on defaults",
+                    by: "jterrazz-os pilot, 2026-10-07: its fix wrote `import { test } from 'vitest'` over the settings file's `test` preset import, and every reader of the file then judged on defaults",
                     kind: 'evidence',
                 }),
             },
@@ -182,7 +182,7 @@ export default fragment({
             files: ['**/noop.adapter.ts', '**/noop-*.adapter.ts'],
             rules: {
                 'no-empty-function': off({
-                    by: "docs/reference/lint-presets.md — a no-op adapter is the null object a consumer's tests are handed: it answers its port by doing nothing",
+                    by: "docs/reference/lint-presets.md: a no-op adapter is the null object a consumer's tests are handed: it answers its port by doing nothing",
                     kind: 'convention',
                 }),
             },

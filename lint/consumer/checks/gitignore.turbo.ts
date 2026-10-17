@@ -52,7 +52,7 @@ export function turboJudged(turbo: null | TurboCache, fix: boolean, headed: bool
         : {
               lines: [
                   ...(headed ? [] : [MISPLACED]),
-                  `  ✗ turbo.json caches in ${turbo.found} — its home is ${TURBO_CACHE}/, set as its cacheDir`,
+                  `  ✗ turbo.json caches in ${turbo.found}; its home is ${TURBO_CACHE}/, set as its cacheDir`,
                   "Run 'typescript fix' to set it.",
               ],
               writes: [],
