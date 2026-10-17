@@ -1,7 +1,7 @@
 .PHONY: install build install-self lint fix test check check-links mutation
 
 # invariant: the stamp depends on the packed toolchain tarballs as well as the lockfile, so a package packed again under the same name is installed again, never run against yesterday's build.
-# invariant: an install replaces the dependencies a running gate reads, so every path that installs — `install`, and any target that depends on `node_modules/.install` — asks the toolchain's `gate-lock` first, which refuses while another gate holds `.artifacts/gate.lock`; a checkout with no install yet holds no gate.
+# invariant: an install replaces the dependencies a running gate reads, so every path that installs (`install`, and any target that depends on `node_modules/.install`) asks the toolchain's `gate-lock` first, which refuses while another gate holds `.artifacts/gate.lock`; a checkout with no install yet holds no gate.
 node_modules/.install: package-lock.json $(wildcard .artifacts/packages/*.tgz)
 	@if [ -d node_modules ] && [ -f dist/typescript.js ]; then node dist/typescript.js gate-lock; fi
 	npm ci
@@ -36,6 +36,6 @@ check-links:
 	@command -v lychee > /dev/null || { echo "check-links: lychee is not installed on this machine — brew install lychee"; exit 1; }
 	lychee --no-progress README.md docs skills
 
-# value: incremental — only the mutants whose source, covering tests or their ground changed since the report left in .artifacts/stryker/ run again; CI, or `MUTATION_ARGS=--cold`, starts both runs from no report.
+# value: incremental: only the mutants whose source, covering tests or their ground changed since the report left in .artifacts/stryker/ run again; CI, or `MUTATION_ARGS=--cold`, starts both runs from no report.
 mutation: build
 	node dist/typescript.js mutation $(MUTATION_ARGS)
