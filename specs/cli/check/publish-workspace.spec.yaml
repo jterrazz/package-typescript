@@ -9,7 +9,7 @@ runs:
 
            RUN  Publish (packaging)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality checks
 

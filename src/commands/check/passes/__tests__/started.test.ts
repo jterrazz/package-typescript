@@ -1,9 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
+import { launched } from '../launched.js';
 import type { Launched } from '../launched.js';
 import { writersDone, writersOf } from '../started.js';
-
-const launched = (name: string, status: Promise<number>): Launched => ({ log: name, status });
 
 const pending = (): { release: () => void; writer: Launched } => {
     const settled = Promise.withResolvers<number>();

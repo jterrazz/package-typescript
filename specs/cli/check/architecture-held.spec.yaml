@@ -23,7 +23,7 @@ runs:
 
            RUN  Architecture (layer map)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality checks
 

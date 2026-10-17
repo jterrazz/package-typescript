@@ -9,7 +9,7 @@ runs:
 
            RUN  Architecture (layer map)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            DRIFT  Deviations from the profile
 

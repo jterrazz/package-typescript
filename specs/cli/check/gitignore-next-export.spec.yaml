@@ -9,7 +9,7 @@ runs:
 
            RUN  Gitignore (artefacts)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality checks
 

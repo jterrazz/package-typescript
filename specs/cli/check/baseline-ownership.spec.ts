@@ -147,7 +147,7 @@ describe('baseline-ownership', () => {
              RUN  Oxlint Check
 
             {{any}}
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -185,7 +185,7 @@ describe('baseline-ownership', () => {
              RUN  Test Conventions (stub)
 
             [error] specs/x.spec.ts:1: a finding the stub always reports (no-unused-ground)
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -211,16 +211,16 @@ describe('baseline-ownership', () => {
 
              RUN  Oxlint Check
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Oxfmt Check
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Test Conventions (stub)
 
             conventions checker: 1 error(s) found
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -242,11 +242,11 @@ describe('baseline-ownership', () => {
              RUN  Test Conventions (stub)
 
             .jterrazz/baseline.json › test: 3 held across 2 rules
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Suppressions (directives)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              END  Finalizing quality checks
 
@@ -268,11 +268,11 @@ describe('baseline-ownership', () => {
              RUN  Test Conventions (stub)
 
             .jterrazz/baseline.json › test: nothing held
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Suppressions (directives)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              END  Finalizing quality checks
 
@@ -293,11 +293,11 @@ describe('baseline-ownership', () => {
 
              RUN  Test Conventions (stub)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Suppressions (directives)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              END  Finalizing quality checks
 
@@ -327,7 +327,7 @@ describe('baseline-ownership', () => {
             {{any}}
             baseline-moved-to-oxlint  .jterrazz/baseline.json › typescript  found: \`eslint/no-debugger\` is an oxlint rule, and the section holds its count · why: oxlint holds its own rules in .jterrazz/oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain · fix: run 'typescript baseline', which records the lint debt in .jterrazz/oxlint-suppressions.json and drops the entry · read: docs/reference/quality-checks.md#the-ratchet
             baseline-moved-to-oxlint  .jterrazz/baseline.json › typescript  found: \`jterrazz/flags-every-file\` is an oxlint rule, and the section holds its count · why: oxlint holds its own rules in .jterrazz/oxlint-suppressions.json, file by file, so the section holds only the passes of this toolchain · fix: run 'typescript baseline', which records the lint debt in .jterrazz/oxlint-suppressions.json and drops the entry · read: docs/reference/quality-checks.md#the-ratchet
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 

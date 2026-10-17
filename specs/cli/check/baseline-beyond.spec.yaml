@@ -8,37 +8,37 @@ runs:
 
            RUN  TypeScript Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxlint Check
           {{any}}
           found: a diagnostic .jterrazz/oxlint-suppressions.json does not hold — each one is listed above · why: the file holds the debt the project recorded, file by file, and a diagnostic beyond it is a regression · fix: fix it, or run 'typescript baseline' to record where the project stands — never a bare `oxlint --suppress-all`, which lints with another config · read: docs/reference/quality-checks.md#the-ratchet
           found: .jterrazz/oxlint-suppressions.json holds more than the project has left · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/reference/quality-checks.md#the-ratchet
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Oxfmt Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Knip (unused code)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Suppressions (directives)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Secrets (credentials)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            DRIFT  Deviations from the profile
 

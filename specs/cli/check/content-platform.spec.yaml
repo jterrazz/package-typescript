@@ -9,23 +9,23 @@ runs:
            RUN  Config (one file)
 
           jterrazz.config.ts:1:1: error config(project-declared): found: jterrazz.config.ts declares a `content` repository on the platform `node`, which runs no code and so declares none · why: A project — a single-project repository, or each member of a monorepo — declares what it is once, its kind and its platform, in jterrazz.config.ts. · fix: write `export default defineConfig({ kind, platform })` from `@jterrazz/typescript/config` in jterrazz.config.ts — the kind one of `library`, `api`, `cli`, `website`, `mobile`, `content`, the platform one of `node`, `bun`, `react`, `next`, `astro`, `expo`, `browser`; a monorepo's own suite at `specs/` declares its platform alone, one of `node`, `bun`, and the root of a monorepo — a package.json listing `workspaces` — declares no kind; `content`, a repository with no code, declares no platform · read: docs/reference/quality-checks.md#the-config-one-file-pass
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Gitignore (artefacts)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Secrets (credentials)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality checks
 

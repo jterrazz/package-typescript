@@ -4,7 +4,7 @@
 
 ## Reading a run
 
-Every pass that ran prints the same block: a `RUN` header carrying its name, whatever it has to say, and one verdict line. A pass that did not apply, such as Astro in a project without Astro, prints nothing at all, because it answered no question.
+Every pass that ran prints the same block: a `RUN` header carrying its name, whatever it has to say, and one verdict line ending on the seconds the pass took from its launch to its verdict — `✓ Passed (2.1s)`. The passes run in parallel, so the seconds of two passes add up to more than the run. A pass that did not apply, such as Astro in a project without Astro, prints nothing at all, because it answered no question.
 
 A failing pass prints its whole log. A passing one stays silent, unless it wrote something (`fix` changed a file the operator owns) or a ratchet held it. A tool's success chatter never reaches the stream, so a green run is the same on every platform.
 

@@ -21,7 +21,7 @@ describe('gitignore-workspace', () => {
 
              RUN  Gitignore (artefacts)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              END  Finalizing quality checks
 
@@ -46,7 +46,7 @@ describe('gitignore-workspace', () => {
             Artefacts belong under .artifacts/<tool>/ at the project root:
               ✗ ../../.gitignore does not ignore .artifacts/ — add it
             Run 'typescript fix' to rewrite .gitignore.
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -71,7 +71,7 @@ describe('gitignore-workspace', () => {
             Artefacts belong under .artifacts/<tool>/ at the project root:
               ✗ .gitignore names coverage/ — its home is .artifacts/vitest/coverage/
             Run 'typescript fix' to rewrite .gitignore.
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 

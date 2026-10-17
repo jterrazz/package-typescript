@@ -9,7 +9,7 @@ runs:
 
            RUN  Oxfmt Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality checks
 

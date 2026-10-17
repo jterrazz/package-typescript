@@ -19,7 +19,7 @@ describe('format-sweep', () => {
 
              RUN  Oxfmt Check
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              END  Finalizing quality checks
 
@@ -49,7 +49,7 @@ describe('format-sweep', () => {
 
             Format issues found in above 2 files. Run without \`--check\` to fix.
             Finished in {{duration}} on 3 files using {{int}} threads.
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 

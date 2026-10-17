@@ -12,13 +12,13 @@ runs:
            RUN  Architecture (layer map)
 
           found: jterrazz.config.ts holds a `sibling` section that is not an object · why: every law a project is held to is resolved from that file, and a file that cannot be resolved judges nothing · fix: correct jterrazz.config.ts until it loads and each preset and section has its declared shape, then run again · read: docs/reference/configuration.md#the-merge-order
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Names (tree)
 
           jterrazz.config.ts:1:1: error names(jterrazz-config-loads): found: `jterrazz.config.ts` holds a `sibling` section that is not an object · why: The settings file jterrazz.config.ts loads, and its typescript section has the declared shape. · fix: correct jterrazz.config.ts until it loads and each preset and section has its declared shape, then run again · read: docs/reference/configuration.md#the-merge-order
           found: every finding above, and .jterrazz/baseline.json records no `names/` entry in its `typescript` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            END  Finalizing quality checks
 

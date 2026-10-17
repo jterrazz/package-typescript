@@ -10,47 +10,47 @@ runs:
 
           {{any}}
 
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Oxlint Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxfmt Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Knip (unused code)
 
           ERROR: Unable to find package.json
 
           Run `knip --help` or visit https://knip.dev for help
-          ✗ Failed with exit code 2
+          ✗ Failed with exit code 2 ({{duration}})
 
            RUN  Suppressions (directives)
 
           found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Comments (styles, scripts, YAML)
 
           found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Markdown (prose)
 
           found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Names (tree)
 
           found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Secrets (credentials)
 
           found: nothing to read under {{path}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            DRIFT  Deviations from the profile
 

@@ -29,7 +29,7 @@ describe('committed-artefact', () => {
 
             Artefacts must never be committed:
               ✗ tsconfig.tsbuildinfo is tracked — git rm --cached tsconfig.tsbuildinfo
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -59,7 +59,7 @@ describe('committed-artefact', () => {
 
             Artefacts must never be committed:
               ✗ .turbo/turbo-build.log is tracked — git rm --cached .turbo/turbo-build.log
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 

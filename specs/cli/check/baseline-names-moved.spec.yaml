@@ -8,27 +8,27 @@ runs:
 
            RUN  TypeScript Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxlint Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxfmt Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Knip (unused code)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Suppressions (directives)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Names (tree)
 
@@ -36,11 +36,11 @@ runs:
           src/types.ts:1:1: error names(no-language-construct-name): found: `types.ts` names a construct of the language · why: A directory or file is named for its subject, never for a construct of the language. · fix: name it for the subject it holds · read: docs/reference/quality-checks.md#the-names-tree-pass
           baseline-ratchet  .jterrazz/baseline.json › typescript  found: `names/no-abbreviated-word` has 1 finding(s) and no entry records them · why: the section holds the debt the project recorded, and a finding no entry holds is new debt · fix: fix the findings, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
           baseline-ratchet  .jterrazz/baseline.json › typescript  found: `names/no-grab-bag-name` is at zero, and its entry is still recorded · why: an entry with nothing left to hold would let the debt grow back to its old count unseen · fix: run 'typescript fix', which deletes the entry · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Secrets (credentials)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            DRIFT  Deviations from the profile
 

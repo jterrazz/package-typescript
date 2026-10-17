@@ -9,7 +9,7 @@ runs:
 
            RUN  Knip (unused code)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality checks
 

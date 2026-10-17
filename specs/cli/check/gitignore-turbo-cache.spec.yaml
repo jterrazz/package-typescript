@@ -12,7 +12,7 @@ runs:
           Artefacts belong under .artifacts/<tool>/ at the project root:
             ✗ turbo.json caches in .turbo/cache, its default — its home is .artifacts/turbo/, set as its cacheDir
           Run 'typescript fix' to set it.
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            END  Finalizing quality checks
 
@@ -25,7 +25,7 @@ runs:
            RUN  Gitignore (artefacts)
 
           turbo.json rewritten: cacheDir .artifacts/turbo
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality fixes
 
@@ -37,7 +37,7 @@ runs:
 
            RUN  Gitignore (artefacts)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality checks
 

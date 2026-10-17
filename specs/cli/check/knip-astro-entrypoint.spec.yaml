@@ -13,7 +13,7 @@ runs:
           src/forgotten.ts
           Unused dependencies (1)
           astro  package.json:7:10
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            END  Finalizing quality checks
 

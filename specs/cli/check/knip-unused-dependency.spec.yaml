@@ -10,37 +10,37 @@ runs:
 
           {{any}}
 
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Oxlint Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxfmt Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Knip (unused code)
 
           Unused dependencies (1)
           totally-unused-pkg  package.json:5:10
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Suppressions (directives)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Secrets (credentials)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            DRIFT  Deviations from the profile
 

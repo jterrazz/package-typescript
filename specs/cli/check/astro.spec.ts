@@ -29,7 +29,7 @@ describe('astro', () => {
             Checking formatting...
             [warn] src/page.astro
             [warn] Code style issues found in the above file. Run Prettier with --write to fix.
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -58,7 +58,7 @@ describe('astro', () => {
             Checking formatting...
             [warn] src/page.astro
             [warn] Code style issues found in the above file. Run Prettier with --write to fix.
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -95,12 +95,12 @@ describe('astro', () => {
              RUN  TypeScript Check
 
             astro-sync-failed
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Astro (check + format)
 
             astro-sync-failed
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 

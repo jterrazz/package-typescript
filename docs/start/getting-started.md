@@ -156,10 +156,10 @@ A repository that ships — a `package.json` not marked `"private": true`, such 
 
 ```text
  RUN  TypeScript Check
-✓ Passed
+✓ Passed (2.1s)
  …
  RUN  Secrets (credentials)
-✓ Passed
+✓ Passed (0.4s)
 
  DRIFT  Deviations from the profile
   declared                              api on node

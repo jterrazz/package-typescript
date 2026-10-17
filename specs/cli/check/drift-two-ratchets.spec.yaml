@@ -8,37 +8,37 @@ runs:
 
            RUN  TypeScript Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxlint Check
 
           : error: There are suppressions that do not occur anymore. help: Run `oxlint --prune-suppressions` to remove unused suppressions.
           found: .jterrazz/oxlint-suppressions.json holds more than the project has left · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/reference/quality-checks.md#the-ratchet
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Oxfmt Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Knip (unused code)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Suppressions (directives)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Secrets (credentials)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            DRIFT  Deviations from the profile
 

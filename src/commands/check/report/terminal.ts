@@ -13,3 +13,6 @@ export function badge(label: string): string {
 export function print(text: string | Uint8Array): void {
     stdout.write(text);
 }
+
+/** A duration as a run prints it, to the tenth of a second. */
+export const secondsOf = (seconds: number): string => `${seconds.toFixed(1)}s`;

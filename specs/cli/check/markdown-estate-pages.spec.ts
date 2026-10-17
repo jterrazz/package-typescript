@@ -22,7 +22,7 @@ describe('markdown-estate-pages', () => {
              RUN  Markdown (prose)
 
             README.md:3:71: error markdown(link-resolves): Relative link 'notes/plan.md' does not exist
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 

@@ -9,11 +9,11 @@ runs:
 
            RUN  TypeScript Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxlint Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality checks
 

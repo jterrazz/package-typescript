@@ -27,7 +27,7 @@ describe('astro', () => {
 
             astro-check-ran
             src/page.astro {{duration}}
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              END  Finalizing quality fixes
 
@@ -47,7 +47,7 @@ describe('astro', () => {
 
              RUN  Astro (check + format)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              END  Finalizing quality checks
 

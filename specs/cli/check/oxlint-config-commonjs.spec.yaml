@@ -10,7 +10,7 @@ runs:
            RUN  Oxlint Check
           {{any}}
           oxlint-config-commonjs  oxlint.config.js  found: a CommonJS config cannot load an ESM preset or plugin · why: oxlint drops a config it cannot load and exits 0, so the run enforces no rule the config names · fix: write oxlint.config.ts or .mjs · read: docs/reference/quality-checks.md#the-two-refusals-that-are-not-diagnostics
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
           {{any}}
 

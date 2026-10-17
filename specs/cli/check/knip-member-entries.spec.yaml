@@ -11,7 +11,7 @@ runs:
 
           Unused files (1)
           apps/tool/src/forgotten.ts
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            END  Finalizing quality checks
 

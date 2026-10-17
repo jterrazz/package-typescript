@@ -44,7 +44,7 @@ describe('secrets', () => {
             NOTES.md:15:1: error secrets(no-api-key): line 15 looks like an api key
             NOTES.md:16:1: error secrets(no-iban): line 16 looks like an iban
             NOTES.md:17:1: error secrets(no-service-token): line 17 looks like a service token
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 

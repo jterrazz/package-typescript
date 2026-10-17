@@ -2,7 +2,7 @@
 
  RUN  Names (tree)
 
-✓ Passed
+✓ Passed ({{duration}})
 
  END  Finalizing quality checks
 

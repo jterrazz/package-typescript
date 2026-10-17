@@ -8,36 +8,36 @@ runs:
 
            RUN  TypeScript Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxlint Check
 
           found: .jterrazz/oxlint-suppressions.json holds entries for files that are gone: src/moved.ts · why: the count is exact, so a debt that fell is recorded the day it falls · fix: run 'typescript fix', which prunes the file · read: docs/reference/quality-checks.md#the-ratchet
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Oxfmt Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Knip (unused code)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Suppressions (directives)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Secrets (credentials)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            DRIFT  Deviations from the profile
 
@@ -59,27 +59,27 @@ runs:
 
            RUN  TypeScript Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxlint Fix
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxfmt Format
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Suppressions (directives)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality fixes
 
@@ -101,35 +101,35 @@ runs:
 
            RUN  TypeScript Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxlint Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxfmt Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Knip (unused code)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Suppressions (directives)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Secrets (credentials)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            DRIFT  Deviations from the profile
 

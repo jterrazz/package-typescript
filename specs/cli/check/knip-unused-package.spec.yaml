@@ -11,7 +11,7 @@ runs:
 
           Unused devDependencies (1)
           playwright  package.json:8:6
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            END  Finalizing quality checks
 

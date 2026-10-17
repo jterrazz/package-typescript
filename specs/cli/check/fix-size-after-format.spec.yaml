@@ -10,11 +10,11 @@ runs:
            RUN  Oxlint Fix
 
           src/index.ts:400:3: error eslint(max-lines): File has too many lines (400). help: Maximum allowed is 300.
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Oxfmt Format
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality fixes
 

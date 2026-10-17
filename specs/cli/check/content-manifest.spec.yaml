@@ -9,23 +9,23 @@ runs:
            RUN  Config (one file)
 
           package.json:1:1: error config(kind-matches-manifest): found: jterrazz.config.ts declares a content repository, and package.json exists: a manifest makes it a project · why: A library publishes its exports, a published cli names its bin, and an application — an api, a website, a mobile app — is private, never published, as are a monorepo's own suite and its root, a container that declares no kind. · fix: delete package.json if the repository holds no code, or declare the kind the project is in jterrazz.config.ts · read: docs/reference/quality-checks.md#the-config-one-file-pass
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Gitignore (artefacts)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Secrets (credentials)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality checks
 

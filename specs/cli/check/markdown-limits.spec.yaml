@@ -8,38 +8,38 @@ runs:
 
            RUN  TypeScript Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxlint Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxfmt Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Knip (unused code)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Suppressions (directives)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
           README.md:1:1: error markdown(prose-block-is-short): a block of 13 lines at line 5 — the limit is 12
           README.md:1:1: error markdown(fenced-run-is-short): a fenced block at line 21 runs 16 lines unbroken — the limit is 15; a blank line after line 29 survives the formatter
           README.md:1:1: error markdown(long-section-has-subheadings): "## A section with nothing to break it up" at line 40 runs 31 lines of prose with no ### and no list
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Secrets (credentials)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            DRIFT  Deviations from the profile
 

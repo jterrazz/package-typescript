@@ -8,30 +8,30 @@ runs:
 
            RUN  Config (one file)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Gitignore (artefacts)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Comments (styles, scripts, YAML)
 
           deploy/values.yaml:1:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Markdown (prose)
 
           README.md:3:1: [MD012] Multiple consecutive blank lines between content [*]
           README.md:4:1: [MD012] Multiple consecutive blank lines between content [*]
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Secrets (credentials)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality checks
 
@@ -43,24 +43,24 @@ runs:
 
            RUN  Config (one file)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Gitignore (artefacts)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Comments (styles, scripts, YAML)
 
           deploy/values.yaml:1:1: error comments(comment-states-its-kind): found: a comment that states no kind · why: the default is no comment — a script, a style sheet or a workflow speaks through its names as code does, and a comment is kept only for what they cannot say: an invariant, a hazard, a constraint from outside the codebase, why a value is this one · fix: delete it, or open it with its kind — `invariant:`, `hazard:`, `outside:`, `value:` · read: docs/reference/lint-presets.md#a-comment-states-its-kind
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Markdown (prose)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality fixes
 

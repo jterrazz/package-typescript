@@ -21,7 +21,7 @@ runs:
           Linting...
           Errors:
           1. pkg.exports["./extra"] is ./missing.js but the file does not exist.
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            END  Finalizing quality checks
 

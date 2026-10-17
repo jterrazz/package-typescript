@@ -27,11 +27,11 @@ describe('default-config', () => {
              RUN  Oxlint Check
 
             src/index.ts:2:5: error eslint(no-debugger): \`debugger\` statement is not allowed help: Remove the debugger statement
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Oxfmt Check
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              END  Finalizing quality checks
 

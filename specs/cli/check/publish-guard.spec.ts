@@ -6,11 +6,14 @@ import { cli } from '../cli.specification.js';
 
 const publish = cli.with({ env: onlyPasses('publish') });
 
+const withoutSeconds = (line: string): string => line.replace(/ \(\d+\.\ds\)$/u, '');
+
 function publishPass(stdout: string): string[] {
     return passOf(stdout, 'Publish (packaging)')
         .split('\n')
         .slice(1)
-        .filter((line) => line.trim() !== '');
+        .filter((line) => line.trim() !== '')
+        .map((line) => withoutSeconds(line));
 }
 
 const fixturesFinding = (file: string): string =>

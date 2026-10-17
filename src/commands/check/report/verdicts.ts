@@ -3,6 +3,7 @@ import { appendFileSync, readFileSync } from 'node:fs';
 import { readSettings } from '../../../../lint/index.rules.js';
 import { labelOf } from '../../../../lint/kit/baseline/baseline-file.js';
 import { checker } from '../../../drivers/checker/checker.js';
+import { secondsSince } from '../passes/launched.js';
 import type { Launched } from '../passes/launched.js';
 import type { PresetRun } from '../passes/presets.js';
 import type { Check } from '../passes/setup.js';
@@ -11,9 +12,12 @@ import { lintVerdict } from './lint-verdict.js';
 import type { LintVerdict } from './lint-verdict.js';
 import { joined } from './logs.js';
 
-export type Verdict = { log: string; status: number; writes?: boolean };
+export type Verdict = { log: string; seconds: number; status: number; writes?: boolean };
 
 type Passed = undefined | Verdict;
+
+const slowestOf = (runs: readonly { seconds: number }[]): number =>
+    Math.max(0, ...runs.map(({ seconds }) => seconds));
 
 const escaped = (text: string): string => text.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
 
@@ -39,19 +43,24 @@ async function heldSummaryOf(): Promise<null | RegExp> {
 export async function settled(launched: Launched | undefined): Promise<Passed> {
     return launched === undefined
         ? undefined
-        : { log: launched.log, status: await launched.status };
+        : { log: launched.log, seconds: await launched.seconds, status: await launched.status };
 }
 
-export async function settledLint(check: Check, passes: Started): Promise<number> {
-    const linted = await passes.lint;
+export type Linted = { seconds: number; status: number };
+
+export async function settledLint(check: Check, passes: Started): Promise<Linted> {
+    const linted = await passes.lint.status;
     if (!check.selected('oxlint')) {
-        return linted;
+        return { seconds: await passes.lint.seconds, status: linted };
     }
+    const from = performance.now();
     const log = check.logs.at('baseline.log');
     const held = await checker('baseline', ['.'], { path: log });
     appendFileSync(check.logs.at('lint.log'), readFileSync(log));
+    const lintSeconds = await passes.lint.seconds;
+    const seconds = Math.round((lintSeconds + secondsSince(from)) * 10) / 10;
 
-    return linted === 0 ? held : linted;
+    return { seconds, status: linted === 0 ? held : linted };
 }
 
 async function presetVerdict(
@@ -59,10 +68,9 @@ async function presetVerdict(
     log: string,
     runs: readonly PresetRun[],
 ): Promise<Verdict> {
-    const outcomes = await Promise.all(runs.map(async (launched) => await settled(launched)));
-    const failed = outcomes.flatMap((outcome) =>
-        outcome === undefined || outcome.status === 0 ? [] : [outcome.log],
-    );
+    const settledRuns = await Promise.all(runs.map(async (launched) => await settled(launched)));
+    const outcomes = settledRuns.filter((outcome) => outcome !== undefined);
+    const failed = outcomes.flatMap((outcome) => (outcome.status === 0 ? [] : [outcome.log]));
     joined(check.logs, log, failed);
     const summary = await heldSummaryOf();
     const rootLog = runs.find(({ root }) => root)?.log;
@@ -77,7 +85,12 @@ async function presetVerdict(
         appendFileSync(log, summaries.map((line) => `${line}\n`).join(''));
     }
 
-    return { log, status: failed.length === 0 ? 0 : 1, writes: summaries.length > 0 };
+    return {
+        log,
+        seconds: slowestOf(outcomes),
+        status: failed.length === 0 ? 0 : 1,
+        writes: summaries.length > 0,
+    };
 }
 
 export async function presetVerdicts(
@@ -103,7 +116,13 @@ export async function publishVerdict(check: Check, runs: readonly Launched[]): P
     if (runs.length === 0) {
         return undefined;
     }
-    const statuses = await Promise.all(runs.map(async ({ status }) => await status));
+    const outcomes = await Promise.all(
+        runs.map(async (launched) => ({
+            seconds: await launched.seconds,
+            status: await launched.status,
+        })),
+    );
+    const statuses = outcomes.map(({ status }) => status);
     const log = check.logs.at('publish.log');
     joined(
         check.logs,
@@ -111,9 +130,14 @@ export async function publishVerdict(check: Check, runs: readonly Launched[]): P
         runs.map(({ log: part }) => part),
     );
 
-    return { log, status: statuses.some((status) => status !== 0) ? 1 : 0, writes: true };
+    return {
+        log,
+        seconds: slowestOf(outcomes),
+        status: statuses.some((status) => status !== 0) ? 1 : 0,
+        writes: true,
+    };
 }
 
-export function lintVerdictOf(check: Check, linted: number): LintVerdict | undefined {
+export function lintVerdictOf(check: Check, linted: Linted): LintVerdict | undefined {
     return check.selected('oxlint') ? lintVerdict(check, linted) : undefined;
 }

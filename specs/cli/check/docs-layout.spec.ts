@@ -24,7 +24,7 @@ describe('docs-layout', () => {
              RUN  Docs (layout)
 
             docs/:1:1: error docs(manual-present): docs/ is missing — every repository carries its own manual, starting at docs/README.md
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -50,7 +50,7 @@ describe('docs-layout', () => {
              RUN  Docs (layout)
 
             docs/guides/release.md:1:1: error docs(release-guide-present-when-shipping): guides/release.md is missing — this repository ships a published package (it declares a library or a cli)
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 

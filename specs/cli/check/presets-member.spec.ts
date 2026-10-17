@@ -156,7 +156,7 @@ describe('presets-member', () => {
              RUN  Stub Conventions
 
             root repository pass
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -179,7 +179,7 @@ describe('presets-member', () => {
 
              RUN  Stub Conventions
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              END  Finalizing quality checks
 
@@ -205,7 +205,7 @@ describe('presets-member', () => {
 
             root repository pass
             nested member pass: apps/api
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 

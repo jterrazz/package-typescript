@@ -8,15 +8,15 @@ runs:
 
            RUN  TypeScript Check
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxlint Fix
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Oxfmt Format
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Gitignore (artefacts)
 
@@ -25,19 +25,19 @@ runs:
             - *.tsbuildinfo
             + .artifacts/
             · !docs/keep.md — a negation rescues a tracked file, kept
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Suppressions (directives)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality fixes
 

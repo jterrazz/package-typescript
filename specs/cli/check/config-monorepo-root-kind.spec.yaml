@@ -10,7 +10,7 @@ runs:
            RUN  Config (one file)
 
           jterrazz.config.ts:1:1: error config(project-declared): found: jterrazz.config.ts declares the kind `workspace`, which is none of `library`, `api`, `cli`, `website`, `mobile`, `content` · why: A project — a single-project repository, or each member of a monorepo — declares what it is once, its kind and its platform, in jterrazz.config.ts. · fix: write jterrazz.config.ts so it loads and declares no `kind` and no `platform`: the root of a monorepo holds the repository's settings alone, and each member under `apps/` or `packages/` declares its own · read: docs/reference/quality-checks.md#the-config-one-file-pass
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            END  Finalizing quality checks
 

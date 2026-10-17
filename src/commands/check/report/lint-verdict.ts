@@ -5,7 +5,7 @@ import { refusal } from '../../../../lint/kit/catalogue/lesson.js';
 import { parsedObject } from '../../../../lint/kit/project/json.js';
 import type { Check } from '../passes/setup.js';
 
-export type LintVerdict = { log: string; status: number; writes: boolean };
+export type LintVerdict = { log: string; seconds: number; status: number; writes: boolean };
 
 const UNPARSED = 'Failed to parse oxlint configuration file';
 
@@ -100,7 +100,10 @@ function ratchetLessons(printed: string, vanished: readonly string[]): string[] 
     ];
 }
 
-export function lintVerdict(check: Check, linted: number): LintVerdict {
+export function lintVerdict(
+    check: Check,
+    { seconds, status: linted }: { seconds: number; status: number },
+): LintVerdict {
     const log = check.logs.at('lint.log');
     const printed = check.logs.read(log);
     const refusals = configRefusals(check, printed);
@@ -112,6 +115,7 @@ export function lintVerdict(check: Check, linted: number): LintVerdict {
 
     return {
         log,
+        seconds,
         status: refusals.length > 0 || vanished.length > 0 ? 1 : linted,
         writes: false,
     };

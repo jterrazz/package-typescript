@@ -10,7 +10,7 @@ runs:
            RUN  Config (one file)
 
           jterrazz.config.ts:1:1: error config(tsconfig-addition-reasoned): found: jterrazz.config.ts sets `typescript.tsconfig` with no `reason`, so no tsconfig.json is derived from it · why: What typescript.tsconfig adds to the derived tsconfig.json carries its reason, since every setting maps to why it is set. · fix: state why under `typescript.tsconfig.reason` in jterrazz.config.ts, or move the option into the platform's preset · read: docs/reference/quality-checks.md#the-config-one-file-pass
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            END  Finalizing quality checks
 

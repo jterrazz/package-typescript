@@ -9,7 +9,8 @@ import {
     secretsPass,
     suppressionsPass,
 } from './checker-passes.js';
-import type { Launched } from './launched.js';
+import { launched, timed } from './launched.js';
+import type { Launched, Timed } from './launched.js';
 import { oxfmt } from './runners.js';
 import type { Check } from './setup.js';
 import type { Fixed } from './tool-passes.js';
@@ -32,7 +33,7 @@ export type Started = {
     format: Launched | undefined;
     gitignore: Launched | undefined;
     knip: Launched | undefined;
-    lint: Promise<number>;
+    lint: Timed;
     markdown: Launched | undefined;
     names: Launched | undefined;
     publish: Launched[];
@@ -41,12 +42,10 @@ export type Started = {
     typescript: Launched | undefined;
 };
 
-async function lintChecked(
-    check: Check,
-): Promise<{ format: Launched | undefined; lint: Promise<number> }> {
+async function lintChecked(check: Check): Promise<{ format: Launched | undefined; lint: Timed }> {
     return {
         format: formatCheck(check),
-        lint: check.selected('oxlint') ? lintCheck(check) : Promise.resolve(0),
+        lint: timed(check.selected('oxlint') ? lintCheck(check) : Promise.resolve(0)),
     };
 }
 
@@ -85,20 +84,23 @@ async function formattedLast(
     check: Check,
     fixed: Fixed | undefined,
     writers: readonly (Launched | undefined)[],
-): Promise<{ format: Launched | undefined; lint: Promise<number> }> {
+    from: number,
+): Promise<{ format: Launched | undefined; lint: Timed }> {
     await writersDone(writers);
     let formatting: Launched | undefined;
     if (check.selected('oxfmt')) {
         const log = check.logs.at('format.log');
         // Stryker disable next-line ArrayDeclaration: oxfmt reads a stand-in argument as one more path to format, and a path that names no file is skipped
-        formatting = { log, status: Promise.resolve(await oxfmt(check, [], log)) };
+        formatting = launched(log, oxfmt(check, [], log));
+        await formatting.status;
     }
-    const lint = fixed === undefined ? Promise.resolve(0) : lintJudged(check, fixed);
+    const lint = timed(fixed === undefined ? Promise.resolve(0) : lintJudged(check, fixed), from);
 
     return { format: formatting, lint };
 }
 
 export async function started(check: Check, config: Launched | undefined): Promise<Started> {
+    const from = performance.now();
     const typescript = typescriptPass(check);
     const fixed =
         check.fix && check.selected('oxlint') && !check.lintTargets.nothing
@@ -127,7 +129,7 @@ export async function started(check: Check, config: Launched | undefined): Promi
         names,
         suppressions,
     });
-    const { format, lint } = checked ?? (await formattedLast(check, fixed, writing));
+    const { format, lint } = checked ?? (await formattedLast(check, fixed, writing, from));
 
     return {
         architecture,

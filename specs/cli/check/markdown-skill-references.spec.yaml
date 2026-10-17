@@ -10,11 +10,11 @@ runs:
            RUN  Markdown (prose)
 
           skills/shop/SKILL.md:1:1: error markdown(skill-links-its-references): skills/shop/references/returns.md is linked from no line of skills/shop/SKILL.md
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Names (tree)
 
-          ✓ Passed
+          ✓ Passed ({{duration}})
 
            END  Finalizing quality checks
 

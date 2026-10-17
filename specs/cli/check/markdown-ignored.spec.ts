@@ -27,7 +27,7 @@ describe('markdown-ignored', () => {
              RUN  Markdown (prose)
 
             README.md:1:1: error markdown(path-resolves): \`apps/notes/absent.md\` names nothing on disk
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 

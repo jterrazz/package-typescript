@@ -73,23 +73,23 @@ describe('names-repository', () => {
              RUN  Oxlint Check
 
             data/scratch.ts:2:5: error eslint(no-debugger): \`debugger\` statement is not allowed help: Remove the debugger statement
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Markdown (prose)
 
             data/NOTES.md:3:16: error markdown(link-resolves): Relative link './missing.md' does not exist
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Names (tree)
 
             data/:1:1: error names(no-undeclared-root-folder): found: \`data/\` is a root outside the spine · why: Every root folder is on the root spine, imposed by a tool, or declared with its reason. · fix: move it under src/, or declare it in jterrazz.config.ts's \`typescript.roots\` with its reason · read: docs/reference/quality-checks.md#a-root-beside-the-spine
             found: every finding above, and .jterrazz/baseline.json records no \`names/\` entry in its \`typescript\` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Secrets (credentials)
 
             data/NOTES.md:3:1: error secrets(no-aws-key): line 3 looks like an aws access key
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -134,19 +134,19 @@ describe('names-repository', () => {
 
              RUN  Oxlint Check
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Markdown (prose)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Names (tree)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Secrets (credentials)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              END  Finalizing quality checks
 
@@ -200,22 +200,22 @@ describe('names-repository', () => {
              RUN  Suppressions (directives)
 
             found: nothing to read under {{workdir}}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Markdown (prose)
 
             found: nothing to read under {{workdir}}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Names (tree)
 
             found: nothing to read under {{workdir}}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Secrets (credentials)
 
             found: nothing to read under {{workdir}}: git ignores every file it holds · why: a sweep that reads nothing would turn every gate above it green · fix: take the project's files out of .gitignore, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -240,22 +240,22 @@ describe('names-repository', () => {
              RUN  Suppressions (directives)
 
             found: nothing to read under {{workdir}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Markdown (prose)
 
             found: nothing to read under {{workdir}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Names (tree)
 
             found: nothing to read under {{workdir}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              RUN  Secrets (credentials)
 
             found: nothing to read under {{workdir}}: it holds folders and no file · why: a sweep that reads nothing would turn every gate above it green · fix: add the project's files, then run again · read: docs/reference/quality-checks.md#an-unreadable-tree
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -298,7 +298,7 @@ describe('names-repository', () => {
             Makefile:1:1: error names(makefile-answers-every-gesture): found: \`make fix\` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule — every repository answers \`make\` install, build, lint, fix, test and check · read: docs/reference/quality-checks.md#the-six-gestures
             Makefile:1:1: error names(makefile-answers-every-gesture): found: \`make check\` has no rule · why: The Makefile writes a rule for each of the six gestures. · fix: write its rule — every repository answers \`make\` install, build, lint, fix, test and check · read: docs/reference/quality-checks.md#the-six-gestures
             found: every finding above, and .jterrazz/baseline.json records no \`names/\` entry in its \`typescript\` section to hold one · why: a project that recorded no debt is held at zero, so each finding fails the run as new debt · fix: fix them, or run 'typescript baseline' to record where the project stands · read: docs/reference/quality-checks.md#what-jterrazzbaselinejson-still-holds
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 
@@ -328,7 +328,7 @@ describe('names-repository', () => {
 
              RUN  Oxlint Check
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              END  Finalizing quality checks
 
@@ -378,11 +378,11 @@ describe('names-repository', () => {
 
              RUN  Oxlint Check
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Names (tree)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              END  Finalizing quality checks
 

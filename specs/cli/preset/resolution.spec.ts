@@ -14,43 +14,43 @@ describe('resolution', () => {
 
              RUN  Config (one file)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  TypeScript Check
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Oxlint Check
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Oxfmt Check
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Knip (unused code)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Architecture (layer map)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Suppressions (directives)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Markdown (prose)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Names (tree)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              RUN  Secrets (credentials)
 
-            ✓ Passed
+            ✓ Passed ({{duration}})
 
              DRIFT  Deviations from the profile
 

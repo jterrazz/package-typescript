@@ -27,7 +27,7 @@ describe('gitignore-boundary', () => {
             Artefacts belong under .artifacts/<tool>/ at the project root:
               ✗ ../.gitignore names coverage/ — its home is .artifacts/vitest/coverage/
             Run 'typescript fix' to rewrite .gitignore.
-            ✗ Failed with exit code 1
+            ✗ Failed with exit code 1 ({{duration}})
 
              END  Finalizing quality checks
 

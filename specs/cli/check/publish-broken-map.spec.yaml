@@ -17,7 +17,7 @@ runs:
           Errors:
           1. pkg.exports["./farewell"] is ./farewell.js but the file does not exist.
           2. pkg.exports["./greeter"] is ./greeter.js but the file is not published. Is it specified in pkg.files?
-          ✗ Failed with exit code 1
+          ✗ Failed with exit code 1 ({{duration}})
 
            END  Finalizing quality checks
 
