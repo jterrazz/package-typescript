@@ -1,6 +1,6 @@
 # @jterrazz/typescript
 
-The whole TypeScript toolchain of a project in one devDependency: it builds, type-checks, lints and formats, and it judges the repository's shape. A project keeps one settings file, `jterrazz.config.ts`, that says what it is; the editor files derived from it — `tsconfig.json`, `oxlint.config.ts`, `oxfmt.config.ts` — which `typescript fix` writes and `typescript check` holds to their derived content; a `Makefile` and a short manual; and it runs two commands, `typescript check` and `typescript fix`. Nothing else needs configuring, and nothing needs keeping in sync between projects.
+The whole TypeScript toolchain of a project in one devDependency: it builds, type-checks, lints and formats, and it judges the repository's shape. A project keeps one settings file, `jterrazz.config.ts`, that says what it is; the editor files derived from it (`tsconfig.json`, `oxlint.config.ts`, `oxfmt.config.ts`), which `typescript fix` writes and `typescript check` holds to their derived content; a `Makefile` and a short manual. It runs two commands, `typescript check` and `typescript fix`. Nothing else needs configuring, and nothing needs keeping in sync between projects.
 
 ## Why it exists
 

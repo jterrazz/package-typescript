@@ -1,4 +1,4 @@
-# @jterrazz/typescript — the manual
+# @jterrazz/typescript: the manual
 
 The toolchain that builds, checks, lints and formats a project from one devDependency. What it is and why it exists is the repository's README; this page lists every page of the manual, by what the reader came to do.
 
@@ -20,7 +20,7 @@ The toolchain that builds, checks, lints and formats a project from one devDepen
 
 A smaller task is one section of a reference page:
 
-| To…                                            | Read                                                                                                |
+| To                                             | Read                                                                                                |
 | ---------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | leave a path out of the gates                  | [Quality checks § Leaving a path out](reference/quality-checks.md#leaving-a-path-out)               |
 | silence one line, with its reason              | [Quality checks § Suppressions](reference/quality-checks.md#the-suppressions-directives-pass)       |
@@ -42,7 +42,7 @@ A smaller task is one section of a reference page:
 
 | Page                                                     | Answers                                                                                                                        |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| [The ideas](concepts/ideas.md)                           | The declaration, the one settings file, the two commands, the ratchet — and why each is so                                     |
+| [The ideas](concepts/ideas.md)                           | The declaration, the one settings file, the two commands, the ratchet, and why each is so                                      |
 | [Architecture](concepts/architecture.md)                 | The two sides, `lint/` that judges and `src/` that runs, the command, the published subpaths                                   |
 | [The composition root](concepts/the-composition-root.md) | Where a hexagonal application is built: `compose()`, its typed overrides, its ordered stop, and the two callers the map allows |
 
