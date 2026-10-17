@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { greeting } from '../index';
 
-describe('greeting', () => {
+describe('index', () => {
     test('greets by name', () => {
         // Given - a name
         const name = 'Ada';
