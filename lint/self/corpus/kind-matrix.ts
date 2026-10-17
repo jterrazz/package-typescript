@@ -29,8 +29,15 @@ function settingsUnder(folder: string): string[] {
 
 function specimenOf(kinds: string, kind: CodeKind): null | Specimen {
     const spec = join(kinds, kind, `${kind}.spec.ts`);
-    const project = join(kinds, kind, '__fixtures__', kind);
-    const settings = settingsUnder(project);
+    const fixtures = join(kinds, kind, '__fixtures__');
+    const project = join(fixtures, kind);
+    const platformed = existsSync(fixtures)
+        ? readdirSync(fixtures, { withFileTypes: true })
+              .filter((entry) => entry.isDirectory() && entry.name.startsWith(`${kind}-`))
+              .map((entry) => join(fixtures, entry.name))
+              .toSorted()
+        : [];
+    const settings = [project, ...platformed].flatMap((folder) => settingsUnder(folder));
     const root = existsSync(join(project, 'jterrazz.config.ts'))
         ? readFileSync(join(project, 'jterrazz.config.ts'), 'utf8')
         : '';
@@ -84,6 +91,13 @@ export function kindMatrix(kinds: string): { refused: string[]; table: string } 
             ...specimens
                 .filter(([, specimen]) => specimen === null)
                 .map(([kind]) => `${kind}: no specimen declaring it`),
+            ...specimens.flatMap(([kind, specimen]) =>
+                PLATFORMS_OF[kind]
+                    .filter(
+                        (platform) => specimen !== null && !specimen.platforms.includes(platform),
+                    )
+                    .map((platform) => `${kind}: no specimen on ${platform}`),
+            ),
             ...stray.map((name) => `${name}: a specimen of no declared kind`),
         ],
         table: markdownTable(

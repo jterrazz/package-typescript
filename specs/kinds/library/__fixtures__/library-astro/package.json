@@ -1,0 +1,29 @@
+{
+    "name": "specimen-library-astro",
+    "version": "1.0.0",
+    "license": "MIT",
+    "files": [
+        "dist"
+    ],
+    "type": "module",
+    "scripts": {
+        "dev": "astro dev"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        }
+    },
+    "devDependencies": {
+        "@jterrazz/test": "17.0.0",
+        "@jterrazz/typescript": "11.0.0",
+        "@types/node": "^26.6.2",
+        "@types/react": "^19.3.0",
+        "astro": "^7.3.1",
+        "vitest": "^5.0.1"
+    },
+    "dependencies": {
+        "react": "^19.3.0"
+    }
+}

@@ -41,6 +41,22 @@ describe('kindMatrix', () => {
         }
     });
 
+    test('a platform a kind runs on and no specimen declares is named', () => {
+        // Given - the suite without its bun specimen of the api
+        const copy = mkdtempSync(join(tmpdir(), 'kinds-'));
+        try {
+            cpSync(KINDS_SUITE, copy, {
+                filter: (source) => !source.endsWith(join('api', '__fixtures__', 'api-bun')),
+                recursive: true,
+            });
+
+            // Then - the matrix names the platform left unproven
+            expect(kindMatrix(copy).refused).toStrictEqual(['api: no specimen on bun']);
+        } finally {
+            rmSync(copy, { force: true, recursive: true });
+        }
+    });
+
     test('the matrix the manual carries is the one the declaration and the suite render', () => {
         // Given - the generated block of the configuration chapter
         const markers = generatedMarkers('kinds');

@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, readdirSync } from 'node:fs';
-import { delimiter, join } from 'node:path';
+import { cpSync, existsSync, mkdirSync, readdirSync, symlinkSync } from 'node:fs';
+import { delimiter, dirname, join, resolve } from 'node:path';
 import process from 'node:process';
 
 import {
@@ -19,6 +19,12 @@ const installed = join(project, 'node_modules');
 const PACKED = {
     '@jterrazz/test': join(CHECKOUT, 'node_modules/@jterrazz/test'),
     '@jterrazz/typescript': process.env.PACKED_PACKAGE ?? '',
+};
+
+// outside: the checkout installs no Bun and no Astro, so a specimen declaring either is handed the stand-in the toolchain's own specs use: Bun's types as one declaration, Astro as its tsconfigs and a binary that refuses nothing.
+const STAND_INS: Record<string, string> = {
+    '@types/bun': resolve(import.meta.dirname, '../../__fixtures__/bun-types'),
+    astro: resolve(import.meta.dirname, '../../__fixtures__/astro-package'),
 };
 
 const isFamily = (name: string): boolean => Object.hasOwn(PACKED, name);
@@ -50,6 +56,11 @@ function install(): void {
         linkBins(join(installed, name), installed);
     }
     linkBins(join(installed, '@jterrazz/typescript'), installed);
+    for (const name of declared.filter((one) => Object.hasOwn(STAND_INS, one))) {
+        mkdirSync(dirname(join(installed, name)), { recursive: true });
+        symlinkSync(STAND_INS[name] ?? '', join(installed, name));
+        linkBins(join(installed, name), installed);
+    }
 }
 
 if (!existsSync(installed)) {
