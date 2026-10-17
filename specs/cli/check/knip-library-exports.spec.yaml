@@ -30,7 +30,7 @@ runs:
           unread  label.ts:2:14
           Unused exported types (1)
           UnreadShape  type  label.ts:3:13
-          ✗ Failed with exit code 1 (1.1s)
+          ✗ Failed with exit code 1 ({{duration}})
 
            RUN  Publish (packaging)
 
