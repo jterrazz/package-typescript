@@ -115,7 +115,7 @@ What a spec stands on sits in the four ground folders `@jterrazz/test` reserves 
 
 The presets this repository ships ignore those four folders wherever they sit, and its own run takes them from the presets like any consumer: no ignore of its own in the lint scripts, `jterrazz.config.ts` or `tsconfig.json`.
 
-The domains today: `build`, `check` (the command's passes and verdicts, each stating the whole run), `clean`, `dev`, `docs-layout` (the manual's rules, one document per family), `doctor`, `fix`, `help`, `node`, `oxfmt`, `preset`, `start`, `tsc`, `typescript`. Four of them run the packed tarball in a consumer's project, through `packed-cli.specification.ts`: `node`, `oxfmt`, `tsc` and `typescript`.
+The domains today: `build`, `check` (the command's passes and verdicts, each stating the whole run), `clean`, `dev`, `docs-layout` (the manual's rules, one document per family), `doctor`, `fix`, `gate-lock`, `help`, `mutation`, `node`, `oxfmt`, `preset`, `start`, `tsc`, `typescript`. Four of them run the packed tarball in a consumer's project, through `packed-cli.specification.ts`: `node`, `oxfmt`, `tsc` and `typescript`.
 
 ## Who a rule is for
 

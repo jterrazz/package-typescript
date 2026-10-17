@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { isList, objectOf, parsedObject, stringOf } from '../../../lint/kit/project/json.js';
+import { isList, objectOf, stringOf } from '../../../lint/kit/project/json.js';
 import {
     headOf,
     mutationSummaryOf,
@@ -27,6 +27,23 @@ export const STAGE_LABELS = {
     suite: 'Mutation (whole suite)',
 } as const;
 
+/** Adds a stage's run as a pass; a stage Stryker stopped is why the run judged nothing. */
+export function stageRecorded(
+    recorded: Recorded,
+    stage: keyof typeof STAGE_LABELS,
+    { seconds, status }: { seconds: number; status: number },
+): void {
+    recorded.passes.push({
+        firstError: status === 0 ? null : `Stryker exited ${String(status)} — its log is above`,
+        label: STAGE_LABELS[stage],
+        seconds,
+        status,
+    });
+    if (status !== 0) {
+        recorded.reason = `Stryker stopped the ${stage === 'suite' ? 'whole suite' : 'module tests'} with status ${String(status)} — its log is above`;
+    }
+}
+
 export function judgedRecorded(recorded: Recorded, judged: Judged, { range }: Measure): void {
     recorded.mutation = {
         detected: judged.detected,
@@ -38,30 +55,37 @@ export function judgedRecorded(recorded: Recorded, judged: Judged, { range }: Me
 
 const countOf = (value: unknown): number => (typeof value === 'number' ? value : 0);
 
-function memberVerdictOf(project: string, member: string): MutationVerdict | undefined {
+function parsedVerdictOf(file: string): unknown {
+    // Stryker disable BlockStatement: a catch left empty returns undefined as this one does, and a try emptied returns it for every file, which the tests reading a member's numbers see
     try {
-        const { mutation } = parsedObject(
-            readFileSync(join(project, member, VERDICT_FILE), 'utf8'),
-        );
-        const { detected, range, survivors, unrun } = objectOf(mutation);
-
-        return {
-            detected: countOf(detected),
-            range: stringOf(range) ?? '',
-            survivors: (isList(survivors) ? survivors : []).map((one) => {
-                const { file, line, mutator } = objectOf(one);
-
-                return {
-                    file: `${member}/${stringOf(file) ?? ''}`,
-                    line: countOf(line),
-                    mutator: stringOf(mutator) ?? '',
-                };
-            }),
-            unrun: countOf(unrun),
-        };
+        return JSON.parse(String(readFileSync(file)));
     } catch {
         return undefined;
     }
+    // Stryker restore BlockStatement
+}
+
+function memberVerdictOf(project: string, member: string): MutationVerdict | undefined {
+    const { mutation } = objectOf(parsedVerdictOf(join(project, member, VERDICT_FILE)));
+    if (mutation === null || mutation === undefined) {
+        return undefined;
+    }
+    const { detected, range, survivors, unrun } = objectOf(mutation);
+
+    return {
+        detected: countOf(detected),
+        range: stringOf(range) ?? '',
+        survivors: (isList(survivors) ? survivors : []).map((one) => {
+            const { file, line, mutator } = objectOf(one);
+
+            return {
+                file: `${member}/${stringOf(file) ?? ''}`,
+                line: countOf(line),
+                mutator: stringOf(mutator) ?? '',
+            };
+        }),
+        unrun: countOf(unrun),
+    };
 }
 
 /** Adds a member's run to the root's: its status and seconds as one pass, its numbers to the root's. */

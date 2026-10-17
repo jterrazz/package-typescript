@@ -18,7 +18,7 @@ import { askedOf } from './asked.js';
 import { baseFor, changeOf, namesACommit, treeChangeFor } from './change.js';
 import type { Base } from './change.js';
 import { memberRuns, unownedRange } from './members.js';
-import { concluded, judgedRecorded, memberRecorded, recorder, STAGE_LABELS } from './recorded.js';
+import { concluded, judgedRecorded, memberRecorded, recorder, stageRecorded } from './recorded.js';
 import type { Recorded } from './recorded.js';
 import { mutationScopeOf } from './scope-globs.js';
 import { changedRanges, fileOf, narrowed, sourcesOf, unreachedRange } from './scope.js';
@@ -57,16 +57,10 @@ async function measured(
     print(
         `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'The whole suite' : 'The module tests'} ran in ${secondsOf(seconds)} on ${String(concurrency)} test runner(s)\n`,
     );
-    const status = 'status' in outcome ? outcome.status : 0;
-    recorded.passes.push({
-        firstError: status === 0 ? null : `Stryker exited ${String(status)} — its log is above`,
-        label: STAGE_LABELS[stage.name],
+    stageRecorded(recorded, stage.name, {
         seconds,
-        status,
+        status: 'status' in outcome ? outcome.status : 0,
     });
-    if (status !== 0) {
-        recorded.reason = `Stryker stopped the ${stage.name === 'suite' ? 'whole suite' : 'module tests'} with status ${String(status)} — its log is above`;
-    }
 
     return withClientOnlyUnmeasured(outcome, clientOnlySources(project));
 }

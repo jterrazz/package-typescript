@@ -1,6 +1,6 @@
 import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
-import { launched, secondsSince, timed } from '../launched.js';
+import { launched, secondsAdded, secondsSince, slowestOf, timed } from '../launched.js';
 
 function clockAt(...moments: number[]): void {
     const now = vi.spyOn(performance, 'now');
@@ -42,5 +42,30 @@ describe('launched', () => {
         // Then - five seconds, and the rejection still reaches its reader
         await expect(run.seconds).resolves.toBe(5);
         await expect(run.status).rejects.toThrow('stopped');
+    });
+
+    test('timed — the seconds wait for the verdict', async () => {
+        // Given - a run whose verdict has not come, the event loop let turn once
+        const verdict = Promise.withResolvers<number>();
+        const run = timed(verdict.promise, 0);
+        await new Promise((resolve) => {
+            setImmediate(resolve);
+        });
+
+        // Then - its seconds are still pending
+        await expect(Promise.race([run.seconds, Promise.resolve('pending')])).resolves.toBe(
+            'pending',
+        );
+        verdict.resolve(0);
+    });
+
+    test('secondsAdded and slowestOf — two runs in a row add up to the tenth; runs in parallel last as their slowest, and none as nothing', () => {
+        // Given - a run of 1.26 s then one of 0.33 s, and three runs side by side
+        const parallel = [{ seconds: 0.4 }, { seconds: 2.5 }, { seconds: 1.1 }];
+
+        // Then - 1.6 s in a row, 2.5 s side by side, 0 s for no run
+        expect([secondsAdded(1.26, 0.33), slowestOf(parallel), slowestOf([])]).toStrictEqual([
+            1.6, 2.5, 0,
+        ]);
     });
 });

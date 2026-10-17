@@ -52,11 +52,17 @@ function gateNamed(value: string | undefined): void {
 
 describe('lock', () => {
     test('isAlive — this process lives, one that exited does not', () => {
-        // Given - this process, and a child that has exited
+        // Given - this process, init — alive, though this user may not signal it —, a child that has exited, no pid, and one that is no whole number
         const dead = deadPid();
 
-        // Then - only this one lives
-        expect([isAlive(process.pid), isAlive(dead)]).toStrictEqual([true, false]);
+        // Then - this process and init live
+        expect([
+            isAlive(process.pid),
+            isAlive(1),
+            isAlive(dead),
+            isAlive(undefined),
+            isAlive(1.5),
+        ]).toStrictEqual([true, true, false, false, false]);
     });
 
     test('holderOf — a live pid holds the checkout; a dead one, no lock, or a lock that names no pid hold nothing', () => {
@@ -68,14 +74,21 @@ describe('lock', () => {
         const none = project();
         const garbled = project();
         locked(garbled, 'pid of nobody');
+        const signalled = ['0', '-1'].map((text) => {
+            const root = project();
+            locked(root, text);
 
-        // Then - the parent holds the first alone
+            return holderOf(root);
+        });
+
+        // Then - the parent holds the first alone, and neither the process group nor every process — pids 0 and -1, which a signal reaches — holds anything
         expect([holderOf(live), holderOf(stale), holderOf(none), holderOf(garbled)]).toStrictEqual([
             process.ppid,
             undefined,
             undefined,
             undefined,
         ]);
+        expect(signalled).toStrictEqual([undefined, undefined]);
     });
 
     test('gateOf — the gate named for this very checkout when it lives, else this process', () => {
@@ -90,8 +103,22 @@ describe('lock', () => {
             named(`${String(process.ppid)}:${root}/elsewhere`),
             named(`${String(dead)}:${root}`),
             named(String(process.ppid)),
+            gateOf(join(root, 'other'), {
+                [GATE_VARIABLE]: `${String(process.ppid)}:${root}/gone`,
+            }),
+            gateOf(join(root, 'gone'), {
+                [GATE_VARIABLE]: `${String(process.ppid)}:${root}/gone/`,
+            }),
             gateOf(root, {}),
-        ]).toStrictEqual([process.ppid, process.pid, process.pid, process.pid, process.pid]);
+        ]).toStrictEqual([
+            process.ppid,
+            process.pid,
+            process.pid,
+            process.pid,
+            process.pid,
+            process.ppid,
+            process.pid,
+        ]);
     });
 
     test('foreignHolderOf and refusedWhileGated — another live gate is named in four parts; the gate this process is a step of is none', () => {
@@ -141,24 +168,49 @@ describe('lock', () => {
         ]).toStrictEqual([false, false, undefined]);
     });
 
-    test('withGateLock — a step of a named gate holds in its name and leaves the hold; a checkout another gate holds is run and left as it was', async () => {
-        // Given - a checkout whose gate is named as the parent of this process, and one the parent holds that this process is no step of
+    test('withGateLock — a step of a named gate holds and registers in its name, leaves both, and hands the name back as it found it; a checkout another gate holds is run and left as it was', async () => {
+        // Given - a machine of its own, a checkout whose gate is named as the parent of this process, and one the parent holds that this process is no step of
+        const machine = project();
+        vi.stubEnv('TMPDIR', machine);
         const stepped = project();
-        gateNamed(`${String(process.ppid)}:${stepped}`);
+        const name = `${String(process.ppid)}:${stepped}`;
+        gateNamed(name);
         await withGateLock(stepped, async () => {
             await Promise.resolve();
         });
+        const named = process.env[GATE_VARIABLE];
         const other = project();
         locked(other, String(process.ppid));
         gateNamed(undefined);
         const ran = await withGateLock(other, async () => await Promise.resolve('ran'));
 
-        // Then - the named gate keeps the first, the other gate the second, and the run's answer comes back
+        // Then - the named gate keeps the first and its registration, the other gate the second, the name is back, and the run's answer comes back
         expect([
             readFileSync(join(stepped, GATE_LOCK), 'utf8'),
+            readdirSync(gatesFolder()),
+            named,
             readFileSync(join(other, GATE_LOCK), 'utf8'),
             ran,
-        ]).toStrictEqual([`${String(process.ppid)}\n`, String(process.ppid), 'ran']);
+        ]).toStrictEqual([
+            `${String(process.ppid)}\n`,
+            [String(process.ppid)],
+            name,
+            String(process.ppid),
+            'ran',
+        ]);
+    });
+
+    test('withGateLock — a lock another gate took over while the run went is left to it', async () => {
+        // Given - a free checkout whose lock a second gate, the parent of this process, takes while the run goes
+        gateNamed(undefined);
+        const root = project();
+        await withGateLock(root, async () => {
+            await Promise.resolve();
+            writeFileSync(join(root, GATE_LOCK), String(process.ppid));
+        });
+
+        // Then - the second gate's lock stands
+        expect(readFileSync(join(root, GATE_LOCK), 'utf8')).toBe(String(process.ppid));
     });
 
     test('withGateLock — a run that throws still drops its lock', async () => {
@@ -221,7 +273,8 @@ describe('lock', () => {
             return readdirSync(gatesFolder());
         });
 
-        // Then - this process is registered during its run alone, and the nested run adds nobody
+        // Then - this process is registered during its run alone, the nested run adds nobody, and hands back the outer gate's name
         expect([during, after, nested]).toStrictEqual([[String(process.pid)], [], []]);
+        expect(process.env[GATE_VARIABLE]).toBe(`${String(process.ppid)}:${machine}`);
     });
 });

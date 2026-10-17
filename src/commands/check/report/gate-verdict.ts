@@ -50,6 +50,44 @@ export function verdictWritten(project: string, verdict: GateVerdict): void {
     writeFileSync(file, `${JSON.stringify(verdict, null, 4)}\n`);
 }
 
+/** A pass's entry: its first finding read from its log where it failed. */
+export const passVerdictOf = (
+    {
+        label,
+        log,
+        seconds,
+        status,
+    }: { label: string; log: string; seconds: number; status: number },
+    read: (log: string) => string,
+): PassVerdict => ({
+    firstError: status === 0 ? null : firstFindingOf(read(log)),
+    label,
+    seconds,
+    status,
+});
+
+/** The drift report's entry: its report goes to the terminal, so its finding is named by where to read it. */
+export const driftPassOf = (status: number, seconds: number): PassVerdict => ({
+    firstError: status === 0 ? null : 'the drift report refused — its report is above',
+    label: 'Drift (profile)',
+    seconds,
+    status,
+});
+
+/** The verdict of a check or a fix: red when any pass is. */
+export function checkVerdictOf(
+    project: string,
+    { fix, passes }: { fix: boolean; passes: readonly PassVerdict[] },
+): GateVerdict {
+    return {
+        command: fix ? 'fix' : 'check',
+        head: headOf(project),
+        mutation: null,
+        passes: [...passes],
+        status: passes.every((pass) => pass.status === 0) ? 0 : 1,
+    };
+}
+
 /** The run's last line: the first failing pass and its first finding, or that every pass passed. */
 export function checkSummaryOf({ passes, status }: Pick<GateVerdict, 'passes' | 'status'>): string {
     if (status === 0) {

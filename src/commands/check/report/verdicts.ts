@@ -3,7 +3,7 @@ import { appendFileSync, readFileSync } from 'node:fs';
 import { readSettings } from '../../../../lint/index.rules.js';
 import { labelOf } from '../../../../lint/kit/baseline/baseline-file.js';
 import { checker } from '../../../drivers/checker/checker.js';
-import { secondsSince } from '../passes/launched.js';
+import { secondsAdded, secondsSince, slowestOf } from '../passes/launched.js';
 import type { Launched } from '../passes/launched.js';
 import type { PresetRun } from '../passes/presets.js';
 import type { Check } from '../passes/setup.js';
@@ -15,9 +15,6 @@ import { joined } from './logs.js';
 export type Verdict = { log: string; seconds: number; status: number; writes?: boolean };
 
 type Passed = undefined | Verdict;
-
-const slowestOf = (runs: readonly { seconds: number }[]): number =>
-    Math.max(0, ...runs.map(({ seconds }) => seconds));
 
 const escaped = (text: string): string => text.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
 
@@ -58,7 +55,7 @@ export async function settledLint(check: Check, passes: Started): Promise<Linted
     const held = await checker('baseline', ['.'], { path: log });
     appendFileSync(check.logs.at('lint.log'), readFileSync(log));
     const lintSeconds = await passes.lint.seconds;
-    const seconds = Math.round((lintSeconds + secondsSince(from)) * 10) / 10;
+    const seconds = secondsAdded(lintSeconds, secondsSince(from));
 
     return { seconds, status: linted === 0 ? held : linted };
 }

@@ -5,7 +5,7 @@ export function jobsNamed(value: string | undefined): number | undefined {
     if (value === undefined || value.trim() === '') {
         return undefined;
     }
-    const jobs = Number(value.trim());
+    const jobs = Number(value);
 
     return Number.isInteger(jobs) && jobs > 0 ? jobs : Number.NaN;
 }

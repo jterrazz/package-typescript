@@ -17,10 +17,15 @@ import { argumentsOf, membersOf, targetsOf, toolConfigs, toolsOf } from './passe
 import type { Check } from './passes/setup.js';
 import { started } from './passes/started.js';
 import type { Started } from './passes/started.js';
-import { checkSummaryOf, firstFindingOf, headOf, verdictWritten } from './report/gate-verdict.js';
-import type { GateVerdict, PassVerdict } from './report/gate-verdict.js';
+import {
+    checkSummaryOf,
+    checkVerdictOf,
+    driftPassOf,
+    passVerdictOf,
+    verdictWritten,
+} from './report/gate-verdict.js';
+import type { PassVerdict } from './report/gate-verdict.js';
 import { logsIn } from './report/logs.js';
-import type { Logs } from './report/logs.js';
 import { reportPass } from './report/report.js';
 import { badge, GREEN, print, RED, RESET } from './report/terminal.js';
 import {
@@ -169,39 +174,18 @@ async function drift(run: Check): Promise<PassVerdict[]> {
     const from = performance.now();
     const status = await checker('drift', ['.', ...run.driftArgs], 'inherit');
 
-    return [
-        {
-            firstError: status === 0 ? null : 'the drift report refused — its report is above',
-            label: 'Drift (profile)',
-            seconds: secondsSince(from),
-            status,
-        },
-    ];
+    return [driftPassOf(status, secondsSince(from))];
 }
 
-const passVerdictOf = (logs: Logs, { label, log, seconds, status }: Reported): PassVerdict => ({
-    firstError: status === 0 ? null : firstFindingOf(logs.read(log)),
-    label,
-    seconds,
-    status,
-});
-
 function concluded(fix: boolean, passes: readonly PassVerdict[]): number {
-    const status = passes.every((pass) => pass.status === 0) ? 0 : 1;
-    const verdict: GateVerdict = {
-        command: fix ? 'fix' : 'check',
-        head: headOf('.'),
-        mutation: null,
-        passes: [...passes],
-        status,
-    };
-    verdictWritten('.', verdict);
+    const verdict = checkVerdictOf(process.cwd(), { fix, passes });
+    verdictWritten(process.cwd(), verdict);
     print(
         `\n${badge('END')} ${fix ? 'Finalizing quality fixes' : 'Finalizing quality checks'}\n\n`,
     );
-    print(`${status === 0 ? GREEN : RED}${checkSummaryOf(verdict)}${RESET}\n`);
+    print(`${verdict.status === 0 ? GREEN : RED}${checkSummaryOf(verdict)}${RESET}\n`);
 
-    return status;
+    return verdict.status;
 }
 
 export async function runChecks(
@@ -237,7 +221,7 @@ async function checksRun(
                 const drifted = await drift(run);
 
                 return concluded(fix, [
-                    ...verdicts.map((verdict) => passVerdictOf(run.logs, verdict)),
+                    ...verdicts.map((verdict) => passVerdictOf(verdict, run.logs.read)),
                     ...drifted,
                 ]);
             }),

@@ -34,9 +34,23 @@ describe('scope', () => {
             result.file('.artifacts/stryker/stryker.config.json').exists,
         ]).toStrictEqual([false, false]);
         // Then - Stryker, which the fixture installs no runner for, fails each member's run with its own status, and nothing is judged after it
-        expect(result.exitCode).toBe(1);
-        expect(result.stderr.text).not.toContain('ENOENT');
-        expect(result.stdout.text).not.toContain('Measuring the whole suite');
+        expect([
+            result.exitCode,
+            result.stderr.text.includes('ENOENT'),
+            result.stdout.text.includes('Measuring the whole suite'),
+        ]).toStrictEqual([1, false, false]);
+        // Then - the root's verdict is one failed pass per member, with no number a member judged
+        const verdict = configOf(result.file('.artifacts/gate/verdict.json').content);
+        expect(verdict).toMatchObject({
+            command: 'mutation',
+            mutation: null,
+            passes: ['apps/api', 'apps/kit', 'apps/mobile'].map((label) => ({
+                firstError: `${label} failed — its verdict is above`,
+                label,
+                status: 1,
+            })),
+            status: 1,
+        });
     });
 
     test('names each member it measures, and measures only the members a --mutate range names', async () => {

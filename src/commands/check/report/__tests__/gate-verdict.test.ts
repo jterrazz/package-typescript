@@ -6,12 +6,17 @@ import { describe, expect, onTestFinished, test } from 'vitest';
 
 import {
     checkSummaryOf,
+    checkVerdictOf,
+    driftPassOf,
     firstFindingOf,
     headOf,
     mutationSummaryOf,
+    passVerdictOf,
     VERDICT_FILE,
     verdictWritten,
 } from '../gate-verdict.js';
+
+const read = (log: string): string => `\n${log}: the first finding\nthe second\n`;
 
 const pass = (label: string, status: number, firstError: null | string = null) => ({
     firstError,
@@ -143,5 +148,51 @@ describe('gate-verdict', () => {
         expect(readFileSync(join(project, VERDICT_FILE), 'utf8')).toBe(
             `${JSON.stringify(verdict, null, 4)}\n`,
         );
+    });
+
+    test('passVerdictOf and driftPassOf — a failed pass names its first finding, read from its log, the drift report where to read it; a pass that passed names none', () => {
+        // Given - a log reader, two passes and two drift reports
+
+        // Then - each entry
+        expect([
+            passVerdictOf(
+                { label: 'Knip (unused code)', log: 'knip.log', seconds: 2, status: 1 },
+                read,
+            ),
+            passVerdictOf({ label: 'Names (tree)', log: 'names.log', seconds: 1, status: 0 }, read),
+            driftPassOf(1, 0.5),
+            driftPassOf(0, 0.5),
+        ]).toStrictEqual([
+            {
+                firstError: 'knip.log: the first finding',
+                label: 'Knip (unused code)',
+                seconds: 2,
+                status: 1,
+            },
+            { firstError: null, label: 'Names (tree)', seconds: 1, status: 0 },
+            {
+                firstError: 'the drift report refused — its report is above',
+                label: 'Drift (profile)',
+                seconds: 0.5,
+                status: 1,
+            },
+            { firstError: null, label: 'Drift (profile)', seconds: 0.5, status: 0 },
+        ]);
+    });
+
+    test('checkVerdictOf — names the command, red when any pass is, green over passes that all passed', () => {
+        // Given - a project in no repository, its passes green, then one red
+        const project = folder();
+        const green = [pass('Config (one file)', 0)];
+        const red = [...green, pass('Oxlint Check', 1, 'src/a.ts:1:1')];
+
+        // Then - a green check, then a red fix
+        expect([
+            checkVerdictOf(project, { fix: false, passes: green }),
+            checkVerdictOf(project, { fix: true, passes: red }),
+        ]).toStrictEqual([
+            { command: 'check', head: null, mutation: null, passes: green, status: 0 },
+            { command: 'fix', head: null, mutation: null, passes: red, status: 1 },
+        ]);
     });
 });
