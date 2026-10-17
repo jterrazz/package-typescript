@@ -124,8 +124,10 @@ mutation:
 	npx typescript mutation $(MUTATION_ARGS)
 
 check:
-	$(MAKE) lint test mutation
+	TYPESCRIPT_GATE=$$$$:$(CURDIR) $(MAKE) lint test mutation
 ```
+
+`TYPESCRIPT_GATE` names the recipe's shell as the gate, so `check` and `mutation` hold the checkout in its name from the first step to the last, and the tests between them run under the same lock ([Quality checks § One gate per checkout](../reference/quality-checks.md#one-gate-per-checkout)).
 
 `check` ends on `mutation`, which reuses of its last report only what the change since leaves standing, and runs cold in CI ([Quality checks § What a report keeps](../reference/quality-checks.md#what-a-report-keeps)); the verdict over the module tests and the whole suite ([Quality checks § Mutation](../reference/quality-checks.md#mutation)): it measures the change not yet committed, or, on a clean tree, the branch since its merge-base with the default branch (the last commit, on the default branch itself), and prints that range in its verdict. `mutation` is no seventh gesture: it is a helper target `check` runs, written so a session can run the verdict alone, and `names/makefile-answers-every-gesture` asks for none. Three cases add a line:
 
