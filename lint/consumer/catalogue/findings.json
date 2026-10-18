@@ -238,7 +238,7 @@
     {
         "family": "markdown",
         "id": "markdown/prose-has-no-dash",
-        "sentence": "Where the settings refuse dashes, a page's prose punctuates with commas, colons, semicolons, parentheses and full stops, never an em dash nor an en dash between words; a code span, a fence, a quote and a numeric range keep theirs."
+        "sentence": "A page's prose punctuates with commas, colons, semicolons, parentheses and full stops, never an em dash nor an en dash between words; a code span, a fence, a quote and a numeric range keep theirs."
     },
     {
         "family": "secrets",

@@ -36,6 +36,7 @@ A bump to 11 reads more than 10 did, and a project lands red on the first run. S
 - **Astro islands are mutated.** The `.tsx` of a hydrated island belongs to the verdict; move its logic into `.ts` modules under module tests, and compare the markup whole by a spec ([Quality checks § What each kind leaves unmeasured](../reference/quality-checks.md#what-each-kind-leaves-unmeasured)).
 - **Go comments are read and reported.** The Comments pass reads `.go` files with Go's shapes; `fix` deletes none, so sort the reported ones by script, as a migration sorts the `.ts` ones.
 - **Manifest keys are known.** A key neither npm nor the family reads is refused; a credit or a fork's origin moves to the README.
+- **Prose punctuates without dashes.** `markdown/prose-has-no-dash` fails each em dash, and each en dash between words, of every page the Markdown pass reads; rewrite the sentence, and move text that must keep them (signed articles, quoted copy) under a root declared `{ reason, verbatim: true }` ([Quality checks § What the prose gate adds](../reference/quality-checks.md#what-the-prose-gate-adds)).
 - **Settings keys are known.** `typescript.generated` is gone, and a key a release removed now fails the file at load, before any pass runs, in four parts. Its replacement is `typescript.roots.<folder>` written `{ reason, verbatim: true }`.
 
 ## After the bump

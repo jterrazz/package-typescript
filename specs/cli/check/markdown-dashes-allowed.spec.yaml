@@ -1,4 +1,4 @@
-description: passes a page's dashes where the settings keep the standard's default
+description: passes a page's dashes where the settings write refusesDashes false
 fixture: ./__fixtures__/markdown/dashes-allowed/
 runs:
     - command: check
@@ -19,6 +19,10 @@ runs:
           ✓ Passed ({{duration}})
 
            RUN  Knip (unused code)
+
+          ✓ Passed ({{duration}})
+
+           RUN  Architecture (layer map)
 
           ✓ Passed ({{duration}})
 

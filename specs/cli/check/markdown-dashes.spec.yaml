@@ -1,4 +1,4 @@
-description: fails a dash that punctuates prose where the settings refuse it, and keeps a range and code
+description: fails a dash that punctuates prose by the standard's default, and keeps a range and code
 fixture: ./__fixtures__/markdown/dashes/
 runs:
     - command: check
@@ -19,10 +19,6 @@ runs:
           ✓ Passed ({{duration}})
 
            RUN  Knip (unused code)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Architecture (layer map)
 
           ✓ Passed ({{duration}})
 
