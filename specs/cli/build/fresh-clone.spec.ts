@@ -19,4 +19,26 @@ describe('fresh-clone', () => {
             ),
         );
     });
+
+    test('refuses to build a clone another live gate holds, and builds nothing', async () => {
+        // Given - a fresh clone whose .artifacts/gate.lock names the live process that laid it
+        const result = await freshCloneCli.env({ FRESH_CLONE: 'gated' }).exec();
+
+        // Then - the bootstrap refuses in the gate's words for a build, before tsdown writes dist/
+        expect(result.exitCode).toBe(1);
+        expect(result.stderr.text).toContain('or run a build in a worktree of its own');
+        expect(result.stdout.text).toContain('built nothing');
+    });
+
+    test('refuses to build a clone whose settings file exports no settings, and builds nothing', async () => {
+        // Given - a fresh clone whose jterrazz.config.ts exports a number
+        const result = await freshCloneCli.env({ FRESH_CLONE: 'unresolved' }).exec();
+
+        // Then - the bootstrap refuses as `typescript build` does, before tsdown writes dist/
+        expect(result.exitCode).toBe(1);
+        expect(result.stderr.text).toContain(
+            'found: jterrazz.config.ts exports no settings object as its default',
+        );
+        expect(result.stdout.text).toContain('built nothing');
+    });
 });

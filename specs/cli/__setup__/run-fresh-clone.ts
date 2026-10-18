@@ -92,8 +92,8 @@ function refused(): number {
     return build;
 }
 
-// invariant: `gated` holds the clone in this process's name, a live gate no build of the clone runs in; `unresolved` writes a settings file that exports no settings.
-const [scenario = 'fresh'] = process.argv.slice(2);
+// invariant: FRESH_CLONE names the scenario: `gated` holds the clone in this process's name, a live gate no build of the clone runs in; `unresolved` writes a settings file that exports no settings.
+const scenario = process.env.FRESH_CLONE ?? 'fresh';
 if (scenario === 'gated') {
     mkdirSync(join(root, '.artifacts'), { recursive: true });
     writeFileSync(join(root, '.artifacts/gate.lock'), String(process.pid));
