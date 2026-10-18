@@ -207,8 +207,9 @@ export const markdown: Pass = Object.freeze({
         const isKept = await filesKeptByteForByte(context);
         const pages = context.files().filter((file) => file.endsWith('.md') && !isKept(file));
         const { resolved } = await context.config();
-        const refusesDashes =
-            objectOf(resolved.sections.typescript?.markdown).refusesDashes === true;
+        // Stryker disable next-line OptionalChaining: the resolved sections always hold the typescript section, the base laws standing even for a settings file that cannot be read
+        const prose = objectOf(resolved.sections.typescript?.markdown);
+        const refusesDashes = prose.refusesDashes === true;
         for (const path of pages) {
             const text = readText(context.root, path);
             // Stryker disable next-line ConditionalExpression: a page the tree lists is a file on disk, which reads

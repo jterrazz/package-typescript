@@ -9,6 +9,7 @@ runs:
 
            RUN  Publish (packaging)
 
+          publish/no-test-code-in-production: nothing to judge in packages/beta: no @jterrazz/test resolves from this package, and what test material is is its to say
           ✓ Passed ({{duration}})
 
            END  Finalizing quality checks

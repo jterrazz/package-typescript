@@ -230,6 +230,7 @@ function misplacedLines(sources: readonly Source[]): string[] {
             (line) =>
                 `  ✗ ${line.source.label} names ${line.pattern}, whose home is ${line.home ?? ''}`,
         ),
+        // Stryker disable next-line OptionalChaining: the pass runs only where a .gitignore or an ancestor's stands, so a source is always found
         ...(isIgnored ? [] : [`  ✗ ${target?.label ?? ''} does not ignore ${ARTIFACTS}/; add it`]),
         ...sources
             .flatMap((source) => source.negations)

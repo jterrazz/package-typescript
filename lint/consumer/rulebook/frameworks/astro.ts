@@ -33,6 +33,7 @@ export default fragment({
                             'next-intl/*',
                             '@jterrazz/manifest/next',
                         ],
+                        // Stryker disable next-line StringLiteral: oxlint reads the rulebook in a process of its own, which no mutant reaches; the behaviour grounds of specs/cli/preset/ prove each name
                         message: 'this is an Astro site, where the Next runtime does not run',
                     },
                 ],

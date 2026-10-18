@@ -5,7 +5,7 @@ import { lint } from '../names-lint.specification.js';
 
 describe('lint-tree', () => {
     test('holds lint/ to its tree — index, consumer, self and kit, declarations apart, rules by family', async () => {
-        // Given - a lint/ tree with files at its roots, a module at its root that is no entry, a program, a helper, and a rule filed under another family
+        // Given - a lint/ tree with files at its roots, a module at its root that is no entry, a program, a file of two helpers, and a rule filed under another family
         const result = await lint.fixture(directory('./__fixtures__/lint-tree/')).run();
 
         // Then - each finding at its position, with its lesson
@@ -36,9 +36,9 @@ describe('lint-tree', () => {
                 fix: move the program under kit/checker/ and hand it this declaration from a module at the root of lint/, leaving here only what it judges
                 read: docs/reference/quality-checks.md#the-lint-tree
             lint/consumer/checks/tree.js:1:1  names(audience-holds-only-declarations)
-                found: \`lint/consumer/checks/tree.js\` hands \`listFiles\` to another module, named for no declaration of its file
+                found: \`lint/consumer/checks/tree.js\` hands \`listFiles\`, \`listFolders\` to another module, named for no declaration of its file
                 why: consumer/ and self/ hold declarations alone (a rule, a check, a decision on an upstream rule, a catalogue entry, their tests), and what a declaration hands another module carries its file's name, a value as a function, but for a catalogue row or what a module at the root of lint/ composes; one named for something else is code or data other files share, and that is the kit's
-                fix: move it under kit/ (project/, baseline/, checker/, catalogue/, compiler/, testing/) or, when it is this declaration's own, name it for the file
+                fix: move them under kit/ (project/, baseline/, checker/, catalogue/, compiler/, testing/) or, when it is this declaration's own, name it for the file
                 read: docs/reference/quality-checks.md#the-lint-tree
             lint/consumer/listing.js:1:1  names(consumer-folder-is-known)
                 found: \`lint/consumer/listing.js\` holds a file at the root of consumer/

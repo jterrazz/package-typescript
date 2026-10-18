@@ -1,0 +1,17 @@
+description: asks a bare eslint directive to name an oxlint rule
+fixture: ./__fixtures__/suppressions/eslint-bare/
+env: TYPESCRIPT_CHECK_PASSES=suppressions
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Suppressions (directives)
+
+          index.ts:1:1: error suppressions(spelled-for-this-toolchain): line 1 spells an eslint directive naming no rule, which this project does not run; name an oxlint rule
+          ✗ Failed with exit code 1 ({{duration}})
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed, first Suppressions (directives): index.ts:1:1: error suppressions(spelled-for-this-toolchain): line 1 spells an eslint directive naming no rule, which this project does not run; name an oxlint rule

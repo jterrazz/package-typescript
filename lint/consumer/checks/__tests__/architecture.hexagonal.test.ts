@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { PLATFORMS } from '../../../kit/project/project-kind.js';
 import type { Platform } from '../../../kit/project/project-kind.js';
-import { compositionEntriesOf } from '../architecture.hexagonal.js';
+import { compositionEntriesOf, hexagonalRules } from '../architecture.hexagonal.js';
 
 const CANDIDATES = [
     'app/_layout.tsx',
@@ -43,5 +43,29 @@ describe('architecture.hexagonal', () => {
         // Given - a project that declares no platform
         // Then - it is entered as a process is
         expect(entriesOf(null)).toStrictEqual(['src/index.ts']);
+    });
+
+    test('every rule of the map says why it holds, in the words its finding prints', () => {
+        // Given - the map a node project is held to
+        // Then - each rule carries its reason
+        expect(
+            Object.fromEntries(hexagonalRules('node').map((rule) => [rule.name, rule.why])),
+        ).toStrictEqual({
+            'hexagonal-composition-is-the-root':
+                'the composition root builds the app once, for the app entry and for a spec runner; a module that reached it would depend on the whole graph',
+            'hexagonal-composition-wires-infrastructure':
+                '`composition/` is the one layer that builds an implementation and hands it to the application',
+            'hexagonal-domain-is-pure': 'the domain layer is pure: it imports no other layer',
+            'hexagonal-feature-is-independent':
+                'a feature is independent: shared code lives in features/common',
+            'hexagonal-inbound-injects-outbound':
+                'an inbound adapter reaches an outbound one through injection, not by import',
+            'hexagonal-port-knows-no-implementation':
+                'a port is an interface: it cannot depend on what implements it',
+            'hexagonal-ui-stays-pure':
+                'an atom and a molecule are pure, and navigation is a feature concern',
+            'hexagonal-use-case-reaches-ports':
+                'a use case depends on the domain and on ports, never on an implementation',
+        });
     });
 });
