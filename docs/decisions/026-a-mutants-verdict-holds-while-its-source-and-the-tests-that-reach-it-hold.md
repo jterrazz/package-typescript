@@ -1,6 +1,6 @@
 # ADR-026: A mutant's verdict holds while its source and the tests that reach it hold
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-15
 
 The direction is the owner's, given 2026-10-13 ("Mutation speed", before
