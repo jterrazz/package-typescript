@@ -80,7 +80,7 @@
         "typescript": "^6.0.0"
     },
     "devDependencies": {
-        "@jterrazz/test": "file:.artifacts/packages/jterrazz-test-17.0.0.tgz",
+        "@jterrazz/test": "file:vendor/jterrazz-test-17.0.0.tgz",
         "@jterrazz/typescript": "file:.",
         "@types/node": "^26.6.2",
         "@types/react": "^19.3.0",

@@ -45,5 +45,8 @@ export default defineConfig({
                 react: 'the website and mobile specimens of specs/kinds/ declare it, and their install links it from this checkout',
             },
         },
+        roots: {
+            vendor: 'carries the unpublished @jterrazz/test 17 that the v11 release installs, since test 17 peers on typescript ^11 and cannot publish first; the folder leaves once test 17 is on npm',
+        },
     },
 });
