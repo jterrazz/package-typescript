@@ -10,6 +10,7 @@ import {
     realpathSync,
     rmSync,
     symlinkSync,
+    writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -56,6 +57,9 @@ for (const name of readdirSync(join(MODULES, FAMILY))) {
     });
 }
 
+const built = (): number =>
+    spawnSync('npm', ['run', 'build'], { cwd: root, stdio: 'inherit' }).status ?? 1;
+
 function freshlyBuilt(): number {
     for (const unbuilt of ['dist', `${INSTALL}/${FAMILY}/${OWN}/dist`]) {
         if (existsSync(join(root, unbuilt))) {
@@ -65,7 +69,7 @@ function freshlyBuilt(): number {
         }
         process.stdout.write(`absent before the build: ${unbuilt}\n`);
     }
-    const build = spawnSync('npm', ['run', 'build'], { cwd: root, stdio: 'inherit' }).status ?? 1;
+    const build = built();
     if (build !== 0) {
         return build;
     }
@@ -81,5 +85,20 @@ function freshlyBuilt(): number {
     return 0;
 }
 
-process.exitCode = freshlyBuilt();
+function refused(): number {
+    const build = built();
+    process.stdout.write(`${existsSync(join(root, 'dist')) ? 'built' : 'built nothing'}\n`);
+
+    return build;
+}
+
+// invariant: `gated` holds the clone in this process's name, a live gate no build of the clone runs in; `unresolved` writes a settings file that exports no settings.
+const [scenario = 'fresh'] = process.argv.slice(2);
+if (scenario === 'gated') {
+    mkdirSync(join(root, '.artifacts'), { recursive: true });
+    writeFileSync(join(root, '.artifacts/gate.lock'), String(process.pid));
+} else if (scenario === 'unresolved') {
+    writeFileSync(join(root, 'jterrazz.config.ts'), 'export default 42;\n');
+}
+process.exitCode = scenario === 'fresh' ? freshlyBuilt() : refused();
 rmSync(root, { force: true, recursive: true });
