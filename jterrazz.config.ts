@@ -27,6 +27,8 @@ export default defineConfig({
             entry: {
                 'specs/cli/__setup__/packed/consumer.ts':
                     'specs/cli/packed-cli.specification.ts spawns it by its path',
+                'specs/cli/__setup__/run-fresh-clone.ts':
+                    'specs/cli/fresh-clone.specification.ts spawns it by its path',
                 'specs/cli/__setup__/run-hoisted-baseline.ts':
                     'specs/cli/hoisted-baseline.specification.ts spawns it by its path',
                 'specs/cli/__setup__/run-install-matrix.ts':

@@ -101,6 +101,8 @@ The package is TypeScript, and what ships is its build: `npm run build` derives 
 
 A build step is a precondition like an install: `make build` precedes `make lint` and `make test`, and the specs drive the built command. The toolchain builds itself with the build plan it ships to everyone else: tsdown first compiles `src/commands/build/self-build.ts` alone into `.artifacts/bootstrap/`, which then runs the plan over the manifest. There is no second toolchain, only the order of two gestures.
 
+The plan reads `jterrazz.config.ts`, and that file imports the package by its own name: `@jterrazz/typescript/config` itself, and `@jterrazz/typescript/rules` through `@jterrazz/test/config`. A clone holds no build of either, so before it reads the settings the bootstrap resolves the package's own name to the sources its exports map is built from, and a source's `.js` import to the `.ts` beside it (`src/commands/build/own-sources.ts`). The settings are thus read through the presets the checkout holds, never through a `dist/` an earlier build left. `specs/cli/build/fresh-clone.spec.ts` builds a copy of the tree that holds no build at all, as CI's checkout does.
+
 ## The command
 
 `typescript check` runs up to fifteen passes, most of them separate processes: tsc, oxlint, oxfmt, knip, publint, dependency-cruiser and the checker program of this package's own. The command starts them all, awaits each, and reports each in one fixed order ([Quality checks](../reference/quality-checks.md)). A pass whose answer is this package's own code (the knip config merged, the sweep a tool is handed) runs in the command itself, as a function; a tool's own output, oxlint's included, is printed as the tool printed it.

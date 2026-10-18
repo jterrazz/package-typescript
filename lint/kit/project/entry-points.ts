@@ -15,7 +15,8 @@ const DECLARATION = /\.d\.[cm]?ts$/u;
 
 const CODE = /\.[cm]?js$/u;
 
-function subpathStemOf(subpath: string, browser: boolean): string {
+/** The stem the entry grammar names a subpath's source by: `./rules` is `index.rules`, and its browser condition `index.rules.browser`. */
+export function subpathStemOf(subpath: string, browser: boolean): string {
     const parts = subpath === '.' ? [] : withoutDotSlash(subpath).split('/');
 
     return ['index', ...parts, ...(browser ? ['browser'] : [])].join('.');
