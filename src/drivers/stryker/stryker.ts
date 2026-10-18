@@ -19,6 +19,7 @@ import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { isRepositoryRoot, nearestRoot } from '../../../lint/kit/project/repository-root.js';
 import { handOver } from '../run.js';
 import { CHILD_COVERAGE_SOURCE } from './child-coverage.js';
+import { headlessEnvironment } from './headless.js';
 import { incrementalKeptWhileInputsHold, recordInputs } from './incremental.js';
 import type { StaysInFunctions } from './incremental.js';
 import type { Inputs } from './inputs.js';
@@ -119,7 +120,7 @@ export function strykerConfig(
     };
 }
 
-/** Lays the files every stage of the run loads, and the PATH its suite runs under. */
+/** Lays the files every stage of the run loads, and the PATH its suite runs under, a browser out of its reach. */
 export function strykerPrepared(project: string): void {
     mkdirSync(MUTATION_OUTPUT, { recursive: true });
     writeFileSync(join(MUTATION_OUTPUT, 'mutant-setup.mjs'), MUTANT_SETUP_SOURCE);
@@ -128,6 +129,11 @@ export function strykerPrepared(project: string): void {
     // outside: the suite runs as `npm test` runs it, its tools found on the PATH npm gives a script; a spec that spawns oxlint type-aware leaves it to find tsgolint there.
     // Stryker disable next-line StringLiteral: a spec runs this command with the project's node_modules/.bin already first on the PATH, as npm does, so no spec can tell the folders apart
     process.env.PATH = `${join(project, 'node_modules', '.bin')}${delimiter}${process.env.PATH ?? ''}`;
+    Object.assign(
+        process.env,
+        // Stryker disable next-line StringLiteral: the name only names the folder for a reader of .artifacts/; the openers it holds refuse from any folder put first on the PATH
+        headlessEnvironment(join(project, MUTATION_OUTPUT, 'headless'), process.env.PATH),
+    );
 }
 
 // invariant: a workspace member is mutated from its own folder, and its specs may climb out of it to the repository's files; a project that is the repository's own root has nothing above it to lay.

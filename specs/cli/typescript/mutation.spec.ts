@@ -132,6 +132,21 @@ describe('mutation', () => {
         expect(result.stdout.text).not.toContain('Measuring the whole suite');
     });
 
+    test('typescript mutation — every process a test starts finds a refusing opener first on its PATH, and BROWSER=none', async () => {
+        // Given - the consumer whose every mutant is detected, beside a module test that spawns a child reading its own environment
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .fixture(directory('./__fixtures__/mutation-headless/'))
+            .exec('typescript mutation');
+
+        // Then - the child, started by a test the run started, inherited the refusing openers and no browser, so the dry run and every mutant pass it
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout.text).toContain(
+            '✓ Mutation passed: 9 detected, 0 surviving, 0 never judged',
+        );
+    });
+
     test('typescript mutation — a source no module test reaches waits for a change, and the module run builds like the suite', async () => {
         // Given - the same consumer with its built, spec-proven source, outside any repository, so no change reaches it
         const result = await cli
