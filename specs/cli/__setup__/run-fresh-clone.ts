@@ -17,7 +17,10 @@ import process from 'node:process';
 
 const REPOSITORY = resolve(import.meta.dirname, '../../..');
 
-const MODULES = join(REPOSITORY, 'node_modules');
+// hazard: a mutation run's sandbox links its install, and git lists that link, which the `node_modules/` pattern does not ignore since it is no folder.
+const INSTALL = 'node_modules';
+
+const MODULES = join(REPOSITORY, INSTALL);
 
 // invariant: the family's two packages are laid as `npm ci` lays them, copies whose own imports resolve from the clone: this package's own without the build a clone never holds, and @jterrazz/test whole.
 const FAMILY = '@jterrazz';
@@ -34,19 +37,19 @@ const cloned = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--ex
     encoding: 'utf8',
 })
     .stdout.split('\0')
-    .filter((file) => file !== '' && existsSync(join(REPOSITORY, file)));
+    .filter((file) => file !== '' && file !== INSTALL && existsSync(join(REPOSITORY, file)));
 for (const file of cloned) {
     mkdirSync(dirname(join(root, file)), { recursive: true });
     copyFileSync(join(REPOSITORY, file), join(root, file));
 }
 
-mkdirSync(join(root, 'node_modules', FAMILY), { recursive: true });
+mkdirSync(join(root, INSTALL, FAMILY), { recursive: true });
 for (const name of readdirSync(MODULES).filter((one) => one !== FAMILY)) {
-    symlinkSync(join(MODULES, name), join(root, 'node_modules', name));
+    symlinkSync(join(MODULES, name), join(root, INSTALL, name));
 }
 for (const name of readdirSync(join(MODULES, FAMILY))) {
     const installed = join(MODULES, FAMILY, name);
-    cpSync(installed, join(root, 'node_modules', FAMILY, name), {
+    cpSync(installed, join(root, INSTALL, FAMILY, name), {
         dereference: true,
         filter: (source) => name !== OWN || source !== join(installed, 'dist'),
         recursive: true,
@@ -54,7 +57,7 @@ for (const name of readdirSync(join(MODULES, FAMILY))) {
 }
 
 function freshlyBuilt(): number {
-    for (const unbuilt of ['dist', `node_modules/${FAMILY}/${OWN}/dist`]) {
+    for (const unbuilt of ['dist', `${INSTALL}/${FAMILY}/${OWN}/dist`]) {
         if (existsSync(join(root, unbuilt))) {
             process.stdout.write(`not a fresh clone: ${unbuilt} exists\n`);
 
