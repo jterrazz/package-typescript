@@ -91,6 +91,7 @@ export function projectOxlintOf(section: unknown): ProjectOxlint {
         const { level, reason } = isJsonObject(setting) ? setting : {};
         if (!isRuleSetting(level) || !isReason(reason)) {
             return refused(
+                // Stryker disable next-line StringLiteral: the specs that read this lesson (specs/cli/check/drift.spec.ts) run the linked package, which no mutant reaches
                 `sets \`${rule}\` with no \`{ level, reason }\`: a rule the project sets apart from its profile says why`,
             );
         }

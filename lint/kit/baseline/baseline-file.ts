@@ -37,6 +37,7 @@ export function readBaseline(root: string): ReadBaseline {
         parsed = JSON.parse(readFileSync(path, 'utf8'));
     } catch (error) {
         return {
+            // Stryker disable next-line StringLiteral: the parser's words are read by a person; specs/cli/check/drift-unreadable-baseline.spec.yaml proves the baseline is refused as unreadable
             problem: `is not JSON: ${error instanceof Error ? error.message : String(error)}`,
             sections: null,
         };
