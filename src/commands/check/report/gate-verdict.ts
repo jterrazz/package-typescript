@@ -31,14 +31,43 @@ export type GateVerdict = {
     status: number;
 };
 
-/** The first line of a log that says anything, without its colours. */
+// outside: a GitHub runner reads a tool's finding as a workflow command, `::error file=...,title=<rule>::<message>`, its values percent-escaped.
+const WORKFLOW_COMMAND =
+    /^::(?<severity>error|notice|warning)(?<properties>(?: [^:]*)?)::(?<message>.*)/u;
+
+const unescaped = (text: string): string =>
+    text.replaceAll(/%(?:0A|0D|25|2C|3A)/gu, (code) => decodeURIComponent(code));
+
+const TITLE = /[ ,]title=(?<title>[^,]*)/u;
+
+const LOCATED = /^(?<at>\S+:\d+:\d+): (?<text>.*)/u;
+
+const readableOf = (line: string): string =>
+    line.replace(
+        WORKFLOW_COMMAND,
+        (_command: string, severity: string, properties: string, message: string): string => {
+            const first = unescaped(message).replace(/\r?\n[\s\S]*/u, '');
+            const title = TITLE.exec(properties)?.[1];
+            const said = title === undefined ? severity : `${severity} ${unescaped(title)}:`;
+
+            return LOCATED.test(first)
+                ? first.replace(
+                      LOCATED,
+                      (_first: string, at: string, text: string): string =>
+                          `${at}: ${said} ${text}`,
+                  )
+                : `${said} ${first}`;
+        },
+    );
+
+/** The first line of a log that says anything, without its colours, and a runner's workflow command read as a terminal prints it. */
 export function firstFindingOf(log: string): null | string {
     const line = stripVTControlCharacters(log)
         .split('\n')
         .map((text) => text.trim())
         .find((text) => text !== '');
 
-    return line ?? null;
+    return line === undefined ? null : readableOf(line);
 }
 
 /** The commit the checkout stands on, or `null` outside a repository or before its first commit. */

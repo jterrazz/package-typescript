@@ -35,7 +35,7 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 ```
 
 - `command` is the command that wrote it, and `head` the commit the checkout stood on (`null` outside a repository). Each run replaces the file, so it holds the last gate run there: a `make check` whose tests failed after a green `check` still holds that check's verdict, and its exit code is the one to read.
-- `passes` lists every pass that ran, with its label, status and seconds; `firstError` is the first line of a failing pass's log, and `null` for one that passed. The drift report is a pass of its own, `Drift (profile)`.
+- `passes` lists every pass that ran, with its label, status and seconds; `firstError` is the first line of a failing pass's log, and `null` for one that passed. On a GitHub runner that line is a workflow command (`::error file=...,title=<rule>::<message>`), so it is read as a terminal prints it, `src/a.ts:1:1: error <rule>: <message>`, and the summary line quotes the same. The drift report is a pass of its own, `Drift (profile)`.
 - `mutation` is `null` for `check` and `fix`. For `mutation`, `passes` lists its stages (`Mutation (module tests)`, `Mutation (whole suite)`, or one per workspace member), and `mutation` holds `detected`, `survivors` (each `file`, `line`, `mutator`), `unrun` (the mutants the run never judged) and `range`; a run that judged nothing, refused or measured nothing, holds `null` there and says why on its last line.
 
 ### One gate per checkout

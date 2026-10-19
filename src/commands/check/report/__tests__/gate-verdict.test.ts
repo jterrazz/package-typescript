@@ -50,6 +50,28 @@ describe('gate-verdict', () => {
         ]);
     });
 
+    test("firstFindingOf — a runner's workflow command reads as the line a terminal prints, its escapes undone and its first line alone", () => {
+        // Given - oxlint's annotation, a titled one with no location, an untitled one, a title first and escaped, a command of no finding, and one in a sentence
+        const logs = [
+            "::error file=a.ts,line=2,endLine=2,col=7,endColumn=8,title=eslint(no-unused-vars)::a.ts:2:7: Variable 'a' is unused",
+            '::warning title=oxlint::found 100%25 of it%0D%0Aa second line',
+            '::notice::plain%2C said%3A here%0Anext',
+            '::error title=a%3Ab%2Cc,file=x.ts::why',
+            '::group::Oxlint',
+            'see ::error::x',
+        ];
+
+        // Then - the location first where the message holds one, then the severity and the rule
+        expect(logs.map((log) => firstFindingOf(log))).toStrictEqual([
+            "a.ts:2:7: error eslint(no-unused-vars): Variable 'a' is unused",
+            'warning oxlint: found 100% of it',
+            'notice plain, said: here',
+            'error a:b,c: why',
+            '::group::Oxlint',
+            'see ::error::x',
+        ]);
+    });
+
     test('checkSummaryOf — the first failing pass and its first finding; a pass with no finding by its label; a red run with no failing pass as it is; a green run as green', () => {
         // Given - a run whose second and third passes failed, one where the drift report alone failed, a red run with no failing pass, and a green one
         // Then - each run reads in one line
