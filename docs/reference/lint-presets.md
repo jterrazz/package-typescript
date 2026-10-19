@@ -256,6 +256,8 @@ The four keys are `entry`, `ignore`, `ignoreBinaries` and `ignoreDependencies`, 
 
 Knip is workspace-aware on its own: it reads the `workspaces` globs from your `package.json` and reports per member from a single run, which is why `check` invokes it once, at the root. A flat config's `entry` reaches the root workspace alone, so the derived config writes a `workspaces` section: the root's entries under `.`, and each member's under its folder (the preset's own, the member's build's, the paths its presets load by name, and its own `typescript.knip`, whose `entry` and `ignore` are read from the member's folder: `'src/{popup,worker}.ts'` in an extension member's settings). The root's `typescript.knip` `ignore` is resolved from the root, so a path it names inside a member carries the member's folder: `apps/api/src/generated/**`.
 
+What git ignores, Knip is told to ignore too: the derived config adds every folder and file `git ls-files --others --ignored --exclude-standard` lists. Knip reads a `.gitignore` only in the folders on the way to a member, so in a monorepo a nested one elsewhere (a `work/.gitignore` over cloned repositories) was never read, and the root's glob reported every file under it as unused; git honours every `.gitignore`, as the other passes trust it to.
+
 ## The catalogue
 
 Every decision a profile ships, the profiles that carry it, its state, the reason behind an `off`, and the version it was taken in. This section is a projection of `lint/`, regenerated with `TEST_UPDATE=1 npm test`, and never hand-edited. It lists the rules that serve a consumer alone; the ones this package keeps for its own suite are [Test](https://github.com/jterrazz/package-typescript/blob/main/docs/guides/test.md#who-a-rule-is-for)'s.

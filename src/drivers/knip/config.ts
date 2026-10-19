@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 
 import { messageOf, refusal } from '../../../lint/kit/catalogue/lesson.js';
+import { git } from '../../../lint/kit/project/git.js';
 import { isGroundFolder } from '../../../lint/kit/project/ground.js';
 import { isList, objectOf, parsedObject } from '../../../lint/kit/project/json.js';
 import type { JsonObject } from '../../../lint/kit/project/json.js';
@@ -120,6 +121,23 @@ function conventionIgnores(): string[] {
     }
 
     return ignores;
+}
+
+// outside: Knip reads a `.gitignore` only in the folders on the way to a workspace member, so a nested one elsewhere in a monorepo is never read and its files are reported unused; git honours every one.
+export function gitIgnored(cwd: string): string[] {
+    return (
+        git(cwd, [
+            'ls-files',
+            '-z',
+            '--others',
+            '--ignored',
+            '--exclude-standard',
+            '--directory',
+        ]) ?? ''
+    )
+        .split('\0')
+        .filter((path) => path !== '')
+        .map((path) => (path.endsWith('/') ? `${path}**` : path));
 }
 
 function manifestHere(): JsonObject {
@@ -262,7 +280,7 @@ export function mergedKnipConfig({
         entry: [...entries, ...settings.entry],
     });
     const manifest = manifestHere();
-    withEntries(merged, 'ignore', conventionIgnores());
+    withEntries(merged, 'ignore', [...conventionIgnores(), ...gitIgnored('.')]);
     const declared = declaredOf(manifest);
     withVitest(merged, declared);
     withPlaywright(merged, declared);

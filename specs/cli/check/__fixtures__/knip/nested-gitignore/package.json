@@ -1,0 +1,8 @@
+{
+    "name": "fixture-knip-nested-gitignore",
+    "private": true,
+    "type": "module",
+    "workspaces": [
+        "packages/*"
+    ]
+}

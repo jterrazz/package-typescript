@@ -1,0 +1,6 @@
+{
+    "name": "fixture-knip-nested-gitignore-lib",
+    "private": true,
+    "type": "module",
+    "main": "./src/index.ts"
+}
