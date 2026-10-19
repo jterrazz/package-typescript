@@ -53,7 +53,8 @@ describe('gate-verdict', () => {
     test("firstFindingOf — a runner's workflow command reads as the line a terminal prints, its escapes undone and its first line alone", () => {
         // Given - oxlint's annotation, a titled one with no location, an untitled one, a title first and escaped, a command of no finding, and one in a sentence
         const logs = [
-            "::error file=a.ts,line=2,endLine=2,col=7,endColumn=8,title=eslint(no-unused-vars)::a.ts:2:7: Variable 'a' is unused",
+            "::error file=a.ts,line=12,endLine=12,col=17,endColumn=18,title=eslint(no-unused-vars)::a.ts:12:17: Variable 'a' is unused",
+            '::error title=oxlint::found in a.ts:12:17: here',
             '::warning title=oxlint::found 100%25 of it%0D%0Aa second line',
             '::notice::plain%2C said%3A here%0Anext',
             '::error title=a%3Ab%2Cc,file=x.ts::why',
@@ -63,7 +64,8 @@ describe('gate-verdict', () => {
 
         // Then - the location first where the message holds one, then the severity and the rule
         expect(logs.map((log) => firstFindingOf(log))).toStrictEqual([
-            "a.ts:2:7: error eslint(no-unused-vars): Variable 'a' is unused",
+            "a.ts:12:17: error eslint(no-unused-vars): Variable 'a' is unused",
+            'error oxlint: found in a.ts:12:17: here',
             'warning oxlint: found 100% of it',
             'notice plain, said: here',
             'error a:b,c: why',

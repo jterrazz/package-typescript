@@ -40,7 +40,7 @@ const unescaped = (text: string): string =>
 
 const TITLE = /[ ,]title=(?<title>[^,]*)/u;
 
-const LOCATED = /^(?<at>\S+:\d+:\d+): (?<text>.*)/u;
+const LOCATED = /^(?<at>\S+:\d+:\d+): /u;
 
 const readableOf = (line: string): string =>
     line.replace(
@@ -51,11 +51,7 @@ const readableOf = (line: string): string =>
             const said = title === undefined ? severity : `${severity} ${unescaped(title)}:`;
 
             return LOCATED.test(first)
-                ? first.replace(
-                      LOCATED,
-                      (_first: string, at: string, text: string): string =>
-                          `${at}: ${said} ${text}`,
-                  )
+                ? first.replace(LOCATED, (_first: string, at: string): string => `${at}: ${said} `)
                 : `${said} ${first}`;
         },
     );
