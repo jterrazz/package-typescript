@@ -1,0 +1,18 @@
+description: refuses a skill frontmatter that is no YAML or states no description, and passes a quoted one
+fixture: ./__fixtures__/markdown/skill-frontmatter/
+env: TYPESCRIPT_CHECK_PASSES=markdown
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Markdown (prose)
+
+          skills/refunds/SKILL.md:1:1: error markdown(skill-frontmatter-reads): found: the frontmatter states no `description` · why: an agent finds a skill by the name and the description its frontmatter states, and an installer that cannot read them keeps the copy it had, so the change reaches no one and nothing says so · fix: give it a `name` and a `description`, each a string that says something · read: docs/reference/quality-checks.md#what-the-prose-gate-adds
+          skills/returns/SKILL.md:3:1: error markdown(skill-frontmatter-reads): found: the frontmatter is no YAML: Nested mappings are not allowed in compact mappings · why: an agent finds a skill by the name and the description its frontmatter states, and an installer that cannot read them keeps the copy it had, so the change reaches no one and nothing says so · fix: quote a value that holds `: ` or opens on a YAML indicator (`description: "Use when: ..."`), then run again · read: docs/reference/quality-checks.md#what-the-prose-gate-adds
+          ✗ Failed with exit code 1 ({{duration}})
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed, first Markdown (prose): skills/refunds/SKILL.md:1:1: error markdown(skill-frontmatter-reads): found: the frontmatter states no `description` · why: an agent finds a skill by the name and the description its frontmatter states, and an installer that cannot read them keeps the copy it had, so the change reaches no one and nothing says so · fix: give it a `name` and a `description`, each a string that says something · read: docs/reference/quality-checks.md#what-the-prose-gate-adds

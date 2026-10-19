@@ -8,6 +8,7 @@ import { proseDashes } from './markdown.dashes.js';
 import { airlessFences, FENCE, linesWithFrontmatterBlanked } from './markdown.fences.js';
 import { QUALIFIED_BY_REPOSITORY, unlinkedReferences, withoutGenerated } from './markdown.parts.js';
 import { brokenLinks, rumdl } from './markdown.rumdl.js';
+import { skillFrontmatter } from './markdown.skills.js';
 
 type Found = { column?: number; line?: number; message: string; rule: string };
 
@@ -181,7 +182,11 @@ function auditPage(
 ): Found[] {
     const markdown = withoutGenerated(written);
     const cited = withoutFences(markdown);
-    const found = [...missingPaths(context, path, cited), ...missingPages(context, path, cited)];
+    const found = [
+        ...skillFrontmatter(path, written),
+        ...missingPaths(context, path, cited),
+        ...missingPages(context, path, cited),
+    ];
 
     for (const reason of longProseBlocks(markdown)) {
         found.push({ message: reason, rule: 'markdown/prose-block-is-short' });

@@ -222,6 +222,11 @@
     },
     {
         "family": "markdown",
+        "id": "markdown/skill-frontmatter-reads",
+        "sentence": "A skill's SKILL.md opens on a YAML frontmatter that parses and states a name and a description, since an installer that cannot read it keeps its old copy."
+    },
+    {
+        "family": "markdown",
         "id": "markdown/prose-block-is-short",
         "sentence": "A paragraph or a list item runs twelve lines at most."
     },
