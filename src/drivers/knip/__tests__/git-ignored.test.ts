@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { gitIgnored } from '../config.js';
+import { gitIgnored } from '../git-ignored.js';
 
 function folder(files: Readonly<Record<string, string>>): string {
     const root = mkdtempSync(join(tmpdir(), 'knip-config-'));
@@ -19,7 +19,7 @@ function folder(files: Readonly<Record<string, string>>): string {
     return root;
 }
 
-describe('config', () => {
+describe('git-ignored', () => {
     test('gitIgnored — every folder and file git ignores, a nested .gitignore honoured, a folder as its glob and a name as git wrote it', () => {
         // Given - a repository ignoring a root file, a folder by a nested .gitignore, and a file whose name git would quote
         const root = folder({
