@@ -1,7 +1,6 @@
 import process from 'node:process';
 
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
-import type { ChapterAnchor } from '../../../lint/kit/catalogue/lesson.js';
 import { readCommandLine } from '../../../lint/kit/checker/command-line.js';
 import { git } from '../../../lint/kit/project/git.js';
 import { dockerRun } from '../../drivers/docker/docker.js';
@@ -19,8 +18,6 @@ import {
 } from './rehearsal.js';
 import type { Facts } from './rehearsal.js';
 
-const READ: ChapterAnchor = 'docs/reference/commands.md#a-rehearsal-on-linux';
-
 const WHY =
     'the rehearsal runs the gate on a fresh clone of a committed branch, installed from its lockfile, as the runner that publishes the release does';
 
@@ -32,7 +29,7 @@ function factsOf(args: readonly string[]): Facts | string {
         return refusal({
             fix: 'run it from a clone or a worktree of the repository',
             found: `${process.cwd()} is in no git repository`,
-            read: READ,
+            read: 'docs/reference/commands.md#a-rehearsal-on-linux',
             why: WHY,
         });
     }
@@ -41,7 +38,7 @@ function factsOf(args: readonly string[]): Facts | string {
         return refusal({
             fix: 'check out the branch to rehearse, or name it with --branch <name>',
             found: 'the checkout stands on no branch',
-            read: READ,
+            read: 'docs/reference/commands.md#a-rehearsal-on-linux',
             why: WHY,
         });
     }
@@ -50,7 +47,7 @@ function factsOf(args: readonly string[]): Facts | string {
         return refusal({
             fix: 'commit the lockfile the package manager writes (package-lock.json, bun.lock or pnpm-lock.yaml)',
             found: `${root} holds no lockfile`,
-            read: READ,
+            read: 'docs/reference/commands.md#a-rehearsal-on-linux',
             why: WHY,
         });
     }
