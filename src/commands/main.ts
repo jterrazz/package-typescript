@@ -15,6 +15,7 @@ import { doctor } from './doctor/doctor.command.js';
 import { fix } from './fix/fix.command.js';
 import { gateLock } from './gate-lock/gate-lock.command.js';
 import { mutation } from './mutation/mutation.command.js';
+import { rehearse } from './rehearse/rehearse.command.js';
 import { start } from './start/start.command.js';
 import { helpOf, SURFACES } from './surface.js';
 import type { CommandName, Surface } from './surface.js';
@@ -80,6 +81,7 @@ const COMMANDS: Readonly<Record<CommandName, Command>> = {
     fix,
     'gate-lock': gateLock,
     mutation,
+    rehearse,
     start,
     tsc,
 };

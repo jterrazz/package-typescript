@@ -84,6 +84,22 @@ export const SURFACES = {
         read: 'docs/reference/quality-checks.md#one-gate-per-checkout',
         says: 'Refuse while a running gate holds this checkout, naming its pid: the guard an install or a pack runs first',
     },
+    rehearse: {
+        flags: [
+            {
+                name: '--branch',
+                says: 'Rehearse this branch instead of the one checked out',
+                value: '<name>',
+            },
+            {
+                name: '--targets',
+                says: `Run these make targets instead of \`build lint test\`, in one value: 'lint test'`,
+                value: '<targets>',
+            },
+        ],
+        read: 'docs/reference/commands.md#a-rehearsal-on-linux',
+        says: 'Run the gate on Linux in Docker, on a fresh clone of the branch, as a GitHub runner runs it',
+    },
     clean: {
         read: 'docs/start/getting-started.md#where-a-tools-output-goes',
         says: "Remove .artifacts/; dist/ stays, as the build's product",

@@ -14,10 +14,11 @@ The sequence, in order:
 
 1. the change merges to `main` and validates green;
 2. a `chore(release): X.Y.Z` commit lands on `main`, bumping `version` in `package.json` and the lockfile, and nothing else;
-3. the owner tags `vX.Y.Z` and creates the GitHub Release;
-4. the workflow runs `make build` and publishes the `dist/` it wrote to npm.
+3. `make rehearse` runs the gate on that commit as the runner will, on Linux ([A rehearsal on Linux](../reference/commands.md#a-rehearsal-on-linux)), and exits 0;
+4. the owner tags `vX.Y.Z` and creates the GitHub Release;
+5. the workflow runs `make build` and publishes the `dist/` it wrote to npm.
 
-Steps 2 to 4 are the owner's. A contributor never bumps the version inside a feature branch: two branches in flight would both claim the same number, and the tag is what the registry answers to.
+Steps 2 to 5 are the owner's. A contributor never bumps the version inside a feature branch: two branches in flight would both claim the same number, and the tag is what the registry answers to.
 
 ## Which number moves
 

@@ -1,4 +1,4 @@
-.PHONY: install build install-self lint fix test check check-links mutation
+.PHONY: install build install-self lint fix test check check-links mutation rehearse
 
 # invariant: the stamp depends on the packed toolchain tarballs as well as the lockfile, so a package packed again under the same name is installed again, never run against yesterday's build.
 # invariant: an install replaces the dependencies a running gate reads, so every path that installs (`install`, and any target that depends on `node_modules/.install`) asks the toolchain's `gate-lock` first, which refuses while another gate holds `.artifacts/gate.lock`; a checkout with no install yet holds no gate.
@@ -39,3 +39,7 @@ check-links:
 # value: incremental: only the mutants whose source, covering tests or their ground changed since the report left in .artifacts/stryker/ run again; CI, or `MUTATION_ARGS=--cold`, starts both runs from no report.
 mutation: build
 	node dist/typescript.js mutation $(MUTATION_ARGS)
+
+# outside: needs docker and the network; `check` never calls it, and a release runs it on its commit before the tag.
+rehearse: build
+	node dist/typescript.js rehearse $(REHEARSE_ARGS)
