@@ -32,11 +32,13 @@ for (const tool of ['tsc', 'oxfmt', 'knip', 'ls-lint']) {
     stub(join(root, 'node_modules/.bin', tool), `echo "${tool}-stub-ran"`);
 }
 stub(join(installed, 'node_modules/.bin/oxlint'), `echo '{ "diagnostics": [] }'`);
-// outside: npm hoists the package's own dependency to the consumer root, beside the stubbed bins.
-symlinkSync(
-    resolve(import.meta.dirname, '../../../node_modules/typescript'),
-    join(root, 'node_modules/typescript'),
-);
+// outside: npm hoists the package's own dependencies a pass imports to the consumer root, beside the stubbed bins.
+for (const hoisted of ['typescript', 'yaml']) {
+    symlinkSync(
+        resolve(import.meta.dirname, '../../../node_modules', hoisted),
+        join(root, 'node_modules', hoisted),
+    );
+}
 
 writeFileSync(
     join(root, 'package.json'),
