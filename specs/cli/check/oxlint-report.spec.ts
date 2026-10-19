@@ -6,8 +6,8 @@ import { describe, expect, test } from 'vitest';
 
 import { temporaryDirectory } from '../../__setup__/temporary-directory.js';
 import { onlyPasses } from '../__setup__/check-passes.js';
+import { FORM_VARIABLES, formOnly } from '../__setup__/oxlint-forms.js';
 import { cli } from '../cli.specification.js';
-import { FORM_VARIABLES, formOnly } from './__setup__/oxlint-forms.js';
 
 // invariant: the oracle is oxlint's own report over a copy of the same ground in the same environment.
 

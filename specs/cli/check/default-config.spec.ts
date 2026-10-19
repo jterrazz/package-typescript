@@ -3,19 +3,13 @@ import { describe, expect, test } from 'vitest';
 
 import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
-import { formOnly } from './__setup__/oxlint-forms.js';
 
 describe('default-config', () => {
     test('hands a project with no config of its own the default, never the config above it', async () => {
         // Given - a project with no oxlint or oxfmt config, under a folder whose configs turn `no-debugger` off and indent with tabs
         // When - the quality checks run from the project, oxlint answering in its compact form
         const result = await cli
-            .with({
-                env: {
-                    ...formOnly({ AI_AGENT: 'spec' }),
-                    ...onlyPasses('oxlint', 'oxfmt'),
-                },
-            })
+            .with({ env: onlyPasses('oxlint', 'oxfmt') })
             .fixture(directory('./__fixtures__/default-config/decoy-parent/'))
             .exec('check', { cwd: 'project' });
 

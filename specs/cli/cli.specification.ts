@@ -2,6 +2,7 @@ import { specification } from '@jterrazz/test';
 import { afterAll } from 'vitest';
 
 import { SELECTING_BIN } from './__setup__/check-passes.js';
+import { ONE_FORM } from './__setup__/oxlint-forms.js';
 
 // outside: Rolldown's slow-plugin advisory depends on the machine's load, never on the command: no token covers it.
 const SLOW_PLUGIN_ADVISORY =
@@ -16,6 +17,7 @@ function withoutSlowPluginAdvisory(text: string): string {
 }
 
 export const { cli, cleanup } = await specification.cli(SELECTING_BIN, {
+    defaults: ONE_FORM,
     transform: withoutSlowPluginAdvisory,
 });
 

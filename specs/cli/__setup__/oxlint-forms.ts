@@ -22,3 +22,6 @@ export const FORM_VARIABLES = [
 export function formOnly(form: Record<string, string>): Record<string, null | string> {
     return { ...Object.fromEntries(FORM_VARIABLES.map((variable) => [variable, null])), ...form };
 }
+
+// invariant: oxlint picks its report's form from the host (an agent, a GitHub runner, a terminal), so a runner whose runs print that report states one, the compact line, for every run whose chain states none.
+export const ONE_FORM = formOnly({ AI_AGENT: 'spec' });

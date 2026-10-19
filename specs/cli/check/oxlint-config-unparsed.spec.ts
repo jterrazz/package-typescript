@@ -5,10 +5,8 @@ import { describe, expect, test } from 'vitest';
 
 import { onlyPasses } from '../__setup__/check-passes.js';
 import { cli } from '../cli.specification.js';
-import { formOnly } from './__setup__/oxlint-forms.js';
 
-// outside: oxlint answers in its compact form whatever the machine's environment picks.
-const oxlint = cli.with({ env: { ...formOnly({ AI_AGENT: 'spec' }), ...onlyPasses('oxlint') } });
+const oxlint = cli.with({ env: onlyPasses('oxlint') });
 
 describe('oxlint-config-unparsed', () => {
     test('fails the oxlint pass when the config names a JS plugin that is not there', async () => {

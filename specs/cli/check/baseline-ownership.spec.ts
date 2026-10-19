@@ -5,8 +5,8 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { onlyPasses } from '../__setup__/check-passes.js';
+import { formOnly } from '../__setup__/oxlint-forms.js';
 import { cli } from '../cli.specification.js';
-import { formOnly } from './__setup__/oxlint-forms.js';
 
 // outside: oxlint refuses two plugins by one name in one run, and @jterrazz/test's checks load every config of this
 // repository: the fixture cannot hold the stub plugin's config, nor the stub preset, so each case writes them.
@@ -134,10 +134,7 @@ describe('baseline-ownership', () => {
     test("holds @jterrazz/test's plugin in the oxlint pass, as oxlint's own rule", async () => {
         // Given - no recorded debt, and a plugin that fails oxlint on every file
         // When - the checks run, oxlint answering in its compact form
-        const result = await ground({
-            ...formOnly({ AI_AGENT: 'spec' }),
-            ...onlyPasses('oxlint'),
-        }).exec('check');
+        const result = await ground(onlyPasses('oxlint')).exec('check');
 
         // Then - the plugin's diagnostic is oxlint's, printed and judged in its pass, on each file in the order oxlint's threads finish
         expect(result.exitCode).toBe(1);
@@ -308,7 +305,7 @@ describe('baseline-ownership', () => {
     test("refuses an oxlint rule left in this package's section, naming the gesture that moves it", async () => {
         // Given - a typescript section recorded before oxlint held its own rules
         // When - the checks run, oxlint answering in its compact form
-        const result = await ground({ ...formOnly({ AI_AGENT: 'spec' }), ...onlyPasses('oxlint') })
+        const result = await ground(onlyPasses('oxlint'))
             .prepare(
                 written({
                     '.jterrazz/baseline.json':

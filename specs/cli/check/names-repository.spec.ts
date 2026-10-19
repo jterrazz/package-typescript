@@ -6,7 +6,6 @@ import { describe, expect, test } from 'vitest';
 import { onlyPasses } from '../__setup__/check-passes.js';
 import { git, repository } from '../__setup__/repository.js';
 import { cli } from '../cli.specification.js';
-import { formOnly } from './__setup__/oxlint-forms.js';
 
 function selected(passes: Record<string, null | string> = {}) {
     return cli.with({ env: passes });
@@ -24,11 +23,7 @@ const names = (makefile?: 'four' | 'more' | 'six') => {
 
 const TREE_PASSES = onlyPasses('suppressions', 'markdown', 'names', 'secrets');
 
-// outside: the linter answers in its compact form whatever the machine's environment picks.
-const GATES = {
-    ...formOnly({ AI_AGENT: 'spec' }),
-    ...onlyPasses('oxlint', 'markdown', 'names', 'secrets'),
-};
+const GATES = onlyPasses('oxlint', 'markdown', 'names', 'secrets');
 
 function dataFolder(workdir: string): void {
     mkdirSync(join(workdir, 'data'));
