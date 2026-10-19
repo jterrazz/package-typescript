@@ -66,6 +66,30 @@ describe('rehearse', () => {
         `);
     });
 
+    test('rehearses the branch checked out with build, lint and test when none is named', async () => {
+        // Given - a committed repository with a lockfile on its default branch, docker stubbed on PATH
+        const result = await cli
+            .fixture(directory('../__fixtures__/sample-app/'))
+            .prepare(locked)
+            .prepare(committed)
+            .prepare((workdir) => {
+                git(workdir, 'branch', '--quiet', '-M', 'trunk');
+            })
+            .prepare(stubbedDocker)
+            .env({ PATH: `$WORKDIR/bin:${process.env.PATH ?? ''}` })
+            .exec('rehearse');
+
+        // Then - the branch and the default targets, in the header and in the run
+        expect(result.stdout.text).toBe(
+            ' TYPESCRIPT  Rehearsing trunk on Linux: a fresh clone in node:24, `make build lint test` as a GitHub runner runs it...\n\n',
+        );
+        expect(result.file('handed.txt').content.split('\n').slice(8, 11)).toStrictEqual([
+            'REHEARSED_BRANCH=trunk',
+            '-e',
+            'REHEARSED_TARGETS=build lint test',
+        ]);
+    });
+
     test('hands docker the run of the branch and the targets it is named, and exits with its code', async () => {
         // Given - a committed repository with a lockfile, docker stubbed on PATH, and a branch and targets named
         const result = await cli

@@ -2,12 +2,12 @@ import process from 'node:process';
 
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { readCommandLine } from '../../../lint/kit/checker/command-line.js';
-import { git } from '../../../lint/kit/project/git.js';
 import { dockerRun } from '../../drivers/docker/docker.js';
 import { badge, print, RED, RESET } from '../check/report/terminal.js';
 import {
     branchOf,
     bunOf,
+    checkoutRootOf,
     drivesBrowser,
     gitDirectoryOf,
     IMAGE,
@@ -23,9 +23,8 @@ const WHY =
 
 function factsOf(args: readonly string[]): Facts | string {
     const commandLine = readCommandLine(args, ['--branch', '--targets']);
-    const root = git(process.cwd(), ['rev-parse', '--show-toplevel'])?.trim();
-    const gitDirectory = root === undefined ? undefined : gitDirectoryOf(root);
-    if (root === undefined || gitDirectory === undefined) {
+    const root = checkoutRootOf(process.cwd());
+    if (root === undefined) {
         return refusal({
             fix: 'run it from a clone or a worktree of the repository',
             found: `${process.cwd()} is in no git repository`,
@@ -56,7 +55,7 @@ function factsOf(args: readonly string[]): Facts | string {
         branch,
         browser: drivesBrowser(root),
         bun: bunOf(root),
-        gitDirectory,
+        gitDirectory: gitDirectoryOf(root),
         go: tracksGo(root),
         installer,
         root,

@@ -7,6 +7,7 @@ import { describe, expect, onTestFinished, test } from 'vitest';
 import {
     branchOf,
     bunOf,
+    checkoutRootOf,
     drivesBrowser,
     gitDirectoryOf,
     installerOf,
@@ -184,12 +185,14 @@ describe('rehearsal', () => {
         ]);
     });
 
-    test('bunOf — the version a manifest pins bun at, its hash dropped, and none for another manager or no pin', () => {
-        // Given - bun pinned with a hash, bun pinned bare, npm pinned, and no pin
+    test('bunOf — the version a manifest pins bun at, its hash dropped, and none for another manager, a pin that is no text, or no pin', () => {
+        // Given - bun pinned with a hash, bun pinned bare, npm pinned, a name ending in bun, a list, and no pin
         const manifests = [
             { packageManager: 'bun@1.2.9+sha512.abc' },
             { packageManager: 'bun@1.3.0' },
             { packageManager: 'npm@10.0.0' },
+            { packageManager: 'notbun@1.0.0' },
+            { packageManager: ['bun@1.0.0'] },
             {},
         ];
 
@@ -198,12 +201,12 @@ describe('rehearsal', () => {
             manifests.map((manifest) =>
                 bunOf(folder({ 'package.json': JSON.stringify(manifest) })),
             ),
-        ).toStrictEqual(['1.2.9', '1.3.0', undefined, undefined]);
+        ).toStrictEqual(['1.2.9', '1.3.0', undefined, undefined, undefined, undefined]);
     });
 
-    test('gitDirectoryOf and branchOf — a checkout keeps its own .git, a worktree reads the one of its main checkout, a detached one stands on no branch, and a plain folder is no repository', () => {
+    test('checkoutRootOf, gitDirectoryOf and branchOf — a checkout keeps its own .git, a worktree reads the one of its main checkout, a detached one stands on no branch, and a plain folder is no repository', () => {
         // Given - a checkout on main, a worktree of it on its own branch, the checkout detached, and a folder
-        const main = repository({ 'a.txt': 'a' });
+        const main = repository({ 'sub/a.txt': 'a' });
         const worktree = join(folder(), 'wt');
         git(main, 'worktree', 'add', '--quiet', '-b', 'side', worktree);
         const detached = repository({ 'a.txt': 'a' });
@@ -212,20 +215,20 @@ describe('rehearsal', () => {
 
         // Then - each git directory by its absolute path, and each branch
         expect([
-            [gitDirectoryOf(main), branchOf(main)],
-            [gitDirectoryOf(worktree), branchOf(worktree)],
-            [gitDirectoryOf(detached), branchOf(detached)],
-            [gitDirectoryOf(plain), branchOf(plain)],
+            [checkoutRootOf(join(main, 'sub')), gitDirectoryOf(main), branchOf(main)],
+            [checkoutRootOf(worktree), gitDirectoryOf(worktree), branchOf(worktree)],
+            [checkoutRootOf(detached), gitDirectoryOf(detached), branchOf(detached)],
+            [checkoutRootOf(plain), branchOf(plain)],
         ]).toStrictEqual([
-            [join(main, '.git'), 'main'],
-            [join(main, '.git'), 'side'],
-            [join(detached, '.git'), undefined],
+            [main, join(main, '.git'), 'main'],
+            [worktree, join(main, '.git'), 'side'],
+            [detached, join(detached, '.git'), undefined],
             [undefined, undefined],
         ]);
     });
 
     test('tracksGo and drivesBrowser — a go.mod git tracks at any depth asks for Go, and a declared playwright for a browser', () => {
-        // Given - a nested tracked go.mod, an untracked one, and manifests declaring playwright as a dependency, @playwright/test as a devDependency, and neither
+        // Given - a nested tracked go.mod, an untracked one, a folder that is no repository, and manifests declaring playwright as a dependency, @playwright/test as a devDependency, and neither
         const tracked = repository({ 'tools/go.mod': 'module x\n' });
         const untracked = repository({});
         writeFileSync(join(untracked, 'go.mod'), 'module x\n');
@@ -236,7 +239,11 @@ describe('rehearsal', () => {
         ];
 
         // Then - Go for the tracked one alone, a browser for the two drivers
-        expect([tracksGo(tracked), tracksGo(untracked)]).toStrictEqual([true, false]);
+        expect([tracksGo(tracked), tracksGo(untracked), tracksGo(folder())]).toStrictEqual([
+            true,
+            false,
+            false,
+        ]);
         expect(
             manifests.map((manifest) =>
                 drivesBrowser(folder({ 'package.json': JSON.stringify(manifest) })),

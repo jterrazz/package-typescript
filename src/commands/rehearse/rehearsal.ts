@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { isAbsolute, join, resolve } from 'node:path';
+import { join } from 'node:path';
 
 import { manifestAt } from '../../../lint/kit/project/build-steps.js';
 import { git } from '../../../lint/kit/project/git.js';
@@ -45,21 +45,22 @@ export const installerOf = (root: string): Installer | undefined =>
 export function bunOf(root: string): string | undefined {
     const pinned = manifestAt(root).packageManager;
 
-    return typeof pinned === 'string' ? BUN_PINNED.exec(pinned)?.groups?.version : undefined;
+    return typeof pinned === 'string' ? BUN_PINNED.exec(pinned)?.[1] : undefined;
 }
 
-/** Where git keeps the objects and refs of the checkout at `root`: its own `.git`, or the main checkout's when `root` is a worktree. */
-export function gitDirectoryOf(root: string): string | undefined {
-    const common = git(root, ['rev-parse', '--git-common-dir'])?.trim();
+/** Where git keeps the objects and refs of a checkout's root: its own `.git`, or the main checkout's when the root is a worktree. */
+export const gitDirectoryOf = (root: string): string =>
+    String(git(root, ['rev-parse', '--path-format=absolute', '--git-common-dir'])).trim();
 
-    return common === undefined ? undefined : isAbsolute(common) ? common : resolve(root, common);
-}
+/** The root of the checkout `cwd` stands in, or `undefined` outside a repository. */
+export const checkoutRootOf = (cwd: string): string | undefined =>
+    git(cwd, ['rev-parse', '--show-toplevel'])?.trim();
 
 export const branchOf = (root: string): string | undefined =>
     git(root, ['symbolic-ref', '--quiet', '--short', 'HEAD'])?.trim();
 
 export const tracksGo = (root: string): boolean =>
-    (git(root, ['ls-files', '--', 'go.mod', '**/go.mod']) ?? '').trim() !== '';
+    (git(root, ['ls-files', '--', 'go.mod', '**/go.mod']) ?? '') !== '';
 
 export const drivesBrowser = (root: string): boolean => {
     const declared = declaredDependencies(root);
