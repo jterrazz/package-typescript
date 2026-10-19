@@ -22,7 +22,7 @@ install-self: build
 lint: install-self
 	npm run lint
 
-fix: build
+fix: install-self
 	npm run lint:fix
 
 test: install-self
