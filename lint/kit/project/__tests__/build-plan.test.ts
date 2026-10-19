@@ -184,30 +184,43 @@ describe('build-plan', () => {
         ]);
     });
 
-    test('buildPlanOf — a package loaded by require builds both formats, cleaning dist/ first, for node when it declares nothing', () => {
+    test('buildPlanOf — a package loaded by require builds each format apart, cleaning dist/ first, for node when it declares nothing', () => {
         // Given - an undeclared package whose manifest publishes its index as ESM and CommonJS
         const root = tree(['src/index.ts'], {
             exports: { import: './dist/index.js', require: './dist/index.cjs' },
             name: 'dual',
         });
-        const declaration = null;
+        const plan = buildPlanOf(root, {
+            declaration: null,
+            settings: conventionsOf(root).settings,
+        });
 
-        // Then - one step, both formats, the CommonJS exports named
-        expect(
-            buildPlanOf(root, { declaration, settings: conventionsOf(root).settings }),
-        ).toStrictEqual([
-            {
-                clean: true,
-                dts: true,
-                entry: { index: 'src/index.ts' },
-                fixedExtension: false,
-                format: ['esm', 'cjs'],
-                hash: false,
-                outDir: 'dist',
-                outputOptions: { chunkFileNames: 'shared-[name].js', exports: 'named' },
-                platform: 'node',
-                sourcemap: true,
+        // Then - the ESM step of the index cleaning dist/, then the CommonJS one, both for node
+        expect(plan.map(({ clean, format, platform }) => [clean, format, platform])).toStrictEqual([
+            [true, ['esm'], 'node'],
+            [false, ['cjs'], 'node'],
+        ]);
+    });
+
+    test('buildPlanOf — no two steps name a shared module alike, since every step writes into dist/', () => {
+        // Given - a package publishing ESM, CommonJS and a browser condition
+        const root = tree(['src/index.ts', 'src/index.browser.ts'], {
+            exports: {
+                browser: './dist/index.browser.js',
+                import: './dist/index.js',
+                require: './dist/index.cjs',
             },
+        });
+
+        // Then - the ESM, the CommonJS and the browser steps, each under a chunk name of its own, the CommonJS exports named
+        expect(
+            buildPlanOf(root, { declaration: null, settings: conventionsOf(root).settings }).map(
+                ({ outputOptions }) => outputOptions,
+            ),
+        ).toStrictEqual([
+            { chunkFileNames: 'shared-[name].js' },
+            { chunkFileNames: 'shared-[name].cjs', exports: 'named' },
+            { chunkFileNames: 'browser-shared-[name].js' },
         ]);
     });
 
@@ -245,7 +258,6 @@ describe('build-plan', () => {
         });
         const declaration = { kind: 'library' as const, platform: 'react' as const };
         const step = { fixedExtension: false, format: ['esm'], hash: false, outDir: 'dist' };
-        const shared = { chunkFileNames: 'shared-[name].js' };
 
         // Then - the default for the browser, react being a browser platform, cleaning dist/; the browser build after it, keeping what the first wrote
         expect(
@@ -256,7 +268,7 @@ describe('build-plan', () => {
                 clean: true,
                 dts: true,
                 entry: { index: 'src/index.ts' },
-                outputOptions: shared,
+                outputOptions: { chunkFileNames: 'shared-[name].js' },
                 platform: 'browser',
                 sourcemap: true,
             },
@@ -265,7 +277,7 @@ describe('build-plan', () => {
                 clean: false,
                 dts: false,
                 entry: { 'index.browser': 'src/index.browser.ts' },
-                outputOptions: shared,
+                outputOptions: { chunkFileNames: 'browser-shared-[name].js' },
                 platform: 'browser',
                 sourcemap: true,
             },
@@ -288,15 +300,11 @@ describe('build-plan', () => {
     });
 
     test('buildPlanOf — a target builds only the formats the manifest names', () => {
-        // Given - a main that names a CommonJS file alone, and an export naming both
+        // Given - a main that names a CommonJS file alone
         const required = tree(['src/index.ts'], { main: './dist/index.cjs', name: 'only-cjs' });
-        const both = tree(['src/index.ts'], {
-            exports: { import: './dist/index.js', require: './dist/index.cjs' },
-            name: 'both',
-        });
 
-        // Then - the CommonJS-only target builds no ESM beside it, the dual one builds both
-        expect([formatsOf(required), formatsOf(both)]).toStrictEqual([[['cjs']], [['esm', 'cjs']]]);
+        // Then - the CommonJS-only target builds no ESM beside it
+        expect(formatsOf(required)).toStrictEqual([['cjs']]);
     });
 
     test('buildPlanOf — a module only the host provides is left to it, named by its types package', () => {
@@ -337,15 +345,12 @@ describe('build-plan', () => {
             settings: conventionsOf(root).settings,
         });
 
-        // Then - the command lacking one is built apart under the interpreter line, the others without a banner
+        // Then - the command lacking one is built apart under the interpreter line and its own chunk name, the others without a banner
         expect(
-            steps.map(({ entry, outputOptions }) => [
-                Object.keys(entry),
-                outputOptions.banner ?? null,
-            ]),
+            steps.map(({ entry, outputOptions }) => [Object.keys(entry), outputOptions]),
         ).toStrictEqual([
-            [['index', 'other'], null],
-            [['tool'], '#!/usr/bin/env node'],
+            [['index', 'other'], { chunkFileNames: 'shared-[name].js' }],
+            [['tool'], { banner: '#!/usr/bin/env node', chunkFileNames: 'bin-shared-[name].js' }],
         ]);
     });
 

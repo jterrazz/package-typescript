@@ -35,7 +35,9 @@ Each target decides its output by its extension and its condition:
 
 Three more things follow from the manifest. A `library` or a `cli` that is `private` is installed by its own repository and read by no consumer, so its build emits no declarations (an ambient module of its host failed the build of an editor extension). The exception is a sibling member of its workspace that depends on it, which is a consumer: the sibling's type check reads the declarations, so a private library the workspace shares keeps them. A host module typed by `@types/<name>` with no `<name>` package of its own (`vscode` is the case) exists only in the process that loads the extension, so it is left out of the bundle and stays an import. And a `bin` built from `src/<name>.bin.ts` opens on `#!/usr/bin/env node`, which the build adds when the source holds none and leaves where it does.
 
-A module two entries share is written once, as `dist/shared-<name>.js`. A `library` emits its declarations with the type-checker, so an export with no annotation is published with the type the checker infers for it. [ADR-018](../decisions/018-a-project-declares-what-it-is-and-every-config-follows.md#consequences) records why they are not built file by file with `isolatedDeclarations`.
+A module two entries share is written once per step that bundles them, under a name only that step writes: `dist/shared-<name>.js` for the ESM entries, `dist/shared-<name>.cjs` for the CommonJS ones, `dist/bin-shared-<name>.js` for the bins built under the interpreter line, and `dist/browser-shared-<name>.js` for the `browser` conditions. Every step writes into `dist/`, so a name two steps shared would leave one step's entries importing the other's code.
+
+A `library` emits its declarations with the type-checker, so an export with no annotation is published with the type the checker infers for it. [ADR-018](../decisions/018-a-project-declares-what-it-is-and-every-config-follows.md#consequences) records why they are not built file by file with `isolatedDeclarations`.
 
 ### What the manifest does not name
 

@@ -30,17 +30,22 @@ export const manifestAt = (root: string): JsonObject => {
     return existsSync(path) ? parsedObject(readFileSync(path, 'utf8')) : {};
 };
 
+// invariant: every step writes into one folder, so the chunks of each are named apart: a step's prefix, and the extension its format loads by.
+export type Chunks = 'bin-shared' | 'browser-shared' | 'shared';
+
 export const stepOf = (
     entry: Readonly<Record<string, string>>,
     {
         banner,
+        chunks = 'shared',
         clean = false,
         dts = true,
         external = [],
         format = ['esm'],
         outDir = DIST,
         platform,
-    }: Partial<BuildStep> & Pick<BuildStep, 'platform'> & { banner?: string; external?: string[] },
+    }: Partial<BuildStep> &
+        Pick<BuildStep, 'platform'> & { banner?: string; chunks?: Chunks; external?: string[] },
 ): BuildStep => ({
     clean,
     dts,
@@ -52,7 +57,7 @@ export const stepOf = (
     outDir,
     outputOptions: {
         ...(banner === undefined ? {} : { banner }),
-        chunkFileNames: 'shared-[name].js',
+        chunkFileNames: `${chunks}-[name].${format.includes('esm') ? 'js' : 'cjs'}`,
         ...(format.includes('cjs') ? { exports: 'named' as const } : {}),
     },
     platform,
@@ -143,6 +148,8 @@ export function nodeEntries(
 
     return [
         ...(Object.keys(others).length === 0 ? [] : [stepOf(others, { ...shape, platform })]),
-        ...(withBin.length === 0 ? [] : [stepOf(bins, { ...shape, banner: HASHBANG, platform })]),
+        ...(withBin.length === 0
+            ? []
+            : [stepOf(bins, { ...shape, banner: HASHBANG, chunks: 'bin-shared', platform })]),
     ];
 }

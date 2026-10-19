@@ -1,0 +1,18 @@
+description: writes the modules each step shares under names of its own, so no step overwrites another's in dist/
+fixture: ./__fixtures__/shared-modules/
+runs:
+    - command: build
+      exit: 0
+      stdout: |4
+           TYPESCRIPT  Building the entries the manifest publishes...
+
+          {{any}}
+          Build completed
+      files:
+          dist/shared-origin.js: { contains: 'built for node' }
+          dist/shared-origin.cjs: { contains: 'built for node' }
+          dist/bin-shared-origin.js: { contains: 'built for node' }
+          dist/browser-shared-origin.js: { contains: 'built for the browser' }
+          dist/index.browser.js: { contains: './browser-shared-origin.js' }
+          dist/index.cjs: { contains: './shared-origin.cjs' }
+          dist/first.js: { contains: './bin-shared-origin.js' }

@@ -10,7 +10,6 @@ runs:
           ℹ config file: {{path}} 
           ℹ entry: src/index.ts
           ℹ tsconfig: tsconfig.json
-          ℹ Build start
           {{any}}
           Build completed
       files:

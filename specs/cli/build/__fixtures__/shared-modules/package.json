@@ -1,0 +1,23 @@
+{
+    "name": "shared-modules-lib",
+    "version": "1.0.0",
+    "type": "module",
+    "bin": {
+        "first": "./dist/first.js",
+        "second": "./dist/second.js"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "browser": "./dist/index.browser.js",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        },
+        "./extra": {
+            "types": "./dist/extra.d.ts",
+            "browser": "./dist/extra.browser.js",
+            "import": "./dist/extra.js",
+            "require": "./dist/extra.cjs"
+        }
+    }
+}

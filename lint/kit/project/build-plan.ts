@@ -163,8 +163,7 @@ function publishedSteps(
     own: BuildStep['platform'],
     [root, shape]: [string, Shape],
 ): BuildStep[] {
-    const dual = planned.filter(([, one]) => !one.browser && one.cjs && one.esm);
-    const required = planned.filter(([, one]) => !one.browser && one.cjs && !one.esm);
+    const required = planned.filter(([, one]) => !one.browser && one.cjs);
     const browser = planned.filter(([, one]) => one.browser);
     const defaulted =
         planned.length === 0 &&
@@ -173,9 +172,6 @@ function publishedSteps(
 
     return [
         ...nodeEntries(entries, root, shape, own),
-        ...(dual.length === 0
-            ? []
-            : [stepOf(entryRecord(dual), { ...shape, format: ['esm', 'cjs'], platform: own })]),
         ...(required.length === 0
             ? []
             : [stepOf(entryRecord(required), { ...shape, format: ['cjs'], platform: own })]),
@@ -183,6 +179,7 @@ function publishedSteps(
             ? []
             : [
                   stepOf(entryRecord(browser), {
+                      chunks: 'browser-shared',
                       dts: false,
                       external: shape.external,
                       platform: 'browser',
@@ -196,7 +193,7 @@ export function buildPlanOf(
     { declaration, settings }: { declaration: null | ProjectIdentity; settings: BuildSettings },
 ): BuildStep[] {
     const planned = [...plannedOf(root)];
-    const main = planned.filter(([, one]) => !one.browser && !one.cjs);
+    const main = planned.filter(([, one]) => !one.browser && one.esm);
     const platform = declaration?.platform;
     const shape = shapeOf(root, declaration);
     const own = [...BROWSER_PLATFORMS].some((one) => one === platform);
