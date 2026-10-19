@@ -46,7 +46,7 @@ export const SURFACES = {
         flags: [
             {
                 name: '--cold',
-                says: 'Start both runs from no incremental report, as CI does: no verdict is inherited (TYPESCRIPT_MUTATION_COLD=1, or CI set, says the same)',
+                says: 'Start both runs from no incremental report: no verdict is inherited (TYPESCRIPT_MUTATION_COLD=1 says the same)',
             },
             {
                 name: '--mutate',

@@ -39,7 +39,7 @@ describe('asked', () => {
         ]);
     });
 
-    test('askedOf — a run is cold when the flag says so, the variable holds any text, or CI is set, and not when either is blank or absent', () => {
+    test('askedOf — a run is cold when the flag says so or the variable holds any text, and not when it is blank or absent, nor because CI is set', () => {
         // Given - each way a run is asked, outside CI first
         vi.stubEnv('CI', '');
         vi.stubEnv('TYPESCRIPT_MUTATION_COLD', '');
@@ -54,13 +54,13 @@ describe('asked', () => {
         vi.stubEnv('CI', ' ');
         const blankCi = askedOf([]).cold;
 
-        // Then - cold by flag, by variable or in CI, never by a blank one
+        // Then - cold by flag or by variable, never by a blank one nor by CI alone
         expect([none, flag, variable, blank, ci, blankCi]).toStrictEqual([
             false,
             true,
             true,
             false,
-            true,
+            false,
             false,
         ]);
     });

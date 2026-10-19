@@ -36,7 +36,7 @@ check-links:
 	@command -v lychee > /dev/null || { echo "check-links: lychee is not installed on this machine — brew install lychee"; exit 1; }
 	lychee --no-progress README.md docs skills
 
-# value: incremental: only the mutants whose source, covering tests or their ground changed since the report left in .artifacts/stryker/ run again; CI, or `MUTATION_ARGS=--cold`, starts both runs from no report.
+# value: incremental: only the mutants whose source, covering tests or their ground changed since the report left in .artifacts/stryker/ run again, on a runner as here; `MUTATION_ARGS=--cold`, or `TYPESCRIPT_MUTATION_COLD`, starts both runs from no report.
 mutation: build
 	node dist/typescript.js mutation $(MUTATION_ARGS)
 

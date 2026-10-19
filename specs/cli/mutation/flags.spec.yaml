@@ -13,7 +13,7 @@ runs:
           Measure the suite against mutants of the sources (--mutate <ranges> narrows it)
 
           Flags:
-            --cold             Start both runs from no incremental report, as CI does: no verdict is inherited (TYPESCRIPT_MUTATION_COLD=1, or CI set, says the same)
+            --cold             Start both runs from no incremental report: no verdict is inherited (TYPESCRIPT_MUTATION_COLD=1 says the same)
             --mutate <ranges>  Point both runs at these lines, every range in one comma-separated value: src/a.ts:10-20,src/b.ts:1-5
             --since <ref>      Measure the change since this commit instead of the uncommitted change, or the branch since its merge-base on a clean tree
             -h, --help         Print this help and run nothing
@@ -33,7 +33,7 @@ runs:
           Measure the suite against mutants of the sources (--mutate <ranges> narrows it)
 
           Flags:
-            --cold             Start both runs from no incremental report, as CI does: no verdict is inherited (TYPESCRIPT_MUTATION_COLD=1, or CI set, says the same)
+            --cold             Start both runs from no incremental report: no verdict is inherited (TYPESCRIPT_MUTATION_COLD=1 says the same)
             --mutate <ranges>  Point both runs at these lines, every range in one comma-separated value: src/a.ts:10-20,src/b.ts:1-5
             --since <ref>      Measure the change since this commit instead of the uncommitted change, or the branch since its merge-base on a clean tree
             -h, --help         Print this help and run nothing
@@ -51,7 +51,7 @@ runs:
           Measure the suite against mutants of the sources (--mutate <ranges> narrows it)
 
           Flags:
-            --cold             Start both runs from no incremental report, as CI does: no verdict is inherited (TYPESCRIPT_MUTATION_COLD=1, or CI set, says the same)
+            --cold             Start both runs from no incremental report: no verdict is inherited (TYPESCRIPT_MUTATION_COLD=1 says the same)
             --mutate <ranges>  Point both runs at these lines, every range in one comma-separated value: src/a.ts:10-20,src/b.ts:1-5
             --since <ref>      Measure the change since this commit instead of the uncommitted change, or the branch since its merge-base on a clean tree
             -h, --help         Print this help and run nothing
