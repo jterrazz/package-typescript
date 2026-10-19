@@ -9,7 +9,7 @@ const SKILL_ENTRY = /(?:^|\/)skills\/[^/]+\/SKILL\.md$/u;
 
 const FRONTMATTER = /^---\n(?<yaml>[\s\S]*?)\n---(?:\n|$)/u;
 
-const PARSER_POSITION = / at line \d+, column \d+:[\s\S]*/u;
+const PARSER_POSITION = / at line [\s\S]*/u;
 
 const STATED = ['name', 'description'] as const;
 
