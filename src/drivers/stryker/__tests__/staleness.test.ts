@@ -90,7 +90,7 @@ function keptIds(
     return report === undefined ? undefined : idsByFile(report);
 }
 
-describe('reportAfter', () => {
+describe('staleness', () => {
     test('staleness — reportAfter — a change in a covering test re-measures the survivor it covered and the kill it made, and no other', () => {
         // Given - the report of a run
         // When - the spec changes

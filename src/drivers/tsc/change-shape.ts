@@ -78,6 +78,17 @@ function linesInFunctions(file: string, text: string): (line: number) => boolean
     return (line) => !loading.has(line);
 }
 
+/** Whether every line named of a module, counted from 1, sits in a function, a type, a comment or a blank, so a mutant there changes only what a function does when it runs. */
+export function linesStayInFunctions(
+    file: string,
+    text: string,
+    lines: readonly number[],
+): boolean {
+    const inFunction = linesInFunctions(file, text);
+
+    return lines.every((line) => inFunction(line));
+}
+
 /**
  * Whether a change of a module reaches only what its functions do when they run: every line it removed and every line it added sits in a function, a type, a comment or a blank.
  * Such a change moves no test that ran none of the module's functions; any other (a constant, an import, a statement run as the module loads) moves every test that loaded it.

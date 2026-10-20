@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest';
 
 import { parsedObject } from '../../../../lint/kit/project/json.js';
-import { observedFrom, observedOf, observedOnDisk, ranBy } from '../observed.js';
+import { observedFrom, observedOf, observedOnDisk, observedTestsOf, ranBy } from '../observed.js';
 
 describe('observed', () => {
-    test('observedFrom — each set of sources written once, a test the run could not follow left out, and read back by test', () => {
+    test('observedFrom — each set of sources written once, a test the run could not follow kept with none, and read back by test', () => {
         // Given - two tests sharing what they loaded, one with nothing, one not followed, one followed halfway
         const observed = observedFrom([
             { loaded: ['a', 'b'], ran: ['a'], test: 'one' },
@@ -16,10 +16,17 @@ describe('observed', () => {
         ]);
         const read = ranBy(observed);
 
-        // Then - four sets, three tests, each read back whole, the unfollowed ones unknown
+        // Then - four sets, three tests, each read back whole, the unfollowed ones named with no set and unknown
         expect(observed).toStrictEqual({
             sets: [['a'], ['a', 'b'], ['b'], []],
-            tests: { one: [0, 1], three: [3, 3], two: [2, 1] },
+            tests: {
+                five: [-1, -1],
+                four: [-1, -1],
+                one: [0, 1],
+                six: [-1, -1],
+                three: [3, 3],
+                two: [2, 1],
+            },
         });
         expect([read('two'), read('four'), read('five'), read('six')]).toStrictEqual([
             { loaded: new Set(['a', 'b']), ran: new Set(['b']) },
@@ -41,7 +48,7 @@ describe('observed', () => {
         );
 
         // Then - the first alone is followed
-        expect(Object.keys(observed.tests)).toStrictEqual(['mapped']);
+        expect(observed.tests).toStrictEqual({ both: [-1, -1], built: [-1, -1], mapped: [0, 0] });
     });
 
     test('ranBy — a test whose pair names a set the record does not hold is unknown', () => {
@@ -76,6 +83,21 @@ describe('observed', () => {
             tests: { one: [0, 1], two: [2, 3] },
         });
         expect(observedOf(onDisk)).toStrictEqual(observed);
+    });
+
+    test('observedTestsOf — the tests a run keeps read back as the dry run observed them, an unfollowed one with no list', () => {
+        // Given - a record of a followed test, an unfollowed one, and one the run does not keep
+        const observed = observedFrom([
+            { loaded: ['a', 'b'], ran: ['a'], test: 'one' },
+            { test: 'two' },
+            { loaded: ['a'], ran: [], test: 'three' },
+        ]);
+
+        // Then - the kept ones, each as it was observed
+        expect(observedTestsOf(observed, (key) => key !== 'three')).toStrictEqual([
+            { loaded: ['a', 'b'], ran: ['a'], test: 'one' },
+            { test: 'two' },
+        ]);
     });
 
     test('observedOf — a record of another shape reads as one that follows no test', () => {

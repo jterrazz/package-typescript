@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, test } from 'vitest';
 
 import { isList, objectOf, parsedObject } from '../../../../lint/kit/project/json.js';
-import { diffStaysInFunctions } from '../../tsc/change-shape.js';
+import { diffStaysInFunctions, linesStayInFunctions } from '../../tsc/change-shape.js';
 import { incrementalKeptWhileInputsHold, recordInputs } from '../incremental.js';
 import { observedFrom } from '../observed.js';
 import type { ObservedTest } from '../observed.js';
@@ -23,7 +23,7 @@ const startedIn = (root: string, cold = false) =>
     incrementalKeptWhileInputsHold(root, 'suite-incremental', {
         cold,
         staysInFunctions: diffStaysInFunctions,
-    });
+    }).inputs;
 
 const roots: string[] = [];
 
@@ -160,7 +160,7 @@ describe('incremental', () => {
         expect(keptIn(root)).toStrictEqual({ 'src/a.ts': [], 'src/b.ts': [] });
     });
 
-    test('incrementalKeptWhileInputsHold — a change inside a function of a source the spec only loaded keeps the spec’s mutants, a change to what loads does not', () => {
+    test('incrementalKeptWhileInputsHold — a change inside a function of a source the spec only loaded keeps the spec’s mutants and leaves the spec out of a dry run mutating it, a change to what loads does not', () => {
         // Given - a run that ended, its spec's processes seen running a.ts and loading h.ts
         const body = ranOnce(SPEC_RAN_A);
         const loading = ranOnce(SPEC_RAN_A);
@@ -171,7 +171,14 @@ describe('incremental', () => {
             FILES['src/h.ts'].replace('return H;', 'return H + 1;'),
         );
         writeFileSync(join(loading, 'src/h.ts'), FILES['src/h.ts'].replace('H = 1', 'H = 2'));
-        startedIn(body);
+        const { carried, dryRun } = incrementalKeptWhileInputsHold(body, 'suite-incremental', {
+            cold: false,
+            dryRunOver: {
+                lines: new Map([['src/h.ts', [4]]]),
+                linesInFunctions: linesStayInFunctions,
+            },
+            staysInFunctions: diffStaysInFunctions,
+        });
         startedIn(loading);
 
         // Then - the function's change measures again b's mutant alone, the constant's the spec's too; the texts kept are this run's
@@ -182,6 +189,11 @@ describe('incremental', () => {
         expect(
             readdirSync(join(body, '.artifacts/stryker/suite-incremental.sources')),
         ).toHaveLength(3);
+        // Then - a dry run mutating the changed line runs the module test that loads h.ts alone, and carries what the record saw of the two left out
+        expect({ carried, dryRun }).toStrictEqual({
+            carried: [MODULE_TESTS[0], SPEC_RAN_A[2]],
+            dryRun: { kept: ['src/__tests__/b.test.ts'], known: 3 },
+        });
     });
 
     test('incrementalKeptWhileInputsHold — a source whose earlier text was never kept reads as changed as it loads', () => {
@@ -295,8 +307,8 @@ describe('incremental', () => {
         const modulesReport = join(root, '.artifacts/stryker/incremental.json');
         recordInputs(root, 'suite-incremental', {
             inputs:
-                reportKept(root, suite, { cold: false, staysInFunctions: diffStaysInFunctions }) ??
-                {},
+                reportKept(root, suite, { cold: false, staysInFunctions: diffStaysInFunctions })
+                    .inputs ?? {},
             observed: observedFrom([]),
         });
         recordInputs(root, 'incremental', {
@@ -304,7 +316,7 @@ describe('incremental', () => {
                 reportKept(root, modules, {
                     cold: false,
                     staysInFunctions: diffStaysInFunctions,
-                }) ?? {},
+                }).inputs ?? {},
             observed: observedFrom([]),
         });
         writeFileSync(suiteReport, '{}');

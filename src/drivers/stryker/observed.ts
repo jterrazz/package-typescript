@@ -1,3 +1,6 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { isList, objectOf } from '../../../lint/kit/project/json.js';
 import type { Inputs } from './inputs.js';
 
@@ -16,6 +19,9 @@ export type Observed = {
     sets: readonly (readonly string[])[];
     tests: Readonly<Record<string, readonly [number, number]>>;
 };
+
+// invariant: a test the run could not follow is recorded with no set, so a later dry run still knows its file and keeps it, where a test the record left out would read as one its file never held.
+const UNFOLLOWED = [-1, -1] as const;
 
 /** The observed tests, each list of sources written once however many tests share it; a test whose processes ran a file the inputs do not hold (a build with no map back to its sources) is one the run could not follow. */
 export function observedFrom(records: readonly ObservedTest[], inputs?: Inputs): Observed {
@@ -36,9 +42,10 @@ export function observedFrom(records: readonly ObservedTest[], inputs?: Inputs):
     const known = (sources: readonly string[]): boolean =>
         inputs === undefined || sources.every((source) => inputs[source] !== undefined);
     for (const { loaded, ran, test } of records) {
-        if (loaded !== undefined && ran !== undefined && known(loaded) && known(ran)) {
-            tests[test] = [setOf(ran), setOf(loaded)];
-        }
+        tests[test] =
+            loaded !== undefined && ran !== undefined && known(loaded) && known(ran)
+                ? [setOf(ran), setOf(loaded)]
+                : UNFOLLOWED;
     }
 
     return { sets, tests };
@@ -57,6 +64,43 @@ export function ranBy(observed: Observed): (test: string) => Ran | undefined {
             ? undefined
             : { loaded: loadedSet, ran: ranSet };
     };
+}
+
+/** The tests of a record a run keeps, as the dry run would have observed them. */
+export function observedTestsOf(
+    observed: Observed,
+    kept: (test: string) => boolean,
+): ObservedTest[] {
+    const read = ranBy(observed);
+
+    return Object.keys(observed.tests)
+        .filter((test) => kept(test))
+        .map((test) => {
+            const ran = read(test);
+
+            return ran === undefined
+                ? { test }
+                : { loaded: [...ran.loaded], ran: [...ran.ran], test };
+        });
+}
+
+const sourcesListed = (sources: unknown): string[] | undefined =>
+    isList(sources) ? sources.map(String) : undefined;
+
+function observedTestOf(value: unknown): ObservedTest {
+    const { loaded, ran, test } = objectOf(value);
+
+    return { loaded: sourcesListed(loaded), ran: sourcesListed(ran), test: String(test) };
+}
+
+/** Every test the dry run's processes wrote into the folder, as they wrote it. */
+export function observedIn(folder: string): ObservedTest[] {
+    return readdirSync(folder).flatMap((name) => {
+        const text = String(readFileSync(join(folder, name)));
+        const records: unknown = JSON.parse(text);
+
+        return isList(records) ? records.map((record) => observedTestOf(record)) : [];
+    });
 }
 
 const numbersOf = (value: unknown): number[] => (isList(value) ? value.map(Number) : []);

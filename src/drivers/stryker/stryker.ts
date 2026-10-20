@@ -14,7 +14,7 @@ import process from 'node:process';
 
 import { readSettings } from '../../../lint/index.rules.js';
 import { ARTIFACTS, DEV_OUTPUT, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
-import { isList, objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
+import { objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { handOver } from '../run.js';
 import { besideOf, withoutBesideLinks } from './beside.js';
@@ -22,16 +22,14 @@ import { CHILD_COVERAGE_SOURCE } from './child-coverage.js';
 import { headlessEnvironment } from './headless.js';
 import { ignorersSource, LOG_IGNORER, PINNED_TEXT_IGNORER } from './ignorers.js';
 import { incrementalKeptWhileInputsHold, recordInputs } from './incremental.js';
-import type { StaysInFunctions } from './incremental.js';
-import type { Inputs } from './inputs.js';
+import type { DryRunOver, Kept, LinesInFunctions, StaysInFunctions } from './incremental.js';
 import {
     MUTANT_SETUP_SOURCE,
     OBSERVED_TESTS_VARIABLE,
     RAN_BY_TESTS_VARIABLE,
 } from './mutant-setup.js';
 import { heldReport, mutatedLines, strykerMutate } from './mutate-entries.js';
-import { observedFrom } from './observed.js';
-import type { ObservedTest } from './observed.js';
+import { observedFrom, observedIn } from './observed.js';
 import { PROGRESS_REPORTER, PROGRESS_REPORTER_SOURCE } from './progress-reporter.js';
 import { REPORT_NAMES } from './reports.js';
 import type { StageName } from './reports.js';
@@ -85,7 +83,11 @@ export function strykerConfig(
         readonly typeChecked: boolean;
     },
     { mutate, name }: Stage,
-    { concurrency, terminal = process.stdout.isTTY }: { concurrency: number; terminal?: boolean },
+    {
+        concurrency,
+        terminal = process.stdout.isTTY,
+        testFiles,
+    }: { concurrency: number; terminal?: boolean; testFiles?: readonly string[] | undefined },
 ): object {
     const files = FILES[name];
     const suite = name === 'suite';
@@ -120,6 +122,7 @@ export function strykerConfig(
         ],
         reporters: ['html', 'json', ...(terminal ? ['progress'] : []), PROGRESS_REPORTER],
         tempDirName: `${MUTATION_OUTPUT}/tmp`,
+        ...(testFiles === undefined ? {} : { testFiles: strykerMutate(testFiles) }),
         testRunner: 'vitest',
         timeoutMS: suite ? 60_000 : 30_000,
         vitest: {
@@ -146,43 +149,32 @@ export function strykerPrepared(project: string, presentation: readonly string[]
     );
 }
 
-/** Keeps of the stage's incremental report what the change since its run leaves standing, none of it when the run starts cold, and returns the inputs the stage starts on. */
+/** Keeps of the stage's incremental report what the change since its run leaves standing, none of it when the run starts cold, and returns what the stage starts on. */
 export const reportKept = (
     project: string,
     stage: Stage,
-    kept: { cold: boolean; staysInFunctions: StaysInFunctions },
-): Inputs | undefined =>
-    incrementalKeptWhileInputsHold(project, FILES[stage.name].incremental, kept);
-
-const sourcesListed = (sources: unknown): string[] | undefined =>
-    isList(sources) ? sources.map(String) : undefined;
-
-function observedTestOf(value: unknown): ObservedTest {
-    const { loaded, ran, test } = objectOf(value);
-
-    return { loaded: sourcesListed(loaded), ran: sourcesListed(ran), test: String(test) };
-}
-
-function observedIn(folder: string): ObservedTest[] {
-    return readdirSync(folder).flatMap((name) => {
-        const text = String(readFileSync(join(folder, name)));
-        const records: unknown = JSON.parse(text);
-
-        return isList(records) ? records.map(observedTestOf) : [];
-    });
-}
+    kept: {
+        cold: boolean;
+        dryRunOver?: DryRunOver | undefined;
+        staysInFunctions: StaysInFunctions;
+    },
+): Kept => incrementalKeptWhileInputsHold(project, FILES[stage.name].incremental, kept);
 
 export type Measured = { ranByTests: ReadonlySet<string>; report: unknown };
 
-/** What the suite's dry run runs before its first mutant: on how many workers. */
-export type DryRunScope = { workers: number };
+/** What the suite's dry run runs before its first mutant: the test files it keeps of those the record knows, `undefined` for every one, on how many workers. */
+export type DryRunScope = {
+    files: undefined | { kept: number; known: number };
+    workers: number;
+};
 
-/** How a stage runs: whether the sandbox builds first, from no report, on how many test runners, in which project, how a change is read, and who hears what the suite's dry run runs. */
+/** How a stage runs: whether the sandbox builds first, from no report, on how many test runners, in which project, how a change and a mutated line are read, and who hears what the suite's dry run runs. */
 export type StageRun = {
     buildsFirst: boolean;
     cold: boolean;
     concurrency: number;
     dryRunScoped: (scope: DryRunScope) => void;
+    linesInFunctions: LinesInFunctions;
     project: string;
     staysInFunctions: StaysInFunctions;
 };
@@ -201,11 +193,13 @@ async function stageWritten(
         concurrency,
         mutated,
         project,
+        testFiles,
     }: {
         buildsFirst: boolean;
         concurrency: number;
         mutated: readonly string[];
         project: string;
+        testFiles: readonly string[] | undefined;
     },
 ): Promise<void> {
     const files = FILES[stage.name];
@@ -227,7 +221,7 @@ async function stageWritten(
     );
     writeFileSync(
         join(MUTATION_OUTPUT, files.config),
-        `${JSON.stringify(strykerConfig({ ...scope, generated, typeChecked }, stage, { concurrency }), null, 4)}\n`,
+        `${JSON.stringify(strykerConfig({ ...scope, generated, typeChecked }, stage, { concurrency, testFiles }), null, 4)}\n`,
     );
 }
 
@@ -237,23 +231,33 @@ export async function strykerRun(
     stage: Stage,
     run: StageRun,
 ): Promise<Measured | { status: number }> {
-    const { buildsFirst, cold, concurrency, project, staysInFunctions } = run;
+    const { buildsFirst, cold, concurrency, linesInFunctions, project } = run;
     const files = FILES[stage.name];
-    await stageWritten(scope, stage, {
-        buildsFirst,
-        concurrency,
-        mutated: [...mutatedLines(stage.mutate).keys()],
-        project,
-    });
+    const suite = stage.name === 'suite';
+    const lines = mutatedLines(stage.mutate);
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const observedInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'observed-tests-'));
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
     process.env[OBSERVED_TESTS_VARIABLE] = observedInto;
-    const inputs = reportKept(project, stage, { cold, staysInFunctions });
-    if (stage.name === 'suite') {
-        run.dryRunScoped({ workers: concurrency });
+    const { carried, dryRun, inputs } = reportKept(project, stage, {
+        cold,
+        dryRunOver: suite ? { lines, linesInFunctions } : undefined,
+        staysInFunctions: run.staysInFunctions,
+    });
+    await stageWritten(scope, stage, {
+        buildsFirst,
+        concurrency,
+        mutated: [...lines.keys()],
+        project,
+        testFiles: dryRun?.kept,
+    });
+    if (suite) {
+        run.dryRunScoped({
+            files: dryRun && { kept: dryRun.kept.length, known: dryRun.known },
+            workers: concurrency,
+        });
     }
     const status = await withoutBesideLinks(
         project,
@@ -266,7 +270,8 @@ export async function strykerRun(
             ),
     );
     const ranByTests = ranByTestsIn(ranInto);
-    const observed = observedFrom(observedIn(observedInto), inputs);
+    // invariant: a test file the dry run left out holds no test the change made stale, so what the last record says of its tests still holds and is carried into this one.
+    const observed = observedFrom([...observedIn(observedInto), ...carried], inputs);
     rmSync(ranInto, { recursive: true });
     rmSync(observedInto, { recursive: true });
 

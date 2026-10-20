@@ -9,7 +9,7 @@ import { toolchainIn } from '../../drivers/node/node.js';
 import { concurrencyOf, jobsNamed } from '../../drivers/stryker/concurrency.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
-import { diffStaysInFunctions } from '../../drivers/tsc/change-shape.js';
+import { diffStaysInFunctions, linesStayInFunctions } from '../../drivers/tsc/change-shape.js';
 import { firstCompileError } from '../../drivers/tsc/compile-error.js';
 import { secondsSince } from '../check/passes/launched.js';
 import { badge, print, RED, RESET, secondsOf } from '../check/report/terminal.js';
@@ -67,11 +67,12 @@ async function measured(
         buildsFirst: buildsOf(project),
         cold,
         concurrency,
-        dryRunScoped: ({ workers }) => {
+        dryRunScoped: ({ files, workers }) => {
             print(
-                `${badge('TYPESCRIPT')} dry run: every test file, on ${String(workers)} worker(s)\n`,
+                `${badge('TYPESCRIPT')} dry run: ${files === undefined ? 'every test file' : `${String(files.kept)} of ${String(files.known)} test files the change reaches`}, on ${String(workers)} worker(s)\n`,
             );
         },
+        linesInFunctions: linesStayInFunctions,
         project,
         staysInFunctions: diffStaysInFunctions,
     });

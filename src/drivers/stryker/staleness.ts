@@ -11,7 +11,8 @@ const idsOf = (mutant: Mutant, key: 'coveredBy' | 'killedBy'): string[] => {
     return isList(ids) ? ids.map(String) : [];
 };
 
-type ReportTest = { file: string; key: string };
+/** A test as a run names it: its file, and its key, the file and its name joined by `#`. */
+export type ReportTest = { file: string; key: string };
 
 function testsOf(report: Record<string, unknown>): Map<string, ReportTest> {
     const tests = new Map<string, ReportTest>();
@@ -26,7 +27,8 @@ function testsOf(report: Record<string, unknown>): Map<string, ReportTest> {
     return tests;
 }
 
-type Change = {
+/** What changed since the record, by what each path is to the tests. */
+export type Change = {
     everything: boolean;
     grounds: readonly string[];
     sources: ReadonlySet<string>;
@@ -36,7 +38,7 @@ type Change = {
 // Stryker disable next-line ConditionalExpression: a role other than ground holds no root, and no test stands under an undefined folder
 const isGround = (role: Role): role is Extract<Role, { kind: 'ground' }> => role.kind === 'ground';
 
-function changeOf(changed: readonly string[]): Change {
+export function changeOf(changed: readonly string[]): Change {
     const roles = changed.map((path) => ({ path, role: roleOf(path) }));
     const pathsOf = (kind: Role['kind']): Set<string> =>
         new Set(roles.filter(({ role }) => role.kind === kind).map(({ path }) => path));
@@ -61,7 +63,7 @@ export type Staleness = {
 };
 
 // invariant: a test is stale when its file changed, when ground under a folder above it changed, when a source its own process loads changed, and when a source changed that a process it spawned ran, or loaded, unless the change reaches only what the source's functions do; a test whose processes the last run could not follow is stale whatever source changed.
-function isStale(test: ReportTest, change: Change, staleness: Staleness): boolean {
+export function isStale(test: ReportTest, change: Change, staleness: Staleness): boolean {
     if (change.tests.has(test.file) || change.grounds.some((root) => isUnder(test.file, root))) {
         return true;
     }
