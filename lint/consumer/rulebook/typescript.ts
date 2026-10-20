@@ -224,6 +224,13 @@ export default fragment({
             by: 'typescript/no-empty-object-type: its upstream successor',
             kind: 'covered',
         }),
+        'typescript/no-generated-empty-object-type': off(
+            {
+                by: 'measured on this package and @jterrazz/test with tsgolint 7.0.2004: 0 reports here, 10 there, not one a defect: each a `Record<never, never>`, the empty start a type grows from by intersection, which the `Record<string, never>` the rule leaves would turn to `never` at the first `&`',
+                kind: 'evidence',
+            },
+            '11.1.0',
+        ),
         'typescript/non-nullable-type-assertion-style': off({
             by: 'typescript/no-non-null-assertion: its fix is the `!` assertion that rule forbids, so no edit closes both',
             kind: 'exclusive',

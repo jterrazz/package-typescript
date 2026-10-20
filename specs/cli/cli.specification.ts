@@ -12,7 +12,7 @@ function withoutSlowPluginAdvisory(text: string): string {
     if (!text.includes('[PLUGIN_TIMINGS]')) {
         return text;
     }
-    const remaining = text.replace(SLOW_PLUGIN_ADVISORY, '');
+    const remaining = text.replaceAll(SLOW_PLUGIN_ADVISORY, '');
     return remaining.trim() === '' ? '' : remaining;
 }
 

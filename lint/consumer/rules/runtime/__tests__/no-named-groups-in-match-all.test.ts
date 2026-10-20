@@ -7,7 +7,7 @@ const FILENAME = '/nowhere/src/parse.ts';
 ruleTester().run('no-named-groups-in-match-all', noNamedGroupsInMatchAll, {
     invalid: [
         {
-            code: 'export const all = (text: string) => [...text.matchAll(/(?<key>\\w+)=(?<value>\\w+)/gu)];',
+            code: String.raw`export const all = (text: string) => [...text.matchAll(/(?<key>\w+)=(?<value>\w+)/gu)];`,
             errors: [{ column: 41, line: 1, messageId: 'named' }],
             filename: FILENAME,
             name: 'a pattern written in the call',
@@ -55,7 +55,7 @@ ruleTester().run('no-named-groups-in-match-all', noNamedGroupsInMatchAll, {
             name: 'a name declared in two scopes with no named group stays unnamed',
         },
         {
-            code: 'export const built = (text: string) => new text.matchAll(/(?<key>\\w+)/gu);',
+            code: String.raw`export const built = (text: string) => new text.matchAll(/(?<key>\w+)/gu);`,
             filename: FILENAME,
             name: 'a construction is no call of matchAll',
         },
@@ -84,17 +84,17 @@ ruleTester().run('no-named-groups-in-match-all', noNamedGroupsInMatchAll, {
             name: 'a name declared in two scopes is no pattern the rule can tell',
         },
         {
-            code: "export const all = (text: string) => [...text['matchAll'](/(?<key>\\w+)/gu)];",
+            code: String.raw`export const all = (text: string) => [...text['matchAll'](/(?<key>\w+)/gu)];`,
             filename: FILENAME,
             name: 'a computed member is no matchAll',
         },
         {
-            code: 'export const all = (text: string) => text.replaceAll(/(?<key>\\w+)/gu, "x");',
+            code: String.raw`export const all = (text: string) => text.replaceAll(/(?<key>\w+)/gu, "x");`,
             filename: FILENAME,
             name: 'another method given a named group is no business of this rule',
         },
         {
-            code: 'declare function matchAll(pattern: RegExp): void; matchAll(/(?<key>\\w+)/gu);',
+            code: String.raw`declare function matchAll(pattern: RegExp): void; matchAll(/(?<key>\w+)/gu);`,
             filename: FILENAME,
             name: 'a bare function named matchAll is no method',
         },
@@ -114,7 +114,7 @@ ruleTester().run('no-named-groups-in-match-all', noNamedGroupsInMatchAll, {
             name: 'a declaration holding nothing, and a destructuring naming none',
         },
         {
-            code: 'export const all = (text: string) => [...text.matchAll(/(\\w+)=(\\w+)/gu)];',
+            code: String.raw`export const all = (text: string) => [...text.matchAll(/(\w+)=(\w+)/gu)];`,
             filename: FILENAME,
             name: 'a pattern with positional groups',
         },

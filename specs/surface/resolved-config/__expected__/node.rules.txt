@@ -321,6 +321,7 @@ typescript/no-extra-non-null-assertion
 typescript/no-extraneous-class
 typescript/no-floating-promises
 typescript/no-for-in-array
+- typescript/no-generated-empty-object-type
 typescript/no-implied-eval
 typescript/no-import-type-side-effects
 typescript/no-inferrable-types

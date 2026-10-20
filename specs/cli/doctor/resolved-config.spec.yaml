@@ -515,6 +515,7 @@ runs:
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/no-extraneous-class = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/no-floating-promises = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/no-for-in-array = "error"
+            @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/no-generated-empty-object-type = "off"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/no-implied-eval = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/no-import-type-side-effects = "error"
             @jterrazz/typescript rulebook                             typescript.oxlint.rules.typescript/no-inferrable-types = "error"
