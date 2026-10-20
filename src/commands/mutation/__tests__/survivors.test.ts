@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
+import { LOG_REASON, PINNED_TEXT_REASON } from '../../../drivers/stryker/ignorers.js';
 import { handedToTheSuite, judgedRuns } from '../survivors.js';
 import type { Changed } from '../survivors.js';
 import { verdictOf } from '../verdict.js';
@@ -9,6 +10,11 @@ const mutant = (status: string, line: number, replacement = 'true', endLine = li
     mutatorName: 'ConditionalExpression',
     replacement,
     status,
+});
+
+const ignored = (line: number, statusReason: string) => ({
+    ...mutant('Ignored', line),
+    statusReason,
 });
 
 const LESSON =
@@ -175,7 +181,8 @@ describe('survivors', () => {
             },
         );
 
-        // Then - two detected by the suite and counted so, the two it did not detect named as survivors, the one it never reported never judged
+        // Then - two detected by the suite and counted so, in their file, the two it did not detect named as survivors, the one it never reported never judged
+        expect(judged.detectedByFile).toStrictEqual({ 'src/a.ts': 2 });
         expect(verdictOf(judged, 0, { glue: NO_GLUE, measure: MEASURE })).toStrictEqual({
             lines: [
                 'src/a.ts:3:9  ConditionalExpression: true  (.artifacts/stryker/suite-report.json)',
@@ -267,5 +274,47 @@ describe('survivors', () => {
             judged.unrun,
             handedToTheSuite(modules, { changed: new Map() }),
         ]).toStrictEqual([2, [], {}, []]);
+    });
+
+    test('a mutant set aside before any run is counted by what set it aside: an ignorer, Stryker’s static skip, or a declaration', () => {
+        // Given - a module run whose report holds four ignored mutants: one by the log ignorer, one by the pinned-text ignorer, one Stryker skipped as static, one a comment declared
+        const judged = judgedRuns({
+            measured: ['src/a.ts'],
+            ranByTests: NONE_RAN,
+            report: {
+                files: {
+                    'src/a.ts': {
+                        mutants: [
+                            ignored(1, LOG_REASON),
+                            ignored(2, PINNED_TEXT_REASON),
+                            ignored(3, 'Static mutant (and "ignoreStatic" was enabled)'),
+                            ignored(4, 'the value is equivalent'),
+                        ],
+                    },
+                },
+            },
+        });
+
+        // Then - one of each, under its name
+        expect(judged.ignoredBy).toStrictEqual({
+            declared: 1,
+            'log calls': 1,
+            'pinned text': 1,
+            'static, no test loads it': 1,
+        });
+    });
+
+    test('a range of a file holds a mutant only when what follows the file is lines and nothing else', () => {
+        // Given - a mutant on line 2 and ranges of its file whose tail is not lines: a prefix before them, a suffix after them
+        const report = { files: { 'src/a.ts': { mutants: [mutant('Killed', 2)] } } };
+        const heldUnder = (measured: string[]) =>
+            judgedRuns({ measured, ranByTests: NONE_RAN, report }).detected;
+
+        // Then - lines alone hold it, the malformed ranges hold nothing
+        expect([
+            heldUnder(['src/a.ts:1-3']),
+            heldUnder(['src/a.ts:x1-3']),
+            heldUnder(['src/a.ts:1-3x']),
+        ]).toStrictEqual([1, 0, 0]);
     });
 });
