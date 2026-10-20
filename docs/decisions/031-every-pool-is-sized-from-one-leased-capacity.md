@@ -104,4 +104,5 @@ with what its specs spawn. One count per core cannot fit both.
   runner, were short: the gates above learned 578 to 662 MB and 862 to
   1,017 MB, and a first run on a fresh host swapped to 7.4 GB on them. The
   seeds were raised to what was learned, on 2026-10-20, so a host with no
-  `.artifacts/capacity.json` does not oversubscribe its first run.
+  `.artifacts/capacity.json` does not oversubscribe its first run. The owner
+  accepted the raise the same day ("fais l'ensemble des trucs remontés").

@@ -102,14 +102,16 @@ it.
     every file; a warm host runs the files the change reaches, as the loop
     does.
 
-- Added on 2026-10-20: a process a mutant's tests spawn compiles through
+- Added and accepted by the owner on 2026-10-20 ("fais l'ensemble des
+  trucs remontés"): a process a mutant's tests spawn compiles through
   Node's compile cache, which the `typescript` bin turns on before it loads
   the command, and a process the dry run spawns does not
   (`NODE_DISABLE_COMPILE_CACHE`): V8 serialises a cached script without the
   source positions the dry run's precise coverage reads, and a reach the
   record missed would leave a verdict standing that should run again.
   `typescript doctor` runs in 170 ms against 194 ms, median of 24 starts.
-- Added on 2026-10-20: ahead of both groups runs the test file that killed
+- Added and accepted by the owner on 2026-10-20 ("fais l'ensemble des
+  trucs remontés"): ahead of both groups runs the test file that killed
   the mutant in the stage's last report, as PIT runs the last killing test
   first since 1.14.4. A mutant is the last report's when its file, its
   mutator, its replacement and the code it replaces match, so one whose
