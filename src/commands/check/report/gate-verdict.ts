@@ -16,10 +16,24 @@ export type PassVerdict = {
     status: number;
 };
 
+/** A survivor as the verdict file names it: its place, its mutant, the report it is read from, and whether its source is domain or glue. */
+export type VerdictSurvivor = {
+    column: number;
+    file: string;
+    line: number;
+    mutator: string;
+    replacement: string;
+    report: string;
+    role: 'domain' | 'glue';
+};
+
 export type MutationVerdict = {
     detected: number;
+    /** The glue mutants a test ran, those detected, the bar, and every glue survivor, failing or not. */
+    glue: { bar: number; detected: number; judged: number; survivors: VerdictSurvivor[] };
     range: string;
-    survivors: { file: string; line: number; mutator: string }[];
+    /** The survivors that fail the run: every domain one, and glue's when glue falls under its bar. */
+    survivors: VerdictSurvivor[];
     unrun: number;
 };
 

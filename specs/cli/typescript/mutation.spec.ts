@@ -325,4 +325,45 @@ describe('mutation', () => {
         `);
         expect(result.stdout.text).not.toContain('Measuring the whole suite');
     });
+
+    test('typescript mutation — glue holds a bar: a survivor in an adapter passes while the share detected reaches it, and is printed', async () => {
+        // Given - the consumer, its test judging everything, beside an adapter under infrastructure/ whose test never stores a price of zero
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .fixture(directory('./__fixtures__/mutation-glue/'))
+            .exec('typescript mutation');
+
+        // Then - the run passes, says how much of the glue was detected against its bar, and names the glue survivor
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(`
+            {{any}}
+            measured 18 mutants over HEAD..working tree: every domain mutant a test runs is detected, and glue holds its bar
+            glue: 9 of 10 detected (90 %), its bar 90 %
+              src/infrastructure/price-store.ts:6:9  EqualityOperator: cents <= 0  (.artifacts/stryker/suite-report.json)
+            0 mutant(s) no test runs
+
+            ✓ Mutation passed: 18 detected, 0 surviving, 0 never judged, over HEAD..working tree
+        `);
+    });
+
+    test('typescript mutation — the same survivor in the domain fails the run', async () => {
+        // Given - the same source under domain/
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .fixture(directory('./__fixtures__/mutation-glue-in-domain/'))
+            .exec('typescript mutation');
+
+        // Then - zero survivors is the domain's bar
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+            {{any}}
+            src/domain/price-store.ts:6:9  EqualityOperator: cents <= 0  (.artifacts/stryker/suite-report.json)
+            found: 1 mutant(s) a test runs and none detects{{any}}
+            0 mutant(s) no test runs
+
+            ✗ Mutation failed: first survivor src/domain/price-store.ts:6 EqualityOperator; 18 detected, 1 surviving, 0 never judged, over HEAD..working tree
+        `);
+    });
 });

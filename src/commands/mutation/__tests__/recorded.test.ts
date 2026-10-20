@@ -20,8 +20,11 @@ function memberVerdict(project: string, member: string, text: string): void {
     writeFileSync(join(project, member, VERDICT_FILE), text);
 }
 
+const NO_GLUE = { bar: 0.9, globs: [] };
+
 const JUDGED = {
     detected: 4,
+    detectedByFile: { 'src/a.ts': 4 },
     detectedBySuite: 1,
     ignoredBy: {},
     left: 2,
@@ -44,13 +47,14 @@ describe('recorded', () => {
     test('judgedRecorded — the numbers of the verdict: what it detected, each survivor at its place, every mutant it never judged, over its range', () => {
         // Given - a verdict with one survivor and three mutants never judged
         const recorded = recorder();
-        judgedRecorded(recorded, JUDGED, { range: 'abc..HEAD' });
+        judgedRecorded(recorded, JUDGED, { glue: NO_GLUE, measure: { range: 'abc..HEAD' } });
 
-        // Then - the numbers the verdict file carries
+        // Then - the numbers the verdict file carries, the survivor with its mutant, its report and its role
         expect(recorded.mutation).toStrictEqual({
             detected: 4,
+            glue: { bar: 0.9, detected: 0, judged: 0, survivors: [] },
             range: 'abc..HEAD',
-            survivors: [{ file: 'src/a.ts', line: 2, mutator: 'ConditionalExpression' }],
+            survivors: [{ ...JUDGED.survivors[0], role: 'domain' }],
             unrun: 3,
         });
     });
@@ -78,7 +82,28 @@ describe('recorded', () => {
             project,
             'apps/web',
             JSON.stringify({
-                mutation: { detected: 5, range: 'def..HEAD', survivors: [], unrun: 0 },
+                mutation: {
+                    detected: 5,
+                    glue: {
+                        bar: 0.9,
+                        detected: 4,
+                        judged: 5,
+                        survivors: [
+                            {
+                                column: 5,
+                                file: 'src/infrastructure/a.ts',
+                                line: 3,
+                                mutator: 'StringLiteral',
+                                replacement: '""',
+                                report: '.artifacts/stryker/report.json',
+                                role: 'glue',
+                            },
+                        ],
+                    },
+                    range: 'def..HEAD',
+                    survivors: [],
+                    unrun: 0,
+                },
             }),
         );
         const recorded = recorder();
@@ -89,12 +114,34 @@ describe('recorded', () => {
         expect(recorded).toStrictEqual({
             mutation: {
                 detected: 8,
+                glue: {
+                    bar: 0.9,
+                    detected: 4,
+                    judged: 5,
+                    survivors: [
+                        {
+                            column: 5,
+                            file: 'apps/web/src/infrastructure/a.ts',
+                            line: 3,
+                            mutator: 'StringLiteral',
+                            replacement: '""',
+                            report: 'apps/web/.artifacts/stryker/report.json',
+                            role: 'glue',
+                        },
+                    ],
+                },
                 range: 'abc..HEAD, def..HEAD',
                 survivors: [
                     { file: 'apps/api/src/a.ts', line: 2, mutator: 'StringLiteral' },
                     { file: 'apps/api/src/b.ts', line: 0, mutator: '' },
                     { file: 'apps/api/', line: 0, mutator: 'Regex' },
-                ],
+                ].map((survivor) => ({
+                    ...survivor,
+                    column: 0,
+                    replacement: '',
+                    report: 'apps/api/',
+                    role: 'domain',
+                })),
                 unrun: 1,
             },
             passes: [
@@ -147,6 +194,7 @@ describe('recorded', () => {
         // Then - its numbers read as nothing
         expect(recorded.mutation).toStrictEqual({
             detected: 0,
+            glue: { bar: 0, detected: 0, judged: 0, survivors: [] },
             range: '',
             survivors: [],
             unrun: 0,

@@ -1,7 +1,9 @@
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { isBrowserSide } from '../../../lint/kit/project/browser-side.js';
 import type { Base } from './change.js';
-import type { Judged } from './survivors.js';
+import { byRole } from './roles.js';
+import type { GlueBar, GlueHeld } from './roles.js';
+import type { Judged, Survivor } from './survivors.js';
 
 function countsOf(byStatus: Record<string, number>): { statuses: string; total: number } {
     const sorted = Object.entries(byStatus).toSorted(([a], [b]) => a.localeCompare(b));
@@ -70,15 +72,15 @@ function countLines(judged: Judged, untestedSources: number): string[] {
     ];
 }
 
-function survivorLines({ survivors }: Judged): string[] {
+const placed = ({ column, file, line, mutator, replacement, report }: Survivor): string =>
+    `${file}:${line}:${column}  ${mutator}: ${String(replacement.split('\n', 1))}  (${report})`;
+
+function survivorLines(survivors: readonly Survivor[]): string[] {
     if (survivors.length === 0) {
         return [];
     }
     return [
-        ...survivors.map(
-            ({ column, file, line, mutator, replacement, report }) =>
-                `${file}:${line}:${column}  ${mutator}: ${String(replacement.split('\n', 1))}  (${report})`,
-        ),
+        ...survivors.map((survivor) => placed(survivor)),
         refusal({
             fix: 'assert what the line decides (a value compared whole kills most of them) or, where no change of the line can alter what the module does, declare it above the line: // Stryker disable next-line <mutator>: <why the mutant is equivalent>',
             found: `${survivors.length} mutant(s) a test runs and none detects`,
@@ -103,6 +105,35 @@ function unrunLines({ unrun }: Judged): string[] {
     ];
 }
 
+const percentOf = (part: number, whole: number): number => Math.floor((part * 100) / whole);
+
+const glueLine = ({ bar, detected, judged }: GlueHeld): string =>
+    `glue: ${detected} of ${judged} detected (${percentOf(detected, judged)} %), its bar ${Math.round(bar * 100)} %`;
+
+// invariant: glue below its bar fails the run, and every glue survivor is printed either way, at its place, under the glue line.
+function glueLines(glue: GlueHeld): { lines: string[]; refused: string[] } {
+    if (glue.judged === 0) {
+        return { lines: [], refused: [] };
+    }
+    const lines = [glueLine(glue), ...glue.survivors.map((survivor) => `  ${placed(survivor)}`)];
+    if (glue.holds) {
+        return { lines, refused: [] };
+    }
+
+    return {
+        lines: [],
+        refused: [
+            ...lines,
+            refusal({
+                fix: 'assert what the surviving glue lines decide, or declare one no change of the line can tell apart above it: // Stryker disable next-line <mutator>: <why the mutant is equivalent>',
+                found: `glue: ${glue.detected} of ${glue.judged} mutant(s) a test runs detected, under its bar of ${Math.round(glue.bar * 100)} %`,
+                read: 'docs/reference/quality-checks.md#domain-and-glue',
+                why: 'glue (an adapter, the composition root, a presentation) is held to a share of the mutants its tests run, and this change leaves more of them alive than the share allows',
+            }),
+        ],
+    };
+}
+
 /** What a verdict names of its measure: the range of commits it covers. */
 export type Measure = { range: string; unmeasured?: string | undefined };
 
@@ -121,31 +152,43 @@ const unmeasuredLines = ({ unmeasured }: Measure): string[] =>
           ];
 
 // invariant: a run that mutated nothing never reads as a run whose mutants were all detected; it says what it measured, or that it measured nothing and why.
-function passedLine({ detected }: Judged, { range }: Measure): string {
-    return detected === 0
-        ? `measured nothing over ${range}: no changed TypeScript source ran a mutant, or the project has none to mutate`
-        : `measured ${detected} mutants over ${range}: every mutant a test runs is detected`;
+function passedLine({ detected }: Judged, { range }: Measure, glue: GlueHeld): string {
+    if (detected === 0) {
+        return `measured nothing over ${range}: no changed TypeScript source ran a mutant, or the project has none to mutate`;
+    }
+
+    return glue.survivors.length === 0
+        ? `measured ${detected} mutants over ${range}: every mutant a test runs is detected`
+        : `measured ${detected} mutants over ${range}: every domain mutant a test runs is detected, and glue holds its bar`;
 }
 
-/** The verdict's lines and status, counting apart the sources with no module test, which no run mutates until a change reaches them. */
+/** The verdict's lines and status: a domain survivor fails it, glue only under its bar; the sources with no module test, which no run mutates until a change reaches them, counted apart. */
 export function verdictOf(
     judged: Judged,
     untestedSources: number,
-    measure: Measure,
+    { glue: bar, measure }: { glue: GlueBar; measure: Measure },
 ): { lines: string[]; status: number } {
-    const refused = [...survivorLines(judged), ...unrunLines(judged)];
+    const { domain, glue } = byRole(judged, bar);
+    const held = glueLines(glue);
+    const refused = [...survivorLines(domain), ...held.refused, ...unrunLines(judged)];
     if (refused.length === 0) {
         return {
             lines: [
-                passedLine(judged, measure),
+                passedLine(judged, measure, glue),
                 ...unmeasuredLines(measure),
+                ...held.lines,
                 ...countLines(judged, untestedSources),
             ],
             status: 0,
         };
     }
     return {
-        lines: [...refused, ...unmeasuredLines(measure), ...countLines(judged, untestedSources)],
+        lines: [
+            ...refused,
+            ...unmeasuredLines(measure),
+            ...held.lines,
+            ...countLines(judged, untestedSources),
+        ],
         status: 1,
     };
 }

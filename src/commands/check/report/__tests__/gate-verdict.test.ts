@@ -100,12 +100,19 @@ describe('gate-verdict', () => {
     test("mutationSummaryOf — the verdict's own numbers and its first survivor, or why it judged nothing", () => {
         // Given - a red verdict with two survivors, a green one, and two runs that judged nothing
         const red = {
+            glue: { bar: 0.9, detected: 0, judged: 0, survivors: [] },
             detected: 7,
             range: 'abc..HEAD',
             survivors: [
                 { file: 'src/a.ts', line: 2, mutator: 'ConditionalExpression' },
                 { file: 'src/b.ts', line: 9, mutator: 'StringLiteral' },
-            ],
+            ].map((survivor) => ({
+                ...survivor,
+                column: 1,
+                replacement: '""',
+                report: '.artifacts/stryker/report.json',
+                role: 'domain' as const,
+            })),
             unrun: 1,
         };
 

@@ -15,6 +15,8 @@ const LESSON =
 
 const NONE_RAN: ReadonlySet<string> = new Set();
 
+const NO_GLUE = { bar: 0.9, globs: [] };
+
 const MEASURE = { range: 'a1b2c3d4..HEAD' };
 
 describe('verdict', () => {
@@ -46,7 +48,7 @@ describe('verdict', () => {
         });
 
         // Then - the gate passes, and says what waits for a change to reach it (two sources with no module test among it) and what it did not judge
-        expect(verdictOf(judged, 2, MEASURE)).toStrictEqual({
+        expect(verdictOf(judged, 2, { glue: NO_GLUE, measure: MEASURE })).toStrictEqual({
             lines: [
                 'measured 3 mutants over a1b2c3d4..HEAD: every mutant a test runs is detected',
                 '0 mutant(s) no test runs',
@@ -63,7 +65,7 @@ describe('verdict', () => {
         const judged = judgedRuns({ measured: [], ranByTests: NONE_RAN, report: {} });
 
         // Then - the verdict passes, and names its range and that nothing was measured
-        expect(verdictOf(judged, 0, MEASURE)).toStrictEqual({
+        expect(verdictOf(judged, 0, { glue: NO_GLUE, measure: MEASURE })).toStrictEqual({
             lines: [
                 'measured nothing over a1b2c3d4..HEAD: no changed TypeScript source ran a mutant, or the project has none to mutate',
                 '0 mutant(s) no test runs',
@@ -100,7 +102,7 @@ describe('verdict', () => {
         });
 
         // Then - each survivor on one line, the static one a test ran among them, then the four parts, then the counts, and no line for what there is none of
-        expect(verdictOf(judged, 0, MEASURE)).toStrictEqual({
+        expect(verdictOf(judged, 0, { glue: NO_GLUE, measure: MEASURE })).toStrictEqual({
             lines: [
                 'src/a.ts:3:9  ConditionalExpression: true  (.artifacts/stryker/report.json)',
                 'src/a.ts:3:24  :   (.artifacts/stryker/report.json)',
@@ -136,7 +138,7 @@ describe('verdict', () => {
         });
 
         // Then - the four parts name every unjudged status, and the run fails
-        expect(verdictOf(judged, 0, MEASURE)).toStrictEqual({
+        expect(verdictOf(judged, 0, { glue: NO_GLUE, measure: MEASURE })).toStrictEqual({
             lines: [
                 'found: 4 mutant(s) the run never judged: no status 1, Pending 2, Skipped 1 · why: a mutant no test was run against says nothing of the line it mutates, so passing it would pass a run that judged nothing there · fix: run `typescript mutation` again to its end: a run stopped midway leaves its mutants Pending, and the next one runs them · read: docs/reference/quality-checks.md#mutation',
                 '0 mutant(s) no test runs',
@@ -170,7 +172,7 @@ describe('verdict', () => {
         );
 
         // Then - the total, then each file with its count
-        expect(verdictOf(judged, 0, MEASURE).lines).toStrictEqual([
+        expect(verdictOf(judged, 0, { glue: NO_GLUE, measure: MEASURE }).lines).toStrictEqual([
             'measured nothing over a1b2c3d4..HEAD: no changed TypeScript source ran a mutant, or the project has none to mutate',
             '5 mutant(s) no test runs',
             '  src/m.ts  3',
@@ -206,7 +208,7 @@ describe('verdict', () => {
         );
 
         // Then - the server's count stands alone, and the browser side is named unmeasured, file by file
-        expect(verdictOf(judged, 0, MEASURE).lines).toStrictEqual([
+        expect(verdictOf(judged, 0, { glue: NO_GLUE, measure: MEASURE }).lines).toStrictEqual([
             'measured nothing over a1b2c3d4..HEAD: no changed TypeScript source ran a mutant, or the project has none to mutate',
             '2 mutant(s) no test runs',
             '  src/server.ts  2',
@@ -233,18 +235,18 @@ describe('verdict', () => {
             'warning: this verdict is narrower than the branch: a1b2c3d4..HEAD is not measured; commit the work and run again, or name the base with --since to measure the branch';
 
         // Then - the warning follows the verdict line and the lesson, and a scope that leaves nothing out prints none
-        expect(verdictOf(passed, 0, narrower).lines).toStrictEqual([
+        expect(verdictOf(passed, 0, { glue: NO_GLUE, measure: narrower }).lines).toStrictEqual([
             'measured 1 mutants over HEAD..working tree: every mutant a test runs is detected',
             WARNING,
             '0 mutant(s) no test runs',
         ]);
-        expect(verdictOf(failed, 0, narrower).lines).toStrictEqual([
+        expect(verdictOf(failed, 0, { glue: NO_GLUE, measure: narrower }).lines).toStrictEqual([
             'src/a.ts:3:9  ConditionalExpression: true  (.artifacts/stryker/report.json)',
             `found: 1 mutant(s) a test runs and none detects · ${LESSON}`,
             WARNING,
             '0 mutant(s) no test runs',
         ]);
-        expect(verdictOf(passed, 0, MEASURE).lines).toStrictEqual([
+        expect(verdictOf(passed, 0, { glue: NO_GLUE, measure: MEASURE }).lines).toStrictEqual([
             'measured 1 mutants over a1b2c3d4..HEAD: every mutant a test runs is detected',
             '0 mutant(s) no test runs',
         ]);

@@ -9,9 +9,15 @@ import {
     verdictLineOf,
     verdictWritten,
 } from '../check/report/gate-verdict.js';
-import type { MutationVerdict, PassVerdict } from '../check/report/gate-verdict.js';
+import type {
+    MutationVerdict,
+    PassVerdict,
+    VerdictSurvivor,
+} from '../check/report/gate-verdict.js';
 import { print } from '../check/report/terminal.js';
-import type { Judged } from './survivors.js';
+import { byRole } from './roles.js';
+import type { GlueBar } from './roles.js';
+import type { Judged, Survivor } from './survivors.js';
 import type { Measure } from './verdict.js';
 
 /** What a mutation run hands its verdict file as it goes: each stage, the numbers it judged, or why it judged none. */
@@ -45,11 +51,26 @@ export function stageRecorded(
     }
 }
 
-export function judgedRecorded(recorded: Recorded, judged: Judged, { range }: Measure): void {
+const asDomain = (survivor: Survivor): VerdictSurvivor => ({ ...survivor, role: 'domain' });
+
+const asGlue = (survivor: Survivor): VerdictSurvivor => ({ ...survivor, role: 'glue' });
+
+export function judgedRecorded(
+    recorded: Recorded,
+    judged: Judged,
+    { glue: bar, measure }: { glue: GlueBar; measure: Measure },
+): void {
+    const { domain, glue } = byRole(judged, bar);
     recorded.mutation = {
         detected: judged.detected,
-        range,
-        survivors: judged.survivors.map(({ file, line, mutator }) => ({ file, line, mutator })),
+        glue: {
+            bar: glue.bar,
+            detected: glue.detected,
+            judged: glue.judged,
+            survivors: glue.survivors.map(asGlue),
+        },
+        range: measure.range,
+        survivors: [...domain.map(asDomain), ...(glue.holds ? [] : glue.survivors.map(asGlue))],
         unrun: Object.values(judged.unrun).reduce((sum, count) => sum + count, 0),
     };
 }
@@ -66,25 +87,39 @@ function parsedVerdictOf(file: string): unknown {
     // Stryker restore BlockStatement
 }
 
+const survivorsOf = (member: string, survivors: unknown): VerdictSurvivor[] =>
+    (isList(survivors) ? survivors : []).map((one) => {
+        const { column, file, line, mutator, replacement, report, role } = objectOf(one);
+
+        return {
+            column: countOf(column),
+            file: `${member}/${stringOf(file) ?? ''}`,
+            line: countOf(line),
+            mutator: stringOf(mutator) ?? '',
+            replacement: stringOf(replacement) ?? '',
+            report: `${member}/${stringOf(report) ?? ''}`,
+            role: role === 'glue' ? 'glue' : 'domain',
+        };
+    });
+
 function memberVerdictOf(project: string, member: string): MutationVerdict | undefined {
     const { mutation } = objectOf(parsedVerdictOf(join(project, member, VERDICT_FILE)));
     if (mutation === null || mutation === undefined) {
         return undefined;
     }
-    const { detected, range, survivors, unrun } = objectOf(mutation);
+    const { detected, glue, range, survivors, unrun } = objectOf(mutation);
+    const held = objectOf(glue);
 
     return {
         detected: countOf(detected),
+        glue: {
+            bar: countOf(held.bar),
+            detected: countOf(held.detected),
+            judged: countOf(held.judged),
+            survivors: survivorsOf(member, held.survivors),
+        },
         range: stringOf(range) ?? '',
-        survivors: (isList(survivors) ? survivors : []).map((one) => {
-            const { file, line, mutator } = objectOf(one);
-
-            return {
-                file: `${member}/${stringOf(file) ?? ''}`,
-                line: countOf(line),
-                mutator: stringOf(mutator) ?? '',
-            };
-        }),
+        survivors: survivorsOf(member, survivors),
         unrun: countOf(unrun),
     };
 }
@@ -105,9 +140,21 @@ export function memberRecorded(
     if (own === undefined) {
         return;
     }
-    const sum = recorded.mutation ?? { detected: 0, range: own.range, survivors: [], unrun: 0 };
+    const sum = recorded.mutation ?? {
+        detected: 0,
+        glue: { bar: own.glue.bar, detected: 0, judged: 0, survivors: [] },
+        range: own.range,
+        survivors: [],
+        unrun: 0,
+    };
     recorded.mutation = {
         detected: sum.detected + own.detected,
+        glue: {
+            bar: own.glue.bar,
+            detected: sum.glue.detected + own.glue.detected,
+            judged: sum.glue.judged + own.glue.judged,
+            survivors: [...sum.glue.survivors, ...own.glue.survivors],
+        },
         range: sum.range === own.range ? sum.range : `${sum.range}, ${own.range}`,
         survivors: [...sum.survivors, ...own.survivors],
         unrun: sum.unrun + own.unrun,

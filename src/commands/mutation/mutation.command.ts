@@ -20,6 +20,7 @@ import type { Base } from './change.js';
 import { memberRuns, unownedRange } from './members.js';
 import { concluded, judgedRecorded, memberRecorded, recorder, stageRecorded } from './recorded.js';
 import type { Recorded } from './recorded.js';
+import type { GlueBar } from './roles.js';
 import { mutationScopeOf } from './scope-globs.js';
 import { changedRanges, modulesMutated, sourcesOf, unreachedRange } from './scope.js';
 import type { MutationScope } from './scope.js';
@@ -73,13 +74,14 @@ async function measured(
 function printed(
     judged: Judged,
     {
+        glue,
         measure,
         recorded,
         untestedSources,
-    }: { measure: Measure; recorded: Recorded; untestedSources: number },
+    }: { glue: GlueBar; measure: Measure; recorded: Recorded; untestedSources: number },
 ): number {
-    judgedRecorded(recorded, judged, measure);
-    const verdict = verdictOf(judged, untestedSources, measure);
+    judgedRecorded(recorded, judged, { glue, measure });
+    const verdict = verdictOf(judged, untestedSources, { glue, measure });
     print(`\n${verdict.lines.join('\n')}\n`);
 
     return verdict.status;
@@ -103,7 +105,7 @@ async function judgedAfterTheSuite({
     const { project, recorded } = run;
     const modulesAlone = judgedRuns(modulesRun);
     const measure = measureOf(since);
-    const verdictOver = { measure, recorded, untestedSources: untested.length };
+    const verdictOver = { glue: scope.glue, measure, recorded, untestedSources: untested.length };
     // Stryker disable next-line ConditionalExpression: a mutant the run never judged fails the verdict whether or not the suite runs after it; the gate only spares the suite's minutes
     if (Object.keys(modulesAlone.unrun).length > 0) {
         return printed(modulesAlone, verdictOver);

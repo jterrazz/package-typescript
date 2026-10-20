@@ -19,20 +19,36 @@ export function sourceGlobsOf(unit: string, { resolved }: Resolution): string[] 
 }
 
 // invariant: a unit's `typescript.mutation` globs are its standard's and its settings file's, read from the repository root.
-export function declaredOf(unit: string, { resolved }: Resolution): MutationScope {
+export function declaredOf(
+    unit: string,
+    { resolved }: Resolution,
+): Omit<MutationScope, 'glue'> & { glue: string[] } {
     const declared = objectOf(objectOf(resolved.sections.typescript).mutation);
     const globs = (key: string): string[] =>
         Object.keys(objectOf(declared[key])).map((glob) => `${prefixOf(unit)}${glob}`);
 
-    return { exclude: globs('exclude'), ignore: globs('ignore'), mutated: globs('mutate') };
+    return {
+        exclude: globs('exclude'),
+        glue: globs('glue'),
+        ignore: globs('ignore'),
+        mutated: globs('mutate'),
+    };
 }
 
+const barOf = ({ resolved }: Resolution): number =>
+    Number(objectOf(objectOf(resolved.sections.typescript).mutationGlue).bar);
+
 export async function mutationScopeOf(project: string): Promise<MutationScope> {
-    const units = [['.', await readSettings(project)] satisfies [string, Resolution]];
+    const settings = await readSettings(project);
+    const units = [['.', settings] satisfies [string, Resolution]];
     const declared = units.map(([unit, resolution]) => declaredOf(unit, resolution));
 
     return {
         exclude: declared.flatMap(({ exclude }) => exclude),
+        glue: {
+            bar: barOf(settings),
+            globs: declared.flatMap(({ glue }) => glue),
+        },
         ignore: declared.flatMap(({ ignore }) => ignore),
         mutated: [
             ...new Set([

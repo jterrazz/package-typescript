@@ -63,6 +63,17 @@ export default defineStandard({
         ],
         markdown: { refusesDashes: true },
         memberRoots: ['apps', 'packages'],
+        mutation: {
+            glue: {
+                '**/composition/**':
+                    'the composition root wires the adapters to the domain: what it gets wrong the specs of the whole application see',
+                '**/infrastructure/**':
+                    'an adapter translates between the domain and a tool, a store or a protocol, and the specs that cross it judge most of what it does',
+                '**/presentation/**':
+                    'presentation renders what the domain decided, and the specs that read the output judge most of what it does',
+            },
+        },
+        mutationGlue: { bar: 0.9 },
         sources: { extensions: ['ts'], roots: ['src'] },
         spine: ['docs', 'lint', 'skills', 'specs', 'src'],
         toolRoots: {

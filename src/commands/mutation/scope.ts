@@ -3,6 +3,7 @@ import { join, matchesGlob } from 'node:path';
 
 import { moduleTestOf } from '../../../lint/kit/project/ground.js';
 import { lastLineReader } from '../../drivers/tsc/node-ends.js';
+import type { GlueBar } from './roles.js';
 import type { Changed } from './survivors.js';
 
 const NEVER_MUTATED = [
@@ -15,7 +16,12 @@ const NEVER_MUTATED = [
     '**/__expected__/**',
 ];
 
-export type MutationScope = { exclude: string[]; ignore: string[]; mutated: string[] };
+export type MutationScope = {
+    exclude: string[];
+    glue: GlueBar;
+    ignore: string[];
+    mutated: string[];
+};
 
 const TEST_EXTENSIONS = ['.ts', '.tsx'];
 

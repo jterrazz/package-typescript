@@ -16,6 +16,8 @@ const LESSON =
 
 const NONE_RAN: ReadonlySet<string> = new Set();
 
+const NO_GLUE = { bar: 0.9, globs: [] };
+
 const MEASURE = { range: 'a1b2c3d4..HEAD' };
 
 const MODULE_RUN_LEAVING_THREE = {
@@ -121,6 +123,7 @@ describe('survivors', () => {
         // Then - three detected, the suite's survivor judged, what nothing runs counted by file, the mutant no change reached left, and neither earlier result judged
         expect(judgedRuns(MODULE_RUN_LEAVING_THREE, suite)).toStrictEqual({
             detected: 3,
+            detectedByFile: { 'src/a.ts': 2, 'src/specs-only.ts': 1 },
             detectedBySuite: 0,
             ignoredBy: {},
             left: 1,
@@ -173,7 +176,7 @@ describe('survivors', () => {
         );
 
         // Then - two detected by the suite and counted so, the two it did not detect named as survivors, the one it never reported never judged
-        expect(verdictOf(judged, 0, MEASURE)).toStrictEqual({
+        expect(verdictOf(judged, 0, { glue: NO_GLUE, measure: MEASURE })).toStrictEqual({
             lines: [
                 'src/a.ts:3:9  ConditionalExpression: true  (.artifacts/stryker/suite-report.json)',
                 'src/a.ts:4:9  ConditionalExpression: true  (.artifacts/stryker/suite-report.json)',
@@ -198,11 +201,11 @@ describe('survivors', () => {
         );
 
         // Then - named as never judged, never counted as left, and the run fails
-        expect([judged.left, judged.unrun, verdictOf(judged, 0, MEASURE).status]).toStrictEqual([
-            0,
-            { 'absent from the suite report': 1 },
-            1,
-        ]);
+        expect([
+            judged.left,
+            judged.unrun,
+            verdictOf(judged, 0, { glue: NO_GLUE, measure: MEASURE }).status,
+        ]).toStrictEqual([0, { 'absent from the suite report': 1 }, 1]);
     });
 
     test('--mutate names the lines to measure and leaves a static mutant to the suite only where the tree’s own change reaches it', () => {

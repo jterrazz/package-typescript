@@ -16,6 +16,7 @@ export type Survivor = {
 
 export type Judged = {
     detected: number;
+    detectedByFile: Record<string, number>;
     detectedBySuite: number;
     /** The mutants set aside before any run, by what set them aside: a declaration, an ignorer, Stryker's static skip. */
     ignoredBy: Record<string, number>;
@@ -50,22 +51,27 @@ function survivorOf(file: string, mutant: Mutant, stage: StageName): Survivor {
     };
 }
 
+function counted(counts: Record<string, number>, key: string): void {
+    counts[key] = (counts[key] ?? 0) + 1;
+}
+
 function tally(judged: Judged, file: string, mutant: Mutant, stage: StageName): void {
     const status = stringOf(mutant.status) ?? 'no status';
     if (DETECTED.has(status)) {
         judged.detected += 1;
+        counted(judged.detectedByFile, file);
     } else if (status === 'Survived') {
         judged.survivors.push(survivorOf(file, mutant, stage));
     } else if (status === 'NoCoverage') {
-        judged.uncoveredByFile[file] = (judged.uncoveredByFile[file] ?? 0) + 1;
+        counted(judged.uncoveredByFile, file);
     } else if (OUTSIDE_VERDICT.has(status)) {
-        judged.outsideVerdict[status] = (judged.outsideVerdict[status] ?? 0) + 1;
+        counted(judged.outsideVerdict, status);
         if (status === 'Ignored') {
             const by = IGNORED_BY.get(mutant.statusReason) ?? 'declared';
-            judged.ignoredBy[by] = (judged.ignoredBy[by] ?? 0) + 1;
+            counted(judged.ignoredBy, by);
         }
     } else {
-        judged.unrun[status] = (judged.unrun[status] ?? 0) + 1;
+        counted(judged.unrun, status);
     }
 }
 
@@ -187,6 +193,7 @@ function suiteAnswer(
             answered.delete(key);
             if (DETECTED.has(mutant.status)) {
                 judged.detected += 1;
+                counted(judged.detectedByFile, file);
                 judged.detectedBySuite += 1;
             } else {
                 judged.survivors.push({ ...survivor, report: reportPathOf('suite') });
@@ -209,6 +216,7 @@ export function judgedRuns(
         forwarded: new Set(),
         judged: {
             detected: 0,
+            detectedByFile: {},
             detectedBySuite: 0,
             ignoredBy: {},
             left: 0,

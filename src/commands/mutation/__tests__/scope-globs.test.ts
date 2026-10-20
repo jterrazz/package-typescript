@@ -51,13 +51,14 @@ describe('scope-globs', () => {
         ]);
     });
 
-    test('declaredOf — the globs a unit declares under exclude, ignore and mutate, each under its folder, and none where it declares none', () => {
+    test('declaredOf — the globs a unit declares under exclude, glue, ignore and mutate, each under its folder, and none where it declares none', () => {
         // Given - a section declaring the three, and one declaring nothing
         const declares = resolveConfig(
             {
                 typescript: {
                     mutation: {
                         exclude: { 'specs/a.ts': 'why' },
+                        glue: { 'src/adapters/**': 'why' },
                         ignore: { 'src/standard/**': 'data' },
                         mutate: { 'scripts/*.ts': 'why' },
                     },
@@ -73,13 +74,19 @@ describe('scope-globs', () => {
             declaredOf('apps/api', { problem: null, resolved: declares }),
             declaredOf('.', { problem: null, resolved: silent }),
         ]).toStrictEqual([
-            { exclude: ['specs/a.ts'], ignore: ['src/standard/**'], mutated: ['scripts/*.ts'] },
+            {
+                exclude: ['specs/a.ts'],
+                glue: ['src/adapters/**'],
+                ignore: ['src/standard/**'],
+                mutated: ['scripts/*.ts'],
+            },
             {
                 exclude: ['apps/api/specs/a.ts'],
+                glue: ['apps/api/src/adapters/**'],
                 ignore: ['apps/api/src/standard/**'],
                 mutated: ['apps/api/scripts/*.ts'],
             },
-            { exclude: [], ignore: [], mutated: [] },
+            { exclude: [], glue: [], ignore: [], mutated: [] },
         ]);
     });
 });
