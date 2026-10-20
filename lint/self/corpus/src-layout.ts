@@ -47,7 +47,12 @@ const TOOL_PACKAGES: Readonly<Record<string, readonly string[]>> = {
     prettier: ['prettier', 'prettier-plugin-astro'],
     publint: ['publint'],
     rumdl: ['rumdl'],
-    stryker: ['@stryker-mutator/core', '@stryker-mutator/vitest-runner'],
+    stryker: [
+        '@stryker-mutator/core',
+        '@stryker-mutator/instrumenter',
+        '@stryker-mutator/typescript-checker',
+        '@stryker-mutator/vitest-runner',
+    ],
     tsc: [
         'typescript',
         '@typescript/typescript-darwin-arm64',

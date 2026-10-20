@@ -41,6 +41,8 @@ export default defineConfig({
                     'specs/kinds/kinds.specification.ts spawns it by its path',
             },
             ignoreDependencies: {
+                '@stryker-mutator/instrumenter':
+                    'src/drivers/stryker/__tests__/ignorers.test.ts hands its path to a child process it spawns, which instruments a source through the ignorers as Stryker does',
                 open: 'src/drivers/stryker/__tests__/headless.test.ts imports it from a child process it spawns, to prove the mutation sandbox refuses it',
                 react: 'the website and mobile specimens of specs/kinds/ declare it, and their install links it from this checkout',
             },
