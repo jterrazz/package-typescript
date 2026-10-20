@@ -21,15 +21,20 @@ import { memberRuns, unownedRange } from './members.js';
 import { concluded, judgedRecorded, memberRecorded, recorder, stageRecorded } from './recorded.js';
 import type { Recorded } from './recorded.js';
 import { mutationScopeOf } from './scope-globs.js';
-import { changedRanges, fileOf, narrowed, sourcesOf, unreachedRange } from './scope.js';
+import { changedRanges, modulesMutated, sourcesOf, unreachedRange } from './scope.js';
 import type { MutationScope } from './scope.js';
 import { afterStage, buildsOf, withClientOnlyUnmeasured } from './stages.js';
 import { handedToTheSuite, judgedRuns } from './survivors.js';
-import type { Judged, ModuleRun } from './survivors.js';
+import type { Changed, Judged, ModuleRun } from './survivors.js';
 import { measureOf, verdictOf } from './verdict.js';
 import type { Measure } from './verdict.js';
 
 type Run = { cold: boolean; jobs: number | undefined; project: string; recorded: Recorded };
+
+const sourceIn =
+    (project: string) =>
+    (file: string): string =>
+        String(readFileSync(join(project, file)));
 
 async function measured(
     scope: MutationScope,
@@ -80,19 +85,19 @@ function printed(
     return verdict.status;
 }
 
+type Change = { changed: Changed; ranges: readonly string[] | undefined; since: Base };
+
 async function judgedAfterTheSuite({
+    change: { changed, ranges, since },
     modulesRun,
-    ranges,
     run,
     scope,
-    since,
     untested,
 }: {
+    change: Change;
     modulesRun: ModuleRun;
-    ranges: readonly string[] | undefined;
     run: Run;
     scope: MutationScope;
-    since: Base;
     untested: readonly string[];
 }): Promise<number> {
     const { project, recorded } = run;
@@ -103,16 +108,9 @@ async function judgedAfterTheSuite({
     if (Object.keys(modulesAlone.unrun).length > 0) {
         return printed(modulesAlone, verdictOver);
     }
-    const request = { ranges, since };
-    const { changed, note } = changeOf(project, request);
-    if (note !== undefined) {
-        print(`${badge('TYPESCRIPT')} ${note}\n`);
-    }
-    const reached = changedRanges(untested, changed, (file) =>
-        String(readFileSync(join(project, file))),
-    );
+    const reached = changedRanges(untested, changed, sourceIn(project));
     // invariant: `--mutate` names the lines to measure and the default run's policy for a static mutant stands: the module tests leave it to the suite only where the tree's own change reaches it.
-    const statics = treeChangeFor(project, request, changed);
+    const statics = treeChangeFor(project, { ranges, since }, changed);
     const reach = { changed, statics };
     const handed = [...reached, ...handedToTheSuite(modulesRun, reach)];
     if (handed.length === 0) {
@@ -217,24 +215,27 @@ async function measuredRun(
     }
     strykerPrepared(project);
 
-    const modules = narrowed(tested, ranges);
+    const { changed, known, note } = changeOf(project, { ranges, since });
+    if (note !== undefined) {
+        print(`${badge('TYPESCRIPT')} ${note}\n`);
+    }
+    const modules = modulesMutated(tested, { changed, known, ranges }, sourceIn(project));
     const first =
         modules.length === 0
             ? undefined
             : await measured(scope, { mutate: modules, name: 'modules' }, run);
 
-    return await afterStage(first, async ({ ranByTests, report }) => {
-        const measuredFiles = new Set(modules.map((range) => fileOf(range)));
-
-        return await judgedAfterTheSuite({
-            modulesRun: { measured: measuredFiles, ranByTests, report },
-            ranges,
-            run,
-            scope,
-            since,
-            untested,
-        });
-    });
+    return await afterStage(
+        first,
+        async ({ ranByTests, report }) =>
+            await judgedAfterTheSuite({
+                change: { changed, ranges, since },
+                modulesRun: { measured: modules, ranByTests, report },
+                run,
+                scope,
+                untested,
+            }),
+    );
 }
 
 function refusedJobs(named: string, recorded: Recorded): number {

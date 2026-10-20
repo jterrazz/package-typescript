@@ -166,27 +166,29 @@ function linesNamed(ranges: readonly string[]): Changed {
     return named;
 }
 
-/** The change the suite measures: what `--mutate` names, else what the tree changed since the base, with a note naming the base, or saying that git could not answer or that the change is empty, so a run that measured nothing says so. */
+/** The change both runs measure: what `--mutate` names, else what the tree changed since the base, with a note naming the base, or saying that git could not answer (`known` false: no line can be said changed) or that the change is empty, so a run that measured nothing says so. */
 export function changeOf(
     project: string,
     { ranges, since }: { ranges: readonly string[] | undefined; since: Base },
-): { changed: Changed; note?: string } {
+): { changed: Changed; known: boolean; note?: string } {
     if (ranges !== undefined) {
-        return { changed: linesNamed(ranges) };
+        return { changed: linesNamed(ranges), known: true };
     }
     const changed = changeSince(project, since.commit);
     if (changed === undefined) {
         return {
             changed: new Map(),
-            note: `git names no commit ${since.commit}: the whole suite measures nothing of this change.`,
+            known: false,
+            note: `git names no commit ${since.commit}: the module tests measure every source they test, whole, and the whole suite nothing of this change.`,
         };
     }
 
     return {
         changed,
+        known: true,
         note:
             changed.size === 0
-                ? `The working tree equals ${since.names}: no line changed, so the whole suite measures no change; name the commit the work started from with --since to measure one.`
+                ? `The working tree equals ${since.names}: no line changed, so neither run measures a change; name the commit the work started from with --since to measure one.`
                 : `The change: the working tree against ${since.names}.`,
     };
 }

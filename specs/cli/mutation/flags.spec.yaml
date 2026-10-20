@@ -10,7 +10,7 @@ runs:
 
           Usage: typescript mutation [--cold] [--mutate <ranges>] [--since <ref>]
 
-          Measure the suite against mutants of the sources (--mutate <ranges> narrows it)
+          Measure the tests against mutants of the lines the change reaches (--mutate <ranges> names others)
 
           Flags:
             --cold             Start both runs from no incremental report: no verdict is inherited (TYPESCRIPT_MUTATION_COLD=1 says the same)
@@ -30,7 +30,7 @@ runs:
 
           Usage: typescript mutation [--cold] [--mutate <ranges>] [--since <ref>]
 
-          Measure the suite against mutants of the sources (--mutate <ranges> narrows it)
+          Measure the tests against mutants of the lines the change reaches (--mutate <ranges> names others)
 
           Flags:
             --cold             Start both runs from no incremental report: no verdict is inherited (TYPESCRIPT_MUTATION_COLD=1 says the same)
@@ -48,7 +48,7 @@ runs:
 
           Usage: typescript mutation [--cold] [--mutate <ranges>] [--since <ref>]
 
-          Measure the suite against mutants of the sources (--mutate <ranges> narrows it)
+          Measure the tests against mutants of the lines the change reaches (--mutate <ranges> names others)
 
           Flags:
             --cold             Start both runs from no incremental report: no verdict is inherited (TYPESCRIPT_MUTATION_COLD=1 says the same)

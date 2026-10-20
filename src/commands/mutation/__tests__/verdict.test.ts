@@ -21,7 +21,7 @@ describe('verdict', () => {
     test('verdictOf — a run whose every covered mutant is detected passes, counting apart what no change has brought to the suite and what the verdict cannot read', () => {
         // Given - two detected mutants and a static one the tests loading its module detect, three no module test runs, a static one they let live and one no test could be credited with, one that did not compile, one that errored and one declared, a file Stryker found nothing to mutate in, beside a file an earlier run measured
         const judged = judgedRuns({
-            measured: new Set(['src/a.ts', 'src/b.ts', 'src/c.ts']),
+            measured: ['src/a.ts', 'src/b.ts', 'src/c.ts'],
             ranByTests: NONE_RAN,
             report: {
                 files: {
@@ -60,7 +60,7 @@ describe('verdict', () => {
 
     test('verdictOf — a run that mutated nothing says it measured nothing over its range, never that every mutant was detected', () => {
         // Given - a report holding no mutant
-        const judged = judgedRuns({ measured: new Set(), ranByTests: NONE_RAN, report: {} });
+        const judged = judgedRuns({ measured: [], ranByTests: NONE_RAN, report: {} });
 
         // Then - the verdict passes, and names its range and that nothing was measured
         expect(verdictOf(judged, 0, MEASURE)).toStrictEqual({
@@ -75,7 +75,7 @@ describe('verdict', () => {
     test('verdictOf — a survivor fails the run, each named at its place, in file and line order, before the lesson', () => {
         // Given - survivors in two files, out of order, two on one line, one replacing a block over several lines, one whose report names neither its mutator nor its replacement, and two static ones, the first a test also ran, the second only loading ran
         const judged = judgedRuns({
-            measured: new Set(['src/a.ts', 'src/b.ts']),
+            measured: ['src/a.ts', 'src/b.ts'],
             ranByTests: new Set(['ran']),
             report: {
                 files: {
@@ -118,7 +118,7 @@ describe('verdict', () => {
     test('verdictOf — a mutant the run never judged fails it, counted by status, an unknown or missing one included — a stopped run passes nothing', () => {
         // Given - a detected mutant, two a stopped run left pending, one of a status no verdict knows, one with none
         const judged = judgedRuns({
-            measured: new Set(['src/a.ts']),
+            measured: ['src/a.ts'],
             ranByTests: NONE_RAN,
             report: {
                 files: {
@@ -149,7 +149,7 @@ describe('verdict', () => {
         // Given - the suite ran nothing of three mutants in one file, and of one in each of two others
         const files = ['src/a.ts', 'src/m.ts', 'src/z.ts'];
         const judged = judgedRuns(
-            { measured: new Set(), ranByTests: NONE_RAN, report: {} },
+            { measured: [], ranByTests: NONE_RAN, report: {} },
             {
                 changed: new Map(files.map((file) => [file, true as const])),
                 report: {
@@ -183,7 +183,7 @@ describe('verdict', () => {
         // Given - the suite ran nothing of a server module's two mutants, a component's three and a template's one
         const files = ['src/server.ts', 'src/Card.tsx', 'src/page.astro'];
         const judged = judgedRuns(
-            { measured: new Set(), ranByTests: NONE_RAN, report: {} },
+            { measured: [], ranByTests: NONE_RAN, report: {} },
             {
                 changed: new Map(files.map((file) => [file, true as const])),
                 report: {
@@ -220,12 +220,12 @@ describe('verdict', () => {
         // Given - a run that mutated one detected mutant, one that left a survivor, both over a scope that leaves the branch's own commits out
         const narrower = { range: 'HEAD..working tree', unmeasured: 'a1b2c3d4..HEAD' };
         const passed = judgedRuns({
-            measured: new Set(['src/a.ts']),
+            measured: ['src/a.ts'],
             ranByTests: NONE_RAN,
             report: { files: { 'src/a.ts': { mutants: [mutant('Killed', 3)] } } },
         });
         const failed = judgedRuns({
-            measured: new Set(['src/a.ts']),
+            measured: ['src/a.ts'],
             ranByTests: NONE_RAN,
             report: { files: { 'src/a.ts': { mutants: [mutant('Survived', 3)] } } },
         });

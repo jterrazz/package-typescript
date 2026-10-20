@@ -1,6 +1,7 @@
 import { isList, objectOf, stringOf } from '../../../lint/kit/project/json.js';
 import { reportPathOf } from '../../drivers/stryker/reports.js';
 import type { StageName } from '../../drivers/stryker/reports.js';
+import { fileOf } from './scope.js';
 
 export type Survivor = {
     column: number;
@@ -56,16 +57,36 @@ function tally(judged: Judged, file: string, mutant: Mutant, stage: StageName): 
 
 type Mutant = Record<string, unknown>;
 
-function mutantsOf(report: unknown, measured?: ReadonlySet<string>): [string, Mutant][] {
+function mutantsOf(report: unknown): [string, Mutant][] {
     return Object.entries(objectOf(objectOf(report).files)).flatMap(([file, entry]) => {
-        if (measured !== undefined && !measured.has(file)) {
-            return [];
-        }
         const { mutants } = objectOf(entry);
 
         return isList(mutants) ? mutants.map((one): [string, Mutant] => [file, objectOf(one)]) : [];
     });
 }
+
+const LINES = /^(?<from>\d+)(?::\d+)?-(?<to>\d+)(?::\d+)?$/u;
+
+// outside: Stryker holds a mutant in a `--mutate` range whole: a file named bare holds all of it, a range of lines what starts and ends within them; its report keeps an earlier run's results beyond the ranges, which this run did not measure.
+function heldBy(ranges: readonly string[], file: string, mutant: Mutant): boolean {
+    const { end, start } = objectOf(mutant.location);
+    const first = Number(objectOf(start).line);
+    const last = Number(objectOf(end).line);
+
+    return ranges.some((range) => {
+        if (range === file) {
+            return true;
+        }
+        const lines = range.startsWith(`${file}:`)
+            ? LINES.exec(range.slice(file.length + 1))?.groups
+            : undefined;
+
+        return lines !== undefined && first >= Number(lines.from) && last <= Number(lines.to);
+    });
+}
+
+const heldMutantsOf = (report: unknown, ranges: readonly string[]): [string, Mutant][] =>
+    mutantsOf(report).filter(([file, mutant]) => heldBy(ranges, file, mutant));
 
 const keyOf = (file: string, mutant: Mutant): string => {
     const start = objectOf(objectOf(mutant.location).start);
@@ -73,9 +94,9 @@ const keyOf = (file: string, mutant: Mutant): string => {
     return JSON.stringify([file, start.line, start.column, mutant.mutatorName, mutant.replacement]);
 };
 
-/** What the module run hands the verdict: its report, the files it measured, and the mutants its tests ran beyond loading their files. */
+/** What the module run hands the verdict: its report, the files and ranges it measured, and the mutants its tests ran beyond loading their files. */
 export type ModuleRun = {
-    measured: ReadonlySet<string>;
+    measured: readonly string[];
     ranByTests: ReadonlySet<string>;
     report: unknown;
 };
@@ -116,7 +137,7 @@ const reachedBy = ({ changed, statics = changed }: Reach, file: string, mutant: 
 
 /** What the module tests hand the whole suite in `measured`, as the `--mutate` range of exactly each node, once: every mutant they let live, and what they could not measure on the lines the change reaches. */
 export function handedToTheSuite(modules: ModuleRun, reach: Reach): string[] {
-    const ranges = mutantsOf(modules.report, modules.measured)
+    const ranges = heldMutantsOf(modules.report, modules.measured)
         .filter(
             ([file, mutant]) =>
                 survivedTheModules(mutant, modules.ranByTests) ||
@@ -133,39 +154,16 @@ export function handedToTheSuite(modules: ModuleRun, reach: Reach): string[] {
     return [...new Set(ranges)];
 }
 
-// outside: Stryker holds a mutant in a `--mutate` range whole: a file named bare holds all of it, a range of lines what starts and ends within them.
-function heldBy(ranges: readonly string[], file: string, mutant: Mutant): boolean {
-    const { end, start } = objectOf(mutant.location);
-    const first = Number(objectOf(start).line);
-    const last = Number(objectOf(end).line);
-
-    return ranges.some((range) => {
-        if (range === file) {
-            return true;
-        }
-        const [from, to] = range
-            .slice(file.length + 1)
-            .split('-')
-            .map(Number);
-
-        return (
-            range.startsWith(`${file}:`) &&
-            first >= (from ?? Number.NaN) &&
-            last <= (to ?? Number.NaN)
-        );
-    });
-}
-
 type Answering = {
     answered: Map<string, Survivor>;
     forwarded: Set<string>;
     judged: Judged;
-    modules: ModuleRun;
+    measuredFiles: ReadonlySet<string>;
 };
 
 // invariant: a survivor the module tests handed on is detected where the suite detects it, and survives as the module tests reported it otherwise; a mutant they left counts where this run handed it on; a source with no module test counts what this run's ranges held.
 function suiteAnswer(
-    { answered, forwarded, judged, modules }: Answering,
+    { answered, forwarded, judged, measuredFiles }: Answering,
     suite: { report: unknown; untested: readonly string[] },
 ): void {
     for (const [file, mutant] of mutantsOf(suite.report)) {
@@ -180,16 +178,14 @@ function suiteAnswer(
                 judged.survivors.push({ ...survivor, report: reportPathOf('suite') });
             }
         } else if (
-            modules.measured.has(file)
-                ? forwarded.delete(key)
-                : heldBy(suite.untested, file, mutant)
+            measuredFiles.has(file) ? forwarded.delete(key) : heldBy(suite.untested, file, mutant)
         ) {
             tally(judged, file, mutant, 'suite');
         }
     }
 }
 
-/** One verdict over both runs: a mutant the module tests let live is the suite's to answer, and survives only where the suite lets it live too; what they left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant handed to the suite that its report does not carry was judged by nothing; of a source with no module test, the suite's report counts only what this run's ranges held, and an earlier run's results it carries beyond them count for nothing. */
+/** One verdict over both runs: a mutant the module tests let live is the suite's to answer, and survives only where the suite lets it live too; what they left is the suite's to judge where the change brought it there, and counted as left where it did not; a mutant handed to the suite that its report does not carry was judged by nothing; of each report, only what this run's ranges held counts, and an earlier run's results it carries beyond them count for nothing. */
 export function judgedRuns(
     modules: ModuleRun,
     suite?: Reach & { report: unknown; untested: readonly string[] },
@@ -206,10 +202,10 @@ export function judgedRuns(
             uncoveredByFile: {},
             unrun: {},
         },
-        modules,
+        measuredFiles: new Set(modules.measured.map((range) => fileOf(range))),
     };
     const { answered, forwarded, judged } = answering;
-    for (const [file, mutant] of mutantsOf(modules.report, modules.measured)) {
+    for (const [file, mutant] of heldMutantsOf(modules.report, modules.measured)) {
         if (suite !== undefined && survivedTheModules(mutant, modules.ranByTests)) {
             // Stryker disable next-line StringLiteral: the report of an answered survivor is replaced by the suite's when the suite judges it
             answered.set(keyOf(file, mutant), survivorOf(file, mutant, 'modules'));

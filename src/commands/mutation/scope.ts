@@ -62,8 +62,7 @@ export function unreachedRange(
     });
 }
 
-/** The ranges `--mutate` names in the files given, or every file whole when it names none. */
-export function narrowed(files: readonly string[], ranges?: readonly string[]): string[] {
+function narrowed(files: readonly string[], ranges?: readonly string[]): string[] {
     if (ranges === undefined) {
         return [...files];
     }
@@ -74,13 +73,13 @@ export function narrowed(files: readonly string[], ranges?: readonly string[]): 
 
 const NO_CODE = /^(?:$|\/\/|\/\*|\*\/|\*(?: |$)|import\s[^;]*;$)/u;
 
-/** The untested sources the change reaches, each hunk holding code as a range of whole lines run to the end of every node it opens, as Stryker mutates only a node it holds whole: a hunk of blank lines, comments and one-line imports holds no mutant, and would cost the suite's dry run for nothing. */
+/** The sources the change reaches, each hunk holding code as a range of whole lines run to the end of every node it opens, as Stryker mutates only a node it holds whole: a hunk of blank lines, comments and one-line imports holds no mutant, and would cost a run's dry run for nothing. */
 export function changedRanges(
-    untested: readonly string[],
+    sources: readonly string[],
     changed: Changed,
     source: (file: string) => string,
 ): string[] {
-    return untested.flatMap((file) => {
+    return sources.flatMap((file) => {
         const lines = changed.get(file);
         if (lines === undefined) {
             return [];
@@ -98,4 +97,21 @@ export function changedRanges(
             )
             .map(([from, to]) => `${file}:${from}-${lastLine(from, to)}`);
     });
+}
+
+/** What the module tests measure of the sources they test: the ranges `--mutate` names in them, else the lines the change reaches, else, where git cannot say what changed, every one whole. */
+export function modulesMutated(
+    tested: readonly string[],
+    {
+        changed,
+        known,
+        ranges,
+    }: { changed: Changed; known: boolean; ranges: readonly string[] | undefined },
+    source: (file: string) => string,
+): string[] {
+    if (ranges !== undefined || !known) {
+        return narrowed(tested, ranges);
+    }
+
+    return changedRanges(tested, changed, source);
 }

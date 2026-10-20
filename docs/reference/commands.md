@@ -10,7 +10,7 @@ npx typescript check           # Every quality pass, in parallel, ending on a dr
 npx typescript fix             # Rewrite in place: lint, formatting, the .gitignore, spellings, fallen baseline counts
 npx typescript doctor          # Installed tool versions against the declared ranges, then where each setting comes from
 npx typescript baseline        # Record today's debt so that it may only fall
-npx typescript mutation        # The module tests, then the whole suite over the changed lines they leave
+npx typescript mutation        # The module tests over the change, then the whole suite over the changed lines they leave
 npx typescript docs-layout .   # Check a repository's docs/ against the manual's shape
 npx typescript gate-lock       # Refuse while a running gate holds this checkout, naming its pid
 npx typescript rehearse        # The gate on Linux, in Docker, on a fresh clone of the branch, before a tag

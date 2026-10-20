@@ -126,7 +126,7 @@ describe('change', () => {
         );
     });
 
-    test('the suite measures the lines --mutate names, a file named alone whole, else the change since the base, which it names, and says when git cannot answer or nothing changed', () => {
+    test('both runs measure the lines --mutate names, a file named alone whole, else the change since the base, which it names, and say when git cannot answer or nothing changed', () => {
         // Given - a repository whose first line was rewritten since its commit, a clean one, and a folder outside any repository
         const root = committedRepository({ 'a.ts': 'one\n' });
         writeFileSync(join(root, 'a.ts'), '1\n');
@@ -167,18 +167,22 @@ describe('change', () => {
                     ['src/z.ts', true],
                     ['src/w.ts', true],
                 ]),
+                known: true,
             },
             {
                 changed: new Map([['a.ts', [[1, 1]]]]),
+                known: true,
                 note: 'The change: the working tree against the base.',
             },
             {
                 changed: new Map(),
-                note: 'The working tree equals the base: no line changed, so the whole suite measures no change; name the commit the work started from with --since to measure one.',
+                known: true,
+                note: 'The working tree equals the base: no line changed, so neither run measures a change; name the commit the work started from with --since to measure one.',
             },
             {
                 changed: new Map(),
-                note: 'git names no commit main: the whole suite measures nothing of this change.',
+                known: false,
+                note: 'git names no commit main: the module tests measure every source they test, whole, and the whole suite nothing of this change.',
             },
         ]);
     });

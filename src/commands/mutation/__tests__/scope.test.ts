@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
-import { changedRanges, fileOf, narrowed, sourcesOf, unreachedRange } from '../scope.js';
+import { changedRanges, fileOf, modulesMutated, sourcesOf, unreachedRange } from '../scope.js';
 
 const SCOPE = {
     exclude: [],
@@ -31,6 +31,8 @@ function treeOf(files: readonly string[]): string {
 
     return root;
 }
+
+const twoLines = (): string => 'export const one = 1;\nexport const two = 2;\n';
 
 describe('scope', () => {
     test('splits the sources the declaration names by whether a module test sits in their folder’s __tests__/, leaving out tests, fixtures and what it ignores', () => {
@@ -63,26 +65,41 @@ describe('scope', () => {
         });
     });
 
-    test('a range names its file, in either spelling, and --mutate narrows the sources to the ranges it names in them', () => {
-        // Given - ranges by lines and by positions, a whole file, and a range in a source outside the list
+    test('a range names its file, in either spelling, and the module tests measure the ranges --mutate names in their sources, else the lines the change reaches, else every source whole where git cannot say', () => {
+        // Given - ranges by lines and by positions, a whole file, and a range in a source outside the list, beside a change rewriting line 2 of one tested source
         const ranges = ['src/a.ts:10-20', 'src/b.ts:3:14-5:16', 'src/c.ts', 'src/z.ts:1-2'];
+        const tested = ['src/a.ts', 'src/b.ts', 'src/c.ts'];
+        const changed = new Map([['src/b.ts', [[2, 2] as const]]]);
 
-        // Then - each range's file, and the ranges of the listed sources, or every source when no range is named
+        // Then - each range's file; the named ranges of the listed sources, the changed line, nothing of an empty change, and every source where the change is unknown
         expect(ranges.map((range) => fileOf(range))).toStrictEqual([
             'src/a.ts',
             'src/b.ts',
             'src/c.ts',
             'src/z.ts',
         ]);
-        expect(narrowed(['src/a.ts', 'src/b.ts', 'src/c.ts'], ranges)).toStrictEqual([
-            'src/a.ts:10-20',
-            'src/b.ts:3:14-5:16',
-            'src/c.ts',
+        expect([
+            modulesMutated(tested, { changed, known: true, ranges }, twoLines),
+            modulesMutated(tested, { changed, known: true, ranges: undefined }, twoLines),
+            modulesMutated(
+                tested,
+                { changed: new Map(), known: true, ranges: undefined },
+                twoLines,
+            ),
+            modulesMutated(
+                tested,
+                { changed: new Map(), known: false, ranges: undefined },
+                twoLines,
+            ),
+        ]).toStrictEqual([
+            ['src/a.ts:10-20', 'src/b.ts:3:14-5:16', 'src/c.ts'],
+            ['src/b.ts:2-2'],
+            [],
+            ['src/a.ts', 'src/b.ts', 'src/c.ts'],
         ]);
-        expect(narrowed(['src/a.ts'])).toStrictEqual(['src/a.ts']);
     });
 
-    test('the suite measures each hunk of code the change made in a source with no module test, and an added source whole', () => {
+    test('a run measures each hunk of code the change made in a source, and an added source whole', () => {
         // Given - a change of seven hunks in one untested source (two of code, one of an import and a blank line, one of comments, one opening an import over several lines, one of an import with code after it on its line, one of a doc comment with an empty line), one added, and one in a source left out
         const source = [
             "import { a } from './a.js';",

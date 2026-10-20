@@ -60,7 +60,7 @@ export const SURFACES = {
             },
         ],
         read: 'docs/reference/quality-checks.md#mutation',
-        says: 'Measure the suite against mutants of the sources (--mutate <ranges> narrows it)',
+        says: 'Measure the tests against mutants of the lines the change reaches (--mutate <ranges> names others)',
     },
     baseline: {
         read: GESTURES,

@@ -19,7 +19,7 @@ const NONE_RAN: ReadonlySet<string> = new Set();
 const MEASURE = { range: 'a1b2c3d4..HEAD' };
 
 const MODULE_RUN_LEAVING_THREE = {
-    measured: new Set(['src/a.ts']),
+    measured: ['src/a.ts'],
     ranByTests: NONE_RAN,
     report: {
         files: {
@@ -72,7 +72,7 @@ describe('survivors', () => {
         expect(
             handedToTheSuite(
                 {
-                    measured: new Set(['src/a.ts', 'src/added.ts', 'src/untouched.ts']),
+                    measured: ['src/a.ts', 'src/added.ts', 'src/untouched.ts'],
                     ranByTests: NONE_RAN,
                     report,
                 },
@@ -143,7 +143,7 @@ describe('survivors', () => {
         // Given - four mutants the module tests ran and let live, on lines no change reached: the suite kills one, times out on one, lets one live and runs nothing of one; a fifth it reports nothing of
         const judged = judgedRuns(
             {
-                measured: new Set(['src/a.ts']),
+                measured: ['src/a.ts'],
                 ranByTests: NONE_RAN,
                 report: {
                     files: {
@@ -189,7 +189,7 @@ describe('survivors', () => {
         // Given - a mutant no module test runs, on a line the change reached, and a suite report holding nothing of it
         const judged = judgedRuns(
             {
-                measured: new Set(['src/a.ts']),
+                measured: ['src/a.ts'],
                 ranByTests: NONE_RAN,
                 report: { files: { 'src/a.ts': { mutants: [mutant('NoCoverage', 2)] } } },
             },
@@ -207,7 +207,7 @@ describe('survivors', () => {
     test('--mutate names the lines to measure and leaves a static mutant to the suite only where the tree’s own change reaches it', () => {
         // Given - a file whose module-level table line 2 and function line 9 no module test runs, the run pointed at the whole file by --mutate, and a tree whose own change touches line 9 alone
         const modules = {
-            measured: new Set(['src/a.ts']),
+            measured: ['src/a.ts'],
             ranByTests: NONE_RAN,
             report: {
                 files: {
@@ -233,5 +233,35 @@ describe('survivors', () => {
             ['src/a.ts:2:8-2:19', 'src/a.ts:9:8-9:19'],
             ['src/a.ts:9:8-9:19'],
         ]);
+    });
+
+    test('the module tests answer only for the lines this run measured: an earlier run’s result their report keeps beyond the ranges counts for nothing', () => {
+        // Given - a module run over lines 1 to 3 and lines 8 to 9 of a source, killing one mutant there, whose report still carries a survivor and an unrun mutant an earlier run left on lines 5 and 7, and one crossing the edge of the first range
+        const modules = {
+            measured: ['src/a.ts:1-3', 'src/a.ts:8:4-9:12'],
+            ranByTests: NONE_RAN,
+            report: {
+                files: {
+                    'src/a.ts': {
+                        mutants: [
+                            mutant('Killed', 2),
+                            mutant('Survived', 3, 'true', 4),
+                            mutant('Survived', 5),
+                            mutant('Pending', 7),
+                            mutant('Killed', 9),
+                        ],
+                    },
+                },
+            },
+        };
+
+        // Then - two detected, nothing handed on, nothing left unjudged
+        const judged = judgedRuns(modules);
+        expect([
+            judged.detected,
+            judged.survivors,
+            judged.unrun,
+            handedToTheSuite(modules, { changed: new Map() }),
+        ]).toStrictEqual([2, [], {}, []]);
     });
 });

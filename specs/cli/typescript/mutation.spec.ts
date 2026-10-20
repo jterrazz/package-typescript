@@ -1,8 +1,12 @@
 import { directory } from '@jterrazz/test';
-import { execFileSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { committed } from '../__setup__/repository.js';
 import { cli } from '../packed-cli.specification.js';
+
+const reportOf = (content: string): unknown => JSON.parse(content);
 
 describe('mutation', () => {
     test('typescript mutation — a mutant the module test runs and none detects, and no spec detects either, fails the run, named at its place', async () => {
@@ -14,6 +18,7 @@ describe('mutation', () => {
         // Then - the module tests hand what they let live to the whole suite, which lets it live too; each survivor is named, then the lesson, and nothing is written to a ledger
         expect(result.exitCode).toBe(1);
         expect(result.stdout).toMatch(`
+             TYPESCRIPT  git names no commit HEAD: the module tests measure every source they test, whole, and the whole suite nothing of this change.
              TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
             {{any}}
              TYPESCRIPT  Measuring the whole suite against what the module tests let live, and the changed lines they do not run...
@@ -39,6 +44,7 @@ describe('mutation', () => {
         // Then - the whole suite detects both, and the verdict counts them among the detected
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toMatch(`
+             TYPESCRIPT  git names no commit HEAD: the module tests measure every source they test, whole, and the whole suite nothing of this change.
              TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
             {{any}}
              TYPESCRIPT  Measuring the whole suite against what the module tests let live, and the changed lines they do not run...
@@ -104,10 +110,9 @@ describe('mutation', () => {
         // Then - the blank variable reads as unset, so HEAD, which nothing outside a repository names; the verdict passes, the suite never started
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toMatch(`
+             TYPESCRIPT  git names no commit HEAD: the module tests measure every source they test, whole, and the whole suite nothing of this change.
              TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
             {{any}}
-             TYPESCRIPT  git names no commit HEAD: the whole suite measures nothing of this change.
-
             measured 9 mutants over HEAD..working tree: every mutant a test runs is detected
             0 mutant(s) no test runs
 
@@ -142,10 +147,9 @@ describe('mutation', () => {
         // Then - the module tests' verdict alone, the source waiting for a change counted apart, and a module sandbox that runs the project's build, as the suite's does
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toMatch(`
+             TYPESCRIPT  git names no commit HEAD: the module tests measure every source they test, whole, and the whole suite nothing of this change.
              TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
             {{any}}
-             TYPESCRIPT  git names no commit HEAD: the whole suite measures nothing of this change.
-
             measured 9 mutants over HEAD..working tree: every mutant a test runs is detected
             0 mutant(s) no test runs
             1 source(s) with no module test: the whole suite measures the lines a change reaches there; what no change reaches no count holds
@@ -194,10 +198,9 @@ describe('mutation', () => {
         // Then - every mutant of the table detected, none left to the suite
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toMatch(`
+             TYPESCRIPT  git names no commit HEAD: the module tests measure every source they test, whole, and the whole suite nothing of this change.
              TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
             {{any}}
-             TYPESCRIPT  git names no commit HEAD: the whole suite measures nothing of this change.
-
             measured 12 mutants over HEAD..working tree: every mutant a test runs is detected
             0 mutant(s) no test runs
 
@@ -216,6 +219,7 @@ describe('mutation', () => {
         // Then - the mutant the test runs and lets live fails the run, though loading the module ran it too
         expect(result.exitCode).toBe(1);
         expect(result.stdout).toMatch(`
+             TYPESCRIPT  git names no commit HEAD: the module tests measure every source they test, whole, and the whole suite nothing of this change.
              TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
             {{any}}
             src/doubled.ts:2:12  ArithmeticOperator: value / 2  (.artifacts/stryker/suite-report.json)
@@ -231,30 +235,52 @@ describe('mutation', () => {
         const result = await cli
             .fixture(directory('./__fixtures__/mutation-consumer/'))
             .fixture(directory('./__fixtures__/mutation-killing/'))
-            .prepare((workdir) => {
-                const git = (...args: string[]): void => {
-                    execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...args], {
-                        cwd: workdir,
-                        stdio: 'ignore',
-                    });
-                };
-                git('init', '--quiet');
-                git('add', '--all');
-                git('commit', '--quiet', '--message', 'first');
-            })
+            .prepare(committed)
             .exec('typescript mutation --since HEAD');
 
-        // Then - the note names the commit as written, and the suite measures no change
+        // Then - the note names the commit as written, and neither run measures a change
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toMatch(`
-             TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
-            {{any}}
-             TYPESCRIPT  The working tree equals HEAD: no line changed, so the whole suite measures no change; name the commit the work started from with --since to measure one.
+             TYPESCRIPT  The working tree equals HEAD: no line changed, so neither run measures a change; name the commit the work started from with --since to measure one.
 
-            measured 9 mutants over HEAD..working tree: every mutant a test runs is detected
+            measured nothing over HEAD..working tree: no changed TypeScript source ran a mutant, or the project has none to mutate
             0 mutant(s) no test runs
 
-            ✓ Mutation passed: 9 detected, 0 surviving, 0 never judged, over HEAD..working tree
+            ✓ Mutation passed: 0 detected, 0 surviving, 0 never judged, over HEAD..working tree
         `);
+    });
+
+    test('typescript mutation — the module tests measure the lines the change reaches, nothing else of the source', async () => {
+        // Given - the consumer, its test judging everything, committed, then the message its guard throws reworded
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .prepare((workdir) => {
+                committed(workdir);
+                const source = join(workdir, 'src/discount.ts');
+                writeFileSync(
+                    source,
+                    String(readFileSync(source)).replace(
+                        "'a discount above half the price'",
+                        "'a discount above half the price is refused'",
+                    ),
+                );
+            })
+            .exec('typescript mutation');
+
+        // Then - the one mutant of the reworded line is measured, and the module report holds no other
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(`
+             TYPESCRIPT  The change: the working tree against HEAD, the change not yet committed.
+             TYPESCRIPT  Measuring the module tests against mutants of the sources they test...
+            {{any}}
+            measured 1 mutants over HEAD..working tree: every mutant a test runs is detected
+            0 mutant(s) no test runs
+
+            ✓ Mutation passed: 1 detected, 0 surviving, 0 never judged, over HEAD..working tree
+        `);
+        expect(reportOf(result.file('.artifacts/stryker/report.json').content)).toMatchObject({
+            files: { 'src/discount.ts': { mutants: [{ location: { start: { line: 3 } } }] } },
+        });
     });
 });
