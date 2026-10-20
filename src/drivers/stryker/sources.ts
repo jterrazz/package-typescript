@@ -2,6 +2,7 @@ import { join } from 'node:path';
 
 import { DIST, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { OBSERVED_TESTS_VARIABLE } from './mutant-setup.js';
+import { KILLERS_VARIABLE } from './previous-killers.js';
 
 // outside: Stryker 10 names a test by its suites and title joined with a space, where Vitest 5 joins them with ` > `: without this plugin every mutant runs no test and survives.
 const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
@@ -19,7 +20,7 @@ const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
     name: 'stryker-test-names',
 };`;
 
-// outside: Vitest runs the slowest file first, and Stryker stops a mutant's run at the first test that fails; the files with a test whose processes ran a function of the mutant's source run first (a test that spawned nothing, or one the dry run could not follow, among them), since a mutant a spawned process only loaded is credited to every file that spawned one, and within each group the file the last run took least time over runs first, so a mutant a quick test detects never waits on a slow one.
+// outside: Vitest runs the slowest file first, and Stryker stops a mutant's run at the first test that fails; the file whose test killed the mutant in the stage's last report runs first, then the files with a test whose processes ran a function of the mutant's source run first (a test that spawned nothing, or one the dry run could not follow, among them), since a mutant a spawned process only loaded is credited to every file that spawned one, and within each group the file the last run took least time over runs first, so a mutant a quick test detects never waits on a slow one.
 export const relevantFirstSource = (
     mutated: readonly string[],
 ): string => `const mutantSources = new Map();
@@ -52,6 +53,15 @@ const ranByFileOf = () => {
     return ranByFile;
 };
 
+let killers;
+const killerOf = (id) => {
+    if (killers === undefined) {
+        const file = process.env.${KILLERS_VARIABLE};
+        killers = file !== undefined && existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
+    }
+    return killers[id];
+};
+
 class RelevantFirst extends BaseSequencer {
     async sort(files) {
         const { root } = this.ctx.config;
@@ -60,7 +70,9 @@ class RelevantFirst extends BaseSequencer {
         const source = mode === 'mutant' ? sourceOfMutant(root, String(activeMutant)) : undefined;
         const tests = source === undefined ? undefined : ranByFileOf();
         const relevant = (file) => tests === undefined || (tests.get(relative(root, file.moduleId)) ?? [undefined]).some((ran) => ran === undefined || ran.has(source));
-        return [...files].sort((a, b) => Number(relevant(b)) - Number(relevant(a)) || took(a) - took(b) || 0);
+        const killer = mode === 'mutant' ? killerOf(String(activeMutant)) : undefined;
+        const killed = (file) => relative(root, file.moduleId) === killer;
+        return [...files].sort((a, b) => Number(killed(b)) - Number(killed(a)) || Number(relevant(b)) - Number(relevant(a)) || took(a) - took(b) || 0);
     }
 }`;
 

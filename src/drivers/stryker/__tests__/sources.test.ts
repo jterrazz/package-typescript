@@ -6,6 +6,7 @@ import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
 import { objectOf } from '../../../../lint/kit/project/json.js';
 import { OBSERVED_TESTS_VARIABLE } from '../mutant-setup.js';
+import { KILLERS_VARIABLE } from '../previous-killers.js';
 import { relevantFirstSource, sandboxScriptSource, vitestConfigSource } from '../sources.js';
 
 const pluginsOf = (source: string): string | undefined => /plugins: \[[^\]]*\]/u.exec(source)?.[0];
@@ -40,8 +41,13 @@ type Sorting = {
     root: string;
 };
 
+let loadedModules = 0;
+
+// invariant: each sort loads the sequencer afresh, since it reads the record and the killers once per process.
 async function sortedBy({ durations, provided, root }: Sorting, specs: Spec[]): Promise<string[]> {
-    const module = `import { existsSync, readdirSync, readFileSync } from 'node:fs';
+    loadedModules += 1;
+    const module = `// ${String(loadedModules)}
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 class BaseSequencer {
     constructor(ctx) {
@@ -160,6 +166,39 @@ describe('sources', () => {
                 'specs/blind.spec.ts',
                 'specs/runs.spec.ts',
                 'specs/never-timed.spec.ts',
+            ],
+        });
+    });
+
+    test('sequencer — a mutant’s last killer runs first, ahead of the files that ran its source', async () => {
+        // Given - the same dry run, and a last report whose only-loading spec killed mutant 7
+        const root = observedRun();
+        const killers = join(root, '.artifacts/killers.json');
+        writeFileSync(killers, JSON.stringify({ 7: 'specs/loads.spec.ts' }));
+        vi.stubEnv(KILLERS_VARIABLE, killers);
+        const specs = SPECS.map((path) =>
+            specOf(root, path.startsWith('src') ? 'unit' : 'cli', path),
+        );
+
+        // When - the files of mutant 7 are sorted, then those of mutant 8, which no test killed
+        const killed = await sortedBy(
+            { durations: DURATIONS, provided: { activeMutant: 7, mode: 'mutant' }, root },
+            specs,
+        );
+        const unkilled = await sortedBy(
+            { durations: DURATIONS, provided: { activeMutant: 8, mode: 'mutant' }, root },
+            specs,
+        );
+
+        // Then - the killer leads mutant 7's files, and mutant 8's keep the order of what ran its source
+        expect({ killed: killed[0], unkilled }).toStrictEqual({
+            killed: 'specs/loads.spec.ts',
+            unkilled: [
+                'src/__tests__/labels.test.ts',
+                'specs/blind.spec.ts',
+                'specs/runs.spec.ts',
+                'specs/never-timed.spec.ts',
+                'specs/loads.spec.ts',
             ],
         });
     });

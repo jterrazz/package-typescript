@@ -1,8 +1,18 @@
 import { directory } from '@jterrazz/test';
+import { execFileSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 import { cli } from '../packed-cli.specification.js';
 import { reportedMutants } from './__setup__/suite-report.js';
+import type { ReportedMutant } from './__setup__/suite-report.js';
+
+const CONSUMER = resolve(import.meta.dirname, '../__setup__/packed/consumer.ts');
+
+const ONE_RUNNER = { TYPESCRIPT_CAPACITY: 'cpus=1,memory=64g' };
+
+const DOUBLING = 'ArithmeticOperator amount / 2';
 
 describe('mutation order', () => {
     test('typescript mutation — a mutant of what a command loads runs first the spec that ran its source, though the specs that only loaded it are quicker', async () => {
@@ -27,5 +37,48 @@ describe('mutation order', () => {
                 testsCompleted: 1,
             },
         });
+    });
+
+    test('typescript mutation — a mutant whose source changed runs first the spec that killed it last, though a quicker one ran its source too', async () => {
+        // Given - a consumer whose quick spec runs the price at zero, which no operator tells apart, and whose slow spec runs it at three; measured once, then a comment written above the price
+        let first: Record<string, ReportedMutant> = {};
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-killer/'))
+            .prepare((workdir) => {
+                execFileSync('git', ['init', '--quiet'], { cwd: workdir });
+                execFileSync(
+                    'node',
+                    [CONSUMER, 'typescript', 'mutation', '--mutate', 'src/price.ts:1-1'],
+                    {
+                        cwd: workdir,
+                        env: { ...process.env, ...ONE_RUNNER },
+                        stdio: 'pipe',
+                    },
+                );
+                first = reportedMutants(
+                    readFileSync(join(workdir, '.artifacts/stryker/suite-report.json'), 'utf8'),
+                );
+                writeFileSync(
+                    join(workdir, 'src/price.ts'),
+                    `// the price doubles\n${readFileSync(join(workdir, 'src/price.ts'), 'utf8')}`,
+                );
+            })
+            .env(ONE_RUNNER)
+            .exec('typescript mutation --mutate src/price.ts:2-2');
+
+        // Then - the first run reached the killer second, quickest first; the second runs it first, and stops there
+        expect(result.exitCode).toBe(0);
+        const second = reportedMutants(result.file('.artifacts/stryker/suite-report.json').content);
+        expect([
+            first[`src/price.ts:1:50 ${DOUBLING}`]?.testsCompleted,
+            second[`src/price.ts:2:50 ${DOUBLING}`],
+        ]).toStrictEqual([
+            2,
+            {
+                coveredBy: ['nothing costs nothing', 'three costs six, the slowest spec'],
+                status: 'Killed',
+                testsCompleted: 1,
+            },
+        ]);
     });
 });

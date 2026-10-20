@@ -73,9 +73,10 @@ describe('stryker', () => {
                 RUNNER,
                 CHECKER,
                 './.artifacts/stryker/progress-reporter.mjs',
+                './.artifacts/stryker/previous-killers.mjs',
                 './.artifacts/stryker/ignorers.mjs',
             ],
-            reporters: ['html', 'json', 'typescript-progress'],
+            reporters: ['html', 'json', 'typescript-progress', 'typescript-previous-killers'],
             tempDirName: '.artifacts/stryker/tmp',
             testRunner: 'vitest',
         };
@@ -114,7 +115,13 @@ describe('stryker', () => {
 
         // Then - Stryker draws its bar, and the run's reporter still says how long the dry run took
         expect(config).toMatchObject({
-            reporters: ['html', 'json', 'progress', 'typescript-progress'],
+            reporters: [
+                'html',
+                'json',
+                'progress',
+                'typescript-progress',
+                'typescript-previous-killers',
+            ],
         });
     });
 

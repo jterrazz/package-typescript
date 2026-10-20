@@ -30,6 +30,7 @@ import {
 } from './mutant-setup.js';
 import { heldReport, mutatedLines, strykerMutate } from './mutate-entries.js';
 import { observedFrom, observedIn } from './observed.js';
+import { killersLaid, PREVIOUS_KILLERS } from './previous-killers.js';
 import { PROGRESS_REPORTER, PROGRESS_REPORTER_SOURCE } from './progress-reporter.js';
 import { REPORT_NAMES } from './reports.js';
 import type { StageName } from './reports.js';
@@ -76,6 +77,14 @@ const REPORTER_FILE = `${MUTATION_OUTPUT}/progress-reporter.mjs`;
 
 export const IGNORERS_FILE = `${MUTATION_OUTPUT}/ignorers.mjs`;
 
+const PLUGINS = [
+    createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner'),
+    createRequire(import.meta.url).resolve('@stryker-mutator/typescript-checker'),
+    `./${REPORTER_FILE}`,
+    `./${PREVIOUS_KILLERS.file}`,
+    `./${IGNORERS_FILE}`,
+];
+
 export function strykerConfig(
     scope: {
         readonly generated: readonly string[];
@@ -114,13 +123,14 @@ export function strykerConfig(
         incrementalFile: `${MUTATION_OUTPUT}/${files.incremental}.json`,
         jsonReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.json` },
         mutate: strykerMutate(mutate),
-        plugins: [
-            createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner'),
-            createRequire(import.meta.url).resolve('@stryker-mutator/typescript-checker'),
-            `./${REPORTER_FILE}`,
-            `./${IGNORERS_FILE}`,
+        plugins: PLUGINS,
+        reporters: [
+            'html',
+            'json',
+            ...(terminal ? ['progress'] : []),
+            PROGRESS_REPORTER,
+            PREVIOUS_KILLERS.name,
         ],
-        reporters: ['html', 'json', ...(terminal ? ['progress'] : []), PROGRESS_REPORTER],
         tempDirName: `${MUTATION_OUTPUT}/tmp`,
         ...(testFiles === undefined ? {} : { testFiles: strykerMutate(testFiles) }),
         testRunner: 'vitest',
@@ -245,6 +255,7 @@ export async function strykerRun(
     const observedInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'observed-tests-'));
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
     process.env[OBSERVED_TESTS_VARIABLE] = observedInto;
+    killersLaid(project, files.report);
     const { carried, dryRun, inputs } = reportKept(project, stage, {
         cold,
         dryRunOver: suite ? { lines, linesInFunctions } : undefined,

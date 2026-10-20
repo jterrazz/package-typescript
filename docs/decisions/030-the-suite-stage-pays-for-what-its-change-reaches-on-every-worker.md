@@ -109,3 +109,9 @@ it.
   source positions the dry run's precise coverage reads, and a reach the
   record missed would leave a verdict standing that should run again.
   `typescript doctor` runs in 170 ms against 194 ms, median of 24 starts.
+- Added on 2026-10-20: ahead of both groups runs the test file that killed
+  the mutant in the stage's last report, as PIT runs the last killing test
+  first since 1.14.4. A mutant is the last report's when its file, its
+  mutator, its replacement and the code it replaces match, so one whose
+  source changed around it still finds its killer. The order still moves
+  no verdict.
