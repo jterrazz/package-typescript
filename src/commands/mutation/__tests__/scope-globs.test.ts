@@ -51,8 +51,8 @@ describe('scope-globs', () => {
         ]);
     });
 
-    test('declaredOf — the globs a unit declares under exclude, glue, ignore and mutate, each under its folder, and none where it declares none', () => {
-        // Given - a section declaring the three, and one declaring nothing
+    test('declaredOf — the globs a unit declares under exclude, glue, ignore, mutate and presentation, each under its folder, and none where it declares none', () => {
+        // Given - a section declaring the five, and one declaring nothing
         const declares = resolveConfig(
             {
                 typescript: {
@@ -61,6 +61,7 @@ describe('scope-globs', () => {
                         glue: { 'src/adapters/**': 'why' },
                         ignore: { 'src/standard/**': 'data' },
                         mutate: { 'scripts/*.ts': 'why' },
+                        presentation: { 'src/report/**': 'the report golden pins it' },
                     },
                 },
             },
@@ -79,14 +80,16 @@ describe('scope-globs', () => {
                 glue: ['src/adapters/**'],
                 ignore: ['src/standard/**'],
                 mutated: ['scripts/*.ts'],
+                presentation: ['src/report/**'],
             },
             {
                 exclude: ['apps/api/specs/a.ts'],
                 glue: ['apps/api/src/adapters/**'],
                 ignore: ['apps/api/src/standard/**'],
                 mutated: ['apps/api/scripts/*.ts'],
+                presentation: ['apps/api/src/report/**'],
             },
-            { exclude: [], glue: [], ignore: [], mutated: [] },
+            { exclude: [], glue: [], ignore: [], mutated: [], presentation: [] },
         ]);
     });
 });

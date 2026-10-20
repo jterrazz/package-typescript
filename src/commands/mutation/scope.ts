@@ -21,6 +21,7 @@ export type MutationScope = {
     glue: GlueBar;
     ignore: string[];
     mutated: string[];
+    presentation: string[];
 };
 
 const TEST_EXTENSIONS = ['.ts', '.tsx'];

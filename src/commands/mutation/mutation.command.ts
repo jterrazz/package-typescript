@@ -215,7 +215,7 @@ async function measuredRun(
     if (unreached !== undefined) {
         return refusedRange(unreached, 'a source the run mutates', recorded);
     }
-    strykerPrepared(project);
+    strykerPrepared(project, scope.presentation);
 
     const { changed, known, note } = changeOf(project, { ranges, since });
     if (note !== undefined) {

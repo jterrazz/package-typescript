@@ -23,6 +23,16 @@ export default defineConfig({
         },
     },
     typescript: {
+        mutation: {
+            presentation: {
+                'src/commands/check/report/**':
+                    'the check specs of specs/cli/check/ compare what the gate prints whole, against their __expected__/ goldens',
+                'src/commands/doctor/**':
+                    'the doctor specs of specs/cli/doctor/ compare what it prints whole, resolved-config.spec.yaml first',
+                'src/commands/mutation/verdict.ts':
+                    'specs/cli/typescript/mutation.spec.ts compares each verdict it prints whole',
+            },
+        },
         knip: {
             entry: {
                 'specs/cli/__setup__/packed/consumer.ts':

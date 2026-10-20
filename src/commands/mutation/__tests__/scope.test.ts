@@ -10,6 +10,7 @@ const SCOPE = {
     glue: { bar: 0.9, globs: [] },
     ignore: ['src/generated/**'],
     mutated: ['src/**/*.ts', 'src/**/*.tsx', 'lint/*.ts'],
+    presentation: [],
 };
 
 const SOURCES: ReadonlySet<string> = new Set(['src/a.ts', 'src/b.ts']);

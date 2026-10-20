@@ -49,8 +49,8 @@ assertion or a declaration. In jterrazz-web, 1.9 % of the mutants sit in
   law of the standard (0.9 for every kind); every glue survivor is printed.
 - What `typescript.mutation.presentation` declares, each glob with the
   reason naming the golden that pins its text, is glue whose string literals
-  are not mutated, unless a string is compared, keys a member or names a
-  module. The standard names no presentation file.
+  are not mutated, unless a string is compared, is a `switch` case, keys a
+  member or names a module. The standard names no presentation file.
 - A change's glue mutants beyond the standard's cap (50) are not run: the
   ones run are the first by a stable hash of the mutant, so a cold and an
   incremental run measure the same ones. Domain is never capped.
@@ -71,8 +71,9 @@ assertion or a declaration. In jterrazz-web, 1.9 % of the mutants sit in
   checks, it holds half of the test runners.
 - A glue survivor no longer fails the run by itself: the bar is a number
   again, for glue only. ADR-019's zero stands for domain. In jterrazz-web,
-  98 % of the mutants are judged against the bar; in this package, none
-  until it declares glue or presentation.
+  98 % of the mutants are judged against the bar; in this package, the
+  three it declares presentation: the check report, the doctor and the
+  mutation verdict.
 - A module test weakened by a change to the test alone is measured when a
   later change reaches the source, as ADR-020 already accepts for the specs.
 - Amends [ADR-019](019-mutation-judges-zero-survivors-not-a-score.md) (the

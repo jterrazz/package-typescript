@@ -1,5 +1,5 @@
 import { isList, objectOf, stringOf } from '../../../lint/kit/project/json.js';
-import { LOG_REASON } from '../../drivers/stryker/ignorers.js';
+import { LOG_REASON, PINNED_TEXT_REASON } from '../../drivers/stryker/ignorers.js';
 import { reportPathOf } from '../../drivers/stryker/reports.js';
 import type { StageName } from '../../drivers/stryker/reports.js';
 import { fileOf } from './scope.js';
@@ -36,6 +36,7 @@ const STATIC_SKIPPED = 'Static mutant (and "ignoreStatic" was enabled)';
 
 const IGNORED_BY: ReadonlyMap<unknown, string> = new Map([
     [LOG_REASON, 'log calls'],
+    [PINNED_TEXT_REASON, 'pinned text'],
     [STATIC_SKIPPED, 'static, no test loads it'],
 ]);
 

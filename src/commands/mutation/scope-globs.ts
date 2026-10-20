@@ -18,7 +18,7 @@ export function sourceGlobsOf(unit: string, { resolved }: Resolution): string[] 
     );
 }
 
-// invariant: a unit's `typescript.mutation` globs are its standard's and its settings file's, read from the repository root.
+// invariant: a unit's `typescript.mutation` globs are its standard's and its settings file's, read from the repository root; a presentation file is glue whose pinned text no run mutates.
 export function declaredOf(
     unit: string,
     { resolved }: Resolution,
@@ -32,6 +32,7 @@ export function declaredOf(
         glue: globs('glue'),
         ignore: globs('ignore'),
         mutated: globs('mutate'),
+        presentation: globs('presentation'),
     };
 }
 
@@ -47,7 +48,7 @@ export async function mutationScopeOf(project: string): Promise<MutationScope> {
         exclude: declared.flatMap(({ exclude }) => exclude),
         glue: {
             bar: barOf(settings),
-            globs: declared.flatMap(({ glue }) => glue),
+            globs: declared.flatMap(({ glue, presentation }) => [...glue, ...presentation]),
         },
         ignore: declared.flatMap(({ ignore }) => ignore),
         mutated: [
@@ -56,5 +57,6 @@ export async function mutationScopeOf(project: string): Promise<MutationScope> {
                 ...declared.flatMap(({ mutated }) => mutated),
             ]),
         ],
+        presentation: declared.flatMap(({ presentation }) => presentation),
     };
 }

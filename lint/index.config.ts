@@ -40,8 +40,14 @@ export type TypescriptSettings = {
     };
     /** What the Markdown pass holds a page's prose to beyond the floor: `refusesDashes` fails an em dash, and an en dash used as punctuation. */
     markdown?: { refusesDashes?: boolean };
-    /** What `typescript mutation` measures beyond the platform's sources, what it leaves out (tests that read the sources as text, sources no test can judge), and the sources that are glue, held to a bar instead of zero survivors. */
-    mutation?: { exclude?: Reasoned; glue?: Reasoned; ignore?: Reasoned; mutate?: Reasoned };
+    /** What `typescript mutation` measures beyond the platform's sources, what it leaves out (tests that read the sources as text, sources no test can judge), the sources that are glue, held to a bar instead of zero survivors, and the presentation files, glue whose printed text a golden pins whole, each reason naming that golden. */
+    mutation?: {
+        exclude?: Reasoned;
+        glue?: Reasoned;
+        ignore?: Reasoned;
+        mutate?: Reasoned;
+        presentation?: Reasoned;
+    };
     names?: readonly NamesRule[];
     /** The rules set apart from the platform's profile, each with its reason. */
     oxlint?: {

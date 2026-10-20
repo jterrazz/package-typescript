@@ -21,7 +21,7 @@ import { isRepositoryRoot, nearestRoot } from '../../../lint/kit/project/reposit
 import { handOver } from '../run.js';
 import { CHILD_COVERAGE_SOURCE } from './child-coverage.js';
 import { headlessEnvironment } from './headless.js';
-import { IGNORERS_SOURCE, LOG_IGNORER } from './ignorers.js';
+import { ignorersSource, LOG_IGNORER, PINNED_TEXT_IGNORER } from './ignorers.js';
 import { incrementalKeptWhileInputsHold, recordInputs } from './incremental.js';
 import type { StaysInFunctions } from './incremental.js';
 import type { Inputs } from './inputs.js';
@@ -109,7 +109,7 @@ export function strykerConfig(
             `!/${DEV_OUTPUT}/**`,
         ],
         ignoreStatic: true,
-        ignorers: [LOG_IGNORER],
+        ignorers: [LOG_IGNORER, PINNED_TEXT_IGNORER],
         incremental: true,
         incrementalFile: `${MUTATION_OUTPUT}/${files.incremental}.json`,
         jsonReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.json` },
@@ -131,13 +131,13 @@ export function strykerConfig(
     };
 }
 
-/** Lays the files every stage of the run loads, and the PATH its suite runs under, a browser out of its reach. */
-export function strykerPrepared(project: string): void {
+/** Lays the files every stage of the run loads, the presentation globs its ignorers read among them, and the PATH its suite runs under, a browser out of its reach. */
+export function strykerPrepared(project: string, presentation: readonly string[]): void {
     mkdirSync(MUTATION_OUTPUT, { recursive: true });
     writeFileSync(join(MUTATION_OUTPUT, 'mutant-setup.mjs'), MUTANT_SETUP_SOURCE);
     writeFileSync(join(MUTATION_OUTPUT, 'child-coverage.cjs'), CHILD_COVERAGE_SOURCE);
     writeFileSync(REPORTER_FILE, PROGRESS_REPORTER_SOURCE);
-    writeFileSync(IGNORERS_FILE, IGNORERS_SOURCE);
+    writeFileSync(IGNORERS_FILE, ignorersSource(presentation));
     // outside: the suite runs as `npm test` runs it, its tools found on the PATH npm gives a script; a spec that spawns oxlint type-aware leaves it to find tsgolint there.
     // Stryker disable next-line StringLiteral: a spec runs this command with the project's node_modules/.bin already first on the PATH, as npm does, so no spec can tell the folders apart
     process.env.PATH = `${join(project, 'node_modules', '.bin')}${delimiter}${process.env.PATH ?? ''}`;

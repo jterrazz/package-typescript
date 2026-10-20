@@ -73,7 +73,7 @@ describe('stryker', () => {
                 '!/.artifacts/dev/**',
             ],
             ignoreStatic: true,
-            ignorers: ['typescript-logs'],
+            ignorers: ['typescript-logs', 'typescript-pinned-text'],
             incremental: true,
             plugins: [
                 RUNNER,

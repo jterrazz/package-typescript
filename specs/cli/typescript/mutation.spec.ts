@@ -326,6 +326,28 @@ describe('mutation', () => {
         expect(result.stdout.text).not.toContain('Measuring the whole suite');
     });
 
+    test('typescript mutation — the text a declared presentation file prints is never mutated, and the verdict says so', async () => {
+        // Given - the consumer, its test judging everything, beside a headline the project declares presentation, its module test comparing the headline whole
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .fixture(directory('./__fixtures__/mutation-presentation/'))
+            .exec('typescript mutation');
+
+        // Then - the two texts are set aside before any run, counted as pinned text, and the headline is judged as glue
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(`
+            {{any}}
+            measured 14 mutants over HEAD..working tree: every mutant a test runs is detected
+            glue: 5 of 5 detected (100 %), its bar 90 %
+            0 mutant(s) no test runs
+            2 mutant(s) outside the verdict: Ignored 2 (pinned text 2)
+
+            ✓ Mutation passed: 14 detected, 0 surviving, 0 never judged, over HEAD..working tree
+        `);
+        expect(result.stdout.text).not.toContain('Measuring the whole suite');
+    });
+
     test('typescript mutation — glue holds a bar: a survivor in an adapter passes while the share detected reaches it, and is printed', async () => {
         // Given - the consumer, its test judging everything, beside an adapter under infrastructure/ whose test never stores a price of zero
         const result = await cli
