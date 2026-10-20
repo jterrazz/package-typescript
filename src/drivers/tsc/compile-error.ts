@@ -16,9 +16,7 @@ export function firstCompileError(project: string): string | undefined {
         return undefined;
     }
     const program = ts.createProgram({ options: parsed.options, rootNames: parsed.fileNames });
-    const first = [...parsed.errors, ...ts.getPreEmitDiagnostics(program)].find(
-        ({ category }) => category === ts.DiagnosticCategory.Error,
-    );
+    const [first] = [...parsed.errors, ...ts.getPreEmitDiagnostics(program)];
     if (first === undefined) {
         return undefined;
     }

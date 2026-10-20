@@ -49,7 +49,8 @@ export async function mutantsMade(
             mutate: true,
             name: join(project, file),
         })),
-        { excludedMutations: [], ignorers, noHeader: true, plugins: null },
+        // Stryker disable next-line ArrayDeclaration: Stryker excludes a mutator by its name, and the name a mutant puts in this list is no mutator's, so it excludes nothing, as the empty list does
+        { excludedMutations: [], ignorers, plugins: null },
     );
 
     return mutants

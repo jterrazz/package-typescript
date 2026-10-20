@@ -89,6 +89,33 @@ describe('verdict', () => {
         ]);
     });
 
+    test('verdictOf — glue under its bar fails the run, its line and survivors above the lesson', () => {
+        // Given - a glue file with one mutant detected and one alive, under a bar of 90 %
+        const judged = judgedRuns({
+            measured: ['src/infrastructure/a.ts'],
+            ranByTests: NONE_RAN,
+            report: {
+                files: {
+                    'src/infrastructure/a.ts': {
+                        mutants: [mutant('Killed', 3), mutant('Survived', 4)],
+                    },
+                },
+            },
+        });
+        const glue = { bar: 0.9, cap: 50, globs: ['**/infrastructure/**'] };
+
+        // Then - the run fails on the glue, naming its share and its survivor
+        expect(verdictOf(judged, 0, { glue, measure: MEASURE })).toStrictEqual({
+            lines: [
+                'glue: 1 of 2 detected (50 %), its bar 90 %',
+                '  src/infrastructure/a.ts:4:9  ConditionalExpression: true  (.artifacts/stryker/report.json)',
+                'found: glue: 1 of 2 mutant(s) a test runs detected, under its bar of 90 % · why: glue (an adapter, the composition root, a presentation) is held to a share of the mutants its tests run, and this change leaves more of them alive than the share allows · fix: assert what the surviving glue lines decide, or declare one no change of the line can tell apart above it: // Stryker disable next-line <mutator>: <why the mutant is equivalent> · read: docs/reference/quality-checks.md#domain-and-glue',
+                '0 mutant(s) no test runs',
+            ],
+            status: 1,
+        });
+    });
+
     test('verdictOf — a run that mutated nothing says it measured nothing over its range, never that every mutant was detected', () => {
         // Given - a report holding no mutant
         const judged = judgedRuns({ measured: [], ranByTests: NONE_RAN, report: {} });

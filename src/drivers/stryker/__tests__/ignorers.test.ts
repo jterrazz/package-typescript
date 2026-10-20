@@ -84,15 +84,16 @@ describe('ignorers', () => {
     });
 
     test('in a presentation file the text it prints is never mutated, and a string that decides still is; elsewhere the same text is', () => {
-        // Given - a presenter that prints a plain text and a template with none of its values, and decides on strings: compared, a switch case, a computed key, a module source and a template that holds a value
+        // Given - a presenter that prints a plain text and a template with none of its values, and decides on strings: compared by each of the four equalities, a switch case, a computed key, a module source and a template that holds a value
         const source = [
             "export { tone } from './tone.js';",
             'export function headline(level: string, cents: number, names: Record<string, string>): string {',
-            "    const dear = level === 'error';",
+            "    const dear = level === 'error' || level == 'fatal';",
+            "    const calm = level !== 'warn' && level != 'debug';",
             "    const title = 'Too dear';",
             '    const plain = `A bargain`;',
             "    switch (level) { case 'info': return names['info']; }",
-            `    return dear ? \`\${title} at \${cents} cents\` : plain;`,
+            `    return dear || calm ? \`\${title} at \${cents} cents\` : plain;`,
             '}',
         ].join('\n');
 
@@ -106,10 +107,11 @@ describe('ignorers', () => {
             byLine: {
                 2: ['made'],
                 3: ['made'],
-                4: [PINNED_TEXT_REASON],
+                4: ['made'],
                 5: [PINNED_TEXT_REASON],
-                6: ['made'],
+                6: [PINNED_TEXT_REASON],
                 7: ['made'],
+                8: ['made'],
             },
             names: [`Ignore ${LOG_IGNORER}`, `Ignore ${PINNED_TEXT_IGNORER}`],
         });
@@ -123,6 +125,7 @@ describe('ignorers', () => {
                 5: ['made'],
                 6: ['made'],
                 7: ['made'],
+                8: ['made'],
             },
             names: [`Ignore ${LOG_IGNORER}`, `Ignore ${PINNED_TEXT_IGNORER}`],
         });
