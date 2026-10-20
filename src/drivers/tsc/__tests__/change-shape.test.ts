@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { diffStaysInFunctions, linesChangedIn } from '../change-shape.js';
+import { diffStaysInFunctions, linesChangedIn, linesStayInFunctions } from '../change-shape.js';
 
 const MODULE = `import { a } from './a.js';
 import type { B } from './b.js';
@@ -155,6 +155,17 @@ describe('change-shape', () => {
         // Then - whether the change reaches only what a function does when it runs
         expect(after).not.toBe(MODULE);
         expect(shapeOf(MODULE, after)).toBe(inFunctions);
+    });
+
+    test('linesStayInFunctions — named lines stay in functions only when every one of them does', () => {
+        // Given - the module's comment and the line its function returns from, then the constant beside that line
+        const lines = [
+            linesStayInFunctions('src/cap.ts', MODULE, [7, 11]),
+            linesStayInFunctions('src/cap.ts', MODULE, [8, 11]),
+        ];
+
+        // Then - a comment and a function's body stay in functions; a constant among them does not
+        expect(lines).toStrictEqual([true, false]);
     });
 
     test('changesOnlyFunctions — a function added or removed whole changes only what functions do', () => {

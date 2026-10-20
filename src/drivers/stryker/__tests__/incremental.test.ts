@@ -18,6 +18,7 @@ import { incrementalKeptWhileInputsHold, recordInputs } from '../incremental.js'
 import { observedFrom } from '../observed.js';
 import type { ObservedTest } from '../observed.js';
 import { reportKept } from '../stryker.js';
+import { FILES, MODULE_TESTS, REPORT, SPEC_QUIET, SPEC_RAN_A } from './incremental.fixtures.js';
 
 const startedIn = (root: string, cold = false) =>
     incrementalKeptWhileInputsHold(root, 'suite-incremental', {
@@ -46,48 +47,6 @@ afterEach(() => {
     }
 });
 
-const mutant = (id: string, coveredBy: string[], killedBy: string[] = []) => ({
-    coveredBy,
-    id,
-    killedBy,
-    location: { end: { column: 2, line: 1 }, start: { column: 1, line: 1 } },
-    mutatorName: 'BooleanLiteral',
-    status: killedBy.length > 0 ? 'Killed' : 'Survived',
-});
-
-const A_MUTANTS = [mutant('1', ['0', '1']), mutant('2', ['1'], ['1'])];
-
-const REPORT = {
-    files: {
-        'src/a.ts': { mutants: A_MUTANTS, source: 'a' },
-        'src/b.ts': { mutants: [mutant('3', ['2'], ['2'])], source: 'b' },
-    },
-    schemaVersion: '2',
-    testFiles: {
-        'specs/a.spec.ts': { tests: [{ id: '1', name: 'a spec' }] },
-        'src/__tests__/a.test.ts': { tests: [{ id: '0', name: 'a test' }] },
-        'src/__tests__/b.test.ts': { tests: [{ id: '2', name: 'b test' }] },
-    },
-};
-
-const quiet = (key: string): ObservedTest => ({ loaded: [], ran: [], test: key });
-
-const MODULE_TESTS = [
-    quiet('src/__tests__/a.test.ts#a test'),
-    quiet('src/__tests__/b.test.ts#b test'),
-];
-
-const SPEC_QUIET = [...MODULE_TESTS, quiet('specs/a.spec.ts#a spec')];
-
-const SPEC_RAN_A = [
-    ...MODULE_TESTS,
-    {
-        loaded: ['src/a.ts', 'src/b.ts', 'src/h.ts'],
-        ran: ['src/a.ts'],
-        test: 'specs/a.spec.ts#a spec',
-    },
-];
-
 const idOf = (one: unknown): string => String(objectOf(one).id);
 
 function idsByFile(report: unknown): Record<string, string[]> {
@@ -111,16 +70,6 @@ const recordOf = (root: string): Record<string, unknown> =>
     parsedAt(join(root, '.artifacts/stryker/suite-incremental.inputs.json'));
 
 const keptIn = (root: string): Record<string, string[]> => idsByFile(parsedAt(reportOf(root)));
-
-const FILES = {
-    'package.json': '{"name":"@scope/package"}',
-    'specs/a.spec.ts': 'spec',
-    'src/__tests__/a.test.ts': "import { a } from '../a.js';",
-    'src/__tests__/b.test.ts': "import { b } from '../b.js';",
-    'src/a.ts': 'a',
-    'src/b.ts': "import { h } from './h.js';",
-    'src/h.ts': 'export const H = 1;\n\nexport function h(): number {\n    return H;\n}\n',
-};
 
 function ranOnce(
     observed: readonly ObservedTest[] = MODULE_TESTS,
@@ -194,6 +143,51 @@ describe('incremental', () => {
             carried: [MODULE_TESTS[0], SPEC_RAN_A[2]],
             dryRun: { kept: ['src/__tests__/b.test.ts'], known: 3 },
         });
+    });
+
+    test('incrementalKeptWhileInputsHold — a source the dry run mutates whole keeps the spec that only loaded it, and a deleted test file is carried by no dry run', () => {
+        // Given - a run that ended, its spec's processes seen running a.ts and loading h.ts
+        const root = ranOnce(SPEC_RAN_A);
+
+        // When - h's function changes, a's module test is deleted, and a dry run mutates h.ts whole, by a reading of lines that would call them all in functions
+        writeFileSync(
+            join(root, 'src/h.ts'),
+            FILES['src/h.ts'].replace('return H;', 'return H + 1;'),
+        );
+        rmSync(join(root, 'src/__tests__/a.test.ts'));
+        const { carried, dryRun } = incrementalKeptWhileInputsHold(root, 'suite-incremental', {
+            cold: false,
+            dryRunOver: {
+                lines: new Map([['src/h.ts', undefined]]),
+                linesInFunctions: () => true,
+            },
+            staysInFunctions: diffStaysInFunctions,
+        });
+
+        // Then - the spec runs beside the module test that loads h.ts, and nothing of the deleted file is carried
+        expect({ carried, dryRun }).toStrictEqual({
+            carried: [],
+            dryRun: { kept: ['specs/a.spec.ts', 'src/__tests__/b.test.ts'], known: 2 },
+        });
+    });
+
+    test('incrementalKeptWhileInputsHold — a dry run the change cannot limit carries nothing of the record', () => {
+        // Given - a run that ended, its spec's processes seen running a.ts and loading h.ts
+        const root = ranOnce(SPEC_RAN_A);
+
+        // When - the manifest changes, and a dry run mutates a line of h's function
+        writeFileSync(join(root, 'package.json'), '{"name":"@scope/renamed"}');
+        const { carried, dryRun } = incrementalKeptWhileInputsHold(root, 'suite-incremental', {
+            cold: false,
+            dryRunOver: {
+                lines: new Map([['src/h.ts', [4]]]),
+                linesInFunctions: linesStayInFunctions,
+            },
+            staysInFunctions: diffStaysInFunctions,
+        });
+
+        // Then - every file runs, so every test's record is this run's to write
+        expect({ carried, dryRun }).toStrictEqual({ carried: [], dryRun: undefined });
     });
 
     test('incrementalKeptWhileInputsHold — a source whose earlier text was never kept reads as changed as it loads', () => {

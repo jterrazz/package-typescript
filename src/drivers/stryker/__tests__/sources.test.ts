@@ -6,7 +6,9 @@ import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
 import { objectOf } from '../../../../lint/kit/project/json.js';
 import { OBSERVED_TESTS_VARIABLE } from '../mutant-setup.js';
-import { relevantFirstSource, sandboxScriptSource } from '../sources.js';
+import { relevantFirstSource, sandboxScriptSource, vitestConfigSource } from '../sources.js';
+
+const pluginsOf = (source: string): string | undefined => /plugins: \[[^\]]*\]/u.exec(source)?.[0];
 
 const WIDE = 'export declare const kind: string;\n';
 
@@ -238,6 +240,20 @@ describe('sources', () => {
         expect([root, deep]).toStrictEqual([
             sandboxScriptSource(false, '/project'),
             sandboxScriptSource(false, '/project'),
+        ]);
+    });
+
+    test('vitestConfigSource — the suite’s config follows the processes its tests spawn and runs its dry run on the stage’s workers, the module tests’ config does neither', () => {
+        // Given - the config of each stage over one mutated source
+        const scope = { exclude: [], mutated: ['src/a.ts'] };
+
+        // Then - the suite's projects add the two plugins beside the test names, the module tests' the test names alone
+        expect([
+            pluginsOf(vitestConfigSource(scope, { dryRunWorkers: 2, suite: true })),
+            pluginsOf(vitestConfigSource(scope, { suite: false })),
+        ]).toStrictEqual([
+            'plugins: [strykerTestNames, ownProcesses, dryRunWorkers]',
+            'plugins: [strykerTestNames]',
         ]);
     });
 });

@@ -85,4 +85,45 @@ describe('dry-run-files', () => {
             rootConfig: undefined,
         });
     });
+
+    test('dryRunFilesOf — a test reaching any one of the mutated sources is kept, a spec that only loads a source is kept where a line mutated there loads, and a run that keeps no file runs every file', () => {
+        // Given - the same record, nothing changed since it was written
+        const followed = Object.fromEntries(
+            Object.entries(INPUTS).filter(([path]) => path !== 'specs/c.spec.ts'),
+        );
+
+        // When - two sources are mutated inside their functions, a module-level line of labels.ts is mutated, a spec is added to a record of no test, and a mutated source no followed test reaches
+        const outcomes = {
+            addedToNoRecord: dryRunFilesOf({
+                changed: ['specs/d.spec.ts'],
+                inputs: INPUTS,
+                mutated: [{ file: 'src/b.ts', inFunctions: true }],
+                observed: { sets: [], tests: {} },
+                staleness: STALENESS,
+            }),
+            moduleLevel: keptFor([], [{ file: 'src/labels.ts', inFunctions: false }]),
+            twoSources: keptFor(
+                [],
+                [
+                    { file: 'src/b.ts', inFunctions: true },
+                    { file: 'src/x.ts', inFunctions: true },
+                ],
+            ),
+            unreached: keptFor([], [{ file: 'src/z.ts', inFunctions: true }], followed),
+        };
+
+        // Then - each test reaching one of the two is kept, the spec that loads labels.ts too, and a record of no test or a dry run of no file reads as every file
+        expect(outcomes).toStrictEqual({
+            addedToNoRecord: undefined,
+            moduleLevel: {
+                kept: ['specs/a.spec.ts', 'specs/b.spec.ts', 'specs/c.spec.ts'],
+                known: 4,
+            },
+            twoSources: {
+                kept: ['specs/b.spec.ts', 'specs/c.spec.ts', 'src/__tests__/x.test.ts'],
+                known: 4,
+            },
+            unreached: undefined,
+        });
+    });
 });

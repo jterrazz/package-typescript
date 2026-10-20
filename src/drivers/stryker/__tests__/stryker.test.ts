@@ -160,4 +160,19 @@ describe('stryker', () => {
             ],
         });
     });
+
+    test('a dry run limited to test files hands Stryker those files, each path held literal, and an unlimited one names none', () => {
+        // Given - a suite stage limited to a dynamic route's spec and a plain one, and the same stage unlimited
+        const stage = { mutate: ['src/a.ts'], name: 'suite' } as const;
+        const scope = { generated: [], mutated: ['src/a.ts'], typeChecked: false };
+        const limited = strykerConfig(scope, stage, {
+            concurrency: 2,
+            testFiles: ['specs/[id].spec.ts', 'specs/a.spec.ts'],
+        });
+        const unlimited = strykerConfig(scope, stage, { concurrency: 2 });
+
+        // Then - the limited run names the two files, the unlimited one leaves Stryker every file
+        expect(limited).toMatchObject({ testFiles: ['specs/[[]id[]].spec.ts', 'specs/a.spec.ts'] });
+        expect(Object.hasOwn(unlimited, 'testFiles')).toBe(false);
+    });
 });

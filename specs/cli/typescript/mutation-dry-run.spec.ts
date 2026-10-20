@@ -20,7 +20,7 @@ function measuredOnce(workdir: string, range: string): void {
     });
 }
 
-const dryRunOf = (text: string): string | undefined => /dry run: .*\n/u.exec(text)?.[0];
+const dryRunOf = (text: string): string | undefined => /^.*dry run: .*\n/mu.exec(text)?.[0];
 
 describe('mutation dry run', () => {
     test('typescript mutation — a change inside a command’s function runs the dry run over the one spec that ran it, and judges as a cold run does', async () => {
@@ -49,8 +49,8 @@ describe('mutation dry run', () => {
 
         // Then - the specs that only load b.ts sit the dry run out, and the verdict is the cold one
         expect([dryRunOf(result.stdout.text), dryRunOf(cold.stdout.text)]).toStrictEqual([
-            'dry run: 1 of 4 test files the change reaches, on 1 worker(s)\n',
-            'dry run: every test file, on 1 worker(s)\n',
+            ' TYPESCRIPT  dry run: 1 of 4 test files the change reaches, on 1 worker(s)\n',
+            ' TYPESCRIPT  dry run: every test file, on 1 worker(s)\n',
         ]);
         expect([result.exitCode, result.stdout.text.split('\n').at(-2)]).toStrictEqual([
             cold.exitCode,
@@ -75,7 +75,21 @@ describe('mutation dry run', () => {
         // Then - every spec spawned the command that loads the label, so each runs again
         expect(result.exitCode).toBe(0);
         expect(dryRunOf(result.stdout.text)).toBe(
-            'dry run: 4 of 4 test files the change reaches, on 1 worker(s)\n',
+            ' TYPESCRIPT  dry run: 4 of 4 test files the change reaches, on 1 worker(s)\n',
         );
+    });
+
+    test('typescript mutation — the suite’s run states the files its dry run runs, and the module tests’ run states none', async () => {
+        // Given - a consumer whose module test lets two mutants of its source live, so the whole suite measures them after it
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .env(OUTSIDE_CI)
+            .exec('typescript mutation');
+
+        // Then - both stages run, and one line names the test files of a dry run, the suite's
+        expect(result.stdout.text).toContain('The module tests ran in');
+        expect(
+            result.stdout.text.match(/^.*dry run: (?:every test file|\d+ of \d+).*$/gmu),
+        ).toStrictEqual([' TYPESCRIPT  dry run: every test file, on 1 worker(s)']);
     });
 });

@@ -1,7 +1,7 @@
 import { matchesGlob } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { heldReport, strykerMutate } from '../mutate-entries.js';
+import { heldReport, mutatedLines, strykerMutate } from '../mutate-entries.js';
 
 const mutant = (from: [number, number], to: [number, number]): object => ({
     location: { end: { column: to[1], line: to[0] }, start: { column: from[1], line: from[0] } },
@@ -108,5 +108,23 @@ describe('mutate-entries', () => {
         // Then - named whole beside a range it keeps the mutant outside the range; with no widened entry it is returned untouched
         expect(heldReport(report, ['src/{a,b}.ts', 'src/{a,b}.ts:1-2'])).toStrictEqual(report);
         expect(heldReport(report, ['src/a.ts'])).toBe(report);
+    });
+
+    test('mutatedLines — each file holds every line its ranges cover, from both ends, and a file any entry names whole is held whole', () => {
+        // Given - two ranges of one file, a file named whole and by a range, and a range by lines and columns
+        const lines = mutatedLines([
+            'src/a.ts:3-5',
+            'src/a.ts:8-8',
+            'src/b.ts',
+            'src/b.ts:1-2',
+            'src/c.ts:2:4-3:1',
+        ]);
+
+        // Then - the lines of each range, counted from 1, and the whole file as undefined
+        expect(Object.fromEntries(lines)).toStrictEqual({
+            'src/a.ts': [3, 4, 5, 8],
+            'src/b.ts': undefined,
+            'src/c.ts': [2, 3],
+        });
     });
 });
