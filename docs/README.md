@@ -17,6 +17,7 @@ The toolchain that builds, checks, lints and formats a project from one devDepen
 | [Develop](guides/develop.md)                                         | Changing the toolchain itself: the loop, where each kind of change lands, what a change owes                                                         |
 | [Test](guides/test.md)                                               | Proving a change: the three test projects, the documents that drive the command, the packed tarball, the self rules                                  |
 | [Release](guides/release.md)                                         | How this package is published, and which number a change moves                                                                                       |
+| [Triage a survivor](guides/triage-a-survivor.md)                     | A mutant that fails `typescript mutation`: what the verdict file names of it, real or equivalent, who may declare                                    |
 
 A smaller task is one section of a reference page:
 
