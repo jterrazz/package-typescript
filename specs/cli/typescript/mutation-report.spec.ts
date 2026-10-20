@@ -8,9 +8,9 @@ import { cli } from '../packed-cli.specification.js';
 
 const CONSUMER = resolve(import.meta.dirname, '../__setup__/packed/consumer.ts');
 
-const OUTSIDE_CI = { CI: '', TYPESCRIPT_MUTATION_COLD: '' };
+const OUTSIDE_CI = { CI: '' };
 
-// invariant: the first run of a pair is the packed command the second one runs, in a repository git can list, outside CI and with no cold run asked (a gate run cold sets both for itself), so the second inherits its report.
+// invariant: the first run of a pair is the packed command the second one runs, in a repository git can list, outside CI, so the second inherits its report.
 function measuredOnce(workdir: string): void {
     execFileSync('git', ['init', '--quiet'], { cwd: workdir });
     execFileSync('node', [CONSUMER, 'typescript', 'mutation'], {
@@ -42,38 +42,28 @@ describe('mutation report', () => {
         `);
     });
 
-    test.each([
-        ['asked with --cold', 'typescript mutation --cold', OUTSIDE_CI],
-        [
-            'asked cold by its variable',
-            'typescript mutation',
-            { CI: '', TYPESCRIPT_MUTATION_COLD: '1' },
-        ],
-    ])(
-        'typescript mutation — a run %s measures every mutant again, whatever its report holds',
-        async (_how, command, env) => {
-            // Given - the consumer, its test judging everything, measured once
-            const result = await cli
-                .fixture(directory('./__fixtures__/mutation-consumer/'))
-                .fixture(directory('./__fixtures__/mutation-killing/'))
-                .prepare(measuredOnce)
-                .env(env)
-                .exec(command);
-
-            // Then - the report is gone before Stryker starts, and the verdict is measured whole
-            expect(result.exitCode).toBe(0);
-            expect(result.stdout.text).toContain('No incremental result file found');
-            expect(result.stdout.text).not.toContain('are reused');
-        },
-    );
-
-    test('typescript mutation — a run in CI reuses what its report leaves standing, as a run on a laptop does', async () => {
-        // Given - the consumer, its test judging everything, measured once, then run where CI is set and no cold run is asked
+    test('typescript mutation — a run asked with --cold measures every mutant again, whatever its report holds', async () => {
+        // Given - the consumer, its test judging everything, measured once
         const result = await cli
             .fixture(directory('./__fixtures__/mutation-consumer/'))
             .fixture(directory('./__fixtures__/mutation-killing/'))
             .prepare(measuredOnce)
-            .env({ CI: 'true', TYPESCRIPT_MUTATION_COLD: '' })
+            .env(OUTSIDE_CI)
+            .exec('typescript mutation --cold');
+
+        // Then - the report is gone before Stryker starts, and the verdict is measured whole
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout.text).toContain('No incremental result file found');
+        expect(result.stdout.text).not.toContain('are reused');
+    });
+
+    test('typescript mutation — a run in CI reuses what its report leaves standing, as a run on a laptop does', async () => {
+        // Given - the consumer, its test judging everything, measured once, then run where CI is set
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .prepare(measuredOnce)
+            .env({ CI: 'true' })
             .exec('typescript mutation');
 
         // Then - every result is reused
@@ -90,7 +80,7 @@ describe('mutation report', () => {
                 measuredOnce(workdir);
                 appendFileSync(join(workdir, 'node_modules/.package-lock.json'), '\n');
             })
-            .env({ CI: 'true', TYPESCRIPT_MUTATION_COLD: '' })
+            .env({ CI: 'true' })
             .exec('typescript mutation');
 
         // Then - no result of the report stands

@@ -7,7 +7,8 @@ The owner accepted the plan on 2026-10-20 ("tout ok"): the three levers
 below, the lesson and message files declared presentation, the lazy loading
 of commands measured before any convention, and the slowest spec files
 split only where they set the dry run's floor. Measured, the lazy loading
-was adopted on 2026-10-20 ("faire toutes les optis").
+was adopted on 2026-10-20 ("faire toutes les optis"), under the owner's
+rule of the same day that the toolchain takes one code path on every host.
 
 ## Context
 
@@ -45,6 +46,14 @@ it.
   record, on a cold run, and where the change reaches a file every test
   reads. The record carries the tests a dry run left out, unchanged, and
   names each test it could not follow, so the next run still knows its file.
+- One code path on every host: nothing reads `CI`, `GITHUB_ACTIONS` or the
+  event that started a run. The workers are the capacity the host detects,
+  or `TYPESCRIPT_JOBS`; the files a dry run runs are the record's and the
+  diff's. A host that restores no record runs every file, and one that
+  restores no report runs cold, by that alone. `TYPESCRIPT_MUTATION_COLD`
+  is gone with it, amending ADR-028: a release whose cache restores a report
+  inherits what its change leaves standing, as every run does, and
+  `--cold` is the one way to ask a cold run.
 - What the suite's dry run will run is printed before it starts:
   `dry run: 41 of 365 test files the change reaches, on 7 worker(s)`.
 - A `cli` loads each command when it dispatches to it, one `import()` per

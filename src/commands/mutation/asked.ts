@@ -15,10 +15,8 @@ export function askedOf(args: readonly string[]): Asked {
     const commandLine = readCommandLine(args, ['--mutate', '--since']);
 
     return {
-        // invariant: a run inherits what the change since its report leaves standing, on a runner as on a laptop, since the report is kept by the bytes of every file it stood on; a run asked cold inherits nothing.
-        cold:
-            commandLine.has('--cold') ||
-            blankAsUnset(process.env.TYPESCRIPT_MUTATION_COLD) !== undefined,
+        // invariant: a run inherits what the change since its report leaves standing, on every host alike, since the report is kept by the bytes of every file it stood on; a host that restores no report runs cold by that alone, and only the flag asks it.
+        cold: commandLine.has('--cold'),
         named: commandLine.value('--since') ?? blankAsUnset(process.env.TYPESCRIPT_MUTATION_SINCE),
         ranges: commandLine.value('--mutate')?.split(','),
     };

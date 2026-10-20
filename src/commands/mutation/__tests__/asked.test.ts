@@ -21,7 +21,6 @@ describe('asked', () => {
     test('askedOf — reads the ranges as a list and the commit to measure since, the flag before the variable', () => {
         // Given - no variable, the commit and the ranges as flags, and a variable under a flag, outside CI
         vi.stubEnv('CI', '');
-        vi.stubEnv('TYPESCRIPT_MUTATION_COLD', '');
         vi.stubEnv('TYPESCRIPT_MUTATION_SINCE', '');
         const flags = askedOf(['--mutate', 'a.ts:1-2,b.ts', '--since', 'main']);
         vi.stubEnv('TYPESCRIPT_MUTATION_SINCE', 'v1');
@@ -39,29 +38,15 @@ describe('asked', () => {
         ]);
     });
 
-    test('askedOf — a run is cold when the flag says so or the variable holds any text, and not when it is blank or absent, nor because CI is set', () => {
-        // Given - each way a run is asked, outside CI first
+    test('askedOf — a run is cold when the flag says so, and never because of the host it runs on', () => {
+        // Given - a run asked nothing and one asked cold, outside CI, then a run asked nothing where CI is set
         vi.stubEnv('CI', '');
-        vi.stubEnv('TYPESCRIPT_MUTATION_COLD', '');
         const none = askedOf([]).cold;
         const flag = askedOf(['--cold']).cold;
-        vi.stubEnv('TYPESCRIPT_MUTATION_COLD', '1');
-        const variable = askedOf([]).cold;
-        vi.stubEnv('TYPESCRIPT_MUTATION_COLD', '   ');
-        const blank = askedOf([]).cold;
         vi.stubEnv('CI', 'true');
         const ci = askedOf([]).cold;
-        vi.stubEnv('CI', ' ');
-        const blankCi = askedOf([]).cold;
 
-        // Then - cold by flag or by variable, never by a blank one nor by CI alone
-        expect([none, flag, variable, blank, ci, blankCi]).toStrictEqual([
-            false,
-            true,
-            true,
-            false,
-            false,
-            false,
-        ]);
+        // Then - cold by the flag alone
+        expect([none, flag, ci]).toStrictEqual([false, true, false]);
     });
 });

@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-19
+**Superseded in part by:** [ADR-030](030-the-suite-stage-pays-for-what-its-change-reaches-on-every-worker.md), for a run being cold when "`TYPESCRIPT_MUTATION_COLD`" asks: only `--cold` asks, and a host that restores no report runs cold by itself.
 
 The owner approved "Cheaper CI" item 4, CI reuses safe mutation results,
 on 2026-10-18 ("faisons 2 3 4 5"); this record states the decision taken

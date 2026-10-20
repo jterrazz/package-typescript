@@ -8,7 +8,7 @@ import { cli } from '../packed-cli.specification.js';
 
 const CONSUMER = resolve(import.meta.dirname, '../__setup__/packed/consumer.ts');
 
-const OUTSIDE_CI = { CI: '', TYPESCRIPT_JOBS: '1', TYPESCRIPT_MUTATION_COLD: '' };
+const OUTSIDE_CI = { CI: '', TYPESCRIPT_JOBS: '1' };
 
 // invariant: the first run is the packed command the second one runs, in a repository git can list, outside CI and with no cold run asked, so the second reads its record.
 function measuredOnce(workdir: string, range: string): void {

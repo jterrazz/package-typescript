@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-15
-**Superseded in part by:** [ADR-028](028-ci-reuses-what-a-restored-report-leaves-standing.md), for a run being cold "when `CI` is set" and the consequence that "CI keeps the cold verdict": CI reuses what a restored report leaves standing.
+**Superseded in part by:** [ADR-028](028-ci-reuses-what-a-restored-report-leaves-standing.md), for a run being cold "when `CI` is set" and the consequence that "CI keeps the cold verdict": CI reuses what a restored report leaves standing; [ADR-030](030-the-suite-stage-pays-for-what-its-change-reaches-on-every-worker.md), for a run asked cold by `TYPESCRIPT_MUTATION_COLD`: only `--cold` asks.
 
 The direction is the owner's, given 2026-10-13 ("Mutation speed", before
 the vision 17 release): incremental reuse keyed per source file and the
