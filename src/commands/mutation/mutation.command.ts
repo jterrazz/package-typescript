@@ -67,6 +67,11 @@ async function measured(
         buildsFirst: buildsOf(project),
         cold,
         concurrency,
+        dryRunScoped: ({ workers }) => {
+            print(
+                `${badge('TYPESCRIPT')} dry run: every test file, on ${String(workers)} worker(s)\n`,
+            );
+        },
         project,
         staysInFunctions: diffStaysInFunctions,
     });

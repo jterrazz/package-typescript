@@ -174,14 +174,60 @@ function observedIn(folder: string): ObservedTest[] {
 
 export type Measured = { ranByTests: ReadonlySet<string>; report: unknown };
 
-/** How a stage runs: whether the sandbox builds first, from no report, on how many test runners, in which project. */
+/** What the suite's dry run runs before its first mutant: on how many workers. */
+export type DryRunScope = { workers: number };
+
+/** How a stage runs: whether the sandbox builds first, from no report, on how many test runners, in which project, how a change is read, and who hears what the suite's dry run runs. */
 export type StageRun = {
     buildsFirst: boolean;
     cold: boolean;
     concurrency: number;
+    dryRunScoped: (scope: DryRunScope) => void;
     project: string;
     staysInFunctions: StaysInFunctions;
 };
+
+const ranByTestsIn = (folder: string): Set<string> =>
+    new Set(
+        readdirSync(folder).flatMap((name) => String(readFileSync(join(folder, name))).split('\n')),
+    );
+
+// invariant: Stryker's TypeScript checker compiles the project from its tsconfig.json before the first mutant, and a mutant that does not compile is a CompileError no test runs; a project that keeps no tsconfig.json has no compilation to check a mutant against.
+async function stageWritten(
+    scope: { readonly exclude: readonly string[]; readonly mutated: readonly string[] },
+    stage: Stage,
+    {
+        buildsFirst,
+        concurrency,
+        project,
+    }: {
+        buildsFirst: boolean;
+        concurrency: number;
+        project: string;
+    },
+): Promise<void> {
+    const files = FILES[stage.name];
+    const suite = stage.name === 'suite';
+    const { resolved } = await readSettings(project);
+    const toolRoots = Object.keys(stringRecordOf(objectOf(resolved.sections.typescript).toolRoots));
+    const generated = generatedRoots(project, toolRoots);
+    const typeChecked = existsSync(join(project, 'tsconfig.json'));
+    writeFileSync(
+        join(MUTATION_OUTPUT, files.vitest),
+        vitestConfigSource(
+            scope.exclude,
+            suite ? { dryRunWorkers: concurrency, suite } : { suite },
+        ),
+    );
+    writeFileSync(
+        join(MUTATION_OUTPUT, files.sandbox),
+        sandboxScriptSource(buildsFirst, project, besideOf(project)),
+    );
+    writeFileSync(
+        join(MUTATION_OUTPUT, files.config),
+        `${JSON.stringify(strykerConfig({ ...scope, generated, typeChecked }, stage, { concurrency }), null, 4)}\n`,
+    );
+}
 
 /** A stage's report, or Stryker's status when it failed: a failed run leaves no report this one could be judged by. */
 export async function strykerRun(
@@ -191,21 +237,7 @@ export async function strykerRun(
 ): Promise<Measured | { status: number }> {
     const { buildsFirst, cold, concurrency, project, staysInFunctions } = run;
     const files = FILES[stage.name];
-    const suite = stage.name === 'suite';
-    const { resolved } = await readSettings(project);
-    const toolRoots = Object.keys(stringRecordOf(objectOf(resolved.sections.typescript).toolRoots));
-    const generated = generatedRoots(project, toolRoots);
-    // invariant: Stryker's TypeScript checker compiles the project from its tsconfig.json before the first mutant, and a mutant that does not compile is a CompileError no test runs; a project that keeps no tsconfig.json has no compilation to check a mutant against.
-    const typeChecked = existsSync(join(project, 'tsconfig.json'));
-    writeFileSync(join(MUTATION_OUTPUT, files.vitest), vitestConfigSource(scope.exclude, suite));
-    writeFileSync(
-        join(MUTATION_OUTPUT, files.sandbox),
-        sandboxScriptSource(buildsFirst, project, besideOf(project)),
-    );
-    writeFileSync(
-        join(MUTATION_OUTPUT, files.config),
-        `${JSON.stringify(strykerConfig({ ...scope, generated, typeChecked }, stage, { concurrency }), null, 4)}\n`,
-    );
+    await stageWritten(scope, stage, { buildsFirst, concurrency, project });
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
@@ -213,6 +245,9 @@ export async function strykerRun(
     process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
     process.env[OBSERVED_TESTS_VARIABLE] = observedInto;
     const inputs = reportKept(project, stage, { cold, staysInFunctions });
+    if (stage.name === 'suite') {
+        run.dryRunScoped({ workers: concurrency });
+    }
     const status = await withoutBesideLinks(
         project,
         besideOf(project),
@@ -223,11 +258,7 @@ export async function strykerRun(
                 project,
             ),
     );
-    const ranByTests = new Set(
-        readdirSync(ranInto).flatMap((name) =>
-            String(readFileSync(join(ranInto, name))).split('\n'),
-        ),
-    );
+    const ranByTests = ranByTestsIn(ranInto);
     const observed = observedFrom(observedIn(observedInto), inputs);
     rmSync(ranInto, { recursive: true });
     rmSync(observedInto, { recursive: true });

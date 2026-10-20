@@ -56,6 +56,20 @@ const OWN_PROCESSES_PLUGIN_SOURCE = `const ownProcesses = {
 };
 `;
 
+// outside: Stryker's Vitest runner runs every test file on one worker, which a mutant's run needs, since the mutant is live in the process that runs its tests; the dry run activates no mutant and Stryker reads its coverage file by file, so it runs on the stage's test runners, read again on every run.
+const dryRunWorkersPluginSource = (workers: number): string => `const dryRunWorkers = {
+    configureVitest({ project, vitest }) {
+        Object.defineProperty(project.config, 'maxWorkers', {
+            configurable: true,
+            enumerable: true,
+            get: () => (vitest.getRootProject().getProvidedContext().mode === 'dry-run' ? ${String(workers)} : 1),
+            set: () => {},
+        });
+    },
+    name: 'stryker-dry-run-workers',
+};
+`;
+
 /** The folders of the repository a member's specs reach by climbing out of it: where the sandbox's copy stands, and the names to lay beside it. */
 export type Beside = { levels: number; names: readonly string[]; root: string };
 
@@ -95,7 +109,11 @@ if (existsSync(declarations)) {
         : ''
 }${beside !== undefined && beside.levels > 0 && beside.levels < SANDBOX_DEPTH ? `\n${besideScript(beside)}` : ''}`;
 
-export function vitestConfigSource(exclude: readonly string[], suite: boolean): string {
+/** What a stage's Vitest config runs: the suite, its dry run on the stage's test runners, or the module tests alone. */
+export type VitestStage = { dryRunWorkers: number; suite: true } | { suite: false };
+
+export function vitestConfigSource(exclude: readonly string[], stage: VitestStage): string {
+    const { suite } = stage;
     const kept = suite
         ? 'projects.filter((project) => project.test?.browser?.enabled !== true)'
         : "projects.filter((project) => project.test?.name === 'unit')";
@@ -114,7 +132,7 @@ ${TEST_NAME_PLUGIN_SOURCE}
 ${FASTEST_FIRST_SOURCE}
 
 ${LOAD_FAILURES_REPORTER_SOURCE}
-${suite ? OWN_PROCESSES_PLUGIN_SOURCE : ''}
+${stage.suite ? `${OWN_PROCESSES_PLUGIN_SOURCE}\n${dryRunWorkersPluginSource(stage.dryRunWorkers)}` : ''}
 const projects = project.test?.projects ?? [];
 
 const setup = resolve(${JSON.stringify(`${MUTATION_OUTPUT}/mutant-setup.mjs`)});
@@ -131,7 +149,7 @@ export default {
         projects: ${kept}.map((one) =>
             mergeConfig(
                 { ...one, test: { ...one.test, setupFiles: [setup, ...listed(one.test?.setupFiles)] } },
-                { plugins: [strykerTestNames${suite ? ', ownProcesses' : ''}], test: { exclude: ${JSON.stringify(exclude)}, isolate: true } },
+                { plugins: [strykerTestNames${suite ? ', ownProcesses, dryRunWorkers' : ''}], test: { exclude: ${JSON.stringify(exclude)}, isolate: true } },
             ),
         ),
     },
