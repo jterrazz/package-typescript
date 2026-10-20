@@ -70,8 +70,33 @@ it.
 ## Consequences
 
 - The verdict of a run is the one a one-worker, whole-suite dry run gives:
-  the coverage is the same file by file, and a file left out holds no test
+  the coverage is the same test by test, and a file left out holds no test
   that could reach a mutant of the stage by the record that already keeps a
   verdict standing. A wrong record (a test that reaches a source by a path
   the record cannot see, as ADR-026 states its limits) now also narrows a
   dry run.
+- Nested runs are not exactly reproducible. Over the same 2,178-mutant plan,
+  the observed records and the tests each source ran were identical on 1 and
+  on 4 workers, but 11 module-level mutants of
+  `lint/kit/catalogue/decisions.ts` gained 25 covering pairs on 4 workers,
+  and two 4-worker runs differed from each other by 4 of them. No mutant
+  lost a test or changed between covered and uncovered. It is read as the
+  timing of what the grandchildren of a nested Stryker run hand back, not
+  as a fault of the per-file merge, and accepted: a drifting mutant runs
+  one test more, never one less.
+- Measured on this package, on a laptop shared with other gates (the
+  load of the machine moves every figure by tens of percent):
+
+    | What                                                                          | Before                                                    | After                                                                           |
+    | ----------------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------- |
+    | the suite's dry run over one plan of 2,178 mutants                            | 883.9 s on 1 worker                                       | 298.4 s on 4 workers                                                            |
+    | a one-file loop, `--mutate src/commands/clean/clean.command.ts:11-16`, 2 jobs | 1,014 s: a dry run of every file, 880.4 s, then 9 mutants | 303 s: a dry run of 56 of 409 test files, 280.3 s, on 2 workers, then 6 mutants |
+    | test files covering a module-level mutant, the plan's 291                     | 179.1 on average, median 227                              | 37.1, median 15, commands loaded on dispatch                                    |
+    | a branch gate's suite stage, 2 jobs, a fresh clone with no record             | 1,552.8 s: dry run 808.5 s, 145 mutants 731.5 s           | 2,073.9 s: dry run 421.6 s on 2 workers, 223 mutants 1,635.6 s                  |
+
+    The last row is no like-for-like: the branch after measures its own
+    change too, 223 suite mutants against 145, most of them in the code
+    that drives Stryker, which the slowest specs cover. Its dry run halved
+    with the workers alone, since a fresh clone restores no record and runs
+    every file; a warm host runs the files the change reaches, as the loop
+    does.
