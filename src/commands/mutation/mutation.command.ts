@@ -75,14 +75,11 @@ async function measured(
         `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'The whole suite' : 'The module tests'} ran in ${secondsOf(seconds)} on ${String(concurrency)} test runner(s)\n`,
     );
     // invariant: Stryker's TypeScript checker stops the run on an error the unmutated tree holds, and the run names the compiler's first one rather than run without the checker.
-    const uncompiled =
-        'status' in outcome && existsSync(join(project, 'tsconfig.json'))
-            ? firstCompileError(project)
-            : undefined;
+    const uncompiled = 'status' in outcome ? firstCompileError(project) : undefined;
     stageRecorded(recorded, stage.name, {
         seconds,
         status: 'status' in outcome ? outcome.status : 0,
-        ...(uncompiled === undefined ? {} : { uncompiled }),
+        uncompiled,
     });
     if (uncompiled !== undefined) {
         print(`\n${RED}${uncompiledRefusal(uncompiled)}${RESET}\n`);

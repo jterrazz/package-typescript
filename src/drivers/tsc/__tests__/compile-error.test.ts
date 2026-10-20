@@ -49,7 +49,7 @@ describe('compile-error', () => {
         ]);
     });
 
-    test('a tsconfig.json missing, an option the compiler does not know, and a type it cannot find are each the first error', () => {
+    test('a project with no tsconfig.json has none; an option the compiler does not know, and a type it cannot find, are each the first error', () => {
         // Given - a project with no tsconfig.json, one naming an unknown option, and one naming a type no package declares
         const missing = projectWith({ 'src/a.ts': 'export const a = 1;\n' });
         const unknown = projectWith({
@@ -67,13 +67,13 @@ describe('compile-error', () => {
             }),
         });
 
-        // Then - each says so, an error of no file by its code and message alone
+        // Then - nothing where no tsconfig.json is kept; the others in the compiler's words, an error of no file by its code and message alone
         expect([
             firstCompileError(missing),
             firstCompileError(unknown),
             firstCompileError(untyped),
         ]).toStrictEqual([
-            'tsconfig.json: the compiler cannot read it',
+            undefined,
             "tsconfig.json:1 TS5023 Unknown compiler option 'unknownOption'.",
             "TS2688 Cannot find type definition file for 'absent'.",
         ]);

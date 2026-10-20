@@ -39,7 +39,11 @@ export const STAGE_LABELS = {
 export function stageRecorded(
     recorded: Recorded,
     stage: keyof typeof STAGE_LABELS,
-    { seconds, status, uncompiled }: { seconds: number; status: number; uncompiled?: string },
+    {
+        seconds,
+        status,
+        uncompiled,
+    }: { seconds: number; status: number; uncompiled?: string | undefined },
 ): void {
     const stopped =
         uncompiled === undefined

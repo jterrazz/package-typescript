@@ -1,7 +1,7 @@
 import { join, relative } from 'node:path';
 import ts from 'typescript';
 
-/** The headline of the first error the compiler finds in the project's unmutated tree, as `file:line TS<code> <message>`, read through its `tsconfig.json` as Stryker's TypeScript checker reads it; none where the tree compiles. */
+/** The headline of the first error the compiler finds in the project's unmutated tree, as `file:line TS<code> <message>`, read through its `tsconfig.json` as Stryker's TypeScript checker reads it; none where the tree compiles, or keeps no `tsconfig.json` the checker could compile. */
 export function firstCompileError(project: string): string | undefined {
     const tsconfig = join(project, 'tsconfig.json');
     const parsed = ts.getParsedCommandLineOfConfigFile(
@@ -13,7 +13,7 @@ export function firstCompileError(project: string): string | undefined {
         },
     );
     if (parsed === undefined) {
-        return 'tsconfig.json: the compiler cannot read it';
+        return undefined;
     }
     const program = ts.createProgram({ options: parsed.options, rootNames: parsed.fileNames });
     const first = [...parsed.errors, ...ts.getPreEmitDiagnostics(program)].find(
