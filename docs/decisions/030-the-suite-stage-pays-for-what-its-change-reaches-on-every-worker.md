@@ -101,3 +101,11 @@ it.
     with the workers alone, since a fresh clone restores no record and runs
     every file; a warm host runs the files the change reaches, as the loop
     does.
+
+- Added on 2026-10-20: a process a mutant's tests spawn compiles through
+  Node's compile cache, which the `typescript` bin turns on before it loads
+  the command, and a process the dry run spawns does not
+  (`NODE_DISABLE_COMPILE_CACHE`): V8 serialises a cached script without the
+  source positions the dry run's precise coverage reads, and a reach the
+  record missed would leave a verdict standing that should run again.
+  `typescript doctor` runs in 170 ms against 194 ms, median of 24 starts.

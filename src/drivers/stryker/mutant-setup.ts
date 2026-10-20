@@ -6,6 +6,7 @@ export const RAN_BY_TESTS_VARIABLE = '__TYPESCRIPT_MUTATION_RAN_BY_TESTS__';
 export const OBSERVED_TESTS_VARIABLE = '__TYPESCRIPT_MUTATION_OBSERVED_TESTS__';
 
 // invariant: first of every project's setup files, since a mutant is live before the test file loads, and a static mutant is credited to every test of each file whose loading ran it; the mutants a test ran in its own process, beyond loading its file, are written where RAN_BY_TESTS_VARIABLE names; what a process it spawned ran stays apart, since a child's loading and its calls cannot be told apart.
+// hazard: V8 serializes a compile-cached script without the source positions its precise coverage relies on, so a process the dry run spawns compiles nothing through Node's compile cache; a process a mutant's tests spawn compiles through it, as under the project's own test run.
 // invariant: what each test's processes ran is written where OBSERVED_TESTS_VARIABLE names: the sources whose functions they ran and the sources of every script they loaded. It is none for a test no process started for, while it ran, while its file loaded or between its tests, and no record of either for a test one of whose processes V8 would not profile or died before it could hand back what it ran.
 export const MUTANT_SETUP_SOURCE = `import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -24,8 +25,10 @@ if (inject('mode') === 'mutant') {
     ns.activeMutant = String(inject('activeMutant'));
     process.env.__STRYKER_ACTIVE_MUTANT__ = ns.activeMutant;
     delete process.env.__STRYKER_CHILD_COVERAGE__;
+    delete process.env.NODE_DISABLE_COMPILE_CACHE;
 } else {
     delete process.env.__STRYKER_ACTIVE_MUTANT__;
+    process.env.NODE_DISABLE_COMPILE_CACHE = '1';
     const children = join(process.cwd(), ${JSON.stringify(MUTATION_OUTPUT)}, 'children', \`\${process.pid}-\${threadId}\`);
     mkdirSync(children, { recursive: true });
     process.env.__STRYKER_CHILD_COVERAGE__ = children;

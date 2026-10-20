@@ -1,9 +1,10 @@
 import { directory } from '@jterrazz/test';
 import { execFileSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
+import { temporaryDirectory } from '../../__setup__/temporary-directory.js';
 import { cli } from '../packed-cli.specification.js';
 
 const CONSUMER = resolve(import.meta.dirname, '../__setup__/packed/consumer.ts');
@@ -91,5 +92,20 @@ describe('mutation dry run', () => {
         expect(
             result.stdout.text.match(/^.*dry run: (?:every test file|\d+ of \d+).*$/gmu),
         ).toStrictEqual([' TYPESCRIPT  dry run: every test file, on 1 worker(s)']);
+    });
+
+    test('typescript mutation — a process the dry run spawns compiles nothing through node’s compile cache, and one a mutant’s tests spawn compiles through it', async () => {
+        // Given - a consumer whose spec spawns a command that asks for the compile cache and logs whether it got it, measured at its label
+        const log = join(temporaryDirectory('compile-cache-'), 'runs.log');
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-compile-cache/'))
+            .env({ COMPILE_CACHE_LOG: log, TYPESCRIPT_CAPACITY: 'cpus=1,memory=64g' })
+            .exec('typescript mutation --mutate src/label.ts:1-1');
+
+        // Then - the dry run's process ran with the cache off, every mutant's with it on
+        expect(result.exitCode).toBe(0);
+        expect([...new Set(readFileSync(log, 'utf8').trim().split('\n'))].toSorted()).toStrictEqual(
+            ['dry run: off', 'mutant: on'],
+        );
     });
 });
