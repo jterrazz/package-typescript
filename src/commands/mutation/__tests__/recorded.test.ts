@@ -264,4 +264,25 @@ describe('recorded', () => {
             'Stryker stopped the module tests with status 1; its log is above',
         );
     });
+
+    test('stageRecorded — a stage the checker stopped on a tree that does not compile names the first compile error, as its first error and as the reason', () => {
+        // Given - a module stage Stryker stopped while the compiler refuses the unmutated tree
+        const recorded = recorder();
+        stageRecorded(recorded, 'modules', {
+            seconds: 4,
+            status: 1,
+            uncompiled: "src/b.ts:2 TS2322 Type 'string' is not assignable to type 'number'.",
+        });
+
+        // Then - the pass and the reason say the tree does not compile, at the compiler's first error
+        const found =
+            "the tree does not compile before any mutant: src/b.ts:2 TS2322 Type 'string' is not assignable to type 'number'.";
+        expect(recorded).toStrictEqual({
+            mutation: undefined,
+            passes: [
+                { firstError: found, label: 'Mutation (module tests)', seconds: 4, status: 1 },
+            ],
+            reason: found,
+        });
+    });
 });

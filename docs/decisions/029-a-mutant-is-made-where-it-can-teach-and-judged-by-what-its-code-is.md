@@ -68,7 +68,13 @@ assertion or a declaration. In jterrazz-web, 1.9 % of the mutants sit in
   package plans 10,132 (63ae8b8a, 18 min 47 s on four runners).
 - The checker compiles the project before the first mutant and fails the
   run on a type error the compiler finds in the unmutated tree; while it
-  checks, it holds half of the test runners.
+  checks, it holds half of the test runners. The run names the compiler's
+  first error at its file and line and never falls back to running the
+  mutants unchecked (the orchestrator's decision under the owner's
+  delegation, 2026-10-20): a tree that does not compile is already red at
+  the gate's TypeScript Check, and a fallback would only hide it. An old
+  commit measured against today's packages meets exactly this: jterrazz-web
+  at 90f9f0a stops before its first mutant.
 - A glue survivor no longer fails the run by itself: the bar is a number
   again, for glue only. ADR-019's zero stands for domain. In jterrazz-web,
   98 % of the mutants are judged against the bar; in this package, the

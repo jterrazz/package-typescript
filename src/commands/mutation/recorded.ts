@@ -18,6 +18,7 @@ import { print } from '../check/report/terminal.js';
 import { byRole } from './roles.js';
 import type { GlueBar } from './roles.js';
 import type { Judged, Survivor } from './survivors.js';
+import { uncompiledFound } from './uncompiled.js';
 import type { Measure } from './verdict.js';
 
 /** What a mutation run hands its verdict file as it goes: each stage, the numbers it judged, or why it judged none. */
@@ -38,16 +39,23 @@ export const STAGE_LABELS = {
 export function stageRecorded(
     recorded: Recorded,
     stage: keyof typeof STAGE_LABELS,
-    { seconds, status }: { seconds: number; status: number },
+    { seconds, status, uncompiled }: { seconds: number; status: number; uncompiled?: string },
 ): void {
+    const stopped =
+        uncompiled === undefined
+            ? `Stryker exited ${String(status)}; its log is above`
+            : uncompiledFound(uncompiled);
     recorded.passes.push({
-        firstError: status === 0 ? null : `Stryker exited ${String(status)}; its log is above`,
+        firstError: status === 0 ? null : stopped,
         label: STAGE_LABELS[stage],
         seconds,
         status,
     });
     if (status !== 0) {
-        recorded.reason = `Stryker stopped the ${stage === 'suite' ? 'whole suite' : 'module tests'} with status ${String(status)}; its log is above`;
+        recorded.reason =
+            uncompiled === undefined
+                ? `Stryker stopped the ${stage === 'suite' ? 'whole suite' : 'module tests'} with status ${String(status)}; its log is above`
+                : uncompiledFound(uncompiled);
     }
 }
 

@@ -11,6 +11,7 @@ import { concurrencyOf, jobsNamed } from '../../drivers/stryker/concurrency.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
 import { diffStaysInFunctions } from '../../drivers/tsc/change-shape.js';
+import { firstCompileError } from '../../drivers/tsc/compile-error.js';
 import { secondsSince } from '../check/passes/launched.js';
 import { badge, print, RED, RESET, secondsOf } from '../check/report/terminal.js';
 import { activeGates, withGateLock } from '../gate-lock/lock.js';
@@ -27,6 +28,7 @@ import type { MutationScope } from './scope.js';
 import { afterStage, buildsOf, withClientOnlyUnmeasured } from './stages.js';
 import { handedToTheSuite, judgedRuns } from './survivors.js';
 import type { Changed, Judged, ModuleRun } from './survivors.js';
+import { uncompiledRefusal } from './uncompiled.js';
 import { measureOf, verdictOf } from './verdict.js';
 import type { Measure } from './verdict.js';
 
@@ -63,10 +65,19 @@ async function measured(
     print(
         `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'The whole suite' : 'The module tests'} ran in ${secondsOf(seconds)} on ${String(concurrency)} test runner(s)\n`,
     );
+    // invariant: Stryker's TypeScript checker stops the run on an error the unmutated tree holds, and the run names the compiler's first one rather than run without the checker.
+    const uncompiled =
+        'status' in outcome && existsSync(join(project, 'tsconfig.json'))
+            ? firstCompileError(project)
+            : undefined;
     stageRecorded(recorded, stage.name, {
         seconds,
         status: 'status' in outcome ? outcome.status : 0,
+        ...(uncompiled === undefined ? {} : { uncompiled }),
     });
+    if (uncompiled !== undefined) {
+        print(`\n${RED}${uncompiledRefusal(uncompiled)}${RESET}\n`);
+    }
 
     return withClientOnlyUnmeasured(outcome, clientOnlySources(project));
 }
