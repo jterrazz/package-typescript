@@ -6,7 +6,7 @@ import { ONE_FORM } from './__setup__/oxlint-forms.js';
 
 // outside: Rolldown's slow-plugin advisory depends on the machine's load, never on the command: no token covers it.
 const SLOW_PLUGIN_ADVISORY =
-    /\[PLUGIN_TIMINGS\][\s\S]*?checks#plugintimings for more details\.\n?/gu;
+    /\[PLUGIN_TIMINGS\][\s\S]*?checks#bundlertimings for more details\.\n?/gu;
 
 function withoutSlowPluginAdvisory(text: string): string {
     if (!text.includes('[PLUGIN_TIMINGS]')) {

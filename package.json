@@ -79,7 +79,7 @@
         "prettier-plugin-astro": "^1.0.1",
         "publint": "^0.3.24",
         "rumdl": "0.2.77",
-        "tsdown": "^0.23.0",
+        "tsdown": "^0.23.1",
         "typescript": "^6.0.0",
         "yaml": "^2.9.1"
     },
