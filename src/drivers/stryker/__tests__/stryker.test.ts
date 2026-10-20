@@ -9,7 +9,7 @@ import { generatedRoots, strykerConfig } from '../stryker.js';
 
 const RUNNER = createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner');
 
-const CHECKER = createRequire(import.meta.url).resolve('@stryker-mutator/typescript-checker');
+const CHECKER = createRequire(import.meta.url).resolve('#mutant-checker');
 
 const SCOPE = {
     generated: [],
@@ -57,7 +57,7 @@ describe('stryker', () => {
         // Then - the module run fast and in its unit project, the suite slower, unrelated and given an hour to start
         const shared = {
             $schema: '../../node_modules/@stryker-mutator/core/schema/stryker-schema.json',
-            checkers: ['typescript'],
+            checkers: ['typescript-native'],
             coverageAnalysis: 'perTest',
             disableTypeChecks: '{src/**/!(*.test-d).ts,src/**/!(*.test-d).tsx,lint/!(*.test-d).ts}',
             ignorePatterns: [

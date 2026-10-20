@@ -1,27 +1,27 @@
-import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { headline, nativeProject, programErrors, programOf } from './native-project.js';
 
-import { tscBinary } from './tsc.js';
+/** What a run found when the tree it mutates does not compile, at the compiler's first error. */
+export const uncompiledFound = (diagnostic: string): string =>
+    `the tree does not compile before any mutant: ${diagnostic}`;
 
-const TSCONFIG = 'tsconfig.json';
+export const UNCOMPILED_WHY =
+    'each mutant is type-checked against the tree it mutates, so a tree the compiler refuses leaves no mutant to judge; the tree must compile before mutants are judged';
 
-const DIAGNOSTIC = /(?:(?<file>.+)\((?<line>\d+),\d+\): )?error (?<code>TS\d+): (?<message>.+)/u;
+export const UNCOMPILED_FIX =
+    'make the tree compile, then run again: `typescript check` names every error, in its TypeScript Check pass';
 
-/** The headline of the first error the compiler finds in the project's unmutated tree, as `file:line TS<code> <message>`, read through its `tsconfig.json` without emitting, as Stryker's TypeScript checker reads it; none where the tree compiles, or keeps no `tsconfig.json`. */
+/** The headline of the first error the compiler finds in the project's unmutated tree, as `file:line TS<code> <message>`, read through its `tsconfig.json` as the TypeScript checker reads it; none where the tree compiles, or keeps no `tsconfig.json` the checker could compile. */
 export function firstCompileError(project: string): string | undefined {
-    if (!existsSync(join(project, TSCONFIG))) {
+    const opened = nativeProject(project);
+    if (opened === undefined) {
         return undefined;
     }
-    const run = spawnSync(tscBinary(), ['--noEmit', '--pretty', 'false', '--project', TSCONFIG], {
-        cwd: project,
-        encoding: 'utf8',
-    });
-    const first = DIAGNOSTIC.exec(run.stdout)?.groups;
-    if (first === undefined) {
-        return undefined;
-    }
-    const { code, file, line, message } = first;
+    try {
+        const [first] = programErrors(programOf(opened.base, opened.config));
 
-    return file === undefined ? `${code} ${message}` : `${file}:${line} ${code} ${message}`;
+        return first === undefined ? undefined : headline(project, first);
+    } finally {
+        opened.base.dispose();
+        opened.api.close();
+    }
 }

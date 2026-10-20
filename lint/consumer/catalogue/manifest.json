@@ -104,6 +104,30 @@
         "audience": "consumer",
         "by": "throw",
         "channel": "runtime",
+        "id": "mutant-checker-uncompiled",
+        "message": "const found = uncompiledFound(headline(project, first));",
+        "module": "src/drivers/tsc/mutant-checker.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
+        "id": "mutant-checker-without-tsconfig",
+        "message": "the TypeScript checker was started in a project that keeps no tsconfig.json",
+        "module": "src/drivers/tsc/mutant-checker.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
+        "id": "native-project-unopened",
+        "message": "the native compiler opened no project at",
+        "module": "src/drivers/tsc/native-project.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
         "id": "own-presets-unbuilt",
         "message": "this repository's presets are not built",
         "module": "lint/kit/project/own-presets.ts"

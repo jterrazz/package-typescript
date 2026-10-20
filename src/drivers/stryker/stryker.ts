@@ -75,11 +75,14 @@ export function generatedRoots(project: string, toolRoots: readonly string[]): s
 
 const REPORTER_FILE = `${MUTATION_OUTPUT}/progress-reporter.mjs`;
 
+/** The name the config gives the TypeScript checker, the plugin `#mutant-checker` declares. */
+export const MUTANT_CHECKER = 'typescript-native';
+
 export const IGNORERS_FILE = `${MUTATION_OUTPUT}/ignorers.mjs`;
 
 const PLUGINS = [
     createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner'),
-    createRequire(import.meta.url).resolve('@stryker-mutator/typescript-checker'),
+    createRequire(import.meta.url).resolve('#mutant-checker'),
     `./${REPORTER_FILE}`,
     `./${PREVIOUS_KILLERS.file}`,
     `./${IGNORERS_FILE}`,
@@ -104,7 +107,7 @@ export function strykerConfig(
     return {
         $schema: '../../node_modules/@stryker-mutator/core/schema/stryker-schema.json',
         buildCommand: `node ${MUTATION_OUTPUT}/${files.sandbox}`,
-        checkers: scope.typeChecked ? ['typescript'] : [],
+        checkers: scope.typeChecked ? [MUTANT_CHECKER] : [],
         concurrency,
         coverageAnalysis: 'perTest',
         disableTypeChecks: typeCheckedGlob(scope.mutated),
@@ -198,7 +201,7 @@ const ranByTestsIn = (folder: string): Set<string> =>
 export const typeCheckedIn = (project: string): boolean =>
     existsSync(join(project, 'tsconfig.json'));
 
-// invariant: Stryker's TypeScript checker compiles the project from its tsconfig.json before the first mutant, and a mutant that does not compile is a CompileError no test runs; a project that keeps no tsconfig.json has no compilation to check a mutant against.
+// invariant: the TypeScript checker compiles the project from its tsconfig.json before the first mutant, and a mutant that does not compile is a CompileError no test runs; a project that keeps no tsconfig.json has no compilation to check a mutant against.
 async function stageWritten(
     scope: { readonly exclude: readonly string[]; readonly mutated: readonly string[] },
     stage: Stage,

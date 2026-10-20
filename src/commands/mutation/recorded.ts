@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { isList, objectOf, stringOf } from '../../../lint/kit/project/json.js';
+import { uncompiledFound } from '../../drivers/tsc/compile-error.js';
 import {
     headOf,
     mutationSummaryOf,
@@ -18,7 +19,6 @@ import { print } from '../check/report/terminal.js';
 import { byRole } from './roles.js';
 import type { GlueBar } from './roles.js';
 import type { Judged, Survivor } from './survivors.js';
-import { uncompiledFound } from './uncompiled.js';
 import type { Measure } from './verdict.js';
 
 /** What a mutation run hands its verdict file as it goes: each stage, the numbers it judged, or why it judged none. */
