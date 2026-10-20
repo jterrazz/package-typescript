@@ -29,7 +29,7 @@ import {
     OBSERVED_TESTS_VARIABLE,
     RAN_BY_TESTS_VARIABLE,
 } from './mutant-setup.js';
-import { heldReport, strykerMutate } from './mutate-entries.js';
+import { heldReport, mutatedLines, strykerMutate } from './mutate-entries.js';
 import { observedFrom } from './observed.js';
 import type { ObservedTest } from './observed.js';
 import { PROGRESS_REPORTER, PROGRESS_REPORTER_SOURCE } from './progress-reporter.js';
@@ -199,10 +199,12 @@ async function stageWritten(
     {
         buildsFirst,
         concurrency,
+        mutated,
         project,
     }: {
         buildsFirst: boolean;
         concurrency: number;
+        mutated: readonly string[];
         project: string;
     },
 ): Promise<void> {
@@ -215,7 +217,7 @@ async function stageWritten(
     writeFileSync(
         join(MUTATION_OUTPUT, files.vitest),
         vitestConfigSource(
-            scope.exclude,
+            { exclude: scope.exclude, mutated },
             suite ? { dryRunWorkers: concurrency, suite } : { suite },
         ),
     );
@@ -237,7 +239,12 @@ export async function strykerRun(
 ): Promise<Measured | { status: number }> {
     const { buildsFirst, cold, concurrency, project, staysInFunctions } = run;
     const files = FILES[stage.name];
-    await stageWritten(scope, stage, { buildsFirst, concurrency, project });
+    await stageWritten(scope, stage, {
+        buildsFirst,
+        concurrency,
+        mutated: [...mutatedLines(stage.mutate).keys()],
+        project,
+    });
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/

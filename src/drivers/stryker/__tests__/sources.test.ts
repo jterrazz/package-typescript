@@ -1,11 +1,12 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { join, relative } from 'node:path';
+import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
 import { objectOf } from '../../../../lint/kit/project/json.js';
-import { FASTEST_FIRST_SOURCE, sandboxScriptSource } from '../sources.js';
+import { OBSERVED_TESTS_VARIABLE } from '../mutant-setup.js';
+import { relevantFirstSource, sandboxScriptSource } from '../sources.js';
 
 const WIDE = 'export declare const kind: string;\n';
 
@@ -26,63 +27,139 @@ type SequencerClass = new (ctx: unknown) => Sequencer;
 
 const isClass = (value: unknown): value is SequencerClass => typeof value === 'function';
 
-const specOf = (project: string, path: string): Spec => ({
-    moduleId: `/project/${path}`,
+const specOf = (root: string, project: string, path: string): Spec => ({
+    moduleId: join(root, path),
     project: { name: project },
 });
 
-async function sortedBy(
-    durations: Readonly<Record<string, number>>,
-    specs: Spec[],
-): Promise<string[]> {
-    const module = `import { relative } from 'node:path';
+type Sorting = {
+    durations: Readonly<Record<string, number>>;
+    provided: Readonly<Record<string, unknown>>;
+    root: string;
+};
+
+async function sortedBy({ durations, provided, root }: Sorting, specs: Spec[]): Promise<string[]> {
+    const module = `import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
 class BaseSequencer {
     constructor(ctx) {
         this.ctx = ctx;
     }
 }
-${FASTEST_FIRST_SOURCE}
-export { FastestFirst };
+${relevantFirstSource(['src/labels.ts', 'src/missing.ts'])}
+export { RelevantFirst };
 `;
     const imported: unknown = await import(`data:text/javascript,${encodeURIComponent(module)}`);
-    const { FastestFirst } = objectOf(imported);
-    if (!isClass(FastestFirst)) {
+    const { RelevantFirst } = objectOf(imported);
+    if (!isClass(RelevantFirst)) {
         return [];
     }
-    const sequencer = new FastestFirst({
+    const sequencer = new RelevantFirst({
         cache: {
             getFileTestResults: (key: string) =>
                 key in durations ? { duration: durations[key] } : undefined,
         },
-        config: { root: '/project' },
+        config: { root },
+        getRootProject: () => ({ getProvidedContext: () => provided }),
     });
-    const sorted: Spec[] = await Reflect.apply(sequencer.sort, sequencer, [specs]);
+    const sorted: Sequencer['sort'] = sequencer.sort.bind(sequencer);
+    const order = await sorted(specs);
 
-    return sorted.map(({ moduleId }) => moduleId);
+    return order.map(({ moduleId }) => relative(root, moduleId));
 }
 
-describe('sources', () => {
-    test('sequencer — a mutant’s tests run quickest file first, whatever its project, a file no run timed last', async () => {
-        // Given - a slow spec, a quick module test of another project, a file never timed, and a second quick one
+const DURATIONS = {
+    'cli:specs/blind.spec.ts': 30,
+    'cli:specs/loads.spec.ts': 10,
+    'cli:specs/runs.spec.ts': 40,
+    'unit:src/__tests__/labels.test.ts': 20,
+};
 
-        // When - the files are sorted on the last run's times
-        const order = await sortedBy(
-            { 'cli:specs/slow.spec.ts': 9000, 'unit:src/a.test.ts': 12, 'unit:src/b.test.ts': 40 },
-            [
-                specOf('cli', 'specs/slow.spec.ts'),
-                specOf('unit', 'src/new.test.ts'),
-                specOf('unit', 'src/b.test.ts'),
-                specOf('unit', 'src/a.test.ts'),
-            ],
+function observedRun(): string {
+    const root = mkdtempSync(join(tmpdir(), 'mutation-sequencer-'));
+    const observed = join(root, '.artifacts/observed');
+    onTestFinished(() => {
+        rmSync(root, { force: true, recursive: true });
+    });
+    laid(root, {
+        '.artifacts/observed/1-1.json': JSON.stringify([
+            {
+                loaded: ['src/cli.ts', 'src/labels.ts'],
+                ran: ['src/cli.ts'],
+                test: 'specs/loads.spec.ts#a',
+            },
+            {
+                loaded: ['src/cli.ts', 'src/labels.ts'],
+                ran: ['src/cli.ts', 'src/labels.ts'],
+                test: 'specs/runs.spec.ts#b',
+            },
+        ]),
+        '.artifacts/observed/2-1.json': JSON.stringify([
+            { loaded: [], ran: [], test: 'src/__tests__/labels.test.ts#reads a label' },
+            { test: 'specs/blind.spec.ts#c' },
+        ]),
+        'src/labels.ts':
+            'const LABEL = stryMutAct_9fa48("7") ? "" : (stryCov_9fa48("7"), "b");\nexport const labelOf = () => stryMutAct_9fa48("8") ? undefined : LABEL;\n',
+    });
+    vi.stubEnv(OBSERVED_TESTS_VARIABLE, observed);
+
+    return root;
+}
+
+const SPECS = [
+    'specs/runs.spec.ts',
+    'specs/never-timed.spec.ts',
+    'specs/loads.spec.ts',
+    'specs/blind.spec.ts',
+    'src/__tests__/labels.test.ts',
+] as const;
+
+describe('sources', () => {
+    test('sequencer — a mutant’s tests run the files that ran its source first, quickest first within each group, a file no run timed last', async () => {
+        // Given - a dry run that saw a spec only load the mutant's source, one run a function of it, a module test that spawned nothing, a spec it could not follow, and a file it never timed
+        const root = observedRun();
+        const specs = SPECS.map((path) =>
+            specOf(root, path.startsWith('src') ? 'unit' : 'cli', path),
         );
 
-        // Then - quickest first, the untimed file last
-        expect(order).toStrictEqual([
-            '/project/src/a.test.ts',
-            '/project/src/b.test.ts',
-            '/project/specs/slow.spec.ts',
-            '/project/src/new.test.ts',
-        ]);
+        // When - the files of mutant 7 are sorted, then those of a mutant no instrumented source holds, then those of the dry run itself
+        const order = await sortedBy(
+            { durations: DURATIONS, provided: { activeMutant: 7, mode: 'mutant' }, root },
+            specs,
+        );
+        const unknown = await sortedBy(
+            { durations: DURATIONS, provided: { activeMutant: 99, mode: 'mutant' }, root },
+            specs,
+        );
+        const dryRun = await sortedBy(
+            { durations: DURATIONS, provided: { mode: 'dry-run' }, root },
+            specs,
+        );
+
+        // Then - what ran the source, spawned nothing or went unfollowed comes before what only loaded it; a mutant of no known source, and the dry run, run quickest first alone
+        expect({ dryRun, order, unknown }).toStrictEqual({
+            dryRun: [
+                'specs/loads.spec.ts',
+                'src/__tests__/labels.test.ts',
+                'specs/blind.spec.ts',
+                'specs/runs.spec.ts',
+                'specs/never-timed.spec.ts',
+            ],
+            order: [
+                'src/__tests__/labels.test.ts',
+                'specs/blind.spec.ts',
+                'specs/runs.spec.ts',
+                'specs/never-timed.spec.ts',
+                'specs/loads.spec.ts',
+            ],
+            unknown: [
+                'specs/loads.spec.ts',
+                'src/__tests__/labels.test.ts',
+                'specs/blind.spec.ts',
+                'specs/runs.spec.ts',
+                'specs/never-timed.spec.ts',
+            ],
+        });
     });
 
     test('sandboxScriptSource — the suite runs against the instrumented build carrying the project’s own declarations', () => {

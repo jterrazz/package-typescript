@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 
 import { DIST, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { OBSERVED_TESTS_VARIABLE } from './mutant-setup.js';
 
 // outside: Stryker 10 names a test by its suites and title joined with a space, where Vitest 5 joins them with ` > `: without this plugin every mutant runs no test and survives.
 const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
@@ -18,11 +19,48 @@ const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
     name: 'stryker-test-names',
 };`;
 
-// outside: Vitest runs the slowest file first, and Stryker stops a mutant's run at the first test that fails; the file the last run took least time over runs first, so a mutant a quick test detects never waits on a slow one.
-export const FASTEST_FIRST_SOURCE = `class FastestFirst extends BaseSequencer {
+// outside: Vitest runs the slowest file first, and Stryker stops a mutant's run at the first test that fails; the files with a test whose processes ran a function of the mutant's source run first (a test that spawned nothing, or one the dry run could not follow, among them), since a mutant a spawned process only loaded is credited to every file that spawned one, and within each group the file the last run took least time over runs first, so a mutant a quick test detects never waits on a slow one.
+export const relevantFirstSource = (
+    mutated: readonly string[],
+): string => `const mutantSources = new Map();
+const mutated = ${JSON.stringify(mutated)};
+const sourceOfMutant = (root, id) => {
+    if (mutantSources.size === 0) {
+        for (const source of mutated) {
+            const text = existsSync(join(root, source)) ? readFileSync(join(root, source), 'utf8') : '';
+            for (const [, one] of text.matchAll(/stryMutAct_9fa48\\("(\\d+)"\\)/gu)) {
+                mutantSources.set(one, source);
+            }
+        }
+    }
+    return mutantSources.get(id);
+};
+let ranByFile;
+const ranByFileOf = () => {
+    if (ranByFile === undefined) {
+        ranByFile = new Map();
+        const folder = process.env.${OBSERVED_TESTS_VARIABLE};
+        for (const name of folder !== undefined && existsSync(folder) ? readdirSync(folder) : []) {
+            for (const { loaded, ran, test } of JSON.parse(readFileSync(join(folder, name), 'utf8'))) {
+                const file = test.split('#')[0];
+                const held = ranByFile.get(file) ?? [];
+                held.push(ran === undefined || (ran.length === 0 && loaded.length === 0) ? undefined : new Set(ran));
+                ranByFile.set(file, held);
+            }
+        }
+    }
+    return ranByFile;
+};
+
+class RelevantFirst extends BaseSequencer {
     async sort(files) {
-        const took = (file) => this.ctx.cache.getFileTestResults(\`\${file.project.name}:\${relative(this.ctx.config.root, file.moduleId)}\`)?.duration ?? Number.POSITIVE_INFINITY;
-        return [...files].sort((a, b) => took(a) - took(b) || 0);
+        const { root } = this.ctx.config;
+        const took = (file) => this.ctx.cache.getFileTestResults(\`\${file.project.name}:\${relative(root, file.moduleId)}\`)?.duration ?? Number.POSITIVE_INFINITY;
+        const { activeMutant, mode } = this.ctx.getRootProject().getProvidedContext();
+        const source = mode === 'mutant' ? sourceOfMutant(root, String(activeMutant)) : undefined;
+        const tests = source === undefined ? undefined : ranByFileOf();
+        const relevant = (file) => tests === undefined || (tests.get(relative(root, file.moduleId)) ?? [undefined]).some((ran) => ran === undefined || ran.has(source));
+        return [...files].sort((a, b) => Number(relevant(b)) - Number(relevant(a)) || took(a) - took(b) || 0);
     }
 }`;
 
@@ -112,13 +150,17 @@ if (existsSync(declarations)) {
 /** What a stage's Vitest config runs: the suite, its dry run on the stage's test runners, or the module tests alone. */
 export type VitestStage = { dryRunWorkers: number; suite: true } | { suite: false };
 
-export function vitestConfigSource(exclude: readonly string[], stage: VitestStage): string {
+export function vitestConfigSource(
+    { exclude, mutated }: { exclude: readonly string[]; mutated: readonly string[] },
+    stage: VitestStage,
+): string {
     const { suite } = stage;
     const kept = suite
         ? 'projects.filter((project) => project.test?.browser?.enabled !== true)'
         : "projects.filter((project) => project.test?.name === 'unit')";
 
-    return `import { relative, resolve } from 'node:path';
+    return `import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
 
 import { mergeConfig } from 'vitest/config';
 import { BaseSequencer } from 'vitest/node';
@@ -129,7 +171,7 @@ const project = typeof declared === 'function' ? await declared({ command: 'serv
 
 ${TEST_NAME_PLUGIN_SOURCE}
 
-${FASTEST_FIRST_SOURCE}
+${relevantFirstSource(mutated)}
 
 ${LOAD_FAILURES_REPORTER_SOURCE}
 ${stage.suite ? `${OWN_PROCESSES_PLUGIN_SOURCE}\n${dryRunWorkersPluginSource(stage.dryRunWorkers)}` : ''}
@@ -145,7 +187,7 @@ export default {
         ...project.test,
         coverage: { enabled: false },
         reporters: [loadFailures],
-        sequence: { ...project.test?.sequence, sequencer: FastestFirst },
+        sequence: { ...project.test?.sequence, sequencer: RelevantFirst },
         projects: ${kept}.map((one) =>
             mergeConfig(
                 { ...one, test: { ...one.test, setupFiles: [setup, ...listed(one.test?.setupFiles)] } },

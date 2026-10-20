@@ -58,6 +58,28 @@ function pointOf(location: unknown): Point {
     return [Number(line), Number(column) - 1];
 }
 
+/** The files a stage's entries name, as the project holds them, each with the lines its ranges hold, counted from 1: `undefined` where an entry names it whole. */
+export function mutatedLines(mutate: readonly string[]): Map<string, number[] | undefined> {
+    const lines = new Map<string, number[] | undefined>();
+    for (const { file, range } of mutate.map((text) => entryOf(text))) {
+        const held = lines.has(file) ? lines.get(file) : [];
+        lines.set(
+            file,
+            range === undefined || held === undefined
+                ? undefined
+                : [
+                      ...held,
+                      ...Array.from(
+                          { length: range.to[0] - range.from[0] + 1 },
+                          (_, at) => range.from[0] + at,
+                      ),
+                  ],
+        );
+    }
+
+    return lines;
+}
+
 // outside: Stryker mutates in a range what starts and ends within it, its lines counted from 1 and its columns from 0, where a report counts both from 1.
 function heldBy(entries: readonly Entry[], mutant: unknown): boolean {
     const { end, start } = objectOf(objectOf(mutant).location);
