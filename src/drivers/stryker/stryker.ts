@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import {
+    existsSync,
     lstatSync,
     mkdirSync,
     mkdtempSync,
@@ -77,7 +78,11 @@ export function generatedRoots(project: string, toolRoots: readonly string[]): s
 const REPORTER_FILE = `${MUTATION_OUTPUT}/progress-reporter.mjs`;
 
 export function strykerConfig(
-    scope: { readonly generated: readonly string[]; readonly mutated: readonly string[] },
+    scope: {
+        readonly generated: readonly string[];
+        readonly mutated: readonly string[];
+        readonly typeChecked: boolean;
+    },
     { mutate, name }: Stage,
     { concurrency, terminal = process.stdout.isTTY }: { concurrency: number; terminal?: boolean },
 ): object {
@@ -87,7 +92,7 @@ export function strykerConfig(
     return {
         $schema: '../../node_modules/@stryker-mutator/core/schema/stryker-schema.json',
         buildCommand: `node ${MUTATION_OUTPUT}/${files.sandbox}`,
-        checkers: [],
+        checkers: scope.typeChecked ? ['typescript'] : [],
         concurrency,
         coverageAnalysis: 'perTest',
         disableTypeChecks: typeCheckedGlob(scope.mutated),
@@ -107,6 +112,7 @@ export function strykerConfig(
         mutate: strykerMutate(mutate),
         plugins: [
             createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner'),
+            createRequire(import.meta.url).resolve('@stryker-mutator/typescript-checker'),
             `./${REPORTER_FILE}`,
         ],
         reporters: ['html', 'json', ...(terminal ? ['progress'] : []), PROGRESS_REPORTER],
@@ -230,6 +236,8 @@ export async function strykerRun(
     const { resolved } = await readSettings(project);
     const toolRoots = Object.keys(stringRecordOf(objectOf(resolved.sections.typescript).toolRoots));
     const generated = generatedRoots(project, toolRoots);
+    // invariant: Stryker's TypeScript checker compiles the project from its tsconfig.json before the first mutant, and a mutant that does not compile is a CompileError no test runs; a project that keeps no tsconfig.json has no compilation to check a mutant against.
+    const typeChecked = existsSync(join(project, 'tsconfig.json'));
     writeFileSync(join(MUTATION_OUTPUT, files.vitest), vitestConfigSource(scope.exclude, suite));
     writeFileSync(
         join(MUTATION_OUTPUT, files.sandbox),
@@ -237,7 +245,7 @@ export async function strykerRun(
     );
     writeFileSync(
         join(MUTATION_OUTPUT, files.config),
-        `${JSON.stringify(strykerConfig({ ...scope, generated }, stage, { concurrency }), null, 4)}\n`,
+        `${JSON.stringify(strykerConfig({ ...scope, generated, typeChecked }, stage, { concurrency }), null, 4)}\n`,
     );
     // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
     const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));

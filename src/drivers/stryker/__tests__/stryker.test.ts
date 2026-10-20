@@ -15,7 +15,13 @@ import {
 
 const RUNNER = createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner');
 
-const SCOPE = { generated: [], mutated: ['src/**/*.ts', 'src/**/*.tsx', 'lint/*.ts'] };
+const CHECKER = createRequire(import.meta.url).resolve('@stryker-mutator/typescript-checker');
+
+const SCOPE = {
+    generated: [],
+    mutated: ['src/**/*.ts', 'src/**/*.tsx', 'lint/*.ts'],
+    typeChecked: true,
+};
 
 describe('stryker', () => {
     test('hands Stryker a dynamic-route file as a path, not as a glob', () => {
@@ -57,7 +63,7 @@ describe('stryker', () => {
         // Then - the module run fast and in its unit project, the suite slower, unrelated and given an hour to start
         const shared = {
             $schema: '../../node_modules/@stryker-mutator/core/schema/stryker-schema.json',
-            checkers: [],
+            checkers: ['typescript'],
             coverageAnalysis: 'perTest',
             disableTypeChecks: '{src/**/!(*.test-d).ts,src/**/!(*.test-d).tsx,lint/!(*.test-d).ts}',
             ignorePatterns: [
@@ -68,7 +74,7 @@ describe('stryker', () => {
             ],
             ignoreStatic: true,
             incremental: true,
-            plugins: [RUNNER, './.artifacts/stryker/progress-reporter.mjs'],
+            plugins: [RUNNER, CHECKER, './.artifacts/stryker/progress-reporter.mjs'],
             reporters: ['html', 'json', 'typescript-progress'],
             tempDirName: '.artifacts/stryker/tmp',
             testRunner: 'vitest',
@@ -113,15 +119,15 @@ describe('stryker', () => {
     });
 
     test('a scope of one glob hands Stryker the glob itself, never a brace of one', () => {
-        // Given - a project that mutates one tree
+        // Given - a project that mutates one tree and keeps no tsconfig.json
         const config = strykerConfig(
-            { generated: [], mutated: ['src/**/*.ts'] },
+            { generated: [], mutated: ['src/**/*.ts'], typeChecked: false },
             { mutate: [], name: 'modules' },
             { concurrency: 1 },
         );
 
-        // Then - the type checks are disabled on that glob alone
-        expect(config).toMatchObject({ disableTypeChecks: 'src/**/!(*.test-d).ts' });
+        // Then - the type checks are disabled on that glob alone, and no mutant is type-checked
+        expect(config).toMatchObject({ checkers: [], disableTypeChecks: 'src/**/!(*.test-d).ts' });
     });
 
     test('a tool root git ignores stays out of the sandbox, and a tracked one goes in', () => {
@@ -140,7 +146,7 @@ describe('stryker', () => {
         expect(generated).toStrictEqual(['ios']);
         expect(
             strykerConfig(
-                { generated, mutated: ['src/**/*.ts'] },
+                { generated, mutated: ['src/**/*.ts'], typeChecked: true },
                 { mutate: [], name: 'modules' },
                 { concurrency: 1 },
             ),

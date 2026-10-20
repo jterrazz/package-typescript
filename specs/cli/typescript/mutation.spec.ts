@@ -283,4 +283,25 @@ describe('mutation', () => {
             files: { 'src/discount.ts': { mutants: [{ location: { start: { line: 3 } } }] } },
         });
     });
+
+    test('typescript mutation — a mutant that does not compile is answered by the compiler before any test', async () => {
+        // Given - a project keeping a tsconfig.json, whose source guards an optional value its module test never passes
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .fixture(directory('./__fixtures__/mutation-type-refused/'))
+            .exec('typescript mutation');
+
+        // Then - the mutants that drop the guard reach a value the type says may be undefined, so they are compile errors, outside the verdict, and no test had to tell them apart
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(`
+            {{any}}
+            measured 8 mutants over HEAD..working tree: every mutant a test runs is detected
+            0 mutant(s) no test runs
+            6 mutant(s) outside the verdict: CompileError 6
+
+            ✓ Mutation passed: 8 detected, 0 surviving, 0 never judged, over HEAD..working tree
+        `);
+        expect(result.stdout.text).not.toContain('Measuring the whole suite');
+    });
 });
