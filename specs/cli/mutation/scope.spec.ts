@@ -12,10 +12,10 @@ describe('scope', () => {
         // Given - a workspace of an expo app, a node api and a library shipping lint rules, none naming anything to mutate, each source with its module test in its folder's __tests__/
         const result = await cli
             .fixture(directory('./__fixtures__/workspace/'))
-            .env({ TYPESCRIPT_JOBS: '3' })
+            .env({ TYPESCRIPT_CAPACITY: 'cpus=3,memory=64g' })
             .exec('mutation');
 
-        // Then - each member hands Stryker its own config, on the test runners TYPESCRIPT_JOBS asks for, under its own .artifacts/: the tested sources of its src/, the expo routes and their .tsx, the library's lint rules its standard names; the sandbox builds nothing the member does not
+        // Then - each member hands Stryker its own config, on the test runners the capacity it is given holds, under its own .artifacts/: the tested sources of its src/, the expo routes and their .tsx, the library's lint rules its standard names; the sandbox builds nothing the member does not
         expect(
             ['apps/api', 'apps/kit', 'apps/mobile'].map((member) =>
                 configOf(result.file(`${member}/.artifacts/stryker/stryker.config.json`).content),

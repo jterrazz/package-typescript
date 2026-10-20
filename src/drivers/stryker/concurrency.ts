@@ -1,24 +1,33 @@
-import type { StageName } from './reports.js';
+import type { Resources } from '../../../lint/kit/project/capacity.js';
 
-/** What `TYPESCRIPT_JOBS` names: nothing when unset or blank, else the count it writes, `NaN` for anything but a positive integer. */
-export function jobsNamed(value: string | undefined): number | undefined {
-    if (value === undefined || value.trim() === '') {
-        return undefined;
+/** How a stage runs on its slice: Stryker's concurrency, the checkers it holds while checking, and which resource bound the count. */
+export type Runners = { binds: 'cpus' | 'memory'; checkers: number; runners: number };
+
+// outside: Stryker 10 takes one concurrency and, with a checker, starts `ceil(c/2)` checkers and `floor(c/2)` runners, then turns the checkers into runners when checking ends (core/dist/src/concurrent/concurrency-token-provider.js); no option sets the checkers apart, so each of its two phases is priced apart.
+const fits = (count: number, memory: number, { checker, runner }: Prices): boolean =>
+    count * runner <= memory &&
+    (checker === undefined ||
+        Math.ceil(count / 2) * checker + Math.floor(count / 2) * runner <= memory);
+
+/** The prices a stage is sized by: a test runner's, and a checker's where the project is type-checked. */
+export type Prices = { checker: number | undefined; runner: number };
+
+/** The most test runners a slice holds: as many as its cpus, fewer where its memory binds, checking or running, never none. */
+export function runnersOf({ cpus, memory }: Resources, prices: Prices): Runners {
+    let runners = cpus;
+    while (runners > 1 && !fits(runners, memory, prices)) {
+        runners -= 1;
     }
-    const jobs = Number(value);
 
-    return Number.isInteger(jobs) && jobs > 0 ? jobs : Number.NaN;
+    return {
+        binds: runners < cpus ? 'memory' : 'cpus',
+        checkers: prices.checker === undefined ? 0 : Math.ceil(runners / 2),
+        runners,
+    };
 }
 
-/** The test runners a stage hands Stryker: the count named, else this gate's share of the machine's cores among the gates running on it, the whole suite three quarters of that share, since its specs spawn processes of their own. */
-export function concurrencyOf(
-    stage: StageName,
-    { cores, gates, jobs }: { cores: number; gates: number; jobs: number | undefined },
-): number {
-    if (jobs !== undefined) {
-        return jobs;
-    }
-    const share = Math.max(1, Math.floor(cores / Math.max(1, gates)));
-
-    return stage === 'suite' ? Math.max(1, Math.floor((share * 3) / 4)) : share;
-}
+/** The slice one test runner hands what its tests spawn: its share of the stage's cpus and memory. */
+export const runnerSlice = ({ cpus, memory }: Resources, runners: number): Resources => ({
+    cpus: Math.max(1, Math.floor(cpus / runners)),
+    memory: Math.floor(memory / runners),
+});

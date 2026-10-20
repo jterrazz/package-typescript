@@ -1,19 +1,10 @@
-import {
-    existsSync,
-    mkdirSync,
-    readdirSync,
-    readFileSync,
-    realpathSync,
-    rmSync,
-    writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
 
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { ARTIFACTS } from '../../../lint/kit/project/build-plan.js';
-import { objectOf } from '../../../lint/kit/project/json.js';
+import { isAlive, leaseTaken } from '../../../lint/kit/project/capacity.js';
 
 /** The file a running gate holds its checkout with, from the project's root: the pid of the gate, alone. */
 export const GATE_LOCK = `${ARTIFACTS}/gate.lock`;
@@ -26,17 +17,6 @@ const pidOf = (text: string | undefined): number | undefined => {
 
     return pid > 0 ? pid : undefined;
 };
-
-/** Whether a process lives: one this user may not signal lives all the same; no pid, or one that is no whole number, names none. */
-export function isAlive(pid: number | undefined): pid is number {
-    try {
-        process.kill(Number(pid), 0);
-
-        return true;
-    } catch (error) {
-        return objectOf(error).code === 'EPERM';
-    }
-}
 
 const readOf = (file: string): string | undefined =>
     existsSync(file) ? String(readFileSync(file)) : undefined;
@@ -81,32 +61,7 @@ export function foreignHolderOf(project: string): number | undefined {
     return holder === gateOf(project) ? undefined : holder;
 }
 
-/** Every live gate of this machine registers here, so a run sizes its share of the cores by how many run beside it. */
-export const gatesFolder = (): string => join(tmpdir(), 'typescript-gates');
-
-/** How many gates live on this machine, this one included; a registration whose gate died is taken away. */
-export function activeGates(): number {
-    const folder = gatesFolder();
-    let names: string[];
-    try {
-        names = readdirSync(folder);
-    } catch {
-        return 1;
-    }
-    const live = names.filter((name) => {
-        if (isAlive(pidOf(name))) {
-            return true;
-        }
-        // Stryker disable next-line ObjectLiteral,BooleanLiteral: the entry was just listed; forcing only spares a race with another gate pruning it at the same moment
-        rmSync(join(folder, name), { force: true });
-
-        return false;
-    });
-
-    return Math.max(1, live.length);
-}
-
-/** Runs `run` as a gate holding `project`: the lock taken where no live gate holds it (a lock whose holder died is taken over), and dropped at the end by the process that took it; a gate already holding it leaves its hold as it is. A gate nested in another checkout's, such as a spec's run in a fixture, registers nothing more on the machine. */
+/** Runs `run` as a gate holding `project`: the lock taken where no live gate holds it (a lock whose holder died is taken over), and dropped at the end by the process that took it; a gate already holding it leaves its hold as it is. The gate leases its share of the machine while it runs; a gate nested in another checkout's, such as a spec's run in a fixture, leases nothing, since it runs inside its outer gate's share. */
 export async function withGateLock<T>(project: string, run: () => Promise<T>): Promise<T> {
     const outer = outerOf(process.env);
     const gate = gateOf(project);
@@ -116,20 +71,16 @@ export async function withGateLock<T>(project: string, run: () => Promise<T>): P
         mkdirSync(dirname(lock), { recursive: true });
         writeFileSync(lock, `${String(gate)}\n`);
     }
-    const registered =
-        outer === undefined || outer.pid === gate ? join(gatesFolder(), String(gate)) : undefined;
-    if (registered !== undefined) {
-        mkdirSync(gatesFolder(), { recursive: true });
-        writeFileSync(registered, realOf(project));
-    }
+    const leased =
+        outer === undefined || outer.pid === gate ? leaseTaken(gate, realOf(project)) : undefined;
     const before = process.env[GATE_VARIABLE];
     process.env[GATE_VARIABLE] = `${String(gate)}:${realOf(project)}`;
     try {
         return await run();
     } finally {
         restored(before);
-        if (gate === process.pid && registered !== undefined) {
-            rmSync(registered);
+        if (gate === process.pid && leased !== undefined) {
+            rmSync(leased);
         }
         if (gate === process.pid && !held && pidOf(readOf(lock)) === gate) {
             rmSync(lock);

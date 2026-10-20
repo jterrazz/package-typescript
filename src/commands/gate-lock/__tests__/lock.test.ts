@@ -13,15 +13,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
+import { leaseFolder } from '../../../../lint/kit/project/capacity.js';
+import { parsedObject } from '../../../../lint/kit/project/json.js';
 import {
-    activeGates,
     foreignHolderOf,
     GATE_LOCK,
     GATE_VARIABLE,
     gateOf,
-    gatesFolder,
     holderOf,
-    isAlive,
     refusedWhileGated,
     withGateLock,
 } from '../lock.js';
@@ -51,20 +50,6 @@ function gateNamed(value: string | undefined): void {
 }
 
 describe('lock', () => {
-    test('isAlive — this process lives, one that exited does not', () => {
-        // Given - this process, init (alive, though this user may not signal it), a child that has exited, no pid, and one that is no whole number
-        const dead = deadPid();
-
-        // Then - this process and init live
-        expect([
-            isAlive(process.pid),
-            isAlive(1),
-            isAlive(dead),
-            isAlive(undefined),
-            isAlive(1.5),
-        ]).toStrictEqual([true, true, false, false, false]);
-    });
-
     test('holderOf — a live pid holds the checkout; a dead one, no lock, or a lock that names no pid hold nothing', () => {
         // Given - four checkouts: held by the parent of this process, by a process that exited, not locked, and locked with words
         const live = project();
@@ -168,7 +153,7 @@ describe('lock', () => {
         ]).toStrictEqual([false, false, undefined]);
     });
 
-    test('withGateLock — a step of a named gate holds and registers in its name, leaves both, and hands the name back as it found it; a checkout another gate holds is run and left as it was', async () => {
+    test('withGateLock — a step of a named gate holds and leases in its name, leaves both, and hands the name back as it found it; a checkout another gate holds is run and left as it was', async () => {
         // Given - a machine of its own, a checkout whose gate is named as the parent of this process, and one the parent holds that this process is no step of
         const machine = project();
         vi.stubEnv('TMPDIR', machine);
@@ -184,10 +169,10 @@ describe('lock', () => {
         gateNamed(undefined);
         const ran = await withGateLock(other, async () => await Promise.resolve('ran'));
 
-        // Then - the named gate keeps the first and its registration, the other gate the second, the name is back, and the run's answer comes back
+        // Then - the named gate keeps the first and its lease, the other gate the second, the name is back, and the run's answer comes back
         expect([
             readFileSync(join(stepped, GATE_LOCK), 'utf8'),
-            readdirSync(gatesFolder()),
+            readdirSync(leaseFolder()),
             named,
             readFileSync(join(other, GATE_LOCK), 'utf8'),
             ran,
@@ -228,33 +213,7 @@ describe('lock', () => {
         expect(existsSync(join(root, GATE_LOCK))).toBe(false);
     });
 
-    test('activeGates — counts the live gates registered on the machine, takes away the dead, and counts this one when none is', () => {
-        // Given - a machine whose registry holds a live gate, this one, a dead one and a name that is no pid
-        const machine = project();
-        vi.stubEnv('TMPDIR', machine);
-        onTestFinished(() => {
-            vi.unstubAllEnvs();
-        });
-        const none = activeGates();
-        mkdirSync(gatesFolder(), { recursive: true });
-        for (const name of [
-            String(process.ppid),
-            String(process.pid),
-            String(deadPid()),
-            'stray',
-        ]) {
-            writeFileSync(join(gatesFolder(), name), '/repo\n');
-        }
-
-        // Then - one with no registry, two live ones after, and only they are left
-        expect([none, activeGates(), readdirSync(gatesFolder()).toSorted()]).toStrictEqual([
-            1,
-            2,
-            [String(process.ppid), String(process.pid)].toSorted(),
-        ]);
-    });
-
-    test("withGateLock — a gate registers on the machine while it runs; a run nested in another checkout's gate registers nothing", async () => {
+    test("withGateLock — a gate leases its share of the machine while it runs, naming its checkout; a run nested in another checkout's gate leases nothing", async () => {
         // Given - a machine of its own, a checkout run as its own gate, then one run inside the parent's gate of another checkout
         const machine = project();
         vi.stubEnv('TMPDIR', machine);
@@ -263,18 +222,22 @@ describe('lock', () => {
         const during = await withGateLock(root, async () => {
             await Promise.resolve();
 
-            return readdirSync(gatesFolder());
+            const [name = ''] = readdirSync(leaseFolder());
+            const file = join(leaseFolder(), name);
+            const lease = parsedObject(readFileSync(file, 'utf8'));
+
+            return [[name, lease.root]];
         });
-        const after = readdirSync(gatesFolder());
+        const after = readdirSync(leaseFolder());
         gateNamed(`${String(process.ppid)}:${machine}`);
         const nested = await withGateLock(project(), async () => {
             await Promise.resolve();
 
-            return readdirSync(gatesFolder());
+            return readdirSync(leaseFolder());
         });
 
-        // Then - this process is registered during its run alone, the nested run adds nobody, and hands back the outer gate's name
-        expect([during, after, nested]).toStrictEqual([[String(process.pid)], [], []]);
+        // Then - this process holds a lease on its checkout during its run alone, the nested run adds none, and hands back the outer gate's name
+        expect([during, after, nested]).toStrictEqual([[[String(process.pid), root]], [], []]);
         expect(process.env[GATE_VARIABLE]).toBe(`${String(process.ppid)}:${machine}`);
     });
 });

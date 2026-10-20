@@ -18,11 +18,11 @@ describe('mutation workers', () => {
         // Given - a consumer whose four specs each spawn its command, measured whole on one test runner, then on three
         const one = await cli
             .fixture(directory('./__fixtures__/mutation-commands/'))
-            .env({ TYPESCRIPT_JOBS: '1' })
+            .env({ TYPESCRIPT_CAPACITY: 'cpus=1,memory=64g' })
             .exec('typescript mutation --mutate src/cli.ts');
         const three = await cli
             .fixture(directory('./__fixtures__/mutation-commands/'))
-            .env({ TYPESCRIPT_JOBS: '3' })
+            .env({ TYPESCRIPT_CAPACITY: 'cpus=3,memory=64g' })
             .exec('typescript mutation --mutate src/cli.ts');
 
         // Then - each says how many workers its dry run ran on, and both reports credit and judge every mutant alike
@@ -37,5 +37,8 @@ describe('mutation workers', () => {
         expect(coverage(three.file('.artifacts/stryker/suite-report.json').content)).toStrictEqual(
             measured,
         );
+        // Then - the stage learned what one of its test runners holds
+        const prices: unknown = JSON.parse(three.file('.artifacts/capacity.json').content);
+        expect(prices).toHaveProperty(['stryker-suite', 0]);
     });
 });

@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-20
+**Superseded in part by:** [ADR-031](031-every-pool-is-sized-from-one-leased-capacity.md), for the workers being "the capacity the host detects, or `TYPESCRIPT_JOBS`": one leased capacity model sizes them, and `TYPESCRIPT_CAPACITY` gives a gate its capacity.
 
 The owner accepted the plan on 2026-10-20 ("tout ok"): the three levers
 below, the lesson and message files declared presentation, the lazy loading

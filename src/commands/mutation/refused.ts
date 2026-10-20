@@ -1,4 +1,5 @@
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
+import { capacityUnread } from '../../../lint/kit/project/capacity.js';
 import { badge, print, RED, RESET } from '../check/report/terminal.js';
 import type { Recorded } from './recorded.js';
 
@@ -41,16 +42,11 @@ export function measuredNothing(project: string, recorded: Recorded): number {
     return 0;
 }
 
-export function refusedJobs(named: string, recorded: Recorded): number {
-    const found = `TYPESCRIPT_JOBS is ${named}, which counts no test runner`;
-    recorded.reason = `refused before any run: ${found}`;
+export function refusedCapacity(named: string, recorded: Recorded): number {
+    const unread = capacityUnread(named);
+    recorded.reason = `refused before any run: ${unread.found}`;
     print(
-        `${RED}${refusal({
-            fix: "set it to a positive integer (TYPESCRIPT_JOBS=2), or leave it unset to take this gate's share of the cores",
-            found,
-            read: 'docs/reference/quality-checks.md#how-many-test-runners',
-            why: 'a count Stryker cannot run would stop the run, or run another one than the one asked for',
-        })}${RESET}\n`,
+        `${RED}${refusal({ ...unread, read: 'docs/reference/quality-checks.md#how-many-test-runners' })}${RESET}\n`,
     );
 
     return 1;

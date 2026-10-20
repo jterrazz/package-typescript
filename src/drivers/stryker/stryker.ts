@@ -184,6 +184,10 @@ const ranByTestsIn = (folder: string): Set<string> =>
         readdirSync(folder).flatMap((name) => String(readFileSync(join(folder, name))).split('\n')),
     );
 
+/** Whether a stage of `project` type-checks each mutant before its tests run it. */
+export const typeCheckedIn = (project: string): boolean =>
+    existsSync(join(project, 'tsconfig.json'));
+
 // invariant: Stryker's TypeScript checker compiles the project from its tsconfig.json before the first mutant, and a mutant that does not compile is a CompileError no test runs; a project that keeps no tsconfig.json has no compilation to check a mutant against.
 async function stageWritten(
     scope: { readonly exclude: readonly string[]; readonly mutated: readonly string[] },
@@ -207,7 +211,7 @@ async function stageWritten(
     const { resolved } = await readSettings(project);
     const toolRoots = Object.keys(stringRecordOf(objectOf(resolved.sections.typescript).toolRoots));
     const generated = generatedRoots(project, toolRoots);
-    const typeChecked = existsSync(join(project, 'tsconfig.json'));
+    const typeChecked = typeCheckedIn(project);
     writeFileSync(
         join(MUTATION_OUTPUT, files.vitest),
         vitestConfigSource(

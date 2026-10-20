@@ -1,19 +1,19 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
 
 import { clientOnlySources } from '../../../lint/kit/project/browser-side.js';
+import { CAPACITY_VARIABLE, capacityNamed } from '../../../lint/kit/project/capacity.js';
+import type { Resources } from '../../../lint/kit/project/capacity.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { toolchainIn } from '../../drivers/node/node.js';
-import { concurrencyOf, jobsNamed } from '../../drivers/stryker/concurrency.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
 import { diffStaysInFunctions, linesStayInFunctions } from '../../drivers/tsc/change-shape.js';
 import { firstCompileError } from '../../drivers/tsc/compile-error.js';
 import { secondsSince } from '../check/passes/launched.js';
 import { badge, print, RED, RESET, secondsOf } from '../check/report/terminal.js';
-import { activeGates, withGateLock } from '../gate-lock/lock.js';
+import { withGateLock } from '../gate-lock/lock.js';
 import { askedOf } from './asked.js';
 import type { Capped } from './cap.js';
 import { baseFor, changeOf, namesACommit, treeChangeFor } from './change.js';
@@ -22,11 +22,12 @@ import { capHeld, glueCapped, glueOf } from './glue-cap.js';
 import { memberRuns, unownedRange } from './members.js';
 import { concluded, judgedRecorded, memberRecorded, recorder, stageRecorded } from './recorded.js';
 import type { Recorded } from './recorded.js';
-import { measuredNothing, refusedJobs, refusedRange, refusedSince } from './refused.js';
+import { measuredNothing, refusedCapacity, refusedRange, refusedSince } from './refused.js';
 import type { GlueBar } from './roles.js';
 import { mutationScopeOf } from './scope-globs.js';
 import { changedRanges, modulesMutated, sourcesOf, unreachedRange } from './scope.js';
 import type { MutationScope } from './scope.js';
+import { leasedRun, sliceNow, stageLease, withCapacityHanded } from './stage-lease.js';
 import { afterStage, buildsOf, withClientOnlyUnmeasured } from './stages.js';
 import { handedToTheSuite, judgedRuns } from './survivors.js';
 import type { Changed, Judged, ModuleRun } from './survivors.js';
@@ -37,7 +38,7 @@ import type { Measure } from './verdict.js';
 type Run = {
     capped?: Capped | undefined;
     cold: boolean;
-    jobs: number | undefined;
+    named: Partial<Resources> | undefined;
     project: string;
     recorded: Recorded;
 };
@@ -52,30 +53,33 @@ async function measured(
     stage: Stage,
     run: Run,
 ): Promise<Measured | { status: number }> {
-    const { cold, jobs, project, recorded } = run;
+    const { cold, project, recorded } = run;
     print(
         `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'Measuring the whole suite against what the module tests let live, and the changed lines they do not run' : 'Measuring the module tests against mutants of the sources they test'}...\n\n`,
     );
 
+    const lease = stageLease(run.named, project, stage.name);
+    print(`${badge('TYPESCRIPT')} ${lease.line}\n`);
+    const concurrency = lease.runners;
     const from = performance.now();
-    const concurrency = concurrencyOf(stage.name, {
-        cores: availableParallelism(),
-        gates: activeGates(),
-        jobs,
-    });
-    const outcome = await strykerRun(scope, stage, {
-        buildsFirst: buildsOf(project),
-        cold,
-        concurrency,
-        dryRunScoped: ({ files, workers }) => {
-            print(
-                `${badge('TYPESCRIPT')} dry run: ${files === undefined ? 'every test file' : `${String(files.kept)} of ${String(files.known)} test files the change reaches`}, on ${String(workers)} worker(s)\n`,
-            );
-        },
-        linesInFunctions: linesStayInFunctions,
+    const outcome = await leasedRun(
         project,
-        staysInFunctions: diffStaysInFunctions,
-    });
+        lease,
+        async () =>
+            await strykerRun(scope, stage, {
+                buildsFirst: buildsOf(project),
+                cold,
+                concurrency,
+                dryRunScoped: ({ files, workers }) => {
+                    print(
+                        `${badge('TYPESCRIPT')} dry run: ${files === undefined ? 'every test file' : `${String(files.kept)} of ${String(files.known)} test files the change reaches`}, on ${String(workers)} worker(s)\n`,
+                    );
+                },
+                linesInFunctions: linesStayInFunctions,
+                project,
+                staysInFunctions: diffStaysInFunctions,
+            }),
+    );
     const seconds = secondsSince(from);
     print(
         `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'The whole suite' : 'The module tests'} ran in ${secondsOf(seconds)} on ${String(concurrency)} test runner(s)\n`,
@@ -163,6 +167,7 @@ async function membersMeasured(
     members: readonly string[],
     asked: {
         cold: boolean;
+        named: Partial<Resources> | undefined;
         ranges: readonly string[] | undefined;
         since: string | undefined;
     },
@@ -176,7 +181,10 @@ async function membersMeasured(
     for (const { args, member } of memberRuns(members, asked)) {
         print(`${badge('TYPESCRIPT')} ${member}\n\n`);
         const from = performance.now();
-        const own = await toolchainIn(join(project, member), ['mutation', ...args]);
+        const own = await withCapacityHanded(
+            sliceNow(asked.named, project),
+            async () => await toolchainIn(join(project, member), ['mutation', ...args]),
+        );
         memberRecorded(recorded, project, { member, seconds: secondsSince(from), status: own });
         status = Math.max(status, own);
     }
@@ -187,16 +195,21 @@ async function membersMeasured(
 async function measuredRun(
     project: string,
     args: readonly string[],
-    { jobs, recorded }: { jobs: number | undefined; recorded: Recorded },
+    { capacity, recorded }: { capacity: Partial<Resources> | undefined; recorded: Recorded },
 ): Promise<number> {
     const { cold, named, ranges } = askedOf(args);
-    const run: Run = { cold, jobs, project, recorded };
+    const run: Run = { cold, named: capacity, project, recorded };
     if (named !== undefined && !namesACommit(project, named)) {
         return refusedSince(named, recorded);
     }
     const members = workspaceMembers(project);
     if (members.length > 0) {
-        return await membersMeasured(project, members, { cold, ranges, since: named }, recorded);
+        return await membersMeasured(
+            project,
+            members,
+            { cold, named: capacity, ranges, since: named },
+            recorded,
+        );
     }
     const since = baseFor(project, named);
     const scope = await mutationScopeOf(project);
@@ -241,16 +254,16 @@ async function measuredRun(
 export async function mutation(args: readonly string[]): Promise<number> {
     const project = process.cwd();
     const recorded = recorder();
-    const named = process.env.TYPESCRIPT_JOBS;
-    const jobs = jobsNamed(named);
+    const written = process.env[CAPACITY_VARIABLE];
+    const capacity = capacityNamed(written);
 
     return await withGateLock(project, async () =>
         concluded(
             project,
             recorded,
-            Number.isNaN(jobs)
-                ? refusedJobs(String(named), recorded)
-                : await measuredRun(project, args, { jobs, recorded }),
+            capacity === 'unreadable'
+                ? refusedCapacity(String(written), recorded)
+                : await measuredRun(project, args, { capacity, recorded }),
         ),
     );
 }

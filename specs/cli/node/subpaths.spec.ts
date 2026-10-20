@@ -23,7 +23,7 @@ describe('subpaths', () => {
             @jterrazz/typescript/oxlint (default) → ./dist/oxlint.js: loads, 1 names
             @jterrazz/typescript/rules (types) → ./dist/rules.d.ts: held
             @jterrazz/typescript/rules (browser) → ./dist/rules.browser.js: reaches 1 modules, and imports no package
-            @jterrazz/typescript/rules (default) → ./dist/rules.js: loads, 72 names
+            @jterrazz/typescript/rules (default) → ./dist/rules.js: loads, 74 names
             @jterrazz/typescript/tsconfig/astro (default) → ./src/presets/tsconfig/astro.json: parses, 22 compiler options
             @jterrazz/typescript/tsconfig/browser (default) → ./src/presets/tsconfig/browser.json: parses, 21 compiler options
             @jterrazz/typescript/tsconfig/bun (default) → ./src/presets/tsconfig/bun.json: parses, 23 compiler options
@@ -54,7 +54,7 @@ describe('subpaths', () => {
             @jterrazz/typescript/docs: DOCS_RULES, HEAD_LINES, auditDocs
             @jterrazz/typescript/oxfmt: oxfmtConfig
             @jterrazz/typescript/oxlint: oxlintConfig
-            @jterrazz/typescript/rules: BASELINE, GROUND_EXPECTED, GROUND_FIXTURES, GROUND_FOLDERS, GROUND_GLOB, GROUND_REQUESTS, GROUND_SEEDS, LESSON_PARTS, MEMBER_DEPTH, OXLINT_CONFIG_NAMES, OXLINT_SUPPRESSIONS, PRUNED, RENAMED_FOLDERS, RETIRED_SHARED_FOLDERS, SETUP_FOLDER, SPECIAL_FOLDERS, TESTS_FOLDER, anchor, anchorsOf, blankComments, byName, cell, countsOf, declaredSubpaths, defineCheck, defineInvariant, defineRule, filesUnder, firstSentence, folderChanged, forgetTree, holdsDirectives, holdsManifest, isDirectory, isFile, isGroundFolder, isProjectRoot, isSpecialFolder, keepsSection, labelOf, lessonOf, lessonParts, listDirectory, markdownTable, missingParts, moduleTestOf, moveKeepingHistory, nearestRoot, originalOf, presetChecks, projected, quotedMask, readAt, readFileCached, readManifest, readSettings, readSettingsSync, refusal, refusalBlock, rowNamed, runChecker, sectionOf, spliceBetween, suppressionDirectives, treeEntries, treeKind, treeNames, whyOf, workspaceMembers, workspacePatterns, writeProjections, writeSection
+            @jterrazz/typescript/rules: BASELINE, CAPACITY_VARIABLE, GROUND_EXPECTED, GROUND_FIXTURES, GROUND_FOLDERS, GROUND_GLOB, GROUND_REQUESTS, GROUND_SEEDS, LESSON_PARTS, MEMBER_DEPTH, OXLINT_CONFIG_NAMES, OXLINT_SUPPRESSIONS, PRUNED, RENAMED_FOLDERS, RETIRED_SHARED_FOLDERS, SETUP_FOLDER, SPECIAL_FOLDERS, TESTS_FOLDER, anchor, anchorsOf, blankComments, byName, cell, countsOf, declaredSubpaths, defineCheck, defineInvariant, defineRule, filesUnder, firstSentence, folderChanged, forgetTree, holdsDirectives, holdsManifest, isDirectory, isFile, isGroundFolder, isProjectRoot, isSpecialFolder, keepsSection, labelOf, lessonOf, lessonParts, listDirectory, markdownTable, missingParts, moduleTestOf, moveKeepingHistory, nearestRoot, originalOf, presetChecks, projected, quotedMask, readAt, readFileCached, readManifest, readSettings, readSettingsSync, refusal, refusalBlock, rowNamed, runChecker, sectionOf, slotsFor, spliceBetween, suppressionDirectives, treeEntries, treeKind, treeNames, whyOf, workspaceMembers, workspacePatterns, writeProjections, writeSection
             the oxlint entry derives the declared project's rules: yes
             the oxfmt entry derives the estate style: yes
         `);

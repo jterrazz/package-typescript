@@ -96,6 +96,14 @@
         "audience": "consumer",
         "by": "throw",
         "channel": "runtime",
+        "id": "capacity-unreadable",
+        "message": "which names no capacity",
+        "module": "lint/kit/project/capacity.ts"
+    },
+    {
+        "audience": "consumer",
+        "by": "throw",
+        "channel": "runtime",
         "id": "own-presets-unbuilt",
         "message": "this repository's presets are not built",
         "module": "lint/kit/project/own-presets.ts"

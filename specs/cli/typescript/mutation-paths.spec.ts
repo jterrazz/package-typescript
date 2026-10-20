@@ -18,10 +18,10 @@ describe('mutation-paths', () => {
             .fixture(directory('./__fixtures__/mutation-consumer/'))
             .fixture(directory('./__fixtures__/mutation-killing/'))
             .fixture(directory('./__fixtures__/mutation-bracketed/'))
-            .env({ TYPESCRIPT_JOBS: '1' })
+            .env({ TYPESCRIPT_CAPACITY: 'cpus=1,memory=64g' })
             .exec('typescript mutation --mutate src/[id]/[key].ts:2-4');
 
-        // Then - both runs measure the guard of the bracketed file, by the whole suite it is handed to by its lines, and name its survivors at their place; each stage says how long it took on how many test runners (this gate's share of the cores, or the count asked for)
+        // Then - both runs measure the guard of the bracketed file, by the whole suite it is handed to by its lines, and name its survivors at their place; each stage says how long it took on how many test runners (what the capacity it is given holds)
         expect([
             whole.exitCode,
             ranged.exitCode,
