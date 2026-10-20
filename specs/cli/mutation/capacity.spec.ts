@@ -10,10 +10,10 @@ const configOf = (content: string): unknown => JSON.parse(content);
 
 describe('capacity', () => {
     test('sizes the test runners from the capacity given: the memory binds a small one, the cpus a large one, the checker priced apart', async () => {
-        // Given - a type-checked project with a module test, given 16 cpus and 1 GB, then 3 cpus and 64 GB
+        // Given - a type-checked project with a module test, given 16 cpus and 2 GB, then 3 cpus and 64 GB
         const small = await cli
             .fixture(directory('./__fixtures__/capacity-app/'))
-            .env({ TYPESCRIPT_CAPACITY: 'cpus=16,memory=1g' })
+            .env({ TYPESCRIPT_CAPACITY: 'cpus=16,memory=2g' })
             .exec('mutation');
         const large = await cli
             .fixture(directory('./__fixtures__/capacity-app/'))
@@ -22,8 +22,8 @@ describe('capacity', () => {
 
         // Then - each says what it was given, what it leased and which resource bound the runners, and hands Stryker that many
         expect([small, large].map((result) => lineOf(result.stdout.text))).toStrictEqual([
-            ' TYPESCRIPT  capacity: 16 cpus, 1.0 GB, given by TYPESCRIPT_CAPACITY: this gate 16 cpus, 0.9 GB · 2 test runner(s) at 300 MB, 1 checker(s) at 400 MB while checking: memory binds',
-            ' TYPESCRIPT  capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · 3 test runner(s) at 300 MB, 2 checker(s) at 400 MB while checking: cpus bind',
+            ' TYPESCRIPT  capacity: 16 cpus, 2.0 GB, given by TYPESCRIPT_CAPACITY: this gate 16 cpus, 1.8 GB · 2 test runner(s) at 650 MB, 1 checker(s) at 400 MB while checking: memory binds',
+            ' TYPESCRIPT  capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · 3 test runner(s) at 650 MB, 2 checker(s) at 400 MB while checking: cpus bind',
         ]);
         expect(
             [small, large].map((result) =>

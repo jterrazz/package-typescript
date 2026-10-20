@@ -35,7 +35,7 @@ with what its specs spawn. One count per core cannot fit both.
   A gate plans on what is available less an eighth of the machine. Nothing
   reads `CI`, `GITHUB_ACTIONS` or the event that started a run.
 - The prices start from seeds (a Vitest worker 150 MB, a module-test runner
-  300 MB, a whole-suite runner 500 MB, a checker 400 MB) and are learned: a
+  650 MB, a whole-suite runner 1 GB, a checker 400 MB) and are learned: a
   stage samples the memory its processes hold, and records the peak per
   test runner in `.artifacts/capacity.json`. A pool's price is the highest of
   its last five peaks.
@@ -99,3 +99,9 @@ with what its specs spawn. One count per core cannot fit both.
     worktree that had learned 822 and 881 MB ran their incremental suite on
     8 and 7 runners, the memory binding, in 493 s and 481 s; the one
     sampled raised swap by 1.1 GB.
+
+- The first seeds, 300 MB a module-test runner and 500 MB a whole-suite
+  runner, were short: the gates above learned 578 to 662 MB and 862 to
+  1,017 MB, and a first run on a fresh host swapped to 7.4 GB on them. The
+  seeds were raised to what was learned, on 2026-10-20, so a host with no
+  `.artifacts/capacity.json` does not oversubscribe its first run.

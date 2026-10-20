@@ -47,20 +47,20 @@ describe('stage-lease', () => {
         // Then - the cpus bind, the checkers are counted, and each runner hands on one cpu and a third of 56 GB
         expect(stageLease({ cpus: 3, memory: 64 * GB }, root, 'suite')).toStrictEqual({
             handed: { cpus: 1, memory: Math.floor((56 * GB) / 3) },
-            line: 'capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · 3 test runner(s) at 500 MB, 2 checker(s) at 400 MB while checking: cpus bind',
+            line: 'capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · 3 test runner(s) at 1024 MB, 2 checker(s) at 400 MB while checking: cpus bind',
             pool: 'stryker-suite',
             runners: 3,
         });
     });
 
-    test('stageLease — a module stage with no compilation given 1 GB runs what its memory holds, and no checker', () => {
-        // Given - a project that keeps no tsconfig.json, its module stage given 16 cpus and 1 GB
+    test('stageLease — a module stage with no compilation given 2 GB runs what its memory holds, and no checker', () => {
+        // Given - a project that keeps no tsconfig.json, its module stage given 16 cpus and 2 GB
         const root = project(false);
 
-        // Then - 896 MB holds two 300 MB runners, the memory binds, and no checker is named
-        expect(stageLease({ cpus: 16, memory: GB }, root, 'modules')).toStrictEqual({
-            handed: { cpus: 8, memory: 448 * MB },
-            line: 'capacity: 16 cpus, 1.0 GB, given by TYPESCRIPT_CAPACITY: this gate 16 cpus, 0.9 GB · 2 test runner(s) at 300 MB: memory binds',
+        // Then - 1,792 MB holds two 650 MB runners, the memory binds, and no checker is named
+        expect(stageLease({ cpus: 16, memory: 2 * GB }, root, 'modules')).toStrictEqual({
+            handed: { cpus: 8, memory: 896 * MB },
+            line: 'capacity: 16 cpus, 2.0 GB, given by TYPESCRIPT_CAPACITY: this gate 16 cpus, 1.8 GB · 2 test runner(s) at 650 MB: memory binds',
             pool: 'stryker-modules',
             runners: 2,
         });

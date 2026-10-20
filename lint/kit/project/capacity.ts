@@ -21,8 +21,8 @@ const GB = 1024 ** 3;
 /** What one worker of each pool is priced at until a run measures one. */
 export const SEED_PRICES: Readonly<Record<Pool, number>> = {
     checker: 400 * MB,
-    'stryker-modules': 300 * MB,
-    'stryker-suite': 500 * MB,
+    'stryker-modules': 650 * MB,
+    'stryker-suite': GB,
     vitest: 150 * MB,
 };
 
