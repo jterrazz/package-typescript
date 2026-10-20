@@ -1,4 +1,5 @@
 import { isList, objectOf, stringOf } from '../../../lint/kit/project/json.js';
+import { LOG_REASON } from '../../drivers/stryker/ignorers.js';
 import { reportPathOf } from '../../drivers/stryker/reports.js';
 import type { StageName } from '../../drivers/stryker/reports.js';
 import { fileOf } from './scope.js';
@@ -16,6 +17,8 @@ export type Survivor = {
 export type Judged = {
     detected: number;
     detectedBySuite: number;
+    /** The mutants set aside before any run, by what set them aside: a declaration, an ignorer, Stryker's static skip. */
+    ignoredBy: Record<string, number>;
     left: number;
     outsideVerdict: Record<string, number>;
     survivors: Survivor[];
@@ -27,6 +30,13 @@ const DETECTED: ReadonlySet<unknown> = new Set(['Killed', 'Timeout']);
 const OUTSIDE_VERDICT: ReadonlySet<unknown> = new Set(['CompileError', 'Ignored', 'RuntimeError']);
 
 const ABSENT = 'absent from the suite report';
+
+const STATIC_SKIPPED = 'Static mutant (and "ignoreStatic" was enabled)';
+
+const IGNORED_BY: ReadonlyMap<unknown, string> = new Map([
+    [LOG_REASON, 'log calls'],
+    [STATIC_SKIPPED, 'static, no test loads it'],
+]);
 
 function survivorOf(file: string, mutant: Mutant, stage: StageName): Survivor {
     const start = objectOf(objectOf(mutant.location).start);
@@ -50,6 +60,10 @@ function tally(judged: Judged, file: string, mutant: Mutant, stage: StageName): 
         judged.uncoveredByFile[file] = (judged.uncoveredByFile[file] ?? 0) + 1;
     } else if (OUTSIDE_VERDICT.has(status)) {
         judged.outsideVerdict[status] = (judged.outsideVerdict[status] ?? 0) + 1;
+        if (status === 'Ignored') {
+            const by = IGNORED_BY.get(mutant.statusReason) ?? 'declared';
+            judged.ignoredBy[by] = (judged.ignoredBy[by] ?? 0) + 1;
+        }
     } else {
         judged.unrun[status] = (judged.unrun[status] ?? 0) + 1;
     }
@@ -196,6 +210,7 @@ export function judgedRuns(
         judged: {
             detected: 0,
             detectedBySuite: 0,
+            ignoredBy: {},
             left: 0,
             outsideVerdict: {},
             survivors: [],

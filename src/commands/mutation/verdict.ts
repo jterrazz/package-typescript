@@ -20,14 +20,26 @@ const withFiles = (entries: readonly [string, number][]): string[] =>
 const totalOf = (entries: readonly [string, number][]): number =>
     entries.reduce((sum, [, count]) => sum + count, 0);
 
-function countLines(
-    { detectedBySuite, left: leftCount, outsideVerdict, uncoveredByFile }: Judged,
-    untestedSources: number,
-): string[] {
+function outsideOf({ ignoredBy, outsideVerdict }: Judged): { statuses: string; total: number } {
+    const { total } = countsOf(outsideVerdict);
+    const statuses = Object.entries(outsideVerdict)
+        .toSorted(([a], [b]) => a.localeCompare(b))
+        .map(([status, count]) =>
+            status === 'Ignored'
+                ? `${status} ${count} (${countsOf(ignoredBy).statuses})`
+                : `${status} ${count}`,
+        )
+        .join(', ');
+
+    return { statuses, total };
+}
+
+function countLines(judged: Judged, untestedSources: number): string[] {
+    const { detectedBySuite, left: leftCount, uncoveredByFile } = judged;
     const sorted = Object.entries(uncoveredByFile).toSorted(byMostFirst);
     const browser = sorted.filter(([file]) => isBrowserSide(file));
     const uncovered = sorted.filter(([file]) => !isBrowserSide(file));
-    const outside = countsOf(outsideVerdict);
+    const outside = outsideOf(judged);
     return [
         ...(detectedBySuite === 0
             ? []

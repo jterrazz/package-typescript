@@ -23,6 +23,7 @@ function memberVerdict(project: string, member: string, text: string): void {
 const JUDGED = {
     detected: 4,
     detectedBySuite: 1,
+    ignoredBy: {},
     left: 2,
     outsideVerdict: {},
     survivors: [

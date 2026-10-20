@@ -65,6 +65,7 @@
         "@arethetypeswrong/cli": "^0.18.5",
         "@ls-lint/ls-lint": "2.3.1",
         "@stryker-mutator/core": "^10.0.0",
+        "@stryker-mutator/instrumenter": "^10.0.0",
         "@stryker-mutator/typescript-checker": "^10.0.0",
         "@stryker-mutator/vitest-runner": "^10.0.0",
         "dependency-cruiser": "18.4.0",

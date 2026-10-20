@@ -52,7 +52,7 @@ describe('verdict', () => {
                 '0 mutant(s) no test runs',
                 '5 mutant(s) the module tests leave to the suite (none of them runs it, or only loading a module does) on lines no change has brought there; the whole suite measures them when one does',
                 '2 source(s) with no module test: the whole suite measures the lines a change reaches there; what no change reaches no count holds',
-                '3 mutant(s) outside the verdict: CompileError 1, Ignored 1, RuntimeError 1',
+                '3 mutant(s) outside the verdict: CompileError 1, Ignored 1 (declared 1), RuntimeError 1',
             ],
             status: 0,
         });

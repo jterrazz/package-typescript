@@ -21,6 +21,7 @@ import { isRepositoryRoot, nearestRoot } from '../../../lint/kit/project/reposit
 import { handOver } from '../run.js';
 import { CHILD_COVERAGE_SOURCE } from './child-coverage.js';
 import { headlessEnvironment } from './headless.js';
+import { IGNORERS_SOURCE, LOG_IGNORER } from './ignorers.js';
 import { incrementalKeptWhileInputsHold, recordInputs } from './incremental.js';
 import type { StaysInFunctions } from './incremental.js';
 import type { Inputs } from './inputs.js';
@@ -77,6 +78,8 @@ export function generatedRoots(project: string, toolRoots: readonly string[]): s
 
 const REPORTER_FILE = `${MUTATION_OUTPUT}/progress-reporter.mjs`;
 
+const IGNORERS_FILE = `${MUTATION_OUTPUT}/ignorers.mjs`;
+
 export function strykerConfig(
     scope: {
         readonly generated: readonly string[];
@@ -106,6 +109,7 @@ export function strykerConfig(
             `!/${DEV_OUTPUT}/**`,
         ],
         ignoreStatic: true,
+        ignorers: [LOG_IGNORER],
         incremental: true,
         incrementalFile: `${MUTATION_OUTPUT}/${files.incremental}.json`,
         jsonReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.json` },
@@ -114,6 +118,7 @@ export function strykerConfig(
             createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner'),
             createRequire(import.meta.url).resolve('@stryker-mutator/typescript-checker'),
             `./${REPORTER_FILE}`,
+            `./${IGNORERS_FILE}`,
         ],
         reporters: ['html', 'json', ...(terminal ? ['progress'] : []), PROGRESS_REPORTER],
         tempDirName: `${MUTATION_OUTPUT}/tmp`,
@@ -132,6 +137,7 @@ export function strykerPrepared(project: string): void {
     writeFileSync(join(MUTATION_OUTPUT, 'mutant-setup.mjs'), MUTANT_SETUP_SOURCE);
     writeFileSync(join(MUTATION_OUTPUT, 'child-coverage.cjs'), CHILD_COVERAGE_SOURCE);
     writeFileSync(REPORTER_FILE, PROGRESS_REPORTER_SOURCE);
+    writeFileSync(IGNORERS_FILE, IGNORERS_SOURCE);
     // outside: the suite runs as `npm test` runs it, its tools found on the PATH npm gives a script; a spec that spawns oxlint type-aware leaves it to find tsgolint there.
     // Stryker disable next-line StringLiteral: a spec runs this command with the project's node_modules/.bin already first on the PATH, as npm does, so no spec can tell the folders apart
     process.env.PATH = `${join(project, 'node_modules', '.bin')}${delimiter}${process.env.PATH ?? ''}`;

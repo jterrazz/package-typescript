@@ -304,4 +304,25 @@ describe('mutation', () => {
         `);
         expect(result.stdout.text).not.toContain('Measuring the whole suite');
     });
+
+    test('typescript mutation — a statement that only logs is never mutated, and the verdict says so', async () => {
+        // Given - the consumer, its test judging everything, beside a source that logs through console and a logger around the price it decides, its module test judging the price alone
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .fixture(directory('./__fixtures__/mutation-logs/'))
+            .exec('typescript mutation');
+
+        // Then - the mutants of the two log statements are set aside before any run, counted by what set them aside, and none survives
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(`
+            {{any}}
+            measured 16 mutants over HEAD..working tree: every mutant a test runs is detected
+            0 mutant(s) no test runs
+            4 mutant(s) outside the verdict: Ignored 4 (log calls 4)
+
+            ✓ Mutation passed: 16 detected, 0 surviving, 0 never judged, over HEAD..working tree
+        `);
+        expect(result.stdout.text).not.toContain('Measuring the whole suite');
+    });
 });

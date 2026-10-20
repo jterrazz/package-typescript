@@ -122,6 +122,7 @@ describe('survivors', () => {
         expect(judgedRuns(MODULE_RUN_LEAVING_THREE, suite)).toStrictEqual({
             detected: 3,
             detectedBySuite: 0,
+            ignoredBy: {},
             left: 1,
             outsideVerdict: {},
             survivors: [
