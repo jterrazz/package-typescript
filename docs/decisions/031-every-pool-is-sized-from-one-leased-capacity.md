@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-20
+**Superseded in part by:** [ADR-032](032-the-mutant-checker-runs-on-the-native-compiler.md), for the checker's seed price: the checker holds the native compiler, measured at 720 MB.
 
 The owner accepted the plan on 2026-10-20 ("fais l'ensemble des trucs
 remontés"), under the rule of the same day that the toolchain takes one code

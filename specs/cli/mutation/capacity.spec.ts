@@ -22,14 +22,14 @@ describe('capacity', () => {
 
         // Then - each says what it was given, what it leased and which resource bound the runners, and hands Stryker that many
         expect([small, large].map((result) => lineOf(result.stdout.text))).toStrictEqual([
-            ' TYPESCRIPT  capacity: 16 cpus, 1.0 GB, given by TYPESCRIPT_CAPACITY: this gate 16 cpus, 0.9 GB · 2 test runner(s) at 300 MB, 1 checker(s) at 400 MB while checking: memory binds',
-            ' TYPESCRIPT  capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · 3 test runner(s) at 300 MB, 2 checker(s) at 400 MB while checking: cpus bind',
+            ' TYPESCRIPT  capacity: 16 cpus, 1.0 GB, given by TYPESCRIPT_CAPACITY: this gate 16 cpus, 0.9 GB · 1 test runner(s) at 300 MB, 1 checker(s) at 720 MB while checking: memory binds',
+            ' TYPESCRIPT  capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · 3 test runner(s) at 300 MB, 2 checker(s) at 720 MB while checking: cpus bind',
         ]);
         expect(
             [small, large].map((result) =>
                 configOf(result.file('.artifacts/stryker/stryker.config.json').content),
             ),
-        ).toMatchObject([{ concurrency: 2 }, { concurrency: 3 }]);
+        ).toMatchObject([{ concurrency: 1 }, { concurrency: 3 }]);
     });
 
     test('two gates running at once on one machine lease complementary shares of its cpus', async () => {
