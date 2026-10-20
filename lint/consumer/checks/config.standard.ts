@@ -23,14 +23,17 @@ export async function standardLogic(context: Context, unit: string): Promise<Fin
     const folder = unit === '.' ? STANDARD_FOLDER : `${unit}/${STANDARD_FOLDER}`;
     const found = await Promise.all(
         standardModules(context, folder).map(async (path) => {
+            const text = context.read(join(context.root, path));
+            if (text === null) {
+                return [];
+            }
             const { logicIn } = await import('../../kit/project/standard-logic.js');
 
-            return logicIn(path, context.read(join(context.root, path)) ?? '').map(
-                ({ line, what }) =>
-                    configFinding('config/standard-is-data', path, {
-                        fix: `state the value it computes, and move the code that applies the standard out of ${STANDARD_FOLDER}/`,
-                        found: `${path}:${String(line)} holds ${what}`,
-                    }),
+            return logicIn(path, text).map(({ line, what }) =>
+                configFinding('config/standard-is-data', path, {
+                    fix: `state the value it computes, and move the code that applies the standard out of ${STANDARD_FOLDER}/`,
+                    found: `${path}:${String(line)} holds ${what}`,
+                }),
             );
         }),
     );
