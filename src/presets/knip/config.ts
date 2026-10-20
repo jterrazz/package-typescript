@@ -1,10 +1,9 @@
 /** The knip config every project is checked against, before what its manifest, build and settings add. */
 export const KNIP_PRESET: Readonly<Record<string, unknown>> = {
-    // outside: `typescript mutation` hands Stryker its vitest runner and its TypeScript checker by path, which knip cannot trace.
+    // outside: `typescript mutation` hands Stryker its vitest runner by path, which knip cannot trace.
     ignoreDependencies: [
         '@jterrazz/test',
         '@jterrazz/typescript',
-        '@stryker-mutator/typescript-checker',
         '@stryker-mutator/vitest-runner',
     ],
     // value: the toolchain's own tools, and the gestures of every repository's Makefile.

@@ -50,11 +50,11 @@ const TOOL_PACKAGES: Readonly<Record<string, readonly string[]>> = {
     stryker: [
         '@stryker-mutator/core',
         '@stryker-mutator/instrumenter',
-        '@stryker-mutator/typescript-checker',
         '@stryker-mutator/vitest-runner',
     ],
     tsc: [
         'typescript',
+        '@typescript/native',
         '@typescript/typescript-darwin-arm64',
         '@typescript/typescript-darwin-x64',
         '@typescript/typescript-linux-arm',

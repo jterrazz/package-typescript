@@ -1,32 +1,27 @@
-import { join, relative } from 'node:path';
-import ts from 'typescript';
+import { headline, nativeProject, programErrors, programOf } from './native-project.js';
 
-/** The headline of the first error the compiler finds in the project's unmutated tree, as `file:line TS<code> <message>`, read through its `tsconfig.json` as Stryker's TypeScript checker reads it; none where the tree compiles, or keeps no `tsconfig.json` the checker could compile. */
+/** What a run found when the tree it mutates does not compile, at the compiler's first error. */
+export const uncompiledFound = (diagnostic: string): string =>
+    `the tree does not compile before any mutant: ${diagnostic}`;
+
+export const UNCOMPILED_WHY =
+    'each mutant is type-checked against the tree it mutates, so a tree the compiler refuses leaves no mutant to judge; the tree must compile before mutants are judged';
+
+export const UNCOMPILED_FIX =
+    'make the tree compile, then run again: `typescript check` names every error, in its TypeScript Check pass';
+
+/** The headline of the first error the compiler finds in the project's unmutated tree, as `file:line TS<code> <message>`, read through its `tsconfig.json` as the TypeScript checker reads it; none where the tree compiles, or keeps no `tsconfig.json` the checker could compile. */
 export function firstCompileError(project: string): string | undefined {
-    const tsconfig = join(project, 'tsconfig.json');
-    const parsed = ts.getParsedCommandLineOfConfigFile(
-        tsconfig,
-        {},
-        {
-            ...ts.sys,
-            onUnRecoverableConfigFileDiagnostic: () => undefined,
-        },
-    );
-    if (parsed === undefined) {
+    const opened = nativeProject(project);
+    if (opened === undefined) {
         return undefined;
     }
-    const program = ts.createProgram({ options: parsed.options, rootNames: parsed.fileNames });
-    const [first] = [...parsed.errors, ...ts.getPreEmitDiagnostics(program)];
-    if (first === undefined) {
-        return undefined;
-    }
-    const { messageText } = first;
-    const message = typeof messageText === 'string' ? messageText : messageText.messageText;
-    const { file, start } = first;
-    if (file === undefined || start === undefined) {
-        return `TS${String(first.code)} ${message}`;
-    }
-    const { line } = file.getLineAndCharacterOfPosition(start);
+    try {
+        const [first] = programErrors(programOf(opened.base, opened.config));
 
-    return `${relative(project, file.fileName)}:${String(line + 1)} TS${String(first.code)} ${message}`;
+        return first === undefined ? undefined : headline(project, first);
+    } finally {
+        opened.base.dispose();
+        opened.api.close();
+    }
 }
