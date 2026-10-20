@@ -63,9 +63,25 @@ assertion or a declaration. In jterrazz-web, 1.9 % of the mutants sit in
 
 ## Consequences
 
-- The module stage of a branch costs its change: this branch's own gate
-  measured 143 module mutants where the cold whole-file stage of the same
-  package plans 10,132 (63ae8b8a, 18 min 47 s on four runners).
+- The module stage of a branch costs its change. Measured cold, four test
+  runners, on four fixed changes, before (the toolchain at `fix/after-v17`)
+  and after (this decision's first four parts, at `7226b7df`; the cap and
+  the pinned text came later):
+
+    | Change                 | Module stage before  | Module stage after                          | Suite mutants before / after |
+    | ---------------------- | -------------------- | ------------------------------------------- | ---------------------------- |
+    | this package, 63ae8b8a | 10,525 made, 1,127 s | 116 made (42 refused by the compiler), 82 s | 242 / 80                     |
+    | this package, a682280d | 10,627 made, 1,033 s | 169 made (7 refused by the compiler), 193 s | 359 / 217                    |
+    | jterrazz-web, 90f9f0a  | 1,189 made, 135 s    | 31 made; the checker stops on the old tree  | 25 / none                    |
+    | jterrazz-web, dddc94b  | 1,191 made, 210 s    | 11 made, 22 s                               | 40 / 40                      |
+
+    On the first three, the whole-suite stage fails its dry run before and
+    after alike: an old commit's specs against today's `@jterrazz/test` 17,
+    so only the module stage, and the suite's count of mutants made, compare.
+    On jterrazz-web at dddc94b both runs pass: 971 mutants detected before,
+    27 after (glue 27 of 27), in 386 s against 222 s. The machine ran other
+    gates meanwhile, so the seconds are an order of size, not a benchmark.
+
 - The checker compiles the project before the first mutant and fails the
   run on a type error the compiler finds in the unmutated tree; while it
   checks, it holds half of the test runners. The run names the compiler's
