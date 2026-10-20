@@ -1,7 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import {
     existsSync,
-    lstatSync,
     mkdirSync,
     mkdtempSync,
     readdirSync,
@@ -10,15 +9,15 @@ import {
     writeFileSync,
 } from 'node:fs';
 import { createRequire } from 'node:module';
-import { delimiter, dirname, join, relative, resolve, sep } from 'node:path';
+import { delimiter, join } from 'node:path';
 import process from 'node:process';
 
 import { readSettings } from '../../../lint/index.rules.js';
 import { ARTIFACTS, DEV_OUTPUT, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { isList, objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
-import { isRepositoryRoot, nearestRoot } from '../../../lint/kit/project/repository-root.js';
 import { handOver } from '../run.js';
+import { besideOf, withoutBesideLinks } from './beside.js';
 import { CHILD_COVERAGE_SOURCE } from './child-coverage.js';
 import { headlessEnvironment } from './headless.js';
 import { ignorersSource, LOG_IGNORER, PINNED_TEXT_IGNORER } from './ignorers.js';
@@ -36,8 +35,7 @@ import type { ObservedTest } from './observed.js';
 import { PROGRESS_REPORTER, PROGRESS_REPORTER_SOURCE } from './progress-reporter.js';
 import { REPORT_NAMES } from './reports.js';
 import type { StageName } from './reports.js';
-import { SANDBOX_DEPTH, sandboxScriptSource, vitestConfigSource } from './sources.js';
-import type { Beside } from './sources.js';
+import { sandboxScriptSource, vitestConfigSource } from './sources.js';
 
 const oneGlob = (globs: readonly string[]): string =>
     globs.length === 1 ? String(globs) : `{${globs.join(',')}}`;
@@ -146,51 +144,6 @@ export function strykerPrepared(project: string, presentation: readonly string[]
         // Stryker disable next-line StringLiteral: the name only names the folder for a reader of .artifacts/; the openers it holds refuse from any folder put first on the PATH
         headlessEnvironment(join(project, MUTATION_OUTPUT, 'headless'), process.env.PATH),
     );
-}
-
-// invariant: a workspace member is mutated from its own folder, and its specs may climb out of it to the repository's files; a project that is the repository's own root has nothing above it to lay.
-export function besideOf(project: string): Beside | undefined {
-    const root = isRepositoryRoot(resolve(project))
-        ? undefined
-        : nearestRoot(dirname(resolve(project)), isRepositoryRoot);
-    if (root === undefined) {
-        return undefined;
-    }
-
-    return {
-        levels: relative(root, resolve(project)).split(sep).length,
-        names: readdirSync(root)
-            .filter((name) => !name.startsWith('.') && name !== 'node_modules')
-            .toSorted(),
-        root,
-    };
-}
-
-// invariant: the links a sandbox lays beside its copy outlive the run when they land in the member's own `.artifacts/`, and each points at a repository folder holding that `.artifacts/` again; a walker that follows links (ls-lint, in the Names pass) loops on them for ever, so the run takes them away when it ends, and before it starts, for those a killed run left.
-export function besideLinksDropped(project: string, beside: Beside | undefined): void {
-    if (beside === undefined || beside.levels < 1 || beside.levels >= SANDBOX_DEPTH) {
-        return;
-    }
-    const laid = resolve(project, MUTATION_OUTPUT, 'tmp', 'sandbox', '../'.repeat(beside.levels));
-    for (const name of beside.names) {
-        const link = join(laid, name);
-        if (lstatSync(link, { throwIfNoEntry: false })?.isSymbolicLink() === true) {
-            rmSync(link);
-        }
-    }
-}
-
-/** Runs `run` with the links of the sandbox gone before it starts, for those a killed run left, and after it ends. */
-export async function withoutBesideLinks<T>(
-    project: string,
-    beside: Beside | undefined,
-    run: () => Promise<T>,
-): Promise<T> {
-    besideLinksDropped(project, beside);
-    const result = await run();
-    besideLinksDropped(project, beside);
-
-    return result;
 }
 
 /** Keeps of the stage's incremental report what the change since its run leaves standing, none of it when the run starts cold, and returns the inputs the stage starts on. */
