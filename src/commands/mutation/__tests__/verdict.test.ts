@@ -15,7 +15,7 @@ const LESSON =
 
 const NONE_RAN: ReadonlySet<string> = new Set();
 
-const NO_GLUE = { bar: 0.9, globs: [] };
+const NO_GLUE = { bar: 0.9, cap: 50, globs: [] };
 
 const MEASURE = { range: 'a1b2c3d4..HEAD' };
 
@@ -58,6 +58,35 @@ describe('verdict', () => {
             ],
             status: 0,
         });
+    });
+
+    test("verdictOf — a capped glue says how many of the change's glue mutants it measured, under its glue line", () => {
+        // Given - two detected glue mutants, the cap having kept them of 60
+        const judged = judgedRuns({
+            measured: ['src/infrastructure/a.ts'],
+            ranByTests: NONE_RAN,
+            report: {
+                files: {
+                    'src/infrastructure/a.ts': {
+                        mutants: [mutant('Killed', 3), mutant('Killed', 4)],
+                    },
+                },
+            },
+        });
+        const glue = {
+            bar: 0.9,
+            cap: 2,
+            capped: { measured: 2, of: 60 },
+            globs: ['**/infrastructure/**'],
+        };
+
+        // Then - the glue line, then what the cap measured
+        expect(verdictOf(judged, 0, { glue, measure: MEASURE }).lines).toStrictEqual([
+            'measured 2 mutants over a1b2c3d4..HEAD: every mutant a test runs is detected',
+            'glue: 2 of 2 detected (100 %), its bar 90 %',
+            'glue: 2 of 60 mutants measured, the cap',
+            '0 mutant(s) no test runs',
+        ]);
     });
 
     test('verdictOf — a run that mutated nothing says it measured nothing over its range, never that every mutant was detected', () => {

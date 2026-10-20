@@ -7,7 +7,7 @@ import { changedRanges, fileOf, modulesMutated, sourcesOf, unreachedRange } from
 
 const SCOPE = {
     exclude: [],
-    glue: { bar: 0.9, globs: [] },
+    glue: { bar: 0.9, cap: 50, globs: [] },
     ignore: ['src/generated/**'],
     mutated: ['src/**/*.ts', 'src/**/*.tsx', 'lint/*.ts'],
     presentation: [],

@@ -3,7 +3,6 @@ import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
 
-import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { clientOnlySources } from '../../../lint/kit/project/browser-side.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { toolchainIn } from '../../drivers/node/node.js';
@@ -16,11 +15,14 @@ import { secondsSince } from '../check/passes/launched.js';
 import { badge, print, RED, RESET, secondsOf } from '../check/report/terminal.js';
 import { activeGates, withGateLock } from '../gate-lock/lock.js';
 import { askedOf } from './asked.js';
+import type { Capped } from './cap.js';
 import { baseFor, changeOf, namesACommit, treeChangeFor } from './change.js';
 import type { Base } from './change.js';
+import { capHeld, glueCapped, glueOf } from './glue-cap.js';
 import { memberRuns, unownedRange } from './members.js';
 import { concluded, judgedRecorded, memberRecorded, recorder, stageRecorded } from './recorded.js';
 import type { Recorded } from './recorded.js';
+import { measuredNothing, refusedJobs, refusedRange, refusedSince } from './refused.js';
 import type { GlueBar } from './roles.js';
 import { mutationScopeOf } from './scope-globs.js';
 import { changedRanges, modulesMutated, sourcesOf, unreachedRange } from './scope.js';
@@ -32,7 +34,13 @@ import { uncompiledRefusal } from './uncompiled.js';
 import { measureOf, verdictOf } from './verdict.js';
 import type { Measure } from './verdict.js';
 
-type Run = { cold: boolean; jobs: number | undefined; project: string; recorded: Recorded };
+type Run = {
+    capped?: Capped | undefined;
+    cold: boolean;
+    jobs: number | undefined;
+    project: string;
+    recorded: Recorded;
+};
 
 const sourceIn =
     (project: string) =>
@@ -42,8 +50,9 @@ const sourceIn =
 async function measured(
     scope: MutationScope,
     stage: Stage,
-    { cold, jobs, project, recorded }: Run,
+    run: Run,
 ): Promise<Measured | { status: number }> {
+    const { cold, jobs, project, recorded } = run;
     print(
         `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'Measuring the whole suite against what the module tests let live, and the changed lines they do not run' : 'Measuring the module tests against mutants of the sources they test'}...\n\n`,
     );
@@ -79,7 +88,7 @@ async function measured(
         print(`\n${RED}${uncompiledRefusal(uncompiled)}${RESET}\n`);
     }
 
-    return withClientOnlyUnmeasured(outcome, clientOnlySources(project));
+    return withClientOnlyUnmeasured(capHeld(outcome, run.capped), clientOnlySources(project));
 }
 
 function printed(
@@ -98,10 +107,15 @@ function printed(
     return verdict.status;
 }
 
-type Change = { changed: Changed; ranges: readonly string[] | undefined; since: Base };
+type Change = {
+    changed: Changed;
+    ranges: readonly string[] | undefined;
+    reached: readonly string[];
+    since: Base;
+};
 
 async function judgedAfterTheSuite({
-    change: { changed, ranges, since },
+    change: { changed, ranges, reached, since },
     modulesRun,
     run,
     scope,
@@ -116,12 +130,16 @@ async function judgedAfterTheSuite({
     const { project, recorded } = run;
     const modulesAlone = judgedRuns(modulesRun);
     const measure = measureOf(since);
-    const verdictOver = { glue: scope.glue, measure, recorded, untestedSources: untested.length };
+    const verdictOver = {
+        glue: glueOf(scope.glue, run.capped),
+        measure,
+        recorded,
+        untestedSources: untested.length,
+    };
     // Stryker disable next-line ConditionalExpression: a mutant the run never judged fails the verdict whether or not the suite runs after it; the gate only spares the suite's minutes
     if (Object.keys(modulesAlone.unrun).length > 0) {
         return printed(modulesAlone, verdictOver);
     }
-    const reached = changedRanges(untested, changed, sourceIn(project));
     // invariant: `--mutate` names the lines to measure and the default run's policy for a static mutant stands: the module tests leave it to the suite only where the tree's own change reaches it.
     const statics = treeChangeFor(project, { ranges, since }, changed);
     const reach = { changed, statics };
@@ -134,21 +152,6 @@ async function judgedAfterTheSuite({
         ({ report }) =>
             printed(judgedRuns(modulesRun, { ...reach, report, untested: reached }), verdictOver),
     );
-}
-
-function refusedRange(range: string, where: string, recorded: Recorded): number {
-    const found = `--mutate names ${range}, which reaches no source the run mutates`;
-    recorded.reason = `refused before any run: ${found}`;
-    print(
-        `${RED}${refusal({
-            fix: `name ${where}, by its path from the project's root and its lines as from-to (src/a.ts:10-20), or the whole file by its path`,
-            found,
-            read: 'docs/reference/quality-checks.md#mutation',
-            why: 'a range that reaches no source narrows both runs to nothing, and the run would pass having measured nothing',
-        })}${RESET}\n`,
-    );
-
-    return 1;
 }
 
 // invariant: a workspace root keeps no vitest config: each member is measured in its own folder, as `cd <member> && typescript mutation` measures it, into its own `.artifacts/stryker/`.
@@ -176,30 +179,6 @@ async function membersMeasured(
     }
 
     return status;
-}
-
-function refusedSince(named: string, recorded: Recorded): number {
-    const found = `git names no commit ${named}`;
-    recorded.reason = `refused before any run: ${found}`;
-    print(
-        `${RED}${refusal({
-            fix: 'name a commit this clone holds (fetch it), or leave --since and TYPESCRIPT_MUTATION_SINCE unset to measure the change not yet committed, or, on a clean tree, the branch since its merge-base with the default branch',
-            found,
-            read: 'docs/reference/quality-checks.md#mutation',
-            why: 'the whole suite measures the lines changed since that commit, and a run that cannot name them would pass having measured nothing',
-        })}${RESET}\n`,
-    );
-
-    return 1;
-}
-
-// invariant: a project with no module test and no `specs/` has nothing to run a mutant against; Stryker would stop on a missing test project, and the run says what it measured instead.
-function measuredNothing(project: string, recorded: Recorded): number {
-    const why = `${project} holds no module test and no specs/, so no test project to run a mutant against`;
-    recorded.reason = `measured nothing: ${why}`;
-    print(`${badge('TYPESCRIPT')} measured nothing: ${why}.\n`);
-
-    return 0;
 }
 
 async function measuredRun(
@@ -232,38 +211,28 @@ async function measuredRun(
     if (note !== undefined) {
         print(`${badge('TYPESCRIPT')} ${note}\n`);
     }
-    const modules = modulesMutated(tested, { changed, known, ranges }, sourceIn(project));
+    const asked = {
+        modules: modulesMutated(tested, { changed, known, ranges }, sourceIn(project)),
+        reached: changedRanges(untested, changed, sourceIn(project)),
+    };
+    const { capped, modules, reached } = await glueCapped(project, asked, scope.glue);
+    const cappedRun = { ...run, capped };
     const first =
         modules.length === 0
             ? undefined
-            : await measured(scope, { mutate: modules, name: 'modules' }, run);
+            : await measured(scope, { mutate: modules, name: 'modules' }, cappedRun);
 
     return await afterStage(
         first,
         async ({ ranByTests, report }) =>
             await judgedAfterTheSuite({
-                change: { changed, ranges, since },
+                change: { changed, ranges, reached, since },
                 modulesRun: { measured: modules, ranByTests, report },
-                run,
+                run: cappedRun,
                 scope,
                 untested,
             }),
     );
-}
-
-function refusedJobs(named: string, recorded: Recorded): number {
-    const found = `TYPESCRIPT_JOBS is ${named}, which counts no test runner`;
-    recorded.reason = `refused before any run: ${found}`;
-    print(
-        `${RED}${refusal({
-            fix: "set it to a positive integer (TYPESCRIPT_JOBS=2), or leave it unset to take this gate's share of the cores",
-            found,
-            read: 'docs/reference/quality-checks.md#how-many-test-runners',
-            why: 'a count Stryker cannot run would stop the run, or run another one than the one asked for',
-        })}${RESET}\n`,
-    );
-
-    return 1;
 }
 
 export async function mutation(args: readonly string[]): Promise<number> {

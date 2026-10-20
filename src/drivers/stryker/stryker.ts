@@ -78,7 +78,7 @@ export function generatedRoots(project: string, toolRoots: readonly string[]): s
 
 const REPORTER_FILE = `${MUTATION_OUTPUT}/progress-reporter.mjs`;
 
-const IGNORERS_FILE = `${MUTATION_OUTPUT}/ignorers.mjs`;
+export const IGNORERS_FILE = `${MUTATION_OUTPUT}/ignorers.mjs`;
 
 export function strykerConfig(
     scope: {

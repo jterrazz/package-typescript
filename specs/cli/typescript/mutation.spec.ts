@@ -305,6 +305,27 @@ describe('mutation', () => {
         `);
     });
 
+    test('typescript mutation — past the cap, a change measures a stable sample of its glue, and says how much of it', async () => {
+        // Given - the consumer, its test judging everything, beside an adapter whose sixteen thresholds make 66 mutants, its test judging each
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .fixture(directory('./__fixtures__/mutation-glue-capped/'))
+            .exec('typescript mutation');
+
+        // Then - fifty of the 66 measured, each detected, the domain whole
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout).toMatch(`
+            {{any}}
+            measured 59 mutants over HEAD..working tree: every mutant a test runs is detected
+            glue: 50 of 50 detected (100 %), its bar 90 %
+            glue: 50 of 66 mutants measured, the cap
+            0 mutant(s) no test runs
+
+            ✓ Mutation passed: 59 detected, 0 surviving, 0 never judged, over HEAD..working tree
+        `);
+    });
+
     test('typescript mutation — the same survivor in the domain fails the run', async () => {
         // Given - the same source under domain/
         const result = await cli

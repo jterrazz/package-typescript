@@ -2,12 +2,16 @@ import { matchesGlob } from 'node:path';
 
 import type { Judged, Survivor } from './survivors.js';
 
-/** What makes a source glue, and the share of its mutants a test runs that must be detected; every other source is domain, held to zero survivors. */
-export type GlueBar = { bar: number; globs: readonly string[] };
+/** What a run measured of a change's glue once the cap held: the mutants it ran, of those the change made. */
+export type GlueCapped = { measured: number; of: number };
+
+/** What makes a source glue, the share of its mutants a test runs that must be detected, and how many of a change's glue mutants a run measures at most; every other source is domain, held to zero survivors, never capped. */
+export type GlueBar = { bar: number; cap: number; capped?: GlueCapped; globs: readonly string[] };
 
 /** What glue held of the run: the glue mutants a test ran, those detected, its survivors, and whether the detected share reaches the bar. */
 export type GlueHeld = {
     bar: number;
+    capped?: GlueCapped;
     detected: number;
     holds: boolean;
     judged: number;
@@ -34,6 +38,7 @@ export function byRole(
         domain: survivors.filter(({ file }) => !isGlue(file, glue)),
         glue: {
             bar: glue.bar,
+            ...(glue.capped === undefined ? {} : { capped: glue.capped }),
             detected,
             holds: detected * PERCENT >= Math.round(glue.bar * PERCENT) * judged,
             judged,

@@ -16,7 +16,7 @@ const LESSON =
 
 const NONE_RAN: ReadonlySet<string> = new Set();
 
-const NO_GLUE = { bar: 0.9, globs: [] };
+const NO_GLUE = { bar: 0.9, cap: 50, globs: [] };
 
 const MEASURE = { range: 'a1b2c3d4..HEAD' };
 

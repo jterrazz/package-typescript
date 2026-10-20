@@ -36,8 +36,11 @@ export function declaredOf(
     };
 }
 
-const barOf = ({ resolved }: Resolution): number =>
-    Number(objectOf(objectOf(resolved.sections.typescript).mutationGlue).bar);
+const lawsOf = ({ resolved }: Resolution): { bar: number; cap: number } => {
+    const { bar, cap } = objectOf(objectOf(resolved.sections.typescript).mutationGlue);
+
+    return { bar: Number(bar), cap: Number(cap) };
+};
 
 export async function mutationScopeOf(project: string): Promise<MutationScope> {
     const settings = await readSettings(project);
@@ -47,7 +50,7 @@ export async function mutationScopeOf(project: string): Promise<MutationScope> {
     return {
         exclude: declared.flatMap(({ exclude }) => exclude),
         glue: {
-            bar: barOf(settings),
+            ...lawsOf(settings),
             globs: declared.flatMap(({ glue, presentation }) => [...glue, ...presentation]),
         },
         ignore: declared.flatMap(({ ignore }) => ignore),

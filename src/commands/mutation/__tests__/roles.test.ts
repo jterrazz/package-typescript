@@ -11,7 +11,7 @@ const survivor = (file: string, line: number) => ({
     report: '.artifacts/stryker/report.json',
 });
 
-const GLUE = { bar: 0.9, globs: ['**/infrastructure/**', 'src/legacy.ts'] };
+const GLUE = { bar: 0.9, cap: 50, globs: ['**/infrastructure/**', 'src/legacy.ts'] };
 
 describe('roles', () => {
     test('byRole — a source is glue where a glob names it and domain everywhere else; glue holds while the share of its mutants detected reaches the bar', () => {

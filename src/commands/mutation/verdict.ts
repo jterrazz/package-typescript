@@ -115,7 +115,13 @@ function glueLines(glue: GlueHeld): { lines: string[]; refused: string[] } {
     if (glue.judged === 0) {
         return { lines: [], refused: [] };
     }
-    const lines = [glueLine(glue), ...glue.survivors.map((survivor) => `  ${placed(survivor)}`)];
+    const lines = [
+        glueLine(glue),
+        ...(glue.capped === undefined
+            ? []
+            : [`glue: ${glue.capped.measured} of ${glue.capped.of} mutants measured, the cap`]),
+        ...glue.survivors.map((survivor) => `  ${placed(survivor)}`),
+    ];
     if (glue.holds) {
         return { lines, refused: [] };
     }

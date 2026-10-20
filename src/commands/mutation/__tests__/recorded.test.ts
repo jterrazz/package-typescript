@@ -20,7 +20,7 @@ function memberVerdict(project: string, member: string, text: string): void {
     writeFileSync(join(project, member, VERDICT_FILE), text);
 }
 
-const NO_GLUE = { bar: 0.9, globs: [] };
+const NO_GLUE = { bar: 0.9, cap: 50, globs: [] };
 
 const JUDGED = {
     detected: 4,

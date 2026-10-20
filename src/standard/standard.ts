@@ -73,7 +73,7 @@ export default defineStandard({
                     'presentation renders what the domain decided, and the specs that read the output judge most of what it does',
             },
         },
-        mutationGlue: { bar: 0.9 },
+        mutationGlue: { bar: 0.9, cap: 50 },
         sources: { extensions: ['ts'], roots: ['src'] },
         spine: ['docs', 'lint', 'skills', 'specs', 'src'],
         toolRoots: {

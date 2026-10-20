@@ -25,6 +25,7 @@ runs:
             @jterrazz/typescript src/standard/kinds/library.ts        typescript.mutation.mutate.lint/consumer/**/*.ts = "the lint rules and checks a library ships to its consumers"
             @jterrazz/typescript src/standard/kinds/library.ts        typescript.mutation.mutate.lint/kit/**/*.ts = "the rules kit those rules and checks run on"
             @jterrazz/typescript src/standard/standard.ts             typescript.mutationGlue.bar = 0.9
+            @jterrazz/typescript src/standard/standard.ts             typescript.mutationGlue.cap = 50
             @jterrazz/typescript rulebook                             typescript.oxlint.env.browser = true
             @jterrazz/typescript rulebook                             typescript.oxlint.env.builtin = true
             @jterrazz/typescript rulebook                             typescript.oxlint.env.node = true

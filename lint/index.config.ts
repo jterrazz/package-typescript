@@ -79,8 +79,8 @@ export type TypescriptLaws = {
     /** The top-level keys a manifest may hold: the ones npm reads, and the ones a host or a dependency reads. */
     manifestKeys?: readonly string[];
     memberRoots?: readonly string[];
-    /** The share of a change's glue mutants a test runs that must be detected, from 0 to 1. */
-    mutationGlue?: { bar: number };
+    /** The share of a change's glue mutants a test runs that must be detected, from 0 to 1, and how many of a change's glue mutants a run measures at most, picked by a stable hash. */
+    mutationGlue?: { bar: number; cap: number };
     /** The folders the platform's code sits in, and its file extensions. */
     sources?: { extensions: readonly string[]; roots: readonly string[] };
     spine?: readonly string[];

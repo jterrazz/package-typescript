@@ -69,6 +69,13 @@ function heldBy(entries: readonly Entry[], mutant: unknown): boolean {
     );
 }
 
+/** Whether the entries a stage is handed hold a mutant of the file at that location, its lines and columns counted from 1 as a report counts them. */
+export const heldIn = (mutate: readonly string[], file: string, location: unknown): boolean =>
+    heldBy(
+        mutate.map((text) => entryOf(text)).filter((entry) => entry.file === file),
+        { location },
+    );
+
 /** The stage's report as the entries asked it: a file handed whole for want of a glob naming it exactly keeps only what its ranges hold, and a braced file no entry names, which only that glob matched, nothing. */
 export function heldReport(report: unknown, mutate: readonly string[]): unknown {
     const entries = mutate.map((text) => entryOf(text));
