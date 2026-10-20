@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
@@ -31,10 +31,10 @@ function projectWith(files: Readonly<Record<string, string>>): string {
 
 describe('compile-error', () => {
     test('names the first error of the tree at its file and line, its code and its message; nothing where the tree compiles', () => {
-        // Given - a tree whose second file assigns a string to a number on its second line, and the same tree fixed
+        // Given - a tree whose second file assigns a string to a number on its twelfth line, and the same tree fixed
         const broken = projectWith({
             'src/a.ts': 'export const a: number = 1;\n',
-            'src/b.ts': "export const b = 1;\nexport const c: number = 'one';\n",
+            'src/b.ts': `export const b = 1;\n${'\n'.repeat(10)}export const c: number = 'one';\n`,
             'tsconfig.json': TSCONFIG,
         });
         const fixed = projectWith({
@@ -44,7 +44,7 @@ describe('compile-error', () => {
 
         // Then - the broken tree's first error, read relative to the project; the fixed one has none
         expect([firstCompileError(broken), firstCompileError(fixed)]).toStrictEqual([
-            "src/b.ts:2 TS2322 Type 'string' is not assignable to type 'number'.",
+            "src/b.ts:12 TS2322 Type 'string' is not assignable to type 'number'.",
             undefined,
         ]);
     });
@@ -76,6 +76,20 @@ describe('compile-error', () => {
             undefined,
             "tsconfig.json:1 TS5023 Unknown compiler option 'unknownOption'.",
             "TS2688 Cannot find type definition file for 'absent'.",
+        ]);
+    });
+
+    test('reads a tree whose tsconfig.json emits, and writes nothing into it', () => {
+        // Given - a tree that compiles, under a tsconfig.json that leaves emitting on
+        const project = projectWith({
+            'src/a.ts': 'export const a = 1;\n',
+            'tsconfig.json': JSON.stringify({ compilerOptions: { types: [] }, include: ['src'] }),
+        });
+
+        // Then - no error, and no JavaScript beside the source
+        expect([firstCompileError(project), existsSync(join(project, 'src/a.js'))]).toStrictEqual([
+            undefined,
+            false,
         ]);
     });
 });

@@ -1,32 +1,27 @@
-import { join, relative } from 'node:path';
-import ts from 'typescript';
+import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 
-/** The headline of the first error the compiler finds in the project's unmutated tree, as `file:line TS<code> <message>`, read through its `tsconfig.json` as Stryker's TypeScript checker reads it; none where the tree compiles, or keeps no `tsconfig.json` the checker could compile. */
+import { tscBinary } from './tsc.js';
+
+const TSCONFIG = 'tsconfig.json';
+
+const DIAGNOSTIC = /(?:(?<file>.+)\((?<line>\d+),\d+\): )?error (?<code>TS\d+): (?<message>.+)/u;
+
+/** The headline of the first error the compiler finds in the project's unmutated tree, as `file:line TS<code> <message>`, read through its `tsconfig.json` without emitting, as Stryker's TypeScript checker reads it; none where the tree compiles, or keeps no `tsconfig.json`. */
 export function firstCompileError(project: string): string | undefined {
-    const tsconfig = join(project, 'tsconfig.json');
-    const parsed = ts.getParsedCommandLineOfConfigFile(
-        tsconfig,
-        {},
-        {
-            ...ts.sys,
-            onUnRecoverableConfigFileDiagnostic: () => undefined,
-        },
-    );
-    if (parsed === undefined) {
+    if (!existsSync(join(project, TSCONFIG))) {
         return undefined;
     }
-    const program = ts.createProgram({ options: parsed.options, rootNames: parsed.fileNames });
-    const [first] = [...parsed.errors, ...ts.getPreEmitDiagnostics(program)];
+    const run = spawnSync(tscBinary(), ['--noEmit', '--pretty', 'false', '--project', TSCONFIG], {
+        cwd: project,
+        encoding: 'utf8',
+    });
+    const first = DIAGNOSTIC.exec(run.stdout)?.groups;
     if (first === undefined) {
         return undefined;
     }
-    const { messageText } = first;
-    const message = typeof messageText === 'string' ? messageText : messageText.messageText;
-    const { file, start } = first;
-    if (file === undefined || start === undefined) {
-        return `TS${String(first.code)} ${message}`;
-    }
-    const { line } = file.getLineAndCharacterOfPosition(start);
+    const { code, file, line, message } = first;
 
-    return `${relative(project, file.fileName)}:${String(line + 1)} TS${String(first.code)} ${message}`;
+    return file === undefined ? `${code} ${message}` : `${file}:${line} ${code} ${message}`;
 }
