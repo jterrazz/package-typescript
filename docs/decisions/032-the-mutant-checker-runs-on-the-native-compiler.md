@@ -29,7 +29,13 @@ unstable API, which checks the whole program for every mutant.
 
 While it checks, Stryker 10 holds half of a stage's processes as checkers
 ([ADR-031](031-every-pool-is-sized-from-one-leased-capacity.md)), so a
-checker's speed is runner slots as much as seconds.
+checker's speed is runner slots as much as seconds. Measured on this
+package's own `typescript mutation`, cold, over the sixteen sources of
+`src/commands/mutation/` (1,080 mutants), on a laptop other sessions
+loaded: the module stage ran in 504.5 s on 8 test runners beside 4 checkers
+with the old checker, and in 135.6 s on 5 runners beside 3 with the native
+one. The same stage with no checker could not be compared: the machine's
+other gate left it 0.4 GB, one runner, 701.4 s.
 
 ## Decision
 
