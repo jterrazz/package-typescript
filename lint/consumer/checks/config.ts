@@ -272,13 +272,14 @@ export const config: Pass = Object.freeze({
                     ? { findings: [], writes: [] }
                     : editorFindings(context, unit);
             const synchronous = await synchronousLoad(context, unit);
+            const logic = await standardLogic(context, unit.path);
             findings.push(
                 ...declarationFindings(context, unit),
                 ...synchronous,
                 ...tsconfigFindings(unit),
                 ...editor.findings,
                 ...toolConfigFindings(context, unit.path),
-                ...standardLogic(context, unit.path),
+                ...logic,
             );
             writes.push(...editor.writes);
         }

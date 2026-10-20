@@ -1,7 +1,5 @@
 import ts from 'typescript';
 
-export const STANDARD_FOLDER = 'src/standard';
-
 export type Logic = { line: number; what: string };
 
 const STANDARD_CALL = 'defineStandard';
