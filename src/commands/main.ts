@@ -2,24 +2,11 @@ import process from 'node:process';
 
 import { refusal } from '../../lint/kit/catalogue/lesson.js';
 import { readArguments } from './arguments.js';
-import { baseline } from './baseline/baseline.command.js';
-import { build } from './build/build.command.js';
-import { check } from './check/check.command.js';
 import { EVERY_PASS } from './check/passes/passes.js';
 import type { Selected } from './check/passes/passes.js';
 import { badge, print } from './check/report/terminal.js';
-import { clean } from './clean/clean.command.js';
-import { dev } from './dev/dev.command.js';
-import { docsLayout } from './docs-layout/docs-layout.command.js';
-import { doctor } from './doctor/doctor.command.js';
-import { fix } from './fix/fix.command.js';
-import { gateLock } from './gate-lock/gate-lock.command.js';
-import { mutation } from './mutation/mutation.command.js';
-import { rehearse } from './rehearse/rehearse.command.js';
-import { start } from './start/start.command.js';
 import { helpOf, SURFACES } from './surface.js';
 import type { CommandName, Surface } from './surface.js';
-import { tsc } from './tsc/tsc.command.js';
 
 export { CHECK_PASSES } from './check/passes/passes.js';
 export type { CheckPass, Selected } from './check/passes/passes.js';
@@ -71,19 +58,71 @@ const isCommand = (name: string): name is CommandName => Object.hasOwn(SURFACES,
 type Command = (args: readonly string[], selected: Selected) => number | Promise<number>;
 
 const COMMANDS: Readonly<Record<CommandName, Command>> = {
-    baseline,
-    build,
-    check,
-    clean,
-    dev,
-    'docs-layout': docsLayout,
-    doctor: async () => await doctor(process.cwd()),
-    fix,
-    'gate-lock': gateLock,
-    mutation,
-    rehearse,
-    start,
-    tsc,
+    baseline: async () => {
+        const { baseline } = await import('./baseline/baseline.command.js');
+
+        return await baseline();
+    },
+    build: async (args) => {
+        const { build } = await import('./build/build.command.js');
+
+        return await build(args);
+    },
+    check: async (args, selected) => {
+        const { check } = await import('./check/check.command.js');
+
+        return await check(args, selected);
+    },
+    clean: async () => {
+        const { clean } = await import('./clean/clean.command.js');
+
+        return clean();
+    },
+    dev: async () => {
+        const { dev } = await import('./dev/dev.command.js');
+
+        return await dev();
+    },
+    'docs-layout': async (args) => {
+        const { docsLayout } = await import('./docs-layout/docs-layout.command.js');
+
+        return await docsLayout(args);
+    },
+    doctor: async () => {
+        const { doctor } = await import('./doctor/doctor.command.js');
+
+        return await doctor(process.cwd());
+    },
+    fix: async (args, selected) => {
+        const { fix } = await import('./fix/fix.command.js');
+
+        return await fix(args, selected);
+    },
+    'gate-lock': async () => {
+        const { gateLock } = await import('./gate-lock/gate-lock.command.js');
+
+        return gateLock();
+    },
+    mutation: async (args) => {
+        const { mutation } = await import('./mutation/mutation.command.js');
+
+        return await mutation(args);
+    },
+    rehearse: async (args) => {
+        const { rehearse } = await import('./rehearse/rehearse.command.js');
+
+        return await rehearse(args);
+    },
+    start: async (args) => {
+        const { start } = await import('./start/start.command.js');
+
+        return await start(args);
+    },
+    tsc: async (args) => {
+        const { tsc } = await import('./tsc/tsc.command.js');
+
+        return await tsc(args);
+    },
 };
 
 // outside: jiti reads its cache place from options only; the variable merely turns the cache off.

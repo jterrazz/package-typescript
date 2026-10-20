@@ -88,6 +88,8 @@ export default defineConfig({
 
 The folder still compiles under the unit's `tsconfig.json`, so how it spells an import (`import/extensions`, which module resolution decides) stays the unit's. A path that is no folder of the unit (a glob, `..`), a platform outside the list and a folder with no reason are refused where the settings are read.
 
+A `cli` loads each of its commands when it dispatches to it: its table of commands holds one `import()` per command, never a static import of them all. A test that spawns one command then loads that command's modules alone, so the mutation suite credits a mutant of a command's module only to the specs that run that command, where a static table credits it to every spec that spawns the binary; measured on this package, the test files that cover a mutant of a module's top-level code fell from 179 to 37 on average ([ADR-030](../decisions/030-the-suite-stage-pays-for-what-its-change-reaches-on-every-worker.md)).
+
 A `library` or a `cli` whose manifest says `"private": true` is not published: a monorepo's internal package its siblings import through `workspace:*`, or a binary its repository compiles and installs itself. The Publish pass leaves it, its manual owes no release guide, and a private `cli` owes no `bin`; a private `library` still names its `exports`, which is how its siblings import it.
 
 ### A monorepo

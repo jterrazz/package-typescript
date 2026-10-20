@@ -6,7 +6,8 @@
 The owner accepted the plan on 2026-10-20 ("tout ok"): the three levers
 below, the lesson and message files declared presentation, the lazy loading
 of commands measured before any convention, and the slowest spec files
-split only where they set the dry run's floor.
+split only where they set the dry run's floor. Measured, the lazy loading
+was adopted on 2026-10-20 ("faire toutes les optis").
 
 ## Context
 
@@ -46,6 +47,12 @@ it.
   names each test it could not follow, so the next run still knows its file.
 - What the suite's dry run will run is printed before it starts:
   `dry run: 41 of 365 test files the change reaches, on 7 worker(s)`.
+- A `cli` loads each command when it dispatches to it, one `import()` per
+  entry of its table of commands, this package's `src/commands/main.ts`
+  first. A spawned command then loads its own modules alone, so a mutant
+  of what one command loads is credited to the specs that run that command,
+  not to every spec that spawns the binary. It is the `cli` kind's
+  convention, stated in [Configuration](../reference/configuration.md#kind-and-platform).
 - The files that hold only the messages a refusal prints are declared
   presentation, amending ADR-029's "lesson prose stays mutated": a golden
   compares each whole. The lessons a rule or a pass teaches stay mutated,
