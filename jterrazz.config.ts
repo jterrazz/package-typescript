@@ -29,6 +29,10 @@ export default defineConfig({
                     'the check specs of specs/cli/check/ compare what the gate prints whole, against their __expected__/ goldens',
                 'src/commands/doctor/**':
                     'the doctor specs of specs/cli/doctor/ compare what it prints whole, resolved-config.spec.yaml first',
+                'src/commands/mutation/refused.ts':
+                    'specs/cli/typescript/mutation.spec.ts and the documents of specs/cli/mutation/ compare each refusal it prints whole',
+                'src/commands/mutation/uncompiled.ts':
+                    'specs/cli/typescript/mutation-made.spec.ts compares the refusal it prints whole',
                 'src/commands/mutation/verdict.ts':
                     'specs/cli/typescript/mutation.spec.ts compares each verdict it prints whole',
             },
