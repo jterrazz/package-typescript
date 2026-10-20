@@ -79,3 +79,23 @@ with what its specs spawn. One count per core cannot fit both.
 - Vitest under `make test` keeps its own count of workers until
   `@jterrazz/test`'s preset reads `slotsFor`, and a gate one of its specs
   starts outside any other gate reads the machine whole.
+- Measured on this package, on a 10-core, 16 GB laptop that other
+  sessions also loaded, each gate a fresh clone of its branch with no
+  override and no `.artifacts/` (so every price was its seed):
+
+    | What                                | Before: 2 jobs                          | After: the model                        |
+    | ----------------------------------- | --------------------------------------- | --------------------------------------- |
+    | the whole `make check`, `npm ci` in | 2,465 s                                 | 1,431 s                                 |
+    | the module tests                    | 456.1 s on 2 runners                    | 239.8 s on 10 runners, the cpus binding |
+    | the whole suite                     | 1,844.4 s on 2 runners, dry run 582.6 s | 993.6 s on 10 runners, dry run 252.6 s  |
+    | mutants judged                      | 697, over the branch of ADR-030         | 972, over that branch and this one      |
+    | swap used, every 30 s               | not sampled                             | 5.4 GB at the start, 7.4 GB at the peak |
+
+    The two rows of mutants are no like-for-like: the branch after carries
+    ADR-030's change and this one, most of it in the code that drives
+    Stryker, which the slowest specs cover. The swap peak came in the
+    suite's mutant phase, ten runners priced at the 500 MB seed, and the
+    run learned 1,017 MB per suite runner for the next one. Gates of a
+    worktree that had learned 822 and 881 MB ran their incremental suite on
+    8 and 7 runners, the memory binding, in 493 s and 481 s; the one
+    sampled raised swap by 1.1 GB.
