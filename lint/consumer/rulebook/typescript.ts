@@ -213,11 +213,11 @@ export default fragment({
             '11.0.0',
         ),
         'typescript/explicit-function-return-type': off({
-            by: 'TypeScript: the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS4058)',
+            by: 'TypeScript: the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS2883, TS4058)',
             kind: 'covered',
         }),
         'typescript/explicit-module-boundary-types': off({
-            by: 'TypeScript: the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS4058)',
+            by: 'TypeScript: the build emits every published declaration with the type-checker, which refuses an inferred type it cannot name (TS2742, TS2883, TS4058)',
             kind: 'covered',
         }),
         'typescript/no-empty-interface': off({

@@ -37,7 +37,7 @@ Three more things follow from the manifest. A `library` or a `cli` that is `priv
 
 A module two entries share is written once per step that bundles them, under a name only that step writes: `dist/shared-<name>.js` for the ESM entries, `dist/shared-<name>.cjs` for the CommonJS ones, `dist/bin-shared-<name>.js` for the bins built under the interpreter line, and `dist/browser-shared-<name>.js` for the `browser` conditions. Every step writes into `dist/`, so a name two steps shared would leave one step's entries importing the other's code.
 
-A `library` emits its declarations with the type-checker, so an export with no annotation is published with the type the checker infers for it. [ADR-018](../decisions/018-a-project-declares-what-it-is-and-every-config-follows.md#consequences) records why they are not built file by file with `isolatedDeclarations`.
+A `library` emits its declarations with the type-checker, so an export with no annotation is published with the type the checker infers for it. An inferred type a consumer could not name, such as one only a dependency of a dependency resolves, fails the build (TS2883) rather than ship a declaration naming it. [ADR-018](../decisions/018-a-project-declares-what-it-is-and-every-config-follows.md#consequences) records why they are not built file by file with `isolatedDeclarations`.
 
 ### What the manifest does not name
 
