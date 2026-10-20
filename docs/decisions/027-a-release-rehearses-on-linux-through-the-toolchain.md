@@ -1,7 +1,9 @@
 # ADR-027: A release rehearses on Linux through the toolchain
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-19
+
+The owner accepted it on 2026-10-20 ("tout ok").
 
 ## Context
 
