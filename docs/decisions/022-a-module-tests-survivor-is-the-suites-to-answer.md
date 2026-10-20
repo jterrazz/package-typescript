@@ -4,6 +4,7 @@
 **Date:** 2026-10-08
 **Accepted:** 2026-10-08: the owner's word on the pilots' list ("résoud tout les pbs qu'on a observé", "fais au mieux"), which named the reversal of ADR-020's order.
 **Amends:** [ADR-020](020-mutation-measures-the-whole-suite-over-a-change.md): the order of its two runs.
+**Amended by:** [ADR-029](029-a-mutant-is-made-where-it-can-teach-and-judged-by-what-its-code-is.md): a module survivor stands on a line the change reaches, since no other line is mutated.
 
 ## Context
 

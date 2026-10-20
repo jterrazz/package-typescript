@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-04
-**Amended by:** [ADR-020](020-mutation-measures-the-whole-suite-over-a-change.md), for what the verdict reaches: the whole suite over a change, and the module-level code a module test loads.
+**Amended by:** [ADR-020](020-mutation-measures-the-whole-suite-over-a-change.md), for what the verdict reaches: the whole suite over a change, and the module-level code a module test loads; [ADR-029](029-a-mutant-is-made-where-it-can-teach-and-judged-by-what-its-code-is.md): the zero is domain's, and glue is held to a bar.
 
 Written 2026-10-04 from commits 7e2c711f and 0654950b, which took the
 decision on 2026-10-03, and from the reading of the specs' mutants that
