@@ -9,7 +9,7 @@ export function clean(): number {
     const artefacts = join(process.cwd(), ARTIFACTS);
     print(`${badge('TYPESCRIPT')} Removing artefacts...\n\n`);
     if (existsSync(artefacts)) {
-        rmSync(artefacts, { force: true, recursive: true });
+        rmSync(artefacts, { recursive: true });
         print(`${GREEN}Removed ${ARTIFACTS}/${RESET}\n`);
     } else {
         print(`${GREEN}Nothing to remove: ${ARTIFACTS}/ is already absent${RESET}\n`);
