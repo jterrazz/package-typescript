@@ -47,7 +47,7 @@ describe('stage-lease', () => {
         // Then - the cpus bind, the checkers are counted, and each runner hands on one cpu and a third of 56 GB
         expect(stageLease({ cpus: 3, memory: 64 * GB }, root, 'suite')).toStrictEqual({
             handed: { cpus: 1, memory: Math.floor((56 * GB) / 3) },
-            line: 'capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · 3 test runner(s) at 1024 MB, 2 checker(s) at 400 MB while checking: cpus bind',
+            line: 'capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · 3 test runner(s) at 1024 MB, 2 checker(s) at 720 MB while checking: cpus bind',
             pool: 'stryker-suite',
             runners: 3,
         });

@@ -55,6 +55,9 @@ checker's speed is runner slots as much as seconds.
 - The API comes from `@typescript/native`, an npm alias of
   `typescript@7.1.0-beta`, pinned exactly. `typescript` itself stays 6 for
   the tools that need its JavaScript API.
+- The checker's seed price is the most its process and the native
+  compiler's held together over the runs below, 720 MB, where the seed was
+  400 MB.
 
 ## Consequences
 

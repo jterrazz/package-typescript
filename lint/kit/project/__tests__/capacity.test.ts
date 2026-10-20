@@ -311,7 +311,7 @@ describe('capacity', () => {
             SEED_PRICES['stryker-suite'],
             600 * MB,
             250 * MB,
-            400 * MB,
+            720 * MB,
             {
                 'stryker-modules': [250 * MB],
                 'stryker-suite': [200, 300, 400, 500, 600].map((peak) => peak * MB),
@@ -334,7 +334,7 @@ describe('capacity', () => {
             priceOf(empty, 'vitest'),
             priceOf(empty, 'checker'),
             priceOf(garbled, 'vitest'),
-        ]).toStrictEqual([150 * MB, 400 * MB, 90 * MB]);
+        ]).toStrictEqual([150 * MB, 720 * MB, 90 * MB]);
     });
 
     test('slotsFor — the pool’s slots of the capacity given, priced in the project, never divided among the gates', () => {
@@ -346,12 +346,12 @@ describe('capacity', () => {
         priceLearned(project, 'vitest', GB);
         const environment = { [CAPACITY_VARIABLE]: 'cpus=8,memory=4g' };
 
-        // Then - 3.5 GB holds three 1 GB workers; the cpus bind under a large memory; a project with no price takes the seed
+        // Then - 3.5 GB holds three 1 GB workers; the cpus bind under a large memory; a project with no price takes the seed, four 720 MB checkers in 3.5 GB
         expect([
             slotsFor(project, 'vitest', environment),
             slotsFor(project, 'vitest', { [CAPACITY_VARIABLE]: 'cpus=2,memory=64g' }),
             slotsFor(folder(), 'checker', environment),
-        ]).toStrictEqual([3, 2, 8]);
+        ]).toStrictEqual([3, 2, 4]);
     });
 
     test('slotsFor — a machine read is shared among the gates, the lease on this checkout counted as the run’s own; a capacity the variable cannot read is refused', () => {
