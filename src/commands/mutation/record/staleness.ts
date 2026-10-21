@@ -1,6 +1,6 @@
-import { isList } from '../../../lint/kit/project/json.js';
-import { reportEdited, testsOf } from '../../../lint/kit/project/mutation-report.js';
-import type { ReportMutant, ReportTest } from '../../../lint/kit/project/mutation-report.js';
+import { isList } from '../../../../lint/kit/project/json.js';
+import { reportEdited, testsOf } from '../../../../lint/kit/project/mutation-report.js';
+import type { ReportMutant, ReportTest } from '../../../../lint/kit/project/mutation-report.js';
 import { isUnder, roleOf } from './inputs.js';
 import type { Reach, Role } from './inputs.js';
 import type { Ran } from './observed.js';
@@ -46,26 +46,42 @@ export type Staleness = {
     reach: (file: string) => Reach;
 };
 
-// invariant: a test is stale when its file changed, when ground under a folder above it changed, when a source its own process loads changed, and when a source changed that a process it spawned ran, or loaded, unless the change reaches only what the source's functions do; a test whose processes the last run could not follow is stale whatever source changed.
-export function isStale(test: ReportTest, change: ChangedFiles, staleness: Staleness): boolean {
-    if (change.tests.has(test.file) || change.grounds.some((root) => isUnder(test.file, root))) {
-        return true;
-    }
-    if (change.sources.size === 0) {
-        return false;
-    }
+// invariant: a test reaches a source when its own process loads it, when a process it spawned ran it, or loaded it while what is asked of it sits outside every function; a test whose processes the last run could not follow reaches every source.
+export function testReaches(
+    test: ReportTest,
+    staleness: Staleness,
+    {
+        inFunctions,
+        sources,
+    }: { inFunctions: (source: string) => boolean; sources: readonly string[] },
+): boolean {
     const loads = staleness.reach(test.file);
     const spawned = staleness.ranBy(test.key);
 
     return (
         loads.everything ||
         spawned === undefined ||
-        [...change.sources].some(
+        sources.some(
             (source) =>
                 loads.files.has(source) ||
                 spawned.ran.has(source) ||
-                (spawned.loaded.has(source) && !staleness.onlyFunctions(source)),
+                (spawned.loaded.has(source) && !inFunctions(source)),
         )
+    );
+}
+
+// invariant: a test is stale when its file changed, when ground under a folder above it changed, and when it reaches a source that changed, a change reaching only what the source's functions do being outside what a spawned process that only loaded it reaches.
+export function isStale(test: ReportTest, change: ChangedFiles, staleness: Staleness): boolean {
+    if (change.tests.has(test.file) || change.grounds.some((root) => isUnder(test.file, root))) {
+        return true;
+    }
+
+    return (
+        change.sources.size > 0 &&
+        testReaches(test, staleness, {
+            inFunctions: staleness.onlyFunctions,
+            sources: [...change.sources],
+        })
     );
 }
 

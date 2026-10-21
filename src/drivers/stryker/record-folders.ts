@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import process from 'node:process';
 
 import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { isList, objectOf } from '../../../lint/kit/project/json.js';
 import {
     IN_PROCESS_VARIABLE,
     OBSERVED_TESTS_VARIABLE,
@@ -40,4 +41,30 @@ export function recordFoldersRemoved(folders: RecordFolders): void {
     for (const folder of Object.values(folders)) {
         rmSync(folder, { recursive: true });
     }
+}
+
+/** One test as the dry run saw it, by its key; a test with neither list is one the run could not follow into every process it spawned. */
+export type ObservedTest = {
+    loaded?: readonly string[] | undefined;
+    ran?: readonly string[] | undefined;
+    test: string;
+};
+
+const sourcesListed = (sources: unknown): string[] | undefined =>
+    isList(sources) ? sources.map(String) : undefined;
+
+function observedTestOf(value: unknown): ObservedTest {
+    const { loaded, ran, test } = objectOf(value);
+
+    return { loaded: sourcesListed(loaded), ran: sourcesListed(ran), test: String(test) };
+}
+
+/** Every test the dry run's processes wrote into the folder, as they wrote it. */
+export function observedIn(folder: string): ObservedTest[] {
+    return readdirSync(folder).flatMap((name) => {
+        const text = String(readFileSync(join(folder, name)));
+        const records: unknown = JSON.parse(text);
+
+        return isList(records) ? records.map((record) => observedTestOf(record)) : [];
+    });
 }

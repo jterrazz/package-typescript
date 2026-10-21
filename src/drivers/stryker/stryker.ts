@@ -15,13 +15,11 @@ import { handOver } from '../run.js';
 import { besideOf, withoutBesideLinks } from './beside.js';
 import { headlessEnvironment } from './headless.js';
 import { LOG_IGNORER, PINNED_TEXT_IGNORER } from './ignorers.js';
-import { incrementalKeptWhileInputsHold, recordInputs } from './incremental.js';
-import type { DryRunOver, Kept, LinesInFunctions, StaysInFunctions } from './incremental.js';
 import { heldReport, mutatedLines, strykerMutate } from './mutate-entries.js';
-import { observedFrom, observedIn } from './observed.js';
 import { killersLaid, PREVIOUS_KILLERS } from './previous-killers.js';
 import { PROGRESS_REPORTER } from './progress-reporter.js';
-import { linesIn, recordFoldersMade, recordFoldersRemoved } from './record-folders.js';
+import { linesIn, observedIn, recordFoldersMade, recordFoldersRemoved } from './record-folders.js';
+import type { ObservedTest } from './record-folders.js';
 import { sandboxScriptSource, vitestConfigSource } from './sources.js';
 
 const oneGlob = (globs: readonly string[]): string =>
@@ -125,37 +123,20 @@ function stageEnvironment(project: string): Readonly<Record<string, string>> {
     return headlessEnvironment(join(project, MUTATION_OUTPUT, 'headless'), path);
 }
 
-/** Keeps of the stage's incremental report what the change since its run leaves standing, none of it when the run starts cold, and returns what the stage starts on. */
-export const reportKept = (
-    project: string,
-    stage: Stage,
-    kept: {
-        cold: boolean;
-        dryRunOver?: DryRunOver | undefined;
-        staysInFunctions: StaysInFunctions;
-    },
-): Kept => incrementalKeptWhileInputsHold(project, STAGES[stage.name].incremental, kept);
-
 export type Measured = { ranByTests: ReadonlySet<string>; report: unknown };
 
 /** What a stage ends on: what it measured, or Stryker's status when it failed. */
 export type StageOutcome = Measured | { status: number };
 
-/** What the suite's dry run runs before its first mutant: the test files it keeps of those the record knows, `undefined` for every one, on how many workers. */
-export type DryRunScope = {
-    files: undefined | { kept: number; known: number };
-    workers: number;
-};
+/** What a stage that ended measured, beside what its tests' processes were seen to run. */
+export type StageRan = Measured & { observed: readonly ObservedTest[] };
 
-/** How a stage runs: whether the sandbox builds first, from no report, on how many test runners, in which project, how a change and a mutated line are read, and who hears what the suite's dry run runs. */
+/** How a stage runs: whether the sandbox builds first, on how many test runners, in which project, and the test files its dry run is limited to, `undefined` for every one. */
 export type StageRun = {
     buildsFirst: boolean;
-    cold: boolean;
     concurrency: number;
-    dryRunScoped: (scope: DryRunScope) => void;
-    linesInFunctions: LinesInFunctions;
     project: string;
-    staysInFunctions: StaysInFunctions;
+    testFiles: readonly string[] | undefined;
 };
 
 /** Whether a stage of `project` type-checks each mutant before its tests run it. */
@@ -203,36 +184,22 @@ async function stageWritten(
     );
 }
 
-/** A stage's report, or Stryker's status when it failed: a failed run leaves no report this one could be judged by. */
+/** A stage's report and what its tests were seen to run, or Stryker's status when it failed: a failed run leaves no report this one could be judged by. */
 export async function strykerRun(
     scope: { readonly exclude: readonly string[]; readonly mutated: readonly string[] },
     stage: Stage,
-    run: StageRun,
-): Promise<StageOutcome> {
-    const { buildsFirst, cold, concurrency, linesInFunctions, project } = run;
+    { buildsFirst, concurrency, project, testFiles }: StageRun,
+): Promise<StageRan | { status: number }> {
     const files = STAGES[stage.name];
-    const suite = stage.name === 'suite';
-    const lines = mutatedLines(stage.mutate);
     const folders = recordFoldersMade(project);
     const killers = killersLaid(project, files.report);
-    const { carried, dryRun, inputs } = reportKept(project, stage, {
-        cold,
-        dryRunOver: suite ? { lines, linesInFunctions } : undefined,
-        staysInFunctions: run.staysInFunctions,
-    });
     await stageWritten(scope, stage, {
         buildsFirst,
         concurrency,
-        mutated: [...lines.keys()],
+        mutated: [...mutatedLines(stage.mutate).keys()],
         project,
-        testFiles: dryRun?.kept,
+        testFiles,
     });
-    if (suite) {
-        run.dryRunScoped({
-            files: dryRun && { kept: dryRun.kept.length, known: dryRun.known },
-            workers: concurrency,
-        });
-    }
     const status = await withEnvironment(
         { ...stageEnvironment(project), ...killers },
         async () =>
@@ -248,15 +215,13 @@ export async function strykerRun(
             ),
     );
     const ranByTests = linesIn(folders.ranByTests);
-    // invariant: a test file the dry run left out holds no test the change made stale, so what the last record says of its tests still holds and is carried into this one.
-    const observed = observedFrom([...observedIn(folders.observed), ...carried], inputs);
+    const observed = observedIn(folders.observed);
     recordFoldersRemoved(folders);
 
     if (status !== 0) {
         return { status };
     }
-    recordInputs(project, files.incremental, { inputs: inputs ?? {}, observed });
     const report = String(readFileSync(join(project, MUTATION_OUTPUT, `${files.report}.json`)));
 
-    return { ranByTests, report: heldReport(JSON.parse(report), stage.mutate) };
+    return { observed, ranByTests, report: heldReport(JSON.parse(report), stage.mutate) };
 }

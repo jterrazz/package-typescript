@@ -12,19 +12,24 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, test } from 'vitest';
 
-import { isList, objectOf, parsedObject } from '../../../../lint/kit/project/json.js';
-import { diffStaysInFunctions, linesStayInFunctions } from '../../tsc/change-shape.js';
+import { isList, objectOf, parsedObject } from '../../../../../lint/kit/project/json.js';
+import { STAGES } from '../../../../../lint/kit/project/mutation-stages.js';
+import type { ObservedTest } from '../../../../drivers/stryker/record-folders.js';
+import {
+    diffStaysInFunctions,
+    linesStayInFunctions,
+} from '../../../../drivers/tsc/change-shape.js';
 import { incrementalKeptWhileInputsHold, recordInputs } from '../incremental.js';
 import { observedFrom } from '../observed.js';
-import type { ObservedTest } from '../observed.js';
-import { reportKept } from '../stryker.js';
 import { FILES, MODULE_TESTS, REPORT, SPEC_QUIET, SPEC_RAN_A } from './incremental.fixtures.js';
 
-const startedIn = (root: string, cold = false) =>
-    incrementalKeptWhileInputsHold(root, 'suite-incremental', {
+const keptOf = (root: string, incremental: string, cold: boolean) =>
+    incrementalKeptWhileInputsHold(root, incremental, {
         cold,
         staysInFunctions: diffStaysInFunctions,
-    }).inputs;
+    });
+
+const startedIn = (root: string, cold = false) => keptOf(root, 'suite-incremental', cold).inputs;
 
 const roots: string[] = [];
 
@@ -292,37 +297,31 @@ describe('incremental', () => {
         expect(existsSync(reportOf(root))).toBe(false);
     });
 
-    test('reportKept — each stage keeps its own report, and a cold start drops its own', () => {
+    test('incrementalKeptWhileInputsHold — each stage keeps its own report, and a cold start drops its own', () => {
         // Given - both stages' reports written on the tree as it stands
         const root = projectWith(FILES);
-        const suite = { mutate: [], name: 'suite' } as const;
-        const modules = { mutate: [], name: 'modules' } as const;
+        const suite = STAGES.suite.incremental;
+        const modules = STAGES.modules.incremental;
         const suiteReport = join(root, '.artifacts/stryker/suite-incremental.json');
         const modulesReport = join(root, '.artifacts/stryker/incremental.json');
         recordInputs(root, 'suite-incremental', {
-            inputs:
-                reportKept(root, suite, { cold: false, staysInFunctions: diffStaysInFunctions })
-                    .inputs ?? {},
+            inputs: keptOf(root, suite, false).inputs ?? {},
             observed: observedFrom([]),
         });
         recordInputs(root, 'incremental', {
-            inputs:
-                reportKept(root, modules, {
-                    cold: false,
-                    staysInFunctions: diffStaysInFunctions,
-                }).inputs ?? {},
+            inputs: keptOf(root, modules, false).inputs ?? {},
             observed: observedFrom([]),
         });
         writeFileSync(suiteReport, '{}');
         writeFileSync(modulesReport, '{}');
 
         // When - a warm start of each, then a cold one of each
-        reportKept(root, suite, { cold: false, staysInFunctions: diffStaysInFunctions });
-        reportKept(root, modules, { cold: false, staysInFunctions: diffStaysInFunctions });
+        keptOf(root, suite, false);
+        keptOf(root, modules, false);
         const warm = [existsSync(suiteReport), existsSync(modulesReport)];
-        reportKept(root, modules, { cold: true, staysInFunctions: diffStaysInFunctions });
+        keptOf(root, modules, true);
         const afterModules = [existsSync(suiteReport), existsSync(modulesReport)];
-        reportKept(root, suite, { cold: true, staysInFunctions: diffStaysInFunctions });
+        keptOf(root, suite, true);
 
         // Then - warm keeps both, each cold start drops its own stage's
         expect([

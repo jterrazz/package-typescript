@@ -1,4 +1,4 @@
-import type { ObservedTest } from '../observed.js';
+import type { ObservedTest } from '../../../../drivers/stryker/record-folders.js';
 
 const mutant = (id: string, coveredBy: string[], killedBy: string[] = []) => ({
     coveredBy,

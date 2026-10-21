@@ -14,7 +14,6 @@ import { STAGES } from '../../../lint/kit/project/mutation-stages.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { toolchainIn } from '../../drivers/node/node.js';
 import { strykerPrepared } from '../../drivers/stryker/prepared.js';
-import { strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Stage, StageOutcome } from '../../drivers/stryker/stryker.js';
 import { diffStaysInFunctions, linesStayInFunctions } from '../../drivers/tsc/change-shape.js';
 import { firstCompileError } from '../../drivers/tsc/compile-error.js';
@@ -28,6 +27,7 @@ import { baseFor, baseTreeOf, changeOf, namesACommit, treeChangeFor } from './ch
 import type { Base } from './change.js';
 import { capHeld, glueCapped, glueOf } from './glue-cap.js';
 import { memberRuns, unownedRange } from './members.js';
+import { recordedStageRun } from './record/stage-run.js';
 import { concluded, judgedRecorded, memberRecorded, recorder, stageRecorded } from './recorded.js';
 import type { Recorded } from './recorded.js';
 import { measuredNothing, refusedCapacity, refusedRange, refusedSince } from './refused.js';
@@ -68,7 +68,7 @@ async function measured(scope: MutationScope, stage: Stage, run: Run): Promise<S
         project,
         lease,
         async () =>
-            await strykerRun(scope, stage, {
+            await recordedStageRun(scope, stage, {
                 buildsFirst: buildsOf(project),
                 cold,
                 concurrency,

@@ -2,10 +2,10 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join, posix } from 'node:path';
 
-import { ARTIFACTS } from '../../../lint/kit/project/build-plan.js';
-import { listNotIgnored } from '../../../lint/kit/project/git-tree.js';
-import { GROUND_FOLDERS, SETUP_FOLDER } from '../../../lint/kit/project/ground.js';
-import { objectOf, stringOf } from '../../../lint/kit/project/json.js';
+import { ARTIFACTS } from '../../../../lint/kit/project/build-plan.js';
+import { listNotIgnored } from '../../../../lint/kit/project/git-tree.js';
+import { GROUND_FOLDERS, SETUP_FOLDER } from '../../../../lint/kit/project/ground.js';
+import { objectOf, stringOf } from '../../../../lint/kit/project/json.js';
 
 /** Every file a run's tests may read, by its hash; the install stands for the toolchain git does not list. */
 export type Inputs = Readonly<Record<string, string>>;

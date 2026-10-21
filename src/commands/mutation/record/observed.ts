@@ -1,18 +1,9 @@
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-
-import { isList, objectOf } from '../../../lint/kit/project/json.js';
+import { isList, objectOf } from '../../../../lint/kit/project/json.js';
+import type { ObservedTest } from '../../../drivers/stryker/record-folders.js';
 import type { Inputs } from './inputs.js';
 
 /** What a test's processes did in the last dry run: the sources whose functions they ran, and the sources of every script they loaded. */
 export type Ran = { loaded: ReadonlySet<string>; ran: ReadonlySet<string> };
-
-/** One test as the dry run saw it, by its key; a test with neither list is one the run could not follow into every process it spawned. */
-export type ObservedTest = {
-    loaded?: readonly string[] | undefined;
-    ran?: readonly string[] | undefined;
-    test: string;
-};
 
 /** The tests of the last dry run, each set of sources written once: a test names the set its processes ran and the set they loaded. */
 export type Observed = {
@@ -82,25 +73,6 @@ export function observedTestsOf(
                 ? { test }
                 : { loaded: [...ran.loaded], ran: [...ran.ran], test };
         });
-}
-
-const sourcesListed = (sources: unknown): string[] | undefined =>
-    isList(sources) ? sources.map(String) : undefined;
-
-function observedTestOf(value: unknown): ObservedTest {
-    const { loaded, ran, test } = objectOf(value);
-
-    return { loaded: sourcesListed(loaded), ran: sourcesListed(ran), test: String(test) };
-}
-
-/** Every test the dry run's processes wrote into the folder, as they wrote it. */
-export function observedIn(folder: string): ObservedTest[] {
-    return readdirSync(folder).flatMap((name) => {
-        const text = String(readFileSync(join(folder, name)));
-        const records: unknown = JSON.parse(text);
-
-        return isList(records) ? records.map((record) => observedTestOf(record)) : [];
-    });
 }
 
 const numbersOf = (value: unknown): number[] => (isList(value) ? value.map(Number) : []);

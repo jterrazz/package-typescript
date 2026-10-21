@@ -1,17 +1,18 @@
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
-import { gitRun } from '../../../lint/kit/project/git.js';
-import { parsedObject, stringRecordOf } from '../../../lint/kit/project/json.js';
-import { readManifest } from '../../../lint/kit/project/manifest.js';
-import { testFileOf } from '../../../lint/kit/project/mutation-report.js';
+import { MUTATION_OUTPUT } from '../../../../lint/kit/project/build-plan.js';
+import { gitRun } from '../../../../lint/kit/project/git.js';
+import { parsedObject, stringRecordOf } from '../../../../lint/kit/project/json.js';
+import { readManifest } from '../../../../lint/kit/project/manifest.js';
+import { testFileOf } from '../../../../lint/kit/project/mutation-report.js';
+import type { ObservedTest } from '../../../drivers/stryker/record-folders.js';
 import { dryRunFilesOf } from './dry-run-files.js';
 import type { DryRunFiles, MutatedSource } from './dry-run-files.js';
 import { changedBetween, inputsOf, isLoadable, ownBuildOf, reachOf, roleOf } from './inputs.js';
 import type { Inputs } from './inputs.js';
 import { observedOf, observedOnDisk, observedTestsOf, ranBy } from './observed.js';
-import type { Observed, ObservedTest } from './observed.js';
+import type { Observed } from './observed.js';
 import { reportAfter } from './staleness.js';
 import type { Staleness } from './staleness.js';
 

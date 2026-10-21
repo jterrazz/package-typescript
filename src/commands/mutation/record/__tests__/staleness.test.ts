@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
 
-import { isList, objectOf } from '../../../../lint/kit/project/json.js';
+import { isList, objectOf } from '../../../../../lint/kit/project/json.js';
+import type { ObservedTest } from '../../../../drivers/stryker/record-folders.js';
 import { ownBuildOf, reachOf } from '../inputs.js';
 import { observedFrom, ranBy } from '../observed.js';
-import type { ObservedTest } from '../observed.js';
 import { reportAfter } from '../staleness.js';
 import type { Staleness } from '../staleness.js';
 

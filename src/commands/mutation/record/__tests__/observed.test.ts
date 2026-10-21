@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { parsedObject } from '../../../../lint/kit/project/json.js';
+import { parsedObject } from '../../../../../lint/kit/project/json.js';
 import { observedFrom, observedOf, observedOnDisk, observedTestsOf, ranBy } from '../observed.js';
 
 describe('observed', () => {

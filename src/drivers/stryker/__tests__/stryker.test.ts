@@ -206,15 +206,7 @@ describe('stryker', () => {
         const outcome = await strykerRun(
             { exclude: [], mutated: ['src/**/*.ts'] },
             { mutate: ['src/a.ts'], name: 'modules' },
-            {
-                buildsFirst: false,
-                cold: true,
-                concurrency: 1,
-                dryRunScoped: () => undefined,
-                linesInFunctions: () => false,
-                project,
-                staysInFunctions: () => false,
-            },
+            { buildsFirst: false, concurrency: 1, project, testFiles: undefined },
         );
         const written = existsSync(join(project, '.artifacts/stryker/stryker.config.json'));
         rmSync(project, { force: true, recursive: true });
@@ -222,6 +214,7 @@ describe('stryker', () => {
         // Then - the config is the project's, and the report measured is the one its run left
         expect(written).toBe(true);
         expect(outcome).toStrictEqual({
+            observed: [],
             ranByTests: new Set(),
             report: { files: { 'src/a.ts': { mutants: [] } }, schemaVersion: '2' },
         });
