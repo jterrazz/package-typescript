@@ -117,3 +117,11 @@ it.
   mutator, its replacement and the code it replaces match, so one whose
   source changed around it still finds its killer. The order still moves
   no verdict.
+- Added and accepted by the owner on 2026-10-21 ("2. ok"): the quickest
+  first order is frozen at the dry run's measure. A mutant's sort reads
+  each file's duration once, at the first sort that meets the file, and
+  never again: Vitest records a file a stopped run skipped as taking no
+  time, so a duration read after each mutant sent the files the last run
+  never reached to the front of the next. On 8 mutants of one source over
+  3 spec files, a kept worker ran its mutant phase in 52 s against 10 s
+  isolated; with the order frozen, 10 s, the same 8 killed.

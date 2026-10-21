@@ -21,6 +21,7 @@ const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
 };`;
 
 // outside: Vitest runs the slowest file first, and Stryker stops a mutant's run at the first test that fails; the file whose test killed the mutant in the stage's last report runs first, then the files with a test whose processes ran a function of the mutant's source run first (a test that spawned nothing, or one the dry run could not follow, among them), since a mutant a spawned process only loaded is credited to every file that spawned one, and within each group the file the last run took least time over runs first, so a mutant a quick test detects never waits on a slow one.
+// hazard: Vitest records a file a stopped run skipped as taking no time, so a duration read again after a mutant's run would send the files that run never reached to the front of the next; a mutant's sort reads each file's duration once, at its first, from the dry run's measure.
 export const relevantFirstSource = (
     mutated: readonly string[],
 ): string => `const mutantSources = new Map();
@@ -62,11 +63,23 @@ const killerOf = (id) => {
     return killers[id];
 };
 
+const frozenDurations = new Map();
+
 class RelevantFirst extends BaseSequencer {
     async sort(files) {
         const { root } = this.ctx.config;
-        const took = (file) => this.ctx.cache.getFileTestResults(\`\${file.project.name}:\${relative(root, file.moduleId)}\`)?.duration ?? Number.POSITIVE_INFINITY;
         const { activeMutant, mode } = this.ctx.getRootProject().getProvidedContext();
+        const timed = (key) => this.ctx.cache.getFileTestResults(key)?.duration ?? Number.POSITIVE_INFINITY;
+        const took = (file) => {
+            const key = \`\${file.project.name}:\${relative(root, file.moduleId)}\`;
+            if (mode !== 'mutant') {
+                return timed(key);
+            }
+            if (!frozenDurations.has(key)) {
+                frozenDurations.set(key, timed(key));
+            }
+            return frozenDurations.get(key);
+        };
         const source = mode === 'mutant' ? sourceOfMutant(root, String(activeMutant)) : undefined;
         const tests = source === undefined ? undefined : ranByFileOf();
         const relevant = (file) => tests === undefined || (tests.get(relative(root, file.moduleId)) ?? [undefined]).some((ran) => ran === undefined || ran.has(source));

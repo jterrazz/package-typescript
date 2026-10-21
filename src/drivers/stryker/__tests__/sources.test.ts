@@ -28,6 +28,8 @@ type Sequencer = { sort: (files: Spec[]) => Promise<Spec[]> };
 
 type SequencerClass = new (ctx: unknown) => Sequencer;
 
+type Sort = (specs: Spec[]) => Promise<string[]>;
+
 const isClass = (value: unknown): value is SequencerClass => typeof value === 'function';
 
 const specOf = (root: string, project: string, path: string): Spec => ({
@@ -43,8 +45,8 @@ type Sorting = {
 
 let loadedModules = 0;
 
-// invariant: each sort loads the sequencer afresh, since it reads the record and the killers once per process.
-async function sortedBy({ durations, provided, root }: Sorting, specs: Spec[]): Promise<string[]> {
+// invariant: each sequencer is loaded afresh, since it reads the record and the killers once per process; the durations and the context it is handed are read as they stand at each sort.
+async function sequencerOver({ durations, provided, root }: Sorting): Promise<Sort> {
     loadedModules += 1;
     const module = `// ${String(loadedModules)}
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -60,7 +62,7 @@ export { RelevantFirst };
     const imported: unknown = await import(`data:text/javascript,${encodeURIComponent(module)}`);
     const { RelevantFirst } = objectOf(imported);
     if (!isClass(RelevantFirst)) {
-        return [];
+        return async () => [];
     }
     const sequencer = new RelevantFirst({
         cache: {
@@ -71,9 +73,14 @@ export { RelevantFirst };
         getRootProject: () => ({ getProvidedContext: () => provided }),
     });
     const sorted: Sequencer['sort'] = sequencer.sort.bind(sequencer);
-    const order = await sorted(specs);
 
-    return order.map(({ moduleId }) => relative(root, moduleId));
+    return async (specs) => (await sorted(specs)).map(({ moduleId }) => relative(root, moduleId));
+}
+
+async function sortedBy(sorting: Sorting, specs: Spec[]): Promise<string[]> {
+    const sort = await sequencerOver(sorting);
+
+    return sort(specs);
 }
 
 const DURATIONS = {
@@ -167,6 +174,31 @@ describe('sources', () => {
                 'specs/runs.spec.ts',
                 'specs/never-timed.spec.ts',
             ],
+        });
+    });
+
+    test('sequencer — a mutant’s sort reads each file’s duration once, so a file a stopped run skipped never moves ahead; the dry run reads them as they stand', async () => {
+        // Given - one sequencer over the dry run's durations, and the files of mutant 7
+        const root = observedRun();
+        const durations: Record<string, number> = { ...DURATIONS };
+        const provided: Record<string, unknown> = { activeMutant: 7, mode: 'mutant' };
+        const sort = await sequencerOver({ durations, provided, root });
+        const specs = SPECS.map((path) =>
+            specOf(root, path.startsWith('src') ? 'unit' : 'cli', path),
+        );
+
+        // When - mutant 7's files are sorted, its run stops before the two slow specs, which the cache then holds as taking next to no time, and the next sorts run
+        const before = await sort(specs);
+        durations['cli:specs/blind.spec.ts'] = 0;
+        durations['cli:specs/runs.spec.ts'] = 1;
+        const after = await sort(specs);
+        provided.mode = 'dry-run';
+        const dryRun = await sort(specs);
+
+        // Then - the mutant's order holds, and the dry run reads the durations the cache holds now
+        expect({ after, dryRun: dryRun.slice(0, 2) }).toStrictEqual({
+            after: before,
+            dryRun: ['specs/blind.spec.ts', 'specs/runs.spec.ts'],
         });
     });
 
