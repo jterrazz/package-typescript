@@ -101,6 +101,12 @@ const DOM_PRESETS = ['next', 'astro', 'expo', 'react', 'browser'] as const;
 const resolvedUnder = (preset: (typeof PRESETS)[number]): ResolvedConfig =>
     resolvedConfig(consumer(`./__fixtures__/tsconfig-${preset}`, preset));
 
+function jsxRuntimeOf(preset: (typeof PRESETS)[number]): (string | undefined)[] {
+    const { compilerOptions } = resolvedUnder(preset);
+
+    return [compilerOptions.jsx, compilerOptions.jsxImportSource];
+}
+
 const FIXTURES = PRESETS.map((preset) => [preset, `./__fixtures__/tsconfig-${preset}`] as const);
 
 describe('tsconfig', () => {
@@ -189,18 +195,12 @@ describe('tsconfig', () => {
 
     test('each JSX preset compiles JSX for its own runtime', () => {
         // Given - a consumer of each preset that renders JSX
-        const runtimeOf = (preset: (typeof PRESETS)[number]): (string | undefined)[] => {
-            const { compilerOptions } = resolvedUnder(preset);
-
-            return [compilerOptions.jsx, compilerOptions.jsxImportSource];
-        };
-
         // Then - React's automatic runtime on the web, React's own import source under Astro, React Native's on Expo
         expect({
-            astro: runtimeOf('astro'),
-            expo: runtimeOf('expo'),
-            next: runtimeOf('next'),
-            react: runtimeOf('react'),
+            astro: jsxRuntimeOf('astro'),
+            expo: jsxRuntimeOf('expo'),
+            next: jsxRuntimeOf('next'),
+            react: jsxRuntimeOf('react'),
         }).toStrictEqual({
             astro: ['react-jsx', 'react'],
             expo: ['react-native', undefined],

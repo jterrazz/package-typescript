@@ -7,6 +7,23 @@ import { objectOf } from '../../../kit/project/json.js';
 import { PLATFORMS } from '../../../kit/project/project-kind.js';
 import { typescriptPreset } from '../preset.js';
 
+function arrayRulesOf(platform: 'expo' | 'react'): unknown[] {
+    const { settings } = typescriptPreset({
+        kind: platform === 'expo' ? 'mobile' : 'website',
+        platform,
+    });
+    const rules = objectOf(objectOf(objectOf(settings).oxlint).rules);
+
+    return [rules['unicorn/no-array-reverse'], rules['unicorn/no-array-sort']].map((rule) =>
+        rule === undefined
+            ? undefined
+            : {
+                  hermes: String(objectOf(rule).reason).includes('Hermes'),
+                  level: objectOf(rule).level,
+              },
+    );
+}
+
 describe('preset', () => {
     test('typescriptPreset — merges the standard, the kind’s and the platform’s, in that order, into the toolchain’s preset', () => {
         // Given - a library on next
@@ -342,24 +359,15 @@ describe('preset', () => {
 
     test('typescriptPreset — an Expo app turns off the two array rules whose fix Hermes cannot run, a React tree keeps them', () => {
         // Given - the oxlint rules of an Expo app and of a React website
-        const rulesOf = (platform: 'expo' | 'react'): Record<string, unknown> =>
-            objectOf(
-                objectOf(objectOf(typescriptPreset({ kind: platform === 'expo' ? 'mobile' : 'website', platform }).settings).oxlint)
-                    .rules,
-            );
-        const arrayRules = (rules: Record<string, unknown>): unknown[] => [
-            rules['unicorn/no-array-reverse'],
-            rules['unicorn/no-array-sort'],
-        ];
+        const rules = [arrayRulesOf('expo'), arrayRulesOf('react')];
 
         // Then - both are off on expo, each with Hermes as its reason, and stated nowhere on react
-        expect([arrayRules(rulesOf('expo')), arrayRules(rulesOf('react'))]).toStrictEqual([
+        expect(rules).toStrictEqual([
             [
-                { level: 'off', reason: expect.stringContaining('Hermes') },
-                { level: 'off', reason: expect.stringContaining('Hermes') },
+                { hermes: true, level: 'off' },
+                { hermes: true, level: 'off' },
             ],
             [undefined, undefined],
         ]);
     });
 });
-

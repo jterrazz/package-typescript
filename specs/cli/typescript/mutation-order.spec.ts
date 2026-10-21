@@ -94,13 +94,10 @@ describe('mutation order', () => {
         const mutants = Object.values(
             reportedMutants(result.file('.artifacts/stryker/suite-report.json').content),
         );
-        expect(mutants.map(({ status }) => status)).toStrictEqual(
-            mutants.map(() => 'Killed'),
-        );
-        expect(mutants.map(({ testsCompleted }) => testsCompleted).toSorted()).toStrictEqual([
-            ...mutants.slice(1).map(() => 1),
-            2,
-        ]);
+        expect(mutants.map(({ status }) => status)).toStrictEqual(mutants.map(() => 'Killed'));
+        expect(
+            mutants.map(({ testsCompleted }) => testsCompleted).toSorted((a, b) => a - b),
+        ).toStrictEqual([...mutants.slice(1).map(() => 1), 2]);
     });
 
     test('typescript mutation — a spec a stopped run skipped keeps its place for the next mutant, where the project keeps its worker', async () => {
@@ -112,10 +109,11 @@ describe('mutation order', () => {
 
         // Then - each mutant is killed by the middle spec, reached second, the slow spec its first run skipped never run ahead of it
         expect(result.exitCode).toBe(0);
+        const mutants = Object.values(
+            reportedMutants(result.file('.artifacts/stryker/suite-report.json').content),
+        );
         expect(
-            Object.values(
-                reportedMutants(result.file('.artifacts/stryker/suite-report.json').content),
-            ).map(({ coveredBy, status, testsCompleted }) => ({
+            mutants.map(({ coveredBy, status, testsCompleted }) => ({
                 covered: coveredBy.length,
                 status,
                 testsCompleted,
@@ -126,4 +124,3 @@ describe('mutation order', () => {
         ]);
     });
 });
-
