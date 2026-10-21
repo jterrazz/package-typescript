@@ -8,11 +8,12 @@ runs:
 
           found: `typescript check` has no flag --ignore-pattern, which is retired · why: a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository · fix: declare the folder in jterrazz.config.ts, where every gate reads it alike: `typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }` · read: docs/reference/quality-checks.md#a-root-beside-the-spine
 
-          Usage: typescript check [--json]
+          Usage: typescript check [--cold] [--json]
 
           Check types, lint, formatting, and unused code
 
           Flags:
+            --cold      Run every pass, whatever green verdict this tree holds
             --json      Print the drift report as one JSON object for a machine
             -h, --help  Print this help and run nothing
 

@@ -1,6 +1,6 @@
 import { directory } from '@jterrazz/test';
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
@@ -10,7 +10,7 @@ const CONSUMER = resolve(import.meta.dirname, '../__setup__/packed/consumer.ts')
 
 const OUTSIDE_CI = { CI: '' };
 
-// invariant: the first run of a pair is the packed command the second one runs, in a repository git can list, outside CI, so the second inherits its report.
+// invariant: the first run of a pair is the packed command the second one runs, in a repository git can list, outside CI, so the second inherits its report; the proof of its green is removed, so the second runs on the report as a host that restored no proof does.
 function measuredOnce(workdir: string): void {
     execFileSync('git', ['init', '--quiet'], { cwd: workdir });
     execFileSync('node', [CONSUMER, 'typescript', 'mutation'], {
@@ -18,6 +18,7 @@ function measuredOnce(workdir: string): void {
         env: { ...process.env, ...OUTSIDE_CI },
         stdio: 'pipe',
     });
+    rmSync(join(workdir, '.artifacts/proven'), { force: true, recursive: true });
 }
 
 describe('mutation report', () => {

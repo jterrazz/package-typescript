@@ -1,6 +1,6 @@
 # Commands
 
-Every command of the `typescript` binary. `check` and `fix` are the two a project runs every day; the rest build, run, measure, or adopt a release.
+Every command of the `typescript` binary. `check` and `fix` are the two a project runs every day; the rest build, run, test, measure, or adopt a release. `check`, `test` and `mutation` answer a tree they already proved green from that proof, and run nothing ([Quality checks § A tree proven green](quality-checks.md#a-tree-proven-green)).
 
 ```bash
 npx typescript build           # Build what the manifest publishes (ESM, CJS where it names one, types); --watch rebuilds on change and runs nothing
@@ -10,6 +10,7 @@ npx typescript check           # Every quality pass, in parallel, ending on a dr
 npx typescript fix             # Rewrite in place: lint, formatting, the .gitignore, spellings, fallen baseline counts
 npx typescript doctor          # Installed tool versions against the declared ranges, then where each setting comes from
 npx typescript baseline        # Record today's debt so that it may only fall
+npx typescript test            # The project's test script, unless this tree is proven green for it
 npx typescript mutation        # The module tests over the change, then the whole suite over the changed lines they leave
 npx typescript docs-layout .   # Check a repository's docs/ against the manual's shape
 npx typescript gate-lock       # Refuse while a running gate holds this checkout, naming its pid
@@ -24,6 +25,7 @@ npx typescript tsc             # The TypeScript 7 compiler, passed through
 | `check`, `fix`                 | [Quality checks](quality-checks.md), and its [flags and exit codes](quality-checks.md#flags-and-exit-codes) |
 | `doctor`, `baseline`           | [Adopt a stricter release](../guides/adopt-a-stricter-release.md#the-two-gestures)                          |
 | `mutation`                     | [Quality checks § Mutation](quality-checks.md#mutation)                                                     |
+| `test`                         | [Quality checks § A tree proven green](quality-checks.md#a-tree-proven-green)                               |
 | `docs-layout`                  | [Quality checks § Outside an npm project](quality-checks.md#outside-an-npm-project)                         |
 | `clean`                        | [Getting started § Where a tool's output goes](../start/getting-started.md#where-a-tools-output-goes)       |
 | `gate-lock`                    | [Quality checks § One gate per checkout](quality-checks.md#one-gate-per-checkout)                           |
@@ -37,7 +39,8 @@ Each command reads only the flags it declares, and refuses any other line before
 
 | Command                                        | Reads                                                                        |
 | ---------------------------------------------- | ---------------------------------------------------------------------------- |
-| `check`                                        | `--json`, once                                                               |
+| `check`                                        | `--cold` and `--json`, each once                                             |
+| `test`                                         | `--cold`, once                                                               |
 | `fix`, `baseline`                              | no flag                                                                      |
 | `mutation`                                     | `--cold`, `--mutate <ranges>` and `--since <ref>`, each once                 |
 | `rehearse`                                     | `--branch <name>` and `--targets <targets>`, each once                       |

@@ -12,11 +12,12 @@ import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
 import { diffStaysInFunctions, linesStayInFunctions } from '../../drivers/tsc/change-shape.js';
 import { firstCompileError } from '../../drivers/tsc/compile-error.js';
 import { secondsSince } from '../check/passes/launched.js';
+import { provenAsked, provenRun } from '../check/report/proven.js';
 import { badge, print, RED, RESET, secondsOf } from '../check/report/terminal.js';
 import { withGateLock } from '../gate-lock/lock.js';
 import { askedOf } from './asked.js';
 import type { Capped } from './cap.js';
-import { baseFor, changeOf, namesACommit, treeChangeFor } from './change.js';
+import { baseFor, baseTreeOf, changeOf, namesACommit, treeChangeFor } from './change.js';
 import type { Base } from './change.js';
 import { capHeld, glueCapped, glueOf } from './glue-cap.js';
 import { memberRuns, unownedRange } from './members.js';
@@ -256,14 +257,20 @@ export async function mutation(args: readonly string[]): Promise<number> {
     const recorded = recorder();
     const written = process.env[CAPACITY_VARIABLE];
     const capacity = capacityNamed(written);
+    const scope = baseTreeOf(project, askedOf(args).named);
 
-    return await withGateLock(project, async () =>
-        concluded(
-            project,
-            recorded,
-            capacity === 'unreadable'
-                ? refusedCapacity(String(written), recorded)
-                : await measuredRun(project, args, { capacity, recorded }),
-        ),
+    return await provenRun(
+        project,
+        provenAsked('mutation', args, scope),
+        async () =>
+            await withGateLock(project, async () =>
+                concluded(
+                    project,
+                    recorded,
+                    capacity === 'unreadable'
+                        ? refusedCapacity(String(written), recorded)
+                        : await measuredRun(project, args, { capacity, recorded }),
+                ),
+            ),
     );
 }

@@ -123,6 +123,13 @@ export function baseFor(project: string, named: string | undefined): Base {
     return { ...base, unmeasured: unmeasuredBy(project, base) };
 }
 
+/** The tree of the commit a run measures the working tree against, by which a proof of its verdict is keyed whatever names that commit; a commit git cannot name is keyed by its name, and the run refuses it. */
+export function baseTreeOf(project: string, named: string | undefined): string {
+    const { commit } = baseFor(project, named);
+
+    return git(project, ['rev-parse', `${commit}^{tree}`])?.trim() ?? `none ${commit}`;
+}
+
 /** What the working tree changed since `since`, untracked files whole, a file moved or renamed by its content (only the lines it changed beyond the move); `undefined` where git cannot say. */
 export function changeSince(project: string, since: string): Changed | undefined {
     const diff = git(project, [

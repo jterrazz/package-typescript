@@ -6,6 +6,7 @@ import { afterAll, describe, expect, test } from 'vitest';
 
 import {
     baseFor,
+    baseTreeOf,
     changeOf,
     changeSince,
     defaultBaseOf,
@@ -336,6 +337,23 @@ describe('change', () => {
             unmeasured: `${trunk.slice(0, 8)}..${middle}`,
         });
         expect(baseFor(alone, undefined)).toMatchObject({ commit: 'HEAD', unmeasured: undefined });
+    });
+
+    test('baseTreeOf — the tree of the commit the run measures against, whatever names it, and the name alone of a commit git cannot name', () => {
+        // Given - a branch holding one commit of its own beside main, the tree clean
+        const root = committedRepository({ 'a.ts': 'one\n' });
+        const trunk = gitIn(root, 'rev-parse', 'HEAD^{tree}');
+        gitIn(root, 'switch', '--quiet', '--create', 'work');
+        writeFileSync(join(root, 'a.ts'), 'two\n');
+        gitIn(root, 'commit', '--quiet', '--all', '--message', 'second');
+
+        // Then - the merge-base and main name one tree; HEAD names its own; an unknown name keys by itself
+        expect([
+            baseTreeOf(root, undefined),
+            baseTreeOf(root, 'main'),
+            baseTreeOf(root, 'HEAD'),
+            baseTreeOf(root, 'nowhere'),
+        ]).toStrictEqual([trunk, trunk, gitIn(root, 'rev-parse', 'HEAD^{tree}'), 'none nowhere']);
     });
 
     test('git names a commit the clone holds, and neither the zero commit a first push carries, a ref it lacks, nor anything outside a repository', () => {

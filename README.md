@@ -30,6 +30,8 @@ npx typescript check   # every quality pass, in parallel; each finding names wha
 
 A project carries `"type": "module"` in its `package.json`. In a git repository `check` also asks for a `Makefile` and a manual; [Getting started](docs/start/getting-started.md) takes a project the whole way, every file complete as written.
 
+A green `check` is kept for the content it ran on, so the same tree, install and toolchain check again in a second; `typescript test` and `typescript mutation` keep theirs the same way ([Quality checks](docs/reference/quality-checks.md#a-tree-proven-green)).
+
 Before a release is tagged, `npx typescript rehearse` runs the gate on Linux, in Docker, on a fresh clone of the branch, as the GitHub runner that publishes it will ([Commands](docs/reference/commands.md#a-rehearsal-on-linux)).
 
 ## Documentation

@@ -12,11 +12,13 @@ The package builds itself with the build plan it ships, so a build comes before 
 | `make build`    | `npm run build`: the build plan the manifest derives, into `dist/` ([Architecture](../concepts/architecture.md#building-this-package))                     |
 | `make lint`     | this package's own `typescript check`, run on this package from `dist/`                                                                                    |
 | `make fix`      | `typescript fix`, `@jterrazz/test`'s fixers first inside it                                                                                                |
-| `make test`     | the three vitest projects ([Test](https://github.com/jterrazz/package-typescript/blob/main/docs/guides/test.md))                                           |
+| `make test`     | `typescript test`: the three vitest projects ([Test](https://github.com/jterrazz/package-typescript/blob/main/docs/guides/test.md))                        |
 | `make mutation` | `typescript mutation`: the module tests over the change to the sources they test, the whole suite over what they let live and the lines they leave (below) |
 | `make check`    | `make lint`, `make test`, then `make mutation`: the gate before a commit                                                                                   |
 
 `make lint` and `make test` first lay the repository's own install of itself again from this build's tarball (`install-self`), so neither judges an install older than the checkout.
+
+Each step of `make check` keeps its green as a proof keyed by the content of its inputs (the tree, the lockfile, the install, the toolchain's build, Node, the platform and a closed list of variables), and the same step on the same key prints that the tree is proven green and runs nothing ([Quality checks § A tree proven green](../reference/quality-checks.md#a-tree-proven-green)). A second `make check` of an unchanged tree therefore costs the build and three hits; a red is never kept, and `MUTATION_ARGS=--cold`, or `--cold` on `check` and `test`, runs a step whatever it proved.
 
 `make check-links` is opt-in and never part of `check`: it runs [lychee](https://lychee.cli.rs) over `README.md`, `docs/` and `skills/`, remote links included. It needs the network and a lychee on the machine, and says so where there is none. Why the gate leaves remote links out is [Quality checks](../reference/quality-checks.md#what-rumdl-judges)'s.
 

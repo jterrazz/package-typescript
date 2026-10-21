@@ -18,6 +18,7 @@ runs:
             tsc          Run the TypeScript 7 compiler this package ships (emit, --build)
             check        Check types, lint, formatting, and unused code
             fix          Auto-fix lint and formatting issues
+            test         Run the project's test script, unless this tree is proven green for it
             gate-lock    Refuse while a running gate holds this checkout, naming its pid: the guard an install or a pack runs first
             rehearse     Run the gate on Linux in Docker, on a fresh clone of the branch, as a GitHub runner runs it
             clean        Remove .artifacts/; dist/ stays, as the build's product
@@ -33,6 +34,7 @@ runs:
             typescript tsc --build
             typescript check
             typescript fix
+            typescript test
             typescript gate-lock
             typescript rehearse
             typescript clean

@@ -6,13 +6,14 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          found: `typescript check` has no flag --watch · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it: it reads --json · read: docs/reference/commands.md#flags-and-help
+          found: `typescript check` has no flag --watch · why: a flag the command does not read would be ignored, and the run would not be the one asked for · fix: drop it: it reads --cold, --json · read: docs/reference/commands.md#flags-and-help
 
-          Usage: typescript check [--json]
+          Usage: typescript check [--cold] [--json]
 
           Check types, lint, formatting, and unused code
 
           Flags:
+            --cold      Run every pass, whatever green verdict this tree holds
             --json      Print the drift report as one JSON object for a machine
             -h, --help  Print this help and run nothing
 
@@ -26,11 +27,12 @@ runs:
 
           found: --json is given more than once · why: the command reads it once, and a line that says it twice was written for another run than this one · fix: give it once: --json · read: docs/reference/commands.md#flags-and-help
 
-          Usage: typescript check [--json]
+          Usage: typescript check [--cold] [--json]
 
           Check types, lint, formatting, and unused code
 
           Flags:
+            --cold      Run every pass, whatever green verdict this tree holds
             --json      Print the drift report as one JSON object for a machine
             -h, --help  Print this help and run nothing
 
@@ -44,11 +46,12 @@ runs:
 
           found: --json takes no value · why: a value the command does not read would be ignored, and the run would not be the one asked for · fix: write it --json, alone · read: docs/reference/commands.md#flags-and-help
 
-          Usage: typescript check [--json]
+          Usage: typescript check [--cold] [--json]
 
           Check types, lint, formatting, and unused code
 
           Flags:
+            --cold      Run every pass, whatever green verdict this tree holds
             --json      Print the drift report as one JSON object for a machine
             -h, --help  Print this help and run nothing
 
@@ -62,11 +65,12 @@ runs:
 
           found: `typescript check` has no flag --ignore-pattern, which is retired · why: a path left out of one run is read differently by each gate: the formatter, the Markdown pass and the linter disagreed on what it covered, and 85 goldens were rewritten in one repository · fix: declare the folder in jterrazz.config.ts, where every gate reads it alike: `typescript: { roots: { "<folder>": { reason: "<why it is kept as written>", verbatim: true } } }` · read: docs/reference/quality-checks.md#a-root-beside-the-spine
 
-          Usage: typescript check [--json]
+          Usage: typescript check [--cold] [--json]
 
           Check types, lint, formatting, and unused code
 
           Flags:
+            --cold      Run every pass, whatever green verdict this tree holds
             --json      Print the drift report as one JSON object for a machine
             -h, --help  Print this help and run nothing
 

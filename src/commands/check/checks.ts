@@ -9,7 +9,7 @@ import { withGateLock } from '../gate-lock/lock.js';
 import { configPass } from './passes/checker-passes.js';
 import type { Launched, Timed } from './passes/launched.js';
 import { secondsSince, timedLaunch, timedLaunches } from './passes/launched.js';
-import { CONTENT_PASSES } from './passes/passes.js';
+import { CHECK_PASSES, CONTENT_PASSES } from './passes/passes.js';
 import type { Selected } from './passes/passes.js';
 import { presetRuns } from './passes/presets.js';
 import type { PresetRun } from './passes/presets.js';
@@ -27,6 +27,7 @@ import {
 } from './report/gate-verdict.js';
 import type { PassVerdict } from './report/gate-verdict.js';
 import { logsIn } from './report/logs.js';
+import { provenAsked, provenRun } from './report/proven.js';
 import { reportPass } from './report/report.js';
 import { badge, print } from './report/terminal.js';
 import {
@@ -194,9 +195,21 @@ export async function runChecks(
     args: readonly string[],
     { fix, selected }: { fix: boolean; selected: Selected },
 ): Promise<number> {
-    return fix
-        ? await checksRun(args, { fix, selected })
-        : await withGateLock(process.cwd(), async () => await checksRun(args, { fix, selected }));
+    if (fix) {
+        return await checksRun(args, { fix, selected });
+    }
+    const project = process.cwd();
+    const gated = async (): Promise<number> =>
+        await withGateLock(project, async () => await checksRun(args, { fix, selected }));
+    // invariant: `--json` asks for the drift report itself, which a proof does not keep, so that run is never answered from one.
+    if (args.includes('--json')) {
+        return await gated();
+    }
+
+    const passes = CHECK_PASSES.filter((pass) => selected(pass));
+
+    // Stryker disable next-line StringLiteral: the passes are listed in one fixed order, so any separator keys each selection apart
+    return await provenRun(project, provenAsked('check', args, passes.join(',')), gated);
 }
 
 async function checksRun(

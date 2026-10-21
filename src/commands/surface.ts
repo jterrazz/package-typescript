@@ -22,6 +22,8 @@ const QUALITY: ChapterAnchor = 'docs/reference/quality-checks.md#flags-and-exit-
 
 const BUILDING: ChapterAnchor = 'docs/reference/building.md#the-entries';
 
+const PROVEN: ChapterAnchor = 'docs/reference/quality-checks.md#a-tree-proven-green';
+
 const GESTURES: ChapterAnchor = 'docs/guides/adopt-a-stricter-release.md#the-two-gestures';
 
 export const SURFACES = {
@@ -74,12 +76,18 @@ export const SURFACES = {
     },
     check: {
         flags: [
+            { name: '--cold', says: 'Run every pass, whatever green verdict this tree holds' },
             { name: '--json', says: 'Print the drift report as one JSON object for a machine' },
         ],
         read: QUALITY,
         says: 'Check types, lint, formatting, and unused code',
     },
     fix: { read: QUALITY, says: 'Auto-fix lint and formatting issues' },
+    test: {
+        flags: [{ name: '--cold', says: 'Run the tests, whatever green verdict this tree holds' }],
+        read: PROVEN,
+        says: "Run the project's test script, unless this tree is proven green for it",
+    },
     'gate-lock': {
         read: 'docs/reference/quality-checks.md#one-gate-per-checkout',
         says: 'Refuse while a running gate holds this checkout, naming its pid: the guard an install or a pack runs first',

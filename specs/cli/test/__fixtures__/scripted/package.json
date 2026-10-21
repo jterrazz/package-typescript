@@ -1,0 +1,7 @@
+{
+    "name": "fixture-scripted",
+    "version": "1.0.0",
+    "scripts": {
+        "test": "node --eval \"console.log('the tests ran')\""
+    }
+}

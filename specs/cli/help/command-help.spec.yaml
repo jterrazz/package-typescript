@@ -84,11 +84,12 @@ runs:
       stdout: |4
            TYPESCRIPT  TypeScript toolchain
 
-          Usage: typescript check [--json]
+          Usage: typescript check [--cold] [--json]
 
           Check types, lint, formatting, and unused code
 
           Flags:
+            --cold      Run every pass, whatever green verdict this tree holds
             --json      Print the drift report as one JSON object for a machine
             -h, --help  Print this help and run nothing
 

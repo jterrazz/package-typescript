@@ -114,8 +114,11 @@ Every repository answers the same six `make` targets at its root, whatever runs 
 install:
 	npm ci
 
-build lint test:
+build lint:
 	npm run $@
+
+test:
+	npx typescript test
 
 fix:
 	npx typescript fix
@@ -126,6 +129,8 @@ mutation:
 check:
 	TYPESCRIPT_GATE=$$$$:$(CURDIR) $(MAKE) lint test mutation
 ```
+
+`typescript test` runs the project's own `test` script, and answers a tree it already proved green from that proof, as `check` and `mutation` do, so a second gate of an unchanged tree runs nothing ([Quality checks § A tree proven green](../reference/quality-checks.md#a-tree-proven-green)).
 
 `TYPESCRIPT_GATE` names the recipe's shell as the gate, so `check` and `mutation` hold the checkout in its name from the first step to the last, and the tests between them run under the same lock ([Quality checks § One gate per checkout](../reference/quality-checks.md#one-gate-per-checkout)).
 

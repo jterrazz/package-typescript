@@ -118,6 +118,11 @@ const COMMANDS: Readonly<Record<CommandName, Command>> = {
 
         return await start(args);
     },
+    test: async (args) => {
+        const { test } = await import('./test/test.command.js');
+
+        return await test(args);
+    },
     tsc: async (args) => {
         const { tsc } = await import('./tsc/tsc.command.js');
 
