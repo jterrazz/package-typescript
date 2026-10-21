@@ -38,7 +38,7 @@ function machineFolder(): string {
 
 const deadPid = (): number => spawnSync(process.execPath, ['--eval', '']).pid;
 
-const lease = (pid: number, since: number): Lease => ({ pid, root: '/repo', since });
+const lease = (pid: number, since: number): Lease => ({ pid, since });
 
 describe('leases', () => {
     test('isAlive — this process lives, one that exited does not', () => {
@@ -53,7 +53,7 @@ describe('leases', () => {
         ]).toStrictEqual([true, true, false, false, false]);
     });
 
-    test('liveLeases — the live leases oldest first, a tie by pid; the dead and a name that is no pid taken away; an unreadable lease kept with no root or age', () => {
+    test('liveLeases — the live leases oldest first, a tie by pid; the dead and a name that is no pid taken away; an unreadable lease kept with no age', () => {
         // Given - no folder, then a folder holding two live leases out of order, a garbled one, a dead one and a stray name
         machineFolder();
         const none = liveLeases();
@@ -67,13 +67,9 @@ describe('leases', () => {
         const leases = liveLeases();
 
         // Then - none at first; the garbled lease first, the parent's next, this process's last, and only the live are left
-        expect([none, leases.map(({ pid, root }) => [pid, root])]).toStrictEqual([
+        expect([none, leases.map(({ pid }) => pid)]).toStrictEqual([
             [],
-            [
-                [1, 'undefined'],
-                [process.ppid, '/a'],
-                [process.pid, '/b'],
-            ],
+            [1, process.ppid, process.pid],
         ]);
         expect(leases[2]?.since).toBeGreaterThan(2);
         expect(readdirSync(leaseFolder()).toSorted()).toStrictEqual(

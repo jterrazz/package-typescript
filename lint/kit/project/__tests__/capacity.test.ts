@@ -27,7 +27,7 @@ const machine = (cpus: number, memory: number, available = memory): Machine => (
     memory,
 });
 
-const lease = (pid: number, since: number): Lease => ({ pid, root: '/repo', since });
+const lease = (pid: number, since: number): Lease => ({ pid, since });
 
 describe('capacity', () => {
     test('capacityNamed — nothing unset or blank; cpus, memory in k, m or g, or both; anything else unreadable', () => {

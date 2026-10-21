@@ -19,8 +19,8 @@ export function isAlive(pid: number | undefined): pid is number {
 /** Every outermost gate of this machine leases its share here while it runs, one file per gate named for its pid. */
 export const leaseFolder = (): string => join(tmpdir(), 'typescript-capacity');
 
-/** A gate's lease: its pid, the checkout it gates, and when it took the lease. */
-export type Lease = { pid: number; root: string; since: number };
+/** A gate's lease as the sizing reads it: its pid, and when it took the lease. */
+export type Lease = { pid: number; since: number };
 
 function leaseIn(folder: string, name: string): Lease | undefined {
     const pid = Number(name);
@@ -38,7 +38,7 @@ function leaseIn(folder: string, name: string): Lease | undefined {
         lease = {};
     }
 
-    return { pid, root: String(lease.root), since: Number(lease.since) || 0 };
+    return { pid, since: Number(lease.since) || 0 };
 }
 
 /** Orders leases oldest first, two of one age by pid, so every gate ranks them alike. */
