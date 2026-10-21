@@ -1,8 +1,8 @@
 .PHONY: install build install-self lint fix test check check-links mutation rehearse
 
-# invariant: the stamp depends on the packed toolchain tarballs as well as the lockfile, so a package packed again under the same name is installed again, never run against yesterday's build.
+# invariant: the stamp depends on the packed toolchain tarballs as well as the manifest and the lockfile, so an edited manifest or a package packed again under the same name is installed again, never run against yesterday's build.
 # invariant: an install replaces the dependencies a running gate reads, so every path that installs (`install`, and any target that depends on `node_modules/.install`) asks the toolchain's `gate-lock` first, which refuses while another gate holds `.artifacts/gate.lock`; a checkout with no install yet holds no gate.
-node_modules/.install: package-lock.json $(wildcard .artifacts/packages/*.tgz)
+node_modules/.install: package.json package-lock.json $(wildcard .artifacts/packages/*.tgz)
 	@if [ -d node_modules ] && [ -f dist/typescript.js ]; then node dist/typescript.js gate-lock; fi
 	npm ci
 	@touch node_modules/.install

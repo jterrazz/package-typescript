@@ -40,7 +40,7 @@ npm install
 
 Under bun the lockfile is not JSON: delete it when it carries an older toolchain, and `bun install` writes it again. Under pnpm, never delete it: a non-frozen `pnpm install` re-resolves every unrelated range (500 lines on one project), so the lockfile is updated in its two `@jterrazz/*` entries alone (the tarball paths, and the `integrity` each tarball's `npm pack --json` prints), and `pnpm install --frozen-lockfile` then proves the file is whole. bun caches a `file:` tarball by its path, so a tarball packed again under the same name is not extracted again: clear the cache first (`bun pm cache rm`).
 
-A `file:` package packed again under the same name changes no line of the lockfile, so the Makefile's install stamp must depend on `.artifacts/packages/*.tgz` beside the lockfile (`node_modules/.install: package-lock.json $(wildcard .artifacts/packages/*.tgz)`), or a gate runs for hours against yesterday's build; `make -B install` forces it once.
+A `file:` package packed again under the same name changes no line of the lockfile, so the Makefile's install stamp must depend on `.artifacts/packages/*.tgz` beside the manifest and the lockfile (`node_modules/.install: package.json package-lock.json $(wildcard .artifacts/packages/*.tgz)`), or a gate runs for hours against yesterday's build; `make -B install` forces it once.
 
 The tarball holds exactly what a consumer of the release gets, so the project resolves one copy of vitest's types, never two.
 
