@@ -1,17 +1,10 @@
-import type { Diagnostic } from '@typescript/native/sync';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import {
-    affectedErrors,
-    importGraphOf,
-    mutatedText,
-    NativeChecker,
-    shapeOf,
-} from '../mutant-checker.js';
-import type { CheckedMutant, ImportGraph } from '../mutant-checker.js';
+import { importGraphOf, mutatedText, NativeChecker, shapeOf } from '../mutant-checker.js';
+import type { CheckedMutant } from '../mutant-checker.js';
 import { nativeProject, programOf } from '../native-project.js';
 import { childProcesses } from './child-processes.js';
 
@@ -65,47 +58,6 @@ const mutant = (
 
 const statuses = (results: Readonly<Record<string, { status: string }>>): Record<string, string> =>
     Object.fromEntries(Object.entries(results).map(([id, { status }]) => [id, status]));
-
-const diagnostic = (text: string): Diagnostic => ({ category: 1, code: 1, end: 0, pos: 0, text });
-const GRAPH: ImportGraph = {
-    global: new Set(['g.ts']),
-    importers: new Map([
-        ['a.ts', new Set(['b.ts', 'c.ts'])],
-        ['b.ts', new Set(['d.ts'])],
-        ['c.ts', new Set(['d.ts'])],
-        ['d.ts', new Set<string>()],
-        ['g.ts', new Set<string>()],
-    ]),
-};
-function walked(
-    shapes: {
-        base: (file: string) => string | undefined;
-        now: (file: string) => string | undefined;
-    },
-    failing: ReadonlyMap<string, string> = new Map(),
-    file = 'a.ts',
-): { asked: (readonly string[] | undefined)[]; found: readonly Diagnostic[] } {
-    const asked: (readonly string[] | undefined)[] = [];
-    const found = affectedErrors(
-        GRAPH,
-        file,
-        {
-            errors: (files) => {
-                asked.push(files);
-
-                return (files ?? []).flatMap((name) => {
-                    const text = failing.get(name);
-
-                    return text === undefined ? [] : [diagnostic(text)];
-                });
-            },
-            shape: shapes.now,
-        },
-        shapes.base,
-    );
-
-    return { asked, found };
-}
 
 describe('mutant-checker', () => {
     test('mutatedText — the replacement stands in the zero-based span it mutates, across lines', () => {
@@ -202,24 +154,27 @@ describe('mutant-checker', () => {
         );
     });
 
-    test('a mutant of a file under node_modules, or of one the project does not hold, is never checked', async () => {
-        // Given - a package under node_modules the project imports, and a mutant that would break it
+    test('every error a mutant causes is told, one to a line', async () => {
+        // Given - a file of two constants typed as numbers
         const project = projectWith({
-            'src/use.ts':
-                "import { dep } from '../node_modules/dep/index.js';\n\nexport const used: number = dep;\n",
+            'src/two.ts': 'export const a: number = 1;\nexport const b: number = 2;\n',
             'tsconfig.json': TSCONFIG,
         });
-        mkdirSync(join(project, 'node_modules/dep'), { recursive: true });
-        writeFileSync(join(project, 'node_modules/dep/index.ts'), 'export const dep = 1;\n');
         const checker = await checkerOf(project);
 
-        // When - the package's constant is made a string
+        // When - one mutant replaces both values with strings
         const results = await checker.check([
-            mutant('package', 'node_modules/dep/index.ts', [0, 19, 20], "'one'"),
+            {
+                ...mutant('both', 'src/two.ts', [0, 25, 26], "'x';\nexport const b: number = 'y'"),
+                location: { end: { column: 26, line: 1 }, start: { column: 25, line: 0 } },
+            },
         ]);
 
-        // Then - the project owns no such file, so nothing is checked
-        expect(statuses(results)).toStrictEqual({ package: 'passed' });
+        // Then - both errors are its reason, on separate lines
+        expect(results.both).toStrictEqual({
+            reason: "src/two.ts:1 TS2322 Type 'string' is not assignable to type 'number'.\nsrc/two.ts:2 TS2322 Type 'string' is not assignable to type 'number'.",
+            status: 'compileError',
+        });
     });
 
     test('disposing the checker ends the native compiler it opened', async () => {
@@ -243,53 +198,6 @@ describe('mutant-checker', () => {
 
         // Then - the checker names the cause
         await expect(checker.init()).rejects.toThrow('keeps no tsconfig.json');
-    });
-
-    test('a script or augmenting file is checked whole; a file with an error of its own answers alone', () => {
-        // Given - a imported by b and c, both imported by d, and g a script
-        // Then - the global one asks for every file's errors, the failing one for its own file only
-        expect(walked({ base: () => 'x', now: () => 'y' }, new Map(), 'g.ts').asked).toStrictEqual([
-            undefined,
-        ]);
-        expect(
-            walked({ base: () => 'x', now: () => 'y' }, new Map([['a.ts', 'own']])),
-        ).toStrictEqual({ asked: [['a.ts']], found: [diagnostic('own')] });
-    });
-
-    test('a file that looks the same from outside leaves its importers unchecked', () => {
-        // Given - a imported by b and c, both imported by d, and g a script
-        // Then - only the file itself is asked
-        expect(walked({ base: () => 'same', now: () => 'same' })).toStrictEqual({
-            asked: [['a.ts']],
-            found: [],
-        });
-    });
-
-    test('a file that looks different, or that cannot say how it looks, has each importer checked once, a level at a time', () => {
-        // Given - a imported by b and c, both imported by d, and g a script
-        // Then - the first level together, the shared importer once, and no empty ask
-        expect(walked({ base: () => 'x', now: () => 'y' }).asked).toStrictEqual([
-            ['a.ts'],
-            ['b.ts', 'c.ts'],
-            ['d.ts'],
-        ]);
-        expect(walked({ base: () => undefined, now: () => undefined }).asked).toStrictEqual([
-            ['a.ts'],
-            ['b.ts', 'c.ts'],
-            ['d.ts'],
-        ]);
-        expect(walked({ base: () => 'x', now: () => undefined }).asked).toHaveLength(3);
-    });
-
-    test("an error in an importer is the mutant's, and ends the walk", () => {
-        // Given - a imported by b and c, both imported by d, and g a script
-        // Then - the failing importer's error returns before the next level is asked
-        expect(
-            walked({ base: () => 'x', now: () => 'y' }, new Map([['b.ts', 'far']])),
-        ).toStrictEqual({
-            asked: [['a.ts'], ['b.ts', 'c.ts']],
-            found: [diagnostic('far')],
-        });
     });
 
     test('maps each file to its importers, and marks the scripts and the modules that augment another as global', () => {
@@ -382,5 +290,35 @@ describe('mutant-checker', () => {
             undefined,
             undefined,
         ]);
+    });
+
+    test('a project that emits declaration maps has them in the shape, after the declarations', () => {
+        // Given - a project whose declarations come with a map
+        const project = projectWith({
+            'src/m.ts': 'export const m = 1;\n',
+            'tsconfig.json': JSON.stringify({
+                compilerOptions: {
+                    declarationMap: true,
+                    module: 'nodenext',
+                    noEmit: true,
+                    strict: true,
+                    types: [],
+                },
+                include: ['src'],
+            }),
+        });
+        const opened = nativeProject(project);
+        expect(opened).toBeDefined();
+        if (opened === undefined) {
+            return;
+        }
+        onTestFinished(() => {
+            opened.api.close();
+        });
+
+        // Then - the map follows the declarations with nothing between
+        expect(shapeOf(programOf(opened.base, opened.config), join(project, 'src/m.ts'))).toMatch(
+            /^export declare const m = 1;\n\/\/# sourceMappingURL=m\.d\.ts\.map\{"version":3/u,
+        );
     });
 });

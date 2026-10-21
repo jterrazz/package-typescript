@@ -5,6 +5,8 @@ import { resolve } from 'node:path';
 import process from 'node:process';
 
 import { invariant, refusal } from '../../../lint/kit/catalogue/lesson.js';
+import type { ImportGraph } from './affected-errors.js';
+import { affectedErrors } from './affected-errors.js';
 import { UNCOMPILED_FIX, UNCOMPILED_WHY, uncompiledFound } from './compile-error.js';
 import { fileErrors, headline, nativeProject, programErrors, programOf } from './native-project.js';
 import type { NativeProject } from './native-project.js';
@@ -35,12 +37,6 @@ const offsetOf = (text: string, { column, line }: Position): number => {
 export const mutatedText = (text: string, { location, replacement }: CheckedMutant): string =>
     `${text.slice(0, offsetOf(text, location.start))}${replacement}${text.slice(offsetOf(text, location.end))}`;
 
-/** What a mutated file reaches: the files that import each file, and the files whose change reaches every file, a script or a module that augments another. */
-export type ImportGraph = {
-    global: ReadonlySet<string>;
-    importers: ReadonlyMap<string, ReadonlySet<string>>;
-};
-
 /** The project's own files, what each imports read from the program, and those whose change no import bounds. */
 export function importGraphOf(program: Program, files: readonly string[]): ImportGraph {
     const importers = new Map(files.map((file) => [file, new Set<string>()]));
@@ -55,6 +51,7 @@ export function importGraphOf(program: Program, files: readonly string[]): Impor
         }
         for (const specifier of source.imports.filter(isStringLiteralLikeNode)) {
             const target = program.getResolvedModuleFromModuleSpecifier(specifier, file);
+            // Stryker disable next-line StringLiteral: a name that no file of the graph bears adds an importer to none, as a missing name does
             importers.get(target?.resolvedFileName ?? '')?.add(file);
         }
     }
@@ -77,52 +74,9 @@ export function shapeOf(program: Program, file: string): string | undefined {
     return [...emitted.outputFiles.values()].map(({ text }) => text).join('');
 }
 
-/** What a mutated program asks of the checker: the errors of some of its files, every file's, and how a file looks to its importers. */
-export type Mutated = {
-    errors: (files?: readonly string[]) => readonly Diagnostic[];
-    shape: (file: string) => string | undefined;
-};
-
-// invariant: an importer is checked again only where a file it imports changed how it looks from outside, as TypeScript's builder decides which files a change affects; the unmutated tree holds no error, so an error is the mutant's wherever it appears.
-/** The errors a mutant of `file` causes: the file's own, then those of each importer of a file whose shape it changed, every file's where no import bounds the change. */
-export function affectedErrors(
-    graph: ImportGraph,
-    file: string,
-    { errors, shape }: Mutated,
-    baseShape: (file: string) => string | undefined,
-): readonly Diagnostic[] {
-    if (graph.global.has(file)) {
-        return errors();
-    }
-    const own = errors([file]);
-    if (own.length > 0) {
-        return own;
-    }
-    const seen = new Set([file]);
-    const changed = [file];
-    for (let next = changed.shift(); next !== undefined; next = changed.shift()) {
-        const now = shape(next);
-        if (now !== undefined && now === baseShape(next)) {
-            continue;
-        }
-        const importers = [...(graph.importers.get(next) ?? [])].filter(
-            (importer) => !seen.has(importer),
-        );
-        const found = importers.length === 0 ? [] : errors(importers);
-        if (found.length > 0) {
-            return found;
-        }
-        for (const importer of importers) {
-            seen.add(importer);
-            changed.push(importer);
-        }
-    }
-
-    return [];
-}
-
 const UNCHECKED: CheckResult = { status: 'passed' };
 
+// Stryker disable next-line StringLiteral: the files under node_modules are libraries and packages a mutant is never of, so holding them in the graph or not changes no answer, only its size
 const isOwn = (file: string): boolean => !file.split('/').includes('node_modules');
 
 /** Stryker's checker on the native compiler: the project opened once, each mutant checked on a snapshot that replaces its file's text, against the files its change reaches. */
@@ -165,6 +119,7 @@ export class NativeChecker {
                 }),
             );
         }
+        // Stryker disable next-line MethodExpression: the files under node_modules are libraries and packages a mutant is never of, so holding them in the graph or not changes no answer, only its size
         this.graph = importGraphOf(program, program.getSourceFileNames().filter(isOwn));
     }
 

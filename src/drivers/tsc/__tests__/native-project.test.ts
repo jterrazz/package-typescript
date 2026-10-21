@@ -64,4 +64,26 @@ describe('native-project', () => {
             headline(project, { ...placed, fileName: undefined }),
         ]).toStrictEqual([`src/a.ts:2 ${coded}`, coded, coded]);
     });
+
+    test('programOf names the configuration it found no project at', () => {
+        // Given - a project opened on its own tsconfig.json
+        const project = mkdtempSync(join(tmpdir(), 'native-project-'));
+        onTestFinished(() => {
+            rmSync(project, { force: true, recursive: true });
+        });
+        writeFileSync(join(project, 'tsconfig.json'), '{}');
+        const opened = nativeProject(project);
+        expect(opened).toBeDefined();
+        if (opened === undefined) {
+            return;
+        }
+        onTestFinished(() => {
+            opened.api.close();
+        });
+
+        // Then - another configuration holds no project
+        expect(() => programOf(opened.base, join(project, 'other.json'))).toThrow(
+            `the native compiler opened no project at ${join(project, 'other.json')}`,
+        );
+    });
 });
