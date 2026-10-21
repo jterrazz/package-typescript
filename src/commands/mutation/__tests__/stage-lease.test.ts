@@ -12,13 +12,10 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
-import {
-    CAPACITY_VARIABLE,
-    priceLearned,
-    PRICES_FILE,
-} from '../../../../lint/kit/project/capacity.js';
+import { CAPACITY_VARIABLE } from '../../../../lint/kit/project/capacity.js';
 import { APART_VARIABLE, apartIn, heldApart } from '../../../../lint/kit/project/priced-apart.js';
-import { leasedRun, peakPriced, sliceNow, stageLease, withCapacityHanded } from '../stage-lease.js';
+import { priceLearned, PRICES_FILE } from '../../../../lint/kit/project/prices.js';
+import { leasedRun, peakPriced, sliceNow, stageLease } from '../stage-lease.js';
 
 const MB = 1024 ** 2;
 
@@ -116,31 +113,6 @@ describe('stage-lease', () => {
 
         // Then - nothing was written for the first two, then 400 MB per runner
         expect([before, written]).toStrictEqual([false, { 'stryker-suite': [400 * MB] }]);
-    });
-
-    test('withCapacityHanded — the run reads the slice handed; the variable is taken away after, or given back as it was, a failure included', async () => {
-        // Given - the variable unset, then set, around runs that read it, one of which fails
-        variableIs(undefined);
-        const unset = await withCapacityHanded({ cpus: 2, memory: GB }, async () => {
-            await Promise.resolve();
-
-            return process.env[CAPACITY_VARIABLE];
-        });
-        const afterUnset = CAPACITY_VARIABLE in process.env;
-        variableIs('cpus=9');
-        await expect(
-            withCapacityHanded({ cpus: 1, memory: GB }, async () => {
-                await Promise.resolve();
-                throw new Error('stopped');
-            }),
-        ).rejects.toThrow('stopped');
-
-        // Then - the run read the slice, nothing was left after the first, and the second found its value again
-        expect([unset, afterUnset, process.env[CAPACITY_VARIABLE]]).toStrictEqual([
-            'cpus=2,memory=1024m',
-            false,
-            'cpus=9',
-        ]);
     });
 
     test('leasedRun — the run is handed a folder of its own where a process registers to be priced apart, gone after; a gate an outer stage started is priced apart from it while its own stage runs', async () => {

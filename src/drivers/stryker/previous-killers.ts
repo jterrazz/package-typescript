@@ -1,6 +1,5 @@
 import { rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import process from 'node:process';
 
 import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 
@@ -86,13 +85,13 @@ export const PREVIOUS_KILLERS = {
     source: SOURCE,
 };
 
-/** Lays the reporter a stage loads, and names where it writes its map and its kills for the sequencer, what an earlier run left of both taken away first. */
-export function killersLaid(project: string, report: string): void {
+/** Lays the reporter a stage loads, and returns the variables that name where it writes its map and its kills for the sequencer, what an earlier run left of both taken away first. */
+export function killersLaid(project: string, report: string): Readonly<Record<string, string>> {
     writeFileSync(join(project, PREVIOUS_KILLERS.file), PREVIOUS_KILLERS.source);
     const into = join(project, MUTATION_OUTPUT, `${report}-killers.json`);
     const recent = join(project, MUTATION_OUTPUT, `${report}-recent-killers.jsonl`);
     rmSync(into, { force: true });
     rmSync(recent, { force: true });
-    process.env[KILLERS_VARIABLE] = into;
-    process.env[RECENT_KILLERS_VARIABLE] = recent;
+
+    return { [KILLERS_VARIABLE]: into, [RECENT_KILLERS_VARIABLE]: recent };
 }

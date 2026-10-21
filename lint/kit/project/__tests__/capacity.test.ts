@@ -1,66 +1,24 @@
-import { spawnSync } from 'node:child_process';
-import {
-    mkdirSync,
-    mkdtempSync,
-    readdirSync,
-    readFileSync,
-    realpathSync,
-    rmSync,
-    writeFileSync,
-} from 'node:fs';
-import { availableParallelism, tmpdir, totalmem } from 'node:os';
-import { join } from 'node:path';
+import { availableParallelism, totalmem } from 'node:os';
 import process from 'node:process';
-import { describe, expect, onTestFinished, test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import {
-    byAge,
-    CAPACITY_VARIABLE,
+    capacityGiven,
     capacityLine,
     capacityNamed,
     capacityUnread,
     capacityValue,
-    isAlive,
-    leaseFolder,
-    leaseTaken,
-    liveLeases,
     machineOf,
-    priceLearned,
-    priceOf,
-    PRICES_FILE,
     priceText,
-    SEED_PRICES,
     sliceOf,
     slots,
-    slotsFor,
 } from '../capacity.js';
-import type { Lease, Machine } from '../capacity.js';
+import type { Machine } from '../capacity.js';
+import type { Lease } from '../leases.js';
 
 const MB = 1024 ** 2;
 
 const GB = 1024 ** 3;
-
-function folder(): string {
-    const fresh = mkdtempSync(join(tmpdir(), 'capacity-'));
-    const made = realpathSync(fresh);
-    onTestFinished(() => {
-        rmSync(made, { force: true, recursive: true });
-    });
-
-    return made;
-}
-
-function machineFolder(): string {
-    const machine = folder();
-    vi.stubEnv('TMPDIR', machine);
-    onTestFinished(() => {
-        vi.unstubAllEnvs();
-    });
-
-    return machine;
-}
-
-const deadPid = (): number => spawnSync(process.execPath, ['--eval', '']).pid;
 
 const machine = (cpus: number, memory: number, available = memory): Machine => ({
     available,
@@ -139,6 +97,20 @@ describe('capacity', () => {
         });
     });
 
+    test('capacityGiven — none unset, the capacity the variable names, and a refusal that reads the manual for one it cannot read', () => {
+        // Given - the variable unset, naming two cpus, and naming a word
+        // Then - nothing, the two cpus, and the four-part refusal
+        expect([capacityGiven({}), capacityGiven({ TYPESCRIPT_CAPACITY: 'cpus=2' })]).toStrictEqual(
+            [undefined, { cpus: 2 }],
+        );
+        expect(() => capacityGiven({ TYPESCRIPT_CAPACITY: 'lots' })).toThrow(
+            'found: TYPESCRIPT_CAPACITY is lots, which names no capacity · why: ',
+        );
+        expect(() => capacityGiven({ TYPESCRIPT_CAPACITY: 'lots' })).toThrow(
+            ' · read: docs/reference/quality-checks.md#how-many-test-runners',
+        );
+    });
+
     test('machineOf — a capacity given is the machine whole; a part not given is read from the machine', () => {
         // Given - both parts given, cpus alone, and nothing
         const both = machineOf({ cpus: 3, memory: 4 * GB });
@@ -165,64 +137,6 @@ describe('capacity', () => {
             slots({ cpus: 16, memory: 1499 * MB }, 500 * MB),
             slots({ cpus: 4, memory: 0 }, 500 * MB),
         ]).toStrictEqual([3, 2, 3, 2, 1]);
-    });
-
-    test('isAlive — this process lives, one that exited does not', () => {
-        // Given - this process, init (alive, though this user may not signal it), a child that has exited, no pid, and one that is no whole number
-        // Then - this process and init live
-        expect([
-            isAlive(process.pid),
-            isAlive(1),
-            isAlive(deadPid()),
-            isAlive(undefined),
-            isAlive(1.5),
-        ]).toStrictEqual([true, true, false, false, false]);
-    });
-
-    test('liveLeases — the live leases oldest first, a tie by pid; the dead and a name that is no pid taken away; an unreadable lease kept with no root or age', () => {
-        // Given - no folder, then a folder holding two live leases out of order, a garbled one, a dead one and a stray name
-        machineFolder();
-        const none = liveLeases();
-        leaseTaken(process.pid, '/b');
-        mkdirSync(leaseFolder(), { recursive: true });
-        writeFileSync(join(leaseFolder(), String(process.ppid)), '{"root":"/a","since":1}\n');
-        writeFileSync(join(leaseFolder(), '1'), 'garbled');
-        const dead = String(deadPid());
-        writeFileSync(join(leaseFolder(), dead), '{"root":"/c","since":2}\n');
-        writeFileSync(join(leaseFolder(), 'stray'), '{}');
-        const leases = liveLeases();
-
-        // Then - none at first; the garbled lease first, the parent's next, this process's last, and only the live are left
-        expect([none, leases.map(({ pid, root }) => [pid, root])]).toStrictEqual([
-            [],
-            [
-                [1, 'undefined'],
-                [process.ppid, '/a'],
-                [process.pid, '/b'],
-            ],
-        ]);
-        expect(leases[2]?.since).toBeGreaterThan(2);
-        expect(readdirSync(leaseFolder()).toSorted()).toStrictEqual(
-            ['1', String(process.ppid), String(process.pid)].toSorted(),
-        );
-    });
-
-    test('byAge — the older lease first, two of one age by pid', () => {
-        // Given - three leases listed newest and largest pid first
-        const leases = [lease(9, 2), lease(7, 1), lease(3, 1)];
-
-        // Then - the age decides, then the pid
-        expect(leases.toSorted(byAge).map(({ pid }) => pid)).toStrictEqual([3, 7, 9]);
-    });
-
-    test('liveLeases — two leases taken at the same moment rank by pid', () => {
-        // Given - the larger pid written first, both of one age
-        const held = folder();
-        writeFileSync(join(held, String(process.pid)), '{"root":"/b","since":5}');
-        writeFileSync(join(held, '1'), '{"root":"/a","since":5}');
-
-        // Then - the smaller pid ranks first
-        expect(liveLeases(held).map(({ pid }) => pid)).toStrictEqual([1, process.pid]);
     });
 
     test('sliceOf — a capacity given is the whole slice, less an eighth of the memory', () => {
@@ -287,109 +201,5 @@ describe('capacity', () => {
         // Given - a round price and one a fraction above a megabyte
         // Then - rounded to the nearest megabyte
         expect([priceText(500 * MB), priceText(1.6 * MB)]).toStrictEqual(['500 MB', '2 MB']);
-    });
-
-    test('priceOf — the seed until a peak is learned, then the median of the last five, other pools kept', () => {
-        // Given - a project with no prices, then seven peaks learned for the suite and one for the modules
-        const project = folder();
-        const seeded = priceOf(project, 'stryker-suite');
-        for (const peak of [900, 100, 600, 300, 400, 200, 500]) {
-            priceLearned(project, 'stryker-suite', peak * MB + 0.4);
-        }
-        priceLearned(project, 'stryker-modules', 250 * MB);
-
-        const written: unknown = JSON.parse(readFileSync(join(project, PRICES_FILE), 'utf8'));
-
-        // Then - the seed, then 400 MB, the median of the last five (900 and 100 dropped), each pool on its own, and the checker still seeded
-        expect([
-            seeded,
-            priceOf(project, 'stryker-suite'),
-            priceOf(project, 'stryker-modules'),
-            priceOf(project, 'checker'),
-            written,
-        ]).toStrictEqual([
-            SEED_PRICES['stryker-suite'],
-            400 * MB,
-            250 * MB,
-            720 * MB,
-            {
-                'stryker-modules': [250 * MB],
-                'stryker-suite': [600, 300, 400, 200, 500].map((peak) => peak * MB),
-            },
-        ]);
-    });
-
-    test('priceOf — a price learned high falls back once three normal runs follow it', () => {
-        // Given - a project whose first two runs measured about 4 GB a runner, then three about 500 MB
-        const project = folder();
-        const prices = [4096, 3700, 520, 500, 510].map((peak) => {
-            priceLearned(project, 'stryker-suite', peak * MB);
-
-            return priceOf(project, 'stryker-suite') / MB;
-        });
-
-        // Then - the median after each run, an even count taking the mean of its middle two
-        expect(prices).toStrictEqual([4096, 3898, 3700, 2110, 520]);
-    });
-
-    test('priceOf — an unreadable file, or peaks that are no positive numbers, leave the seed', () => {
-        // Given - one project whose prices file is garbled, one whose peaks are no prices
-        const garbled = folder();
-        mkdirSync(join(garbled, '.artifacts'));
-        writeFileSync(join(garbled, PRICES_FILE), 'garbled');
-        const empty = folder();
-        mkdirSync(join(empty, '.artifacts'));
-        writeFileSync(join(empty, PRICES_FILE), '{"vitest":[0,-3,"x"],"checker":7}');
-
-        // Then - the seeds, and a learned peak writes the file again
-        priceLearned(garbled, 'vitest', 90 * MB);
-        expect([
-            priceOf(empty, 'vitest'),
-            priceOf(empty, 'checker'),
-            priceOf(garbled, 'vitest'),
-        ]).toStrictEqual([600 * MB, 720 * MB, 90 * MB]);
-    });
-
-    test('slotsFor — the pool’s slots of the capacity given, priced in the project, never divided among the gates', () => {
-        // Given - a machine where two other gates hold leases, and a project whose vitest price is learned
-        machineFolder();
-        leaseTaken(1, '/elsewhere');
-        leaseTaken(process.ppid, '/other');
-        const project = folder();
-        priceLearned(project, 'vitest', GB);
-        const environment = { [CAPACITY_VARIABLE]: 'cpus=8,memory=4g' };
-
-        // Then - 3.5 GB holds three 1 GB workers; the cpus bind under a large memory; a project with no price takes the seed, four 720 MB checkers in 3.5 GB
-        expect([
-            slotsFor(project, 'vitest', environment),
-            slotsFor(project, 'vitest', { [CAPACITY_VARIABLE]: 'cpus=2,memory=64g' }),
-            slotsFor(folder(), 'checker', environment),
-        ]).toStrictEqual([3, 2, 4]);
-    });
-
-    test('slotsFor — a machine read is shared among the gates, the lease on this checkout counted as the run’s own; a capacity the variable cannot read is refused', () => {
-        // Given - the oldest lease on this checkout, two newer ones of other gates, and a price no memory binds
-        machineFolder();
-        const project = folder();
-        priceLearned(project, 'vitest', 1);
-        mkdirSync(leaseFolder(), { recursive: true });
-        writeFileSync(
-            join(leaseFolder(), String(process.pid)),
-            JSON.stringify({ root: project, since: 0 }),
-        );
-        writeFileSync(join(leaseFolder(), '1'), '{"root":"/elsewhere","since":1}');
-        writeFileSync(join(leaseFolder(), String(process.ppid)), '{"root":"/other","since":2}');
-        const cpus = availableParallelism();
-        const elsewhere = folder();
-        priceLearned(elsewhere, 'vitest', 1);
-
-        // Then - this run ranks first of three gates, a run from another checkout last of four, and the unreadable variable throws the refusal
-        expect([slotsFor(project, 'vitest', {}), slotsFor(elsewhere, 'vitest', {})]).toStrictEqual([
-            Math.floor(cpus / 3) + (cpus % 3 > 0 ? 1 : 0),
-            Math.max(1, Math.floor(cpus / 4)),
-        ]);
-        expect(() => slotsFor(project, 'vitest', { [CAPACITY_VARIABLE]: 'lots' })).toThrow(
-            "found: TYPESCRIPT_CAPACITY is lots, which names no capacity · why: a capacity read wrong would size every pool of the gate from a machine that is not there · fix: write it cpus=<count>,memory=<size> (cpus=4,memory=8g), either part alone, or leave it unset to take this gate's share of the machine · read: docs/reference/quality-checks.md#how-many-test-runners",
-        );
     });
 });

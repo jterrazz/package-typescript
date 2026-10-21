@@ -4,9 +4,11 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
+import { MUTATION_OUTPUT } from '../../../../lint/kit/project/build-plan.js';
 import { objectOf } from '../../../../lint/kit/project/json.js';
 import {
     KILLERS_VARIABLE,
+    killersLaid,
     PREVIOUS_KILLERS,
     RECENT_KILLERS_VARIABLE,
 } from '../previous-killers.js';
@@ -197,5 +199,33 @@ describe('previous-killers', () => {
         expect(appended).toBe(
             `${JSON.stringify({ killer: 'specs/slow.spec.ts', source: 'src/price.ts' })}\n${JSON.stringify({ killer: 'specs/quick.spec.ts', source: 'src/price.ts' })}\n`,
         );
+    });
+
+    test('killersLaid — lays the reporter, takes away what an earlier run left of its map and kills, and names both in the variables it returns', () => {
+        // Given - a project where an earlier suite run left its map and its kills
+        const project = mkdtempSync(join(tmpdir(), 'killers-laid-'));
+        onTestFinished(() => {
+            rmSync(project, { force: true, recursive: true });
+        });
+        const output = join(project, MUTATION_OUTPUT);
+        mkdirSync(output, { recursive: true });
+        const into = join(output, 'suite-report-killers.json');
+        const recent = join(output, 'suite-report-recent-killers.jsonl');
+        writeFileSync(into, '{}');
+        writeFileSync(recent, '{}');
+        const variables = killersLaid(project, 'suite-report');
+
+        // Then - the reporter is laid, the earlier files are gone, and the variables name where this run writes
+        expect([
+            readFileSync(join(project, PREVIOUS_KILLERS.file), 'utf8'),
+            existsSync(into),
+            existsSync(recent),
+            variables,
+        ]).toStrictEqual([
+            PREVIOUS_KILLERS.source,
+            false,
+            false,
+            { [KILLERS_VARIABLE]: into, [RECENT_KILLERS_VARIABLE]: recent },
+        ]);
     });
 });

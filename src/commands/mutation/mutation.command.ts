@@ -3,8 +3,13 @@ import { join } from 'node:path';
 import process from 'node:process';
 
 import { clientOnlySources } from '../../../lint/kit/project/browser-side.js';
-import { CAPACITY_VARIABLE, capacityNamed } from '../../../lint/kit/project/capacity.js';
+import {
+    CAPACITY_VARIABLE,
+    capacityNamed,
+    capacityValue,
+} from '../../../lint/kit/project/capacity.js';
 import type { Resources } from '../../../lint/kit/project/capacity.js';
+import { withEnvironment } from '../../../lint/kit/project/environment.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { toolchainIn } from '../../drivers/node/node.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
@@ -28,7 +33,7 @@ import type { GlueBar } from './roles.js';
 import { mutationScopeOf } from './scope-globs.js';
 import { changedRanges, modulesMutated, sourcesOf, unreachedRange } from './scope.js';
 import type { MutationScope } from './scope.js';
-import { leasedRun, sliceNow, stageLease, withCapacityHanded } from './stage-lease.js';
+import { leasedRun, sliceNow, stageLease } from './stage-lease.js';
 import { afterStage, buildsOf, withClientOnlyUnmeasured } from './stages.js';
 import { handedToTheSuite, judgedRuns } from './survivors.js';
 import type { Changed, Judged, ModuleRun } from './survivors.js';
@@ -182,8 +187,8 @@ async function membersMeasured(
     for (const { args, member } of memberRuns(members, asked)) {
         print(`${badge('TYPESCRIPT')} ${member}\n\n`);
         const from = performance.now();
-        const own = await withCapacityHanded(
-            sliceNow(asked.named, project),
+        const own = await withEnvironment(
+            { [CAPACITY_VARIABLE]: capacityValue(sliceNow(asked.named, project)) },
             async () => await toolchainIn(join(project, member), ['mutation', ...args]),
         );
         memberRecorded(recorded, project, { member, seconds: secondsSince(from), status: own });
@@ -222,7 +227,7 @@ async function measuredRun(
     if (unreached !== undefined) {
         return refusedRange(unreached, 'a source the run mutates', recorded);
     }
-    strykerPrepared(project, scope.presentation);
+    strykerPrepared(scope.presentation);
 
     const { changed, known, note } = changeOf(project, { ranges, since });
     if (note !== undefined) {

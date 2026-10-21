@@ -13,17 +13,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
-import { leaseFolder } from '../../../../lint/kit/project/capacity.js';
 import { parsedObject } from '../../../../lint/kit/project/json.js';
-import {
-    foreignHolderOf,
-    GATE_LOCK,
-    GATE_VARIABLE,
-    gateOf,
-    holderOf,
-    refusedWhileGated,
-    withGateLock,
-} from '../lock.js';
+import { GATE_VARIABLE, leaseFolder } from '../../../../lint/kit/project/leases.js';
+import { foreignHolderOf, GATE_LOCK, holderOf, refusedWhileGated, withGateLock } from '../lock.js';
 
 function project(): string {
     const folder = mkdtempSync(join(tmpdir(), 'gate-lock-'));
@@ -74,36 +66,6 @@ describe('lock', () => {
             undefined,
         ]);
         expect(signalled).toStrictEqual([undefined, undefined]);
-    });
-
-    test('gateOf — the gate named for this very checkout when it lives, else this process', () => {
-        // Given - a checkout, and the gate variable naming a live gate for it, for another checkout, a dead gate, and no root
-        const root = project();
-        const named = (value: string): number => gateOf(root, { [GATE_VARIABLE]: value });
-        const dead = deadPid();
-
-        // Then - only the live gate of this checkout is adopted
-        expect([
-            named(`${String(process.ppid)}:${root}`),
-            named(`${String(process.ppid)}:${root}/elsewhere`),
-            named(`${String(dead)}:${root}`),
-            named(String(process.ppid)),
-            gateOf(join(root, 'other'), {
-                [GATE_VARIABLE]: `${String(process.ppid)}:${root}/gone`,
-            }),
-            gateOf(join(root, 'gone'), {
-                [GATE_VARIABLE]: `${String(process.ppid)}:${root}/gone/`,
-            }),
-            gateOf(root, {}),
-        ]).toStrictEqual([
-            process.ppid,
-            process.pid,
-            process.pid,
-            process.pid,
-            process.pid,
-            process.ppid,
-            process.pid,
-        ]);
     });
 
     test('foreignHolderOf and refusedWhileGated — another live gate is named in four parts; the gate this process is a step of is none', () => {

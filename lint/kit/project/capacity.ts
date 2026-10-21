@@ -1,12 +1,9 @@
-import { mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
-import { availableParallelism, tmpdir, totalmem } from 'node:os';
-import { dirname, join } from 'node:path';
+import { availableParallelism, totalmem } from 'node:os';
 import process from 'node:process';
 
 import { refusal } from '../catalogue/lesson.js';
 import type { Unread } from '../catalogue/lesson.js';
-import { ARTIFACTS } from './build-plan.js';
-import { listOf, objectOf, parsedObject } from './json.js';
+import type { Lease } from './leases.js';
 
 /** The variable that gives a gate its capacity, `cpus=<count>,memory=<size>`: a person's override, or the slice a gate hands the gates its workers run. */
 export const CAPACITY_VARIABLE = 'TYPESCRIPT_CAPACITY';
@@ -25,11 +22,6 @@ export const SEED_PRICES: Readonly<Record<Pool, number>> = {
     'stryker-suite': GB,
     vitest: 600 * MB,
 };
-
-/** The learned prices of a project, each pool's last measured peaks per worker. */
-export const PRICES_FILE = `${ARTIFACTS}/prices.json`;
-
-const KEPT_PEAKS = 5;
 
 export type Resources = { cpus: number; memory: number };
 
@@ -87,6 +79,20 @@ export const capacityUnread = (named: string): Unread => ({
     why: 'a capacity read wrong would size every pool of the gate from a machine that is not there',
 });
 
+/** The capacity `TYPESCRIPT_CAPACITY` names in `environment`, or none where it is unset or blank; a value that names no capacity is refused. */
+export function capacityGiven(environment: NodeJS.ProcessEnv): Partial<Resources> | undefined {
+    const written = environment[CAPACITY_VARIABLE];
+    const named = capacityNamed(written);
+    if (named === 'unreadable') {
+        const unread = capacityUnread(String(written));
+        throw new Error(
+            refusal({ ...unread, read: 'docs/reference/quality-checks.md#how-many-test-runners' }),
+        );
+    }
+
+    return named;
+}
+
 const constrained = (): number => {
     const limit = process.constrainedMemory();
 
@@ -109,69 +115,6 @@ export function machineOf(named: Partial<Resources> | undefined): Machine {
 /** How many workers of a price a slice holds: its cpus, or fewer where its memory binds, never none. */
 export const slots = ({ cpus, memory }: Resources, price: number): number =>
     Math.max(1, Math.min(cpus, Math.floor(memory / price)));
-
-/** Whether a process lives: one this user may not signal lives all the same; no pid, or one that is no whole number, names none. */
-export function isAlive(pid: number | undefined): pid is number {
-    try {
-        process.kill(Number(pid), 0);
-
-        return true;
-    } catch (error) {
-        return objectOf(error).code === 'EPERM';
-    }
-}
-
-/** Every outermost gate of this machine leases its share here while it runs, one file per gate named for its pid. */
-export const leaseFolder = (): string => join(tmpdir(), 'typescript-capacity');
-
-/** A gate's lease: its pid, the checkout it gates, and when it took the lease. */
-export type Lease = { pid: number; root: string; since: number };
-
-function leaseIn(folder: string, name: string): Lease | undefined {
-    const pid = Number(name);
-    if (!isAlive(pid)) {
-        // Stryker disable next-line ObjectLiteral,BooleanLiteral: the entry was just listed; forcing only spares a race with another gate pruning it at the same moment
-        rmSync(join(folder, name), { force: true });
-
-        return undefined;
-    }
-    let lease;
-    try {
-        const text = String(readFileSync(join(folder, name)));
-        lease = parsedObject(text);
-    } catch {
-        lease = {};
-    }
-
-    return { pid, root: String(lease.root), since: Number(lease.since) || 0 };
-}
-
-/** Orders leases oldest first, two of one age by pid, so every gate ranks them alike. */
-export const byAge = (a: Lease, b: Lease): number => a.since - b.since || a.pid - b.pid;
-
-/** The leases of the gates living on this machine, oldest first; a lease whose gate died is taken away. */
-export function liveLeases(folder: string = leaseFolder()): Lease[] {
-    let names: string[];
-    try {
-        names = readdirSync(folder);
-    } catch {
-        return [];
-    }
-
-    return names
-        .map((name) => leaseIn(folder, name))
-        .filter((lease) => lease !== undefined)
-        .toSorted(byAge);
-}
-
-/** Takes a lease for the gate of `pid` on `root`, as of now. */
-export function leaseTaken(pid: number, root: string, folder: string = leaseFolder()): string {
-    const file = join(folder, String(pid));
-    mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, `${JSON.stringify({ root, since: Date.now() })}\n`);
-
-    return file;
-}
 
 // value: an eighth of the machine stays for everything that is no gate, and for a price measured short.
 const budgetOf = ({ available, memory }: Machine): number =>
@@ -205,67 +148,3 @@ export function capacityLine(machine: Machine, slice: Slice): string {
 
 /** A price as the capacity line prints it, in whole megabytes. */
 export const priceText = (bytes: number): string => `${String(Math.round(bytes / MB))} MB`;
-
-function peaksIn(project: string): Readonly<Record<string, unknown>> {
-    try {
-        const text = String(readFileSync(join(project, PRICES_FILE)));
-
-        return parsedObject(text);
-    } catch {
-        return {};
-    }
-}
-
-const medianOf = (values: readonly number[]): number => {
-    const sorted = values.toSorted((a, b) => a - b);
-    const middle = Math.floor(sorted.length / 2);
-
-    return sorted.length % 2 === 1
-        ? Number(sorted[middle])
-        : (Number(sorted[middle - 1]) + Number(sorted[middle])) / 2;
-};
-
-/** What one worker of a pool costs in a project: the median of its last measured peaks, so one peak out of line neither pins nor drops it, else the pool's seed. */
-export function priceOf(project: string, pool: Pool): number {
-    const peaks = listOf(peaksIn(project)[pool])
-        .map(Number)
-        .filter((peak) => peak > 0);
-
-    return peaks.length === 0 ? SEED_PRICES[pool] : medianOf(peaks);
-}
-
-/** Records a peak measured per worker of a pool in `project`, in bytes, keeping the last five: what a pool's runner hands back after it measured its workers, so the next `slotsFor` prices them by the median of the five. */
-export function priceLearned(project: string, pool: Pool, peak: number): void {
-    const peaks = peaksIn(project);
-    const file = join(project, PRICES_FILE);
-    mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(
-        file,
-        `${JSON.stringify({ ...peaks, [pool]: [...listOf(peaks[pool]), Math.round(peak)].slice(-KEPT_PEAKS) }, null, 4)}\n`,
-    );
-}
-
-/** How many workers of a pool a run in `project` may start: this machine's capacity, shared among the live gates, the one gating `project` counted as this run's own, sized by the pool's price there. */
-export function slotsFor(
-    project: string,
-    pool: Pool,
-    environment: NodeJS.ProcessEnv = process.env,
-): number {
-    const written = environment[CAPACITY_VARIABLE];
-    const named = capacityNamed(written);
-    if (named === 'unreadable') {
-        const unread = capacityUnread(String(written));
-        throw new Error(
-            refusal({
-                ...unread,
-                read: 'docs/reference/quality-checks.md#how-many-test-runners',
-            }),
-        );
-    }
-    const machine = machineOf(named);
-    const leases = liveLeases();
-    const root = realpathSync(project);
-    const own = leases.find((lease) => lease.root === root);
-
-    return slots(sliceOf(machine, leases, own?.pid), priceOf(project, pool));
-}

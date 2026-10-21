@@ -6,6 +6,7 @@ import process from 'node:process';
 
 import { readSettings } from '../../../lint/index.rules.js';
 import { ARTIFACTS, DEV_OUTPUT, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { withEnvironment } from '../../../lint/kit/project/environment.js';
 import { objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { handOver } from '../run.js';
@@ -134,21 +135,22 @@ export function strykerConfig(
     };
 }
 
-/** Lays the files every stage of the run loads, the presentation globs its ignorers read among them, and the PATH its suite runs under, a browser out of its reach. */
-export function strykerPrepared(project: string, presentation: readonly string[]): void {
+/** Lays the files every stage of the run loads, the presentation globs its ignorers read among them. */
+export function strykerPrepared(presentation: readonly string[]): void {
     mkdirSync(MUTATION_OUTPUT, { recursive: true });
     writeFileSync(join(MUTATION_OUTPUT, 'mutant-setup.mjs'), MUTANT_SETUP_SOURCE);
     writeFileSync(join(MUTATION_OUTPUT, 'child-coverage.cjs'), CHILD_COVERAGE_SOURCE);
     writeFileSync(REPORTER_FILE, PROGRESS_REPORTER_SOURCE);
     writeFileSync(IGNORERS_FILE, ignorersSource(presentation));
+}
+
+function stageEnvironment(project: string): Readonly<Record<string, string>> {
     // outside: the suite runs as `npm test` runs it, its tools found on the PATH npm gives a script; a spec that spawns oxlint type-aware leaves it to find tsgolint there.
     // Stryker disable next-line StringLiteral: a spec runs this command with the project's node_modules/.bin already first on the PATH, as npm does, so no spec can tell the folders apart
-    process.env.PATH = `${join(project, 'node_modules', '.bin')}${delimiter}${process.env.PATH ?? ''}`;
-    Object.assign(
-        process.env,
-        // Stryker disable next-line StringLiteral: the name only names the folder for a reader of .artifacts/; the openers it holds refuse from any folder put first on the PATH
-        headlessEnvironment(join(project, MUTATION_OUTPUT, 'headless'), process.env.PATH),
-    );
+    const path = `${join(project, 'node_modules', '.bin')}${delimiter}${process.env.PATH ?? ''}`;
+
+    // Stryker disable next-line StringLiteral: the name only names the folder for a reader of .artifacts/; the openers it holds refuse from any folder put first on the PATH
+    return headlessEnvironment(join(project, MUTATION_OUTPUT, 'headless'), path);
 }
 
 /** Keeps of the stage's incremental report what the change since its run leaves standing, none of it when the run starts cold, and returns what the stage starts on. */
@@ -237,7 +239,7 @@ export async function strykerRun(
     const suite = stage.name === 'suite';
     const lines = mutatedLines(stage.mutate);
     const folders = recordFoldersMade(project);
-    killersLaid(project, files.report);
+    const killers = killersLaid(project, files.report);
     const { carried, dryRun, inputs } = reportKept(project, stage, {
         cold,
         dryRunOver: suite ? { lines, linesInFunctions } : undefined,
@@ -256,14 +258,18 @@ export async function strykerRun(
             workers: concurrency,
         });
     }
-    const status = await withoutBesideLinks(
-        project,
-        besideOf(project),
+    const status = await withEnvironment(
+        { ...stageEnvironment(project), ...killers },
         async () =>
-            await handOver(
-                projectBinary('stryker'),
-                ['run', join(MUTATION_OUTPUT, files.config)],
+            await withoutBesideLinks(
                 project,
+                besideOf(project),
+                async () =>
+                    await handOver(
+                        projectBinary('stryker'),
+                        ['run', join(MUTATION_OUTPUT, files.config)],
+                        project,
+                    ),
             ),
     );
     const ranByTests = linesIn(folders.ranByTests);

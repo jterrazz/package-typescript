@@ -10,7 +10,7 @@ const OPENERS = ['open', 'xdg-open'];
 
 export type HeadlessEnvironment = { BROWSER: string; PATH: string };
 
-// invariant: no check may open a window. Every process a mutation run starts inherits this environment, a spec's spawned CLI included: `open` and `xdg-open` refuse first on PATH (the `open` package spawns the first on macOS), and BROWSER=none leaves the bundled xdg-open Linux uses no browser to hand a URL to.
+// invariant: no check may open a window. Every process a stage's Stryker starts inherits this environment, a spec's spawned CLI included: `open` and `xdg-open` refuse first on PATH (the `open` package spawns the first on macOS), and BROWSER=none leaves the bundled xdg-open Linux uses no browser to hand a URL to.
 /** Lays the refusing openers in `folder`, and returns the environment that puts them first. */
 export function headlessEnvironment(folder: string, path: string | undefined): HeadlessEnvironment {
     mkdirSync(folder, { recursive: true });

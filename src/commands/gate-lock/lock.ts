@@ -1,22 +1,22 @@
-import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import process from 'node:process';
 
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { ARTIFACTS } from '../../../lint/kit/project/build-plan.js';
-import { isAlive, leaseTaken } from '../../../lint/kit/project/capacity.js';
+import { withEnvironment } from '../../../lint/kit/project/environment.js';
+import {
+    GATE_VARIABLE,
+    gateOf,
+    isAlive,
+    leaseTaken,
+    outerOf,
+    pidOf,
+    realOf,
+} from '../../../lint/kit/project/leases.js';
 
 /** The file a running gate holds its checkout with, from the project's root: the pid of the gate, alone. */
 export const GATE_LOCK = `${ARTIFACTS}/gate.lock`;
-
-/** Names the gate a process runs inside, `<pid>:<root>`, so the steps of one `make check` are one gate holding its root and the builds a gate runs are never refused. */
-export const GATE_VARIABLE = 'TYPESCRIPT_GATE';
-
-const pidOf = (text: string | undefined): number | undefined => {
-    const pid = Number(text);
-
-    return pid > 0 ? pid : undefined;
-};
 
 const readOf = (file: string): string | undefined =>
     existsSync(file) ? String(readFileSync(file)) : undefined;
@@ -26,32 +26,6 @@ export function holderOf(project: string): number | undefined {
     const pid = pidOf(readOf(join(project, GATE_LOCK)));
 
     return isAlive(pid) ? pid : undefined;
-}
-
-type Outer = { pid: number; root: string };
-
-const realOf = (path: string): string => {
-    try {
-        return realpathSync(path);
-    } catch {
-        return resolve(path);
-    }
-};
-
-// invariant: a value with no colon names a root made of digits alone, which no checkout is, so it is adopted by none.
-function outerOf(environment: NodeJS.ProcessEnv): Outer | undefined {
-    const named = String(environment[GATE_VARIABLE]);
-    const colon = named.indexOf(':');
-    const pid = pidOf(named.slice(0, colon));
-
-    return isAlive(pid) ? { pid, root: realOf(named.slice(colon + 1)) } : undefined;
-}
-
-/** The gate this process is a step of in `project`: the one its caller names for that same checkout, else this process. */
-export function gateOf(project: string, environment: NodeJS.ProcessEnv = process.env): number {
-    const outer = outerOf(environment);
-
-    return outer !== undefined && outer.root === realOf(project) ? outer.pid : process.pid;
 }
 
 /** A gate holding the checkout that this process is no step of. */
@@ -73,26 +47,18 @@ export async function withGateLock<T>(project: string, run: () => Promise<T>): P
     }
     const leased =
         outer === undefined || outer.pid === gate ? leaseTaken(gate, realOf(project)) : undefined;
-    const before = process.env[GATE_VARIABLE];
-    process.env[GATE_VARIABLE] = `${String(gate)}:${realOf(project)}`;
     try {
-        return await run();
+        return await withEnvironment(
+            { [GATE_VARIABLE]: `${String(gate)}:${realOf(project)}` },
+            run,
+        );
     } finally {
-        restored(before);
         if (gate === process.pid && leased !== undefined) {
             rmSync(leased);
         }
         if (gate === process.pid && !held && pidOf(readOf(lock)) === gate) {
             rmSync(lock);
         }
-    }
-}
-
-function restored(before: string | undefined): void {
-    if (before === undefined) {
-        Reflect.deleteProperty(process.env, GATE_VARIABLE);
-    } else {
-        process.env[GATE_VARIABLE] = before;
     }
 }
 
