@@ -75,6 +75,7 @@ export async function leasedRun<T>(
     run: () => Promise<T>,
 ): Promise<T> {
     const released = heldApart();
+    // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of the temp folder; mkdtemp makes it unique whatever it is
     const apart = mkdtempSync(join(tmpdir(), 'typescript-apart-'));
     const watch = residentPeak(process.pid, SAMPLED_EVERY_MS, () => apartIn(apart));
     try {
@@ -84,7 +85,7 @@ export async function leasedRun<T>(
         );
     } finally {
         peakPriced(project, lease, watch.stop());
-        rmSync(apart, { force: true, recursive: true });
+        rmSync(apart, { recursive: true });
         released();
     }
 }

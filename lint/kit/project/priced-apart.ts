@@ -16,14 +16,15 @@ export function heldApart(
     }
     const file = join(folder, String(pid));
     try {
+        // Stryker disable next-line StringLiteral: a registration is the file's name; what it holds no one reads
         writeFileSync(file, '');
+
+        return () => {
+            rmSync(file, { force: true });
+        };
     } catch {
         return () => undefined;
     }
-
-    return () => {
-        rmSync(file, { force: true });
-    };
 }
 
 /** The pids registered priced apart in `folder`; none where it does not stand. */

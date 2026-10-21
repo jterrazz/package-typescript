@@ -17,7 +17,7 @@ function folder(): string {
 
 describe('priced-apart', () => {
     test('heldApart — a process registers in the folder a stage names while it runs, and takes it back; none where no stage names one, or the folder no longer stands', () => {
-        // Given - a stage's folder, a process registered there, one registered under no stage, and one under a folder already removed
+        // Given - a stage's folder, a process registered there, one registered under no stage, one under a folder already removed, and one whose stage removed its folder before it let go
         const stage = folder();
         const release = heldApart(41, { [APART_VARIABLE]: stage });
         const held = apartIn(stage);
@@ -26,8 +26,12 @@ describe('priced-apart', () => {
         const gone = join(stage, 'removed');
         heldApart(43, { [APART_VARIABLE]: gone })();
         unnamed();
+        const orphan = folder();
+        const late = heldApart(44, { [APART_VARIABLE]: orphan });
+        rmSync(orphan, { recursive: true });
+        late();
 
-        // Then - the pid is held apart until released, nothing is written elsewhere, and a folder that does not stand holds none
+        // Then - the pid is held apart until released, nothing is written elsewhere, a folder that does not stand holds none, and letting go after the folder went threw nothing
         expect([
             [...held],
             [...apartIn(stage)],

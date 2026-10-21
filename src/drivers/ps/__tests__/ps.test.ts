@@ -7,17 +7,17 @@ import { residentBelowTools, residentPeak } from '../ps.js';
 
 describe('ps', () => {
     test('residentBelowTools — the memory below each tool a pid started, at any depth, the tools, the pid and its siblings left out', () => {
-        // Given - a gate 10 whose two tools 11 and 14 each started processes, one of them listed before its parent, a sibling of 10, and lines that are no row: one short of a column, one whose memory is no number
+        // Given - a gate 10 whose two tools 11 and 14 each started processes, one listed before its parent, a sibling of 10, and lines that are no row: one short of a column, one whose memory is no number, both below a tool
         const table = [
             '  1     0   9000',
+            ' 13    12      4',
             ' 12    11     30',
             ' 10     1   5000',
             ' 11    10    200',
-            ' 13    12      4',
             ' 14    10    700',
             ' 15    14     60',
             ' 16     1    800',
-            ' 17    10',
+            ' 17    11',
             ' 18    11    x',
             'garbled',
             '',

@@ -36,6 +36,10 @@ describe('scope', () => {
                 mutate: ['app/index.tsx', 'src/screen.tsx'],
             },
         ]);
+        // Then - each member sizes itself from the share the root hands it, an eighth of the memory kept back at the root and again in the member
+        expect(result.stdout.text).toContain(
+            'capacity: 3 cpus, 56.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 49.0 GB',
+        );
         expect([
             result.file('apps/api/.artifacts/stryker/sandbox.mjs').content.includes('npm'),
             result.file('.artifacts/stryker/stryker.config.json').exists,
