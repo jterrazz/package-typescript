@@ -133,3 +133,12 @@ it.
   first models 1.47 to 1.83 times fewer tests completed; on the fixture of
   its spec, 7 mutants on one line, 13 tests completed fall to 8. The order
   still moves no verdict.
+- Added and accepted by the owner on 2026-10-21 ("ok pour tes trucs"): the
+  suite stage no longer gives every test file a process of its own in every
+  run. The dry run still does, so a module's loading is credited to each
+  file that loads it, and so does the run of a mutant the dry run saw a test
+  file run in its own process. The run of a mutant only spawned processes
+  ran keeps the worker between files where the project's own test run does:
+  the mutant is live in each child from its start, so no module the worker
+  kept was loaded under another mutant. Where a project gives each file its
+  own process, as this package's specs do, nothing changes.

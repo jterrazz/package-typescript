@@ -102,4 +102,28 @@ describe('mutation order', () => {
             2,
         ]);
     });
+
+    test('typescript mutation — a spec a stopped run skipped keeps its place for the next mutant, where the project keeps its worker', async () => {
+        // Given - a consumer whose project keeps its worker, a quick spec and a slow one that judge nothing and a middle one that tells both numbers apart, measured cold on one test runner at both numbers
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-order-frozen/'))
+            .env(ONE_RUNNER)
+            .exec('typescript mutation --mutate src/first.ts:1-1,src/second.ts:1-1');
+
+        // Then - each mutant is killed by the middle spec, reached second, the slow spec its first run skipped never run ahead of it
+        expect(result.exitCode).toBe(0);
+        expect(
+            Object.values(
+                reportedMutants(result.file('.artifacts/stryker/suite-report.json').content),
+            ).map(({ coveredBy, status, testsCompleted }) => ({
+                covered: coveredBy.length,
+                status,
+                testsCompleted,
+            })),
+        ).toStrictEqual([
+            { covered: 3, status: 'Killed', testsCompleted: 2 },
+            { covered: 3, status: 'Killed', testsCompleted: 2 },
+        ]);
+    });
 });
+

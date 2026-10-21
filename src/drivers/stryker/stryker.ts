@@ -1,13 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import {
-    existsSync,
-    mkdirSync,
-    mkdtempSync,
-    readdirSync,
-    readFileSync,
-    rmSync,
-    writeFileSync,
-} from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { delimiter, join } from 'node:path';
 import process from 'node:process';
@@ -23,15 +15,12 @@ import { headlessEnvironment } from './headless.js';
 import { ignorersSource, LOG_IGNORER, PINNED_TEXT_IGNORER } from './ignorers.js';
 import { incrementalKeptWhileInputsHold, recordInputs } from './incremental.js';
 import type { DryRunOver, Kept, LinesInFunctions, StaysInFunctions } from './incremental.js';
-import {
-    MUTANT_SETUP_SOURCE,
-    OBSERVED_TESTS_VARIABLE,
-    RAN_BY_TESTS_VARIABLE,
-} from './mutant-setup.js';
+import { MUTANT_SETUP_SOURCE } from './mutant-setup.js';
 import { heldReport, mutatedLines, strykerMutate } from './mutate-entries.js';
 import { observedFrom, observedIn } from './observed.js';
 import { killersLaid, PREVIOUS_KILLERS } from './previous-killers.js';
 import { PROGRESS_REPORTER, PROGRESS_REPORTER_SOURCE } from './progress-reporter.js';
+import { linesIn, recordFoldersMade, recordFoldersRemoved } from './record-folders.js';
 import { REPORT_NAMES } from './reports.js';
 import type { StageName } from './reports.js';
 import { sandboxScriptSource, vitestConfigSource } from './sources.js';
@@ -192,11 +181,6 @@ export type StageRun = {
     staysInFunctions: StaysInFunctions;
 };
 
-const ranByTestsIn = (folder: string): Set<string> =>
-    new Set(
-        readdirSync(folder).flatMap((name) => String(readFileSync(join(folder, name))).split('\n')),
-    );
-
 /** Whether a stage of `project` type-checks each mutant before its tests run it. */
 export const typeCheckedIn = (project: string): boolean =>
     existsSync(join(project, 'tsconfig.json'));
@@ -252,12 +236,7 @@ export async function strykerRun(
     const files = FILES[stage.name];
     const suite = stage.name === 'suite';
     const lines = mutatedLines(stage.mutate);
-    // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
-    const ranInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'ran-by-tests-'));
-    // Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
-    const observedInto = mkdtempSync(join(project, MUTATION_OUTPUT, 'observed-tests-'));
-    process.env[RAN_BY_TESTS_VARIABLE] = ranInto;
-    process.env[OBSERVED_TESTS_VARIABLE] = observedInto;
+    const folders = recordFoldersMade(project);
     killersLaid(project, files.report);
     const { carried, dryRun, inputs } = reportKept(project, stage, {
         cold,
@@ -287,11 +266,10 @@ export async function strykerRun(
                 project,
             ),
     );
-    const ranByTests = ranByTestsIn(ranInto);
+    const ranByTests = linesIn(folders.ranByTests);
     // invariant: a test file the dry run left out holds no test the change made stale, so what the last record says of its tests still holds and is carried into this one.
-    const observed = observedFrom([...observedIn(observedInto), ...carried], inputs);
-    rmSync(ranInto, { recursive: true });
-    rmSync(observedInto, { recursive: true });
+    const observed = observedFrom([...observedIn(folders.observed), ...carried], inputs);
+    recordFoldersRemoved(folders);
 
     if (status !== 0) {
         return { status };

@@ -998,7 +998,7 @@ A pool holds `max(1, min(cpus, floor(memory / price)))` workers, so the memory b
 
 `TYPESCRIPT_CAPACITY` gives a gate its capacity: `cpus=4,memory=8g`, either part alone, the memory in `k`, `m` or `g`. A gate given one takes it whole: it reads no free memory and shares it with no other gate. Anything else is refused before a run starts. While Stryker runs, the gate gives each test runner its share the same way, the stage's cpus and memory divided by its runners, so a gate a spec starts inside a runner sizes itself to that share.
 
-The suite's dry run activates no mutant, so it runs its test files on as many Vitest workers as the stage has test runners; each mutant's tests run on one worker of their runner, since the mutant is live in the process that runs them. Why one model sizes every pool is [ADR-031](../decisions/031-every-pool-is-sized-from-one-leased-capacity.md).
+The suite's dry run activates no mutant, so it runs its test files on as many Vitest workers as the stage has test runners; each mutant's tests run on one worker of their runner, since the mutant is live in the process that runs them. The dry run gives each test file a process of its own, so a module's loading is credited to every file that loads it. A mutant's run does the same where the dry run saw a test file run the mutant in its own process, as a module loaded under one mutant would keep it; a mutant only the processes a test spawns ran is live in each child from its start, so its run keeps the worker between files where the project's own test run does (`isolate: false`). Why one model sizes every pool is [ADR-031](../decisions/031-every-pool-is-sized-from-one-leased-capacity.md).
 
 ### Every mutant a test runs is detected
 

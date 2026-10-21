@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 
 import { DIST, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
-import { OBSERVED_TESTS_VARIABLE } from './mutant-setup.js';
+import { IN_PROCESS_VARIABLE, OBSERVED_TESTS_VARIABLE } from './mutant-setup.js';
 import { KILLERS_VARIABLE, RECENT_KILLERS_VARIABLE } from './previous-killers.js';
 
 // outside: Stryker 10 names a test by its suites and title joined with a space, where Vitest 5 joins them with ` > `: without this plugin every mutant runs no test and survives.
@@ -157,6 +157,32 @@ const dryRunWorkersPluginSource = (workers: number): string => `const dryRunWork
 };
 `;
 
+// invariant: a mutant the dry run ran in a test file's own process is live in the worker as its modules load, so its run gives each file a process of its own; a mutant only the processes a test spawns ran is live in each child from its start, so its run keeps the worker as the project's own test run does. The dry run gives each file its own, since a module loaded once per worker would credit its loading to the first file alone.
+const OWN_WORKER_PLUGIN_SOURCE = `let inProcess;
+const inProcessOf = () => {
+    if (inProcess === undefined) {
+        const folder = process.env.${IN_PROCESS_VARIABLE};
+        inProcess = new Set((folder !== undefined && existsSync(folder) ? readdirSync(folder) : []).flatMap((name) => readFileSync(join(folder, name), 'utf8').split('\\n')));
+    }
+    return inProcess;
+};
+const ownWorker = {
+    configureVitest({ project, vitest }) {
+        const own = project.config.isolate;
+        Object.defineProperty(project.config, 'isolate', {
+            configurable: true,
+            enumerable: true,
+            get: () => {
+                const { activeMutant, mode } = vitest.getRootProject().getProvidedContext();
+                return mode !== 'mutant' || inProcessOf().has(String(activeMutant)) || own;
+            },
+            set: () => {},
+        });
+    },
+    name: 'stryker-own-worker',
+};
+`;
+
 /** The folders of the repository a member's specs reach by climbing out of it: where the sandbox's copy stands, and the names to lay beside it. */
 export type Beside = { levels: number; names: readonly string[]; root: string };
 
@@ -223,7 +249,7 @@ ${TEST_NAME_PLUGIN_SOURCE}
 ${relevantFirstSource(mutated)}
 
 ${LOAD_FAILURES_REPORTER_SOURCE}
-${stage.suite ? `${OWN_PROCESSES_PLUGIN_SOURCE}\n${dryRunWorkersPluginSource(stage.dryRunWorkers)}` : ''}
+${stage.suite ? `${OWN_PROCESSES_PLUGIN_SOURCE}\n${dryRunWorkersPluginSource(stage.dryRunWorkers)}\n${OWN_WORKER_PLUGIN_SOURCE}` : ''}
 const projects = project.test?.projects ?? [];
 
 const setup = resolve(${JSON.stringify(`${MUTATION_OUTPUT}/mutant-setup.mjs`)});
@@ -240,7 +266,7 @@ export default {
         projects: ${kept}.map((one) =>
             mergeConfig(
                 { ...one, test: { ...one.test, setupFiles: [setup, ...listed(one.test?.setupFiles)] } },
-                { plugins: [strykerTestNames${suite ? ', ownProcesses, dryRunWorkers' : ''}], test: { exclude: ${JSON.stringify(exclude)}, isolate: true } },
+                { plugins: [strykerTestNames${suite ? ', ownProcesses, dryRunWorkers, ownWorker' : ''}], test: { exclude: ${JSON.stringify(exclude)}${suite ? '' : ', isolate: true'} } },
             ),
         ),
     },

@@ -358,17 +358,20 @@ describe('sources', () => {
         ]);
     });
 
-    test('vitestConfigSource — the suite’s config follows the processes its tests spawn and runs its dry run on the stage’s workers, the module tests’ config does neither', () => {
+    test('vitestConfigSource — the suite’s config follows the processes its tests spawn, runs its dry run on the stage’s workers and decides each run’s isolation, the module tests’ config does none of it', () => {
         // Given - the config of each stage over one mutated source
         const scope = { exclude: [], mutated: ['src/a.ts'] };
+        const suite = vitestConfigSource(scope, { dryRunWorkers: 2, suite: true });
+        const modules = vitestConfigSource(scope, { suite: false });
 
-        // Then - the suite's projects add the two plugins beside the test names, the module tests' the test names alone
-        expect([
-            pluginsOf(vitestConfigSource(scope, { dryRunWorkers: 2, suite: true })),
-            pluginsOf(vitestConfigSource(scope, { suite: false })),
-        ]).toStrictEqual([
-            'plugins: [strykerTestNames, ownProcesses, dryRunWorkers]',
+        // Then - the suite's projects add the three plugins beside the test names and force no isolation, the module tests' the test names alone, every file isolated
+        expect([pluginsOf(suite), pluginsOf(modules)]).toStrictEqual([
+            'plugins: [strykerTestNames, ownProcesses, dryRunWorkers, ownWorker]',
             'plugins: [strykerTestNames]',
+        ]);
+        expect([suite.includes('isolate: true'), modules.includes('isolate: true')]).toStrictEqual([
+            false,
+            true,
         ]);
     });
 });
