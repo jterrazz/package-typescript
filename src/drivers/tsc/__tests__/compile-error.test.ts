@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
 import { firstCompileError } from '../compile-error.js';
-import { childProcesses } from './child-processes.js';
+import { childProcesses, startedSince } from './child-processes.js';
 
 const TSCONFIG = JSON.stringify({
     compilerOptions: {
@@ -106,6 +106,6 @@ describe('compile-error', () => {
         firstCompileError(broken);
 
         // Then - no process it started is left, once the system has ended it
-        await expect.poll(childProcesses, { timeout: 10_000 }).toStrictEqual(before);
+        await expect.poll(() => startedSince(before), { timeout: 10_000 }).toStrictEqual([]);
     });
 });
