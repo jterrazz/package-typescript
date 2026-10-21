@@ -1,30 +1,11 @@
 description: fails stale links, anchors and paths at their position, and keeps a decision record's paths
 fixture: ./__fixtures__/markdown/stale-coordinates/
+env: TYPESCRIPT_CHECK_PASSES=markdown
 runs:
     - command: check
       exit: 1
       stdout: |4
            START  Running quality checks
-
-           RUN  TypeScript Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxlint Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxfmt Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Knip (unused code)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Suppressions (directives)
-
-          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
@@ -32,24 +13,6 @@ runs:
           README.md:5:24: error markdown(link-resolves): Relative link 'notes/design.md' does not exist
           README.md:5:80: [MD051] Link anchor '#usage' does not exist in document headings
           ✗ Failed with exit code 1 ({{duration}})
-
-           RUN  Names (tree)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed ({{duration}})
-
-           DRIFT  Deviations from the profile
-
-            declared                              nothing: node, the default
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
 
            END  Finalizing quality checks
 

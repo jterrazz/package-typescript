@@ -1,5 +1,6 @@
 description: leaves the incremental buildinfo under .artifacts/tsc/
 fixture: ../__fixtures__/incremental-app/
+env: TYPESCRIPT_CHECK_PASSES=typescript
 runs:
     - command: check
       exit: 0
@@ -9,44 +10,6 @@ runs:
            RUN  TypeScript Check
 
           ✓ Passed ({{duration}})
-
-           RUN  Oxlint Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxfmt Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Knip (unused code)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Suppressions (directives)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Markdown (prose)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Names (tree)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed ({{duration}})
-
-           DRIFT  Deviations from the profile
-
-            declared                              nothing: node, the default
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
 
            END  Finalizing quality checks
 

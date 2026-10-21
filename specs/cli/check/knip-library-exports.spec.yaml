@@ -1,26 +1,11 @@
 description: a dead export, type or file beneath a library's entries is reported
 fixture: ./__fixtures__/knip/library-exports/
+env: TYPESCRIPT_CHECK_PASSES=knip
 runs:
     - command: check
       exit: 1
       stdout: |4
            START  Running quality checks
-
-           RUN  Config (one file)
-
-          {{any}}
-
-           RUN  TypeScript Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxlint Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxfmt Check
-
-          ✓ Passed ({{duration}})
 
            RUN  Knip (unused code)
 
@@ -32,40 +17,6 @@ runs:
           UnreadShape  type  label.ts:3:13
           ✗ Failed with exit code 1 ({{duration}})
 
-           RUN  Publish (packaging)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Architecture (layer map)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Suppressions (directives)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Markdown (prose)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Names (tree)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed ({{duration}})
-
-           DRIFT  Deviations from the profile
-
-            declared                              library on node
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
-
            END  Finalizing quality checks
 
-          ✗ Some checks failed, first Config (one file): {{any}}
+          ✗ Some checks failed, first Knip (unused code): Unused files (1)

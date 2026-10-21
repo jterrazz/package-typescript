@@ -1,30 +1,11 @@
 description: fails a page whose prose, fence and section run past the readability limits
 fixture: ./__fixtures__/markdown/walls/
+env: TYPESCRIPT_CHECK_PASSES=markdown
 runs:
     - command: check
       exit: 1
       stdout: |4
            START  Running quality checks
-
-           RUN  TypeScript Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxlint Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxfmt Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Knip (unused code)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Suppressions (directives)
-
-          ✓ Passed ({{duration}})
 
            RUN  Markdown (prose)
 
@@ -32,24 +13,6 @@ runs:
           README.md:1:1: error markdown(fenced-run-is-short): a fenced block at line 21 runs 16 lines unbroken, over the limit of 15; a blank line after line 29 survives the formatter
           README.md:1:1: error markdown(long-section-has-subheadings): "## A section with nothing to break it up" at line 40 runs 31 lines of prose with no ### and no list
           ✗ Failed with exit code 1 ({{duration}})
-
-           RUN  Names (tree)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed ({{duration}})
-
-           DRIFT  Deviations from the profile
-
-            declared                              nothing: node, the default
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
 
            END  Finalizing quality checks
 

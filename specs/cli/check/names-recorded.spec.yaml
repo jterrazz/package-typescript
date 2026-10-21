@@ -1,5 +1,6 @@
 description: records a construct name in the ratchet, and the run it records is green
 fixture: ../__fixtures__/names/recorded/
+env: TYPESCRIPT_CHECK_PASSES=names
 runs:
     - command: baseline
       exit: 0
@@ -12,47 +13,9 @@ runs:
       stdout: |4
            START  Running quality checks
 
-           RUN  TypeScript Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxlint Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxfmt Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Knip (unused code)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Suppressions (directives)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Markdown (prose)
-
-          ✓ Passed ({{duration}})
-
            RUN  Names (tree)
 
           ✓ Passed ({{duration}})
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed ({{duration}})
-
-           DRIFT  Deviations from the profile
-
-            declared                              nothing: node, the default
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  1
-            tool versions                         in range
 
            END  Finalizing quality checks
 

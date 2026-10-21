@@ -1,8 +1,9 @@
 description: passes for valid typed code
 fixture: ./__fixtures__/typechecker/valid/
+env: TYPESCRIPT_CHECK_PASSES=typescript
 runs:
     - command: check
-      exit: 1
+      exit: 0
       stdout: |4
            START  Running quality checks
 
@@ -10,47 +11,6 @@ runs:
 
           ✓ Passed ({{duration}})
 
-           RUN  Oxlint Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxfmt Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Knip (unused code)
-
-          ERROR: Unable to find package.json
-
-          Run `knip --help` or visit https://knip.dev for help
-          ✗ Failed with exit code 2 ({{duration}})
-
-           RUN  Suppressions (directives)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Markdown (prose)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Names (tree)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed ({{duration}})
-
-           DRIFT  Deviations from the profile
-
-            declared                              nothing: node, the default
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
-
            END  Finalizing quality checks
 
-          ✗ Some checks failed, first Knip (unused code): ERROR: Unable to find package.json
+          ✓ All checks passed

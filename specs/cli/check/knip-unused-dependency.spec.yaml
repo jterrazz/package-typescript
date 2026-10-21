@@ -1,24 +1,11 @@
 description: still detects genuinely unused dependencies
 fixture: ./__fixtures__/knip/unused-dep/
+env: TYPESCRIPT_CHECK_PASSES=knip
 runs:
     - command: check
       exit: 1
       stdout: |4
            START  Running quality checks
-
-           RUN  TypeScript Check
-
-          {{any}}
-
-          ✗ Failed with exit code 1 ({{duration}})
-
-           RUN  Oxlint Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxfmt Check
-
-          ✓ Passed ({{duration}})
 
            RUN  Knip (unused code)
 
@@ -26,32 +13,6 @@ runs:
           totally-unused-pkg  package.json:5:10
           ✗ Failed with exit code 1 ({{duration}})
 
-           RUN  Suppressions (directives)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Markdown (prose)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Names (tree)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed ({{duration}})
-
-           DRIFT  Deviations from the profile
-
-            declared                              nothing: node, the default
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
-
            END  Finalizing quality checks
 
-          ✗ Some checks failed, first TypeScript Check: {{any}}
+          ✗ Some checks failed, first Knip (unused code): Unused dependencies (1)

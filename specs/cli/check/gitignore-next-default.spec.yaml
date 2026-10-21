@@ -1,22 +1,11 @@
 description: fails a project that ignores .next with no output:'export' to pin it
 fixture: ./__fixtures__/gitignore/next-default/
+env: TYPESCRIPT_CHECK_PASSES=gitignore
 runs:
     - command: check
       exit: 1
       stdout: |4
            START  Running quality checks
-
-           RUN  TypeScript Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxlint Check
-
-          ✓ Passed ({{duration}})
-
-           RUN  Oxfmt Check
-
-          ✓ Passed ({{duration}})
 
            RUN  Gitignore (artefacts)
 
@@ -24,36 +13,6 @@ runs:
             ✗ .gitignore names .next/, whose home is .artifacts/next/
           Run 'typescript fix' to rewrite .gitignore.
           ✗ Failed with exit code 1 ({{duration}})
-
-           RUN  Knip (unused code)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Suppressions (directives)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Markdown (prose)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Names (tree)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed ({{duration}})
-
-           DRIFT  Deviations from the profile
-
-            declared                              nothing: node, the default
-            exceptions                            0
-            rules off vs profile                  none
-            suppressions                          0
-            .jterrazz/oxlint-suppressions.json    nothing held
-            .jterrazz/baseline.json › typescript  nothing held
-            tool versions                         in range
 
            END  Finalizing quality checks
 

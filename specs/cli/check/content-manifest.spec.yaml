@@ -1,5 +1,6 @@
 description: refuses a package.json beside a content declaration
 fixture: ./__fixtures__/content/manifest/
+env: TYPESCRIPT_CHECK_PASSES=config
 runs:
     - command: check
       exit: 1
@@ -10,22 +11,6 @@ runs:
 
           package.json:1:1: error config(kind-matches-manifest): found: jterrazz.config.ts declares a content repository, and package.json exists: a manifest makes it a project · why: A library publishes its exports, a published cli names its bin, and an application (an api, a website, a mobile app) is private, never published, as are a monorepo's own suite and its root, a container that declares no kind. · fix: delete package.json if the repository holds no code, or declare the kind the project is in jterrazz.config.ts · read: docs/reference/quality-checks.md#the-config-one-file-pass
           ✗ Failed with exit code 1 ({{duration}})
-
-           RUN  Gitignore (artefacts)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Markdown (prose)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Names (tree)
-
-          ✓ Passed ({{duration}})
-
-           RUN  Secrets (credentials)
-
-          ✓ Passed ({{duration}})
 
            END  Finalizing quality checks
 
