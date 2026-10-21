@@ -81,4 +81,25 @@ describe('mutation order', () => {
             },
         ]);
     });
+
+    test('typescript mutation — the spec that killed the latest mutants of a source runs first for the next one, though a quicker spec covers it too', async () => {
+        // Given - a consumer whose quick spec runs the label and judges nothing, and whose slow spec tells every mutant of it apart, measured cold on one test runner
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-order-recent/'))
+            .env(ONE_RUNNER)
+            .exec('typescript mutation --mutate src/label.ts:1-1');
+
+        // Then - every mutant is killed; the first reached the slow spec second, every later one ran it first and stopped there
+        expect(result.exitCode).toBe(0);
+        const mutants = Object.values(
+            reportedMutants(result.file('.artifacts/stryker/suite-report.json').content),
+        );
+        expect(mutants.map(({ status }) => status)).toStrictEqual(
+            mutants.map(() => 'Killed'),
+        );
+        expect(mutants.map(({ testsCompleted }) => testsCompleted).toSorted()).toStrictEqual([
+            ...mutants.slice(1).map(() => 1),
+            2,
+        ]);
+    });
 });

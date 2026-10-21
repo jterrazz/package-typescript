@@ -5,7 +5,11 @@ import process from 'node:process';
 import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
 import { objectOf } from '../../../../lint/kit/project/json.js';
-import { KILLERS_VARIABLE, PREVIOUS_KILLERS } from '../previous-killers.js';
+import {
+    KILLERS_VARIABLE,
+    PREVIOUS_KILLERS,
+    RECENT_KILLERS_VARIABLE,
+} from '../previous-killers.js';
 
 const PRICE = 'export const price = (amount: number): number => amount * 2;\n';
 
@@ -39,7 +43,10 @@ const LAST_REPORT = {
     },
 };
 
-type Reporter = { onMutationTestingPlanReady: (event: { mutantPlans: unknown[] }) => void };
+type Reporter = {
+    onMutantTested: (result: object) => void;
+    onMutationTestingPlanReady: (event: { mutantPlans: unknown[] }) => void;
+};
 
 type ReporterClass = new (options: unknown) => Reporter;
 
@@ -72,6 +79,29 @@ async function planned(
         name,
         written: existsSync(into) ? JSON.parse(readFileSync(into, 'utf8')) : undefined,
     };
+}
+
+async function tested(project: string, results: object[]): Promise<string> {
+    const imported: unknown = await import(
+        `data:text/javascript,${encodeURIComponent(PREVIOUS_KILLERS.source)}`
+    );
+    const [plugin] = Object.values(objectOf(imported)).flat();
+    const { injectableClass } = objectOf(plugin);
+    const into = join(project, 'recent.jsonl');
+    vi.stubEnv(RECENT_KILLERS_VARIABLE, into);
+    vi.spyOn(process, 'cwd').mockReturnValue(project);
+    onTestFinished(() => {
+        vi.unstubAllEnvs();
+        vi.restoreAllMocks();
+    });
+    if (isClass(injectableClass)) {
+        const reporter = new injectableClass({ jsonReporter: { fileName: 'report.json' } });
+        for (const result of results) {
+            reporter.onMutantTested(result);
+        }
+    }
+
+    return existsSync(into) ? readFileSync(into, 'utf8') : '';
 }
 
 function projectWith(source: string): string {
@@ -149,5 +179,23 @@ describe('previous-killers', () => {
 
         // Then - no map is written for the sequencer to read
         expect(written).toBeUndefined();
+    });
+
+    test('each mutant a stage kills is appended as its source and the file of the test that killed it; a mutant no test killed adds nothing', async () => {
+        // Given - a project whose price a stage mutates
+        const project = projectWith(PRICE);
+        const fileName = join(project, 'src/price.ts');
+
+        // When - two mutants are killed, one by a test whose name holds a hash, and one survives
+        const appended = await tested(project, [
+            { fileName, killedBy: ['specs/slow.spec.ts#a > b'], status: 'Killed' },
+            { fileName, killedBy: [], status: 'Survived' },
+            { fileName, killedBy: ['specs/quick.spec.ts#c #1'], status: 'Killed' },
+        ]);
+
+        // Then - two lines, in the order the kills came
+        expect(appended).toBe(
+            `${JSON.stringify({ killer: 'specs/slow.spec.ts', source: 'src/price.ts' })}\n${JSON.stringify({ killer: 'specs/quick.spec.ts', source: 'src/price.ts' })}\n`,
+        );
     });
 });

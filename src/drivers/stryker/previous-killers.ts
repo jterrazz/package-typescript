@@ -9,8 +9,12 @@ const NAME = 'typescript-previous-killers';
 /** The variable naming the file a stage maps each mutant it runs to, the test file that killed it in the stage's last report. */
 export const KILLERS_VARIABLE = '__TYPESCRIPT_MUTATION_KILLERS__';
 
+/** The variable naming the file a stage appends each mutant it kills to, as the mutant's source and the test file that killed it, one line each. */
+export const RECENT_KILLERS_VARIABLE = '__TYPESCRIPT_MUTATION_RECENT_KILLERS__';
+
 // invariant: a mutant is the last report's when its file, its mutator, its replacement and the code it replaces are the same, the nearest by line where several are, so a mutant whose source changed around it still finds its killer; Stryker plans every mutant before it runs one, so the map is written before the sequencer first reads it.
-const SOURCE = `import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+// invariant: a killed mutant's line is appended as Stryker reports it, whole, so a sequencer reading the file while a mutant is reported reads every line but the one being written.
+const SOURCE = `import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { relative } from 'node:path';
 
 const offsetOf = (lines, { column, line }) => lines.slice(0, line).reduce((sum, text) => sum + text.length + 1, 0) + column;
@@ -61,6 +65,15 @@ class PreviousKillers {
         }
         writeFileSync(into, JSON.stringify(killed));
     }
+
+    onMutantTested({ fileName, killedBy, status }) {
+        const into = process.env.${RECENT_KILLERS_VARIABLE};
+        const [test] = killedBy ?? [];
+        if (into !== undefined && status === 'Killed' && test !== undefined) {
+            const killer = test.slice(0, test.indexOf('#'));
+            appendFileSync(into, \`\${JSON.stringify({ killer, source: relative(process.cwd(), fileName) })}\\n\`);
+        }
+    }
 }
 
 export const strykerPlugins = [{ injectableClass: PreviousKillers, kind: 'Reporter', name: '${NAME}' }];
@@ -73,10 +86,13 @@ export const PREVIOUS_KILLERS = {
     source: SOURCE,
 };
 
-/** Lays the reporter a stage loads, and names where it writes its map for the sequencer, a map an earlier run left taken away first. */
+/** Lays the reporter a stage loads, and names where it writes its map and its kills for the sequencer, what an earlier run left of both taken away first. */
 export function killersLaid(project: string, report: string): void {
     writeFileSync(join(project, PREVIOUS_KILLERS.file), PREVIOUS_KILLERS.source);
     const into = join(project, MUTATION_OUTPUT, `${report}-killers.json`);
+    const recent = join(project, MUTATION_OUTPUT, `${report}-recent-killers.jsonl`);
     rmSync(into, { force: true });
+    rmSync(recent, { force: true });
     process.env[KILLERS_VARIABLE] = into;
+    process.env[RECENT_KILLERS_VARIABLE] = recent;
 }

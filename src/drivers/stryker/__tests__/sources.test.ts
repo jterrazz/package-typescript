@@ -6,7 +6,7 @@ import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
 import { objectOf } from '../../../../lint/kit/project/json.js';
 import { OBSERVED_TESTS_VARIABLE } from '../mutant-setup.js';
-import { KILLERS_VARIABLE } from '../previous-killers.js';
+import { KILLERS_VARIABLE, RECENT_KILLERS_VARIABLE } from '../previous-killers.js';
 import { relevantFirstSource, sandboxScriptSource, vitestConfigSource } from '../sources.js';
 
 const pluginsOf = (source: string): string | undefined => /plugins: \[[^\]]*\]/u.exec(source)?.[0];
@@ -49,7 +49,7 @@ let loadedModules = 0;
 async function sequencerOver({ durations, provided, root }: Sorting): Promise<Sort> {
     loadedModules += 1;
     const module = `// ${String(loadedModules)}
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 class BaseSequencer {
     constructor(ctx) {
@@ -199,6 +199,50 @@ describe('sources', () => {
         expect({ after, dryRun: dryRun.slice(0, 2) }).toStrictEqual({
             after: before,
             dryRun: ['specs/blind.spec.ts', 'specs/runs.spec.ts'],
+        });
+    });
+
+    test('sequencer — the files that killed the latest mutants of the source run next, the latest first, and a file that killed one since moves ahead', async () => {
+        // Given - the dry run, and a stage whose kills of the label's mutants so far were by the blind spec, then the never-timed one, and one kill of another source
+        const root = observedRun();
+        const recent = join(root, '.artifacts/recent.jsonl');
+        const kill = (killer: string, source = 'src/labels.ts'): string =>
+            `${JSON.stringify({ killer, source })}\n`;
+        writeFileSync(
+            recent,
+            `${kill('specs/blind.spec.ts')}${kill('specs/never-timed.spec.ts')}${kill('specs/loads.spec.ts', 'src/missing.ts')}`,
+        );
+        vi.stubEnv(RECENT_KILLERS_VARIABLE, recent);
+        const sort = await sequencerOver({
+            durations: DURATIONS,
+            provided: { activeMutant: 7, mode: 'mutant' },
+            root,
+        });
+        const specs = SPECS.map((path) =>
+            specOf(root, path.startsWith('src') ? 'unit' : 'cli', path),
+        );
+
+        // When - mutant 7's files are sorted, then again once the slowest spec has killed one more, while a kill is half written
+        const before = await sort(specs);
+        writeFileSync(recent, `${kill('specs/runs.spec.ts')}{"killer":`, { flag: 'a' });
+        const after = await sort(specs);
+
+        // Then - the latest killers lead, the latest first; the rest keep the order of what ran the source
+        expect({ after, before }).toStrictEqual({
+            after: [
+                'specs/runs.spec.ts',
+                'specs/never-timed.spec.ts',
+                'specs/blind.spec.ts',
+                'src/__tests__/labels.test.ts',
+                'specs/loads.spec.ts',
+            ],
+            before: [
+                'specs/never-timed.spec.ts',
+                'specs/blind.spec.ts',
+                'src/__tests__/labels.test.ts',
+                'specs/runs.spec.ts',
+                'specs/loads.spec.ts',
+            ],
         });
     });
 

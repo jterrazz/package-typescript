@@ -125,3 +125,11 @@ it.
   never reached to the front of the next. On 8 mutants of one source over
   3 spec files, a kept worker ran its mutant phase in 52 s against 10 s
   isolated; with the order frozen, 10 s, the same 8 killed.
+- Added and accepted by the owner on 2026-10-21 ("2. ok"): after the last
+  killer run the test files that killed the latest of the stage's mutants
+  of the same source, up to three, the latest first. The reporter appends
+  each kill as Stryker reports it, and the sequencer reads the file again
+  when it grew. Over four cold suite reports of this package, ranking them
+  first models 1.47 to 1.83 times fewer tests completed; on the fixture of
+  its spec, 7 mutants on one line, 13 tests completed fall to 8. The order
+  still moves no verdict.
