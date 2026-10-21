@@ -39,6 +39,6 @@ export function pathsChangedSince(project: string, since: string): string[] | un
 export function branchBaseTreeOf(project: string): string {
     const base = branchBaseFor(project);
 
-    // Stryker disable next-line StringLiteral: git names the tree of every commit it named as the base
+    // Stryker disable next-line StringLiteral,ConditionalExpression: git names the tree of every commit it named as the base, and none outside a repository, where the guard only spares the call
     return base === undefined ? '' : (git(project, ['rev-parse', `${base}^{tree}`])?.trim() ?? '');
 }
