@@ -95,8 +95,9 @@ assertion or a declaration. In jterrazz-web, 1.9 % of the mutants sit in
 - A glue survivor no longer fails the run by itself: the bar is a number
   again, for glue only. ADR-019's zero stands for domain. In jterrazz-web,
   98 % of the mutants are judged against the bar; in this package, the
-  three it declares presentation: the check report, the doctor and the
-  mutation verdict.
+  six it declares presentation: the check report, the terminal every
+  command prints with, the doctor, the mutation command's two refusal
+  modules and its verdict.
 - A module test weakened by a change to the test alone is measured when a
   later change reaches the source, as ADR-020 already accepts for the specs.
 - Amends [ADR-019](019-mutation-judges-zero-survivors-not-a-score.md) (the
