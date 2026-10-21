@@ -28,4 +28,26 @@ describe('verdict-file', () => {
             status: 1,
         });
     });
+
+    test('appends what each pass it ran ended on to .artifacts/check/outcomes.jsonl, a red pass red', async () => {
+        // Given - the same application, checked by its config pass and the drift report alone
+        const result = await cli
+            .with({ env: onlyPasses('config', 'drift') })
+            .fixture(directory('../__fixtures__/sample-app/'))
+            .exec('check');
+
+        // Then - one line per pass, the config pass red, each with when it ended, its command and its seconds
+        const lines = result
+            .file('.artifacts/check/outcomes.jsonl')
+            .content.split('\n')
+            .filter((line) => line !== '');
+        const ran = { command: 'check', head: null, kind: 'pass' };
+        expect(lines.map((line) => verdictOf(line))).toMatchObject([
+            { ...ran, name: 'Config (one file)', status: 'red' },
+            { ...ran, name: 'Drift (profile)', status: 'green' },
+        ]);
+        expect(
+            lines.filter((line) => /^\{"at":"[^"]+",.*"seconds":[\d.]+,/u.test(line)),
+        ).toHaveLength(2);
+    });
 });

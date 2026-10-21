@@ -38,6 +38,25 @@ The toolchain measures from the nearest `package.json`: a workspace root runs ea
 - `passes` lists every pass that ran, with its label, status and seconds; `firstError` is the first line of a failing pass's log, and `null` for one that passed. On a GitHub runner that line is a workflow command (`::error file=...,title=<rule>::<message>`), so it is read as a terminal prints it, `src/a.ts:1:1: error <rule>: <message>`, and the summary line quotes the same. The drift report is a pass of its own, `Drift (profile)`.
 - `mutation` is `null` for `check` and `fix`. For `mutation`, `passes` lists its stages (`Mutation (module tests)`, `Mutation (whole suite)`, or one per workspace member), and `mutation` holds `detected`, `survivors` (the ones that fail the run, each `file`, `line`, `column`, `mutator`, `replacement`, the `report` it is read from and its `role`, `domain` or `glue`), `glue` (its `bar`, the glue mutants a test ran as `judged`, those `detected`, and every glue survivor, failing or not), `unrun` (the mutants the run never judged) and `range`; a run that judged nothing, refused or measured nothing, holds `null` there and says why on its last line.
 
+### What each run ended on
+
+Every `check`, `fix` and `mutation` appends one line per pass it ran to `.artifacts/check/outcomes.jsonl`, and `typescript test` one for the test script and one per test file Vitest ran: the command, the commit, the pass or the file (with its Vitest project), green or red, and its seconds.
+
+```json
+{
+    "at": "2026-10-21T12:00:00.000Z",
+    "command": "test",
+    "head": "9f18589c...",
+    "kind": "file",
+    "name": "specs/cli/check/proven.spec.ts",
+    "project": "cli",
+    "seconds": 4.2,
+    "status": "red"
+}
+```
+
+No verdict reads it. It is the evidence a pass or a test file is removed by, one that never failed across a month of gates, so a line older than thirty days is dropped, and a tree proven green runs nothing and records nothing. A test file's outcome is read from the results Vitest keeps to order its next run, under the preset's `.artifacts/vitest/` or Vite's default `node_modules/.vite/`; a project that moves that cache records its test script alone.
+
 ### One gate per checkout
 
 A gate reads what an install and a build replace (`node_modules/`, `dist/`, the package a spec packs), so `check` and `mutation` hold the checkout for as long as they run: each writes its gate's pid to `.artifacts/gate.lock`, and the process that wrote it takes it away when it ends. While a live process holds it, `typescript build` and `typescript gate-lock` refuse, naming that pid in four parts; a repository's `install` asks `gate-lock` before it installs, and runs its gates in parallel only in worktrees of their own. A lock whose pid is dead holds nothing, and the next gate takes it over.

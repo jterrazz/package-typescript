@@ -5,6 +5,7 @@ import { stripVTControlCharacters } from 'node:util';
 import { ARTIFACTS } from '../../../../lint/kit/project/build-plan.js';
 import { git } from '../../../../lint/kit/project/git.js';
 import { GREEN, RED, RESET } from '../../terminal.js';
+import { outcomesRecorded, passOutcomesOf } from './outcomes.js';
 
 /** Where every gate command leaves its verdict, from the project's root. */
 export const VERDICT_FILE = `${ARTIFACTS}/gate/verdict.json`;
@@ -84,10 +85,12 @@ export function firstFindingOf(log: string): null | string {
 export const headOf = (project: string): null | string =>
     git(project, ['rev-parse', '--verify', '--quiet', 'HEAD'])?.trim() ?? null;
 
-export function verdictWritten(project: string, verdict: GateVerdict): void {
+/** Leaves the gate's verdict for its reader, and appends what each of its passes ended on to the outcomes later removals are decided by. */
+export function verdictWritten(project: string, verdict: GateVerdict, now = new Date()): void {
     const file = join(project, VERDICT_FILE);
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, `${JSON.stringify(verdict, null, 4)}\n`);
+    outcomesRecorded(project, passOutcomesOf(verdict, now), now);
 }
 
 /** A pass's entry: its first finding read from its log where it failed. */

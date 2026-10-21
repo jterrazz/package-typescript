@@ -1,0 +1,7 @@
+{
+    "name": "fixture-failing",
+    "version": "1.0.0",
+    "scripts": {
+        "test": "node --eval \"process.exit(1)\""
+    }
+}
