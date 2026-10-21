@@ -37,17 +37,17 @@ npx typescript tsc             # The TypeScript 7 compiler, passed through
 
 Each command reads only the flags it declares, and refuses any other line before it reads or writes a file, in four parts, above its usage, exiting `1`:
 
-| Command                                        | Reads                                                                        |
-| ---------------------------------------------- | ---------------------------------------------------------------------------- |
-| `check`                                        | `--cold` and `--json`, each once                                             |
-| `test`                                         | `--cold`, once                                                               |
-| `fix`, `baseline`                              | no flag                                                                      |
-| `mutation`                                     | `--cold`, `--mutate <ranges>` and `--since <ref>`, each once                 |
-| `rehearse`                                     | `--branch <name>` and `--targets <targets>`, each once                       |
-| `docs-layout`                                  | one `<root>`, the working directory when none is named                       |
-| `build`, `dev`, `doctor`, `clean`, `gate-lock` | nothing                                                                      |
-| `start`                                        | every argument, handed to the application; after `--`, `-h` and `--help` too |
-| `tsc`                                          | every argument, the compiler's own, its `--help` included                    |
+| Command                                        | Reads                                                                         |
+| ---------------------------------------------- | ----------------------------------------------------------------------------- |
+| `check`                                        | `--cold` and `--json`, each once                                              |
+| `test`                                         | `--cold`, once                                                                |
+| `fix`, `baseline`                              | no flag                                                                       |
+| `mutation`                                     | `--cold`, `--mutate <ranges>`, `--report html` and `--since <ref>`, each once |
+| `rehearse`                                     | `--branch <name>` and `--targets <targets>`, each once                        |
+| `docs-layout`                                  | one `<root>`, the working directory when none is named                        |
+| `build`, `dev`, `doctor`, `clean`, `gate-lock` | nothing                                                                       |
+| `start`                                        | every argument, handed to the application; after `--`, `-h` and `--help` too  |
+| `tsc`                                          | every argument, the compiler's own, its `--help` included                     |
 
 A flag the command does not declare, one given twice that the table does not say repeats, a valued flag with no value, a value written on a flag that takes none (`--json=1`), and a word where the command takes no argument are each refused: a flag the command would ignore, or a second value that would silently replace the first, makes a run that is not the one asked for. A value is written after its flag or joined to it, `--since main` or `--since=main`; several `--mutate` ranges are one comma-separated value, `--mutate src/a.ts:10-20,src/b.ts:1-5`.
 

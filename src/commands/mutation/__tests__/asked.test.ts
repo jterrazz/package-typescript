@@ -31,10 +31,10 @@ describe('asked', () => {
 
         // Then - the ranges split on commas, the flag beats the variable, a blank variable is unset
         expect([flags, variable, both, blank]).toStrictEqual([
-            { cold: false, named: 'main', ranges: ['a.ts:1-2', 'b.ts'] },
-            { cold: false, named: 'v1', ranges: undefined },
-            { cold: false, named: 'v2', ranges: undefined },
-            { cold: false, named: undefined, ranges: undefined },
+            { cold: false, named: 'main', ranges: ['a.ts:1-2', 'b.ts'], report: undefined },
+            { cold: false, named: 'v1', ranges: undefined, report: undefined },
+            { cold: false, named: 'v2', ranges: undefined, report: undefined },
+            { cold: false, named: undefined, ranges: undefined, report: undefined },
         ]);
     });
 
@@ -48,5 +48,14 @@ describe('asked', () => {
 
         // Then - cold by the flag alone
         expect([none, flag, ci]).toStrictEqual([false, true, false]);
+    });
+
+    test('askedOf — reads the report a person asked for beside the JSON ones, and none unless asked', () => {
+        // Given - a run asked nothing, and one asked for the HTML report
+        // Then - the format is read as written
+        expect([askedOf([]).report, askedOf(['--report', 'html']).report]).toStrictEqual([
+            undefined,
+            'html',
+        ]);
     });
 });

@@ -23,14 +23,14 @@ import { badge, print, RED, RESET, secondsOf } from '../terminal.js';
 import { secondsSince } from '../timing.js';
 import { askedOf } from './asked.js';
 import type { Capped } from './cap.js';
-import { baseFor, baseTreeOf, changeOf, namesACommit, treeChangeFor } from './change.js';
+import { baseFor, baseTreeOf, changeOf, treeChangeFor } from './change.js';
 import type { Base } from './change.js';
 import { capHeld, glueCapped, glueOf } from './glue-cap.js';
 import { memberRuns, unownedRange } from './members.js';
 import { recordedStageRun } from './record/stage-run.js';
 import { concluded, judgedRecorded, memberRecorded, recorder, stageRecorded } from './recorded.js';
 import type { Recorded } from './recorded.js';
-import { measuredNothing, refusedCapacity, refusedRange, refusedSince } from './refused.js';
+import { measuredNothing, refusedAsked, refusedCapacity, refusedRange } from './refused.js';
 import type { GlueBar } from './roles.js';
 import { mutationScopeOf } from './scope-globs.js';
 import { changedRanges, modulesMutated, sourcesOf, unreachedRange } from './scope.js';
@@ -46,6 +46,7 @@ import type { Measure } from './verdict.js';
 type Run = {
     capped?: Capped | undefined;
     cold: boolean;
+    html: boolean;
     named: Partial<Resources> | undefined;
     project: string;
     recorded: Recorded;
@@ -72,6 +73,7 @@ async function measured(scope: MutationScope, stage: Stage, run: Run): Promise<S
                 buildsFirst: buildsOf(project),
                 cold,
                 concurrency,
+                html: run.html,
                 dryRunScoped: ({ files, workers }) => {
                     print(
                         `${badge('TYPESCRIPT')} dry run: ${files === undefined ? 'every test file' : `${String(files.kept)} of ${String(files.known)} test files the change reaches`}, on ${String(workers)} worker(s)\n`,
@@ -171,6 +173,7 @@ async function membersMeasured(
         cold: boolean;
         named: Partial<Resources> | undefined;
         ranges: readonly string[] | undefined;
+        report: string | undefined;
         since: string | undefined;
     },
     recorded: Recorded,
@@ -199,17 +202,18 @@ async function measuredRun(
     args: readonly string[],
     { capacity, recorded }: { capacity: Partial<Resources> | undefined; recorded: Recorded },
 ): Promise<number> {
-    const { cold, named, ranges } = askedOf(args);
-    const run: Run = { cold, named: capacity, project, recorded };
-    if (named !== undefined && !namesACommit(project, named)) {
-        return refusedSince(named, recorded);
+    const { cold, named, ranges, report: format } = askedOf(args);
+    const run: Run = { cold, html: format === 'html', named: capacity, project, recorded };
+    const refused = refusedAsked(project, { format, named }, recorded);
+    if (refused !== undefined) {
+        return refused;
     }
     const members = workspaceMembers(project);
     if (members.length > 0) {
         return await membersMeasured(
             project,
             members,
-            { cold, named: capacity, ranges, since: named },
+            { cold, named: capacity, ranges, report: format, since: named },
             recorded,
         );
     }

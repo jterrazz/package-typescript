@@ -1,6 +1,7 @@
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { capacityUnread } from '../../../lint/kit/project/capacity.js';
 import { badge, print, RED, RESET } from '../terminal.js';
+import { namesACommit } from './change.js';
 import type { Recorded } from './recorded.js';
 
 export function refusedRange(range: string, where: string, recorded: Recorded): number {
@@ -18,7 +19,7 @@ export function refusedRange(range: string, where: string, recorded: Recorded): 
     return 1;
 }
 
-export function refusedSince(named: string, recorded: Recorded): number {
+function refusedSince(named: string, recorded: Recorded): number {
     const found = `git names no commit ${named}`;
     recorded.reason = `refused before any run: ${found}`;
     print(
@@ -48,4 +49,34 @@ export function refusedCapacity(named: string, recorded: Recorded): number {
     print(`${RED}${refusal(unread)}${RESET}\n`);
 
     return 1;
+}
+
+function refusedReport(format: string, recorded: Recorded): number {
+    const found = `--report names ${format}, a report the run cannot write`;
+    recorded.reason = `refused before any run: ${found}`;
+    print(
+        `${RED}${refusal({
+            fix: 'write --report html for the HTML report of each stage beside its JSON one, or leave the flag out: the verdict and the next run read the JSON reports alone',
+            found,
+            read: 'docs/reference/quality-checks.md#what-a-run-prints',
+            why: 'the run would end without the report it was asked for',
+        })}${RESET}\n`,
+    );
+
+    return 1;
+}
+
+/** The refusal of a line that asks a report the run cannot write or a commit git cannot name, printed, or `undefined` where it asks neither. */
+export function refusedAsked(
+    project: string,
+    { format, named }: { format: string | undefined; named: string | undefined },
+    recorded: Recorded,
+): number | undefined {
+    if (format !== undefined && format !== 'html') {
+        return refusedReport(format, recorded);
+    }
+
+    return named === undefined || namesACommit(project, named)
+        ? undefined
+        : refusedSince(named, recorded);
 }

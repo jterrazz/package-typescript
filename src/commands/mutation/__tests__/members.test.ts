@@ -48,6 +48,19 @@ describe('members', () => {
         expect(runs).toStrictEqual([{ args: ['--since', 'main', '--cold'], member: 'apps/api' }]);
     });
 
+    test('memberRuns — hands the report a person asked for to every member', () => {
+        // Given - one member, measured with the HTML report asked
+        const runs = memberRuns(['apps/api'], {
+            cold: false,
+            ranges: undefined,
+            report: 'html',
+            since: undefined,
+        });
+
+        // Then - the member writes it too
+        expect(runs).toStrictEqual([{ args: ['--report', 'html'], member: 'apps/api' }]);
+    });
+
     test('unownedRange — names the first range no member holds, and none when each sits in one', () => {
         // Given - two members, a member named as a prefix of another's folder
         const members = ['apps/api', 'apps/kit'];

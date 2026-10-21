@@ -99,6 +99,22 @@ describe('mutation', () => {
         expect(`${misspelled.stdout.text}${backwards.stdout.text}`).not.toContain('Measuring');
     });
 
+    test('typescript mutation — a report it cannot write is refused before anything runs', async () => {
+        // Given - the consumer, asked for a report in a format no stage writes
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .exec('typescript mutation --report pdf');
+
+        // Then - the four parts name the format and the one the run writes, and no run starts
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+            found: --report names pdf, a report the run cannot write · why: the run would end without the report it was asked for · fix: write --report html for the HTML report of each stage beside its JSON one, or leave the flag out: the verdict and the next run read the JSON reports alone · read: docs/reference/quality-checks.md#what-a-run-prints
+
+            ✗ Mutation failed: refused before any run: --report names pdf, a report the run cannot write
+        `);
+        expect(result.stdout.text).not.toContain('Measuring');
+    });
+
     test('typescript mutation — a run whose every mutant the module tests run is detected passes', async () => {
         // Given - the same consumer, its test judging the guard, its boundary and its message, CI's variable left blank by an event that carries no commit
         const result = await cli

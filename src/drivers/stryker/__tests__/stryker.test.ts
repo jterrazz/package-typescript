@@ -87,7 +87,7 @@ describe('stryker', () => {
                 './.artifacts/stryker/previous-killers.mjs',
                 './.artifacts/stryker/ignorers.mjs',
             ],
-            reporters: ['html', 'json', 'typescript-progress', 'typescript-previous-killers'],
+            reporters: ['json', 'typescript-progress', 'typescript-previous-killers'],
             tempDirName: '.artifacts/stryker/tmp',
             testRunner: 'vitest',
         };
@@ -95,7 +95,6 @@ describe('stryker', () => {
             ...shared,
             buildCommand: 'node .artifacts/stryker/sandbox.mjs',
             concurrency: 8,
-            htmlReporter: { fileName: '.artifacts/stryker/report.html' },
             incrementalFile: '.artifacts/stryker/incremental.json',
             jsonReporter: { fileName: '.artifacts/stryker/report.json' },
             mutate: ['src/a.ts'],
@@ -107,7 +106,6 @@ describe('stryker', () => {
             buildCommand: 'node .artifacts/stryker/sandbox.suite.mjs',
             concurrency: 6,
             dryRunTimeoutMinutes: 60,
-            htmlReporter: { fileName: '.artifacts/stryker/suite-report.html' },
             incrementalFile: '.artifacts/stryker/suite-incremental.json',
             jsonReporter: { fileName: '.artifacts/stryker/suite-report.json' },
             mutate: ['src/c.ts:3-4'],
@@ -126,13 +124,23 @@ describe('stryker', () => {
 
         // Then - Stryker draws its bar, and the run's reporter still says how long the dry run took
         expect(config).toMatchObject({
-            reporters: [
-                'html',
-                'json',
-                'progress',
-                'typescript-progress',
-                'typescript-previous-killers',
-            ],
+            reporters: ['json', 'progress', 'typescript-progress', 'typescript-previous-killers'],
+        });
+    });
+
+    test('writes the HTML report beside the JSON one only where a person asked for it', () => {
+        // Given - the suite run asked for the HTML report
+        const config = strykerConfig(
+            SCOPE,
+            { mutate: ['src/a.ts'], name: 'suite' },
+            { concurrency: 2, html: true, terminal: false },
+        );
+
+        // Then - Stryker writes it under the stage's report name, its JSON report still first read
+        expect(config).toMatchObject({
+            htmlReporter: { fileName: '.artifacts/stryker/suite-report.html' },
+            jsonReporter: { fileName: '.artifacts/stryker/suite-report.json' },
+            reporters: ['html', 'json', 'typescript-progress', 'typescript-previous-killers'],
         });
     });
 
@@ -195,24 +203,26 @@ describe('stryker', () => {
     });
 
     test('a project other than the working directory has its config written, its tool run and its report read in its own tree', async () => {
-        // Given - a project in a folder of its own, whose install holds the stand-in for Stryker
+        // Given - a project in a folder of its own, whose install holds the stand-in for Stryker, and an HTML report an earlier run was asked for
         const project = mkdtempSync(join(tmpdir(), 'mutation-elsewhere-'));
         mkdirSync(join(project, 'node_modules/.bin'), { recursive: true });
         mkdirSync(join(project, '.artifacts/stryker'), { recursive: true });
         writeFileSync(join(project, 'node_modules/.bin/stryker'), STRYKER_STANDIN);
         chmodSync(join(project, 'node_modules/.bin/stryker'), 0o755);
+        writeFileSync(join(project, '.artifacts/stryker/report.html'), '<html></html>');
 
         // When - its module stage runs from this repository's folder
         const outcome = await strykerRun(
             { exclude: [], mutated: ['src/**/*.ts'] },
             { mutate: ['src/a.ts'], name: 'modules' },
-            { buildsFirst: false, concurrency: 1, project, testFiles: undefined },
+            { buildsFirst: false, concurrency: 1, html: false, project, testFiles: undefined },
         );
         const written = existsSync(join(project, '.artifacts/stryker/stryker.config.json'));
+        const earlier = existsSync(join(project, '.artifacts/stryker/report.html'));
         rmSync(project, { force: true, recursive: true });
 
-        // Then - the config is the project's, and the report measured is the one its run left
-        expect(written).toBe(true);
+        // Then - the config is the project's, the report measured is the one its run left, and the earlier HTML report is gone with the run that wrote none
+        expect([written, earlier]).toStrictEqual([true, false]);
         expect(outcome).toStrictEqual({
             observed: [],
             ranByTests: new Set(),

@@ -112,7 +112,7 @@ describe('readArguments', () => {
 
         // Then - the first lists every flag, comma and space between, the second says it reads no flag
         expect(lessons[0]).toContain(
-            'fix: drop it: it reads --cold, --mutate <ranges>, --since <ref>',
+            'fix: drop it: it reads --cold, --mutate <ranges>, --report <format>, --since <ref>',
         );
         expect(lessons[1]).toContain('fix: drop it: `typescript fix` reads no flag');
     });

@@ -982,6 +982,7 @@ typescript mutation                                # the module tests over the c
 typescript mutation --since <ref>                  # the change measured from a named commit instead of the branch's merge-base
 typescript mutation --mutate src/a.ts:10-20        # both runs pointed at the lines named, changed or not
 typescript mutation --mutate src/a.ts:1-9,src/b.ts:4-8   # several ranges, one comma-separated value: a second --mutate is refused
+typescript mutation --report html                  # each stage's HTML report too, beside its JSON one, for a person to browse
 ```
 
 Not a pass of `check`: [Stryker](https://stryker-mutator.io) rewrites the sources one mutant at a time and asks whether a test fails, which says what the coverage number cannot, namely whether a line the tests run is a line they judge. The command derives Stryker's configs and the Vitest configs they run into `.artifacts/stryker/`, and a project keeps none of them: Stryker and its Vitest runner are this package's dependencies. A run is two, each incremental, each with its own report:
@@ -1012,6 +1013,8 @@ A mutant of the suite costs a run of the tests that reach it, stopped at the fir
 ### What a run prints
 
 Each stage prints the capacity it sized its test runners by ([below](#how-many-test-runners)), Stryker's own log under its `TYPESCRIPT` header, then the seconds the stage took and the test runners it ran on, `The module tests ran in 33.4s on 8 test runner(s)`. Before Stryker starts, the suite says what its dry run, the initial run of the tests over the unmutated sandbox, will run: `dry run: 41 of 365 test files the change reaches, on 7 worker(s)`, or `dry run: every test file, on 7 worker(s)` where no record limits it ([below](#what-a-report-keeps)). Inside the stage's log, `dry run: 12.0s` is the seconds that run took. On a terminal Stryker draws its progress bar; read through a pipe (a log file, CI, an agent), the run prints one `progress:` line per tenth of the mutants it runs instead of Stryker's tick every ten seconds, and each says `no verdict yet`: the survivors it counts so far are mutants the next stage may still detect, and only the verdict below says what failed. The run's last line and `.artifacts/gate/verdict.json` carry that verdict ([The verdict file](#the-verdict-file)).
+
+A stage leaves under `.artifacts/stryker/` only what the verdict or a later run reads: its JSON report, its record and the files Stryker runs from. Stryker's HTML report, 0.8 MB for the module tests and 2.5 MB for the whole suite on this package, is for a person alone, so a stage writes it only where `--report html` asks, beside its JSON one (`.artifacts/stryker/report.html`, `.artifacts/stryker/suite-report.html`), the same on every host. A stage asked nothing removes the one an earlier run left, so no HTML report in the folder is older than the JSON one beside it. Any other format is refused before a run starts.
 
 ### How many test runners
 

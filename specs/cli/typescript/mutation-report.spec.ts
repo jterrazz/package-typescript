@@ -1,6 +1,6 @@
 import { directory } from '@jterrazz/test';
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
@@ -41,6 +41,31 @@ describe('mutation report', () => {
 
             ✓ Mutation passed: 9 detected, 0 surviving, 0 never judged, over HEAD..working tree
         `);
+    });
+
+    test("typescript mutation — a run leaves the JSON report alone, and --report html adds Stryker's HTML report beside it", async () => {
+        // Given - the consumer, its test judging everything, measured once with no report asked
+        const leftByDefault: boolean[] = [];
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-consumer/'))
+            .fixture(directory('./__fixtures__/mutation-killing/'))
+            .prepare((workdir) => {
+                measuredOnce(workdir);
+                leftByDefault.push(
+                    existsSync(join(workdir, '.artifacts/stryker/report.json')),
+                    existsSync(join(workdir, '.artifacts/stryker/report.html')),
+                );
+            })
+            .env(OUTSIDE_CI)
+            .exec('typescript mutation --report html');
+
+        // Then - the first run left its JSON report and no HTML one; the run asked for it writes it, its results reused
+        expect(leftByDefault).toStrictEqual([true, false]);
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout.text).toContain('9 of 9 mutant result(s) are reused.');
+        expect(result.file('.artifacts/stryker/report.html').content).toContain(
+            '<mutation-test-report-app',
+        );
     });
 
     test('typescript mutation — a run asked with --cold measures every mutant again, whatever its report holds', async () => {

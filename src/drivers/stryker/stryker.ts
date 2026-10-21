@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { delimiter, join } from 'node:path';
 import process from 'node:process';
@@ -45,6 +45,14 @@ export const REPORTER_FILE = `${MUTATION_OUTPUT}/progress-reporter.mjs`;
 /** The name the config gives the TypeScript checker, the plugin `#mutant-checker` declares. */
 export const MUTANT_CHECKER = 'typescript-native';
 
+const reportersOf = ({ html, terminal }: { html: boolean; terminal: boolean }): string[] => [
+    ...(html ? ['html'] : []),
+    'json',
+    ...(terminal ? ['progress'] : []),
+    PROGRESS_REPORTER,
+    PREVIOUS_KILLERS.name,
+];
+
 export const IGNORERS_FILE = `${MUTATION_OUTPUT}/ignorers.mjs`;
 
 const PLUGINS = [
@@ -64,9 +72,15 @@ export function strykerConfig(
     { mutate, name }: Stage,
     {
         concurrency,
+        html = false,
         terminal = process.stdout.isTTY,
         testFiles,
-    }: { concurrency: number; terminal?: boolean; testFiles?: readonly string[] | undefined },
+    }: {
+        concurrency: number;
+        html?: boolean;
+        terminal?: boolean;
+        testFiles?: readonly string[] | undefined;
+    },
 ): object {
     const files = STAGES[name];
     const suite = name === 'suite';
@@ -81,7 +95,7 @@ export function strykerConfig(
         ...(files.timeouts.dryRunMinutes === undefined
             ? {}
             : { dryRunTimeoutMinutes: files.timeouts.dryRunMinutes }),
-        htmlReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.html` },
+        ...(html ? { htmlReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.html` } } : {}),
         ignorePatterns: [
             `/${ARTIFACTS}/**`,
             ...scope.generated.map((root) => `/${root}`),
@@ -96,13 +110,7 @@ export function strykerConfig(
         jsonReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.json` },
         mutate: strykerMutate(mutate),
         plugins: PLUGINS,
-        reporters: [
-            'html',
-            'json',
-            ...(terminal ? ['progress'] : []),
-            PROGRESS_REPORTER,
-            PREVIOUS_KILLERS.name,
-        ],
+        reporters: reportersOf({ html, terminal }),
         tempDirName: `${MUTATION_OUTPUT}/tmp`,
         ...(testFiles === undefined ? {} : { testFiles: strykerMutate(testFiles) }),
         testRunner: 'vitest',
@@ -131,10 +139,11 @@ export type StageOutcome = Measured | { status: number };
 /** What a stage that ended measured, beside what its tests' processes were seen to run. */
 export type StageRan = Measured & { observed: readonly ObservedTest[] };
 
-/** How a stage runs: whether the sandbox builds first, on how many test runners, in which project, and the test files its dry run is limited to, `undefined` for every one. */
+/** How a stage runs: whether the sandbox builds first, on how many test runners, whether it writes the HTML report a person asked for, in which project, and the test files its dry run is limited to, `undefined` for every one. */
 export type StageRun = {
     buildsFirst: boolean;
     concurrency: number;
+    html: boolean;
     project: string;
     testFiles: readonly string[] | undefined;
 };
@@ -150,12 +159,14 @@ async function stageWritten(
     {
         buildsFirst,
         concurrency,
+        html,
         mutated,
         project,
         testFiles,
     }: {
         buildsFirst: boolean;
         concurrency: number;
+        html: boolean;
         mutated: readonly string[];
         project: string;
         testFiles: readonly string[] | undefined;
@@ -178,9 +189,13 @@ async function stageWritten(
         join(project, MUTATION_OUTPUT, files.sandbox),
         sandboxScriptSource(buildsFirst, project, besideOf(project)),
     );
+    // invariant: a report a person asked for on an earlier run would read as this run's, so a run that writes none removes it.
+    if (!html) {
+        rmSync(join(project, MUTATION_OUTPUT, `${files.report}.html`), { force: true });
+    }
     writeFileSync(
         join(project, MUTATION_OUTPUT, files.config),
-        `${JSON.stringify(strykerConfig({ ...scope, generated, typeChecked }, stage, { concurrency, testFiles }), null, 4)}\n`,
+        `${JSON.stringify(strykerConfig({ ...scope, generated, typeChecked }, stage, { concurrency, html, testFiles }), null, 4)}\n`,
     );
 }
 
@@ -188,7 +203,7 @@ async function stageWritten(
 export async function strykerRun(
     scope: { readonly exclude: readonly string[]; readonly mutated: readonly string[] },
     stage: Stage,
-    { buildsFirst, concurrency, project, testFiles }: StageRun,
+    { buildsFirst, concurrency, html, project, testFiles }: StageRun,
 ): Promise<StageRan | { status: number }> {
     const files = STAGES[stage.name];
     const folders = recordFoldersMade(project);
@@ -196,6 +211,7 @@ export async function strykerRun(
     await stageWritten(scope, stage, {
         buildsFirst,
         concurrency,
+        html,
         mutated: [...mutatedLines(stage.mutate).keys()],
         project,
         testFiles,

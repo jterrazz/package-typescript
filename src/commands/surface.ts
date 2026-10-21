@@ -56,6 +56,11 @@ export const SURFACES = {
                 value: '<ranges>',
             },
             {
+                name: '--report',
+                says: "Also write each stage's report for a person to browse: html, beside the JSON one the verdict reads",
+                value: '<format>',
+            },
+            {
                 name: '--since',
                 says: 'Measure the change since this commit instead of the uncommitted change, or the branch since its merge-base on a clean tree',
                 value: '<ref>',

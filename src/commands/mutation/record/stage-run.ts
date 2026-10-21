@@ -12,12 +12,13 @@ export type DryRunScope = {
     workers: number;
 };
 
-/** How a stage runs on its record: whether the sandbox builds first, from no report, on how many test runners, in which project, how a change and a mutated line are read, and who hears what the suite's dry run runs. */
+/** How a stage runs on its record: whether the sandbox builds first, from no report, on how many test runners, whether it writes the HTML report a person asked for, in which project, how a change and a mutated line are read, and who hears what the suite's dry run runs. */
 export type RecordedRun = {
     buildsFirst: boolean;
     cold: boolean;
     concurrency: number;
     dryRunScoped: (scope: DryRunScope) => void;
+    html: boolean;
     linesInFunctions: LinesInFunctions;
     project: string;
     staysInFunctions: StaysInFunctions;
@@ -47,6 +48,7 @@ export async function recordedStageRun(
     const ran = await strykerRun(scope, stage, {
         buildsFirst: run.buildsFirst,
         concurrency: run.concurrency,
+        html: run.html,
         project: run.project,
         testFiles: dryRun?.kept,
     });
