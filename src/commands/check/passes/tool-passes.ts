@@ -1,4 +1,4 @@
-import { appendFileSync, rmSync, writeFileSync } from 'node:fs';
+import { rmSync, writeFileSync } from 'node:fs';
 import process from 'node:process';
 
 import { readSettings } from '../../../../lint/index.rules.js';
@@ -10,7 +10,7 @@ import {
 import { messageOf, refusal } from '../../../../lint/kit/catalogue/lesson.js';
 import { buildPlanOf, conventionsOf } from '../../../../lint/kit/project/build-plan.js';
 import { isFileOnDisk } from '../../../../lint/kit/project/fs-cache.js';
-import { astroChecked, astroEntrypointsOf, astroSynced } from '../../../drivers/astro/astro.js';
+import { astroChecked, astroEntrypointsOf } from '../../../drivers/astro/astro.js';
 import { knip } from '../../../drivers/knip/knip.js';
 import type { KnipProject, KnipUnit } from '../../../drivers/knip/knip.js';
 import {
@@ -22,44 +22,20 @@ import { fixedUnder } from '../../../drivers/oxlint/oxlint.js';
 import type { FixScope } from '../../../drivers/oxlint/unsafe-fixers.js';
 import { astroFormatted } from '../../../drivers/prettier/prettier.js';
 import { typeChecked } from '../../../drivers/tsc/tsc.js';
+import {
+    astroSyncedOnce,
+    isAstro,
+    lintTypesGenerated,
+    typedUnits,
+    typesGenerated,
+} from './generated-types.js';
 import type { Launched } from './launched.js';
 import { fixReportCarried, lintOutcome } from './lint-outcome.js';
-import { routeTypesGenerated } from './route-types.js';
 import { oxfmt, oxlint } from './runners.js';
 import type { Check } from './setup.js';
 
-type Synced = { log: string; status: number };
-
-const syncs = new WeakMap<Check, Map<string, Promise<Synced>>>();
-
-const syncedInto = async (unit: string, log: string): Promise<Synced> => ({
-    log,
-    status: await astroSynced(unit, log),
-});
-
-// invariant: `astro sync` writes the module types both the TypeScript Check and the Astro pass read, so it runs once per unit and run, before either reads them; each pass it fails prints its report.
-async function astroSyncedOnce(check: Check, unit: string, log: string): Promise<number> {
-    const runs = syncs.get(check) ?? new Map<string, Promise<Synced>>();
-    syncs.set(check, runs);
-    const syncLog = check.logs.at(`astro-sync-${String(runs.size)}.log`);
-    const synced = runs.get(unit) ?? syncedInto(unit, syncLog);
-    runs.set(unit, synced);
-    const { log: report, status } = await synced;
-    if (status !== 0) {
-        appendFileSync(log, check.logs.read(report));
-    }
-
-    return status;
-}
-
-const isAstro = (check: Check, unit: string): boolean =>
-    check.declarations.get(unit)?.platform === 'astro';
-
 async function typeCheckedUnit(check: Check, unit: string, log: string): Promise<number> {
-    if (isAstro(check, unit) && (await astroSyncedOnce(check, unit, log)) !== 0) {
-        return 1;
-    }
-    if ((await routeTypesGenerated(unit, log)) !== 0) {
+    if ((await typesGenerated(check, unit, log)) !== 0) {
         return 1;
     }
 
@@ -85,14 +61,16 @@ export function typescriptPass(check: Check): Launched | undefined {
         return undefined;
     }
     const log = check.logs.at('type.log');
-    const units = check.members.length > 0 ? check.members : ['.'];
 
-    return { log, status: typescriptRuns(check, units, log) };
+    return { log, status: typescriptRuns(check, typedUnits(check), log) };
 }
 
 export async function lintCheck(check: Check): Promise<number> {
     const log = check.logs.at('lint.log');
     writeFileSync(log, '');
+    if ((await lintTypesGenerated(check, log)) !== 0) {
+        return 1;
+    }
 
     return await oxlint(check, ['--type-aware', '--deny-warnings'], log);
 }

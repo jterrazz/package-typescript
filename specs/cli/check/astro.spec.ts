@@ -99,6 +99,43 @@ describe('astro', () => {
         expect(result.file('.astro/types.d.ts').exists).toBe(true);
     });
 
+    test('lints a module importing the types astro sync writes, which a fresh clone lacks', async () => {
+        // Given - the same middleware, no .astro/ folder yet, and the type-aware lint alone
+        const result = await cli
+            .with({ env: onlyPasses('oxlint') })
+            .fixture(directory('../__fixtures__/astro/synced/'))
+            .prepare(astroStub)
+            .exec('check');
+
+        // Then - astro sync ran first, so no rule read the imported call as error typed
+        expect(result.exitCode).toBe(0);
+        expect(result.file('.astro/types.d.ts').exists).toBe(true);
+    });
+
+    test('fails the lint with the report when astro sync fails, and lints nothing past it', async () => {
+        // Given - the same middleware, and an astro whose sync fails
+        const result = await cli
+            .with({ env: onlyPasses('oxlint') })
+            .fixture(directory('../__fixtures__/astro/synced/'))
+            .prepare(astroStubFailingSync)
+            .exec('check');
+
+        // Then - the lint prints the sync's report in place of any rule's
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toMatch(`
+             START  Running quality checks
+
+             RUN  Oxlint Check
+
+            astro-sync-failed
+            ✗ Failed with exit code 1 ({{duration}})
+
+             END  Finalizing quality checks
+
+            ✗ Some checks failed, first Oxlint Check: astro-sync-failed
+        `);
+    });
+
     test('fails the type check and the Astro pass alike, each with the report, when astro sync fails, and checks nothing past it', async () => {
         // Given - the same middleware, and an astro whose sync fails
         const result = await cli
