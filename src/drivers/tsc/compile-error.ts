@@ -21,7 +21,6 @@ export function firstCompileError(project: string): string | undefined {
 
         return first === undefined ? undefined : headline(project, first);
     } finally {
-        opened.base.dispose();
         opened.api.close();
     }
 }

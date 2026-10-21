@@ -173,7 +173,6 @@ export class NativeChecker {
     }
 
     async dispose(): Promise<void> {
-        this.opened?.base.dispose();
         this.opened?.api.close();
     }
 
@@ -184,6 +183,7 @@ export class NativeChecker {
             return UNCHECKED;
         }
         const text = this.texts.get(file) ?? readFileSync(file, 'utf8');
+        // Stryker disable next-line CallExpression: a cache: a file read again is the same text, so only the time of the reading differs
         this.texts.set(file, text);
         let found: readonly Diagnostic[] = [];
         opened.api.runWithTemporaryFileUpdate(
@@ -200,8 +200,10 @@ export class NativeChecker {
                             files === undefined
                                 ? programErrors(program)
                                 : fileErrors(program, files),
+                        // Stryker disable next-line ArrowFunction: a file with no known shape has its importers checked, and the unmutated tree holds no error there, so the errors found are the same and only the work differs
                         shape: (changed) => shapeOf(program, changed),
                     },
+                    // Stryker disable next-line ArrowFunction: a file with no known base shape has its importers checked, and the unmutated tree holds no error there, so the errors found are the same and only the work differs
                     (unchanged) => this.baseShape(unchanged),
                 );
             },
@@ -217,7 +219,9 @@ export class NativeChecker {
 
     private baseShape(file: string): string | undefined {
         const { opened } = this;
+        // Stryker disable next-line BooleanLiteral,BlockStatement: a shape never kept is no shape known, which has the importers checked and finds the same errors, only with more work
         if (!this.shapes.has(file) && opened !== undefined) {
+            // Stryker disable next-line CallExpression: a shape never kept is no shape known, which has the importers checked and finds the same errors, only with more work
             this.shapes.set(file, shapeOf(programOf(opened.base, opened.config), file));
         }
 

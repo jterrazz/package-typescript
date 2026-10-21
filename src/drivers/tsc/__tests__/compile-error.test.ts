@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
 import { firstCompileError } from '../compile-error.js';
+import { childProcesses } from './child-processes.js';
 
 const TSCONFIG = JSON.stringify({
     compilerOptions: {
@@ -50,8 +51,8 @@ describe('compile-error', () => {
     });
 
     test('a project with no tsconfig.json has none; an option the compiler does not know, and a type it cannot find, are each the first error', () => {
-        // Given - a project with no tsconfig.json, one naming an unknown option, and one naming a type no package declares
-        const missing = projectWith({ 'src/a.ts': 'export const a = 1;\n' });
+        // Given - a project with no tsconfig.json, though a file of it is broken, one naming an unknown option, and one naming a type no package declares
+        const missing = projectWith({ 'src/a.ts': "export const a: number = 'one';\n" });
         const unknown = projectWith({
             'src/a.ts': 'export const a = 1;\n',
             'tsconfig.json': JSON.stringify({
@@ -91,5 +92,20 @@ describe('compile-error', () => {
             undefined,
             false,
         ]);
+    });
+
+    test('the native compiler it opened ends once it has answered', async () => {
+        // Given - the processes running before, and a broken tree
+        const before = childProcesses();
+        const broken = projectWith({
+            'src/a.ts': "export const a: number = 'one';\n",
+            'tsconfig.json': TSCONFIG,
+        });
+
+        // When - the first error is read
+        firstCompileError(broken);
+
+        // Then - no process it started is left, once the system has ended it
+        await expect.poll(childProcesses, { timeout: 10_000 }).toStrictEqual(before);
     });
 });

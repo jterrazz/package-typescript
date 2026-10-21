@@ -24,6 +24,7 @@ export function nativeProject(project: string): NativeProject | undefined {
     if (!existsSync(config)) {
         return undefined;
     }
+    // Stryker disable next-line ObjectLiteral: every path the compiler is handed is absolute, the project's own, so the folder it runs in names none of them
     const api = new API({ cwd: project });
     const read = objectOf(api.readConfigFile(config).config);
     const adjusted = {
@@ -48,21 +49,23 @@ export function programOf(snapshot: Snapshot, config: string): Program {
     return opened.program;
 }
 
+/** The errors among these diagnostics, the warnings, suggestions and messages left out. */
+export const errorsOf = (found: readonly Diagnostic[]): Diagnostic[] =>
+    found.filter(({ category }) => category === ERROR_CATEGORY);
+
 /** Every error the program holds: its configuration, its options, its globals, then each file's syntax and types. */
 export const programErrors = (program: Program): Diagnostic[] =>
-    [
+    errorsOf([
         ...program.getConfigFileParsingDiagnostics(),
         ...program.getProgramDiagnostics(),
         ...program.getGlobalDiagnostics(),
         ...program.getSyntacticDiagnostics(),
         ...program.getSemanticDiagnostics(),
-    ].filter(({ category }) => category === ERROR_CATEGORY);
+    ]);
 
 /** The errors of the syntax and types of these files of the program. */
 export const fileErrors = (program: Program, files: readonly string[]): Diagnostic[] =>
-    [...program.getSyntacticDiagnostics(files), ...program.getSemanticDiagnostics(files)].filter(
-        ({ category }) => category === ERROR_CATEGORY,
-    );
+    errorsOf([...program.getSyntacticDiagnostics(files), ...program.getSemanticDiagnostics(files)]);
 
 /** A diagnostic as `file:line TS<code> <message>`, its file read from the project; by its code and message alone where it has no file. */
 export function headline(
