@@ -1,8 +1,8 @@
-import { spawnSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { gitRun } from '../../../lint/kit/project/git.js';
 import { parsedObject, stringRecordOf } from '../../../lint/kit/project/json.js';
 import { readManifest } from '../../../lint/kit/project/manifest.js';
 import { testFileOf } from '../../../lint/kit/project/mutation-report.js';
@@ -113,21 +113,22 @@ function onlyFunctionsIn(
 ): (source: string) => boolean {
     return (source) => {
         const kept = join(textsOf(project, incremental), String(before[source]));
-        const diff = spawnSync('git', [
+        // outside: `git diff --no-index` exits 1 when the two files differ, which is the answer read here.
+        const diff = gitRun(project, [
             'diff',
             '--no-index',
             '--no-ext-diff',
             '--no-color',
             '--unified=0',
             '--',
-            kept,
-            join(project, source),
+            resolve(kept),
+            resolve(project, source),
         ]);
 
         return staysInFunctions(
             source,
             { after: String(now.get(source)), before: () => String(readFileSync(kept)) },
-            String(diff.stdout),
+            diff.stdout,
         );
     };
 }

@@ -1,5 +1,4 @@
-import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { delimiter, join } from 'node:path';
 import process from 'node:process';
@@ -7,22 +6,21 @@ import process from 'node:process';
 import { readSettings } from '../../../lint/index.rules.js';
 import { ARTIFACTS, DEV_OUTPUT, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { withEnvironment } from '../../../lint/kit/project/environment.js';
+import { git } from '../../../lint/kit/project/git.js';
 import { objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
 import { STAGES } from '../../../lint/kit/project/mutation-stages.js';
 import type { StageName } from '../../../lint/kit/project/mutation-stages.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { handOver } from '../run.js';
 import { besideOf, withoutBesideLinks } from './beside.js';
-import { CHILD_COVERAGE_SOURCE } from './child-coverage.js';
 import { headlessEnvironment } from './headless.js';
-import { ignorersSource, LOG_IGNORER, PINNED_TEXT_IGNORER } from './ignorers.js';
+import { LOG_IGNORER, PINNED_TEXT_IGNORER } from './ignorers.js';
 import { incrementalKeptWhileInputsHold, recordInputs } from './incremental.js';
 import type { DryRunOver, Kept, LinesInFunctions, StaysInFunctions } from './incremental.js';
-import { MUTANT_SETUP_SOURCE } from './mutant-setup.js';
 import { heldReport, mutatedLines, strykerMutate } from './mutate-entries.js';
 import { observedFrom, observedIn } from './observed.js';
 import { killersLaid, PREVIOUS_KILLERS } from './previous-killers.js';
-import { PROGRESS_REPORTER, PROGRESS_REPORTER_SOURCE } from './progress-reporter.js';
+import { PROGRESS_REPORTER } from './progress-reporter.js';
 import { linesIn, recordFoldersMade, recordFoldersRemoved } from './record-folders.js';
 import { sandboxScriptSource, vitestConfigSource } from './sources.js';
 
@@ -40,13 +38,11 @@ export type Stage = {
 /** The tool roots git ignores: trees a tool generates, as `expo run:ios` lays `ios/`, which no test reads and the sandbox must not copy. */
 export function generatedRoots(project: string, toolRoots: readonly string[]): string[] {
     return toolRoots.filter(
-        (root) =>
-            spawnSync('git', ['check-ignore', '--quiet', '--', root], { cwd: project }).status ===
-            0,
+        (root) => git(project, ['check-ignore', '--quiet', '--', root]) !== undefined,
     );
 }
 
-const REPORTER_FILE = `${MUTATION_OUTPUT}/progress-reporter.mjs`;
+export const REPORTER_FILE = `${MUTATION_OUTPUT}/progress-reporter.mjs`;
 
 /** The name the config gives the TypeScript checker, the plugin `#mutant-checker` declares. */
 export const MUTANT_CHECKER = 'typescript-native';
@@ -120,15 +116,6 @@ export function strykerConfig(
     };
 }
 
-/** Lays the files every stage of the run loads, the presentation globs its ignorers read among them. */
-export function strykerPrepared(presentation: readonly string[]): void {
-    mkdirSync(MUTATION_OUTPUT, { recursive: true });
-    writeFileSync(join(MUTATION_OUTPUT, 'mutant-setup.mjs'), MUTANT_SETUP_SOURCE);
-    writeFileSync(join(MUTATION_OUTPUT, 'child-coverage.cjs'), CHILD_COVERAGE_SOURCE);
-    writeFileSync(REPORTER_FILE, PROGRESS_REPORTER_SOURCE);
-    writeFileSync(IGNORERS_FILE, ignorersSource(presentation));
-}
-
 function stageEnvironment(project: string): Readonly<Record<string, string>> {
     // outside: the suite runs as `npm test` runs it, its tools found on the PATH npm gives a script; a spec that spawns oxlint type-aware leaves it to find tsgolint there.
     // Stryker disable next-line StringLiteral: a spec runs this command with the project's node_modules/.bin already first on the PATH, as npm does, so no spec can tell the folders apart
@@ -200,18 +187,18 @@ async function stageWritten(
     const generated = generatedRoots(project, toolRoots);
     const typeChecked = typeCheckedIn(project);
     writeFileSync(
-        join(MUTATION_OUTPUT, files.vitest),
+        join(project, MUTATION_OUTPUT, files.vitest),
         vitestConfigSource(
             { exclude: scope.exclude, mutated },
             suite ? { dryRunWorkers: concurrency, suite } : { suite },
         ),
     );
     writeFileSync(
-        join(MUTATION_OUTPUT, files.sandbox),
+        join(project, MUTATION_OUTPUT, files.sandbox),
         sandboxScriptSource(buildsFirst, project, besideOf(project)),
     );
     writeFileSync(
-        join(MUTATION_OUTPUT, files.config),
+        join(project, MUTATION_OUTPUT, files.config),
         `${JSON.stringify(strykerConfig({ ...scope, generated, typeChecked }, stage, { concurrency, testFiles }), null, 4)}\n`,
     );
 }
@@ -254,7 +241,7 @@ export async function strykerRun(
                 besideOf(project),
                 async () =>
                     await handOver(
-                        projectBinary('stryker'),
+                        projectBinary('stryker', project),
                         ['run', join(MUTATION_OUTPUT, files.config)],
                         project,
                     ),
@@ -269,7 +256,7 @@ export async function strykerRun(
         return { status };
     }
     recordInputs(project, files.incremental, { inputs: inputs ?? {}, observed });
-    const report = String(readFileSync(join(MUTATION_OUTPUT, `${files.report}.json`)));
+    const report = String(readFileSync(join(project, MUTATION_OUTPUT, `${files.report}.json`)));
 
     return { ranByTests, report: heldReport(JSON.parse(report), stage.mutate) };
 }

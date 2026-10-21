@@ -13,7 +13,8 @@ import { withEnvironment } from '../../../lint/kit/project/environment.js';
 import { STAGES } from '../../../lint/kit/project/mutation-stages.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { toolchainIn } from '../../drivers/node/node.js';
-import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
+import { strykerPrepared } from '../../drivers/stryker/prepared.js';
+import { strykerRun } from '../../drivers/stryker/stryker.js';
 import type { Stage, StageOutcome } from '../../drivers/stryker/stryker.js';
 import { diffStaysInFunctions, linesStayInFunctions } from '../../drivers/tsc/change-shape.js';
 import { firstCompileError } from '../../drivers/tsc/compile-error.js';
@@ -222,7 +223,7 @@ async function measuredRun(
     if (unreached !== undefined) {
         return refusedRange(unreached, 'a source the run mutates', recorded);
     }
-    strykerPrepared(scope.presentation);
+    strykerPrepared(project, scope.presentation);
 
     const { changed, known, note } = changeOf(project, { ranges, since });
     if (note !== undefined) {

@@ -1,15 +1,26 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { generatedRoots, strykerConfig } from '../stryker.js';
+import { generatedRoots, strykerConfig, strykerRun } from '../stryker.js';
 
 const RUNNER = createRequire(import.meta.url).resolve('@stryker-mutator/vitest-runner');
 
 const CHECKER = createRequire(import.meta.url).resolve('#mutant-checker');
+
+// outside: a stand-in for Stryker that runs from the project's own install, as `stryker run <config>` does, and writes the report its config names, an empty one, only where the config is found from the folder it runs in.
+const STRYKER_STANDIN = `#!/usr/bin/env node
+const { existsSync, readFileSync, writeFileSync } = require('node:fs');
+const config = process.argv[3];
+if (!existsSync(config)) {
+    process.exit(3);
+}
+const report = { files: { 'src/a.ts': { mutants: [] } }, schemaVersion: '2' };
+writeFileSync(JSON.parse(readFileSync(config, 'utf8')).jsonReporter.fileName, JSON.stringify(report));
+`;
 
 const SCOPE = {
     generated: [],
@@ -181,5 +192,38 @@ describe('stryker', () => {
         // Then - the limited run names the two files, the unlimited one leaves Stryker every file
         expect(limited).toMatchObject({ testFiles: ['specs/[[]id[]].spec.ts', 'specs/a.spec.ts'] });
         expect(Object.hasOwn(unlimited, 'testFiles')).toBe(false);
+    });
+
+    test('a project other than the working directory has its config written, its tool run and its report read in its own tree', async () => {
+        // Given - a project in a folder of its own, whose install holds the stand-in for Stryker
+        const project = mkdtempSync(join(tmpdir(), 'mutation-elsewhere-'));
+        mkdirSync(join(project, 'node_modules/.bin'), { recursive: true });
+        mkdirSync(join(project, '.artifacts/stryker'), { recursive: true });
+        writeFileSync(join(project, 'node_modules/.bin/stryker'), STRYKER_STANDIN);
+        chmodSync(join(project, 'node_modules/.bin/stryker'), 0o755);
+
+        // When - its module stage runs from this repository's folder
+        const outcome = await strykerRun(
+            { exclude: [], mutated: ['src/**/*.ts'] },
+            { mutate: ['src/a.ts'], name: 'modules' },
+            {
+                buildsFirst: false,
+                cold: true,
+                concurrency: 1,
+                dryRunScoped: () => undefined,
+                linesInFunctions: () => false,
+                project,
+                staysInFunctions: () => false,
+            },
+        );
+        const written = existsSync(join(project, '.artifacts/stryker/stryker.config.json'));
+        rmSync(project, { force: true, recursive: true });
+
+        // Then - the config is the project's, and the report measured is the one its run left
+        expect(written).toBe(true);
+        expect(outcome).toStrictEqual({
+            ranByTests: new Set(),
+            report: { files: { 'src/a.ts': { mutants: [] } }, schemaVersion: '2' },
+        });
     });
 });
