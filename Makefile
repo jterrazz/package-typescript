@@ -26,7 +26,7 @@ fix: install-self
 	npm run lint:fix
 
 test: install-self
-	npm test
+	node dist/typescript.js test
 
 # invariant: the three steps are one gate: `TYPESCRIPT_GATE` names this recipe's shell, which `check` and `mutation` hold the checkout in the name of, and whose own builds the lock never refuses.
 check: node_modules/.install
