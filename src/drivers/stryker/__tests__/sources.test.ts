@@ -74,14 +74,21 @@ export { RelevantFirst };
     });
     const sorted: Sequencer['sort'] = sequencer.sort.bind(sequencer);
 
-    return async (specs) => (await sorted(specs)).map(({ moduleId }) => relative(root, moduleId));
+    return async (specs) => {
+        const ordered = await sorted(specs);
+
+        return ordered.map(({ moduleId }) => relative(root, moduleId));
+    };
 }
 
 async function sortedBy(sorting: Sorting, specs: Spec[]): Promise<string[]> {
     const sort = await sequencerOver(sorting);
 
-    return sort(specs);
+    return await sort(specs);
 }
+
+const killLine = (killer: string, source = 'src/labels.ts'): string =>
+    `${JSON.stringify({ killer, source })}\n`;
 
 const DURATIONS = {
     'cli:specs/blind.spec.ts': 30,
@@ -206,11 +213,9 @@ describe('sources', () => {
         // Given - the dry run, and a stage whose kills of the label's mutants so far were by the blind spec, then the never-timed one, and one kill of another source
         const root = observedRun();
         const recent = join(root, '.artifacts/recent.jsonl');
-        const kill = (killer: string, source = 'src/labels.ts'): string =>
-            `${JSON.stringify({ killer, source })}\n`;
         writeFileSync(
             recent,
-            `${kill('specs/blind.spec.ts')}${kill('specs/never-timed.spec.ts')}${kill('specs/loads.spec.ts', 'src/missing.ts')}`,
+            `${killLine('specs/blind.spec.ts')}${killLine('specs/never-timed.spec.ts')}${killLine('specs/loads.spec.ts', 'src/missing.ts')}`,
         );
         vi.stubEnv(RECENT_KILLERS_VARIABLE, recent);
         const sort = await sequencerOver({
@@ -224,7 +229,7 @@ describe('sources', () => {
 
         // When - mutant 7's files are sorted, then again once the slowest spec has killed one more, while a kill is half written
         const before = await sort(specs);
-        writeFileSync(recent, `${kill('specs/runs.spec.ts')}{"killer":`, { flag: 'a' });
+        writeFileSync(recent, `${killLine('specs/runs.spec.ts')}{"killer":`, { flag: 'a' });
         const after = await sort(specs);
 
         // Then - the latest killers lead, the latest first; the rest keep the order of what ran the source

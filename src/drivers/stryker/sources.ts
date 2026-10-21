@@ -20,8 +20,67 @@ const TEST_NAME_PLUGIN_SOURCE = `const strykerTestNames = {
     name: 'stryker-test-names',
 };`;
 
-// outside: Vitest runs the slowest file first, and Stryker stops a mutant's run at the first test that fails; the file whose test killed the mutant in the stage's last report runs first, then the files that killed the latest of this stage's mutants of its source, the latest first, then the files with a test whose processes ran a function of the mutant's source run first (a test that spawned nothing, or one the dry run could not follow, among them), since a mutant a spawned process only loaded is credited to every file that spawned one, and within each group the file the last run took least time over runs first, so a mutant a quick test detects never waits on a slow one.
+const PREVIOUS_KILLERS_SOURCE = `let killers;
+const killerOf = (id) => {
+    if (killers === undefined) {
+        const file = process.env.${KILLERS_VARIABLE};
+        killers = file !== undefined && existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
+    }
+    return killers[id];
+};
+
+const RECENT_KILLERS = 3;
+let recentKillers = { bySource: new Map(), size: -1 };
+const recentOf = (source) => {
+    const file = process.env.${RECENT_KILLERS_VARIABLE};
+    if (source === undefined || file === undefined || !existsSync(file)) {
+        return [];
+    }
+    const { size } = statSync(file);
+    if (size !== recentKillers.size) {
+        const bySource = new Map();
+        for (const line of readFileSync(file, 'utf8').split('\\n').slice(0, -1)) {
+            const { killer, source: of } = JSON.parse(line);
+            bySource.set(of, [killer, ...(bySource.get(of) ?? []).filter((one) => one !== killer)].slice(0, RECENT_KILLERS));
+        }
+        recentKillers = { bySource, size };
+    }
+    return recentKillers.bySource.get(source) ?? [];
+};`;
+
 // hazard: Vitest records a file a stopped run skipped as taking no time, so a duration read again after a mutant's run would send the files that run never reached to the front of the next; a mutant's sort reads each file's duration once, at its first, from the dry run's measure.
+const RELEVANT_FIRST_CLASS_SOURCE = `const frozenDurations = new Map();
+
+class RelevantFirst extends BaseSequencer {
+    async sort(files) {
+        const { root } = this.ctx.config;
+        const { activeMutant, mode } = this.ctx.getRootProject().getProvidedContext();
+        const timed = (key) => this.ctx.cache.getFileTestResults(key)?.duration ?? Number.POSITIVE_INFINITY;
+        const took = (file) => {
+            const key = \`\${file.project.name}:\${relative(root, file.moduleId)}\`;
+            if (mode !== 'mutant') {
+                return timed(key);
+            }
+            if (!frozenDurations.has(key)) {
+                frozenDurations.set(key, timed(key));
+            }
+            return frozenDurations.get(key);
+        };
+        const source = mode === 'mutant' ? sourceOfMutant(root, String(activeMutant)) : undefined;
+        const tests = source === undefined ? undefined : ranByFileOf();
+        const relevant = (file) => tests === undefined || (tests.get(relative(root, file.moduleId)) ?? [undefined]).some((ran) => ran === undefined || ran.has(source));
+        const killer = mode === 'mutant' ? killerOf(String(activeMutant)) : undefined;
+        const killed = (file) => relative(root, file.moduleId) === killer;
+        const recent = recentOf(source);
+        const recency = (file) => {
+            const at = recent.indexOf(relative(root, file.moduleId));
+            return at === -1 ? recent.length : at;
+        };
+        return [...files].sort((a, b) => Number(killed(b)) - Number(killed(a)) || recency(a) - recency(b) || Number(relevant(b)) - Number(relevant(a)) || took(a) - took(b) || 0);
+    }
+}`;
+
+// outside: Vitest runs the slowest file first, and Stryker stops a mutant's run at the first test that fails; the file whose test killed the mutant in the stage's last report runs first, then the files that killed the latest of this stage's mutants of its source, the latest first, then the files with a test whose processes ran a function of the mutant's source run first (a test that spawned nothing, or one the dry run could not follow, among them), since a mutant a spawned process only loaded is credited to every file that spawned one, and within each group the file the last run took least time over runs first, so a mutant a quick test detects never waits on a slow one.
 export const relevantFirstSource = (
     mutated: readonly string[],
 ): string => `const mutantSources = new Map();
@@ -54,64 +113,9 @@ const ranByFileOf = () => {
     return ranByFile;
 };
 
-let killers;
-const killerOf = (id) => {
-    if (killers === undefined) {
-        const file = process.env.${KILLERS_VARIABLE};
-        killers = file !== undefined && existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
-    }
-    return killers[id];
-};
+${PREVIOUS_KILLERS_SOURCE}
 
-const RECENT_KILLERS = 3;
-let recentKillers = { bySource: new Map(), size: -1 };
-const recentOf = (source) => {
-    const file = process.env.${RECENT_KILLERS_VARIABLE};
-    if (source === undefined || file === undefined || !existsSync(file)) {
-        return [];
-    }
-    const { size } = statSync(file);
-    if (size !== recentKillers.size) {
-        const bySource = new Map();
-        for (const line of readFileSync(file, 'utf8').split('\\n').slice(0, -1)) {
-            const { killer, source: of } = JSON.parse(line);
-            bySource.set(of, [killer, ...(bySource.get(of) ?? []).filter((one) => one !== killer)].slice(0, RECENT_KILLERS));
-        }
-        recentKillers = { bySource, size };
-    }
-    return recentKillers.bySource.get(source) ?? [];
-};
-
-const frozenDurations = new Map();
-
-class RelevantFirst extends BaseSequencer {
-    async sort(files) {
-        const { root } = this.ctx.config;
-        const { activeMutant, mode } = this.ctx.getRootProject().getProvidedContext();
-        const timed = (key) => this.ctx.cache.getFileTestResults(key)?.duration ?? Number.POSITIVE_INFINITY;
-        const took = (file) => {
-            const key = \`\${file.project.name}:\${relative(root, file.moduleId)}\`;
-            if (mode !== 'mutant') {
-                return timed(key);
-            }
-            if (!frozenDurations.has(key)) {
-                frozenDurations.set(key, timed(key));
-            }
-            return frozenDurations.get(key);
-        };
-        const source = mode === 'mutant' ? sourceOfMutant(root, String(activeMutant)) : undefined;
-        const tests = source === undefined ? undefined : ranByFileOf();
-        const relevant = (file) => tests === undefined || (tests.get(relative(root, file.moduleId)) ?? [undefined]).some((ran) => ran === undefined || ran.has(source));
-        const killer = mode === 'mutant' ? killerOf(String(activeMutant)) : undefined;
-        const killed = (file) => relative(root, file.moduleId) === killer;
-        const recent = recentOf(source);
-        const recency = (file) => {
-            const at = recent.indexOf(relative(root, file.moduleId));
-            return at === -1 ? recent.length : at;
-        };
-        return [...files].sort((a, b) => Number(killed(b)) - Number(killed(a)) || recency(a) - recency(b) || Number(relevant(b)) - Number(relevant(a)) || took(a) - took(b) || 0);
-    }
-}`;
+${RELEVANT_FIRST_CLASS_SOURCE}`;
 
 // hazard: Stryker reads the tests of each file, and a file a mutant stops from loading holds none, so the mutant would read as survived; the file's failure is handed over as a failed test.
 const LOAD_FAILURES_REPORTER_SOURCE = `const loadFailures = {
