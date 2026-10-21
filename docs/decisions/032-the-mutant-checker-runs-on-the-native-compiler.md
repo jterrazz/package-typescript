@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-20
+**Accepted:** 2026-10-21, for the alias rule: the owner's word on the review ("Tout ok"), that `typescript@7` never enters the tree under its own name and its API only under the alias.
 
 The owner asked for it on 2026-10-20 ("ça serait possible dès ajd le
 vérificateur stryker natif sur la version beta ?"), under the standing go of
@@ -61,6 +62,8 @@ other gate left it 0.4 GB, one runner, 701.4 s.
 - The API comes from `@typescript/native`, an npm alias of
   `typescript@7.1.0-beta`, pinned exactly. `typescript` itself stays 6 for
   the tools that need its JavaScript API.
+- `typescript@7` never enters the tree under its own name: the 7 API is
+  reached only through the alias.
 - The checker's seed price is the most its process and the native
   compiler's held together over the runs below, 720 MB, where the seed was
   400 MB.
@@ -80,7 +83,7 @@ other gate left it 0.4 GB, one runner, 701.4 s.
 - A beta carries the checker. Its API may change before 7.1 is stable, and
   the pin moves with a measured parity run, never by range.
 - The architecture's rule against a second package named `typescript` is
-  narrowed to its name: the July hijack (6.1.1) came from a `typescript@7`
+  thereby narrowed to its name, which the alias is safe beside: the July hijack (6.1.1) came from a `typescript@7`
   that pnpm's hoist fallback could hand perfectionist. Measured on
   2026-10-20 under pnpm 9.15.9, alone and in a workspace, with this
   package's tarball installed: the hoisted `typescript` is 6.0.3, and
