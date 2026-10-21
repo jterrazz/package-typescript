@@ -22,8 +22,6 @@ const QUALITY: ChapterAnchor = 'docs/reference/quality-checks.md#flags-and-exit-
 
 const BUILDING: ChapterAnchor = 'docs/reference/building.md#the-entries';
 
-const PROVEN: ChapterAnchor = 'docs/reference/quality-checks.md#a-tree-proven-green';
-
 const GESTURES: ChapterAnchor = 'docs/guides/adopt-a-stricter-release.md#the-two-gestures';
 
 export const SURFACES = {
@@ -89,9 +87,14 @@ export const SURFACES = {
     },
     fix: { read: QUALITY, says: 'Auto-fix lint and formatting issues' },
     test: {
-        flags: [{ name: '--cold', says: 'Run the tests, whatever green verdict this tree holds' }],
-        read: PROVEN,
-        says: "Run the project's test script, unless this tree is proven green for it",
+        flags: [
+            {
+                name: '--cold',
+                says: 'Run every test file, whatever green verdict or record this tree holds',
+            },
+        ],
+        read: 'docs/reference/quality-checks.md#the-test-files-a-change-reaches',
+        says: "Run the project's test script over the test files the change reaches, unless this tree is proven green for it",
     },
     'gate-lock': {
         read: 'docs/reference/quality-checks.md#one-gate-per-checkout',

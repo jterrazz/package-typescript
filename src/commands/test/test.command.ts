@@ -1,5 +1,6 @@
 import process from 'node:process';
 
+import { git } from '../../../lint/kit/project/git.js';
 import { npmTest } from '../../drivers/npm/npm.js';
 import { headOf } from '../check/report/gate-verdict.js';
 import {
@@ -9,12 +10,16 @@ import {
     testOutcomeOf,
 } from '../check/report/outcomes.js';
 import { provenAsked, provenRun } from '../check/report/proven.js';
+import { branchBaseFor } from '../mutation/branch.js';
+import { scriptRunOf, testFilesReachedIn, testScriptOf } from '../mutation/record/test-files.js';
+import type { TestFiles } from '../mutation/record/test-files.js';
+import { badge, print } from '../terminal.js';
 import { secondsSince } from '../timing.js';
 
-async function recordedTest(project: string): Promise<number> {
+async function recordedTest(project: string, args: readonly string[]): Promise<number> {
     const before = fileResultsOf(project);
     const from = performance.now();
-    const status = await npmTest(project);
+    const status = await npmTest(project, args);
     const now = new Date();
     const head = headOf(project);
     outcomesRecorded(
@@ -29,12 +34,27 @@ async function recordedTest(project: string): Promise<number> {
     return status;
 }
 
+async function selectedTest(project: string, cold: boolean, script: string): Promise<number> {
+    const selection: TestFiles = cold
+        ? { kind: 'every', reason: 'asked --cold' }
+        : testFilesReachedIn(project);
+    const { args, line } = scriptRunOf(selection, script);
+    const status = args === undefined ? 0 : await recordedTest(project, args);
+    print(`${badge('TYPESCRIPT')} ${line}\n`);
+
+    return status;
+}
+
 export async function test(args: readonly string[]): Promise<number> {
     const project = process.cwd();
+    const asked = provenAsked('test', args);
+    const base = branchBaseFor(project);
+    const scope =
+        base === undefined ? '' : (git(project, ['rev-parse', `${base}^{tree}`])?.trim() ?? '');
 
     return await provenRun(
         project,
-        provenAsked('test', args),
-        async () => await recordedTest(project),
+        { ...asked, scope },
+        async () => await selectedTest(project, asked.cold, testScriptOf(project)),
     );
 }

@@ -10,7 +10,7 @@ npx typescript check           # Every quality pass, in parallel, ending on a dr
 npx typescript fix             # Rewrite in place: lint, formatting, the .gitignore, spellings, fallen baseline counts
 npx typescript doctor          # Installed tool versions against the declared ranges, then where each setting comes from
 npx typescript baseline        # Record today's debt so that it may only fall
-npx typescript test            # The project's test script, unless this tree is proven green for it
+npx typescript test            # The project's test script over the test files the change reaches, unless this tree is proven green for it
 npx typescript mutation        # The module tests over the change, then the whole suite over the changed lines they leave
 npx typescript docs-layout .   # Check a repository's docs/ against the manual's shape
 npx typescript gate-lock       # Refuse while a running gate holds this checkout, naming its pid
@@ -25,7 +25,7 @@ npx typescript tsc             # The TypeScript 7 compiler, passed through
 | `check`, `fix`                 | [Quality checks](quality-checks.md), and its [flags and exit codes](quality-checks.md#flags-and-exit-codes) |
 | `doctor`, `baseline`           | [Adopt a stricter release](../guides/adopt-a-stricter-release.md#the-two-gestures)                          |
 | `mutation`                     | [Quality checks § Mutation](quality-checks.md#mutation)                                                     |
-| `test`                         | [Quality checks § A tree proven green](quality-checks.md#a-tree-proven-green)                               |
+| `test`                         | [Quality checks § The test files a change reaches](quality-checks.md#the-test-files-a-change-reaches)       |
 | `docs-layout`                  | [Quality checks § Outside an npm project](quality-checks.md#outside-an-npm-project)                         |
 | `clean`                        | [Getting started § Where a tool's output goes](../start/getting-started.md#where-a-tools-output-goes)       |
 | `gate-lock`                    | [Quality checks § One gate per checkout](quality-checks.md#one-gate-per-checkout)                           |

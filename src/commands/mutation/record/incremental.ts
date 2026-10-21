@@ -55,7 +55,8 @@ function jsonAt(path: string): Record<string, unknown> | undefined {
     // Stryker restore BlockStatement
 }
 
-function recordedOf(
+/** What a stage's last run recorded, or `undefined` where it left no record that parses. */
+export function recordedOf(
     project: string,
     incremental: string,
 ): undefined | { inputs: Inputs; observed: Observed } {
@@ -134,7 +135,8 @@ function onlyFunctionsIn(
     };
 }
 
-function codeTextsIn(project: string, inputs: Inputs): Map<string, string> {
+/** The text of every file of the inputs a test may load. */
+export function codeTextsIn(project: string, inputs: Inputs): Map<string, string> {
     const code = Object.keys(inputs).filter((path) => isLoadable(path));
 
     return new Map(code.map((path) => [path, String(readFileSync(join(project, path)))]));

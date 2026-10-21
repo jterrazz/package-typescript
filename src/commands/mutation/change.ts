@@ -50,7 +50,8 @@ function defaultBranchOf(project: string): string | undefined {
 }
 
 // invariant: on the default branch itself the merge-base is HEAD, so the branch reads as having no commit of its own and the last commit is the change.
-function branchBaseOf(project: string): undefined | { base: string; branch: string } {
+/** The merge-base with the default branch and that branch's name, or `undefined` on the default branch itself, in a clone with none, or with no history shared. */
+export function branchBaseOf(project: string): undefined | { base: string; branch: string } {
     const branch = defaultBranchOf(project);
     // Stryker disable next-line ConditionalExpression,BlockStatement: a clone with no default branch asks git for a merge-base with the word `undefined`, which names no commit, and the answer is the same absent base
     if (branch === undefined) {
