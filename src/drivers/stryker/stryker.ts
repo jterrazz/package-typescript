@@ -8,6 +8,8 @@ import { readSettings } from '../../../lint/index.rules.js';
 import { ARTIFACTS, DEV_OUTPUT, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { withEnvironment } from '../../../lint/kit/project/environment.js';
 import { objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
+import { REPORT_NAMES } from '../../../lint/kit/project/mutation-report.js';
+import type { StageName } from '../../../lint/kit/project/mutation-report.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { handOver } from '../run.js';
 import { besideOf, withoutBesideLinks } from './beside.js';
@@ -22,8 +24,6 @@ import { observedFrom, observedIn } from './observed.js';
 import { killersLaid, PREVIOUS_KILLERS } from './previous-killers.js';
 import { PROGRESS_REPORTER, PROGRESS_REPORTER_SOURCE } from './progress-reporter.js';
 import { linesIn, recordFoldersMade, recordFoldersRemoved } from './record-folders.js';
-import { REPORT_NAMES } from './reports.js';
-import type { StageName } from './reports.js';
 import { sandboxScriptSource, vitestConfigSource } from './sources.js';
 
 const oneGlob = (globs: readonly string[]): string =>

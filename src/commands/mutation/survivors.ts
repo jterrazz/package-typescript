@@ -1,7 +1,7 @@
-import { isList, objectOf, stringOf } from '../../../lint/kit/project/json.js';
+import { objectOf, stringOf } from '../../../lint/kit/project/json.js';
+import { mutantsOf, reportPathOf } from '../../../lint/kit/project/mutation-report.js';
+import type { ReportMutant, StageName } from '../../../lint/kit/project/mutation-report.js';
 import { LOG_REASON, PINNED_TEXT_REASON } from '../../drivers/stryker/ignorers.js';
-import { reportPathOf } from '../../drivers/stryker/reports.js';
-import type { StageName } from '../../drivers/stryker/reports.js';
 import { fileOfRange } from './scope.js';
 
 export type Survivor = {
@@ -40,7 +40,7 @@ const IGNORED_BY: ReadonlyMap<unknown, string> = new Map([
     [STATIC_SKIPPED, 'static, no test loads it'],
 ]);
 
-function survivorOf(file: string, mutant: Mutant, stage: StageName): Survivor {
+function survivorOf(file: string, mutant: ReportMutant, stage: StageName): Survivor {
     const start = objectOf(objectOf(mutant.location).start);
     return {
         column: Number(start.column),
@@ -56,7 +56,7 @@ function counted(counts: Record<string, number>, key: string): void {
     counts[key] = (counts[key] ?? 0) + 1;
 }
 
-function tally(judged: Judged, file: string, mutant: Mutant, stage: StageName): void {
+function tally(judged: Judged, file: string, mutant: ReportMutant, stage: StageName): void {
     const status = stringOf(mutant.status) ?? 'no status';
     if (DETECTED.has(status)) {
         judged.detected += 1;
@@ -76,20 +76,10 @@ function tally(judged: Judged, file: string, mutant: Mutant, stage: StageName): 
     }
 }
 
-type Mutant = Record<string, unknown>;
-
-function mutantsOf(report: unknown): [string, Mutant][] {
-    return Object.entries(objectOf(objectOf(report).files)).flatMap(([file, entry]) => {
-        const { mutants } = objectOf(entry);
-
-        return isList(mutants) ? mutants.map((one): [string, Mutant] => [file, objectOf(one)]) : [];
-    });
-}
-
 const LINES = /^(?<from>\d+)(?::\d+)?-(?<to>\d+)(?::\d+)?$/u;
 
 // outside: Stryker holds a mutant in a `--mutate` range whole: a file named bare holds all of it, a range of lines what starts and ends within them; its report keeps an earlier run's results beyond the ranges, which this run did not measure.
-function heldBy(ranges: readonly string[], file: string, mutant: Mutant): boolean {
+function heldBy(ranges: readonly string[], file: string, mutant: ReportMutant): boolean {
     const { end, start } = objectOf(mutant.location);
     const first = Number(objectOf(start).line);
     const last = Number(objectOf(end).line);
@@ -106,10 +96,10 @@ function heldBy(ranges: readonly string[], file: string, mutant: Mutant): boolea
     });
 }
 
-const heldMutantsOf = (report: unknown, ranges: readonly string[]): [string, Mutant][] =>
+const heldMutantsOf = (report: unknown, ranges: readonly string[]): [string, ReportMutant][] =>
     mutantsOf(report).filter(([file, mutant]) => heldBy(ranges, file, mutant));
 
-const keyOf = (file: string, mutant: Mutant): string => {
+const keyOf = (file: string, mutant: ReportMutant): string => {
     const start = objectOf(objectOf(mutant.location).start);
 
     return JSON.stringify([file, start.line, start.column, mutant.mutatorName, mutant.replacement]);
@@ -123,7 +113,7 @@ export type ModuleRun = {
 };
 
 // invariant: the module tests leave a mutant to the suite when none of them runs it, or only loading a module runs it and the tests loading it let it live or could not be credited with it; one a test also ran is theirs to answer.
-function leftByTheModules(mutant: Mutant, ranByTests: ReadonlySet<string>): boolean {
+function leftByTheModules(mutant: ReportMutant, ranByTests: ReadonlySet<string>): boolean {
     // Stryker disable next-line StringLiteral: a mutant without an id is in no set of ids, whatever stands in for it
     const ranByATest = ranByTests.has(stringOf(mutant.id) ?? '');
 
@@ -137,7 +127,8 @@ function leftByTheModules(mutant: Mutant, ranByTests: ReadonlySet<string>): bool
 /** Lines a change touched, file by file: `true` for a file the change adds whole. */
 export type Changed = ReadonlyMap<string, readonly (readonly [number, number])[] | true>;
 
-const lineOf = (mutant: Mutant): number => Number(objectOf(objectOf(mutant.location).start).line);
+const lineOf = (mutant: ReportMutant): number =>
+    Number(objectOf(objectOf(mutant.location).start).line);
 
 /** Whether the change reaches a mutant: a file it adds, or a line of the hunks it rewrote. */
 export function reaches(changed: Changed, file: string, line: number): boolean {
@@ -147,14 +138,17 @@ export function reaches(changed: Changed, file: string, line: number): boolean {
 }
 
 // invariant: a mutant a module test runs and none detects is the whole suite's to answer, wherever it stands: a spec may prove the line the module test only runs, and the verdict fails only on what the suite also lets live.
-const survivedTheModules = (mutant: Mutant, ranByTests: ReadonlySet<string>): boolean =>
+const survivedTheModules = (mutant: ReportMutant, ranByTests: ReadonlySet<string>): boolean =>
     mutant.status === 'Survived' && !leftByTheModules(mutant, ranByTests);
 
 /** The lines that reach a mutant of the run: the change, and for a static mutant `statics`, the tree's own change. `--mutate` names lines to measure, and never makes a table the module tests only load the suite's to judge. */
 export type Reach = { changed: Changed; statics?: Changed };
 
-const reachedBy = ({ changed, statics = changed }: Reach, file: string, mutant: Mutant): boolean =>
-    reaches(mutant.static === true ? statics : changed, file, lineOf(mutant));
+const reachedBy = (
+    { changed, statics = changed }: Reach,
+    file: string,
+    mutant: ReportMutant,
+): boolean => reaches(mutant.static === true ? statics : changed, file, lineOf(mutant));
 
 /** What the module tests hand the whole suite in `measured`, as the `--mutate` range of exactly each node, once: every mutant they let live, and what they could not measure on the lines the change reaches. */
 export function handedToTheSuite(modules: ModuleRun, reach: Reach): string[] {

@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { parsedObject, stringRecordOf } from '../../../lint/kit/project/json.js';
 import { readManifest } from '../../../lint/kit/project/manifest.js';
+import { testFileOf } from '../../../lint/kit/project/mutation-report.js';
 import { dryRunFilesOf } from './dry-run-files.js';
 import type { DryRunFiles, MutatedSource } from './dry-run-files.js';
 import { changedBetween, inputsOf, isLoadable, ownBuildOf, reachOf, roleOf } from './inputs.js';
@@ -152,8 +153,6 @@ function mutatedSources(
     });
 }
 
-const fileOfTest = (test: string): string => test.split('#')[0] ?? test;
-
 function dryRunOf(
     recorded: { inputs: Inputs; observed: Observed },
     {
@@ -185,7 +184,7 @@ function dryRunOf(
             dryRun === undefined
                 ? []
                 : observedTestsOf(recorded.observed, (test) => {
-                      const file = fileOfTest(test);
+                      const file = testFileOf(test);
 
                       return !left.has(file) && inputs[file] !== undefined;
                   }),

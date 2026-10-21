@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
-import { isList, objectOf } from '../../../lint/kit/project/json.js';
+import { objectOf } from '../../../lint/kit/project/json.js';
+import { reportEdited } from '../../../lint/kit/project/mutation-report.js';
 import type { Made } from '../../drivers/stryker/enumerate.js';
 
 /** What the cap kept of a change's glue: the mutants it measures, the files they sit in, and how many the change made. */
@@ -60,36 +61,20 @@ export function cappedEntries(
 }
 
 // invariant: a range Stryker is handed holds every mutant whose node starts and ends inside it, so a kept mutant's range brings the mutants nested in its node too; the report keeps only the kept ones of a capped file.
-export function cappedReport(report: unknown, { files, kept }: Capped): unknown {
-    const held = Object.entries(objectOf(objectOf(report).files)).map(
-        ([file, entry]): [string, unknown] => {
-            if (!files.has(file)) {
-                return [file, entry];
-            }
-            const { mutants } = objectOf(entry);
-            const isKept = (mutant: unknown): boolean => {
-                const { location, mutatorName, replacement } = objectOf(mutant);
-                const { column, line } = objectOf(objectOf(location).start);
+export const cappedReport = (report: unknown, { files, kept }: Capped): unknown =>
+    reportEdited(report, (file, mutants) =>
+        files.has(file)
+            ? mutants.filter(({ location, mutatorName, replacement }) => {
+                  const { column, line } = objectOf(objectOf(location).start);
 
-                return kept.has(
-                    keyOf(
-                        file,
-                        [Number(line), Number(column)],
-                        String(mutatorName),
-                        String(replacement),
-                    ),
-                );
-            };
-
-            return [
-                file,
-                {
-                    ...objectOf(entry),
-                    mutants: isList(mutants) ? mutants.filter((one) => isKept(one)) : [],
-                },
-            ];
-        },
+                  return kept.has(
+                      keyOf(
+                          file,
+                          [Number(line), Number(column)],
+                          String(mutatorName),
+                          String(replacement),
+                      ),
+                  );
+              })
+            : mutants,
     );
-
-    return { ...objectOf(report), files: Object.fromEntries(held) };
-}

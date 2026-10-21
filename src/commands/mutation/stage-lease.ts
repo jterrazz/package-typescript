@@ -14,12 +14,12 @@ import {
 import type { Pool, Resources, Slice } from '../../../lint/kit/project/capacity.js';
 import { withEnvironment } from '../../../lint/kit/project/environment.js';
 import { gateOf, liveLeases } from '../../../lint/kit/project/leases.js';
+import type { StageName } from '../../../lint/kit/project/mutation-report.js';
 import { APART_VARIABLE, apartIn, heldApart } from '../../../lint/kit/project/priced-apart.js';
 import { priceLearned, priceOf } from '../../../lint/kit/project/prices.js';
 import { residentPeak } from '../../drivers/ps/ps.js';
 import { runnerSlice, runnersOf } from '../../drivers/stryker/concurrency.js';
 import type { Runners } from '../../drivers/stryker/concurrency.js';
-import type { StageName } from '../../drivers/stryker/reports.js';
 import { typeCheckedIn } from '../../drivers/stryker/stryker.js';
 
 // Stryker disable next-line ArithmeticOperator: the period only sets how finely a stage's peak is sampled, which no verdict reads

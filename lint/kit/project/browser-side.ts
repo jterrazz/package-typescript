@@ -1,8 +1,8 @@
 import { readFileSync, statSync } from 'node:fs';
 import { join, posix } from 'node:path';
 
-import { MUTATION_OUTPUT } from './build-plan.js';
-import { isJsonObject, objectOf } from './json.js';
+import { mutantsOf, reportEdited, reportPathOf } from './mutation-report.js';
+import type { ReportMutant } from './mutation-report.js';
 import { projectFiles, readText } from './project-files.js';
 
 // outside: a component, an island or a template runs in the browser, where the mutation run starts no project: no test of it is credited with a mutant there.
@@ -15,19 +15,12 @@ export const isBrowserSide = (file: string): boolean => BROWSER_SIDE.test(file);
 export function unmeasuredBrowserMutants(unit: string): null | number {
     try {
         // Stryker disable next-line StringLiteral: a buffer parses as its text, so the encoding changes nothing the parse could show
-        const text = readFileSync(join(unit, MUTATION_OUTPUT, 'report.json'), 'utf8');
+        const text = readFileSync(join(unit, reportPathOf('modules')), 'utf8');
         const report: unknown = JSON.parse(text);
-        let count = 0;
-        for (const [file, entry] of Object.entries(objectOf(objectOf(report).files))) {
-            const { mutants } = objectOf(entry);
-            if (isBrowserSide(file) && Array.isArray(mutants)) {
-                count += mutants.filter(
-                    (mutant) => isJsonObject(mutant) && mutant.status === 'NoCoverage',
-                ).length;
-            }
-        }
 
-        return count;
+        return mutantsOf(report).filter(
+            ([file, mutant]) => isBrowserSide(file) && mutant.status === 'NoCoverage',
+        ).length;
     } catch {
         return null;
     }
@@ -89,30 +82,19 @@ export function clientOnlySources(unit: string): ReadonlySet<string> {
     return sources;
 }
 
-const unmeasured = (mutant: unknown): unknown =>
-    isJsonObject(mutant) && mutant.status === 'Survived'
-        ? { ...mutant, status: 'NoCoverage' }
-        : mutant;
-
-function entryUnmeasured(entry: unknown): unknown {
-    const { mutants } = objectOf(entry);
-
-    return Array.isArray(mutants)
-        ? { ...objectOf(entry), mutants: mutants.map((mutant) => unmeasured(mutant)) }
-        : entry;
-}
+const survived = (mutant: ReportMutant): boolean => mutant.status === 'Survived';
 
 /** A report where every mutant of a source in `sources` that no test judged (one that survived, or none ran) reads as one no test ran, so the verdict counts it unmeasured instead of failing on a line no test could judge. */
 export function reportWithUnmeasured(report: unknown, sources: ReadonlySet<string>): unknown {
     if (sources.size === 0) {
         return report;
     }
-    const files = Object.entries(objectOf(objectOf(report).files)).map(
-        ([file, entry]): [string, unknown] => [
-            file,
-            sources.has(file) ? entryUnmeasured(entry) : entry,
-        ],
-    );
 
-    return { ...objectOf(report), files: Object.fromEntries(files) };
+    return reportEdited(report, (file, mutants) =>
+        sources.has(file) && mutants.some(survived)
+            ? mutants.map((mutant) =>
+                  survived(mutant) ? { ...mutant, status: 'NoCoverage' } : mutant,
+              )
+            : mutants,
+    );
 }

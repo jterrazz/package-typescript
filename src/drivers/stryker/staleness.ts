@@ -1,31 +1,15 @@
-import { isList, objectOf, stringOf } from '../../../lint/kit/project/json.js';
+import { isList } from '../../../lint/kit/project/json.js';
+import { reportEdited, testsOf } from '../../../lint/kit/project/mutation-report.js';
+import type { ReportMutant, ReportTest } from '../../../lint/kit/project/mutation-report.js';
 import { isUnder, roleOf } from './inputs.js';
 import type { Reach, Role } from './inputs.js';
 import type { Ran } from './observed.js';
 
-type Mutant = Record<string, unknown>;
-
-const idsOf = (mutant: Mutant, key: 'coveredBy' | 'killedBy'): string[] => {
+const idsOf = (mutant: ReportMutant, key: 'coveredBy' | 'killedBy'): string[] => {
     const ids = mutant[key];
 
     return isList(ids) ? ids.map(String) : [];
 };
-
-/** A test as a run names it: its file, and its key, the file and its name joined by `#`. */
-export type ReportTest = { file: string; key: string };
-
-function testsOf(report: Record<string, unknown>): Map<string, ReportTest> {
-    const tests = new Map<string, ReportTest>();
-    for (const [file, entry] of Object.entries(objectOf(report.testFiles))) {
-        const listed = objectOf(entry).tests;
-        for (const test of isList(listed) ? listed : []) {
-            const { id, name } = objectOf(test);
-            tests.set(String(id), { file, key: `${file}#${stringOf(name) ?? ''}` });
-        }
-    }
-
-    return tests;
-}
 
 /** What changed since the record, by what each path is to the tests. */
 export type ChangedFiles = {
@@ -86,7 +70,7 @@ export function isStale(test: ReportTest, change: ChangedFiles, staleness: Stale
 }
 
 // invariant: Stryker stops a mutant's run at the first test that fails under it, so a kill stands while every test that killed it stands, whatever became of the others that cover it; any other result (a survivor, a timeout) stands only while every test that covered it does, since any of them may now detect it.
-function standsAfter(mutant: Mutant, staleTests: ReadonlySet<string>): boolean {
+function standsAfter(mutant: ReportMutant, staleTests: ReadonlySet<string>): boolean {
     const killers = idsOf(mutant, 'killedBy');
     const judges =
         mutant.status === 'Killed' && killers.length > 0
@@ -112,19 +96,10 @@ export function reportAfter(
     const staleTests = new Set(
         [...testsOf(report)].filter(([, test]) => isStale(test, change, stale)).map(([id]) => id),
     );
-    const files: Record<string, unknown> = {};
-    for (const [file, entry] of Object.entries(objectOf(report.files))) {
-        if (change.sources.has(file)) {
-            continue;
-        }
-        const { mutants } = objectOf(entry);
-        files[file] = {
-            ...objectOf(entry),
-            mutants: (isList(mutants) ? mutants : [])
-                .map(objectOf)
-                .filter((mutant) => standsAfter(mutant, staleTests)),
-        };
-    }
 
-    return { ...report, files };
+    return reportEdited(report, (file, mutants) =>
+        change.sources.has(file)
+            ? undefined
+            : mutants.filter((mutant) => standsAfter(mutant, staleTests)),
+    );
 }

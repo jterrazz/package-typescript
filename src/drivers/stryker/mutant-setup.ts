@@ -1,4 +1,5 @@
 import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { TEST_KEY_JOIN } from '../../../lint/kit/project/mutation-report.js';
 import { SOURCES_RAN_SOURCE } from './sources-ran.js';
 
 export const RAN_BY_TESTS_VARIABLE = '__TYPESCRIPT_MUTATION_RAN_BY_TESTS__';
@@ -168,12 +169,12 @@ if (inject('mode') === 'mutant') {
                 own = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).name;
             } catch {}
             const records = [...tests].map((test) => {
-                const [file, ...name] = test.split('#');
+                const [file, ...name] = test.split('${TEST_KEY_JOIN}');
                 const one = { blind: fileObserved.blind, functions: new Map(), spawned: fileObserved.spawned };
                 observe(one, fileObserved);
                 observe(one, observedOf(test));
                 const ran = !one.spawned ? { loaded: [], ran: [] } : one.blind ? undefined : sourcesRan(one.functions, root, own);
-                return { test: \`\${relative(root, file)}#\${name.join('#')}\`, ...ran };
+                return { test: \`\${relative(root, file)}${TEST_KEY_JOIN}\${name.join('${TEST_KEY_JOIN}')}\`, ...ran };
             });
             mkdirSync(observedInto, { recursive: true });
             writeFileSync(join(observedInto, \`\${process.pid}-\${threadId}-\${Math.random().toString(36).slice(2)}.json\`), JSON.stringify(records));

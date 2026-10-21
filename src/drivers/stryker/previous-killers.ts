@@ -2,6 +2,7 @@ import { rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { TEST_KEY_JOIN } from '../../../lint/kit/project/mutation-report.js';
 
 const NAME = 'typescript-previous-killers';
 
@@ -69,7 +70,7 @@ class PreviousKillers {
         const into = process.env.${RECENT_KILLERS_VARIABLE};
         const [test] = killedBy ?? [];
         if (into !== undefined && status === 'Killed' && test !== undefined) {
-            const killer = test.slice(0, test.indexOf('#'));
+            const killer = test.slice(0, test.indexOf('${TEST_KEY_JOIN}'));
             appendFileSync(into, \`\${JSON.stringify({ killer, source: relative(process.cwd(), fileName) })}\\n\`);
         }
     }

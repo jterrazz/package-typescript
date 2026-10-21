@@ -1,4 +1,5 @@
-import { isList, objectOf } from '../../../lint/kit/project/json.js';
+import { objectOf } from '../../../lint/kit/project/json.js';
+import { reportEdited } from '../../../lint/kit/project/mutation-report.js';
 
 const ENTRY =
     // Stryker disable next-line Regex: the pattern matches every string from its first character, so anchoring its start changes nothing an entry could show
@@ -104,27 +105,13 @@ export function heldReport(report: unknown, mutate: readonly string[]): unknown 
     if (!entries.some(({ file }) => isWidened(file))) {
         return report;
     }
-    const { files } = objectOf(report);
-    const held = Object.entries(objectOf(files)).flatMap(([file, entry]): [string, unknown][] => {
-        const named = entries.filter((one) => one.file === file);
+
+    return reportEdited(report, (file, mutants) => {
         if (!file.includes('{')) {
-            return [[file, entry]];
+            return mutants;
         }
-        if (named.length === 0) {
-            return [];
-        }
-        const { mutants } = objectOf(entry);
+        const named = entries.filter((one) => one.file === file);
 
-        return [
-            [
-                file,
-                {
-                    ...objectOf(entry),
-                    mutants: isList(mutants) ? mutants.filter((one) => heldBy(named, one)) : [],
-                },
-            ],
-        ];
+        return named.length === 0 ? undefined : mutants.filter((one) => heldBy(named, one));
     });
-
-    return { ...objectOf(report), files: Object.fromEntries(held) };
 }

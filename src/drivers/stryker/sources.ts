@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 
 import { DIST, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { TEST_KEY_JOIN } from '../../../lint/kit/project/mutation-report.js';
 import { SANDBOX_DEPTH } from './beside.js';
 import type { Beside } from './beside.js';
 import { dryRunWorkersPluginSource } from './dry-run-workers.js';
@@ -106,7 +107,7 @@ const ranByFileOf = () => {
         const folder = process.env.${OBSERVED_TESTS_VARIABLE};
         for (const name of folder !== undefined && existsSync(folder) ? readdirSync(folder) : []) {
             for (const { loaded, ran, test } of JSON.parse(readFileSync(join(folder, name), 'utf8'))) {
-                const file = test.split('#')[0];
+                const file = test.split('${TEST_KEY_JOIN}')[0];
                 const held = ranByFile.get(file) ?? [];
                 held.push(ran === undefined || (ran.length === 0 && loaded.length === 0) ? undefined : new Set(ran));
                 ranByFile.set(file, held);
