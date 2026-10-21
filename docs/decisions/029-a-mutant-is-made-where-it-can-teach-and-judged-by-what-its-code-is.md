@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-20
+**Amended by:** [ADR-030](030-the-suite-stage-pays-for-what-its-change-reaches-on-every-worker.md), for lesson prose: the files that hold only the messages a refusal prints are declared presentation, so this package declares five, not three.
 
 The direction is the owner's, given 2026-10-17 ("ok ajoute 1 2 3 4", then
 "ok" to 5 and 6), and the shape below was accepted under the owner's
