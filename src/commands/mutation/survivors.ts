@@ -3,6 +3,7 @@ import { mutantsOf, reportPathOf } from '../../../lint/kit/project/mutation-repo
 import type { ReportMutant } from '../../../lint/kit/project/mutation-report.js';
 import type { StageName } from '../../../lint/kit/project/mutation-stages.js';
 import { LOG_REASON, PINNED_TEXT_REASON } from '../../drivers/stryker/ignorers.js';
+import { mutateEntryOf, nodeEntry } from '../../drivers/stryker/mutate-entries.js';
 import { fileOfRange } from './scope.js';
 
 export type Survivor = {
@@ -77,8 +78,6 @@ function tally(judged: Judged, file: string, mutant: ReportMutant, stage: StageN
     }
 }
 
-const LINES = /^(?<from>\d+)(?::\d+)?-(?<to>\d+)(?::\d+)?$/u;
-
 // outside: Stryker holds a mutant in a `--mutate` range whole: a file named bare holds all of it, a range of lines what starts and ends within them; its report keeps an earlier run's results beyond the ranges, which this run did not measure.
 function heldBy(ranges: readonly string[], file: string, mutant: ReportMutant): boolean {
     const { end, start } = objectOf(mutant.location);
@@ -86,14 +85,13 @@ function heldBy(ranges: readonly string[], file: string, mutant: ReportMutant): 
     const last = Number(objectOf(end).line);
 
     return ranges.some((range) => {
-        if (range === file) {
-            return true;
-        }
-        const lines = range.startsWith(`${file}:`)
-            ? LINES.exec(range.slice(file.length + 1))?.groups
-            : undefined;
+        const entry = mutateEntryOf(range);
 
-        return lines !== undefined && first >= Number(lines.from) && last <= Number(lines.to);
+        return (
+            entry?.file === file &&
+            (entry.range === undefined ||
+                (first >= entry.range.from[0] && last <= entry.range.to[0]))
+        );
     });
 }
 
@@ -164,7 +162,11 @@ export function handedToTheSuite(modules: ModuleRun, reach: Reach): string[] {
             const from = objectOf(start);
             const to = objectOf(end);
 
-            return `${file}:${Number(from.line)}:${Number(from.column) - 1}-${Number(to.line)}:${Number(to.column) - 1}`;
+            return nodeEntry(
+                file,
+                [Number(from.line), Number(from.column)],
+                [Number(to.line), Number(to.column)],
+            );
         });
 
     return [...new Set(ranges)];

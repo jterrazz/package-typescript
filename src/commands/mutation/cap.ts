@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { objectOf } from '../../../lint/kit/project/json.js';
 import { reportEdited } from '../../../lint/kit/project/mutation-report.js';
 import type { Made } from '../../drivers/stryker/enumerate.js';
+import { nodeEntry } from '../../drivers/stryker/mutate-entries.js';
 
 /** What the cap kept of a change's glue: the mutants it measures, the files they sit in, and how many the change made. */
 export type Capped = {
@@ -52,9 +53,8 @@ export function cappedEntries(
     const named = new Set(entries.map((entry) => fileOf(entry)));
     const ranges = measured
         .filter(({ file }) => named.has(file))
-        .map(
-            ({ column, endColumn, endLine, file, line }) =>
-                `${file}:${String(line)}:${String(column - 1)}-${String(endLine)}:${String(endColumn - 1)}`,
+        .map(({ column, endColumn, endLine, file, line }) =>
+            nodeEntry(file, [line, column], [endLine, endColumn]),
         );
 
     return [...new Set([...entries.filter((entry) => !files.has(fileOf(entry))), ...ranges])];

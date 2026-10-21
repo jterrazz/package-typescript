@@ -2,6 +2,7 @@ import { existsSync, globSync } from 'node:fs';
 import { join, matchesGlob } from 'node:path';
 
 import { moduleTestOf } from '../../../lint/kit/project/ground.js';
+import { linesEntry, mutateEntryOf } from '../../drivers/stryker/mutate-entries.js';
 import { lastLineReader } from '../../drivers/tsc/node-ends.js';
 import type { GlueBar } from './roles.js';
 import type { Changed } from './survivors.js';
@@ -49,23 +50,21 @@ export function sourcesOf(
     };
 }
 
-export const fileOfRange = (range: string): string =>
-    range.replace(/:\d+(?::\d+)?-\d+(?::\d+)?/u, '');
+/** The file a range names, the text itself where it names none. */
+export const fileOfRange = (range: string): string => mutateEntryOf(range)?.file ?? range;
 
-const RANGE = /^(?<file>[^:]+)(?::(?<from>\d+)(?::\d+)?-(?<to>\d+)(?::\d+)?)?$/u;
-
-/** The first `--mutate` range that reaches no source of the run (a path it does not mutate, or lines written other than `from-to` in order), else `undefined`. */
+/** The first `--mutate` range that reaches no source of the run (no entry Stryker reads, a path it does not mutate, or lines written other than `from-to` in order), else `undefined`. */
 export function unreachedRange(
     ranges: readonly string[],
     sources: ReadonlySet<string>,
 ): string | undefined {
     return ranges.find((range) => {
-        const groups = RANGE.exec(range)?.groups;
+        const entry = mutateEntryOf(range);
 
         return (
-            groups === undefined ||
-            !sources.has(String(groups.file)) ||
-            Number(groups.from) > Number(groups.to)
+            entry === undefined ||
+            !sources.has(entry.file) ||
+            (entry.range !== undefined && entry.range.from[0] > entry.range.to[0])
         );
     });
 }
@@ -103,7 +102,7 @@ export function changedRanges(
             .filter(([from, to]) =>
                 textLines.slice(from - 1, to).some((line) => !NO_CODE.test(line.trim())),
             )
-            .map(([from, to]) => `${file}:${from}-${lastLine(from, to)}`);
+            .map(([from, to]) => linesEntry(file, from, lastLine(from, to)));
     });
 }
 

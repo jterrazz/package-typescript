@@ -1,20 +1,30 @@
 import { objectOf } from '../../../lint/kit/project/json.js';
 import { reportEdited } from '../../../lint/kit/project/mutation-report.js';
 
+// outside: Stryker reads a `--mutate` entry as a path, then an optional range of lines, each end with an optional column; a path holding `:` would read as a range, so the grammar names none.
 const ENTRY =
-    // Stryker disable next-line Regex: the pattern matches every string from its first character, so anchoring its start changes nothing an entry could show
-    /^(?<file>.*?)(?::(?<fromLine>\d+)(?::(?<fromColumn>\d+))?-(?<toLine>\d+)(?::(?<toColumn>\d+))?)?$/su;
+    /^(?<file>[^:]+)(?::(?<fromLine>\d+)(?::(?<fromColumn>\d+))?-(?<toLine>\d+)(?::(?<toColumn>\d+))?)?$/u;
 
-type Point = readonly [line: number, column: number];
+/** A place in a source as Stryker counts a range's ends: its line from 1, its column from 0. */
+export type Point = readonly [line: number, column: number];
 
-type Entry = { file: string; range: undefined | { from: Point; to: Point }; text: string };
+/** A `--mutate` entry read: the file it names, and the range it holds there, `undefined` where it names the file whole. */
+export type MutateEntry = {
+    file: string;
+    range: undefined | { from: Point; to: Point };
+    text: string;
+};
 
-function entryOf(text: string): Entry {
-    // Stryker disable next-line OptionalChaining: the pattern matches every string, so its groups are always there
-    const { file = text, fromColumn, fromLine, toColumn, toLine } = ENTRY.exec(text)?.groups ?? {};
+/** The entry a text names, `undefined` where it names none: a path holding `:`, a range with no line or with no end. */
+export function mutateEntryOf(text: string): MutateEntry | undefined {
+    const groups = ENTRY.exec(text)?.groups;
+    if (groups === undefined) {
+        return undefined;
+    }
+    const { fromColumn, fromLine, toColumn, toLine } = groups;
 
     return {
-        file,
+        file: String(groups.file),
         range:
             fromLine === undefined
                 ? undefined
@@ -25,6 +35,21 @@ function entryOf(text: string): Entry {
         text,
     };
 }
+
+const entryOf = (text: string): MutateEntry =>
+    mutateEntryOf(text) ?? { file: text, range: undefined, text };
+
+/** The entry holding lines `from` to `to` of a file, whole. */
+export const linesEntry = (file: string, from: number, to: number): string =>
+    `${file}:${String(from)}-${String(to)}`;
+
+/** The entry holding exactly a node a report locates, its line and column at each end counted from 1, as a report counts them. */
+export const nodeEntry = (
+    file: string,
+    [line, column]: readonly [number, number],
+    [endLine, endColumn]: readonly [number, number],
+): string =>
+    `${file}:${String(line)}:${String(column - 1)}-${String(endLine)}:${String(endColumn - 1)}`;
 
 // invariant: braces around a comma are expanded whatever escapes them, so such a file reaches Stryker whole, through `?` in place of each comma, and the report is cut back to the ranges asked.
 const isWidened = (file: string): boolean => file.includes('{') && file.includes(',');
@@ -82,7 +107,7 @@ export function mutatedLines(mutate: readonly string[]): Map<string, number[] | 
 }
 
 // outside: Stryker mutates in a range what starts and ends within it, its lines counted from 1 and its columns from 0, where a report counts both from 1.
-function heldBy(entries: readonly Entry[], mutant: unknown): boolean {
+function heldBy(entries: readonly MutateEntry[], mutant: unknown): boolean {
     const { end, start } = objectOf(objectOf(mutant).location);
 
     return entries.some(

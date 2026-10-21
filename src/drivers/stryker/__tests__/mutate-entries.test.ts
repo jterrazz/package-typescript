@@ -1,7 +1,14 @@
 import { matchesGlob } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
-import { heldReport, mutatedLines, strykerMutate } from '../mutate-entries.js';
+import {
+    heldReport,
+    linesEntry,
+    mutatedLines,
+    mutateEntryOf,
+    nodeEntry,
+    strykerMutate,
+} from '../mutate-entries.js';
 
 const mutant = (from: [number, number], to: [number, number]): object => ({
     location: { end: { column: to[1], line: to[0] }, start: { column: from[1], line: from[0] } },
@@ -126,5 +133,37 @@ describe('mutate-entries', () => {
             'src/b.ts': undefined,
             'src/c.ts': [2, 3],
         });
+    });
+
+    test('mutateEntryOf — a path, a range of lines and a range of columns are read as Stryker reads them, and a path holding a colon names no entry', () => {
+        // Given - a file whole, a range of lines, a range with columns, and texts the grammar refuses
+        const read = ['src/a.ts', 'src/a.ts:3-5', 'src/a.ts:2:4-5:7'].map((text) =>
+            mutateEntryOf(text),
+        );
+        const refused = ['src/a:b.ts', 'src/a:b.ts:1-2', 'src/a.ts:3', 'src/a.ts:-4'];
+
+        // Then - the open ends reach the line's first and last column; the refused texts are no entry
+        expect(read).toStrictEqual([
+            { file: 'src/a.ts', range: undefined, text: 'src/a.ts' },
+            {
+                file: 'src/a.ts',
+                range: { from: [3, 0], to: [5, Number.MAX_SAFE_INTEGER] },
+                text: 'src/a.ts:3-5',
+            },
+            { file: 'src/a.ts', range: { from: [2, 4], to: [5, 7] }, text: 'src/a.ts:2:4-5:7' },
+        ]);
+        expect(refused.map((text) => mutateEntryOf(text))).toStrictEqual(
+            refused.map(() => undefined),
+        );
+    });
+
+    test('linesEntry, nodeEntry — an entry of whole lines, and one of exactly a node a report locates, its columns counted from 0', () => {
+        // Given - lines 3 to 7, and a node from line 2 column 5 to line 4 column 1 as a report counts them
+        const lines = linesEntry('src/a.ts', 3, 7);
+        const node = nodeEntry('src/a.ts', [2, 5], [4, 1]);
+
+        // Then - each reads back to what it was built from
+        expect([lines, node]).toStrictEqual(['src/a.ts:3-7', 'src/a.ts:2:4-4:0']);
+        expect(mutateEntryOf(node)?.range).toStrictEqual({ from: [2, 4], to: [4, 0] });
     });
 });

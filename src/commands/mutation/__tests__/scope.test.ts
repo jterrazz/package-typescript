@@ -175,4 +175,14 @@ describe('scope', () => {
         // Then - the stray one is named
         expect(unreachedRange(['src/a.ts:1-2', range], SOURCES)).toBe(range);
     });
+
+    test('unreachedRange, fileOfRange — a source whose path holds a colon is named by no range, whole or by its lines', () => {
+        // Given - a run that mutates such a source
+        const sources = new Set(['src/a:b.ts']);
+
+        // Then - both forms are refused, and neither reads as naming the source
+        expect(unreachedRange(['src/a:b.ts'], sources)).toBe('src/a:b.ts');
+        expect(unreachedRange(['src/a:b.ts:1-2'], sources)).toBe('src/a:b.ts:1-2');
+        expect(fileOfRange('src/a:b.ts:1-2')).toBe('src/a:b.ts:1-2');
+    });
 });

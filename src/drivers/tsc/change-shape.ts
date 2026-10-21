@@ -1,31 +1,22 @@
 import ts from 'typescript';
 
+import { hunksIn } from '../../../lint/kit/project/diff-hunks.js';
+import type { HunkSide } from '../../../lint/kit/project/diff-hunks.js';
+
 /** The lines a change removed and added, each side numbered from 1. */
 export type LinesChanged = { added: readonly number[]; removed: readonly number[] };
 
-const span = (from: number, count: number): number[] =>
+const linesOf = ({ count, from }: HunkSide): number[] =>
     Array.from({ length: count }, (_, at) => from + at);
-
-// outside: git writes a hunk's range as `-<from>,<count>` and `+<from>,<count>`, and leaves the count out where it is one.
-function rangeOf(written: string): number[] {
-    const [from, count = '1'] = written.slice(1).split(',');
-
-    return span(Number(from), Number(count));
-}
 
 /** The lines a `git diff --unified=0` of two texts removes and adds, each side numbered from 1. */
 export function linesChangedIn(diff: string): LinesChanged {
-    const added: number[] = [];
-    const removed: number[] = [];
-    for (const line of diff.split('\n')) {
-        if (line.startsWith('@@ ')) {
-            const [, before = '', after = ''] = line.split(' ');
-            removed.push(...rangeOf(before));
-            added.push(...rangeOf(after));
-        }
-    }
+    const hunks = hunksIn(diff);
 
-    return { added, removed };
+    return {
+        added: hunks.flatMap(({ added }) => linesOf(added)),
+        removed: hunks.flatMap(({ removed }) => linesOf(removed)),
+    };
 }
 
 const isFunction = (node: ts.Node): boolean =>

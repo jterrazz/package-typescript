@@ -1,3 +1,4 @@
+import { hunksIn } from '../../../lint/kit/project/diff-hunks.js';
 import { git } from '../../../lint/kit/project/git.js';
 import { fileOfRange } from './scope.js';
 import type { Changed } from './survivors.js';
@@ -5,18 +6,12 @@ import type { Changed } from './survivors.js';
 /** The lines a `git diff --unified=0` adds or rewrites, file by file, in the new side's numbering; a hunk that only deletes reaches no line, so neither does a file the diff deletes. */
 export function hunksOf(diff: string): Map<string, [number, number][]> {
     const hunks = new Map<string, [number, number][]>();
-    // Stryker disable next-line StringLiteral: a hunk always follows the +++ line of its file, which names it first
-    let file = '';
-    for (const line of diff.split('\n')) {
-        if (line.startsWith('+++ ')) {
-            file = line.slice('+++ b/'.length);
-            continue;
-        }
-        const hunk = /^@@ -\d+(?:,\d+)? \+(?<from>\d+)(?:,(?<count>\d+))? @@/u.exec(line)?.groups;
-        const count = Number(hunk?.count ?? 1);
-        if (hunk !== undefined && count > 0) {
-            const from = Number(hunk.from);
-            hunks.set(file, [...(hunks.get(file) ?? []), [from, from + count - 1]]);
+    for (const { added, file } of hunksIn(diff)) {
+        if (added.count > 0) {
+            hunks.set(file, [
+                ...(hunks.get(file) ?? []),
+                [added.from, added.from + added.count - 1],
+            ]);
         }
     }
 
