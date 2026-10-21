@@ -87,12 +87,13 @@ describe('capacity', () => {
         ]);
     });
 
-    test('capacityUnread — names the variable and what it holds, why it is refused and how to write it', () => {
+    test('capacityUnread — names the variable and what it holds, why it is refused, how to write it and where to read', () => {
         // Given - a variable that holds a word
         // Then - the found part names the value
         expect(capacityUnread('many')).toStrictEqual({
             fix: "write it cpus=<count>,memory=<size> (cpus=4,memory=8g), either part alone, or leave it unset to take this gate's share of the machine",
             found: 'TYPESCRIPT_CAPACITY is many, which names no capacity',
+            read: 'docs/reference/quality-checks.md#how-many-test-runners',
             why: 'a capacity read wrong would size every pool of the gate from a machine that is not there',
         });
     });

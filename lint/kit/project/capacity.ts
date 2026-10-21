@@ -2,7 +2,7 @@ import { availableParallelism, totalmem } from 'node:os';
 import process from 'node:process';
 
 import { refusal } from '../catalogue/lesson.js';
-import type { Unread } from '../catalogue/lesson.js';
+import type { Lesson } from '../catalogue/lesson.js';
 import type { Lease } from './leases.js';
 
 /** The variable that gives a gate its capacity, `cpus=<count>,memory=<size>`: a person's override, or the slice a gate hands the gates its workers run. */
@@ -72,10 +72,11 @@ export function capacityNamed(
 export const capacityValue = ({ cpus, memory }: Resources): string =>
     `cpus=${String(cpus)},memory=${String(Math.floor(memory / MB))}m`;
 
-/** What a `TYPESCRIPT_CAPACITY` that names no capacity teaches, but where to read. */
-export const capacityUnread = (named: string): Unread => ({
+/** What a `TYPESCRIPT_CAPACITY` that names no capacity teaches, and where to read. */
+export const capacityUnread = (named: string): Lesson => ({
     fix: "write it cpus=<count>,memory=<size> (cpus=4,memory=8g), either part alone, or leave it unset to take this gate's share of the machine",
     found: `${CAPACITY_VARIABLE} is ${named}, which names no capacity`,
+    read: 'docs/reference/quality-checks.md#how-many-test-runners',
     why: 'a capacity read wrong would size every pool of the gate from a machine that is not there',
 });
 
@@ -85,9 +86,7 @@ export function capacityGiven(environment: NodeJS.ProcessEnv): Partial<Resources
     const named = capacityNamed(written);
     if (named === 'unreadable') {
         const unread = capacityUnread(String(written));
-        throw new Error(
-            refusal({ ...unread, read: 'docs/reference/quality-checks.md#how-many-test-runners' }),
-        );
+        throw new Error(refusal(unread));
     }
 
     return named;

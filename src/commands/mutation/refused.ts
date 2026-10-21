@@ -45,9 +45,7 @@ export function measuredNothing(project: string, recorded: Recorded): number {
 export function refusedCapacity(named: string, recorded: Recorded): number {
     const unread = capacityUnread(named);
     recorded.reason = `refused before any run: ${unread.found}`;
-    print(
-        `${RED}${refusal({ ...unread, read: 'docs/reference/quality-checks.md#how-many-test-runners' })}${RESET}\n`,
-    );
+    print(`${RED}${refusal(unread)}${RESET}\n`);
 
     return 1;
 }
