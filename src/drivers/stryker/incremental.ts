@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { parsedObject, stringRecordOf } from '../../../lint/kit/project/json.js';
+import { readManifest } from '../../../lint/kit/project/manifest.js';
 import { dryRunFilesOf } from './dry-run-files.js';
 import type { DryRunFiles, MutatedSource } from './dry-run-files.js';
 import { changedBetween, inputsOf, isLoadable, ownBuildOf, reachOf, roleOf } from './inputs.js';
@@ -216,7 +217,7 @@ export function incrementalKeptWhileInputsHold(
     const recorded = cold ? undefined : recordedOf(project, incremental);
     const report = jsonAt(file);
     const texts = codeTextsIn(project, inputs);
-    const ownBuild = ownBuildOf(jsonAt(join(project, 'package.json')));
+    const ownBuild = ownBuildOf(readManifest(project) ?? undefined);
     const staleness: Staleness | undefined =
         recorded === undefined
             ? undefined
