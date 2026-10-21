@@ -10,10 +10,11 @@ import {
 } from '../../../lint/kit/project/capacity.js';
 import type { Resources } from '../../../lint/kit/project/capacity.js';
 import { withEnvironment } from '../../../lint/kit/project/environment.js';
+import { STAGES } from '../../../lint/kit/project/mutation-stages.js';
 import { workspaceMembers } from '../../../lint/kit/project/workspace-members.js';
 import { toolchainIn } from '../../drivers/node/node.js';
 import { strykerPrepared, strykerRun } from '../../drivers/stryker/stryker.js';
-import type { Measured, Stage } from '../../drivers/stryker/stryker.js';
+import type { Stage, StageOutcome } from '../../drivers/stryker/stryker.js';
 import { diffStaysInFunctions, linesStayInFunctions } from '../../drivers/tsc/change-shape.js';
 import { firstCompileError } from '../../drivers/tsc/compile-error.js';
 import { provenAsked, provenRun } from '../check/report/proven.js';
@@ -54,15 +55,9 @@ const sourceIn =
     (file: string): string =>
         String(readFileSync(join(project, file)));
 
-async function measured(
-    scope: MutationScope,
-    stage: Stage,
-    run: Run,
-): Promise<Measured | { status: number }> {
+async function measured(scope: MutationScope, stage: Stage, run: Run): Promise<StageOutcome> {
     const { cold, project, recorded } = run;
-    print(
-        `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'Measuring the whole suite against what the module tests let live, and the changed lines they do not run' : 'Measuring the module tests against mutants of the sources they test'}...\n\n`,
-    );
+    print(`${badge('TYPESCRIPT')} ${STAGES[stage.name].measuring}...\n\n`);
 
     const lease = stageLease(run.named, project, stage.name);
     print(`${badge('TYPESCRIPT')} ${lease.line}\n`);
@@ -88,7 +83,7 @@ async function measured(
     );
     const seconds = secondsSince(from);
     print(
-        `${badge('TYPESCRIPT')} ${stage.name === 'suite' ? 'The whole suite' : 'The module tests'} ran in ${secondsOf(seconds)} on ${String(concurrency)} test runner(s)\n`,
+        `${badge('TYPESCRIPT')} The ${STAGES[stage.name].subject} ran in ${secondsOf(seconds)} on ${String(concurrency)} test runner(s)\n`,
     );
     // invariant: the TypeScript checker stops the run on an error the unmutated tree holds, and the run names the compiler's first one rather than run without the checker.
     const uncompiled = 'status' in outcome ? firstCompileError(project) : undefined;

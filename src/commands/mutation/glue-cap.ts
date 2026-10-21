@@ -1,12 +1,13 @@
 import { mutantsMade } from '../../drivers/stryker/enumerate.js';
 import { heldIn } from '../../drivers/stryker/mutate-entries.js';
 import { IGNORERS_FILE } from '../../drivers/stryker/stryker.js';
-import type { Measured } from '../../drivers/stryker/stryker.js';
+import type { StageOutcome } from '../../drivers/stryker/stryker.js';
 import { capped, cappedEntries, cappedReport } from './cap.js';
 import type { Capped } from './cap.js';
 import { isGlue } from './roles.js';
 import type { GlueBar, GlueCapped } from './roles.js';
 import { fileOfRange } from './scope.js';
+import { reportMapped } from './stages.js';
 
 type Stages = { modules: string[]; reached: string[] };
 
@@ -39,13 +40,8 @@ export async function glueCapped(
     };
 }
 
-export const capHeld = (
-    outcome: Measured | { status: number },
-    cap: Capped | undefined,
-): Measured | { status: number } =>
-    cap === undefined || !('report' in outcome)
-        ? outcome
-        : { ...outcome, report: cappedReport(outcome.report, cap) };
+export const capHeld = (outcome: StageOutcome, cap: Capped | undefined): StageOutcome =>
+    cap === undefined ? outcome : reportMapped(outcome, (report) => cappedReport(report, cap));
 
 export const glueOf = (glue: GlueBar, cap: Capped | undefined): GlueBar => {
     if (cap === undefined) {

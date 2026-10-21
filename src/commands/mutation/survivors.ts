@@ -1,6 +1,7 @@
 import { objectOf, stringOf } from '../../../lint/kit/project/json.js';
 import { mutantsOf, reportPathOf } from '../../../lint/kit/project/mutation-report.js';
-import type { ReportMutant, StageName } from '../../../lint/kit/project/mutation-report.js';
+import type { ReportMutant } from '../../../lint/kit/project/mutation-report.js';
+import type { StageName } from '../../../lint/kit/project/mutation-stages.js';
 import { LOG_REASON, PINNED_TEXT_REASON } from '../../drivers/stryker/ignorers.js';
 import { fileOfRange } from './scope.js';
 

@@ -8,8 +8,8 @@ import { readSettings } from '../../../lint/index.rules.js';
 import { ARTIFACTS, DEV_OUTPUT, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { withEnvironment } from '../../../lint/kit/project/environment.js';
 import { objectOf, stringRecordOf } from '../../../lint/kit/project/json.js';
-import { REPORT_NAMES } from '../../../lint/kit/project/mutation-report.js';
-import type { StageName } from '../../../lint/kit/project/mutation-report.js';
+import { STAGES } from '../../../lint/kit/project/mutation-stages.js';
+import type { StageName } from '../../../lint/kit/project/mutation-stages.js';
 import { projectBinary } from '../../../lint/kit/project/package-root.js';
 import { handOver } from '../run.js';
 import { besideOf, withoutBesideLinks } from './beside.js';
@@ -36,23 +36,6 @@ export type Stage = {
     mutate: readonly string[];
     name: StageName;
 };
-
-const FILES = {
-    modules: {
-        config: 'stryker.config.json',
-        incremental: 'incremental',
-        report: REPORT_NAMES.modules,
-        sandbox: 'sandbox.mjs',
-        vitest: 'vitest.config.mjs',
-    },
-    suite: {
-        config: 'stryker.suite.config.json',
-        incremental: 'suite-incremental',
-        report: REPORT_NAMES.suite,
-        sandbox: 'sandbox.suite.mjs',
-        vitest: 'vitest.suite.config.mjs',
-    },
-} as const;
 
 /** The tool roots git ignores: trees a tool generates, as `expo run:ios` lays `ios/`, which no test reads and the sandbox must not copy. */
 export function generatedRoots(project: string, toolRoots: readonly string[]): string[] {
@@ -91,7 +74,7 @@ export function strykerConfig(
         testFiles,
     }: { concurrency: number; terminal?: boolean; testFiles?: readonly string[] | undefined },
 ): object {
-    const files = FILES[name];
+    const files = STAGES[name];
     const suite = name === 'suite';
 
     return {
@@ -101,7 +84,9 @@ export function strykerConfig(
         concurrency,
         coverageAnalysis: 'perTest',
         disableTypeChecks: typeCheckedGlob(scope.mutated),
-        ...(suite ? { dryRunTimeoutMinutes: 60 } : {}),
+        ...(files.timeouts.dryRunMinutes === undefined
+            ? {}
+            : { dryRunTimeoutMinutes: files.timeouts.dryRunMinutes }),
         htmlReporter: { fileName: `${MUTATION_OUTPUT}/${files.report}.html` },
         ignorePatterns: [
             `/${ARTIFACTS}/**`,
@@ -127,7 +112,7 @@ export function strykerConfig(
         tempDirName: `${MUTATION_OUTPUT}/tmp`,
         ...(testFiles === undefined ? {} : { testFiles: strykerMutate(testFiles) }),
         testRunner: 'vitest',
-        timeoutMS: suite ? 60_000 : 30_000,
+        timeoutMS: files.timeouts.mutantMs,
         vitest: {
             configFile: `${MUTATION_OUTPUT}/${files.vitest}`,
             ...(suite ? { related: false } : {}),
@@ -162,9 +147,12 @@ export const reportKept = (
         dryRunOver?: DryRunOver | undefined;
         staysInFunctions: StaysInFunctions;
     },
-): Kept => incrementalKeptWhileInputsHold(project, FILES[stage.name].incremental, kept);
+): Kept => incrementalKeptWhileInputsHold(project, STAGES[stage.name].incremental, kept);
 
 export type Measured = { ranByTests: ReadonlySet<string>; report: unknown };
+
+/** What a stage ends on: what it measured, or Stryker's status when it failed. */
+export type StageOutcome = Measured | { status: number };
 
 /** What the suite's dry run runs before its first mutant: the test files it keeps of those the record knows, `undefined` for every one, on how many workers. */
 export type DryRunScope = {
@@ -205,7 +193,7 @@ async function stageWritten(
         testFiles: readonly string[] | undefined;
     },
 ): Promise<void> {
-    const files = FILES[stage.name];
+    const files = STAGES[stage.name];
     const suite = stage.name === 'suite';
     const { resolved } = await readSettings(project);
     const toolRoots = Object.keys(stringRecordOf(objectOf(resolved.sections.typescript).toolRoots));
@@ -233,9 +221,9 @@ export async function strykerRun(
     scope: { readonly exclude: readonly string[]; readonly mutated: readonly string[] },
     stage: Stage,
     run: StageRun,
-): Promise<Measured | { status: number }> {
+): Promise<StageOutcome> {
     const { buildsFirst, cold, concurrency, linesInFunctions, project } = run;
-    const files = FILES[stage.name];
+    const files = STAGES[stage.name];
     const suite = stage.name === 'suite';
     const lines = mutatedLines(stage.mutate);
     const folders = recordFoldersMade(project);

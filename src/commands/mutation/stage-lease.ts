@@ -14,7 +14,8 @@ import {
 import type { Pool, Resources, Slice } from '../../../lint/kit/project/capacity.js';
 import { withEnvironment } from '../../../lint/kit/project/environment.js';
 import { gateOf, liveLeases } from '../../../lint/kit/project/leases.js';
-import type { StageName } from '../../../lint/kit/project/mutation-report.js';
+import { STAGES } from '../../../lint/kit/project/mutation-stages.js';
+import type { StageName } from '../../../lint/kit/project/mutation-stages.js';
 import { APART_VARIABLE, apartIn, heldApart } from '../../../lint/kit/project/priced-apart.js';
 import { priceLearned, priceOf } from '../../../lint/kit/project/prices.js';
 import { residentPeak } from '../../drivers/ps/ps.js';
@@ -44,7 +45,7 @@ export function stageLease(
     project: string,
     stage: StageName,
 ): StageLease {
-    const pool = stage === 'suite' ? 'stryker-suite' : 'stryker-modules';
+    const { pool } = STAGES[stage];
     const machine = machineOf(named);
     const slice = sliceNow(named, project);
     const prices = { checker: priceOf(project, 'checker'), runner: priceOf(project, pool) };

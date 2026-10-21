@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { isList, objectOf, stringOf } from '../../../lint/kit/project/json.js';
+import { STAGES } from '../../../lint/kit/project/mutation-stages.js';
+import type { StageName } from '../../../lint/kit/project/mutation-stages.js';
 import { uncompiledFound } from '../../drivers/tsc/compile-error.js';
 import {
     headOf,
@@ -30,15 +32,10 @@ export type Recorded = {
 
 export const recorder = (): Recorded => ({ mutation: undefined, passes: [], reason: '' });
 
-const STAGE_LABELS = {
-    modules: 'Mutation (module tests)',
-    suite: 'Mutation (whole suite)',
-} as const;
-
 /** Adds a stage's run as a pass; a stage Stryker stopped is why the run judged nothing. */
 export function stageRecorded(
     recorded: Recorded,
-    stage: keyof typeof STAGE_LABELS,
+    stage: StageName,
     {
         seconds,
         status,
@@ -51,14 +48,14 @@ export function stageRecorded(
             : uncompiledFound(uncompiled);
     recorded.passes.push({
         firstError: status === 0 ? null : stopped,
-        label: STAGE_LABELS[stage],
+        label: `Mutation (${STAGES[stage].subject})`,
         seconds,
         status,
     });
     if (status !== 0) {
         recorded.reason =
             uncompiled === undefined
-                ? `Stryker stopped the ${stage === 'suite' ? 'whole suite' : 'module tests'} with status ${String(status)}; its log is above`
+                ? `Stryker stopped the ${STAGES[stage].subject} with status ${String(status)}; its log is above`
                 : uncompiledFound(uncompiled);
     }
 }

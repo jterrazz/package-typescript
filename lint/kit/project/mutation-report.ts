@@ -1,18 +1,12 @@
 import { MUTATION_OUTPUT } from './build-plan.js';
 import { isList, objectOf, stringOf } from './json.js';
 import type { JsonObject } from './json.js';
-
-/** The two runs of a mutation command, each with the report it writes. */
-export type StageName = 'modules' | 'suite';
-
-export const REPORT_NAMES: Readonly<Record<StageName, string>> = {
-    modules: 'report',
-    suite: 'suite-report',
-};
+import { STAGES } from './mutation-stages.js';
+import type { StageName } from './mutation-stages.js';
 
 /** Where a stage writes its JSON report, from the project's root. */
 export const reportPathOf = (stage: StageName): string =>
-    `${MUTATION_OUTPUT}/${REPORT_NAMES[stage]}.json`;
+    `${MUTATION_OUTPUT}/${STAGES[stage].report}.json`;
 
 /** A mutant as a Stryker report holds it. */
 export type ReportMutant = JsonObject;
