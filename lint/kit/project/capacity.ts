@@ -23,7 +23,7 @@ export const SEED_PRICES: Readonly<Record<Pool, number>> = {
     checker: 720 * MB,
     'stryker-modules': 650 * MB,
     'stryker-suite': GB,
-    vitest: 150 * MB,
+    vitest: 600 * MB,
 };
 
 /** The learned prices of a project, each pool's last measured peaks per worker. */
@@ -225,7 +225,7 @@ export function priceOf(project: string, pool: Pool): number {
     return peaks.length === 0 ? SEED_PRICES[pool] : Math.max(...peaks);
 }
 
-/** Records a peak measured per worker of a pool, keeping the last five. */
+/** Records a peak measured per worker of a pool in `project`, in bytes, keeping the last five: what a pool's runner hands back after it measured its workers, so the next `slotsFor` prices them at it. */
 export function priceLearned(project: string, pool: Pool, peak: number): void {
     const peaks = peaksIn(project);
     const file = join(project, PRICES_FILE);

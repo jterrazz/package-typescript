@@ -334,7 +334,7 @@ describe('capacity', () => {
             priceOf(empty, 'vitest'),
             priceOf(empty, 'checker'),
             priceOf(garbled, 'vitest'),
-        ]).toStrictEqual([150 * MB, 720 * MB, 90 * MB]);
+        ]).toStrictEqual([600 * MB, 720 * MB, 90 * MB]);
     });
 
     test('slotsFor — the pool’s slots of the capacity given, priced in the project, never divided among the gates', () => {

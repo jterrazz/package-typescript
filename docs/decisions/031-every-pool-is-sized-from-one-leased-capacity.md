@@ -35,7 +35,7 @@ with what its specs spawn. One count per core cannot fit both.
   and a container's limit, and the memory the system says nothing holds now.
   A gate plans on what is available less an eighth of the machine. Nothing
   reads `CI`, `GITHUB_ACTIONS` or the event that started a run.
-- The prices start from seeds (a Vitest worker 150 MB, a module-test runner
+- The prices start from seeds (a Vitest worker 600 MB, a module-test runner
   650 MB, a whole-suite runner 1 GB, a checker 400 MB) and are learned: a
   stage samples the memory its processes hold, and records the peak per
   test runner in `.artifacts/capacity.json`. A pool's price is the highest of
@@ -60,7 +60,10 @@ with what its specs spawn. One count per core cannot fit both.
 - Each stage prints the capacity it sized by:
   `capacity: 10 cpus, 16.0 GB, 6.4 GB available, 2 gate(s): this gate 5 cpus, 4.4 GB · 5 test runner(s) at 500 MB, 3 checker(s) at 400 MB while checking: cpus bind`.
 - `slotsFor(project, pool)` on `./rules` hands the same model to a sibling
-  package, so `@jterrazz/test`'s preset can size Vitest's workers by it.
+  package, so `@jterrazz/test`'s preset can size Vitest's workers by it, and
+  `priceLearned(project, pool, peak)` beside it records the peak per worker
+  that package measures, so it learns the price without owning the format of
+  `.artifacts/capacity.json`.
 
 ## Consequences
 
@@ -107,3 +110,7 @@ with what its specs spawn. One count per core cannot fit both.
   seeds were raised to what was learned, on 2026-10-20, so a host with no
   `.artifacts/capacity.json` does not oversubscribe its first run. The owner
   accepted the raise the same day ("fais l'ensemble des trucs remontés").
+- The Vitest seed, 150 MB, was short: `@jterrazz/test`'s own suite measured
+  592 MB per worker with the processes its specs spawn, on 2026-10-21. It
+  was raised to 600 MB the same day, under the owner's word on the review
+  ("Tout ok").

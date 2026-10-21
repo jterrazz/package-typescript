@@ -107,7 +107,7 @@ export {
 } from './kit/project/manifest.js';
 export type { Manifest } from './kit/project/manifest.js';
 export { OXLINT_CONFIG_NAMES } from './kit/project/editor-config-names.js';
-export { CAPACITY_VARIABLE, slotsFor } from './kit/project/capacity.js';
+export { CAPACITY_VARIABLE, priceLearned, slotsFor } from './kit/project/capacity.js';
 export type { Pool } from './kit/project/capacity.js';
 export type { PresetLaw, Resolution, Resolved } from './kit/project/preset.js';
 export type { PresetChecks } from './consumer/checks/preset-checks.js';
