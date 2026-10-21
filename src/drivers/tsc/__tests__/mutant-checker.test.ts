@@ -6,7 +6,7 @@ import { describe, expect, onTestFinished, test } from 'vitest';
 import { importGraphOf, mutatedText, NativeChecker, shapeOf } from '../mutant-checker.js';
 import type { CheckedMutant } from '../mutant-checker.js';
 import { nativeProject, programOf } from '../native-project.js';
-import { childProcesses } from './child-processes.js';
+import { childProcesses, startedSince } from './child-processes.js';
 
 const TSCONFIG = JSON.stringify({
     compilerOptions: {
@@ -189,7 +189,7 @@ describe('mutant-checker', () => {
         await checker.dispose();
 
         // Then - no process it started is left, once the system has ended it
-        await expect.poll(childProcesses, { timeout: 10_000 }).toStrictEqual(before);
+        await expect.poll(() => startedSince(before), { timeout: 10_000 }).toStrictEqual([]);
     });
 
     test('a project with no tsconfig.json is refused at start', async () => {
