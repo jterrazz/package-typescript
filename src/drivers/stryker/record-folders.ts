@@ -12,7 +12,6 @@ import {
 /** The folders a stage's test files write what they ran into, each named to them by its variable. */
 export type RecordFolders = { inProcess: string; observed: string; ranByTests: string };
 
-// Stryker disable next-line StringLiteral: the prefix only names the folder for a reader of .artifacts/
 const madeIn = (project: string, prefix: string): string =>
     mkdtempSync(join(project, MUTATION_OUTPUT, prefix));
 

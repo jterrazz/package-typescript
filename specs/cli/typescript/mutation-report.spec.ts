@@ -51,10 +51,14 @@ describe('mutation report', () => {
             .env(OUTSIDE_CI)
             .exec('typescript mutation --cold');
 
-        // Then - the report is gone before Stryker starts, and the verdict is measured whole
+        // Then - the report is gone before Stryker starts, the verdict is measured whole, and no record of what the tests ran is left
         expect(result.exitCode).toBe(0);
         expect(result.stdout.text).toContain('No incremental result file found');
         expect(result.stdout.text).not.toContain('are reused');
+        const left = await result.directory('.artifacts/stryker').files();
+        expect(
+            left.filter((path) => /(?:in-process|observed-tests|ran-by-tests)-/u.test(path)),
+        ).toStrictEqual([]);
     });
 
     test('typescript mutation — a run in CI reuses what its report leaves standing, as a run on a laptop does', async () => {
