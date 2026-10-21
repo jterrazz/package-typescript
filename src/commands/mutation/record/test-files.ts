@@ -65,6 +65,9 @@ export function testFilesOf({
 // outside: the files are handed to the script after `--`, which only a script that is one vitest command reads as the files to run.
 const ONE_VITEST = /^vitest(?:\s+[^\s&|;<>`$()]+)*$/u;
 
+/** Whether a test script is one `vitest` command, which reads the files handed after `--` as the files to run. */
+export const handsFilesTo = (script: string): boolean => ONE_VITEST.test(script);
+
 /** The project's own `test` script, empty where it keeps none. */
 export const testScriptOf = (project: string): string =>
     stringOf(objectOf(readManifest(project)?.scripts).test)?.trim() ?? '';
@@ -74,7 +77,7 @@ export function testFilesReachedIn(project: string): TestFiles {
     if (workspaceMembers(project).length > 0) {
         return every('a workspace root, whose members each keep their own record');
     }
-    if (!ONE_VITEST.test(testScriptOf(project))) {
+    if (!handsFilesTo(testScriptOf(project))) {
         return every('the test script is not one vitest command, so it cannot be handed the files');
     }
     const recorded = recordedOf(project, STAGES.suite.incremental);

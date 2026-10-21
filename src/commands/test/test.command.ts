@@ -1,6 +1,5 @@
 import process from 'node:process';
 
-import { git } from '../../../lint/kit/project/git.js';
 import { npmTest } from '../../drivers/npm/npm.js';
 import { headOf } from '../check/report/gate-verdict.js';
 import {
@@ -10,7 +9,7 @@ import {
     testOutcomeOf,
 } from '../check/report/outcomes.js';
 import { provenAsked, provenRun } from '../check/report/proven.js';
-import { branchBaseFor } from '../mutation/branch.js';
+import { branchBaseTreeOf } from '../mutation/branch.js';
 import { scriptRunOf, testFilesReachedIn, testScriptOf } from '../mutation/record/test-files.js';
 import type { TestFiles } from '../mutation/record/test-files.js';
 import { badge, print } from '../terminal.js';
@@ -48,13 +47,9 @@ async function selectedTest(project: string, cold: boolean, script: string): Pro
 export async function test(args: readonly string[]): Promise<number> {
     const project = process.cwd();
     const asked = provenAsked('test', args);
-    const base = branchBaseFor(project);
-    const scope =
-        base === undefined ? '' : (git(project, ['rev-parse', `${base}^{tree}`])?.trim() ?? '');
-
     return await provenRun(
         project,
-        { ...asked, scope },
+        { ...asked, scope: branchBaseTreeOf(project) },
         async () => await selectedTest(project, asked.cold, testScriptOf(project)),
     );
 }

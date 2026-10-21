@@ -30,9 +30,10 @@ describe('test', () => {
             .prepare(repository)
             .exec(['test', 'test --cold']);
 
-        // Then - the script ran
+        // Then - the script ran, over every test file, and says so
         expect(result.exitCode).toBe(0);
         expect(result.stdout.text).toContain('the tests ran');
+        expect(result.stdout.text).toContain(' TYPESCRIPT  ran every test file: asked --cold\n');
     });
 
     test('records a run whose script failed as a red pass, and keeps no proof of it', async () => {

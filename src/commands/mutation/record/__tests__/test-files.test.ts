@@ -7,7 +7,13 @@ import { afterAll, describe, expect, test } from 'vitest';
 import { recordInputs } from '../incremental.js';
 import { inputsOf } from '../inputs.js';
 import { observedFrom, ranBy } from '../observed.js';
-import { scriptRunOf, testFilesOf, testFilesReachedIn, testScriptOf } from '../test-files.js';
+import {
+    handsFilesTo,
+    scriptRunOf,
+    testFilesOf,
+    testFilesReachedIn,
+    testScriptOf,
+} from '../test-files.js';
 
 const OBSERVED = observedFrom([
     { loaded: ['src/cli.ts', 'src/b.ts'], ran: ['src/cli.ts'], test: 'specs/a.spec.ts#a runs a' },
@@ -85,7 +91,7 @@ function recorded(root: string): void {
     recordInputs(root, 'suite-incremental', {
         inputs,
         observed: observedFrom([
-            { loaded: [], ran: [], test: 'specs/a.spec.ts#a' },
+            { loaded: ['src/y.ts'], ran: [], test: 'specs/a.spec.ts#a' },
             { loaded: [], ran: [], test: 'src/__tests__/x.test.ts#x' },
             { loaded: [], ran: [], test: 'src/__tests__/y.test.ts#y' },
         ]),
@@ -179,15 +185,15 @@ describe('test-files', () => {
     });
 
     test('testFilesReachedIn — reads the suite record and the change since the branch base: a one-file change runs its reacher alone', () => {
-        // Given - a vitest project recorded at its first commit, on a branch whose one change is y
+        // Given - a vitest project recorded at its first commit, a spec seen spawning a process that loaded y, on a branch whose one change is y
         const root = projectOf(VITEST_PROJECT);
         recorded(root);
         execFileSync('git', ['switch', '--quiet', '--create', 'work'], { cwd: root });
         writeFileSync(join(root, 'src/y.ts'), 'export const y = 2;');
 
-        // Then - y's module test alone, of the three test files
+        // Then - y's module test, and the spec whose process only loaded y, of the three test files
         expect(testFilesReachedIn(root)).toStrictEqual({
-            files: ['src/__tests__/y.test.ts'],
+            files: ['specs/a.spec.ts', 'src/__tests__/y.test.ts'],
             kind: 'reached',
             total: 3,
         });
@@ -280,5 +286,40 @@ describe('test-files', () => {
             { args: undefined, line: 'ran 0 of 5 test files the change reaches' },
             { args: [], line: 'ran every test file: asked --cold' },
         ]);
+    });
+
+    test('testFilesReachedIn — a repository with no commit names no base, and runs every file', () => {
+        // Given - a vitest project recorded in a repository that holds no commit yet
+        const root = mkdtempSync(join(tmpdir(), 'test-files-'));
+        created.push(root);
+        for (const [path, content] of Object.entries(VITEST_PROJECT)) {
+            mkdirSync(dirname(join(root, path)), { recursive: true });
+            writeFileSync(join(root, path), content);
+        }
+        execFileSync('git', ['init', '--quiet'], { cwd: root });
+        recorded(root);
+
+        // Then - every file, and why
+        expect(testFilesReachedIn(root)).toStrictEqual({
+            kind: 'every',
+            reason: 'git names no commit the branch started from',
+        });
+    });
+
+    test('handsFilesTo — one vitest command, its words split by any run of blanks, and nothing that chains, pipes or prefixes it', () => {
+        // Given - scripts that are one vitest command, and scripts that are not
+        // Then - only the first read the files handed after --
+        expect(
+            [
+                'vitest',
+                'vitest --run',
+                'vitest  --run --project unit',
+                'tsc && vitest',
+                'npx vitest',
+                'vitest --run | tee log',
+                'vitest $(cat args)',
+                'vitestx --run',
+            ].map((script) => handsFilesTo(script)),
+        ).toStrictEqual([true, true, true, false, false, false, false, false]);
     });
 });

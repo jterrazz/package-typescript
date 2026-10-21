@@ -26,10 +26,19 @@ export function pathsChangedSince(project: string, since: string): string[] | un
         '--',
         '.',
     ]);
-    const untracked = git(project, ['ls-files', '-z', '--others', '--exclude-standard']);
-    if (diff === undefined || untracked === undefined) {
+    if (diff === undefined) {
         return undefined;
     }
+    // Stryker disable next-line StringLiteral: git lists the untracked files of a tree it has just diffed
+    const untracked = git(project, ['ls-files', '-z', '--others', '--exclude-standard']) ?? '';
 
     return `${diff}${untracked}`.split('\0').filter((path) => path !== '');
+}
+
+/** The tree of the commit a test run selects against, by which a proof of its green is keyed; empty outside a repository. */
+export function branchBaseTreeOf(project: string): string {
+    const base = branchBaseFor(project);
+
+    // Stryker disable next-line StringLiteral: git names the tree of every commit it named as the base
+    return base === undefined ? '' : (git(project, ['rev-parse', `${base}^{tree}`])?.trim() ?? '');
 }

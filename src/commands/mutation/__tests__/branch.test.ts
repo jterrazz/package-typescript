@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
-import { branchBaseFor, pathsChangedSince } from '../branch.js';
+import { branchBaseFor, branchBaseTreeOf, pathsChangedSince } from '../branch.js';
 
 const created: string[] = [];
 
@@ -35,13 +35,15 @@ function committedRepository(files: Record<string, string>): string {
 
 describe('branch', () => {
     test('branchBaseFor — the merge-base with the default branch whatever the tree holds uncommitted, the commit before HEAD on the default branch, HEAD alone on a first commit, and none outside a repository', () => {
-        // Given - a dirty branch cut from main after one commit of its own, main itself two commits deep, a lone commit, and a folder with no repository
+        // Given - a dirty branch cut from main after two commits of its own, main itself two commits deep, a lone commit, and a folder with no repository
         const branched = committedRepository({ 'a.ts': 'one\n' });
         const fork = gitIn(branched, 'rev-parse', 'HEAD');
         gitIn(branched, 'switch', '--quiet', '--create', 'work');
         writeFileSync(join(branched, 'a.ts'), 'two\n');
         gitIn(branched, 'commit', '--quiet', '--all', '--message', 'second');
         writeFileSync(join(branched, 'a.ts'), 'three\n');
+        gitIn(branched, 'commit', '--quiet', '--all', '--message', 'third');
+        writeFileSync(join(branched, 'a.ts'), 'four\n');
         const main = committedRepository({ 'a.ts': 'one\n' });
         const before = gitIn(main, 'rev-parse', 'HEAD');
         writeFileSync(join(main, 'a.ts'), 'two\n');
@@ -80,5 +82,18 @@ describe('branch', () => {
             ['a folder/new.ts', 'edited.ts', 'gone.ts', 'moved.ts', 'renamed.ts'],
             undefined,
         ]);
+    });
+
+    test('branchBaseTreeOf — the tree of the base a test run selects against, and nothing outside a repository', () => {
+        // Given - main two commits deep, and a folder with no repository
+        const main = committedRepository({ 'a.ts': 'one\n' });
+        const tree = gitIn(main, 'rev-parse', 'HEAD^{tree}');
+        writeFileSync(join(main, 'a.ts'), 'two\n');
+        gitIn(main, 'commit', '--quiet', '--all', '--message', 'second');
+        const nowhere = mkdtempSync(join(tmpdir(), 'mutation-branch-'));
+        created.push(nowhere);
+
+        // Then - the first commit's tree, then nothing
+        expect([branchBaseTreeOf(main), branchBaseTreeOf(nowhere)]).toStrictEqual([tree, '']);
     });
 });
