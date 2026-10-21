@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import process from 'node:process';
 
 import { invariant, refusal } from '../../../lint/kit/catalogue/lesson.js';
+import { heldApart } from '../../../lint/kit/project/priced-apart.js';
 import type { ImportGraph } from './affected-errors.js';
 import { affectedErrors } from './affected-errors.js';
 import { UNCOMPILED_FIX, UNCOMPILED_WHY, uncompiledFound } from './compile-error.js';
@@ -93,6 +94,8 @@ export class NativeChecker {
 
     private readonly project: string;
 
+    private released: (() => void) | undefined;
+
     constructor(project: string = process.cwd()) {
         this.project = project;
     }
@@ -121,6 +124,7 @@ export class NativeChecker {
         }
         // Stryker disable next-line MethodExpression: the files under node_modules are libraries and packages a mutant is never of, so holding them in the graph or not changes no answer, only its size
         this.graph = importGraphOf(program, program.getSourceFileNames().filter(isOwn));
+        this.released = heldApart();
     }
 
     async check(mutants: readonly CheckedMutant[]): Promise<Record<string, CheckResult>> {
@@ -129,6 +133,7 @@ export class NativeChecker {
 
     async dispose(): Promise<void> {
         this.opened?.api.close();
+        this.released?.();
     }
 
     private checked(mutant: CheckedMutant): CheckResult {

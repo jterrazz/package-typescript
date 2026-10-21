@@ -289,18 +289,18 @@ describe('capacity', () => {
         expect([priceText(500 * MB), priceText(1.6 * MB)]).toStrictEqual(['500 MB', '2 MB']);
     });
 
-    test('priceOf — the seed until a peak is learned, then the highest of the last five, other pools kept', () => {
+    test('priceOf — the seed until a peak is learned, then the median of the last five, other pools kept', () => {
         // Given - a project with no prices, then seven peaks learned for the suite and one for the modules
         const project = folder();
         const seeded = priceOf(project, 'stryker-suite');
-        for (const peak of [900, 100, 200, 300, 400, 500, 600]) {
+        for (const peak of [900, 100, 600, 300, 400, 200, 500]) {
             priceLearned(project, 'stryker-suite', peak * MB + 0.4);
         }
         priceLearned(project, 'stryker-modules', 250 * MB);
 
         const written: unknown = JSON.parse(readFileSync(join(project, PRICES_FILE), 'utf8'));
 
-        // Then - the seed, then 600 MB of the last five (900 dropped), each pool on its own, and the checker still seeded
+        // Then - the seed, then 400 MB, the median of the last five (900 and 100 dropped), each pool on its own, and the checker still seeded
         expect([
             seeded,
             priceOf(project, 'stryker-suite'),
@@ -309,14 +309,27 @@ describe('capacity', () => {
             written,
         ]).toStrictEqual([
             SEED_PRICES['stryker-suite'],
-            600 * MB,
+            400 * MB,
             250 * MB,
             720 * MB,
             {
                 'stryker-modules': [250 * MB],
-                'stryker-suite': [200, 300, 400, 500, 600].map((peak) => peak * MB),
+                'stryker-suite': [600, 300, 400, 200, 500].map((peak) => peak * MB),
             },
         ]);
+    });
+
+    test('priceOf — a price learned high falls back once three normal runs follow it', () => {
+        // Given - a project whose first two runs measured about 4 GB a runner, then three about 500 MB
+        const project = folder();
+        const prices = [4096, 3700, 520, 500, 510].map((peak) => {
+            priceLearned(project, 'stryker-suite', peak * MB);
+
+            return priceOf(project, 'stryker-suite') / MB;
+        });
+
+        // Then - the median after each run, an even count taking the mean of its middle two
+        expect(prices).toStrictEqual([4096, 3898, 3700, 2110, 520]);
     });
 
     test('priceOf — an unreadable file, or peaks that are no positive numbers, leave the seed', () => {

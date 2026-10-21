@@ -27,7 +27,7 @@ export const SEED_PRICES: Readonly<Record<Pool, number>> = {
 };
 
 /** The learned prices of a project, each pool's last measured peaks per worker. */
-export const PRICES_FILE = `${ARTIFACTS}/capacity.json`;
+export const PRICES_FILE = `${ARTIFACTS}/prices.json`;
 
 const KEPT_PEAKS = 5;
 
@@ -216,16 +216,25 @@ function peaksIn(project: string): Readonly<Record<string, unknown>> {
     }
 }
 
-/** What one worker of a pool costs in a project: the highest of its last measured peaks, else the pool's seed. */
+const medianOf = (values: readonly number[]): number => {
+    const sorted = values.toSorted((a, b) => a - b);
+    const middle = Math.floor(sorted.length / 2);
+
+    return sorted.length % 2 === 1
+        ? Number(sorted[middle])
+        : (Number(sorted[middle - 1]) + Number(sorted[middle])) / 2;
+};
+
+/** What one worker of a pool costs in a project: the median of its last measured peaks, so one peak out of line neither pins nor drops it, else the pool's seed. */
 export function priceOf(project: string, pool: Pool): number {
     const peaks = listOf(peaksIn(project)[pool])
         .map(Number)
         .filter((peak) => peak > 0);
 
-    return peaks.length === 0 ? SEED_PRICES[pool] : Math.max(...peaks);
+    return peaks.length === 0 ? SEED_PRICES[pool] : medianOf(peaks);
 }
 
-/** Records a peak measured per worker of a pool in `project`, in bytes, keeping the last five: what a pool's runner hands back after it measured its workers, so the next `slotsFor` prices them at it. */
+/** Records a peak measured per worker of a pool in `project`, in bytes, keeping the last five: what a pool's runner hands back after it measured its workers, so the next `slotsFor` prices them by the median of the five. */
 export function priceLearned(project: string, pool: Pool, peak: number): void {
     const peaks = peaksIn(project);
     const file = join(project, PRICES_FILE);

@@ -26,8 +26,14 @@ export function runnersOf({ cpus, memory }: Resources, prices: Prices): Runners 
     };
 }
 
-/** The slice one test runner hands what its tests spawn: its share of the stage's cpus and memory. */
-export const runnerSlice = ({ cpus, memory }: Resources, runners: number): Resources => ({
+const MB = 1024 ** 2;
+
+/** The slice one test runner hands what its tests spawn: its share of the stage's cpus, and of the memory the stage's runners leave at `price` each, never none. */
+export const runnerSlice = (
+    { cpus, memory }: Resources,
+    runners: number,
+    price: number,
+): Resources => ({
     cpus: Math.max(1, Math.floor(cpus / runners)),
-    memory: Math.floor(memory / runners),
+    memory: Math.max(MB, Math.floor(memory / runners - price)),
 });

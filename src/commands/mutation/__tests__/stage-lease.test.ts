@@ -12,7 +12,12 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
-import { CAPACITY_VARIABLE, PRICES_FILE } from '../../../../lint/kit/project/capacity.js';
+import {
+    CAPACITY_VARIABLE,
+    priceLearned,
+    PRICES_FILE,
+} from '../../../../lint/kit/project/capacity.js';
+import { APART_VARIABLE, apartIn, heldApart } from '../../../../lint/kit/project/priced-apart.js';
 import { leasedRun, peakPriced, sliceNow, stageLease, withCapacityHanded } from '../stage-lease.js';
 
 const MB = 1024 ** 2;
@@ -44,9 +49,9 @@ describe('stage-lease', () => {
         // Given - a project that keeps a tsconfig.json, its suite stage given a capacity whole
         const root = project(true);
 
-        // Then - the cpus bind, the checkers are counted, and each runner hands on one cpu and a third of 56 GB
+        // Then - the cpus bind, the checkers are counted, and each runner hands on one cpu and a third of what three 1 GB runners leave of 56 GB
         expect(stageLease({ cpus: 3, memory: 64 * GB }, root, 'suite')).toStrictEqual({
-            handed: { cpus: 1, memory: Math.floor((56 * GB) / 3) },
+            handed: { cpus: 1, memory: Math.floor((56 * GB) / 3 - GB) },
             line: 'capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · 3 test runner(s) at 1024 MB, 2 checker(s) at 720 MB while checking: cpus bind',
             pool: 'stryker-suite',
             runners: 3,
@@ -57,12 +62,26 @@ describe('stage-lease', () => {
         // Given - a project that keeps no tsconfig.json, its module stage given 16 cpus and 2 GB
         const root = project(false);
 
-        // Then - 1,792 MB holds two 650 MB runners, the memory binds, and no checker is named
+        // Then - 1,792 MB holds two 650 MB runners, each handing on half of the cpus and of the 492 MB they leave, the memory binds, and no checker is named
         expect(stageLease({ cpus: 16, memory: 2 * GB }, root, 'modules')).toStrictEqual({
-            handed: { cpus: 8, memory: 896 * MB },
+            handed: { cpus: 8, memory: 246 * MB },
             line: 'capacity: 16 cpus, 2.0 GB, given by TYPESCRIPT_CAPACITY: this gate 16 cpus, 1.8 GB · 2 test runner(s) at 650 MB: memory binds',
             pool: 'stryker-modules',
             runners: 2,
+        });
+    });
+
+    test('stageLease — one peak out of line among the suite’s last five leaves the stage the runners its other peaks price', () => {
+        // Given - a project whose suite runners measured about 500 MB four times and 4 GB once, its suite stage given 8 cpus and 4 GB
+        const root = project(false);
+        for (const peak of [500, 510, 4096, 490, 480]) {
+            priceLearned(root, 'stryker-suite', peak * MB);
+        }
+
+        // Then - 3.5 GB holds seven runners at the median, where the highest peak would have held one
+        expect(stageLease({ cpus: 8, memory: 4 * GB }, root, 'suite')).toMatchObject({
+            line: 'capacity: 8 cpus, 4.0 GB, given by TYPESCRIPT_CAPACITY: this gate 8 cpus, 3.5 GB · 7 test runner(s) at 500 MB: memory binds',
+            runners: 7,
         });
     });
 
@@ -124,10 +143,42 @@ describe('stage-lease', () => {
         ]);
     });
 
+    test('leasedRun — the run is handed a folder of its own where a process registers to be priced apart, gone after; a gate an outer stage started is priced apart from it while its own stage runs', async () => {
+        // Given - this gate started by an outer stage's runner, and a stage whose run registers a process of its own priced apart
+        const outer = project(false);
+        variableIs(undefined);
+        vi.stubEnv(APART_VARIABLE, outer);
+        const lease = {
+            handed: { cpus: 1, memory: GB },
+            line: '',
+            pool: 'stryker-suite',
+            runners: 1,
+        } as const;
+        const root = project(false);
+        const seen = await leasedRun(root, lease, async () => {
+            await Promise.resolve();
+            const own = String(process.env[APART_VARIABLE]);
+            heldApart(4242);
+
+            return { own, ownHeld: [...apartIn(own)], outerHeld: [...apartIn(outer)] };
+        });
+
+        // Then - the run's own folder held the process, the outer one held this gate, and after it both are as they were, the variable given back
+        expect([
+            seen.own === outer,
+            seen.ownHeld,
+            seen.outerHeld,
+            existsSync(seen.own),
+            [...apartIn(outer)],
+            process.env[APART_VARIABLE],
+        ]).toStrictEqual([false, [4242], [process.pid], false, [], outer]);
+    });
+
     test('leasedRun — the run reads its runners’ slice, answers or fails as it does, and leaves no watch behind', async () => {
         // Given - a lease on a project, a run that answers with the variable it reads, and one that fails, under a pinned scheduler
         using _ = clock.run('2026-10-20T00:00:00Z');
         variableIs(undefined);
+        vi.stubEnv(APART_VARIABLE, undefined);
         const lease = {
             handed: { cpus: 2, memory: GB },
             line: '',

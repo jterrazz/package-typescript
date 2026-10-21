@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import process from 'node:process';
 
 import {
@@ -12,6 +15,7 @@ import {
     sliceOf,
 } from '../../../lint/kit/project/capacity.js';
 import type { Pool, Resources, Slice } from '../../../lint/kit/project/capacity.js';
+import { APART_VARIABLE, apartIn, heldApart } from '../../../lint/kit/project/priced-apart.js';
 import { residentPeak } from '../../drivers/ps/ps.js';
 import { runnerSlice, runnersOf } from '../../drivers/stryker/concurrency.js';
 import type { Runners } from '../../drivers/stryker/concurrency.js';
@@ -51,14 +55,14 @@ export function stageLease(
     });
 
     return {
-        handed: runnerSlice(slice, sized.runners),
+        handed: runnerSlice(slice, sized.runners, prices.runner),
         line: `${capacityLine(machine, slice)} · ${sizedText(sized, prices)}`,
         pool,
         runners: sized.runners,
     };
 }
 
-/** Learns a stage's price from the most memory its processes held at once, shared by its test runners. */
+/** Learns a stage's price from the most memory its test runners held at once, shared among them. */
 export function peakPriced(project: string, lease: StageLease, peak: number | undefined): void {
     if (peak !== undefined && peak > 0) {
         priceLearned(project, lease.pool, peak / lease.runners);
@@ -80,16 +84,27 @@ export async function withCapacityHanded<T>(handed: Resources, run: () => Promis
     }
 }
 
-/** Runs a stage on its lease: each test runner's slice handed on, its processes' memory watched, and the price learned from the peak, a failed run's too. */
+/** Runs a stage on its lease: priced apart from the test runner of an outer stage that started this gate, each of its own runners' slice handed on, the memory of what its tool started watched (a process priced apart left out), and the price learned from the peak, a failed run's too. */
 export async function leasedRun<T>(
     project: string,
     lease: StageLease,
     run: () => Promise<T>,
 ): Promise<T> {
-    const watch = residentPeak(process.pid, SAMPLED_EVERY_MS);
+    const released = heldApart();
+    const apart = mkdtempSync(join(tmpdir(), 'typescript-apart-'));
+    const watch = residentPeak(process.pid, SAMPLED_EVERY_MS, () => apartIn(apart));
+    const before = process.env[APART_VARIABLE];
+    process.env[APART_VARIABLE] = apart;
     try {
         return await withCapacityHanded(lease.handed, run);
     } finally {
+        if (before === undefined) {
+            Reflect.deleteProperty(process.env, APART_VARIABLE);
+        } else {
+            process.env[APART_VARIABLE] = before;
+        }
         peakPriced(project, lease, watch.stop());
+        rmSync(apart, { force: true, recursive: true });
+        released();
     }
 }

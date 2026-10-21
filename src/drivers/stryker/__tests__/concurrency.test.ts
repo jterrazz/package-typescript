@@ -32,15 +32,17 @@ describe('concurrency', () => {
         ]);
     });
 
-    test('runnerSlice — each test runner hands on its share of the cpus, never none, and of the memory', () => {
-        // Given - ten cpus and 5 GB shared by four runners, and two cpus and 3 GB by three
-        // Then - two cpus and a quarter of the memory each, then one cpu and a third
+    test('runnerSlice — each test runner hands on its share of the cpus, never none, and of the memory its runners leave, never none', () => {
+        // Given - ten cpus and 5 GB shared by four runners at 1 GB, two cpus and 3 GB by three at 512 MB, and 2 GB that two runners at 1 GB fill
+        // Then - two cpus and a quarter of what is left each, one cpu and a third, and one cpu and a megabyte where nothing is left
         expect([
-            runnerSlice({ cpus: 10, memory: 5 * GB }, 4),
-            runnerSlice({ cpus: 2, memory: 3 * GB }, 3),
+            runnerSlice({ cpus: 10, memory: 5 * GB }, 4, GB),
+            runnerSlice({ cpus: 2, memory: 3 * GB }, 3, 512 * MB),
+            runnerSlice({ cpus: 2, memory: 2 * GB }, 2, GB),
         ]).toStrictEqual([
-            { cpus: 2, memory: 1.25 * GB },
-            { cpus: 1, memory: GB },
+            { cpus: 2, memory: 0.25 * GB },
+            { cpus: 1, memory: 512 * MB },
+            { cpus: 1, memory: MB },
         ]);
     });
 });

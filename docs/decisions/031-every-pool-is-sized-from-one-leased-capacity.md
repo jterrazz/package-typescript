@@ -37,9 +37,16 @@ with what its specs spawn. One count per core cannot fit both.
   reads `CI`, `GITHUB_ACTIONS` or the event that started a run.
 - The prices start from seeds (a Vitest worker 600 MB, a module-test runner
   650 MB, a whole-suite runner 1 GB, a checker 400 MB) and are learned: a
-  stage samples the memory its processes hold, and records the peak per
-  test runner in `.artifacts/capacity.json`. A pool's price is the highest of
+  stage samples the memory its test runners hold, and records the peak per
+  test runner in `.artifacts/prices.json`. A pool's price is the median of
   its last five peaks.
+- A runner's price is what one runner of its pool holds. The sample leaves
+  out Stryker's own process, the checkers, which have their price, and every
+  gate a spec starts inside a runner while its own stage runs: that gate
+  sizes its stages from the slice it is handed, so it registers its process
+  in a folder the outer stage names (`__TYPESCRIPT_PRICED_APART__`), as the
+  checker does, and the sample leaves each registered process and what runs
+  below it out.
 - The checker is priced apart. Stryker 10 takes one concurrency and splits
   it into checkers and runners while checking, then turns the checkers into
   runners (`concurrency-token-provider.js`); no option sets the checkers
@@ -53,7 +60,8 @@ with what its specs spawn. One count per core cannot fit both.
 - `TYPESCRIPT_CAPACITY` (`cpus=4,memory=8g`, either part alone) gives a gate
   its capacity whole, and replaces `TYPESCRIPT_JOBS`, which is gone with no
   alias. The same variable hands each test runner its share while Stryker
-  runs, so a gate a spec starts sizes itself to its runner's slice.
+  runs, its cpus and the memory the stage's runners leave at their price,
+  so a gate a spec starts sizes itself to its runner's slice.
 - The suite's dry run runs on as many Vitest workers as the stage has test
   runners, as [ADR-030](030-the-suite-stage-pays-for-what-its-change-reaches-on-every-worker.md)
   decided; the model now sizes that count.
@@ -63,17 +71,17 @@ with what its specs spawn. One count per core cannot fit both.
   package, so `@jterrazz/test`'s preset can size Vitest's workers by it, and
   `priceLearned(project, pool, peak)` beside it records the peak per worker
   that package measures, so it learns the price without owning the format of
-  `.artifacts/capacity.json`.
+  `.artifacts/prices.json`.
 
 ## Consequences
 
 - An agent no longer pins a count: a gate on a quiet machine takes it, and
   two gates overlapping take complementary shares from their next stage on.
 - A price measured on a small run can be short for a large one: the reserve
-  of an eighth and the highest of five peaks absorb it, and an
-  out-of-memory kill would name the price to raise. The peak is resident
-  memory, which counts shared pages more than once, so a learned price errs
-  high.
+  of an eighth absorbs it, and an out-of-memory kill would name the price to
+  raise. A price that truly rose is learned once three of the last five runs
+  measure it. The peak is resident memory, which counts shared pages more
+  than once, so a learned price errs high.
 - A lease is seen only by the gates that share its temp folder: a container
   or a virtual machine on the same host sizes itself to what it is given, not
   to the host's other gates.
@@ -114,3 +122,21 @@ with what its specs spawn. One count per core cannot fit both.
   592 MB per worker with the processes its specs spawn, on 2026-10-21. It
   was raised to 600 MB the same day, under the owner's word on the review
   ("Tout ok").
+- The first learned price charged a runner with everything below the gate,
+  divided by its runners: Stryker's process, the checkers, and every gate a
+  spec started, whose stages grow with the slice handed to them. Fewer
+  runners hand each nested gate more cpus and memory, so the next peak per
+  runner rose, and the highest of five kept it: on 2026-10-21 this package's
+  suite runner was priced 1,024, 1,402, 1,961, 2,169, 2,204 and then
+  3,713 MB over successive gates, and its last dry run took 876 s on one
+  worker. A sampled suite stage on one runner held 4,089 MB at its peak, of
+  which 3,846 MB were the gates its specs started and 149 MB the runner.
+- The price was then amended to measure one runner of its pool alone, by the
+  median of five, the file renamed so that no peak measured the old way
+  prices a run, and the memory handed on cut to what the runners leave, so
+  a nested gate's slice is no runner's. The owner accepted the amendment on
+  2026-10-21 ("fais toutes les optis").
+- The least a nested gate's stage holds, whatever slice it is handed (one
+  runner, its checker and Stryker's process), is priced nowhere: a suite
+  whose specs start many gates at once still spends more than its slice,
+  and the reserve of an eighth is what absorbs it.
