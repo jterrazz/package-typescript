@@ -140,3 +140,18 @@ with what its specs spawn. One count per core cannot fit both.
   runner, its checker and Stryker's process), is priced nowhere: a suite
   whose specs start many gates at once still spends more than its slice,
   and the reserve of an eighth is what absorbs it.
+- Proposed on 2026-10-21, under the owner's condition of 2026-10-20 that
+  it lands only if Timeout counts move with load: no guard shrinks a stage
+  and raises Stryker's `timeoutFactor` when swap grows, because they do
+  not move. Stryker counts a Timeout as detected, so the guard would only
+  protect against a loaded machine timing out a mutant that should
+  survive. It is built when two runs of one commit show a mutant Survived
+  in one and Timeout in the other.
+- The read behind it: `--cold --mutate src/drivers/ps/ps.ts`, run on one
+  commit at `cpus=2` and `cpus=7` while other sessions held the load
+  average above 100, judged its 70 mutants alike, mutant by mutant (38
+  killed, the same 12 timed out), in 41.6 s and 25.5 s, swap flat at 3.5
+  to 3.8 GB. Over the 53 reports earlier gates of this laptop left (51,865
+  mutants, 244 Timeouts), no suite stage timed a mutant out, two runs of
+  one commit timed out the same 63 of 10,520, and where commits differed a
+  mutant went from Killed to Timeout, never from Survived.
