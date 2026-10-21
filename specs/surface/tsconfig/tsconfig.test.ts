@@ -27,6 +27,9 @@ type ResolvedConfig = {
         allowImportingTsExtensions?: boolean;
         incremental?: boolean;
         jsx?: string;
+        jsxImportSource?: string;
+        lib?: string[];
+        strict?: boolean;
         tsBuildInfoFile?: string;
     };
     dir: string;
@@ -89,7 +92,14 @@ function hermesErrorsUnder(preset: string): string {
     }).stdout;
 }
 
-const PRESETS = ['node', 'bun', 'next', 'astro', 'expo', 'react'] as const;
+const PRESETS = ['node', 'bun', 'next', 'astro', 'expo', 'react', 'browser'] as const;
+
+const TSX_PRESETS = ['next', 'expo', 'react', 'browser'] as const;
+
+const DOM_PRESETS = ['next', 'astro', 'expo', 'react', 'browser'] as const;
+
+const resolvedUnder = (preset: (typeof PRESETS)[number]): ResolvedConfig =>
+    resolvedConfig(consumer(`./__fixtures__/tsconfig-${preset}`, preset));
 
 const FIXTURES = PRESETS.map((preset) => [preset, `./__fixtures__/tsconfig-${preset}`] as const);
 
@@ -163,15 +173,66 @@ describe('tsconfig', () => {
         },
     );
 
+    test.each(TSX_PRESETS)('the %s preset compiles the consumer’s .tsx files', (preset) => {
+        // Given - a consumer holding a .tsx module nothing imports
+        const dir = consumer(`./__fixtures__/tsconfig-${preset}`, preset);
+
+        // When - tsc lists the files the preset compiles
+        const listed = execFileSync(TSC, ['--listFilesOnly'], { cwd: dir, encoding: 'utf8' })
+            .split('\n')
+            .filter((path) => path.startsWith(dir))
+            .map((path) => path.slice(dir.length + 1));
+
+        // Then - the .tsx module is among them
+        expect(listed).toContain('view.tsx');
+    });
+
+    test('each JSX preset compiles JSX for its own runtime', () => {
+        // Given - a consumer of each preset that renders JSX
+        const runtimeOf = (preset: (typeof PRESETS)[number]): (string | undefined)[] => {
+            const { compilerOptions } = resolvedUnder(preset);
+
+            return [compilerOptions.jsx, compilerOptions.jsxImportSource];
+        };
+
+        // Then - React's automatic runtime on the web, React's own import source under Astro, React Native's on Expo
+        expect({
+            astro: runtimeOf('astro'),
+            expo: runtimeOf('expo'),
+            next: runtimeOf('next'),
+            react: runtimeOf('react'),
+        }).toStrictEqual({
+            astro: ['react-jsx', 'react'],
+            expo: ['react-native', undefined],
+            next: ['react-jsx', undefined],
+            react: ['react-jsx', undefined],
+        });
+    });
+
+    test.each(DOM_PRESETS)('the %s preset types the DOM', (preset) => {
+        // Given - the same consumer tsconfig
+        const { compilerOptions } = resolvedUnder(preset);
+
+        // Then - the DOM's library is among those it compiles against
+        expect(compilerOptions.lib?.map((lib) => lib.toLowerCase())).toContain('dom');
+    });
+
+    test.each(PRESETS)('the %s preset type-checks strictly', (preset) => {
+        // Given - the same consumer tsconfig
+        const { compilerOptions } = resolvedUnder(preset);
+
+        // Then - strict mode is on
+        expect(compilerOptions.strict).toBe(true);
+    });
+
     test('the astro preset extends Astro strict, and its own ground and JSX runtime win', () => {
         // Given - an Astro consumer that writes the one extends the chapter documents
-        const { compilerOptions, dir, exclude } = resolvedConfig(
-            consumer('./__fixtures__/tsconfig-astro', 'astro'),
-        );
+        const { compilerOptions, dir, exclude, scoped } = resolvedUnder('astro');
 
         // Then - Astro's settings arrive underneath, and ours are the ones that hold
         expect(compilerOptions.allowImportingTsExtensions).toBe(true);
         expect(compilerOptions.jsx).toBe('react-jsx');
+        expect(scoped.map((entry) => relative(dir, entry))).toContain('.astro/types.d.ts');
         expect(exclude.map((entry) => relative(dir, entry))).toStrictEqual(
             expect.arrayContaining([
                 'node_modules',

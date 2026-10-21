@@ -6,9 +6,13 @@
     "scripts": {
         "build": "astro build"
     },
+    "dependencies": {
+        "react": "*"
+    },
     "devDependencies": {
         "@jterrazz/typescript": "*",
         "@types/node": "*",
+        "@types/react": "*",
         "astro": "*",
         "vitest": "*"
     }

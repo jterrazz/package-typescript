@@ -109,6 +109,13 @@ function consumerOf(
         join(project, 'node_modules/@types/node'),
     );
     symlinkSync(join(REPOSITORY, 'node_modules/vitest'), join(project, 'node_modules/vitest'));
+    if (readFileSync(join(project, 'package.json'), 'utf8').includes('"@types/react"')) {
+        symlinkSync(
+            join(REPOSITORY, 'node_modules/@types/react'),
+            join(project, 'node_modules/@types/react'),
+        );
+        symlinkSync(join(REPOSITORY, 'node_modules/react'), join(project, 'node_modules/react'));
+    }
     if (readFileSync(join(project, 'package.json'), 'utf8').includes('"@types/bun"')) {
         symlinkSync(BUN_TYPES, join(project, 'node_modules/@types/bun'));
     }

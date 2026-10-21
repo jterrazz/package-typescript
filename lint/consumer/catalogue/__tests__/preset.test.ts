@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
 import { objectOf } from '../../../kit/project/json.js';
+import { PLATFORMS } from '../../../kit/project/project-kind.js';
 import { typescriptPreset } from '../preset.js';
 
 describe('preset', () => {
@@ -321,4 +322,44 @@ describe('preset', () => {
             'src/standard/platforms/node.ts',
         ]);
     });
+
+    test('typescriptPreset — every platform’s tsconfig.json extends the preset of its own name', () => {
+        // Given - a library on each platform
+        const extended = PLATFORMS.map(
+            (platform) =>
+                objectOf(
+                    objectOf(typescriptPreset({ kind: 'library', platform }).files)[
+                        'tsconfig.json'
+                    ],
+                ).json,
+        );
+
+        // Then - each extends its own platform's preset
+        expect(extended).toStrictEqual(
+            PLATFORMS.map((platform) => ({ extends: `@jterrazz/typescript/tsconfig/${platform}` })),
+        );
+    });
+
+    test('typescriptPreset — an Expo app turns off the two array rules whose fix Hermes cannot run, a React tree keeps them', () => {
+        // Given - the oxlint rules of an Expo app and of a React website
+        const rulesOf = (platform: 'expo' | 'react'): Record<string, unknown> =>
+            objectOf(
+                objectOf(objectOf(typescriptPreset({ kind: platform === 'expo' ? 'mobile' : 'website', platform }).settings).oxlint)
+                    .rules,
+            );
+        const arrayRules = (rules: Record<string, unknown>): unknown[] => [
+            rules['unicorn/no-array-reverse'],
+            rules['unicorn/no-array-sort'],
+        ];
+
+        // Then - both are off on expo, each with Hermes as its reason, and stated nowhere on react
+        expect([arrayRules(rulesOf('expo')), arrayRules(rulesOf('react'))]).toStrictEqual([
+            [
+                { level: 'off', reason: expect.stringContaining('Hermes') },
+                { level: 'off', reason: expect.stringContaining('Hermes') },
+            ],
+            [undefined, undefined],
+        ]);
+    });
 });
+
