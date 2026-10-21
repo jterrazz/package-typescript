@@ -7,18 +7,20 @@ import { describe, expect, test } from 'vitest';
 import type { CheckPass } from '#command';
 
 import { onlyPasses, SELECTING_BIN } from '../__setup__/check-passes.js';
+import { ONE_FORM } from '../__setup__/oxlint-forms.js';
 import { repository } from '../__setup__/repository.js';
 import { cli } from '../cli.specification.js';
 
-// invariant: the first check is the command the chain runs, in the same environment but for the passes it names, so a second run differs from it by the selection alone; its verdict file is removed, so a hit is seen writing it again.
+// invariant: the first check is the command the chain runs, in the environment the runner hands it (the one report form oxlint prints) but for the passes it names, so a second run differs from it by the selection alone; its verdict file is removed, so a hit is seen writing it again.
 function checkedGreen(...passes: [CheckPass, ...CheckPass[]]): (workdir: string) => void {
+    const handed = Object.entries({ ...process.env, ...ONE_FORM, ...onlyPasses(...passes) });
+    const env = Object.fromEntries(
+        handed.filter((entry): entry is [string, string] => typeof entry[1] === 'string'),
+    );
+
     return (workdir) => {
         repository(workdir);
-        execFileSync('node', [SELECTING_BIN, 'check'], {
-            cwd: workdir,
-            env: { ...process.env, ...onlyPasses(...passes) },
-            stdio: 'pipe',
-        });
+        execFileSync('node', [SELECTING_BIN, 'check'], { cwd: workdir, env, stdio: 'pipe' });
         rmSync(join(workdir, '.artifacts/gate/verdict.json'));
     };
 }

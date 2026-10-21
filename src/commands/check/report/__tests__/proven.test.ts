@@ -324,10 +324,14 @@ describe('proven', () => {
         commit('mine');
         const merge = (() => {
             try {
-                execFileSync('git', ['merge', '--quiet', 'other'], {
-                    cwd: merging,
-                    stdio: 'ignore',
-                });
+                execFileSync(
+                    'git',
+                    ['-c', 'user.email=t@t', '-c', 'user.name=t', 'merge', '--quiet', 'other'],
+                    {
+                        cwd: merging,
+                        stdio: 'ignore',
+                    },
+                );
 
                 return 'merged';
             } catch {
