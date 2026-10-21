@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import type { Made } from '../../../drivers/stryker/enumerate.js';
 import { capped, cappedEntries, cappedReport } from '../cap.js';
-import { fileOf } from '../scope.js';
+import { fileOfRange } from '../scope.js';
 
 const madeAt = (file: string, line: number): Made => ({
     column: 5,
@@ -70,14 +70,14 @@ describe('cap', () => {
                 : cappedEntries(
                       ['src/domain/b.ts:1-9', 'src/infrastructure/a.ts:3-4'],
                       cap,
-                      fileOf,
+                      fileOfRange,
                   ),
         ).toStrictEqual([
             'src/domain/b.ts:1-9',
             `src/infrastructure/a.ts:${String(kept)}:4-${String(kept)}:11`,
         ]);
         expect(
-            cap === undefined ? [] : cappedEntries(['src/domain/b.ts:1-9'], cap, fileOf),
+            cap === undefined ? [] : cappedEntries(['src/domain/b.ts:1-9'], cap, fileOfRange),
         ).toStrictEqual(['src/domain/b.ts:1-9']);
     });
 

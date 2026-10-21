@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterAll, describe, expect, test } from 'vitest';
 
-import { changedRanges, fileOf, modulesMutated, sourcesOf, unreachedRange } from '../scope.js';
+import { changedRanges, fileOfRange, modulesMutated, sourcesOf, unreachedRange } from '../scope.js';
 
 const SCOPE = {
     exclude: [],
@@ -74,7 +74,7 @@ describe('scope', () => {
         const changed = new Map([['src/b.ts', [[2, 2] as const]]]);
 
         // Then - each range's file; the named ranges of the listed sources, the changed line, nothing of an empty change, and every source where the change is unknown
-        expect(ranges.map((range) => fileOf(range))).toStrictEqual([
+        expect(ranges.map((range) => fileOfRange(range))).toStrictEqual([
             'src/a.ts',
             'src/b.ts',
             'src/c.ts',

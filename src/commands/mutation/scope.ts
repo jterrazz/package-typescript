@@ -49,7 +49,8 @@ export function sourcesOf(
     };
 }
 
-export const fileOf = (range: string): string => range.replace(/:\d+(?::\d+)?-\d+(?::\d+)?/u, '');
+export const fileOfRange = (range: string): string =>
+    range.replace(/:\d+(?::\d+)?-\d+(?::\d+)?/u, '');
 
 const RANGE = /^(?<file>[^:]+)(?::(?<from>\d+)(?::\d+)?-(?<to>\d+)(?::\d+)?)?$/u;
 
@@ -75,7 +76,7 @@ function narrowed(files: readonly string[], ranges?: readonly string[]): string[
     }
     const named = new Set(files);
 
-    return ranges.filter((range) => named.has(fileOf(range)));
+    return ranges.filter((range) => named.has(fileOfRange(range)));
 }
 
 const NO_CODE = /^(?:$|\/\/|\/\*|\*\/|\*(?: |$)|import\s[^;]*;$)/u;

@@ -2,7 +2,7 @@ import { isList, objectOf, stringOf } from '../../../lint/kit/project/json.js';
 import { LOG_REASON, PINNED_TEXT_REASON } from '../../drivers/stryker/ignorers.js';
 import { reportPathOf } from '../../drivers/stryker/reports.js';
 import type { StageName } from '../../drivers/stryker/reports.js';
-import { fileOf } from './scope.js';
+import { fileOfRange } from './scope.js';
 
 export type Survivor = {
     column: number;
@@ -226,7 +226,7 @@ export function judgedRuns(
             uncoveredByFile: {},
             unrun: {},
         },
-        measuredFiles: new Set(modules.measured.map((range) => fileOf(range))),
+        measuredFiles: new Set(modules.measured.map((range) => fileOfRange(range))),
     };
     const { answered, forwarded, judged } = answering;
     for (const [file, mutant] of heldMutantsOf(modules.report, modules.measured)) {

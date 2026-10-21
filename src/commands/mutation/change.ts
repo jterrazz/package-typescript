@@ -1,5 +1,5 @@
 import { git } from '../../../lint/kit/project/git.js';
-import { fileOf } from './scope.js';
+import { fileOfRange } from './scope.js';
 import type { Changed } from './survivors.js';
 
 /** The lines a `git diff --unified=0` adds or rewrites, file by file, in the new side's numbering; a hunk that only deletes reaches no line, so neither does a file the diff deletes. */
@@ -160,7 +160,7 @@ function linesNamed(ranges: readonly string[]): Changed {
     const named = new Map<string, [number, number][] | true>();
     for (const range of ranges) {
         const lines = /:(?<from>\d+)(?::\d+)?-(?<to>\d+)/u.exec(range)?.groups;
-        const file = fileOf(range);
+        const file = fileOfRange(range);
         const before = named.get(file) ?? [];
         named.set(
             file,

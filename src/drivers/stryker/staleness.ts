@@ -28,7 +28,7 @@ function testsOf(report: Record<string, unknown>): Map<string, ReportTest> {
 }
 
 /** What changed since the record, by what each path is to the tests. */
-export type Change = {
+export type ChangedFiles = {
     everything: boolean;
     grounds: readonly string[];
     sources: ReadonlySet<string>;
@@ -38,7 +38,7 @@ export type Change = {
 // Stryker disable next-line ConditionalExpression: a role other than ground holds no root, and no test stands under an undefined folder
 const isGround = (role: Role): role is Extract<Role, { kind: 'ground' }> => role.kind === 'ground';
 
-export function changeOf(changed: readonly string[]): Change {
+export function changedFilesOf(changed: readonly string[]): ChangedFiles {
     const roles = changed.map((path) => ({ path, role: roleOf(path) }));
     const pathsOf = (kind: Role['kind']): Set<string> =>
         new Set(roles.filter(({ role }) => role.kind === kind).map(({ path }) => path));
@@ -63,7 +63,7 @@ export type Staleness = {
 };
 
 // invariant: a test is stale when its file changed, when ground under a folder above it changed, when a source its own process loads changed, and when a source changed that a process it spawned ran, or loaded, unless the change reaches only what the source's functions do; a test whose processes the last run could not follow is stale whatever source changed.
-export function isStale(test: ReportTest, change: Change, staleness: Staleness): boolean {
+export function isStale(test: ReportTest, change: ChangedFiles, staleness: Staleness): boolean {
     if (change.tests.has(test.file) || change.grounds.some((root) => isUnder(test.file, root))) {
         return true;
     }
@@ -105,7 +105,7 @@ export function reportAfter(
     changed: readonly string[],
     stale: Staleness,
 ): Record<string, unknown> | undefined {
-    const change = changeOf(changed);
+    const change = changedFilesOf(changed);
     if (change.everything) {
         return undefined;
     }

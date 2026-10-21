@@ -1,6 +1,8 @@
 import { join } from 'node:path';
 
 import { DIST, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { SANDBOX_DEPTH } from './beside.js';
+import type { Beside } from './beside.js';
 import { dryRunWorkersPluginSource } from './dry-run-workers.js';
 import { IN_PROCESS_VARIABLE, OBSERVED_TESTS_VARIABLE } from './mutant-setup.js';
 import { KILLERS_VARIABLE, RECENT_KILLERS_VARIABLE } from './previous-killers.js';
@@ -174,9 +176,6 @@ const ownWorker = {
 };
 `;
 
-/** The folders of the repository a member's specs reach by climbing out of it: where the sandbox's copy stands, and the names to lay beside it. */
-export type Beside = { levels: number; names: readonly string[]; root: string };
-
 // invariant: the sandbox lies four folders below its member (`.artifacts/stryker/tmp/sandbox-*`), so a spec that climbs `levels` folders out of a member lands `levels` folders above the copy; the repository's top-level entries are linked there, for the climbs that land inside `.artifacts/`.
 const besideScript = ({ levels, names, root }: Beside): string =>
     `import { existsSync as present, symlinkSync } from 'node:fs';
@@ -189,8 +188,6 @@ for (const name of ${JSON.stringify(names)}) {
     }
 }
 `;
-
-export const SANDBOX_DEPTH = 4;
 
 // outside: the checks a test runs read the git tree, and the sandbox lies in the ignored .artifacts/, where git sees none.
 // invariant: the build the suite runs against holds the declarations of the project's own build: a mutant changes what the code does, never the types it declares, and a declaration emitted from instrumented code infers wider types than the code states.

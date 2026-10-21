@@ -37,7 +37,7 @@ export type Kept = {
 };
 
 /** What the last run recorded beside its report: the inputs it ran on, and, once it ended, what its tests ran. */
-export type Recorded = { inputs: Inputs; observed?: Observed | undefined };
+export type StageRecord = { inputs: Inputs; observed?: Observed | undefined };
 
 const recordPathOf = (project: string, incremental: string): string =>
     join(project, MUTATION_OUTPUT, `${incremental}.inputs.json`);
@@ -67,7 +67,7 @@ function recordedOf(
 export function recordInputs(
     project: string,
     incremental: string,
-    { inputs, observed }: Recorded,
+    { inputs, observed }: StageRecord,
 ): void {
     const onDisk =
         observed === undefined ? { inputs } : { inputs, observed: observedOnDisk(observed) };

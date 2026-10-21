@@ -30,7 +30,7 @@ export type Recorded = {
 
 export const recorder = (): Recorded => ({ mutation: undefined, passes: [], reason: '' });
 
-export const STAGE_LABELS = {
+const STAGE_LABELS = {
     modules: 'Mutation (module tests)',
     suite: 'Mutation (whole suite)',
 } as const;

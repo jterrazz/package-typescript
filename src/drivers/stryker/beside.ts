@@ -3,8 +3,12 @@ import { dirname, join, relative, resolve, sep } from 'node:path';
 
 import { MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
 import { isRepositoryRoot, nearestRoot } from '../../../lint/kit/project/repository-root.js';
-import { SANDBOX_DEPTH } from './sources.js';
-import type { Beside } from './sources.js';
+
+/** The folders of the repository a member's specs reach by climbing out of it: where the sandbox's copy stands, and the names to lay beside it. */
+export type Beside = { levels: number; names: readonly string[]; root: string };
+
+/** How many folders the sandbox lies below its member, `.artifacts/stryker/tmp/sandbox-*`. */
+export const SANDBOX_DEPTH = 4;
 
 // invariant: a workspace member is mutated from its own folder, and its specs may climb out of it to the repository's files; a project that is the repository's own root has nothing above it to lay.
 export function besideOf(project: string): Beside | undefined {

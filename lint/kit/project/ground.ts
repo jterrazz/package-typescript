@@ -15,7 +15,7 @@ export const GO_GROUND_FOLDER = 'testdata';
 
 export const GO_TEST_FILE = /_test\.go$/u;
 
-export const GO_GROUND_GLOBS: readonly string[] = Object.freeze([
+const GO_GROUND_GLOBS: readonly string[] = Object.freeze([
     `**/${GO_GROUND_FOLDER}/**`,
     '**/*_test.go',
 ]);

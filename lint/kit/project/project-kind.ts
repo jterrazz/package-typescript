@@ -36,8 +36,8 @@ export const PLATFORMS_OF: PlatformsOf = {
     website: ['react', 'next', 'astro', 'browser'],
 };
 
-/** The platform a content repository is read on, where a pass needs one: it declares none, and runs no JS pass that would use it. */
-export const CONTENT_PLATFORM: Platform = 'node';
+// value: a content repository declares no platform and runs no JS pass that would use one, so a pass that needs one reads it on node.
+const CONTENT_PLATFORM: Platform = 'node';
 
 /** `kind: null` is a monorepo's own suite: a member of tests alone, which is no product and so declares no kind. */
 export type ProjectIdentity = { kind: null | ProjectKind; platform: Platform };

@@ -6,7 +6,7 @@ import { capped, cappedEntries, cappedReport } from './cap.js';
 import type { Capped } from './cap.js';
 import { isGlue } from './roles.js';
 import type { GlueBar, GlueCapped } from './roles.js';
-import { fileOf } from './scope.js';
+import { fileOfRange } from './scope.js';
 
 type Stages = { modules: string[]; reached: string[] };
 
@@ -17,7 +17,7 @@ export async function glueCapped(
     glue: GlueBar,
 ): Promise<Stages & { capped: Capped | undefined }> {
     const entries = [...stages.modules, ...stages.reached];
-    const files = [...new Set(entries.map((entry) => fileOf(entry)))].filter((file) =>
+    const files = [...new Set(entries.map((entry) => fileOfRange(entry)))].filter((file) =>
         isGlue(file, glue),
     );
     const all = await mutantsMade(project, files, IGNORERS_FILE);
@@ -34,8 +34,8 @@ export async function glueCapped(
 
     return {
         capped: cap,
-        modules: cappedEntries(stages.modules, cap, fileOf),
-        reached: cappedEntries(stages.reached, cap, fileOf),
+        modules: cappedEntries(stages.modules, cap, fileOfRange),
+        reached: cappedEntries(stages.reached, cap, fileOfRange),
     };
 }
 
