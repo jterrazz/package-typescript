@@ -35,6 +35,8 @@ export default defineConfig({
                     'specs/cli/typescript/mutation-made.spec.ts compares the refusal it prints whole',
                 'src/commands/mutation/verdict.ts':
                     'specs/cli/typescript/mutation.spec.ts compares each verdict it prints whole',
+                'src/commands/terminal.ts':
+                    'the check specs of specs/cli/check/ compare the badges and colours every command prints whole, against their __expected__/ goldens',
             },
         },
         knip: {
