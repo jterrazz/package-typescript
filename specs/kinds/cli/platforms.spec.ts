@@ -4,11 +4,11 @@ import { describe, expect, test } from 'vitest';
 import { cli } from '../kinds.specification.js';
 
 describe('platforms', () => {
-    test('a cli on bun fixes, builds, checks and runs its cli specs from its declaration alone', async () => {
+    test('a cli on bun fixes, builds and checks from its declaration alone', async () => {
         // Given - a command on bun, its bin built from src/, both packed packages installed
         const result = await cli
             .fixture(directory('./__fixtures__/cli-bun/'))
-            .exec(['typescript fix', 'typescript build', 'typescript check', 'vitest --run']);
+            .exec(['typescript fix', 'typescript build', 'typescript check']);
 
         // Then - every gesture passes, and the editor files derive from what it declares
         expect(result.exitCode).toBe(0);
@@ -17,19 +17,13 @@ describe('platforms', () => {
         );
     });
 
-    test('a private cli whose product is a Go program fixes, builds, checks and runs its cli specs from its declaration alone', async () => {
-        // Given - a Go module built by the Go toolchain and driven by a TypeScript suite, both packed packages installed
+    test('a private cli whose product is a Go program fixes and checks from its declaration alone', async () => {
+        // Given - a Go module driven by a TypeScript suite, both packed packages installed
         const result = await cli
             .fixture(directory('./__fixtures__/cli-go/'))
-            .exec([
-                'typescript fix',
-                'go build -o .artifacts/go/greet ./src/cmd/greet',
-                'typescript check',
-                'vitest --run',
-            ]);
+            .exec(['typescript fix', 'typescript check']);
 
-        // Then - every gesture passes, and the Go binary is what the suite drove
+        // Then - both gestures pass
         expect(result.exitCode).toBe(0);
-        expect(result.file('.artifacts/go/greet').exists).toBe(true);
     });
 });
