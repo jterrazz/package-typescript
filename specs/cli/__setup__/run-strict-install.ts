@@ -82,8 +82,18 @@ function resolvesFrom(directory: string, tool: string): boolean {
     return probe.status === 0;
 }
 
+// hazard: the consumer root lies outside the checkout, so oxlint finds `tsgolint` only where it is named.
 function runHere(command: string, args: readonly string[]): number {
-    return spawnSync(command, args, { cwd: root, stdio: 'inherit' }).status ?? 1;
+    return (
+        spawnSync(command, args, {
+            cwd: root,
+            env: {
+                ...process.env,
+                OXLINT_TSGOLINT_PATH: join(REPOSITORY, 'node_modules/.bin/tsgolint'),
+            },
+            stdio: 'inherit',
+        }).status ?? 1
+    );
 }
 
 function strictly(): number {
