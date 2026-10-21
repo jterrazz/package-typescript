@@ -189,10 +189,8 @@ async function stageWritten(
         join(project, MUTATION_OUTPUT, files.sandbox),
         sandboxScriptSource(buildsFirst, project, besideOf(project)),
     );
-    // invariant: a report a person asked for on an earlier run would read as this run's, so a run that writes none removes it.
-    if (!html) {
-        rmSync(join(project, MUTATION_OUTPUT, `${files.report}.html`), { force: true });
-    }
+    // invariant: a report a person asked for on an earlier run would read as this run's, so it goes before Stryker starts, which writes one again only where this run asks.
+    rmSync(join(project, MUTATION_OUTPUT, `${files.report}.html`), { force: true });
     writeFileSync(
         join(project, MUTATION_OUTPUT, files.config),
         `${JSON.stringify(strykerConfig({ ...scope, generated, typeChecked }, stage, { concurrency, html, testFiles }), null, 4)}\n`,
