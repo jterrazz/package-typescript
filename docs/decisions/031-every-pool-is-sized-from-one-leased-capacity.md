@@ -66,7 +66,7 @@ with what its specs spawn. One count per core cannot fit both.
   runners, as [ADR-030](030-the-suite-stage-pays-for-what-its-change-reaches-on-every-worker.md)
   decided; the model now sizes that count.
 - Each stage prints the capacity it sized by:
-  `capacity: 10 cpus, 16.0 GB, 6.4 GB available, 2 gate(s): this gate 5 cpus, 4.4 GB · 5 test runner(s) at 500 MB, 3 checker(s) at 400 MB while checking: cpus bind`.
+  `capacity: 10 cpus, 16.0 GB, 6.4 GB available, 2 gate(s): this gate 5 cpus, 4.4 GB · 5 test runner(s) at 650 MB, 3 checker(s) at 720 MB while checking: cpus bind`.
 - `slotsFor(project, pool)` on `./rules` hands the same model to a sibling
   package, so `@jterrazz/test`'s preset can size Vitest's workers by it, and
   `priceLearned(project, pool, peak)` beside it records the peak per worker
@@ -116,7 +116,7 @@ with what its specs spawn. One count per core cannot fit both.
   runner, were short: the gates above learned 578 to 662 MB and 862 to
   1,017 MB, and a first run on a fresh host swapped to 7.4 GB on them. The
   seeds were raised to what was learned, on 2026-10-20, so a host with no
-  `.artifacts/capacity.json` does not oversubscribe its first run. The owner
+  `.artifacts/prices.json` does not oversubscribe its first run. The owner
   accepted the raise the same day ("fais l'ensemble des trucs remontés").
 - The Vitest seed, 150 MB, was short: `@jterrazz/test`'s own suite measured
   592 MB per worker with the processes its specs spawn, on 2026-10-21. It
