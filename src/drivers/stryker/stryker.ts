@@ -225,6 +225,7 @@ export async function strykerRun(
                         projectBinary('stryker', project),
                         ['run', join(MUTATION_OUTPUT, files.config)],
                         project,
+                        { reaping: true },
                     ),
             ),
     );

@@ -87,15 +87,29 @@ export async function run(
     }
 }
 
+function signalled(group: number, signal: NodeJS.Signals): void {
+    try {
+        process.kill(-group, signal);
+    } catch {
+        // invariant: a group with no member left is no error, nothing remains to signal.
+    }
+}
+
+/** Hands the terminal over to a command. With `reaping`, the command leads a process group of its own: signals reach the whole group, and when the command ends every process still in it is killed, so none outlives it as an orphan. */
 export async function handOver(
     command: string,
     args: readonly string[],
     cwd?: string,
+    { reaping = false }: { reaping?: boolean } = {},
 ): Promise<number> {
     await flushed();
-    const child = spawn(command, args, { cwd, stdio: 'inherit' });
+    const child = spawn(command, args, { cwd, detached: reaping, stdio: 'inherit' });
     const forward = (signal: NodeJS.Signals): void => {
-        child.kill(signal);
+        if (reaping && child.pid !== undefined) {
+            signalled(child.pid, signal);
+        } else {
+            child.kill(signal);
+        }
     };
     for (const signal of FORWARDED) {
         process.on(signal, forward);
@@ -106,6 +120,9 @@ export async function handOver(
     } finally {
         for (const signal of FORWARDED) {
             process.off(signal, forward);
+        }
+        if (reaping && child.pid !== undefined) {
+            signalled(child.pid, 'SIGKILL');
         }
     }
 }

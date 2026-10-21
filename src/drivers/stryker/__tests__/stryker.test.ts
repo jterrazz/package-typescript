@@ -1,9 +1,17 @@
-import { execFileSync } from 'node:child_process';
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import {
+    chmodSync,
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
 import { generatedRoots, strykerConfig, strykerRun } from '../stryker.js';
 
@@ -227,6 +235,43 @@ describe('stryker', () => {
             observed: [],
             ranByTests: new Set(),
             report: { files: { 'src/a.ts': { mutants: [] } }, schemaVersion: '2' },
+        });
+    });
+
+    test('a stage leaves no process alive once it ends, whatever the runners it forked do with a signal', async () => {
+        // Given - a project whose Stryker stand-in forks a runner that ignores SIGTERM, then ends as a killed run does
+        const project = mkdtempSync(join(tmpdir(), 'mutation-reaped-'));
+        const pidFile = join(project, 'runner.pid');
+        mkdirSync(join(project, 'node_modules/.bin'), { recursive: true });
+        mkdirSync(join(project, '.artifacts/stryker'), { recursive: true });
+        const forking = `const { spawn } = require('node:child_process');
+const runner = spawn(process.execPath, ['--eval', "process.on('SIGTERM', () => {}); setInterval(() => {}, 1000);"], { stdio: 'ignore' });
+require('node:fs').writeFileSync(${JSON.stringify(pidFile)}, String(runner.pid));
+runner.unref();
+`;
+        writeFileSync(
+            join(project, 'node_modules/.bin/stryker'),
+            STRYKER_STANDIN.replace('\n', `\n${forking}`),
+        );
+        chmodSync(join(project, 'node_modules/.bin/stryker'), 0o755);
+
+        // When - the module stage runs and ends
+        await strykerRun(
+            { exclude: [], mutated: ['src/**/*.ts'] },
+            { mutate: ['src/a.ts'], name: 'modules' },
+            { buildsFirst: false, concurrency: 1, html: false, project, testFiles: undefined },
+        );
+        const runner = Number(readFileSync(pidFile, 'utf8'));
+        const alive = (): boolean => spawnSync('kill', ['-0', String(runner)]).status === 0;
+        // hazard: a runner left alive outlives the whole run as an orphan.
+        onTestFinished(() => {
+            spawnSync('kill', ['-KILL', String(runner)]);
+            rmSync(project, { force: true, recursive: true });
+        });
+
+        // Then - nothing of the stage outlives it
+        await vi.waitFor(() => {
+            expect(alive()).toBe(false);
         });
     });
 });

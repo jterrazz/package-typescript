@@ -1,3 +1,4 @@
+import { waitUntil } from '@jterrazz/test';
 import { spawnSync } from 'node:child_process';
 import {
     existsSync,
@@ -35,6 +36,47 @@ function scratch(): string {
     });
 
     return directory;
+}
+
+const alive = (pid: number): boolean => {
+    try {
+        process.kill(pid, 0);
+
+        return true;
+    } catch {
+        return false;
+    }
+};
+
+async function leaving(options?: {
+    reaping: boolean;
+}): Promise<{ beats: () => number; pid: number }> {
+    // Given - a command that forks a grandchild ignoring SIGTERM, then ends before it
+    const folder = scratch();
+    const file = join(folder, 'grandchild');
+    const beat = join(folder, 'beat');
+    const grandchild = `process.on('SIGTERM', () => {}); setInterval(() => require('node:fs').appendFileSync(${JSON.stringify(beat)}, 'x'), 20);`;
+    const program = [
+        `const { spawn } = require('node:child_process');`,
+        `const child = spawn(process.execPath, ['--eval', ${JSON.stringify(grandchild)}], { stdio: 'ignore' });`,
+        `require('node:fs').writeFileSync(${JSON.stringify(file)}, String(child.pid));`,
+        `child.unref();`,
+    ].join(' ');
+    // hazard: a grandchild left alive holds nothing of the test, yet outlives the whole run as an orphan.
+    onTestFinished(() => {
+        const pid = Number(readFileSync(file, 'utf8'));
+        if (pid > 0) {
+            spawnSync('kill', ['-KILL', String(pid)]);
+        }
+    });
+
+    // When - the terminal is handed over to it
+    await handOver(process.execPath, ['--eval', program], undefined, options);
+
+    return {
+        beats: () => (existsSync(beat) ? readFileSync(beat, 'utf8').length : 0),
+        pid: Number(readFileSync(file, 'utf8')),
+    };
 }
 
 describe('run', () => {
@@ -254,5 +296,56 @@ describe('run', () => {
             status,
             stderr.mock.calls.filter(([chunk]) => chunk === LINE).length,
         ]).toStrictEqual([127, 1]);
+    });
+
+    test('reaping: leaves no process of its tree alive once it ends', async () => {
+        // Given - a command that ends before its SIGTERM-ignoring grandchild
+
+        // When - the terminal is handed over to it, reaping
+        const { pid } = await leaving({ reaping: true });
+
+        // Then - the grandchild is gone
+        await vi.waitFor(() => {
+            expect(alive(pid)).toBe(false);
+        });
+    });
+
+    test('reaps nothing unless asked to', async () => {
+        // Given - the same command
+
+        // When - the terminal is handed over to it, with no option
+        const { beats } = await leaving();
+
+        // Then - the grandchild goes on beating after the command ended
+        const ended = beats();
+        await waitUntil(() => beats() > ended + 2);
+        expect(beats()).toBeGreaterThan(ended + 2);
+    });
+
+    test('reaping: hands a signal to every process of the tree', async () => {
+        // Given - a command whose grandchild exits 7 on SIGHUP, and the command waiting for it
+        const folder = scratch();
+        const file = join(folder, 'status');
+        const ready = join(folder, 'ready');
+        const grandchild = `process.on('SIGHUP', () => process.exit(7)); require('node:fs').writeFileSync(${JSON.stringify(ready)}, 'x'); setInterval(() => {}, 1000);`;
+        const program = [
+            `const { spawn } = require('node:child_process');`,
+            `const child = spawn(process.execPath, ['--eval', ${JSON.stringify(grandchild)}], { stdio: 'ignore' });`,
+            `process.on('SIGHUP', () => {});`,
+            `child.on('exit', (code) => { require('node:fs').writeFileSync(${JSON.stringify(file)}, String(code)); process.exit(0); });`,
+        ].join(' ');
+        const status = handOver(process.execPath, ['--eval', program], undefined, {
+            reaping: true,
+        });
+        await vi.waitFor(() => {
+            expect(existsSync(ready)).toBe(true);
+        });
+
+        // When - the parent receives the signal
+        process.emit('SIGHUP', 'SIGHUP');
+
+        // Then - the grandchild got it too
+        await status;
+        expect(readFileSync(file, 'utf8')).toBe('7');
     });
 });
