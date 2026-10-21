@@ -81,4 +81,21 @@ describe('mutation workers', () => {
             'spec mutant': 1,
         });
     });
+
+    test('typescript mutation — a project that declares fileParallelism false keeps its files in turn in the dry run, where the stage has many test runners', async () => {
+        // Given - a consumer whose serial project holds two files that each take one shared app and fail if it is taken, measured on three test runners
+        const lock = join(temporaryDirectory('mutation-serial-'), 'app');
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-serial/'))
+            .env({ SERIAL_LOCK: lock, TYPESCRIPT_CAPACITY: 'cpus=3,memory=64g' })
+            .exec('typescript mutation --mutate src/label.ts:1-1');
+
+        // Then - the files never overlapped, so the dry run passed and every mutant of the label is judged
+        expect(result.exitCode).toBe(0);
+        const mutants = Object.values(
+            coverage(result.file('.artifacts/stryker/suite-report.json').content),
+        );
+        expect(mutants.length).toBeGreaterThan(0);
+        expect(mutants.map(({ status }) => status)).toStrictEqual(mutants.map(() => 'Killed'));
+    });
 });

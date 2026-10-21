@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 
 import { DIST, MUTATION_OUTPUT } from '../../../lint/kit/project/build-plan.js';
+import { dryRunWorkersPluginSource } from './dry-run-workers.js';
 import { IN_PROCESS_VARIABLE, OBSERVED_TESTS_VARIABLE } from './mutant-setup.js';
 import { KILLERS_VARIABLE, RECENT_KILLERS_VARIABLE } from './previous-killers.js';
 
@@ -144,20 +145,6 @@ const OWN_PROCESSES_PLUGIN_SOURCE = `const ownProcesses = {
         project.config.pool = 'forks';
     },
     name: 'stryker-own-processes',
-};
-`;
-
-// outside: Stryker's Vitest runner runs every test file on one worker, which a mutant's run needs, since the mutant is live in the process that runs its tests; the dry run activates no mutant and Stryker reads its coverage file by file, so it runs on the stage's test runners, read again on every run.
-const dryRunWorkersPluginSource = (workers: number): string => `const dryRunWorkers = {
-    configureVitest({ project, vitest }) {
-        Object.defineProperty(project.config, 'maxWorkers', {
-            configurable: true,
-            enumerable: true,
-            get: () => (vitest.getRootProject().getProvidedContext().mode === 'dry-run' ? ${String(workers)} : 1),
-            set: () => {},
-        });
-    },
-    name: 'stryker-dry-run-workers',
 };
 `;
 

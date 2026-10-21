@@ -35,6 +35,9 @@ it.
 - The suite's dry run runs its test files on as many Vitest workers as the
   stage has test runners. It activates no mutant, and Stryker reads its
   coverage file by file; each mutant's tests still run on one worker.
+  A project that declares `fileParallelism: false` keeps its files in turn
+  in the dry run too, since its files share state; Stryker's own single
+  worker is set on every project, so only that declaration marks one.
 - A mutant's tests run the files whose processes ran a function of its
   source first (with a test that spawned nothing, and one the dry run could
   not follow), then the files that only loaded it, each group quickest
