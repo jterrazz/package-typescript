@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 
+import { badge, GREEN, print, RED, RESET, secondsOf } from '../../terminal.js';
 import type { Logs } from './logs.js';
-import { badge, GREEN, print, RED, RESET, secondsOf } from './terminal.js';
 
 export function reportPass(
     logs: Logs,

@@ -6,9 +6,11 @@ import { inScratch } from '../../../lint/kit/checker/ending.js';
 import type { ProjectIdentity } from '../../../lint/kit/project/project-kind.js';
 import { checker } from '../../drivers/checker/checker.js';
 import { withGateLock } from '../gate-lock/lock.js';
+import { badge, print } from '../terminal.js';
+import { secondsSince } from '../timing.js';
 import { configPass } from './passes/checker-passes.js';
 import type { Launched, Timed } from './passes/launched.js';
-import { secondsSince, timedLaunch, timedLaunches } from './passes/launched.js';
+import { timedLaunch, timedLaunches } from './passes/launched.js';
 import { CHECK_PASSES, CONTENT_PASSES } from './passes/passes.js';
 import type { Selected } from './passes/passes.js';
 import { presetRuns } from './passes/presets.js';
@@ -29,7 +31,6 @@ import type { PassVerdict } from './report/gate-verdict.js';
 import { logsIn } from './report/logs.js';
 import { provenAsked, provenRun } from './report/proven.js';
 import { reportPass } from './report/report.js';
-import { badge, print } from './report/terminal.js';
 import {
     lintVerdictOf,
     presetVerdicts,

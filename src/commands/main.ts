@@ -4,9 +4,9 @@ import { refusal } from '../../lint/kit/catalogue/lesson.js';
 import { readArguments } from './arguments.js';
 import { EVERY_PASS } from './check/passes/passes.js';
 import type { Selected } from './check/passes/passes.js';
-import { badge, print } from './check/report/terminal.js';
 import { helpOf, SURFACES } from './surface.js';
 import type { CommandName, Surface } from './surface.js';
+import { badge, print } from './terminal.js';
 
 export { CHECK_PASSES } from './check/passes/passes.js';
 export type { CheckPass, Selected } from './check/passes/passes.js';

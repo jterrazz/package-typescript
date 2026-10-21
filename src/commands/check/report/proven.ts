@@ -21,8 +21,8 @@ import { git } from '../../../../lint/kit/project/git.js';
 import { isJsonObject, parsedObject } from '../../../../lint/kit/project/json.js';
 import type { JsonObject } from '../../../../lint/kit/project/json.js';
 import { chromiumBuilds } from '../../doctor/browsers.js';
+import { badge, GREEN, print, RESET } from '../../terminal.js';
 import { headOf, VERDICT_FILE } from './gate-verdict.js';
-import { badge, GREEN, print, RESET } from './terminal.js';
 
 /** Where a green verdict is kept, one file per stage and key, from the project's root. */
 export const PROVEN_FOLDER = `${ARTIFACTS}/proven`;

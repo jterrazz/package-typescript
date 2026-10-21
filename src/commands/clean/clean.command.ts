@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import process from 'node:process';
 
 import { ARTIFACTS } from '../../../lint/kit/project/build-plan.js';
-import { badge, GREEN, print, RESET } from '../check/report/terminal.js';
+import { badge, GREEN, print, RESET } from '../terminal.js';
 
 export function clean(): number {
     const artefacts = join(process.cwd(), ARTIFACTS);

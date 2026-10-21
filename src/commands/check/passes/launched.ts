@@ -1,11 +1,10 @@
+import { secondsSince } from '../../timing.js';
+
 export type Launched = { log: string; status: Promise<number> };
 
 export type Timed = { seconds: Promise<number>; status: Promise<number> };
 
 export type TimedLaunch = Launched & Timed;
-
-export const secondsSince = (from: number): number =>
-    Math.round((performance.now() - from) / 100) / 10;
 
 async function secondsTo(status: Promise<number>, from: number): Promise<number> {
     await Promise.allSettled([status]);

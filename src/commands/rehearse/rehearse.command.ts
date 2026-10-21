@@ -3,7 +3,7 @@ import process from 'node:process';
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { readCommandLine } from '../../../lint/kit/checker/command-line.js';
 import { dockerRun } from '../../drivers/docker/docker.js';
-import { badge, print, RED, RESET } from '../check/report/terminal.js';
+import { badge, print, RED, RESET } from '../terminal.js';
 import {
     branchOf,
     bunOf,

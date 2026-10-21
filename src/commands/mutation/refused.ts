@@ -1,6 +1,6 @@
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { capacityUnread } from '../../../lint/kit/project/capacity.js';
-import { badge, print, RED, RESET } from '../check/report/terminal.js';
+import { badge, print, RED, RESET } from '../terminal.js';
 import type { Recorded } from './recorded.js';
 
 export function refusedRange(range: string, where: string, recorded: Recorded): number {

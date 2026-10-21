@@ -23,7 +23,7 @@ import {
 } from '../../drivers/oxlint/oxlint.js';
 import { holdsContentOnly } from '../check/passes/content.js';
 import { verbatimHere } from '../check/passes/setup.js';
-import { badge, print } from '../check/report/terminal.js';
+import { badge, print } from '../terminal.js';
 
 async function listedTargets(ignoresOf: string | undefined): Promise<null | string[]> {
     try {

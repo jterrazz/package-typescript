@@ -3,7 +3,7 @@ import process from 'node:process';
 import { readSettings } from '../../../lint/index.rules.js';
 import { planOf } from '../../../lint/kit/project/build-plan.js';
 import { watched } from '../../drivers/tsdown/tsdown.js';
-import { badge, print, RED, RESET } from '../check/report/terminal.js';
+import { badge, print, RED, RESET } from '../terminal.js';
 
 export async function dev(): Promise<number> {
     print(`${badge('TYPESCRIPT')} Starting dev mode...\n\n`);

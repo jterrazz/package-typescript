@@ -4,8 +4,8 @@ import { readSettings } from '../../../lint/index.rules.js';
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { planOf } from '../../../lint/kit/project/build-plan.js';
 import { builtFrom, watched } from '../../drivers/tsdown/tsdown.js';
-import { badge, GREEN, print, RED, RESET } from '../check/report/terminal.js';
 import { refusedWhileGated } from '../gate-lock/lock.js';
+import { badge, GREEN, print, RED, RESET } from '../terminal.js';
 
 export async function build(args: readonly string[] = []): Promise<number> {
     print(`${badge('TYPESCRIPT')} Building the entries the manifest publishes...\n\n`);

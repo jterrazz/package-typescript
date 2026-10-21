@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { objectOf, parsedObject } from '../../../lint/kit/project/json.js';
-import { print } from '../check/report/terminal.js';
+import { print } from '../terminal.js';
 import { declaredAnywhere } from './declared.js';
 
 type Read = (text: string, name: string) => ReadonlySet<string>;

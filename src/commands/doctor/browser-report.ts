@@ -1,5 +1,5 @@
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
-import { print } from '../check/report/terminal.js';
+import { print } from '../terminal.js';
 import { chromiumBuilds } from './browsers.js';
 import { declaredAnywhere } from './declared.js';
 

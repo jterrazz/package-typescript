@@ -15,7 +15,7 @@ import type {
     PassVerdict,
     VerdictSurvivor,
 } from '../check/report/gate-verdict.js';
-import { print } from '../check/report/terminal.js';
+import { print } from '../terminal.js';
 import { byRole } from './roles.js';
 import type { GlueBar } from './roles.js';
 import type { Judged, Survivor } from './survivors.js';

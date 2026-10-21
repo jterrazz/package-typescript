@@ -3,7 +3,6 @@ import { describe, expect, onTestFinished, test, vi } from 'vitest';
 import {
     launched,
     secondsAdded,
-    secondsSince,
     slowestOf,
     timed,
     timedLaunch,
@@ -21,14 +20,6 @@ function clockAt(...moments: number[]): void {
 }
 
 describe('launched', () => {
-    test('secondsSince — the time since a moment, to the tenth of a second', () => {
-        // Given - a clock read at 10 260 ms, then at 10 240 ms
-        clockAt(10_260, 10_240);
-
-        // Then - each distance from 9 000 ms rounds to its nearest tenth
-        expect([secondsSince(9000), secondsSince(9000)]).toStrictEqual([1.3, 1.2]);
-    });
-
     test('launched — a pass is timed from its launch to its verdict, its log and status kept', async () => {
         // Given - a pass launched at 1 000 ms whose verdict comes at 3 500 ms
         clockAt(1000, 3500);

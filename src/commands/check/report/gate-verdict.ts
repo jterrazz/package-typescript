@@ -4,7 +4,7 @@ import { stripVTControlCharacters } from 'node:util';
 
 import { ARTIFACTS } from '../../../../lint/kit/project/build-plan.js';
 import { git } from '../../../../lint/kit/project/git.js';
-import { GREEN, RED, RESET } from './terminal.js';
+import { GREEN, RED, RESET } from '../../terminal.js';
 
 /** Where every gate command leaves its verdict, from the project's root. */
 export const VERDICT_FILE = `${ARTIFACTS}/gate/verdict.json`;

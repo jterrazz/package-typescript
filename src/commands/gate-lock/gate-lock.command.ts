@@ -1,6 +1,6 @@
 import process from 'node:process';
 
-import { badge, GREEN, print, RED, RESET } from '../check/report/terminal.js';
+import { badge, GREEN, print, RED, RESET } from '../terminal.js';
 import { GATE_LOCK, holderOf, refusedWhileGated } from './lock.js';
 
 export function gateLock(): number {
