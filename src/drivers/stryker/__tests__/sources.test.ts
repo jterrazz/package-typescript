@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { describe, expect, onTestFinished, test, vi } from 'vitest';
@@ -8,21 +8,8 @@ import { objectOf } from '../../../../lint/kit/project/json.js';
 import { OBSERVED_TESTS_VARIABLE } from '../mutant-setup.js';
 import { KILLERS_VARIABLE, RECENT_KILLERS_VARIABLE } from '../previous-killers.js';
 import { relevantFirstSource, sandboxScriptSource, vitestConfigSource } from '../sources.js';
-
-const pluginsOf = (source: string): string | undefined => /plugins: \[[^\]]*\]/u.exec(source)?.[0];
-
-const WIDE = 'export declare const kind: string;\n';
-
-const EXACT = "export declare const kind: 'api';\n";
-
-function laid(root: string, files: Readonly<Record<string, string>>): void {
-    for (const [path, text] of Object.entries(files)) {
-        mkdirSync(join(root, path, '..'), { recursive: true });
-        writeFileSync(join(root, path), text);
-    }
-}
-
-type Spec = { moduleId: string; project: { name: string } };
+import { EXACT, laid, pluginsOf, specOf, WIDE } from './sources.fixtures.js';
+import type { Spec } from './sources.fixtures.js';
 
 type Sequencer = { sort: (files: Spec[]) => Promise<Spec[]> };
 
@@ -31,11 +18,6 @@ type SequencerClass = new (ctx: unknown) => Sequencer;
 type Sort = (specs: Spec[]) => Promise<string[]>;
 
 const isClass = (value: unknown): value is SequencerClass => typeof value === 'function';
-
-const specOf = (root: string, project: string, path: string): Spec => ({
-    moduleId: join(root, path),
-    project: { name: project },
-});
 
 type Sorting = {
     durations: Readonly<Record<string, number>>;
@@ -306,6 +288,38 @@ describe('sources', () => {
                 readFileSync(join(sandbox, path), 'utf8'),
             ),
         ).toStrictEqual([EXACT, 'instrumented', WIDE]);
+    });
+
+    test('sandboxScriptSource — a member’s build runs under the real repository, and the sandbox’s git tree lists the copy without what the build wrote', () => {
+        // Given - a workspace repository, and the sandbox of a member two folders down whose build records the repository it runs under
+        const made = mkdtempSync(join(tmpdir(), 'mutation-workspace-'));
+        const repository = realpathSync(made);
+        onTestFinished(() => {
+            rmSync(repository, { force: true, recursive: true });
+        });
+        const sandbox = join(repository, 'packages/web/.artifacts/stryker/tmp/sandbox-1');
+        laid(repository, {
+            '.gitignore': '.artifacts/\n',
+            'pnpm-workspace.yaml': "packages:\n    - 'packages/*'\n",
+        });
+        execFileSync('git', ['init', '--quiet'], { cwd: repository });
+        const build = 'mkdir -p dist && git rev-parse --show-toplevel > dist/root';
+        laid(sandbox, { 'package.json': JSON.stringify({ scripts: { build } }) });
+        writeFileSync(
+            join(sandbox, 'sandbox.mjs'),
+            sandboxScriptSource(true, join(repository, 'packages/web')),
+        );
+
+        // When - the sandbox script runs
+        execFileSync(process.execPath, ['sandbox.mjs'], { cwd: sandbox, stdio: 'ignore' });
+
+        // Then - the build found the workspace's repository, and the sandbox's own repository is back, listing the copy alone
+        expect({
+            built: readFileSync(join(sandbox, 'dist/root'), 'utf8').trim(),
+            listed: execFileSync('git', ['ls-files'], { cwd: sandbox, encoding: 'utf8' })
+                .split('\n')
+                .filter(Boolean),
+        }).toStrictEqual({ built: repository, listed: ['package.json', 'sandbox.mjs'] });
     });
 
     test('sandboxScriptSource — a run that builds nothing only lays the git tree', () => {

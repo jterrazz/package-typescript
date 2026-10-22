@@ -191,15 +191,22 @@ for (const name of ${JSON.stringify(names)}) {
 `;
 
 // outside: the checks a test runs read the git tree, and the sandbox lies in the ignored .artifacts/, where git sees none.
+// outside: a framework build finds its workspace root under the nearest git repository (Next.js ignores a pnpm-workspace.yaml above it and cannot resolve `next` hoisted there), so the build runs with the sandbox's repository moved beside it, under the real one, as the build in the checkout does.
 // invariant: the build the suite runs against holds the declarations of the project's own build: a mutant changes what the code does, never the types it declares, and a declaration emitted from instrumented code infers wider types than the code states.
 export const sandboxScriptSource = (build: boolean, project: string, beside?: Beside): string =>
     `import { execFileSync } from 'node:child_process';
-${build ? "import { cpSync, existsSync, statSync } from 'node:fs';\n" : ''}
+${build ? "import { cpSync, existsSync, renameSync, statSync } from 'node:fs';\n" : ''}
 execFileSync('git', ['init', '--quiet']);
 execFileSync('git', ['add', '--all']);
 ${
     build
-        ? `execFileSync('npm', ['run', 'build'], { stdio: 'inherit' });
+        ? `const repository = \`\${process.cwd()}.git\`;
+renameSync('.git', repository);
+try {
+    execFileSync('npm', ['run', 'build'], { stdio: 'inherit' });
+} finally {
+    renameSync(repository, '.git');
+}
 const declarations = ${JSON.stringify(join(project, DIST))};
 if (existsSync(declarations)) {
     cpSync(declarations, ${JSON.stringify(DIST)}, {
