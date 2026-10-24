@@ -4,6 +4,7 @@ import { join, posix } from 'node:path';
 
 import { ARTIFACTS } from '../../../../lint/kit/project/build-plan.js';
 import { listNotIgnored } from '../../../../lint/kit/project/git-tree.js';
+import { git } from '../../../../lint/kit/project/git.js';
 import { GROUND_FOLDERS, SETUP_FOLDER } from '../../../../lint/kit/project/ground.js';
 import { objectOf, stringOf } from '../../../../lint/kit/project/json.js';
 
@@ -14,18 +15,33 @@ const INSTALL = 'node_modules/.package-lock.json';
 
 const hashOf = (bytes: Buffer | string): string => createHash('sha256').update(bytes).digest('hex');
 
-/** The hash of every file git lists in the project, ignored files and the output of runs aside, and of the install; `undefined` where git cannot list the tree, so no change could be told. */
+const CONFIGURATION = /^\.|\.(?:[cm]?[jt]sx?|json5?|jsonc|ya?ml|toml)$/u;
+
+const isUntrackedConfiguration = (path: string): boolean => CONFIGURATION.test(path);
+
+// invariant: a tool reads a root file as its configuration by its name, and a project commits what configures it, so a root file git does not track and no tool would read by its shape (a log, a note, an archive left in the checkout) is no input: it would read as a change every test reads, and run every one.
+function untrackedRootFilesOf(project: string): ReadonlySet<string> {
+    const others = String(git(project, ['ls-files', '--others', '--exclude-standard', '-z']));
+
+    return new Set(
+        others.split('\0').filter((path) => !path.includes('/') && !isUntrackedConfiguration(path)),
+    );
+}
+
+/** The hash of every file git lists in the project, ignored files, the output of runs and the root files no tool reads aside, and of the install; `undefined` where git cannot list the tree, so no change could be told. */
 export function inputsOf(project: string): Record<string, string> | undefined {
     // outside: the sweep that lists a project's files leaves a test's ground to its scenario, so the tree is asked of git directly.
     const listed = listNotIgnored(project);
     if (listed === null) {
         return undefined;
     }
+    const stray = untrackedRootFilesOf(project);
     const inputs: Record<string, string> = {};
     for (const path of listed) {
         const file = join(project, path);
         if (
             !path.startsWith(`${ARTIFACTS}/`) &&
+            !stray.has(path) &&
             statSync(file, { throwIfNoEntry: false })?.isFile() === true
         ) {
             inputs[path] = hashOf(readFileSync(file));

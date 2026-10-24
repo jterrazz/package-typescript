@@ -315,6 +315,41 @@ import j from './j.mjs';`;
         ]);
     });
 
+    test('inputsOf — a root file git does not track is an input only where a tool may read it as configuration; the same file tracked, or deeper, always is', () => {
+        // Given - a log, a note and an archive left at the root untracked, beside untracked root configurations, a tracked root note, a log git ignores, and a log in a folder
+        const root = projectWith({
+            '.env': 'A=1',
+            '.gitignore': 'ignored.log\n',
+            'NOTES.md': 'tracked',
+            'config.yaml': 'a: 1',
+            'eslint.config.mjs': 'x',
+            'notes.json.bak': 'x',
+            'oxlint.yml': 'a: 1',
+            'ignored.log': 'x',
+            'scratch.txt': 'x',
+            'src/run.log': 'x',
+            'stryker.log': 'x',
+            'tool.tgz': 'x',
+            'tsconfig.json': '{}',
+            'vitest.config.ts': 'x',
+        });
+        execFileSync('git', ['add', 'NOTES.md'], { cwd: root });
+
+        // Then - the stray root files and the ignored one are no input
+        expect(Object.keys(inputsOf(root) ?? {}).toSorted()).toStrictEqual([
+            '.env',
+            '.gitignore',
+            'NOTES.md',
+            'config.yaml',
+            'eslint.config.mjs',
+            'node_modules/.package-lock.json',
+            'oxlint.yml',
+            'src/run.log',
+            'tsconfig.json',
+            'vitest.config.ts',
+        ]);
+    });
+
     test('inputsOf — a file git still tracks that the tree no longer holds is no input', () => {
         // Given - two tracked sources, one then deleted from the disk
         const root = projectWith({ 'src/a.ts': 'a', 'src/gone.ts': 'gone' });
