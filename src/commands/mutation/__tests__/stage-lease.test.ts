@@ -1,4 +1,5 @@
 import { clock } from '@jterrazz/test';
+import { spawn } from 'node:child_process';
 import {
     existsSync,
     mkdtempSync,
@@ -14,8 +15,8 @@ import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
 import { CAPACITY_VARIABLE } from '../../../../lint/kit/project/capacity.js';
 import { APART_VARIABLE, apartIn, heldApart } from '../../../../lint/kit/project/priced-apart.js';
-import { priceLearned, PRICES_FILE } from '../../../../lint/kit/project/prices.js';
-import { leasedRun, peakPriced, sliceNow, stageLease } from '../stage-lease.js';
+import { COSTS_FILE, priceLearned } from '../../../../lint/kit/project/prices.js';
+import { leasedRun, samplesPriced, sliceNow, stageLease } from '../stage-lease.js';
 
 const MB = 1024 ** 2;
 
@@ -46,10 +47,10 @@ describe('stage-lease', () => {
         // Given - a project that keeps a tsconfig.json, its suite stage given a capacity whole
         const root = project(true);
 
-        // Then - the cpus bind, the checkers are counted, and each runner hands on one cpu and a third of what three 1 GB runners leave of 56 GB
+        // Then - the cpus bind, the checkers are counted, and each runner hands on one cpu and a third of what Stryker and three 1 GB runners leave of 56 GB
         expect(stageLease({ cpus: 3, memory: 64 * GB }, root, 'suite')).toStrictEqual({
-            handed: { cpus: 1, memory: Math.floor((56 * GB) / 3 - GB) },
-            line: 'capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · 3 test runner(s) at 1024 MB, 2 checker(s) at 720 MB while checking: cpus bind',
+            handed: { cpus: 1, memory: Math.floor((56 * GB - 300 * MB) / 3 - GB) },
+            line: 'capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · Stryker at 300 MB, 3 test runner(s) at 1024 MB, 2 checker(s) at 720 MB while checking: cpus bind',
             pool: 'stryker-suite',
             runners: 3,
         });
@@ -59,10 +60,10 @@ describe('stage-lease', () => {
         // Given - a project that keeps no tsconfig.json, its module stage given 16 cpus and 2 GB
         const root = project(false);
 
-        // Then - 1,792 MB holds two 650 MB runners, each handing on half of the cpus and of the 492 MB they leave, the memory binds, and no checker is named
+        // Then - 1,792 MB holds Stryker's 300 MB and two 650 MB runners, each handing on half of the cpus and of the 192 MB they leave, the memory binds, and no checker is named
         expect(stageLease({ cpus: 16, memory: 2 * GB }, root, 'modules')).toStrictEqual({
-            handed: { cpus: 8, memory: 246 * MB },
-            line: 'capacity: 16 cpus, 2.0 GB, given by TYPESCRIPT_CAPACITY: this gate 16 cpus, 1.8 GB · 2 test runner(s) at 650 MB: memory binds',
+            handed: { cpus: 8, memory: 96 * MB },
+            line: 'capacity: 16 cpus, 2.0 GB, given by TYPESCRIPT_CAPACITY: this gate 16 cpus, 1.8 GB · Stryker at 300 MB, 2 test runner(s) at 650 MB: memory binds',
             pool: 'stryker-modules',
             runners: 2,
         });
@@ -75,10 +76,10 @@ describe('stage-lease', () => {
             priceLearned(root, 'stryker-suite', peak * MB);
         }
 
-        // Then - 3.5 GB holds seven runners at the median, where the highest peak would have held one
+        // Then - 3.5 GB holds Stryker and six runners at the median, where the highest peak would have held one
         expect(stageLease({ cpus: 8, memory: 4 * GB }, root, 'suite')).toMatchObject({
-            line: 'capacity: 8 cpus, 4.0 GB, given by TYPESCRIPT_CAPACITY: this gate 8 cpus, 3.5 GB · 7 test runner(s) at 500 MB: memory binds',
-            runners: 7,
+            line: 'capacity: 8 cpus, 4.0 GB, given by TYPESCRIPT_CAPACITY: this gate 8 cpus, 3.5 GB · Stryker at 300 MB, 6 test runner(s) at 500 MB: memory binds',
+            runners: 6,
         });
     });
 
@@ -96,8 +97,8 @@ describe('stage-lease', () => {
         });
     });
 
-    test('peakPriced — a peak shared by the stage’s runners becomes its pool’s price; no peak, or none above nothing, teaches none', () => {
-        // Given - a stage of three suite runners whose processes peaked at 1.2 GB, and two that read nothing
+    test('samplesPriced — the high of the samples, Stryker’s once and its runners’ shared, becomes the pool’s cost; samples of nothing teach none', () => {
+        // Given - a stage of three suite runners sampled ten times, their processes at 300 MB but one brief spike to 3 GB, Stryker at 200 MB but once 260 MB; and a stage whose samples read nothing
         const root = project(false);
         const lease = {
             handed: { cpus: 1, memory: GB },
@@ -105,14 +106,21 @@ describe('stage-lease', () => {
             pool: 'stryker-suite',
             runners: 3,
         } as const;
-        peakPriced(root, lease, undefined);
-        peakPriced(root, lease, 0);
-        const before = existsSync(join(root, PRICES_FILE));
-        peakPriced(root, lease, 1200 * MB);
-        const written: unknown = JSON.parse(readFileSync(join(root, PRICES_FILE), 'utf8'));
+        samplesPriced(root, lease, []);
+        samplesPriced(root, lease, [{ below: 0, tools: 0 }]);
+        const before = existsSync(join(root, COSTS_FILE));
+        samplesPriced(root, lease, [
+            ...Array.from({ length: 8 }, () => ({ below: 900 * MB, tools: 200 * MB })),
+            { below: 1200 * MB, tools: 260 * MB },
+            { below: 3 * GB, tools: 200 * MB },
+        ]);
+        const written: unknown = JSON.parse(readFileSync(join(root, COSTS_FILE), 'utf8'));
 
-        // Then - nothing was written for the first two, then 400 MB per runner
-        expect([before, written]).toStrictEqual([false, { 'stryker-suite': [400 * MB] }]);
+        // Then - nothing was written for the first two, then the ninth decile: 400 MB per runner where the spike's 1 GB would have been read, and Stryker's 200 MB, its brief 260 MB left out alike
+        expect([before, written]).toStrictEqual([
+            false,
+            { 'stryker-suite': [400 * MB], 'stryker-suite tool': [200 * MB] },
+        ]);
     });
 
     test('leasedRun — the run is handed a folder of its own where a process registers to be priced apart, gone after; a gate an outer stage started is priced apart from it while its own stage runs', async () => {
@@ -144,6 +152,40 @@ describe('stage-lease', () => {
             [...apartIn(outer)],
             process.env[APART_VARIABLE],
         ]).toStrictEqual([false, [4242], [process.pid], false, [], outer]);
+    });
+
+    test('leasedRun — a process a run registers apart is in no sample: below Stryker, only what is not apart is shared by the runners', async () => {
+        // Given - a process standing for Stryker that starts a runner, which the run registers apart, sampled once under a pinned scheduler
+        const stryker = spawn(process.execPath, [
+            '--eval',
+            "const runner = require('node:child_process').spawn(process.execPath, ['--eval', 'setTimeout(() => {}, 30000)'], { stdio: 'ignore' }); console.log(runner.pid); setTimeout(() => {}, 30000);",
+        ]);
+        const runner = await new Promise<number>((resolve) => {
+            stryker.stdout.once('data', (data: Buffer) => {
+                resolve(Number(String(data).trim()));
+            });
+        });
+        onTestFinished(() => {
+            process.kill(runner);
+            stryker.kill();
+        });
+        using _ = clock.run('2026-10-24T00:00:00Z');
+        variableIs(undefined);
+        vi.stubEnv(APART_VARIABLE, undefined);
+        const root = project(false);
+        await leasedRun(
+            root,
+            { handed: { cpus: 1, memory: GB }, line: '', pool: 'stryker-suite', runners: 1 },
+            async () => {
+                heldApart(runner);
+                await vi.advanceTimersByTimeAsync(2000);
+            },
+        );
+        const written: unknown = JSON.parse(readFileSync(join(root, COSTS_FILE), 'utf8'));
+
+        // Then - Stryker's process was priced, and nothing below it, the runner held apart
+        expect(written).toHaveProperty('stryker-suite tool');
+        expect(written).not.toHaveProperty('stryker-suite');
     });
 
     test('leasedRun — the run reads its runners’ slice, answers or fails as it does, and leaves no watch behind', async () => {

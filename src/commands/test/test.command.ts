@@ -14,6 +14,7 @@ import { scriptRunOf, testFilesReachedIn, testScriptOf } from '../mutation/recor
 import type { TestFiles } from '../mutation/record/test-files.js';
 import { badge, print } from '../terminal.js';
 import { secondsSince } from '../timing.js';
+import { leasedTest, testLease } from './test-lease.js';
 
 async function recordedTest(project: string, args: readonly string[]): Promise<number> {
     const before = fileResultsOf(project);
@@ -33,12 +34,29 @@ async function recordedTest(project: string, args: readonly string[]): Promise<n
     return status;
 }
 
+async function sizedTest(
+    project: string,
+    script: string,
+    files: readonly string[],
+): Promise<number> {
+    const lease = testLease(project, script);
+    if (lease !== undefined) {
+        print(`${badge('TYPESCRIPT')} ${lease.line}\n`);
+    }
+
+    return await leasedTest(
+        project,
+        { files, lease },
+        async (args) => await recordedTest(project, args),
+    );
+}
+
 async function selectedTest(project: string, cold: boolean, script: string): Promise<number> {
     const selection: TestFiles = cold
         ? { kind: 'every', reason: 'asked --cold' }
         : testFilesReachedIn(project);
     const { args, line } = scriptRunOf(selection, script);
-    const status = args === undefined ? 0 : await recordedTest(project, args);
+    const status = args === undefined ? 0 : await sizedTest(project, script, args);
     print(`${badge('TYPESCRIPT')} ${line}\n`);
 
     return status;

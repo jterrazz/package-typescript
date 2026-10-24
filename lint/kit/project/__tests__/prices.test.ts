@@ -5,9 +5,17 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { describe, expect, onTestFinished, test, vi } from 'vitest';
 
-import { CAPACITY_VARIABLE, SEED_PRICES } from '../capacity.js';
+import { CAPACITY_VARIABLE, SEED_PRICES, SEED_TOOLS } from '../capacity.js';
 import { GATE_VARIABLE, leaseFolder, leaseTaken } from '../leases.js';
-import { priceLearned, priceOf, PRICES_FILE, slotsFor } from '../prices.js';
+import {
+    costLearned,
+    costOf,
+    COSTS_FILE,
+    highOf,
+    priceLearned,
+    priceOf,
+    slotsFor,
+} from '../prices.js';
 
 const MB = 1024 ** 2;
 
@@ -43,7 +51,7 @@ describe('prices', () => {
         }
         priceLearned(project, 'stryker-modules', 250 * MB);
 
-        const written: unknown = JSON.parse(readFileSync(join(project, PRICES_FILE), 'utf8'));
+        const written: unknown = JSON.parse(readFileSync(join(project, COSTS_FILE), 'utf8'));
 
         // Then - the seed, then 400 MB, the median of the last five (900 and 100 dropped), each pool on its own, and the checker still seeded
         expect([
@@ -81,10 +89,10 @@ describe('prices', () => {
         // Given - one project whose prices file is garbled, one whose peaks are no prices
         const garbled = folder();
         mkdirSync(join(garbled, '.artifacts'));
-        writeFileSync(join(garbled, PRICES_FILE), 'garbled');
+        writeFileSync(join(garbled, COSTS_FILE), 'garbled');
         const empty = folder();
         mkdirSync(join(empty, '.artifacts'));
-        writeFileSync(join(empty, PRICES_FILE), '{"vitest":[0,-3,"x"],"checker":7}');
+        writeFileSync(join(empty, COSTS_FILE), '{"vitest":[0,-3,"x"],"checker":7}');
 
         // Then - the seeds, and a learned peak writes the file again
         priceLearned(garbled, 'vitest', 90 * MB);
@@ -93,6 +101,39 @@ describe('prices', () => {
             priceOf(empty, 'checker'),
             priceOf(garbled, 'vitest'),
         ]).toStrictEqual([600 * MB, 720 * MB, 90 * MB]);
+    });
+
+    test('highOf — the ninth decile of the samples by nearest rank, the most of a few, none of none', () => {
+        // Given - twenty samples whose two highest are brief spikes, five samples, one, and none
+        const twenty = [...Array.from({ length: 18 }, (_, index) => index + 1), 500, 900];
+
+        // Then - the 18th of twenty, the 5th of five, the one, and nothing
+        expect([highOf(twenty), highOf([5, 1, 4, 2, 3]), highOf([7]), highOf([])]).toStrictEqual([
+            18,
+            5,
+            7,
+            undefined,
+        ]);
+    });
+
+    test('costLearned — the high of a run’s tools held once and of what is below them shared by its workers, each kept beside the other; samples of nothing teach nothing', () => {
+        // Given - a project with no cost, then a Vitest run of four workers sampled ten times, and a run whose samples saw nothing
+        const project = folder();
+        const seeded = costOf(project, 'vitest');
+        costLearned(project, 'vitest', {
+            below: [...Array.from({ length: 9 }, () => 3200 * MB), 8 * GB],
+            tools: [...Array.from({ length: 9 }, () => 600 * MB), 900 * MB],
+            workers: 4,
+        });
+        costLearned(project, 'vitest', { below: [0], tools: [], workers: 4 });
+        const written: unknown = JSON.parse(readFileSync(join(project, COSTS_FILE), 'utf8'));
+
+        // Then - the seeds first, then 800 MB a worker and 600 MB for Vitest, the spikes left out, and nothing more for the empty run
+        expect([seeded, costOf(project, 'vitest'), written]).toStrictEqual([
+            { tool: SEED_TOOLS.vitest, worker: SEED_PRICES.vitest },
+            { tool: 600 * MB, worker: 800 * MB },
+            { vitest: [800 * MB], 'vitest tool': [600 * MB] },
+        ]);
     });
 
     test('slotsFor — the pool’s slots of the capacity given, priced in the project, never divided among the gates', () => {
@@ -104,7 +145,7 @@ describe('prices', () => {
         priceLearned(project, 'vitest', GB);
         const environment = { [CAPACITY_VARIABLE]: 'cpus=8,memory=4g' };
 
-        // Then - 3.5 GB holds three 1 GB workers; the cpus bind under a large memory; a project with no price takes the seed, four 720 MB checkers in 3.5 GB
+        // Then - 3.5 GB holds Vitest's seeded 300 MB and three 1 GB workers; the cpus bind under a large memory; a project with no price takes the seed, four 720 MB checkers in 3.5 GB, a checker's tool held by Stryker's
         expect([
             slotsFor(project, 'vitest', environment),
             slotsFor(project, 'vitest', { [CAPACITY_VARIABLE]: 'cpus=2,memory=64g' }),
@@ -116,7 +157,7 @@ describe('prices', () => {
         // Given - the oldest lease, held by the gate this run is a step of on its checkout, two newer ones of other live gates, and a price no memory binds
         machineFolder();
         const project = folder();
-        priceLearned(project, 'vitest', 1);
+        costLearned(project, 'vitest', { below: [1], tools: [1], workers: 1 });
         mkdirSync(leaseFolder(), { recursive: true });
         writeFileSync(
             join(leaseFolder(), String(process.ppid)),
@@ -131,7 +172,7 @@ describe('prices', () => {
         const gate = { [GATE_VARIABLE]: `${String(process.ppid)}:${project}` };
         const cpus = availableParallelism();
         const elsewhere = folder();
-        priceLearned(elsewhere, 'vitest', 1);
+        costLearned(elsewhere, 'vitest', { below: [1], tools: [1], workers: 1 });
 
         // Then - this run ranks first of three gates, a run of the same gate in another checkout last of four, and the unreadable variable throws the refusal
         expect([

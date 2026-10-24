@@ -22,8 +22,8 @@ describe('capacity', () => {
 
         // Then - each says what it was given, what it leased and which resource bound the runners, and hands Stryker that many
         expect([small, large].map((result) => lineOf(result.stdout.text))).toStrictEqual([
-            ' TYPESCRIPT  capacity: 16 cpus, 2.0 GB, given by TYPESCRIPT_CAPACITY: this gate 16 cpus, 1.8 GB · 2 test runner(s) at 650 MB, 1 checker(s) at 720 MB while checking: memory binds',
-            ' TYPESCRIPT  capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · 3 test runner(s) at 650 MB, 2 checker(s) at 720 MB while checking: cpus bind',
+            ' TYPESCRIPT  capacity: 16 cpus, 2.0 GB, given by TYPESCRIPT_CAPACITY: this gate 16 cpus, 1.8 GB · Stryker at 300 MB, 2 test runner(s) at 650 MB, 1 checker(s) at 720 MB while checking: memory binds',
+            ' TYPESCRIPT  capacity: 3 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 3 cpus, 56.0 GB · Stryker at 300 MB, 3 test runner(s) at 650 MB, 2 checker(s) at 720 MB while checking: cpus bind',
         ]);
         expect(
             [small, large].map((result) =>

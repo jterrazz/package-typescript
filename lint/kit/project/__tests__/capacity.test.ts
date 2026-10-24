@@ -128,16 +128,19 @@ describe('capacity', () => {
         expect(read.available).toBeLessThan(read.memory);
     });
 
-    test('slots — the cpus, fewer where the memory binds, never none', () => {
-        // Given - a price of 500 MB on slices where the cpus bind, where the memory binds, at the edge, and where it holds none
-        // Then - each holds the least of the two, and one at the least
+    test('slots — the cpus, fewer where the memory the tool leaves binds, never none', () => {
+        // Given - workers at 500 MB under a tool of 200 MB, on slices where the cpus bind, where the memory binds, at the edge, where the tool takes all, and where nothing is held
+        const cost = { tool: 200 * MB, worker: 500 * MB };
+
+        // Then - each holds the least of the two, the tool counted once whatever the count, and one at the least
         expect([
-            slots({ cpus: 3, memory: 64 * GB }, 500 * MB),
-            slots({ cpus: 16, memory: GB }, 500 * MB),
-            slots({ cpus: 16, memory: 1500 * MB }, 500 * MB),
-            slots({ cpus: 16, memory: 1499 * MB }, 500 * MB),
-            slots({ cpus: 4, memory: 0 }, 500 * MB),
-        ]).toStrictEqual([3, 2, 3, 2, 1]);
+            slots({ cpus: 3, memory: 64 * GB }, cost),
+            slots({ cpus: 16, memory: 1224 * MB }, cost),
+            slots({ cpus: 16, memory: 1700 * MB }, cost),
+            slots({ cpus: 16, memory: 1699 * MB }, cost),
+            slots({ cpus: 16, memory: 200 * MB }, cost),
+            slots({ cpus: 4, memory: 0 }, cost),
+        ]).toStrictEqual([3, 2, 3, 2, 1, 1]);
     });
 
     test('sliceOf — a capacity given is the whole slice, less an eighth of the memory', () => {

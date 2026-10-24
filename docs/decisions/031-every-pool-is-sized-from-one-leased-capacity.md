@@ -3,6 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-10-20
 **Superseded in part by:** [ADR-032](032-the-mutant-checker-runs-on-the-native-compiler.md), for the checker's seed price: the checker holds the native compiler, measured at 720 MB.
+**Amended by:** [ADR-035](035-a-pool-is-priced-by-the-high-of-its-run-and-its-tool-once.md): a price is the ninth decile of a run, each pool's tool is held once, and `typescript test` learns Vitest's.
 
 The owner accepted the plan on 2026-10-20 ("fais l'ensemble des trucs
 remontés"), under the rule of the same day that the toolchain takes one code

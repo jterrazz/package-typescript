@@ -61,7 +61,7 @@ describe('mutation workers', () => {
             measured,
         );
         // Then - the stage learned what one of its test runners holds
-        const prices: unknown = JSON.parse(three.file('.artifacts/prices.json').content);
+        const prices: unknown = JSON.parse(three.file('.artifacts/costs.json').content);
         expect(prices).toHaveProperty(['stryker-suite', 0]);
     });
 

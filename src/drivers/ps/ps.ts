@@ -15,68 +15,69 @@ const rowsOf = (table: string): Row[] =>
             resident: Number(resident) * KILOBYTE,
         }));
 
-function below(rows: readonly Row[], pid: number, apart: ReadonlySet<number>): number {
-    const reached = new Set([pid]);
-    let total = 0;
-    let grown = true;
-    while (grown) {
-        grown = false;
-        for (const { child, parent, resident } of rows) {
-            if (reached.has(parent) && !reached.has(child) && !apart.has(child)) {
-                reached.add(child);
-                total += resident;
-                grown = true;
-            }
-        }
-    }
+/** What the processes below a pid held at one sample, in bytes: its tools, down to the depth the watch names, each held once whatever count of workers it serves, and the workers below them. */
+export type Resident = { below: number; tools: number };
 
-    return total;
-}
-
-/** The resident memory of what the tools `pid` started started in turn, read from a `ps -A -o pid=,ppid=,rss=` table, in bytes: the processes below each child of `pid`, each child itself left out, and every process at or below a pid of `apart`. */
-export function residentBelowTools(
+/** The resident memory below `pid`, read from a `ps -A -o pid=,ppid=,rss=` table: the processes down to `depth` below it are its tools, every one deeper is below them, and each process at or below a pid of `apart` is left out. */
+export function residentOf(
     table: string,
     pid: number,
-    apart: ReadonlySet<number> = new Set(),
-): number {
+    { apart = new Set(), depth = 1 }: { apart?: ReadonlySet<number>; depth?: number } = {},
+): Resident {
     const rows = rowsOf(table);
+    const held: Resident = { below: 0, tools: 0 };
+    let level = new Set([pid]);
+    for (let reached = 1; level.size > 0; reached += 1) {
+        const next = new Set<number>();
+        for (const { child, parent, resident } of rows) {
+            if (level.has(parent) && !apart.has(child)) {
+                next.add(child);
+                held[reached <= depth ? 'tools' : 'below'] += resident;
+            }
+        }
+        level = next;
+    }
 
-    return rows
-        .filter(({ child, parent }) => parent === pid && !apart.has(child))
-        .reduce((total, { child }) => total + below(rows, child, apart), 0);
+    return held;
 }
 
-const residentNow = (pid: number, apart: ReadonlySet<number>): number | undefined => {
+const residentNow = (
+    pid: number,
+    options: { apart: ReadonlySet<number>; depth: number },
+): Resident | undefined => {
     const listed = spawnSync('ps', ['-A', '-o', 'pid=,ppid=,rss='], { encoding: 'utf8' });
 
-    // Stryker disable next-line ConditionalExpression: a ps that fails prints no row, so its table reads as nothing held, and a peak of nothing teaches no price
-    return listed.status === 0 ? residentBelowTools(listed.stdout, pid, apart) : undefined;
+    // Stryker disable next-line ConditionalExpression: a ps that fails prints no row, so its table reads as nothing held, and a sample of nothing teaches no price
+    return listed.status === 0 ? residentOf(listed.stdout, pid, options) : undefined;
 };
 
-/** The most resident memory the processes below a pid's tools held at once so far, and the gesture that stops watching and says it; `undefined` before `ps` read anything. */
-export type Watch = { read: () => number | undefined; stop: () => number | undefined };
+/** The samples a watch took so far, and the gesture that stops watching and hands them all. */
+export type Watch = { read: () => readonly Resident[]; stop: () => readonly Resident[] };
 
-/** Watches what the tools `pid` started started in turn, sampled every `everyMs` until stopped, leaving out each sample the processes `apart` names then. */
-export function residentPeak(
+/** Watches what a pid's tools held and what they started, sampled every `everyMs` until stopped: the processes down to `depth` below it are its tools, and each sample leaves out the processes `apart` names then. */
+export function residentWatch(
     pid: number,
     everyMs: number,
-    apart: () => ReadonlySet<number> = () => new Set(),
+    {
+        apart = () => new Set(),
+        depth = 1,
+    }: { apart?: () => ReadonlySet<number>; depth?: number } = {},
 ): Watch {
-    let peak: number | undefined;
+    const samples: Resident[] = [];
     const sampled = (): void => {
-        const now = residentNow(pid, apart());
+        const now = residentNow(pid, { apart: apart(), depth });
         if (now !== undefined) {
-            peak = Math.max(peak ?? 0, now);
+            samples.push(now);
         }
     };
     const timer = setInterval(sampled, everyMs);
 
     return {
-        read: () => peak,
+        read: () => [...samples],
         stop: () => {
             clearInterval(timer);
 
-            return peak;
+            return [...samples];
         },
     };
 }

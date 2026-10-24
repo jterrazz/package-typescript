@@ -87,7 +87,7 @@ describe('test selection', () => {
         );
     });
 
-    test('typescript test — a project no mutation run has recorded runs every test file', async () => {
+    test('typescript test — a project no mutation run has recorded runs every test file, on the workers its capacity holds', async () => {
         // Given - the consumer committed, never measured, then x changed
         const result = await typescript
             .fixture(directory('./__fixtures__/test-selection/'))
@@ -102,10 +102,13 @@ describe('test selection', () => {
             })
             .exec('typescript test');
 
-        // Then - every file ran
+        // Then - every file ran, on the workers the capacity given holds, and the run says what it sized them by
         expect(result.exitCode).toBe(0);
         expect(ranLineOf(result.stdout.text)).toBe(
             ' TYPESCRIPT  ran every test file: no record of what each test reaches, which `typescript mutation` leaves\n',
+        );
+        expect(/^.*capacity: .*\n/mu.exec(result.stdout.text)?.[0]).toBe(
+            ' TYPESCRIPT  capacity: 1 cpus, 64.0 GB, given by TYPESCRIPT_CAPACITY: this gate 1 cpus, 56.0 GB · Vitest at 300 MB, 1 worker(s) at 600 MB: cpus bind\n',
         );
         expect(testOutcomesOf(result.file('.artifacts/check/outcomes.jsonl').content)).toHaveLength(
             4,

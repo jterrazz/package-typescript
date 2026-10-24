@@ -23,6 +23,17 @@ export const SEED_PRICES: Readonly<Record<Pool, number>> = {
     vitest: 600 * MB,
 };
 
+/** What the tool that runs each pool's workers holds once, whatever count of workers it runs, until a run measures it: Stryker's own process, Vitest's with the npm that starts it; a checker is run by Stryker's. */
+export const SEED_TOOLS: Readonly<Record<Pool, number>> = {
+    checker: 0,
+    'stryker-modules': 300 * MB,
+    'stryker-suite': 300 * MB,
+    vitest: 300 * MB,
+};
+
+/** What a pool costs: its tool, held once, and each of its workers. */
+export type Cost = { tool: number; worker: number };
+
 export type Resources = { cpus: number; memory: number };
 
 /** A machine as a gate reads it: its cpus and memory, the memory nothing holds now, and whether a variable gave them. */
@@ -111,9 +122,9 @@ export function machineOf(named: Partial<Resources> | undefined): Machine {
     };
 }
 
-/** How many workers of a price a slice holds: its cpus, or fewer where its memory binds, never none. */
-export const slots = ({ cpus, memory }: Resources, price: number): number =>
-    Math.max(1, Math.min(cpus, Math.floor(memory / price)));
+/** How many workers of a pool a slice holds: its cpus, or fewer where the memory its tool leaves binds, never none. */
+export const slots = ({ cpus, memory }: Resources, { tool, worker }: Cost): number =>
+    Math.max(1, Math.min(cpus, Math.floor((memory - tool) / worker)));
 
 // value: an eighth of the machine stays for everything that is no gate, and for a price measured short.
 const budgetOf = ({ available, memory }: Machine): number =>
