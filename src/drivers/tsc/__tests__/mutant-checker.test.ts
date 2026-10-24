@@ -3,7 +3,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { importGraphOf, mutatedText, NativeChecker, shapeOf } from '../mutant-checker.js';
+import {
+    compileErrorsAmong,
+    importGraphOf,
+    mutatedText,
+    NativeChecker,
+    shapeOf,
+} from '../mutant-checker.js';
 import type { CheckedMutant } from '../mutant-checker.js';
 import { nativeProject, programOf } from '../native-project.js';
 import { childProcesses, startedSince } from './child-processes.js';
@@ -189,6 +195,37 @@ describe('mutant-checker', () => {
         await checker.dispose();
 
         // Then - no process it started is left, once the system has ended it
+        await expect.poll(() => startedSince(before), { timeout: 10_000 }).toStrictEqual([]);
+    });
+
+    test('compileErrorsAmong — the ids of the mutants the compiler still refuses on the tree; none where no checker opens on it', async () => {
+        // Given - a function returning a text, a tree that does not compile, and a project keeping no tsconfig.json
+        const source = "export function a(): string {\n    return 'a';\n}\n";
+        const mutants = [
+            mutant('body', 'src/a.ts', [0, 28, 0], '{}'),
+            mutant('text', 'src/a.ts', [1, 11, 14], '""'),
+        ].map((one, index) =>
+            index === 0
+                ? {
+                      ...one,
+                      location: { end: { column: 1, line: 2 }, start: { column: 28, line: 0 } },
+                  }
+                : one,
+        );
+        const compiles = projectWith({ 'src/a.ts': source, 'tsconfig.json': TSCONFIG });
+        const refused = projectWith({
+            'src/a.ts': `${source}export const b: number = 'one';\n`,
+            'tsconfig.json': TSCONFIG,
+        });
+
+        const before = childProcesses();
+
+        // Then - the emptied body is refused and the emptied text is not, and the compiler opened for each run ends with it; the others answer nothing
+        await expect(compileErrorsAmong(compiles, mutants)).resolves.toStrictEqual(
+            new Set(['body']),
+        );
+        await expect(compileErrorsAmong(refused, mutants)).resolves.toBeUndefined();
+        await expect(compileErrorsAmong(projectWith({}), mutants)).resolves.toBeUndefined();
         await expect.poll(() => startedSince(before), { timeout: 10_000 }).toStrictEqual([]);
     });
 

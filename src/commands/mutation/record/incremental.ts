@@ -6,14 +6,13 @@ import { gitRun } from '../../../../lint/kit/project/git.js';
 import { parsedObject, stringRecordOf } from '../../../../lint/kit/project/json.js';
 import { readManifest } from '../../../../lint/kit/project/manifest.js';
 import { testFileOf } from '../../../../lint/kit/project/mutation-report.js';
-import type { ObservedTest } from '../../../drivers/stryker/record-folders.js';
-import { dryRunFilesOf } from './dry-run-files.js';
-import type { DryRunFiles, MutatedSource } from './dry-run-files.js';
+import { dryRunOf } from './dry-run-files.js';
+import type { DryRunKept, DryRunOver } from './dry-run-files.js';
 import { changedBetween, inputsOf, isLoadable, ownBuildOf, reachOf, roleOf } from './inputs.js';
 import type { Inputs } from './inputs.js';
-import { observedOf, observedOnDisk, observedTestsOf, ranBy } from './observed.js';
+import { observedOf, observedOnDisk, ranBy } from './observed.js';
 import type { Observed } from './observed.js';
-import { reportAfter } from './staleness.js';
+import { changedFilesOf, isStale, reportAfter } from './staleness.js';
 import type { Staleness } from './staleness.js';
 
 /** Whether a change of a source, as git's diff names its lines between the source's two texts, reaches only what its functions do: the syntax is the TypeScript driver's to read. */
@@ -23,21 +22,8 @@ export type StaysInFunctions = (
     diff: string,
 ) => boolean;
 
-/** Whether every line named of a source, counted from 1, sits inside a function, a type, a comment or a blank: the syntax is the TypeScript driver's to read. */
-export type LinesInFunctions = (file: string, text: string, lines: readonly number[]) => boolean;
-
-/** The sources a suite's dry run is limited to, each with the lines mutated there (`undefined` where it is mutated whole), and how their lines are read. */
-export type DryRunOver = {
-    lines: ReadonlyMap<string, readonly number[] | undefined>;
-    linesInFunctions: LinesInFunctions;
-};
-
 /** What a stage starts on: the inputs it recorded, the test files its dry run keeps (`undefined` for all of them), and the tests of the record the dry run leaves out, which still hold. */
-export type Kept = {
-    carried: readonly ObservedTest[];
-    dryRun: DryRunFiles | undefined;
-    inputs: Inputs | undefined;
-};
+export type Kept = DryRunKept & { inputs: Inputs | undefined };
 
 /** What the last run recorded beside its report: the inputs it ran on, and, once it ended, what its tests ran. */
 export type StageRecord = { inputs: Inputs; observed?: Observed | undefined };
@@ -142,58 +128,104 @@ export function codeTextsIn(project: string, inputs: Inputs): Map<string, string
     return new Map(code.map((path) => [path, String(readFileSync(join(project, path)))]));
 }
 
-function mutatedSources(
-    { lines, linesInFunctions }: DryRunOver,
-    texts: ReadonlyMap<string, string>,
-): MutatedSource[] {
-    return [...lines].map(([file, held]) => {
-        const text = texts.get(file);
+/** What a stage starts on before anything is written: the inputs it would record, the text of every file a test may load, and, where the last run left a record, how the change since it reads and the report it leaves standing (`undefined` where it leaves none). */
+export type Planned = {
+    inputs: Inputs | undefined;
+    reading:
+        | undefined
+        | {
+              changed: readonly string[];
+              recorded: { inputs: Inputs; observed: Observed };
+              staleness: Staleness;
+          };
+    report: Record<string, unknown> | undefined;
+    texts: ReadonlyMap<string, string>;
+};
 
-        return {
-            file,
-            inFunctions:
-                held !== undefined && text !== undefined && linesInFunctions(file, text, held),
-        };
-    });
-}
-
-function dryRunOf(
-    recorded: { inputs: Inputs; observed: Observed },
-    {
-        inputs,
-        over,
-        staleness,
-        texts,
-    }: {
-        inputs: Inputs;
-        over: DryRunOver | undefined;
-        staleness: Staleness;
-        texts: ReadonlyMap<string, string>;
-    },
-): Pick<Kept, 'carried' | 'dryRun'> {
-    const dryRun =
-        over === undefined
-            ? undefined
-            : dryRunFilesOf({
-                  changed: changedBetween(recorded.inputs, inputs),
-                  inputs,
-                  mutated: mutatedSources(over, texts),
-                  observed: recorded.observed,
-                  staleness,
-              });
-    const left = new Set(dryRun?.kept);
+/**
+ * Reads what a stage's incremental report keeps of the change since its run, writing nothing: a cold start, or a project git cannot list, keeps no report and reads no record, since a verdict a gate stands on is never inherited from an earlier run, nor a dry run limited by one.
+ */
+export function incrementalPlanned(
+    project: string,
+    incremental: string,
+    { cold, staysInFunctions }: { cold: boolean; staysInFunctions: StaysInFunctions },
+): Planned {
+    const inputs = inputsOf(project);
+    if (inputs === undefined) {
+        return { inputs, reading: undefined, report: undefined, texts: new Map() };
+    }
+    const recorded = cold ? undefined : recordedOf(project, incremental);
+    const texts = codeTextsIn(project, inputs);
+    if (recorded === undefined) {
+        return { inputs, reading: undefined, report: undefined, texts };
+    }
+    const staleness: Staleness = {
+        onlyFunctions: onlyFunctionsIn(project, incremental, {
+            before: recorded.inputs,
+            now: texts,
+            staysInFunctions,
+        }),
+        ranBy: ranBy(recorded.observed),
+        reach: reachOf(texts, ownBuildOf(readManifest(project) ?? undefined)),
+    };
+    const changed = changedBetween(recorded.inputs, inputs);
+    const report = jsonAt(join(project, MUTATION_OUTPUT, `${incremental}.json`));
 
     return {
-        carried:
-            dryRun === undefined
-                ? []
-                : observedTestsOf(recorded.observed, (test) => {
-                      const file = testFileOf(test);
-
-                      return !left.has(file) && inputs[file] !== undefined;
-                  }),
-        dryRun,
+        inputs,
+        reading: { changed, recorded, staleness },
+        report: report === undefined ? undefined : reportAfter(report, changed, staleness),
+        texts,
     };
+}
+
+/** The test files a suite's dry run keeps over the sources it mutates, and the tests of the record it leaves out, which still hold; every file, and nothing carried, where no record reads the change. */
+export function plannedDryRun(planned: Planned, over: DryRunOver | undefined): DryRunKept {
+    const { inputs, reading, texts } = planned;
+
+    return inputs === undefined || reading === undefined
+        ? { carried: [], dryRun: undefined }
+        : dryRunOf(reading.recorded, {
+              changed: reading.changed,
+              inputs,
+              over,
+              staleness: reading.staleness,
+              texts,
+          });
+}
+
+/** Whether the change since the record made one of its tests stale or brought a test file it does not know: a test a run never saw judge a mutant may judge it now. */
+export function freshTestsIn({ reading }: Planned): boolean {
+    if (reading === undefined) {
+        return true;
+    }
+    const change = changedFilesOf(reading.changed);
+
+    return (
+        change.tests.size > 0 ||
+        Object.keys(reading.recorded.observed.tests).some((key) =>
+            isStale({ file: testFileOf(key), key }, change, reading.staleness),
+        )
+    );
+}
+
+/** Writes what a stage starts on: the report it keeps, the inputs alone as its record, and the text of every source; a project git cannot list keeps neither report nor record. */
+export function plannedWritten(project: string, incremental: string, planned: Planned): void {
+    const file = join(project, MUTATION_OUTPUT, `${incremental}.json`);
+    const { inputs, report, texts } = planned;
+    if (inputs === undefined) {
+        rmSync(file, { force: true });
+        rmSync(recordPathOf(project, incremental), { force: true });
+
+        return;
+    }
+    if (report === undefined) {
+        rmSync(file, { force: true });
+    } else {
+        writeFileSync(file, JSON.stringify(report));
+    }
+    recordInputs(project, incremental, { inputs });
+    keptTexts(project, incremental, { inputs, texts });
 }
 
 /**
@@ -209,45 +241,9 @@ export function incrementalKeptWhileInputsHold(
         staysInFunctions,
     }: { cold: boolean; dryRunOver?: DryRunOver | undefined; staysInFunctions: StaysInFunctions },
 ): Kept {
-    const file = join(project, MUTATION_OUTPUT, `${incremental}.json`);
-    const inputs = inputsOf(project);
-    if (inputs === undefined) {
-        rmSync(file, { force: true });
-        rmSync(recordPathOf(project, incremental), { force: true });
+    const planned = incrementalPlanned(project, incremental, { cold, staysInFunctions });
+    const limited = plannedDryRun(planned, dryRunOver);
+    plannedWritten(project, incremental, planned);
 
-        return { carried: [], dryRun: undefined, inputs: undefined };
-    }
-    const recorded = cold ? undefined : recordedOf(project, incremental);
-    const report = jsonAt(file);
-    const texts = codeTextsIn(project, inputs);
-    const ownBuild = ownBuildOf(readManifest(project) ?? undefined);
-    const staleness: Staleness | undefined =
-        recorded === undefined
-            ? undefined
-            : {
-                  onlyFunctions: onlyFunctionsIn(project, incremental, {
-                      before: recorded.inputs,
-                      now: texts,
-                      staysInFunctions,
-                  }),
-                  ranBy: ranBy(recorded.observed),
-                  reach: reachOf(texts, ownBuild),
-              };
-    const kept =
-        report === undefined || recorded === undefined || staleness === undefined
-            ? undefined
-            : reportAfter(report, changedBetween(recorded.inputs, inputs), staleness);
-    const limited =
-        recorded === undefined || staleness === undefined
-            ? { carried: [], dryRun: undefined }
-            : dryRunOf(recorded, { inputs, over: dryRunOver, staleness, texts });
-    if (kept === undefined) {
-        rmSync(file, { force: true });
-    } else {
-        writeFileSync(file, JSON.stringify(kept));
-    }
-    recordInputs(project, incremental, { inputs });
-    keptTexts(project, incremental, { inputs, texts });
-
-    return { ...limited, inputs };
+    return { ...limited, inputs: planned.inputs };
 }

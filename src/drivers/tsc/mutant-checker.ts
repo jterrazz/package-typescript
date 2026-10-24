@@ -188,3 +188,25 @@ export class NativeChecker {
         return this.shapes.get(file);
     }
 }
+
+/** The ids of the mutants the compiler refuses on the project's tree as it stands, each checked as the run's checker checks it; `undefined` where no checker opens on the tree, which keeps no tsconfig.json or holds an error. */
+export async function compileErrorsAmong(
+    project: string,
+    mutants: readonly CheckedMutant[],
+): Promise<ReadonlySet<string> | undefined> {
+    const checker = new NativeChecker(project);
+    try {
+        await checker.init();
+        const results = await checker.check(mutants);
+
+        return new Set(
+            Object.entries(results)
+                .filter(([, result]) => result.status === 'compileError')
+                .map(([id]) => id),
+        );
+    } catch {
+        return undefined;
+    } finally {
+        await checker.dispose();
+    }
+}

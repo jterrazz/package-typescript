@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { mutantsMade } from '../enumerate.js';
+import { mutantsInstrumented, mutantsMade } from '../enumerate.js';
 import { ignorersSource } from '../ignorers.js';
 
 const IGNORERS = '.artifacts/stryker/ignorers.mjs';
@@ -67,6 +67,24 @@ describe('enumerate', () => {
             },
         ]);
         await expect(mutantsMade(project, [], IGNORERS)).resolves.toStrictEqual([]);
+    });
+
+    test('mutantsInstrumented — every mutant Stryker makes of the files, what a directive or an ignorer sets aside included and marked so', async () => {
+        // Given - a source that logs, and decides
+        const project = projectWith({
+            'src/logs.ts':
+                "export function logged(): boolean {\n    console.info('logged');\n    return true;\n}\n",
+        });
+
+        const made = await mutantsInstrumented(project, ['src/logs.ts'], IGNORERS);
+
+        // Then - the log's mutants are made too, set aside
+        expect(made.map(({ ignored, mutator }) => [mutator, ignored])).toStrictEqual([
+            ['BlockStatement', false],
+            ['CallExpression', true],
+            ['StringLiteral', true],
+            ['BooleanLiteral', false],
+        ]);
     });
 
     test('mutantsMade — a plugin of the laid module that is no ignorer is passed over, the ignorers beside it still read', async () => {

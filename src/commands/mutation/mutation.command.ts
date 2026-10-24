@@ -17,6 +17,7 @@ import { strykerPrepared } from '../../drivers/stryker/prepared.js';
 import type { Stage, StageOutcome } from '../../drivers/stryker/stryker.js';
 import { diffStaysInFunctions, linesStayInFunctions } from '../../drivers/tsc/change-shape.js';
 import { firstCompileError } from '../../drivers/tsc/compile-error.js';
+import { compileErrorsAmong } from '../../drivers/tsc/mutant-checker.js';
 import { provenAsked, provenRun } from '../check/report/proven.js';
 import { withGateLock } from '../gate-lock/lock.js';
 import { badge, print, RED, RESET, secondsOf } from '../terminal.js';
@@ -28,6 +29,7 @@ import type { Base } from './change.js';
 import { capHeld, glueCapped, glueOf } from './glue-cap.js';
 import { memberRuns, unownedRange } from './members.js';
 import { recordedStageRun } from './record/stage-run.js';
+import type { DryRunScope } from './record/stage-run.js';
 import { concluded, judgedRecorded, memberRecorded, recorder, stageRecorded } from './recorded.js';
 import type { Recorded } from './recorded.js';
 import { measuredNothing, refusedAsked, refusedCapacity, refusedRange } from './refused.js';
@@ -57,6 +59,15 @@ const sourceIn =
     (file: string): string =>
         String(readFileSync(join(project, file)));
 
+function dryRunLineOf(dryRun: DryRunScope): string {
+    if ('carried' in dryRun) {
+        return `dry run: none, the record carries the stage's ${String(dryRun.carried)} mutant(s)`;
+    }
+    const { files, workers } = dryRun;
+
+    return `dry run: ${files === undefined ? 'every test file' : `${String(files.kept)} of ${String(files.known)} test files the change reaches`}, on ${String(workers)} worker(s)`;
+}
+
 async function measured(scope: MutationScope, stage: Stage, run: Run): Promise<StageOutcome> {
     const { cold, project, recorded } = run;
     print(`${badge('TYPESCRIPT')} ${STAGES[stage.name].measuring}...\n\n`);
@@ -74,10 +85,9 @@ async function measured(scope: MutationScope, stage: Stage, run: Run): Promise<S
                 cold,
                 concurrency,
                 html: run.html,
-                dryRunScoped: ({ files, workers }) => {
-                    print(
-                        `${badge('TYPESCRIPT')} dry run: ${files === undefined ? 'every test file' : `${String(files.kept)} of ${String(files.known)} test files the change reaches`}, on ${String(workers)} worker(s)\n`,
-                    );
+                compileErrorsAmong,
+                dryRunScoped: (dryRun) => {
+                    print(`${badge('TYPESCRIPT')} ${dryRunLineOf(dryRun)}\n`);
                 },
                 linesInFunctions: linesStayInFunctions,
                 project,

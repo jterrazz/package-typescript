@@ -1,27 +1,32 @@
-import { execFileSync } from 'node:child_process';
-import {
-    existsSync,
-    mkdirSync,
-    mkdtempSync,
-    readdirSync,
-    readFileSync,
-    rmSync,
-    writeFileSync,
-} from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, test } from 'vitest';
+import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { isList, objectOf, parsedObject } from '../../../../../lint/kit/project/json.js';
+import { objectOf } from '../../../../../lint/kit/project/json.js';
 import { STAGES } from '../../../../../lint/kit/project/mutation-stages.js';
 import type { ObservedTest } from '../../../../drivers/stryker/record-folders.js';
 import {
     diffStaysInFunctions,
     linesStayInFunctions,
 } from '../../../../drivers/tsc/change-shape.js';
-import { incrementalKeptWhileInputsHold, recordInputs } from '../incremental.js';
+import {
+    freshTestsIn,
+    incrementalKeptWhileInputsHold,
+    incrementalPlanned,
+    recordInputs,
+} from '../incremental.js';
 import { observedFrom } from '../observed.js';
-import { FILES, MODULE_TESTS, REPORT, SPEC_QUIET, SPEC_RAN_A } from './incremental.fixtures.js';
+import {
+    FILES,
+    idsByFile,
+    MODULE_TESTS,
+    parsedAt,
+    projectWith,
+    REPORT,
+    SPEC_QUIET,
+    SPEC_RAN_A,
+} from './incremental.fixtures.js';
 
 const keptOf = (root: string, incremental: string, cold: boolean) =>
     incrementalKeptWhileInputsHold(root, incremental, {
@@ -29,45 +34,13 @@ const keptOf = (root: string, incremental: string, cold: boolean) =>
         staysInFunctions: diffStaysInFunctions,
     });
 
+const plannedIn = (root: string) =>
+    incrementalPlanned(root, 'suite-incremental', {
+        cold: false,
+        staysInFunctions: diffStaysInFunctions,
+    });
+
 const startedIn = (root: string, cold = false) => keptOf(root, 'suite-incremental', cold).inputs;
-
-const roots: string[] = [];
-
-function projectWith(files: Record<string, string>): string {
-    const root = mkdtempSync(join(tmpdir(), 'incremental-'));
-    roots.push(root);
-    execFileSync('git', ['init', '--quiet'], { cwd: root });
-    for (const [path, text] of Object.entries(files)) {
-        mkdirSync(join(root, path, '..'), { recursive: true });
-        writeFileSync(join(root, path), text);
-    }
-    mkdirSync(join(root, '.artifacts/stryker'), { recursive: true });
-
-    return root;
-}
-
-afterEach(() => {
-    for (const root of roots.splice(0)) {
-        rmSync(root, { force: true, recursive: true });
-    }
-});
-
-const idOf = (one: unknown): string => String(objectOf(one).id);
-
-function idsByFile(report: unknown): Record<string, string[]> {
-    const files = Object.entries(objectOf(objectOf(report).files));
-
-    return Object.fromEntries(
-        files.map(([file, entry]) => {
-            const { mutants } = objectOf(entry);
-
-            return [file, isList(mutants) ? mutants.map(idOf) : []];
-        }),
-    );
-}
-
-const parsedAt = (path: string): Record<string, unknown> =>
-    parsedObject(readFileSync(path, 'utf8'));
 
 const reportOf = (root: string): string => join(root, '.artifacts/stryker/suite-incremental.json');
 
@@ -379,7 +352,9 @@ describe('incremental', () => {
     test('incrementalKeptWhileInputsHold — a project git cannot list, run for the first time, starts from nothing', () => {
         // Given - a folder that is no repository, and no report nor record in it
         const root = mkdtempSync(join(tmpdir(), 'incremental-'));
-        roots.push(root);
+        onTestFinished(() => {
+            rmSync(root, { force: true, recursive: true });
+        });
 
         // When - a run starts
         const inputs = startedIn(root);
@@ -389,5 +364,36 @@ describe('incremental', () => {
             undefined,
             false,
         ]);
+    });
+
+    test('incrementalPlanned — reads what the report keeps of the change and writes nothing, the record and the report left as the last run left them', () => {
+        // Given - a run that ended
+        const root = ranOnce();
+        const before = [readFileSync(reportOf(root), 'utf8'), recordOf(root)];
+
+        // When - the helper changes and a stage plans its start
+        writeFileSync(join(root, 'src/h.ts'), 'changed');
+        const { report } = plannedIn(root);
+        const unrecorded = projectWith(FILES);
+
+        // Then - b's mutant is out of the plan's report, nothing on disk moved, and a plan no record was read for holds every test fresh
+        expect(idsByFile(report)).toStrictEqual({ 'src/a.ts': [], 'src/b.ts': [] });
+        expect(freshTestsIn(plannedIn(unrecorded))).toBe(true);
+        expect([readFileSync(reportOf(root), 'utf8'), recordOf(root)]).toStrictEqual(before);
+    });
+
+    test.each([
+        ['a source no test reaches', 'src/z.ts', false],
+        ['a helper a module test loads', 'src/h.ts', true],
+        ['a test file the record does not know', 'src/__tests__/z.test.ts', true],
+    ] as const)('freshTestsIn — %s added or changed: %s', (_case, path, fresh) => {
+        // Given - a run that ended, its tests seen spawning nothing
+        const root = ranOnce(SPEC_QUIET);
+
+        // When - the file is written
+        writeFileSync(join(root, path), 'export const Z = 1;\n');
+
+        // Then - only a test the change made stale, or one the record never saw, is fresh
+        expect(freshTestsIn(plannedIn(root))).toBe(fresh);
     });
 });

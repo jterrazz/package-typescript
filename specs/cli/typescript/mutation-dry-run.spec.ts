@@ -21,6 +21,17 @@ function measuredOnce(workdir: string, range: string): void {
     });
 }
 
+function unused(workdir: string): void {
+    writeFileSync(join(workdir, 'src/unused.ts'), 'export const UNUSED = 1;\n');
+}
+
+function labelled(workdir: string): void {
+    writeFileSync(
+        join(workdir, 'src/labels.ts'),
+        `const LABEL = 'bee';\n\nexport function labelOf(): string {\n    return \`\${LABEL}\`;\n}\n`,
+    );
+}
+
 const dryRunOf = (text: string): string | undefined => /^.*dry run: .*\n/mu.exec(text)?.[0];
 
 describe('mutation dry run', () => {
@@ -67,7 +78,7 @@ describe('mutation dry run', () => {
                 measuredOnce(workdir, 'src/labels.ts:1-1');
                 writeFileSync(
                     join(workdir, 'src/labels.ts'),
-                    "const LABEL = 'bee' as const;\n\nexport function labelOf(): string {\n    return LABEL;\n}\n",
+                    "const LABEL = 'b' + 'ee';\n\nexport function labelOf(): string {\n    return LABEL;\n}\n",
                 );
             })
             .env(OUTSIDE_CI)
@@ -78,6 +89,89 @@ describe('mutation dry run', () => {
         expect(dryRunOf(result.stdout.text)).toBe(
             ' TYPESCRIPT  dry run: 4 of 4 test files the change reaches, on 1 worker(s)\n',
         );
+    });
+
+    test('typescript mutation — a change that leaves the record carrying every mutant of the suite, a compile error among them, starts no Stryker, and judges as a cold run does', async () => {
+        // Given - the consumer, type-checked at command a, measured once at its body, then a source no test reaches added
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-commands/'))
+            .fixture(directory('./__fixtures__/mutation-carried/'))
+            .prepare((workdir) => {
+                measuredOnce(workdir, 'src/a.ts:1-3');
+                unused(workdir);
+            })
+            .env(OUTSIDE_CI)
+            .exec('typescript mutation --mutate src/a.ts:1-3');
+        const cold = await cli
+            .fixture(directory('./__fixtures__/mutation-commands/'))
+            .fixture(directory('./__fixtures__/mutation-carried/'))
+            .prepare(unused)
+            .env({ TYPESCRIPT_CAPACITY: 'cpus=1,memory=64g' })
+            .exec('typescript mutation --mutate src/a.ts:1-3');
+
+        // Then - the kill and the compile error the compiler still refuses stand, so no dry run runs, and the verdict is the cold one
+        expect([dryRunOf(result.stdout.text), dryRunOf(cold.stdout.text)]).toStrictEqual([
+            " TYPESCRIPT  dry run: none, the record carries the stage's 2 mutant(s)\n",
+            ' TYPESCRIPT  dry run: every test file, on 1 worker(s)\n',
+        ]);
+        expect(result.stdout.text).toContain('CompileError 1');
+        expect([result.exitCode, result.stdout.text.split('\n').slice(-6)]).toStrictEqual([
+            cold.exitCode,
+            cold.stdout.text.split('\n').slice(-6),
+        ]);
+    });
+
+    test('typescript mutation — a run asked for the HTML report starts Stryker though the record carries every mutant of the suite, and writes it', async () => {
+        // Given - the consumer, type-checked, measured once at command a's body, then a source no test reaches added
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-commands/'))
+            .fixture(directory('./__fixtures__/mutation-carried/'))
+            .prepare((workdir) => {
+                measuredOnce(workdir, 'src/a.ts:1-3');
+                unused(workdir);
+            })
+            .env(OUTSIDE_CI)
+            .exec('typescript mutation --mutate src/a.ts:1-3 --report html');
+
+        // Then - the dry run runs, and the report it was asked for is written
+        expect(result.exitCode).toBe(0);
+        expect(dryRunOf(result.stdout.text)).toBe(
+            ' TYPESCRIPT  dry run: 1 of 4 test files the change reaches, on 1 worker(s)\n',
+        );
+        expect(result.file('.artifacts/stryker/suite-report.html').content).toContain(
+            '<mutation-test-report-app',
+        );
+    });
+
+    test('typescript mutation — Stryker runs only the source holding a mutant the record does not carry, its dry run over the spec that reaches it, and judges as a cold run does', async () => {
+        // Given - the consumer, type-checked, measured once at command a's body and at the label's function, then that function rewritten to the same output
+        const result = await cli
+            .fixture(directory('./__fixtures__/mutation-commands/'))
+            .fixture(directory('./__fixtures__/mutation-carried/'))
+            .prepare((workdir) => {
+                measuredOnce(workdir, 'src/a.ts:1-3,src/labels.ts:4-4');
+                labelled(workdir);
+            })
+            .env(OUTSIDE_CI)
+            .exec('typescript mutation --mutate src/a.ts:1-3,src/labels.ts:4-4');
+        const cold = await cli
+            .fixture(directory('./__fixtures__/mutation-commands/'))
+            .fixture(directory('./__fixtures__/mutation-carried/'))
+            .prepare(labelled)
+            .env({ TYPESCRIPT_CAPACITY: 'cpus=1,memory=64g' })
+            .exec('typescript mutation --mutate src/a.ts:1-3,src/labels.ts:4-4');
+
+        // Then - a's kill and compile error stand, so Stryker is handed the label alone, run over the spec that ran it, and the verdict is the cold one
+        expect(dryRunOf(result.stdout.text)).toBe(
+            ' TYPESCRIPT  dry run: 1 of 4 test files the change reaches, on 1 worker(s)\n',
+        );
+        expect(
+            JSON.parse(result.file('.artifacts/stryker/stryker.suite.config.json').content),
+        ).toMatchObject({ mutate: ['src/labels.ts:4-4'] });
+        expect([result.exitCode, result.stdout.text.split('\n').slice(-6)]).toStrictEqual([
+            cold.exitCode,
+            cold.stdout.text.split('\n').slice(-6),
+        ]);
     });
 
     test('typescript mutation — the suite’s run states the files its dry run runs, and the module tests’ run states none', async () => {

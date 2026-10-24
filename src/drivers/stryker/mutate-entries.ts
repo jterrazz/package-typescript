@@ -52,7 +52,7 @@ export const nodeEntry = (
     `${file}:${String(line)}:${String(column - 1)}-${String(endLine)}:${String(endColumn - 1)}`;
 
 // invariant: braces around a comma are expanded whatever escapes them, so such a file reaches Stryker whole, through `?` in place of each comma, and the report is cut back to the ranges asked.
-const isWidened = (file: string): boolean => file.includes('{') && file.includes(',');
+export const isWidened = (file: string): boolean => file.includes('{') && file.includes(',');
 
 // outside: Stryker reads a mutate entry as a minimatch glob after turning every backslash into a slash, so a backslash escapes nothing there; a character held in a class of its own is read back as a plain path, which a line range may sit beside.
 const literalOf = (file: string): string => {

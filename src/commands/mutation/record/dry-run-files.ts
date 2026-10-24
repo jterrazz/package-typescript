@@ -1,5 +1,7 @@
 import { testFileOf } from '../../../../lint/kit/project/mutation-report.js';
+import type { ObservedTest } from '../../../drivers/stryker/record-folders.js';
 import type { Inputs } from './inputs.js';
+import { observedTestsOf } from './observed.js';
 import type { Observed } from './observed.js';
 import { changedFilesOf, isStale, testReaches } from './staleness.js';
 import type { Staleness } from './staleness.js';
@@ -58,4 +60,76 @@ export function dryRunFilesOf({
 
     // outside: Stryker reads an empty list of test files as every one of them.
     return kept.size === 0 ? undefined : { kept: [...kept].toSorted(), known: known.size };
+}
+
+/** Whether every line named of a source, counted from 1, sits inside a function, a type, a comment or a blank: the syntax is the TypeScript driver's to read. */
+export type LinesInFunctions = (file: string, text: string, lines: readonly number[]) => boolean;
+
+/** The sources a suite's dry run is limited to, each with the lines mutated there (`undefined` where it is mutated whole), and how their lines are read. */
+export type DryRunOver = {
+    lines: ReadonlyMap<string, readonly number[] | undefined>;
+    linesInFunctions: LinesInFunctions;
+};
+
+/** The test files a dry run keeps, `undefined` for all of them, and the tests of the record it leaves out, which still hold. */
+export type DryRunKept = {
+    carried: readonly ObservedTest[];
+    dryRun: DryRunFiles | undefined;
+};
+
+function mutatedSources(
+    { lines, linesInFunctions }: DryRunOver,
+    texts: ReadonlyMap<string, string>,
+): MutatedSource[] {
+    return [...lines].map(([file, held]) => {
+        const text = texts.get(file);
+
+        return {
+            file,
+            inFunctions:
+                held !== undefined && text !== undefined && linesInFunctions(file, text, held),
+        };
+    });
+}
+
+/** The test files a suite's dry run keeps over the sources it mutates, read from the record, and the tests of the record it leaves out. */
+export function dryRunOf(
+    recorded: { inputs: Inputs; observed: Observed },
+    {
+        changed,
+        inputs,
+        over,
+        staleness,
+        texts,
+    }: {
+        changed: readonly string[];
+        inputs: Inputs;
+        over: DryRunOver | undefined;
+        staleness: Staleness;
+        texts: ReadonlyMap<string, string>;
+    },
+): DryRunKept {
+    const dryRun =
+        over === undefined
+            ? undefined
+            : dryRunFilesOf({
+                  changed,
+                  inputs,
+                  mutated: mutatedSources(over, texts),
+                  observed: recorded.observed,
+                  staleness,
+              });
+    const left = new Set(dryRun?.kept);
+
+    return {
+        carried:
+            dryRun === undefined
+                ? []
+                : observedTestsOf(recorded.observed, (test) => {
+                      const file = testFileOf(test);
+
+                      return !left.has(file) && inputs[file] !== undefined;
+                  }),
+        dryRun,
+    };
 }

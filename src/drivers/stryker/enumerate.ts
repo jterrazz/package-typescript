@@ -28,12 +28,15 @@ const placeOf = (location: unknown): [number, number] => {
     return [Number(line) + 1, Number(column) + 1];
 };
 
-/** Every mutant Stryker makes of the files, through the ignorers the run laid, before any run: what a directive or an ignorer sets aside is not made. */
-export async function mutantsMade(
+/** A mutant as made before any run, and whether a directive or an ignorer set it aside there. */
+export type Instrumented = Made & { ignored: boolean };
+
+/** Every mutant Stryker makes of the files, through the ignorers the run laid, before any run, those a directive or an ignorer sets aside included. */
+export async function mutantsInstrumented(
     project: string,
     files: readonly string[],
     ignorersFile: string,
-): Promise<Made[]> {
+): Promise<Instrumented[]> {
     // outside: Stryker's packages load only where a mutation run needs them, so every other command starts without them.
     const instrumenter = await import('@stryker-mutator/instrumenter');
     const { noopLogger } = await import('@stryker-mutator/util');
@@ -53,20 +56,40 @@ export async function mutantsMade(
         { excludedMutations: [], ignorers, plugins: null },
     );
 
-    return mutants
-        .filter(({ status }) => status !== 'Ignored')
-        .map(({ fileName, location, mutatorName, replacement }) => {
-            const [line, column] = placeOf(location.start);
-            const [endLine, endColumn] = placeOf(location.end);
+    return mutants.map(({ fileName, location, mutatorName, replacement, status }) => {
+        const [line, column] = placeOf(location.start);
+        const [endLine, endColumn] = placeOf(location.end);
 
-            return {
-                column,
-                endColumn,
-                endLine,
-                file: fileName.slice(project.length + 1),
-                line,
-                mutator: mutatorName,
-                replacement,
-            };
-        });
+        return {
+            column,
+            endColumn,
+            endLine,
+            file: fileName.slice(project.length + 1),
+            ignored: status === 'Ignored',
+            line,
+            mutator: mutatorName,
+            replacement,
+        };
+    });
+}
+
+/** Every mutant Stryker makes of the files, through the ignorers the run laid, before any run: what a directive or an ignorer sets aside is not made. */
+export async function mutantsMade(
+    project: string,
+    files: readonly string[],
+    ignorersFile: string,
+): Promise<Made[]> {
+    const instrumented = await mutantsInstrumented(project, files, ignorersFile);
+
+    return instrumented
+        .filter(({ ignored }) => !ignored)
+        .map(({ column, endColumn, endLine, file, line, mutator, replacement }) => ({
+            column,
+            endColumn,
+            endLine,
+            file,
+            line,
+            mutator,
+            replacement,
+        }));
 }
