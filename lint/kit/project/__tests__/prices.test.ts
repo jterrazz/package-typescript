@@ -103,6 +103,22 @@ describe('prices', () => {
         ]).toStrictEqual([600 * MB, 720 * MB, 90 * MB]);
     });
 
+    test('priceOf — a Vitest worker learned above its seed is priced at the seed, below it as learned; a Stryker runner learned above its seed keeps what it learned', () => {
+        // Given - a project whose Vitest workers learned 740 MB on one worker and whose suite runners learned 2 GB, and one whose Vitest workers learned 440 MB
+        const high = folder();
+        priceLearned(high, 'vitest', 740 * MB);
+        priceLearned(high, 'stryker-suite', 2 * GB);
+        const low = folder();
+        priceLearned(low, 'vitest', 440 * MB);
+
+        // Then - the 600 MB seed, the 2 GB learned, and the 440 MB learned
+        expect([
+            priceOf(high, 'vitest'),
+            priceOf(high, 'stryker-suite'),
+            priceOf(low, 'vitest'),
+        ]).toStrictEqual([SEED_PRICES.vitest, 2 * GB, 440 * MB]);
+    });
+
     test('highOf — the ninth decile of the samples by nearest rank, the most of a few, none of none', () => {
         // Given - twenty samples whose two highest are brief spikes, five samples, one, and none
         const twenty = [...Array.from({ length: 18 }, (_, index) => index + 1), 500, 900];
@@ -121,18 +137,18 @@ describe('prices', () => {
         const project = folder();
         const seeded = costOf(project, 'vitest');
         costLearned(project, 'vitest', {
-            below: [...Array.from({ length: 9 }, () => 3200 * MB), 8 * GB],
+            below: [...Array.from({ length: 9 }, () => 1600 * MB), 8 * GB],
             tools: [...Array.from({ length: 9 }, () => 600 * MB), 900 * MB],
             workers: 4,
         });
         costLearned(project, 'vitest', { below: [0], tools: [], workers: 4 });
         const written: unknown = JSON.parse(readFileSync(join(project, COSTS_FILE), 'utf8'));
 
-        // Then - the seeds first, then 800 MB a worker and 600 MB for Vitest, the spikes left out, and nothing more for the empty run
+        // Then - the seeds first, then 400 MB a worker and 600 MB for Vitest, the spikes left out, and nothing more for the empty run
         expect([seeded, costOf(project, 'vitest'), written]).toStrictEqual([
             { tool: SEED_TOOLS.vitest, worker: SEED_PRICES.vitest },
-            { tool: 600 * MB, worker: 800 * MB },
-            { vitest: [800 * MB], 'vitest tool': [600 * MB] },
+            { tool: 600 * MB, worker: 400 * MB },
+            { vitest: [400 * MB], 'vitest tool': [600 * MB] },
         ]);
     });
 
@@ -142,15 +158,15 @@ describe('prices', () => {
         leaseTaken(1, '/elsewhere');
         leaseTaken(process.ppid, '/other');
         const project = folder();
-        priceLearned(project, 'vitest', GB);
+        priceLearned(project, 'vitest', 500 * MB);
         const environment = { [CAPACITY_VARIABLE]: 'cpus=8,memory=4g' };
 
-        // Then - 3.5 GB holds Vitest's seeded 300 MB and three 1 GB workers; the cpus bind under a large memory; a project with no price takes the seed, four 720 MB checkers in 3.5 GB, a checker's tool held by Stryker's
+        // Then - 3.5 GB holds Vitest's seeded 300 MB and six 500 MB workers; the cpus bind under a large memory; a project with no price takes the seed, four 720 MB checkers in 3.5 GB, a checker's tool held by Stryker's
         expect([
             slotsFor(project, 'vitest', environment),
             slotsFor(project, 'vitest', { [CAPACITY_VARIABLE]: 'cpus=2,memory=64g' }),
             slotsFor(folder(), 'checker', environment),
-        ]).toStrictEqual([3, 2, 4]);
+        ]).toStrictEqual([6, 2, 4]);
     });
 
     test('slotsFor — a machine read is shared among the gates, the lease of the gate this run is a step of counted as its own; a capacity the variable cannot read is refused', () => {

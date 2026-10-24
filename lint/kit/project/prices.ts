@@ -39,11 +39,15 @@ const recordedOf = (project: string, key: string): number[] =>
 
 const toolKey = (pool: Pool): string => `${pool} tool`;
 
-/** What one worker of a pool costs in a project: the median of its last measured highs, so one run out of line neither pins nor drops it, else the pool's seed. */
+// value: what one Vitest worker holds falls as workers are added, so a price learned on one worker would size every later run to one; no run tells memory short yet, so the seed bounds it.
+const CAPPED_AT_SEED: ReadonlySet<Pool> = new Set<Pool>(['vitest']);
+
+/** What one worker of a pool costs in a project: the median of its last measured highs, so one run out of line neither pins nor drops it, else the pool's seed; a Vitest worker never above its seed. */
 export function priceOf(project: string, pool: Pool): number {
     const peaks = recordedOf(project, pool);
+    const learned = peaks.length === 0 ? SEED_PRICES[pool] : medianOf(peaks);
 
-    return peaks.length === 0 ? SEED_PRICES[pool] : medianOf(peaks);
+    return CAPPED_AT_SEED.has(pool) ? Math.min(learned, SEED_PRICES[pool]) : learned;
 }
 
 /** What a pool costs in a project: its tool, held once, and each worker, each the median of its last measured highs, else its seed. */

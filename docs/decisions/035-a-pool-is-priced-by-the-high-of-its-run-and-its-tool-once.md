@@ -1,7 +1,10 @@
 # ADR-035: A pool is priced by the high of its run, and its tool once
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-24
+
+**Accepted:** 2026-10-24: the owner's word on the speed batch's review ("tout ok"),
+with the cap on Vitest's learned price written into the decision below.
 
 Amends [ADR-031](031-every-pool-is-sized-from-one-leased-capacity.md):
 how a price is learned, what a pool is charged for its tool, and which
@@ -40,6 +43,14 @@ and nothing measured a Vitest run.
   that is one `vitest` command (`--maxWorkers`), unless it states its
   own, and a run of every test file teaches the pool its cost; a run of
   a few files leaves workers idle and teaches nothing.
+- A Vitest worker is never priced above its 600 MB seed: learning may
+  lower its price, never raise it. The cap is Vitest's alone. A Stryker
+  runner keeps what it learns above its seed, since the spike this record
+  answers was a stage's and a suite whose specs start gates may truly
+  hold more than 1 GB a runner; the suite's learned 371 MB on 2026-10-24
+  sat under its seed, so the cap would have changed nothing there. The
+  cap holds until a run can tell that memory was short: no such signal
+  exists in the toolchain today, and none is inferred.
 - The file is `.artifacts/costs.json`, so no peak learned the old way
   prices a run.
 - What the machine is read as stays ADR-031's: the memory the system
@@ -61,8 +72,12 @@ and nothing measured a Vitest run.
   not coincide: `@jterrazz/test`'s suite measured 737, 805 and 660 MB a
   worker on one worker, about 590 on three, 440 on four and 350 to 400 on nine
   (ninth decile of the tree less Vitest). A cost learned on few workers
-  errs high, so a host short of memory starts few and learns its way up
-  as runs on more workers follow, never the other way.
+  errs high, and a run sized by it takes as few again, so it never learns
+  its way up: on the owner's loaded laptop a price of about 740 MB learned
+  on one worker held `@jterrazz/test`'s suite to one and 272 s, where it
+  took 109 s before; at the 600 MB seed it ran on three to four. The cap at the seed
+  breaks that loop for Vitest; a run on more workers still lowers the
+  price below it.
 - On a laptop that other sessions load, where the system says 2.5 to
   4.5 GB is available, the run takes one to three workers; it is the
   reading of the machine that binds, not the price. Swap grew by about
