@@ -132,6 +132,9 @@ export type Fixed = { judged: boolean; status: number };
 
 /** Applies the lint fixes; judging what is left waits until the formatter has laid the code out. */
 export async function lintFix(check: Check): Promise<Fixed> {
+    if ((await lintTypesGenerated(check, check.logs.at('fix-scopes.log'))) !== 0) {
+        return { judged: false, status: 0 };
+    }
     let scopes: FixScope[];
     try {
         scopes = await fixScopes(check);

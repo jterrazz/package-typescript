@@ -23,7 +23,7 @@ export function astroStub(workdir: string): void {
     stubbed(workdir, [
         '    echo "astro-synced"',
         '    mkdir -p .astro',
-        `    printf '%s\\n' "declare module 'astro:middleware' { export const sequence: () => unknown; }" > .astro/types.d.ts`,
+        `    printf '%s\\n' "declare module 'astro:middleware' { export const sequence: () => unknown; export const enabled: boolean; }" > .astro/types.d.ts`,
         '    exit 0',
     ]);
 }
