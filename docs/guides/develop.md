@@ -6,17 +6,19 @@ How a change to the toolchain itself is made: the loop, where each kind of chang
 
 The package builds itself with the build plan it ships, so a build comes before every other gesture, and the specs drive the built command.
 
-| Gesture         | Runs                                                                                                                                                       |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `make install`  | `npm ci`, once per change of the lockfile                                                                                                                  |
-| `make build`    | `npm run build`: the build plan the manifest derives, into `dist/` ([Architecture](../concepts/architecture.md#building-this-package))                     |
-| `make lint`     | this package's own `typescript check`, run on this package from `dist/`                                                                                    |
-| `make fix`      | `typescript fix`, `@jterrazz/test`'s fixers first inside it                                                                                                |
-| `make test`     | `typescript test`: the three vitest projects ([Test](https://github.com/jterrazz/package-typescript/blob/main/docs/guides/test.md))                        |
-| `make mutation` | `typescript mutation`: the module tests over the change to the sources they test, the whole suite over what they let live and the lines they leave (below) |
-| `make check`    | `make lint`, `make test`, then `make mutation`: the gate before a commit                                                                                   |
+| Gesture         | Runs                                                                                                                                                                        |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `make install`  | `npm ci`, once per change of the lockfile                                                                                                                                   |
+| `make build`    | `npm run build`: the build plan the manifest derives, into `dist/` ([Architecture](../concepts/architecture.md#building-this-package)), unless `dist/` is this tree's build |
+| `make lint`     | this package's own `typescript check`, run on this package from `dist/`                                                                                                     |
+| `make fix`      | `typescript fix`, `@jterrazz/test`'s fixers first inside it                                                                                                                 |
+| `make test`     | `typescript test`: the three vitest projects ([Test](https://github.com/jterrazz/package-typescript/blob/main/docs/guides/test.md))                                         |
+| `make mutation` | `typescript mutation`: the module tests over the change to the sources they test, the whole suite over what they let live and the lines they leave (below)                  |
+| `make check`    | `make lint`, `make test`, then `make mutation`: the gate before a commit                                                                                                    |
 
 `make lint` and `make test` first lay the repository's own install of itself again from this build's tarball (`install-self`), so neither judges an install older than the checkout.
+
+A build is keyed by what it reads: every file git lists outside `specs/` and `.github/`, by its path and its bytes, the install and Node's version, written to `.artifacts/build.key` once `npm run build` ends. `make build` builds nothing when that key is the tree's and nothing in `dist/` is newer than it, and `install-self` lays its copy again only for a build it has not laid or once the install or the copy moved. An edited source, an untracked file, a new install, a `dist/` another gesture rebuilt or removed: each builds again, and an edit under `specs/` alone never does.
 
 Each step of `make check` keeps its green as a proof keyed by the content of its inputs (the tree, the lockfile, the install, the toolchain's build, Node, the platform and a closed list of variables), and the same step on the same key prints that the tree is proven green and runs nothing ([Quality checks § A tree proven green](../reference/quality-checks.md#a-tree-proven-green)). A second `make check` of an unchanged tree therefore costs the build and three hits; a red is never kept, and `MUTATION_ARGS=--cold`, or `--cold` on `check` and `test`, runs a step whatever it proved.
 

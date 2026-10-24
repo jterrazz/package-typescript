@@ -9,15 +9,30 @@ node_modules/.install: package.json package-lock.json $(wildcard .artifacts/pack
 
 install: node_modules/.install
 
-build: node_modules/.install
-	npm run build
+# invariant: a build is keyed by what it reads: every file git lists outside `specs/` and `.github/`, by its path and its bytes (the tree `git write-tree` writes from a copy of the index once `git add --all` has laid the working tree in it), the install and Node's version; where git writes no tree the key is empty, and an empty key matches no build.
+BUILD_KEY = index=.artifacts/build.$$$$.index; cp "$$(git rev-parse --git-path index)" $$index 2> /dev/null && GIT_INDEX_FILE=$$index git add --all -- . && GIT_INDEX_FILE=$$index git rm -r -q --cached --ignore-unmatch -- specs .github && tree=$$(GIT_INDEX_FILE=$$index git write-tree) && echo "$$tree $$(node --version) $$(git hash-object node_modules/.package-lock.json)"; rm -f $$index
 
-# invariant: the repository installs itself (`file:.`) as a copy of its tarball, laid again from this build's, so what the specs and @jterrazz/test load from node_modules is what a consumer installs.
+# invariant: `dist/` is built again unless the key the last build wrote is this tree's and nothing in `dist/` is newer than that key, so an edited input, a build another gesture wrote and a deleted `dist/` all build, and an unchanged tree never does.
+build: node_modules/.install
+	@mkdir -p .artifacts; key="$$($(BUILD_KEY))"; \
+	if [ -n "$$key" ] && [ "$$key" = "$$(cat .artifacts/build.key 2> /dev/null)" ] && [ -f dist/typescript.js ] && [ -z "$$(find dist -newer .artifacts/build.key -print -quit)" ]; then \
+		echo "build: dist/ is this tree's build"; \
+	else \
+		rm -f .artifacts/build.key && npm run build && echo "$$key" > .artifacts/build.key; \
+	fi
+
+# invariant: the repository installs itself (`file:.`) as a copy of its tarball, laid again from this build's, so what the specs and @jterrazz/test load from node_modules is what a consumer installs; the copy is laid again unless it is the one this build's key laid and neither it nor the install moved since.
 install-self: build
-	@rm -rf .artifacts/self node_modules/@jterrazz/typescript
-	@mkdir -p .artifacts/self node_modules/@jterrazz/typescript
-	@npm pack --ignore-scripts --silent --pack-destination .artifacts/self > /dev/null
-	@tar -xzf .artifacts/self/*.tgz --strip-components=1 -C node_modules/@jterrazz/typescript
+	@key="$$(cat .artifacts/build.key 2> /dev/null)"; \
+	if [ -n "$$key" ] && [ "$$key" = "$$(cat .artifacts/self/key 2> /dev/null)" ] && [ -f node_modules/@jterrazz/typescript/dist/typescript.js ] && [ -z "$$(find node_modules/.install node_modules/@jterrazz/typescript -newer .artifacts/self/key -print -quit)" ]; then \
+		:; \
+	else \
+		rm -rf .artifacts/self node_modules/@jterrazz/typescript && \
+		mkdir -p .artifacts/self node_modules/@jterrazz/typescript && \
+		npm pack --ignore-scripts --silent --pack-destination .artifacts/self > /dev/null && \
+		tar -xzf .artifacts/self/*.tgz --strip-components=1 -C node_modules/@jterrazz/typescript && \
+		echo "$$key" > .artifacts/self/key; \
+	fi
 
 lint: install-self
 	npm run lint
