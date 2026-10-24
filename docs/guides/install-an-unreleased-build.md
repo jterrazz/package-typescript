@@ -44,6 +44,23 @@ A `file:` package packed again under the same name changes no line of the lockfi
 
 The tarball holds exactly what a consumer of the release gets, so the project resolves one copy of vitest's types, never two.
 
+## A runtime dependency's tarball
+
+The recipe names devDependencies, which no consumer of the project reads. A project gated against an unreleased build of a package it depends on at runtime (an entry of `dependencies`, a design kit or a client) takes the tarball another way.
+
+`npm install <tgz>` rewrites that entry to a `file:` path. On a package, the Publish (packaging) pass refuses it, publint reading a dependency no registry can resolve ([Quality checks](../reference/quality-checks.md#the-publish-packaging-pass)), and a tarball packed from that manifest ships the path to every consumer, where it names nothing.
+
+So the manifest and the lockfile stay as committed, and the tarball is laid into `node_modules/` alone, after the project's own install:
+
+```bash
+git checkout -- package.json package-lock.json
+make install
+npm install --no-save .artifacts/packages/<name>-<version>.tgz
+touch node_modules/.install
+```
+
+`--no-save` writes neither file, so the diff the gate judges is the project's own. Any later `npm ci` lays the registry version back, and the Makefile's install stamp runs one for a tarball under `.artifacts/packages/` newer than it: the last line keeps `make check` from undoing the install, and a new tarball is taken by the last two lines again.
+
 ## The packages themselves
 
 `@jterrazz/test` peers on `@jterrazz/typescript`, and its manifest keeps that peer at the registry range (`^11.0.0`) for the whole development: only its devDependency is a `file:`. A peer written as `file:../package-typescript` warned in every consumer.
