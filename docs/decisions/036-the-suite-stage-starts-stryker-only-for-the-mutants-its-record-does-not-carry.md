@@ -1,7 +1,9 @@
 # ADR-036: The suite stage starts Stryker only for the mutants its record does not carry
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-24
+
+**Accepted:** 2026-10-24: the owner's word on the speed batch's review ("tout ok").
 
 ## Context
 
