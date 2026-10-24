@@ -9,7 +9,7 @@ import {
 import { dirname, join } from 'node:path';
 
 import { ARTIFACTS } from '../../../../lint/kit/project/build-plan.js';
-import { isList, objectOf } from '../../../../lint/kit/project/json.js';
+import { objectOf } from '../../../../lint/kit/project/json.js';
 import type { GateVerdict } from './gate-verdict.js';
 
 /** Where every gate appends what each of its passes and test files ended on, from the project's root. */
@@ -110,8 +110,18 @@ export const testOutcomeOf = (
 /** Each test file Vitest last ran, by `<project>:<path>`, with what it recorded of it: its duration in milliseconds and whether it failed. */
 export type FileResults = ReadonlyMap<string, string>;
 
-// outside: Vitest keeps, for its sequencer, the duration and the failure of every file it last ran in `<cacheDir>/vitest/<hash>/results.json`, the cache folder being the preset's `.artifacts/vitest` or Vite's default `node_modules/.vite`.
+// outside: Vitest keeps, for its sequencer, the duration and the failure of every file it last ran in `<cacheDir>/vitest/<hash>/results.json`, by project then path, the cache folder being the preset's `.artifacts/vitest` or Vite's default `node_modules/.vite`.
 const CACHE_FOLDERS = [`${ARTIFACTS}/vitest/vitest`, 'node_modules/.vite/vitest'];
+
+function cachedResultsOf(cache: string): [string, string][] {
+    const { projects } = objectOf(parsed(readFileSync(cache, 'utf8')));
+
+    return Object.entries(objectOf(projects)).flatMap(([name, recorded]) =>
+        Object.entries(objectOf(objectOf(recorded).files)).map(
+            ([path, result]): [string, string] => [`${name}:${path}`, JSON.stringify(result)],
+        ),
+    );
+}
 
 /** What Vitest's results caches hold now, each entry as its text, so two reads tell the files a run between them ran. */
 export function fileResultsOf(project: string): FileResults {
@@ -119,12 +129,8 @@ export function fileResultsOf(project: string): FileResults {
     for (const folder of CACHE_FOLDERS.map((name) => join(project, name))) {
         const caches = existsSync(folder) ? readdirSync(folder) : [];
         for (const cache of caches.map((hash) => join(folder, hash, 'results.json'))) {
-            if (existsSync(cache)) {
-                const { results: listed } = objectOf(parsed(readFileSync(cache, 'utf8')));
-                for (const entry of isList(listed) ? listed : []) {
-                    const [key, result] = isList(entry) ? entry : [];
-                    results.set(String(key), JSON.stringify(result));
-                }
+            for (const [key, result] of existsSync(cache) ? cachedResultsOf(cache) : []) {
+                results.set(key, result);
             }
         }
     }

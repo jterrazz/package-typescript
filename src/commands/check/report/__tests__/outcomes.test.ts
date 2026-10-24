@@ -45,7 +45,7 @@ const linesIn = (project: string): unknown[] =>
         .filter((line) => line !== '')
         .map((line): unknown => JSON.parse(line));
 
-const resultsCache = (results: unknown): string => JSON.stringify({ results, version: '5.0.1' });
+const resultsCache = (cached: unknown): string => JSON.stringify({ projects: cached, version: 1 });
 
 describe('outcomes', () => {
     test('outcomesRecorded — appends each outcome as one line, and writes no file for a run that ended on none', () => {
@@ -165,33 +165,41 @@ describe('outcomes', () => {
         ]);
     });
 
-    test("fileResultsOf — reads Vitest's results under the preset's cache folder and Vite's default one, and skips one it cannot parse", () => {
-        // Given - a project holding a cache in each folder, and a torn one
+    test("fileResultsOf — reads Vitest's results under the preset's cache folder and Vite's default one, by project and path, and skips one it cannot parse", () => {
+        // Given - a project holding a cache in each folder, and one holding a torn cache
         const project = projectDirectory();
         const preset = join(project, '.artifacts/vitest/vitest/da39');
         const vite = join(project, 'node_modules/.vite/vitest/e3b0');
-        const torn = join(project, 'node_modules/.vite/vitest/ffff');
-        for (const folder of [preset, vite, torn]) {
+        for (const folder of [preset, vite, join(project, 'node_modules/.vite/vitest/empty')]) {
             mkdirSync(folder, { recursive: true });
         }
         writeFileSync(
             join(preset, 'results.json'),
-            resultsCache([['unit:src/a.test.ts', { duration: 12.5, failed: false }]]),
+            resultsCache({
+                cli: { files: { 'specs/c.spec.ts': { duration: 900, failed: false } } },
+                unit: {
+                    files: { 'src/a.test.ts': { duration: 12.5, failed: false, lastRun: 7 } },
+                    typecheck: { 'src/a.test-d.ts': { duration: 1, failed: false } },
+                },
+            }),
         );
         writeFileSync(
             join(vite, 'results.json'),
-            resultsCache([[':specs/b.spec.ts', { duration: 3, failed: true }]]),
+            resultsCache({ '': { files: { 'specs/b.spec.ts': { duration: 3, failed: true } } } }),
         );
-        writeFileSync(join(torn, 'results.json'), '{"results":[');
-        mkdirSync(join(project, 'node_modules/.vite/vitest/empty'));
+        const torn = projectDirectory();
+        mkdirSync(join(torn, 'node_modules/.vite/vitest/ffff'), { recursive: true });
+        writeFileSync(join(torn, 'node_modules/.vite/vitest/ffff/results.json'), '{"projects":');
 
-        // Then - both caches' entries, each as its text
+        // Then - both caches' file entries, each as its text, and none of a torn cache
         expect(fileResultsOf(project)).toStrictEqual(
             new Map([
-                ['unit:src/a.test.ts', '{"duration":12.5,"failed":false}'],
+                ['cli:specs/c.spec.ts', '{"duration":900,"failed":false}'],
+                ['unit:src/a.test.ts', '{"duration":12.5,"failed":false,"lastRun":7}'],
                 [':specs/b.spec.ts', '{"duration":3,"failed":true}'],
             ]),
         );
+        expect(fileResultsOf(torn)).toStrictEqual(new Map());
         expect(fileResultsOf(projectDirectory())).toStrictEqual(new Map());
     });
 
