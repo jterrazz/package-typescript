@@ -3,6 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-10-20
 **Accepted:** 2026-10-21, for the alias rule: the owner's word on the review ("Tout ok"), that `typescript@7` never enters the tree under its own name and its API only under the alias.
+**Amended by:** [ADR-038](038-every-type-check-runs-on-the-one-native-compiler.md), for the compiler `typescript check` runs: the alias's binary, and the 7.0 platform packages leave the manifest.
 
 The owner asked for it on 2026-10-20 ("ça serait possible dès ajd le
 vérificateur stryker natif sur la version beta ?"), under the standing go of
