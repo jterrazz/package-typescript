@@ -1,6 +1,6 @@
 {
     "name": "@jterrazz/typescript",
-    "version": "10.3.2",
+    "version": "10.4.0",
     "license": "MIT",
     "author": "Jean-Baptiste Terrazzoni <contact@jterrazz.com>",
     "repository": {
@@ -60,7 +60,8 @@
         }
     },
     "publishConfig": {
-        "registry": "https://registry.npmjs.org/"
+        "registry": "https://registry.npmjs.org/",
+        "tag": "v10"
     },
     "scripts": {
         "build": "# no build script",
