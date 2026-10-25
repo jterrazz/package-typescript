@@ -1,6 +1,6 @@
 /** The `docs/` tree of one repository, as a rule engine needs to see it. */
 export type DocsTree = {
-    /** The root `AGENTS.md`, its whole text, or `null` when the repository has none. */
+    /** The root `CLAUDE.md`, its whole text, or `null` when the repository has none. */
     readonly agents: null | string;
     /**
      * Every path under `docs/`, repository-relative, sorted, directories carrying

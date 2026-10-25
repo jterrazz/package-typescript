@@ -38,7 +38,7 @@ shape it:
 2. **The pass measures from the REPOSITORY, not the package.** Every other
    per-package gate measures from the nearest `package.json`; this one asks
    its question where a `.git` is. A manual answers for a whole tree, and
-   only its root carries the `AGENTS.md` that routes into it. Nothing else
+   only its root carries the `CLAUDE.md` that routes into it. Nothing else
    gates the pass: a repository with no `docs/` is not exempt, it is the
    case the rule exists for.
 3. **The `04-operating.md` presence test is derived, and the lint only ever

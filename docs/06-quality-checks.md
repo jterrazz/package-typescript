@@ -86,7 +86,7 @@ The member pass is behind the release that answers it. `--member` arrives in `@j
 
 Every repository carries the same manual — a map at `docs/README.md`, a fixed spine, and its own chapters numbered contiguously after it — and this pass refuses a tree that breaks it.
 
-Its unit is the **repository**, not the package: a manual answers for a whole tree, and only its root carries the `AGENTS.md` that routes into it. So the pass asks its question exactly where a repository is — a `.git` beside the project, a file in a worktree and a directory in a clone — and nowhere else. A fixture directory is not a repository, and neither is a workspace member linted on its own.
+Its unit is the **repository**, not the package: a manual answers for a whole tree, and only its root carries the `CLAUDE.md` that routes into it. So the pass asks its question exactly where a repository is — a `.git` beside the project, a file in a worktree and a directory in a clone — and nowhere else. A fixture directory is not a repository, and neither is a workspace member linted on its own.
 
 Nothing else gates it. A repository with **no** `docs/` at all is not exempt; it is the case the rule exists for, and it fails on `docs-absent`.
 
@@ -114,7 +114,7 @@ The spine itself is language-agnostic doctrine, and it is [`jterrazz-studio`'s](
 | `docs-decision-index`      | a hand-written `decisions/README.md` — an index is a copy                  |
 | `docs-template-missing`    | a `decisions/` with no `_template.md` beside the records                   |
 | `docs-reference-unstamped` | a page under `reference/` carrying no generation marker on its first line  |
-| `docs-agents-route`        | a repository whose root `AGENTS.md` is absent or does not route to the map |
+| `docs-agents-route`        | a repository whose root `CLAUDE.md` is absent or does not route to the map |
 | `docs-cross-repo-link`     | a link from `docs/` reaching into another repository's tree                |
 
 Three things about the roster are decisions, not details:
@@ -143,7 +143,7 @@ import { auditDocs } from '@jterrazz/typescript/docs';
 const violations = auditDocs(tree); // -> [{ rule, path, message }, …]
 ```
 
-`tree` is a plain description of one repository — the paths under `docs/`, the opening lines of each page, each page's link targets, the root `AGENTS.md`, and the three presence facts. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
+`tree` is a plain description of one repository — the paths under `docs/`, the opening lines of each page, each page's link targets, the root `CLAUDE.md`, and the three presence facts. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
 
 ## The Oxlint pass
 

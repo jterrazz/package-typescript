@@ -463,8 +463,8 @@ export function auditDocs(tree) {
     if (tree.agents === null || !(tree.agents ?? '').includes('docs/README.md')) {
         report(
             'docs-agents-route',
-            'AGENTS.md',
-            'AGENTS.md does not route to docs/README.md — the brief is a map, not a manual',
+            'CLAUDE.md',
+            'CLAUDE.md does not route to docs/README.md — the brief is a map, not a manual',
         );
     }
 

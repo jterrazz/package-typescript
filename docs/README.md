@@ -2,7 +2,7 @@
 
 The complete TypeScript toolchain for the `@jterrazz` ecosystem: one devDependency that builds, checks, lints, formats and documents a project. A consumer wires three config files at the shipped presets and calls `typescript check` / `typescript fix`; there is nothing else to configure.
 
-This corpus is where that knowledge is authored. `AGENTS.md` and the `jterrazz-typescript` skill route into it; they never restate it.
+This corpus is where that knowledge is authored. `CLAUDE.md` and the `jterrazz-typescript` skill route into it; they never restate it.
 
 ## Table of contents
 

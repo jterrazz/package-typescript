@@ -509,7 +509,7 @@ run_checks() {
     # Docs (layout): the manual's shape — the map, the spine, the numbering, the
     # three subfolders, the decision mold. Its unit is the REPOSITORY, not the
     # package: a manual answers for the whole tree, and only its root carries the
-    # AGENTS.md that routes into it. So the pass asks its question exactly where a
+    # CLAUDE.md that routes into it. So the pass asks its question exactly where a
     # repository is — `.git` here, a file in a worktree and a directory in a clone.
     # Nothing else gates it: a repository with NO docs/ is the population the rule
     # exists for, and it fails on `docs-absent`. Check-only, like every read-only

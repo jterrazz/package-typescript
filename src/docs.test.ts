@@ -581,12 +581,12 @@ test('passes a stamped reference page', () => {
 });
 
 test('names a repository whose brief does not route to the manual', () => {
-    // Given - no AGENTS.md at the root
+    // Given - no CLAUDE.md at the root
     const tree = manual({ agents: null });
 
     // Then - the brief is a map, not a manual
     expect(sentence(tree, 'docs-agents-route')).toBe(
-        'AGENTS.md does not route to docs/README.md — the brief is a map, not a manual',
+        'CLAUDE.md does not route to docs/README.md — the brief is a map, not a manual',
     );
 });
 
