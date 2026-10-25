@@ -220,7 +220,7 @@ A project with nothing of its own to say keeps no section at all.
 
 ## The tsconfig presets
 
-Every preset scopes its `include` and `exclude` to `${configDir}`, the directory of the `tsconfig.json` that extends it, so a project inherits the right file set without restating one. Every preset checks and never emits, compiles incrementally into `.artifacts/tsc/`, and allows an import that names a `.ts` file: Node runs a module that way, and the check reads it as Node does. The declarations a library publishes are emitted by the build, never by `tsc`, so a library and a service on one platform share one preset ([Building](building.md)).
+Every preset scopes its `include` and `exclude` to `${configDir}`, the directory of the `tsconfig.json` that extends it, so a project inherits the right file set without restating one. Every preset checks and never emits, compiles incrementally into `.artifacts/tsc/`, and allows an import that names a `.ts` file: Node runs a module that way, and the check reads it as Node does. The declarations a library publishes are emitted by the build, on a configuration of its own over the preset, never by a project's `tsc`, so a library and a service on one platform share one preset ([Building](building.md)).
 
 The `browser` preset is `react`'s without its JSX transform: the DOM's libraries and bundler resolution, for a page or an extension that runs plain DOM code, a `.tsx` component test included, which renders without JSX.
 

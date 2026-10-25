@@ -3,6 +3,7 @@ import process from 'node:process';
 import { readSettings } from '../../../lint/index.rules.js';
 import { refusal } from '../../../lint/kit/catalogue/lesson.js';
 import { planOf } from '../../../lint/kit/project/build-plan.js';
+import { tscBinary } from '../../drivers/tsc/tsc.js';
 import { builtFrom, watched } from '../../drivers/tsdown/tsdown.js';
 import { refusedWhileGated } from '../gate-lock/lock.js';
 import { badge, GREEN, print, RED, RESET } from '../terminal.js';
@@ -31,9 +32,9 @@ export async function build(args: readonly string[] = []): Promise<number> {
     }
     if (args.includes('--watch')) {
         // Stryker disable next-line ObjectLiteral,BooleanLiteral: a run that is not asked for, or asked for wrongly, starts the application after the first build, which prints after the marker a spec stops at, so no spec reads it; the arguments are proven in watchArguments
-        return await watched(steps, project, { run: false });
+        return await watched(steps, project, { compiler: tscBinary(), run: false });
     }
-    const status = await builtFrom(steps, project);
+    const status = await builtFrom(steps, project, tscBinary());
     if (status !== 0) {
         print(
             `${RED}${refusal({

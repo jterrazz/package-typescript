@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
@@ -36,11 +36,16 @@ export async function cleanedUpOnEnding<T>(
     }
 }
 
-export async function inScratch<T>(work: (scratch: string) => Promise<T>): Promise<T> {
-    const scratch = mkdtempSync(join(tmpdir(), 'typescript-'));
+export async function inScratch<T>(
+    work: (scratch: string) => Promise<T>,
+    parent = tmpdir(),
+): Promise<T> {
+    mkdirSync(parent, { recursive: true });
+    const scratch = mkdtempSync(join(parent, 'typescript-'));
 
     return await cleanedUpOnEnding(
         () => {
+            // Stryker disable next-line BooleanLiteral: the scratch was made above and is removed once, which `force` only forgives the absence of
             rmSync(scratch, { force: true, recursive: true });
         },
         async () => await work(scratch),

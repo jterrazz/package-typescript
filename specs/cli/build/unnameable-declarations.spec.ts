@@ -37,12 +37,12 @@ describe('unnameable declarations', () => {
             })
             .exec('build');
 
-        // Then - the declaration emit names both exports a consumer could not resolve, and no dist/ is written
+        // Then - the compiler names, on its output, both exports a consumer could not resolve, and no dist/ is written
         expect(result.exitCode).toBe(1);
-        expect(result.stderr.text).toContain(
+        expect(result.stdout.text).toContain(
             "src/index.ts(3,14): error TS2883: The inferred type of 'made' cannot be named without a reference to 'Thing' from 'dep-a/node_modules/dep-b'. This is likely not portable. A type annotation is necessary.",
         );
-        expect(result.stderr.text).toContain(
+        expect(result.stdout.text).toContain(
             "src/index.ts(5,17): error TS2883: The inferred type of 'remade' cannot be named without a reference to 'Thing' from 'dep-a/node_modules/dep-b'. This is likely not portable. A type annotation is necessary.",
         );
         expect(result.file('dist/index.d.ts').exists).toBe(false);

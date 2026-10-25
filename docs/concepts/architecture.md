@@ -150,6 +150,8 @@ The official TypeScript 7 Go compiler is `@typescript/native`, an npm alias of `
 
 `typescript check` and `typescript tsc` run its binary, the per-platform `@typescript/typescript-<os>-<arch>` package `@typescript/native` depends on, which `src/drivers/tsc/tsc.ts` resolves from that package's own folder, since npm hoists it or nests it beside it.
 
+`typescript build` emits a library's declarations with the same binary, which the build's declaration generator runs on the project's options over what each step's entries import ([ADR-039](../decisions/039-a-librarys-declarations-are-emitted-by-the-native-compiler-over-what-its-entries-import.md)).
+
 `typescript mutation` type-checks each mutant on the same compiler through its API, which ships only in the `typescript` package from 7.1: `src/drivers/tsc/native-project.ts` opens a project on `@typescript/native` for the mutant checker and for the first error of a tree that does not compile ([ADR-032](../decisions/032-the-mutant-checker-runs-on-the-native-compiler.md)).
 
 The ordinary `typescript` dependency stays on ^6 because two consumers need the JavaScript compiler API the Go package does not ship: `dependency-cruiser` (a `typescript <7` peer) and `eslint-plugin-perfectionist`, which does a bare `require('typescript')`.

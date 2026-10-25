@@ -39,6 +39,8 @@ A module two entries share is written once per step that bundles them, under a n
 
 A `library` emits its declarations with the type-checker, so an export with no annotation is published with the type the checker infers for it. An inferred type a consumer could not name, such as one only a dependency of a dependency resolves, fails the build (TS2883) rather than ship a declaration naming it. [ADR-018](../decisions/018-a-project-declares-what-it-is-and-every-config-follows.md#consequences) records why they are not built file by file with `isolatedDeclarations`.
 
+The type-checker is the TypeScript 7 Go compiler `check` runs, on the project's `tsconfig.json`, over the files the step's entries import and no other, so a test the tsconfig includes is never emitted ([ADR-039](../decisions/039-a-librarys-declarations-are-emitted-by-the-native-compiler-over-what-its-entries-import.md)). A project that emits declarations therefore keeps its `tsconfig.json` at its root, as `typescript fix` derives it. The compiler prints what it refuses (a TS2883, an entry on no disk) on the build's output, above tsdown's report.
+
 ### What the manifest does not name
 
 Two kinds of entry are not in `exports`, `main` or `bin`, and their names say so; nothing is declared:
