@@ -1,0 +1,7 @@
+description: names an AGENTS.md left beside the brief, even as a link to CLAUDE.md
+fixture: ./__fixtures__/stale-brief/
+runs:
+    - command: docs-layout .
+      exit: 1
+      stdout: |
+          AGENTS.md:1:1: error docs(no-agents-brief): AGENTS.md is the brief under its old name: rename it CLAUDE.md, and keep nothing named AGENTS.md

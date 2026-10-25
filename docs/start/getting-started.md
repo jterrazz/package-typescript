@@ -149,10 +149,10 @@ npx typescript fix     # formats, sorts package.json, writes .artifacts/ into th
 npx typescript check   # every pass, in parallel, then the drift report
 ```
 
-In a repository, `check` also asks for the shape every repository of the family keeps: a manual under `docs/` and a root `AGENTS.md` that routes to it. The smallest manual that passes is a map and the three pages every manual holds:
+In a repository, `check` also asks for the shape every repository of the family keeps: a manual under `docs/` and a root `CLAUDE.md` that routes to it, and no `AGENTS.md`. The smallest manual that passes is a map and the three pages every manual holds:
 
 ```text
-AGENTS.md                  # links docs/README.md
+CLAUDE.md                  # links docs/README.md
 docs/README.md             # one row per page
 docs/concepts/architecture.md
 docs/guides/develop.md
@@ -202,7 +202,7 @@ That is the whole contract, and it is meant to stay that size:
 - **One file of settings**, `jterrazz.config.ts`: the kind, the platform, the presets, and every setting with its reason.
 - **Three derived files**, `oxlint.config.ts`, `oxfmt.config.ts` and `tsconfig.json`, each written by `fix` and refused by `check` when it says anything else. In a monorepo the `tsconfig.json` is one per member: the toolchain measures from the package, not the repository.
 - **Two tracked ledgers at most**, under `.jterrazz/`: the debt the ratchet holds, gone when it is paid ([the ratchet](../reference/quality-checks.md#the-ratchet)).
-- **Six gestures**, the `Makefile` above, and **a manual**, `AGENTS.md` and `docs/`: both required at a repository root.
+- **Six gestures**, the `Makefile` above, and **a manual**, `CLAUDE.md` and `docs/`: both required at a repository root.
 
 A local `compilerOption` is written under `typescript.tsconfig`, with its reason, and lands in the derived `tsconfig.json`; it is still a smell rather than a shortcut. It says the preset lacks something, and settles that lack for one project where nobody else reads it, so the next project meets the same gap and answers it differently. Change the preset instead, where every project gets the answer.
 
@@ -254,7 +254,7 @@ jterrazz.config.ts      # the repository's settings, no kind (or no file at all)
 oxlint.config.ts        # derived; lints each member by its own declaration
 oxfmt.config.ts         # derived
 Makefile                # the six gestures, once for the repository
-AGENTS.md, docs/        # the manual, once for the repository
+CLAUDE.md, docs/        # the manual, once for the repository
 .jterrazz/              # the ledgers, where check runs
 packages/greeting/
   package.json

@@ -1,21 +1,23 @@
 // invariant: the Dockerfile and `.infrastructure/` clauses are read at every member's root too; the publishable
 // clause is the caller's, from the root's declared kind and every member's.
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { workspaceMembers } from './workspace-members.js';
 
 /** The `docs/` tree of one repository, as a rule of the kit needs to see it. */
 export type DocsTree = {
-    /** The root `AGENTS.md`, its whole text, or `null` when the repository has none. */
-    readonly agents: null | string;
+    /** The root `CLAUDE.md`, its whole text, or `null` when the repository has none as a regular file. */
+    readonly brief: null | string;
     /** Every path under `docs/`, sorted, a directory with its trailing slash, `docs/` itself included. */
     readonly files: readonly string[];
     /** The first `HEAD_LINES` of every markdown file under `docs/`; no rule reads further down. */
     readonly heads: Readonly<Record<string, readonly string[]>>;
     /** Every markdown link target of each file under `docs/`, in the order the page carries them. */
     readonly links: Readonly<Record<string, readonly string[]>>;
+    /** Whether a root `AGENTS.md` (a file or a link) is left over from the brief's old name. */
+    readonly staleBrief: boolean;
     /** The three facts the `guides/release.md` presence test is derived from. */
     readonly ships: {
         /** A `Dockerfile` at the repository root or at a workspace member's. */
@@ -57,6 +59,24 @@ function listDocs(root: string): string[] {
 }
 
 // invariant: an unreadable file is an absent one.
+// invariant: a link is no brief: CLAUDE.md is the file the agent reads, not a pointer to another name.
+function readBrief(path: string): null | string {
+    try {
+        return lstatSync(path).isFile() ? readFileSync(path, 'utf8') : null;
+    } catch {
+        return null;
+    }
+}
+
+function present(path: string): boolean {
+    try {
+        lstatSync(path);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 function read(path: string): null | string {
     try {
         return readFileSync(path, 'utf8');
@@ -113,9 +133,10 @@ export function readDocsTree(
     const files = listDocs(root);
 
     return {
-        agents: read(join(root, 'AGENTS.md')),
+        brief: readBrief(join(root, 'CLAUDE.md')),
         files,
         ...readPages(root, files, headLines),
         ships: readShips(root, publishable),
+        staleBrief: present(join(root, 'AGENTS.md')),
     };
 }

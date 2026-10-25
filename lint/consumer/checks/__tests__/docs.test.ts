@@ -215,25 +215,33 @@ describe('docs', () => {
     });
 
     test('names a repository whose brief does not route to the manual', () => {
-        // Given - no AGENTS.md at the root
-        const tree = manual({ agents: null });
+        // Given - no CLAUDE.md at the root
+        const tree = manual({ brief: null });
 
         // Then - the brief is a map, not a manual
         expect(auditDocs(tree)).toStrictEqual([
             {
                 message:
-                    'AGENTS.md does not route to docs/README.md: the brief is a map, not a manual',
-                path: 'AGENTS.md',
-                rule: 'docs/agents-route-to-the-map',
+                    'CLAUDE.md does not route to docs/README.md: the brief is a map, not a manual',
+                path: 'CLAUDE.md',
+                rule: 'docs/brief-routes-to-the-map',
             },
         ]);
     });
 
     test('names a brief that exists but routes elsewhere', () => {
         // Given - a brief restating the corpus instead of pointing at it
-        const tree = manual({ agents: '# Agent brief\n\nEverything you need is right here.\n' });
+        const tree = manual({ brief: '# Agent brief\n\nEverything you need is right here.\n' });
 
         // Then - the same rule
-        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/agents-route-to-the-map']);
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/brief-routes-to-the-map']);
+    });
+
+    test('names an AGENTS.md left beside the brief', () => {
+        // Given - a compliant CLAUDE.md, and the brief's old name still at the root
+        const tree = manual({ staleBrief: true });
+
+        // Then - the straggler is named, so the old name dies everywhere
+        expect(rulesBrokenBy(tree)).toStrictEqual(['docs/no-agents-brief']);
     });
 });

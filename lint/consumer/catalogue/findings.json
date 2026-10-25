@@ -302,8 +302,13 @@
     },
     {
         "family": "docs",
-        "id": "docs/agents-route-to-the-map",
-        "sentence": "The root AGENTS.md routes to the manual's map."
+        "id": "docs/brief-routes-to-the-map",
+        "sentence": "The root CLAUDE.md routes to the manual's map."
+    },
+    {
+        "family": "docs",
+        "id": "docs/no-agents-brief",
+        "sentence": "No AGENTS.md is left beside the brief, CLAUDE.md."
     },
     {
         "family": "docs",

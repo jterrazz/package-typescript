@@ -4,7 +4,7 @@ import type { DocsTree } from '../docs.js';
 /** The smallest compliant manual: each test breaks exactly one thing. */
 export function manual(overrides: Partial<DocsTree> = {}): DocsTree {
     return {
-        agents: '# Agent brief\n\nThe corpus is docs/README.md.\n',
+        brief: '# Agent brief\n\nThe corpus is docs/README.md.\n',
         files: [
             'docs/',
             'docs/README.md',
@@ -19,6 +19,7 @@ export function manual(overrides: Partial<DocsTree> = {}): DocsTree {
             'docs/README.md': ['concepts/architecture.md', 'guides/develop.md', 'guides/test.md'],
         },
         ships: { dockerfile: false, infrastructure: false, publishable: false },
+        staleBrief: false,
         ...overrides,
     };
 }

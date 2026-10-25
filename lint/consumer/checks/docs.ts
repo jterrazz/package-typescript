@@ -144,11 +144,18 @@ export function auditDocs(tree: DocsTree): readonly DocsViolation[] {
     auditFolder(report, { children });
     auditDecisions(report, { files, heads });
 
-    if (tree.agents?.includes('docs/README.md') !== true) {
+    if (tree.brief?.includes('docs/README.md') !== true) {
         report(
-            'docs/agents-route-to-the-map',
+            'docs/brief-routes-to-the-map',
+            'CLAUDE.md',
+            'CLAUDE.md does not route to docs/README.md: the brief is a map, not a manual',
+        );
+    }
+    if (tree.staleBrief) {
+        report(
+            'docs/no-agents-brief',
             'AGENTS.md',
-            'AGENTS.md does not route to docs/README.md: the brief is a map, not a manual',
+            'AGENTS.md is the brief under its old name: rename it CLAUDE.md, and keep nothing named AGENTS.md',
         );
     }
 

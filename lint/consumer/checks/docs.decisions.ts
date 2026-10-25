@@ -1,7 +1,7 @@
 import type { DocsTree } from '../../kit/project/docs-tree.js';
 
 export const DOCS_RULES = [
-    'docs/agents-route-to-the-map',
+    'docs/brief-routes-to-the-map',
     'docs/decision-heading-carries-its-number',
     'docs/decision-listed-in-the-map',
     'docs/decision-named-by-number-and-subject',
@@ -13,6 +13,7 @@ export const DOCS_RULES = [
     'docs/map-links-only-pages',
     'docs/map-matches-pages',
     'docs/map-present',
+    'docs/no-agents-brief',
     'docs/no-cross-repository-link',
     'docs/no-loose-file',
     'docs/no-unknown-subfolder',

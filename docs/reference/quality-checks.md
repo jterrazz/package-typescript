@@ -280,7 +280,7 @@ Every repository carries the same shape of manual (a map at `docs/README.md` and
 
 Three pages are required of every manual: `concepts/architecture.md`, `guides/develop.md` and `guides/test.md`; a repository that ships an image or a package also holds `guides/release.md`. A workspace ships a package when any of its members does, not only when its own root does. A page is named for its subject in kebab case, with no number, and sits directly in its section: the map gives the order. This shape is not [the root spine](#the-root-spine), the folders a repository root may hold, which the Names pass judges. `decisions/` is optional: a manual with none owes neither a record nor a template.
 
-Its unit is the **repository**, not the package: a manual answers for a whole tree, and only its root carries the `AGENTS.md` that routes into it. So the pass asks its question exactly where a repository is (a `.git` beside the project, a file in a worktree and a directory in a clone) and nowhere else. A fixture directory is not a repository, and neither is a workspace member linted on its own.
+Its unit is the **repository**, not the package: a manual answers for a whole tree, and only its root carries the `CLAUDE.md` that routes into it. So the pass asks its question exactly where a repository is (a `.git` beside the project, a file in a worktree and a directory in a clone) and nowhere else. A fixture directory is not a repository, and neither is a workspace member linted on its own.
 
 Nothing else gates it. A repository with **no** `docs/` at all is not exempt; it is the case the rule exists for, and it fails on `docs/manual-present`.
 
@@ -291,7 +291,8 @@ Why a manual has this shape is language-agnostic doctrine, and it is the estate'
 | Rule                                        | Requirement                                                                                                                          |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `docs/manual-present`                       | Every repository carries a docs/ manual.                                                                                             |
-| `docs/agents-route-to-the-map`              | The root AGENTS.md routes to the manual's map.                                                                                       |
+| `docs/brief-routes-to-the-map`              | The root CLAUDE.md routes to the manual's map.                                                                                       |
+| `docs/no-agents-brief`                      | No AGENTS.md is left beside the brief, CLAUDE.md.                                                                                    |
 | `docs/map-present`                          | The manual opens on its map, docs/README.md.                                                                                         |
 | `docs/map-matches-pages`                    | The map links every page of the four sections, and only the pages there are.                                                         |
 | `docs/map-links-only-pages`                 | The map links nothing but its own pages and decisions/.                                                                              |
@@ -339,17 +340,18 @@ import { auditDocs } from '@jterrazz/typescript/docs';
 import type { DocsTree } from '@jterrazz/typescript/docs';
 
 const tree: DocsTree = {
-    agents: null,
+    brief: null,
     files: ['docs/'],
     heads: {},
     links: {},
     ships: { dockerfile: false, infrastructure: false, publishable: false },
+    staleBrief: false,
 };
 
 export const violations = auditDocs(tree);
 ```
 
-A `DocsTree` is a plain description of one repository: the paths under `docs/`, the opening lines of each page, each page's link targets, the root `AGENTS.md`, and the three presence facts. Each violation is a `{ rule, path, message }`, its `rule` typed `DocsRule` (the union of the pass's ids, `DOCS_RULES` as a value), so a consumer that compares a rule id stops compiling when a release renames it, rather than reading every tree as broken. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
+A `DocsTree` is a plain description of one repository: the paths under `docs/`, the opening lines of each page, each page's link targets, the root `CLAUDE.md`, whether an `AGENTS.md` is left over, and the three presence facts. Each violation is a `{ rule, path, message }`, its `rule` typed `DocsRule` (the union of the pass's ids, `DOCS_RULES` as a value), so a consumer that compares a rule id stops compiling when a release renames it, rather than reading every tree as broken. No filesystem, no transport: a sweep across clones nothing has been installed into judges by the same copy of the rules as the gate. `HEAD_LINES` says how far down a page a rule reads, so a `**Status:**` below it is a status the manual does not declare.
 
 ## The Oxlint pass
 
