@@ -1,7 +1,9 @@
 # ADR-039: A library's declarations are emitted by the native compiler, over what its entries import
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-25
+
+**Accepted:** 2026-10-25: the owner's word ("ok pour tout, go tout update et terminer").
 
 The owner asked for it on 2026-10-25: `typescript build` stops emitting the
 declarations with the JavaScript compiler, TypeScript 6, and emits them with

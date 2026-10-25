@@ -1,7 +1,9 @@
 # ADR-038: Every type-check runs on the one native compiler
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-25
+
+**Accepted:** 2026-10-25: the owner's word ("ok pour tout, go tout update et terminer").
 
 The owner asked for it on 2026-10-25: move the `typescript check` type-check
 from the TypeScript 7.0.2 binary to the 7.1 beta already installed for the
