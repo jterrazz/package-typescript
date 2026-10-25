@@ -146,9 +146,11 @@ The two editor entries are what a project's derived `oxlint.config.ts` and `oxfm
 
 ## Two TypeScript compilers, on purpose
 
-`typescript check` type-checks with the official TypeScript 7 Go compiler, pulled in through the per-platform `@typescript/typescript-*` optionalDependencies and resolved by path by the command.
+The official TypeScript 7 Go compiler is `@typescript/native`, an npm alias of `typescript@7.1.0-beta`, and every type-check of the toolchain runs on it ([ADR-038](../decisions/038-every-type-check-runs-on-the-one-native-compiler.md)).
 
-`typescript mutation` type-checks each mutant on the same Go compiler through its API, which ships only in the `typescript` package from 7.1: `src/drivers/tsc/native-project.ts` opens a project on `@typescript/native`, an npm alias of `typescript@7.1.0-beta`, for the mutant checker and for the first error of a tree that does not compile ([ADR-032](../decisions/032-the-mutant-checker-runs-on-the-native-compiler.md)).
+`typescript check` and `typescript tsc` run its binary, the per-platform `@typescript/typescript-<os>-<arch>` package `@typescript/native` depends on, which `src/drivers/tsc/tsc.ts` resolves from that package's own folder, since npm hoists it or nests it beside it.
+
+`typescript mutation` type-checks each mutant on the same compiler through its API, which ships only in the `typescript` package from 7.1: `src/drivers/tsc/native-project.ts` opens a project on `@typescript/native` for the mutant checker and for the first error of a tree that does not compile ([ADR-032](../decisions/032-the-mutant-checker-runs-on-the-native-compiler.md)).
 
 The ordinary `typescript` dependency stays on ^6 because two consumers need the JavaScript compiler API the Go package does not ship: `dependency-cruiser` (a `typescript <7` peer) and `eslint-plugin-perfectionist`, which does a bare `require('typescript')`.
 

@@ -1,31 +1,25 @@
-import { join } from 'node:path';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
 import process from 'node:process';
 
-import {
-    binaryIn,
-    HOISTED_BESIDE_PACKAGE,
-    isExecutable,
-    PACKAGE_ROOT,
-} from '../../../lint/kit/project/package-root.js';
+import { binaryIn, HOISTED_BESIDE_PACKAGE } from '../../../lint/kit/project/package-root.js';
 import { handOver, run } from '../run.js';
 
-const PLATFORMS: Readonly<Record<string, string>> = {
-    darwin: 'darwin',
-    linux: 'linux',
-    win32: 'win32',
-};
+// outside: the binary is the platform package `@typescript/native` depends on, which npm hoists or nests beside it, so it resolves from that package's own folder, by the name its own `getExePath` builds.
+function nativeCompiler(): string | undefined {
+    try {
+        const native = createRequire(import.meta.url).resolve('@typescript/native/package.json');
+        const platform = `@typescript/typescript-${process.platform}-${process.arch}/package.json`;
 
-const ARCHITECTURES: Readonly<Record<string, string>> = { arm: 'arm', arm64: 'arm64', x64: 'x64' };
-
-function tscIn(fallbackBin: string): string {
-    const compiler = `@typescript/typescript-${PLATFORMS[process.platform] ?? 'linux'}-${ARCHITECTURES[process.arch] ?? 'x64'}/lib/tsc`;
-
-    return (
-        [join(PACKAGE_ROOT, 'node_modules', compiler), join(PACKAGE_ROOT, '../..', compiler)].find(
-            (path) => isExecutable(path),
-        ) ?? binaryIn('tsc', fallbackBin)
-    );
+        return join(dirname(createRequire(native).resolve(platform)), 'lib/tsc');
+        // Stryker disable BlockStatement: a compiler left undefined is as absent as one refused
+    } catch {
+        return undefined;
+    }
+    // Stryker restore BlockStatement
 }
+
+const tscIn = (fallbackBin: string): string => nativeCompiler() ?? binaryIn('tsc', fallbackBin);
 
 export const tscBinary = (): string => tscIn(HOISTED_BESIDE_PACKAGE);
 

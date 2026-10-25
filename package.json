@@ -93,15 +93,6 @@
         "react": "^19.3.0",
         "vitest": "^5.0.5"
     },
-    "optionalDependencies": {
-        "@typescript/typescript-darwin-arm64": "^7.0.2",
-        "@typescript/typescript-darwin-x64": "^7.0.2",
-        "@typescript/typescript-linux-arm": "^7.0.2",
-        "@typescript/typescript-linux-arm64": "^7.0.2",
-        "@typescript/typescript-linux-x64": "^7.0.2",
-        "@typescript/typescript-win32-arm64": "^7.0.2",
-        "@typescript/typescript-win32-x64": "^7.0.2"
-    },
     "engines": {
         "node": ">=24.0.0"
     }

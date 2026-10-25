@@ -36,21 +36,6 @@ function manifestAt(path: string): Manifest {
 
 const manifest = manifestAt(resolve(PACKAGE_ROOT, 'package.json'));
 
-const PLATFORMS: Readonly<Record<string, string>> = {
-    darwin: 'darwin',
-    linux: 'linux',
-    win32: 'win32',
-};
-
-const ARCHITECTURES: Readonly<Record<string, string>> = { arm: 'arm', arm64: 'arm64', x64: 'x64' };
-
-function goCompilerPackage(): string {
-    const os = PLATFORMS[process.platform] ?? 'linux';
-    const arch = ARCHITECTURES[process.arch] ?? 'x64';
-
-    return `@typescript/typescript-${os}-${arch}`;
-}
-
 // outside: a package whose `exports` hides `./package.json` (knip) is invisible to `require`; the two
 // directories after it are the ones the command's binary lookup walks.
 function installedVersion(name: string): null | string {
@@ -128,7 +113,12 @@ const declared: Record<string, string> = {
 export function toolVersions(): ToolVersion[] {
     const rows: [string, null | string, string][] = [
         ['node', process.version.replace(/^v/u, ''), manifest.node ?? '*'],
-        ['tsc (Go)', installedVersion(goCompilerPackage()), declared[goCompilerPackage()] ?? '*'],
+        [
+            'tsc (Go)',
+            installedVersion('@typescript/native'),
+            // Stryker disable next-line StringLiteral,Regex: the manifest declares the alias, whose range holds one `npm:<name>@`, at its start
+            (declared['@typescript/native'] ?? '*').replace(/^npm:[^@]+@/u, ''),
+        ],
         ['typescript', installedVersion('typescript'), declared.typescript ?? '*'],
         ['oxlint', installedVersion('oxlint'), declared.oxlint ?? '*'],
         ['oxfmt', installedVersion('oxfmt'), declared.oxfmt ?? '*'],
