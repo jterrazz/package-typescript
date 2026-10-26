@@ -1,0 +1,18 @@
+description: judges the root's settings file, and leaves each member's out of the report
+fixture: ./__fixtures__/knip/settings-files/
+env: TYPESCRIPT_CHECK_PASSES=knip
+runs:
+    - command: check
+      exit: 1
+      stdout: |4
+           START  Running quality checks
+
+           RUN  Knip (unused code)
+
+          Unlisted dependencies (1)
+          root-settings-helper  studio.config.ts:1:26
+          ✗ Failed with exit code 1 ({{duration}})
+
+           END  Finalizing quality checks
+
+          ✗ Some checks failed, first Knip (unused code): Unlisted dependencies (1)

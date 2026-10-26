@@ -1,0 +1,8 @@
+{
+    "name": "fixture-knip-settings-files",
+    "private": true,
+    "type": "module",
+    "workspaces": [
+        "apps/*"
+    ]
+}
